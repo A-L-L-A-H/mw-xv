@@ -721,7 +721,7 @@
       "deliverable": "Precision/error reports, historical count reconciliation record",
       "acceptance": "Measured data/fixtures versioned; empty/unsupported/unknown distinct; no invented benchmark pass",
       "verification": "deterministic golden-suite report",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
