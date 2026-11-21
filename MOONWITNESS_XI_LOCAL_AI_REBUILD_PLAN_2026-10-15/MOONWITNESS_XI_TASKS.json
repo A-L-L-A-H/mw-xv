@@ -1040,7 +1040,7 @@
       "deliverable": "Untrusted content handling and human-approved action boundary",
       "acceptance": "Malicious retrieved text cannot alter system rules, run shell, publish, leak secret",
       "verification": "OWASP-inspired adversarial fixtures",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
