@@ -1798,7 +1798,9 @@
       "output": "Precision/error reports, historical count reconciliation record",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/K4-006.md"
     },
     {
       "id": "K5-001",

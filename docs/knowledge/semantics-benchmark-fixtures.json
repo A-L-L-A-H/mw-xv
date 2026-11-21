@@ -1,0 +1,315 @@
+{
+  "schema_version": 1,
+  "suite_id": "mw:benchmark-suite:synthetic-semantics-v1",
+  "suite_version": "1.0.0",
+  "fixture_classification": "synthetic",
+  "description": "Versioned synthetic golden benchmark suite covering polarity/speaker annotation, textual alignment boundaries, scoped concept profiles, non-measured slice separation, and the Asma 1751-vs-1754 historical count reconciliation audit.",
+  "cases": [
+    {
+      "case_id": "SEM-01-negative-narration",
+      "domain": "polarity_speaker",
+      "input_state": "measured",
+      "note": "Synthetic negative narration preserves negative polarity without flattening.",
+      "expected": {
+        "expected_status": "projected",
+        "expected_polarity": "negative",
+        "expected_context_mode": "narration"
+      },
+      "payload": {
+        "annotation": {
+          "id": "mw:semantic-annotation:bench-001",
+          "kind": "ResearchSemanticAnnotation",
+          "schema_version": 1,
+          "subject_assertion_id": "mw:assertion:bench-001",
+          "evidence_id": "mw:evidence:bench-001",
+          "source_content_sha256": "5f3bdeb83d3a6f7bd67d57dabf3b89124c694ac0634386de87af13c57e480297",
+          "offset_basis": "resolved_evidence_excerpt",
+          "source_range": {
+            "byte_start": 0,
+            "byte_end": 31,
+            "scalar_start": 0,
+            "scalar_end": 27
+          },
+          "polarity": "negative",
+          "polarity_basis": "explicit_negation",
+          "polarity_cue": {
+            "kind": "negation",
+            "span": {
+              "byte_start": 18,
+              "byte_end": 21,
+              "scalar_start": 16,
+              "scalar_end": 19
+            },
+            "text": "not"
+          },
+          "context": {
+            "mode": "narration"
+          },
+          "review_status": "accepted",
+          "reviewer_id": "mw:user:bench-reviewer-1",
+          "reviewed_at": "2026-10-18T00:00:00Z"
+        },
+        "evidence": {
+          "evidence": {
+            "id": "mw:evidence:bench-001",
+            "assertion_id": "mw:assertion:bench-001",
+            "direction": "supporting",
+            "selector": {
+              "source_id": "mw:source:ebible-webp-protestant",
+              "expression_id": "mw:expression:webp-protestant",
+              "edition_id": "mw:edition:webp-protestant-2020-stable",
+              "locator": "Genesis 1:1",
+              "content_sha256": "5f3bdeb83d3a6f7bd67d57dabf3b89124c694ac0634386de87af13c57e480297"
+            }
+          },
+          "source_id": "mw:source:ebible-webp-protestant",
+          "expression_id": "mw:expression:webp-protestant",
+          "edition_id": "mw:edition:webp-protestant-2020-stable",
+          "locator": "Genesis 1:1",
+          "content_sha256": "5f3bdeb83d3a6f7bd67d57dabf3b89124c694ac0634386de87af13c57e480297",
+          "direction": "supporting",
+          "excerpt": "They said \u201CI do not agree.\u201D",
+          "citation": "synthetic:bench:001"
+        }
+      }
+    },
+    {
+      "case_id": "SEM-02-direct-quote-speaker",
+      "domain": "polarity_speaker",
+      "input_state": "measured",
+      "note": "Synthetic direct quote remains scoped to explicit speaker identity.",
+      "expected": {
+        "expected_status": "scoped",
+        "expected_polarity": "positive",
+        "expected_context_mode": "direct_quote",
+        "expected_speaker_id": "mw:agent:synthetic-speaker-1"
+      },
+      "payload": {
+        "annotation": {
+          "id": "mw:semantic-annotation:bench-002",
+          "kind": "ResearchSemanticAnnotation",
+          "schema_version": 1,
+          "subject_assertion_id": "mw:assertion:bench-002",
+          "evidence_id": "mw:evidence:bench-002",
+          "source_content_sha256": "5f3bdeb83d3a6f7bd67d57dabf3b89124c694ac0634386de87af13c57e480297",
+          "offset_basis": "resolved_evidence_excerpt",
+          "source_range": {
+            "byte_start": 0,
+            "byte_end": 31,
+            "scalar_start": 0,
+            "scalar_end": 27
+          },
+          "polarity": "positive",
+          "polarity_basis": "human_scope_judgment",
+          "context": {
+            "mode": "direct_quote",
+            "speaker_id": "mw:agent:synthetic-speaker-1",
+            "cue": {
+              "kind": "quotation",
+              "span": {
+                "byte_start": 10,
+                "byte_end": 13,
+                "scalar_start": 10,
+                "scalar_end": 11
+              },
+              "text": "\u201C"
+            }
+          },
+          "review_status": "accepted",
+          "reviewer_id": "mw:user:bench-reviewer-1",
+          "reviewed_at": "2026-10-18T00:00:00Z"
+        },
+        "evidence": {
+          "evidence": {
+            "id": "mw:evidence:bench-002",
+            "assertion_id": "mw:assertion:bench-002",
+            "direction": "supporting",
+            "selector": {
+              "source_id": "mw:source:ebible-webp-protestant",
+              "expression_id": "mw:expression:webp-protestant",
+              "edition_id": "mw:edition:webp-protestant-2020-stable",
+              "locator": "Genesis 1:1",
+              "content_sha256": "5f3bdeb83d3a6f7bd67d57dabf3b89124c694ac0634386de87af13c57e480297"
+            }
+          },
+          "source_id": "mw:source:ebible-webp-protestant",
+          "expression_id": "mw:expression:webp-protestant",
+          "edition_id": "mw:edition:webp-protestant-2020-stable",
+          "locator": "Genesis 1:1",
+          "content_sha256": "5f3bdeb83d3a6f7bd67d57dabf3b89124c694ac0634386de87af13c57e480297",
+          "direction": "supporting",
+          "excerpt": "They said \u201CI do not agree.\u201D",
+          "citation": "synthetic:bench:002"
+        }
+      }
+    },
+    {
+      "case_id": "ALN-01-parallel-candidate",
+      "domain": "textual_alignment",
+      "input_state": "measured",
+      "note": "Synthetic cross-tradition parallel candidate keeps all four boundary flags false.",
+      "expected": {
+        "expected_outcome": "candidate",
+        "expected_asserts_identity": false,
+        "expected_asserts_quotation": false,
+        "expected_asserts_fulfillment": false,
+        "expected_asserts_doctrine": false
+      },
+      "payload": {
+        "candidate": {
+          "id": "mw:textual-alignment-candidate:bench-001",
+          "left": {
+            "evidence_id": "mw:evidence:bench-left-1",
+            "selector": {
+              "source_id": "mw:source:synthetic-alpha",
+              "expression_id": "mw:expression:synthetic-alpha",
+              "edition_id": "mw:edition:synthetic-alpha-v1",
+              "locator": "Section 1:1",
+              "content_sha256": "3ee2142c2731a1543f0de1b0ea28b2056fa73600bca5290251dab6195ee0c599",
+              "range": {
+                "unit": "unicode_scalar",
+                "start": 0,
+                "end": 34
+              },
+              "quote": "Synthetic left witness alpha line."
+            }
+          },
+          "right": {
+            "evidence_id": "mw:evidence:bench-right-1",
+            "selector": {
+              "source_id": "mw:source:synthetic-beta",
+              "expression_id": "mw:expression:synthetic-beta",
+              "edition_id": "mw:edition:synthetic-beta-v1",
+              "locator": "Chapter 2:1",
+              "content_sha256": "ff42de9ade2723a5572d24869806ddea30a4251edab4e5813f2ec0968f863ffb",
+              "range": {
+                "unit": "unicode_scalar",
+                "start": 0,
+                "end": 34
+              },
+              "quote": "Synthetic right witness beta line."
+            }
+          },
+          "similarity_score": 0.42,
+          "method": {
+            "id": "mw:alignment-method:synthetic-lexical",
+            "version": "1.0.0"
+          },
+          "uncertainty": {
+            "level": "high",
+            "note": "Synthetic fixture similarity does not assert historical or doctrinal dependence."
+          }
+        },
+        "passages": {
+          "mw:evidence:bench-left-1": {
+            "evidence_id": "mw:evidence:bench-left-1",
+            "tradition_context_id": "mw:tradition:synthetic-alpha",
+            "source_id": "mw:source:synthetic-alpha",
+            "expression_id": "mw:expression:synthetic-alpha",
+            "edition_id": "mw:edition:synthetic-alpha-v1",
+            "locator": "Section 1:1",
+            "content_sha256": "3ee2142c2731a1543f0de1b0ea28b2056fa73600bca5290251dab6195ee0c599",
+            "range": {
+              "unit": "unicode_scalar",
+              "start": 0,
+              "end": 34
+            },
+            "quote": "Synthetic left witness alpha line.",
+            "text": "Synthetic left witness alpha line."
+          },
+          "mw:evidence:bench-right-1": {
+            "evidence_id": "mw:evidence:bench-right-1",
+            "tradition_context_id": "mw:tradition:synthetic-beta",
+            "source_id": "mw:source:synthetic-beta",
+            "expression_id": "mw:expression:synthetic-beta",
+            "edition_id": "mw:edition:synthetic-beta-v1",
+            "locator": "Chapter 2:1",
+            "content_sha256": "ff42de9ade2723a5572d24869806ddea30a4251edab4e5813f2ec0968f863ffb",
+            "range": {
+              "unit": "unicode_scalar",
+              "start": 0,
+              "end": 34
+            },
+            "quote": "Synthetic right witness beta line.",
+            "text": "Synthetic right witness beta line."
+          }
+        }
+      }
+    },
+    {
+      "case_id": "CPT-01-scoped-profile-valid",
+      "domain": "concept_profile",
+      "input_state": "measured",
+      "note": "Synthetic scoped concept profile passes structural validation with candidate interpretation.",
+      "expected": {
+        "expected_valid": true
+      },
+      "payload": {
+        "document": {
+          "format": "moonwitness-concept-profiles/v1",
+          "profiles": [
+            {
+              "id": "mw:concept-profile:bench-ruh-01",
+              "concept_id": "mw:concept:synthetic-ruh",
+              "tradition": "synthetic-tradition-a",
+              "interpretive_scope": "Synthetic analytical profile for benchmark regression only.",
+              "epistemic_status": "provisional",
+              "uncertainty": {
+                "level": "moderate",
+                "note": "Synthetic benchmark entry; makes no doctrinal claim."
+              },
+              "interpretations": [
+                {
+                  "claim_type": "human_interpretation",
+                  "text": "Synthetic candidate reading kept separate from other traditions.",
+                  "status": "candidate",
+                  "evidence_ids": ["mw:evidence:bench-001"]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "SLICE-01-empty-asma-lexicon",
+      "domain": "concept_profile",
+      "input_state": "empty",
+      "note": "No human-authored Arabic lexical analyzer or authorized multi-verse Asma dataset exists yet."
+    },
+    {
+      "case_id": "SLICE-02-unsupported-script",
+      "domain": "polarity_speaker",
+      "input_state": "unsupported",
+      "note": "Unsupported morphological/script analyzers are reported distinctly instead of skipped silently."
+    },
+    {
+      "case_id": "SLICE-03-unknown-gold-label",
+      "domain": "textual_alignment",
+      "input_state": "unknown",
+      "note": "Cross-tradition witness pair lacks human-reviewed ground-truth label."
+    }
+  ],
+  "historical_reconciliations": [
+    {
+      "record_id": "mw:count-reconciliation:asma-1751-vs-1754-audit",
+      "topic": "Historical Pure Asma corpus occurrence count discrepancy (1751 vs 1754)",
+      "reconciliation_status": "discrepancy_recorded",
+      "observations": [
+        {
+          "source_label": "historical-plan-note-1751",
+          "count": 1751,
+          "artifact_ref": "MOONWITNESS_XI_LOCAL_AI_REBUILD_PLAN_2026-10-15/MOONWITNESS_XI_MASTER_PLAN.md#L241",
+          "observation_state": "historical_unverified"
+        },
+        {
+          "source_label": "historical-plan-note-1754",
+          "count": 1754,
+          "artifact_ref": "research/profiles/quran-primary-v1.json",
+          "observation_state": "historical_unverified"
+        }
+      ],
+      "resolution_note": "Recorded as an explicit audit discrepancy (delta = 3) under K4-006 / master plan section 7.2. Cannot be marked reconciled_with_evidence until an authorized full-corpus edition and human-authored morphological method are measured."
+    }
+  ]
+}

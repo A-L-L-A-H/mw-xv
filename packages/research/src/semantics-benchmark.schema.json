@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://moonwitness.dev/schemas/semantics-benchmark.schema.json",
+  "title": "MoonWitness semantics benchmark and drift ledger",
+  "description": "Versioned benchmark suite and historical count reconciliation contract for deterministic semantic evaluation without invented passes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "suite_id", "suite_version", "fixture_classification", "cases"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "suite_id": {
+      "type": "string",
+      "pattern": "^mw:benchmark-suite:[a-z0-9][a-z0-9._-]{0,127}$"
+    },
+    "suite_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "fixture_classification": {
+      "enum": ["synthetic", "pinned_approved_sample"]
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "cases": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "domain", "input_state"],
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$"
+          },
+          "domain": {
+            "enum": ["polarity_speaker", "textual_alignment", "concept_profile"]
+          },
+          "input_state": {
+            "enum": ["measured", "empty", "unsupported", "unknown"]
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "expected": {
+            "type": "object"
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "historical_reconciliations": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "$ref": "#/$defs/historical_reconciliation"
+      }
+    }
+  },
+  "$defs": {
+    "historical_reconciliation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "topic",
+        "reconciliation_status",
+        "observations",
+        "resolution_note"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "pattern": "^mw:count-reconciliation:[a-z0-9][a-z0-9._-]{0,127}$"
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "reconciliation_status": {
+          "enum": ["discrepancy_recorded", "insufficient_evidence", "reconciled_with_evidence"]
+        },
+        "observations": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source_label", "count", "artifact_ref", "observation_state"],
+            "properties": {
+              "source_label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "artifact_ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 240
+              },
+              "observation_state": {
+                "enum": ["measured", "historical_unverified", "unsupported", "unknown"]
+              }
+            }
+          }
+        },
+        "resolution_note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    }
+  }
+}
