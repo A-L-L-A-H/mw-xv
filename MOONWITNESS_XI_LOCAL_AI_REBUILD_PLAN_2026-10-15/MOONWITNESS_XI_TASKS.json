@@ -962,7 +962,7 @@
       "deliverable": "Typed AI_MODE disabled|local provider with explicit loopback allowlist",
       "acceptance": "API/worker startup and core workflow pass without model; no remote fallback",
       "verification": "offline smoke disabled/unavailable tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
