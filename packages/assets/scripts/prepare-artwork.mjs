@@ -14,7 +14,8 @@ const generated = [
     width: 1800,
     height: 900,
     quality: 78,
-    focalPoint: 'center-right (character foreground & moon on right; negative space on left for copy)',
+    focalPoint:
+      'center-right (character foreground & moon on right; negative space on left for copy)',
     alt: '',
     decorative: true,
   },
