@@ -193,11 +193,11 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-CORE-003.3** Tambahkan unit test resolusi layanan & missing-service fail-closed error di `packages/orm/tests/`
   - [x] **MW-CORE-003.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm audit:workspace` lulus tanpa siklus dependency baru
 
-- [ ] **MW-CORE-004** Implementasikan validasi skema konfigurasi startup dan diagnostik runtime `/readyz` yang terstruktur
-  - [ ] **MW-CORE-004.1** Validasi seluruh environment variable runtime di `apps/api/src/config/env.ts` dengan pesan error terstruktur & aman dari kebocoran secret
-  - [ ] **MW-CORE-004.2** Perluas `/readyz` pada `apps/api/src/routes/health.routes.ts` dan `worker-health.ts` untuk melaporkan versi addon aktif, status DB pool, dan kesiapan layanan inti
-  - [ ] **MW-CORE-004.3** Uji startup failure formatting & `/readyz` degraded vs healthy payload di `apps/api/tests/`
-  - [ ] **MW-CORE-004.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
+- [x] **MW-CORE-004** Implementasikan validasi skema konfigurasi startup dan diagnostik runtime `/readyz` yang terstruktur
+  - [x] **MW-CORE-004.1** Validasi seluruh environment variable runtime di `apps/api/src/config/env.ts` dengan pesan error terstruktur & aman dari kebocoran secret
+  - [x] **MW-CORE-004.2** Perluas `/readyz` pada `apps/api/src/routes/health.routes.ts` dan `worker-health.ts` untuk melaporkan versi addon aktif, status DB pool, dan kesiapan layanan inti
+  - [x] **MW-CORE-004.3** Uji startup failure formatting & `/readyz` degraded vs healthy payload di `apps/api/tests/`
+  - [x] **MW-CORE-004.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
 - [ ] **MW-CORE-005** Seragamkan lifecycle proses (`onInit`, `onReady`, `onDispose`) antara server API Fastify dan seluruh worker command
   - [ ] **MW-CORE-005.1** Integrasikan shutdown controller (`apps/api/src/lifecycle/`) dengan `ServiceContainer.disposeAll()` dan penutupan koneksi DB/S3/HTTP

@@ -66,6 +66,12 @@ describe('worker health endpoints', () => {
       connection: { filename: ':memory:' },
       useNullAsDefault: true,
     });
+    await db!.schema.createTable('_orm_addons', (table) => {
+      table.string('name').primary();
+      table.string('version').notNullable();
+      table.timestamp('installed_at').notNullable().defaultTo(db!.fn.now());
+      table.timestamp('upgraded_at').notNullable().defaultTo(db!.fn.now());
+    });
     health = await startWorkerHealthServer({
       db,
       host: '127.0.0.1',
@@ -81,7 +87,17 @@ describe('worker health endpoints', () => {
     expect(alive.status).toBe(200);
     expect(alive.headers.get('cache-control')).toBe('no-store');
     expect(await alive.json()).toMatchObject({ status: 'alive', worker: 'test-worker' });
-    expect((await fetch(`${baseUrl}/readyz`)).status).toBe(200);
+    const healthyProbe = await fetch(`${baseUrl}/readyz`);
+    expect(healthyProbe.status).toBe(200);
+    expect(await healthyProbe.json()).toMatchObject({
+      status: 'ready',
+      database: 'connected',
+      databasePool: {
+        used: expect.any(Number),
+        free: expect.any(Number),
+        capacity: expect.any(Number),
+      },
+    });
     expect((await fetch(`${baseUrl}/metrics`)).status).toBe(401);
     const metrics = await fetch(`${baseUrl}/metrics`, {
       headers: { authorization: 'Bearer worker-metrics-token-at-least-32-characters' },
@@ -92,7 +108,12 @@ describe('worker health endpoints', () => {
 
     health.setReady(false);
     expect((await fetch(`${baseUrl}/livez`)).status).toBe(200);
-    expect((await fetch(`${baseUrl}/readyz`)).status).toBe(503);
+    const degradedProbe = await fetch(`${baseUrl}/readyz`);
+    expect(degradedProbe.status).toBe(503);
+    expect(await degradedProbe.json()).toMatchObject({
+      status: 'not-ready',
+      database: 'connected',
+    });
     health.setReady(true);
     expect((await fetch(`${baseUrl}/readyz`)).status).toBe(200);
 

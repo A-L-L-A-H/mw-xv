@@ -4,6 +4,13 @@ import { timingSafeEqual } from 'node:crypto';
 import { testConnection } from '../database/knex.js';
 import { readWhatsAppDatabaseMetrics, renderMetrics } from '../observability/metrics.js';
 
+async function readInstalledAddons(db: Knex) {
+  return (await db('_orm_addons').select('name', 'version').orderBy('name')) as Array<{
+    name: string;
+    version: string;
+  }>;
+}
+
 export interface WorkerHealthOptions {
   db: Knex;
   host: string;
@@ -38,11 +45,27 @@ export async function startWorkerHealthServer(
     reply.header('Cache-Control', 'no-store').send({ status: 'alive', worker: options.name })
   );
   app.get('/readyz', async (_request, reply) => {
-    const healthy = ready && (await testConnection(options.db));
+    const dbOk = await testConnection(options.db);
+    const installedAddons = dbOk ? await readInstalledAddons(options.db).catch(() => []) : [];
+    const pool = options.db.client.pool ?? undefined;
+    const databasePool = pool
+      ? {
+          used: pool.numUsed() ?? 0,
+          free: pool.numFree() ?? 0,
+          capacity: pool.numPendingCreates() ?? 0,
+        }
+      : undefined;
+    const healthy = ready && dbOk;
     return reply
       .header('Cache-Control', 'no-store')
       .status(healthy ? 200 : 503)
-      .send({ status: healthy ? 'ready' : 'not-ready', worker: options.name });
+      .send({
+        status: healthy ? 'ready' : 'not-ready',
+        worker: options.name,
+        database: dbOk ? 'connected' : 'disconnected',
+        databasePool,
+        installedAddons,
+      });
   });
   app.get('/metrics', async (request, reply) => {
     const token = options.metricsToken;

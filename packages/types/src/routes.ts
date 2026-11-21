@@ -43,6 +43,12 @@ export interface HealthResponse {
   timestamp: string;
   uptime: number;
   database: 'connected' | 'disconnected';
+  databasePool?: {
+    used: number;
+    free: number;
+    capacity: number;
+  };
+  installedAddons?: Array<{ name: string; version: string }>;
   attachmentStorage?: 'connected' | 'disconnected';
   registeredModels: string[];
 }
