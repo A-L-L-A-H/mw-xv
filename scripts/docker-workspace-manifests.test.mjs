@@ -35,15 +35,15 @@ test('production build copies every workspace manifest before frozen install', (
 });
 
 test('native SQLite dependency build installs its compiler toolchain only in the build stage', () => {
-  const buildStage = dockerfile.slice(
-    0,
-    dockerfile.indexOf('\nFROM node:22-bookworm-slim AS runtime')
-  );
+  const runtimeStart = dockerfile.indexOf('\nFROM node:22-bookworm-slim AS runtime');
+  const buildStage = dockerfile.slice(0, runtimeStart);
+  const runtimeAndLater = dockerfile.slice(runtimeStart);
   assert.match(buildStage, /apt-get install --yes --no-install-recommends python3 make g\+\+/u);
   assert.match(buildStage, /rm -rf \/var\/lib\/apt\/lists\/\*/u);
-  assert.doesNotMatch(
-    dockerfile.slice(dockerfile.indexOf('\nFROM node:22-bookworm-slim AS runtime')),
-    /apt-get install/u
+  assert.doesNotMatch(runtimeAndLater, /\b(?:python3|make|g\+\+|build-essential)\b/u);
+  assert.match(
+    runtimeAndLater,
+    /apt-get install --yes --no-install-recommends ffmpeg[\s\S]*rm -rf \/var\/lib\/apt\/lists\/\*/u
   );
 });
 

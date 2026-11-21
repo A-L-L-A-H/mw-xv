@@ -46,6 +46,7 @@ jobs:
       - name: Build workspace and verify budgets
         run: |
           pnpm build
+          pnpm docs:check:built
           pnpm --filter @moonwitness/board typecheck
           pnpm board:budget
           pnpm test:ui-budget
@@ -89,3 +90,42 @@ jobs:
         run: pnpm --filter @moonwitness/orm-knowledge... build
       - name: Run K9-001 deterministic knowledge gate
         run: node scripts/knowledge/run-k-gate.mjs --json
+
+  postgres-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: moonwitness_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d moonwitness_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      POSTGRES_TEST_URL: postgresql://postgres:postgres@127.0.0.1:5432/moonwitness_test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/moonwitness_test
+      REQUIRE_POSTGRES_TESTS: 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: '22'
+          pnpm-version: '11.17.0'
+      - name: Install frozen workspace dependencies
+        run: pnpm install --frozen-lockfile --no-runtime
+      - name: Build workspace and run PostgreSQL integration suites
+        run: |
+          pnpm build
+          pnpm test:integration:built
+          node scripts/knowledge/run-k-gate.mjs --json

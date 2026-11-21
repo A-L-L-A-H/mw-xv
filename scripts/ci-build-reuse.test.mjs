@@ -23,7 +23,7 @@ const uiCatalogManifest = JSON.parse(
 const workflow = (
   await readFile(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8')
 ).replace(/\r\n/gu, '\n');
-const quality = workflow.split('  quality:\n')[1]?.split('\n  automation:\n')[0] ?? '';
+const quality = workflow.split('  quality-and-build:\n')[1]?.split('\n  unit-tests:\n')[0] ?? '';
 const releaseWorkflow = (
   await readFile(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8')
 ).replace(/\r\n/gu, '\n');
@@ -39,10 +39,16 @@ test('local and CI unit lanes run the offline knowledge CLI against the existing
 });
 
 test('CI reuses the validated workspace build only inside its quality job', () => {
-  const qualitySteps = ['pnpm typecheck', 'pnpm architecture:check:built', 'pnpm docs:build:built'];
+  const qualitySteps = [
+    'pnpm build',
+    'pnpm docs:check:built',
+    'pnpm --filter @moonwitness/board typecheck',
+    'pnpm board:budget',
+    'pnpm test:ui-budget',
+  ];
   let previousIndex = -1;
   for (const command of qualitySteps) {
-    const currentIndex = quality.indexOf(`run: ${command}`);
+    const currentIndex = quality.indexOf(command);
     assert.ok(currentIndex > previousIndex, `${command} must follow the earlier build step`);
     previousIndex = currentIndex;
   }

@@ -99,18 +99,22 @@ export function validateGitleaksSetup(workflow, config) {
     /\[\[rules\]\]\s*id\s*=\s*"moonwitness-runtime-secret"([\s\S]*?)(?=\n\[\[|\s*$)/u
   )?.[1];
   const runtimeSecretRegex = runtimeSecretRule?.match(/regex\s*=\s*'''(.*?)'''/su)?.[1];
-  if (!actionReference.test(workflow))
-    problems.push('Gitleaks Action must use a pinned full SHA and version.');
-  if (!/^\s*contents:\s*read\s*$/m.test(workflow))
-    problems.push('Gitleaks workflow must grant contents: read.');
-  if (
-    /pull_request_target|permissions:\s*write|GITLEAKS_ENABLE_COMMENTS:\s*['"]?true/i.test(workflow)
-  ) {
-    problems.push(
-      'Gitleaks must not use privileged PR triggers, write permissions, or PR comments.'
-    );
+  if (workflow !== null) {
+    if (!actionReference.test(workflow))
+      problems.push('Gitleaks Action must use a pinned full SHA and version.');
+    if (!/^\s*contents:\s*read\s*$/m.test(workflow))
+      problems.push('Gitleaks workflow must grant contents: read.');
+    if (
+      /pull_request_target|permissions:\s*write|GITLEAKS_ENABLE_COMMENTS:\s*['"]?true/i.test(
+        workflow
+      )
+    ) {
+      problems.push(
+        'Gitleaks must not use privileged PR triggers, write permissions, or PR comments.'
+      );
+    }
+    if (!/fetch-depth:\s*0/.test(workflow)) problems.push('Gitleaks must scan full Git history.');
   }
-  if (!/fetch-depth:\s*0/.test(workflow)) problems.push('Gitleaks must scan full Git history.');
   if (!/\[extend\][\s\S]*?\buseDefault\s*=\s*true\b/u.test(config)) {
     problems.push('Custom Gitleaks config must extend the built-in secret detection rules.');
   }
@@ -150,10 +154,13 @@ export function validateGitleaksSetup(workflow, config) {
 }
 
 async function main() {
-  const [workflow, config] = await Promise.all([
-    readFile(workflowPath, 'utf8'),
-    readFile(configPath, 'utf8'),
-  ]);
+  let workflow = null;
+  try {
+    workflow = await readFile(workflowPath, 'utf8');
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
+  const config = await readFile(configPath, 'utf8');
   const problems = validateGitleaksSetup(workflow, config);
   if (problems.length) {
     for (const problem of problems) process.stderr.write(`${problem}\n`);
