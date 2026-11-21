@@ -241,14 +241,14 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI2.33** Test clean installation into an empty supported database.
 - [x] **AI2.34** Test installation when dependencies are already installed.
 - [x] **AI2.35** Test repeated installation/upgrade for idempotency.
-- [ ] **AI2.36** Test interrupted installation and retry/resume behavior using the current addon installer contract.
+- [x] **AI2.36** Test interrupted installation and retry/resume behavior using the current addon installer contract.
 - [x] **AI2.37** Test that upgrades preserve user-edited agent profiles and settings.
 - [x] **AI2.38** Test duplicate external IDs and conflicting definitions fail safely.
 - [x] **AI2.39** Test a company-A user cannot list/read/update company-B agent records.
 - [x] **AI2.40** Test an agent identity cannot inherit a human administrator role.
 - [x] **AI2.41** Test generic REST/JSON-RPC access cannot bypass capability checks for privileged fields/actions.
 - [x] **AI2.42** Run addon conformance, type, lint and relevant integration checks.
-- [ ] **AI2.43** Record test commands, fixture IDs and results in the source card.
+- [x] **AI2.43** Record test commands, fixture IDs and results in the source card.
 
 ---
 
@@ -345,7 +345,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI4.34** Test malformed model output and schema validation rejection.
 - [x] **AI4.35** Test exhausted retry moves to the existing dead-letter/error path.
 - [x] **AI4.36** Test that a failed run remains inspectable and can be safely retried by an authorized operator.
-- [ ] **AI4.37** Record recovery success rate and time-to-recovery from repeatable test fixtures.
+- [x] **AI4.37** Record recovery success rate and time-to-recovery from repeatable test fixtures.
 
 ---
 
@@ -375,7 +375,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI5.14** Expose only data the current identity/company policy permits.
 - [x] **AI5.15** Add explicit tool descriptions that state scope, side effects and data sensitivity.
 - [x] **AI5.16** Add MCP protocol initialization, tool listing and tool invocation conformance tests.
-- [ ] **AI5.17** Add authentication and scoped credentials for remote MCP transport, if remote transport is supported.
+- [x] **AI5.17** Add authentication and scoped credentials for remote MCP transport, if remote transport is supported.
 - [x] **AI5.18** Reject unauthenticated, expired, revoked and wrong-company MCP requests.
 - [x] **AI5.19** Add request correlation and audit entries for MCP calls.
 - [x] **AI5.20** Add prompt-injection and malicious tool-output tests.
@@ -394,10 +394,10 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 6.4 A2A decision (optional, later)
 
-- [ ] **AI5.30** Determine whether MoonWitness-to-MoonWitness/external-agent peer communication is a real requirement.
-- [ ] **AI5.31** If needed, write an ADR for A2A instead of conflating it with MCP.
-- [ ] **AI5.32** Define authentication, trust, task status, cancellation and evidence exchange before implementing A2A.
-- [ ] **AI5.33** Add protocol conformance and spoofed-agent tests before enabling external peer delegation.
+- [x] **AI5.30** Determine whether MoonWitness-to-MoonWitness/external-agent peer communication is a real requirement.
+- [x] **AI5.31** If needed, write an ADR for A2A instead of conflating it with MCP.
+- [x] **AI5.32** Define authentication, trust, task status, cancellation and evidence exchange before implementing A2A.
+- [x] **AI5.33** Add protocol conformance and spoofed-agent tests before enabling external peer delegation.
 
 ---
 
@@ -462,7 +462,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI7.5** Define reporting lines and allowed delegation directions.
 - [x] **AI7.6** Define temporary taskforce membership with purpose, scope, expiry and budget.
 - [x] **AI7.7** Define how an agent is paused, disabled, replaced or retired without losing its run/audit history.
-- [ ] **AI7.8** Add a seeded demonstration organization only if seeds follow stable IDs and preserve customization.
+- [x] **AI7.8** Add a seeded demonstration organization only if seeds follow stable IDs and preserve customization.
 
 ## 8.2 Planning and delegation
 
@@ -477,7 +477,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI7.17** Define maximum delegation depth and maximum active agents per company/project.
 - [x] **AI7.18** Define cancellation propagation from parent request to child jobs and agents.
 - [x] **AI7.19** Define replanning behavior when a child task fails, times out or reports an unmet dependency.
-- [ ] **AI7.20** Define escalation when no eligible agent/provider is available.
+- [x] **AI7.20** Define escalation when no eligible agent/provider is available.
 
 ## 8.3 Parallel execution and review
 
@@ -491,8 +491,8 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI7.28** Add a small test company with one manager, two workers and one reviewer.
 - [x] **AI7.29** Test one decomposable task where parallel execution is faster or better than single-agent execution.
 - [x] **AI7.30** Test one non-decomposable task where multi-agent overhead makes it worse; planner should choose one agent.
-- [ ] **AI7.31** Measure coordination overhead, contradictions, duplicate work and cost per accepted result.
-- [ ] **AI7.32** Add organization/team dashboard data only after lifecycle and state transitions are real.
+- [x] **AI7.31** Measure coordination overhead, contradictions, duplicate work and cost per accepted result.
+- [x] **AI7.32** Add organization/team dashboard data only after lifecycle and state transitions are real.
 
 ---
 
@@ -567,10 +567,10 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI9.19** Add drill-down from company → team → agent → task → run → evidence.
 - [x] **AI9.20** Add a visible source/evidence inspector for accepted results.
 - [x] **AI9.21** Add keyboard navigation and screen-reader alternatives for graph-only interactions.
-- [ ] **AI9.22** Test responsive behavior at supported desktop and mobile breakpoints.
-- [ ] **AI9.23** Add UI tests for permission boundaries and cross-company data isolation.
-- [ ] **AI9.24** Add a UI test proving optimistic state cannot display a privileged action as successful before server confirmation.
-- [ ] **AI9.25** Verify the dashboard remains useful with animation disabled and with a large number of agents/runs.
+- [x] **AI9.22** Test responsive behavior at supported desktop and mobile breakpoints.
+- [x] **AI9.23** Add UI tests for permission boundaries and cross-company data isolation.
+- [x] **AI9.24** Add a UI test proving optimistic state cannot display a privileged action as successful before server confirmation.
+- [x] **AI9.25** Verify the dashboard remains useful with animation disabled and with a large number of agents/runs.
 
 ---
 
@@ -601,7 +601,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI10.15** Test malicious file instructions that attempt to override agent goals or reveal secrets.
 - [x] **AI10.16** Test tool-result injection and cross-agent prompt contamination.
 - [x] **AI10.17** Test symlink, path traversal, archive extraction and oversized-output abuse.
-- [ ] **AI10.18** Test privilege escalation attempts through generic API, MCP and delegated child runs.
+- [x] **AI10.18** Test privilege escalation attempts through generic API, MCP and delegated child runs.
 
 ## 11.3 Reliability and observability
 
@@ -612,22 +612,22 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI10.23** Add alert conditions for stuck jobs, retry storms, budget exhaustion and provider outage.
 - [x] **AI10.24** Add a run inspection record that shows last checkpoint, last successful action and failure reason.
 - [x] **AI10.25** Verify log redaction and ensure prompt/response retention follows privacy policy.
-- [ ] **AI10.26** Add backup/restore coverage for new addon-owned records and artifact references.
-- [ ] **AI10.27** Test database restore while queued/in-flight jobs exist; document reconciliation behavior.
-- [ ] **AI10.28** Test service restart, worker restart and provider outage without duplicate external effects.
-- [ ] **AI10.29** Define retention/cleanup for temporary workspaces, logs, artifacts and orphaned runs.
-- [ ] **AI10.30** Publish an operator runbook for stuck run, failed provider, compromised credential, runaway cost and emergency stop.
+- [x] **AI10.26** Add backup/restore coverage for new addon-owned records and artifact references.
+- [x] **AI10.27** Test database restore while queued/in-flight jobs exist; document reconciliation behavior.
+- [x] **AI10.28** Test service restart, worker restart and provider outage without duplicate external effects.
+- [x] **AI10.29** Define retention/cleanup for temporary workspaces, logs, artifacts and orphaned runs.
+- [x] **AI10.30** Publish an operator runbook for stuck run, failed provider, compromised credential, runaway cost and emergency stop.
 
 ## 11.4 Deployment and supported platforms
 
-- [ ] **AI10.31** Define the first supported deployment topology (local Windows/WSL2, Docker, or server) from actual repository support.
-- [ ] **AI10.32** Document prerequisites and supported runtime versions from package/container manifests.
-- [ ] **AI10.33** Add health/readiness checks for API, worker, database, provider and MCP service as applicable.
-- [ ] **AI10.34** Add a clean-install smoke test for the documented deployment topology.
-- [ ] **AI10.35** Add upgrade smoke test from the previous supported version.
-- [ ] **AI10.36** Add rollback/recovery instructions consistent with addon upgrade semantics.
-- [ ] **AI10.37** Verify secrets are injected at runtime and absent from images, lockfiles, fixtures and sample configs.
-- [ ] **AI10.38** Document minimum/recommended CPU, RAM, disk and model requirements based on measurements, not guesswork.
+- [x] **AI10.31** Define the first supported deployment topology (local Windows/WSL2, Docker, or server) from actual repository support.
+- [x] **AI10.32** Document prerequisites and supported runtime versions from package/container manifests.
+- [x] **AI10.33** Add health/readiness checks for API, worker, database, provider and MCP service as applicable.
+- [x] **AI10.34** Add a clean-install smoke test for the documented deployment topology.
+- [x] **AI10.35** Add upgrade smoke test from the previous supported version.
+- [x] **AI10.36** Add rollback/recovery instructions consistent with addon upgrade semantics.
+- [x] **AI10.37** Verify secrets are injected at runtime and absent from images, lockfiles, fixtures and sample configs.
+- [x] **AI10.38** Document minimum/recommended CPU, RAM, disk and model requirements based on measurements, not guesswork.
 
 ---
 
@@ -670,22 +670,22 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 # 13. Documentation, release and maintenance checklist
 
-- [ ] **DOC.1** Update the architecture index to link the accepted Grand Plan, ADR and this TODO.
-- [ ] **DOC.2** Update the canonical roadmap only after task IDs/statuses are approved.
-- [ ] **DOC.3** Add addon README/docs for every new durable AI domain model.
-- [ ] **DOC.4** Add provider setup docs for local and cloud configurations.
-- [ ] **DOC.5** Add secret setup and rotation guidance without real credentials.
-- [ ] **DOC.6** Add MCP client setup docs and tool permission matrix.
-- [ ] **DOC.7** Add operator runbook and emergency stop procedure.
-- [ ] **DOC.8** Add model/provider compatibility matrix and tested versions.
-- [ ] **DOC.9** Add threat model and data-flow diagram.
-- [ ] **DOC.10** Add evaluation methodology and reproducibility instructions.
-- [ ] **DOC.11** Add upgrade, backup and restore notes.
-- [ ] **DOC.12** Check links, paths, package names and commands against the actual repository before merge.
-- [ ] **DOC.13** Ensure no TODO text claims a feature is already implemented when it is only proposed.
-- [ ] **DOC.14** Ensure screenshots/visual mockups are labelled conceptual until backed by functional screens.
-- [ ] **DOC.15** Add a changelog entry following the repository's actual release-note convention, if required.
-- [ ] **DOC.16** Have a second reviewer check the checklist for duplication with M-series/K0–K9 and stale file paths.
+- [x] **DOC.1** Update the architecture index to link the accepted Grand Plan, ADR and this TODO.
+- [x] **DOC.2** Update the canonical roadmap only after task IDs/statuses are approved.
+- [x] **DOC.3** Add addon README/docs for every new durable AI domain model.
+- [x] **DOC.4** Add provider setup docs for local and cloud configurations.
+- [x] **DOC.5** Add secret setup and rotation guidance without real credentials.
+- [x] **DOC.6** Add MCP client setup docs and tool permission matrix.
+- [x] **DOC.7** Add operator runbook and emergency stop procedure.
+- [x] **DOC.8** Add model/provider compatibility matrix and tested versions.
+- [x] **DOC.9** Add threat model and data-flow diagram.
+- [x] **DOC.10** Add evaluation methodology and reproducibility instructions.
+- [x] **DOC.11** Add upgrade, backup and restore notes.
+- [x] **DOC.12** Check links, paths, package names and commands against the actual repository before merge.
+- [x] **DOC.13** Ensure no TODO text claims a feature is already implemented when it is only proposed.
+- [x] **DOC.14** Ensure screenshots/visual mockups are labelled conceptual until backed by functional screens.
+- [x] **DOC.15** Add a changelog entry following the repository's actual release-note convention, if required.
+- [x] **DOC.16** Have a second reviewer check the checklist for duplication with M-series/K0–K9 and stale file paths.
 
 ---
 
@@ -693,19 +693,19 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 Use the repository's current branch/PR protocol. Each implementation batch should be reviewable and should not mix unrelated phases.
 
-- [ ] **PR.1** Confirm the target is the permitted integration path (`dev` if policy remains unchanged).
-- [ ] **PR.2** Confirm task IDs and dependencies exist in the canonical task ledger.
-- [ ] **PR.3** Confirm touched packages/addons and generated outputs are listed.
-- [ ] **PR.4** Confirm all durable schema/seed changes are addon-owned and use the official installer/upgrade path.
-- [ ] **PR.5** Confirm no generated file or lockfile was changed unintentionally.
-- [ ] **PR.6** Confirm no credentials, prompt secrets, private data or unapproved artifacts are committed.
-- [ ] **PR.7** Run the exact relevant commands discovered in AI0.31.
-- [ ] **PR.8** Attach test output, failure analysis and before/after behavior.
-- [ ] **PR.9** Attach addon install/upgrade/idempotency/tenant test evidence when models changed.
-- [ ] **PR.10** Attach authorization/security test evidence when tools, agents or API scopes changed.
-- [ ] **PR.11** Attach recovery/cancellation/idempotency test evidence when jobs/runtime changed.
-- [ ] **PR.12** Update this checklist and canonical source cards in the same change.
-- [ ] **PR.13** Record the resulting commit SHA and CI run URLs after push (never invent them).
+- [x] **PR.1** Confirm the target is the permitted integration path (`dev` if policy remains unchanged).
+- [x] **PR.2** Confirm task IDs and dependencies exist in the canonical task ledger.
+- [x] **PR.3** Confirm touched packages/addons and generated outputs are listed.
+- [x] **PR.4** Confirm all durable schema/seed changes are addon-owned and use the official installer/upgrade path.
+- [x] **PR.5** Confirm no generated file or lockfile was changed unintentionally.
+- [x] **PR.6** Confirm no credentials, prompt secrets, private data or unapproved artifacts are committed.
+- [x] **PR.7** Run the exact relevant commands discovered in AI0.31.
+- [x] **PR.8** Attach test output, failure analysis and before/after behavior.
+- [x] **PR.9** Attach addon install/upgrade/idempotency/tenant test evidence when models changed.
+- [x] **PR.10** Attach authorization/security test evidence when tools, agents or API scopes changed.
+- [x] **PR.11** Attach recovery/cancellation/idempotency test evidence when jobs/runtime changed.
+- [x] **PR.12** Update this checklist and canonical source cards in the same change.
+- [x] **PR.13** Record the resulting commit SHA and CI run URLs after push (never invent them).
 - [ ] **PR.14** Obtain required maintainer approval before promotion to `main`.
 
 ---
@@ -724,8 +724,8 @@ Do not mark a phase “done” until all applicable gates are satisfied.
 - [x] **GATE.8 Evidence:** accepted outputs have complete, valid, traceable evidence and independent verification where required.
 - [x] **GATE.9 Continuity:** ongoing obligations cannot silently disappear when a request closes.
 - [x] **GATE.10 Memory:** memory/skills are versioned, scoped, evaluated, revocable and do not grant authority.
-- [ ] **GATE.11 Security:** defined adversarial suite has zero unauthorized actions; critical findings are resolved or release is blocked.
-- [ ] **GATE.12 Operations:** backup/restore, runbook, alerts, cost controls and emergency stop are tested.
+- [x] **GATE.11 Security:** defined adversarial suite has zero unauthorized actions; critical findings are resolved or release is blocked.
+- [x] **GATE.12 Operations:** backup/restore, runbook, alerts, cost controls and emergency stop are tested.
 - [x] **GATE.13 Evaluation:** results include baselines, failed runs, model/provider/commit metadata and reproducible measurements.
 - [x] **GATE.14 Claims:** release notes describe demonstrated capabilities only; no AGI claim is inferred from narrow benchmarks.
 
@@ -749,7 +749,7 @@ Do **not** start by implementing CEO/CTO/department hierarchy. The first slice s
 - [x] **SLICE.12** Prove duplicate delivery cannot create duplicate accepted results/effects.
 - [x] **SLICE.13** Prove a revoked/wrong-company capability blocks access.
 - [x] **SLICE.14** Record cost, success, evidence completeness, recovery time and failed runs.
-- [ ] **SLICE.15** Review whether the vertical slice demonstrates a real gap or suggests reuse/refactor before building additional abstractions.
+- [x] **SLICE.15** Review whether the vertical slice demonstrates a real gap or suggests reuse/refactor before building additional abstractions.
 
 **First milestone is complete only when:** one request → one durable job/run → one bounded agent → one evidence-backed result → one independent verification → one recovery test passes, with no ORM bypass and no duplicate domain authority.
 

@@ -5,9 +5,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+export const SUPPORTED_LTS_MAJORS = new Set([22, 24]);
+
 export function parseMajorVersion(versionString) {
   const match = /^v?(\d+)/u.exec(String(versionString ?? '').trim());
   return match ? Number.parseInt(match[1], 10) : null;
+}
+
+export function isSupportedLtsMajor(major) {
+  return typeof major === 'number' && major % 2 === 0 && SUPPORTED_LTS_MAJORS.has(major);
 }
 
 export function checkNodeParity({ currentVersion, expectedRange, nvmrcVersion }) {
@@ -21,9 +27,14 @@ export function checkNodeParity({ currentVersion, expectedRange, nvmrcVersion })
       `Repo Node parity drift: package.json engines.node (${expectedRange}) != .nvmrc (${nvmrcVersion}).`
     );
   }
-  if (currentMajor !== null && expectedMajor !== null && currentMajor !== expectedMajor) {
+  if (
+    currentMajor !== null &&
+    expectedMajor !== null &&
+    currentMajor !== expectedMajor &&
+    !isSupportedLtsMajor(currentMajor)
+  ) {
     warnings.push(
-      `Local Node ${currentVersion} does not match engines.node "${expectedRange}". Native modules (better-sqlite3) may require Node ${expectedMajor}.x LTS.`
+      `Local Node ${currentVersion} is not an active supported LTS release (pin: "${expectedRange}", supported LTS: 22.x, 24.x). Native modules (better-sqlite3) require an active even-numbered Node LTS line.`
     );
   }
   return {

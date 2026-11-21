@@ -966,14 +966,14 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 
 ### R4. CI, visual acceptance, dan release gate
 
-- [ ] **R4.1 — CI catalog gate:** tambahkan `pnpm test:ui-catalog` ke workflow CI pada job quality yang tepat; jangan mengandalkan hanya unit test shared UI.
-- [ ] **R4.2 — Exact SHA evidence:** pastikan CI mencatat hasil `test:ui`, `test:ui-catalog`, Axe, UI budget, Board typecheck/lint, dan Board bundle budget pada exact commit `dev`.
-- [ ] **R4.3 — Visual matrix:** jalankan review screenshot desktop 1440px dan mobile 390px/320px untuk Home, auth, Board, model list/form, Kanban, analytical views, dan Workbench; perbarui snapshot hanya setelah side-by-side review.
+- [ ] **R4.1 — CI catalog gate:** tambahkan `pnpm test:ui-catalog` ke workflow CI pada job quality yang tepat; jangan mengandalkan hanya unit test shared UI. *(Script `test:ui-catalog` tersedia di `package.json`; menunggu wiring di `.github/workflows/ci.yml`.)*
+- [ ] **R4.2 — Exact SHA evidence:** pastikan CI mencatat hasil `test:ui`, `test:ui-catalog`, Axe, UI budget, Board typecheck/lint, dan Board bundle budget pada exact commit `dev`. *(Menunggu push & hasil CI hijau pada exact SHA `dev`.)*
+- [ ] **R4.3 — Visual matrix:** jalankan review screenshot desktop 1440px dan mobile 390px/320px untuk Home, auth, Board, model list/form, Kanban, analytical views, dan Workbench; perbarui snapshot hanya setelah side-by-side review. *(Menunggu review screenshot side-by-side pada viewport target.)*
 - [x] **R4.4 — Real-data contract:** uji loading, empty, error, permission-denied, zero-value, stale metadata, dan conflict state dengan API/fixture test yang diberi label; jangan pernah menampilkan fixture sebagai data produksi.
 - [x] **R4.5 — Accessibility gate:** tidak boleh ada pelanggaran Axe baru; validasi keyboard-only, focus return, accessible name, contrast, reduced motion, dan screen-reader status.
 - [x] **R4.6 — Performance gate:** pastikan lazy views tidak masuk initial bundle route yang tidak membutuhkannya; laporkan raw/gzip size dan pertahankan budget.
 - [x] **R4.7 — Documentation:** perbarui UI Bible, TOKENS, katalog, dan referensi komponen setelah kontrak implementasi berubah; jangan membuat dokumen desain kedua.
-- [ ] **R4.8 — Final acceptance:** jalankan seluruh gate relevan pada exact SHA terakhir di `dev`; catat command, hasil, screenshot path, dan blocker yang tersisa sebelum menandai task induk selesai.
+- [ ] **R4.8 — Final acceptance:** jalankan seluruh gate relevan pada exact SHA terakhir di `dev`; catat command, hasil, screenshot path, dan blocker yang tersisa sebelum menandai task induk selesai. *(Menunggu hosted CI SHA hijau & verifikasi visual matrix `R4.1`–`R4.3`.)*
 
 ### Aturan penutupan Bagian R
 

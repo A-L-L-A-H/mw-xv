@@ -24,14 +24,42 @@ test('checkNodeParity reports clean parity for Node 22.x', () => {
   assert.deepEqual(res.warnings, []);
 });
 
-test('checkNodeParity warns on local runtime drift without crashing', () => {
+test('checkNodeParity reports clean parity for Node 24.x LTS alongside 22.x pin', () => {
   const res = checkNodeParity({
     currentVersion: 'v24.22.1',
     expectedRange: '22.x',
     nvmrcVersion: '22',
   });
+  assert.equal(res.ok, true);
+  assert.deepEqual(res.warnings, []);
+});
+
+test('checkNodeParity rejects odd-numbered and unsupported Node versions', () => {
+  const oddRes = checkNodeParity({
+    currentVersion: 'v23.5.0',
+    expectedRange: '22.x',
+    nvmrcVersion: '22',
+  });
+  assert.equal(oddRes.ok, false);
+  assert.match(oddRes.warnings[0], /better-sqlite3/u);
+
+  const oldRes = checkNodeParity({
+    currentVersion: 'v20.11.0',
+    expectedRange: '22.x',
+    nvmrcVersion: '22',
+  });
+  assert.equal(oldRes.ok, false);
+  assert.match(oldRes.warnings[0], /supported LTS/u);
+});
+
+test('checkNodeParity warns on repo parity drift between engines.node and .nvmrc', () => {
+  const res = checkNodeParity({
+    currentVersion: 'v22.14.0',
+    expectedRange: '22.x',
+    nvmrcVersion: '20',
+  });
   assert.equal(res.ok, false);
-  assert.match(res.warnings[0], /better-sqlite3/u);
+  assert.match(res.warnings[0], /Repo Node parity drift/u);
 });
 
 test('repository .nvmrc and .node-version match package.json engines.node', async () => {
