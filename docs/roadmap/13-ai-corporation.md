@@ -133,7 +133,7 @@ MCP conformance, tool authorization, replay protection, dan injection tests lulu
 ## M12.07 — Proof-Carrying Work (PCW), independent verification & obligation continuity (`AI6.1`–`AI6.31`)
 
 - **Prasyarat:** M12.03, M12.05, M9.03, K3-005, K6-003, K6-005
-- **Baca/periksa:** `packages/orm-workflow/src/runtime.ts`, `packages/orm-knowledge/src/outcome-verification.ts`, [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md).
+- **Baca/periksa:** `packages/orm-workflow/src/runtime.ts`, `packages/orm-knowledge/src/bug-outcome-verification.ts`, [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md).
 - **Deliverable:** Pipeline PCW (`ai.work_contract`, `ai.acceptance_criterion`, `ai.artifact_manifest`, deterministic verifier hooks, independent reviewer via `orm-workflow` `requireDifferentActor: true`) dan continuity ledger (`ai.obligation`, impact links, re-verification triggers, read-only obligation timeline/report).
 - **Proposal IDs (ledger):** `AI6.1`–`AI6.31`
 - **Acceptance criteria:** Klaim selesai palsu tanpa bukti, bukti mismatch/stale/parsial, serta self-approval pekerja/agen selalu ditolak; perubahan code/source/policy atau expiry memicu pembukaan ulang `ai.obligation` tanpa penghapusan saat work contract ditutup.
