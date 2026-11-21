@@ -267,6 +267,8 @@ jobs:
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-request
       - name: Build documentation package storage
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-storage
+      - name: Build documentation package whatsapp
+        run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-whatsapp
       - name: Build documentation package knowledge
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-knowledge
       - name: Test documentation generators

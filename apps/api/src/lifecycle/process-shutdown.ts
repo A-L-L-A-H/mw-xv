@@ -5,9 +5,14 @@ export interface ProcessShutdownController {
   dispose(): void;
 }
 
-/** Connect process termination signals to the abort signal consumed by long-running loops. */
+export interface ProcessShutdownOptions {
+  readonly onUnhandledError?: (reason: unknown) => void;
+}
+
+/** Connect termination signals and fatal process errors to one graceful abort signal. */
 export function createProcessShutdownController(
-  onStopping: () => void = () => undefined
+  onStopping: () => void = () => undefined,
+  options: ProcessShutdownOptions = {}
 ): ProcessShutdownController {
   const controller = new AbortController();
   let stopping = false;
@@ -17,13 +22,26 @@ export function createProcessShutdownController(
     onStopping();
     controller.abort();
   };
+  const stopOnFatal = (error: unknown) => {
+    options.onUnhandledError?.(error);
+    if (!options.onUnhandledError) {
+      const summary = error instanceof Error ? error.message : String(error);
+      process.stderr.write(`Fatal unhandled worker error: ${summary}\n`);
+    }
+    process.exitCode = 1;
+    stop();
+  };
   const signals: ShutdownSignal[] = ['SIGINT', 'SIGTERM'];
   for (const signal of signals) process.once(signal, stop);
+  process.once('unhandledRejection', stopOnFatal);
+  process.once('uncaughtException', stopOnFatal);
 
   return {
     signal: controller.signal,
     dispose() {
       for (const signal of signals) process.removeListener(signal, stop);
+      process.removeListener('unhandledRejection', stopOnFatal);
+      process.removeListener('uncaughtException', stopOnFatal);
     },
   };
 }

@@ -15,7 +15,9 @@ x-app-environment: &app_environment
   LOG_PRETTY: 'false'
   PRINT_ROUTES: 'false'
   WORKER_HEALTH_HOST: ${WORKER_HEALTH_HOST:-127.0.0.1}
-  OUTBOX_WORKER_HEALTH_PORT: ${OUTBOX_WORKER_HEALTH_PORT:-0}
+  JOBS_WORKER_HEALTH_PORT: ${JOBS_WORKER_HEALTH_PORT:-3011}
+  JOBS_SCHEDULER_HEALTH_PORT: ${JOBS_SCHEDULER_HEALTH_PORT:-3012}
+  OUTBOX_WORKER_HEALTH_PORT: ${OUTBOX_WORKER_HEALTH_PORT:-3013}
   ATTACHMENT_STORAGE_DIR: ${ATTACHMENT_STORAGE_DIR:-/var/lib/moonwitness/attachments}
   ATTACHMENT_STORAGE_DRIVER: ${ATTACHMENT_STORAGE_DRIVER:-s3}
   ATTACHMENT_S3_ENDPOINT: ${ATTACHMENT_S3_ENDPOINT:-https://s3.moonwitness.biz.id}
@@ -113,7 +115,15 @@ services:
       - no-new-privileges:true
     stop_grace_period: 2m
     healthcheck:
-      disable: true
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:' + (process.env.JOBS_WORKER_HEALTH_PORT || 3011) + '/readyz').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
     environment: *app_environment
     volumes:
       - whatsapp_attachments:/var/lib/moonwitness/attachments
@@ -131,7 +141,15 @@ services:
       - no-new-privileges:true
     stop_grace_period: 30s
     healthcheck:
-      disable: true
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:' + (process.env.JOBS_SCHEDULER_HEALTH_PORT || 3012) + '/readyz').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
     environment: *app_environment
     volumes:
       - whatsapp_attachments:/var/lib/moonwitness/attachments
@@ -149,7 +167,15 @@ services:
       - no-new-privileges:true
     stop_grace_period: 2m
     healthcheck:
-      disable: true
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:' + (process.env.OUTBOX_WORKER_HEALTH_PORT || 3013) + '/readyz').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
     environment:
       <<: [*app_environment, *whatsapp_gateway_credentials]
 

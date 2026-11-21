@@ -40,19 +40,24 @@ test('prevents direct ./routes/* imports in apps/api/src/app.ts while allowing a
   assert.deepEqual(allowedRegistry, []);
 });
 
-test('retains explicit legacy allowlist only for whatsapp models/manifest pending extraction', () => {
-  assert.deepEqual(
-    findApiAddonBoundaryViolations(
-      `export const WhatsappAccount = defineModel('whatsapp.account', { fields: {} });`,
-      'apps/api/src/whatsapp/models.ts'
-    ),
-    []
+test('blocks legacy whatsapp paths from defining models or addons directly in apps/api/src', () => {
+  const legacyModel = findApiAddonBoundaryViolations(
+    `export const WhatsappAccount = defineModel('whatsapp.account', { fields: {} });`,
+    'apps/api/src/whatsapp/models.ts'
   );
-  assert.deepEqual(
-    findApiAddonBoundaryViolations(
-      `export const whatsappManifest = defineAddon({ name: 'whatsapp', version: '1.0.0', models: [] });`,
-      'apps/api/src/whatsapp/manifest.ts'
-    ),
-    []
+  assert.equal(legacyModel.length, 1);
+  assert.match(legacyModel[0], /ORM model definitions are forbidden/u);
+
+  const legacyAddon = findApiAddonBoundaryViolations(
+    `export const whatsappManifest = defineAddon({ name: 'whatsapp', version: '1.0.0', models: [] });`,
+    'apps/api/src/whatsapp/manifest.ts'
   );
+  assert.equal(legacyAddon.length, 1);
+  assert.match(legacyAddon[0], /Addon manifests are forbidden/u);
+
+  const reexport = findApiAddonBoundaryViolations(
+    `export { whatsappManifest } from '@moonwitness/orm-whatsapp';`,
+    'apps/api/src/whatsapp/manifest.ts'
+  );
+  assert.deepEqual(reexport, []);
 });

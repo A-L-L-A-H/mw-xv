@@ -7,11 +7,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const apiSourceRoot = path.join(root, 'apps/api/src');
 
 /**
- * Legacy exceptions tracked for extraction into `packages/orm-whatsapp`.
- * Zero new ORM models or addon manifests may be defined inside `apps/api/src`.
+ * All domain ORM models and addon manifests must live in workspace packages under `packages/*`.
+ * Zero ORM models or addon manifests may be defined inside `apps/api/src`.
  */
-const LEGACY_MODEL_ALLOWLIST = new Set(['apps/api/src/whatsapp/models.ts']);
-const LEGACY_ADDON_ALLOWLIST = new Set(['apps/api/src/whatsapp/manifest.ts']);
+const LEGACY_MODEL_ALLOWLIST = new Set();
+const LEGACY_ADDON_ALLOWLIST = new Set();
 
 export function findApiAddonBoundaryViolations(source, file = 'apps/api/src/fixture.ts') {
   const normalized = file.replaceAll('\\', '/');

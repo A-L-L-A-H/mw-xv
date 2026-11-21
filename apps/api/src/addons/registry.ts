@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { Knex } from 'knex';
-import { installAddons, type Addon } from '@moonwitness/orm';
+import { installAddons, Registry, type Addon } from '@moonwitness/orm';
 import { manifest as baseAddon, initializeSuperadminPassword } from '@moonwitness/orm-base';
 import { manifest as authAddon, createAuthService } from '@moonwitness/auth';
 import { jobsManifest } from '@moonwitness/jobs';
@@ -13,7 +13,7 @@ import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
 import type { AttachmentStorage } from '@moonwitness/orm-storage';
 import { whatsappManifest } from '../whatsapp/manifest.js';
 import { createAttachmentScanner, type AttachmentScanner } from '../whatsapp/clamav-scanner.js';
-import { createVideoPoster } from '../whatsapp/media-thumbnail.js';
+import type { createVideoPoster } from '../whatsapp/media-thumbnail.js';
 import { checkWhatsAppGatewayVersion } from '../whatsapp/version-guard.js';
 import { ensureResearchReviewWorkflow } from '../research-review-workflow.js';
 import { healthRoutes } from '../routes/health.routes.js';
@@ -52,9 +52,16 @@ export interface ApiAddonRuntimeContext {
   fetchContactAvatar?: typeof fetch;
 }
 
+export interface ApiAddonExperimentMetadata {
+  readonly flagKey: string;
+  readonly expiresAt: string;
+  readonly proposalId: string;
+}
+
 export interface ApiAddonModule {
   readonly name: string;
   readonly manifest?: Addon;
+  readonly experimental?: ApiAddonExperimentMetadata;
   readonly postInstall?: (db: Knex) => Promise<void>;
   readonly registerRoutes?: (app: FastifyInstance, ctx: ApiAddonRuntimeContext) => Promise<void>;
 }
@@ -173,14 +180,32 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   },
 ];
 
+export interface InstallApiAddonsOptions {
+  /** Skip schema/seed DDL during boot when pre-deploy `db:migrate` has already run. */
+  readonly skipBootMigrations?: boolean;
+}
+
 export async function installApiAddons(
   db: Knex,
   superadminPassword: string | undefined,
-  addons: readonly ApiAddonModule[] = API_ADDONS
+  addons: readonly ApiAddonModule[] = API_ADDONS,
+  installOptions: InstallApiAddonsOptions = {}
 ): Promise<void> {
   const manifests = addons
     .map((addon) => addon.manifest)
     .filter((manifest): manifest is Addon => manifest !== undefined);
+  const skipBootMigrations =
+    installOptions.skipBootMigrations ?? process.env.SKIP_BOOT_MIGRATIONS === 'true';
+
+  if (skipBootMigrations) {
+    for (const addon of manifests) {
+      for (const model of addon.models) {
+        if (!Registry.has(model.modelName)) Registry.register(model);
+      }
+    }
+    return;
+  }
+
   await installAddons(db, manifests);
   for (const addon of addons) {
     await addon.postInstall?.(db);
@@ -194,6 +219,11 @@ export async function registerApiAddonRoutes(
   addons: readonly ApiAddonModule[] = API_ADDONS
 ): Promise<void> {
   for (const addon of addons) {
+    if (addon.manifest?.httpPlugins) {
+      for (const httpPlugin of addon.manifest.httpPlugins) {
+        await app.register(httpPlugin as Parameters<FastifyInstance['register']>[0], ctx);
+      }
+    }
     await addon.registerRoutes?.(app, ctx);
   }
 }

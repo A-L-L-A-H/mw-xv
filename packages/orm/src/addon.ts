@@ -58,6 +58,11 @@ export function seed<const F extends FieldMap>(
   return { id, model, values };
 }
 
+export type AddonHttpPlugin<TApp = unknown, TOptions = unknown> = (
+  app: TApp,
+  options: TOptions
+) => unknown | Promise<unknown>;
+
 export interface Addon {
   readonly name: string;
   readonly version: string;
@@ -66,6 +71,8 @@ export interface Addon {
   readonly data?: readonly SeedRecord[];
   readonly views?: readonly ViewDefinition[];
   readonly menus?: readonly AddonMenu[];
+  /** Optional declarative HTTP plugin entrypoints mounted by the API host adapter. */
+  readonly httpPlugins?: readonly AddonHttpPlugin[];
   /** Idempotent database setup run transactionally after addon tables are synchronized. */
   readonly setup?: (transaction: Knex.Transaction) => Promise<void>;
   /** Programmatic, transactional data/schema backfills keyed by the exact prior addon version. */

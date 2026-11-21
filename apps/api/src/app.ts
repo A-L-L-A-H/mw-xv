@@ -19,6 +19,7 @@ import { isRecord } from '@moonwitness/types';
 import ormPlugin from './plugins/orm.plugin.js';
 import authPlugin, { validateJwtSecret } from './plugins/auth.plugin.js';
 import observabilityPlugin from './plugins/observability.plugin.js';
+import { createPostgresRateLimitStoreCtor } from './plugins/rate-limit-store.js';
 import { config, localAiConfig } from './config/env.js';
 import { createDatabase } from './database/knex.js';
 import { databaseErrorCode, databaseErrorContext } from './database/errors.js';
@@ -214,7 +215,12 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(ormPlugin, { db });
   app.addHook('onClose', async () => db.destroy());
 
-  await app.register(rateLimit, { global: false });
+  await app.register(rateLimit, {
+    global: false,
+    ...(process.env.RATE_LIMIT_STORE === 'postgres'
+      ? { store: createPostgresRateLimitStoreCtor(db) as never }
+      : {}),
+  });
   await app.register(authPlugin, {
     jwtSecret,
     accessTtlSeconds: authConfig.accessTtlSeconds,
