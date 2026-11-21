@@ -498,7 +498,7 @@
       "deliverable": "Evidence references to canonical passage/range/content hash",
       "acceptance": "No invented citations; dangling selector rejected; counterevidence supported",
       "verification": "G1 citation resolution and mismatched hash tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
