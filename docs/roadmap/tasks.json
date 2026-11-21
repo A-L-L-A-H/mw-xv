@@ -2145,8 +2145,10 @@
       "dependsOn": ["K9-002", "K9-003", "K9-004", "K9-005"],
       "output": "Reviewed release report, manifest, SBOM/provenance where pipeline supports",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-006.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     },
     {
       "id": "K9-007",
