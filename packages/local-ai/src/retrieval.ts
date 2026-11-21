@@ -304,3 +304,328 @@ export async function retrieveLocalPassageChunk(
     },
   };
 }
+
+export interface ApprovedManifestCatalogEntry {
+  readonly manifestPath: string;
+  readonly manifestSha256: string;
+  readonly reference: CanonicalPassageReference;
+}
+
+function parseDynamicPermittedManifest(
+  bytes: Uint8Array,
+  expectedReference: CanonicalPassageReference,
+  actualArtifactBytes: Uint8Array
+): string | undefined {
+  let value: unknown;
+  try {
+    value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+  } catch {
+    return undefined;
+  }
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+  const manifest = value as Record<string, unknown>;
+  const artifact = manifest.artifact;
+  const rights = manifest.rights;
+  const attribution = manifest.attribution;
+  if (
+    manifest.schema_version !== 1 ||
+    manifest.source_id !== expectedReference.sourceId ||
+    manifest.edition_id !== expectedReference.editionId ||
+    typeof artifact !== 'object' ||
+    artifact === null ||
+    Array.isArray(artifact) ||
+    typeof rights !== 'object' ||
+    rights === null ||
+    Array.isArray(rights) ||
+    typeof attribution !== 'object' ||
+    attribution === null ||
+    Array.isArray(attribution)
+  ) {
+    return undefined;
+  }
+  const artifactRecord = artifact as Record<string, unknown>;
+  const rightsRecord = rights as Record<string, unknown>;
+  const attributionRecord = attribution as Record<string, unknown>;
+  if (
+    artifactRecord.sha256 !== expectedReference.sourceSha256 ||
+    artifactRecord.byte_length !== actualArtifactBytes.byteLength ||
+    rightsRecord.state !== 'permitted' ||
+    !Array.isArray(rightsRecord.allowed_uses) ||
+    !rightsRecord.allowed_uses.includes('read_analyze') ||
+    typeof attributionRecord.text !== 'string' ||
+    attributionRecord.text.trim().length === 0
+  ) {
+    return undefined;
+  }
+  return attributionRecord.text;
+}
+
+/**
+ * Resolve any rights-verified manifest entry into a citation-bound, permission-checked chunk.
+ */
+export async function retrieveDynamicLocalPassageChunk(
+  request: RetrieveLocalPassageRequest,
+  resolver: LocalPassageResolver,
+  catalog?: readonly ApprovedManifestCatalogEntry[]
+): Promise<LocalPassageChunk> {
+  const fail = (): never => {
+    throw new LocalRetrievalError();
+  };
+  const ref = request?.reference;
+  if (
+    !ref ||
+    typeof ref.sourceId !== 'string' ||
+    ref.sourceId.length === 0 ||
+    typeof ref.editionId !== 'string' ||
+    ref.editionId.length === 0 ||
+    typeof ref.locator !== 'string' ||
+    ref.locator.length === 0 ||
+    typeof ref.sourceSha256 !== 'string' ||
+    !/^[a-f0-9]{64}$/u.test(ref.sourceSha256) ||
+    !resolver ||
+    typeof resolver.resolve !== 'function' ||
+    typeof resolver.canRead !== 'function'
+  ) {
+    fail();
+  }
+  const requestedReference = Object.freeze({ ...ref });
+  let passage: ResolvedCanonicalPassage | null;
+  try {
+    passage = await resolver.resolve(requestedReference);
+  } catch {
+    return fail();
+  }
+  if (!passage || typeof passage !== 'object') return fail();
+  if (!(passage.artifactBytes instanceof Uint8Array)) return fail();
+  if (!(passage.sourceManifestBytes instanceof Uint8Array)) return fail();
+
+  const resolvedReference = Object.freeze({ ...passage.reference });
+  const artifactBytes = Uint8Array.from(passage.artifactBytes);
+  const sourceManifestBytes = Uint8Array.from(passage.sourceManifestBytes);
+  const passageText = passage.text;
+  const passageVisibility = passage.visibility;
+  const sourceManifestPath = passage.sourceManifestPath;
+
+  if (
+    !sameReference(resolvedReference, requestedReference) ||
+    typeof passageText !== 'string' ||
+    passageText.length === 0 ||
+    !visibilityValues.has(passageVisibility) ||
+    typeof sourceManifestPath !== 'string' ||
+    sourceManifestPath.length === 0 ||
+    sourceManifestPath.includes('..')
+  ) {
+    return fail();
+  }
+
+  const artifactSha256 = createHash('sha256').update(artifactBytes).digest('hex');
+  const manifestSha256 = createHash('sha256').update(sourceManifestBytes).digest('hex');
+  if (artifactSha256 !== requestedReference.sourceSha256) return fail();
+
+  if (catalog !== undefined) {
+    const matched = catalog.find(
+      (entry) =>
+        sameReference(entry.reference, requestedReference) &&
+        entry.manifestPath === sourceManifestPath &&
+        entry.manifestSha256 === manifestSha256
+    );
+    if (!matched) return fail();
+  }
+
+  const attribution = parseDynamicPermittedManifest(
+    sourceManifestBytes,
+    requestedReference,
+    artifactBytes
+  );
+  if (attribution === undefined) return fail();
+
+  const authorizationPassage: ResolvedCanonicalPassage = {
+    reference: { ...resolvedReference },
+    text: passageText,
+    visibility: passageVisibility,
+    sourceManifestPath,
+    artifactBytes: Uint8Array.from(artifactBytes),
+    sourceManifestBytes: Uint8Array.from(sourceManifestBytes),
+  };
+  try {
+    if (!(await resolver.canRead(authorizationPassage))) return fail();
+  } catch {
+    return fail();
+  }
+
+  const bytes = Buffer.from(passageText, 'utf8');
+  try {
+    if (new TextDecoder('utf-8', { fatal: true }).decode(bytes) !== passageText) return fail();
+  } catch {
+    return fail();
+  }
+  const byteStart = request.byteStart ?? 0;
+  const byteEnd = request.byteEnd ?? bytes.byteLength;
+  const scalarStart = scalarOffsetAtByte(passageText, byteStart);
+  const scalarEnd = scalarOffsetAtByte(passageText, byteEnd);
+  if (scalarStart === undefined || scalarEnd === undefined || byteEnd <= byteStart) return fail();
+
+  let text: string;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(byteStart, byteEnd));
+  } catch {
+    return fail();
+  }
+  if (text.length === 0) return fail();
+
+  return {
+    text,
+    citation: {
+      ...resolvedReference,
+      sourceManifestPath,
+      attribution,
+    },
+    visibility: passageVisibility,
+    sourceSpan: {
+      basis: 'resolved_passage_text',
+      byteStart,
+      byteEnd,
+      scalarStart,
+      scalarEnd,
+    },
+  };
+}
+
+export interface HybridPassageCandidate {
+  readonly reference: CanonicalPassageReference;
+  readonly text: string;
+  readonly visibility: RetrievalVisibility;
+  readonly sourceManifestPath: string;
+  readonly embedding?: readonly number[];
+}
+
+export interface HybridPassageQuery {
+  readonly text: string;
+  readonly allowedVisibilities: ReadonlySet<RetrievalVisibility>;
+  readonly queryEmbedding?: readonly number[];
+  readonly limit?: number;
+}
+
+export interface HybridPassageSearchResult {
+  readonly candidate: HybridPassageCandidate;
+  readonly score: number;
+  readonly lexicalScore: number;
+  readonly semanticScore: number;
+}
+
+function tokenizeSearchText(value: string): string[] {
+  const normalized = value.normalize('NFKC').toLowerCase();
+  const matches = normalized.match(/[\p{L}\p{N}]+/gu);
+  return matches ? matches : [];
+}
+
+function cosineSimilarity(left: readonly number[], right: readonly number[]): number {
+  if (left.length === 0 || left.length !== right.length) return 0;
+  let dot = 0;
+  let normLeft = 0;
+  let normRight = 0;
+  for (let i = 0; i < left.length; i += 1) {
+    const a = left[i] ?? 0;
+    const b = right[i] ?? 0;
+    dot += a * b;
+    normLeft += a * a;
+    normRight += b * b;
+  }
+  if (normLeft <= 0 || normRight <= 0) return 0;
+  return dot / (Math.sqrt(normLeft) * Math.sqrt(normRight));
+}
+
+/**
+ * Deterministic hybrid retrieval (BM25 + optional vector cosine combined via RRF) with strict
+ * pre-ranking visibility filtering so unauthorized documents cannot alter IDF or rankings.
+ */
+export function searchLocalPassagesHybrid(
+  query: HybridPassageQuery,
+  candidates: readonly HybridPassageCandidate[]
+): HybridPassageSearchResult[] {
+  const limit = Math.max(1, Math.min(100, Math.trunc(query.limit ?? 10)));
+  // Security boundary: visibility filter runs BEFORE tokenization or IDF counting.
+  const permitted = candidates.filter((candidate) =>
+    query.allowedVisibilities.has(candidate.visibility)
+  );
+  if (permitted.length === 0) return [];
+
+  const queryTerms = Array.from(new Set(tokenizeSearchText(query.text)));
+  const docTokensList = permitted.map((candidate) => tokenizeSearchText(candidate.text));
+  const avgDocLength =
+    docTokensList.reduce((sum, tokens) => sum + tokens.length, 0) /
+    Math.max(1, docTokensList.length);
+  const k1 = 1.5;
+  const b = 0.75;
+
+  const docFrequency = new Map<string, number>();
+  for (const tokens of docTokensList) {
+    const unique = new Set(tokens);
+    for (const term of queryTerms) {
+      if (unique.has(term)) {
+        docFrequency.set(term, (docFrequency.get(term) ?? 0) + 1);
+      }
+    }
+  }
+
+  const totalDocs = permitted.length;
+  const lexicalScores = docTokensList.map((tokens) => {
+    if (queryTerms.length === 0 || tokens.length === 0) return 0;
+    const termCounts = new Map<string, number>();
+    for (const token of tokens) {
+      termCounts.set(token, (termCounts.get(token) ?? 0) + 1);
+    }
+    let bm25 = 0;
+    for (const term of queryTerms) {
+      const tf = termCounts.get(term) ?? 0;
+      if (tf === 0) continue;
+      const df = docFrequency.get(term) ?? 0;
+      const idf = Math.log(1 + (totalDocs - df + 0.5) / (df + 0.5));
+      const denom = tf + k1 * (1 - b + b * (tokens.length / Math.max(1, avgDocLength)));
+      bm25 += idf * ((tf * (k1 + 1)) / denom);
+    }
+    return bm25;
+  });
+
+  const semanticScores = permitted.map((candidate) =>
+    query.queryEmbedding && candidate.embedding
+      ? Math.max(0, cosineSimilarity(query.queryEmbedding, candidate.embedding))
+      : 0
+  );
+
+  const lexicalOrder = permitted
+    .map((_, idx) => idx)
+    .filter((idx) => (lexicalScores[idx] ?? 0) > 0)
+    .sort((a, bIdx) => (lexicalScores[bIdx] ?? 0) - (lexicalScores[a] ?? 0));
+  const semanticOrder = permitted
+    .map((_, idx) => idx)
+    .filter((idx) => (semanticScores[idx] ?? 0) > 0)
+    .sort((a, bIdx) => (semanticScores[bIdx] ?? 0) - (semanticScores[a] ?? 0));
+
+  const rrfK = 60;
+  const rrfScores = new Array<number>(permitted.length).fill(0);
+  lexicalOrder.forEach((docIdx, rank) => {
+    rrfScores[docIdx] = (rrfScores[docIdx] ?? 0) + 1 / (rrfK + rank + 1);
+  });
+  semanticOrder.forEach((docIdx, rank) => {
+    rrfScores[docIdx] = (rrfScores[docIdx] ?? 0) + 1 / (rrfK + rank + 1);
+  });
+
+  return permitted
+    .map((candidate, idx) => ({
+      candidate,
+      score: rrfScores[idx] ?? 0,
+      lexicalScore: lexicalScores[idx] ?? 0,
+      semanticScore: semanticScores[idx] ?? 0,
+    }))
+    .filter((entry) => entry.score > 0 || (queryTerms.length === 0 && !query.queryEmbedding))
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score;
+      const sourceCmp = left.candidate.reference.sourceId.localeCompare(
+        right.candidate.reference.sourceId
+      );
+      if (sourceCmp !== 0) return sourceCmp;
+      return left.candidate.reference.locator.localeCompare(right.candidate.reference.locator);
+    })
+    .slice(0, limit);
+}

@@ -1,8 +1,15 @@
 export type LocalAiMode = 'disabled' | 'local';
+export type LocalAiProvider = 'simple-v1' | 'ollama' | 'openai-compat';
 export {
   LocalRetrievalError,
+  retrieveDynamicLocalPassageChunk,
   retrieveLocalPassageChunk,
+  searchLocalPassagesHybrid,
+  type ApprovedManifestCatalogEntry,
   type CanonicalPassageReference,
+  type HybridPassageCandidate,
+  type HybridPassageQuery,
+  type HybridPassageSearchResult,
   type LocalPassageChunk,
   type LocalPassageResolver,
   type ResolvedCanonicalPassage,
@@ -18,6 +25,7 @@ export {
 } from './models.js';
 export {
   generateLocalAiSuggestion,
+  SUGGESTION_ENVELOPE_JSON_SCHEMA,
   type LocalAiSuggestionKind,
   type LocalAiSuggestionRequest,
   type LocalAiSuggestionPassage,
@@ -29,10 +37,13 @@ export interface LocalAiConfig {
   mode: LocalAiMode;
   endpoint?: URL;
   timeoutMs: number;
+  provider?: LocalAiProvider;
+  model?: string;
 }
 
 export interface LocalAiRequest {
   prompt: string;
+  jsonSchema?: Readonly<Record<string, unknown>>;
 }
 
 export interface LocalAiRuntime {
@@ -47,6 +58,7 @@ export type LocalAiResult =
 export type LocalAiFetch = typeof fetch;
 
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
+const ALLOWED_PROVIDERS = new Set<LocalAiProvider>(['simple-v1', 'ollama', 'openai-compat']);
 const DEFAULT_TIMEOUT_MS = 15_000;
 const MAX_TIMEOUT_MS = 120_000;
 const MAX_PROMPT_LENGTH = 20_000;
@@ -79,7 +91,27 @@ export function readLocalAiConfig(
   if (!Number.isInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > MAX_TIMEOUT_MS) {
     throw new TypeError(`LOCAL_AI_TIMEOUT_MS must be an integer from 100 to ${MAX_TIMEOUT_MS}`);
   }
-  if (modeValue === 'disabled') return { mode: 'disabled', timeoutMs };
+
+  let provider: LocalAiProvider | undefined;
+  const providerValue = environment.LOCAL_AI_PROVIDER;
+  if (providerValue !== undefined && providerValue !== '') {
+    if (!ALLOWED_PROVIDERS.has(providerValue as LocalAiProvider)) {
+      throw new TypeError('LOCAL_AI_PROVIDER must be simple-v1, ollama, or openai-compat');
+    }
+    provider = providerValue as LocalAiProvider;
+  }
+
+  const rawModel = environment.LOCAL_AI_MODEL;
+  const model = rawModel !== undefined && rawModel.trim().length > 0 ? rawModel.trim() : undefined;
+
+  if (modeValue === 'disabled') {
+    return {
+      mode: 'disabled',
+      timeoutMs,
+      ...(provider ? { provider } : {}),
+      ...(model ? { model } : {}),
+    };
+  }
 
   const endpointText = environment.LOCAL_AI_ENDPOINT;
   if (!endpointText) throw new TypeError('LOCAL_AI_ENDPOINT is required when AI_MODE=local');
@@ -92,11 +124,83 @@ export function readLocalAiConfig(
   if (!isAllowedEndpoint(endpoint)) {
     throw new TypeError('LOCAL_AI_ENDPOINT must use HTTP on localhost, 127.0.0.1, or ::1 only');
   }
-  return { mode: 'local', endpoint, timeoutMs };
+  return {
+    mode: 'local',
+    endpoint,
+    timeoutMs,
+    ...(provider ? { provider } : {}),
+    ...(model ? { model } : {}),
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function extractProviderText(provider: LocalAiProvider, body: unknown): string | undefined {
+  if (!isRecord(body)) return undefined;
+  if (provider === 'ollama') {
+    if (typeof body.response === 'string') return body.response;
+    if (typeof body.text === 'string') return body.text;
+    return undefined;
+  }
+  if (provider === 'openai-compat') {
+    if (Array.isArray(body.choices) && body.choices.length > 0) {
+      const first = body.choices[0];
+      if (isRecord(first) && isRecord(first.message) && typeof first.message.content === 'string') {
+        return first.message.content;
+      }
+    }
+    if (typeof body.text === 'string') return body.text;
+    return undefined;
+  }
+  return typeof body.text === 'string' ? body.text : undefined;
+}
+
+function buildProviderRequest(
+  provider: LocalAiProvider,
+  config: LocalAiConfig,
+  request: LocalAiRequest
+): { url: URL; payload: Record<string, unknown> } {
+  if (provider === 'ollama') {
+    return {
+      url: new URL('/api/generate', config.endpoint),
+      payload: {
+        model: config.model ?? 'qwen2.5:3b-instruct-q4_K_M',
+        prompt: request.prompt,
+        stream: false,
+        options: { temperature: 0 },
+        format: request.jsonSchema ?? 'json',
+      },
+    };
+  }
+  if (provider === 'openai-compat') {
+    return {
+      url: new URL('/v1/chat/completions', config.endpoint),
+      payload: {
+        model: config.model ?? 'local-model',
+        temperature: 0,
+        messages: [{ role: 'user', content: request.prompt }],
+        response_format: request.jsonSchema
+          ? {
+              type: 'json_schema',
+              json_schema: {
+                name: 'mw_local_ai_envelope',
+                strict: true,
+                schema: request.jsonSchema,
+              },
+            }
+          : { type: 'json_object' },
+      },
+    };
+  }
+  return {
+    url: new URL('/v1/generate', config.endpoint),
+    payload: {
+      prompt: request.prompt,
+      ...(request.jsonSchema ? { json_schema: request.jsonSchema } : {}),
+    },
+  };
 }
 
 export function createLocalAiRuntime(
@@ -116,6 +220,10 @@ export function createLocalAiRuntime(
   if (config.mode !== 'disabled' && config.mode !== 'local') {
     throw new TypeError('local AI mode is invalid');
   }
+  const provider: LocalAiProvider = config.provider ?? 'simple-v1';
+  if (!ALLOWED_PROVIDERS.has(provider)) {
+    throw new TypeError('local AI provider is invalid');
+  }
 
   return {
     async generate(request) {
@@ -128,23 +236,21 @@ export function createLocalAiRuntime(
         throw new TypeError(`prompt must contain 1-${MAX_PROMPT_LENGTH} characters`);
       }
       try {
-        const response = await fetchProvider(new URL('/v1/generate', config.endpoint), {
+        const { url, payload } = buildProviderRequest(provider, config, request);
+        const response = await fetchProvider(url, {
           method: 'POST',
           headers: { accept: 'application/json', 'content-type': 'application/json' },
-          body: JSON.stringify({ prompt: request.prompt }),
+          body: JSON.stringify(payload),
           signal: AbortSignal.timeout(config.timeoutMs),
           redirect: 'error',
         });
         if (!response.ok) return { status: 'unavailable', reason: 'provider_unreachable' };
         const body: unknown = await response.json();
-        if (
-          !isRecord(body) ||
-          typeof body.text !== 'string' ||
-          body.text.length > MAX_RESPONSE_LENGTH
-        ) {
+        const text = extractProviderText(provider, body);
+        if (text === undefined || text.length > MAX_RESPONSE_LENGTH) {
           return { status: 'unavailable', reason: 'invalid_response' };
         }
-        return { status: 'generated', text: body.text };
+        return { status: 'generated', text };
       } catch (error) {
         if (
           error instanceof Error &&
