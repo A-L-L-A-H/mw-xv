@@ -438,7 +438,7 @@
       "deliverable": "Authenticated/public-filtered exact source and passage retrieval endpoints",
       "acceptance": "Unknown ID 404; privacy and rights enforced; API documented and typed",
       "verification": "API auth tests; corpus lookup integration",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
