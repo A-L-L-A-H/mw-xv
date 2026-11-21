@@ -30,6 +30,7 @@ import { localRetrievalRoutes } from './routes/local-retrieval.routes.js';
 import { localAiSuggestionRoutes } from './routes/local-ai-suggestion.routes.js';
 import { childProtectionRoutes } from './routes/child-protection.routes.js';
 import { publicationRoutes } from './routes/publication.routes.js';
+import { bugCaseRoutes } from './routes/bug-case.routes.js';
 import { ensureResearchReviewWorkflow } from './research-review-workflow.js';
 import { config, localAiConfig } from './config/env.js';
 import { checkWhatsAppGatewayVersion } from './whatsapp/version-guard.js';
@@ -383,6 +384,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(localAiSuggestionRoutes);
   await app.register(childProtectionRoutes);
   await app.register(publicationRoutes);
+  await app.register(bugCaseRoutes);
 
   return app;
 }
