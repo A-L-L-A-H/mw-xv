@@ -53,7 +53,7 @@ export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
       <DialogContent className="max-w-lg border-4 border-ink bg-paper p-6 shadow-ink-lg rounded-none">
         <DialogHeader className="border-b-2 border-ink pb-3 text-left">
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 border-2 border-ink bg-lime px-2 py-0.5 font-mono text-xs font-bold uppercase text-on-accent">
+            <span className="flex items-center gap-1 border-2 border-ink bg-primary px-2 py-0.5 font-mono text-xs font-bold uppercase text-primary-foreground">
               <KeyboardIcon className="size-3.5" /> Manual
             </span>
             <DialogTitle className="font-display text-2xl uppercase tracking-wider text-ink">
@@ -69,7 +69,7 @@ export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
           {SHORTCUT_GROUPS.map((group) => (
             <div key={group.category} className="space-y-2">
               <h3 className="font-display text-xs uppercase tracking-widest text-ink-faint flex items-center gap-1.5">
-                <SparkleIcon className="size-3 text-lime" />
+                <SparkleIcon className="size-3 text-yellow-readable" />
                 {group.category}
               </h3>
               <div className="space-y-1.5">

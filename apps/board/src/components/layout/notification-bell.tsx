@@ -59,7 +59,7 @@ export function NotificationBell() {
           {unreadCount > 0 && (
             <span
               aria-hidden="true"
-              className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center border-2 border-ink bg-pink font-mono text-[9px] font-bold text-on-pink"
+              className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center border-2 border-ink bg-magenta font-mono text-[9px] font-bold text-on-magenta"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
@@ -89,7 +89,7 @@ export function NotificationBell() {
           {inbox.isLoading ? (
             <p className="p-5 text-center text-xs text-ink-soft">Loading inbox…</p>
           ) : inbox.isError ? (
-            <div role="alert" className="space-y-2 p-5 text-center text-xs text-pink">
+            <div role="alert" className="space-y-2 p-5 text-center text-xs text-destructive">
               <p>Notifications could not be loaded.</p>
               <Button size="xs" variant="outline" onClick={() => void inbox.refetch()}>
                 Retry
@@ -131,7 +131,7 @@ export function NotificationBell() {
           )}
         </div>
         {markRead.isError && (
-          <p role="alert" className="border-t border-ink/20 p-3 text-xs text-pink">
+          <p role="alert" className="border-t border-ink/20 p-3 text-xs text-destructive">
             This notification could not be marked as read. Try again.
           </p>
         )}

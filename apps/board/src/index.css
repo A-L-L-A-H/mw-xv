@@ -21,9 +21,7 @@
   --ink: var(--mw-ink);
   --ink-soft: var(--mw-ink-soft);
   --ink-faint: var(--mw-ink-faint);
-  --lime: var(--mw-lime);
-  --pink: var(--mw-pink);
-  --on-pink: var(--mw-on-pink);
+  --on-magenta: var(--mw-on-magenta);
   --on-accent: var(--mw-on-accent);
   --halftone-dot: var(--mw-halftone-dot);
 
@@ -43,6 +41,7 @@
   --accent: var(--mw-accent);
   --accent-foreground: var(--mw-accent-foreground);
   --destructive: var(--mw-destructive);
+  --destructive-foreground: var(--mw-destructive-foreground);
   --border: var(--mw-border);
   --input: var(--mw-input);
   --ring: var(--mw-focus);
@@ -59,11 +58,11 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-ink-faint: var(--ink-faint);
-  --color-lime: var(--lime);
-  --color-pink: var(--pink);
   --color-yellow: var(--mw-yellow);
   --color-magenta: var(--mw-magenta);
-  --color-on-pink: var(--on-pink);
+  --color-yellow-readable: var(--mw-yellow-readable);
+  --color-magenta-readable: var(--mw-magenta-readable);
+  --color-on-magenta: var(--on-magenta);
   --color-on-accent: var(--on-accent);
   --color-night: var(--mw-night);
 
@@ -82,6 +81,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -127,8 +127,8 @@
       160px 160px;
   }
   ::selection {
-    background: var(--lime);
-    color: var(--on-accent);
+    background: var(--mw-primary);
+    color: var(--mw-primary-foreground);
   }
   :focus-visible {
     outline: 2px solid var(--ink);
@@ -163,7 +163,7 @@
     box-shadow: 3px 3px 0 0 var(--ink);
   }
   .sticker[data-active='true'] {
-    @apply bg-lime text-on-accent;
+    @apply bg-primary text-primary-foreground;
   }
 
   /* Pressable brutalist surface: lifts on hover, slams down on press. */

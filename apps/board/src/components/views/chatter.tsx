@@ -77,10 +77,10 @@ const TYPE_ICONS = {
 };
 
 const TYPE_COLORS = {
-  todo: 'border-2 border-ink bg-lime text-on-accent',
+  todo: 'border-2 border-ink bg-primary text-primary-foreground',
   call: 'border-2 border-ink bg-paper-raised text-ink',
   meeting: 'border-2 border-ink bg-ink text-paper',
-  email: 'border-2 border-ink bg-pink text-on-pink',
+  email: 'border-2 border-ink bg-magenta text-on-magenta',
 };
 
 function formatBytes(bytes: number) {
@@ -293,7 +293,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
       {/* Header and Tab Selector */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-ink pb-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 border-2 border-ink bg-lime px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-wider text-on-accent">
+          <div className="flex items-center gap-1.5 border-2 border-ink bg-primary px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-wider text-primary-foreground">
             <BoltIcon className="size-3.5" /> Record Chatter
           </div>
           <span className="font-mono text-xs text-ink-faint">
@@ -309,14 +309,14 @@ export function Chatter({ model, recordId }: ChatterProps) {
             className={cn(
               'flex items-center gap-2 px-3 py-1 font-display text-xs uppercase tracking-wider transition-colors',
               activeTab === 'activities'
-                ? 'border-2 border-ink bg-lime font-bold text-on-accent shadow-[2px_2px_0_0_var(--ink)]'
+                ? 'border-2 border-ink bg-primary font-bold text-primary-foreground shadow-[2px_2px_0_0_var(--ink)]'
                 : 'text-ink-soft hover:text-ink'
             )}
           >
             <ClockIcon className="size-3.5" />
             Activities
             {plannedCount > 0 && (
-              <span className="grid size-4 place-items-center border border-ink bg-pink text-[10px] font-bold text-on-pink shadow-[1px_1px_0_0_var(--ink)]">
+              <span className="grid size-4 place-items-center border border-ink bg-magenta text-[10px] font-bold text-on-magenta shadow-[1px_1px_0_0_var(--ink)]">
                 {plannedCount}
               </span>
             )}
@@ -327,7 +327,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
             className={cn(
               'flex items-center gap-2 px-3 py-1 font-display text-xs uppercase tracking-wider transition-colors',
               activeTab === 'attachments'
-                ? 'border-2 border-ink bg-lime font-bold text-on-accent shadow-[2px_2px_0_0_var(--ink)]'
+                ? 'border-2 border-ink bg-primary font-bold text-primary-foreground shadow-[2px_2px_0_0_var(--ink)]'
                 : 'text-ink-soft hover:text-ink'
             )}
           >
@@ -345,7 +345,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
             className={cn(
               'flex items-center gap-2 px-3 py-1 font-display text-xs uppercase tracking-wider transition-colors',
               activeTab === 'audit'
-                ? 'border-2 border-ink bg-lime font-bold text-on-accent shadow-[2px_2px_0_0_var(--ink)]'
+                ? 'border-2 border-ink bg-primary font-bold text-primary-foreground shadow-[2px_2px_0_0_var(--ink)]'
                 : 'text-ink-soft hover:text-ink'
             )}
           >
@@ -363,7 +363,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
               <h3 className="font-display text-lg uppercase tracking-wide">
                 Scheduled Activities & Tasks
               </h3>
-              <Doodle kind="sparkle" className="size-4 text-lime" />
+              <Doodle kind="sparkle" className="size-4 text-yellow-readable" />
             </div>
             <Button
               size="sm"
@@ -385,7 +385,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5 sm:col-span-2">
                   <Label htmlFor="act-summary" className="font-bold text-xs uppercase">
-                    Summary / Task Title <span className="text-pink">*</span>
+                    Summary / Task Title <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="act-summary"
@@ -412,7 +412,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                           className={cn(
                             'flex-1 flex items-center justify-center gap-1.5 border-2 border-ink py-1.5 text-xs font-bold uppercase transition-all',
                             newType === t
-                              ? 'bg-lime text-on-accent shadow-[2px_2px_0_0_var(--ink)]'
+                              ? 'bg-primary text-primary-foreground shadow-[2px_2px_0_0_var(--ink)]'
                               : 'bg-paper text-ink-soft hover:bg-paper-raised'
                           )}
                         >
@@ -499,7 +499,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                       isDone
                         ? 'bg-card/50 opacity-60'
                         : isOverdue
-                          ? 'bg-pink/10 border-pink'
+                          ? 'bg-destructive/10 border-destructive'
                           : 'bg-paper hover:bg-paper-raised'
                     )}
                   >
@@ -509,7 +509,9 @@ export function Chatter({ model, recordId }: ChatterProps) {
                         onClick={() => handleToggleState(act)}
                         className={cn(
                           'mt-0.5 grid size-5 place-items-center border-2 border-ink transition-colors',
-                          isDone ? 'bg-lime text-on-accent' : 'bg-paper hover:bg-lime/30'
+                          isDone
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-paper hover:bg-primary/30'
                         )}
                         title={isDone ? 'Mark as planned' : 'Mark as done'}
                       >
@@ -542,7 +544,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                               className={cn(
                                 'font-mono text-xs px-1.5 py-0.5 border',
                                 isOverdue
-                                  ? 'border-pink bg-pink text-on-pink font-bold'
+                                  ? 'border-destructive bg-destructive text-destructive-foreground font-bold'
                                   : 'border-ink/20 text-ink-faint'
                               )}
                             >
@@ -564,7 +566,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteActivity(act.id)}
-                        className="size-7 text-ink-faint hover:text-pink hover:bg-pink/10"
+                        className="size-7 text-ink-faint hover:text-destructive hover:bg-destructive/10"
                         title="Delete activity"
                       >
                         <DeleteIcon className="size-3.5" />
@@ -586,7 +588,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
               <h3 className="font-display text-lg uppercase tracking-wide">
                 Document Vault & Attachments
               </h3>
-              <Doodle kind="bolt" className="size-4 text-lime" />
+              <Doodle kind="bolt" className="size-4 text-yellow-readable" />
             </div>
             <Button
               size="sm"
@@ -615,7 +617,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
             className={cn(
               'border-2 border-dashed p-6 text-center cursor-pointer transition-all',
               isDragging
-                ? 'border-lime bg-lime/10 scale-[1.01]'
+                ? 'border-primary bg-primary/10 scale-[1.01]'
                 : 'border-ink/30 bg-card hover:border-ink hover:bg-paper-raised'
             )}
           >
@@ -647,7 +649,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                     className="border-2 border-ink bg-card p-3 font-mono text-xs shadow-ink-sm flex items-start justify-between gap-2"
                   >
                     <div className="flex items-start gap-2.5 truncate">
-                      <div className="size-8 border-2 border-ink bg-lime/20 flex items-center justify-center shrink-0">
+                      <div className="size-8 border-2 border-ink bg-primary/20 flex items-center justify-center shrink-0">
                         <FileIcon className="size-4 text-ink" />
                       </div>
                       <div className="truncate space-y-0.5">
@@ -666,7 +668,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDownloadAttachment(file)}
-                        className="size-7 text-ink-faint hover:text-lime hover:bg-lime/10"
+                        className="size-7 text-ink-faint hover:text-yellow-readable hover:bg-primary/10"
                         title="Download attachment"
                       >
                         <DownloadIcon className="size-3.5" />
@@ -675,7 +677,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteAttachment(file.id)}
-                        className="size-7 text-ink-faint hover:text-pink hover:bg-pink/10"
+                        className="size-7 text-ink-faint hover:text-destructive hover:bg-destructive/10"
                         title="Delete attachment"
                       >
                         <DeleteIcon className="size-3.5" />
@@ -697,7 +699,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
               <h3 className="font-display text-lg uppercase tracking-wide">
                 Audit Trail & Change History
               </h3>
-              <Doodle kind="crown" className="size-4 text-lime" />
+              <Doodle kind="crown" className="size-4 text-yellow-readable" />
             </div>
             <span className="font-mono text-[11px] text-ink-faint uppercase">
               Append-Only Security Ledger
@@ -748,10 +750,10 @@ export function Chatter({ model, recordId }: ChatterProps) {
                           className={cn(
                             'border px-1.5 py-0.5 font-bold uppercase text-[10px]',
                             entry.operation === 'create'
-                              ? 'border-lime bg-lime text-on-accent'
+                              ? 'border-primary bg-primary text-primary-foreground'
                               : entry.operation === 'write'
                                 ? 'border-ink bg-ink text-paper'
-                                : 'border-pink bg-pink text-on-pink'
+                                : 'border-destructive bg-destructive text-destructive-foreground'
                           )}
                         >
                           {entry.operation}
@@ -775,13 +777,13 @@ export function Chatter({ model, recordId }: ChatterProps) {
                             className="flex flex-wrap items-center gap-2 text-[11px]"
                           >
                             <span className="font-bold text-ink-soft">{field}:</span>
-                            <span className="line-through text-pink/80">
+                            <span className="line-through text-destructive">
                               {delta.before === null || delta.before === undefined
                                 ? 'null'
                                 : String(delta.before)}
                             </span>
                             <span className="text-ink-faint">→</span>
-                            <span className="font-bold text-lime-600 dark:text-lime">
+                            <span className="font-bold text-yellow-readable">
                               {delta.after === null || delta.after === undefined
                                 ? 'null'
                                 : String(delta.after)}

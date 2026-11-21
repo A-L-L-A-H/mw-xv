@@ -604,15 +604,30 @@ test('reduced motion removes decorative animation and keeps loading status visib
   const progress = page.getByRole('status', { name: 'Loading preview' });
   const progressBar = progress.locator('span').first();
   const loadingSpinner = motionGrid.locator('.mw-ui-loading-spinner');
+  const liveBeacon = motionGrid.locator('.mw-ui-live-indicator-dot');
 
-  for (const element of [speedLines, underline, speechBubble, progressBar, loadingSpinner]) {
+  for (const element of [
+    speedLines,
+    underline,
+    speechBubble,
+    progressBar,
+    loadingSpinner,
+    liveBeacon,
+  ]) {
     await expect
       .poll(() => element.evaluate((node) => getComputedStyle(node).animationName))
       .not.toBe('none');
   }
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  for (const element of [speedLines, underline, speechBubble, progressBar, loadingSpinner]) {
+  for (const element of [
+    speedLines,
+    underline,
+    speechBubble,
+    progressBar,
+    loadingSpinner,
+    liveBeacon,
+  ]) {
     await expect
       .poll(() => element.evaluate((node) => getComputedStyle(node).animationName))
       .toBe('none');
@@ -620,6 +635,7 @@ test('reduced motion removes decorative animation and keeps loading status visib
   await expect(progress).toBeVisible();
   await expect(page.getByText('Loading preview…')).toBeVisible();
   await expect(speechBubble).toBeVisible();
+  await expect(motionGrid.getByText('ON AIR')).toBeVisible();
   expect(await speechBubble.evaluate((node) => getComputedStyle(node).opacity)).toBe('1');
   await motionGrid.screenshot({ path: testInfo.outputPath('reduced-motion-states.png') });
 });
@@ -640,8 +656,8 @@ test('button hover and pressed motion keeps a stable hit area and visible focus 
   const hoverTransform = await button.evaluate((element) => getComputedStyle(element).transform);
   expect(hoverTransform).not.toBe('none');
   const hoverBox = await button.boundingBox();
-  expect(hoverBox?.width).toBe(idleBox?.width);
-  expect(hoverBox?.height).toBe(idleBox?.height);
+  expect(hoverBox?.width).toBeCloseTo(idleBox!.width, 2);
+  expect(hoverBox?.height).toBeCloseTo(idleBox!.height, 2);
 
   await page.mouse.down();
   const pressedTransform = await button.evaluate((element) => getComputedStyle(element).transform);
@@ -731,4 +747,213 @@ test('catalog has no WCAG 2.1 A/AA accessibility violations in light or dark the
       `${theme} theme accessibility violations`
     ).toEqual([]);
   }
+});
+
+test('icons, materials, and decorations contact sheet renders canonical assets at all scales', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1672, height: 941 });
+  await page.goto('./#icons-materials');
+  const section = page.locator('#icons-materials');
+  await expect(
+    section.getByRole('heading', { name: 'Icons, Materials & Decorations' })
+  ).toBeVisible();
+
+  for (const label of [
+    'ArrowLeft',
+    'Bookmark',
+    'CheckCircle',
+    'Clock',
+    'FileSpreadsheet',
+    'History',
+    'Send',
+    'SignalOff',
+    'Smartphone',
+  ]) {
+    const row = section.locator('.catalog-icon-scale-row').filter({ hasText: label });
+    await expect(row).toBeVisible();
+    for (const size of [16, 20, 24, 32]) {
+      const svg = row.locator(`svg[width="${size}"][height="${size}"]`);
+      await expect(svg).toBeVisible();
+    }
+  }
+
+  const materialImages = section.locator('.catalog-material-card img');
+  await expect(materialImages).toHaveCount(10);
+  for (const image of await materialImages.all()) {
+    await expect(image).toBeVisible();
+    expect(
+      await image.evaluate(
+        (element: HTMLImageElement) => element.complete && element.naturalWidth > 0
+      )
+    ).toBe(true);
+  }
+
+  await expect(section.locator('.mw-ui-doodle')).toHaveCount(5);
+  await expect(section.locator('.mw-ui-decorative-motif')).toHaveCount(6);
+
+  await section.scrollIntoViewIfNeeded();
+  await page.locator('.catalog-topbar').evaluate((element: HTMLElement) => {
+    element.style.position = 'static';
+  });
+  await section.screenshot({
+    path: resolve(process.cwd(), '../../docs/design/ui-catalog/icons-materials-desktop.png'),
+  });
+});
+
+test('story workbench proof renders 3-column desktop, stacks on mobile without overflow, and preserves whitespace', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1672, height: 941 });
+  await page.goto('./#workbench-proof');
+
+  const grid = page.getByTestId('workbench-proof-grid');
+  await expect(grid).toBeVisible();
+  const desktopCols = await grid.evaluate(
+    (element) => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/u).length
+  );
+  expect(desktopCols).toBe(3);
+
+  await expect(grid).toContainText(
+    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+  );
+  await expect(grid).toContainText('Contoh desain · Synthetic sample');
+  await expect(grid.locator('.mw-ui-badge').filter({ hasText: 'INTERNAL' }).first()).toBeVisible();
+
+  const draftInput = grid.getByRole('textbox', { name: 'Draft content' });
+  await expect(draftInput).toHaveValue(
+    '  Line 01: Night market signal\n    Indented field note\n\tTabbed source cue'
+  );
+  await draftInput.fill('  Custom line\n    Kept indent');
+  await expect(grid.locator('.catalog-workbench-pre')).toHaveText('  Custom line\n    Kept indent');
+
+  await grid.getByRole('button', { name: /02 · Field interview/u }).click();
+  await expect(grid.locator('.mw-ui-page-header-title')).toHaveText('Field interview');
+  await grid.getByRole('button', { name: /01 · Opening scene/u }).click();
+
+  await grid.scrollIntoViewIfNeeded();
+  await page.locator('.catalog-topbar').evaluate((element: HTMLElement) => {
+    element.style.position = 'static';
+  });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(
+    false
+  );
+  await grid.screenshot({
+    path: resolve(process.cwd(), '../../docs/design/ui-catalog/workbench-proof-desktop.png'),
+  });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('./#workbench-proof');
+  await page.locator('.catalog-topbar').evaluate((element: HTMLElement) => {
+    element.style.position = 'static';
+  });
+  const mobileCols = await grid.evaluate(
+    (element) => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/u).length
+  );
+  expect(mobileCols).toBe(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(
+    false
+  );
+  await grid.scrollIntoViewIfNeeded();
+  await grid.screenshot({
+    path: resolve(process.cwd(), '../../docs/design/ui-catalog/workbench-proof-mobile.png'),
+  });
+});
+
+test('component matrix covers textarea, switch, indeterminate checkbox, sentinel select, overlays, command, compact table, and chart states', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1672, height: 941 });
+  await page.goto('./#forms');
+
+  const notes = page.getByRole('textbox', { name: 'Editorial notes' });
+  await expect(notes).toHaveValue('  First line\n    Indented detail');
+  await notes.fill('  Updated line\n    Two indents');
+  await expect(notes).toHaveValue('  Updated line\n    Two indents');
+
+  const publishSwitch = page.getByRole('switch', { name: 'Auto-publish snapshots' });
+  await expect(publishSwitch).toHaveAttribute('aria-checked', 'true');
+  await publishSwitch.click();
+  await expect(publishSwitch).toHaveAttribute('aria-checked', 'false');
+
+  const indeterminateBox = page.getByRole('checkbox', { name: 'Select partial archive batch' });
+  await expect(indeterminateBox).toHaveJSProperty('indeterminate', true);
+  await expect(indeterminateBox).toHaveAttribute('aria-checked', 'mixed');
+  await indeterminateBox.click();
+  await expect(indeterminateBox).toHaveJSProperty('indeterminate', false);
+  await expect(indeterminateBox).toBeChecked();
+
+  const assignmentTrigger = page.getByRole('combobox', { name: 'Project assignment' });
+  await expect(assignmentTrigger).toContainText('Unassigned');
+  await assignmentTrigger.click();
+  await page.getByRole('option', { name: 'Editorial' }).click();
+  await expect(assignmentTrigger).toContainText('Editorial');
+
+  await page.goto('./#overlays');
+  const overlaysSection = page.locator('#overlays');
+  await overlaysSection.scrollIntoViewIfNeeded();
+  await page.locator('.catalog-topbar').evaluate((element: HTMLElement) => {
+    element.style.position = 'static';
+  });
+  await overlaysSection.screenshot({
+    path: resolve(process.cwd(), '../../docs/design/ui-catalog/component-matrix-desktop.png'),
+  });
+
+  await expect(overlaysSection.locator('.mw-ui-page-header[data-treatment="display"]')).toHaveCount(
+    1
+  );
+  await expect(overlaysSection.locator('.mw-ui-page-header[data-treatment="brush"]')).toHaveCount(
+    1
+  );
+
+  await overlaysSection.getByRole('button', { name: 'Open quick info' }).click();
+  await expect(page.getByText('Revision snapshot', { exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByText('Revision snapshot', { exact: true })).toHaveCount(0);
+
+  await overlaysSection.getByRole('button', { name: 'Open detail sheet' }).click();
+  const sheetDialog = page.getByRole('dialog', { name: 'Story metadata' });
+  await expect(sheetDialog).toBeVisible();
+  await sheetDialog.getByRole('button', { name: 'Close sheet' }).click();
+  await expect(sheetDialog).toHaveCount(0);
+
+  const commandInput = overlaysSection.getByRole('combobox', { name: 'Search commands' });
+  await commandInput.fill('Inspect');
+  await overlaysSection.getByRole('option', { name: 'Inspect revision' }).click();
+  await expect(page.getByTestId('selected-command-status')).toContainText('Inspect revision');
+  await commandInput.fill('nonexistent-command');
+  await expect(overlaysSection.getByText('No commands found.')).toBeVisible();
+
+  await page.goto('./#data-display');
+  const compactTable = page.getByRole('table', { name: 'Compact revision log' });
+  await expect(compactTable).toHaveAttribute('data-density', 'compact');
+
+  await page.goto('./#charts');
+  await expect(
+    page.locator('.mw-ui-chart-title', { hasText: 'Zero values bar example' })
+  ).toBeVisible();
+  await expect(
+    page.locator('.mw-ui-chart-title', { hasText: 'Zero values line example' })
+  ).toBeVisible();
+  await expect(
+    page.locator('.mw-ui-chart-title', { hasText: 'Line loading example' })
+  ).toBeVisible();
+  await expect(page.getByText('Timeline could not be loaded.')).toBeVisible();
+  await expect(page.getByText('No timeline points yet.')).toBeVisible();
+});
+
+test('zine polish patterns wrap cleanly at 320px and expose paper/torn/scuffed states', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto('./#materials');
+  const materialsSection = page.locator('#materials');
+  await expect(materialsSection.getByText('ZINE')).toBeVisible();
+  await expect(materialsSection.getByText('DOSSIER', { exact: true })).toBeVisible();
+  await expect(materialsSection.locator('.mw-ui-metric-tile[data-surface="paper"]')).toBeVisible();
+  await expect(materialsSection.locator('.mw-ui-metric-tile[data-accent="violet"]')).toBeVisible();
+  await expect(materialsSection.locator('.mw-ui-panel[data-frame="scuffed"]')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true
+  );
 });

@@ -88,11 +88,11 @@ export function ActivityBell() {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'call':
-        return <PhoneIcon className="size-3.5 text-lime" />;
+        return <PhoneIcon className="size-3.5 text-yellow-readable" />;
       case 'meeting':
-        return <CalendarIcon className="size-3.5 text-pink" />;
+        return <CalendarIcon className="size-3.5 text-magenta-readable" />;
       case 'email':
-        return <MailIcon className="size-3.5 text-lime" />;
+        return <MailIcon className="size-3.5 text-yellow-readable" />;
       default:
         return <CheckSquareIcon className="size-3.5 text-ink-faint" />;
     }
@@ -116,11 +116,11 @@ export function ActivityBell() {
         >
           <CalendarClockIcon className="size-4" />
           {overdue.length > 0 ? (
-            <span className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center border-2 border-ink bg-pink text-[10px] font-bold text-on-pink shadow-[1px_1px_0_0_var(--ink)] animate-pulse">
+            <span className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center border-2 border-ink bg-destructive text-[10px] font-bold text-destructive-foreground shadow-[1px_1px_0_0_var(--ink)] animate-pulse">
               {overdue.length}
             </span>
           ) : activities.length > 0 ? (
-            <span className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center border-2 border-ink bg-lime text-[10px] font-bold text-on-accent shadow-[1px_1px_0_0_var(--ink)]">
+            <span className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center border-2 border-ink bg-primary text-[10px] font-bold text-primary-foreground shadow-[1px_1px_0_0_var(--ink)]">
               {activities.length}
             </span>
           ) : null}
@@ -134,7 +134,7 @@ export function ActivityBell() {
             <span className="font-display text-sm uppercase tracking-wider text-ink">
               Activities
             </span>
-            <span className="border border-ink bg-lime px-1.5 py-0.2 font-mono text-[10px] font-bold text-on-accent">
+            <span className="border border-ink bg-primary px-1.5 py-0.2 font-mono text-[10px] font-bold text-primary-foreground">
               {activities.length}
             </span>
           </div>
@@ -159,7 +159,7 @@ export function ActivityBell() {
             className={cn(
               'flex-1 py-1.5 text-center font-bold transition-colors',
               activeTab === 'overdue'
-                ? 'bg-pink text-on-pink'
+                ? 'bg-destructive text-destructive-foreground'
                 : 'text-ink-soft hover:bg-paper-raised'
             )}
           >
@@ -171,7 +171,7 @@ export function ActivityBell() {
             className={cn(
               'flex-1 py-1.5 text-center font-bold transition-colors',
               activeTab === 'today'
-                ? 'bg-lime text-on-accent'
+                ? 'bg-primary text-primary-foreground'
                 : 'text-ink-soft hover:bg-paper-raised'
             )}
           >
@@ -183,7 +183,7 @@ export function ActivityBell() {
             className={cn(
               'flex-1 py-1.5 text-center font-bold transition-colors',
               activeTab === 'upcoming'
-                ? 'border-b-2 border-lime font-black text-ink bg-paper-raised'
+                ? 'border-b-2 border-primary font-black text-ink bg-paper-raised'
                 : 'text-ink-soft hover:bg-paper-raised'
             )}
           >
@@ -211,18 +211,20 @@ export function ActivityBell() {
                   key={act.id}
                   className="group flex items-start justify-between gap-3 p-3 transition-colors hover:bg-paper"
                 >
-                  <div
-                    className="flex-1 cursor-pointer"
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-auto min-h-0 flex-1 flex-col items-start justify-start gap-0 p-0 text-left font-normal normal-case hover:bg-transparent"
                     onClick={() => handleOpenRecord(act.resource_model, act.resource_id)}
                   >
-                    <div className="flex items-center gap-1.5 mb-1">
+                    <span className="flex w-full items-center gap-1.5 mb-1">
                       {getActivityIcon(act.activity_type)}
-                      <span className="font-display text-xs uppercase tracking-wide text-ink line-clamp-1 group-hover:text-lime-600 transition-colors">
+                      <span className="font-display text-xs uppercase tracking-wide text-ink line-clamp-1 group-hover:text-yellow-readable transition-colors">
                         {act.summary}
                       </span>
-                    </div>
+                    </span>
 
-                    <div className="flex items-center gap-2 font-mono text-[10px]">
+                    <span className="flex items-center gap-2 font-mono text-[10px]">
                       <span className="text-ink-faint">
                         {act.resource_model} #{act.resource_id}
                       </span>
@@ -231,17 +233,17 @@ export function ActivityBell() {
                           className={cn(
                             'border px-1 py-0.2 font-bold uppercase',
                             isOverdue
-                              ? 'border-pink bg-pink/15 text-pink'
+                              ? 'border-destructive bg-destructive/15 text-destructive'
                               : isToday
-                                ? 'border-lime bg-lime/20 text-lime-800 dark:text-lime'
+                                ? 'border-primary bg-primary/20 text-yellow-readable'
                                 : 'border-ink/20 text-ink-faint'
                           )}
                         >
                           {act.deadline}
                         </span>
                       )}
-                    </div>
-                  </div>
+                    </span>
+                  </Button>
 
                   <div className="flex items-center gap-1">
                     <Button
@@ -250,7 +252,7 @@ export function ActivityBell() {
                       title="Mark as Done"
                       disabled={markDoneMutation.isPending}
                       onClick={() => markDoneMutation.mutate(act.id)}
-                      className="size-6 hover:border-lime hover:bg-lime hover:text-on-accent"
+                      className="size-6 hover:border-primary hover:bg-primary hover:text-primary-foreground"
                     >
                       <CheckIcon className="size-3" />
                     </Button>
@@ -279,7 +281,7 @@ export function ActivityBell() {
               setOpen(false);
               router.push('/board/m/base.activity');
             }}
-            className="w-full font-mono text-xs text-ink-soft hover:bg-lime hover:text-on-accent"
+            className="w-full font-mono text-xs text-ink-soft hover:bg-primary hover:text-primary-foreground"
           >
             View All Activities Table →
           </Button>

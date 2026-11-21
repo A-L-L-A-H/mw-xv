@@ -84,8 +84,8 @@ export function ProfilePage() {
       </header>
 
       <section className="ink-panel overflow-hidden bg-card">
-        <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-4 border-b-2 border-ink bg-lime/20 p-6 sm:flex sm:flex-wrap sm:p-8">
-          <div className="grid size-16 place-items-center border-2 border-ink bg-lime shadow-ink-sm">
+        <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-4 border-b-2 border-ink bg-primary/20 p-6 sm:flex sm:flex-wrap sm:p-8">
+          <div className="grid size-16 place-items-center border-2 border-ink bg-primary text-primary-foreground shadow-ink-sm">
             <UserIcon className="size-8" />
           </div>
           <div className="min-w-0 flex-1">
@@ -107,7 +107,7 @@ export function ProfilePage() {
             <Skeleton className="h-16" />
           </div>
         ) : error ? (
-          <p className="p-6 text-sm text-pink">Could not load the linked contact profile.</p>
+          <p className="p-6 text-sm text-destructive">Could not load the linked contact profile.</p>
         ) : (
           <dl className="grid gap-px bg-ink/15 sm:grid-cols-2">
             <ProfileDetail icon={PartnerIcon} label="Contact name" value={data?.name} />

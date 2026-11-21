@@ -5,6 +5,7 @@ export type ArtworkFrameProps = Omit<ComponentProps<'figure'>, 'children'> & {
   shape?: 'landscape' | 'portrait' | 'square';
   caption?: ReactNode;
   surface?: 'ink' | 'paper';
+  frame?: 'line' | 'torn' | 'scuffed';
 };
 
 /** Media frame; callers provide optimized images and accurate alt text. */
@@ -13,12 +14,14 @@ export function ArtworkFrame({
   shape = 'landscape',
   caption,
   surface = 'ink',
+  frame = 'line',
   className,
   ...props
 }: ArtworkFrameProps) {
   return (
     <figure
       className={['mw-ui-artwork-frame', className].filter(Boolean).join(' ')}
+      data-frame={frame}
       data-shape={shape}
       data-surface={surface}
       {...props}

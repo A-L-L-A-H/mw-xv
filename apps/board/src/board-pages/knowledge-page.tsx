@@ -38,10 +38,7 @@ function SourceCard({ citation, passage }: { citation: SourceCitation; passage: 
   return (
     <article className="ink-panel min-w-0 space-y-4 bg-card p-5 sm:p-6">
       <div className="flex items-start gap-3">
-        <BookOpenIcon
-          aria-hidden="true"
-          className="mt-1 size-5 shrink-0 text-lime-700 dark:text-lime"
-        />
+        <BookOpenIcon aria-hidden="true" className="mt-1 size-5 shrink-0 text-yellow-readable" />
         <div className="min-w-0">
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
             {passage.editionId}
@@ -49,7 +46,7 @@ function SourceCard({ citation, passage }: { citation: SourceCitation; passage: 
           <h2 className="mt-1 break-words font-display text-xl uppercase">{passage.locator}</h2>
         </div>
       </div>
-      <blockquote className="border-l-4 border-lime-600 pl-4 text-lg leading-relaxed text-ink">
+      <blockquote className="border-l-4 border-yellow-readable pl-4 text-lg leading-relaxed text-ink">
         {passage.text}
       </blockquote>
       <p className="text-sm leading-relaxed text-ink-soft">{citation.citation}</p>
@@ -217,7 +214,7 @@ export function KnowledgePage() {
             onChange={(event) => setGraphSearchInput(event.target.value)}
             maxLength={120}
             placeholder="Claim, assertion, relation or endpoint ID, predicate, source, or passage…"
-            className="min-w-0 flex-1 border-2 border-ink bg-paper px-3 py-2 text-ink outline-none focus-visible:ring-2 focus-visible:ring-lime-700"
+            className="min-w-0 flex-1 border-2 border-ink bg-paper px-3 py-2 text-ink outline-none focus-visible:ring-2 focus-visible:ring-yellow-readable"
           />
           <Button type="submit" disabled={graphSearchInput.trim().length < 2}>
             <SearchIcon aria-hidden="true" className="size-4" />
@@ -251,7 +248,7 @@ export function KnowledgePage() {
 
       <section aria-labelledby="relation-heading" className="space-y-4">
         <div className="flex items-start gap-3">
-          <RelationIcon aria-hidden="true" className="mt-1 size-5 text-lime-700 dark:text-lime" />
+          <RelationIcon aria-hidden="true" className="mt-1 size-5 text-yellow-readable" />
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-faint">
               Research graph
@@ -271,7 +268,7 @@ export function KnowledgePage() {
             onChange={(event) => setRelationInput(event.target.value)}
             maxLength={255}
             placeholder="mw:relation:…"
-            className="min-w-0 flex-1 border-2 border-ink bg-paper px-3 py-2 text-ink outline-none focus-visible:ring-2 focus-visible:ring-lime-700"
+            className="min-w-0 flex-1 border-2 border-ink bg-paper px-3 py-2 text-ink outline-none focus-visible:ring-2 focus-visible:ring-yellow-readable"
           />
           <Button type="submit" disabled={!relationInput.trim()}>
             <SearchIcon aria-hidden="true" className="size-4" />
@@ -347,7 +344,7 @@ function GraphSearchResults({
                 {result.kind === 'evidence' ? (
                   <Button
                     type="button"
-                    className="text-left text-sm font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
+                    className="text-left text-sm font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-readable"
                     onClick={() => onOpenPassage(result.sourceId, result.locator)}
                   >
                     Open pinned passage {result.locator}
@@ -355,7 +352,7 @@ function GraphSearchResults({
                 ) : result.kind === 'relation' ? (
                   <Button
                     type="button"
-                    className="text-left text-sm font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
+                    className="text-left text-sm font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-readable"
                     onClick={() => onExplainRelation(result.id)}
                   >
                     Explain relation
@@ -363,7 +360,7 @@ function GraphSearchResults({
                 ) : (
                   <Button
                     type="button"
-                    className="text-left text-sm font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
+                    className="text-left text-sm font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-readable"
                     onClick={() => onFindAssertion(result.id)}
                   >
                     Find linked evidence
@@ -441,7 +438,7 @@ function RelationCard({
             <div key={alternative.relation.id} className="border-l-4 border-ink/20 pl-4">
               <Button
                 type="button"
-                className="text-left font-medium underline decoration-ink/30 underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
+                className="text-left font-medium underline decoration-ink/30 underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-readable"
                 onClick={() => onSelectRelation(alternative.relation.id)}
               >
                 {alternative.relation.predicate}
@@ -493,7 +490,7 @@ function EvidenceList({
                 {isPinnedSourceId(sourceId) && (
                   <Button
                     type="button"
-                    className="mt-2 text-left text-xs font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
+                    className="mt-2 text-left text-xs font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-readable"
                     onClick={() => onSelectSource(sourceId, row.locator)}
                   >
                     Open pinned source passage {row.locator}

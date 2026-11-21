@@ -285,14 +285,14 @@ function FormEditor({
                   disabled={mutations.action.isPending}
                   className={
                     isUnarchive
-                      ? 'gap-1.5 hover:bg-lime hover:text-on-accent'
-                      : 'gap-1.5 hover:bg-lime/25'
+                      ? 'gap-1.5 hover:bg-primary hover:text-primary-foreground'
+                      : 'gap-1.5 hover:bg-primary/25'
                   }
                 >
                   {mutations.action.isPending ? (
                     <LoadingSpinner className="size-4" />
                   ) : (
-                    <BoltIcon className="size-4 text-lime-600 dark:text-lime" />
+                    <BoltIcon className="size-4 text-yellow-readable" />
                   )}
                   {label}
                 </Button>
@@ -304,7 +304,7 @@ function FormEditor({
               variant="outline"
               size="sm"
               onClick={() => handleArchive(false)}
-              className="gap-1.5 hover:bg-pink hover:text-on-pink"
+              className="gap-1.5 hover:bg-destructive hover:text-destructive-foreground"
               disabled={mutations.archive.isPending}
             >
               <ArchiveIcon className="size-4" /> Archive
@@ -344,12 +344,12 @@ function FormEditor({
 
       {/* Notifications */}
       {error && (
-        <div className="border-2 border-ink bg-pink p-3 font-bold text-on-pink shadow-ink">
+        <div className="border-2 border-ink bg-destructive p-3 font-bold text-destructive-foreground shadow-ink">
           {error}
         </div>
       )}
       {successMsg && (
-        <div className="border-2 border-ink bg-lime p-3 font-bold text-on-accent shadow-ink flex items-center gap-2">
+        <div className="border-2 border-ink bg-primary p-3 font-bold text-primary-foreground shadow-ink flex items-center gap-2">
           <CheckIcon className="size-5" /> {successMsg}
         </div>
       )}
@@ -435,7 +435,7 @@ function FormEditor({
                           className="font-bold text-xs uppercase tracking-wider"
                         >
                           {field.label}
-                          {isRequired && <span className="ml-1 text-pink">*</span>}
+                          {isRequired && <span className="ml-1 text-destructive">*</span>}
                         </Label>
                         {isReadonly && (
                           <span className="font-mono text-[10px] uppercase text-ink-faint">

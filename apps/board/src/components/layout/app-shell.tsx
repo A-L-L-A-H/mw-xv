@@ -81,7 +81,8 @@ function NavItem({
       title={label}
       className={cn(
         'group relative flex min-h-10 min-w-0 items-center gap-3 border-l-4 border-transparent px-2 py-2 font-display text-base uppercase tracking-wide text-ink/70 transition-[background-color,color,border-color] duration-[var(--mw-motion-fast)] ease-[var(--mw-motion-ease)] hover:bg-ink/10 hover:text-ink',
-        active && 'border-l-pink bg-pink text-on-pink hover:bg-pink hover:text-on-pink'
+        active &&
+          'border-l-magenta bg-magenta text-on-magenta hover:bg-magenta hover:text-on-magenta'
       )}
       aria-current={active ? 'page' : undefined}
     >
@@ -343,7 +344,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             className={cn(
               'flex w-full items-center gap-3 border-2 px-3 py-2 text-left font-mono text-xs uppercase tracking-wider transition-colors',
               developmentMode
-                ? 'border-lime bg-lime text-on-accent font-bold'
+                ? 'border-primary bg-primary text-primary-foreground font-bold'
                 : 'border-ink/30 bg-transparent text-ink-soft hover:border-ink hover:text-ink'
             )}
           >
@@ -395,7 +396,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   className={cn(
                     'flex w-full items-center gap-3 border-2 px-3 py-2 text-left font-mono text-xs uppercase tracking-wider transition-colors',
                     developmentMode
-                      ? 'border-lime bg-lime text-on-accent font-bold'
+                      ? 'border-primary bg-primary text-primary-foreground font-bold'
                       : 'border-ink/30 bg-transparent text-ink-soft hover:border-ink hover:text-ink'
                   )}
                 >
@@ -435,7 +436,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     aria-label={`Switch company. Current scope: ${currentCompany?.name ?? 'Global Scope'}`}
                     title={`Company scope: ${currentCompany?.name ?? 'Global Scope'}`}
                   >
-                    <CompanyIcon className="size-3.5 text-lime-600 dark:text-lime" />
+                    <CompanyIcon className="size-3.5 text-yellow-readable" />
                     <span className="hidden sm:inline">Tenant:</span>
                     <span className="hidden max-w-[120px] truncate font-bold md:inline">
                       {currentCompany ? currentCompany.name : 'Global Scope'}
@@ -455,7 +456,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <GlobeIcon className="size-3.5 text-ink-faint" />
                       Global (All Companies)
                     </span>
-                    {!activeCompanyId && <CheckIcon className="size-3.5 text-lime" />}
+                    {!activeCompanyId && <CheckIcon className="size-3.5 text-yellow-readable" />}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {companies.map((c) => (
@@ -468,7 +469,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                         <CompanyIcon className="size-3.5 text-ink-faint" />
                         {c.name}
                       </span>
-                      {activeCompanyId === c.id && <CheckIcon className="size-3.5 text-lime" />}
+                      {activeCompanyId === c.id && (
+                        <CheckIcon className="size-3.5 text-yellow-readable" />
+                      )}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -515,7 +518,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   aria-label={`User menu for ${user?.login ?? 'current user'}`}
                   title={`User menu for ${user?.login ?? 'current user'}`}
                 >
-                  <span className="grid size-6 place-items-center border-2 border-ink bg-lime font-display text-xs text-on-accent">
+                  <span className="grid size-6 place-items-center border-2 border-ink bg-primary font-display text-xs text-primary-foreground">
                     {user?.login.slice(0, 1).toUpperCase()}
                   </span>
                   <span className="hidden sm:inline">{user?.login}</span>
@@ -597,7 +600,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     }}
                     className="flex items-center gap-2 cursor-pointer"
                   >
-                    <ItemIcon className="size-4 text-lime-600 dark:text-lime" />
+                    <ItemIcon className="size-4 text-yellow-readable" />
                     <span className="font-bold">{item.title}</span>
                     <span className="ml-auto inline-flex items-center border border-ink/20 bg-card px-1.5 py-0.5 font-mono text-[10px] uppercase text-ink-faint">
                       {item.type} #{item.id}

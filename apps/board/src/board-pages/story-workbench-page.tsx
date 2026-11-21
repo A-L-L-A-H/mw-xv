@@ -334,7 +334,7 @@ export function StoryWorkbenchPage() {
               maxLength={1000000}
               spellCheck={false}
               readOnly={!canEdit || historyQuery.isLoading || pages.length === 0}
-              className="min-h-64 w-full resize-y border-2 border-ink/30 bg-paper p-4 font-mono text-sm leading-relaxed text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
+              className="min-h-64 w-full resize-y border-2 border-ink/30 bg-paper p-4 font-mono text-sm leading-relaxed text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               aria-describedby="story-page-help"
             />
             <p id="story-page-help" className="text-xs text-ink-faint">

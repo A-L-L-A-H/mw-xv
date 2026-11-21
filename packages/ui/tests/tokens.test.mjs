@@ -179,15 +179,21 @@ test('control boundaries and focus indicators meet the 3:1 non-text target', () 
   }
 });
 
-test('pink accent uses dark foreground instead of low-contrast white', () => {
-  assert.ok(contrast(tokenValue('on-pink'), tokenValue('pink')) >= 4.5);
-  assert.ok(contrast('#ffffff', tokenValue('pink')) < 4.5);
+test('magenta accent uses dark foreground instead of low-contrast white', () => {
+  assert.ok(contrast(tokenValue('on-magenta'), tokenValue('magenta')) >= 4.5);
+  assert.ok(contrast('#ffffff', tokenValue('magenta')) < 4.5);
+  assert.ok(contrast(tokenValue('on-violet'), tokenValue('violet')) >= 4.5);
   assert.equal(tokenValue('destructive-foreground'), 'var(--mw-on-error)');
 });
 
 test('editorial accent text has readable theme-aware colors on both surfaces', () => {
   for (const selector of [':root', '\\.dark']) {
-    for (const token of ['magenta-readable', 'cyan-readable', 'yellow-readable']) {
+    for (const token of [
+      'magenta-readable',
+      'cyan-readable',
+      'yellow-readable',
+      'violet-readable',
+    ]) {
       assert.ok(
         contrast(resolvedValue(token, selector), resolvedValue('surface', selector)) >= 4.5,
         `${token} on surface in ${selector} is below 4.5:1`
@@ -222,9 +228,12 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
     'ink-black',
     'ink-panel',
     'yellow',
+    'violet',
+    'on-violet',
     'yellow-readable',
     'magenta-readable',
     'cyan-readable',
+    'violet-readable',
     'signal-blue',
     'font-brush',
     'font-display',

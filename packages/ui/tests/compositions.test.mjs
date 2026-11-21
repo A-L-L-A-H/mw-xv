@@ -85,3 +85,39 @@ test('PageHeader, Table, and EmptyState support treatment, density, and headingL
   assert.match(markup, /data-density="compact"/u);
   assert.match(markup, /<h3 class="mw-ui-empty-state-title">Nothing here<\/h3>/u);
 });
+
+test('PageHeader supports two-tone split brush and MetricTile/ArtworkFrame support torn and scuffed frames', () => {
+  const markup = renderToStaticMarkup(
+    createElement(
+      'section',
+      null,
+      createElement(PageHeader, {
+        title: 'Shadow',
+        accentTitle: 'Command center',
+        accent: 'yellow',
+        treatment: 'brush',
+      }),
+      createElement(MetricTile, {
+        label: 'Telemetry',
+        value: '04',
+        detail: 'Active workers',
+        accent: 'violet',
+        surface: 'paper',
+        frame: 'torn',
+      }),
+      createElement(
+        ArtworkFrame,
+        { frame: 'scuffed', shape: 'square' },
+        createElement('img', { src: '/sample.webp', alt: 'Sample' })
+      )
+    )
+  );
+
+  assert.match(markup, /class="mw-ui-page-header-title-accent"/u);
+  assert.match(markup, /Command center/u);
+  assert.match(markup, /data-accent="yellow"/u);
+  assert.match(markup, /data-accent="violet"/u);
+  assert.match(markup, /data-surface="paper"/u);
+  assert.match(markup, /data-frame="torn"/u);
+  assert.match(markup, /data-frame="scuffed"/u);
+});

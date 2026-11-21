@@ -337,7 +337,7 @@ export function DashboardPage() {
               className={cn(
                 'px-4 py-1.5 font-display text-sm uppercase tracking-wider transition-colors',
                 adminSubView === 'telemetry'
-                  ? 'border-2 border-ink bg-lime text-on-accent font-bold shadow-[2px_2px_0_0_var(--ink)]'
+                  ? 'border-2 border-ink bg-primary text-primary-foreground font-bold shadow-[2px_2px_0_0_var(--ink)]'
                   : 'text-ink-soft hover:text-ink hover:bg-paper-raised'
               )}
             >
@@ -350,7 +350,7 @@ export function DashboardPage() {
               className={cn(
                 'px-4 py-1.5 font-display text-sm uppercase tracking-wider transition-colors',
                 adminSubView === 'crons'
-                  ? 'border-2 border-ink bg-lime text-on-accent font-bold shadow-[2px_2px_0_0_var(--ink)]'
+                  ? 'border-2 border-ink bg-primary text-primary-foreground font-bold shadow-[2px_2px_0_0_var(--ink)]'
                   : 'text-ink-soft hover:text-ink hover:bg-paper-raised'
               )}
             >
@@ -415,7 +415,7 @@ export function DashboardPage() {
           <div className="min-w-0 border-4 border-ink bg-paper p-4 shadow-ink space-y-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-ink pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 border-2 border-ink bg-lime px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-on-accent">
+                <div className="flex items-center gap-1.5 border-2 border-ink bg-primary px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-primary-foreground">
                   <Zap className="size-3.5" /> Live Pulse
                 </div>
                 <h2 className="font-display text-xl uppercase tracking-wider">
@@ -463,10 +463,10 @@ export function DashboardPage() {
                             className={cn(
                               'border px-1.5 py-0.5 text-[10px] font-bold uppercase',
                               audit.operation === 'create'
-                                ? 'border-lime bg-lime text-on-accent'
+                                ? 'border-primary bg-primary text-primary-foreground'
                                 : audit.operation === 'write'
                                   ? 'border-ink bg-ink text-paper'
-                                  : 'border-pink bg-pink text-on-pink'
+                                  : 'border-destructive bg-destructive text-destructive-foreground'
                             )}
                           >
                             {audit.operation}
@@ -479,7 +479,7 @@ export function DashboardPage() {
                         </div>
 
                         <div className="my-2 min-w-0">
-                          <p className="font-bold text-ink truncate group-hover:text-lime-600 transition-colors">
+                          <p className="font-bold text-ink truncate group-hover:text-yellow-readable transition-colors">
                             {audit.model} #{audit.record_id}
                           </p>
                           <p className="break-words text-[11px] text-ink-faint">
@@ -513,14 +513,14 @@ export function DashboardPage() {
                     className="group border-2 border-ink bg-card p-3 font-mono text-xs transition-transform hover:-translate-y-0.5 hover:shadow-ink"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="border border-lime bg-lime/20 px-1.5 py-0.5 text-[10px] font-bold uppercase text-lime-800 dark:text-lime-300">
+                      <span className="border border-primary bg-primary/20 px-1.5 py-0.5 text-[10px] font-bold uppercase text-yellow-readable">
                         {act.activity_type}
                       </span>
                       {act.deadline && (
                         <span className="text-[10px] text-ink-faint">Due: {act.deadline}</span>
                       )}
                     </div>
-                    <p className="font-bold text-sm text-ink truncate mt-2 group-hover:text-lime-600">
+                    <p className="font-bold text-sm text-ink truncate mt-2 group-hover:text-yellow-readable">
                       {act.summary}
                     </p>
                     <p className="text-[11px] text-ink-faint mt-1">
@@ -537,7 +537,7 @@ export function DashboardPage() {
             <div className="border-4 border-ink bg-paper p-6 shadow-ink space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-ink pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 border-2 border-ink bg-pink/20 px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-pink-900 dark:text-pink-300">
+                  <div className="flex items-center gap-1.5 border-2 border-ink bg-magenta/20 px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-magenta-readable">
                     <Cpu className="size-3.5" /> Engine Telemetry
                   </div>
                   <h2 className="font-display text-xl uppercase tracking-wider">
@@ -550,7 +550,7 @@ export function DashboardPage() {
                     <Button
                       size="sm"
                       onClick={() => setFailuresModalOpen(true)}
-                      className="gap-1.5 font-mono text-xs border-2 border-pink bg-pink text-on-pink shadow-ink hover:bg-pink/90"
+                      className="gap-1.5 font-mono text-xs border-2 border-destructive bg-destructive text-destructive-foreground shadow-ink hover:bg-destructive/90"
                     >
                       <AlertTriangle className="size-3.5" />
                       Triage Failures (
@@ -582,38 +582,40 @@ export function DashboardPage() {
                   <div className="text-[10px] uppercase text-ink-faint flex items-center gap-1.5">
                     <span>Running</span>
                     {(jobsHealth?.data?.running ?? 0) > 0 && (
-                      <span className="size-2 border border-ink bg-lime animate-pulse" />
+                      <span className="size-2 border border-ink bg-primary animate-pulse" />
                     )}
                   </div>
-                  <div className="text-2xl font-display font-bold mt-1 text-lime-600 dark:text-lime-400">
+                  <div className="text-2xl font-display font-bold mt-1 text-yellow-readable">
                     {jobsHealthLoading ? '—' : (jobsHealth?.data?.running ?? 0)}
                   </div>
                 </div>
 
-                <div
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => {
                     setFailureTab('jobs');
                     setFailuresModalOpen(true);
                   }}
                   className={cn(
-                    'border-2 border-ink bg-card p-3 font-mono cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-ink',
-                    (jobsHealth?.data?.dead ?? 0) > 0 && 'bg-pink/10 border-pink'
+                    'h-auto w-full flex-col items-stretch justify-start gap-0 border-2 border-ink bg-card p-3 text-left font-mono font-normal normal-case cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-ink',
+                    (jobsHealth?.data?.dead ?? 0) > 0 && 'bg-destructive/10 border-destructive'
                   )}
                   title="Click to inspect failed jobs"
                 >
-                  <div className="text-[10px] uppercase text-ink-faint flex items-center justify-between">
+                  <span className="text-[10px] uppercase text-ink-faint flex items-center justify-between">
                     <span>Dead Letter</span>
                     <ExternalLink className="size-2.5 opacity-60" />
-                  </div>
-                  <div
+                  </span>
+                  <span
                     className={cn(
-                      'text-2xl font-display font-bold mt-1',
-                      (jobsHealth?.data?.dead ?? 0) > 0 ? 'text-pink' : 'text-ink'
+                      'text-2xl font-display font-bold mt-1 block',
+                      (jobsHealth?.data?.dead ?? 0) > 0 ? 'text-destructive' : 'text-ink'
                     )}
                   >
                     {jobsHealthLoading ? '—' : (jobsHealth?.data?.dead ?? 0)}
-                  </div>
-                </div>
+                  </span>
+                </Button>
 
                 <div className="border-2 border-ink bg-card p-3 font-mono">
                   <div className="text-[10px] uppercase text-ink-faint">Outbox Pending</div>
@@ -622,30 +624,33 @@ export function DashboardPage() {
                   </div>
                 </div>
 
-                <div
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => {
                     setFailureTab('outbox');
                     setFailuresModalOpen(true);
                   }}
                   className={cn(
-                    'border-2 border-ink bg-card p-3 font-mono cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-ink',
-                    (jobsHealth?.data?.outboxDead ?? 0) > 0 && 'bg-pink/10 border-pink'
+                    'h-auto w-full flex-col items-stretch justify-start gap-0 border-2 border-ink bg-card p-3 text-left font-mono font-normal normal-case cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-ink',
+                    (jobsHealth?.data?.outboxDead ?? 0) > 0 &&
+                      'bg-destructive/10 border-destructive'
                   )}
                   title="Click to inspect failed outbox events"
                 >
-                  <div className="text-[10px] uppercase text-ink-faint flex items-center justify-between">
+                  <span className="text-[10px] uppercase text-ink-faint flex items-center justify-between">
                     <span>Outbox Dead</span>
                     <ExternalLink className="size-2.5 opacity-60" />
-                  </div>
-                  <div
+                  </span>
+                  <span
                     className={cn(
-                      'text-2xl font-display font-bold mt-1',
-                      (jobsHealth?.data?.outboxDead ?? 0) > 0 ? 'text-pink' : 'text-ink'
+                      'text-2xl font-display font-bold mt-1 block',
+                      (jobsHealth?.data?.outboxDead ?? 0) > 0 ? 'text-destructive' : 'text-ink'
                     )}
                   >
                     {jobsHealthLoading ? '—' : (jobsHealth?.data?.outboxDead ?? 0)}
-                  </div>
-                </div>
+                  </span>
+                </Button>
               </div>
 
               <BarChart
@@ -720,7 +725,7 @@ export function DashboardPage() {
                             className={cn(
                               'h-7 px-2.5 text-[11px] font-bold uppercase tracking-wider',
                               cron.enabled
-                                ? 'bg-lime text-on-accent hover:bg-lime/90'
+                                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                                 : 'text-ink-faint'
                             )}
                           >
@@ -743,7 +748,7 @@ export function DashboardPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <h2 className="font-display text-2xl uppercase tracking-wider">Available Modules</h2>
-              <Doodle kind="crown" className="size-6 text-lime rotate-12" />
+              <Doodle kind="crown" className="size-6 text-yellow-readable rotate-12" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -763,7 +768,7 @@ export function DashboardPage() {
                       className="ink-panel group relative block p-6 transition-transform hover:-translate-y-1 hover:shadow-ink-lg"
                     >
                       <div className="flex items-start justify-between">
-                        <div className="size-12 border-2 border-ink bg-paper flex items-center justify-center group-hover:bg-lime group-hover:text-on-accent transition-colors">
+                        <div className="size-12 border-2 border-ink bg-paper flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                           <Icon className="size-6" strokeWidth={2.4} />
                         </div>
                         <span className="font-mono text-xs text-ink-faint uppercase">
@@ -772,7 +777,7 @@ export function DashboardPage() {
                       </div>
 
                       <div className="mt-4">
-                        <h3 className="font-display text-xl uppercase tracking-wide group-hover:text-lime-600 transition-colors">
+                        <h3 className="font-display text-xl uppercase tracking-wide group-hover:text-yellow-readable transition-colors">
                           {m.menu.label ?? modelLabel(m.model)}
                         </h3>
                         <p className="font-mono text-xs text-ink-faint mt-0.5">{m.model}</p>
@@ -791,7 +796,7 @@ export function DashboardPage() {
         <DialogContent className="max-w-2xl font-sans">
           <DialogHeader>
             <div className="flex items-center gap-2">
-              <span className="border-2 border-ink bg-pink p-1 text-on-pink shadow-[1px_1px_0_0_var(--ink)]">
+              <span className="border-2 border-ink bg-destructive p-1 text-destructive-foreground shadow-[1px_1px_0_0_var(--ink)]">
                 <AlertTriangle className="size-4" />
               </span>
               <DialogTitle className="font-display text-xl uppercase tracking-wider text-ink">
@@ -847,7 +852,7 @@ export function DashboardPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="border border-pink bg-pink/20 px-1.5 py-0.2 font-bold uppercase text-pink text-[10px]">
+                        <span className="border border-destructive bg-destructive/20 px-1.5 py-0.2 font-bold uppercase text-destructive text-[10px]">
                           DEAD
                         </span>
                         <span className="font-bold text-ink text-sm">Job #{job.id}</span>
@@ -880,7 +885,7 @@ export function DashboardPage() {
                         size="xs"
                         disabled={actionInProgressId !== null}
                         onClick={() => handleRetryJob(job.id)}
-                        className="gap-1 bg-lime text-on-accent hover:bg-lime/90"
+                        className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <RotateCw
                           className={cn(
@@ -908,7 +913,7 @@ export function DashboardPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="border border-pink bg-pink/20 px-1.5 py-0.2 font-bold uppercase text-pink text-[10px]">
+                      <span className="border border-destructive bg-destructive/20 px-1.5 py-0.2 font-bold uppercase text-destructive text-[10px]">
                         OUTBOX DEAD
                       </span>
                       <span className="font-bold text-ink text-sm">Event #{event.id}</span>
@@ -926,7 +931,7 @@ export function DashboardPage() {
                       Target: {event.aggregate_model} #{event.aggregate_id}
                     </p>
                     {event.last_error && (
-                      <p className="border border-pink/30 bg-pink/5 p-1 text-[10px] text-pink truncate mt-1">
+                      <p className="border border-destructive/30 bg-destructive/5 p-1 text-[10px] text-destructive truncate mt-1">
                         Error: {event.last_error}
                       </p>
                     )}
@@ -937,7 +942,7 @@ export function DashboardPage() {
                       size="xs"
                       disabled={actionInProgressId !== null}
                       onClick={() => handleRetryOutbox(event.id)}
-                      className="gap-1 bg-lime text-on-accent hover:bg-lime/90"
+                      className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
                     >
                       <RotateCw
                         className={cn(

@@ -14,6 +14,13 @@ import {
 } from '@moonwitness/ui/icons';
 import { toast } from '@moonwitness/ui/components/toast';
 import { Button } from '@moonwitness/ui/components/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@moonwitness/ui/components/dropdown-menu';
+import { MenuIcon } from '@moonwitness/ui/icons';
 import { Checkbox } from '@moonwitness/ui/components/checkbox';
 import { Input } from '@moonwitness/ui/components/input';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
@@ -1437,9 +1444,7 @@ function WhatsappInbox({ inboxPreferenceScope }: { inboxPreferenceScope: string 
       ? qr.image
       : null;
   const lastInboxSyncLabel = conversationsQuery.dataUpdatedAt
-    ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
-        new Date(conversationsQuery.dataUpdatedAt)
-      )
+    ? formatDateTime(conversationsQuery.dataUpdatedAt, 'time')
     : null;
   const retryWhatsAppData = () => {
     const retries: Promise<unknown>[] = [accountQuery.refetch(), conversationsQuery.refetch()];
@@ -1697,7 +1702,7 @@ function WhatsappInbox({ inboxPreferenceScope }: { inboxPreferenceScope: string 
         (connected && (conversationsQuery.isError || messagesQuery.isError))) && (
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-pink p-3 text-sm dark:text-black"
+          className="flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-destructive p-3 text-sm text-destructive-foreground"
         >
           <p>
             {accountQuery.isError
@@ -2310,7 +2315,7 @@ function WhatsappInbox({ inboxPreferenceScope }: { inboxPreferenceScope: string 
                   )}
                   {confirmGroupJoin && groupInvitePreview && (
                     <div
-                      className="border-2 border-ink bg-pink/20 p-3"
+                      className="border-2 border-ink bg-magenta/20 p-3"
                       role="alertdialog"
                       aria-label="Confirm joining WhatsApp group"
                     >
@@ -2368,14 +2373,14 @@ function WhatsappInbox({ inboxPreferenceScope }: { inboxPreferenceScope: string 
                     setMobileConversationOpen(true);
                   }}
                   variant="ghost"
-                  className={`h-auto w-full justify-start border-b border-ink/20 p-4 text-left hover:bg-pink/20 ${activeConversation?.id === conversation.id ? 'bg-pink/30' : ''}`}
+                  className={`h-auto w-full justify-start border-b border-ink/20 p-4 text-left hover:bg-magenta/20 ${activeConversation?.id === conversation.id ? 'bg-magenta/30' : ''}`}
                 >
                   <span className="flex items-center gap-2 font-semibold">
                     {conversation.is_group && <UsersIcon className="size-4" />}
                     {conversation.name}
                     {conversation.is_pinned && <span className="text-xs">Pinned</span>}
                     {conversation.unread_count > 0 && (
-                      <span className="ml-auto rounded-full bg-pink px-2 text-xs">
+                      <span className="ml-auto rounded-full bg-magenta px-2 text-xs text-on-magenta">
                         {conversation.unread_count}
                       </span>
                     )}
@@ -2826,7 +2831,7 @@ function WhatsappInbox({ inboxPreferenceScope }: { inboxPreferenceScope: string 
               )}
               {messagesQuery.isError && !messagesQuery.data && (
                 <div
-                  className="space-y-3 border-2 border-ink bg-pink p-3 dark:text-black"
+                  className="space-y-3 border-2 border-ink bg-destructive p-3 text-destructive-foreground"
                   role="alert"
                 >
                   <p className="text-sm">Messages could not be loaded.</p>
@@ -2854,247 +2859,264 @@ function WhatsappInbox({ inboxPreferenceScope }: { inboxPreferenceScope: string 
                   Showing cached messages. Refresh failed; retrying automatically.
                 </p>
               )}
-              {messageList.map((message, index) => (
-                <div key={message.id} className="contents">
-                  {activeConversation?.unread_count > 0 && index === newMessagesDividerIndex && (
-                    <div
-                      role="separator"
-                      aria-label="New messages"
-                      className="w-full border-y border-ink/40 py-1 text-center text-xs font-semibold text-ink-faint"
-                    >
-                      New messages
-                    </div>
-                  )}
-                  <article
-                    id={`whatsapp-message-${message.id}`}
-                    tabIndex={-1}
-                    className={`group relative max-w-[85%] border-2 border-ink p-3 ${message.direction === 'outbound' ? 'ml-auto bg-pink/30' : 'mr-auto bg-white'}`}
-                  >
-                    {activeConversation?.is_group &&
-                      !message.provider_type?.startsWith('group_event_') && (
-                        <p
-                          className={`mb-1 font-mono text-[10px] ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}`}
-                        >
-                          {message.direction === 'outbound'
-                            ? 'You'
-                            : message.sender_display_name?.trim() ||
-                              message.sender_jid?.split('@')[0]?.split(':')[0] ||
-                              'Group participant'}
-                        </p>
-                      )}
-                    <p
-                      className={`whitespace-pre-wrap break-words text-sm ${message.is_deleted || message.provider_type ? `italic ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}` : ''}`}
-                    >
-                      {message.is_deleted
-                        ? 'This message was deleted'
-                        : message.provider_type?.startsWith('group_event_')
-                          ? message.content || messageFallbackLabel(message.provider_type)
-                          : message.provider_type
-                            ? messageFallbackLabel(message.provider_type)
-                            : message.content}
-                    </p>
-                    {message.is_edited && !message.is_deleted && (
-                      <span
-                        className={`ml-2 text-[10px] italic ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}`}
+              {messageList.map((message, index) => {
+                const canCopy = Boolean(
+                  message.content && !message.is_deleted && !message.provider_type
+                );
+                const canReply = Boolean(
+                  canSend &&
+                  !message.is_deleted &&
+                  !message.provider_type &&
+                  !['queued', 'sending', 'unknown'].includes(message.status)
+                );
+                const canReact = Boolean(
+                  canSend &&
+                  !message.is_deleted &&
+                  !message.provider_type &&
+                  ['received', 'sent', 'delivered', 'read'].includes(message.status)
+                );
+                const canForward = Boolean(
+                  canSend &&
+                  !message.is_deleted &&
+                  !message.provider_type &&
+                  ['received', 'sent', 'delivered', 'read'].includes(message.status)
+                );
+                const canEdit = Boolean(
+                  canManageMessages &&
+                  message.direction === 'outbound' &&
+                  !message.is_deleted &&
+                  !message.provider_type &&
+                  ['sent', 'delivered', 'read'].includes(message.status) &&
+                  message.message_type === 'text' &&
+                  clockNow > 0 &&
+                  clockNow - Date.parse(message.create_date) >= 0 &&
+                  clockNow - Date.parse(message.create_date) <= 15 * 60_000
+                );
+                const canDelete = Boolean(
+                  canManageMessages &&
+                  message.direction === 'outbound' &&
+                  !message.is_deleted &&
+                  !message.provider_type &&
+                  ['sent', 'delivered', 'read'].includes(message.status)
+                );
+                const hasActions =
+                  canCopy || canReply || canReact || canForward || canEdit || canDelete;
+
+                return (
+                  <div key={message.id} className="contents">
+                    {activeConversation?.unread_count > 0 && index === newMessagesDividerIndex && (
+                      <div
+                        role="separator"
+                        aria-label="New messages"
+                        className="w-full border-y border-ink/40 py-1 text-center text-xs font-semibold text-ink-faint"
                       >
-                        Edited
-                      </span>
-                    )}
-                    {message.is_forwarded && (
-                      <p
-                        className={`mb-1 font-mono text-[10px] italic ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}`}
-                      >
-                        Forwarded
-                      </p>
-                    )}
-                    {message.reply_to && (
-                      <Button
-                        type="button"
-                        variant="link"
-                        className={`mb-2 block h-auto w-full border-l-2 border-magenta pl-2 text-left text-xs ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'} hover:text-ink`}
-                        onClick={() => void jumpToQuotedMessage(message)}
-                        aria-label="Jump to quoted message"
-                      >
-                        {message.reply_to.unavailable
-                          ? 'Quoted message unavailable'
-                          : message.reply_to.content ||
-                            messageFallbackLabel(message.reply_to.provider_type) ||
-                            `[${message.reply_to.message_type || 'media'}]`}
-                      </Button>
-                    )}
-                    {!message.is_deleted &&
-                    !message.provider_type &&
-                    message.media_scan_status === 'infected' ? (
-                      <p role="status" className="mt-2 text-xs text-warning">
-                        Attachment blocked by malware scan. It was removed and cannot be downloaded.
-                      </p>
-                    ) : (
-                      !message.is_deleted &&
-                      !message.provider_type &&
-                      message.message_type !== 'text' && <MediaPreview message={message} />
-                    )}
-                    {!message.provider_type &&
-                      message.media_scan_status !== 'infected' &&
-                      message.media_file_name && (
-                        <p className="mt-1 text-xs">
-                          {safeMediaDownloadName(message.media_file_name).name}
-                        </p>
-                      )}
-                    {summarizeReactions(message.reactions).length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1" aria-label="Message reactions">
-                        {summarizeReactions(message.reactions).map((reaction) => (
-                          <span
-                            key={reaction.emoji}
-                            role="img"
-                            aria-label={`${reaction.emoji} reaction, ${reaction.count}${reaction.includesMe ? ', includes yours' : ''}`}
-                            className={`border border-ink/50 px-2 py-0.5 text-xs ${reaction.includesMe ? 'bg-pink/40' : 'bg-paper'}`}
-                          >
-                            {reaction.emoji} {reaction.count}
-                          </span>
-                        ))}
+                        New messages
                       </div>
                     )}
-                    {message.content && !message.is_deleted && !message.provider_type && (
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="absolute right-2 top-2 z-10 h-auto p-1 text-xs underline md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
-                        aria-label="Copy message"
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(message.content ?? '');
-                            toast.success('Message copied');
-                          } catch {
-                            toast.error('Could not copy message text');
-                          }
-                        }}
+                    <article
+                      id={`whatsapp-message-${message.id}`}
+                      tabIndex={-1}
+                      className={`group relative max-w-[85%] border-2 border-ink p-3 ${hasActions ? 'pr-11' : ''} ${message.direction === 'outbound' ? 'ml-auto bg-magenta/30' : 'mr-auto bg-paper-raised'}`}
+                    >
+                      {activeConversation?.is_group &&
+                        !message.provider_type?.startsWith('group_event_') && (
+                          <p
+                            className={`mb-1 font-mono text-[10px] ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}`}
+                          >
+                            {message.direction === 'outbound'
+                              ? 'You'
+                              : message.sender_display_name?.trim() ||
+                                message.sender_jid?.split('@')[0]?.split(':')[0] ||
+                                'Group participant'}
+                          </p>
+                        )}
+                      <p
+                        className={`whitespace-pre-wrap break-words text-sm ${message.is_deleted || message.provider_type ? `italic ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}` : ''}`}
                       >
-                        Copy
-                      </Button>
-                    )}
-                    {canSend &&
-                      !message.is_deleted &&
-                      !message.provider_type &&
-                      !['queued', 'sending', 'unknown'].includes(message.status) && (
+                        {message.is_deleted
+                          ? 'This message was deleted'
+                          : message.provider_type?.startsWith('group_event_')
+                            ? message.content || messageFallbackLabel(message.provider_type)
+                            : message.provider_type
+                              ? messageFallbackLabel(message.provider_type)
+                              : message.content}
+                      </p>
+                      {message.is_edited && !message.is_deleted && (
+                        <span
+                          className={`ml-2 text-[10px] italic ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}`}
+                        >
+                          Edited
+                        </span>
+                      )}
+                      {message.is_forwarded && (
+                        <p
+                          className={`mb-1 font-mono text-[10px] italic ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}`}
+                        >
+                          Forwarded
+                        </p>
+                      )}
+                      {message.reply_to && (
                         <Button
                           type="button"
                           variant="link"
-                          className="mt-1 h-auto p-0 text-xs underline"
-                          aria-label="Reply to message"
-                          onClick={() => setReplyingTo(message)}
+                          className={`mb-2 block h-auto w-full border-l-2 border-magenta pl-2 text-left text-xs ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'} hover:text-ink`}
+                          onClick={() => void jumpToQuotedMessage(message)}
+                          aria-label="Jump to quoted message"
                         >
-                          Reply
+                          {message.reply_to.unavailable
+                            ? 'Quoted message unavailable'
+                            : message.reply_to.content ||
+                              messageFallbackLabel(message.reply_to.provider_type) ||
+                              `[${message.reply_to.message_type || 'media'}]`}
                         </Button>
                       )}
-                    {canSend &&
-                      !message.is_deleted &&
+                      {!message.is_deleted &&
                       !message.provider_type &&
-                      ['received', 'sent', 'delivered', 'read'].includes(message.status) && (
-                        <Button
-                          type="button"
-                          variant="link"
-                          className="mt-1 h-auto p-0 text-xs underline"
-                          aria-label="React to message"
-                          onClick={() => setReactingTo(message)}
-                        >
-                          React
-                        </Button>
+                      message.media_scan_status === 'infected' ? (
+                        <p role="status" className="mt-2 text-xs text-warning">
+                          Attachment blocked by malware scan. It was removed and cannot be
+                          downloaded.
+                        </p>
+                      ) : (
+                        !message.is_deleted &&
+                        !message.provider_type &&
+                        message.message_type !== 'text' && <MediaPreview message={message} />
                       )}
-                    {canSend &&
-                      !message.is_deleted &&
-                      !message.provider_type &&
-                      ['received', 'sent', 'delivered', 'read'].includes(message.status) && (
-                        <Button
-                          type="button"
-                          variant="link"
-                          className="ml-3 mt-1 h-auto p-0 text-xs underline"
-                          aria-label="Forward message"
-                          onClick={() => {
-                            setForwardConversationSearch('');
-                            setDebouncedForwardConversationSearch('');
-                            setForwardShowArchived(false);
-                            setForwardingMessage(message);
-                          }}
-                        >
-                          Forward
-                        </Button>
+                      {!message.provider_type &&
+                        message.media_scan_status !== 'infected' &&
+                        message.media_file_name && (
+                          <p className="mt-1 text-xs">
+                            {safeMediaDownloadName(message.media_file_name).name}
+                          </p>
+                        )}
+                      {summarizeReactions(message.reactions).length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1" aria-label="Message reactions">
+                          {summarizeReactions(message.reactions).map((reaction) => (
+                            <span
+                              key={reaction.emoji}
+                              role="img"
+                              aria-label={`${reaction.emoji} reaction, ${reaction.count}${reaction.includesMe ? ', includes yours' : ''}`}
+                              className={`border border-ink/50 px-2 py-0.5 text-xs ${reaction.includesMe ? 'bg-magenta/40' : 'bg-paper'}`}
+                            >
+                              {reaction.emoji} {reaction.count}
+                            </span>
+                          ))}
+                        </div>
                       )}
-                    {canManageMessages &&
-                      message.direction === 'outbound' &&
-                      !message.is_deleted &&
-                      !message.provider_type &&
-                      ['sent', 'delivered', 'read'].includes(message.status) && (
-                        <>
-                          {message.message_type === 'text' &&
-                            clockNow > 0 &&
-                            clockNow - Date.parse(message.create_date) >= 0 &&
-                            clockNow - Date.parse(message.create_date) <= 15 * 60_000 && (
-                              <Button
-                                type="button"
-                                variant="link"
-                                className="ml-3 mt-1 h-auto p-0 text-xs underline"
-                                aria-label="Edit message"
-                                onClick={() => {
+                      {hasActions && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="Message actions"
+                              className="absolute right-1.5 top-1.5 z-10"
+                            >
+                              <MenuIcon className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {canCopy && (
+                              <DropdownMenuItem
+                                onSelect={async () => {
+                                  try {
+                                    await navigator.clipboard.writeText(message.content ?? '');
+                                    toast.success('Message copied');
+                                  } catch {
+                                    toast.error('Could not copy message text');
+                                  }
+                                }}
+                              >
+                                Copy message
+                              </DropdownMenuItem>
+                            )}
+                            {canReply && (
+                              <DropdownMenuItem onSelect={() => setReplyingTo(message)}>
+                                Reply to message
+                              </DropdownMenuItem>
+                            )}
+                            {canReact && (
+                              <DropdownMenuItem onSelect={() => setReactingTo(message)}>
+                                React to message
+                              </DropdownMenuItem>
+                            )}
+                            {canForward && (
+                              <DropdownMenuItem
+                                onSelect={() => {
+                                  setForwardConversationSearch('');
+                                  setDebouncedForwardConversationSearch('');
+                                  setForwardShowArchived(false);
+                                  setForwardingMessage(message);
+                                }}
+                              >
+                                Forward message
+                              </DropdownMenuItem>
+                            )}
+                            {canEdit && (
+                              <DropdownMenuItem
+                                onSelect={() => {
                                   setEditText(message.content ?? '');
                                   setEditingMessage(message);
                                 }}
                               >
-                                Edit
-                              </Button>
+                                Edit message
+                              </DropdownMenuItem>
                             )}
-                          <Button
-                            type="button"
-                            variant="link"
-                            className="ml-3 mt-1 h-auto p-0 text-xs underline"
-                            aria-label="Delete message for everyone"
-                            onClick={() => setRevokingMessage(message)}
-                          >
-                            Delete
-                          </Button>
-                        </>
+                            {canDelete && (
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={() => setRevokingMessage(message)}
+                              >
+                                Delete message for everyone
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
-                    <p
-                      className={`mt-2 flex flex-wrap justify-end gap-x-2 text-right font-mono text-[10px] ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}`}
-                    >
-                      <time
-                        dateTime={message.create_date}
-                        aria-label={`Message time: ${formatDateTime(message.create_date, 'dateTime')}`}
+                      <p
+                        className={`mt-2 flex flex-wrap justify-end gap-x-2 text-right font-mono text-[10px] ${message.direction === 'outbound' ? 'text-ink' : 'text-ink-faint'}`}
                       >
-                        {formatDateTime(message.create_date, 'dateTime')}
-                      </time>
-                      <span>{messageStatusLabel[message.status] ?? 'Status unavailable'}</span>
-                    </p>
-                    {message.last_error && (
-                      <p role="status" className="mt-1 text-xs text-red-800 dark:text-red-200">
-                        {message.last_error}
+                        <time
+                          dateTime={message.create_date}
+                          aria-label={`Message time: ${formatDateTime(message.create_date, 'dateTime')}`}
+                        >
+                          {formatDateTime(message.create_date, 'dateTime')}
+                        </time>
+                        <span>{messageStatusLabel[message.status] ?? 'Status unavailable'}</span>
                       </p>
-                    )}
-                    {message.status === 'failed' && message.retryable && (
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="mt-1 h-auto p-0 text-xs underline"
-                        onClick={async () => {
-                          try {
-                            await client.request(`/whatsapp/messages/${message.id}/retry`, {
-                              method: 'POST',
-                            });
-                            await queryClient.invalidateQueries({
-                              queryKey: scopedQueryKey(['whatsapp']),
-                            });
-                          } catch (error) {
-                            toast.error(
-                              error instanceof Error ? error.message : 'Retry could not be queued'
-                            );
-                          }
-                        }}
-                      >
-                        Retry send
-                      </Button>
-                    )}
-                  </article>
-                </div>
-              ))}
+                      {message.last_error && (
+                        <p role="status" className="mt-1 text-xs text-red-800 dark:text-red-200">
+                          {message.last_error}
+                        </p>
+                      )}
+                      {message.status === 'failed' && message.retryable && (
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="mt-1 h-auto p-0 text-xs underline"
+                          onClick={async () => {
+                            try {
+                              await client.request(`/whatsapp/messages/${message.id}/retry`, {
+                                method: 'POST',
+                              });
+                              await queryClient.invalidateQueries({
+                                queryKey: scopedQueryKey(['whatsapp']),
+                              });
+                            } catch (error) {
+                              toast.error(
+                                error instanceof Error ? error.message : 'Retry could not be queued'
+                              );
+                            }
+                          }}
+                        >
+                          Retry send
+                        </Button>
+                      )}
+                    </article>
+                  </div>
+                );
+              })}
               {activeConversation?.unread_count > 0 &&
                 newMessagesDividerIndex === messageList.length && (
                   <div
@@ -3480,7 +3502,7 @@ function MessageComposer({
       )}
       <div className="flex items-center gap-2">
         <label
-          className="cursor-pointer rounded border-2 border-ink p-2 hover:bg-pink/20"
+          className="cursor-pointer rounded border-2 border-ink p-2 hover:bg-magenta/20"
           title="Attach media"
         >
           <span className="sr-only">Attach media</span>
@@ -3600,7 +3622,7 @@ function MessageComposer({
             className="h-2 overflow-hidden border border-ink bg-paper-raised"
           >
             <div
-              className="h-full bg-pink transition-[width] duration-150"
+              className="h-full bg-magenta transition-[width] duration-150"
               style={{ width: `${uploadProgress.percent ?? 0}%` }}
             />
           </div>
@@ -3632,12 +3654,11 @@ function GroupProfileSummary({
   const queryClient = useQueryClient();
   const [avatar, setAvatar] = useState<{ conversationId: number; url: string } | null>(null);
   const [participantDraft, setParticipantDraft] = useState('');
-  const [pendingAction, setPendingAction] = useState<{
+  const [confirmAction, setConfirmAction] = useState<{
     action: 'add' | 'remove' | 'promote' | 'demote';
     phone: string;
     name: string;
   } | null>(null);
-  const [confirmAction, setConfirmAction] = useState<typeof pendingAction>(null);
   const [mutating, setMutating] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [refreshRequired, setRefreshRequired] = useState(false);
@@ -3730,7 +3751,6 @@ function GroupProfileSummary({
         }
       );
       setConfirmAction(null);
-      setPendingAction(null);
       setParticipantDraft('');
       const refreshed = await onRefresh();
       if (!refreshed) setActionError('Action completed. Group details could not be refreshed yet.');
@@ -3868,7 +3888,7 @@ function GroupProfileSummary({
       )}
       {confirmSetting && profile && (
         <div
-          className="mt-2 border-2 border-ink bg-pink/20 p-2"
+          className="mt-2 border-2 border-ink bg-magenta/20 p-2"
           role="alertdialog"
           aria-modal="true"
         >
@@ -4006,7 +4026,7 @@ function GroupProfileSummary({
           </div>
           {confirmInviteReset && (
             <div
-              className="border-2 border-ink bg-pink/20 p-2"
+              className="border-2 border-ink bg-magenta/20 p-2"
               role="alertdialog"
               aria-label="Confirm invite link reset"
             >
@@ -4126,7 +4146,7 @@ function GroupProfileSummary({
       )}
       {confirmLeave && (
         <div
-          className="mt-2 border-2 border-ink bg-pink/20 p-2"
+          className="mt-2 border-2 border-ink bg-magenta/20 p-2"
           role="alertdialog"
           aria-label="Confirm leaving group"
         >
@@ -4154,7 +4174,7 @@ function GroupProfileSummary({
       )}
       {confirmAction && (
         <div
-          className="mt-2 border-2 border-ink bg-pink/20 p-2"
+          className="mt-2 border-2 border-ink bg-magenta/20 p-2"
           role="alertdialog"
           aria-label="Confirm group participant action"
         >
@@ -4434,7 +4454,7 @@ function MediaPreview({ message }: { message: Message }) {
             className="h-2 overflow-hidden border border-ink bg-paper-raised"
           >
             <div
-              className="h-full bg-pink transition-[width] duration-150"
+              className="h-full bg-magenta transition-[width] duration-150"
               style={{ width: `${downloadProgress.percent ?? 0}%` }}
             />
           </div>

@@ -184,12 +184,12 @@ export function QueryBuilderDialog({
         <DialogHeader className="border-b-2 border-ink pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FilterIcon className="size-6 text-lime" />
+              <FilterIcon className="size-6 text-yellow-readable" />
               <DialogTitle className="font-display text-2xl uppercase tracking-wider text-ink">
                 Advanced Query Builder: {views.title}
               </DialogTitle>
             </div>
-            <Doodle kind="crown" className="size-5 text-pink" />
+            <Doodle kind="crown" className="size-5 text-magenta-readable" />
           </div>
           <DialogDescription className="font-mono text-xs text-ink-faint">
             Construct complex multi-criteria domains with compound operators and saved presets.
@@ -204,22 +204,32 @@ export function QueryBuilderDialog({
             </span>
             <div className="flex flex-wrap gap-1.5">
               {savedQueries.map((saved) => (
-                <Button
+                <div
                   key={saved.id}
-                  type="button"
-                  onClick={() => handleLoadSaved(saved)}
-                  className="group inline-flex items-center gap-1.5 border-2 border-ink bg-paper px-2 py-0.5 text-xs font-bold shadow-[2px_2px_0_0_var(--ink)] hover:bg-lime hover:text-on-accent transition-colors"
+                  className="inline-flex items-center border-2 border-ink bg-paper shadow-[2px_2px_0_0_var(--ink)]"
                 >
-                  <BookmarkIcon className="size-3 text-ink-faint group-hover:text-on-accent" />
-                  <span>{saved.name}</span>
-                  <span
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => handleLoadSaved(saved)}
+                    className="group inline-flex h-auto min-h-0 items-center gap-1.5 rounded-none border-0 bg-transparent px-2 py-0.5 text-xs font-bold shadow-none hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    <BookmarkIcon className="size-3 text-ink-faint group-hover:text-primary-foreground" />
+                    <span>{saved.name}</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
                     onClick={(e) => handleDeleteSaved(saved.id, e)}
-                    className="ml-1 text-ink-faint hover:text-pink transition-colors"
+                    className="h-auto min-h-0 rounded-none border-0 border-l border-ink/20 bg-transparent px-1.5 py-0.5 text-xs font-bold text-ink-faint shadow-none hover:bg-destructive/10 hover:text-destructive transition-colors"
                     title="Delete preset"
+                    aria-label={`Delete preset ${saved.name}`}
                   >
                     ×
-                  </span>
-                </Button>
+                  </Button>
+                </div>
               ))}
             </div>
           </div>
@@ -235,7 +245,7 @@ export function QueryBuilderDialog({
               className={cn(
                 'px-3 py-1 font-bold uppercase transition-colors',
                 conjunction === 'all'
-                  ? 'bg-lime text-on-accent border border-ink'
+                  ? 'bg-primary text-primary-foreground border border-ink'
                   : 'text-ink-faint'
               )}
             >
@@ -247,7 +257,7 @@ export function QueryBuilderDialog({
               className={cn(
                 'px-3 py-1 font-bold uppercase transition-colors',
                 conjunction === 'any'
-                  ? 'bg-lime text-on-accent border border-ink'
+                  ? 'bg-primary text-primary-foreground border border-ink'
                   : 'text-ink-faint'
               )}
             >
@@ -335,7 +345,7 @@ export function QueryBuilderDialog({
                   size="icon"
                   onClick={() => handleRemoveRule(rule.id)}
                   disabled={rules.length === 1}
-                  className="size-8 text-ink-faint hover:text-pink hover:bg-pink/10 shrink-0"
+                  className="size-8 text-ink-faint hover:text-destructive hover:bg-destructive/10 shrink-0"
                 >
                   <DeleteIcon className="size-3.5" />
                 </Button>
@@ -379,7 +389,7 @@ export function QueryBuilderDialog({
                 <Button
                   type="button"
                   onClick={() => setShowSaveInput(false)}
-                  className="text-xs text-ink-faint hover:text-pink px-1"
+                  className="text-xs text-ink-faint hover:text-destructive px-1"
                 >
                   ×
                 </Button>

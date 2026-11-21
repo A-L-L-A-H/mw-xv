@@ -132,12 +132,12 @@ export function TagsWidget({ model, recordId }: TagsWidgetProps) {
             className="sticker group relative flex items-center gap-1.5 border-2 border-ink bg-paper-raised px-2.5 py-0.5 font-mono text-xs font-bold text-ink shadow-[2px_2px_0_0_var(--ink)]"
             style={{ '--tilt': `${(idx % 3) - 1.2}deg` } as React.CSSProperties}
           >
-            <span className="size-2 border border-ink bg-lime" />
+            <span className="size-2 border border-ink bg-primary" />
             <span>{tagName}</span>
             <Button
               type="button"
               onClick={() => handleRemoveLink(link.id)}
-              className="ml-0.5 text-ink-faint hover:text-pink transition-colors"
+              className="ml-0.5 text-ink-faint hover:text-destructive transition-colors"
               title="Remove tag"
             >
               <CloseIcon className="size-3" />
@@ -158,7 +158,7 @@ export function TagsWidget({ model, recordId }: TagsWidgetProps) {
         </PopoverTrigger>
         <PopoverContent align="start" className="w-56 p-3 space-y-3 font-sans">
           <div className="flex items-center gap-1.5 border-b border-ink/20 pb-2">
-            <TagIcon className="size-3.5 text-lime" />
+            <TagIcon className="size-3.5 text-yellow-readable" />
             <span className="font-display text-xs uppercase tracking-wider text-ink">
               Add Record Tag
             </span>
@@ -187,9 +187,9 @@ export function TagsWidget({ model, recordId }: TagsWidgetProps) {
                   key={tag.id}
                   type="button"
                   onClick={() => handleAttachTag(tag.id)}
-                  className="w-full flex items-center gap-2 border border-ink/20 bg-paper px-2 py-1 text-left text-xs transition-colors hover:border-ink hover:bg-lime hover:text-on-accent"
+                  className="w-full flex items-center gap-2 border border-ink/20 bg-paper px-2 py-1 text-left text-xs transition-colors hover:border-ink hover:bg-primary hover:text-primary-foreground"
                 >
-                  <span className="size-2 border border-ink bg-lime shrink-0" />
+                  <span className="size-2 border border-ink bg-primary shrink-0" />
                   <span className="truncate font-bold">{tag.name}</span>
                 </Button>
               ))

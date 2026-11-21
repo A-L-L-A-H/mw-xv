@@ -4,24 +4,25 @@
 
 ## Color roles
 
-| Role                    | Token                                                                          | Value / behavior                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| Fixed brand paper       | `--mw-paper-cream`                                                             | `#f3efe4`; remains warm cream in either theme                                                      |
-| Fixed brand ink         | `--mw-ink-black`                                                               | `#0d0d0d`; remains available on paper and accents                                                  |
-| Dark panel              | `--mw-ink-panel`                                                               | `#17171a`                                                                                          |
-| Semantic page           | `--mw-background` / `--mw-foreground`                                          | Theme-aware page surface and text                                                                  |
-| Semantic raised surface | `--mw-surface` / `--mw-surface-foreground`                                     | Theme-aware panels and controls                                                                    |
-| Brand yellow            | `--mw-yellow`                                                                  | `#ffe031`; use paired dark ink for text                                                            |
-| Brand magenta           | `--mw-magenta`                                                                 | `#ff2e88`; use `--mw-on-pink` for text                                                             |
-| Brand cyan              | `--mw-signal-blue`                                                             | `#00b8f0`; decorative accent unless paired contrast is checked                                     |
-| Editorial accent text   | `--mw-magenta-readable`, `--mw-cyan-readable`, `--mw-yellow-readable`          | Darker palette-matched values on paper surfaces; bright brand accents on dark surfaces             |
-| Semantic state          | `--mw-success`, `--mw-warning`, `--mw-info`, `--mw-error` / `--mw-destructive` | Status colors have distinct semantic tokens, separate from brand magenta, and pair with text/shape |
+| Role                    | Token                                                                                         | Value / behavior                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Fixed brand paper       | `--mw-paper-cream`                                                                            | `#f3efe4`; remains warm cream in either theme                                                      |
+| Fixed brand ink         | `--mw-ink-black`                                                                              | `#0d0d0d`; remains available on paper and accents                                                  |
+| Dark panel              | `--mw-ink-panel`                                                                              | `#17171a`                                                                                          |
+| Semantic page           | `--mw-background` / `--mw-foreground`                                                         | Theme-aware page surface and text                                                                  |
+| Semantic raised surface | `--mw-surface` / `--mw-surface-foreground`                                                    | Theme-aware panels and controls                                                                    |
+| Brand yellow            | `--mw-yellow`                                                                                 | `#ffe031`; use paired dark ink for text                                                            |
+| Brand magenta           | `--mw-magenta`                                                                                | `#ff2e88`; use `--mw-on-magenta` for text                                                          |
+| Brand cyan              | `--mw-signal-blue`                                                                            | `#00b8f0`; decorative accent unless paired contrast is checked                                     |
+| Brand violet            | `--mw-violet`                                                                                 | `#c084fc`; use `--mw-on-violet` (`#0d0d0d`) for text                                               |
+| Editorial accent text   | `--mw-magenta-readable`, `--mw-cyan-readable`, `--mw-yellow-readable`, `--mw-violet-readable` | Darker palette-matched values on paper surfaces; bright brand accents on dark surfaces             |
+| Semantic state          | `--mw-success`, `--mw-warning`, `--mw-info`, `--mw-error` / `--mw-destructive`                | Status colors have distinct semantic tokens, separate from brand magenta, and pair with text/shape |
 
-`--mw-lime` and `--mw-pink` are migration aliases. New UI must use semantic names. Remove aliases after app consumers have migrated. `--mw-paper` and `--mw-ink` are theme-aware surface tokens; use the fixed brand tokens when a design needs paper or ink to stay unchanged in dark mode.
+All legacy `--mw-lime` and `--mw-pink` migration aliases have been removed in favor of semantic tokens (`--mw-primary`, `--mw-accent`, `--mw-yellow`, `--mw-magenta`, `--mw-error`, `--mw-destructive`). `--mw-paper` and `--mw-ink` are theme-aware surface tokens; use the fixed brand tokens when a design needs paper or ink to stay unchanged in dark mode.
 
 ## Contrast and state
 
-Normal text pairs meet WCAG AA at 4.5:1. Non-text control boundaries and focus indicators target at least 3:1 against adjacent surfaces. The package contrast test calculates luminance from token values for both light and `.dark` mappings. Do not use white text on `#ff2e88`; use `--mw-on-pink` (`#0d0d0d`). Use `--mw-on-accent` for yellow. Error/destructive feedback uses the error semantic, not the brand magenta. Status and chart meaning must not depend on color alone; include labels, shapes, markers, line style, or an accessible data table.
+Normal text pairs meet WCAG AA at 4.5:1. Non-text control boundaries and focus indicators target at least 3:1 against adjacent surfaces. The package contrast test calculates luminance from token values for both light and `.dark` mappings. Do not use white text on `#ff2e88`; use `--mw-on-magenta` (`#0d0d0d`). Use `--mw-on-accent` for yellow. Error/destructive feedback uses the error semantic, not the brand magenta. Status and chart meaning must not depend on color alone; include labels, shapes, markers, line style, or an accessible data table.
 
 ## Typography
 

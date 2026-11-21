@@ -7,6 +7,7 @@ import {
   Doodle,
   InkFrame,
   InkUnderline,
+  LiveIndicator,
   LoadingSpinner,
   SpeedLines,
   SpeechBubble,
@@ -30,7 +31,7 @@ test('ink effects render as decorative shared primitives', () => {
   assert.match(html, /class="mw-ui-ink-underline(?:\s|")/u);
   assert.match(html, /class="mw-ui-ink-underline-path"/u);
   assert.match(html, /pathLength="1"/u);
-  assert.match(html, /class="mw-ui-doodle"/u);
+  assert.match(html, /class="mw-ui-doodle(?:\s|")/u);
   assert.match(html, /class="mw-ui-speech-bubble(?:\s|")/u);
   assert.match(html, /class="mw-ui-ink-frame"/u);
   assert.match(html, /aria-hidden="true"/u);
@@ -67,4 +68,20 @@ test('doodle crown, smiley, and decorative motifs stay non-interactive and aria-
   assert.match(html, /class="mw-ui-decorative-motif"/u);
   assert.match(html, /focusable="false"/u);
   assert.match(html, /aria-hidden="true"/u);
+});
+
+test('live indicator binds to active state with non-color label and offscreen pause class', () => {
+  const activeHtml = renderToStaticMarkup(
+    React.createElement(LiveIndicator, { active: true, label: 'ON AIR', variant: 'on-air' })
+  );
+  const idleHtml = renderToStaticMarkup(
+    React.createElement(LiveIndicator, { active: false, label: 'STANDBY' })
+  );
+
+  assert.match(activeHtml, /class="mw-ui-live-indicator(?:\s|")/u);
+  assert.match(activeHtml, /data-active="true"/u);
+  assert.match(activeHtml, /data-variant="on-air"/u);
+  assert.match(activeHtml, /ON AIR/u);
+  assert.match(idleHtml, /data-active="false"/u);
+  assert.match(idleHtml, /STANDBY/u);
 });

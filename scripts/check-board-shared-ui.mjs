@@ -31,14 +31,21 @@ export function findBoardUiViolations(source, file = 'apps/board/src/fixture.tsx
   const visit = (node) => {
     if (
       (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
-      ts.isIdentifier(node.tagName) &&
-      node.tagName.text in replacements
+      ts.isIdentifier(node.tagName)
     ) {
-      report(
-        node.tagName,
-        `raw JSX <${node.tagName.text}> is not allowed`,
-        `use ${replacements[node.tagName.text]}; then run pnpm board:ui:check`
-      );
+      if (node.tagName.text in replacements) {
+        report(
+          node.tagName,
+          `raw JSX <${node.tagName.text}> is not allowed`,
+          `use ${replacements[node.tagName.text]}; then run pnpm board:ui:check`
+        );
+      } else if (node.tagName.text === 'svg') {
+        report(
+          node.tagName,
+          'raw JSX <svg> is not allowed',
+          'use @moonwitness/ui/icons, @moonwitness/ui/components/effects, or @moonwitness/assets; then run pnpm board:ui:check'
+        );
+      }
     }
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
       const specifier = node.moduleSpecifier;

@@ -175,6 +175,7 @@ export function Doodle({
   className?: string;
   style?: CSSProperties;
 }) {
+  const motion = useAnimationVisibility<SVGSVGElement>();
   const common = {
     fill: 'none',
     stroke: 'currentColor',
@@ -208,7 +209,14 @@ export function Doodle({
     ),
     smiley: (
       <g>
-        <circle cx="12" cy="12" r="9.2" fill="var(--mw-yellow)" stroke="currentColor" strokeWidth="2" />
+        <circle
+          cx="12"
+          cy="12"
+          r="9.2"
+          fill="var(--mw-yellow)"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
         <circle cx="9" cy="10" r="1.2" fill="var(--mw-ink-black)" />
         <circle cx="15" cy="10" r="1.2" fill="var(--mw-ink-black)" />
         <path
@@ -225,8 +233,9 @@ export function Doodle({
     <svg
       aria-hidden="true"
       focusable="false"
+      ref={motion.ref}
       viewBox={kind === 'crown' ? '0 0 28 24' : '0 0 24 24'}
-      className={cn('mw-ui-doodle', className)}
+      className={cn('mw-ui-doodle', motion.visibilityClass, className)}
       style={style}
     >
       {shapes[kind]}
@@ -235,12 +244,7 @@ export function Doodle({
 }
 
 export type DecorativeMotifKind =
-  | 'underline'
-  | 'cross-out'
-  | 'orbit'
-  | 'globe-grid'
-  | 'moon-phases'
-  | 'eye-target';
+  'underline' | 'cross-out' | 'orbit' | 'globe-grid' | 'moon-phases' | 'eye-target';
 
 const motifSpecs: Record<DecorativeMotifKind, { viewBox: string; content: ReactNode }> = {
   underline: {
@@ -307,7 +311,15 @@ const motifSpecs: Record<DecorativeMotifKind, { viewBox: string; content: ReactN
     content: (
       <>
         <circle cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="2" />
-        <ellipse cx="48" cy="48" rx="19" ry="40" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <ellipse
+          cx="48"
+          cy="48"
+          rx="19"
+          ry="40"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
         <path d="M10 34h76M10 62h76M48 8v80" fill="none" stroke="currentColor" strokeWidth="1.5" />
       </>
     ),
@@ -409,5 +421,31 @@ export function SpeechBubble({ children, className }: { children: ReactNode; cla
     <div ref={motion.ref} className={cn('mw-ui-speech-bubble', motion.visibilityClass, className)}>
       {children}
     </div>
+  );
+}
+
+/** Real-state live status indicator; pulses only while active, visible, and motion-enabled. */
+export function LiveIndicator({
+  label = 'LIVE',
+  active = false,
+  variant = 'live',
+  className,
+}: {
+  label?: string;
+  active?: boolean;
+  variant?: 'live' | 'on-air';
+  className?: string;
+}) {
+  const motion = useAnimationVisibility<HTMLSpanElement>();
+  return (
+    <span
+      ref={motion.ref}
+      className={cn('mw-ui-live-indicator', motion.visibilityClass, className)}
+      data-active={active ? 'true' : 'false'}
+      data-variant={variant}
+    >
+      <span aria-hidden="true" className="mw-ui-live-indicator-dot" />
+      <span>{label}</span>
+    </span>
   );
 }

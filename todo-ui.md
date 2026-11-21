@@ -742,31 +742,31 @@ Object storage harus transparan bagi pengguna selama alur tetap melewati API. Im
 
 ### Q2. Material xerox kasar, torn edge, dan splatter (menutup Bagian E)
 
-- [ ] Buat dan daftarkan aset SVG deterministik ringan di `@moonwitness/assets` (`manifest.json` + `licenses.json`): dry-brush/xerox scuffed border, torn-edge divider atas/bawah/kiri/kanan, ink splatter sudut, serta tile halftone/speckle/scratch.
-- [ ] Terapkan frame xerox/torn melalui `Panel`, `SectionRibbon`, `ArtworkFrame`, dan `MetricTile` di `@moonwitness/ui` menggunakan SVG mask/border-image/CSS ringan tanpa menaikkan budget JS/CSS route.
-- [ ] Validasi seluruh aset baru dengan `pnpm test:assets` dan `pnpm assets:check:bounds` (zero script/external ref, geometri di dalam `viewBox`, regenerasi deterministik).
+- [x] Buat dan daftarkan aset SVG deterministik ringan di `@moonwitness/assets` (`manifest.json` + `licenses.json`): dry-brush/xerox scuffed border, torn-edge divider atas/bawah/kiri/kanan, ink splatter sudut, serta tile halftone/speckle/scratch. Bukti: `packages/assets/manifest.json` (`scuffed-border.svg`, `torn-edge-*.svg`, `ink-splatter-*.svg`, `tile-{halftone,scratch,speckle}.svg`).
+- [x] Terapkan frame xerox/torn melalui `Panel`, `SectionRibbon`, `ArtworkFrame`, dan `MetricTile` di `@moonwitness/ui` menggunakan SVG mask/border-image/CSS ringan tanpa menaikkan budget JS/CSS route. Bukti: `frame?: 'line' | 'torn' | 'scuffed'` di `packages/ui/src/components/{panel,section-ribbon,artwork-frame,metric-tile}.tsx` dan lulus `pnpm test:ui` (47/47) serta `pnpm board:budget`.
+- [x] Validasi seluruh aset baru dengan `pnpm test:assets` dan `pnpm assets:check:bounds` (zero script/external ref, geometri di dalam `viewBox`, regenerasi deterministik).
 
 ### Q3. Kolase zine sidebar & ornamen sudut non-interaktif
 
 - [ ] Tambahkan blok kolase zine di footer sidebar Board (crop mata manga monokrom + tape note + crown doodle) pada desktop tanpa menutupi item navigasi atau memicu overflow.
-- [ ] Tambahkan ornamen sudut deterministik (crown doodle, petir, bintang kapur, panah tangan) pada area hero/masthead/panel ekspresif; pastikan seluruh ornamen memakai `aria-hidden="true"`, `pointer-events: none`, dan tidak memotong `:focus-visible`.
+- [x] Tambahkan ornamen sudut deterministik (crown doodle, petir, bintang kapur, panah tangan) pada area hero/masthead/panel ekspresif; pastikan seluruh ornamen memakai `aria-hidden="true"`, `pointer-events: none`, dan tidak memotong `:focus-visible`. Bukti: `Doodle` & `DecorativeMotif` di `packages/ui/src/components/effects.tsx` dan `packages/ui/tests/effects.test.mjs`.
 
 ### Q4. Two-tone brush headline & neon accent rhythm
 
-- [ ] Dukung headline two-tone split brush (putih/paper + aksen `--mw-magenta` / `--mw-yellow` dengan brush-swipe miring terkendali) pada `PageHeader` dan banner masthead tanpa merusak wrapping pada 320 px.
-- [ ] Tambahkan token aksen violet editorial bila dipakai untuk variasi tile modul/status di `packages/ui/src/styles/tokens.css` lengkap dengan pasangan foreground teruji di `packages/ui/tests/tokens.test.mjs`; larang literal warna baru di CSS app.
-- [ ] Terapkan neon icon tile dan aksen border status (`magenta`, `cyan`, `yellow`, semantic state) dengan patuh penuh pada `TOKENS.md` (`--mw-on-pink: #0d0d0d`, dilarang teks putih di atas `#ff2e88`).
+- [x] Dukung headline two-tone split brush (putih/paper + aksen `--mw-magenta` / `--mw-yellow` dengan brush-swipe miring terkendali) pada `PageHeader` dan banner masthead tanpa merusak wrapping pada 320 px. Bukti: `accentTitle` di `packages/ui/src/components/page-header.tsx` dan `packages/ui/tests/compositions.test.mjs`.
+- [x] Tambahkan token aksen violet editorial bila dipakai untuk variasi tile modul/status di `packages/ui/src/styles/tokens.css` lengkap dengan pasangan foreground teruji di `packages/ui/tests/tokens.test.mjs`; larang literal warna baru di CSS app. Bukti: `--mw-violet`, `--mw-violet-readable`, `--mw-on-violet` di `packages/ui/src/styles/tokens.css`.
+- [x] Terapkan neon icon tile dan aksen border status (`magenta`, `cyan`, `yellow`, semantic state) dengan patuh penuh pada `TOKENS.md` (`--mw-on-magenta: #0d0d0d`, dilarang teks putih di atas `#ff2e88`). Bukti: `MetricTile` (`accent?: 'magenta' | 'cyan' | 'yellow' | 'green' | 'violet'`) dan `packages/ui/tests/tokens.test.mjs`.
 
 ### Q5. Micro-motion hidup (Gen-Z / comic tactile)
 
-- [ ] Terapkan stamp-pop hover (`--mw-motion-ease-emphasis` + hard-offset shadow aksen neon) pada `mw-ui-interactive-surface` dan `Button[data-treatment="brush"]` hanya untuk hover-capable pointers tanpa menggeser layout/hit area.
+- [x] Terapkan stamp-pop hover (`--mw-motion-ease-emphasis` + hard-offset shadow aksen neon) pada `mw-ui-interactive-surface` dan `Button[data-treatment="brush"]` hanya untuk hover-capable pointers tanpa menggeser layout/hit area. Bukti: `packages/ui/tests/tokens.test.mjs` dan `packages/ui/src/styles/components.css`.
 - [ ] Tambahkan stepped doodle micro-jitter (2–3 frame `steps(1)`) pada ornamen dekoratif saat kartu induk di-hover saja; hentikan offscreen lewat `useAnimationVisibility` dan matikan total saat `prefers-reduced-motion: reduce`.
-- [ ] Tambahkan indikator `LIVE` / `ON AIR` terikat state nyata (tanpa data palsu) yang berhenti saat offscreen atau reduced motion.
+- [x] Tambahkan indikator `LIVE` / `ON AIR` terikat state nyata (tanpa data palsu) yang berhenti saat offscreen atau reduced motion. Bukti: `LiveIndicator` di `packages/ui/src/components/effects.tsx` dan `packages/ui/tests/effects.test.mjs`.
 
 ### Q6. Verifikasi, budget, dan visual acceptance
 
-- [ ] Buktikan seluruh komponen & pola baru di `apps/ui-catalog` terlebih dahulu (light + dark, desktop + mobile, hover + focus + reduced motion) sebelum rollout penuh ke `apps/board`.
-- [ ] Jalankan dan pastikan lulus seluruh gate: `pnpm board:ui:check`, `pnpm test:ui`, `pnpm test:assets`, `pnpm assets:check:bounds`, `pnpm board:budget`, dan `pnpm test:ui-budget`.
+- [x] Buktikan seluruh komponen & pola baru di `apps/ui-catalog` terlebih dahulu (light + dark, desktop + mobile, hover + focus + reduced motion) sebelum rollout penuh ke `apps/board`. Bukti: `apps/ui-catalog/src/catalog.tsx` & `apps/ui-catalog/tests/catalog.spec.ts`.
+- [x] Jalankan dan pastikan lulus seluruh gate: `pnpm board:ui:check`, `pnpm test:ui`, `pnpm test:assets`, `pnpm assets:check:bounds`, `pnpm board:budget`, dan `pnpm test:ui-budget`.
 - [ ] Lakukan side-by-side visual review pada `1672×941`, `1440×900`, `390×844`, dan `320×700`, lalu perbarui baseline screenshot (`pnpm ui:visual:update` / `pnpm board:visual:update`) setelah gap utama bersih.
 
 ## Urutan kerja
