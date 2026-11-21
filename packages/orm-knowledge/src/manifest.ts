@@ -19,6 +19,7 @@ import {
   ResearchPrivacyProjection,
   ResearchPrivacyRevocation,
 } from './privacy-revocation.model.js';
+import { BugCaseActionOutcomeEvent, BugCaseRecord } from './bug-case.model.js';
 import { views } from './views.js';
 
 const syntheticDigest = 'a'.repeat(64);
@@ -40,6 +41,7 @@ const installAppendOnlyGuards: NonNullable<Addon['setup']> = async (trx) => {
     'knowledge_research_suggestion_versions',
     'knowledge_research_actor_identities',
     'knowledge_privacy_revocations',
+    'knowledge_bug_case_events',
   ] as const;
   const client = String(trx.client.config.client);
 
@@ -117,6 +119,8 @@ export const manifest = defineAddon({
     ResearchActorIdentity,
     ResearchPrivacyRevocation,
     ResearchPrivacyProjection,
+    BugCaseRecord,
+    BugCaseActionOutcomeEvent,
   ],
   setup: installAppendOnlyGuards,
   data: [
@@ -261,6 +265,8 @@ export const manifest = defineAddon({
         ResearchPrivacyRevocation,
         ResearchPrivacyProjection,
         ResearchSuggestionVersion,
+        BugCaseRecord,
+        BugCaseActionOutcomeEvent,
       ] as const
     ).map((model) =>
       seed(ModelAccess, `knowledge.access_user_${model.modelName.replaceAll('.', '_')}_read`, {
