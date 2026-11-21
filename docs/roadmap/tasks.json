@@ -2085,8 +2085,10 @@
       "dependsOn": ["K8-006", "K7-006"],
       "output": "Required deterministic/unit/PostgreSQL/browser/security/offline checks",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-001.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     },
     {
       "id": "K9-002",
