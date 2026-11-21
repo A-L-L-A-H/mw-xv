@@ -7,6 +7,7 @@ import {
   defineModel,
   fields,
   installAddons,
+  createServiceToken,
 } from '../src/index.js';
 
 describe('ORM hardening and performance invariants', () => {
@@ -136,5 +137,24 @@ describe('ORM hardening and performance invariants', () => {
     await installAddons(db, [v12]);
 
     expect(executed).toEqual(['1.0.0->1.1.0', '1.1.0->1.2.0']);
+  });
+
+  it('resolves registered cross-addon services through Environment and fails closed for missing services', async () => {
+    const storageService = createServiceToken<{ put(): string }>('orm.service.storage');
+    const loggerService = createServiceToken<{ info(message: string): void }>('orm.service.logger');
+
+    const services = new Environment().services;
+    services.register(storageService, { put: () => 'stored' });
+    services.register(loggerService, { info: () => undefined });
+
+    const env = new Environment({}, undefined, services);
+    const childEnv = env.withUser(7);
+
+    expect(env.services.get(storageService).put()).toBe('stored');
+    expect(env.services.has(loggerService)).toBe(true);
+    expect(childEnv.services).toBe(env.services);
+    expect(() => env.services.get(createServiceToken('orm.service.missing'))).toThrowError(
+      "Service 'orm.service.missing' is not registered."
+    );
   });
 });

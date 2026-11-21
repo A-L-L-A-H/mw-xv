@@ -3,19 +3,26 @@ import type { Knex } from 'knex';
 import { transaction } from 'objection';
 import type { BaseModel } from './base.model.js';
 import { Registry } from './registry.js';
+import { ServiceContainer } from './services.js';
 import type { ModelContext } from './types.js';
 
 export class Environment {
   readonly context: ModelContext;
+  readonly services: ServiceContainer;
   readonly trx?: Transaction;
   private readonly boundModels = new Map<string, typeof BaseModel>();
 
-  constructor(context: ModelContext = {}, trx?: Transaction) {
+  constructor(
+    context: ModelContext = {},
+    trx?: Transaction,
+    services: ServiceContainer = new ServiceContainer()
+  ) {
     this.context = {
       activeTest: true,
       ...context,
     };
     this.trx = trx;
+    this.services = services;
 
     return new Proxy(this, {
       get: (target, prop, receiver) => {
@@ -67,21 +74,21 @@ export class Environment {
    * Create a new Environment with a specific user ID.
    */
   withUser(userId: number): Environment {
-    return new Environment({ ...this.context, userId }, this.trx);
+    return new Environment({ ...this.context, userId }, this.trx, this.services);
   }
 
   /**
    * Create a new Environment with merged context.
    */
   withContext(extraContext: ModelContext): Environment {
-    return new Environment({ ...this.context, ...extraContext }, this.trx);
+    return new Environment({ ...this.context, ...extraContext }, this.trx, this.services);
   }
 
   /**
    * Create a new Environment bound to a database transaction.
    */
   withTransaction(trx: Transaction): Environment {
-    return new Environment(this.context, trx);
+    return new Environment(this.context, trx, this.services);
   }
 
   /**

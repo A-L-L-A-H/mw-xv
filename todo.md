@@ -187,11 +187,11 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-CORE-002.3** Pastikan seluruh proses worker menghormati `SKIP_BOOT_MIGRATIONS` setelah `db:migrate` berjalan
   - [x] **MW-CORE-002.4** Verifikasi: `pnpm build && pnpm api:addon:check && pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-CORE-003** Sediakan `ServiceRegistry` bertipe pada Core Runtime & `Environment` untuk akses layanan lintas addon (`storage`, `logger`, `jobs`, `notification`, `scanner`, `localAi`)
-  - [ ] **MW-CORE-003.1** Definisikan `ServiceToken<T>` dan `ServiceContainer` di `packages/orm/src/`
-  - [ ] **MW-CORE-003.2** Sambungkan `ServiceContainer` di `apps/api/src/plugins/orm.plugin.ts` agar tersedia via `env.services.get(token)` di API maupun worker
-  - [ ] **MW-CORE-003.3** Tambahkan unit test resolusi layanan & missing-service fail-closed error di `packages/orm/tests/`
-  - [ ] **MW-CORE-003.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm audit:workspace` lulus tanpa siklus dependency baru
+- [x] **MW-CORE-003** Sediakan `ServiceRegistry` bertipe pada Core Runtime & `Environment` untuk akses layanan lintas addon (`storage`, `logger`, `jobs`, `notification`, `scanner`, `localAi`)
+  - [x] **MW-CORE-003.1** Definisikan `ServiceToken<T>` dan `ServiceContainer` di `packages/orm/src/`
+  - [x] **MW-CORE-003.2** Sambungkan `ServiceContainer` di `apps/api/src/plugins/orm.plugin.ts` agar tersedia via `env.services.get(token)` di API maupun worker
+  - [x] **MW-CORE-003.3** Tambahkan unit test resolusi layanan & missing-service fail-closed error di `packages/orm/tests/`
+  - [x] **MW-CORE-003.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm audit:workspace` lulus tanpa siklus dependency baru
 
 - [ ] **MW-CORE-004** Implementasikan validasi skema konfigurasi startup dan diagnostik runtime `/readyz` yang terstruktur
   - [ ] **MW-CORE-004.1** Validasi seluruh environment variable runtime di `apps/api/src/config/env.ts` dengan pesan error terstruktur & aman dari kebocoran secret

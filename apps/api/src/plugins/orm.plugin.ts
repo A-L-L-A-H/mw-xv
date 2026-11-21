@@ -1,13 +1,24 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import type { Knex } from 'knex';
-import { Environment, Registry, type BaseModel } from '@moonwitness/orm';
+import {
+  Environment,
+  Registry,
+  createServiceToken,
+  type BaseModel,
+  type ServiceContainer,
+  type ServiceToken,
+} from '@moonwitness/orm';
 import { testConnection } from '../database/knex.js';
+
+const environmentServiceToken: ServiceToken<Environment> = createServiceToken('api.environment');
+const knexServiceToken: ServiceToken<Knex> = createServiceToken('api.knex');
 
 declare module 'fastify' {
   interface FastifyInstance {
     knex: Knex;
     env: Environment;
+    services: ServiceContainer;
     models: typeof Registry;
     db: Knex;
     testConnection: () => Promise<boolean>;
@@ -23,9 +34,13 @@ declare module 'fastify' {
 const ormPlugin: FastifyPluginAsync<{ db: Knex }> = async (fastify, options) => {
   // Global decorations
   const globalEnv = new Environment();
+  const globalServices = globalEnv.services;
+  globalServices.register(knexServiceToken, options.db);
+  globalServices.register(environmentServiceToken, globalEnv);
   fastify.decorate('knex', options.db);
   fastify.decorate('db', options.db);
   fastify.decorate('env', globalEnv);
+  fastify.decorate('services', globalServices);
   fastify.decorate('models', Registry);
 
   // Request-scoped decorations
@@ -39,10 +54,7 @@ const ormPlugin: FastifyPluginAsync<{ db: Knex }> = async (fastify, options) => 
     const lang = (request.headers['accept-language'] || 'en').split(',')[0].trim();
     const activeTest = request.headers['x-active-test'] !== 'false';
 
-    request.env = new Environment({
-      lang,
-      activeTest,
-    });
+    request.env = new Environment({ lang, activeTest }, undefined, globalServices);
   });
 
   fastify.decorate('testConnection', () => testConnection(options.db));
