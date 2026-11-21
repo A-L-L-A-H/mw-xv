@@ -97,6 +97,7 @@ function resolveCacheTtlMs(option?: number): number {
     const parsed = Number(envVal);
     if (Number.isFinite(parsed) && parsed >= 0) return parsed;
   }
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST) return 0;
   return DEFAULT_AUTH_CACHE_TTL_MS;
 }
 
@@ -136,6 +137,7 @@ export function validateJwtSecret(secret: string | undefined): string {
  * public routes. Must be registered after the ORM plugin: it enriches `request.env`.
  */
 const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
+  invalidateAuthCache();
   const cacheTtlMs = resolveCacheTtlMs(options.cacheTtlMs);
 
   await fastify.register(jwt, {
