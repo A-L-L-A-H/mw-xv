@@ -4,7 +4,7 @@ import {
   ListObjectsV2Command,
   HeadObjectCommand,
   PutObjectCommand,
-  S3Client,
+  type S3Client,
 } from '@aws-sdk/client-s3';
 import { randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
