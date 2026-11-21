@@ -2157,8 +2157,10 @@
       "dependsOn": ["K9-006", "K0-005"],
       "output": "Written decision on deployment authorization, privacy, rights, operations owner, incident policy",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-007.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     }
   ]
 }

@@ -289,7 +289,7 @@ Track approved through ADR 0004 on 2026-10-15. The existing 148 M-series tasks a
 - [ ] K9-004 Offline egress-denial certification (in progress; Node-runtime egress-denial test suite passes with zero outbound `fetch`/`http`/`https`/`net`/`dns` calls across `knowledge`, `corpus`, `research`, and `local-ai` while OS-level air-gapped full-stack boot and `K9-001`/`K9-003` remain open). Evidence: [K9-004](docs/roadmap/evidence/K9-004.md).
 - [ ] K9-005 Measured performance and capacity decision (in progress; same-machine synthetic/model-off throughput, p50/p95 latency, and RSS benchmark `scripts/knowledge/benchmark-knowledge-capacity.mjs` measured at `a5aaba1` while PostgreSQL index/IOPS scale metrics, local-AI model profiling, and `K9-001` hosted CI gate remain open). Evidence: [K9-005](docs/roadmap/evidence/K9-005.md).
 - [ ] K9-006 Protected promotion and rollback-ready release (in progress; `test:promotion-policy` 19/19, `test:release-dry-run` 3/3, `test:expected-ref` 10/10, and `release:classify` from `origin/main` `21fff13` verified while `release:preflight:built`, clean-checkout `release:dry-run`, `release-orchestrate-workflow.test.mjs`, `K9-002`..`K9-005`, and CODEOWNER promotion approval remain open). Evidence: [K9-006](docs/roadmap/evidence/K9-006.md).
-- [ ] K9-007 Publication-production go/no-go assessment.
+- [ ] K9-007 Publication-production go/no-go assessment (in progress; formal Go/No-Go decision recorded — NO-GO for public production pending amended ADR 0001, safeguarding/policy owner sign-offs, hosted exact-SHA PostgreSQL CI, and clean `K9-006` preflight; READY for local offline staging review under `AI_MODE=disabled`). Evidence: [K9-007](docs/roadmap/evidence/K9-007.md).
 
 ## Pemeliharaan jangka panjang
 
