@@ -139,7 +139,7 @@
       "deliverable": "Per-source repo/file/hash/license/old-id/target-decision inventory",
       "acceptance": "Historical metrics not marked confirmed; no runtime remote repo dependencies; alias conflicts visible",
       "verification": "inventory schema validation and link review",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
