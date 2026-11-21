@@ -11,7 +11,9 @@ const expressionStart = '$' + '{';
 const normalize = (source) => source.replace(/\r\n/gu, '\n');
 const readOptionalWorkflow = async (name) => {
   try {
-    return normalize(await readFile(new NodeURL(`../.github/workflows/${name}`, import.meta.url), 'utf8'));
+    return normalize(
+      await readFile(new NodeURL(`../.github/workflows/${name}`, import.meta.url), 'utf8')
+    );
   } catch (error) {
     if (error?.code === 'ENOENT') return null;
     throw error;

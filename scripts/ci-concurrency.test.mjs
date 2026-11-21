@@ -9,7 +9,10 @@ const productionCompose = readFileSync('docker-compose.production.yml', 'utf8');
 const containerSmoke = readFileSync('scripts/smoke-containers.mjs', 'utf8');
 
 test('CI cancels stale runs only within the same workflow and ref', () => {
-  assert.match(workflow, /group:\s*ci-\$\{\{\s*github\.workflow\s*\}\}-\$\{\{\s*github\.ref\s*\}\}/u);
+  assert.match(
+    workflow,
+    /group:\s*ci-\$\{\{\s*github\.workflow\s*\}\}-\$\{\{\s*github\.ref\s*\}\}/u
+  );
   assert.match(workflow, /cancel-in-progress:\s*true/u);
 
   const group = (workflowName, ref) => `ci-${workflowName}-${ref}`;
@@ -21,7 +24,12 @@ test('CI cancels stale runs only within the same workflow and ref', () => {
 test('CI runs quality-and-build, unit-tests, knowledge-gate, and postgres-integration on dev and main', () => {
   assert.match(workflow, /^ {2}pull_request:\r?\n {4}branches: \[dev, main\]$/mu);
   assert.match(workflow, /^ {2}push:\r?\n {4}branches: \[dev, main\]$/mu);
-  for (const jobName of ['quality-and-build', 'unit-tests', 'knowledge-gate', 'postgres-integration']) {
+  for (const jobName of [
+    'quality-and-build',
+    'unit-tests',
+    'knowledge-gate',
+    'postgres-integration',
+  ]) {
     assert.match(workflow, new RegExp(`^ {2}${jobName}:`, 'mu'));
   }
   assert.match(workflow, /pnpm docs:check:built/u);
@@ -63,7 +71,10 @@ test('integration job supplies isolated PostgreSQL test credentials', () => {
   const integrationJob = workflow.match(/ {2}postgres-integration:[\s\S]*$/u)?.[0];
   assert.ok(integrationJob, 'CI should define its postgres-integration job');
   assert.match(integrationJob, /postgres:16-alpine/u);
-  assert.match(integrationJob, /POSTGRES_TEST_URL:\s*postgresql:\/\/postgres:postgres@127\.0\.0\.1:5432\/moonwitness_test/u);
+  assert.match(
+    integrationJob,
+    /POSTGRES_TEST_URL:\s*postgresql:\/\/postgres:postgres@127\.0\.0\.1:5432\/moonwitness_test/u
+  );
   assert.match(integrationJob, /REQUIRE_POSTGRES_TESTS:\s*'true'/u);
 });
 
