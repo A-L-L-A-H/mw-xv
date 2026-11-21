@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
+  DecorativeMotif,
   Doodle,
   InkFrame,
   InkUnderline,
@@ -47,4 +48,23 @@ test('speed lines stop pulsing when animation is disabled', () => {
 
   assert.match(html, /mw-ui-speed-lines/u);
   assert.doesNotMatch(html, /mw-ui-speed-lines-pulse/u);
+});
+
+test('doodle crown, smiley, and decorative motifs stay non-interactive and aria-hidden', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(Doodle, { kind: 'crown' }),
+      React.createElement(Doodle, { kind: 'smiley' }),
+      React.createElement(DecorativeMotif, { kind: 'moon-phases' }),
+      React.createElement(DecorativeMotif, { kind: 'eye-target' }),
+      React.createElement(DecorativeMotif, { kind: 'globe-grid' })
+    )
+  );
+
+  assert.match(html, /viewBox="0 0 28 24"/u);
+  assert.match(html, /class="mw-ui-decorative-motif"/u);
+  assert.match(html, /focusable="false"/u);
+  assert.match(html, /aria-hidden="true"/u);
 });

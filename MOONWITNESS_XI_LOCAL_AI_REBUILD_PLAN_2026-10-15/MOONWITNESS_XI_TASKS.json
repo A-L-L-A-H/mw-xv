@@ -198,7 +198,7 @@
       "deliverable": "Stable `mw:*` ID grammar, alias registry, conflict state",
       "acceptance": "No silent same-as by title, deterministic ID validation and ID collision tests",
       "verification": "canonical IDs positive/negative fixtures",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
