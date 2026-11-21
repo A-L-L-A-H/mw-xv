@@ -26,8 +26,8 @@
   --mw-magenta: var(--mw-pink);
   --mw-primary: var(--mw-primary);
   --mw-error: var(--mw-destructive);
-  --mw-yellow: var(--mw-lime); --color-lime
-  --mw-magenta: var(--mw-pink); --color-pink
+  --mw-yellow: var(--mw-lime);
+  --mw-magenta: var(--mw-pink);
   --color-background: var(--mw-background);
   --color-foreground: var(--mw-foreground);\n  --mw-yellow;\n  --mw-magenta;\n  --mw-primary;\n  --mw-error;
   --mw-yellow;

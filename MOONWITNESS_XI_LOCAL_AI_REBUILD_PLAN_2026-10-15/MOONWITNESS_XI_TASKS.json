@@ -922,7 +922,7 @@
       "deliverable": "Sensitive-case disclosure protection and human-reviewed escalation procedure",
       "acceptance": "No child identifiers in public/AI prompt/log; deny until authorized protection process approved",
       "verification": "G3 synthetic child privacy and data minimization negative tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
