@@ -356,7 +356,7 @@
       "deliverable": "Versioned dataset source snapshot and active projection switch",
       "acceptance": "Rebuild deterministic; can select known-good version; no data loss on interrupted import",
       "verification": "snapshot replay/rollback tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
