@@ -62,7 +62,7 @@
       "deliverable": "Read-only baseline of build/test state, branches, Postgres, RAM/CPU/GPU/storage/network, and known failures",
       "acceptance": "All observations cite actual commands/SHA; skipped integrations are labeled and no user data touched",
       "verification": "git status; git rev-parse HEAD; node --version; pnpm --version; selective baseline commands",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
