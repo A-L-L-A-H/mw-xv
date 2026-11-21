@@ -2133,8 +2133,10 @@
       "dependsOn": ["K9-001"],
       "output": "Same-machine corpus size/latency/memory/IO and index build metrics",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-005.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     },
     {
       "id": "K9-006",
