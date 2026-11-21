@@ -599,7 +599,7 @@
       "deliverable": "Non-destructive duplicate suggestions with rationale and review state",
       "acceptance": "No automatic merge; true duplicate/overlap/different cases tested; private records not exposed",
       "verification": "G3 overlap 009/012/013 and authorization tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
