@@ -1,0 +1,780 @@
+import { spawn, execFile } from 'node:child_process';
+import { createHash, randomUUID } from 'node:crypto';
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import path from 'node:path';
+import { promisify } from 'node:util';
+import {
+  AccessDeniedError,
+  ConcurrencyConflictError,
+  NotFoundError,
+  ValidationError,
+} from '@moonwitness/types';
+import { DesktopRiskGate, isSecretOrSensitivePath, redactSensitiveText } from './risk-gate.js';
+import type {
+  AcquireWorktreeOptions,
+  BoundedPtyCommandRequest,
+  BoundedPtyCommandResult,
+  DesktopActionAuthContext,
+  GitWorktreeLease,
+  WorktreeCommitResult,
+  WorktreeDiffFile,
+  WorktreeDiffSummary,
+  WorktreeFileContent,
+  WorktreeFileWriteResult,
+} from './types.js';
+
+const execFileAsync = promisify(execFile);
+
+const RUN_ID_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/u;
+const GIT_REF_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,127}$/u;
+const BARE_COMMAND_REGEX = /^[a-zA-Z0-9._-]+$/u;
+
+const DEFAULT_ALLOWED_COMMANDS: readonly string[] = [
+  'node',
+  'pnpm',
+  'npm',
+  'git',
+  'vitest',
+  'tsc',
+  'eslint',
+  'prettier',
+];
+
+const SAFE_ENV_KEYS: ReadonlySet<string> = new Set([
+  'PATH',
+  'Path',
+  'PATHEXT',
+  'SYSTEMROOT',
+  'SystemRoot',
+  'COMSPEC',
+  'ComSpec',
+  'WINDIR',
+  'windir',
+  'TEMP',
+  'TMP',
+  'TMPDIR',
+  'HOME',
+  'USERPROFILE',
+  'HOMEDRIVE',
+  'HOMEPATH',
+  'LANG',
+  'LC_ALL',
+  'TERM',
+  'NO_COLOR',
+  'FORCE_COLOR',
+  'CI',
+]);
+
+const BLOCKED_ENV_OVERRIDE_PATTERN =
+  /^(?:PATH|PATHEXT|COMSPEC|SHELL|NODE_OPTIONS|NODE_EXTRA_CA_CERTS|LD_PRELOAD|LD_LIBRARY_PATH|DYLD_.*|.*(?:KEY|SECRET|TOKEN|PASSWORD|CREDENTIAL).*)$/iu;
+
+const MAX_READ_BYTES = 1_048_576;
+const DEFAULT_TIMEOUT_MS = 15_000;
+const MAX_TIMEOUT_MS = 120_000;
+const DEFAULT_OUTPUT_BYTES = 65_536;
+const MAX_OUTPUT_BYTES = 1_048_576;
+
+function sha256Hex(input: string | Uint8Array): string {
+  return createHash('sha256').update(input).digest('hex');
+}
+
+function normalizePathPrefix(prefix: string): string {
+  return prefix
+    .replaceAll('\\', '/')
+    .replace(/^\.\//u, '')
+    .replace(/^\/+/u, '')
+    .replace(/\/+$/u, '');
+}
+
+function isWithinRealRoot(realRoot: string, realCandidate: string): boolean {
+  const rel = path.relative(realRoot, realCandidate);
+  if (rel === '') return true;
+  return !rel.startsWith('..') && !path.isAbsolute(rel);
+}
+
+function validateGitRef(value: string, label: string): string {
+  if (
+    !GIT_REF_REGEX.test(value) ||
+    value.startsWith('-') ||
+    value.includes('..') ||
+    value.includes('@{') ||
+    value.endsWith('.lock') ||
+    value.endsWith('/') ||
+    value.includes('//')
+  ) {
+    throw new ValidationError(`Invalid ${label}: '${value}'`);
+  }
+  return value;
+}
+
+export interface WorktreeSandboxOptions {
+  readonly repoRoot: string;
+  readonly worktreeBaseDir?: string;
+  readonly allowedPathPrefixes?: readonly string[];
+  readonly allowedCommands?: readonly string[];
+  readonly defaultTimeoutMs?: number;
+  readonly maxOutputBytes?: number;
+  readonly knownSecrets?: readonly string[];
+  readonly riskGate?: DesktopRiskGate;
+}
+
+export class WorktreeSandbox {
+  readonly repoRoot: string;
+  readonly worktreeRootDir: string;
+  private readonly lockRootDir: string;
+  private readonly defaultAllowedPaths: readonly string[];
+  private readonly allowedCommands: ReadonlySet<string>;
+  private readonly defaultTimeoutMs: number;
+  private readonly maxOutputBytes: number;
+  private readonly knownSecrets: readonly string[];
+  private readonly riskGate: DesktopRiskGate;
+  private readonly leases = new Map<string, GitWorktreeLease>();
+  private fencingCounter = 0;
+
+  constructor(options: WorktreeSandboxOptions) {
+    if (!options.repoRoot || !existsSync(options.repoRoot)) {
+      throw new ValidationError(`Repository root does not exist: '${options.repoRoot}'`);
+    }
+    this.repoRoot = realpathSync(options.repoRoot);
+    const baseDir = options.worktreeBaseDir ?? '.mw-worktrees';
+    if (path.isAbsolute(baseDir) || baseDir.includes('..')) {
+      throw new ValidationError(
+        `worktreeBaseDir must be a relative path inside repoRoot: '${baseDir}'`
+      );
+    }
+    this.worktreeRootDir = path.resolve(this.repoRoot, baseDir);
+    if (!isWithinRealRoot(this.repoRoot, this.worktreeRootDir)) {
+      throw new ValidationError('worktreeBaseDir escapes repoRoot');
+    }
+    this.lockRootDir = path.join(this.worktreeRootDir, '.locks');
+    this.defaultAllowedPaths = (options.allowedPathPrefixes ?? [])
+      .map(normalizePathPrefix)
+      .filter(Boolean);
+    this.allowedCommands = new Set(options.allowedCommands ?? DEFAULT_ALLOWED_COMMANDS);
+    this.defaultTimeoutMs = Math.min(
+      MAX_TIMEOUT_MS,
+      Math.max(100, options.defaultTimeoutMs ?? DEFAULT_TIMEOUT_MS)
+    );
+    this.maxOutputBytes = Math.min(
+      MAX_OUTPUT_BYTES,
+      Math.max(1024, options.maxOutputBytes ?? DEFAULT_OUTPUT_BYTES)
+    );
+    this.knownSecrets = options.knownSecrets ?? [];
+    this.riskGate = options.riskGate ?? new DesktopRiskGate();
+  }
+
+  async acquire(options: AcquireWorktreeOptions): Promise<GitWorktreeLease> {
+    if (!RUN_ID_REGEX.test(options.runId)) {
+      throw new ValidationError(`Invalid runId '${options.runId}'`);
+    }
+    const existing = this.leases.get(options.runId);
+    if (existing && existing.status === 'active') {
+      throw new ConcurrencyConflictError(
+        `Worktree lease already active for run '${options.runId}'`
+      );
+    }
+
+    const baseRef = validateGitRef(options.baseRef ?? 'HEAD', 'baseRef');
+    this.fencingCounter += 1;
+    const fencingToken = this.fencingCounter;
+    const branchName = validateGitRef(
+      options.branchName ?? `mw/run-${options.runId}-${fencingToken}`,
+      'branchName'
+    );
+    const worktreePath = path.resolve(this.worktreeRootDir, `run-${options.runId}`);
+    if (!isWithinRealRoot(this.worktreeRootDir, worktreePath)) {
+      throw new AccessDeniedError('Computed worktree path escapes worktree root');
+    }
+
+    mkdirSync(this.lockRootDir, { recursive: true });
+    const lockFile = path.join(this.lockRootDir, `run-${options.runId}.lock.json`);
+    const leaseId = randomUUID();
+    const createdAt = new Date().toISOString();
+
+    try {
+      writeFileSync(
+        lockFile,
+        JSON.stringify({ leaseId, runId: options.runId, fencingToken, createdAt }),
+        { encoding: 'utf8', flag: 'wx' }
+      );
+    } catch (error) {
+      throw new ConcurrencyConflictError(
+        `Worktree lock already exists on disk for run '${options.runId}'`,
+        { cause: error }
+      );
+    }
+
+    if (existsSync(worktreePath)) {
+      rmSync(lockFile, { force: true });
+      throw new ConcurrencyConflictError(
+        `Worktree directory already exists for run '${options.runId}': ${worktreePath}`
+      );
+    }
+
+    try {
+      await this.runGit(this.repoRoot, [
+        'worktree',
+        'add',
+        '-b',
+        branchName,
+        worktreePath,
+        baseRef,
+      ]);
+      const headCommit = (await this.runGit(worktreePath, ['rev-parse', 'HEAD'])).trim();
+      const allowedPaths = (options.allowedPaths ?? this.defaultAllowedPaths)
+        .map(normalizePathPrefix)
+        .filter(Boolean);
+
+      const lease: GitWorktreeLease = {
+        leaseId,
+        runId: options.runId,
+        branchName,
+        worktreePath: realpathSync(worktreePath),
+        baseRef,
+        headCommit,
+        fencingToken,
+        status: 'active',
+        createdAt,
+        allowedPaths,
+      };
+      this.leases.set(options.runId, lease);
+      return lease;
+    } catch (error) {
+      rmSync(lockFile, { force: true });
+      if (existsSync(worktreePath)) {
+        await this.runGit(this.repoRoot, ['worktree', 'remove', '--force', worktreePath]).catch(
+          () => undefined
+        );
+      }
+      throw error;
+    }
+  }
+
+  getLease(runId: string): GitWorktreeLease {
+    const lease = this.leases.get(runId);
+    if (!lease || lease.status !== 'active') {
+      throw new NotFoundError(`No active worktree lease for run '${runId}'`);
+    }
+    return lease;
+  }
+
+  listLeases(): readonly GitWorktreeLease[] {
+    return [...this.leases.values()];
+  }
+
+  async readFile(runId: string, relativePath: string): Promise<WorktreeFileContent> {
+    const lease = this.getLease(runId);
+    const resolved = this.resolveWorktreePath(lease, relativePath, {
+      requireExists: true,
+      allowDirectory: false,
+    });
+    const st = statSync(resolved.absolutePath);
+    if (!st.isFile()) {
+      throw new ValidationError(`Target path is not a regular file: '${relativePath}'`);
+    }
+    if (st.size > MAX_READ_BYTES) {
+      throw new ValidationError(
+        `File '${relativePath}' exceeds max read limit (${MAX_READ_BYTES} bytes)`
+      );
+    }
+    const content = readFileSync(resolved.absolutePath, 'utf8');
+    return {
+      runId,
+      relativePath: resolved.relativePath,
+      content,
+      sha256: sha256Hex(content),
+      sizeBytes: Buffer.byteLength(content, 'utf8'),
+    };
+  }
+
+  async writeFile(
+    runId: string,
+    relativePath: string,
+    content: string,
+    auth: DesktopActionAuthContext
+  ): Promise<WorktreeFileWriteResult> {
+    const lease = this.getLease(runId);
+    this.riskGate.assertAllowed({
+      runId,
+      action: 'worktree.write',
+      companyId: auth.companyId,
+      agentId: auth.agentId,
+      workContractId: auth.workContractId,
+      expectedPolicyVersion: auth.expectedPolicyVersion,
+      dataClassification: auth.dataClassification,
+      grant: auth.grant,
+      humanApproval: auth.humanApproval,
+      targetPath: relativePath,
+    });
+
+    const resolved = this.resolveWorktreePath(lease, relativePath, {
+      requireExists: false,
+      allowDirectory: false,
+    });
+    const parentDir = path.dirname(resolved.absolutePath);
+    mkdirSync(parentDir, { recursive: true });
+
+    // Re-verify parent directory realpath after creation to close symlink races.
+    const realRoot = realpathSync(lease.worktreePath);
+    const realParent = realpathSync(parentDir);
+    if (!isWithinRealRoot(realRoot, realParent)) {
+      throw new AccessDeniedError(`Target parent escapes worktree sandbox: '${relativePath}'`);
+    }
+    if (existsSync(resolved.absolutePath) && lstatSync(resolved.absolutePath).isSymbolicLink()) {
+      throw new AccessDeniedError(`Symlink overwrite rejected: '${relativePath}'`);
+    }
+
+    writeFileSync(resolved.absolutePath, content, 'utf8');
+    return {
+      runId,
+      relativePath: resolved.relativePath,
+      sha256: sha256Hex(content),
+      sizeBytes: Buffer.byteLength(content, 'utf8'),
+    };
+  }
+
+  async inspectDiff(runId: string): Promise<WorktreeDiffSummary> {
+    const lease = this.getLease(runId);
+    const statusRaw = await this.runGit(lease.worktreePath, ['status', '--porcelain=v1', '-z']);
+    const statusEntries = parsePorcelainZ(statusRaw);
+    const numstatRaw = await this.runGit(lease.worktreePath, ['diff', '--numstat', '-z']);
+    const numstats = parseNumstatZ(numstatRaw);
+
+    const files: WorktreeDiffFile[] = statusEntries
+      .filter((entry) => !isSecretOrSensitivePath(entry.path))
+      .map((entry) => {
+        const stats = numstats.get(entry.path) ?? { additions: 0, deletions: 0 };
+        return {
+          path: entry.path,
+          status: entry.status,
+          additions: stats.additions,
+          deletions: stats.deletions,
+        };
+      });
+
+    const rawPatch = await this.runGit(lease.worktreePath, ['diff', '--no-color']);
+    const patch = redactSensitiveText(rawPatch, this.knownSecrets).text;
+
+    return {
+      runId,
+      leaseId: lease.leaseId,
+      branchName: lease.branchName,
+      headCommit: lease.headCommit,
+      clean: statusEntries.length === 0,
+      files,
+      patch,
+      patchSha256: sha256Hex(patch),
+    };
+  }
+
+  async commit(
+    runId: string,
+    message: string,
+    auth: DesktopActionAuthContext
+  ): Promise<WorktreeCommitResult> {
+    const lease = this.getLease(runId);
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage || trimmedMessage.length > 500) {
+      throw new ValidationError('Commit message must be a non-empty string up to 500 characters');
+    }
+
+    this.riskGate.assertAllowed({
+      runId,
+      action: 'git.commit_local',
+      companyId: auth.companyId,
+      agentId: auth.agentId,
+      workContractId: auth.workContractId,
+      expectedPolicyVersion: auth.expectedPolicyVersion,
+      dataClassification: auth.dataClassification,
+      grant: auth.grant,
+      humanApproval: auth.humanApproval,
+    });
+
+    const statusRaw = await this.runGit(lease.worktreePath, ['status', '--porcelain=v1', '-z']);
+    const entries = parsePorcelainZ(statusRaw);
+    if (entries.length === 0) {
+      throw new ValidationError(`Worktree for run '${runId}' has no changes to commit`);
+    }
+
+    const stagedFiles: string[] = [];
+    for (const entry of entries) {
+      if (isSecretOrSensitivePath(entry.path)) {
+        throw new AccessDeniedError(
+          `Refusing to stage sensitive or secret path '${entry.path}' in worktree commit`
+        );
+      }
+      this.assertWithinAllowlist(lease, entry.path);
+      if (!entry.status.includes('D')) {
+        this.resolveWorktreePath(lease, entry.path, {
+          requireExists: false,
+          allowDirectory: false,
+        });
+      }
+      stagedFiles.push(entry.path);
+    }
+
+    await this.runGit(lease.worktreePath, ['add', '--', ...stagedFiles]);
+    await this.runGit(lease.worktreePath, [
+      '-c',
+      'user.name=MoonWitness Harness',
+      '-c',
+      'user.email=harness@moonwitness.local',
+      'commit',
+      '-m',
+      trimmedMessage,
+    ]);
+    const commitSha = (await this.runGit(lease.worktreePath, ['rev-parse', 'HEAD'])).trim();
+    const updatedLease: GitWorktreeLease = { ...lease, headCommit: commitSha };
+    this.leases.set(runId, updatedLease);
+
+    return {
+      runId,
+      leaseId: lease.leaseId,
+      branchName: lease.branchName,
+      commitSha,
+      message: trimmedMessage,
+      stagedFiles,
+    };
+  }
+
+  async executeBoundedCommand(
+    request: BoundedPtyCommandRequest,
+    auth: DesktopActionAuthContext
+  ): Promise<BoundedPtyCommandResult> {
+    const lease = this.getLease(request.runId);
+    if (!BARE_COMMAND_REGEX.test(request.command)) {
+      throw new AccessDeniedError(
+        `Command '${request.command}' must be a bare executable name without path separators or shell syntax`
+      );
+    }
+    if (!this.allowedCommands.has(request.command)) {
+      throw new AccessDeniedError(
+        `Command '${request.command}' is not in the desktop sandbox command allowlist`
+      );
+    }
+    for (const arg of request.args) {
+      if (typeof arg !== 'string' || arg.includes('\0')) {
+        throw new ValidationError('Command arguments must be valid strings without NUL bytes');
+      }
+    }
+
+    const action = request.action ?? 'pty.exec_local';
+    const fullCommandPreview = [request.command, ...request.args].join(' ');
+    this.riskGate.assertAllowed({
+      runId: request.runId,
+      action,
+      companyId: auth.companyId,
+      agentId: auth.agentId,
+      workContractId: auth.workContractId,
+      expectedPolicyVersion: auth.expectedPolicyVersion,
+      dataClassification: auth.dataClassification,
+      grant: auth.grant,
+      humanApproval: auth.humanApproval,
+      targetCommand: fullCommandPreview,
+    });
+
+    const cwd = request.cwdRelative
+      ? this.resolveWorktreePath(lease, request.cwdRelative, {
+          requireExists: true,
+          allowDirectory: true,
+          skipAllowlist: true,
+        }).absolutePath
+      : lease.worktreePath;
+
+    const timeoutMs = Math.min(
+      MAX_TIMEOUT_MS,
+      Math.max(100, request.timeoutMs ?? this.defaultTimeoutMs)
+    );
+    const maxOutputBytes = Math.min(
+      MAX_OUTPUT_BYTES,
+      Math.max(256, request.maxOutputBytes ?? this.maxOutputBytes)
+    );
+
+    const childEnv = this.buildSanitizedEnv(request.envOverrides);
+    const executable = request.command === 'node' ? process.execPath : request.command;
+    const startTime = Date.now();
+
+    const execution = await new Promise<{
+      readonly exitCode: number | null;
+      readonly signal: string | null;
+      readonly timedOut: boolean;
+      readonly truncated: boolean;
+      readonly stdout: string;
+      readonly stderr: string;
+    }>((resolve, reject) => {
+      const child = spawn(executable, [...request.args], {
+        cwd,
+        env: childEnv,
+        shell: false,
+        windowsHide: true,
+      });
+
+      const stdoutChunks: Buffer[] = [];
+      const stderrChunks: Buffer[] = [];
+      let totalBytes = 0;
+      let truncated = false;
+      let timedOut = false;
+      let settled = false;
+
+      const appendChunk = (target: Buffer[], chunk: Buffer): void => {
+        if (truncated) return;
+        const remaining = maxOutputBytes - totalBytes;
+        if (remaining <= 0) {
+          truncated = true;
+          child.kill();
+          return;
+        }
+        if (chunk.length > remaining) {
+          target.push(chunk.subarray(0, remaining));
+          totalBytes += remaining;
+          truncated = true;
+          child.kill();
+          return;
+        }
+        target.push(chunk);
+        totalBytes += chunk.length;
+      };
+
+      const timer = setTimeout(() => {
+        timedOut = true;
+        child.kill();
+      }, timeoutMs);
+
+      child.stdout.on('data', (chunk: Buffer) => appendChunk(stdoutChunks, chunk));
+      child.stderr.on('data', (chunk: Buffer) => appendChunk(stderrChunks, chunk));
+
+      child.on('error', (error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(error);
+      });
+
+      child.on('close', (exitCode, signal) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve({
+          exitCode,
+          signal: signal ? String(signal) : null,
+          timedOut,
+          truncated,
+          stdout: Buffer.concat(stdoutChunks).toString('utf8'),
+          stderr: Buffer.concat(stderrChunks).toString('utf8'),
+        });
+      });
+    });
+
+    const stdout = redactSensitiveText(execution.stdout, this.knownSecrets).text;
+    const stderr = redactSensitiveText(execution.stderr, this.knownSecrets).text;
+
+    return {
+      runId: request.runId,
+      leaseId: lease.leaseId,
+      command: request.command,
+      args: [...request.args],
+      cwd,
+      exitCode: execution.exitCode,
+      signal: execution.signal,
+      timedOut: execution.timedOut,
+      truncated: execution.truncated,
+      stdout,
+      stderr,
+      stdoutSha256: sha256Hex(stdout),
+      stderrSha256: sha256Hex(stderr),
+      durationMs: Math.max(0, Date.now() - startTime),
+    };
+  }
+
+  async release(
+    runId: string,
+    options?: { readonly removeBranch?: boolean }
+  ): Promise<GitWorktreeLease> {
+    const lease = this.getLease(runId);
+    const lockFile = path.join(this.lockRootDir, `run-${runId}.lock.json`);
+
+    if (existsSync(lease.worktreePath)) {
+      await this.runGit(this.repoRoot, ['worktree', 'remove', '--force', lease.worktreePath]);
+    }
+    if (options?.removeBranch) {
+      await this.runGit(this.repoRoot, ['branch', '-D', lease.branchName]).catch(() => undefined);
+    }
+    rmSync(lockFile, { force: true });
+
+    const released: GitWorktreeLease = {
+      ...lease,
+      status: 'released',
+      releasedAt: new Date().toISOString(),
+    };
+    this.leases.set(runId, released);
+    return released;
+  }
+
+  private assertWithinAllowlist(lease: GitWorktreeLease, normalizedRelativePath: string): void {
+    const allowlist = lease.allowedPaths.length > 0 ? lease.allowedPaths : this.defaultAllowedPaths;
+    if (allowlist.length === 0) return;
+    const matched = allowlist.some(
+      (prefix) =>
+        normalizedRelativePath === prefix || normalizedRelativePath.startsWith(`${prefix}/`)
+    );
+    if (!matched) {
+      throw new AccessDeniedError(
+        `Path '${normalizedRelativePath}' is outside the allowed worktree path allowlist`
+      );
+    }
+  }
+
+  private resolveWorktreePath(
+    lease: GitWorktreeLease,
+    rawRelativePath: string,
+    options: {
+      readonly requireExists: boolean;
+      readonly allowDirectory: boolean;
+      readonly skipAllowlist?: boolean;
+    }
+  ): { readonly relativePath: string; readonly absolutePath: string } {
+    if (typeof rawRelativePath !== 'string' || rawRelativePath.trim() === '') {
+      throw new ValidationError('Worktree path must be a non-empty relative path');
+    }
+    if (rawRelativePath.includes('\0')) {
+      throw new AccessDeniedError('Path contains NUL byte');
+    }
+    if (
+      path.isAbsolute(rawRelativePath) ||
+      /^[A-Za-z]:/u.test(rawRelativePath) ||
+      rawRelativePath.startsWith('\\\\') ||
+      rawRelativePath.startsWith('//') ||
+      rawRelativePath.startsWith('/') ||
+      rawRelativePath.startsWith('\\')
+    ) {
+      throw new AccessDeniedError(`Absolute or external path rejected: '${rawRelativePath}'`);
+    }
+
+    const slashNormalized = rawRelativePath.replaceAll('\\', '/');
+    const rawSegments = slashNormalized.split('/');
+    for (const seg of rawSegments) {
+      if (seg === '..') {
+        throw new AccessDeniedError(`Path traversal ('..') rejected: '${rawRelativePath}'`);
+      }
+    }
+
+    const cleanSegments = rawSegments.filter((seg) => seg !== '' && seg !== '.');
+    if (cleanSegments.length === 0) {
+      if (!options.allowDirectory) {
+        throw new ValidationError(`File path cannot be empty or root: '${rawRelativePath}'`);
+      }
+      return { relativePath: '.', absolutePath: lease.worktreePath };
+    }
+
+    const normalizedRelative = cleanSegments.join('/');
+    if (isSecretOrSensitivePath(normalizedRelative)) {
+      throw new AccessDeniedError(`Sensitive or secret path rejected: '${normalizedRelative}'`);
+    }
+    if (!options.skipAllowlist) {
+      this.assertWithinAllowlist(lease, normalizedRelative);
+    }
+
+    const realRoot = realpathSync(lease.worktreePath);
+    let cursor = lease.worktreePath;
+    for (const seg of cleanSegments) {
+      cursor = path.join(cursor, seg);
+      if (existsSync(cursor)) {
+        const lstat = lstatSync(cursor);
+        if (lstat.isSymbolicLink()) {
+          throw new AccessDeniedError(
+            `Symbolic link rejected in sandbox path: '${normalizedRelative}'`
+          );
+        }
+        const realSegment = realpathSync(cursor);
+        if (!isWithinRealRoot(realRoot, realSegment)) {
+          throw new AccessDeniedError(
+            `Resolved path escapes worktree sandbox: '${normalizedRelative}'`
+          );
+        }
+      }
+    }
+
+    const absolutePath = path.resolve(lease.worktreePath, ...cleanSegments);
+    if (!isWithinRealRoot(realRoot, path.dirname(absolutePath)) && absolutePath !== realRoot) {
+      throw new AccessDeniedError(`Path escapes worktree sandbox: '${normalizedRelative}'`);
+    }
+
+    if (options.requireExists && !existsSync(absolutePath)) {
+      throw new NotFoundError(`Worktree path not found: '${normalizedRelative}'`);
+    }
+
+    return { relativePath: normalizedRelative, absolutePath };
+  }
+
+  private buildSanitizedEnv(overrides?: Readonly<Record<string, string>>): NodeJS.ProcessEnv {
+    const env: NodeJS.ProcessEnv = {};
+    for (const key of SAFE_ENV_KEYS) {
+      const value = process.env[key];
+      if (value !== undefined) {
+        env[key] = value;
+      }
+    }
+    if (overrides) {
+      for (const [key, value] of Object.entries(overrides)) {
+        if (BLOCKED_ENV_OVERRIDE_PATTERN.test(key)) {
+          throw new AccessDeniedError(`Environment variable override '${key}' is prohibited`);
+        }
+        env[key] = value;
+      }
+    }
+    return env;
+  }
+
+  private async runGit(cwd: string, args: readonly string[]): Promise<string> {
+    const { stdout } = await execFileAsync('git', ['-C', cwd, ...args], {
+      encoding: 'utf8',
+      windowsHide: true,
+      maxBuffer: 10 * 1024 * 1024,
+    });
+    return stdout;
+  }
+}
+
+function parsePorcelainZ(raw: string): Array<{ readonly status: string; readonly path: string }> {
+  if (!raw) return [];
+  const tokens = raw.split('\0');
+  const entries: Array<{ readonly status: string; readonly path: string }> = [];
+  for (let i = 0; i < tokens.length; i += 1) {
+    const token = tokens[i];
+    if (!token || token.length < 4) continue;
+    const status = token.slice(0, 2);
+    const filePath = token.slice(3).replaceAll('\\', '/');
+    entries.push({ status, path: filePath });
+    if (status.startsWith('R') || status.startsWith('C')) {
+      i += 1;
+    }
+  }
+  return entries;
+}
+
+function parseNumstatZ(
+  raw: string
+): Map<string, { readonly additions: number; readonly deletions: number }> {
+  const map = new Map<string, { readonly additions: number; readonly deletions: number }>();
+  if (!raw) return map;
+  const tokens = raw.split('\0');
+  for (const token of tokens) {
+    if (!token) continue;
+    const parts = token.split('\t');
+    if (parts.length < 3) continue;
+    const additions = parts[0] === '-' ? 0 : Number.parseInt(parts[0] ?? '0', 10) || 0;
+    const deletions = parts[1] === '-' ? 0 : Number.parseInt(parts[1] ?? '0', 10) || 0;
+    const filePath = parts.slice(2).join('\t').replaceAll('\\', '/');
+    map.set(filePath, { additions, deletions });
+  }
+  return map;
+}
