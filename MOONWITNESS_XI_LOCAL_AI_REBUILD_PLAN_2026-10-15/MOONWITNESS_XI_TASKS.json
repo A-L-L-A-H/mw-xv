@@ -218,7 +218,7 @@
       "deliverable": "Artifact, edition, rights/attribution/locale/ref manifest type",
       "acceptance": "Missing rights/checksum disallows publish; source bytes preserved unmodified",
       "verification": "schema fixtures including unknown license",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
