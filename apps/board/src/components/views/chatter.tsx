@@ -4,26 +4,25 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@moonwitness/ui/components/toast';
 import {
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Download,
-  File,
-  FileArchive,
-  FileCode,
-  FileImage,
-  FileText,
-  History,
-  Mail,
-  MessageSquare,
-  Paperclip,
-  Phone,
-  Plus,
-  Trash2,
-  UploadCloud,
-  UserCheck,
-  Zap,
-} from 'lucide-react';
+  CalendarIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  DownloadIcon,
+  DocumentIcon,
+  ArchiveIcon,
+  CodeIcon,
+  ImageIcon,
+  HistoryIcon,
+  MailIcon,
+  MessageIcon,
+  AttachmentIcon,
+  PhoneIcon,
+  AddIcon,
+  DeleteIcon,
+  UploadIcon,
+  SecurityIcon,
+  BoltIcon,
+} from "@moonwitness/ui/icons";
 import { client } from '@/lib/client';
 import { formatDateTime } from '@/lib/date-format';
 import { scopedQueryKey } from '@/lib/query-scope';

@@ -802,7 +802,7 @@
       "deliverable": "Versioned content story/page and 1 image/file per page optional render",
       "acceptance": "Page order stable, original story text preserved, no fake media asset or auto-publish",
       "verification": "G2 two-page media/versioning test",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {

@@ -729,6 +729,46 @@ Object storage harus transparan bagi pengguna selama alur tetap melewati API. Im
 - [ ] **WUI-19 — Pengaturan grup WhatsApp:** Tampilkan status pesan sementara hanya jika provider mengirim metadata; tampilkan kontrol info grup dan announcement hanya jika status didukung, minta konfirmasi sebelum mengubah aturan anggota, serta tampilkan hasil terbaru setelah refresh. Chromium E2E PostgreSQL memverifikasi konfirmasi kedua kontrol dan status pesan sementara (1/1); API route tests memverifikasi company scope dan provider payload. Review visual/responsif, keyboard dan aksesibilitas dialog masih diperlukan; perubahan nyata belum diuji di grup/device GoWA tertaut. Tautan feature: `todo-wa.md` P2-28.
 - [ ] **WUI-10 — Batas package UI:** audit perubahan inbox untuk memastikan Board menangani route/data/permission, sedangkan `@moonwitness/ui` hanya menerima primitive presentasi dan interaksi reusable. Jika komponen baru benar-benar dipakai ulang atau diperlukan demi aksesibilitas, dokumentasikan kontrak, expose subpath publik, tambahkan specimen UI Catalog dan package checks; jika khusus WhatsApp, pertahankan di Board.
 
+## Q. Grunge, zine consistency, and expressive motion pass
+
+> Tahap ini memperluas item terbuka di Bagian **E** (material/decorative vector), **G** (retheme primitive), **H** (gap specimen), **J–K** (dashboard/workbench/auth), **L** (motion), dan **M** (visual acceptance) tanpa menduplikasi checklist lama. Aturan desain tunggal tetap di `packages/ui/README.md` dan kontrak kontras di `packages/ui/TOKENS.md`.
+> **Anti-bentrok K-series (`MOONWITNESS_XI_TASKS.json`):** kerjakan berurutan `packages/assets` → `packages/ui` → `apps/ui-catalog` terlebih dahulu (0 bentrok dengan K0–K7); pisahkan perubahan `apps/board` pada branch fitur tersendiri bila paralel dengan K8 (`K8-001/002/004/005/006`).
+
+### Q1. Konsistensi kanvas dark-ink & torn paper scraps
+
+- [ ] Selaraskan kontinuitas visual dark-ink zine lintas Home, auth, Board, dan Story Workbench sambil mempertahankan preferensi/toggle theme terang–gelap Board yang sudah ada.
+- [ ] Gunakan `--mw-paper-cream` sebagai kartu sobekan kertas / sticky KPI notes di atas permukaan gelap (kontras tinggi untuk angka condensed & label) tanpa memutar angka, tabel, atau kontrol form.
+- [ ] Jaga mode terang sebagai paper-zine yang disengaja (bukan kotak admin beige datar), tetap memenuhi kontras WCAG AA `>= 4.5:1` di kedua theme.
+
+### Q2. Material xerox kasar, torn edge, dan splatter (menutup Bagian E)
+
+- [ ] Buat dan daftarkan aset SVG deterministik ringan di `@moonwitness/assets` (`manifest.json` + `licenses.json`): dry-brush/xerox scuffed border, torn-edge divider atas/bawah/kiri/kanan, ink splatter sudut, serta tile halftone/speckle/scratch.
+- [ ] Terapkan frame xerox/torn melalui `Panel`, `SectionRibbon`, `ArtworkFrame`, dan `MetricTile` di `@moonwitness/ui` menggunakan SVG mask/border-image/CSS ringan tanpa menaikkan budget JS/CSS route.
+- [ ] Validasi seluruh aset baru dengan `pnpm test:assets` dan `pnpm assets:check:bounds` (zero script/external ref, geometri di dalam `viewBox`, regenerasi deterministik).
+
+### Q3. Kolase zine sidebar & ornamen sudut non-interaktif
+
+- [ ] Tambahkan blok kolase zine di footer sidebar Board (crop mata manga monokrom + tape note + crown doodle) pada desktop tanpa menutupi item navigasi atau memicu overflow.
+- [ ] Tambahkan ornamen sudut deterministik (crown doodle, petir, bintang kapur, panah tangan) pada area hero/masthead/panel ekspresif; pastikan seluruh ornamen memakai `aria-hidden="true"`, `pointer-events: none`, dan tidak memotong `:focus-visible`.
+
+### Q4. Two-tone brush headline & neon accent rhythm
+
+- [ ] Dukung headline two-tone split brush (putih/paper + aksen `--mw-magenta` / `--mw-yellow` dengan brush-swipe miring terkendali) pada `PageHeader` dan banner masthead tanpa merusak wrapping pada 320 px.
+- [ ] Tambahkan token aksen violet editorial bila dipakai untuk variasi tile modul/status di `packages/ui/src/styles/tokens.css` lengkap dengan pasangan foreground teruji di `packages/ui/tests/tokens.test.mjs`; larang literal warna baru di CSS app.
+- [ ] Terapkan neon icon tile dan aksen border status (`magenta`, `cyan`, `yellow`, semantic state) dengan patuh penuh pada `TOKENS.md` (`--mw-on-pink: #0d0d0d`, dilarang teks putih di atas `#ff2e88`).
+
+### Q5. Micro-motion hidup (Gen-Z / comic tactile)
+
+- [ ] Terapkan stamp-pop hover (`--mw-motion-ease-emphasis` + hard-offset shadow aksen neon) pada `mw-ui-interactive-surface` dan `Button[data-treatment="brush"]` hanya untuk hover-capable pointers tanpa menggeser layout/hit area.
+- [ ] Tambahkan stepped doodle micro-jitter (2–3 frame `steps(1)`) pada ornamen dekoratif saat kartu induk di-hover saja; hentikan offscreen lewat `useAnimationVisibility` dan matikan total saat `prefers-reduced-motion: reduce`.
+- [ ] Tambahkan indikator `LIVE` / `ON AIR` terikat state nyata (tanpa data palsu) yang berhenti saat offscreen atau reduced motion.
+
+### Q6. Verifikasi, budget, dan visual acceptance
+
+- [ ] Buktikan seluruh komponen & pola baru di `apps/ui-catalog` terlebih dahulu (light + dark, desktop + mobile, hover + focus + reduced motion) sebelum rollout penuh ke `apps/board`.
+- [ ] Jalankan dan pastikan lulus seluruh gate: `pnpm board:ui:check`, `pnpm test:ui`, `pnpm test:assets`, `pnpm assets:check:bounds`, `pnpm board:budget`, dan `pnpm test:ui-budget`.
+- [ ] Lakukan side-by-side visual review pada `1672×941`, `1440×900`, `390×844`, dan `320×700`, lalu perbarui baseline screenshot (`pnpm ui:visual:update` / `pnpm board:visual:update`) setelah gap utama bersih.
+
 ## Urutan kerja
 
 1. **A–C:** baseline, pemetaan fitur, UI Bible awal, dan keamanan generator.
@@ -738,6 +778,7 @@ Object storage harus transparan bagi pengguna selama alur tetap melewati API. Im
 5. **L–N:** motion/audio, gate dan visual acceptance, cleanup, serta Bible final.
 6. **O:** selaraskan pengalaman lampiran dengan limit, error, dan jalur pemulihan storage untuk provider S3-compatible; penerimaan UI/API sudah dilakukan terhadap Garage, sedangkan body limit reverse proxy production masih menjadi gate deployment.
 7. **P:** selesaikan UI WhatsApp bersama pekerjaan feature pada `todo-wa.md`; tutup item hanya dengan bukti interaksi dan visual yang direview.
+8. **Q:** jalankan grunge/zine polish pass (`packages/assets` → `packages/ui` → `apps/ui-catalog` → `apps/board`), jaga seluruh gate kontras/asset/budget, dan perbarui baseline visual setelah review side-by-side.
 
 ## Definisi selesai
 
