@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "addons": ["auth", "base", "jobs", "notification"],
   "generatedFrom": "core addon manifests and model field metadata; no seed values included",
-  "sourceSha256": "d14016565aa0364fa6ebe4c231496941cc006ff1a02233e90e7b8389ce86277e",
+  "sourceSha256": "34c807617aaac1d9d979fccab9bc45c5ee7875d39fb71d8ca5dae0d09216dd56",
   "models": [
     {
       "name": "auth.refresh_token",
@@ -139,6 +139,10 @@
     {
       "name": "knowledge.privacy_revocation",
       "table": "knowledge_privacy_revocations"
+    },
+    {
+      "name": "knowledge.publication_snapshot",
+      "table": "knowledge_publication_snapshots"
     },
     {
       "name": "knowledge.research_active_release",
@@ -578,6 +582,27 @@
       "from": "knowledge.privacy_revocation",
       "field": "company",
       "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.publication_snapshot",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.publication_snapshot",
+      "field": "requester",
+      "to": "base.user",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.publication_snapshot",
+      "field": "reviewer",
+      "to": "base.user",
       "cardinality": "N:1",
       "kind": "belongsTo"
     },

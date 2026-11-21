@@ -161,3 +161,23 @@ export {
   type TrustedBugOutcomeEvidenceResolver,
   type VerifyBugCaseOutcomeInput,
 } from './bug-outcome-verification.js';
+export { PublicationSnapshot } from './publication.model.js';
+export {
+  listApprovedPublications,
+  PublicationStoreError,
+  readApprovedPublication,
+  readPublicationAuditHistory,
+  recordPublicationSnapshot,
+  supersedeOrTakedownPublication,
+  type ApprovedPublicationView,
+  type PublicationActorContext,
+  type PublicationCitation,
+  type PublicationClassification,
+  type PublicationProjectionPayload,
+  type PublicationReviewStatus,
+  type PublicationRightsState,
+  type PublicationStoreErrorCode,
+  type RecordPublicationSnapshotInput,
+  type StoredPublicationAuditRevision,
+  type SupersedeOrTakedownInput,
+} from './publication-store.js';
