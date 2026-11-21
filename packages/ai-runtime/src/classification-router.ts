@@ -225,12 +225,52 @@ export class DataClassificationRouter {
 
   constructor(options?: {
     readonly targets?: readonly RegisteredRouteTarget[];
+    readonly providers?: readonly AiProvider[];
     readonly clock?: Clock;
   }) {
     this.clock = options?.clock ?? SYSTEM_CLOCK;
     for (const target of options?.targets ?? []) {
       this.registerTarget(target);
     }
+    for (const provider of options?.providers ?? []) {
+      this.registerTarget({
+        id: provider.id,
+        provider,
+        model: {
+          id: `${provider.id}-default`,
+          providerId: provider.id,
+          providerKind: provider.kind,
+          modelName: 'default',
+          capabilities: provider.capabilities,
+          contextWindowTokens: 16_384,
+          maxOutputTokens: 2_048,
+          modalities: ['text'],
+        },
+      });
+    }
+  }
+
+  selectProvider(params: {
+    readonly dataClassification: DataClassificationAlias;
+    readonly requiredCapabilities?: Partial<ProviderCapabilities>;
+    readonly companyId?: number;
+    readonly correlationId?: string;
+  }): AiProvider {
+    const decision = this.evaluateRouting({
+      correlationId: params.correlationId ?? 'select-provider',
+      companyId: params.companyId ?? 1,
+      dataClassification: params.dataClassification,
+      policy: {
+        allowedClassification: params.dataClassification,
+        allowCloudFallback:
+          params.dataClassification === 'cloud_eligible' ||
+          params.dataClassification === 'cloud-eligible',
+      },
+      criteria: {
+        requiredCapabilities: params.requiredCapabilities,
+      },
+    });
+    return decision.selectedTarget.provider;
   }
 
   registerTarget(target: RegisteredRouteTarget): void {

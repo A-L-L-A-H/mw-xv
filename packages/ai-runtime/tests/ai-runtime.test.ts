@@ -26,13 +26,16 @@ import {
   ObligationContinuityLedger,
   OllamaAdapter,
   OpenAiProviderAdapter,
+  PcwService,
   PermanentAgentRunError,
   propagateCancellation,
   ProviderError,
   ProviderResilienceGuard,
   ReadOnlyRepoInspector,
+  redactSensitiveOutput,
   registerMoonWitnessMcpTools,
   retrieveEligibleMemoryContext,
+  RiskPolicyEngine,
   runEvaluationCorpus,
   runMemoryAblation,
   SlidingWindowRateLimiter,
@@ -40,7 +43,13 @@ import {
   validateJsonSchema,
   validatePlannerDecomposition,
   verifyProofCarryingWork,
+  VerticalSliceOrchestrator,
+  WorkforcePlanner,
   WorkspaceConflictLockManager,
+  GenAiTelemetry,
+  InMemoryTelemetrySink,
+  MemoryLifecycleService,
+  ObligationLedger,
   type CapabilityGrantRecord,
   type Clock,
   type EvalCorpusFixture,
@@ -1888,5 +1897,124 @@ describe('Phases AI8, AI10, AI11: Memory Ablation, R0-R4 Risk Enforcer & G0-G6 C
       clock,
     });
     expect(poisonedAblation.recommendation).toBe('reject');
+  });
+
+  it('exercises E2E domain service wrappers (MemoryLifecycleService, PcwService, ObligationLedger, WorkforcePlanner, VerticalSliceOrchestrator)', async () => {
+    const memSvc = new MemoryLifecycleService();
+    const cand = await memSvc.recordCandidate({
+      companyId: 1,
+      kind: 'semantic',
+      content: 'Verify SHA-256 against storage',
+    });
+    expect(cand.status).toBe('candidate');
+    await memSvc.promoteCandidate({
+      candidateId: cand.id,
+      companyId: 1,
+      reviewerActorId: 202,
+    });
+    const skill = await memSvc.registerSkillVersion({
+      companyId: 1,
+      code: 'skill.test',
+      version: '1.0.0',
+      procedure: 'Read manifest first',
+    });
+    const promotedSkill = await memSvc.promoteSkillVersion({
+      skillVersionId: skill.id,
+      companyId: 1,
+      reviewerActorId: 202,
+      ablationPassed: true,
+    });
+    expect(promotedSkill.status).toBe('promoted');
+    await memSvc.revokeSkillVersion({
+      skillVersionId: skill.id,
+      companyId: 1,
+      reason: 'Superseded',
+    });
+    const retrieved = await memSvc.retrieveForRun({
+      companyId: 1,
+      dataClassification: 'local_only',
+      runId: 10,
+    });
+    expect(retrieved.some((r) => r.id === cand.id)).toBe(true);
+    expect(retrieved.some((r) => r.id === skill.id)).toBe(false);
+
+    const pcwSvc = new PcwService();
+    const wc = await pcwSvc.createWorkContract({
+      companyId: 1,
+      title: 'Test contract',
+      outcome: 'Verified',
+      scope: 'packages/ai-runtime',
+      riskTier: 'R3',
+      workerActorId: 101,
+      criteria: [{ code: 'C1', method: 'human_decision', requiredEvidenceType: 'signoff' }],
+    });
+    const awaiting = await pcwSvc.submitForHumanSignOff({
+      contractId: wc.id,
+      companyId: 1,
+      reviewerActorId: 202,
+    });
+    expect(awaiting.status).toBe('awaiting_human_approval');
+    const signed = await pcwSvc.recordHumanSignOff({
+      contractId: wc.id,
+      companyId: 1,
+      humanActorId: 303,
+      rationale: 'Approved',
+    });
+    expect(signed.status).toBe('accepted');
+
+    const obLedger = new ObligationLedger();
+    const ob = await obLedger.createObligation({
+      companyId: 1,
+      title: 'Keep runtime verified',
+      scopePaths: ['packages/ai-runtime/src'],
+      triggerType: 'code_change',
+    });
+    expect(ob.status).toBe('active');
+    await obLedger.ingestChangeEvent({
+      companyId: 1,
+      triggerType: 'code_change',
+      changedPaths: ['packages/ai-runtime/src/index.ts'],
+    });
+    expect((await obLedger.getObligation(ob.id))?.status).toBe('needs_reverification');
+
+    const planner = new WorkforcePlanner();
+    expect(
+      planner.recommendTopology({ companyId: 1, decomposable: false, estimatedSteps: 2 }).mode
+    ).toBe('single_agent');
+
+    const riskEngine = new RiskPolicyEngine();
+    expect(riskEngine.evaluate({ tier: 'R3', humanApproved: false }).decision).toBe(
+      'require_human_approval'
+    );
+    expect(riskEngine.evaluate({ tier: 'R3', humanApproved: true }).decision).toBe('allow');
+
+    const sink = new InMemoryTelemetrySink();
+    const telemetry = new GenAiTelemetry({ sink });
+    telemetry.recordRunEvent({
+      correlationId: 'c1',
+      meta: { authorization: 'Bearer top-secret-token' },
+    });
+    expect(JSON.stringify(sink.getEvents())).not.toContain('top-secret-token');
+    expect(
+      JSON.stringify(
+        redactSensitiveOutput({ text: 'Authorization: Bearer s123 MW_AI_API_KEY=k456' })
+      )
+    ).not.toContain('k456');
+
+    const sliceDir = await createTempDir('mw-slice-');
+    await fs.writeFile(path.join(sliceDir, 'README.md'), '# Slice\n');
+    const slice = new VerticalSliceOrchestrator({
+      allowlistedRoots: [sliceDir],
+      provider: new MockProvider({ id: 'slice-p' }),
+    });
+    const sliceRes = await slice.run({
+      companyId: 1,
+      workerActorId: 101,
+      reviewerActorId: 202,
+      targetPath: sliceDir,
+      objective: 'Inspect slice README',
+    });
+    expect(sliceRes.contractStatus).toBe('accepted');
+    expect(sliceRes.obligationStatus).toBe('active');
   });
 });

@@ -1,5 +1,5 @@
 export const SLUG_CODE_PATTERN = '^[a-z][a-z0-9_.-]{1,127}$';
-export const CAPABILITY_PATTERN = '^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*@v[1-9][0-9]*$';
+export const CAPABILITY_PATTERN = '^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+@v[1-9][0-9]*$';
 export const SECRET_REF_PATTERN = '^MW_AI_(?:C[1-9][0-9]*_)?[A-Z0-9_]{1,100}$';
 export const SHA256_PATTERN = '^[a-f0-9]{64}$';
 export const UUID_PATTERN =

@@ -66,7 +66,7 @@ export const fields = {
   ) {
     return { kind: 'enum' as const, values, ...options } as Field<V[number]> & O;
   },
-  belongsTo<M extends typeof BaseModel, const O extends FieldOptions<number>>(
+  belongsTo<M extends typeof BaseModel | (() => typeof BaseModel), O extends FieldOptions<number>>(
     target: M | (() => M),
     options: O = {} as O
   ) {

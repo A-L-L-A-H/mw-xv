@@ -15,7 +15,7 @@ const URL_USERINFO_PATTERN = /(https?:\/\/)([^:@/\s]+):([^@/\s]+)@/giu;
 const URL_QUERY_SECRET_PATTERN =
   /([?&](?:key|api_key|apikey|token|access_token|secret|password)=)[^&#\s]+/giu;
 const KV_SECRET_PATTERN =
-  /\b(password|secret|token|credential|api_key|apikey)\s*[:=]\s*["']?(?!\[REDACTED(?:_[A-Z0-9_]+)?\])[^\s,;'"}\]]+["']?/giu;
+  /\b(password|secret|token|credential|api_key|apikey|MW_AI_[A-Z0-9_]+)\s*[:=]\s*["']?(?!\[REDACTED(?:_[A-Z0-9_]+)?\])[^\s,;'"}\]]+["']?/giu;
 
 export const AI_LOGGER_REDACT_PATHS: readonly string[] = [
   'req.headers.authorization',
@@ -269,4 +269,11 @@ export function redactError(
   knownSecrets: readonly (string | null | undefined)[] = []
 ): SanitizedErrorInfo {
   return createRedactor(knownSecrets).redactError(error);
+}
+
+export function redactSensitiveOutput<T>(
+  input: T,
+  knownSecrets: readonly (string | null | undefined)[] = []
+): T {
+  return createRedactor(knownSecrets).redactObject(input);
 }

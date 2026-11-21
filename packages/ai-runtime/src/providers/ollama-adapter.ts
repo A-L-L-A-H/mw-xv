@@ -34,6 +34,8 @@ export type OllamaEndpointMode = 'chat' | 'generate';
 export interface OllamaAdapterConfig {
   readonly id?: string;
   readonly endpoint?: string | URL;
+  readonly baseUrl?: string | URL;
+  readonly model?: string;
   readonly allowNonLoopback?: boolean;
   readonly endpointMode?: OllamaEndpointMode;
   readonly defaultTimeoutMs?: number;
@@ -226,7 +228,7 @@ export class OllamaAdapter implements AiProvider {
     this.fetchFn = config.fetch ?? globalThis.fetch;
     this.resolveAddresses = config.resolveAddresses;
 
-    const rawEndpoint = config.endpoint ?? 'http://127.0.0.1:11434';
+    const rawEndpoint = config.endpoint ?? config.baseUrl ?? 'http://127.0.0.1:11434';
     this.endpointUrl = this.allowNonLoopback
       ? validateCloudOrEndpointUrl(rawEndpoint, {
           allowLoopbackHttp: true,

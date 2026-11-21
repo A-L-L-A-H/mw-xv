@@ -16,9 +16,13 @@ import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  DESKTOP_ADDONS,
+  DesktopUpstreamSyncClient,
   LocalSidecarController,
   buildArtifactDigest,
   createDesktopHarnessBridge,
+  parseDesktopCliArgs,
+  startDesktopSidecarDaemon,
   type DesktopActionAuthContext,
   type DesktopBridgeHostSurface,
   type DesktopCapabilityBridge,
@@ -28,6 +32,8 @@ import {
   type PcwSyncEnvelope,
   type UpstreamPcwSyncTransport,
 } from '../src/index.js';
+import { Company } from '@moonwitness/orm-base';
+import { ProviderProfile } from '@moonwitness/orm-ai';
 
 const tempDirs: string[] = [];
 const activeBridges: DesktopCapabilityBridge[] = [];
@@ -1041,5 +1047,425 @@ describe('MoonWitness Desktop Harness', () => {
         auth: makeAuth({ grant: makeGrant({ capability: 'mcp.off@v1' }) }),
       })
     ).rejects.toThrow(/disabled/iu);
+  });
+
+  it('initializes better-sqlite3 local.db via MW_DESKTOP_HOME with DESKTOP_ADDONS, single-writer lockfile, and company isolation', async () => {
+    const desktopHome = makeTempDir('mw-desktop-home-');
+    const previousHome = process.env.MW_DESKTOP_HOME;
+    process.env.MW_DESKTOP_HOME = desktopHome;
+
+    try {
+      const sidecar = new LocalSidecarController();
+      activeSidecars.push(sidecar);
+
+      const expectedDbPath = path.join(desktopHome, 'local.db');
+      expect(sidecar.sqlitePath).toBe(expectedDbPath);
+      expect(existsSync(`${expectedDbPath}.lock`)).toBe(true);
+
+      // Concurrent writer on the same local.db is blocked by the OS single-writer lockfile.
+      expect(() => new LocalSidecarController({ sqlitePath: expectedDbPath })).toThrow(
+        /Single-writer SQLite lock/iu
+      );
+
+      const installed = await sidecar.initializeOrmAddons();
+      expect(installed).toEqual(DESKTOP_ADDONS.map((addon) => addon.name));
+      expect(sidecar.getState().registeredOrmModels).toEqual(
+        expect.arrayContaining(['base.company', 'base.job', 'ai.agent', 'ai.work_contract'])
+      );
+
+      // Verify company-scoped ORM addon data isolation and outbox partition scoping.
+      const companyA = await Company.query().insertAndFetch({ name: 'Desktop Company A' });
+      const companyB = await Company.query().insertAndFetch({ name: 'Desktop Company B' });
+
+      await ProviderProfile.query().insert({
+        company_id: companyA.id,
+        code: 'ollama-company-a',
+        name: 'Company A Local Ollama',
+        kind: 'ollama',
+        endpoint_url: 'http://127.0.0.1:11434',
+        secret_ref: 'MW_AI_OLLAMA_LOCAL',
+        data_classification: 'local_only',
+        enabled: true,
+      });
+      await ProviderProfile.query().insert({
+        company_id: companyB.id,
+        code: 'ollama-company-b',
+        name: 'Company B Local Ollama',
+        kind: 'ollama',
+        endpoint_url: 'http://127.0.0.1:11434',
+        secret_ref: 'MW_AI_OLLAMA_LOCAL',
+        data_classification: 'local_only',
+        enabled: true,
+      });
+
+      const digestA = buildArtifactDigest({
+        artifactKind: 'report',
+        content: 'company-a-report',
+        dataClassification: 'local_only',
+      });
+      const digestB = buildArtifactDigest({
+        artifactKind: 'report',
+        content: 'company-b-report',
+        dataClassification: 'local_only',
+      });
+
+      sidecar.setActiveCompany(companyA.id);
+      sidecar.enqueuePcwEnvelope({
+        envelopeId: 'env-comp-a',
+        companyId: companyA.id,
+        workContractId: 101,
+        agentRunId: 'run-comp-a',
+        agentId: 1,
+        correlationId: 'corr-a',
+        fencingToken: 1,
+        runStatus: 'completed',
+        artifacts: [digestA],
+      });
+
+      // Cross-company enqueue while scoped to Company A is rejected.
+      expect(() =>
+        sidecar.enqueuePcwEnvelope({
+          envelopeId: 'env-comp-b-blocked',
+          companyId: companyB.id,
+          workContractId: 102,
+          agentRunId: 'run-comp-b',
+          agentId: 2,
+          correlationId: 'corr-b',
+          fencingToken: 1,
+          runStatus: 'completed',
+          artifacts: [digestB],
+        })
+      ).toThrow(/active sidecar session is scoped/iu);
+
+      const recordsA = await sidecar.queryCompanyAddonRecords('ai.provider_profile');
+      expect(recordsA.map((r) => r.code)).toEqual(['ollama-company-a']);
+      await expect(
+        sidecar.queryCompanyAddonRecords('ai.provider_profile', [], { companyId: companyB.id })
+      ).rejects.toThrow(/Cross-company/iu);
+
+      // Switch session to Company B: Company A rows and envelopes are isolated.
+      sidecar.setActiveCompany(companyB.id);
+      sidecar.enqueuePcwEnvelope({
+        envelopeId: 'env-comp-b',
+        companyId: companyB.id,
+        workContractId: 102,
+        agentRunId: 'run-comp-b',
+        agentId: 2,
+        correlationId: 'corr-b',
+        fencingToken: 1,
+        runStatus: 'completed',
+        artifacts: [digestB],
+      });
+
+      const recordsB = await sidecar.queryCompanyAddonRecords('ai.provider_profile');
+      expect(recordsB.map((r) => r.code)).toEqual(['ollama-company-b']);
+      expect(sidecar.listEnvelopes().map((e) => e.envelopeId)).toEqual(['env-comp-b']);
+      expect(() => sidecar.getEnvelope('env-comp-a')).toThrow(/another company partition/iu);
+
+      const envScoped = sidecar.createScopedEnvironment();
+      expect(envScoped.context.companyId).toBe(companyB.id);
+
+      await sidecar.closeAsync();
+      expect(existsSync(`${expectedDbPath}.lock`)).toBe(false);
+
+      // Stale lockfile from a dead PID is reclaimed automatically.
+      writeFileSync(
+        `${expectedDbPath}.lock`,
+        JSON.stringify({
+          pid: 999999,
+          startedAt: new Date(Date.now() - 60_000).toISOString(),
+          startTimeMs: Date.now() - 60_000,
+          host: 'stale-host',
+          sqlitePath: expectedDbPath,
+          lockPath: `${expectedDbPath}.lock`,
+        }),
+        'utf8'
+      );
+      const reclaimed = new LocalSidecarController({
+        sqlitePath: expectedDbPath,
+        lockOptions: { isPidAlive: () => false },
+      });
+      activeSidecars.push(reclaimed);
+      expect(reclaimed.getLockMetadata()?.pid).toBe(process.pid);
+      reclaimed.close();
+    } finally {
+      if (previousHome === undefined) {
+        delete process.env.MW_DESKTOP_HOME;
+      } else {
+        process.env.MW_DESKTOP_HOME = previousHome;
+      }
+    }
+  });
+
+  it('enforces frozen IPC bridge membrane, sender origin allowlist, MW_AI_* keychain, and cryptographic R3 nonces', async () => {
+    const repoRoot = initTempGitRepo();
+    const bridge = createDesktopHarnessBridge(
+      {
+        repoRoot,
+        sqlitePath: ':memory:',
+        boardOrigin: 'http://127.0.0.1:5173',
+        apiBaseUrl: 'http://127.0.0.1:3000',
+        requireSignedApprovals: true,
+      },
+      { autoAttach: false }
+    );
+    activeBridges.push(bridge);
+
+    expect(Object.isFrozen(bridge)).toBe(true);
+    expect(Object.isFrozen(bridge.worktree)).toBe(true);
+    expect(Object.isFrozen(bridge.sidecar)).toBe(true);
+
+    expect(bridge.verifySenderOrigin('http://127.0.0.1:5173', 'main')).toBe(true);
+    expect(bridge.verifySenderOrigin('tauri://localhost', 'main')).toBe(true);
+    expect(() => bridge.verifySenderOrigin('https://attacker.example.com', 'main')).toThrow(
+      /untrusted sender origin/iu
+    );
+    expect(() => bridge.verifySenderOrigin('http://127.0.0.1:5173', 'child-webview')).toThrow(
+      /non-main window label/iu
+    );
+
+    expect(() => bridge.keychain.registerSecretRef('OPENAI_API_KEY', 'sk-invalid-ref')).toThrow(
+      /only MW_AI_\*/iu
+    );
+    bridge.keychain.registerSecretRef('MW_AI_C1_LOCAL_SECRET', 'top-secret-keychain-987654');
+    expect(bridge.keychain.hasSecretRef('MW_AI_C1_LOCAL_SECRET')).toBe(true);
+    expect(bridge.keychain.listSecretRefs()).toEqual(['MW_AI_C1_LOCAL_SECRET']);
+
+    const r3Grant = makeGrant({
+      allowedRiskTier: 'R3',
+      allowedClassification: 'cloud_eligible',
+      maxCallsPerRun: 5,
+    });
+
+    // Unsigned / forged R3 token is rejected when requireSignedApprovals is active.
+    const forgedToken = makeApproval({
+      runId: 'run-signed-r3',
+      action: 'git.push_remote',
+      nonce: 'forged-nonce',
+      signature: 'deadbeef',
+    });
+    const forgedDecision = bridge.risk.evaluate({
+      runId: 'run-signed-r3',
+      action: 'git.push_remote',
+      companyId: 1,
+      agentId: 10,
+      workContractId: 42,
+      expectedPolicyVersion: 1,
+      dataClassification: 'cloud_eligible',
+      grant: r3Grant,
+      humanApproval: forgedToken,
+    });
+    expect(forgedDecision.allowed).toBe(false);
+    expect(forgedDecision.reasonCode).toBe('HUMAN_APPROVAL_FORGED');
+
+    // Native host-issued cryptographic token succeeds once and rejects replay.
+    const issuedToken = bridge.issueNativeApprovalToken({
+      approvedByUserId: 7,
+      action: 'git.push_remote',
+      runId: 'run-signed-r3',
+    });
+    const validDecision = bridge.risk.evaluate({
+      runId: 'run-signed-r3',
+      action: 'git.push_remote',
+      companyId: 1,
+      agentId: 10,
+      workContractId: 42,
+      expectedPolicyVersion: 1,
+      dataClassification: 'cloud_eligible',
+      grant: r3Grant,
+      humanApproval: issuedToken,
+    });
+    expect(validDecision.allowed).toBe(true);
+
+    const replayDecision = bridge.risk.evaluate({
+      runId: 'run-signed-r3',
+      action: 'git.push_remote',
+      companyId: 1,
+      agentId: 10,
+      workContractId: 42,
+      expectedPolicyVersion: 1,
+      dataClassification: 'cloud_eligible',
+      grant: r3Grant,
+      humanApproval: issuedToken,
+    });
+    expect(replayDecision.allowed).toBe(false);
+    expect(replayDecision.reasonCode).toBe('HUMAN_APPROVAL_REPLAYED');
+  });
+
+  it('reconciles upstream HTTP sync with exponential backoff retry, 409 quarantine, and CLI sidecar health daemon', async () => {
+    const repoRoot = initTempGitRepo();
+    const homeDir = makeTempDir('mw-desktop-cli-home-');
+    let pcwAttempts = 0;
+
+    const apiServer = createServer((req, res) => {
+      const chunks: Buffer[] = [];
+      req.on('data', (chunk: Buffer) => chunks.push(chunk));
+      req.on('end', () => {
+        const url = req.url ?? '/';
+        const bodyText = Buffer.concat(chunks).toString('utf8');
+        res.setHeader('content-type', 'application/json');
+
+        if (req.method === 'POST' && url === '/api/ai/desktop/lease') {
+          const body = JSON.parse(bodyText) as { hostId: string };
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({
+              granted: true,
+              leaseOwner: `desktop:${body.hostId}`,
+              fencingToken: 4,
+              leaseUntil: new Date(Date.now() + 60_000).toISOString(),
+            })
+          );
+          return;
+        }
+
+        if (req.method === 'GET' && url.startsWith('/api/ai/desktop/pull')) {
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({
+              companyId: 1,
+              nextCursor: 'cursor-2',
+              workContracts: [{ id: 42, code: 'wc-1' }],
+              capabilityGrants: [],
+              executionPolicies: [],
+            })
+          );
+          return;
+        }
+
+        if (req.method === 'POST' && url === '/api/ai/desktop/artifacts/upload') {
+          const body = JSON.parse(bodyText) as { artifact: { storageKey: string; sha256: string } };
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({
+              storageKey: body.artifact.storageKey,
+              sha256: body.artifact.sha256,
+              verified: true,
+            })
+          );
+          return;
+        }
+
+        if (req.method === 'POST' && url === '/api/ai/desktop/pcw-sync') {
+          const env = JSON.parse(bodyText) as PcwSyncEnvelope;
+          if (env.envelopeId === 'env-409') {
+            res.writeHead(409);
+            res.end(JSON.stringify({ message: 'SHA-256 or fencing conflict on server' }));
+            return;
+          }
+          pcwAttempts += 1;
+          if (pcwAttempts === 1) {
+            res.writeHead(503);
+            res.end('Temporary upstream outage');
+            return;
+          }
+          res.writeHead(200);
+          res.end(JSON.stringify({ outcome: 'synced', upstreamRecordId: 8801 }));
+          return;
+        }
+
+        res.writeHead(404);
+        res.end(JSON.stringify({ error: 'Not Found' }));
+      });
+    });
+
+    await new Promise<void>((resolve) => {
+      apiServer.listen(0, '127.0.0.1', () => resolve());
+    });
+
+    try {
+      const address = apiServer.address();
+      if (!address || typeof address === 'string') {
+        throw new Error('Failed to bind mock upstream API server');
+      }
+      const apiBaseUrl = `http://127.0.0.1:${address.port}`;
+
+      const syncClient = new DesktopUpstreamSyncClient({
+        apiBaseUrl,
+        authToken: () => 'desktop-session-jwt',
+        maxRetries: 2,
+        baseDelayMs: 5,
+        maxDelayMs: 20,
+      });
+
+      const leaseResp = await syncClient.claimWorkContractLease({
+        companyId: 1,
+        workContractId: 42,
+        hostId: 'workstation-1',
+      });
+      expect(leaseResp.granted).toBe(true);
+      expect(leaseResp.fencingToken).toBe(4);
+
+      const pullResp = await syncClient.pullCompanySnapshot({ companyId: 1 });
+      expect(pullResp.nextCursor).toBe('cursor-2');
+      expect(pullResp.workContracts).toHaveLength(1);
+
+      const payloadBytes = Buffer.from('verified-evidence-payload', 'utf8');
+      const artifact = buildArtifactDigest({
+        artifactKind: 'evidence_bundle',
+        content: payloadBytes,
+        dataClassification: 'local_only',
+      });
+      const uploadResp = await syncClient.uploadArtifact({
+        companyId: 1,
+        workContractId: 42,
+        artifact,
+        contentBase64: payloadBytes.toString('base64'),
+      });
+      expect(uploadResp.verified).toBe(true);
+
+      const cliOpts = parseDesktopCliArgs([
+        '--repo-root',
+        repoRoot,
+        '--desktop-home',
+        homeDir,
+        '--api-url',
+        apiBaseUrl,
+        '--skip-addons',
+      ]);
+      const daemon = await startDesktopSidecarDaemon(cliOpts);
+      try {
+        const healthRes = await fetch(daemon.healthUrl);
+        expect(healthRes.status).toBe(200);
+        const healthJson = (await healthRes.json()) as { ok: boolean; hostSurface: string };
+        expect(healthJson.ok).toBe(true);
+        expect(healthJson.hostSurface).toBe('apps/board');
+
+        daemon.bridge.sidecar.enqueuePcwEnvelope({
+          envelopeId: 'env-retry-ok',
+          companyId: 1,
+          workContractId: 42,
+          agentRunId: 'run-http-1',
+          agentId: 10,
+          correlationId: 'corr-http-1',
+          fencingToken: 4,
+          runStatus: 'completed',
+          artifacts: [artifact],
+        });
+        daemon.bridge.sidecar.enqueuePcwEnvelope({
+          envelopeId: 'env-409',
+          companyId: 1,
+          workContractId: 42,
+          agentRunId: 'run-http-2',
+          agentId: 10,
+          correlationId: 'corr-http-2',
+          fencingToken: 4,
+          runStatus: 'completed',
+          artifacts: [artifact],
+        });
+
+        const batch = await daemon.bridge.sidecar.syncPending(syncClient);
+        expect(batch.attempted).toBe(2);
+        expect(batch.synced).toBe(1);
+        expect(batch.conflicts).toBe(1);
+        expect(pcwAttempts).toBe(2);
+        expect(syncClient.getQuarantinedEnvelopes().map((q) => q.envelopeId)).toEqual(['env-409']);
+        expect(syncClient.clearQuarantine('env-409')).toBe(true);
+      } finally {
+        await daemon.stop();
+      }
+    } finally {
+      await new Promise<void>((resolve) => apiServer.close(() => resolve()));
+    }
   });
 });

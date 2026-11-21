@@ -10,7 +10,8 @@ import { manifest as organizationAddon } from '@moonwitness/orm-organization';
 import { manifest as integrationAddon } from '@moonwitness/orm-integration';
 import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
-import type { AttachmentStorage } from '@moonwitness/orm-storage';
+import { manifest as aiAddon } from '@moonwitness/orm-ai';
+import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
 import { whatsappManifest } from '../whatsapp/manifest.js';
 import { createAttachmentScanner, type AttachmentScanner } from '../whatsapp/clamav-scanner.js';
 import type { createVideoPoster } from '../whatsapp/media-thumbnail.js';
@@ -38,6 +39,11 @@ import { localAiSuggestionRoutes } from '../routes/local-ai-suggestion.routes.js
 import { childProtectionRoutes } from '../routes/child-protection.routes.js';
 import { publicationRoutes } from '../routes/publication.routes.js';
 import { bugCaseRoutes } from '../routes/bug-case.routes.js';
+import {
+  aiCorporationRoutes,
+  ensureAiJobHandlersRegistered,
+} from '../routes/ai-corporation.routes.js';
+import { aiDesktopSyncRoutes } from '../routes/ai-desktop-sync.routes.js';
 
 export interface ApiAddonRuntimeContext {
   jwtSecret: string;
@@ -176,6 +182,26 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
       await app.register(childProtectionRoutes);
       await app.register(publicationRoutes);
       await app.register(bugCaseRoutes);
+    },
+  },
+  {
+    name: 'orm-storage',
+    manifest: storageAddon,
+  },
+  {
+    name: 'ai',
+    manifest: aiAddon,
+    async postInstall() {
+      ensureAiJobHandlersRegistered();
+    },
+    async registerRoutes(app, ctx) {
+      ensureAiJobHandlersRegistered();
+      await app.register(aiCorporationRoutes, {
+        attachmentStorage: ctx.attachmentStorage,
+      });
+      await app.register(aiDesktopSyncRoutes, {
+        attachmentStorage: ctx.attachmentStorage,
+      });
     },
   },
 ];

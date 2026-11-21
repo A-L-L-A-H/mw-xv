@@ -1,0 +1,34 @@
+{
+  "name": "@moonwitness/ai-evaluation",
+  "version": "1.0.0-rc.1",
+  "private": true,
+  "description": "Deterministic AI Corporation evaluation lab, 4-arm memory ablation suite, and G0-G6 capability gate evaluator",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
+    "test": "tsc -p tsconfig.check.json && vitest run"
+  },
+  "dependencies": {
+    "@moonwitness/ai-runtime": "workspace:*",
+    "@moonwitness/orm-ai": "workspace:*",
+    "@moonwitness/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "5.0.3",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}

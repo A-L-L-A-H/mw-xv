@@ -148,6 +148,29 @@ export interface TypedToolDefinition<
   readonly inputSchema: JsonSchemaNode;
   readonly outputSchema?: JsonSchemaNode;
   readonly description: string;
+  readonly validateArgs?: (args: TInput) => boolean;
+  execute(args: TInput, context: ToolExecutionContext): Promise<TOutput> | TOutput;
+}
+
+export interface RelaxedToolRegistration<
+  TInput extends JsonObject = JsonObject,
+  TOutput extends JsonValue = JsonValue,
+> {
+  readonly name: string;
+  readonly version?: number;
+  readonly capability?: string;
+  readonly ownerAddon?: string;
+  readonly riskTier: RiskTier;
+  readonly dataClassification?: DataClassification;
+  readonly sideEffect?: ToolSideEffectKind;
+  readonly requiresConfirmation?: boolean;
+  readonly idempotent?: boolean;
+  readonly maxInputBytes?: number;
+  readonly maxOutputBytes?: number;
+  readonly inputSchema?: JsonSchemaNode;
+  readonly outputSchema?: JsonSchemaNode;
+  readonly description?: string;
+  readonly validateArgs?: (args: TInput) => boolean;
   execute(args: TInput, context: ToolExecutionContext): Promise<TOutput> | TOutput;
 }
 
@@ -200,7 +223,8 @@ export type GatewayInvokeResult =
     };
 
 export interface CapabilityGatewayOptions {
-  readonly grantStore: CapabilityGrantStore;
+  readonly grantStore?: CapabilityGrantStore;
+  readonly db?: unknown;
   readonly emergencyStopController?: EmergencyStopController;
   readonly redactor?: RedactionContext;
   readonly clock?: Clock;
@@ -312,6 +336,7 @@ export class CapabilityGateway {
   private readonly redactor: RedactionContext;
   private readonly clock: Clock;
   private readonly runCallCounts = new Map<string, number>();
+  private readonly runTotalCalls = new Map<string, number>();
   private readonly agentWindowTimestamps = new Map<string, number[]>();
   private readonly idempotencyCache = new Map<string, IdempotencyEntry>();
   private readonly auditLog: PolicyAuditEntry[] = [];
@@ -319,22 +344,49 @@ export class CapabilityGateway {
   private readonly quotaWindowMs: number;
   private auditSeq = 1;
 
-  constructor(options: CapabilityGatewayOptions) {
-    this.grantStore = options.grantStore;
+  constructor(options: CapabilityGatewayOptions = {}) {
+    this.clock = options.clock ?? SYSTEM_CLOCK;
+    this.grantStore = options.grantStore ?? new InMemoryCapabilityGrantStore(this.clock);
     this.emergencyStopController = options.emergencyStopController;
     this.redactor = options.redactor ?? createRedactor();
-    this.clock = options.clock ?? SYSTEM_CLOCK;
     this.defaultMaxCallsPerAgentWindow = options.defaultMaxCallsPerAgentWindow;
     this.quotaWindowMs = options.quotaWindowMs ?? 60_000;
   }
 
   registerTool<TInput extends JsonObject, TOutput extends JsonValue>(
-    tool: TypedToolDefinition<TInput, TOutput>
+    tool: RelaxedToolRegistration<TInput, TOutput>
   ): void {
-    if (!CAPABILITY_IDENTIFIER_REGEX.test(tool.capability)) {
-      throw new Error(`Invalid capability identifier "${tool.capability}" for tool "${tool.name}"`);
+    const inferredCapability =
+      tool.capability ??
+      (CAPABILITY_IDENTIFIER_REGEX.test(tool.name) ? tool.name : 'tool.execute@v1');
+    if (!CAPABILITY_IDENTIFIER_REGEX.test(inferredCapability)) {
+      throw new Error(
+        `Invalid capability identifier "${inferredCapability}" for tool "${tool.name}"`
+      );
     }
-    this.tools.set(tool.name, tool as unknown as TypedToolDefinition);
+    const normalized: TypedToolDefinition<TInput, TOutput> = {
+      name: tool.name,
+      version: tool.version ?? 1,
+      capability: inferredCapability,
+      ownerAddon: tool.ownerAddon ?? 'orm-ai',
+      riskTier: tool.riskTier,
+      dataClassification: tool.dataClassification ?? 'local_only',
+      sideEffect: tool.sideEffect ?? (tool.riskTier === 'R0' ? 'read_only' : 'reversible_write'),
+      requiresConfirmation: tool.requiresConfirmation ?? tool.riskTier === 'R3',
+      idempotent: tool.idempotent ?? false,
+      maxInputBytes: tool.maxInputBytes,
+      maxOutputBytes: tool.maxOutputBytes,
+      inputSchema: tool.inputSchema ?? { type: 'object' },
+      outputSchema: tool.outputSchema,
+      description: tool.description ?? tool.name,
+      validateArgs: tool.validateArgs,
+      execute: tool.execute,
+    };
+    this.tools.set(tool.name, normalized as unknown as TypedToolDefinition);
+  }
+
+  getRunQuotaUsage(runId: string | number): { readonly calls: number } {
+    return { calls: this.runTotalCalls.get(String(runId)) ?? 0 };
   }
 
   getTool(name: string): TypedToolDefinition | undefined {
@@ -442,7 +494,117 @@ export class CapabilityGateway {
     toolName: string,
     args: JsonObject,
     context: ToolExecutionContext
-  ): Promise<GatewayInvokeResult> {
+  ): Promise<GatewayInvokeResult>;
+  async invoke(request: {
+    readonly toolName: string;
+    readonly args?: JsonObject;
+    readonly grant?: {
+      readonly id?: string | number;
+      readonly companyId: number;
+      readonly capability: string;
+      readonly policyVersion?: number;
+      readonly maxCallsPerRun?: number;
+      readonly expiresAt: string;
+      readonly revokedAt?: string | null;
+    };
+    readonly activePolicyVersion?: number;
+    readonly companyId: number;
+    readonly agentId?: number | string;
+    readonly runId?: number | string;
+    readonly correlationId?: string;
+    readonly humanApproved?: boolean;
+  }): Promise<JsonValue>;
+  async invoke(
+    toolNameOrReq:
+      | string
+      | {
+          readonly toolName: string;
+          readonly args?: JsonObject;
+          readonly grant?: {
+            readonly id?: string | number;
+            readonly companyId: number;
+            readonly capability: string;
+            readonly policyVersion?: number;
+            readonly maxCallsPerRun?: number;
+            readonly expiresAt: string;
+            readonly revokedAt?: string | null;
+          };
+          readonly activePolicyVersion?: number;
+          readonly companyId: number;
+          readonly agentId?: number | string;
+          readonly runId?: number | string;
+          readonly correlationId?: string;
+          readonly humanApproved?: boolean;
+        },
+    maybeArgs?: JsonObject,
+    maybeContext?: ToolExecutionContext
+  ): Promise<GatewayInvokeResult | JsonValue> {
+    if (typeof toolNameOrReq === 'object' && toolNameOrReq !== null) {
+      const req = toolNameOrReq;
+      const args = req.args ?? {};
+      const actorId = req.agentId ?? 'inline-agent';
+      const runId = String(req.runId ?? 'inline-run');
+      const policyVersion = req.activePolicyVersion ?? req.grant?.policyVersion ?? 1;
+      const tool = this.tools.get(req.toolName);
+      if (this.grantStore instanceof InMemoryCapabilityGrantStore) {
+        this.grantStore.setPolicyVersion(req.companyId, policyVersion);
+        if (req.grant) {
+          this.grantStore.upsertGrant({
+            grantId: String(req.grant.id ?? 'inline-grant'),
+            companyId: req.grant.companyId,
+            agentId: actorId,
+            capability: req.grant.capability,
+            scope: { allowWrite: true },
+            policyVersion: req.grant.policyVersion ?? policyVersion,
+            maxCallsPerRun: req.grant.maxCallsPerRun ?? 25,
+            issuedBy: 'system',
+            issuedAt: new Date(this.clock.now()).toISOString(),
+            expiresAt: req.grant.expiresAt,
+            status: req.grant.revokedAt ? 'revoked' : 'active',
+            revokedAt: req.grant.revokedAt ?? undefined,
+          });
+        }
+      }
+      const actionDigest = tool
+        ? computeDigest({
+            tool: tool.name,
+            capability: tool.capability,
+            companyId: req.companyId,
+            args,
+          })
+        : '';
+      const humanApprovalToken: HumanApprovalToken | undefined =
+        req.humanApproved === true
+          ? {
+              tokenId: 'inline-human-approval',
+              companyId: req.companyId,
+              runId,
+              actionDigest,
+              approvedByUserId: 1,
+              approvedByRole: 'operator',
+              issuedAt: new Date(this.clock.now()).toISOString(),
+              expiresAt: new Date(this.clock.now() + 60_000).toISOString(),
+            }
+          : undefined;
+
+      const res = await this.invoke(req.toolName, args, {
+        actorType: 'agent',
+        actorId,
+        companyId: req.companyId,
+        runId,
+        correlationId: req.correlationId ?? `corr_${runId}`,
+        policyVersion,
+        humanApprovalToken,
+      });
+      if (!res.allowed) {
+        throw new Error(res.denial.message);
+      }
+      return res.output;
+    }
+
+    const toolName = toolNameOrReq;
+    const args = maybeArgs ?? {};
+    const context = maybeContext!;
     const tool = this.tools.get(toolName);
     if (!tool) {
       return this.recordDenial({
@@ -484,11 +646,13 @@ export class CapabilityGateway {
     }
 
     const argValidation = validateJsonSchema(tool.inputSchema, args);
-    if (!argValidation.valid) {
-      const summary = argValidation.errors
-        .slice(0, 4)
-        .map((issue) => `${issue.path}: ${issue.message}`)
-        .join('; ');
+    if (!argValidation.valid || (tool.validateArgs && !tool.validateArgs(args))) {
+      const summary = !argValidation.valid
+        ? argValidation.errors
+            .slice(0, 4)
+            .map((issue) => `${issue.path}: ${issue.message}`)
+            .join('; ')
+        : 'Custom validateArgs rejected input';
       return this.recordDenial({
         code: 'validation_failed',
         reasonCode: 'INVALID_TOOL_ARGUMENTS',
@@ -754,6 +918,10 @@ export class CapabilityGateway {
     }
 
     this.runCallCounts.set(runQuotaKey, usedInRun + 1);
+    this.runTotalCalls.set(
+      String(context.runId),
+      (this.runTotalCalls.get(String(context.runId)) ?? 0) + 1
+    );
     activeTimestamps.push(nowMs);
     this.agentWindowTimestamps.set(agentWindowKey, activeTimestamps);
 

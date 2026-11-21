@@ -21,6 +21,7 @@ import {
   StoryIcon,
   SunIcon,
   SettingsIcon,
+  SparkleIcon,
   UserIcon,
   MessageIcon,
   PartnerIcon,
@@ -60,6 +61,8 @@ import { ActivityBell } from './activity-bell';
 import { NotificationBell } from './notification-bell';
 import { Sheet, SheetContent, SheetTrigger } from '@moonwitness/ui/components/sheet';
 import { SoundToggle } from '@moonwitness/ui/components/audio';
+import { DesktopHarnessDrawer } from '@/components/ai/desktop-harness-drawer';
+import { AI_MISSION_CONTROL_ROUTES } from '@/components/ai/ai-api';
 
 function NavItem({
   to,
@@ -127,6 +130,12 @@ function ModelNavigation({
         />
       )}
       <NavItem to="/board/whatsapp" label="WhatsApp" icon={MessageIcon} onNavigate={onNavigate} />
+      <NavItem
+        to="/board/ai/hq"
+        label="AI Mission Control"
+        icon={SparkleIcon}
+        onNavigate={onNavigate}
+      />
       {isLoading &&
         Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-8 bg-ink/10" />)}
       {groups.map(([group, items]) => (
@@ -433,6 +442,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Button>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <DesktopHarnessDrawer />
             {/* Tenant / Company Switcher */}
             {companies.length > 0 && (
               <DropdownMenu>
@@ -618,6 +628,32 @@ export function AppShell({ children }: { children: ReactNode }) {
               })}
             </CommandGroup>
           )}
+
+          {/* AI Mission Control Section */}
+          <CommandGroup heading="AI Mission Control">
+            {AI_MISSION_CONTROL_ROUTES.map((route) => {
+              const RouteIcon = route.icon;
+              return (
+                <CommandItem
+                  key={route.href}
+                  value={`${route.label} ${route.href}`}
+                  onSelect={() => {
+                    setPaletteOpen(false);
+                    setPaletteQuery('');
+                    router.push(route.href);
+                  }}
+                >
+                  <RouteIcon /> {route.label}
+                  <span
+                    className="ml-auto max-w-[45%] truncate font-mono text-xs text-ink-faint"
+                    title={route.href}
+                  >
+                    {route.href}
+                  </span>
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
 
           {/* System Modules Section */}
           {visibleGroups.map(([group, items]) => (

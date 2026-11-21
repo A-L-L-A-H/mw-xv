@@ -57,6 +57,18 @@
       "scripts": ["build", "build:built", "dev", "preview", "test"]
     },
     {
+      "name": "@moonwitness/ai-evaluation",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/ai-evaluation",
+      "scripts": ["build", "test", "typecheck"]
+    },
+    {
+      "name": "@moonwitness/ai-mcp",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/ai-mcp",
+      "scripts": ["build", "test", "typecheck"]
+    },
+    {
       "name": "@moonwitness/ai-runtime",
       "version": "1.0.0-rc.1",
       "directory": "packages/ai-runtime",
@@ -249,6 +261,16 @@
       "preview": "vite preview",
       "test": "playwright test"
     },
+    "@moonwitness/ai-evaluation": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    },
+    "@moonwitness/ai-mcp": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    },
     "@moonwitness/ai-runtime": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run",
@@ -376,6 +398,7 @@
       "db:migrate": "pnpm --filter @moonwitness/api db:migrate",
       "dependency:candidate": "node scripts/dependency-candidate.mjs",
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
+      "desktop:ui:check": "node --test scripts/check-desktop-non-overlap.test.mjs && node scripts/check-desktop-non-overlap.mjs",
       "dev": "pnpm --filter @moonwitness/ui build && node scripts/run-local-services.mjs dev",
       "dev:api": "pnpm --filter @moonwitness/api dev",
       "dev:board": "pnpm --filter @moonwitness/board dev",
@@ -8482,6 +8505,22 @@
     },
     {
       "method": "GET",
+      "path": "/agents"
+    },
+    {
+      "method": "POST",
+      "path": "/agents"
+    },
+    {
+      "method": "GET",
+      "path": "/agents/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/agents/:id"
+    },
+    {
+      "method": "GET",
       "path": "/api/:model"
     },
     {
@@ -8653,6 +8692,14 @@
       "path": "/api/research/witnesses/:witnessId"
     },
     {
+      "method": "GET",
+      "path": "/artifacts"
+    },
+    {
+      "method": "POST",
+      "path": "/artifacts"
+    },
+    {
       "method": "POST",
       "path": "/auth/login"
     },
@@ -8685,6 +8732,54 @@
       "path": "/auth/register"
     },
     {
+      "method": "POST",
+      "path": "/desktop/artifacts/upload"
+    },
+    {
+      "method": "POST",
+      "path": "/desktop/lease"
+    },
+    {
+      "method": "POST",
+      "path": "/desktop/pcw-sync"
+    },
+    {
+      "method": "GET",
+      "path": "/desktop/pull"
+    },
+    {
+      "method": "POST",
+      "path": "/emergency-stop"
+    },
+    {
+      "method": "GET",
+      "path": "/eval-summary"
+    },
+    {
+      "method": "GET",
+      "path": "/governance/approvals"
+    },
+    {
+      "method": "POST",
+      "path": "/governance/approvals"
+    },
+    {
+      "method": "POST",
+      "path": "/governance/approvals/:id/decide"
+    },
+    {
+      "method": "GET",
+      "path": "/grants"
+    },
+    {
+      "method": "POST",
+      "path": "/grants"
+    },
+    {
+      "method": "POST",
+      "path": "/grants/:id/revoke"
+    },
+    {
       "method": "GET",
       "path": "/health"
     },
@@ -8695,6 +8790,18 @@
     {
       "method": "GET",
       "path": "/livez"
+    },
+    {
+      "method": "GET",
+      "path": "/memory"
+    },
+    {
+      "method": "POST",
+      "path": "/memory"
+    },
+    {
+      "method": "POST",
+      "path": "/memory/:id/revoke"
     },
     {
       "method": "GET",
@@ -8718,7 +8825,47 @@
     },
     {
       "method": "GET",
+      "path": "/obligations"
+    },
+    {
+      "method": "POST",
+      "path": "/obligations"
+    },
+    {
+      "method": "PATCH",
+      "path": "/obligations/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/providers"
+    },
+    {
+      "method": "POST",
+      "path": "/providers"
+    },
+    {
+      "method": "PATCH",
+      "path": "/providers/:id"
+    },
+    {
+      "method": "GET",
       "path": "/readyz"
+    },
+    {
+      "method": "GET",
+      "path": "/runs"
+    },
+    {
+      "method": "POST",
+      "path": "/runs"
+    },
+    {
+      "method": "GET",
+      "path": "/runs/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/runs/:id/cancel"
     },
     {
       "method": "GET",
@@ -8898,6 +9045,22 @@
     },
     {
       "method": "GET",
+      "path": "/work-contracts"
+    },
+    {
+      "method": "POST",
+      "path": "/work-contracts"
+    },
+    {
+      "method": "GET",
+      "path": "/work-contracts/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/work-contracts/:id/verify"
+    },
+    {
+      "method": "GET",
       "path": "/workflows/definitions"
     },
     {
@@ -8917,5 +9080,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "84f0f219bbab35ee38dc70cd2218bb5152154b4ce53a704739a01be4ce9bf074"
+  "generatedFromSha256": "32f3c0a2c350a50b17d911d4f9895999c33d4a4c3e4cfaed9861bb39b3ac76da"
 }

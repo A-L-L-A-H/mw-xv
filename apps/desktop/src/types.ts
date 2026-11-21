@@ -53,6 +53,33 @@ export interface HumanApprovalToken {
   readonly issuedAt: string;
   readonly expiresAt: string;
   readonly singleUse?: boolean;
+  readonly nonce?: string;
+  readonly signature?: string;
+}
+
+export interface NativeHumanApprovalRequest {
+  readonly approvedByUserId: number;
+  readonly action: DesktopActionKind;
+  readonly runId: string;
+  readonly scopeHash?: string;
+  readonly ttlMs?: number;
+  readonly singleUse?: boolean;
+}
+
+export interface DesktopKeychainSecretStore {
+  setSecret(secretRef: string, secretValue: string): void;
+  resolveSecret(secretRef: string): string | null;
+  deleteSecret(secretRef: string): boolean;
+  listSecretRefs(): readonly string[];
+}
+
+export interface SingleWriterLockMetadata {
+  readonly pid: number;
+  readonly startedAt: string;
+  readonly startTimeMs: number;
+  readonly host: string;
+  readonly sqlitePath: string;
+  readonly lockPath: string;
 }
 
 export interface DesktopActionAuthContext {
@@ -84,14 +111,18 @@ export interface DesktopHarnessConfig {
   readonly repoRoot: string;
   readonly worktreeBaseDir?: string;
   readonly sqlitePath: string;
+  readonly desktopHomeDir?: string;
   readonly boardOrigin: string;
   readonly apiBaseUrl: string;
   readonly localAiEndpoint?: string;
+  readonly allowedIpcOrigins?: readonly string[];
   readonly allowedPathPrefixes?: readonly string[];
   readonly allowedCommands?: readonly string[];
   readonly defaultTimeoutMs?: number;
   readonly maxOutputBytes?: number;
   readonly offlineMode?: boolean;
+  readonly activeCompanyId?: number | null;
+  readonly requireSignedApprovals?: boolean;
   readonly knownSecrets?: readonly string[];
   readonly mcpServers?: readonly LocalMcpServerConfig[];
 }
@@ -233,6 +264,10 @@ export interface LocalSidecarState {
   readonly sqlitePath: string;
   readonly schemaVersion: number;
   readonly offlineMode: boolean;
+  readonly activeCompanyId?: number | null;
+  readonly installedAddons?: readonly string[];
+  readonly lockPath?: string | null;
+  readonly storageDir?: string | null;
   readonly registeredOrmModels: readonly string[];
   readonly pendingOutboxCount: number;
   readonly syncedOutboxCount: number;
@@ -306,6 +341,46 @@ export interface UpstreamPcwSyncTransport {
   pushEnvelope(envelope: PcwSyncEnvelope): Promise<UpstreamPcwSyncResult>;
 }
 
+export interface DesktopLeaseClaimRequest {
+  readonly companyId: number;
+  readonly workContractId: number;
+  readonly hostId: string;
+  readonly requestedLeaseSeconds?: number;
+}
+
+export interface DesktopLeaseClaimResponse {
+  readonly granted: boolean;
+  readonly leaseOwner: string;
+  readonly fencingToken: number;
+  readonly leaseUntil: string;
+}
+
+export interface DesktopPullSyncRequest {
+  readonly companyId: number;
+  readonly sinceCursor?: string;
+}
+
+export interface DesktopPullSyncResponse {
+  readonly companyId: number;
+  readonly nextCursor: string;
+  readonly workContracts: readonly JsonObject[];
+  readonly capabilityGrants: readonly JsonObject[];
+  readonly executionPolicies: readonly JsonObject[];
+}
+
+export interface DesktopArtifactUploadRequest {
+  readonly companyId: number;
+  readonly workContractId: number;
+  readonly artifact: PcwArtifactDigest;
+  readonly contentBase64: string;
+}
+
+export interface DesktopArtifactUploadResponse {
+  readonly storageKey: string;
+  readonly sha256: string;
+  readonly verified: boolean;
+}
+
 export interface PcwSyncBatchResult {
   readonly attempted: number;
   readonly synced: number;
@@ -363,6 +438,13 @@ export interface DesktopCapabilityBridge {
   readonly protocolVersion: '1.0';
   readonly hostSurface: 'apps/board';
   getStatus(): Promise<DesktopBridgeSnapshot>;
+  verifySenderOrigin(origin: string, windowLabel?: string): boolean;
+  issueNativeApprovalToken(request: NativeHumanApprovalRequest): HumanApprovalToken;
+  readonly keychain: {
+    registerSecretRef(secretRef: string, secretValue: string): void;
+    hasSecretRef(secretRef: string): boolean;
+    listSecretRefs(): readonly string[];
+  };
   readonly worktree: {
     acquire(options: AcquireWorktreeOptions): Promise<GitWorktreeLease>;
     listLeases(): Promise<readonly GitWorktreeLease[]>;
@@ -394,8 +476,14 @@ export interface DesktopCapabilityBridge {
   readonly sidecar: {
     getState(): LocalSidecarState;
     setOfflineMode(offline: boolean): LocalSidecarState;
+    setActiveCompany(companyId: number | null): LocalSidecarState;
+    getActiveCompany(): number | null;
+    initializeOrmAddons(): Promise<readonly string[]>;
     enqueuePcwEnvelope(input: EnqueuePcwEnvelopeInput): PcwSyncEnvelope;
-    listEnvelopes(domain?: Domain): readonly PcwSyncEnvelope[];
+    listEnvelopes(
+      domain?: Domain,
+      options?: { readonly companyId?: number }
+    ): readonly PcwSyncEnvelope[];
     syncPending(transport: UpstreamPcwSyncTransport): Promise<PcwSyncBatchResult>;
   };
   readonly mcp: {

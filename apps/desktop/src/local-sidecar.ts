@@ -1,9 +1,29 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { Registry } from '@moonwitness/orm';
+import knex, { type Knex } from 'knex';
+import { Model } from 'objection';
+import { jobsManifest } from '@moonwitness/jobs';
 import {
+  Environment,
+  Registry,
+  ServiceContainer,
+  createServiceToken,
+  installAddons,
+  registerAddons,
+  type Addon,
+} from '@moonwitness/orm';
+import { manifest as aiManifest } from '@moonwitness/orm-ai';
+import { manifest as baseManifest } from '@moonwitness/orm-base';
+import { manifest as knowledgeManifest } from '@moonwitness/orm-knowledge';
+import { manifest as notificationManifest } from '@moonwitness/orm-notification';
+import { manifest as organizationManifest } from '@moonwitness/orm-organization';
+import { LocalFileAttachmentStorage, manifest as storageManifest } from '@moonwitness/orm-storage';
+import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
+import {
+  AccessDeniedError,
   ConcurrencyConflictError,
   NotFoundError,
   ValidationError,
@@ -23,12 +43,24 @@ import type {
   PcwSyncEnvelope,
   PcwSyncStatus,
   RiskAuditRecord,
+  SingleWriterLockMetadata,
   UpstreamPcwSyncTransport,
 } from './types.js';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const SHA256_REGEX = /^[a-f0-9]{64}$/u;
 const SCHEMA_VERSION = 1;
+
+export const DESKTOP_ADDONS: readonly Addon[] = Object.freeze([
+  baseManifest,
+  organizationManifest,
+  jobsManifest,
+  notificationManifest,
+  workflowManifest,
+  storageManifest,
+  knowledgeManifest,
+  aiManifest,
+]);
 
 const ALLOWED_DOMAIN_FIELDS: ReadonlySet<string> = new Set([
   'envelope_id',
@@ -72,6 +104,119 @@ interface MetaRow {
 
 interface RunFencingRow {
   fencing_token: number;
+}
+
+export function resolveDesktopHomeDir(overrideHomeDir?: string): string {
+  const raw = overrideHomeDir ?? process.env.MW_DESKTOP_HOME;
+  if (raw && raw.trim()) {
+    return path.resolve(raw.trim());
+  }
+  return path.join(os.homedir(), '.moonwitness');
+}
+
+export function resolveDesktopDatabasePath(sqlitePath?: string, overrideHomeDir?: string): string {
+  if (!sqlitePath || sqlitePath === '~/.moonwitness/local.db') {
+    return path.join(resolveDesktopHomeDir(overrideHomeDir), 'local.db');
+  }
+  if (sqlitePath === ':memory:') {
+    return ':memory:';
+  }
+  if (sqlitePath.startsWith('~/') || sqlitePath.startsWith('~\\')) {
+    return path.join(os.homedir(), sqlitePath.slice(2));
+  }
+  return path.resolve(sqlitePath);
+}
+
+export function isProcessAlive(pid: number): boolean {
+  if (!Number.isSafeInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    const code =
+      typeof error === 'object' && error !== null && 'code' in error
+        ? String((error as { code?: unknown }).code)
+        : '';
+    return code === 'EPERM';
+  }
+}
+
+export function acquireSingleWriterLock(
+  sqlitePath: string,
+  options?: {
+    readonly pid?: number;
+    readonly isPidAlive?: (pid: number) => boolean;
+    readonly staleLockAgeMs?: number;
+  }
+): SingleWriterLockMetadata {
+  const lockPath = `${sqlitePath}.lock`;
+  mkdirSync(path.dirname(path.resolve(sqlitePath)), { recursive: true });
+  const currentPid = options?.pid ?? process.pid;
+  const checkAlive = options?.isPidAlive ?? isProcessAlive;
+  const staleAgeMs = options?.staleLockAgeMs ?? 86_400_000;
+  const nowMs = Date.now();
+  const metadata: SingleWriterLockMetadata = {
+    pid: currentPid,
+    startedAt: new Date(nowMs).toISOString(),
+    startTimeMs: nowMs,
+    host: os.hostname(),
+    sqlitePath,
+    lockPath,
+  };
+
+  const tryCreate = (): boolean => {
+    try {
+      writeFileSync(lockPath, JSON.stringify(metadata, null, 2), {
+        encoding: 'utf8',
+        flag: 'wx',
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  if (tryCreate()) {
+    return metadata;
+  }
+
+  let existing: SingleWriterLockMetadata | null;
+  try {
+    existing = JSON.parse(readFileSync(lockPath, 'utf8')) as SingleWriterLockMetadata;
+  } catch {
+    existing = null;
+  }
+
+  if (existing && Number.isSafeInteger(existing.pid) && existing.pid > 0) {
+    const alive = checkAlive(existing.pid);
+    const expired =
+      typeof existing.startTimeMs === 'number' &&
+      Number.isFinite(existing.startTimeMs) &&
+      nowMs - existing.startTimeMs > staleAgeMs;
+    if (alive && !expired) {
+      throw new ConcurrencyConflictError(
+        `Single-writer SQLite lock '${lockPath}' is already held by active PID ${existing.pid}`
+      );
+    }
+  }
+
+  rmSync(lockPath, { force: true });
+  if (!tryCreate()) {
+    throw new ConcurrencyConflictError(`Failed to acquire single-writer SQLite lock '${lockPath}'`);
+  }
+  return metadata;
+}
+
+export function releaseSingleWriterLock(lock: SingleWriterLockMetadata | null): void {
+  if (!lock || !existsSync(lock.lockPath)) return;
+  try {
+    const current = JSON.parse(readFileSync(lock.lockPath, 'utf8')) as SingleWriterLockMetadata;
+    if (current.pid === lock.pid && current.startTimeMs === lock.startTimeMs) {
+      rmSync(lock.lockPath, { force: true });
+    }
+  } catch {
+    rmSync(lock.lockPath, { force: true });
+  }
 }
 
 export function buildArtifactDigest(input: {
@@ -170,34 +315,64 @@ function validateArtifacts(artifacts: readonly PcwArtifactDigest[]): void {
 }
 
 export interface LocalSidecarControllerOptions {
-  readonly sqlitePath: string;
+  readonly sqlitePath?: string;
+  readonly desktopHomeDir?: string;
   readonly offlineMode?: boolean;
+  readonly activeCompanyId?: number | null;
   readonly knownSecrets?: readonly string[];
+  readonly lockOptions?: {
+    readonly pid?: number;
+    readonly isPidAlive?: (pid: number) => boolean;
+    readonly staleLockAgeMs?: number;
+  };
 }
 
 export class LocalSidecarController {
   readonly sqlitePath: string;
+  readonly desktopHomeDir: string;
+  readonly storageDir: string;
+  readonly attachmentStorage: LocalFileAttachmentStorage;
   private readonly db: DatabaseSync;
   private readonly knownSecrets: readonly string[];
+  private lockMetadata: SingleWriterLockMetadata | null = null;
+  private ormKnex: Knex | null = null;
+  private installedAddonNames: readonly string[] = [];
+  private activeCompanyId: number | null;
   private offlineMode: boolean;
   private closed = false;
 
-  constructor(options: LocalSidecarControllerOptions) {
-    this.sqlitePath = options.sqlitePath;
+  constructor(options: LocalSidecarControllerOptions = {}) {
+    this.desktopHomeDir = resolveDesktopHomeDir(options.desktopHomeDir);
+    this.sqlitePath = resolveDesktopDatabasePath(options.sqlitePath, options.desktopHomeDir);
+    this.storageDir = path.join(this.desktopHomeDir, 'storage');
+    this.attachmentStorage = new LocalFileAttachmentStorage(this.storageDir);
     this.offlineMode = options.offlineMode ?? false;
+    this.activeCompanyId = options.activeCompanyId ?? null;
     this.knownSecrets = options.knownSecrets ?? [];
+
+    if (this.activeCompanyId !== null) {
+      validatePositiveInt(this.activeCompanyId, 'activeCompanyId');
+    }
 
     if (this.sqlitePath !== ':memory:') {
       mkdirSync(path.dirname(path.resolve(this.sqlitePath)), { recursive: true });
+      this.lockMetadata = acquireSingleWriterLock(this.sqlitePath, options.lockOptions);
     }
 
-    this.db = new DatabaseSync(this.sqlitePath);
-    this.initializeSchema();
+    try {
+      this.db = new DatabaseSync(this.sqlitePath);
+      this.initializeSchema();
+    } catch (error) {
+      releaseSingleWriterLock(this.lockMetadata);
+      this.lockMetadata = null;
+      throw error;
+    }
   }
 
   private initializeSchema(): void {
     if (this.sqlitePath !== ':memory:') {
       this.db.exec('PRAGMA journal_mode = WAL;');
+      this.db.exec('PRAGMA synchronous = NORMAL;');
     }
     this.db.exec(`
       PRAGMA foreign_keys = ON;
@@ -245,6 +420,9 @@ export class LocalSidecarController {
       CREATE INDEX IF NOT EXISTS idx_desktop_pcw_outbox_sync
         ON desktop_pcw_outbox (sync_status, created_at);
 
+      CREATE INDEX IF NOT EXISTS idx_desktop_pcw_outbox_company
+        ON desktop_pcw_outbox (company_id, sync_status, created_at);
+
       CREATE TABLE IF NOT EXISTS desktop_pcw_artifacts (
         envelope_id TEXT NOT NULL REFERENCES desktop_pcw_outbox(envelope_id) ON DELETE CASCADE,
         storage_key TEXT NOT NULL,
@@ -280,6 +458,122 @@ export class LocalSidecarController {
     this.setMetaIfMissing('offline_mode', this.offlineMode ? 'true' : 'false', now);
   }
 
+  /**
+   * Initialize canonical MoonWitness workspace addons (`DESKTOP_ADDONS`) inside this SQLite sidecar
+   * via `better-sqlite3` + `knex` + `@moonwitness/orm` `installAddons`/`registerAddons` (DSK-2.5, DSK-2.7).
+   */
+  async initializeOrmAddons(addons: readonly Addon[] = DESKTOP_ADDONS): Promise<readonly string[]> {
+    this.assertOpen();
+    if (!this.ormKnex) {
+      const isFileDb = this.sqlitePath !== ':memory:';
+      this.ormKnex = knex({
+        client: 'better-sqlite3',
+        connection: { filename: this.sqlitePath },
+        useNullAsDefault: true,
+        pool: {
+          afterCreate(
+            connection: { pragma(sql: string): unknown },
+            done: (error: Error | null, connection: unknown) => void
+          ) {
+            if (isFileDb) {
+              connection.pragma('journal_mode = WAL');
+              connection.pragma('synchronous = NORMAL');
+            }
+            connection.pragma('foreign_keys = ON');
+            connection.pragma('busy_timeout = 5000');
+            done(null, connection);
+          },
+        },
+      });
+    }
+
+    Model.knex(this.ormKnex);
+    await installAddons(this.ormKnex, addons);
+    await registerAddons(this.ormKnex, addons);
+    this.installedAddonNames = addons.map((addon) => addon.name);
+    this.setMeta(
+      'installed_addons',
+      JSON.stringify(this.installedAddonNames),
+      new Date().toISOString()
+    );
+    return this.installedAddonNames;
+  }
+
+  getOrmKnex(): Knex | null {
+    return this.ormKnex;
+  }
+
+  createScopedEnvironment(companyId?: number, userId?: number): Environment {
+    this.assertOpen();
+    const effectiveCompanyId = companyId ?? this.activeCompanyId;
+    if (effectiveCompanyId === null || effectiveCompanyId === undefined) {
+      throw new AccessDeniedError('Company scope is required to create a sidecar ORM Environment');
+    }
+    validatePositiveInt(effectiveCompanyId, 'companyId');
+    if (this.activeCompanyId !== null && effectiveCompanyId !== this.activeCompanyId) {
+      throw new AccessDeniedError(
+        `Cross-company sidecar environment rejected: requested company ${effectiveCompanyId} != active session company ${this.activeCompanyId}`
+      );
+    }
+    const services = new ServiceContainer();
+    const attachmentStorageToken = createServiceToken('attachmentStorage');
+    services.register(attachmentStorageToken, this.attachmentStorage);
+    return new Environment(
+      {
+        companyId: effectiveCompanyId,
+        ...(userId !== undefined ? { userId } : {}),
+      },
+      undefined,
+      services
+    );
+  }
+
+  async queryCompanyAddonRecords(
+    modelName: string,
+    domain: Domain = [],
+    options?: { readonly companyId?: number; readonly fields?: readonly string[] }
+  ): Promise<readonly Record<string, unknown>[]> {
+    this.assertOpen();
+    if (!this.ormKnex) {
+      throw new ValidationError(
+        'ORM addons have not been initialized; call initializeOrmAddons() first'
+      );
+    }
+    const effectiveCompanyId = this.resolveScopedCompanyId(options?.companyId, true);
+    const ModelClass = Registry.get(modelName);
+    const hasCompanyField =
+      ModelClass.fields !== undefined && Object.hasOwn(ModelClass.fields, 'company');
+    const scopedDomain: Domain = hasCompanyField
+      ? [['company_id', '=', effectiveCompanyId], ...domain]
+      : domain;
+    return await ModelClass.search_read(scopedDomain, {
+      ...(options?.fields ? { fields: [...options.fields] } : {}),
+      context: { companyId: effectiveCompanyId },
+    });
+  }
+
+  setActiveCompany(companyId: number | null): LocalSidecarState {
+    this.assertOpen();
+    if (companyId !== null) {
+      validatePositiveInt(companyId, 'companyId');
+    }
+    this.activeCompanyId = companyId;
+    this.setMeta(
+      'active_company_id',
+      companyId === null ? '' : String(companyId),
+      new Date().toISOString()
+    );
+    return this.getState();
+  }
+
+  getActiveCompany(): number | null {
+    return this.activeCompanyId;
+  }
+
+  getLockMetadata(): SingleWriterLockMetadata | null {
+    return this.lockMetadata;
+  }
+
   getState(): LocalSidecarState {
     if (this.closed) {
       return {
@@ -287,6 +581,10 @@ export class LocalSidecarController {
         sqlitePath: this.sqlitePath,
         schemaVersion: SCHEMA_VERSION,
         offlineMode: this.offlineMode,
+        activeCompanyId: this.activeCompanyId,
+        installedAddons: this.installedAddonNames,
+        lockPath: this.lockMetadata?.lockPath ?? null,
+        storageDir: this.storageDir,
         registeredOrmModels: Registry.getNames(),
         pendingOutboxCount: 0,
         syncedOutboxCount: 0,
@@ -299,17 +597,32 @@ export class LocalSidecarController {
     }
 
     const countByStatus = (status: PcwSyncStatus): number => {
+      if (this.activeCompanyId !== null) {
+        const row = this.db
+          .prepare(
+            'SELECT COUNT(*) AS total FROM desktop_pcw_outbox WHERE sync_status = ? AND company_id = ?'
+          )
+          .get(status, this.activeCompanyId) as unknown as CountRow | undefined;
+        return row?.total ?? 0;
+      }
       const row = this.db
         .prepare('SELECT COUNT(*) AS total FROM desktop_pcw_outbox WHERE sync_status = ?')
         .get(status) as unknown as CountRow | undefined;
       return row?.total ?? 0;
     };
 
-    const activeRunRow = this.db
-      .prepare(
-        "SELECT COUNT(*) AS total FROM desktop_local_runs WHERE run_status IN ('pending', 'running')"
-      )
-      .get() as unknown as CountRow | undefined;
+    const activeRunRow =
+      this.activeCompanyId !== null
+        ? (this.db
+            .prepare(
+              "SELECT COUNT(*) AS total FROM desktop_local_runs WHERE run_status IN ('pending', 'running') AND company_id = ?"
+            )
+            .get(this.activeCompanyId) as unknown as CountRow | undefined)
+        : (this.db
+            .prepare(
+              "SELECT COUNT(*) AS total FROM desktop_local_runs WHERE run_status IN ('pending', 'running')"
+            )
+            .get() as unknown as CountRow | undefined);
 
     const failedCount = countByStatus('failed');
     const conflictCount = countByStatus('conflict');
@@ -325,6 +638,10 @@ export class LocalSidecarController {
       sqlitePath: this.sqlitePath,
       schemaVersion: SCHEMA_VERSION,
       offlineMode: this.offlineMode,
+      activeCompanyId: this.activeCompanyId,
+      installedAddons: this.installedAddonNames,
+      lockPath: this.lockMetadata?.lockPath ?? null,
+      storageDir: this.storageDir,
       registeredOrmModels: Registry.getNames(),
       pendingOutboxCount: countByStatus('pending'),
       syncedOutboxCount: countByStatus('synced'),
@@ -346,6 +663,11 @@ export class LocalSidecarController {
   enqueuePcwEnvelope(input: EnqueuePcwEnvelopeInput): PcwSyncEnvelope {
     this.assertOpen();
     validatePositiveInt(input.companyId, 'companyId');
+    if (this.activeCompanyId !== null && input.companyId !== this.activeCompanyId) {
+      throw new AccessDeniedError(
+        `Cannot enqueue PCW envelope for company ${input.companyId} while active sidecar session is scoped to company ${this.activeCompanyId}`
+      );
+    }
     validatePositiveInt(input.workContractId, 'workContractId');
     validatePositiveInt(input.agentId, 'agentId');
     if (!input.agentRunId.trim() || !input.correlationId.trim()) {
@@ -481,12 +803,23 @@ export class LocalSidecarController {
     if (!row) {
       throw new NotFoundError(`PCW envelope '${envelopeId}' not found`);
     }
+    if (this.activeCompanyId !== null && row.company_id !== this.activeCompanyId) {
+      throw new AccessDeniedError(
+        `PCW envelope '${envelopeId}' belongs to another company partition`
+      );
+    }
     return this.rowToEnvelope(row);
   }
 
-  listEnvelopes(domain: Domain = []): readonly PcwSyncEnvelope[] {
+  listEnvelopes(
+    domain: Domain = [],
+    options?: { readonly companyId?: number }
+  ): readonly PcwSyncEnvelope[] {
     this.assertOpen();
-    const { sqlWhere, params } = compileSimpleDomain(domain);
+    const scopedCompanyId = this.resolveScopedCompanyId(options?.companyId, false);
+    const effectiveDomain: Domain =
+      scopedCompanyId !== null ? [['company_id', '=', scopedCompanyId], ...domain] : domain;
+    const { sqlWhere, params } = compileSimpleDomain(effectiveDomain);
     const sql = `SELECT * FROM desktop_pcw_outbox${sqlWhere} ORDER BY created_at ASC, rowid ASC`;
     const rows = this.db.prepare(sql).all(...params) as unknown as OutboxRow[];
     return rows.map((row) => this.rowToEnvelope(row));
@@ -522,11 +855,18 @@ export class LocalSidecarController {
       };
     }
 
-    const pendingRows = this.db
-      .prepare(
-        "SELECT * FROM desktop_pcw_outbox WHERE sync_status IN ('pending', 'failed') ORDER BY created_at ASC, rowid ASC"
-      )
-      .all() as unknown as OutboxRow[];
+    const pendingRows =
+      this.activeCompanyId !== null
+        ? (this.db
+            .prepare(
+              "SELECT * FROM desktop_pcw_outbox WHERE sync_status IN ('pending', 'failed') AND company_id = ? ORDER BY created_at ASC, rowid ASC"
+            )
+            .all(this.activeCompanyId) as unknown as OutboxRow[])
+        : (this.db
+            .prepare(
+              "SELECT * FROM desktop_pcw_outbox WHERE sync_status IN ('pending', 'failed') ORDER BY created_at ASC, rowid ASC"
+            )
+            .all() as unknown as OutboxRow[]);
 
     let synced = 0;
     let failed = 0;
@@ -685,17 +1025,68 @@ export class LocalSidecarController {
   getCheckpoint(agentRunId: string): JsonObject | null {
     this.assertOpen();
     const row = this.db
-      .prepare('SELECT checkpoint_json FROM desktop_local_runs WHERE agent_run_id = ?')
-      .get(agentRunId) as unknown as { checkpoint_json: string | null } | undefined;
-    if (!row?.checkpoint_json) return null;
+      .prepare('SELECT company_id, checkpoint_json FROM desktop_local_runs WHERE agent_run_id = ?')
+      .get(agentRunId) as unknown as
+      { company_id: number; checkpoint_json: string | null } | undefined;
+    if (!row) return null;
+    if (this.activeCompanyId !== null && row.company_id !== this.activeCompanyId) {
+      throw new AccessDeniedError(`Run '${agentRunId}' belongs to another company partition`);
+    }
+    if (!row.checkpoint_json) return null;
     return JSON.parse(row.checkpoint_json) as JsonObject;
+  }
+
+  async closeAsync(): Promise<void> {
+    if (this.ormKnex) {
+      const knexInstance = this.ormKnex;
+      this.ormKnex = null;
+      await knexInstance.destroy();
+    }
+    this.close();
   }
 
   close(): void {
     if (!this.closed) {
       this.closed = true;
+      if (this.ormKnex) {
+        const knexInstance = this.ormKnex;
+        this.ormKnex = null;
+        void knexInstance.destroy();
+      }
       this.db.close();
+      releaseSingleWriterLock(this.lockMetadata);
+      this.lockMetadata = null;
     }
+  }
+
+  private resolveScopedCompanyId(
+    requestedCompanyId: number | undefined,
+    requireScope: true
+  ): number;
+  private resolveScopedCompanyId(
+    requestedCompanyId: number | undefined,
+    requireScope: false
+  ): number | null;
+  private resolveScopedCompanyId(
+    requestedCompanyId: number | undefined,
+    requireScope: boolean
+  ): number | null {
+    if (requestedCompanyId !== undefined) {
+      validatePositiveInt(requestedCompanyId, 'companyId');
+      if (this.activeCompanyId !== null && requestedCompanyId !== this.activeCompanyId) {
+        throw new AccessDeniedError(
+          `Cross-company sidecar query rejected: requested company ${requestedCompanyId} != active session company ${this.activeCompanyId}`
+        );
+      }
+      return requestedCompanyId;
+    }
+    if (this.activeCompanyId !== null) {
+      return this.activeCompanyId;
+    }
+    if (requireScope) {
+      throw new AccessDeniedError('Company scope is required for local sidecar query');
+    }
+    return null;
   }
 
   private assertOpen(): void {

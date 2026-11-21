@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `84f0f219bbab35ee38dc70cd2218bb5152154b4ce53a704739a01be4ce9bf074`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `32f3c0a2c350a50b17d911d4f9895999c33d4a4c3e4cfaed9861bb39b3ac76da`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -11,6 +11,8 @@ Source fingerprint: `84f0f219bbab35ee38dc70cd2218bb5152154b4ce53a704739a01be4ce9
 | `@moonwitness/desktop`          | App     | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/docs`             | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
 | `@moonwitness/ui-catalog`       | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `preview`, `test`                                                                                                                                                                                                                                   |
+| `@moonwitness/ai-evaluation`    | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/ai-mcp`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/ai-runtime`       | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/assets`           | Package | 1.0.0-rc.1 | `artwork:prepare`, `brand:prepare`, `fonts:prepare`                                                                                                                                                                                                                                |
 | `@moonwitness/auth`             | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
@@ -134,6 +136,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm db:migrate`
 - `pnpm dependency:candidate`
 - `pnpm dependency:plan`
+- `pnpm desktop:ui:check`
 - `pnpm dev`
 - `pnpm dev:api`
 - `pnpm dev:board`

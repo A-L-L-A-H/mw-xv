@@ -114,13 +114,43 @@ export interface EmergencyStopRecord {
   readonly clearedBy?: string;
 }
 
+const DB_SCOPED_EMERGENCY_STOPS = new WeakMap<object, Map<string, EmergencyStopRecord>>();
+
+function getDbStopMap(db: unknown): Map<string, EmergencyStopRecord> | undefined {
+  if (typeof db !== 'object' && typeof db !== 'function') return undefined;
+  if (db === null) return undefined;
+  let map = DB_SCOPED_EMERGENCY_STOPS.get(db as object);
+  if (!map) {
+    map = new Map<string, EmergencyStopRecord>();
+    DB_SCOPED_EMERGENCY_STOPS.set(db as object, map);
+  }
+  return map;
+}
+
 export class EmergencyStopController {
   private readonly clock: Clock;
+  private readonly db?: unknown;
   private readonly activeStops = new Map<string, EmergencyStopRecord>();
   private readonly history: EmergencyStopRecord[] = [];
 
-  constructor(clock: Clock = SYSTEM_CLOCK) {
-    this.clock = clock;
+  constructor(
+    clockOrOptions: Clock | { readonly db?: unknown; readonly clock?: Clock } = SYSTEM_CLOCK
+  ) {
+    if (
+      typeof clockOrOptions === 'object' &&
+      clockOrOptions !== null &&
+      'now' in clockOrOptions &&
+      typeof clockOrOptions.now === 'function'
+    ) {
+      this.clock = clockOrOptions;
+    } else if (typeof clockOrOptions === 'object' && clockOrOptions !== null) {
+      const opts = clockOrOptions as { readonly db?: unknown; readonly clock?: Clock };
+      this.db = opts.db;
+      this.clock = opts.clock ?? SYSTEM_CLOCK;
+    } else {
+      this.db = clockOrOptions;
+      this.clock = SYSTEM_CLOCK;
+    }
   }
 
   private static makeKey(scope: EmergencyStopRecord['scope'], targetId: string | number): string {
@@ -146,8 +176,34 @@ export class EmergencyStopController {
       active: true,
     };
     this.activeStops.set(key, record);
+    getDbStopMap(this.db)?.set(key, record);
     this.history.push(record);
     return record;
+  }
+
+  async activate(params: {
+    readonly scope?: EmergencyStopRecord['scope'];
+    readonly companyId?: number;
+    readonly targetId?: string | number;
+    readonly actorId?: string | number;
+    readonly reason: string;
+  }): Promise<EmergencyStopRecord> {
+    const scope = params.scope ?? (params.companyId !== undefined ? 'company' : 'global');
+    const targetId = params.targetId ?? params.companyId;
+    return this.activateStop({
+      scope,
+      targetId,
+      reason: params.reason,
+      activatedBy: String(params.actorId ?? 'operator'),
+    });
+  }
+
+  async canDispatch(params: {
+    readonly companyId?: number;
+    readonly agentId?: number | string;
+    readonly providerId?: string;
+  }): Promise<boolean> {
+    return !this.checkStopped(params).stopped;
   }
 
   clearStop(params: {
@@ -159,9 +215,10 @@ export class EmergencyStopController {
       params.scope === 'global'
         ? 'global:*'
         : EmergencyStopController.makeKey(params.scope, params.targetId ?? '');
-    const existing = this.activeStops.get(key);
+    const existing = this.activeStops.get(key) ?? getDbStopMap(this.db)?.get(key);
     if (!existing) return false;
     this.activeStops.delete(key);
+    getDbStopMap(this.db)?.delete(key);
     this.history.push({
       ...existing,
       active: false,
@@ -176,25 +233,23 @@ export class EmergencyStopController {
     readonly agentId?: number | string;
     readonly providerId?: string;
   }): { readonly stopped: boolean; readonly record?: EmergencyStopRecord } {
-    const globalStop = this.activeStops.get('global:*');
+    const dbMap = getDbStopMap(this.db);
+    const getStop = (key: string): EmergencyStopRecord | undefined =>
+      this.activeStops.get(key) ?? dbMap?.get(key);
+
+    const globalStop = getStop('global:*');
     if (globalStop) return { stopped: true, record: globalStop };
 
     if (params.companyId !== undefined) {
-      const companyStop = this.activeStops.get(
-        EmergencyStopController.makeKey('company', params.companyId)
-      );
+      const companyStop = getStop(EmergencyStopController.makeKey('company', params.companyId));
       if (companyStop) return { stopped: true, record: companyStop };
     }
     if (params.agentId !== undefined) {
-      const agentStop = this.activeStops.get(
-        EmergencyStopController.makeKey('agent', params.agentId)
-      );
+      const agentStop = getStop(EmergencyStopController.makeKey('agent', params.agentId));
       if (agentStop) return { stopped: true, record: agentStop };
     }
     if (params.providerId !== undefined) {
-      const providerStop = this.activeStops.get(
-        EmergencyStopController.makeKey('provider', params.providerId)
-      );
+      const providerStop = getStop(EmergencyStopController.makeKey('provider', params.providerId));
       if (providerStop) return { stopped: true, record: providerStop };
     }
     return { stopped: false };
@@ -202,6 +257,59 @@ export class EmergencyStopController {
 
   getHistory(): readonly EmergencyStopRecord[] {
     return [...this.history];
+  }
+}
+
+export async function activateEmergencyStop(
+  db: unknown,
+  params: {
+    readonly companyId?: number;
+    readonly active?: boolean;
+    readonly reason?: string;
+    readonly actorId?: string | number;
+  }
+): Promise<EmergencyStopRecord | null> {
+  const controller = new EmergencyStopController({ db });
+  if (params.active === false) {
+    controller.clearStop({
+      scope: params.companyId !== undefined ? 'company' : 'global',
+      targetId: params.companyId,
+      clearedBy: String(params.actorId ?? 'operator'),
+    });
+    return null;
+  }
+  return controller.activate({
+    scope: params.companyId !== undefined ? 'company' : 'global',
+    companyId: params.companyId,
+    actorId: params.actorId,
+    reason: params.reason ?? 'Emergency stop activated',
+  });
+}
+
+export const setEmergencyStop = activateEmergencyStop;
+
+export function isDbEmergencyStopped(
+  db: unknown,
+  params: { readonly companyId?: number; readonly agentId?: number | string }
+): { readonly stopped: boolean; readonly record?: EmergencyStopRecord } {
+  return new EmergencyStopController({ db }).checkStopped(params);
+}
+
+export class RiskPolicyEngine {
+  evaluate(params: { readonly tier: RiskTier; readonly humanApproved?: boolean }): {
+    readonly decision: 'allow' | 'require_human_approval' | 'deny';
+    readonly tier: RiskTier;
+  } {
+    if (params.tier === 'R4') {
+      return { decision: 'deny', tier: params.tier };
+    }
+    if (params.tier === 'R3') {
+      return {
+        decision: params.humanApproved ? 'allow' : 'require_human_approval',
+        tier: params.tier,
+      };
+    }
+    return { decision: 'allow', tier: params.tier };
   }
 }
 
@@ -560,5 +668,36 @@ export class GenAiTelemetryCollector {
     }
 
     return alerts;
+  }
+}
+
+export class InMemoryTelemetrySink {
+  private readonly events: Record<string, unknown>[] = [];
+
+  record(event: Record<string, unknown>): void {
+    this.events.push(event);
+  }
+
+  getEvents(): readonly Record<string, unknown>[] {
+    return [...this.events];
+  }
+}
+
+export class GenAiTelemetry {
+  private readonly sink: InMemoryTelemetrySink;
+  private readonly redactor: RedactionContext;
+
+  constructor(options?: {
+    readonly sink?: InMemoryTelemetrySink;
+    readonly redactor?: RedactionContext;
+  }) {
+    this.sink = options?.sink ?? new InMemoryTelemetrySink();
+    this.redactor = options?.redactor ?? createRedactor();
+  }
+
+  recordRunEvent(event: Record<string, unknown>): Record<string, unknown> {
+    const redacted = this.redactor.redactObject(event);
+    this.sink.record(redacted);
+    return redacted;
   }
 }

@@ -1,6 +1,6 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `84f0f219bbab35ee38dc70cd2218bb5152154b4ce53a704739a01be4ce9bf074`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `32f3c0a2c350a50b17d911d4f9895999c33d4a4c3e4cfaed9861bb39b3ac76da`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                                     |
 | ------ | -------------------------------------------------------- |
@@ -16,6 +16,10 @@ Extracted from literal Fastify route declarations. Source fingerprint: `84f0f219
 | GET    | `/admin/jobs/health`                                     |
 | GET    | `/admin/outbox`                                          |
 | POST   | `/admin/outbox/:id/retry`                                |
+| GET    | `/agents`                                                |
+| POST   | `/agents`                                                |
+| GET    | `/agents/:id`                                            |
+| PATCH  | `/agents/:id`                                            |
 | GET    | `/api/:model`                                            |
 | POST   | `/api/:model`                                            |
 | DELETE | `/api/:model/:id`                                        |
@@ -59,6 +63,8 @@ Extracted from literal Fastify route declarations. Source fingerprint: `84f0f219
 | GET    | `/api/research/suggestions/:suggestionId`                |
 | POST   | `/api/research/suggestions/generate`                     |
 | GET    | `/api/research/witnesses/:witnessId`                     |
+| GET    | `/artifacts`                                             |
+| POST   | `/artifacts`                                             |
 | POST   | `/auth/login`                                            |
 | POST   | `/auth/logout`                                           |
 | GET    | `/auth/me`                                               |
@@ -67,15 +73,40 @@ Extracted from literal Fastify route declarations. Source fingerprint: `84f0f219
 | PATCH  | `/auth/me/profile`                                       |
 | POST   | `/auth/refresh`                                          |
 | POST   | `/auth/register`                                         |
+| POST   | `/desktop/artifacts/upload`                              |
+| POST   | `/desktop/lease`                                         |
+| POST   | `/desktop/pcw-sync`                                      |
+| GET    | `/desktop/pull`                                          |
+| POST   | `/emergency-stop`                                        |
+| GET    | `/eval-summary`                                          |
+| GET    | `/governance/approvals`                                  |
+| POST   | `/governance/approvals`                                  |
+| POST   | `/governance/approvals/:id/decide`                       |
+| GET    | `/grants`                                                |
+| POST   | `/grants`                                                |
+| POST   | `/grants/:id/revoke`                                     |
 | GET    | `/health`                                                |
 | POST   | `/jsonrpc`                                               |
 | GET    | `/livez`                                                 |
+| GET    | `/memory`                                                |
+| POST   | `/memory`                                                |
+| POST   | `/memory/:id/revoke`                                     |
 | GET    | `/metrics`                                               |
 | PATCH  | `/notifications/:id/read`                                |
 | GET    | `/notifications/inbox`                                   |
 | GET    | `/notifications/preferences`                             |
 | PUT    | `/notifications/preferences/:channel`                    |
+| GET    | `/obligations`                                           |
+| POST   | `/obligations`                                           |
+| PATCH  | `/obligations/:id`                                       |
+| GET    | `/providers`                                             |
+| POST   | `/providers`                                             |
+| PATCH  | `/providers/:id`                                         |
 | GET    | `/readyz`                                                |
+| GET    | `/runs`                                                  |
+| POST   | `/runs`                                                  |
+| GET    | `/runs/:id`                                              |
+| POST   | `/runs/:id/cancel`                                       |
 | GET    | `/whatsapp/account`                                      |
 | GET    | `/whatsapp/agents`                                       |
 | POST   | `/whatsapp/connect`                                      |
@@ -120,6 +151,10 @@ Extracted from literal Fastify route declarations. Source fingerprint: `84f0f219
 | GET    | `/whatsapp/readyz`                                       |
 | GET    | `/whatsapp/statuses`                                     |
 | POST   | `/whatsapp/statuses`                                     |
+| GET    | `/work-contracts`                                        |
+| POST   | `/work-contracts`                                        |
+| GET    | `/work-contracts/:id`                                    |
+| POST   | `/work-contracts/:id/verify`                             |
 | GET    | `/workflows/definitions`                                 |
 | GET    | `/workflows/instances`                                   |
 | POST   | `/workflows/instances`                                   |

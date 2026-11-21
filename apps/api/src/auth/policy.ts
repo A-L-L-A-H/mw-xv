@@ -9,6 +9,7 @@ const INTERNAL_PREFIXES = [
   'base.outbox_event',
   'workflow.',
   'knowledge.',
+  'ai.',
 ];
 
 /** Only administrative roles may touch these; ordinary users use dedicated endpoints. */

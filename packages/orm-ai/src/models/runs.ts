@@ -76,7 +76,7 @@ export const AgentRun = defineModel('ai.agent_run', {
 export const ArtifactManifest = defineModel('ai.artifact_manifest', {
   table: 'ai_artifact_manifests',
   order: 'create_date desc, id desc',
-  unique: [['company', 'storage_key']],
+  unique: [['company', 'storage_key', 'acceptance_criterion']],
   fields: {
     company: fields.belongsTo(
       modelRef(() => Company),

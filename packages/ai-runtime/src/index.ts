@@ -19,3 +19,5 @@ export * from './pcw-verifier.js';
 export * from './workforce-planner.js';
 export * from './memory-evaluator.js';
 export * from './capability-gates.js';
+export * from './domain-services.js';
+export { AgentHarness } from './domain-services.js';

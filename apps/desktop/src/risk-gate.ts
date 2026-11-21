@@ -1,11 +1,12 @@
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isIP } from 'node:net';
-import { AccessDeniedError } from '@moonwitness/types';
+import { AccessDeniedError, ValidationError } from '@moonwitness/types';
 import type {
   DataClassification,
   DesktopActionKind,
   DesktopCapabilityGrant,
   HumanApprovalToken,
+  NativeHumanApprovalRequest,
   RiskAuditRecord,
   RiskEvaluationDecision,
   RiskEvaluationRequest,
@@ -150,14 +151,20 @@ export function isLoopbackHostname(hostname: string): boolean {
     normalized === '127.0.0.1' ||
     normalized === 'localhost' ||
     normalized === '::1' ||
-    normalized === 'ipc.localhost'
+    normalized === 'ipc.localhost' ||
+    normalized === 'tauri.localhost'
   );
 }
 
 export function isLoopbackEndpointUrl(endpointUrl: string): boolean {
   try {
     const parsed = new URL(endpointUrl);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:' && parsed.protocol !== 'ws:') {
+    if (
+      parsed.protocol !== 'http:' &&
+      parsed.protocol !== 'https:' &&
+      parsed.protocol !== 'ws:' &&
+      parsed.protocol !== 'tauri:'
+    ) {
       return false;
     }
     if (parsed.username || parsed.password || parsed.hash) return false;
@@ -212,6 +219,98 @@ export function resolveRiskTierForAction(request: {
   return { requestedTier, resolvedTier };
 }
 
+/**
+ * Native host R3 HumanApprovalToken issuer & cryptographic single-use nonce verifier (DSK-1.11 / DSK-4.8).
+ * Lives outside the webview DOM so renderer XSS cannot forge valid R3 approval tokens.
+ */
+export class NativeHumanApprovalIssuer {
+  private readonly secretKey: Buffer;
+  private readonly issuedNonces = new Set<string>();
+
+  constructor(secretKey?: Uint8Array) {
+    this.secretKey = secretKey ? Buffer.from(secretKey) : randomBytes(32);
+  }
+
+  issueToken(request: NativeHumanApprovalRequest): HumanApprovalToken {
+    if (!Number.isSafeInteger(request.approvedByUserId) || request.approvedByUserId <= 0) {
+      throw new ValidationError('approvedByUserId must be a positive integer');
+    }
+    if (!request.runId.trim()) {
+      throw new ValidationError('runId is required for HumanApprovalToken');
+    }
+    const now = Date.now();
+    const ttlMs = Math.max(1000, Math.min(3_600_000, request.ttlMs ?? 300_000));
+    const tokenId = `approval-${randomUUID()}`;
+    const nonce = randomBytes(16).toString('hex');
+    const issuedAt = new Date(now).toISOString();
+    const expiresAt = new Date(now + ttlMs).toISOString();
+    const singleUse = request.singleUse ?? true;
+
+    const signature = this.computeSignature({
+      tokenId,
+      approvedByUserId: request.approvedByUserId,
+      action: request.action,
+      runId: request.runId,
+      scopeHash: request.scopeHash ?? '',
+      issuedAt,
+      expiresAt,
+      singleUse,
+      nonce,
+    });
+    this.issuedNonces.add(nonce);
+
+    return Object.freeze({
+      tokenId,
+      approvedByUserId: request.approvedByUserId,
+      action: request.action,
+      runId: request.runId,
+      ...(request.scopeHash !== undefined ? { scopeHash: request.scopeHash } : {}),
+      issuedAt,
+      expiresAt,
+      singleUse,
+      nonce,
+      signature,
+    });
+  }
+
+  verifyToken(token: HumanApprovalToken): boolean {
+    if (!token.nonce || !token.signature) return false;
+    if (!this.issuedNonces.has(token.nonce)) return false;
+    const expected = this.computeSignature({
+      tokenId: token.tokenId,
+      approvedByUserId: token.approvedByUserId,
+      action: token.action,
+      runId: token.runId,
+      scopeHash: token.scopeHash ?? '',
+      issuedAt: token.issuedAt,
+      expiresAt: token.expiresAt,
+      singleUse: token.singleUse ?? true,
+      nonce: token.nonce,
+    });
+    const a = Buffer.from(token.signature, 'utf8');
+    const b = Buffer.from(expected, 'utf8');
+    return a.length === b.length && timingSafeEqual(a, b);
+  }
+
+  private computeSignature(payload: {
+    readonly tokenId: string;
+    readonly approvedByUserId: number;
+    readonly action: DesktopActionKind;
+    readonly runId: string;
+    readonly scopeHash: string;
+    readonly issuedAt: string;
+    readonly expiresAt: string;
+    readonly singleUse: boolean;
+    readonly nonce: string;
+  }): string {
+    return createHmac('sha256', this.secretKey)
+      .update(
+        `${payload.tokenId}|${payload.approvedByUserId}|${payload.action}|${payload.runId}|${payload.scopeHash}|${payload.issuedAt}|${payload.expiresAt}|${String(payload.singleUse)}|${payload.nonce}`
+      )
+      .digest('hex');
+  }
+}
+
 function isClassificationAllowed(
   requested: DataClassification,
   grantAllowed: DataClassification,
@@ -236,7 +335,6 @@ function isClassificationAllowed(
     }
     return true;
   }
-  // cloud_eligible
   return true;
 }
 
@@ -315,13 +413,19 @@ export class DesktopRiskGate {
   private readonly auditLog: RiskAuditRecord[] = [];
   private readonly maxAuditEntries: number;
   private readonly onAudit?: (entry: RiskAuditRecord) => void;
+  private readonly approvalVerifier?: (token: HumanApprovalToken) => boolean;
+  private readonly requireSignedApprovals: boolean;
 
   constructor(options?: {
     readonly maxAuditEntries?: number;
     readonly onAudit?: (entry: RiskAuditRecord) => void;
+    readonly approvalVerifier?: (token: HumanApprovalToken) => boolean;
+    readonly requireSignedApprovals?: boolean;
   }) {
     this.maxAuditEntries = options?.maxAuditEntries ?? 1000;
     this.onAudit = options?.onAudit;
+    this.approvalVerifier = options?.approvalVerifier;
+    this.requireSignedApprovals = options?.requireSignedApprovals ?? false;
   }
 
   evaluate(request: RiskEvaluationRequest): RiskEvaluationDecision {
@@ -450,6 +554,9 @@ export class DesktopRiskGate {
       request.humanApproval.singleUse !== false
     ) {
       this.consumedApprovalTokens.add(request.humanApproval.tokenId);
+      if (request.humanApproval.nonce) {
+        this.consumedApprovalTokens.add(`nonce:${request.humanApproval.nonce}`);
+      }
     }
 
     const nextUsed = used + 1;
@@ -502,12 +609,24 @@ export class DesktopRiskGate {
         reason: `Risk tier R3 action '${request.action}' requires a HumanApprovalToken`,
       };
     }
-    if (this.consumedApprovalTokens.has(token.tokenId)) {
+    if (
+      this.consumedApprovalTokens.has(token.tokenId) ||
+      (token.nonce !== undefined && this.consumedApprovalTokens.has(`nonce:${token.nonce}`))
+    ) {
       return {
         ok: false,
         code: 'HUMAN_APPROVAL_REPLAYED',
         reason: `Human approval token '${token.tokenId}' has already been consumed`,
       };
+    }
+    if (this.approvalVerifier && (this.requireSignedApprovals || token.signature !== undefined)) {
+      if (!this.approvalVerifier(token)) {
+        return {
+          ok: false,
+          code: 'HUMAN_APPROVAL_FORGED',
+          reason: `Human approval token '${token.tokenId}' failed cryptographic nonce verification`,
+        };
+      }
     }
     if (!Number.isSafeInteger(token.approvedByUserId) || token.approvedByUserId <= 0) {
       return {
