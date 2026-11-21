@@ -1736,7 +1736,7 @@ function WhatsappInbox({ inboxPreferenceScope }: { inboxPreferenceScope: string 
             Company inbox
           </p>
           <h1 className="font-display text-3xl uppercase">WhatsApp</h1>
-          <p className="mt-1 flex items-center gap-2 text-sm">
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
             {statusIcon}
             <span>{statusLabel[status] ?? status}</span>
             <LiveIndicator

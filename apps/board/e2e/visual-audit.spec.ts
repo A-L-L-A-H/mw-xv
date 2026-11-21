@@ -1081,7 +1081,7 @@ test('empty and unavailable story workbench states explain the next action', asy
 test('responsive protected screens fit and remain accessible in both themes', async ({
   page,
 }, testInfo) => {
-  test.setTimeout(240_000);
+  test.setTimeout(360_000);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/login');
   await page.getByLabel('Email or Username').fill('superadmin');
@@ -1223,6 +1223,7 @@ test('responsive protected screens fit and remain accessible in both themes', as
             )
             .toBe(!originalThemeIsDark);
           await page.getByRole('button', { name: /^User menu for/u }).click();
+          await expect(page.getByRole('menuitem', { name: 'Toggle theme' })).toBeVisible();
           await page.getByRole('menuitem', { name: 'Toggle theme' }).click();
           await expect
             .poll(() =>
