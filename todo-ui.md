@@ -797,12 +797,11 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 > **Batas arsitektur:** `@moonwitness/ui` tetap presentational dan reusable; `apps/board` memiliki routing, data fetching, permission, state domain, dan integrasi API. Gunakan metadata model/view dari API/ORM sebagai sumber kebenaran. Bila kontrak backend belum tersedia, catat dependency dan jangan menyamarkannya dengan fixture produksi.
 
 ### R0. Audit, pemetaan, dan urutan implementasi
-
-- [ ] **R0.1 — Baseline audit:** audit seluruh item R1–R4 terhadap source aktual di `dev`; buat tabel singkat status `implemented / partial / missing / blocked` beserta path dan test yang membuktikannya.
-- [ ] **R0.2 — Reconcile tanpa duplikasi:** cocokkan ID `MW-UI-001..006`, `MW-WEB-001..009`, dan `MW-SKIN-001..005` dengan referensi di `todo.md`; gunakan Bagian R sebagai checklist eksekusi UI dan jangan membuat task/issue duplikat.
-- [ ] **R0.3 — Dependency map:** tandai kebutuhan metadata/API/ORM yang menjadi prasyarat UI; pisahkan blocker backend dari pekerjaan frontend dan jangan membuat mock production data untuk melewati blocker.
-- [ ] **R0.4 — Baseline quality:** rekam hasil awal `pnpm board:ui:check`, `pnpm test:ui`, `pnpm test:ui-budget`, `pnpm test:ui-catalog`, `pnpm --filter @moonwitness/board typecheck`, `pnpm --filter @moonwitness/board lint`, dan `pnpm board:budget`; jangan menurunkan baseline atau menghapus test yang gagal.
-- [ ] **R0.5 — Execution order:** kerjakan shared primitives (R1) terlebih dahulu, lanjutkan integrasi renderer (R2), lalu Skin Engine (R3); jalankan R4 sebagai gate sebelum menyatakan batch selesai.
+- [x] **R0.1 — Baseline audit:** audit seluruh item R1–R4 terhadap source aktual di `dev`; buat tabel singkat status `implemented / partial / missing / blocked` beserta path dan test yang membuktikannya.
+- [x] **R0.2 — Reconcile tanpa duplikasi:** cocokkan ID `MW-UI-001..006`, `MW-WEB-001..009`, dan `MW-SKIN-001..005` dengan referensi di `todo.md`; gunakan Bagian R sebagai checklist eksekusi UI dan jangan membuat task/issue duplikat.
+- [x] **R0.3 — Dependency map:** tandai kebutuhan metadata/API/ORM yang menjadi prasyarat UI; pisahkan blocker backend dari pekerjaan frontend dan jangan membuat mock production data untuk melewati blocker.
+- [x] **R0.4 — Baseline quality:** rekam hasil awal `pnpm board:ui:check`, `pnpm test:ui`, `pnpm test:ui-budget`, `pnpm test:ui-catalog`, `pnpm --filter @moonwitness/board typecheck`, `pnpm --filter @moonwitness/board lint`, dan `pnpm board:budget`; jangan menurunkan baseline atau menghapus test yang gagal.
+- [x] **R0.5 — Execution order:** kerjakan shared primitives (R1) terlebih dahulu, lanjutkan integrasi renderer (R2), lalu Skin Engine (R3); jalankan R4 sebagai gate sebelum menyatakan batch selesai.
 
 ### R1. Shared UI & Design System
 
@@ -992,3 +991,8 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 7. Bila blocker memerlukan perubahan kontrak ORM/API, catat ID dependency dan lanjutkan task UI lain yang tidak terblokir; jangan membuat workaround yang mengubah perilaku produksi.
 
 **Definition of Done — UI Platform Next Wave:** shared primitives tersedia melalui public subpath dan lolos package checks; Board menggunakan metadata API untuk dynamic List/Form/Kanban/Search/Calendar/Graph/Pivot; skin/mode/density bekerja, tersimpan, dan lolos contrast/accessibility matrix; UI Catalog dan visual E2E menjadi gate CI; tidak ada regresi permission, tenant isolation, responsive layout, atau performance budget; seluruh hasil diverifikasi pada exact SHA branch `dev`.
+
+
+
+
+

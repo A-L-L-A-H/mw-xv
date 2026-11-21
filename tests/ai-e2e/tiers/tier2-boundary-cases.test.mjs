@@ -3990,8 +3990,22 @@ export const cases = [
       });
       let unregister2 = null;
       try {
+        await orm.registerAddons(db2, [
+          ormBase.manifest,
+          auth.manifest,
+          jobs.jobsManifest,
+          ormNotification.manifest,
+          ormWorkflow.manifest,
+          ormOrg.manifest,
+          ormIntegration.manifest,
+          ormStorage.manifest,
+          ormAi.manifest,
+        ]);
         jobs.Job.knex(db2);
         jobs.JobRun.knex(db2);
+        ormBase.User.knex(db2);
+        ormBase.CompanyMembership.knex(db2);
+        ormBase.Company.knex(db2);
         let executions = 0;
         unregister2 = jobs.registerJobHandler({
           name: handlerName,

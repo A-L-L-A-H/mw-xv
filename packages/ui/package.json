@@ -153,6 +153,18 @@
       "types": "./dist/components/audio.d.ts",
       "import": "./dist/components/audio.js"
     },
+    "./components/date-picker": {
+      "types": "./dist/components/date-picker.d.ts",
+      "import": "./dist/components/date-picker.js"
+    },
+    "./components/number-input": {
+      "types": "./dist/components/number-input.d.ts",
+      "import": "./dist/components/number-input.js"
+    },
+    "./components/tag-input": {
+      "types": "./dist/components/tag-input.d.ts",
+      "import": "./dist/components/tag-input.js"
+    },
     "./icons": {
       "types": "./dist/icons/index.d.ts",
       "import": "./dist/icons/index.js"
