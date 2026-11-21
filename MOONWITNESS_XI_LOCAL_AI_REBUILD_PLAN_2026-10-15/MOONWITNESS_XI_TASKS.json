@@ -1021,7 +1021,7 @@
       "deliverable": "Summaries/term/duplicate suggestions stored as unreviewed candidate",
       "acceptance": "Invalid JSON/citations/unsupported claims rejected; model cannot write canonical",
       "verification": "schema hallucinated citation/prompt injection tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
