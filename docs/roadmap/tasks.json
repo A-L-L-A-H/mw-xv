@@ -2092,7 +2092,9 @@
       "output": "Candidate scope audit of corpus artifacts, prompts and releases",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K9-002.md"
     },
     {
       "id": "K9-003",

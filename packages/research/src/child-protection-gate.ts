@@ -105,9 +105,11 @@ const HIGH_RISK_EXTERNAL_CHANNELS = new Set<ProtectionDisclosureChannel>([
 const PROHIBITED_MINOR_KEY_PATTERN =
   /^(?:child_?name|minor_?name|student_?name|guardian_?(?:name|phone|email)|date_of_birth|dob|birth_?date|school_?name|home_?address|address|phone|mobile|email|national_?id|passport|ssn|gps|coordinates|raw_allegation|minor_?id|child_?id)$/iu;
 
+const ISO_DATE_OR_TIMESTAMP = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)?$/u;
+
 const PROHIBITED_VALUE_PATTERNS: readonly RegExp[] = [
   /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/iu,
-  /(?:\+?\d[\d\s-]{7,}\d)/u,
+  /(?:\+\d[\d\s-]{6,}\d|\b0\d{2,4}[\s-]?\d{3,4}[\s-]?\d{3,4}\b|\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b)/u,
 ];
 
 const MAX_SCAN_DEPTH = 12;
@@ -126,10 +128,12 @@ export function containsProhibitedMinorIdentifiers(payload: unknown): string[] {
       return;
     }
     if (typeof node === 'string') {
-      for (const pattern of PROHIBITED_VALUE_PATTERNS) {
-        if (pattern.test(node)) {
-          paths.add(currentPath || '/');
-          break;
+      if (!ISO_DATE_OR_TIMESTAMP.test(node)) {
+        for (const pattern of PROHIBITED_VALUE_PATTERNS) {
+          if (pattern.test(node)) {
+            paths.add(currentPath || '/');
+            break;
+          }
         }
       }
       return;

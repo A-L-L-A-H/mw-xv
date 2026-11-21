@@ -284,7 +284,7 @@ Track approved through ADR 0004 on 2026-10-15. The existing 148 M-series tasks a
 - [ ] K8-005 Role-safe case/status and submission prototype.
 - [ ] K8-006 Editorial/publication revision and takedown support (in progress; append-only superseding, immediate takedown cache/read removal, idempotency, and audit endpoints implemented in `@moonwitness/orm-knowledge` and `apps/api` while Board/Web UI and `K8-003`/`K8-004` remain open). Evidence: [K8-006](docs/roadmap/evidence/K8-006.md).
 - [ ] K9-001 Exact-SHA full knowledge and app CI gate.
-- [ ] K9-002 Source license, PII, secrets and dependency scan.
+- [ ] K9-002 Source license, PII, secrets and dependency scan (in progress; offline corpus-rights, PII, `.gitleaks.toml`, and dependency-policy compliance scanner + deliberate bad-fixture tests pass while `K9-001` exact-SHA CI gate remains open and retired `.github/workflows/gitleaks.yml` causes `automation:check:secrets` ENOENT). Evidence: [K9-002](docs/roadmap/evidence/K9-002.md).
 - [ ] K9-003 Migration, interrupted-write and backup/restore drill.
 - [ ] K9-004 Offline egress-denial certification.
 - [ ] K9-005 Measured performance and capacity decision.
