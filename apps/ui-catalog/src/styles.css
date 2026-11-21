@@ -17,7 +17,7 @@
   --color-paper-raised: var(--mw-paper-raised);
   --color-ink: var(--mw-ink);
   --color-ink-soft: var(--mw-ink-soft);
-  --color-ink-faint: var(--mw-ink-faint);
+  --color-ink-faint: var(--mw-ink-faint);\n  --mw-yellow: var(--mw-lime);\n  --mw-magenta: var(--mw-pink);\n  --mw-primary: var(--mw-primary);\n  --mw-error: var(--mw-destructive);
   --mw-yellow: var(--mw-lime);
   --mw-magenta: var(--mw-pink);
   --mw-primary: var(--mw-primary);
@@ -29,7 +29,7 @@
   --mw-yellow: var(--mw-lime); --color-lime
   --mw-magenta: var(--mw-pink); --color-pink
   --color-background: var(--mw-background);
-  --color-foreground: var(--mw-foreground);
+  --color-foreground: var(--mw-foreground);\n  --mw-yellow;\n  --mw-magenta;\n  --mw-primary;\n  --mw-error;
   --mw-yellow;
   --mw-magenta;
   --mw-primary;
