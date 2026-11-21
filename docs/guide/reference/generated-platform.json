@@ -39,6 +39,12 @@
       "scripts": ["build", "dev", "lint", "preview", "start", "start:built", "typecheck"]
     },
     {
+      "name": "@moonwitness/desktop",
+      "version": "1.0.0-rc.1",
+      "directory": "apps/desktop",
+      "scripts": ["build", "test", "typecheck"]
+    },
+    {
       "name": "@moonwitness/docs",
       "version": "1.0.0-rc.1",
       "directory": "apps/docs",
@@ -49,6 +55,12 @@
       "version": "1.0.0-rc.1",
       "directory": "apps/ui-catalog",
       "scripts": ["build", "build:built", "dev", "preview", "test"]
+    },
+    {
+      "name": "@moonwitness/ai-runtime",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/ai-runtime",
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/assets",
@@ -108,6 +120,12 @@
       "name": "@moonwitness/orm",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-ai",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/orm-ai",
       "scripts": ["build", "test"]
     },
     {
@@ -211,6 +229,11 @@
       "start:built": "node ../../scripts/prepare-board-standalone.mjs && node ../../scripts/start-board.mjs",
       "typecheck": "tsc --noEmit"
     },
+    "@moonwitness/desktop": {
+      "build": "tsc",
+      "test": "vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    },
     "@moonwitness/docs": {
       "dev": "vite",
       "portal:build": "pnpm --filter @moonwitness/ui-catalog build && node ../../scripts/docs/build-guide.mjs && tsc -p tsconfig.json && vite build && node scripts/copy-404.mjs && node scripts/copy-ui-catalog.mjs && node scripts/verify-build.mjs",
@@ -225,6 +248,11 @@
       "dev": "vite",
       "preview": "vite preview",
       "test": "playwright test"
+    },
+    "@moonwitness/ai-runtime": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
     },
     "@moonwitness/assets": {
       "artwork:prepare": "node scripts/prepare-artwork.mjs",
@@ -265,6 +293,10 @@
     "@moonwitness/orm": {
       "build": "tsc",
       "test": "vitest run"
+    },
+    "@moonwitness/orm-ai": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/orm-base": {
       "build": "tsc",
@@ -8885,5 +8917,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "b39e32d2061a91615847efb6fed20ab5be9e541fc7cb82d28fe4b7519f35753e"
+  "generatedFromSha256": "84f0f219bbab35ee38dc70cd2218bb5152154b4ce53a704739a01be4ce9bf074"
 }
