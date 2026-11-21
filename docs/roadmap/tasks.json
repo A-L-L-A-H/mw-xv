@@ -1383,6 +1383,158 @@
       "evidence": "docs/roadmap/evidence/M11.15.md"
     },
     {
+      "id": "M12.01",
+      "title": "Exact-SHA baseline audit dan source-backed reuse matrix (BASE.17–BASE.30, AI0.1–AI0.42).",
+      "milestone": "M12",
+      "dependsOn": [
+        "M0.01",
+        "M0.03",
+        "M9.03",
+        "M9.04",
+        "M9.05",
+        "M9.06",
+        "M9.07",
+        "K0-003",
+        "K7-001"
+      ],
+      "output": "docs/architecture/ai-corporation-baseline-audit.md",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p0",
+      "status": "in_progress"
+    },
+    {
+      "id": "M12.02",
+      "title": "Official ADR 0007 dan rekonsiliasi roadmap/workstream (AI1.1–AI1.34).",
+      "milestone": "M12",
+      "dependsOn": ["M12.01", "M0.07", "M11.02"],
+      "output": "docs/decisions/0007-ai-corporation-addon-first-architecture.md, docs/roadmap/13-ai-corporation.md, dan sinkronisasi tasks.json/ROADMAP.md/ACTIVE-PLAN.md",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p0",
+      "status": "in_progress"
+    },
+    {
+      "id": "M12.03",
+      "title": "Addon-First domain foundation @moonwitness/orm-ai (AI2.1–AI2.43).",
+      "milestone": "M12",
+      "dependsOn": ["M12.02", "M4.10", "M4.11", "M4.12", "M9.03", "M9.04", "M9.05", "M9.07"],
+      "output": "packages/orm-ai, registrasi API_ADDONS, INTERNAL_PREFIXES 'ai.', dan addon conformance tests",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p0"
+    },
+    {
+      "id": "M12.04",
+      "title": "Provider & model abstraction dengan data-classification routing (AI3.1–AI3.28).",
+      "milestone": "M12",
+      "dependsOn": ["M12.02", "M9.04", "K7-001", "K7-005"],
+      "output": "packages/ai-runtime provider contracts, Mock/Ollama/Cloud adapters, DataClassificationRouter, dan contract suite",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p0"
+    },
+    {
+      "id": "M12.05",
+      "title": "First durable, bounded read-only agent via @moonwitness/jobs (AI4.1–AI4.37).",
+      "milestone": "M12",
+      "dependsOn": ["M12.03", "M12.04", "M4.10", "M4.11", "M4.12", "K7-005"],
+      "output": "Bounded read-only agent harness, ai.agent_run.* job handlers, dan crash/fencing/cancellation tests",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p0"
+    },
+    {
+      "id": "M12.06",
+      "title": "Capability/tool gateway, MCP server & A2A ADR (AI5.1–AI5.33).",
+      "milestone": "M12",
+      "dependsOn": ["M12.03", "M12.05", "M9.03", "K0-003"],
+      "output": "Capability gateway, packages/ai-mcp (read-only + 1 scoped idempotent write tool), dan ADR 0008 A2A",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p0"
+    },
+    {
+      "id": "M12.07",
+      "title": "Proof-Carrying Work (PCW), independent verification & obligation continuity (AI6.1–AI6.31).",
+      "milestone": "M12",
+      "dependsOn": ["M12.03", "M12.05", "M9.03", "K3-005", "K6-003", "K6-005"],
+      "output": "PCW verifier pipeline, independent reviewer workflow, dan ai.obligation continuity ledger",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p0"
+    },
+    {
+      "id": "M12.08",
+      "title": "AI Company workforce organization & bounded multi-agent orchestration (AI7.1–AI7.32).",
+      "milestone": "M12",
+      "dependsOn": ["M12.06", "M12.07", "M9.05", "M9.06"],
+      "output": "Workforce planner/delegation controller, cycle/duplicate guards, dan parallel conflict control tests",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p1"
+    },
+    {
+      "id": "M12.09",
+      "title": "Episodic/semantic/procedural memory & controlled learning (AI8.1–AI8.24).",
+      "milestone": "M12",
+      "dependsOn": ["M12.07", "K0-003", "K5-002"],
+      "output": "Memory/skill candidate lifecycle terpisah dari K0–K9, ablation benchmarks, dan revocation tests",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p1"
+    },
+    {
+      "id": "M12.10",
+      "title": "Mission Control UI & operator experience di apps/board (AI9.1–AI9.25).",
+      "milestone": "M12",
+      "dependsOn": ["M12.06", "M12.07", "M12.08", "M9.06"],
+      "output": "apps/board/src/app/board/ai/* pages dengan @moonwitness/ui, badge persisted/derived/ephemeral, dan isolation tests",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p1"
+    },
+    {
+      "id": "M12.11",
+      "title": "Security risk tiers R0–R4, sandboxing, observability & restore drill (AI10.1–AI10.38).",
+      "milestone": "M12",
+      "dependsOn": ["M12.06", "M12.07", "M12.10", "M4.12", "K5-002", "K7-005"],
+      "output": "R0–R4 policy engine, adversarial/injection tests, OTel GenAI telemetry, dan restore-drill-fixture coverage",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p0"
+    },
+    {
+      "id": "M12.12",
+      "title": "Evaluation lab, baselines & G0–G6 capability gates (AI11.1–AI11.24).",
+      "milestone": "M12",
+      "dependsOn": ["M12.08", "M12.09", "M12.11"],
+      "output": "packages/ai-evaluation corpus, single vs multi-agent baselines, dan G0–G6 gate runners",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p1"
+    },
+    {
+      "id": "M12.13",
+      "title": "Documentation, operator runbooks, threat model & doc gates (DOC.1–DOC.16).",
+      "milestone": "M12",
+      "dependsOn": ["M12.02", "M12.11", "M12.12"],
+      "output": "docs/ai-corporation/*, runbooks, threat model, eval methodology, dan docs:check:built green",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p1"
+    },
+    {
+      "id": "M12.14",
+      "title": "Vertical slice, release gates G1–G14, E2E Tiers 1–5 & CI verification (SLICE/GATE/PR).",
+      "milestone": "M12",
+      "dependsOn": ["M12.10", "M12.11", "M12.12", "M12.13"],
+      "output": "End-to-end vertical slice, G1–G14 gates, sinkronisasi ledger todo-ai-corporation.md, dan hosted CI green",
+      "detailFile": "docs/roadmap/13-ai-corporation.md",
+      "labels": ["ai-corporation"],
+      "priority": "p0"
+    },
+    {
       "id": "K0-001",
       "title": "Centralization ADR and deployment boundary",
       "milestone": "K0",

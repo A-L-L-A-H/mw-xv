@@ -2,9 +2,9 @@
 
 Dokumen ini adalah sumber utama rencana lintas milestone. Dibuat 2026-10-04 berdasarkan seluruh rencana yang disepakati. Checkbox kosong berarti belum diverifikasi selesai, termasuk fitur yang implementasi awalnya sudah ada.
 
-**Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 148 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
+**Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 162 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
 
-**Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-10-24):** checklist dokumen ini berisi 81 kartu terbuka (48 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
+**Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-11-22):** checklist dokumen ini berisi 95 kartu terbuka (62 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
 
 Urutan nomor bukan urutan aktivasi mutlak: misalnya required checks M1.06 baru diaktifkan setelah ci-gate M2.05 tersedia. Kontrak automation, spesifikasi UI/asset, skenario test minimum, dan template bukti ada pada panduan detail.
 
@@ -220,6 +220,25 @@ Jalur ini melengkapi M1/M7/M8, bukan membuat release pipeline kedua. Detail: [ka
 - [ ] M11.13 Gabungkan commit/push, version bump, docs dan issue sync tanpa release loop. Regression integration fixture membuktikan satu bump per source batch, status/docs dan `chore(release)` tidak mengubah candidate, serta prepare retry idempotent; docs generation, links, lint dan formatting lulus. Hosted release-prepare acceptance masih menunggu M7.05: [Evidence](docs/roadmap/evidence/M11.13.md).
 - [ ] M11.14 Uji seluruh siklus roadmap → issue → commit → CI → PR → merge → release → status. Fault fixtures lokal menguji selector task-level dan fail-closed; hosted create pilot `38121623513` membuat #25/#26. Run `39055408094` memverifikasi existing-issue update dan satu stale-plan refresh/apply pada source `eecd89b` untuk K2-006/#68 dan K8-001/#82; tidak ada issue ditutup. Authenticated bounded backfill, remote no-op dan API fault recovery, auto-merge activation, release cycle, dan out-of-order event tetap terbuka. Owner external: repository/roadmap automation maintainer melalui scoped Actions writer/dispatch: [Evidence](docs/roadmap/evidence/M11.14.md).
 - [ ] M11.15 Sediakan runbook audit/recovery dan pemeriksaan drift issue/roadmap. Audit publik pada `153866b` setelah hosted changed-task sync menemukan 66/213 task terkelola, 147 belum ada, 65 stale-source, 8 metadata drift, serta tanpa duplicate/orphan/stale-milestone/broken-link/conflict; plan masih mengusulkan 147 create + 66 update, tanpa no-op/konflik. Hosted plan/apply changed-task run `38978677409` sukses, tetapi bulk backfill belum terjadi. Recheck source `4bc4426`: 71 dari 72 managed issue terdeteksi `staleSource` dan plan meminta update untuk semuanya, sehingga deteksi stale projection terukur; 44 open + 29 closed = 73 vs 72 managed menandakan tepat satu issue open tanpa penanda roadmap yang harus lewat jalur needs-triage. `docs/operations/roadmap-sync.md` dikoreksi: kesimpulan run/step sync terbaca anonim (bukan butuh `actions: read`), baris drift baru menjelaskan batch lebih dari lima kini dipecah dengan continuation terbatas, dan contoh perintah pnpm tidak lagi memakai pemisah `--` yang diteruskan sebagai argumen literal. Pagination skala >100, fault recovery hosted, dan M11.14 masih terbuka. Catatan 2026-10-24: audit read-only menambah kelas `lifecycleStateDrift` yang membandingkan state issue dengan status source task dan proyeksi lifecycle di blok terkelola; dua kandidat pertama (#56, #66) ternyata terbaca drift hanya karena body-nya basi, sehingga klaim kini membutuhkan status source dan hasilnya nol pada `3fd2efb`. Runbook mendapat baris interpretasinya dan tetap melarang audit menutup/membuka issue sendiri: [Evidence](docs/roadmap/evidence/M11.15.md).
+
+## M12 — AI Corporation (EGAO)
+
+Workstream arsitektur Addon-First untuk AI Corporation sesuai [ADR 0007](docs/decisions/0007-ai-corporation-addon-first-architecture.md) dan [audit baseline](docs/architecture/ai-corporation-baseline-audit.md). Rincian kartu berada di [kartu AI Corporation](docs/roadmap/13-ai-corporation.md) dan ledger implementasi granular berada di [todo-ai-corporation.md](moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
+
+- [ ] M12.01 Exact-SHA baseline audit dan source-backed reuse matrix (`BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`).
+- [ ] M12.02 Official ADR `0007` dan rekonsiliasi roadmap/workstream (`AI1.1`–`AI1.34`).
+- [ ] M12.03 Addon-First domain foundation `@moonwitness/orm-ai` (`AI2.1`–`AI2.43`).
+- [ ] M12.04 Provider & model abstraction dengan data-classification routing (`AI3.1`–`AI3.28`).
+- [ ] M12.05 First durable, bounded read-only agent via `@moonwitness/jobs` (`AI4.1`–`AI4.37`).
+- [ ] M12.06 Capability/tool gateway, MCP server & A2A ADR (`AI5.1`–`AI5.33`).
+- [ ] M12.07 Proof-Carrying Work (PCW), independent verification & obligation continuity (`AI6.1`–`AI6.31`).
+- [ ] M12.08 AI Company workforce organization & bounded multi-agent orchestration (`AI7.1`–`AI7.32`).
+- [ ] M12.09 Episodic/semantic/procedural memory & controlled learning (`AI8.1`–`AI8.24`).
+- [ ] M12.10 Mission Control UI & operator experience di `apps/board` (`AI9.1`–`AI9.25`).
+- [ ] M12.11 Security risk tiers R0–R4, sandboxing, observability & restore drill (`AI10.1`–`AI10.38`).
+- [ ] M12.12 Evaluation lab, baselines & G0–G6 capability gates (`AI11.1`–`AI11.24`).
+- [ ] M12.13 Documentation, operator runbooks, threat model & doc gates (`DOC.1`–`DOC.16`).
+- [ ] M12.14 Vertical slice, release gates G1–G14, E2E Tiers 1–5 & CI verification (`SLICE.1`–`SLICE.15`, `GATE.1`–`GATE.14`, `PR.1`–`PR.14`).
 
 ## K — Local AI knowledge rebuild (K0–K9)
 
