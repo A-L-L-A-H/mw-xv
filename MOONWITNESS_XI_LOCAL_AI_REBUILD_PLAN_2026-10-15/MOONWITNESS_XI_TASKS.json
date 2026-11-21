@@ -742,7 +742,7 @@
       "deliverable": "Opt-in import from user-supplied exports with source kind/time/consent and checksum",
       "acceptance": "Import without network/cloud, no hidden account scraping; no raw private input committed",
       "verification": "synthetic export fixture + denial/overwrite tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
