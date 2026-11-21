@@ -1060,7 +1060,7 @@
       "deliverable": "Measured latency/memory/source coverage; local model-off resilience report",
       "acceptance": "Same-source comparison, named machine; no fictional score; non-AI flow passes offline",
       "verification": "offline egress-denied and G1–G3 regression tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
