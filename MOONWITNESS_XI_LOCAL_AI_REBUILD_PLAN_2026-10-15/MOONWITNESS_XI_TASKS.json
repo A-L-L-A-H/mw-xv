@@ -278,7 +278,7 @@
       "deliverable": "JCS-compatible hashing and stable manifest order; dataset digest",
       "acceptance": "Same input gives same hash across runs/order; changes produce different hash",
       "verification": "RFC 8785 vectors; repeated snapshot fixture",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
