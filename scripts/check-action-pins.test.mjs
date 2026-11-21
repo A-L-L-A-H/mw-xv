@@ -60,6 +60,15 @@ test('installs pnpm 11 with a Node runtime and required frozen lockfile', () => 
   );
   assert.equal(
     pnpmSetupOrderValid(
+      [
+        '- uses: actions/setup-node@node-sha # v7',
+        '- run: npm install --global --no-audit --no-fund "pnpm@${{ inputs.pnpm-version }}"',
+      ].join('\n')
+    ),
+    true
+  );
+  assert.equal(
+    pnpmSetupOrderValid(
       ['- uses: pnpm/action-setup@pnpm-sha # v6', '- uses: actions/setup-node@node-sha # v7'].join(
         '\n'
       )
