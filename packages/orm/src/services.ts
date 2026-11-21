@@ -10,9 +10,11 @@ export interface ServiceRegistration<T> {
 
 export class ServiceContainer {
   private readonly services = new Map<string, unknown>();
+  private readonly disposers = new Map<string, () => Promise<void> | void>();
 
-  register<T>(token: ServiceToken<T>, value: T): void {
+  register<T>(token: ServiceToken<T>, value: T, dispose?: () => Promise<void> | void): void {
     this.services.set(token.key, value);
+    if (dispose) this.disposers.set(token.key, dispose);
   }
 
   get<T>(token: ServiceToken<T>): T {
@@ -28,6 +30,16 @@ export class ServiceContainer {
 
   list(): string[] {
     return [...this.services.keys()];
+  }
+
+  async disposeAll(): Promise<void> {
+    for (const [key, dispose] of [...this.disposers.entries()].reverse()) {
+      try {
+        await dispose();
+      } finally {
+        this.disposers.delete(key);
+      }
+    }
   }
 }
 

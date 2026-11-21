@@ -199,11 +199,11 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-CORE-004.3** Uji startup failure formatting & `/readyz` degraded vs healthy payload di `apps/api/tests/`
   - [x] **MW-CORE-004.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-CORE-005** Seragamkan lifecycle proses (`onInit`, `onReady`, `onDispose`) antara server API Fastify dan seluruh worker command
-  - [ ] **MW-CORE-005.1** Integrasikan shutdown controller (`apps/api/src/lifecycle/`) dengan `ServiceContainer.disposeAll()` dan penutupan koneksi DB/S3/HTTP
-  - [ ] **MW-CORE-005.2** Pastikan timeout drain request dan pelepasan lease worker berjalan deterministik saat `SIGINT`/`SIGTERM`
-  - [ ] **MW-CORE-005.3** Uji urutan cleanup resource pada `apps/api/tests/`
-  - [ ] **MW-CORE-005.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
+- [x] **MW-CORE-005** Seragamkan lifecycle proses (`onInit`, `onReady`, `onDispose`) antara server API Fastify dan seluruh worker command
+  - [x] **MW-CORE-005.1** Integrasikan shutdown controller (`apps/api/src/lifecycle/`) dengan `ServiceContainer.disposeAll()` dan penutupan koneksi DB/S3/HTTP
+  - [x] **MW-CORE-005.2** Pastikan timeout drain request dan pelepasan lease worker berjalan deterministik saat `SIGINT`/`SIGTERM`
+  - [x] **MW-CORE-005.3** Uji urutan cleanup resource pada `apps/api/tests/`
+  - [x] **MW-CORE-005.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
 - [ ] **MW-CORE-006** Standarisasi hierarki kelas error platform (`PlatformError`, `ValidationError`, `AccessDeniedError`, `NotFoundError`, `ConcurrencyConflictError`, `SchemaSyncError`)
   - [ ] **MW-CORE-006.1** Definisikan kontrak kode error stabil dan status HTTP mapping di `packages/types/src/` dan `packages/orm/src/`

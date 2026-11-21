@@ -5,9 +5,14 @@ import { createDatabase } from '../database/knex.js';
 import { bootstrapApiAddons } from '../addons/registry.js';
 import { runOutboxLoop } from '@moonwitness/jobs';
 import { registerNotificationOutboxConsumer } from '@moonwitness/orm-notification';
-import { readWorkerHealthPort, startWorkerHealthServer } from './worker-health.js';
+import {
+  readWorkerHealthPort,
+  startWorkerHealthServer,
+  type WorkerHealthServer,
+} from './worker-health.js';
 import { registerWebhookOutboxConsumer } from '@moonwitness/orm-integration';
 import { createProcessShutdownController } from '../lifecycle/process-shutdown.js';
+import { ServiceContainer, createServiceToken } from '@moonwitness/orm';
 import { registerWhatsAppOutboxConsumer } from '../whatsapp/outbox-consumer.js';
 import { createAttachmentStorage } from '../storage/attachment-storage.js';
 import { closeS3AttachmentStorage, S3AttachmentStorage } from '@moonwitness/orm-storage';
@@ -20,9 +25,9 @@ let unregisterNotificationConsumer = () => {};
 let unregisterWebhookConsumer = () => {};
 let unregisterWhatsAppConsumer = () => {};
 const attachmentStorage = createAttachmentStorage();
-const shutdown = createProcessShutdownController(() => {
-  workerHealth?.setReady(false);
-});
+const services = new ServiceContainer();
+const workerHealthToken = createServiceToken<WorkerHealthServer>('api.workerHealth');
+const shutdown = createProcessShutdownController(() => workerHealth?.setReady(false), { services });
 
 try {
   await bootstrapApiAddons(db, process.env.SUPERADMIN_PASSWORD, undefined, {
@@ -48,6 +53,7 @@ try {
         'OUTBOX_WORKER_HEALTH_PORT'
       ),
     });
+    services.register(workerHealthToken, workerHealth, () => workerHealth?.close());
   }
   await runOutboxLoop(`moonwitness-outbox-${randomUUID()}`, shutdown.signal);
 } finally {

@@ -4,16 +4,21 @@ import { pathToFileURL } from 'node:url';
 import { createDatabase } from '../database/knex.js';
 import { bootstrapApiAddons } from '../addons/registry.js';
 import { registerJobHandler, runWorkerLoop } from '@moonwitness/jobs';
-import { readWorkerHealthPort, startWorkerHealthServer } from './worker-health.js';
+import {
+  readWorkerHealthPort,
+  startWorkerHealthServer,
+  type WorkerHealthServer,
+} from './worker-health.js';
 import { registerWorkflowExpiryHandler } from '@moonwitness/orm-workflow';
 import { createProcessShutdownController } from '../lifecycle/process-shutdown.js';
+import { ServiceContainer, createServiceToken } from '@moonwitness/orm';
 import { registerWhatsAppAttachmentJob } from './whatsapp-attachments-job.js';
 
 const db = createDatabase();
 let workerHealth: Awaited<ReturnType<typeof startWorkerHealthServer>> = null;
-const shutdown = createProcessShutdownController(() => {
-  workerHealth?.setReady(false);
-});
+const services = new ServiceContainer();
+const workerHealthToken = createServiceToken<WorkerHealthServer>('api.workerHealth');
+const shutdown = createProcessShutdownController(() => workerHealth?.setReady(false), { services });
 
 try {
   await bootstrapApiAddons(db, process.env.SUPERADMIN_PASSWORD, undefined, {
@@ -29,6 +34,7 @@ try {
       name: 'jobs-worker',
       port: readWorkerHealthPort(process.env.JOBS_WORKER_HEALTH_PORT, 'JOBS_WORKER_HEALTH_PORT'),
     });
+    services.register(workerHealthToken, workerHealth, () => workerHealth?.close());
   }
   const unregisterExample = registerJobHandler({
     name: 'example.noop',
