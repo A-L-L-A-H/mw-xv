@@ -942,7 +942,7 @@
       "deliverable": "Verified fix outcome proof, independent reviewer, reopen behavior",
       "acceptance": "Posting/submitting story cannot close BUG; evidence freshness and outcome test required",
       "verification": "reopen/stale verification/unreviewed evidence tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
