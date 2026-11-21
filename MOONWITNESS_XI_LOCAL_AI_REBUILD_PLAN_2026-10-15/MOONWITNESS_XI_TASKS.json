@@ -159,7 +159,7 @@
       "deliverable": "Agent protocol, evidence file template, K task index integration",
       "acceptance": "No direct main/force push, secrets, data exfiltration, bypass, premature complete; roadmap M tasks preserved",
       "verification": "pnpm test:roadmap; existing issue-plan dry-run",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {

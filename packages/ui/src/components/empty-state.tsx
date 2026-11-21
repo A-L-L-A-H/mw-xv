@@ -5,6 +5,7 @@ export type EmptyStateProps = Omit<ComponentProps<'section'>, 'children' | 'titl
   description?: ReactNode;
   icon?: ReactNode;
   action?: ReactNode;
+  headingLevel?: 2 | 3 | 4;
 };
 
 export function EmptyState({
@@ -12,9 +13,11 @@ export function EmptyState({
   description,
   icon,
   action,
+  headingLevel = 2,
   className,
   ...props
 }: EmptyStateProps) {
+  const Heading = `h${headingLevel}` as const;
   return (
     <section className={['mw-ui-empty-state', className].filter(Boolean).join(' ')} {...props}>
       {icon ? (
@@ -22,7 +25,7 @@ export function EmptyState({
           {icon}
         </div>
       ) : null}
-      <h2 className="mw-ui-empty-state-title">{title}</h2>
+      <Heading className="mw-ui-empty-state-title">{title}</Heading>
       {description ? <p className="mw-ui-empty-state-description">{description}</p> : null}
       {action ? <div className="mw-ui-empty-state-action">{action}</div> : null}
     </section>

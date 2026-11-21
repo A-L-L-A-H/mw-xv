@@ -561,6 +561,13 @@
     display: grid;
     gap: 1rem;
   }
+  .mw-ui-page-header[data-treatment='brush'] .mw-ui-page-header-title {
+    font-family: var(--mw-font-brush);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+  }
   .mw-ui-page-header-main,
   .mw-ui-panel-header {
     display: flex;
@@ -701,6 +708,10 @@
   .mw-ui-table-cell {
     border-bottom: 1px solid var(--mw-border);
     padding: 0.625rem 0.75rem;
+  }
+  .mw-ui-table[data-density='compact'] .mw-ui-table-header,
+  .mw-ui-table[data-density='compact'] .mw-ui-table-cell {
+    padding: 0.375rem 0.5rem;
   }
   .mw-ui-table-header {
     color: var(--mw-muted-foreground);
@@ -1153,7 +1164,7 @@
     display: block;
     width: 38%;
     height: 100%;
-    background: var(--mw-pink);
+    background: var(--mw-magenta);
     animation: mw-ui-progress var(--mw-motion-progress) ease-in-out infinite;
   }
   .mw-ui-loading-spinner {
@@ -1235,6 +1246,13 @@
   .mw-ui-doodle {
     width: 1.5rem;
     height: 1.5rem;
+    pointer-events: none;
+    color: var(--mw-ink);
+  }
+  .mw-ui-decorative-motif {
+    display: block;
+    pointer-events: none;
+    user-select: none;
     color: var(--mw-ink);
   }
   .mw-ui-ink-frame {

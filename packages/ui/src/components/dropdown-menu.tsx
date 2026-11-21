@@ -7,7 +7,7 @@ import { cn } from '../lib/cn.js';
 const panel =
   'mw-ui-menu-content z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-none border-2 border-ink bg-card p-1 text-ink shadow-[4px_4px_0_0_var(--ink)] data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95';
 const item =
-  'mw-ui-menu-item relative flex cursor-default items-center gap-2 rounded-none px-2.5 py-1.5 text-sm outline-hidden select-none focus:bg-lime focus:text-on-accent focus:font-bold data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 data-[variant=destructive]:text-pink data-[variant=destructive]:focus:bg-pink data-[variant=destructive]:focus:text-on-pink [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink-soft data-[variant=destructive]:*:[svg]:text-pink data-[variant=destructive]:focus:*:[svg]:text-on-pink';
+  'mw-ui-menu-item relative flex cursor-default items-center gap-2 rounded-none px-2.5 py-1.5 text-sm outline-hidden select-none focus:bg-[var(--mw-primary)] focus:text-[var(--mw-primary-foreground)] focus:font-bold data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 data-[variant=destructive]:text-[var(--mw-destructive)] data-[variant=destructive]:focus:bg-[var(--mw-destructive)] data-[variant=destructive]:focus:text-[var(--mw-destructive-foreground)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink-soft data-[variant=destructive]:*:[svg]:text-[var(--mw-destructive)] data-[variant=destructive]:focus:*:[svg]:text-[var(--mw-destructive-foreground)]';
 
 export function DropdownMenu(props: React.ComponentProps<typeof Primitive.Root>) {
   return <Primitive.Root data-slot="dropdown-menu" {...props} />;
@@ -151,7 +151,7 @@ export function DropdownMenuSubTrigger({
       data-inset={inset}
       className={cn(
         item,
-        'flex px-2 py-1.5 data-[inset]:pl-8 data-[state=open]:bg-lime data-[state=open]:text-on-accent [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink-soft',
+        'flex px-2 py-1.5 data-[inset]:pl-8 data-[state=open]:bg-[var(--mw-primary)] data-[state=open]:text-[var(--mw-primary-foreground)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink-soft',
         className
       )}
       {...props}
