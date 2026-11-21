@@ -39,6 +39,7 @@ jobs:
           pnpm board:ui:check
           pnpm api:addon:check
           pnpm test:assets
+          pnpm exec playwright install chromium
           pnpm assets:check:bounds
           pnpm test:ui
           node scripts/check-docs.mjs
@@ -84,5 +85,7 @@ jobs:
           pnpm-version: '11.17.0'
       - name: Install frozen workspace dependencies
         run: pnpm install --frozen-lockfile --no-runtime
+      - name: Build knowledge workspace dependencies
+        run: pnpm --filter @moonwitness/orm-knowledge... build
       - name: Run K9-001 deterministic knowledge gate
         run: node scripts/knowledge/run-k-gate.mjs --json
