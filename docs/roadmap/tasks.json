@@ -2109,8 +2109,10 @@
       "dependsOn": ["K9-001"],
       "output": "Validated upgrade, point-in-time restore practice and knowledge snapshot recovery",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-003.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     },
     {
       "id": "K9-004",
