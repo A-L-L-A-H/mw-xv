@@ -4,7 +4,7 @@ Dokumen ini adalah sumber utama rencana lintas milestone. Dibuat 2026-10-04 berd
 
 **Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 162 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
 
-**Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-11-22):** checklist dokumen ini berisi 95 kartu terbuka (62 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
+**Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-11-22):** checklist dokumen ini berisi 93 kartu terbuka (60 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
 
 Urutan nomor bukan urutan aktivasi mutlak: misalnya required checks M1.06 baru diaktifkan setelah ci-gate M2.05 tersedia. Kontrak automation, spesifikasi UI/asset, skenario test minimum, dan template bukti ada pada panduan detail.
 
@@ -225,8 +225,8 @@ Jalur ini melengkapi M1/M7/M8, bukan membuat release pipeline kedua. Detail: [ka
 
 Workstream arsitektur Addon-First untuk AI Corporation sesuai [ADR 0007](docs/decisions/0007-ai-corporation-addon-first-architecture.md) dan [audit baseline](docs/architecture/ai-corporation-baseline-audit.md). Rincian kartu berada di [kartu AI Corporation](docs/roadmap/13-ai-corporation.md) dan ledger implementasi granular berada di [todo-ai-corporation.md](moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
 
-- [ ] M12.01 Exact-SHA baseline audit dan source-backed reuse matrix (`BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`).
-- [ ] M12.02 Official ADR `0007` dan rekonsiliasi roadmap/workstream (`AI1.1`–`AI1.34`).
+- [x] M12.01 Exact-SHA baseline audit dan source-backed reuse matrix (`BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`). Bukti: [M12.01](docs/roadmap/evidence/M12.01.md), [baseline audit](docs/architecture/ai-corporation-baseline-audit.md).
+- [x] M12.02 Official ADR `0007` dan rekonsiliasi roadmap/workstream (`AI1.1`–`AI1.34`). Bukti: [M12.02](docs/roadmap/evidence/M12.02.md), [ADR 0007](docs/decisions/0007-ai-corporation-addon-first-architecture.md).
 - [ ] M12.03 Addon-First domain foundation `@moonwitness/orm-ai` (`AI2.1`–`AI2.43`).
 - [ ] M12.04 Provider & model abstraction dengan data-classification routing (`AI3.1`–`AI3.28`).
 - [ ] M12.05 First durable, bounded read-only agent via `@moonwitness/jobs` (`AI4.1`–`AI4.37`).

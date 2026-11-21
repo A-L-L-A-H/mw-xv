@@ -59,23 +59,25 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 0.2 Existing capabilities explicitly not to duplicate
 
-- [ ] **BASE.17 VERIFY** Inspect `orm-organization` models and services; map Company, membership, group, role, hierarchy and company-scope semantics.
-- [ ] **BASE.18 VERIFY** Inspect `orm-request`; decide whether AI work is represented by the existing request/work-item model plus typed extensions.
-- [ ] **BASE.19 VERIFY** Inspect `orm-workflow`; map transitions, approval, escalation and human sign-off.
-- [ ] **BASE.20 VERIFY** Inspect `orm-integration`; map provider/tool connection records and secret-reference patterns.
-- [ ] **BASE.21 VERIFY** Inspect `orm-knowledge`, corpus, research and provenance contracts; identify the approved read interfaces workforce agents may consume.
-- [ ] **BASE.22 VERIFY** Inspect `orm-storage`; define how artifacts/evidence are referenced and retained.
-- [ ] **BASE.23 VERIFY** Inspect Jobs public contracts, handler registration, scheduler, outbox, cancellation and worker lifecycle.
-- [ ] **BASE.24 VERIFY** Inspect local-AI exports and its loopback-only / prompt-only safety boundary; do not silently extend that package into a shell/tool executor.
-- [ ] **BASE.25 VERIFY** Inspect generic API exposure rules; ensure internal job, scheduler, audit and privileged workflow records cannot be mutated via generic CRUD without dedicated authorization.
+- [x] **BASE.17 VERIFY** Inspect `orm-organization` models and services; map Company, membership, group, role, hierarchy and company-scope semantics.
+- [x] **BASE.18 VERIFY** Inspect `orm-request`; decide whether AI work is represented by the existing request/work-item model plus typed extensions.
+- [x] **BASE.19 VERIFY** Inspect `orm-workflow`; map transitions, approval, escalation and human sign-off.
+- [x] **BASE.20 VERIFY** Inspect `orm-integration`; map provider/tool connection records and secret-reference patterns.
+- [x] **BASE.21 VERIFY** Inspect `orm-knowledge`, corpus, research and provenance contracts; identify the approved read interfaces workforce agents may consume.
+- [x] **BASE.22 VERIFY** Inspect `orm-storage`; define how artifacts/evidence are referenced and retained.
+- [x] **BASE.23 VERIFY** Inspect Jobs public contracts, handler registration, scheduler, outbox, cancellation and worker lifecycle.
+- [x] **BASE.24 VERIFY** Inspect local-AI exports and its loopback-only / prompt-only safety boundary; do not silently extend that package into a shell/tool executor.
+- [x] **BASE.25 VERIFY** Inspect generic API exposure rules; ensure internal job, scheduler, audit and privileged workflow records cannot be mutated via generic CRUD without dedicated authorization.
 
 **No-go rules:**
 
-- [ ] **BASE.26 NO-GO** Do not introduce a second ORM, database truth, task queue, workflow engine or knowledge/provenance engine.
-- [ ] **BASE.27 NO-GO** Do not create a second `task` model until `orm-request` has been inspected and a written ADR explains why it cannot satisfy the work-item contract.
-- [ ] **BASE.28 NO-GO** Do not give an agent a human superadmin identity or unrestricted API token.
-- [ ] **BASE.29 NO-GO** Do not make a model's self-reported “done” response equivalent to verified completion.
-- [ ] **BASE.30 NO-GO** Do not enable automatic live self-modification of agent policies, skills, memory or production code.
+- [x] **BASE.26 NO-GO** Do not introduce a second ORM, database truth, task queue, workflow engine or knowledge/provenance engine.
+- [x] **BASE.27 NO-GO** Do not create a second `task` model until `orm-request` has been inspected and a written ADR explains why it cannot satisfy the work-item contract.
+- [x] **BASE.28 NO-GO** Do not give an agent a human superadmin identity or unrestricted API token.
+- [x] **BASE.29 NO-GO** Do not make a model's self-reported “done” response equivalent to verified completion.
+- [x] **BASE.30 NO-GO** Do not enable automatic live self-modification of agent policies, skills, memory or production code.
+
+> **Evidence (`BASE.17`–`BASE.30`):** Verified directly from source on `dev` (`43c3a43` -> `fe92056`) in [`docs/architecture/ai-corporation-baseline-audit.md`](../../../docs/architecture/ai-corporation-baseline-audit.md) §2, [`docs/decisions/0007-ai-corporation-addon-first-architecture.md`](../../../docs/decisions/0007-ai-corporation-addon-first-architecture.md) §2–3 (`orm-request` `PurchaseRequest` kept unmodified; `ai.work_contract` owned by `@moonwitness/orm-ai`), and [`docs/roadmap/evidence/M12.01.md`](../../../docs/roadmap/evidence/M12.01.md).
 
 ---
 
@@ -86,54 +88,56 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 1.1 Fetch and record the authoritative repository state
 
-- [ ] **AI0.1** Read the repository's current `AGENTS.md` (and nested `AGENTS.md` files relevant to touched packages).
-- [ ] **AI0.2** Read the current contribution/development instructions and execution protocol.
-- [ ] **AI0.3** Fetch the current `dev` branch and record its full commit SHA, commit date and tree state.
-- [ ] **AI0.4** Confirm `main` and `dev` are still the only permitted long-lived branches.
-- [ ] **AI0.5** Record the current `main` SHA and the merge/promotion relationship from `dev` to `main`.
-- [ ] **AI0.6** Locate the canonical master `ROADMAP.md` and read the complete current roadmap.
-- [ ] **AI0.7** Locate and read `ACTIVE-PLAN.md` (or the current canonical active-plan equivalent).
-- [ ] **AI0.8** Locate and parse `tasks.json` (or the current canonical structured task ledger).
-- [ ] **AI0.9** Read the current source cards and record their IDs, status, dependencies and acceptance criteria.
-- [ ] **AI0.10** Read the ADR index and determine the next valid ADR number/name.
-- [ ] **AI0.11** Record the current M-series status and all active M-series dependencies that could overlap AI runtime, addons, API, Board or jobs.
-- [ ] **AI0.12** Record K0–K9 status and mark all knowledge/provenance/privacy/local-AI tasks that must remain owned by that track.
-- [ ] **AI0.13** Search for existing AI/agent/provider/MCP/A2A/run/memory/workforce models, routes, handlers, packages and partially completed code.
-- [ ] **AI0.14** Search for unmerged or in-progress implementation already present on `dev`; do not trust a README-only inventory.
-- [ ] **AI0.15** Record the exact repository tree paths for all relevant addons, services, API routes, Board pages, tests and docs.
+- [x] **AI0.1** Read the repository's current `AGENTS.md` (and nested `AGENTS.md` files relevant to touched packages).
+- [x] **AI0.2** Read the current contribution/development instructions and execution protocol.
+- [x] **AI0.3** Fetch the current `dev` branch and record its full commit SHA, commit date and tree state.
+- [x] **AI0.4** Confirm `main` and `dev` are still the only permitted long-lived branches.
+- [x] **AI0.5** Record the current `main` SHA and the merge/promotion relationship from `dev` to `main`.
+- [x] **AI0.6** Locate the canonical master `ROADMAP.md` and read the complete current roadmap.
+- [x] **AI0.7** Locate and read `ACTIVE-PLAN.md` (or the current canonical active-plan equivalent).
+- [x] **AI0.8** Locate and parse `tasks.json` (or the current canonical structured task ledger).
+- [x] **AI0.9** Read the current source cards and record their IDs, status, dependencies and acceptance criteria.
+- [x] **AI0.10** Read the ADR index and determine the next valid ADR number/name.
+- [x] **AI0.11** Record the current M-series status and all active M-series dependencies that could overlap AI runtime, addons, API, Board or jobs.
+- [x] **AI0.12** Record K0–K9 status and mark all knowledge/provenance/privacy/local-AI tasks that must remain owned by that track.
+- [x] **AI0.13** Search for existing AI/agent/provider/MCP/A2A/run/memory/workforce models, routes, handlers, packages and partially completed code.
+- [x] **AI0.14** Search for unmerged or in-progress implementation already present on `dev`; do not trust a README-only inventory.
+- [x] **AI0.15** Record the exact repository tree paths for all relevant addons, services, API routes, Board pages, tests and docs.
 
 ## 1.2 Understand the existing engineering patterns
 
-- [ ] **AI0.16** Inspect one representative addon from manifest through `defineAddon` registration.
-- [ ] **AI0.17** Inspect one representative addon model declaration using `defineModel`.
-- [ ] **AI0.18** Inspect how addon dependencies are declared and dependency closure is validated.
-- [ ] **AI0.19** Inspect how addon IDs/external IDs remain stable across install and upgrade.
-- [ ] **AI0.20** Inspect field types, relations, constraints, computed fields and validation conventions.
-- [ ] **AI0.21** Inspect access metadata, company rules and record-level authorization patterns.
-- [ ] **AI0.22** Inspect addon menus, views, actions and Board metadata conventions.
-- [ ] **AI0.23** Inspect seed patterns and how user-edited values are preserved during upgrade.
-- [ ] **AI0.24** Inspect upgrade hooks and retry/resume behavior for interrupted addon installation.
-- [ ] **AI0.25** Inspect addon test structure, fixtures and conformance tests.
-- [ ] **AI0.26** Inspect service registration, dependency injection and transaction boundaries.
-- [ ] **AI0.27** Inspect REST route schemas and JSON-RPC operation conventions.
-- [ ] **AI0.28** Inspect error types, error envelopes, correlation IDs and logging conventions.
-- [ ] **AI0.29** Inspect UI design tokens, shared components, loading/empty/error states and accessibility rules.
-- [ ] **AI0.30** Inspect test naming, test placement, lint/format rules and CI workflows.
+- [x] **AI0.16** Inspect one representative addon from manifest through `defineAddon` registration.
+- [x] **AI0.17** Inspect one representative addon model declaration using `defineModel`.
+- [x] **AI0.18** Inspect how addon dependencies are declared and dependency closure is validated.
+- [x] **AI0.19** Inspect how addon IDs/external IDs remain stable across install and upgrade.
+- [x] **AI0.20** Inspect field types, relations, constraints, computed fields and validation conventions.
+- [x] **AI0.21** Inspect access metadata, company rules and record-level authorization patterns.
+- [x] **AI0.22** Inspect addon menus, views, actions and Board metadata conventions.
+- [x] **AI0.23** Inspect seed patterns and how user-edited values are preserved during upgrade.
+- [x] **AI0.24** Inspect upgrade hooks and retry/resume behavior for interrupted addon installation.
+- [x] **AI0.25** Inspect addon test structure, fixtures and conformance tests.
+- [x] **AI0.26** Inspect service registration, dependency injection and transaction boundaries.
+- [x] **AI0.27** Inspect REST route schemas and JSON-RPC operation conventions.
+- [x] **AI0.28** Inspect error types, error envelopes, correlation IDs and logging conventions.
+- [x] **AI0.29** Inspect UI design tokens, shared components, loading/empty/error states and accessibility rules.
+- [x] **AI0.30** Inspect test naming, test placement, lint/format rules and CI workflows.
 
 ## 1.3 Establish the baseline before adding code
 
-- [ ] **AI0.31** Discover the repository's actual package scripts; record exact supported verify/build/lint/typecheck/test commands (do not guess command names).
-- [ ] **AI0.32** Run the canonical fast verification command and preserve its complete result.
-- [ ] **AI0.33** Run relevant ORM/addon tests and preserve the result.
-- [ ] **AI0.34** Run relevant API and authorization tests and preserve the result.
-- [ ] **AI0.35** Run Jobs Engine tests, including lease/retry/idempotency coverage, and preserve the result.
-- [ ] **AI0.36** Run relevant Board/UI tests and preserve the result.
-- [ ] **AI0.37** Run integration/E2E tests required by the repository's current execution protocol.
-- [ ] **AI0.38** Record database setup, addon install, addon upgrade and restore/backup test procedures.
-- [ ] **AI0.39** Record current CI workflows and their required checks for a documentation-only and a code PR.
-- [ ] **AI0.40** Record baseline runtime/resource measurements only where reproducible; label estimates separately.
-- [ ] **AI0.41** Capture existing failures as baseline debt; do not attribute them to this workstream.
-- [ ] **AI0.42** Create a source-backed reuse matrix with columns: existing owner, capability, API, test, extension point, gap and proposed action.
+- [x] **AI0.31** Discover the repository's actual package scripts; record exact supported verify/build/lint/typecheck/test commands (do not guess command names).
+- [x] **AI0.32** Run the canonical fast verification command and preserve its complete result.
+- [x] **AI0.33** Run relevant ORM/addon tests and preserve the result.
+- [x] **AI0.34** Run relevant API and authorization tests and preserve the result.
+- [x] **AI0.35** Run Jobs Engine tests, including lease/retry/idempotency coverage, and preserve the result.
+- [x] **AI0.36** Run relevant Board/UI tests and preserve the result.
+- [x] **AI0.37** Run integration/E2E tests required by the repository's current execution protocol.
+- [x] **AI0.38** Record database setup, addon install, addon upgrade and restore/backup test procedures.
+- [x] **AI0.39** Record current CI workflows and their required checks for a documentation-only and a code PR.
+- [x] **AI0.40** Record baseline runtime/resource measurements only where reproducible; label estimates separately.
+- [x] **AI0.41** Capture existing failures as baseline debt; do not attribute them to this workstream.
+- [x] **AI0.42** Create a source-backed reuse matrix with columns: existing owner, capability, API, test, extension point, gap and proposed action.
+
+> **Evidence (`AI0.1`–`AI0.42`):** Completed under canonical card `M12.01`. Full exact-SHA inventory, engineering pattern audit, baseline measurements (`1c49cdd`), environmental debt (`POSTGRES_TEST_URL`, `--maxWorkers=2`), and 10-owner Reuse Matrix recorded in [`docs/architecture/ai-corporation-baseline-audit.md`](../../../docs/architecture/ai-corporation-baseline-audit.md) and [`docs/roadmap/evidence/M12.01.md`](../../../docs/roadmap/evidence/M12.01.md).
 
 ---
 
@@ -144,46 +148,48 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 2.1 Resolve domain ownership before designing models
 
-- [ ] **AI1.1** Map each proposed AI entity to an existing addon or a documented new addon candidate.
-- [ ] **AI1.2** Decide whether an agent is an organization member, a service principal, or a separately typed identity linked to organization membership.
-- [ ] **AI1.3** Define tenant/company ownership and company-switching rules for agent identities.
-- [ ] **AI1.4** Map AI work items to `orm-request`; document the missing fields/lifecycle before considering extensions.
-- [ ] **AI1.5** Map delegation and approval to `orm-workflow` before adding new workflow state.
-- [ ] **AI1.6** Map model/provider connections to `orm-integration` before adding connection models.
-- [ ] **AI1.7** Map knowledge retrieval to approved `orm-knowledge` / research interfaces.
-- [ ] **AI1.8** Map files, logs and evidence artifacts to `orm-storage` and the existing retention policy.
-- [ ] **AI1.9** Map run dispatch/recovery to `@moonwitness/jobs`; list only measured gaps.
-- [ ] **AI1.10** Decide which high-volume or ephemeral runtime data must remain outside ORM and define its retention/reference contract.
-- [ ] **AI1.11** Decide whether the first release needs one cohesive `orm-ai` addon or an extension to an existing addon; justify the smallest viable boundary.
-- [ ] **AI1.12** Reject proposed package splits that have no independent lifecycle, owner or dependency boundary.
+- [x] **AI1.1** Map each proposed AI entity to an existing addon or a documented new addon candidate.
+- [x] **AI1.2** Decide whether an agent is an organization member, a service principal, or a separately typed identity linked to organization membership.
+- [x] **AI1.3** Define tenant/company ownership and company-switching rules for agent identities.
+- [x] **AI1.4** Map AI work items to `orm-request`; document the missing fields/lifecycle before considering extensions.
+- [x] **AI1.5** Map delegation and approval to `orm-workflow` before adding new workflow state.
+- [x] **AI1.6** Map model/provider connections to `orm-integration` before adding connection models.
+- [x] **AI1.7** Map knowledge retrieval to approved `orm-knowledge` / research interfaces.
+- [x] **AI1.8** Map files, logs and evidence artifacts to `orm-storage` and the existing retention policy.
+- [x] **AI1.9** Map run dispatch/recovery to `@moonwitness/jobs`; list only measured gaps.
+- [x] **AI1.10** Decide which high-volume or ephemeral runtime data must remain outside ORM and define its retention/reference contract.
+- [x] **AI1.11** Decide whether the first release needs one cohesive `orm-ai` addon or an extension to an existing addon; justify the smallest viable boundary.
+- [x] **AI1.12** Reject proposed package splits that have no independent lifecycle, owner or dependency boundary.
 
 ## 2.2 Write and approve architecture records
 
-- [ ] **AI1.13** Convert the ADR draft into the repository's actual ADR format and numbering.
-- [ ] **AI1.14** Record the ORM Addon-First invariant and all forbidden bypasses in the ADR.
-- [ ] **AI1.15** Record the domain-plane versus execution-plane boundary.
-- [ ] **AI1.16** Record provider versus agent-harness distinction; a model API adapter is not a complete agent runtime.
-- [ ] **AI1.17** Record the relationship between MCP (tool interface), optional A2A (peer-agent protocol), Jobs (durable dispatch) and ORM (source of truth).
-- [ ] **AI1.18** Record identity, company isolation, capability grants, expiry and revocation semantics.
-- [ ] **AI1.19** Record data classification and local-only versus cloud-eligible routing rules.
-- [ ] **AI1.20** Record evidence, reviewer independence and human-approval requirements.
-- [ ] **AI1.21** Record memory lifecycle and prohibit automatic promotion of unverified memory/skills.
-- [ ] **AI1.22** Record sandboxing and tool-execution threat model.
-- [ ] **AI1.23** Record compatibility, addon upgrade, rollback/recovery and deprecation policy.
-- [ ] **AI1.24** Record explicit non-goals for the first release (no unrestricted shell, no self-modifying policy, no open-ended swarm).
-- [ ] **AI1.25** Obtain maintainer review/approval for the ADR before implementing domain schema.
+- [x] **AI1.13** Convert the ADR draft into the repository's actual ADR format and numbering.
+- [x] **AI1.14** Record the ORM Addon-First invariant and all forbidden bypasses in the ADR.
+- [x] **AI1.15** Record the domain-plane versus execution-plane boundary.
+- [x] **AI1.16** Record provider versus agent-harness distinction; a model API adapter is not a complete agent runtime.
+- [x] **AI1.17** Record the relationship between MCP (tool interface), optional A2A (peer-agent protocol), Jobs (durable dispatch) and ORM (source of truth).
+- [x] **AI1.18** Record identity, company isolation, capability grants, expiry and revocation semantics.
+- [x] **AI1.19** Record data classification and local-only versus cloud-eligible routing rules.
+- [x] **AI1.20** Record evidence, reviewer independence and human-approval requirements.
+- [x] **AI1.21** Record memory lifecycle and prohibit automatic promotion of unverified memory/skills.
+- [x] **AI1.22** Record sandboxing and tool-execution threat model.
+- [x] **AI1.23** Record compatibility, addon upgrade, rollback/recovery and deprecation policy.
+- [x] **AI1.24** Record explicit non-goals for the first release (no unrestricted shell, no self-modifying policy, no open-ended swarm).
+- [x] **AI1.25** Obtain maintainer review/approval for the ADR before implementing domain schema.
 
 ## 2.3 Register tasks according to repository governance
 
-- [ ] **AI1.26** Reconcile proposal IDs in this file with current task ID naming and numbering.
-- [ ] **AI1.27** Add a single AI Corporation workstream to the canonical active plan; do not create a second master task ledger.
-- [ ] **AI1.28** Add only agreed tasks to the existing structured task ledger (`tasks.json` or its current successor).
-- [ ] **AI1.29** Add cross-links to the existing M-series/K0–K9 tasks that AI Corporation depends on.
-- [ ] **AI1.30** Confirm no existing task is duplicated or re-opened without maintainer decision.
-- [ ] **AI1.31** Add acceptance criteria, test evidence expectations and dependencies to every registered task.
-- [ ] **AI1.32** Add this checklist to the repository's canonical documentation location after path conventions are confirmed.
-- [ ] **AI1.33** Confirm whether checkboxes are accepted as the canonical progress ledger or whether each item must also have a source card.
-- [ ] **AI1.34** Define how completion is synchronized between this checklist, source cards, `tasks.json` and master roadmap.
+- [x] **AI1.26** Reconcile proposal IDs in this file with current task ID naming and numbering.
+- [x] **AI1.27** Add a single AI Corporation workstream to the canonical active plan; do not create a second master task ledger.
+- [x] **AI1.28** Add only agreed tasks to the existing structured task ledger (`tasks.json` or its current successor).
+- [x] **AI1.29** Add cross-links to the existing M-series/K0–K9 tasks that AI Corporation depends on.
+- [x] **AI1.30** Confirm no existing task is duplicated or re-opened without maintainer decision.
+- [x] **AI1.31** Add acceptance criteria, test evidence expectations and dependencies to every registered task.
+- [x] **AI1.32** Add this checklist to the repository's canonical documentation location after path conventions are confirmed.
+- [x] **AI1.33** Confirm whether checkboxes are accepted as the canonical progress ledger or whether each item must also have a source card.
+- [x] **AI1.34** Define how completion is synchronized between this checklist, source cards, `tasks.json` and master roadmap.
+
+> **Evidence (`AI1.1`–`AI1.34`):** Completed under canonical card `M12.02`. Official accepted ADR at [`docs/decisions/0007-ai-corporation-addon-first-architecture.md`](../../../docs/decisions/0007-ai-corporation-addon-first-architecture.md) (compatibility pointer: [`docs/architecture/adr/0007-ai-corporation-addon-first-architecture.md`](../../../docs/architecture/adr/0007-ai-corporation-addon-first-architecture.md)); canonical source cards `M12.01`–`M12.14` in [`docs/roadmap/13-ai-corporation.md`](../../../docs/roadmap/13-ai-corporation.md); ledger sync across [`docs/roadmap/tasks.json`](../../../docs/roadmap/tasks.json), [`ROADMAP.md`](../../../ROADMAP.md), [`docs/roadmap/ACTIVE-PLAN.md`](../../../docs/roadmap/ACTIVE-PLAN.md), and [`docs/roadmap/evidence/M12.02.md`](../../../docs/roadmap/evidence/M12.02.md).
 
 ---
 
@@ -753,26 +759,27 @@ Do **not** start by implementing CEO/CTO/department hierarchy. The first slice s
 
 Update this section as work proceeds. Keep the latest commit SHA and test evidence in the relevant source card.
 
-| Phase                          | Status      | Exit evidence                                    | Notes                       |
-| ------------------------------ | ----------- | ------------------------------------------------ | --------------------------- |
-| AI0 — Exact-SHA audit          | Not started | Source inventory, baseline report, reuse matrix  | Must precede implementation |
-| AI1 — ADR and registration     | Not started | Approved ADR and canonical task IDs              | No schema before approval   |
-| AI2 — ORM domain foundation    | Not started | Addon install/upgrade/security tests             | Addon-First only            |
-| AI3 — Provider abstraction     | Not started | Local + cloud contract tests                     | Secrets external            |
-| AI4 — First durable agent      | Not started | Bounded read-only task and recovery proof        | No swarm                    |
-| AI5 — Tools and MCP            | Not started | Read-only conformance and authorization tests    | Write tools later           |
-| AI6 — Proof-Carrying Work      | Not started | Independent verification and evidence            | No self-approval            |
-| AI7 — AI Company               | Not started | Delegation/team tests and net-benefit evaluation | Adaptive, bounded staffing  |
-| AI8 — Memory/learning          | Not started | Ablation, utility and harm tests                 | No live self-modification   |
-| AI9 — Mission Control          | Not started | UI state backed by persisted/run data            | UI after contracts          |
-| AI10 — Security/operations     | Not started | Adversarial, restore and runbook evidence        | Required for production     |
-| AI11 — Generalization research | Not started | Reproducible cross-domain results                | No AGI overclaim            |
+| Phase                          | Status      | Exit evidence                                                                                                                                                                                                     | Notes                                                                                                                                                 |
+| ------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI0 — Exact-SHA audit          | Complete    | [`docs/architecture/ai-corporation-baseline-audit.md`](../../../docs/architecture/ai-corporation-baseline-audit.md), [`M12.01`](../../../docs/roadmap/evidence/M12.01.md)                                         | Owner: M1 (`M12.01`); verified `pnpm test:roadmap`, `pnpm automation:check:roadmap`, `node scripts/check-docs.mjs`, `@moonwitness/api --maxWorkers=2` |
+| AI1 — ADR and registration     | Complete    | [`ADR 0007`](../../../docs/decisions/0007-ai-corporation-addon-first-architecture.md), [`13-ai-corporation.md`](../../../docs/roadmap/13-ai-corporation.md), [`M12.02`](../../../docs/roadmap/evidence/M12.02.md) | Owner: M1 (`M12.02`); ADR `0007` Accepted, `M12.01`–`M12.14` synced across `tasks.json`/`ROADMAP.md`/`ACTIVE-PLAN.md`                                 |
+| AI2 — ORM domain foundation    | Not started | Addon install/upgrade/security tests                                                                                                                                                                              | Addon-First only                                                                                                                                      |
+| AI3 — Provider abstraction     | Not started | Local + cloud contract tests                                                                                                                                                                                      | Secrets external                                                                                                                                      |
+| AI4 — First durable agent      | Not started | Bounded read-only task and recovery proof                                                                                                                                                                         | No swarm                                                                                                                                              |
+| AI5 — Tools and MCP            | Not started | Read-only conformance and authorization tests                                                                                                                                                                     | Write tools later                                                                                                                                     |
+| AI6 — Proof-Carrying Work      | Not started | Independent verification and evidence                                                                                                                                                                             | No self-approval                                                                                                                                      |
+| AI7 — AI Company               | Not started | Delegation/team tests and net-benefit evaluation                                                                                                                                                                  | Adaptive, bounded staffing                                                                                                                            |
+| AI8 — Memory/learning          | Not started | Ablation, utility and harm tests                                                                                                                                                                                  | No live self-modification                                                                                                                             |
+| AI9 — Mission Control          | Not started | UI state backed by persisted/run data                                                                                                                                                                             | UI after contracts                                                                                                                                    |
+| AI10 — Security/operations     | Not started | Adversarial, restore and runbook evidence                                                                                                                                                                         | Required for production                                                                                                                               |
+| AI11 — Generalization research | Not started | Reproducible cross-domain results                                                                                                                                                                                 | No AGI overclaim                                                                                                                                      |
 
 ## Change log
 
-| Date       | Change                                                                                                                                                                               | Commit / evidence                      |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
-| 2026-11-22 | Initial granular AI Corporation checklist generated from the 2026-11-21 blueprint and documented repository baseline. Exact current `dev` SHA still requires Phase AI0 verification. | Documentation proposal; not yet merged |
+| Date       | Change                                                                                                                                                                               | Commit / evidence                                                                          |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| 2026-11-22 | Initial granular AI Corporation checklist generated from the 2026-11-21 blueprint and documented repository baseline. Exact current `dev` SHA still requires Phase AI0 verification. | Documentation proposal; not yet merged                                                     |
+| 2026-11-22 | Closed `BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`, and `AI1.1`–`AI1.34` under `M12.01` & `M12.02`; updated `ROADMAP.md`, `tasks.json`, and Progress Ledger `AI0`/`AI1`.                   | `a43f47f`, `fe92056`, `docs/roadmap/evidence/M12.01.md`, `docs/roadmap/evidence/M12.02.md` |
 
 ---
 
