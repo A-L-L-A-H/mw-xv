@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `61cc19022761469f65d169d76232a24222be60982c32e0d1b5f9ed90097679bf`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `67d759e5a60c7bbe09b79ea94963438ec76d20439c8f948f91d3efa8a394b039`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -289,10 +289,35 @@ Models: 4; declared views: 0; menu entries: 0; seed rows: 1.
 
 Version: `1.6.0`; dependencies: `base`.
 
-Models: 15; declared views: 3; menu entries: 3; seed rows: 26.
+Models: 18; declared views: 3; menu entries: 3; seed rows: 29.
 
 | Model                                           | Table                                            | Field                         | Kind      | Required | Optional | Default    | Relation                           |
 | ----------------------------------------------- | ------------------------------------------------ | ----------------------------- | --------- | -------- | -------- | ---------- | ---------------------------------- |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `case_id`                     | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `case_state`                  | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `classification`              | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `company`                     | belongsTo | Yes      | No       | No         | `base.company`                     |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `created_by`                  | belongsTo | Yes      | No       | No         | `base.user`                        |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `human_approval_status`       | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `program_id`                  | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `publication_status`          | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `resolved_status`             | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `revision`                    | integer   | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `synthetic`                   | boolean   | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `title`                       | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `workflow_instance_id`        | integer   | No       | Yes      | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `actor`                       | belongsTo | Yes      | No       | No         | `base.user`                        |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `bug_case`                    | belongsTo | Yes      | No       | No         | `knowledge.bug_case`               |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `company`                     | belongsTo | Yes      | No       | No         | `base.company`                     |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `event_digest`                | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `event_kind`                  | enum      | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `from_state`                  | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `idempotency_key`             | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `payload_json`                | text      | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `recorded_at`                 | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `to_state`                    | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `workflow_event_sequence`     | integer   | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `workflow_instance_id`        | integer   | Yes      | No       | No         | —                                  |
 | `knowledge.concept_profile_version`             | `knowledge_concept_profile_versions`             | `company`                     | belongsTo | Yes      | No       | No         | `base.company`                     |
 | `knowledge.concept_profile_version`             | `knowledge_concept_profile_versions`             | `concept_id`                  | string    | Yes      | No       | No         | —                                  |
 | `knowledge.concept_profile_version`             | `knowledge_concept_profile_versions`             | `profile_digest`              | string    | Yes      | No       | No         | —                                  |
@@ -317,6 +342,24 @@ Models: 15; declared views: 3; menu entries: 3; seed rows: 26.
 | `knowledge.privacy_revocation`                  | `knowledge_privacy_revocations`                  | `event_digest`                | string    | Yes      | No       | No         | —                                  |
 | `knowledge.privacy_revocation`                  | `knowledge_privacy_revocations`                  | `idempotency_key`             | string    | Yes      | No       | No         | —                                  |
 | `knowledge.privacy_revocation`                  | `knowledge_privacy_revocations`                  | `subject_ref_sha256`          | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `classification`              | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `company`                     | belongsTo | Yes      | No       | No         | `base.company`                     |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `idempotency_key`             | string    | No       | Yes      | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `minor_involved`              | boolean   | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `projection_digest`           | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `projection_json`             | text      | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `publication_id`              | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `recorded_at`                 | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `requester`                   | belongsTo | Yes      | No       | No         | `base.user`                        |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `review_status`               | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `reviewer`                    | belongsTo | No       | Yes      | No         | `base.user`                        |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `revision`                    | integer   | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `rights_state`                | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `subject_id`                  | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `supersedes_digest`           | string    | No       | Yes      | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `synthetic`                   | boolean   | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `takedown_reason_code`        | string    | No       | Yes      | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `title`                       | string    | Yes      | No       | No         | —                                  |
 | `knowledge.research_active_release`             | `knowledge_research_active_releases`             | `activated_at`                | string    | Yes      | No       | No         | —                                  |
 | `knowledge.research_active_release`             | `knowledge_research_active_releases`             | `corpus_key`                  | string    | Yes      | No       | No         | —                                  |
 | `knowledge.research_active_release`             | `knowledge_research_active_releases`             | `release`                     | belongsTo | Yes      | No       | No         | `knowledge.research_graph_release` |
@@ -422,7 +465,7 @@ Models: 15; declared views: 3; menu entries: 3; seed rows: 26.
 
 - Seed coverage: `base.access_group` has 2 declared seed row(s); seed values are not included.
 - Seed coverage: `base.group_membership` has 2 declared seed row(s); seed values are not included.
-- Seed coverage: `base.model_access` has 15 declared seed row(s); seed values are not included.
+- Seed coverage: `base.model_access` has 18 declared seed row(s); seed values are not included.
 - Seed coverage: `knowledge.privacy_projection` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `knowledge.witness_correction` has 2 declared seed row(s); seed values are not included.
 - Seed coverage: `knowledge.witness_interpretation` has 2 declared seed row(s); seed values are not included.
@@ -432,9 +475,12 @@ Models: 15; declared views: 3; menu entries: 3; seed rows: 26.
 
 | Group reference   | Model                                           | Read | Create | Write | Delete |
 | ----------------- | ----------------------------------------------- | ---- | ------ | ----- | ------ |
+| `base.group_user` | `knowledge.bug_case`                            | No   | No     | No    | No     |
+| `base.group_user` | `knowledge.bug_case_event`                      | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.concept_profile_version`             | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.privacy_projection`                  | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.privacy_revocation`                  | No   | No     | No    | No     |
+| `base.group_user` | `knowledge.publication_snapshot`                | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.research_active_release`             | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.research_actor_identity`             | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.research_graph_record`               | No   | No     | No    | No     |

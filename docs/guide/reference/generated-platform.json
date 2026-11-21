@@ -19,7 +19,9 @@
         "dev",
         "jobs:outbox",
         "jobs:scheduler",
+        "jobs:scheduler:built",
         "jobs:worker",
+        "jobs:worker:built",
         "reset:superadmin-password",
         "revoke:auth-sessions",
         "start",
@@ -180,7 +182,9 @@
       "dev": "tsx watch src/server.ts",
       "jobs:outbox": "tsx src/commands/outbox-worker.ts",
       "jobs:scheduler": "tsx src/commands/jobs-scheduler.ts",
+      "jobs:scheduler:built": "node dist/commands/jobs-scheduler.js",
       "jobs:worker": "tsx src/commands/jobs-worker.ts",
+      "jobs:worker:built": "node dist/commands/jobs-worker.js",
       "reset:superadmin-password": "tsx src/commands/reset-superadmin-password.ts",
       "revoke:auth-sessions": "tsx src/commands/revoke-auth-sessions.ts",
       "start": "node dist/server.js",
@@ -298,13 +302,14 @@
       "test": "pnpm build && node --test tests/*.test.mjs"
     },
     "root": {
+      "api:addon:check": "node --test scripts/check-api-addon-boundary.test.mjs && node scripts/check-api-addon-boundary.mjs",
       "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs --check",
       "architecture:check:built": "node scripts/architecture/generate-diagrams.mjs --check",
       "architecture:generate": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs",
       "assets:check:bounds": "node packages/assets/scripts/check-svg-bounds.mjs",
       "assets:check:docs": "node scripts/export-doc-assets.mjs --check",
       "assets:export:docs": "node scripts/export-doc-assets.mjs",
-      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
+      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
       "assets:generate:illustrations": "node packages/assets/scripts/generate-illustrations.mjs && node scripts/export-doc-assets.mjs",
       "assets:render": "node packages/assets/scripts/render-social.mjs",
       "assets:validate": "node packages/assets/scripts/validate.mjs",
@@ -423,7 +428,7 @@
       "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
       "test:unit:ci": "node scripts/run-unit-tests.mjs",
       "test:versioned-docs": "node --test scripts/docs/versioned-site.test.mjs",
-      "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
+      "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
       "test:workflow-trust": "node --test scripts/check-workflow-checkout-trust.test.mjs",
       "test:workspace-version-policy": "node --test scripts/workspace-version-policy.test.mjs",
       "typecheck": "pnpm build && pnpm --filter @moonwitness/board typecheck",
@@ -552,6 +557,12 @@
       "configuredInExample": true,
       "secret": false,
       "valueType": "integer"
+    },
+    {
+      "name": "ENABLE_API_DOCS",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
     },
     {
       "name": "HOST",
@@ -693,7 +704,7 @@
     },
     {
       "name": "WHATSAPP_CLAMAV_URL",
-      "configuredInExample": true,
+      "configuredInExample": false,
       "secret": false,
       "valueType": "string"
     },
@@ -729,6 +740,12 @@
     },
     {
       "name": "WHATSAPP_GATEWAY_USERNAME",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "WHATSAPP_MEDIA_SCAN",
       "configuredInExample": true,
       "secret": false,
       "valueType": "string"
@@ -3169,6 +3186,298 @@
       "depends": ["base"],
       "models": [
         {
+          "name": "knowledge.bug_case",
+          "table": "knowledge_bug_cases",
+          "fields": [
+            {
+              "name": "case_id",
+              "kind": "string",
+              "column": "case_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "case_state",
+              "kind": "enum",
+              "column": "case_state",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": [
+                "action_recorded",
+                "intake",
+                "planned",
+                "reopened",
+                "triaged",
+                "verified_resolved"
+              ]
+            },
+            {
+              "name": "classification",
+              "kind": "enum",
+              "column": "classification",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["CHILD_SENSITIVE", "CONFIDENTIAL", "INTERNAL", "RESTRICTED"]
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "created_by",
+              "kind": "belongsTo",
+              "column": "created_by_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "human_approval_status",
+              "kind": "enum",
+              "column": "human_approval_status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["human_approved", "human_rejected", "unreviewed"]
+            },
+            {
+              "name": "program_id",
+              "kind": "string",
+              "column": "program_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "publication_status",
+              "kind": "enum",
+              "column": "publication_status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["editorial_candidate", "public_approved", "unpublished"]
+            },
+            {
+              "name": "resolved_status",
+              "kind": "enum",
+              "column": "resolved_status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["reopened", "unresolved", "verified_resolved"]
+            },
+            {
+              "name": "revision",
+              "kind": "integer",
+              "column": "revision",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "synthetic",
+              "kind": "boolean",
+              "column": "synthetic",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "title",
+              "kind": "string",
+              "column": "title",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "workflow_instance_id",
+              "kind": "integer",
+              "column": "workflow_instance_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["case_id", "company"]]
+        },
+        {
+          "name": "knowledge.bug_case_event",
+          "table": "knowledge_bug_case_events",
+          "fields": [
+            {
+              "name": "actor",
+              "kind": "belongsTo",
+              "column": "actor_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "bug_case",
+              "kind": "belongsTo",
+              "column": "bug_case_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "knowledge.bug_case"
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "event_digest",
+              "kind": "string",
+              "column": "event_digest",
+              "declaredRequired": true,
+              "required": true,
+              "unique": true,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "event_kind",
+              "kind": "enum",
+              "column": "event_kind",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["action", "intake", "plan", "reopen", "triage", "verification"]
+            },
+            {
+              "name": "from_state",
+              "kind": "string",
+              "column": "from_state",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "idempotency_key",
+              "kind": "string",
+              "column": "idempotency_key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "recorded_at",
+              "kind": "string",
+              "column": "recorded_at",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "to_state",
+              "kind": "string",
+              "column": "to_state",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "workflow_event_sequence",
+              "kind": "integer",
+              "column": "workflow_event_sequence",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "workflow_instance_id",
+              "kind": "integer",
+              "column": "workflow_instance_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [
+            ["bug_case", "company", "idempotency_key"],
+            ["bug_case", "workflow_event_sequence"]
+          ]
+        },
+        {
           "name": "knowledge.concept_profile_version",
           "table": "knowledge_concept_profile_versions",
           "fields": [
@@ -3440,6 +3749,220 @@
             }
           ],
           "uniqueConstraints": [["company", "idempotency_key"]]
+        },
+        {
+          "name": "knowledge.publication_snapshot",
+          "table": "knowledge_publication_snapshots",
+          "fields": [
+            {
+              "name": "classification",
+              "kind": "enum",
+              "column": "classification",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": [
+                "CHILD_SENSITIVE",
+                "CONFIDENTIAL",
+                "INTERNAL",
+                "PUBLIC_APPROVED",
+                "RESTRICTED"
+              ]
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "idempotency_key",
+              "kind": "string",
+              "column": "idempotency_key",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "minor_involved",
+              "kind": "boolean",
+              "column": "minor_involved",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "projection_digest",
+              "kind": "string",
+              "column": "projection_digest",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "projection_json",
+              "kind": "text",
+              "column": "projection_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "publication_id",
+              "kind": "string",
+              "column": "publication_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "recorded_at",
+              "kind": "string",
+              "column": "recorded_at",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "requester",
+              "kind": "belongsTo",
+              "column": "requester_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "review_status",
+              "kind": "enum",
+              "column": "review_status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["approved", "draft", "rejected", "superseded", "taken_down"]
+            },
+            {
+              "name": "reviewer",
+              "kind": "belongsTo",
+              "column": "reviewer_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "revision",
+              "kind": "integer",
+              "column": "revision",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "rights_state",
+              "kind": "enum",
+              "column": "rights_state",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": [
+                "internal_use",
+                "metadata_only",
+                "permitted",
+                "restricted",
+                "unknown",
+                "withdrawn"
+              ]
+            },
+            {
+              "name": "subject_id",
+              "kind": "string",
+              "column": "subject_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "supersedes_digest",
+              "kind": "string",
+              "column": "supersedes_digest",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "synthetic",
+              "kind": "boolean",
+              "column": "synthetic",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "takedown_reason_code",
+              "kind": "string",
+              "column": "takedown_reason_code",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "title",
+              "kind": "string",
+              "column": "title",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [
+            ["company", "idempotency_key", "publication_id"],
+            ["publication_id", "revision"]
+          ]
         },
         {
           "name": "knowledge.research_active_release",
@@ -4547,9 +5070,25 @@
         "knowledge.witness_testimony": 2,
         "knowledge.witness_correction": 2,
         "knowledge.witness_interpretation": 2,
-        "base.model_access": 15
+        "base.model_access": 18
       },
       "accessRules": [
+        {
+          "group": "base.group_user",
+          "model": "knowledge.bug_case",
+          "read": false,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "knowledge.bug_case_event",
+          "read": false,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
         {
           "group": "base.group_user",
           "model": "knowledge.concept_profile_version",
@@ -4569,6 +5108,14 @@
         {
           "group": "base.group_user",
           "model": "knowledge.privacy_revocation",
+          "read": false,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "knowledge.publication_snapshot",
           "read": false,
           "create": false,
           "write": false,
@@ -6245,8 +6792,36 @@
       "path": "/api/models"
     },
     {
+      "method": "GET",
+      "path": "/api/public/publications"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/publications/:publicationId"
+    },
+    {
       "method": "POST",
       "path": "/api/research/actor-identities"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/bug-cases"
+    },
+    {
+      "method": "GET",
+      "path": "/api/research/bug-cases/:caseId"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/bug-cases/:caseId/transitions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/bug-cases/:caseId/verify-outcome"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/child-protection/gate-check"
     },
     {
       "method": "GET",
@@ -6271,6 +6846,18 @@
     {
       "method": "POST",
       "path": "/api/research/privacy/revocations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/research/publications/:publicationId/audit"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/publications/:publicationId/supersede"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/publications/:publicationId/takedown"
     },
     {
       "method": "GET",
@@ -6581,5 +7168,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "61cc19022761469f65d169d76232a24222be60982c32e0d1b5f9ed90097679bf"
+  "generatedFromSha256": "67d759e5a60c7bbe09b79ea94963438ec76d20439c8f948f91d3efa8a394b039"
 }
