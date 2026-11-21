@@ -479,7 +479,7 @@
       "deliverable": "Typed assertion records with explicit review/uncertainty",
       "acceptance": "Quoted claim/negation/context cannot become global fact; missing != false",
       "verification": "positive/negative assertion tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
