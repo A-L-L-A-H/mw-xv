@@ -1870,7 +1870,9 @@
       "output": "33 planned slots; reviewed partial title/code mapping; missing/conflicts shown",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K5-006.md"
     },
     {
       "id": "K6-001",
