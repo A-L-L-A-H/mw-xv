@@ -1,17 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   ArchiveIcon,
   ArrowRightIcon,
   BoltIcon,
-  CheckIcon,
   DeleteIcon,
   SaveIcon,
 } from '@moonwitness/ui/icons';
 import { LoadingSpinner } from '@moonwitness/ui/components/effects';
+import { toast } from '@moonwitness/ui/components/toast';
+import { ConflictError } from '@moonwitness/client';
 import { evalDomain, type FieldMeta, type ResolvedViews } from '@moonwitness/client';
-import { useRecord, useRecordMutations } from '@/hooks/use-model';
+import { client } from '@/lib/client';
+import { keys, useRecord, useRecordMutations, type RecordData } from '@/hooks/use-model';
 import { formatDateTime } from '@/lib/date-format';
 import { Button } from '@moonwitness/ui/components/button';
+import { StatusBar } from '@moonwitness/ui/components/status-bar';
+import { SmartButtonBox } from '@moonwitness/ui/components/smart-button-box';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@moonwitness/ui/components/tabs';
+import { ConfirmDialog } from './confirm-dialog';
 import { Label } from '@moonwitness/ui/components/label';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { FieldWidget } from './fields';
@@ -61,6 +68,7 @@ function FormEditor({
 }: FormViewProps & { initialRecord?: Record<string, unknown> }) {
   const isCreate = recordId === undefined;
   const mutations = useRecordMutations(model);
+  const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
     if (initialRecord) return { ...initialRecord };
@@ -75,7 +83,10 @@ function FormEditor({
   });
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<
+    { kind: 'archive'; hard: boolean } | { kind: 'back' } | null
+  >(null);
+  const [conflict, setConflict] = useState<{ serverRecord: Record<string, unknown> } | null>(null);
   const saveInFlight = useRef(false);
 
   // Field lookup map
@@ -96,10 +107,8 @@ function FormEditor({
   }, [dirty]);
 
   const handleBackSafe = useCallback(() => {
-    if (dirty && !window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
-      return;
-    }
-    onBack();
+    if (dirty) setConfirmAction({ kind: 'back' });
+    else onBack();
   }, [dirty, onBack]);
 
   function handleChange(name: string, val: unknown) {
@@ -116,7 +125,6 @@ function FormEditor({
     });
     setDirty(true);
     setError(null);
-    setSuccessMsg(null);
   }
 
   const handleSave = useCallback(
@@ -124,7 +132,6 @@ function FormEditor({
       if (e) e.preventDefault();
       if (saveInFlight.current) return;
       setError(null);
-      setSuccessMsg(null);
 
       // Validate required fields (respecting dynamic visibility and required predicates)
       for (const [name, f] of fieldMap.entries()) {
@@ -167,21 +174,34 @@ function FormEditor({
         const saved = await mutations.save.mutateAsync({
           id: recordId,
           values: cleanValues,
+          writeDate: isCreate ? undefined : String(initialRecord?.write_date ?? ''),
         });
         setDirty(false);
-        setSuccessMsg('Record saved successfully!');
-        setTimeout(() => setSuccessMsg(null), 3500);
+        toast.success('Record saved successfully.');
 
         if (isCreate && saved?.id) {
           onSaved?.(saved.id);
         }
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Failed to save record.');
+        if (err instanceof ConflictError && recordId !== undefined) {
+          try {
+            const serverRecord = await queryClient.fetchQuery<RecordData>({
+              queryKey: keys.record(model, recordId),
+              queryFn: () => client.model<RecordData>(model).read(recordId),
+              staleTime: 0,
+            });
+            setConflict({ serverRecord });
+          } catch {
+            setConflict({ serverRecord: {} });
+          }
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to save record.');
+        }
       } finally {
         saveInFlight.current = false;
       }
     },
-    [fieldMap, formData, views.fields, mutations.save, recordId, isCreate, onSaved]
+    [fieldMap, formData, views.fields, mutations.save, recordId, isCreate, onSaved, initialRecord, model, queryClient]
   );
 
   // Keyboard shortcut listener: Ctrl+S to save, Esc to go back
@@ -201,16 +221,18 @@ function FormEditor({
 
   async function handleArchive(hard = false) {
     if (!recordId) return;
-    const confirmMsg = hard
-      ? 'Permanently delete this record? This action cannot be undone.'
-      : 'Archive this record?';
-    if (!window.confirm(confirmMsg)) return;
-
     try {
-      await mutations.archive.mutateAsync({ id: recordId, hard });
+      await mutations.archive.mutateAsync({
+        id: recordId,
+        hard,
+        writeDate: String(initialRecord?.write_date ?? ''),
+      });
+      toast.success(hard ? 'Record deleted.' : 'Record archived.');
       onBack();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to archive record.');
+      toast.error(err instanceof Error ? err.message : 'Failed to archive record.');
+    } finally {
+      setConfirmAction(null);
     }
   }
 
@@ -221,20 +243,30 @@ function FormEditor({
   async function handleExecuteAction(method: string) {
     if (!recordId) return;
     setError(null);
-    setSuccessMsg(null);
     try {
       await mutations.action.mutateAsync({ id: recordId, method });
-      setSuccessMsg(`Action executed successfully.`);
-      setTimeout(() => setSuccessMsg(null), 3500);
+      toast.success('Action executed successfully.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Action failed to execute.');
     }
   }
 
-  const sections = views.form?.sections?.length
-    ? views.form.sections
-    : [{ fields: views.fields.map((f) => f.name) }];
   const canWrite = views.permissions.write || (isCreate && views.permissions.create);
+
+  const formSections = useMemo(() => {
+    const sections = views.form?.sections?.length
+      ? views.form.sections
+      : [{ fields: views.fields.map((f) => f.name) }];
+    const visibleSections = sections.map((section, index) => ({
+      ...section,
+      title: section.title ?? `Section ${index + 1}`,
+    }));
+    const labels = views.form?.tabs?.length ? views.form.tabs : visibleSections.map((s) => s.title!);
+    return { visibleSections, labels };
+  }, [views.fields, views.form]);
+
+  const saveStep = isCreate ? 1 : dirty ? 2 : 3;
+  const archiveTarget = confirmAction?.kind === 'archive' ? confirmAction : null;
 
   return (
     <div className="min-w-0 space-y-6">
@@ -299,45 +331,46 @@ function FormEditor({
               );
             })}
 
-          {!isCreate && views.permissions.unlink && initialRecord?.active !== false && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleArchive(false)}
-              className="gap-1.5 hover:bg-destructive hover:text-destructive-foreground"
-              disabled={mutations.archive.isPending}
-            >
-              <ArchiveIcon className="size-4" /> Archive
-            </Button>
-          )}
-
-          {!isCreate && views.permissions.unlink && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => handleArchive(true)}
-              className="gap-1.5"
-              disabled={mutations.archive.isPending}
-              title="Permanently delete this record"
-            >
-              <DeleteIcon className="size-4" /> Delete permanently
-            </Button>
-          )}
-
           {canWrite && (
-            <Button
-              onClick={() => handleSave()}
-              size="sm"
-              disabled={!dirty || mutations.save.isPending}
-              className="gap-1.5"
-            >
-              {mutations.save.isPending ? (
-                <LoadingSpinner className="size-4" />
-              ) : (
-                <SaveIcon className="size-4" />
-              )}
-              Save Record
-            </Button>
+            <SmartButtonBox
+              className="min-w-0"
+              primaryActions={[
+                {
+                  id: 'save',
+                  label: 'Save Record',
+                  icon: mutations.save.isPending ? <LoadingSpinner className="size-4" /> : <SaveIcon className="size-4" />,
+                  onClick: () => void handleSave(),
+                  disabled: !dirty || mutations.save.isPending,
+                  primary: true,
+                },
+              ]}
+              secondaryActions={
+                !isCreate && views.permissions.unlink
+                  ? [
+                      ...(initialRecord?.active !== false
+                        ? [{
+                            id: 'archive',
+                            label: 'Archive',
+                            icon: <ArchiveIcon className="size-4" />,
+                            variant: 'outline' as const,
+                            ariaLabel: 'Archive record',
+                            onClick: () => setConfirmAction({ kind: 'archive', hard: false }),
+                            disabled: mutations.archive.isPending,
+                          }]
+                        : []),
+                      {
+                        id: 'delete-permanently',
+                        label: 'Delete permanently',
+                        icon: <DeleteIcon className="size-4" />,
+                        variant: 'destructive' as const,
+                        ariaLabel: 'Delete record permanently',
+                        onClick: () => setConfirmAction({ kind: 'archive', hard: true }),
+                        disabled: mutations.archive.isPending,
+                      },
+                    ]
+                  : []
+              }
+            />
           )}
         </div>
       </div>
@@ -348,29 +381,37 @@ function FormEditor({
           {error}
         </div>
       )}
-      {successMsg && (
-        <div className="border-2 border-ink bg-primary p-3 font-bold text-primary-foreground shadow-ink flex items-center gap-2">
-          <CheckIcon className="size-5" /> {successMsg}
-        </div>
+      {!isCreate && (
+        <StatusBar
+          steps={[
+            { id: 'loaded', label: 'Loaded', state: saveStep >= 1 ? 'done' : 'disabled' },
+            {
+              id: 'editing',
+              label: 'Editing',
+              state: saveStep === 2 ? 'active' : saveStep > 2 ? 'done' : 'disabled',
+            },
+            { id: 'saved', label: 'Saved', state: saveStep === 3 ? 'done' : 'disabled' },
+          ]}
+        />
       )}
 
       {!isCreate && recordId !== undefined && <WorkflowPanel model={model} recordId={recordId} />}
 
       {/* Form sections */}
       <form onSubmit={handleSave} className="space-y-6">
-        {sections.map((section, sIdx) => {
+        <Tabs defaultValue="0" className="min-w-0 space-y-5">
+          <TabsList className="flex-wrap">
+            {formSections.visibleSections.map((section, index) => (
+              <TabsTrigger key={index} value={String(index)}>{section.title}</TabsTrigger>
+            ))}
+          </TabsList>
+        {formSections.visibleSections.map((section, sIdx) => {
           const visibleFields = section.fields
             .map((fieldName) => fieldMap.get(fieldName))
             .filter((f): f is FieldMeta => f !== undefined && f.name !== 'id');
 
           return (
-            <div key={sIdx} className="ink-panel min-w-0 bg-card p-6 sm:p-8">
-              {section.title && (
-                <div className="mb-6 border-b-2 border-ink pb-2">
-                  <h2 className="font-display text-xl uppercase tracking-wider">{section.title}</h2>
-                </div>
-              )}
-
+            <TabsContent key={sIdx} value={String(sIdx)} className="ink-panel min-w-0 bg-card p-6 sm:p-8">
               <div className="grid min-w-0 gap-6 sm:grid-cols-2">
                 {visibleFields.map((field) => {
                   const isInvisible = evalDomain(field.invisible, formData);
@@ -458,9 +499,10 @@ function FormEditor({
                   );
                 })}
               </div>
-            </div>
+            </TabsContent>
           );
         })}
+        </Tabs>
       </form>
 
       {/* Audit Trail & Meta box */}
@@ -500,7 +542,39 @@ function FormEditor({
       )}
 
       {/* Unified Chatter & Activity Stream */}
-      {!isCreate && recordId !== undefined && <Chatter model={model} recordId={recordId} />}
+      {!isCreate && recordId !== undefined && views.form?.chatter !== false && (
+        <Chatter model={model} recordId={recordId} />
+      )}
+      <ConfirmDialog
+        open={confirmAction !== null}
+        title={confirmAction?.kind === 'back' ? 'Discard unsaved changes?' : archiveTarget?.hard ? 'Delete permanently?' : 'Archive record?'}
+        description={
+          confirmAction?.kind === 'back'
+            ? 'Your local changes will be lost if you leave this record.'
+            : archiveTarget?.hard
+              ? 'This record will be permanently removed. This action cannot be undone.'
+              : 'The record will be archived and remain recoverable.'
+        }
+        confirmLabel={confirmAction?.kind === 'back' ? 'Discard changes' : archiveTarget?.hard ? 'Delete permanently' : 'Archive'}
+        destructive={confirmAction?.kind === 'archive'}
+        busy={mutations.archive.isPending}
+        onConfirm={() => {
+          if (confirmAction?.kind === 'back') {
+            setConfirmAction(null);
+            onBack();
+          } else if (archiveTarget) void handleArchive(archiveTarget.hard);
+        }}
+        onCancel={() => setConfirmAction(null)}
+      />
+      <ConfirmDialog
+        open={conflict !== null}
+        title="Record changed on the server"
+        description="A newer version was saved after you loaded this record. Reload to review the server data before reapplying your changes."
+        confirmLabel="Reload and review"
+        cancelLabel="Keep local changes"
+        onConfirm={() => window.location.reload()}
+        onCancel={() => setConflict(null)}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { AuthError, ConflictError, type AuthService, type AuthSession } from '@moonwitness/auth';
 import type { Partner, User } from '@moonwitness/orm-base';
+import { invalidateAuthCache } from '../plugins/auth.plugin.js';
 
 export interface AuthRoutesOptions {
   authService: AuthService;
@@ -156,6 +157,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (fastify,
     { schema: { tags: ['Auth'], summary: 'Revoke a refresh token session', body: refreshBody } },
     async (req) => {
       await authService.logout(req.body.refresh_token);
+      invalidateAuthCache();
       return { success: true };
     }
   );
@@ -187,6 +189,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (fastify,
           req.body.current_password,
           req.body.new_password
         );
+        invalidateAuthCache(req.auth.userId);
         return { success: true, data: { refresh_sessions_revoked: true } };
       } catch (error) {
         if (error instanceof AuthError)

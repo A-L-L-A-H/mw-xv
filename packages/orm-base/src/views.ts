@@ -15,6 +15,8 @@ import { AccessGroup, GroupMembership, ModelAccess } from './models/access-group
 import { CompanyMembership } from './models/company-membership.js';
 import { AuditLog } from './models/audit-log.js';
 import { IrFeatureFlag } from './models/feature-flag.js';
+import { SavedFilter } from './models/saved-filter.js';
+import { ConfigParameter } from './models/config-parameter.js';
 
 /** Domains use API column names (`company_id`); view field lists use model field keys. */
 export const views = [
@@ -310,5 +312,27 @@ export const views = [
       ],
     },
     search: { fields: ['key', 'name', 'proposal_id'] },
+  }),
+  defineView(SavedFilter, {
+    title: 'Saved Filters',
+    list: { columns: ['model_name', 'name', 'is_default', 'is_shared', 'user', 'company'] },
+    form: {
+      sections: [
+        { title: 'Filter', fields: ['model_name', 'name', 'domain_json', 'order', 'group_by'] },
+        { title: 'Scope', fields: ['is_default', 'is_shared', 'user', 'company'] },
+      ],
+    },
+    search: { fields: ['model_name', 'name'] },
+  }),
+  defineView(ConfigParameter, {
+    title: 'Config Parameters',
+    list: { columns: ['key', 'value_type', 'is_secret', 'company'] },
+    form: {
+      sections: [
+        { title: 'Parameter', fields: ['key', 'value_type', 'value', 'is_secret', 'company'] },
+        { title: 'Notes', fields: ['description'] },
+      ],
+    },
+    search: { fields: ['key', 'description'] },
   }),
 ];

@@ -4,7 +4,104 @@ import { transaction } from 'objection';
 import type { BaseModel } from './base.model.js';
 import { Registry } from './registry.js';
 import { ServiceContainer } from './services.js';
-import type { ModelContext } from './types.js';
+import {
+  ValidationError,
+  type Domain,
+  type ModelContext,
+  type SearchOptions,
+} from './types.js';
+
+/**
+ * Immutable, chainable collection of model records bound to an Environment.
+ */
+export class Recordset<M extends BaseModel = BaseModel> implements Iterable<M> {
+  readonly model: typeof BaseModel;
+  readonly env: Environment;
+  readonly records: readonly M[];
+
+  constructor(model: typeof BaseModel, env: Environment, records: readonly M[]) {
+    this.model = model;
+    this.env = env;
+    this.records = Object.freeze([...records]);
+  }
+
+  get ids(): number[] {
+    return this.records.map((r) => r.id);
+  }
+
+  get length(): number {
+    return this.records.length;
+  }
+
+  [Symbol.iterator](): Iterator<M> {
+    return this.records[Symbol.iterator]();
+  }
+
+  /** Assert this recordset contains exactly one record and return it. */
+  ensureOne(): M {
+    if (this.records.length !== 1) {
+      throw new ValidationError(
+        `Expected singleton recordset for '${this.model.modelName}', got ${this.records.length} records`
+      );
+    }
+    return this.records[0]!;
+  }
+
+  /** Project records using a field name or mapper function. */
+  mapped<K extends keyof M>(field: K): M[K][];
+  mapped<R>(fn: (record: M) => R): R[];
+  mapped<R>(fnOrField: ((record: M) => R) | keyof M): R[] {
+    if (typeof fnOrField === 'function') {
+      return this.records.map(fnOrField);
+    }
+    return this.records.map((record) => record[fnOrField] as unknown as R);
+  }
+
+  /** Return a new Recordset containing only records matching the predicate. */
+  filtered(predicate: (record: M) => boolean): Recordset<M> {
+    return new Recordset<M>(this.model, this.env, this.records.filter(predicate));
+  }
+
+  /** Batch-update all records in this recordset. */
+  async write(
+    vals: Partial<M> | Record<string, unknown>,
+    options: { context?: ModelContext; transaction?: Transaction; expectedWriteDate?: string } = {}
+  ): Promise<number> {
+    if (this.records.length === 0) return 0;
+    const BoundModel = this.env.get(this.model.modelName);
+    return BoundModel.write(this.ids, vals, options);
+  }
+
+  /** Archive (or hard-delete) all records in this recordset. */
+  async unlink(
+    hardDelete = false,
+    options: { transaction?: Transaction; expectedWriteDate?: string } = {}
+  ): Promise<number> {
+    if (this.records.length === 0) return 0;
+    const BoundModel = this.env.get(this.model.modelName);
+    return BoundModel.unlink(this.ids, hardDelete, options);
+  }
+
+  /** Execute an exposed action method on every record in this recordset. */
+  async executeAction(actionName: string, ...args: unknown[]): Promise<unknown[]> {
+    if (!this.model.exposedActions.includes(actionName)) {
+      throw new ValidationError(
+        `Action '${actionName}' is not exposed on model '${this.model.modelName}'`
+      );
+    }
+    const results: unknown[] = [];
+    for (const record of this.records) {
+      const fn = (record as unknown as Record<string, unknown>)[actionName];
+      if (typeof fn !== 'function') {
+        throw new ValidationError(
+          `Action '${actionName}' is not implemented on model '${this.model.modelName}'`
+        );
+      }
+      results.push(await (fn as (...a: unknown[]) => unknown).apply(record, args));
+    }
+    return results;
+  }
+}
 
 export class Environment {
   readonly context: ModelContext;
@@ -89,6 +186,33 @@ export class Environment {
    */
   withTransaction(trx: Transaction): Environment {
     return new Environment(this.context, trx, this.services);
+  }
+
+  /**
+   * Load records by ID(s) into an immutable Recordset bound to this environment.
+   */
+  async browse<M extends BaseModel = BaseModel>(
+    modelName: string,
+    ids: number | number[],
+    options: SearchOptions = {}
+  ): Promise<Recordset<M>> {
+    const BoundModel = this.get(modelName);
+    const idList = Array.isArray(ids) ? ids : [ids];
+    const records = (await BoundModel.browse(idList, options)) as M[];
+    return new Recordset<M>(BoundModel, this, records);
+  }
+
+  /**
+   * Search records matching a domain into an immutable Recordset bound to this environment.
+   */
+  async search<M extends BaseModel = BaseModel>(
+    modelName: string,
+    domain: Domain = [],
+    options: SearchOptions = {}
+  ): Promise<Recordset<M>> {
+    const BoundModel = this.get(modelName);
+    const records = (await BoundModel.search(domain, options)) as M[];
+    return new Recordset<M>(BoundModel, this, records);
   }
 
   /**

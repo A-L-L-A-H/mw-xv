@@ -15,7 +15,9 @@
     "build": "tsc",
     "test": "tsc -p tsconfig.check.json && vitest run"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@moonwitness/types": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^26.6.4",
     "typescript": "~5.7.3",

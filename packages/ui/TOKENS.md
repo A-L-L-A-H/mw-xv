@@ -43,4 +43,18 @@ Use the shared radius, hard-shadow, layer, and motion tokens rather than introdu
 
 The `.dark` class remaps semantic page/surface tokens while retaining fixed brand paper, ink, and accents. Theme persistence and selection are app-owned. Under `prefers-reduced-motion: reduce`, transition duration tokens become zero; components and app-specific effects must also disable keyframes and preserve state information without movement. Loading indicators may become static while their textual status remains visible.
 
+## Skin & Theme Engine (`@moonwitness/ui/themes`)
+
+Skins layer semantic overrides on top of `:root` and `.dark` using `[data-skin='<id>']`, `[data-skin='<id>'].dark`, and `[data-density='compact']` selectors with zero runtime CSS-in-JS:
+
+| Skin ID                     | Label                     | Default mode | Default density | Purpose                                                               |
+| --------------------------- | ------------------------- | ------------ | --------------- | --------------------------------------------------------------------- |
+| `moonwitness-ink`           | MoonWitness Ink           | `light`      | `comfortable`   | Default zine/manga editorial aesthetic with warm paper and bold ink   |
+| `moonwitness-compact`       | MoonWitness Compact       | `light`      | `compact`       | Dense operational layout with crisp neutral surfaces and cyan primary |
+| `moonwitness-high-contrast` | MoonWitness High Contrast | `light`      | `comfortable`   | Maximum legibility accessibility skin with reinforced focus borders   |
+
+- Import `themeRegistry`, `createThemeRegistry`, `BUILTIN_SKINS`, and `DEFAULT_SKIN_ID` from `@moonwitness/ui/themes`.
+- Register custom skins via `createThemeRegistry` or `themeRegistry.register(metadata)`. Duplicate or non-slug IDs are rejected, and unknown IDs safely fall back to `DEFAULT_SKIN_ID`.
+- Every supported skin × color mode pair is verified against WCAG AA (≥ 4.5:1 text contrast, ≥ 3:1 control border and focus contrast) in `packages/ui/tests/themes.test.mjs`.
+
 The token stylesheet has no global element selectors, external font requests, framework dependencies, or application side effects.

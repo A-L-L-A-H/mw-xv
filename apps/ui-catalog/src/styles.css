@@ -1,11 +1,18 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source(none);
 @import 'tw-animate-css';
 @import '@moonwitness/ui/styles/tokens.css';
 @import '@moonwitness/ui/components.css';
 @import '@moonwitness/assets/fonts.css';
 
-@source '../../../packages/ui/src';
-@source '../../../packages/ui/dist';
+@source '../../../packages/ui/src/components/command.tsx';
+@source '../../../packages/ui/src/components/dialog.tsx';
+@source '../../../packages/ui/src/components/dropdown-menu.tsx';
+@source '../../../packages/ui/src/components/label.tsx';
+@source '../../../packages/ui/src/components/popover.tsx';
+@source '../../../packages/ui/src/components/select.tsx';
+@source '../../../packages/ui/src/components/sheet.tsx';
+@source '../../../packages/ui/src/components/switch.tsx';
+@source '../../../packages/ui/src/components/tooltip.tsx';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -161,6 +168,7 @@ a:focus-visible {
   top: 0;
   z-index: 8;
   display: flex;
+  flex-wrap: wrap;
   min-height: 4.25rem;
   align-items: center;
   justify-content: space-between;

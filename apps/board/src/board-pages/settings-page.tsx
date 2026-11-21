@@ -19,6 +19,7 @@ import {
 } from '@moonwitness/ui/components/select';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { useAuth } from '@/hooks/use-auth-context';
+import { useSkin } from '@/components/providers/skin-provider';
 import { client } from '@/lib/client';
 import {
   DEFAULT_PREFERENCES,
@@ -47,6 +48,7 @@ const TIMEZONES = [
 
 export function SettingsPage() {
   const { user, logout } = useAuth();
+  const { skin, mode, density, skins, setSkin, setMode, setDensity } = useSkin();
   const router = useRouter();
   const [storedPreferences] = useState<BoardPreferences>(readPreferences);
   const [preferenceDraft, setPreferenceDraft] = useState<Partial<BoardPreferences>>({});
@@ -71,6 +73,9 @@ export function SettingsPage() {
 
   const preferences: BoardPreferences = {
     ...storedPreferences,
+    theme: mode,
+    skin,
+    density,
     language:
       languages.find((option) => option.id === userPreferences?.language_id)?.code ??
       storedPreferences.language,
@@ -152,24 +157,100 @@ export function SettingsPage() {
             <p className="text-sm text-ink-soft">Choose a theme for this browser.</p>
           </div>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {(['light', 'dark'] as const).map((theme) => {
-            const Icon = theme === 'light' ? SunIcon : MoonIcon;
-            const selected = preferences.theme === theme;
-            return (
-              <Button
-                key={theme}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => updatePreference('theme', theme)}
-                className={`flex items-center gap-3 border-2 p-4 text-left transition-colors ${selected ? 'border-ink bg-primary/30 shadow-ink-sm' : 'border-ink/30 hover:border-ink'}`}
-              >
-                <Icon className="size-5" />
-                <span className="font-display uppercase">{theme} theme</span>
-                {selected && <CheckIcon className="ml-auto size-4" />}
-              </Button>
-            );
-          })}
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(['light', 'dark'] as const).map((theme) => {
+              const Icon = theme === 'light' ? SunIcon : MoonIcon;
+              const selected = preferences.theme === theme;
+              return (
+                <Button
+                  key={theme}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => {
+                    setMode(theme);
+                    updatePreference('theme', theme);
+                  }}
+                  className={`flex items-center gap-3 border-2 p-4 text-left transition-colors ${selected ? 'border-ink bg-primary/30 shadow-ink-sm' : 'border-ink/30 hover:border-ink'}`}
+                >
+                  <Icon className="size-5" />
+                  <span className="font-display uppercase">{theme} theme</span>
+                  {selected && <CheckIcon className="ml-auto size-4" />}
+                </Button>
+              );
+            })}
+          </div>
+
+          <div className="space-y-2 border-t border-ink/20 pt-4">
+            <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">Skin</p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {skins.map((skinOption) => {
+                const selected = preferences.skin === skinOption.id;
+                return (
+                  <Button
+                    key={skinOption.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => {
+                      setSkin(skinOption.id);
+                      updatePreference('skin', skinOption.id);
+                    }}
+                    className={`flex h-auto flex-col items-start gap-2 border-2 p-3 text-left transition-colors ${selected ? 'border-ink bg-primary/25 shadow-ink-sm' : 'border-ink/30 hover:border-ink'}`}
+                  >
+                    <div className="flex w-full items-center justify-between gap-2">
+                      <span className="font-display text-sm uppercase">{skinOption.label}</span>
+                      {selected && <CheckIcon className="size-4 shrink-0" />}
+                    </div>
+                    <span className="text-xs font-normal normal-case text-ink-soft">
+                      {skinOption.description}
+                    </span>
+                    <span className="mt-1 flex items-center gap-1.5" aria-hidden="true">
+                      <span
+                        className="size-3.5 border border-ink"
+                        style={{ backgroundColor: skinOption.swatch.background }}
+                      />
+                      <span
+                        className="size-3.5 border border-ink"
+                        style={{ backgroundColor: skinOption.swatch.surface }}
+                      />
+                      <span
+                        className="size-3.5 border border-ink"
+                        style={{ backgroundColor: skinOption.swatch.foreground }}
+                      />
+                      <span
+                        className="size-3.5 border border-ink"
+                        style={{ backgroundColor: skinOption.swatch.accent }}
+                      />
+                    </span>
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2 border-t border-ink/20 pt-4">
+            <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">Density</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(['comfortable', 'compact'] as const).map((densityOption) => {
+                const selected = preferences.density === densityOption;
+                return (
+                  <Button
+                    key={densityOption}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => {
+                      setDensity(densityOption);
+                      updatePreference('density', densityOption);
+                    }}
+                    className={`flex items-center justify-between gap-3 border-2 p-3 text-left transition-colors ${selected ? 'border-ink bg-primary/30 shadow-ink-sm' : 'border-ink/30 hover:border-ink'}`}
+                  >
+                    <span className="font-display uppercase">{densityOption} density</span>
+                    {selected && <CheckIcon className="size-4" />}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 

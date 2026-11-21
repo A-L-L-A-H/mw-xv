@@ -137,6 +137,82 @@
   --mw-on-error: #0d0d0d;
 }
 
+/* Skin: moonwitness-compact (dense operational) */
+[data-skin='moonwitness-compact'] {
+  --mw-paper: #f0eee9;
+  --mw-paper-raised: #ffffff;
+  --mw-ink: #111113;
+  --mw-ink-soft: #37373c;
+  --mw-ink-faint: #5e5e66;
+  --mw-muted: #e3e1db;
+  --mw-primary: var(--mw-signal-blue);
+  --mw-accent: var(--mw-signal-blue);
+  --mw-radius-sm: 0.125rem;
+  --mw-radius-md: 0.1875rem;
+  --mw-radius-lg: 0.375rem;
+  --mw-shadow-ink: 2px 2px 0 0 var(--mw-ink);
+  --mw-shadow-ink-lg: 4px 4px 0 0 var(--mw-ink);
+}
+
+[data-skin='moonwitness-compact'].dark {
+  --mw-paper: #0c0d10;
+  --mw-paper-raised: #15171c;
+  --mw-ink: #f0f2f5;
+  --mw-ink-soft: #c2c6cf;
+  --mw-ink-faint: #9197a3;
+  --mw-muted: #20232b;
+}
+
+/* Skin: moonwitness-high-contrast (WCAG AAA/AA accessibility) */
+[data-skin='moonwitness-high-contrast'] {
+  --mw-paper: #ffffff;
+  --mw-paper-raised: #ffffff;
+  --mw-ink: #000000;
+  --mw-ink-soft: #1a1a1a;
+  --mw-ink-faint: #333333;
+  --mw-muted: #ebebeb;
+  --mw-yellow: #ffd000;
+  --mw-on-accent: #000000;
+  --mw-error: #990000;
+  --mw-on-error: #ffffff;
+  --mw-success: #005a1f;
+  --mw-on-success: #ffffff;
+  --mw-info: #003c8f;
+  --mw-on-info: #ffffff;
+  --mw-yellow-readable: #5c4800;
+  --mw-magenta-readable: #990044;
+  --mw-cyan-readable: #005b7a;
+  --mw-violet-readable: #4c1d95;
+  --mw-frame-width: 3px;
+}
+
+[data-skin='moonwitness-high-contrast'].dark {
+  --mw-paper: #000000;
+  --mw-paper-raised: #0a0a0a;
+  --mw-ink: #ffffff;
+  --mw-ink-soft: #e6e6e6;
+  --mw-ink-faint: #cccccc;
+  --mw-muted: #1c1c1c;
+  --mw-yellow: #ffe600;
+  --mw-focus: var(--mw-yellow);
+  --mw-error: #ff8a80;
+  --mw-on-error: #000000;
+  --mw-yellow-readable: var(--mw-yellow);
+  --mw-magenta-readable: #ff66a8;
+  --mw-cyan-readable: #33d1ff;
+  --mw-violet-readable: #d8b4fe;
+}
+
+/* Density: compact */
+[data-density='compact'] {
+  --mw-space-2: 0.375rem;
+  --mw-space-3: 0.5rem;
+  --mw-space-4: 0.75rem;
+  --mw-space-6: 1rem;
+  --mw-panel-gap-comfortable: 0.5rem;
+  --mw-panel-padding-comfortable: 0.75rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --mw-motion-fast: 0ms;

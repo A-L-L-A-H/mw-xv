@@ -2,18 +2,33 @@ import { createHash } from 'node:crypto';
 import type { Knex } from 'knex';
 import { Registry } from './registry.js';
 import type { BaseModel } from './base.model.js';
-import { columnName, type DefinedModel, type Field, type FieldMap } from './model-definition.js';
-import { registerView, type ViewDefinition } from './view.js';
-
-function resolveTargetModel(
-  target: typeof BaseModel | (() => typeof BaseModel) | undefined
-): typeof BaseModel | undefined {
-  if (!target) return undefined;
-  if (typeof target === 'function' && !('tableName' in target)) {
-    return (target as () => typeof BaseModel)();
-  }
-  return target as typeof BaseModel;
-}
+import {
+  applyModelExtension,
+  columnName,
+  resolveFieldTarget,
+  type DefinedModel,
+  type Field,
+  type FieldMap,
+  type ModelExtension,
+} from './model-definition.js';
+import {
+  planSchemaSync,
+  syncModelSchema,
+  type ApplySchemaSyncOptions,
+  type SchemaDiffPlan,
+} from './schema-sync.js';
+import {
+  registerView,
+  registerViewExtension,
+  resolveViews,
+  restoreViews,
+  snapshotViews,
+  unregisterModelViews,
+  validateViews,
+  type ViewDefinition,
+  type ViewExtension,
+} from './view.js';
+import { ConcurrencyConflictError, ValidationError } from './types.js';
 
 type AddonModel = typeof BaseModel & { readonly fields: FieldMap };
 export interface SeedReference {
@@ -63,14 +78,29 @@ export type AddonHttpPlugin<TApp = unknown, TOptions = unknown> = (
   options: TOptions
 ) => unknown | Promise<unknown>;
 
+export type AddonLifecycleStatus = 'uninstalled' | 'installed' | 'disabled' | 'upgrade_failed';
+
 export interface Addon {
   readonly name: string;
   readonly version: string;
+  readonly displayName?: string;
+  readonly category?: string;
+  readonly summary?: string;
+  readonly license?: string;
+  readonly autoInstall?: boolean;
+  readonly uninstallable?: boolean;
+  readonly compatibility?: Readonly<Record<string, string>>;
   readonly depends?: readonly string[];
   readonly models: readonly AddonModel[];
+  /** Declarative `extendModel(...)` patches applied in topological addon order before schema sync. */
+  readonly extensions?: readonly ModelExtension[];
   readonly data?: readonly SeedRecord[];
   readonly views?: readonly ViewDefinition[];
+  /** Declarative `extendView(...)` patches applied in priority order. */
+  readonly viewExtensions?: readonly ViewExtension[];
   readonly menus?: readonly AddonMenu[];
+  readonly actions?: readonly Record<string, unknown>[];
+  readonly security?: Readonly<Record<string, unknown>>;
   /** Optional declarative HTTP plugin entrypoints mounted by the API host adapter. */
   readonly httpPlugins?: readonly AddonHttpPlugin[];
   /** Idempotent database setup run transactionally after addon tables are synchronized. */
@@ -94,7 +124,10 @@ export interface ModelMenuInfo {
   developmentOnly: boolean;
 }
 
+const CORE_ADDONS = new Set(['base', 'auth', 'jobs']);
 const modelMenus = new Map<string, ModelMenuInfo>();
+const registeredAddons = new Map<string, Addon>();
+const appliedExtensions = new WeakSet<ModelExtension>();
 
 export function getModelMenuInfo(model: string): ModelMenuInfo {
   return (
@@ -105,6 +138,7 @@ export function getModelMenuInfo(model: string): ModelMenuInfo {
     }
   );
 }
+
 export function defineAddon(addon: Addon): Readonly<Addon> {
   if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(addon.version)) {
     throw new Error(`Addon '${addon.name}' must use a semantic version (major.minor.patch)`);
@@ -125,6 +159,8 @@ export function defineAddon(addon: Addon): Readonly<Addon> {
 interface InstalledAddon {
   name: string;
   version: string;
+  status?: AddonLifecycleStatus;
+  schema_digest?: string;
   installed_at?: string;
   upgraded_at?: string;
 }
@@ -136,6 +172,21 @@ function compareVersions(left: string, right: string): number {
     if (a[index] !== b[index]) return (a[index] ?? 0) - (b[index] ?? 0);
   }
   return 0;
+}
+
+function satisfiesRange(version: string, range: string): boolean {
+  const trimmed = range.trim();
+  if (trimmed === '*' || trimmed === '') return true;
+  if (trimmed.startsWith('>=')) {
+    return compareVersions(version, trimmed.slice(2).trim()) >= 0;
+  }
+  if (trimmed.startsWith('^')) {
+    const base = trimmed.slice(1).trim();
+    const [bMaj] = base.split('.').map(Number);
+    const [vMaj] = version.split('.').map(Number);
+    return vMaj === bMaj && compareVersions(version, base) >= 0;
+  }
+  return compareVersions(version, trimmed) === 0;
 }
 
 function sort<T>(
@@ -163,102 +214,126 @@ function sort<T>(
   return sorted;
 }
 
-function addField(
-  table: Knex.CreateTableBuilder,
-  name: string,
-  field: Field,
-  includeForeignKey = true
-) {
-  const column = columnName(name, field);
-  const builder =
-    field.kind === 'integer' || field.kind === 'belongsTo'
-      ? table.integer(column)
-      : field.kind === 'text'
-        ? table.text(column)
-        : field.kind === 'boolean'
-          ? table.boolean(column)
-          : table.string(column, 255);
-  if (field.required || field.default !== undefined) builder.notNullable();
-  else builder.nullable();
-  if (field.default !== undefined) builder.defaultTo(field.default);
-  if (field.unique) builder.unique();
-  if (field.values) builder.checkIn([...field.values]);
-  const targetModel = resolveTargetModel(field.target);
-  if (field.kind === 'belongsTo' && targetModel && includeForeignKey)
-    builder.references('id').inTable(targetModel.tableName).onDelete('RESTRICT');
+/**
+ * Deterministic topological resolution of workspace addons with compatibility validation.
+ */
+export function discoverWorkspaceAddons(addons: readonly Addon[]): Addon[] {
+  // Sort deterministically by name before topological sort so input order never affects output
+  const canonical = [...addons].sort((a, b) => a.name.localeCompare(b.name));
+  const ordered = sort(
+    canonical,
+    (addon) => addon.name,
+    (addon) => addon.depends ?? []
+  );
+  const byName = new Map(ordered.map((a) => [a.name, a]));
+  for (const addon of ordered) {
+    if (addon.compatibility) {
+      for (const [depName, range] of Object.entries(addon.compatibility)) {
+        const dep = byName.get(depName);
+        if (!dep) {
+          throw new Error(`Addon '${addon.name}' requires compatible addon '${depName}' (${range})`);
+        }
+        if (!satisfiesRange(dep.version, range)) {
+          throw new Error(
+            `Addon '${addon.name}' incompatible with '${depName}@${dep.version}' (expected ${range})`
+          );
+        }
+      }
+    }
+  }
+  return ordered;
 }
 
-async function syncModel(db: Knex.Transaction, model: AddonModel) {
-  const entries = Object.entries(model.fields);
-  const tableExists = await db.schema.hasTable(model.tableName);
-  if (!tableExists) {
-    await db.schema.createTable(model.tableName, (table) => {
-      table.increments('id').primary();
-      table.boolean('active').notNullable().defaultTo(true);
-      table.timestamp('create_date').notNullable().defaultTo(db.fn.now());
-      table.timestamp('write_date').notNullable().defaultTo(db.fn.now());
-      table.integer('create_uid').nullable();
-      table.integer('write_uid').nullable();
-      for (const [name, field] of entries) addField(table, name, field);
-    });
-  } else {
-    for (const [name, field] of entries) {
-      if (await db.schema.hasColumn(model.tableName, columnName(name, field))) continue;
-      const populated: unknown = await db(model.tableName).first('id');
-      if (populated && ((field.required && field.default === undefined) || field.unique)) {
-        throw new Error(
-          `Cannot safely add ${model.modelName}.${name} to an existing populated table; backfill explicitly first`
-        );
-      }
-      await db.schema.alterTable(model.tableName, (table) =>
-        addField(table, name, field, db.client.config.client !== 'better-sqlite3')
-      );
+function computeAddonSchemaDigest(addon: Addon): string {
+  const payload = addon.models
+    .map((m) => ({
+      model: m.modelName,
+      table: m.tableName,
+      unique: m.uniqueConstraints,
+      fields: Object.entries(m.fields)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, f]) => ({
+          k,
+          kind: f.kind,
+          required: Boolean(f.required),
+          unique: Boolean(f.unique),
+          index: Boolean(f.index),
+          values: f.values,
+          onDelete: f.onDelete,
+          store: Boolean(f.store),
+        })),
+    }))
+    .sort((a, b) => a.model.localeCompare(b.model));
+  return createHash('sha256').update(JSON.stringify(payload)).digest('hex').slice(0, 16);
+}
+
+function resolveAddonsAndModels(addons: readonly Addon[]): {
+  ordered: Addon[];
+  models: AddonModel[];
+  nextMenus: Map<string, ModelMenuInfo>;
+  data: SeedRecord[];
+} {
+  const ordered = discoverWorkspaceAddons(addons);
+  const nextMenus = new Map<string, ModelMenuInfo>();
+  for (const addon of ordered) {
+    for (const menu of addon.menus ?? []) {
+      if (nextMenus.has(menu.model)) throw new Error(`Duplicate addon menu model: ${menu.model}`);
+      nextMenus.set(menu.model, {
+        ...(menu.label ? { label: menu.label } : {}),
+        group: menu.group,
+        sequence: menu.sequence ?? 1000,
+        developmentOnly: menu.developmentOnly ?? false,
+      });
     }
   }
 
-  const hasCompanyColumn = entries.some(
-    ([name, field]) => columnName(name, field) === 'company_id'
+  const allModels = ordered.flatMap((addon) => [...addon.models]);
+  const modelByName = new Map(allModels.map((m) => [m.modelName, m]));
+
+  // Apply declarative model extensions in topological addon order (idempotent per extension object)
+  for (const addon of ordered) {
+    for (const ext of addon.extensions ?? []) {
+      const target = modelByName.get(ext.target);
+      if (!target) {
+        throw new Error(`Extension target model not found: ${ext.target} (in addon '${addon.name}')`);
+      }
+      if (!appliedExtensions.has(ext)) {
+        applyModelExtension(target, ext);
+        appliedExtensions.add(ext);
+      }
+    }
+  }
+
+  const models = sort(
+    allModels,
+    (model) => model.modelName,
+    (model) =>
+      Object.values(model.fields).flatMap((field) => {
+        if (field.kind !== 'belongsTo') return [];
+        const targetModel = resolveFieldTarget(field.target);
+        return targetModel && targetModel.modelName !== model.modelName
+          ? [targetModel.modelName]
+          : [];
+      })
   );
-  const indexes = [
-    ['active', 'id'],
-    ['create_uid'],
-    ...(hasCompanyColumn ? [['company_id', 'active', 'id']] : []),
-    ...entries.flatMap(([name, field]) =>
-      field.kind === 'belongsTo' || field.index === true ? [[columnName(name, field)]] : []
-    ),
-  ];
-  for (const columns of indexes) {
-    const suffix = createHash('sha256')
-      .update(`${model.tableName}.${columns.join('.')}`)
-      .digest('hex')
-      .slice(0, 12);
-    const indexName = `mw_idx_${suffix}`;
-    const identifiers = columns.map(() => '??').join(', ');
-    await db.raw(`CREATE INDEX IF NOT EXISTS ?? ON ?? (${identifiers})`, [
-      indexName,
-      model.tableName,
-      ...columns,
-    ]);
+
+  if (new Set(models.map((model) => model.tableName)).size !== models.length) {
+    throw new Error('Duplicate addon table');
   }
-  for (const constraint of model.uniqueConstraints) {
-    if (constraint.length === 0) throw new Error(`Empty unique constraint on ${model.modelName}`);
-    const columns = constraint.map((name) => {
-      const field = model.fields[name];
-      if (!field) throw new Error(`Unknown unique field: ${model.modelName}.${name}`);
-      return columnName(name, field);
-    });
-    const suffix = createHash('sha256')
-      .update(`${model.tableName}.unique.${columns.join('.')}`)
-      .digest('hex')
-      .slice(0, 12);
-    const indexName = `mw_uq_${suffix}`;
-    const identifiers = columns.map(() => '??').join(', ');
-    await db.raw(`CREATE UNIQUE INDEX IF NOT EXISTS ?? ON ?? (${identifiers})`, [
-      indexName,
-      model.tableName,
-      ...columns,
-    ]);
+
+  const data = ordered.flatMap((addon) => [...(addon.data ?? [])]);
+  const seedIds = new Set<string>();
+  for (const record of data) {
+    if (!models.includes(record.model)) {
+      throw new Error(`Seed model not installed: ${record.model.modelName}`);
+    }
+    if (seedIds.has(record.id)) {
+      throw new Error(`Duplicate external data ID: ${record.id}`);
+    }
+    seedIds.add(record.id);
   }
+
+  return { ordered, models, nextMenus, data };
 }
 
 interface ExternalRecord {
@@ -291,7 +366,7 @@ async function installData(db: Knex.Transaction, data: readonly SeedRecord[]) {
       if (!field) throw new Error(`Unknown seed field: ${record.model.modelName}.${name}`);
       if (typeof value === 'object' && value !== null) {
         const linked = await ensure(value.$ref);
-        const targetModel = resolveTargetModel(field.target);
+        const targetModel = resolveFieldTarget(field.target);
         if (targetModel?.modelName !== linked.model)
           throw new Error(`Invalid relation for ${record.id}.${name}`);
         values[columnName(name, field)] = linked.record_id;
@@ -332,7 +407,6 @@ async function installData(db: Knex.Transaction, data: readonly SeedRecord[]) {
     if (resolving.has(id)) throw new Error(`Circular data reference: ${id}`);
     resolving.add(id);
     const values = await resolveValues(record);
-    // Adopt existing default records once, then track only immutable external IDs.
     let existing: Identity | undefined;
     const adopt = (match: Identity | undefined) => {
       if (existing && match && existing.id !== match.id)
@@ -360,8 +434,6 @@ async function installData(db: Knex.Transaction, data: readonly SeedRecord[]) {
     const mappedRecord = await db<ExternalRecord>('_orm_data')
       .where({ model: identity.model, record_id: identity.record_id })
       .first('id');
-    // A legacy/manual row may already belong to another external seed ID. Keep
-    // that canonical mapping; the current seed can still reference its record.
     if (!mappedRecord) await db<ExternalRecord>('_orm_data').insert(identity);
     resolving.delete(id);
     return identity;
@@ -369,160 +441,257 @@ async function installData(db: Knex.Transaction, data: readonly SeedRecord[]) {
   for (const record of data) await ensure(record.id);
 }
 
-/** Register addon metadata in-memory (models, views, menus, security) without DDL/seed. */
+/** Compute a dry-run SchemaDiffPlan for a set of addons without mutating the database. */
+export async function planAddonsSchemaSync(
+  db: Knex,
+  addons: readonly Addon[]
+): Promise<SchemaDiffPlan> {
+  const { models } = resolveAddonsAndModels(addons);
+  return planSchemaSync(db, models);
+}
+
+/** Register addon metadata in-memory (models, extensions, views, menus) without DDL/seed. */
 export async function registerAddons(db: Knex, addons: readonly Addon[]): Promise<void> {
-  const ordered = sort(
-    addons,
-    (addon) => addon.name,
-    (addon) => addon.depends ?? []
-  );
-  const nextMenus = new Map<string, ModelMenuInfo>();
-  for (const addon of ordered) {
-    for (const menu of addon.menus ?? []) {
-      if (nextMenus.has(menu.model)) throw new Error('Duplicate addon menu model: ' + menu.model);
-      nextMenus.set(menu.model, {
-        ...(menu.label ? { label: menu.label } : {}),
-        group: menu.group,
-        sequence: menu.sequence ?? 1000,
-        developmentOnly: menu.developmentOnly ?? false,
-      });
-    }
-  }
-  const models = sort(
-    ordered.flatMap((addon) => [...addon.models]),
-    (model) => model.modelName,
-    (model) =>
-      Object.values(model.fields).flatMap((field) => {
-        if (field.kind !== 'belongsTo') return [];
-        const targetModel = resolveTargetModel(field.target);
-        return targetModel && targetModel.modelName !== model.modelName
-          ? [targetModel.modelName]
-          : [];
-      })
-  );
-  if (new Set(models.map((model) => model.tableName)).size !== models.length)
-    throw new Error('Duplicate addon table');
-  const data = ordered.flatMap((addon) => [...(addon.data ?? [])]);
-  for (const record of data) {
-    if (!models.includes(record.model))
-      throw new Error('Seed model not installed: ' + record.model.modelName);
-  }
-  // In-memory registration only: no DDL, no seed, no advisory lock.
+  const { ordered, models, nextMenus } = resolveAddonsAndModels(addons);
+
   for (const model of models) {
     model.knex(db);
     Registry.register(model);
   }
   for (const addon of ordered) {
+    registeredAddons.set(addon.name, addon);
     for (const view of addon.views ?? []) {
-      if (!models.some((model) => model.modelName === view.model))
-        throw new Error('View model not installed: ' + view.model);
-      registerView(view);
+      if (!models.some((model) => model.modelName === view.model)) {
+        throw new Error(`View model not installed: ${view.model}`);
+      }
+      registerView({ ...view, addonName: addon.name });
     }
+    for (const viewExt of addon.viewExtensions ?? []) {
+      if (!models.some((model) => model.modelName === viewExt.model)) {
+        throw new Error(`View extension model not installed: ${viewExt.model}`);
+      }
+      registerViewExtension({ ...viewExt, addonName: viewExt.addonName ?? addon.name });
+    }
+  }
+  // Cross-addon view validation
+  for (const model of models) {
+    validateViews(model, resolveViews(model));
   }
   modelMenus.clear();
   for (const [name, menu] of nextMenus) modelMenus.set(name, menu);
 }
 
 /** Install an ordered set of addons atomically; restart preserves user-edited seed values. */
-export async function installAddons(db: Knex, addons: readonly Addon[]): Promise<void> {
-  const ordered = sort(
-    addons,
-    (addon) => addon.name,
-    (addon) => addon.depends ?? []
-  );
-  const nextMenus = new Map<string, ModelMenuInfo>();
-  for (const addon of ordered) {
-    for (const menu of addon.menus ?? []) {
-      if (nextMenus.has(menu.model)) throw new Error(`Duplicate addon menu model: ${menu.model}`);
-      nextMenus.set(menu.model, {
-        ...(menu.label ? { label: menu.label } : {}),
-        group: menu.group,
-        sequence: menu.sequence ?? 1000,
-        developmentOnly: menu.developmentOnly ?? false,
-      });
-    }
-  }
-  const models = sort(
-    ordered.flatMap((addon) => [...addon.models]),
-    (model) => model.modelName,
-    (model) =>
-      Object.values(model.fields).flatMap((field) => {
-        // Only belongsTo fields create foreign keys from this model's table.
-        // hasMany references point the other way and must not create a cycle.
-        if (field.kind !== 'belongsTo') return [];
-        const targetModel = resolveTargetModel(field.target);
-        return targetModel && targetModel.modelName !== model.modelName
-          ? [targetModel.modelName]
-          : [];
-      })
-  );
-  if (new Set(models.map((model) => model.tableName)).size !== models.length)
-    throw new Error('Duplicate addon table');
-  const data = ordered.flatMap((addon) => [...(addon.data ?? [])]);
-  for (const record of data) {
-    if (!models.includes(record.model))
-      throw new Error(`Seed model not installed: ${record.model.modelName}`);
-  }
-  await db.transaction(async (trx) => {
-    // API and worker replicas can start together during a rolling deployment.
-    // Serialize schema/seed installation per database before inspecting tables.
-    if (db.client.config.client === 'pg') {
-      await trx.raw('select pg_advisory_xact_lock(?, hashtext(?))', [
-        1297564238,
-        'moonwitness.addon.install',
-      ]);
-    }
-    for (const model of models) await syncModel(trx, model);
-    if (!(await trx.schema.hasTable('_orm_addons'))) {
-      await trx.schema.createTable('_orm_addons', (table) => {
-        table.string('name').primary();
-        table.string('version').notNullable();
-        table.timestamp('installed_at').notNullable().defaultTo(trx.fn.now());
-        table.timestamp('upgraded_at').notNullable().defaultTo(trx.fn.now());
-      });
+export async function installAddons(
+  db: Knex,
+  addons: readonly Addon[],
+  options: ApplySchemaSyncOptions = {}
+): Promise<void> {
+  const registrySnapshot = Registry.snapshot();
+  const viewsSnapshot = snapshotViews();
+  const menusSnapshot = new Map(modelMenus);
+
+  try {
+    const { ordered, models, nextMenus, data } = resolveAddonsAndModels(addons);
+
+    await db.transaction(async (trx) => {
+      if (db.client.config.client === 'pg') {
+        await trx.raw('select pg_advisory_xact_lock(?, hashtext(?))', [
+          1297564238,
+          'moonwitness.addon.install',
+        ]);
+      }
+
+      for (const model of models) {
+        await syncModelSchema(trx, model, options);
+      }
+
+      if (!(await trx.schema.hasTable('_orm_addons'))) {
+        await trx.schema.createTable('_orm_addons', (table) => {
+          table.string('name').primary();
+          table.string('version').notNullable();
+          table.string('status').notNullable().defaultTo('installed');
+          table.string('schema_digest').nullable();
+          table.timestamp('installed_at').notNullable().defaultTo(trx.fn.now());
+          table.timestamp('upgraded_at').notNullable().defaultTo(trx.fn.now());
+        });
+      } else {
+        if (!(await trx.schema.hasColumn('_orm_addons', 'status'))) {
+          await trx.schema.alterTable('_orm_addons', (table) => {
+            table.string('status').notNullable().defaultTo('installed');
+          });
+        }
+        if (!(await trx.schema.hasColumn('_orm_addons', 'schema_digest'))) {
+          await trx.schema.alterTable('_orm_addons', (table) => {
+            table.string('schema_digest').nullable();
+          });
+        }
+      }
+
+      for (const addon of ordered) {
+        const installed = await trx<InstalledAddon>('_orm_addons')
+          .where({ name: addon.name })
+          .first();
+        if (installed && compareVersions(addon.version, installed.version) < 0) {
+          throw new Error(
+            `Addon downgrade rejected for '${addon.name}': ${installed.version} -> ${addon.version}`
+          );
+        }
+        if (installed && compareVersions(addon.version, installed.version) > 0 && addon.upgrade) {
+          const applicableVersions = Object.keys(addon.upgrade)
+            .filter(
+              (fromVersion) =>
+                compareVersions(fromVersion, installed.version) >= 0 &&
+                compareVersions(fromVersion, addon.version) < 0
+            )
+            .sort(compareVersions);
+          for (const fromVersion of applicableVersions) {
+            await addon.upgrade[fromVersion]?.(trx);
+          }
+        }
+      }
+
+      for (const addon of ordered) await addon.setup?.(trx);
+      await installData(trx, data);
+
+      for (const addon of ordered) {
+        const digest = computeAddonSchemaDigest(addon);
+        await trx<InstalledAddon>('_orm_addons')
+          .insert({
+            name: addon.name,
+            version: addon.version,
+            status: 'installed',
+            schema_digest: digest,
+          })
+          .onConflict('name')
+          .merge({
+            version: addon.version,
+            status: 'installed',
+            schema_digest: digest,
+            upgraded_at: trx.fn.now(),
+          });
+      }
+    });
+
+    for (const model of models) {
+      model.knex(db);
+      Registry.register(model);
     }
     for (const addon of ordered) {
-      const installed = await trx<InstalledAddon>('_orm_addons')
-        .where({ name: addon.name })
-        .first();
-      if (installed && compareVersions(addon.version, installed.version) < 0) {
-        throw new Error(
-          `Addon downgrade rejected for '${addon.name}': ${installed.version} -> ${addon.version}`
-        );
+      registeredAddons.set(addon.name, addon);
+      for (const view of addon.views ?? []) {
+        if (!models.some((model) => model.modelName === view.model)) {
+          throw new Error(`View model not installed: ${view.model}`);
+        }
+        registerView({ ...view, addonName: addon.name });
       }
-      if (installed && compareVersions(addon.version, installed.version) > 0 && addon.upgrade) {
-        const applicableVersions = Object.keys(addon.upgrade)
-          .filter(
-            (fromVersion) =>
-              compareVersions(fromVersion, installed.version) >= 0 &&
-              compareVersions(fromVersion, addon.version) < 0
-          )
-          .sort(compareVersions);
-        for (const fromVersion of applicableVersions) {
-          await addon.upgrade[fromVersion]?.(trx);
+      for (const viewExt of addon.viewExtensions ?? []) {
+        if (!models.some((model) => model.modelName === viewExt.model)) {
+          throw new Error(`View extension model not installed: ${viewExt.model}`);
+        }
+        registerViewExtension({ ...viewExt, addonName: viewExt.addonName ?? addon.name });
+      }
+    }
+    for (const model of models) {
+      validateViews(model, resolveViews(model));
+    }
+    modelMenus.clear();
+    for (const [name, menu] of nextMenus) modelMenus.set(name, menu);
+  } catch (err) {
+    // Atomic in-memory rollback on any install/upgrade failure
+    Registry.restore(registrySnapshot);
+    restoreViews(viewsSnapshot);
+    modelMenus.clear();
+    for (const [name, menu] of menusSnapshot) modelMenus.set(name, menu);
+    throw err;
+  }
+}
+
+/** Enable a previously disabled addon. */
+export async function enableAddon(db: Knex, name: string): Promise<void> {
+  const row = await db<InstalledAddon>('_orm_addons').where({ name }).first();
+  if (!row) {
+    throw new ValidationError(`Addon '${name}' is not installed`);
+  }
+  await db<InstalledAddon>('_orm_addons')
+    .where({ name })
+    .update({ status: 'installed', upgraded_at: db.fn.now() });
+}
+
+/** Disable an installed addon, blocking core addons and addons with active dependents. */
+export async function disableAddon(db: Knex, name: string): Promise<void> {
+  if (CORE_ADDONS.has(name)) {
+    throw new ConcurrencyConflictError(`Core addon '${name}' cannot be disabled`);
+  }
+  const row = await db<InstalledAddon>('_orm_addons').where({ name }).first();
+  if (!row) {
+    throw new ValidationError(`Addon '${name}' is not installed`);
+  }
+  const activeInstalled = await db<InstalledAddon>('_orm_addons')
+    .where({ status: 'installed' })
+    .select('name');
+  const activeNames = new Set(activeInstalled.map((r) => r.name));
+  for (const [otherName, otherAddon] of registeredAddons) {
+    if (otherName !== name && activeNames.has(otherName) && otherAddon.depends?.includes(name)) {
+      throw new ConcurrencyConflictError(
+        `Cannot disable addon '${name}': active addon '${otherName}' depends on it`
+      );
+    }
+  }
+  await db<InstalledAddon>('_orm_addons')
+    .where({ name })
+    .update({ status: 'disabled', upgraded_at: db.fn.now() });
+}
+
+/** Safely uninstall an addon, detaching runtime registrations and metadata. */
+export async function uninstallAddon(
+  db: Knex,
+  name: string,
+  options: { purgeData?: boolean } = {}
+): Promise<void> {
+  if (CORE_ADDONS.has(name)) {
+    throw new ConcurrencyConflictError(`Core addon '${name}' cannot be uninstalled`);
+  }
+  const addon = registeredAddons.get(name);
+  if (addon?.uninstallable === false) {
+    throw new ConcurrencyConflictError(`Addon '${name}' is marked non-uninstallable`);
+  }
+  const activeInstalled = await db<InstalledAddon>('_orm_addons')
+    .where({ status: 'installed' })
+    .select('name');
+  const activeNames = new Set(activeInstalled.map((r) => r.name));
+  for (const [otherName, otherAddon] of registeredAddons) {
+    if (otherName !== name && activeNames.has(otherName) && otherAddon.depends?.includes(name)) {
+      throw new ConcurrencyConflictError(
+        `Cannot uninstall addon '${name}': active addon '${otherName}' depends on it`
+      );
+    }
+  }
+
+  const modelNames = addon ? addon.models.map((m) => m.modelName) : [];
+
+  await db.transaction(async (trx) => {
+    if (modelNames.length > 0 && (await trx.schema.hasTable('_orm_data'))) {
+      await trx('_orm_data').whereIn('model', modelNames).delete();
+    }
+    if (options.purgeData && addon) {
+      for (const model of [...addon.models].reverse()) {
+        if (await trx.schema.hasTable(model.tableName)) {
+          await trx.schema.dropTable(model.tableName);
         }
       }
     }
-    for (const addon of ordered) await addon.setup?.(trx);
-    await installData(trx, data);
-    for (const addon of ordered) {
-      await trx<InstalledAddon>('_orm_addons')
-        .insert({ name: addon.name, version: addon.version })
-        .onConflict('name')
-        .merge({ version: addon.version, upgraded_at: trx.fn.now() });
+    if (await trx.schema.hasTable('_orm_addons')) {
+      await trx('_orm_addons').where({ name }).delete();
     }
   });
-  for (const model of models) {
-    model.knex(db);
-    Registry.register(model);
-  }
-  for (const addon of ordered) {
-    for (const view of addon.views ?? []) {
-      if (!models.some((model) => model.modelName === view.model))
-        throw new Error(`View model not installed: ${view.model}`);
-      registerView(view);
+
+  if (addon) {
+    for (const model of addon.models) {
+      Registry.unregister(model.modelName);
+      unregisterModelViews(model.modelName);
+      modelMenus.delete(model.modelName);
     }
+    registeredAddons.delete(name);
   }
-  modelMenus.clear();
-  for (const [name, menu] of nextMenus) modelMenus.set(name, menu);
 }

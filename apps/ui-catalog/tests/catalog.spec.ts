@@ -957,3 +957,50 @@ test('zine polish patterns wrap cleanly at 320px and expose paper/torn/scuffed s
     true
   );
 });
+
+test('skin, color mode, and density switcher supports all built-in combinations without WCAG AA violations', async ({
+  page,
+}) => {
+  await page.goto('./');
+  const skins = [
+    { id: 'moonwitness-ink', label: 'MoonWitness Ink' },
+    { id: 'moonwitness-compact', label: 'MoonWitness Compact' },
+    { id: 'moonwitness-high-contrast', label: 'MoonWitness High Contrast' },
+  ];
+
+  for (const skin of skins) {
+    await page.getByRole('combobox', { name: 'Preview skin' }).click();
+    await page.getByRole('option', { name: skin.label }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-skin', skin.id);
+
+    for (const mode of ['light', 'dark'] as const) {
+      const isDark = await page.locator('html').evaluate((el) => el.classList.contains('dark'));
+      if (mode === 'dark' && !isDark) {
+        await page.getByRole('button', { name: 'Use dark theme' }).click();
+      } else if (mode === 'light' && isDark) {
+        await page.getByRole('button', { name: 'Use light theme' }).click();
+      }
+
+      for (const density of ['comfortable', 'compact'] as const) {
+        const currentDensity = await page.locator('html').getAttribute('data-density');
+        if (density === 'compact' && currentDensity !== 'compact') {
+          await page.getByRole('button', { name: 'Use compact density' }).click();
+        } else if (density === 'comfortable' && currentDensity === 'compact') {
+          await page.getByRole('button', { name: 'Use comfortable density' }).click();
+        }
+
+        const results = await new AxeBuilder({ page })
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+          .analyze();
+        expect(
+          results.violations.map(({ id, impact, nodes }) => ({
+            id,
+            impact,
+            nodes: nodes.map(({ target, failureSummary }) => ({ target, failureSummary })),
+          })),
+          `${skin.id} / ${mode} / ${density} accessibility violations`
+        ).toEqual([]);
+      }
+    }
+  }
+});

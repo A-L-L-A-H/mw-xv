@@ -14,7 +14,7 @@ import { Readable, Transform, type Readable as NodeReadable } from 'node:stream'
 import { Upload } from '@aws-sdk/lib-storage';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { MAX_ATTACHMENT_BYTES } from '@moonwitness/types';
-import type { AttachmentStorage, StoredObjectMetadata } from './index.js';
+import type { AttachmentStorage, StoredObjectMetadata } from './storage.types.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 

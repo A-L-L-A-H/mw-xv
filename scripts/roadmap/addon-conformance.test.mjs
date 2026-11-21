@@ -251,4 +251,71 @@ describe('workspace addon conformance', () => {
       addonManifests.length
     );
   });
+
+  it('enforces acyclic addon dependencies, valid multi-mode views, and menu hierarchy integrity', () => {
+    const allowedViewKeys = new Set([
+      'title',
+      'description',
+      'icon',
+      'defaultMode',
+      'actions',
+      'list',
+      'form',
+      'search',
+      'kanban',
+      'calendar',
+      'graph',
+      'pivot',
+    ]);
+    const byName = new Map(addonManifests.map((addon) => [addon.name, addon]));
+    const visiting = new Set();
+    const visited = new Set();
+
+    function visit(name) {
+      if (visited.has(name)) return;
+      assert.ok(!visiting.has(name), `cyclic addon dependency detected at ${name}`);
+      visiting.add(name);
+      const addon = byName.get(name);
+      assert.ok(addon, `missing dependency ${name}`);
+      for (const dep of addon.depends ?? []) visit(dep);
+      visiting.delete(name);
+      visited.add(name);
+    }
+
+    for (const addon of addonManifests) {
+      visit(addon.name);
+      for (const view of addon.views ?? []) {
+        const viewModes = view.spec && typeof view.spec === 'object' ? view.spec : view;
+        for (const mode of Object.keys(viewModes)) {
+          if (mode === 'model') continue;
+          assert.ok(
+            allowedViewKeys.has(mode),
+            `${addon.name} view for ${view.model} has unsupported key "${mode}"`
+          );
+        }
+      }
+      for (const menu of addon.menus ?? []) {
+        if (menu.parentId) {
+          assert.notEqual(menu.parentId, menu.id, `${addon.name} menu ${menu.id} cannot parent itself`);
+        }
+      }
+    }
+  });
+
+  it('installs all 11 addons deterministically when supplied in reverse dependency order', async () => {
+    const db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+    after(async () => {
+      await db.destroy();
+    });
+
+    await installAddons(db, [...addonManifests].reverse());
+    assert.equal(
+      Number((await db('_orm_addons').count({ count: '*' }).first())?.count),
+      addonManifests.length
+    );
+  });
 });

@@ -1,4 +1,6 @@
 export * from './domain.js';
+export * from './views.js';
+export * from './i18n.js';
 export * from './api.js';
 export * from './jsonrpc.js';
 export * from './routes.js';
@@ -6,3 +8,4 @@ export * from './config.js';
 export * from './guards.js';
 export * from './attachments.js';
 export * from './errors.js';
+export * from './theme.js';

@@ -4,7 +4,7 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const workflowPath = path.join(root, '.github', 'workflows', 'gitleaks.yml');
+const workflowsDir = path.join(root, '.github', 'workflows');
 const configPath = path.join(root, '.gitleaks.toml');
 const actionReference = /gitleaks\/gitleaks-action@[0-9a-f]{40}\s+#\s*v\d+\.\d+\.\d+/;
 const exactLine = (segments) => new RegExp(segments.join(''), 'u');
@@ -153,13 +153,20 @@ export function validateGitleaksSetup(workflow, config) {
   return problems;
 }
 
-async function main() {
-  let workflow = null;
-  try {
-    workflow = await readFile(workflowPath, 'utf8');
-  } catch (error) {
-    if (error?.code !== 'ENOENT') throw error;
+async function findActiveGitleaksWorkflow() {
+  for (const filename of ['ci.yml']) {
+    try {
+      const content = await readFile(path.join(workflowsDir, filename), 'utf8');
+      if (/gitleaks\/gitleaks-action@/u.test(content)) return content;
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
   }
+  return null;
+}
+
+async function main() {
+  const workflow = await findActiveGitleaksWorkflow();
   const config = await readFile(configPath, 'utf8');
   const problems = validateGitleaksSetup(workflow, config);
   if (problems.length) {
@@ -167,7 +174,11 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  process.stdout.write('Gitleaks workflow and exact-line allowlist are valid.\n');
+  process.stdout.write(
+    workflow
+      ? 'Gitleaks workflow and exact-line allowlist are valid.\n'
+      : 'Gitleaks config and exact-line allowlist are valid (standalone; no dedicated workflow).\n'
+  );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

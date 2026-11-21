@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `32f3c0a2c350a50b17d911d4f9895999c33d4a4c3e4cfaed9861bb39b3ac76da`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `2c505b78cf571755c14cde5f0ecb202d72a482f4442b62b90c16b6f4f115d289`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -28,7 +28,7 @@ Models: 1; declared views: 0; menu entries: 0; seed rows: 0.
 
 Version: `1.0.0`; dependencies: none.
 
-Models: 23; declared views: 23; menu entries: 23; seed rows: 737.
+Models: 25; declared views: 25; menu entries: 25; seed rows: 739.
 
 | Model                        | Table                    | Field                  | Kind      | Required | Optional | Default    | Relation                |
 | ---------------------------- | ------------------------ | ---------------------- | --------- | -------- | -------- | ---------- | ----------------------- |
@@ -75,6 +75,12 @@ Models: 23; declared views: 23; menu entries: 23; seed rows: 737.
 | `base.company_membership`    | `company_memberships`    | `company`              | belongsTo | Yes      | No       | No         | `base.company`          |
 | `base.company_membership`    | `company_memberships`    | `is_default`           | boolean   | No       | Yes      | [redacted] | —                       |
 | `base.company_membership`    | `company_memberships`    | `user`                 | belongsTo | Yes      | No       | No         | `base.user`             |
+| `base.config_parameter`      | `base_config_parameters` | `company`              | belongsTo | No       | Yes      | No         | `base.company`          |
+| `base.config_parameter`      | `base_config_parameters` | `description`          | text      | No       | Yes      | No         | —                       |
+| `base.config_parameter`      | `base_config_parameters` | `is_secret`            | boolean   | No       | Yes      | [redacted] | —                       |
+| `base.config_parameter`      | `base_config_parameters` | `key`                  | string    | Yes      | No       | No         | —                       |
+| `base.config_parameter`      | `base_config_parameters` | `value`                | text      | No       | Yes      | No         | —                       |
+| `base.config_parameter`      | `base_config_parameters` | `value_type`           | enum      | No       | Yes      | [redacted] | —                       |
 | `base.country`               | `countries`              | `code`                 | string    | Yes      | No       | No         | —                       |
 | `base.country`               | `countries`              | `code_alpha3`          | string    | No       | Yes      | No         | —                       |
 | `base.country`               | `countries`              | `name`                 | string    | Yes      | No       | No         | —                       |
@@ -140,6 +146,15 @@ Models: 23; declared views: 23; menu entries: 23; seed rows: 737.
 | `base.partner_category`      | `partner_categories`     | `name`                 | string    | Yes      | No       | No         | —                       |
 | `base.partner_category_link` | `partner_category_links` | `category`             | belongsTo | Yes      | No       | No         | `base.partner_category` |
 | `base.partner_category_link` | `partner_category_links` | `partner`              | belongsTo | Yes      | No       | No         | `base.partner`          |
+| `base.saved_filter`          | `base_saved_filters`     | `company`              | belongsTo | No       | Yes      | No         | `base.company`          |
+| `base.saved_filter`          | `base_saved_filters`     | `domain_json`          | text      | No       | Yes      | [redacted] | —                       |
+| `base.saved_filter`          | `base_saved_filters`     | `group_by`             | string    | No       | Yes      | No         | —                       |
+| `base.saved_filter`          | `base_saved_filters`     | `is_default`           | boolean   | No       | Yes      | [redacted] | —                       |
+| `base.saved_filter`          | `base_saved_filters`     | `is_shared`            | boolean   | No       | Yes      | [redacted] | —                       |
+| `base.saved_filter`          | `base_saved_filters`     | `model_name`           | string    | Yes      | No       | No         | —                       |
+| `base.saved_filter`          | `base_saved_filters`     | `name`                 | string    | Yes      | No       | No         | —                       |
+| `base.saved_filter`          | `base_saved_filters`     | `order`                | string    | No       | Yes      | No         | —                       |
+| `base.saved_filter`          | `base_saved_filters`     | `user`                 | belongsTo | No       | Yes      | No         | `base.user`             |
 | `base.sequence`              | `sequences`              | `code`                 | string    | Yes      | No       | No         | —                       |
 | `base.sequence`              | `sequences`              | `name`                 | string    | No       | Yes      | No         | —                       |
 | `base.sequence`              | `sequences`              | `next_number`          | integer   | No       | Yes      | [redacted] | —                       |
@@ -177,6 +192,7 @@ Models: 23; declared views: 23; menu entries: 23; seed rows: 737.
 | `base.bank`                  | base.bank                  | Finance      |      310 | Development mode |
 | `base.company`               | Companies                  | Organization |       20 | Standard         |
 | `base.company_membership`    | base.company_membership    | Technical    |      450 | Development mode |
+| `base.config_parameter`      | base.config_parameter      | Technical    |      490 | Development mode |
 | `base.country`               | base.country               | Localization |      210 | Development mode |
 | `base.country_state`         | base.country_state         | Localization |      220 | Development mode |
 | `base.currency`              | base.currency              | Localization |      230 | Development mode |
@@ -188,6 +204,7 @@ Models: 23; declared views: 23; menu entries: 23; seed rows: 737.
 | `base.partner_bank`          | base.partner_bank          | Finance      |      320 | Development mode |
 | `base.partner_category`      | base.partner_category      | Contacts     |      120 | Development mode |
 | `base.partner_category_link` | base.partner_category_link | Contacts     |      130 | Development mode |
+| `base.saved_filter`          | base.saved_filter          | Technical    |      480 | Development mode |
 | `base.sequence`              | base.sequence              | Technical    |      410 | Development mode |
 | `base.tag`                   | Tags                       | Workspace    |       60 | Standard         |
 | `base.tag_link`              | base.tag_link              | Technical    |      390 | Development mode |
@@ -200,6 +217,7 @@ Models: 23; declared views: 23; menu entries: 23; seed rows: 737.
 - Seed coverage: `base.bank` has 8 declared seed row(s); seed values are not included.
 - Seed coverage: `base.company` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `base.company_membership` has 2 declared seed row(s); seed values are not included.
+- Seed coverage: `base.config_parameter` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `base.country` has 249 declared seed row(s); seed values are not included.
 - Seed coverage: `base.country_state` has 444 declared seed row(s); seed values are not included.
 - Seed coverage: `base.currency` has 1 declared seed row(s); seed values are not included.
@@ -211,6 +229,7 @@ Models: 23; declared views: 23; menu entries: 23; seed rows: 737.
 - Seed coverage: `base.partner_bank` has 2 declared seed row(s); seed values are not included.
 - Seed coverage: `base.partner_category` has 2 declared seed row(s); seed values are not included.
 - Seed coverage: `base.partner_category_link` has 2 declared seed row(s); seed values are not included.
+- Seed coverage: `base.saved_filter` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `base.sequence` has 2 declared seed row(s); seed values are not included.
 - Seed coverage: `base.tag` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `base.tag_link` has 1 declared seed row(s); seed values are not included.

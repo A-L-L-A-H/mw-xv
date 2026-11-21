@@ -9,6 +9,10 @@ import { PageHeader } from '../dist/components/page-header.js';
 import { Panel } from '../dist/components/panel.js';
 import { PaperNote } from '../dist/components/paper-note.js';
 import { SectionRibbon } from '../dist/components/section-ribbon.js';
+import { StatusBar } from '../dist/components/status-bar.js';
+import { SmartButtonBox } from '../dist/components/smart-button-box.js';
+import { KanbanBoard } from '../dist/components/kanban-board.js';
+import { FilterFacetBar } from '../dist/components/filter-facet-bar.js';
 import { Table, TableBody, TableCell, TableRow } from '../dist/components/table.js';
 
 test('compositions expose semantic, configurable visual treatments', () => {
@@ -120,4 +124,44 @@ test('PageHeader supports two-tone split brush and MetricTile/ArtworkFrame suppo
   assert.match(markup, /data-surface="paper"/u);
   assert.match(markup, /data-frame="torn"/u);
   assert.match(markup, /data-frame="scuffed"/u);
+});
+
+test('new compositions expose state, count, and keyboard-accessible semantics', () => {
+  const markup = renderToStaticMarkup(
+    createElement(
+      'div',
+      null,
+      createElement(StatusBar, {
+        steps: [
+          { id: 'draft', label: 'Draft', state: 'active', count: 2 },
+          { id: 'review', label: 'Review', state: 'disabled' },
+        ],
+      }),
+      createElement(SmartButtonBox, {
+        label: 'Approve',
+        description: 'Runs validation',
+        count: 3,
+        pending: true,
+        'aria-label': 'Approve 3 selected records',
+      }),
+      createElement(KanbanBoard, {
+        columns: [
+          { id: 'open', title: 'Open', count: 1, cards: [{ id: 'record-1', title: 'Record 1' }] },
+          { id: 'done', title: 'Done', count: 0 },
+        ],
+      }),
+      createElement(FilterFacetBar, {
+        facets: [{ id: 'status', label: 'Status', value: 'Open' }],
+        onFacetRemove: () => {},
+      })
+    )
+  );
+
+  assert.match(markup, /aria-current="step"/u);
+  assert.match(markup, /aria-label="Approve 3 selected records"/u);
+  assert.match(markup, /aria-busy="true"/u);
+  assert.match(markup, /<h3[^>]*>Open<\/h3>/u);
+  assert.match(markup, /aria-label="Open"/u);
+  assert.match(markup, /<button[^>]*data-slot="kanban-card"/u);
+  assert.match(markup, /aria-label="Remove Status: Open"/u);
 });

@@ -1,4 +1,10 @@
-import { useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
+import { useEffect, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
+import {
+  DEFAULT_SKIN_ID,
+  themeRegistry,
+  type SkinDensity,
+  type SkinId,
+} from '@moonwitness/ui/themes';
 import {
   ActivityIcon,
   AddIcon,
@@ -285,6 +291,13 @@ function Section({
 
 function CatalogContent() {
   const [dark, setDark] = useState(false);
+  const [skin, setSkin] = useState<SkinId>(DEFAULT_SKIN_ID);
+  const [density, setDensity] = useState<SkinDensity>('comfortable');
+
+  useEffect(() => {
+    document.documentElement.dataset.skin = skin;
+    document.documentElement.dataset.density = density;
+  }, [skin, density]);
   const [page, setPage] = useState(1);
   const [checked, setChecked] = useState(true);
   const [indeterminateChecked, setIndeterminateChecked] = useState<boolean | 'indeterminate'>(
@@ -377,6 +390,19 @@ function CatalogContent() {
     });
   }
 
+  function selectSkin(nextSkin: SkinId) {
+    setSkin(nextSkin);
+    document.documentElement.dataset.skin = nextSkin;
+  }
+
+  function toggleDensity() {
+    setDensity((current) => {
+      const next: SkinDensity = current === 'comfortable' ? 'compact' : 'comfortable';
+      document.documentElement.dataset.density = next;
+      return next;
+    });
+  }
+
   return (
     <TooltipProvider>
       <div className="catalog-shell">
@@ -411,9 +437,42 @@ function CatalogContent() {
               <span className="catalog-breadcrumb">Design system / UI package</span>
               <span className="catalog-version">v1.0.0-rc.1</span>
             </div>
-            <Button variant="outline" size="sm" onClick={toggleTheme} aria-pressed={dark}>
-              {dark ? 'Use light theme' : 'Use dark theme'}
-            </Button>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                flexWrap: 'wrap',
+                maxWidth: '100%',
+              }}
+            >
+              <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
+                <SelectTrigger
+                  aria-label="Preview skin"
+                  style={{ minHeight: '2rem', height: '2rem', width: 'auto', maxWidth: '100%' }}
+                >
+                  <SelectValue placeholder="Skin" />
+                </SelectTrigger>
+                <SelectContent>
+                  {themeRegistry.list().map((entry) => (
+                    <SelectItem key={entry.id} value={entry.id}>
+                      {entry.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleDensity}
+                aria-pressed={density === 'compact'}
+              >
+                {density === 'compact' ? 'Use comfortable density' : 'Use compact density'}
+              </Button>
+              <Button variant="outline" size="sm" onClick={toggleTheme} aria-pressed={dark}>
+                {dark ? 'Use light theme' : 'Use dark theme'}
+              </Button>
+            </div>
           </header>
 
           <div className="catalog-content">

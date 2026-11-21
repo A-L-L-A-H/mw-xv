@@ -12,7 +12,7 @@ import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
 import { manifest as aiAddon } from '@moonwitness/orm-ai';
 import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
-import { whatsappManifest } from '../whatsapp/manifest.js';
+import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 import { createAttachmentScanner, type AttachmentScanner } from '../whatsapp/clamav-scanner.js';
 import type { createVideoPoster } from '../whatsapp/media-thumbnail.js';
 import { checkWhatsAppGatewayVersion } from '../whatsapp/version-guard.js';
@@ -20,6 +20,8 @@ import { ensureResearchReviewWorkflow } from '../research-review-workflow.js';
 import { healthRoutes } from '../routes/health.routes.js';
 import { authRoutes } from '../routes/auth.routes.js';
 import { genericRoutes } from '../routes/generic.routes.js';
+import { bootstrapRoutes } from '../routes/bootstrap.routes.js';
+import { menuRegistry } from './action-menu-registry.js';
 import { whatsappRoutes } from '../routes/whatsapp.routes.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
 import { notificationRoutes } from '../routes/notification.routes.js';
@@ -97,6 +99,9 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
     async registerRoutes(app, ctx) {
       await app.register(genericRoutes, {
         attachmentStorage: ctx.attachmentStorage,
+      });
+      await app.register(bootstrapRoutes, {
+        activeAddons: API_ADDONS.map((a) => a.name),
       });
     },
   },
@@ -211,6 +216,39 @@ export interface InstallApiAddonsOptions {
   readonly skipBootMigrations?: boolean;
 }
 
+function syncAddonMenusToRegistry(manifests: readonly Addon[]): void {
+  for (const manifest of manifests) {
+    if (!manifest.menus) continue;
+    for (const [index, menu] of manifest.menus.entries()) {
+      const menuObj = menu as {
+        id?: string;
+        parentId?: string;
+        label?: string;
+        name?: string;
+        icon?: string;
+        sequence?: number;
+        actionId?: string;
+        model?: string;
+        groups?: readonly string[];
+        developmentOnly?: boolean;
+      };
+      const id = menuObj.id ?? `${manifest.name}.${menuObj.model ?? index}`;
+      menuRegistry.register({
+        id,
+        parentId: menuObj.parentId,
+        label: menuObj.label ?? menuObj.name ?? id,
+        icon: menuObj.icon,
+        sequence: menuObj.sequence ?? (index + 1) * 10,
+        actionId: menuObj.actionId,
+        model: menuObj.model,
+        groups: menuObj.groups,
+        developmentOnly: menuObj.developmentOnly,
+        addon: manifest.name,
+      });
+    }
+  }
+}
+
 export async function installApiAddons(
   db: Knex,
   superadminPassword: string | undefined,
@@ -220,6 +258,7 @@ export async function installApiAddons(
   const manifests = addons
     .map((addon) => addon.manifest)
     .filter((manifest): manifest is Addon => manifest !== undefined);
+  syncAddonMenusToRegistry(manifests);
   const skipBootMigrations =
     installOptions.skipBootMigrations ?? process.env.SKIP_BOOT_MIGRATIONS === 'true';
 

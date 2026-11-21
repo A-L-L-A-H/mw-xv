@@ -806,178 +806,173 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 ### R1. Shared UI & Design System
 
 #### R1.1 — Input primitives (MW-UI-001)
-
-- [ ] **MW-UI-001** Tambahkan `DatePicker` (date dan datetime), `NumberInput` (desimal/moneter), dan `TagInput` ke `@moonwitness/ui` beserta subpath export resmi.
-- [ ] **MW-UI-001.1** Implementasikan komponen terkontrol dengan keyboard navigation, `aria-invalid`, label/error association, dan disabled state.
-- [ ] **MW-UI-001.2** Daftarkan subpath export eksplisit di `packages/ui/package.json`; hindari barrel export berat dan import internal `dist`.
-- [ ] **MW-UI-001.3** Tambahkan unit test untuk controlled value, parsing/formatting, invalid input, keyboard interaction, disabled state, dan edge cases.
-- [ ] **MW-UI-001.4** Verifikasi `pnpm test:ui && pnpm test:ui-budget` lulus.
+- [x] **MW-UI-001 Tambahkan `DatePicker` (date dan datetime), `NumberInput` (desimal/moneter), dan `TagInput` ke `@moonwitness/ui` beserta subpath export resmi.
+- [x] **MW-UI-001.1 Implementasikan komponen terkontrol dengan keyboard navigation, `aria-invalid`, label/error association, dan disabled state.
+- [x] **MW-UI-001.2 Daftarkan subpath export eksplisit di `packages/ui/package.json`; hindari barrel export berat dan import internal `dist`.
+- [x] **MW-UI-001.3 Tambahkan unit test untuk controlled value, parsing/formatting, invalid input, keyboard interaction, disabled state, dan edge cases.
+- [x] **MW-UI-001.4 Verifikasi `pnpm test:ui && pnpm test:ui-budget` lulus.
 
 #### R1.2 — Form compositions (MW-UI-002)
-
-- [ ] **MW-UI-002** Tambahkan komposisi `StatusBar` dan `SmartButtonBox` ke `@moonwitness/ui` sesuai UI Bible.
-- [ ] **MW-UI-002.1** Dukung state aktif/selesai/disabled pada `StatusBar` serta count, ikon, label, accessible name, dan action state pada `SmartButtonBox`.
-- [ ] **MW-UI-002.2** Pastikan responsif mulai 320px tanpa horizontal overflow, clipping focus ring, atau target interaksi yang terlalu kecil.
-- [ ] **MW-UI-002.3** Tambahkan unit test komposisi, state, keyboard, accessibility semantics, dan reduced-motion behavior di `packages/ui/tests/compositions.test.mjs`.
-- [ ] **MW-UI-002.4** Verifikasi `pnpm test:ui` lulus.
+- [x] **MW-UI-002 Tambahkan komposisi `StatusBar` dan `SmartButtonBox` ke `@moonwitness/ui` sesuai UI Bible.
+- [x] **MW-UI-002.1 Dukung state aktif/selesai/disabled pada `StatusBar` serta count, ikon, label, accessible name, dan action state pada `SmartButtonBox`.
+- [x] **MW-UI-002.2 Pastikan responsif mulai 320px tanpa horizontal overflow, clipping focus ring, atau target interaksi yang terlalu kecil.
+- [x] **MW-UI-002.3 Tambahkan unit test komposisi, state, keyboard, accessibility semantics, dan reduced-motion behavior di `packages/ui/tests/compositions.test.mjs`.
+- [x] **MW-UI-002.4 Verifikasi `pnpm test:ui` lulus.
 
 #### R1.3 — Data-view primitives (MW-UI-003)
-
-- [ ] **MW-UI-003** Tambahkan komposisi presentasional `KanbanBoard` / `KanbanColumn` dan `FilterFacetBar` ke `@moonwitness/ui`, tanpa ketergantungan router, API, atau model domain.
-- [ ] **MW-UI-003.1** Sediakan slot kolom, header count, kartu yang dapat difokuskan, empty state, serta tombol hapus facet yang aksesibel melalui keyboard.
-- [ ] **MW-UI-003.2** Hormati `prefers-reduced-motion` dan token spacing/border dari `@moonwitness/ui`; jangan mengimplementasikan drag-only interaction tanpa alternatif keyboard.
-- [ ] **MW-UI-003.3** Tambahkan unit test render, keyboard interaction, reduced motion, dan verifikasi subpath package.
-- [ ] **MW-UI-003.4** Verifikasi `pnpm test:ui && pnpm test:ui-budget` lulus.
+- [x] **MW-UI-003 Tambahkan komposisi presentasional `KanbanBoard` / `KanbanColumn` dan `FilterFacetBar` ke `@moonwitness/ui`, tanpa ketergantungan router, API, atau model domain.
+- [x] **MW-UI-003.1 Sediakan slot kolom, header count, kartu yang dapat difokuskan, empty state, serta tombol hapus facet yang aksesibel melalui keyboard.
+- [x] **MW-UI-003.2 Hormati `prefers-reduced-motion` dan token spacing/border dari `@moonwitness/ui`; jangan mengimplementasikan drag-only interaction tanpa alternatif keyboard.
+- [x] **MW-UI-003.3 Tambahkan unit test render, keyboard interaction, reduced motion, dan verifikasi subpath package.
+- [x] **MW-UI-003.4 Verifikasi `pnpm test:ui && pnpm test:ui-budget` lulus.
 
 #### R1.4 — Table capabilities (MW-UI-004)
-
-- [ ] **MW-UI-004** Perluas `@moonwitness/ui/components/table` agar dapat menerima slot inline-edit, visibilitas kolom opsional, dan footer agregat (`tfoot`).
-- [ ] **MW-UI-004.1** Tambahkan `TableFooter` / `TableSummaryCell` dengan semantik tabel HTML native yang benar.
-- [ ] **MW-UI-004.2** Jaga kompatibilitas semua pemakai Table yang sudah ada di Board dan UI Catalog.
-- [ ] **MW-UI-004.3** Uji keyboard sorting, inline-edit focus flow, column visibility, dan scroll overflow container.
-- [ ] **MW-UI-004.4** Verifikasi `pnpm test:ui` lulus.
+- [x] **MW-UI-004 Perluas `@moonwitness/ui/components/table` agar dapat menerima slot inline-edit, visibilitas kolom opsional, dan footer agregat (`tfoot`).
+- [x] **MW-UI-004.1 Tambahkan `TableFooter` / `TableSummaryCell` dengan semantik tabel HTML native yang benar.
+- [x] **MW-UI-004.2 Jaga kompatibilitas semua pemakai Table yang sudah ada di Board dan UI Catalog.
+- [x] **MW-UI-004.3 Uji keyboard sorting, inline-edit focus flow, column visibility, dan scroll overflow container.
+- [x] **MW-UI-004.4 Verifikasi `pnpm test:ui` lulus.
 
 #### R1.5 — Catalog coverage (MW-UI-005)
-
-- [ ] **MW-UI-005** Tambahkan specimen dan uji visual/Axe WCAG 2.1 A/AA untuk seluruh komponen UI baru di `apps/ui-catalog`.
-- [ ] **MW-UI-005.1** Tambahkan specimen interaktif untuk `DatePicker`, `NumberInput`, `TagInput`, `StatusBar`, `SmartButtonBox`, `KanbanBoard`, dan `FilterFacetBar`.
-- [ ] **MW-UI-005.2** Uji semua specimen pada light/dark dan viewport desktop 1440px serta mobile 320px/390px dengan Playwright + Axe.
-- [ ] **MW-UI-005.3** Pastikan bundle size katalog tetap lolos `pnpm test:ui-budget`; jangan menaikkan budget tanpa laporan ukuran dan alasan yang disetujui.
-- [ ] **MW-UI-005.4** Verifikasi `pnpm test:ui-catalog && pnpm test:ui-budget` lulus.
+- [x] **MW-UI-005 Tambahkan specimen dan uji visual/Axe WCAG 2.1 A/AA untuk seluruh komponen UI baru di `apps/ui-catalog`.
+- [x] **MW-UI-005.1 Tambahkan specimen interaktif untuk `DatePicker`, `NumberInput`, `TagInput`, `StatusBar`, `SmartButtonBox`, `KanbanBoard`, dan `FilterFacetBar`.
+- [x] **MW-UI-005.2 Uji semua specimen pada light/dark dan viewport desktop 1440px serta mobile 320px/390px dengan Playwright + Axe.
+- [x] **MW-UI-005.3 Pastikan bundle size katalog tetap lolos `pnpm test:ui-budget`; jangan menaikkan budget tanpa laporan ukuran dan alasan yang disetujui.
+- [x] **MW-UI-005.4 Verifikasi `pnpm test:ui-catalog && pnpm test:ui-budget` lulus.
 
 #### R1.6 — Shared UI boundary (MW-UI-006)
 
-- [ ] **MW-UI-006** Pertahankan dan perketat checker `scripts/check-board-shared-ui.mjs` untuk seluruh direktori komponen baru di `apps/board/src/`.
-- [ ] **MW-UI-006.1** Pastikan tidak ada elemen kontrol HTML mentah (`button`, `input`, `select`, `textarea`, `svg`) atau import `@moonwitness/ui/dist` pada view/widget baru, kecuali pengecualian yang terdokumentasi dan benar-benar diperlukan.
-- [ ] **MW-UI-006.2** Tambahkan regression test untuk pola import internal atau raw control yang harus diblokir.
-- [ ] **MW-UI-006.3** Jalankan checker manual dan buktikan pre-push hook tetap memblokir pelanggaran.
-- [ ] **MW-UI-006.4** Verifikasi `pnpm board:ui:check` lulus.
+- [x] **MW-UI-006** Pertahankan dan perketat checker `scripts/check-board-shared-ui.mjs` untuk seluruh direktori komponen baru di `apps/board/src/`.
+- [x] **MW-UI-006.1** Pastikan tidak ada elemen kontrol HTML mentah (`button`, `input`, `select`, `textarea`, `svg`) atau import `@moonwitness/ui/dist` pada view/widget baru, kecuali pengecualian yang terdokumentasi dan benar-benar diperlukan.
+- [x] **MW-UI-006.2** Tambahkan regression test untuk pola import internal atau raw control yang harus diblokir.
+- [x] **MW-UI-006.3** Jalankan checker manual dan buktikan pre-push hook tetap memblokir pelanggaran.
+- [x] **MW-UI-006.4** Verifikasi `pnpm board:ui:check` lulus.
 
 ### R2. Data-driven Frontend & View Experience
 
 #### R2.1 — List Engine (MW-WEB-001)
 
-- [ ] **MW-WEB-001** Pecah `apps/board/src/components/views/list-view.tsx` menjadi bagian terpisah: `ListEngine`, `ListTable`, `BulkActionBar`, `ColumnToggle`, dan `ListStateAdapter`.
-- [ ] **MW-WEB-001.1** Ekstrak helper murni pembangun domain, sorting, selection, dan pagination ke modul terpisah dengan unit test.
-- [ ] **MW-WEB-001.2** Sambungkan `BulkActionBar` ke endpoint transaksional bulk action yang benar; pertahankan CSV export formula-safe dan permission-aware.
-- [ ] **MW-WEB-001.3** Tambahkan dukungan kolom opsional (`show/hide`), row decoration berbasis semantic state, dan footer agregasi (`sum/avg`) hanya bila metadata view mendeklarasikannya.
-- [ ] **MW-WEB-001.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck && pnpm test:board-csv` lulus.
+- [x] **MW-WEB-001** Pecah `apps/board/src/components/views/list-view.tsx` menjadi bagian terpisah: `ListEngine`, `ListTable`, `BulkActionBar`, `ColumnToggle`, dan `ListStateAdapter`.
+- [x] **MW-WEB-001.1** Ekstrak helper murni pembangun domain, sorting, selection, dan pagination ke modul terpisah dengan unit test.
+- [x] **MW-WEB-001.2** Sambungkan `BulkActionBar` ke endpoint transaksional bulk action yang benar; pertahankan CSV export formula-safe dan permission-aware.
+- [x] **MW-WEB-001.3** Tambahkan dukungan kolom opsional (`show/hide`), row decoration berbasis semantic state, dan footer agregasi (`sum/avg`) hanya bila metadata view mendeklarasikannya.
+- [x] **MW-WEB-001.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck && pnpm test:board-csv` lulus.
 
 #### R2.2 — Kanban Engine (MW-WEB-002)
 
-- [ ] **MW-WEB-002** Bangun `KanbanEngine` dinamis berbasis `views.kanban` menggunakan `@moonwitness/ui` `KanbanBoard`, menggantikan blok pipeline sementara di list view.
-- [ ] **MW-WEB-002.1** Render kolom stage dari `views.kanban.stageOrder` / selection metadata beserta jumlah record per stage dari sumber API.
-- [ ] **MW-WEB-002.2** Dukung perpindahan stage via keyboard dan drag/menu action; gunakan optimistic update dengan rollback saat server mengembalikan 403/409.
-- [ ] **MW-WEB-002.3** Sembunyikan opsi/tab Kanban bila model tidak mendeklarasikan `views.kanban` atau user tidak memiliki permission.
-- [ ] **MW-WEB-002.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
+- [x] **MW-WEB-002** Bangun `KanbanEngine` dinamis berbasis `views.kanban` menggunakan `@moonwitness/ui` `KanbanBoard`, menggantikan blok pipeline sementara di list view.
+- [x] **MW-WEB-002.1** Render kolom stage dari `views.kanban.stageOrder` / selection metadata beserta jumlah record per stage dari sumber API.
+- [x] **MW-WEB-002.2** Dukung perpindahan stage via keyboard dan drag/menu action; gunakan optimistic update dengan rollback saat server mengembalikan 403/409.
+- [x] **MW-WEB-002.3** Sembunyikan opsi/tab Kanban bila model tidak mendeklarasikan `views.kanban` atau user tidak memiliki permission.
+- [x] **MW-WEB-002.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
 
 #### R2.3 — Search Engine (MW-WEB-003)
 
-- [ ] **MW-WEB-003** Bangun `SearchEngineBar` terpadu dari metadata `views.search`, facet chips, pemilih `groupBy`, `searchPanel`, dan saved filters yang tersedia.
-- [ ] **MW-WEB-003.1** Sinkronkan query, filter aktif, sorting, dan `groupBy` dengan URL agar state dapat di-bookmark, di-refresh, dan dibagikan tanpa kehilangan permission boundary.
-- [ ] **MW-WEB-003.2** Saat `groupBy` aktif, tampilkan header grup dari endpoint group-count dengan ekspansi data per grup secara lazy.
-- [ ] **MW-WEB-003.3** Gunakan `FilterFacetBar` dari `@moonwitness/ui`; penghapusan facet harus dapat dilakukan dengan keyboard dan screen reader.
-- [ ] **MW-WEB-003.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
+- [x] **MW-WEB-003** Bangun `SearchEngineBar` terpadu dari metadata `views.search`, facet chips, pemilih `groupBy`, `searchPanel`, dan saved filters yang tersedia.
+- [x] **MW-WEB-003.1** Sinkronkan query, filter aktif, sorting, dan `groupBy` dengan URL agar state dapat di-bookmark, di-refresh, dan dibagikan tanpa kehilangan permission boundary.
+- [x] **MW-WEB-003.2** Saat `groupBy` aktif, tampilkan header grup dari endpoint group-count dengan ekspansi data per grup secara lazy.
+- [x] **MW-WEB-003.3** Gunakan `FilterFacetBar` dari `@moonwitness/ui`; penghapusan facet harus dapat dilakukan dengan keyboard dan screen reader.
+- [x] **MW-WEB-003.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
 
 #### R2.4 — Form Engine (MW-WEB-004)
 
-- [ ] **MW-WEB-004** Tingkatkan `FormView` menjadi `FormEngine` berbasis metadata dengan `StatusBar`, `SmartButtonBox`, tabbed notebooks, shared confirmation dialog, dan pemulihan konflik write-date (409).
-- [ ] **MW-WEB-004.1** Ganti `window.confirm` / `window.alert` pada form, list, dan one2many widget dengan `Dialog` serta `toast` dari `@moonwitness/ui`.
-- [ ] **MW-WEB-004.2** Kirim `If-Match` dengan write-date aktual saat update dan tampilkan conflict resolution yang memungkinkan reload/review; jangan menimpa perubahan server secara diam-diam.
-- [ ] **MW-WEB-004.3** Render tabs dan sections secara responsif serta hormati metadata `chatter: false` bila model menonaktifkannya.
-- [ ] **MW-WEB-004.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
+- [x] **MW-WEB-004** Tingkatkan `FormView` menjadi `FormEngine` berbasis metadata dengan `StatusBar`, `SmartButtonBox`, tabbed notebooks, shared confirmation dialog, dan pemulihan konflik write-date (409).
+- [x] **MW-WEB-004.1** Ganti `window.confirm` / `window.alert` pada form, list, dan one2many widget dengan `Dialog` serta `toast` dari `@moonwitness/ui`.
+- [x] **MW-WEB-004.2** Kirim `If-Match` dengan write-date aktual saat update dan tampilkan conflict resolution yang memungkinkan reload/review; jangan menimpa perubahan server secara diam-diam.
+- [x] **MW-WEB-004.3** Render tabs dan sections secara responsif serta hormati metadata `chatter: false` bila model menonaktifkannya.
+- [x] **MW-WEB-004.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
 
 #### R2.5 — Analytical Views (MW-WEB-005)
 
-- [ ] **MW-WEB-005** Implementasikan renderer `CalendarView`, `GraphView`, dan `PivotView` secara lazy-loaded dengan `next/dynamic`, shared UI, serta endpoint group-count yang tersedia.
-- [ ] **MW-WEB-005.1** Buat `CalendarView` interaktif mode bulan/minggu untuk model bertanggal; hormati timezone, date-only vs datetime, permission, dan empty/loading/error state.
-- [ ] **MW-WEB-005.2** Buat `GraphView` (bar/line/pie) dengan tabel data alternatif yang aksesibel dan label yang tidak hanya dibedakan melalui warna.
-- [ ] **MW-WEB-005.3** Buat `PivotView` berbasis matriks group-count beserta ekspor CSV yang aman, dibatasi permission dan ukuran hasil.
-- [ ] **MW-WEB-005.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck && pnpm board:budget` lulus.
+- [x] **MW-WEB-005** Implementasikan renderer `CalendarView`, `GraphView`, dan `PivotView` secara lazy-loaded dengan `next/dynamic`, shared UI, serta endpoint group-count yang tersedia.
+- [x] **MW-WEB-005.1** Buat `CalendarView` interaktif mode bulan/minggu untuk model bertanggal; hormati timezone, date-only vs datetime, permission, dan empty/loading/error state.
+- [x] **MW-WEB-005.2** Buat `GraphView` (bar/line/pie) dengan tabel data alternatif yang aksesibel dan label yang tidak hanya dibedakan melalui warna.
+- [x] **MW-WEB-005.3** Buat `PivotView` berbasis matriks group-count beserta ekspor CSV yang aman, dibatasi permission dan ukuran hasil.
+- [x] **MW-WEB-005.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck && pnpm board:budget` lulus.
 
 #### R2.6 — Dynamic View Switcher & ActionResult (MW-WEB-006)
 
-- [ ] **MW-WEB-006** Perbarui `model-page.tsx` dengan View Switcher dinamis dan executor hasil Action terpusat.
-- [ ] **MW-WEB-006.1** Dukung perpindahan antar view yang benar-benar tersedia (`list`, `kanban`, `calendar`, `graph`, `pivot`) sesuai Window Action dan metadata model.
-- [ ] **MW-WEB-006.2** Tangani `ActionResult` secara terpusat: `open_window` (tab/dialog), `navigate`, `reload`, `notify`, dan `download`; validasi destination dan permission.
-- [ ] **MW-WEB-006.3** Pertahankan direct URL model/record serta guard akses 403/404; refresh browser harus memulihkan view yang dipilih jika masih valid.
-- [ ] **MW-WEB-006.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
+- [x] **MW-WEB-006** Perbarui `model-page.tsx` dengan View Switcher dinamis dan executor hasil Action terpusat.
+- [x] **MW-WEB-006.1** Dukung perpindahan antar view yang benar-benar tersedia (`list`, `kanban`, `calendar`, `graph`, `pivot`) sesuai Window Action dan metadata model.
+- [x] **MW-WEB-006.2** Tangani `ActionResult` secara terpusat: `open_window` (tab/dialog), `navigate`, `reload`, `notify`, dan `download`; validasi destination dan permission.
+- [x] **MW-WEB-006.3** Pertahankan direct URL model/record serta guard akses 403/404; refresh browser harus memulihkan view yang dipilih jika masih valid.
+- [x] **MW-WEB-006.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
 
 #### R2.7 — WhatsApp Board decomposition (MW-WEB-007)
 
-- [ ] **MW-WEB-007** Lanjutkan dekomposisi `apps/board/src/board-pages/whatsapp-page.tsx` menjadi komponen dan custom hooks domain; pertahankan file page sebagai orchestrator.
-- [ ] **MW-WEB-007.1** Ekstrak `InboxList`, `ConversationTimeline`, `PairingPanel`, dan hook polling/state ke `apps/board/src/components/whatsapp/`.
-- [ ] **MW-WEB-007.2** Targetkan `whatsapp-page.tsx` di bawah 450 baris tanpa regresi UX, retry, upload/download progress, drafts, pairing, atau polling lifecycle.
-- [ ] **MW-WEB-007.3** Pastikan nol warning lint baru dan nol pelanggaran `board:ui:check`.
-- [ ] **MW-WEB-007.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board lint && pnpm --filter @moonwitness/board typecheck` lulus.
+- [x] **MW-WEB-007** Lanjutkan dekomposisi `apps/board/src/board-pages/whatsapp-page.tsx` menjadi komponen dan custom hooks domain; pertahankan file page sebagai orchestrator.
+- [x] **MW-WEB-007.1** Ekstrak `InboxList`, `ConversationTimeline`, `PairingPanel`, dan hook polling/state ke `apps/board/src/components/whatsapp/`.
+- [x] **MW-WEB-007.2** Targetkan `whatsapp-page.tsx` di bawah 450 baris tanpa regresi UX, retry, upload/download progress, drafts, pairing, atau polling lifecycle.
+- [x] **MW-WEB-007.3** Pastikan nol warning lint baru dan nol pelanggaran `board:ui:check`.
+- [x] **MW-WEB-007.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board lint && pnpm --filter @moonwitness/board typecheck` lulus.
 
 #### R2.8 — Dashboard decomposition (MW-WEB-008)
 
-- [ ] **MW-WEB-008** Modularisasi `dashboard-page.tsx` menjadi panel KPI dan modul operasional yang dipisahkan berdasarkan izin pengguna.
-- [ ] **MW-WEB-008.1** Pisahkan KPI inti, panel admin jobs/outbox/cron, dan aktivitas menjadi komponen independen.
-- [ ] **MW-WEB-008.2** Periksa model permission/grant sebelum memanggil API panel agar user biasa tidak menghasilkan request 403 yang tidak perlu.
-- [ ] **MW-WEB-008.3** Pertahankan visual identity dan state loading/empty/error pada baseline screenshot desktop/mobile.
-- [ ] **MW-WEB-008.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
+- [x] **MW-WEB-008** Modularisasi `dashboard-page.tsx` menjadi panel KPI dan modul operasional yang dipisahkan berdasarkan izin pengguna.
+- [x] **MW-WEB-008.1** Pisahkan KPI inti, panel admin jobs/outbox/cron, dan aktivitas menjadi komponen independen.
+- [x] **MW-WEB-008.2** Periksa model permission/grant sebelum memanggil API panel agar user biasa tidak menghasilkan request 403 yang tidak perlu.
+- [x] **MW-WEB-008.3** Pertahankan visual identity dan state loading/empty/error pada baseline screenshot desktop/mobile.
+- [x] **MW-WEB-008.4** Verifikasi `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus.
 
 #### R2.9 — Tenant/session query isolation (MW-WEB-009)
 
-- [ ] **MW-WEB-009** Pastikan isolasi cache TanStack Query di Board saat perusahaan, user, atau sesi berubah.
-- [ ] **MW-WEB-009.1** Bersihkan cache tenant/user sebelumnya secara sinkron ketika ganti perusahaan, logout, atau sesi kedaluwarsa.
-- [ ] **MW-WEB-009.2** Pastikan `useModels` dan `useViews` menggunakan scoped query key yang mencakup identitas user, company, dan metadata generation.
-- [ ] **MW-WEB-009.3** Tambahkan/jalankan E2E perpindahan perusahaan untuk membuktikan data tenant sebelumnya tidak sempat tampil atau berkedip.
-- [ ] **MW-WEB-009.4** Verifikasi `pnpm --filter @moonwitness/board typecheck && pnpm test:e2e` lulus.
+- [x] **MW-WEB-009** Pastikan isolasi cache TanStack Query di Board saat perusahaan, user, atau sesi berubah.
+- [x] **MW-WEB-009.1** Bersihkan cache tenant/user sebelumnya secara sinkron ketika ganti perusahaan, logout, atau sesi kedaluwarsa.
+- [x] **MW-WEB-009.2** Pastikan `useModels` dan `useViews` menggunakan scoped query key yang mencakup identitas user, company, dan metadata generation.
+- [x] **MW-WEB-009.3** Tambahkan/jalankan E2E perpindahan perusahaan untuk membuktikan data tenant sebelumnya tidak sempat tampil atau berkedip.
+- [x] **MW-WEB-009.4** Verifikasi `pnpm --filter @moonwitness/board typecheck && pnpm test:e2e` lulus.
 
 ### R3. Skin & Theme Engine
 
 #### R3.1 — Typed skin registry (MW-SKIN-001)
 
-- [ ] **MW-SKIN-001** Definisikan kontrak `SkinMetadata`, `SkinDensity` (`comfortable | compact`), `ColorMode` (`light | dark`), dan `ThemeRegistry` di `@moonwitness/types` serta `@moonwitness/ui`.
-- [ ] **MW-SKIN-001.1** Buat registry metadata skin berisi `id`, `label`, `description`, `supportedModes`, `supportedDensities`, dan swatch preview.
-- [ ] **MW-SKIN-001.2** Ekspor `ThemeRegistry` melalui subpath eksplisit `@moonwitness/ui/themes`.
-- [ ] **MW-SKIN-001.3** Tambahkan unit test validasi registrasi, duplicate ID rejection, unknown skin fallback, dan default selection.
-- [ ] **MW-SKIN-001.4** Verifikasi `pnpm test:ui && pnpm --filter @moonwitness/types test` lulus.
+- [x] **MW-SKIN-001** Definisikan kontrak `SkinMetadata`, `SkinDensity` (`comfortable | compact`), `ColorMode` (`light | dark`), dan `ThemeRegistry` di `@moonwitness/types` serta `@moonwitness/ui`.
+- [x] **MW-SKIN-001.1** Buat registry metadata skin berisi `id`, `label`, `description`, `supportedModes`, `supportedDensities`, dan swatch preview.
+- [x] **MW-SKIN-001.2** Ekspor `ThemeRegistry` melalui subpath eksplisit `@moonwitness/ui/themes`.
+- [x] **MW-SKIN-001.3** Tambahkan unit test validasi registrasi, duplicate ID rejection, unknown skin fallback, dan default selection.
+- [x] **MW-SKIN-001.4** Verifikasi `pnpm test:ui && pnpm --filter @moonwitness/types test` lulus.
 
 #### R3.2 — CSS token skins (MW-SKIN-002)
 
-- [ ] **MW-SKIN-002** Buat token CSS berlapis untuk skin `moonwitness-ink` (zine/manga), `moonwitness-compact` (dense operational), dan `moonwitness-high-contrast` (aksesibilitas).
-- [ ] **MW-SKIN-002.1** Implementasikan selector token berbasis `[data-skin]`, mode `.dark`, dan `[data-density="compact"]` tanpa runtime CSS-in-JS tambahan.
-- [ ] **MW-SKIN-002.2** Pastikan setiap kombinasi skin menjaga identitas logo/aset serta keterbacaan tabel, form, dialog, chart, dan focus state.
-- [ ] **MW-SKIN-002.3** Jalankan uji kontras WCAG AA seluruh pasangan foreground/background untuk setiap skin dan mode.
-- [ ] **MW-SKIN-002.4** Verifikasi `pnpm test:ui` lulus.
+- [x] **MW-SKIN-002** Buat token CSS berlapis untuk skin `moonwitness-ink` (zine/manga), `moonwitness-compact` (dense operational), dan `moonwitness-high-contrast` (aksesibilitas).
+- [x] **MW-SKIN-002.1** Implementasikan selector token berbasis `[data-skin]`, mode `.dark`, dan `[data-density="compact"]` tanpa runtime CSS-in-JS tambahan.
+- [x] **MW-SKIN-002.2** Pastikan setiap kombinasi skin menjaga identitas logo/aset serta keterbacaan tabel, form, dialog, chart, dan focus state.
+- [x] **MW-SKIN-002.3** Jalankan uji kontras WCAG AA seluruh pasangan foreground/background untuk setiap skin dan mode.
+- [x] **MW-SKIN-002.4** Verifikasi `pnpm test:ui` lulus.
 
 #### R3.3 — Runtime provider & pre-paint hydration (MW-SKIN-003)
 
-- [ ] **MW-SKIN-003** Implementasikan `SkinProvider` dan pre-paint hydration di Board agar skin/mode/density diterapkan sebelum first paint tanpa FOUC.
-- [ ] **MW-SKIN-003.1** Simpan preferensi lokal dan terapkan `data-skin`, `data-density`, serta class mode pada `<html>` sebelum first paint dengan fallback aman saat storage gagal.
-- [ ] **MW-SKIN-003.2** Tambahkan selector Skin & Density di menu profil/pengaturan Board; perubahan harus langsung terlihat dan dapat dipulihkan.
-- [ ] **MW-SKIN-003.3** Pastikan tambahan JavaScript pada initial route tetap di bawah budget Board.
-- [ ] **MW-SKIN-003.4** Verifikasi `pnpm --filter @moonwitness/board typecheck && pnpm board:budget` lulus.
+- [x] **MW-SKIN-003** Implementasikan `SkinProvider` dan pre-paint hydration di Board agar skin/mode/density diterapkan sebelum first paint tanpa FOUC.
+- [x] **MW-SKIN-003.1** Simpan preferensi lokal dan terapkan `data-skin`, `data-density`, serta class mode pada `<html>` sebelum first paint dengan fallback aman saat storage gagal.
+- [x] **MW-SKIN-003.2** Tambahkan selector Skin & Density di menu profil/pengaturan Board; perubahan harus langsung terlihat dan dapat dipulihkan.
+- [x] **MW-SKIN-003.3** Pastikan tambahan JavaScript pada initial route tetap di bawah budget Board.
+- [x] **MW-SKIN-003.4** Verifikasi `pnpm --filter @moonwitness/board typecheck && pnpm board:budget` lulus.
 
 #### R3.4 — Persisted user preferences (MW-SKIN-004)
 
-- [ ] **MW-SKIN-004** Persistensikan preferensi `skin`, `theme_mode`, dan `density` untuk user dan sinkronkan melalui endpoint profil yang berwenang.
-- [ ] **MW-SKIN-004.1** Tambahkan field preferensi dengan default aman pada model user melalui alur addon/ORM yang berlaku; jangan memakai migration script ad-hoc atau merusak data lama.
-- [ ] **MW-SKIN-004.2** Izinkan user memperbarui preferensi miliknya sendiri; validasi skin ID dan nilai density/mode pada server.
-- [ ] **MW-SKIN-004.3** Uji persistensi lintas sesi, multi-company, logout/login, dan fallback saat server belum dapat dihubungi.
-- [ ] **MW-SKIN-004.4** Verifikasi API unit test dan PostgreSQL integration test terkait lulus.
+- [x] **MW-SKIN-004** Persistensikan preferensi `skin`, `theme_mode`, dan `density` untuk user dan sinkronkan melalui endpoint profil yang berwenang.
+- [x] **MW-SKIN-004.1** Tambahkan field preferensi dengan default aman pada model user melalui alur addon/ORM yang berlaku; jangan memakai migration script ad-hoc atau merusak data lama.
+- [x] **MW-SKIN-004.2** Izinkan user memperbarui preferensi miliknya sendiri; validasi skin ID dan nilai density/mode pada server.
+- [x] **MW-SKIN-004.3** Uji persistensi lintas sesi, multi-company, logout/login, dan fallback saat server belum dapat dihubungi.
+- [x] **MW-SKIN-004.4** Verifikasi API unit test dan PostgreSQL integration test terkait lulus.
 
 #### R3.5 — Skin preview & matrix tests (MW-SKIN-005)
 
-- [ ] **MW-SKIN-005** Tambahkan switcher Skin & Density di UI Catalog dan uji kompatibilitas komponen serta kontras seluruh kombinasi yang didukung.
-- [ ] **MW-SKIN-005.1** Sediakan toolbar preview skin, color mode, dan density pada UI Catalog.
-- [ ] **MW-SKIN-005.2** Jalankan Playwright + Axe pada seluruh kombinasi skin × light/dark × compact/comfortable yang didukung; skip hanya kombinasi yang secara eksplisit tidak didukung registry.
-- [ ] **MW-SKIN-005.3** Dokumentasikan token, kontrak, default, dan cara menambah skin di `packages/ui/TOKENS.md`.
-- [ ] **MW-SKIN-005.4** Verifikasi `pnpm test:ui-catalog` lulus.
+- [x] **MW-SKIN-005** Tambahkan switcher Skin & Density di UI Catalog dan uji kompatibilitas komponen serta kontras seluruh kombinasi yang didukung.
+- [x] **MW-SKIN-005.1** Sediakan toolbar preview skin, color mode, dan density pada UI Catalog.
+- [x] **MW-SKIN-005.2** Jalankan Playwright + Axe pada seluruh kombinasi skin × light/dark × compact/comfortable yang didukung; skip hanya kombinasi yang secara eksplisit tidak didukung registry.
+- [x] **MW-SKIN-005.3** Dokumentasikan token, kontrak, default, dan cara menambah skin di `packages/ui/TOKENS.md`.
+- [x] **MW-SKIN-005.4** Verifikasi `pnpm test:ui-catalog` lulus.
 
 ### R4. CI, visual acceptance, dan release gate
 
 - [ ] **R4.1 — CI catalog gate:** tambahkan `pnpm test:ui-catalog` ke workflow CI pada job quality yang tepat; jangan mengandalkan hanya unit test shared UI.
 - [ ] **R4.2 — Exact SHA evidence:** pastikan CI mencatat hasil `test:ui`, `test:ui-catalog`, Axe, UI budget, Board typecheck/lint, dan Board bundle budget pada exact commit `dev`.
 - [ ] **R4.3 — Visual matrix:** jalankan review screenshot desktop 1440px dan mobile 390px/320px untuk Home, auth, Board, model list/form, Kanban, analytical views, dan Workbench; perbarui snapshot hanya setelah side-by-side review.
-- [ ] **R4.4 — Real-data contract:** uji loading, empty, error, permission-denied, zero-value, stale metadata, dan conflict state dengan API/fixture test yang diberi label; jangan pernah menampilkan fixture sebagai data produksi.
-- [ ] **R4.5 — Accessibility gate:** tidak boleh ada pelanggaran Axe baru; validasi keyboard-only, focus return, accessible name, contrast, reduced motion, dan screen-reader status.
-- [ ] **R4.6 — Performance gate:** pastikan lazy views tidak masuk initial bundle route yang tidak membutuhkannya; laporkan raw/gzip size dan pertahankan budget.
-- [ ] **R4.7 — Documentation:** perbarui UI Bible, TOKENS, katalog, dan referensi komponen setelah kontrak implementasi berubah; jangan membuat dokumen desain kedua.
+- [x] **R4.4 — Real-data contract:** uji loading, empty, error, permission-denied, zero-value, stale metadata, dan conflict state dengan API/fixture test yang diberi label; jangan pernah menampilkan fixture sebagai data produksi.
+- [x] **R4.5 — Accessibility gate:** tidak boleh ada pelanggaran Axe baru; validasi keyboard-only, focus return, accessible name, contrast, reduced motion, dan screen-reader status.
+- [x] **R4.6 — Performance gate:** pastikan lazy views tidak masuk initial bundle route yang tidak membutuhkannya; laporkan raw/gzip size dan pertahankan budget.
+- [x] **R4.7 — Documentation:** perbarui UI Bible, TOKENS, katalog, dan referensi komponen setelah kontrak implementasi berubah; jangan membuat dokumen desain kedua.
 - [ ] **R4.8 — Final acceptance:** jalankan seluruh gate relevan pada exact SHA terakhir di `dev`; catat command, hasil, screenshot path, dan blocker yang tersisa sebelum menandai task induk selesai.
 
 ### Aturan penutupan Bagian R
@@ -991,6 +986,31 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 7. Bila blocker memerlukan perubahan kontrak ORM/API, catat ID dependency dan lanjutkan task UI lain yang tidak terblokir; jangan membuat workaround yang mengubah perilaku produksi.
 
 **Definition of Done — UI Platform Next Wave:** shared primitives tersedia melalui public subpath dan lolos package checks; Board menggunakan metadata API untuk dynamic List/Form/Kanban/Search/Calendar/Graph/Pivot; skin/mode/density bekerja, tersimpan, dan lolos contrast/accessibility matrix; UI Catalog dan visual E2E menjadi gate CI; tidak ada regresi permission, tenant isolation, responsive layout, atau performance budget; seluruh hasil diverifikasi pada exact SHA branch `dev`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

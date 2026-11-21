@@ -878,6 +878,194 @@
   .mw-ui-table-row:hover {
     background: var(--mw-muted);
   }
+  .mw-ui-table-footer {
+    background: var(--mw-muted);
+    font-weight: 700;
+  }
+  .mw-ui-table-summary-cell {
+    border-top: 2px solid var(--mw-border);
+    padding: 0.625rem 0.75rem;
+  }
+  .mw-ui-date-picker {
+    display: grid;
+    gap: var(--mw-spacing-2, 0.5rem);
+  }
+  @media (min-width: 480px) {
+    .mw-ui-date-picker {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .mw-ui-tag-input,
+  .mw-ui-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+  .mw-ui-tag-list,
+  .mw-ui-status-bar {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .mw-ui-tag,
+  .mw-ui-tag-remove,
+  .mw-ui-status-step,
+  .mw-ui-kanban-card,
+  .mw-ui-filter-facet {
+    align-items: center;
+    display: inline-flex;
+  }
+  .mw-ui-tag {
+    background: var(--mw-muted);
+    border: 1px solid var(--mw-border);
+    color: var(--mw-foreground);
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+  }
+  .mw-ui-tag-remove {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--mw-foreground);
+    cursor: pointer;
+    font: inherit;
+    line-height: 1;
+    min-height: 1.5rem;
+    min-width: 1.5rem;
+    padding: 0;
+  }
+  .mw-ui-tag-remove:focus-visible,
+  .mw-ui-smart-button:focus-visible,
+  .mw-ui-kanban-card:focus-visible,
+  .mw-ui-filter-facet:focus-visible {
+    outline: 3px solid var(--mw-focus);
+    outline-offset: 2px;
+  }
+  .mw-ui-tag-input .mw-ui-input {
+    min-width: 7rem;
+    flex: 1 1 7rem;
+  }
+  .mw-ui-status-bar,
+  .mw-ui-filter-facet-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .mw-ui-status-step {
+    border: 1px solid var(--mw-border);
+    flex: 1 1 9rem;
+    gap: 0.5rem;
+    min-width: min(9rem, 100%);
+    padding: 0.5rem 0.625rem;
+  }
+  .mw-ui-status-indicator {
+    background: var(--mw-muted-foreground);
+    flex: none;
+    height: 0.625rem;
+    width: 0.625rem;
+  }
+  .mw-ui-status-step[data-state='active'] .mw-ui-status-indicator {
+    background: var(--mw-accent);
+  }
+  .mw-ui-status-step[data-state='done'] .mw-ui-status-indicator {
+    background: var(--mw-success);
+  }
+  .mw-ui-status-label,
+  .mw-ui-kanban-card-title,
+  .mw-ui-filter-facet-label {
+    font-weight: 600;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .mw-ui-status-count,
+  .mw-ui-smart-button-count,
+  .mw-ui-kanban-column-count {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+  .mw-ui-smart-button {
+    align-items: center;
+    background: var(--mw-surface);
+    border: 2px solid var(--mw-border);
+    color: var(--mw-foreground);
+    cursor: pointer;
+    display: flex;
+    gap: 0.625rem;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.75rem;
+    text-align: start;
+    width: min(100%, 18rem);
+  }
+  .mw-ui-smart-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+  .mw-ui-smart-button-content,
+  .mw-ui-kanban-column-body {
+    display: grid;
+    min-width: 0;
+  }
+  .mw-ui-smart-button-label {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  .mw-ui-smart-button-description {
+    color: var(--mw-muted-foreground);
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+  .mw-ui-kanban {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+  @media (min-width: 720px) {
+    .mw-ui-kanban {
+      grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    }
+  }
+  .mw-ui-kanban-column {
+    background: var(--mw-surface);
+    border: 1px solid var(--mw-border);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .mw-ui-kanban-column-header {
+    align-items: center;
+    border-bottom: 1px solid var(--mw-border);
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+  }
+  .mw-ui-kanban-column-title {
+    font-size: 0.875rem;
+    margin: 0;
+  }
+  .mw-ui-kanban-column-count {
+    color: var(--mw-muted-foreground);
+  }
+  .mw-ui-kanban-column-body {
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+  .mw-ui-kanban-card,
+  .mw-ui-filter-facet {
+    background: var(--mw-background);
+    border: 1px solid var(--mw-border);
+    color: var(--mw-foreground);
+    cursor: pointer;
+    font: inherit;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    padding: 0.5rem 0.625rem;
+  }
+  .mw-ui-kanban-card {
+    text-align: start;
+    width: 100%;
+  }
   .mw-ui-chart {
     min-width: 0;
     color: var(--mw-foreground);

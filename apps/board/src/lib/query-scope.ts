@@ -9,14 +9,16 @@ export function scopedQueryKey<TKey extends QueryKey>(queryKey: TKey) {
     scopeMarker,
     client.currentUser?.id ?? null,
     client.getCompanyId() ?? null,
+    client.metadataGeneration ?? null,
   ] as const;
 }
 
 export function isCurrentScopeQueryKey(queryKey: QueryKey): boolean {
-  const scopeIndex = queryKey.length - 3;
+  const scopeIndex = queryKey.length - 4;
   return (
     queryKey[scopeIndex] === scopeMarker &&
     queryKey[scopeIndex + 1] === (client.currentUser?.id ?? null) &&
-    queryKey[scopeIndex + 2] === (client.getCompanyId() ?? null)
+    queryKey[scopeIndex + 2] === (client.getCompanyId() ?? null) &&
+    queryKey[scopeIndex + 3] === (client.metadataGeneration ?? null)
   );
 }

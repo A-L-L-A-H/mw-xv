@@ -46,6 +46,8 @@ import { FieldCell } from './fields';
 import { relationKey } from './field-utils';
 import { ImportWizardDialog } from './import-wizard-dialog';
 import { QueryBuilderDialog, type FilterRule } from './query-builder-dialog';
+import { ConfirmDialog } from './confirm-dialog';
+import { toast } from '@moonwitness/ui/components/toast';
 
 interface CustomFilter {
   id: string;
@@ -257,6 +259,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
   const mutations = useRecordMutations(model);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isBulkArchiving, setIsBulkArchiving] = useState(false);
+  const [confirmBulkArchive, setConfirmBulkArchive] = useState(false);
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
@@ -284,22 +287,18 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
 
   const handleBulkArchive = async () => {
     if (!selectedIds.length) return;
-    if (
-      !window.confirm(`Are you sure you want to archive ${selectedIds.length} selected record(s)?`)
-    ) {
-      return;
-    }
-
     setIsBulkArchiving(true);
     try {
       await Promise.all(
         selectedIds.map((id) => mutations.archive.mutateAsync({ id, hard: false }))
       );
       setSelectedIds([]);
+      toast.success('Selected records archived.');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to archive selected records');
+      toast.error(err instanceof Error ? err.message : 'Failed to archive selected records');
     } finally {
       setIsBulkArchiving(false);
+      setConfirmBulkArchive(false);
     }
   };
 
@@ -399,7 +398,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
       setSelectedIds([]);
       setTagPopoverOpen(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to tag selected records');
+      toast.error(err instanceof Error ? err.message : 'Failed to tag selected records');
     } finally {
       setIsMassTagging(false);
     }
@@ -1375,7 +1374,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
             <Button
               variant="outline"
               size="sm"
-              onClick={handleBulkArchive}
+              onClick={() => setConfirmBulkArchive(true)}
               disabled={isBulkArchiving}
               className="gap-1.5 hover:bg-destructive hover:text-destructive-foreground"
             >
@@ -1480,6 +1479,16 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
           }}
         />
       )}
+      <ConfirmDialog
+        open={confirmBulkArchive}
+        title="Bulk archive"
+        description={`Archive ${selectedIds.length} selected record${selectedIds.length === 1 ? '' : 's'}? Archived records remain recoverable.`}
+        confirmLabel="Archive"
+        destructive
+        busy={isBulkArchiving}
+        onConfirm={() => void handleBulkArchive()}
+        onCancel={() => setConfirmBulkArchive(false)}
+      />
     </div>
   );
 }

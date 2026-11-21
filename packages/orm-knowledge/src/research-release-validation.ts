@@ -9,7 +9,7 @@ import {
   type ResearchVisibility,
 } from '@moonwitness/research';
 import { WorkflowError } from '@moonwitness/orm-workflow';
-import type { StoredResearchGraphRecord } from './research-release.js';
+import type { StoredResearchGraphRecord } from './research-release.types.js';
 
 export const visibilityOrder: Record<ResearchVisibility, number> = {
   PUBLIC_APPROVED: 0,

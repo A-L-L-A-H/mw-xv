@@ -26,8 +26,17 @@ import {
   type JsonValue,
 } from '@moonwitness/types';
 import type { Transaction } from 'objection';
-import { canAccess, canManageBaseUser, operationFor, rpcOperation } from '../auth/policy.js';
+import {
+  canAccess,
+  canManageBaseUser,
+  operationFor,
+  rpcOperation,
+  sanitizeClientContext,
+} from '../auth/policy.js';
 import { getRecordRuleDomain } from '../auth/rules.js';
+import { invalidateAuthCacheForModel } from '../plugins/auth.plugin.js';
+import { validateAttachmentMagicBytes } from '../storage/attachment-validation.js';
+import { genericExtendedRoutes } from './generic-extended.routes.js';
 import type {
   ActionRequestBody,
   DeleteQueryParams,
@@ -648,6 +657,75 @@ async function executeRpc(
         );
       return unlinked;
     }
+    case 'read': {
+      const ids = Array.isArray(args[0])
+        ? (args[0] as unknown[]).filter((v): v is number => typeof v === 'number' && Number.isInteger(v))
+        : [];
+      const fields = Array.isArray(kwargs.fields)
+        ? (kwargs.fields as unknown[]).filter((f): f is string => typeof f === 'string')
+        : undefined;
+      if (ids.length === 0) return [];
+      const scope = await userReadScope(req, model.modelName);
+      return (await model.search_read([['id', 'in', ids], ...scope], {
+        fields,
+        activeTest: false,
+      })) as unknown as JsonValue;
+    }
+    case 'search_count': {
+      const rawDomain = (args[0] ?? []) as Domain;
+      validateDomain(rawDomain, new Set(Object.keys(model.fields ?? {})));
+      const scope = await userReadScope(req, model.modelName);
+      const query = applyDomain(model.query(trx), [...rawDomain, ...scope]);
+      const result = (await query.count('* as count').first()) as unknown as { count?: number | string } | undefined;
+      return Number(result?.count ?? 0);
+    }
+    case 'fields_get': {
+      return describeFields(model) as unknown as JsonValue;
+    }
+    case 'views_get': {
+      return resolveViews(model) as unknown as JsonValue;
+    }
+    case 'default_get': {
+      const requestedFields = Array.isArray(args[0])
+        ? (args[0] as unknown[]).filter((f): f is string => typeof f === 'string')
+        : Object.keys(model.fields ?? {});
+      const safeCtx = sanitizeClientContext(kwargs.context, req.auth);
+      const defaults: Record<string, unknown> = {};
+      const fieldMap = model.fields ?? {};
+      for (const fieldName of requestedFields) {
+        const field = fieldMap[fieldName] as { default?: unknown } | undefined;
+        if (!field) continue;
+        const ctxKey = `default_${fieldName}`;
+        if (ctxKey in safeCtx) {
+          defaults[fieldName] = safeCtx[ctxKey];
+        } else if (field.default !== undefined) {
+          defaults[fieldName] =
+            typeof field.default === 'function' ? (field.default as () => unknown)() : field.default;
+        }
+      }
+      return defaults as unknown as JsonValue;
+    }
+    case 'onchange': {
+      return { values: {} };
+    }
+    case 'call_action': {
+      const ids = Array.isArray(args[0])
+        ? (args[0] as unknown[]).filter((v): v is number => typeof v === 'number' && Number.isInteger(v))
+        : [];
+      const actionName = typeof args[1] === 'string' ? args[1] : '';
+      const actionArgs = Array.isArray(args[2]) ? args[2] : [];
+      if (!actionName) throw new Error('Action name is required');
+      const scope = await userReadScope(req, model.modelName);
+      const records = await model.search([['id', 'in', ids], ...scope], { activeTest: false });
+      const results: unknown[] = [];
+      for (const rec of records) {
+        const fn = (rec as unknown as Record<string, unknown>)[actionName];
+        if (typeof fn !== 'function') throw new Error(`Action '${actionName}' not found`);
+        results.push(await (fn as (...a: unknown[]) => Promise<unknown>).apply(rec, actionArgs));
+      }
+      invalidateAuthCacheForModel(model.modelName);
+      return results as unknown as JsonValue;
+    }
     default:
       throw new Error(`Method '${method}' is not exposed`);
   }
@@ -701,6 +779,8 @@ function encodedAttachmentName(name: string): string {
 }
 
 export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fastify, options) => {
+  await fastify.register(genericExtendedRoutes);
+
   fastify.addContentTypeParser(
     'application/octet-stream',
     { parseAs: 'buffer' },
@@ -771,6 +851,13 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
         return reply.code(400).send({ success: false, error: 'Attachment must not be empty' });
       if (req.body.length > MAX_ATTACHMENT_BYTES)
         return reply.code(413).send({ success: false, error: 'Attachment exceeds 10 MiB limit' });
+      if (!validateAttachmentMagicBytes(req.body, mimetype))
+        return reply.code(400).send({
+          success: false,
+          error: 'Attachment content does not match declared MIME type',
+          code: 'INVALID_MIME_SIGNATURE',
+          requestId: req.id,
+        });
 
       const key = randomUUID();
       const checksum = createHash('sha256').update(req.body).digest('hex');
@@ -908,6 +995,9 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
     unlink: canAccess(req.auth?.role, model, 'unlink', req.auth?.groupPermissions),
   });
 
+  const actionPermissionFor = (req: FastifyRequest, model: string) =>
+    canAccess(req.auth?.role, model, 'action', req.auth?.groupPermissions);
+
   /** Field metadata with readonly forced on when the caller cannot write. */
   const fieldsFor = (req: FastifyRequest, model: string) => {
     const writable = canAccess(req.auth?.role, model, 'write', req.auth?.groupPermissions);
@@ -931,9 +1021,13 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
     if (!Registry.has(req.params.model))
       return reply.status(404).send(modelNotFound(req.params.model));
     const views = resolveViews(Registry.get(req.params.model));
+    const actions = actionPermissionFor(req, req.params.model)
+      ? (views.actions ?? [])
+      : [];
     return {
       success: true,
       ...views,
+      actions,
       permissions: permissionsFor(req, req.params.model),
       fields: fieldsFor(req, req.params.model),
     };

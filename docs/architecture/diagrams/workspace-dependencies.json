@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "7cdcc46699879e56b03eaccff845cd638200c856995abdc3886e99233b035444",
+  "sourceSha256": "f70254db544861af2748bdb9c9668dab380ef1b367f5e0a6084b26d47a3c7124",
   "packages": [
     {
       "name": "@moonwitness/ai-evaluation",
@@ -156,7 +156,7 @@
     {
       "name": "@moonwitness/orm-whatsapp",
       "kind": "package",
-      "version": "1.14.0",
+      "version": "1.0.0-rc.1",
       "manifest": "packages/orm-whatsapp"
     },
     {
@@ -426,6 +426,12 @@
       "manifest": "apps/board"
     },
     {
+      "from": "@moonwitness/client",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/client"
+    },
+    {
       "from": "@moonwitness/corpus",
       "to": "@moonwitness/knowledge",
       "kind": "runtime",
@@ -433,7 +439,25 @@
     },
     {
       "from": "@moonwitness/desktop",
+      "to": "@moonwitness/ai-mcp",
+      "kind": "runtime",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
+      "to": "@moonwitness/ai-runtime",
+      "kind": "runtime",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
       "to": "@moonwitness/jobs",
+      "kind": "runtime",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
+      "to": "@moonwitness/logger",
       "kind": "runtime",
       "manifest": "apps/desktop"
     },
@@ -560,6 +584,12 @@
     {
       "from": "@moonwitness/orm-base",
       "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-base"
+    },
+    {
+      "from": "@moonwitness/orm-base",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-base"
     },

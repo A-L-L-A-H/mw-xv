@@ -8,7 +8,6 @@ import {
   WarningIcon as AlertTriangle,
   CompanyIcon as Building2,
   CalendarIcon as Calendar,
-  CheckIcon as CheckCircle2,
   JobsIcon as Cpu,
   ExternalLinkIcon as ExternalLink,
   AddonIcon as Layers,
@@ -17,8 +16,6 @@ import {
   RefreshIcon as RotateCw,
   SignalIcon as Sparkles,
   DeleteIcon as Trash2,
-  UserIcon as UserPlus,
-  UsersIcon as Users,
 } from '@moonwitness/ui/icons';
 import { client } from '@/lib/client';
 import { formatDateTime } from '@/lib/date-format';
@@ -38,9 +35,10 @@ import {
   DialogDescription,
 } from '@moonwitness/ui/components/dialog';
 import { CronSchedulerPanel } from '@/components/layout/cron-scheduler-panel';
+import { DashboardKpiGrid } from '@/components/dashboard/kpi-grid';
 import { cn } from '@/lib/utils';
 import { BarChart } from '@moonwitness/ui/components/chart';
-import { MetricTile } from '@moonwitness/ui/components/metric-tile';
+import { toast } from '@moonwitness/ui/components/toast';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -59,37 +57,7 @@ export function DashboardPage() {
     return () => window.removeEventListener(DEVELOPMENT_MODE_EVENT, syncMode);
   }, []);
   const visibleModels = models?.filter((model) => developmentMode || !model.menu.developmentOnly);
-
-  // Live KPI Queries
-  const { data: partnerStats, isLoading: partnerLoading } = useQuery({
-    queryKey: scopedQueryKey(['kpi', 'base.partner']),
-    queryFn: () => client.model('base.partner').searchRead({ count: true, limit: 1 }),
-  });
-
-  const { data: userStats, isLoading: userLoading } = useQuery({
-    queryKey: scopedQueryKey(['kpi', 'base.user']),
-    queryFn: () =>
-      client.model('base.user').searchRead({
-        domain: [['active', '=', true]],
-        count: true,
-        limit: 1,
-      }),
-  });
-
-  const { data: companyStats, isLoading: companyLoading } = useQuery({
-    queryKey: scopedQueryKey(['kpi', 'base.company']),
-    queryFn: () => client.model('base.company').searchRead({ count: true, limit: 1 }),
-  });
-
-  const { data: activityStats, isLoading: activityLoading } = useQuery({
-    queryKey: scopedQueryKey(['kpi', 'base.activity']),
-    queryFn: () =>
-      client.model('base.activity').searchRead({
-        domain: [['state', '=', 'planned']],
-        count: true,
-        limit: 1,
-      }),
-  });
+  const accessibleModels = new Set(models?.map((model) => model.model) ?? []);
 
   // Live Recent Audit Events (Admins)
   const { data: recentAudits, isLoading: auditsLoading } = useQuery({
@@ -223,7 +191,7 @@ export function DashboardPage() {
         queryClient.invalidateQueries({ queryKey: ['admin', 'jobs', 'health'] }),
       ]);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to retry job');
+      toast.error(err instanceof Error ? err.message : 'Failed to retry job');
     } finally {
       setActionInProgressId(null);
     }
@@ -238,7 +206,7 @@ export function DashboardPage() {
         queryClient.invalidateQueries({ queryKey: ['admin', 'jobs', 'health'] }),
       ]);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to cancel job');
+      toast.error(err instanceof Error ? err.message : 'Failed to cancel job');
     } finally {
       setActionInProgressId(null);
     }
@@ -253,7 +221,7 @@ export function DashboardPage() {
         queryClient.invalidateQueries({ queryKey: ['admin', 'jobs', 'health'] }),
       ]);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to retry outbox event');
+      toast.error(err instanceof Error ? err.message : 'Failed to retry outbox event');
     } finally {
       setActionInProgressId(null);
     }
@@ -277,7 +245,7 @@ export function DashboardPage() {
           limit: 6,
           order: 'deadline asc',
         }),
-    enabled: !isAdmin,
+    enabled: !isAdmin && accessibleModels.has('base.activity'),
   });
 
   return (
@@ -370,63 +338,7 @@ export function DashboardPage() {
       ) : (
         <>
           {/* KPI Counters Grid */}
-          <div className="dashboard-metrics">
-            {/* Partner Count */}
-            <Link href="/board/m/base.partner" className="dashboard-metric-link">
-              <MetricTile
-                label="Partners & contacts"
-                value={partnerLoading ? '—' : (partnerStats?.total ?? 0)}
-                detail="View directory"
-                icon={<Users className="size-4" />}
-                accent="magenta"
-                surface="paper"
-                frame="torn"
-                className="mw-ui-interactive-surface"
-              />
-            </Link>
-
-            {/* Active Users */}
-            <Link href="/board/m/base.user" className="dashboard-metric-link">
-              <MetricTile
-                label="Active users"
-                value={userLoading ? '—' : (userStats?.total ?? 0)}
-                detail="System accounts"
-                icon={<UserPlus className="size-4" />}
-                accent="cyan"
-                surface="paper"
-                frame="torn"
-                className="mw-ui-interactive-surface"
-              />
-            </Link>
-
-            {/* Companies / Multi-Tenant */}
-            <Link href="/board/m/base.company" className="dashboard-metric-link">
-              <MetricTile
-                label="Companies"
-                value={companyLoading ? '—' : (companyStats?.total ?? 0)}
-                detail="Tenant scopes"
-                icon={<Building2 className="size-4" />}
-                accent="yellow"
-                surface="paper"
-                frame="torn"
-                className="mw-ui-interactive-surface"
-              />
-            </Link>
-
-            {/* Pending Activities */}
-            <Link href="/board/m/base.activity" className="dashboard-metric-link">
-              <MetricTile
-                label="Planned activities"
-                value={activityLoading ? '—' : (activityStats?.total ?? 0)}
-                detail="Active reminders"
-                icon={<CheckCircle2 className="size-4" />}
-                accent="violet"
-                surface="paper"
-                frame="torn"
-                className="mw-ui-interactive-surface"
-              />
-            </Link>
-          </div>
+          <DashboardKpiGrid accessibleModels={accessibleModels} />
 
           {/* Live System Activity / Audit Pulse Feed */}
           <div className="min-w-0 border-4 border-ink bg-paper p-4 shadow-ink space-y-4 sm:p-6">

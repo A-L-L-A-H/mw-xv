@@ -7,190 +7,195 @@ flowchart LR
   model5["base.bank"]
   model6["base.company"]
   model7["base.company_membership"]
-  model8["base.country"]
-  model9["base.country_state"]
-  model10["base.cron"]
-  model11["base.currency"]
-  model12["base.group_membership"]
-  model13["base.job"]
-  model14["base.job_run"]
-  model15["base.language"]
-  model16["base.model_access"]
-  model17["base.outbox_event"]
-  model18["base.partner"]
-  model19["base.partner_address"]
-  model20["base.partner_bank"]
-  model21["base.partner_category"]
-  model22["base.partner_category_link"]
-  model23["base.sequence"]
-  model24["base.tag"]
-  model25["base.tag_link"]
-  model26["base.user"]
-  model27["integration.webhook_delivery"]
-  model28["integration.webhook_endpoint"]
-  model29["ir.feature_flag"]
-  model30["knowledge.bug_case"]
-  model31["knowledge.bug_case_event"]
-  model32["knowledge.concept_profile_version"]
-  model33["knowledge.privacy_projection"]
-  model34["knowledge.privacy_revocation"]
-  model35["knowledge.publication_snapshot"]
-  model36["knowledge.research_active_release"]
-  model37["knowledge.research_actor_identity"]
-  model38["knowledge.research_graph_record"]
-  model39["knowledge.research_graph_release"]
-  model40["knowledge.research_review_event"]
-  model41["knowledge.research_suggestion_version"]
-  model42["knowledge.story_page_version"]
-  model43["knowledge.story_version"]
-  model44["knowledge.textual_alignment_candidate_version"]
-  model45["knowledge.witness_correction"]
-  model46["knowledge.witness_interpretation"]
-  model47["knowledge.witness_testimony"]
-  model48["notification.notification"]
-  model49["notification.preference"]
-  model50["notification.template"]
-  model51["organization.department"]
-  model52["organization.membership"]
-  model53["organization.position"]
-  model54["organization.team"]
-  model55["request.purchase"]
-  model56["whatsapp.account"]
-  model57["whatsapp.conversation"]
-  model58["whatsapp.conversation.alias"]
-  model59["whatsapp.conversation.label"]
-  model60["whatsapp.conversation.read"]
-  model61["whatsapp.group.creation"]
-  model62["whatsapp.group.join"]
-  model63["whatsapp.group.operation"]
-  model64["whatsapp.internal_note"]
-  model65["whatsapp.label"]
-  model66["whatsapp.message"]
-  model67["whatsapp.status"]
-  model68["whatsapp.upload.ticket"]
-  model69["workflow.approval"]
-  model70["workflow.definition"]
-  model71["workflow.event"]
-  model72["workflow.instance"]
-  model0 -->|user N:1| model26
-  model2 -->|assigned_to N:1| model26
-  model5 -->|country N:1| model8
-  model6 -->|country N:1| model8
-  model6 -->|currency N:1| model11
-  model6 -->|language N:1| model15
+  model8["base.config_parameter"]
+  model9["base.country"]
+  model10["base.country_state"]
+  model11["base.cron"]
+  model12["base.currency"]
+  model13["base.group_membership"]
+  model14["base.job"]
+  model15["base.job_run"]
+  model16["base.language"]
+  model17["base.model_access"]
+  model18["base.outbox_event"]
+  model19["base.partner"]
+  model20["base.partner_address"]
+  model21["base.partner_bank"]
+  model22["base.partner_category"]
+  model23["base.partner_category_link"]
+  model24["base.saved_filter"]
+  model25["base.sequence"]
+  model26["base.tag"]
+  model27["base.tag_link"]
+  model28["base.user"]
+  model29["integration.webhook_delivery"]
+  model30["integration.webhook_endpoint"]
+  model31["ir.feature_flag"]
+  model32["knowledge.bug_case"]
+  model33["knowledge.bug_case_event"]
+  model34["knowledge.concept_profile_version"]
+  model35["knowledge.privacy_projection"]
+  model36["knowledge.privacy_revocation"]
+  model37["knowledge.publication_snapshot"]
+  model38["knowledge.research_active_release"]
+  model39["knowledge.research_actor_identity"]
+  model40["knowledge.research_graph_record"]
+  model41["knowledge.research_graph_release"]
+  model42["knowledge.research_review_event"]
+  model43["knowledge.research_suggestion_version"]
+  model44["knowledge.story_page_version"]
+  model45["knowledge.story_version"]
+  model46["knowledge.textual_alignment_candidate_version"]
+  model47["knowledge.witness_correction"]
+  model48["knowledge.witness_interpretation"]
+  model49["knowledge.witness_testimony"]
+  model50["notification.notification"]
+  model51["notification.preference"]
+  model52["notification.template"]
+  model53["organization.department"]
+  model54["organization.membership"]
+  model55["organization.position"]
+  model56["organization.team"]
+  model57["request.purchase"]
+  model58["whatsapp.account"]
+  model59["whatsapp.conversation"]
+  model60["whatsapp.conversation.alias"]
+  model61["whatsapp.conversation.label"]
+  model62["whatsapp.conversation.read"]
+  model63["whatsapp.group.creation"]
+  model64["whatsapp.group.join"]
+  model65["whatsapp.group.operation"]
+  model66["whatsapp.internal_note"]
+  model67["whatsapp.label"]
+  model68["whatsapp.message"]
+  model69["whatsapp.status"]
+  model70["whatsapp.upload.ticket"]
+  model71["workflow.approval"]
+  model72["workflow.definition"]
+  model73["workflow.event"]
+  model74["workflow.instance"]
+  model0 -->|user N:1| model28
+  model2 -->|assigned_to N:1| model28
+  model5 -->|country N:1| model9
+  model6 -->|country N:1| model9
+  model6 -->|currency N:1| model12
+  model6 -->|language N:1| model16
   model7 -->|company N:1| model6
-  model7 -->|user N:1| model26
-  model9 -->|country N:1| model8
-  model10 -->|company N:1| model6
-  model10 -->|requested_by N:1| model26
-  model12 -->|group N:1| model1
-  model12 -->|user N:1| model26
-  model13 -->|company N:1| model6
-  model13 -->|requested_by N:1| model26
-  model14 -->|job N:1| model13
-  model16 -->|group N:1| model1
-  model17 -->|actor N:1| model26
-  model17 -->|company N:1| model6
-  model18 -->|addresses 1:N| model19
+  model7 -->|user N:1| model28
+  model8 -->|company N:1| model6
+  model10 -->|country N:1| model9
+  model11 -->|company N:1| model6
+  model11 -->|requested_by N:1| model28
+  model13 -->|group N:1| model1
+  model13 -->|user N:1| model28
+  model14 -->|company N:1| model6
+  model14 -->|requested_by N:1| model28
+  model15 -->|job N:1| model14
+  model17 -->|group N:1| model1
+  model18 -->|actor N:1| model28
   model18 -->|company N:1| model6
-  model18 -->|country N:1| model8
-  model18 -->|parent N:1| model18
-  model18 -->|state N:1| model9
-  model19 -->|country N:1| model8
-  model19 -->|partner N:1| model18
-  model19 -->|state N:1| model9
-  model20 -->|bank N:1| model5
-  model20 -->|company N:1| model6
-  model20 -->|currency N:1| model11
-  model20 -->|partner N:1| model18
-  model22 -->|category N:1| model21
-  model22 -->|partner N:1| model18
-  model25 -->|tag N:1| model24
-  model26 -->|language N:1| model15
-  model26 -->|partner 1:1| model18
-  model27 -->|company N:1| model6
-  model27 -->|endpoint N:1| model28
-  model28 -->|company N:1| model6
+  model19 -->|addresses 1:N| model20
+  model19 -->|company N:1| model6
+  model19 -->|country N:1| model9
+  model19 -->|parent N:1| model19
+  model19 -->|state N:1| model10
+  model20 -->|country N:1| model9
+  model20 -->|partner N:1| model19
+  model20 -->|state N:1| model10
+  model21 -->|bank N:1| model5
+  model21 -->|company N:1| model6
+  model21 -->|currency N:1| model12
+  model21 -->|partner N:1| model19
+  model23 -->|category N:1| model22
+  model23 -->|partner N:1| model19
+  model24 -->|company N:1| model6
+  model24 -->|user N:1| model28
+  model27 -->|tag N:1| model26
+  model28 -->|language N:1| model16
+  model28 -->|partner 1:1| model19
   model29 -->|company N:1| model6
+  model29 -->|endpoint N:1| model30
   model30 -->|company N:1| model6
-  model30 -->|created_by N:1| model26
-  model31 -->|actor N:1| model26
-  model31 -->|bug_case N:1| model30
   model31 -->|company N:1| model6
   model32 -->|company N:1| model6
-  model32 -->|recorded_by N:1| model26
+  model32 -->|created_by N:1| model28
+  model33 -->|actor N:1| model28
+  model33 -->|bug_case N:1| model32
   model33 -->|company N:1| model6
-  model34 -->|actor N:1| model26
   model34 -->|company N:1| model6
+  model34 -->|recorded_by N:1| model28
   model35 -->|company N:1| model6
-  model35 -->|requester N:1| model26
-  model35 -->|reviewer N:1| model26
-  model36 -->|release N:1| model39
-  model37 -->|provisioned_by N:1| model26
-  model37 -->|user 1:1| model26
-  model38 -->|release N:1| model39
-  model41 -->|company N:1| model6
-  model41 -->|recorded_by N:1| model26
-  model42 -->|story_version N:1| model43
+  model36 -->|actor N:1| model28
+  model36 -->|company N:1| model6
+  model37 -->|company N:1| model6
+  model37 -->|requester N:1| model28
+  model37 -->|reviewer N:1| model28
+  model38 -->|release N:1| model41
+  model39 -->|provisioned_by N:1| model28
+  model39 -->|user 1:1| model28
+  model40 -->|release N:1| model41
   model43 -->|company N:1| model6
-  model43 -->|recorded_by N:1| model26
-  model44 -->|company N:1| model6
-  model44 -->|recorded_by N:1| model26
-  model45 -->|recorded_by N:1| model26
-  model45 -->|testimony N:1| model47
-  model46 -->|recorded_by N:1| model26
-  model46 -->|testimony N:1| model47
-  model47 -->|company N:1| model6
-  model47 -->|created_by N:1| model26
-  model48 -->|company N:1| model6
-  model48 -->|recipient N:1| model26
-  model48 -->|template N:1| model50
+  model43 -->|recorded_by N:1| model28
+  model44 -->|story_version N:1| model45
+  model45 -->|company N:1| model6
+  model45 -->|recorded_by N:1| model28
+  model46 -->|company N:1| model6
+  model46 -->|recorded_by N:1| model28
+  model47 -->|recorded_by N:1| model28
+  model47 -->|testimony N:1| model49
+  model48 -->|recorded_by N:1| model28
+  model48 -->|testimony N:1| model49
   model49 -->|company N:1| model6
-  model49 -->|user N:1| model26
+  model49 -->|created_by N:1| model28
+  model50 -->|company N:1| model6
+  model50 -->|recipient N:1| model28
+  model50 -->|template N:1| model52
   model51 -->|company N:1| model6
-  model51 -->|parent N:1| model51
-  model52 -->|company N:1| model6
-  model52 -->|department N:1| model51
-  model52 -->|manager N:1| model52
-  model52 -->|position N:1| model53
-  model52 -->|team N:1| model54
-  model52 -->|user N:1| model26
+  model51 -->|user N:1| model28
   model53 -->|company N:1| model6
-  model53 -->|department N:1| model51
+  model53 -->|parent N:1| model53
   model54 -->|company N:1| model6
-  model54 -->|department N:1| model51
-  model54 -->|parent N:1| model54
+  model54 -->|department N:1| model53
+  model54 -->|manager N:1| model54
+  model54 -->|position N:1| model55
+  model54 -->|team N:1| model56
+  model54 -->|user N:1| model28
   model55 -->|company N:1| model6
-  model55 -->|currency N:1| model11
-  model55 -->|vendor N:1| model18
+  model55 -->|department N:1| model53
   model56 -->|company N:1| model6
-  model57 -->|account N:1| model56
+  model56 -->|department N:1| model53
+  model56 -->|parent N:1| model56
   model57 -->|company N:1| model6
+  model57 -->|currency N:1| model12
+  model57 -->|vendor N:1| model19
   model58 -->|company N:1| model6
-  model58 -->|conversation N:1| model57
+  model59 -->|account N:1| model58
   model59 -->|company N:1| model6
-  model59 -->|conversation N:1| model57
-  model59 -->|label N:1| model65
   model60 -->|company N:1| model6
-  model60 -->|conversation N:1| model57
+  model60 -->|conversation N:1| model59
   model61 -->|company N:1| model6
+  model61 -->|conversation N:1| model59
+  model61 -->|label N:1| model67
   model62 -->|company N:1| model6
+  model62 -->|conversation N:1| model59
   model63 -->|company N:1| model6
-  model63 -->|conversation N:1| model57
   model64 -->|company N:1| model6
-  model64 -->|conversation N:1| model57
   model65 -->|company N:1| model6
-  model66 -->|account N:1| model56
+  model65 -->|conversation N:1| model59
   model66 -->|company N:1| model6
-  model66 -->|conversation N:1| model57
-  model67 -->|account N:1| model56
+  model66 -->|conversation N:1| model59
   model67 -->|company N:1| model6
+  model68 -->|account N:1| model58
   model68 -->|company N:1| model6
-  model68 -->|conversation N:1| model57
-  model69 -->|actor N:1| model26
-  model69 -->|instance N:1| model72
-  model71 -->|actor N:1| model26
-  model71 -->|instance N:1| model72
-  model72 -->|company N:1| model6
-  model72 -->|definition N:1| model70
-  model72 -->|started_by N:1| model26
+  model68 -->|conversation N:1| model59
+  model69 -->|account N:1| model58
+  model69 -->|company N:1| model6
+  model70 -->|company N:1| model6
+  model70 -->|conversation N:1| model59
+  model71 -->|actor N:1| model28
+  model71 -->|instance N:1| model74
+  model73 -->|actor N:1| model28
+  model73 -->|instance N:1| model74
+  model74 -->|company N:1| model6
+  model74 -->|definition N:1| model72
+  model74 -->|started_by N:1| model28

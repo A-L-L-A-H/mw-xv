@@ -5,7 +5,7 @@ import { isCurrentScopeQueryKey, scopedQueryKey } from '@/lib/query-scope';
 
 export type RecordData = Record<string, unknown> & { id: number };
 
-const keys = {
+export const keys = {
   models: () => scopedQueryKey(['models']),
   views: (model: string) => scopedQueryKey(['views', model]),
   list: (model: string, options: SearchReadOptions) =>
@@ -61,12 +61,27 @@ export function useRecordMutations(model: string) {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: keys.all(model) });
   return {
     save: useMutation({
-      mutationFn: ({ id, values }: { id?: number; values: Partial<RecordData> }) =>
-        id ? repo.write(id, values) : repo.create(values),
+      mutationFn: ({
+        id,
+        values,
+        writeDate,
+      }: {
+        id?: number;
+        values: Partial<RecordData>;
+        writeDate?: string;
+      }) => (id ? repo.write(id, values, { writeDate }) : repo.create(values)),
       onSuccess: invalidate,
     }),
     archive: useMutation({
-      mutationFn: ({ id, hard }: { id: number; hard?: boolean }) => repo.unlink(id, { hard }),
+      mutationFn: ({
+        id,
+        hard,
+        writeDate,
+      }: {
+        id: number;
+        hard?: boolean;
+        writeDate?: string;
+      }) => repo.unlink(id, { hard, writeDate }),
       onSuccess: invalidate,
     }),
     action: useMutation({

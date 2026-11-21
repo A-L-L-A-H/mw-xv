@@ -33,3 +33,15 @@ export {
   isFeatureFlagEnabled,
   type FeatureFlagQueryDb,
 } from './models/feature-flag.js';
+export {
+  SavedFilter,
+  validateSavedFilterDomainJson,
+  canMutateSavedFilter,
+} from './models/saved-filter.js';
+export {
+  ConfigParameter,
+  getConfigParam,
+  redactConfigParameterForAudit,
+  type ConfigParameterValueType,
+  type ConfigParamQueryDb,
+} from './models/config-parameter.js';

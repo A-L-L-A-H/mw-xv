@@ -11,7 +11,7 @@ import {
   type AttachmentReference,
 } from '@moonwitness/orm-storage';
 import { createAttachmentStorage } from '../storage/attachment-storage.js';
-import { whatsappManifest } from '../whatsapp/manifest.js';
+import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 import { whatsappAttachmentReferences } from './whatsapp-attachment-references.js';
 
 export interface AttachmentReconcileOptions {

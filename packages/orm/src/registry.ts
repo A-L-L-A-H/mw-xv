@@ -57,6 +57,40 @@ export class Registry {
   }
 
   /**
+   * Unregister a model class from the registry.
+   */
+  static unregister(name: string): boolean {
+    const deleted = this.models.delete(name);
+    if (deleted) {
+      this.generation += 1;
+    }
+    return deleted;
+  }
+
+  /**
+   * Increment the registry generation counter (e.g. when views or extensions change).
+   */
+  static bumpGeneration(): number {
+    this.generation += 1;
+    return this.generation;
+  }
+
+  /**
+   * Capture a shallow snapshot of registered models for atomic rollback.
+   */
+  static snapshot(): Map<string, typeof BaseModel> {
+    return new Map(this.models);
+  }
+
+  /**
+   * Restore registered models from a previous snapshot.
+   */
+  static restore(snapshot: Map<string, typeof BaseModel>): void {
+    this.models = new Map(snapshot);
+    this.generation += 1;
+  }
+
+  /**
    * Clear registry (useful for tests).
    */
   static clear(): void {

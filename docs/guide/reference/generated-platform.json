@@ -184,7 +184,7 @@
     },
     {
       "name": "@moonwitness/orm-whatsapp",
-      "version": "1.14.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-whatsapp",
       "scripts": ["build", "test"]
     },
@@ -370,7 +370,9 @@
       "test": "pnpm build && node --test tests/*.test.mjs"
     },
     "root": {
+      "addon:create": "node scripts/addon-create.mjs",
       "addon:scaffold": "node scripts/evolution/scaffold-exp-addon.mjs",
+      "ai:watchdog": "node scripts/ai-drift-watchdog.mjs",
       "api:addon:check": "node --test scripts/check-api-addon-boundary.test.mjs && node scripts/check-api-addon-boundary.mjs",
       "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs --check",
       "architecture:check:built": "node scripts/architecture/generate-diagrams.mjs --check",
@@ -429,7 +431,11 @@
       "local-ai:eval": "node scripts/local-ai/eval.mjs",
       "local-ai:register-model": "node scripts/local-ai/register-model.mjs",
       "local-ai:tournament": "node scripts/local-ai/tournament.mjs",
+      "node:parity": "node scripts/check-node-version.mjs",
+      "orm:codegen": "node scripts/orm-codegen.mjs",
+      "orm:inspect": "node scripts/orm-inspect.mjs",
       "platform:audit": "node scripts/platform-audit.mjs",
+      "preflight:fast": "node scripts/preflight-fast.mjs",
       "promotion:approval-check": "node scripts/check-promotion-approval.mjs",
       "promotion:risk": "node scripts/check-promotion-risk.mjs",
       "readme:check": "node scripts/docs/update-readme.mjs --check",
@@ -586,6 +592,12 @@
     {
       "name": "ATTACHMENT_STORAGE_DRIVER",
       "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "AUTH_CACHE_TTL_MS",
+      "configuredInExample": false,
       "secret": false,
       "valueType": "string"
     },
@@ -1471,6 +1483,77 @@
           "uniqueConstraints": [["company", "user"]]
         },
         {
+          "name": "base.config_parameter",
+          "table": "base_config_parameters",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "description",
+              "kind": "text",
+              "column": "description",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "is_secret",
+              "kind": "boolean",
+              "column": "is_secret",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "key",
+              "kind": "string",
+              "column": "key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "value",
+              "kind": "text",
+              "column": "value",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "value_type",
+              "kind": "enum",
+              "column": "value_type",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["boolean", "integer", "json", "string"]
+            }
+          ],
+          "uniqueConstraints": [["company", "key"]]
+        },
+        {
           "name": "base.country",
           "table": "countries",
           "fields": [
@@ -2229,6 +2312,108 @@
           "uniqueConstraints": [["category", "partner"]]
         },
         {
+          "name": "base.saved_filter",
+          "table": "base_saved_filters",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "domain_json",
+              "kind": "text",
+              "column": "domain_json",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "group_by",
+              "kind": "string",
+              "column": "group_by",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "is_default",
+              "kind": "boolean",
+              "column": "is_default",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "is_shared",
+              "kind": "boolean",
+              "column": "is_shared",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "model_name",
+              "kind": "string",
+              "column": "model_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "order",
+              "kind": "string",
+              "column": "order",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "user",
+              "kind": "belongsTo",
+              "column": "user_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.user"
+            }
+          ],
+          "uniqueConstraints": []
+        },
+        {
           "name": "base.sequence",
           "table": "sequences",
           "fields": [
@@ -2577,6 +2762,13 @@
           "developmentOnly": true
         },
         {
+          "model": "base.config_parameter",
+          "label": "base.config_parameter",
+          "group": "Technical",
+          "sequence": 490,
+          "developmentOnly": true
+        },
+        {
           "model": "base.country",
           "label": "base.country",
           "group": "Localization",
@@ -2654,6 +2846,13 @@
           "developmentOnly": true
         },
         {
+          "model": "base.saved_filter",
+          "label": "base.saved_filter",
+          "group": "Technical",
+          "sequence": 480,
+          "developmentOnly": true
+        },
+        {
           "model": "base.sequence",
           "label": "base.sequence",
           "group": "Technical",
@@ -2697,6 +2896,7 @@
         "base.bank",
         "base.company",
         "base.company_membership",
+        "base.config_parameter",
         "base.country",
         "base.country_state",
         "base.currency",
@@ -2708,6 +2908,7 @@
         "base.partner_bank",
         "base.partner_category",
         "base.partner_category_link",
+        "base.saved_filter",
         "base.sequence",
         "base.tag",
         "base.tag_link",
@@ -2736,7 +2937,9 @@
         "base.group_membership": 1,
         "base.company_membership": 2,
         "base.model_access": 1,
-        "ir.feature_flag": 1
+        "ir.feature_flag": 1,
+        "base.saved_filter": 1,
+        "base.config_parameter": 1
       },
       "accessRules": [
         {
@@ -8548,6 +8751,22 @@
       "path": "/api/:model/:id/action/:method"
     },
     {
+      "method": "POST",
+      "path": "/api/:model/action/:actionName"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/:model/bulk"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/:model/bulk"
+    },
+    {
+      "method": "POST",
+      "path": "/api/:model/default-get"
+    },
+    {
       "method": "GET",
       "path": "/api/:model/fields"
     },
@@ -8556,8 +8775,16 @@
       "path": "/api/:model/group-count"
     },
     {
+      "method": "POST",
+      "path": "/api/:model/onchange"
+    },
+    {
       "method": "GET",
       "path": "/api/:model/views"
+    },
+    {
+      "method": "GET",
+      "path": "/api/app/bootstrap"
     },
     {
       "method": "GET",
@@ -9080,5 +9307,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "32f3c0a2c350a50b17d911d4f9895999c33d4a4c3e4cfaed9861bb39b3ac76da"
+  "generatedFromSha256": "2c505b78cf571755c14cde5f0ecb202d72a482f4442b62b90c16b6f4f115d289"
 }

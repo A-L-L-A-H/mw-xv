@@ -18,6 +18,19 @@ const scheduledWorkflowExpectations = [
   { name: 'Monthly platform audit', workflowFile: 'platform-audit.yml', maximumAgeDays: 38 },
 ];
 
+export const RETIRED_WORKFLOW_FILES = Object.freeze([
+  'browser-matrix.yml',
+  'deep-regression.yml',
+  'codeql.yml',
+  'gitleaks.yml',
+  'platform-audit.yml',
+]);
+
+export function resolveActiveScheduledWorkflowExpectations(activeWorkflowFiles) {
+  const activeSet = new Set(activeWorkflowFiles);
+  return scheduledWorkflowExpectations.filter(({ workflowFile }) => activeSet.has(workflowFile));
+}
+
 export function auditWorkflowArtifactRetention(workflows, maximumRetentionDays = 90) {
   if (!Array.isArray(workflows) || workflows.length === 0) {
     return {

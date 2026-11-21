@@ -31,98 +31,30 @@ export interface RegisterParams {
   email?: string;
 }
 
-export type FieldType =
-  | 'integer'
-  | 'string'
-  | 'boolean'
-  | 'selection'
-  | 'many2one'
-  | 'one2many'
-  | 'password'
-  | 'datetime';
-
-export interface FieldMeta {
-  name: string;
-  type: FieldType;
-  label: string;
-  help?: string;
-  required: boolean;
-  readonly: boolean;
-  unique: boolean;
-  writeOnly?: boolean;
-  default?: string | number | boolean;
-  selection?: { value: string; label: string }[];
-  relation?: string;
-  foreignKey?: string;
-  invisible?: Domain | boolean;
-  readonlyIf?: Domain;
-  requiredIf?: Domain;
-}
-
-export interface ListView {
-  columns: string[];
-  order?: string;
-}
-
-export interface FormSection {
-  title?: string;
-  fields: string[];
-}
-
-export interface FormView {
-  sections: FormSection[];
-}
-
-export interface SearchFilter {
-  label: string;
-  domain: Domain;
-}
-
-export interface SearchView {
-  fields: string[];
-  filters: SearchFilter[];
-}
-
-/** What the caller may do on a model; drives which buttons a UI shows. */
-export interface ModelPermissions {
-  read: boolean;
-  create: boolean;
-  write: boolean;
-  unlink: boolean;
-}
-
-export interface ModelInfo {
-  model: string;
-  table: string;
-  menu: {
-    label?: string;
-    group: string;
-    sequence: number;
-    developmentOnly: boolean;
-  };
-}
-
-export interface ModelFields {
-  model: string;
-  permissions: ModelPermissions;
-  fields: FieldMeta[];
-}
-
-export interface ResolvedViews {
-  model: string;
-  title: string;
-  permissions: ModelPermissions;
-  fields: FieldMeta[];
-  list: ListView;
-  form: FormView;
-  search: SearchView;
-  actions?: string[];
-}
+export type {
+  CalendarView,
+  Domain,
+  DomainItem,
+  DomainLeaf,
+  DomainOperator,
+  FieldMeta,
+  FieldType,
+  FormSection,
+  FormView,
+  GraphView,
+  KanbanView,
+  ListView,
+  ModelFields,
+  ModelInfo,
+  ModelPermissions,
+  PivotView,
+  ResolvedViews,
+  SearchFilter,
+  SearchView,
+} from '@moonwitness/types';
+import type { Domain } from '@moonwitness/types';
 
 export type DomainTerm = [string, string, unknown];
-/** Odoo-style prefix (Polish) notation: `['|', a, b]` means a OR b; terms are ANDed by default. */
-export type DomainItem = DomainTerm | [string, unknown] | '&' | '|' | '!';
-export type Domain = DomainItem[];
 
 export interface SearchReadOptions {
   domain?: Domain;

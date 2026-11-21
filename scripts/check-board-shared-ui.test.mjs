@@ -80,3 +80,19 @@ test('raw JSX <svg> fails with shared asset guidance', () => {
   assert.ok(violations.every((violation) => /@moonwitness\/assets/u.test(violation)));
   assert.ok(violations.every((violation) => /pnpm board:ui:check/u.test(violation)));
 });
+
+test('new component subdirectories under apps/board/src/components/ are covered by UI boundary checks', () => {
+  const viewsViolations = findBoardUiViolations(
+    'export function ViewCard() {\n  return <button type="button">Open</button>;\n}',
+    'apps/board/src/components/views/custom-view.tsx'
+  );
+  const dashboardViolations = findBoardUiViolations(
+    'export function Widget() {\n  return <input type="text" />;\n}',
+    'apps/board/src/components/dashboard/widget.tsx'
+  );
+
+  assert.equal(viewsViolations.length, 1);
+  assert.match(viewsViolations[0], /apps\/board\/src\/components\/views\/custom-view\.tsx:2: raw JSX <button>/u);
+  assert.equal(dashboardViolations.length, 1);
+  assert.match(dashboardViolations[0], /apps\/board\/src\/components\/dashboard\/widget\.tsx:2: raw JSX <input>/u);
+});

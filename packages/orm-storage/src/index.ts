@@ -20,22 +20,8 @@ import { MAX_ATTACHMENT_BYTES } from '@moonwitness/types';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
-export interface StoredObjectMetadata {
-  readonly key: string;
-  readonly sizeBytes: number;
-  readonly checksum?: string;
-  readonly lastModified?: Date;
-}
-
-export interface AttachmentStorage {
-  checkReady?(): Promise<void>;
-  put(key: string, content: Uint8Array): Promise<StoredObjectMetadata>;
-  get(key: string): Promise<Buffer | null>;
-  putStream?(key: string, content: Readable, maxBytes?: number): Promise<StoredObjectMetadata>;
-  getStream?(key: string): Promise<Readable | null>;
-  delete(key: string): Promise<void>;
-  list(): AsyncIterable<StoredObjectMetadata>;
-}
+export type { AttachmentStorage, StoredObjectMetadata } from './storage.types.js';
+import type { AttachmentStorage, StoredObjectMetadata } from './storage.types.js';
 
 function validateKey(key: string): string {
   if (!UUID_PATTERN.test(key)) throw new Error('Invalid attachment storage key');

@@ -14,6 +14,8 @@ import type { Domain, FieldMeta } from '@moonwitness/client';
 import { useRecordMutations, useRecords, useViews } from '@/hooks/use-model';
 import { Button } from '@moonwitness/ui/components/button';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
+import { toast } from '@moonwitness/ui/components/toast';
+import { ConfirmDialog } from './confirm-dialog';
 import { FieldCell } from './fields';
 
 interface One2ManyWidgetProps {
@@ -45,6 +47,7 @@ export function One2ManyWidget({ field, parentModel, parentId, isCreate }: One2M
   );
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
   const createParams = new URLSearchParams({
     relation_parent_model: parentModel,
@@ -73,12 +76,15 @@ export function One2ManyWidget({ field, parentModel, parentId, isCreate }: One2M
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to remove this item?')) return;
     setDeletingId(id);
     try {
       await mutations.archive.mutateAsync({ id, hard: false });
+      toast.success('Item removed.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to remove item.');
     } finally {
       setDeletingId(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -152,7 +158,7 @@ export function One2ManyWidget({ field, parentModel, parentId, isCreate }: One2M
                           variant="ghost"
                           size="xs"
                           className="h-6 px-1.5 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => handleDelete(row.id as number)}
+                          onClick={() => setDeleteTarget(row.id)}
                           disabled={deletingId === row.id}
                           title="Archive item"
                         >
@@ -171,6 +177,16 @@ export function One2ManyWidget({ field, parentModel, parentId, isCreate }: One2M
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Remove item"
+        description="Archive this linked record? It will remain available in its model list."
+        confirmLabel="Remove"
+        destructive
+        busy={deletingId !== null}
+        onConfirm={() => deleteTarget !== null && void handleDelete(deleteTarget)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

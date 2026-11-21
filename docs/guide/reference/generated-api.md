@@ -1,6 +1,6 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `32f3c0a2c350a50b17d911d4f9895999c33d4a4c3e4cfaed9861bb39b3ac76da`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `2c505b78cf571755c14cde5f0ecb202d72a482f4442b62b90c16b6f4f115d289`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                                     |
 | ------ | -------------------------------------------------------- |
@@ -27,9 +27,15 @@ Extracted from literal Fastify route declarations. Source fingerprint: `32f3c0a2
 | PATCH  | `/api/:model/:id`                                        |
 | PUT    | `/api/:model/:id`                                        |
 | POST   | `/api/:model/:id/action/:method`                         |
+| POST   | `/api/:model/action/:actionName`                         |
+| DELETE | `/api/:model/bulk`                                       |
+| PATCH  | `/api/:model/bulk`                                       |
+| POST   | `/api/:model/default-get`                                |
 | GET    | `/api/:model/fields`                                     |
 | GET    | `/api/:model/group-count`                                |
+| POST   | `/api/:model/onchange`                                   |
 | GET    | `/api/:model/views`                                      |
+| GET    | `/api/app/bootstrap`                                     |
 | GET    | `/api/base.attachment/:id/download`                      |
 | POST   | `/api/base.attachment/upload`                            |
 | GET    | `/api/corpus/passages/:editionId/:locator`               |

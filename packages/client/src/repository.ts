@@ -107,18 +107,27 @@ export class ModelRepository<TRecord = Record<string, unknown>> {
     return res.data;
   }
 
-  async write(id: number, values: Partial<TRecord>): Promise<TRecord> {
+  async write(
+    id: number,
+    values: Partial<TRecord>,
+    options: { writeDate?: string } = {}
+  ): Promise<TRecord> {
     const res = await this.http.request<{ data: TRecord }>(this.path(id), {
       method: 'PATCH',
+      ...(options.writeDate ? { headers: { 'If-Match': `"${options.writeDate}"` } } : {}),
       body: values,
     });
     return res.data;
   }
 
   /** Archives (active=false) by default; `hard: true` deletes permanently. */
-  async unlink(id: number, options: { hard?: boolean } = {}): Promise<void> {
+  async unlink(
+    id: number,
+    options: { hard?: boolean; writeDate?: string } = {}
+  ): Promise<void> {
     await this.http.request(this.path(id), {
       method: 'DELETE',
+      ...(options.writeDate ? { headers: { 'If-Match': `"${options.writeDate}"` } } : {}),
       query: { hard: options.hard ? 'true' : undefined },
     });
   }
