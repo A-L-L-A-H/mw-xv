@@ -15,8 +15,8 @@ Checklist penguatan fondasi arsitektur, keamanan, CI/CD, reliabilitas runtime, d
 
 - [x] **Ekstrak legacy `apps/api/src/whatsapp/{models,manifest}.ts` ke `packages/orm-whatsapp`:** 13 model + view dipindah ke `@moonwitness/orm-whatsapp` dan allowlist di `scripts/check-api-addon-boundary.mjs` dikosongkan (`new Set()`).
 
-- [ ] **Pecah god-file `apps/api/src/routes/whatsapp.routes.ts` (~5.400 baris):** `route-helpers.ts` dan `routes/whatsapp/media.routes.ts` telah diekstrak; pemecahan penuh sub-domain lainnya (`accounts`, `conversations`, `messages`, `groups`, `statuses`, `webhooks`) tetap berlanjut bertahap.
-- [ ] **Pecah god-file `apps/board/src/board-pages/whatsapp-page.tsx` (~4.450 baris):** ekstrak ke komponen domain terpisah (`InboxList`, `ConversationTimeline`, `MessageComposer`, `GroupProfileDrawer`, `PairingPanel`, `MediaPreview`).
+- [x] **Pecah god-file `apps/api/src/routes/whatsapp.routes.ts` (~5.400 baris):** dipecah menjadi orkestrator tipis (~29 baris) dan 10 sub-router domain terpisah (`accounts`, `conversations`, `group-management`, `groups`, `media`, `message-actions`, `messages`, `statuses`, `triage`, `webhooks`) + `route-helpers.ts` dengan zero regresi rute/docs/test (`1990580`).
+- [x] **Pecah god-file `apps/board/src/board-pages/whatsapp-page.tsx` (~4.630 baris):** diekstrak komponen domain ke `apps/board/src/components/whatsapp/` (`types.ts`, `media-preview.tsx`, `message-composer.tsx`, `profile-drawers.tsx`) dengan zero perubahan visual/behavior (`2ae2e92`).
 - [x] **Aktifkan healthcheck worker di production:** `docker-compose.production.yml` dan `docker-compose.prd.yml` memakai probe `/readyz` pada port `3011` (`jobs-worker`), `3012` (`jobs-scheduler`), dan `3013` (`outbox-worker`).
 - [x] **Tambahkan handler `unhandledRejection`/`uncaughtException` pada worker commands:** handler fatal terintegrasi lewat [apps/api/src/lifecycle/process-shutdown.ts](apps/api/src/lifecycle/process-shutdown.ts) dan dibersihkan di `dispose()`.
 - [x] **Pisahkan DDL migrasi dari boot aplikasi:** ditambahkan [apps/api/src/commands/db-migrate.ts](apps/api/src/commands/db-migrate.ts) dengan `pg_advisory_lock(77490122)` serta mode boot `SKIP_BOOT_MIGRATIONS=true`.
@@ -27,5 +27,5 @@ Checklist penguatan fondasi arsitektur, keamanan, CI/CD, reliabilitas runtime, d
 ## P2 — DX, Performa Build & Isolasi Kerja
 
 - [x] **Build caching monorepo (Turborepo):** `turbo.json` aktif untuk caching task monorepo tanpa mengganggu skrip CI/release existing.
-- [ ] **Bersihkan 6 warning `oxlint` di `apps/board`:** tersisa 5 warning di `apps/board` (`only-export-components` metadata route dan 3 `react(set-state-in-effect)` di `whatsapp-page.tsx`).
+- [x] **Bersihkan 6 warning `oxlint` di `apps/board`:** dibersihkan penuh hingga `0` warnings dan `0` errors di 91 file (`oxlint`), termasuk Next metadata route directives dan refactor efek React di [message-composer.tsx](apps/board/src/components/whatsapp/message-composer.tsx) & [media-preview.tsx](apps/board/src/components/whatsapp/media-preview.tsx) (`2ae2e92`).
 - [x] **Isolasi paralel lintas track:** ruleset `protect-main` (id `27796649`) dan `protect-dev` (id `27796651`) aktif di GitHub beserta workflow CI `quality-and-build`, `unit-tests`, `knowledge-gate`, dan `postgres-integration`.

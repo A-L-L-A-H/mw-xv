@@ -7,7 +7,7 @@
       "title": "Continue splitting monolithic apps/api/src/routes/whatsapp.routes.ts handlers into addon helpers",
       "priority": "high",
       "category": "architecture",
-      "status": "open",
+      "status": "completed",
       "targetFiles": [
         "apps/api/src/routes/whatsapp.routes.ts",
         "apps/api/src/whatsapp/route-helpers.ts"
