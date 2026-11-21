@@ -981,7 +981,7 @@
       "deliverable": "CPU/GPU/RAM/VRAM/disk and licensed model SHA/profile report",
       "acceptance": "No single compulsory model; source/license and storage outside Git verified",
       "verification": "hash, license, missing model tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
