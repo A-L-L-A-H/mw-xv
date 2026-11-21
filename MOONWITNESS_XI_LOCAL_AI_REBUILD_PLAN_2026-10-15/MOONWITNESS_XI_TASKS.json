@@ -902,7 +902,7 @@
       "deliverable": "Case intake, triage, plan, action, verification, reopen linked to events",
       "acceptance": "Statuses separate approval/publish/resolved; no duplicate action/outbox side effect",
       "verification": "G3 end-to-end state/replay tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
