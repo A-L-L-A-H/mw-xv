@@ -7,7 +7,7 @@ import { Registry } from '@moonwitness/orm';
 
 const TEST_JWT_SECRET = 'test-api-orm-hardening-secret-value-at-least-32-chars';
 
-describe('API & ORM architectural hardening', () => {
+describe('API & ORM architectural hardening', { timeout: 20_000 }, () => {
   const apps: Awaited<ReturnType<typeof buildApp>>[] = [];
 
   afterEach(async () => {

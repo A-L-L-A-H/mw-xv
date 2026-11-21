@@ -20,6 +20,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A0 — Architecture audit and ADR
 
 **Deliverables**
+
 - Existing-domain reuse matrix.
 - Agent identity and company-scoping contract.
 - Knowledge/research AI vs workforce runtime boundary.
@@ -28,6 +29,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 - ADR with explicit non-goals and compatibility policy.
 
 **Acceptance**
+
 - Every persistent model has an identified addon owner.
 - No second task, workflow, job queue or knowledge truth source is proposed without a documented gap.
 - All security-sensitive tool paths have a named deterministic policy enforcement point.
@@ -36,6 +38,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A1 — Minimal AI domain addon
 
 **Deliverables**
+
 - Minimal agent profile and role/capability contracts.
 - Model profile/provider references; secrets remain external.
 - Policy reference and risk tier.
@@ -43,6 +46,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 - Board views and access metadata.
 
 **Acceptance**
+
 - Addon installs and upgrades idempotently.
 - Reinstall preserves user-edited values.
 - Cross-company list/read/write attempts fail closed.
@@ -52,6 +56,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A2 — Provider abstraction and health
 
 **Deliverables**
+
 - Provider adapter contract.
 - One local provider adapter and one cloud provider adapter.
 - Model capability registry and test fixtures.
@@ -59,6 +64,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 - Data classification routing policy.
 
 **Acceptance**
+
 - Provider outage does not corrupt a run.
 - Cloud fallback is blocked for local-only data class.
 - Credentials never enter prompts, client bundles or logs.
@@ -67,6 +73,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A3 — First bounded durable agent
 
 **Deliverables**
+
 - One read-only research or repository-inspection work type.
 - Durable run record linked to Jobs Engine identifiers.
 - Structured work contract and result envelope.
@@ -74,6 +81,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 - Cancellation, timeout, retry and resume behavior.
 
 **Acceptance**
+
 - Agent can complete a defined low-risk task and produce evidence.
 - Crash injection resumes or enters a known terminal state.
 - Duplicate outbox delivery creates no duplicate external effect.
@@ -82,6 +90,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A4 — Proof-Carrying Work and verifier
 
 **Deliverables**
+
 - Required acceptance-criteria records or a compatible extension to existing request models.
 - Artifact/evidence manifest.
 - Deterministic verification hooks.
@@ -89,6 +98,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 - Human sign-off for required risk classes.
 
 **Acceptance**
+
 - Worker cannot close/accept its own task by self-report.
 - A deliberately false completion claim fails verification.
 - Every accepted criterion has a valid evidence reference.
@@ -97,6 +107,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A5 — Obligation Continuity Kernel
 
 **Deliverables**
+
 - Persistent obligations attached to accepted outputs.
 - Dependency and impact mapping.
 - Reverification triggers.
@@ -104,6 +115,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 - Mission Control obligation view.
 
 **Acceptance**
+
 - A later change that invalidates an earlier deliverable triggers an obligation review.
 - Existing obligations can be superseded only with an explicit decision and evidence.
 - Active obligations are not silently deleted by a task closure or agent.
@@ -111,6 +123,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A6 — Multi-agent company and adaptive staffing
 
 **Deliverables**
+
 - CEO/planner, worker, reviewer and researcher role templates.
 - Delegation contract and cycle/duplicate detection.
 - Temporary taskforce creation with expiry and budget.
@@ -118,6 +131,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 - Escalation and operator queue.
 
 **Acceptance**
+
 - Parallel tasks do not write to the same protected workspace without conflict strategy.
 - No duplicate active task for the same scope/acceptance contract.
 - Parent task cannot close while required child tasks are unresolved.
@@ -126,6 +140,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A7 — Memory and reusable procedures
 
 **Deliverables**
+
 - Episodic run summaries.
 - Procedural skill/SOP version registry.
 - Memory candidate lifecycle, expiry and revocation.
@@ -133,6 +148,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 - Learning promotion report.
 
 **Acceptance**
+
 - Memory that is wrong, stale or harmful can be revoked and its use traced.
 - Promotion requires benchmark evidence and no safety regression.
 - Memory utility is measured by downstream task outcome, not recall alone.
@@ -140,6 +156,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A8 — MCP and A2A adapters
 
 **Deliverables**
+
 - MCP server with read-only tools first.
 - Tool list tied to domain-operation access metadata.
 - Scoped write capabilities and redaction.
@@ -147,6 +164,7 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 - Protocol conformance tests.
 
 **Acceptance**
+
 - Unauthenticated/unauthorized calls fail closed.
 - Tool schema cannot grant more access than current MoonWitness user/agent context.
 - Task state and evidence remain persisted in MoonWitness, not only remote protocol session.
@@ -154,12 +172,14 @@ IDs below are proposal labels only. They do not exist in the repository roadmap 
 ### A9 — Mission Control and evaluation lab
 
 **Deliverables**
+
 - Company HQ, Workforce, Mission Control, Live Operations, Evidence & Continuity, Governance and Research Lab.
 - Keyboard/screen-reader alternatives to graph views.
 - Correlated traces and cost accounting.
 - Reproducible benchmark report and failure atlas.
 
 **Acceptance**
+
 - Every UI status can be traced to persisted state or an explicitly labelled ephemeral signal.
 - Operator can locate owner, current status, last successful checkpoint, cost, permissions and evidence for any run.
 - UI passes accessibility, responsive and performance budgets.
@@ -172,21 +192,21 @@ Some UX and evaluation harness tasks can run in parallel after A0, but schema/ru
 
 ## 4. Mandatory test matrix
 
-| Area | Positive test | Adversarial / failure test |
-|---|---|---|
-| Addon | Fresh install and upgrade | Interrupted install, duplicate seed, stale model version |
-| Tenant | Same-company permitted access | Cross-company relations and record enumeration |
-| Identity | Agent gets role-limited capability | Attempt to use human/admin role or revoked token |
-| Provider | Local/cloud request succeeds | Timeout, malformed output, outage, quota exhaustion |
-| Runtime | Task produces artifact | Crash, stuck process, hostile file, resource limit breach |
-| Jobs | Lease/heartbeat/retry works | Stale worker commits after lease loss; duplicate delivery |
-| MCP | Tool schema and operation match | Prompt injection, forged arguments, wrong tenant, expired grant |
-| A2A | Valid task exchange | Spoofed Agent Card, auth required, duplicate task, lost status update |
-| Verification | Passing evidence accepts work | Fabricated evidence, partial test run, reviewer conflict |
-| Obligations | Change triggers relevant recheck | Stale or superseded obligation incorrectly blocks release |
-| Memory | Valid skill improves transfer | Poisoned/stale memory degrades behavior |
-| Governance | Budget and approval enforced | Budget race, approval replay, unauthorized escalation |
-| UI | Real status, costs and evidence render | Stale cache, permission leak, broken reconnect |
+| Area         | Positive test                          | Adversarial / failure test                                            |
+| ------------ | -------------------------------------- | --------------------------------------------------------------------- |
+| Addon        | Fresh install and upgrade              | Interrupted install, duplicate seed, stale model version              |
+| Tenant       | Same-company permitted access          | Cross-company relations and record enumeration                        |
+| Identity     | Agent gets role-limited capability     | Attempt to use human/admin role or revoked token                      |
+| Provider     | Local/cloud request succeeds           | Timeout, malformed output, outage, quota exhaustion                   |
+| Runtime      | Task produces artifact                 | Crash, stuck process, hostile file, resource limit breach             |
+| Jobs         | Lease/heartbeat/retry works            | Stale worker commits after lease loss; duplicate delivery             |
+| MCP          | Tool schema and operation match        | Prompt injection, forged arguments, wrong tenant, expired grant       |
+| A2A          | Valid task exchange                    | Spoofed Agent Card, auth required, duplicate task, lost status update |
+| Verification | Passing evidence accepts work          | Fabricated evidence, partial test run, reviewer conflict              |
+| Obligations  | Change triggers relevant recheck       | Stale or superseded obligation incorrectly blocks release             |
+| Memory       | Valid skill improves transfer          | Poisoned/stale memory degrades behavior                               |
+| Governance   | Budget and approval enforced           | Budget race, approval replay, unauthorized escalation                 |
+| UI           | Real status, costs and evidence render | Stale cache, permission leak, broken reconnect                        |
 
 ## 5. Required research metrics
 

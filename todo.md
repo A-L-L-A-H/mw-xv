@@ -181,11 +181,11 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-CORE-001.3** Tambahkan uji integrasi boot dengan `SKIP_BOOT_MIGRATIONS=true` yang membuktikan `/api/base.partner/views` mengembalikan view eksplisit (bukan fallback)
   - [x] **MW-CORE-001.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test` lulus tanpa error
 
-- [ ] **MW-CORE-002** Satukan modul bootstrap runtime (`bootstrapMoonWitnessRuntime`) yang dipakai identik oleh `apps/api/src/app.ts`, `db-migrate.ts`, `jobs-worker.ts`, `jobs-scheduler.ts`, dan `outbox-worker.ts`
-  - [ ] **MW-CORE-002.1** Buat modul bootstrap kanonis di `apps/api/src/addons/registry.ts` yang mengekspor daftar manifest addon resmi tunggal
-  - [ ] **MW-CORE-002.2** Hapus duplikasi daftar addon dan pemanggilan langsung `installAddons(...)` di `jobs-worker.ts`, `jobs-scheduler.ts`, dan `outbox-worker.ts`
-  - [ ] **MW-CORE-002.3** Pastikan seluruh proses worker menghormati `SKIP_BOOT_MIGRATIONS` setelah `db:migrate` berjalan
-  - [ ] **MW-CORE-002.4** Verifikasi: `pnpm build && pnpm api:addon:check && pnpm --filter @moonwitness/api test` lulus
+- [x] **MW-CORE-002** Satukan modul bootstrap runtime (`bootstrapMoonWitnessRuntime`) yang dipakai identik oleh `apps/api/src/app.ts`, `db-migrate.ts`, `jobs-worker.ts`, `jobs-scheduler.ts`, dan `outbox-worker.ts`
+  - [x] **MW-CORE-002.1** Buat modul bootstrap kanonis di `apps/api/src/addons/registry.ts` yang mengekspor daftar manifest addon resmi tunggal
+  - [x] **MW-CORE-002.2** Hapus duplikasi daftar addon dan pemanggilan langsung `installAddons(...)` di `jobs-worker.ts`, `jobs-scheduler.ts`, dan `outbox-worker.ts`
+  - [x] **MW-CORE-002.3** Pastikan seluruh proses worker menghormati `SKIP_BOOT_MIGRATIONS` setelah `db:migrate` berjalan
+  - [x] **MW-CORE-002.4** Verifikasi: `pnpm build && pnpm api:addon:check && pnpm --filter @moonwitness/api test` lulus
 
 - [ ] **MW-CORE-003** Sediakan `ServiceRegistry` bertipe pada Core Runtime & `Environment` untuk akses layanan lintas addon (`storage`, `logger`, `jobs`, `notification`, `scanner`, `localAi`)
   - [ ] **MW-CORE-003.1** Definisikan `ServiceToken<T>` dan `ServiceContainer` di `packages/orm/src/`

@@ -24,13 +24,13 @@
 
 ## Status legend
 
-| Marker | Meaning |
-|---|---|
-| `[x]` | Existing foundation recorded in the previous repository review; revalidate at exact SHA in Phase 0 |
-| `[ ]` | Not yet completed by this workstream |
-| **VERIFY** | Inspect current code/docs before deciding whether to extend, reuse, or skip |
-| **BLOCKED** | Cannot proceed until named dependency or decision is resolved |
-| **NO-GO** | Explicitly prohibited by the architecture unless a new ADR changes the decision |
+| Marker      | Meaning                                                                                            |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| `[x]`       | Existing foundation recorded in the previous repository review; revalidate at exact SHA in Phase 0 |
+| `[ ]`       | Not yet completed by this workstream                                                               |
+| **VERIFY**  | Inspect current code/docs before deciding whether to extend, reuse, or skip                        |
+| **BLOCKED** | Cannot proceed until named dependency or decision is resolved                                      |
+| **NO-GO**   | Explicitly prohibited by the architecture unless a new ADR changes the decision                    |
 
 ---
 
@@ -753,25 +753,25 @@ Do **not** start by implementing CEO/CTO/department hierarchy. The first slice s
 
 Update this section as work proceeds. Keep the latest commit SHA and test evidence in the relevant source card.
 
-| Phase | Status | Exit evidence | Notes |
-|---|---|---|---|
-| AI0 — Exact-SHA audit | Not started | Source inventory, baseline report, reuse matrix | Must precede implementation |
-| AI1 — ADR and registration | Not started | Approved ADR and canonical task IDs | No schema before approval |
-| AI2 — ORM domain foundation | Not started | Addon install/upgrade/security tests | Addon-First only |
-| AI3 — Provider abstraction | Not started | Local + cloud contract tests | Secrets external |
-| AI4 — First durable agent | Not started | Bounded read-only task and recovery proof | No swarm |
-| AI5 — Tools and MCP | Not started | Read-only conformance and authorization tests | Write tools later |
-| AI6 — Proof-Carrying Work | Not started | Independent verification and evidence | No self-approval |
-| AI7 — AI Company | Not started | Delegation/team tests and net-benefit evaluation | Adaptive, bounded staffing |
-| AI8 — Memory/learning | Not started | Ablation, utility and harm tests | No live self-modification |
-| AI9 — Mission Control | Not started | UI state backed by persisted/run data | UI after contracts |
-| AI10 — Security/operations | Not started | Adversarial, restore and runbook evidence | Required for production |
-| AI11 — Generalization research | Not started | Reproducible cross-domain results | No AGI overclaim |
+| Phase                          | Status      | Exit evidence                                    | Notes                       |
+| ------------------------------ | ----------- | ------------------------------------------------ | --------------------------- |
+| AI0 — Exact-SHA audit          | Not started | Source inventory, baseline report, reuse matrix  | Must precede implementation |
+| AI1 — ADR and registration     | Not started | Approved ADR and canonical task IDs              | No schema before approval   |
+| AI2 — ORM domain foundation    | Not started | Addon install/upgrade/security tests             | Addon-First only            |
+| AI3 — Provider abstraction     | Not started | Local + cloud contract tests                     | Secrets external            |
+| AI4 — First durable agent      | Not started | Bounded read-only task and recovery proof        | No swarm                    |
+| AI5 — Tools and MCP            | Not started | Read-only conformance and authorization tests    | Write tools later           |
+| AI6 — Proof-Carrying Work      | Not started | Independent verification and evidence            | No self-approval            |
+| AI7 — AI Company               | Not started | Delegation/team tests and net-benefit evaluation | Adaptive, bounded staffing  |
+| AI8 — Memory/learning          | Not started | Ablation, utility and harm tests                 | No live self-modification   |
+| AI9 — Mission Control          | Not started | UI state backed by persisted/run data            | UI after contracts          |
+| AI10 — Security/operations     | Not started | Adversarial, restore and runbook evidence        | Required for production     |
+| AI11 — Generalization research | Not started | Reproducible cross-domain results                | No AGI overclaim            |
 
 ## Change log
 
-| Date | Change | Commit / evidence |
-|---|---|---|
+| Date       | Change                                                                                                                                                                               | Commit / evidence                      |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
 | 2026-11-22 | Initial granular AI Corporation checklist generated from the 2026-11-21 blueprint and documented repository baseline. Exact current `dev` SHA still requires Phase AI0 verification. | Documentation proposal; not yet merged |
 
 ---

@@ -2,22 +2,12 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createDatabase } from '../database/knex.js';
-import { installAddons, registerAddons } from '@moonwitness/orm';
-import { manifest as baseManifest } from '@moonwitness/orm-base';
-import { jobsManifest, runOutboxLoop } from '@moonwitness/jobs';
-import {
-  manifest as notificationAddon,
-  registerNotificationOutboxConsumer,
-} from '@moonwitness/orm-notification';
-import { manifest as workflowAddon } from '@moonwitness/orm-workflow';
+import { bootstrapApiAddons } from '../addons/registry.js';
+import { runOutboxLoop } from '@moonwitness/jobs';
+import { registerNotificationOutboxConsumer } from '@moonwitness/orm-notification';
 import { readWorkerHealthPort, startWorkerHealthServer } from './worker-health.js';
-import {
-  manifest as integrationAddon,
-  registerWebhookOutboxConsumer,
-} from '@moonwitness/orm-integration';
-import { manifest as requestAddon } from '@moonwitness/orm-request';
+import { registerWebhookOutboxConsumer } from '@moonwitness/orm-integration';
 import { createProcessShutdownController } from '../lifecycle/process-shutdown.js';
-import { whatsappManifest } from '../whatsapp/manifest.js';
 import { registerWhatsAppOutboxConsumer } from '../whatsapp/outbox-consumer.js';
 import { createAttachmentStorage } from '../storage/attachment-storage.js';
 import { closeS3AttachmentStorage, S3AttachmentStorage } from '@moonwitness/orm-storage';
@@ -35,21 +25,9 @@ const shutdown = createProcessShutdownController(() => {
 });
 
 try {
-  const skipBootMigrations = process.env.SKIP_BOOT_MIGRATIONS === 'true';
-  const addons = [
-    baseManifest,
-    jobsManifest,
-    notificationAddon,
-    integrationAddon,
-    workflowAddon,
-    requestAddon,
-    whatsappManifest,
-  ];
-  if (skipBootMigrations) {
-    await registerAddons(db, addons);
-  } else {
-    await installAddons(db, addons);
-  }
+  await bootstrapApiAddons(db, process.env.SUPERADMIN_PASSWORD, undefined, {
+    skipBootMigrations: process.env.SKIP_BOOT_MIGRATIONS === 'true',
+  });
   unregisterNotificationConsumer = registerNotificationOutboxConsumer();
   unregisterWebhookConsumer = registerWebhookOutboxConsumer(async (secretRef, companyId) => {
     if (!secretRef.startsWith(`MW_WEBHOOK_SECRET_C${companyId}_`)) return null;

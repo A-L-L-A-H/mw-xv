@@ -1,4 +1,5 @@
 # MOONWITNESS XV — AI CORPORATION
+
 ## Grand Plan & Design Blueprint
 
 **Working title:** Evidence-Grounded Adaptive Agent Organization (EGAO)  
@@ -74,19 +75,19 @@ This proposal is aligned with the public repository README and ROADMAP available
 
 ### 2.1 Existing capabilities to reuse
 
-| Existing capability | Role in AI Corporation | Design instruction |
-|---|---|---|
-| `@moonwitness/orm` / addon installer | Canonical domain model, schema, validation, relation and metadata generation | Extend; do not bypass |
-| `orm-organization` | Companies and organization structures | Inspect and reuse before adding org models |
-| `orm-request` | Request/work item lifecycle | Determine whether it can be the canonical work item before proposing a new task model |
-| `orm-workflow` | Approval and business workflow | Reuse for human gates and state transitions where suitable |
-| `orm-notification` | Human/agent notifications | Reuse; add channels only through declared integration boundaries |
-| `orm-integration` | External connectors and integration records | Reuse for provider/tool connection metadata if the model contract fits |
-| `orm-knowledge`, `knowledge`, `corpus`, `research` | Evidence, source artifacts, assertions, corpus and research workflows | Keep research truth distinct from agent-generated procedural memory |
-| `orm-storage` | Artifact and attachment metadata | Store evidence artifact references, not large transient traces in ORM rows |
-| `@moonwitness/jobs` | Queue, scheduler, worker, retry, lease, heartbeat, fencing, dead-letter, cancellation, idempotency | Use as the durable dispatch/recovery substrate; extend only when measured gaps exist |
-| Auth, audit, outbox, multi-company rules | Identity, isolation and record accountability | Apply to agents as well as human users |
-| Board, UI, assets and docs | User experience and visual system | Build a native Mission Control experience from metadata and existing design tokens |
+| Existing capability                                | Role in AI Corporation                                                                             | Design instruction                                                                    |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `@moonwitness/orm` / addon installer               | Canonical domain model, schema, validation, relation and metadata generation                       | Extend; do not bypass                                                                 |
+| `orm-organization`                                 | Companies and organization structures                                                              | Inspect and reuse before adding org models                                            |
+| `orm-request`                                      | Request/work item lifecycle                                                                        | Determine whether it can be the canonical work item before proposing a new task model |
+| `orm-workflow`                                     | Approval and business workflow                                                                     | Reuse for human gates and state transitions where suitable                            |
+| `orm-notification`                                 | Human/agent notifications                                                                          | Reuse; add channels only through declared integration boundaries                      |
+| `orm-integration`                                  | External connectors and integration records                                                        | Reuse for provider/tool connection metadata if the model contract fits                |
+| `orm-knowledge`, `knowledge`, `corpus`, `research` | Evidence, source artifacts, assertions, corpus and research workflows                              | Keep research truth distinct from agent-generated procedural memory                   |
+| `orm-storage`                                      | Artifact and attachment metadata                                                                   | Store evidence artifact references, not large transient traces in ORM rows            |
+| `@moonwitness/jobs`                                | Queue, scheduler, worker, retry, lease, heartbeat, fencing, dead-letter, cancellation, idempotency | Use as the durable dispatch/recovery substrate; extend only when measured gaps exist  |
+| Auth, audit, outbox, multi-company rules           | Identity, isolation and record accountability                                                      | Apply to agents as well as human users                                                |
+| Board, UI, assets and docs                         | User experience and visual system                                                                  | Build a native Mission Control experience from metadata and existing design tokens    |
 
 The README specifically documents transactional addon installation, generic REST/JSON-RPC, audit/outbox, multi-company boundaries, and a database-backed Jobs Engine with lease, heartbeat, fencing, retries, dead-letter, cooperative cancellation, and idempotency. [S1]
 
@@ -324,17 +325,17 @@ The domain plane owns the truth. The execution plane receives short-lived, scope
 
 The following is a provisional package map, subject to an exact source audit:
 
-| Proposed boundary | Responsibility | Reuse rule |
-|---|---|---|
-| Existing `orm-organization` | Company, teams, departments, memberships and organizational relationships | Extend only if required by real agent membership semantics |
-| Existing `orm-request` | Canonical request/work item, acceptance criteria and assignment if supported | Do not introduce a second `task` model without proving the current model cannot serve |
-| Existing `orm-workflow` | Approval states, transitions, escalation and sign-off | Reuse for human gates |
-| Existing `orm-integration` | External provider/tool connection metadata | Store secret references, never raw credentials |
-| Existing `orm-knowledge` / `knowledge` / `corpus` / `research` | Trusted facts, source artifacts, evidence and provenance | Extend contracts; do not duplicate evidence graph |
-| Proposed `orm-ai` addon | Agent definitions, model profiles, capabilities, execution policy references, logical run/delegation records, memory candidates and obligation links where no existing model fits | First inspect existing addon boundaries; start as one cohesive addon, split only when ownership requires it |
-| Proposed `ai-runtime` package | Provider adapters, agent harness adapters, planning/delegation services, execution controller and typed result envelopes | No schema ownership; use ORM services and Jobs contracts |
-| Proposed `ai-mcp` package/app entry | MCP server that exposes approved MoonWitness operations as tools/resources/prompts | Tool list derived from allowed domain operations; no new data authority |
-| Proposed `ai-evaluation` workspace | Deterministic tests, benchmark runners, replay and scoring | Keep benchmark artifacts outside production business tables unless summaries are needed |
+| Proposed boundary                                              | Responsibility                                                                                                                                                                    | Reuse rule                                                                                                  |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Existing `orm-organization`                                    | Company, teams, departments, memberships and organizational relationships                                                                                                         | Extend only if required by real agent membership semantics                                                  |
+| Existing `orm-request`                                         | Canonical request/work item, acceptance criteria and assignment if supported                                                                                                      | Do not introduce a second `task` model without proving the current model cannot serve                       |
+| Existing `orm-workflow`                                        | Approval states, transitions, escalation and sign-off                                                                                                                             | Reuse for human gates                                                                                       |
+| Existing `orm-integration`                                     | External provider/tool connection metadata                                                                                                                                        | Store secret references, never raw credentials                                                              |
+| Existing `orm-knowledge` / `knowledge` / `corpus` / `research` | Trusted facts, source artifacts, evidence and provenance                                                                                                                          | Extend contracts; do not duplicate evidence graph                                                           |
+| Proposed `orm-ai` addon                                        | Agent definitions, model profiles, capabilities, execution policy references, logical run/delegation records, memory candidates and obligation links where no existing model fits | First inspect existing addon boundaries; start as one cohesive addon, split only when ownership requires it |
+| Proposed `ai-runtime` package                                  | Provider adapters, agent harness adapters, planning/delegation services, execution controller and typed result envelopes                                                          | No schema ownership; use ORM services and Jobs contracts                                                    |
+| Proposed `ai-mcp` package/app entry                            | MCP server that exposes approved MoonWitness operations as tools/resources/prompts                                                                                                | Tool list derived from allowed domain operations; no new data authority                                     |
+| Proposed `ai-evaluation` workspace                             | Deterministic tests, benchmark runners, replay and scoring                                                                                                                        | Keep benchmark artifacts outside production business tables unless summaries are needed                     |
 
 Do not create all of these packages immediately. First deliver a dependency and ownership matrix. Avoid package fragmentation.
 
@@ -379,15 +380,15 @@ Use two distinct graphs:
 
 Start with a small default workforce:
 
-| Role | Responsibility | Default authority |
-|---|---|---|
-| CEO / Planner | Interpret company goals, propose plans and allocate work | May delegate within company and budget limits; cannot change constitutional policy |
-| Operations Manager | Schedule work, monitor queues and escalate blockers | Manage low-risk internal workflow |
-| Research Specialist | Gather and synthesize source-backed evidence | Read approved sources; propose assertions, never self-approve them |
-| Architect | Design technical approach and interface contracts | Read repository; propose ADRs and plans |
-| Builder | Implement bounded code or content changes | Write only in isolated workspace/assigned repo scope |
-| QA / Reviewer | Independently verify artifacts and acceptance evidence | Read artifacts and tests; no silent approval of own work |
-| Security Reviewer | Review permissions, dependencies and high-risk changes | Read-only security inspection; may block/escalate |
+| Role                | Responsibility                                           | Default authority                                                                  |
+| ------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| CEO / Planner       | Interpret company goals, propose plans and allocate work | May delegate within company and budget limits; cannot change constitutional policy |
+| Operations Manager  | Schedule work, monitor queues and escalate blockers      | Manage low-risk internal workflow                                                  |
+| Research Specialist | Gather and synthesize source-backed evidence             | Read approved sources; propose assertions, never self-approve them                 |
+| Architect           | Design technical approach and interface contracts        | Read repository; propose ADRs and plans                                            |
+| Builder             | Implement bounded code or content changes                | Write only in isolated workspace/assigned repo scope                               |
+| QA / Reviewer       | Independently verify artifacts and acceptance evidence   | Read artifacts and tests; no silent approval of own work                           |
+| Security Reviewer   | Review permissions, dependencies and high-risk changes   | Read-only security inspection; may block/escalate                                  |
 
 An adaptive organization may spawn temporary specialists (e.g. database reviewer, accessibility auditor, localization expert) for a defined task. Each temporary role needs an owner, capabilities, expiry, budget and decommission condition.
 
@@ -412,13 +413,13 @@ A delegation graph must detect cycles, duplicate active assignments, conflicting
 
 ### 7.1 Separate five memory types
 
-| Memory | What it stores | Promotion rule |
-|---|---|---|
-| Working state | Current task context, plan, scratch results | Short retention; not trusted as durable fact |
-| Episodic memory | What happened in a run, including failures and recovery | Append-only summary with references to evidence |
-| Semantic knowledge | Source-backed claims and domain facts | Existing knowledge/provenance review pipeline |
-| Procedural memory | Reusable skills, SOPs, tool procedures and checklists | Versioned, tested, scoped and reviewed |
-| Normative memory | Policies, boundaries, definitions and approved operating rules | Only authorized human/governance changes |
+| Memory             | What it stores                                                 | Promotion rule                                  |
+| ------------------ | -------------------------------------------------------------- | ----------------------------------------------- |
+| Working state      | Current task context, plan, scratch results                    | Short retention; not trusted as durable fact    |
+| Episodic memory    | What happened in a run, including failures and recovery        | Append-only summary with references to evidence |
+| Semantic knowledge | Source-backed claims and domain facts                          | Existing knowledge/provenance review pipeline   |
+| Procedural memory  | Reusable skills, SOPs, tool procedures and checklists          | Versioned, tested, scoped and reviewed          |
+| Normative memory   | Policies, boundaries, definitions and approved operating rules | Only authorized human/governance changes        |
 
 Do not let an agent turn an episode into semantic truth without provenance and review. Do not let procedural memory override normative policy.
 
@@ -499,13 +500,13 @@ Each agent receives only the minimum capabilities, resources, data and duration 
 
 ### 9.2 Risk tiers
 
-| Tier | Examples | Default policy |
-|---|---|---|
-| R0 — Observe | Read allowed metadata, inspect approved documents | Autonomous |
-| R1 — Reversible internal | Draft task, propose plan, create private note, run read-only tests | Autonomous within quota |
-| R2 — Scoped write | Modify isolated branch/workspace, create draft PR, update assigned records | Autonomous with constraints and audit |
-| R3 — External or consequential | Send messages, publish content, alter production settings, change permissions, spend beyond small cap | Explicit human approval |
-| R4 — Irreversible / critical | Delete production data, disclose secrets, financial transfer, change root security or company ownership | Human-only; never autonomous |
+| Tier                           | Examples                                                                                                | Default policy                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| R0 — Observe                   | Read allowed metadata, inspect approved documents                                                       | Autonomous                            |
+| R1 — Reversible internal       | Draft task, propose plan, create private note, run read-only tests                                      | Autonomous within quota               |
+| R2 — Scoped write              | Modify isolated branch/workspace, create draft PR, update assigned records                              | Autonomous with constraints and audit |
+| R3 — External or consequential | Send messages, publish content, alter production settings, change permissions, spend beyond small cap   | Explicit human approval               |
+| R4 — Irreversible / critical   | Delete production data, disclose secrets, financial transfer, change root security or company ownership | Human-only; never autonomous          |
 
 Risk classification is enforced by deterministic service logic, not by the model's self-assessment.
 
@@ -621,14 +622,14 @@ The UI should feel like a premium operations console for a living organization, 
 
 ### 12.3 The “AGI staircase” as measurable engineering maturity
 
-| Level | Capability | Evidence required |
-|---|---|---|
-| G0 — Governed assistant | Read, summarize, retrieve and propose | Permission tests, provenance correctness, calibrated uncertainty |
-| G1 — Bounded actor | Complete one scoped task using tools | Acceptance tests, action audit, safe sandbox |
-| G2 — Persistent worker | Resume multi-session work and preserve obligations | Crash recovery, task continuity, retained functionality |
-| G3 — Coordinated team | Delegate, review and combine agent outputs | Reduced duplicate work, verifiable handoffs, cost controls |
-| G4 — Adaptive organization | Compose temporary teams and routing policies | Better outcomes than fixed baseline without policy violations |
-| G5 — Experience-driven improvement | Reuse skills/memory and improve future outcomes | Controlled ablation, transfer, retention, rollback and no safety regression |
+| Level                                        | Capability                                                       | Evidence required                                                                   |
+| -------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| G0 — Governed assistant                      | Read, summarize, retrieve and propose                            | Permission tests, provenance correctness, calibrated uncertainty                    |
+| G1 — Bounded actor                           | Complete one scoped task using tools                             | Acceptance tests, action audit, safe sandbox                                        |
+| G2 — Persistent worker                       | Resume multi-session work and preserve obligations               | Crash recovery, task continuity, retained functionality                             |
+| G3 — Coordinated team                        | Delegate, review and combine agent outputs                       | Reduced duplicate work, verifiable handoffs, cost controls                          |
+| G4 — Adaptive organization                   | Compose temporary teams and routing policies                     | Better outcomes than fixed baseline without policy violations                       |
+| G5 — Experience-driven improvement           | Reuse skills/memory and improve future outcomes                  | Controlled ablation, transfer, retention, rollback and no safety regression         |
 | G6 — Cross-domain generalist research system | Handle unfamiliar task families with limited human decomposition | Broad external evaluation, robust uncertainty, transfer and independent replication |
 
 These levels are product/research milestones, not accepted scientific definitions of AGI.
@@ -641,21 +642,21 @@ A system that cannot prove its quality should not be trusted with more autonomy.
 
 ### 13.1 Core metrics
 
-| Metric | Definition | Why it matters |
-|---|---|---|
-| Verified task success | Required acceptance criteria passed / required criteria | Avoids self-reported completion |
-| Retained functionality | Previously accepted active obligations that still pass / eligible previously accepted obligations | Detects regressions in continuing projects |
-| Requirement conformance | Current active requirements satisfied / total active requirements | Detects drift from current goals |
-| Evidence completeness | Required criteria with valid evidence / required criteria | Measures auditability |
-| Evidence validity | Evidence independently confirmed / submitted evidence | Detects fabricated or irrelevant proof |
-| Duplicate work rate | Duplicate active work items / active work items | Measures coordination quality |
-| Contradiction rate | Outputs that conflict on shared facts / outputs reviewed | Measures alignment |
-| Recovery success | Recoverable interrupted runs resumed without corrupting state / recoverable interruptions | Measures resilience |
-| Unsafe-action rate | Unauthorized or policy-violating effects | Target zero in release gates |
-| Memory utility | Difference in downstream outcome with and without selected memory | Tests actual learning value |
-| Memory harm rate | Later failures attributable to stale/wrong memory | Prevents memory poisoning |
-| Cost per accepted result | Model + runtime + tool cost / accepted deliverable | Makes autonomy economically governable |
-| Human interruption burden | Human interventions per accepted project milestone | Measures whether autonomy reduces work rather than creating review toil |
+| Metric                    | Definition                                                                                        | Why it matters                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Verified task success     | Required acceptance criteria passed / required criteria                                           | Avoids self-reported completion                                         |
+| Retained functionality    | Previously accepted active obligations that still pass / eligible previously accepted obligations | Detects regressions in continuing projects                              |
+| Requirement conformance   | Current active requirements satisfied / total active requirements                                 | Detects drift from current goals                                        |
+| Evidence completeness     | Required criteria with valid evidence / required criteria                                         | Measures auditability                                                   |
+| Evidence validity         | Evidence independently confirmed / submitted evidence                                             | Detects fabricated or irrelevant proof                                  |
+| Duplicate work rate       | Duplicate active work items / active work items                                                   | Measures coordination quality                                           |
+| Contradiction rate        | Outputs that conflict on shared facts / outputs reviewed                                          | Measures alignment                                                      |
+| Recovery success          | Recoverable interrupted runs resumed without corrupting state / recoverable interruptions         | Measures resilience                                                     |
+| Unsafe-action rate        | Unauthorized or policy-violating effects                                                          | Target zero in release gates                                            |
+| Memory utility            | Difference in downstream outcome with and without selected memory                                 | Tests actual learning value                                             |
+| Memory harm rate          | Later failures attributable to stale/wrong memory                                                 | Prevents memory poisoning                                               |
+| Cost per accepted result  | Model + runtime + tool cost / accepted deliverable                                                | Makes autonomy economically governable                                  |
+| Human interruption burden | Human interventions per accepted project milestone                                                | Measures whether autonomy reduces work rather than creating review toil |
 
 ### 13.2 Test corpus
 
@@ -692,6 +693,7 @@ The project should move in evidence-gated phases, not a large “build all agent
 ### Phase 0 — Exact-SHA audit and architecture freeze
 
 Deliver:
+
 - current `dev` source inventory;
 - reuse matrix for existing addons and jobs;
 - local-ai/K-track boundary review;
@@ -704,6 +706,7 @@ Exit: maintainer-approved ADR and no duplicate domain ownership.
 ### Phase 1 — Agent domain foundation (Addon-First)
 
 Deliver:
+
 - minimal agent, model profile, capability and policy metadata;
 - agent identity and company-scoped authorization mapping;
 - safe provider secret-reference contract;
@@ -715,6 +718,7 @@ Exit: an agent may be registered and inspected but cannot perform privileged act
 ### Phase 2 — One durable, bounded agent
 
 Deliver:
+
 - provider adapters for one local and one cloud route;
 - one deterministic safe task class;
 - Jobs Engine integration;
@@ -727,6 +731,7 @@ Exit: after forced crash/provider outage, the task resumes or reaches an auditab
 ### Phase 3 — Proof-Carrying Work and Obligation Ledger
 
 Deliver:
+
 - typed acceptance criteria;
 - evidence envelope and verifier contract;
 - persistent obligation records or an extension to existing domain models;
@@ -738,6 +743,7 @@ Exit: a later change detects and re-verifies at least one previously accepted ob
 ### Phase 4 — Multi-agent team and adaptive organization
 
 Deliver:
+
 - CEO/planner, builder, reviewer and researcher roles;
 - bounded delegation and dynamic team assembly;
 - dependency and cycle detection;
@@ -750,6 +756,7 @@ Exit: a multi-step project completes with traceable task ownership, independent 
 ### Phase 5 — Memory and procedural learning
 
 Deliver:
+
 - episodic and procedural memory contracts;
 - memory candidate review/versioning/expiry;
 - controlled A/B evaluation and replay;
@@ -761,6 +768,7 @@ Exit: a memory/skill release improves an independently evaluated future task set
 ### Phase 6 — MCP and A2A interoperability
 
 Deliver:
+
 - authenticated MCP server with read-only first and bounded write scopes;
 - tool catalog generated from authorized domain operations;
 - optional A2A adapter for remote peer-agent delegation;
@@ -771,6 +779,7 @@ Exit: external agents can safely inspect/delegate to MoonWitness within tenant a
 ### Phase 7 — Mission Control and research lab
 
 Deliver:
+
 - premium Company HQ, Workforce, Mission Control, Live Operations, Evidence & Continuity, Governance, and Research Lab views;
 - accessible graph/list alternatives;
 - real-time updates and observability correlation;
@@ -781,6 +790,7 @@ Exit: the operator can understand who is doing what, why, with which permissions
 ### Phase 8 — Generalization research
 
 Deliver:
+
 - cross-domain benchmarks;
 - unfamiliar-task evaluation;
 - memory and team adaptation studies;
@@ -808,20 +818,20 @@ Exit: publish measurable results, including negative results. No AGI claim by mi
 
 ## 16. Main risks and countermeasures
 
-| Risk | Failure mode | Countermeasure |
-|---|---|---|
-| Architecture duplication | New AI subsystem duplicates request/workflow/knowledge/jobs | Exact reuse matrix and ADR before schema work |
-| Multi-agent overhead | More tokens, slower results, more contradictions | Start single-agent; recruit only when task decomposes; measure net benefit |
-| Supervisor bottleneck | CEO makes one bad decomposition that poisons the team | Independent plan critique, worker feedback, replanning and human escalation |
-| Memory poisoning | A wrong result becomes permanent policy | Candidate-only memory, provenance, replay and promotion gate |
-| Stale obligations | Old requirements persist after scope changes | Active/superseded status, explicit owner and change impact review |
-| Prompt injection | Untrusted content changes agent goals or tool use | Treat content as data; policy gate outside model; least agency |
-| Tool privilege creep | Agent obtains excessive durable credentials | Ephemeral scoped capability tokens and revocation |
-| Cost runaway | Heartbeats, retries and parallel workers consume budget | Global/agent/task budgets, concurrency caps, hard stop and alerting |
-| False completion | Agent claims success without working evidence | Independent verifier and evidence completeness gate |
-| Model lock-in | Provider changes break workflow or model-specific prompts | Provider abstraction, contract tests and model capability registry |
-| UI theater | Beautiful dashboard hides poor reliability | UI state must be backed by real runs, evidence and tests |
-| AGI overclaim | Narrow benchmark gains presented as general intelligence | Explicit capability levels, broad evaluation and transparent limitations |
+| Risk                     | Failure mode                                                | Countermeasure                                                              |
+| ------------------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Architecture duplication | New AI subsystem duplicates request/workflow/knowledge/jobs | Exact reuse matrix and ADR before schema work                               |
+| Multi-agent overhead     | More tokens, slower results, more contradictions            | Start single-agent; recruit only when task decomposes; measure net benefit  |
+| Supervisor bottleneck    | CEO makes one bad decomposition that poisons the team       | Independent plan critique, worker feedback, replanning and human escalation |
+| Memory poisoning         | A wrong result becomes permanent policy                     | Candidate-only memory, provenance, replay and promotion gate                |
+| Stale obligations        | Old requirements persist after scope changes                | Active/superseded status, explicit owner and change impact review           |
+| Prompt injection         | Untrusted content changes agent goals or tool use           | Treat content as data; policy gate outside model; least agency              |
+| Tool privilege creep     | Agent obtains excessive durable credentials                 | Ephemeral scoped capability tokens and revocation                           |
+| Cost runaway             | Heartbeats, retries and parallel workers consume budget     | Global/agent/task budgets, concurrency caps, hard stop and alerting         |
+| False completion         | Agent claims success without working evidence               | Independent verifier and evidence completeness gate                         |
+| Model lock-in            | Provider changes break workflow or model-specific prompts   | Provider abstraction, contract tests and model capability registry          |
+| UI theater               | Beautiful dashboard hides poor reliability                  | UI state must be backed by real runs, evidence and tests                    |
+| AGI overclaim            | Narrow benchmark gains presented as general intelligence    | Explicit capability levels, broad evaluation and transparent limitations    |
 
 ---
 

@@ -370,10 +370,7 @@ async function installData(db: Knex.Transaction, data: readonly SeedRecord[]) {
 }
 
 /** Register addon metadata in-memory (models, views, menus, security) without DDL/seed. */
-export async function registerAddons(
-  db: Knex,
-  addons: readonly Addon[]
-): Promise<void> {
+export async function registerAddons(db: Knex, addons: readonly Addon[]): Promise<void> {
   const ordered = sort(
     addons,
     (addon) => addon.name,
