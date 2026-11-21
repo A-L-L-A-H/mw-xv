@@ -8,6 +8,7 @@ import type { ModelContext } from './types.js';
 export class Environment {
   readonly context: ModelContext;
   readonly trx?: Transaction;
+  private readonly boundModels = new Map<string, typeof BaseModel>();
 
   constructor(context: ModelContext = {}, trx?: Transaction) {
     this.context = {
@@ -31,7 +32,13 @@ export class Environment {
    */
   get<T extends typeof BaseModel = typeof BaseModel>(modelName: string): T {
     const RawModelClass = Registry.get<T>(modelName);
-    return this.bindModel(RawModelClass);
+    const cached = this.boundModels.get(modelName);
+    if (cached && Object.getPrototypeOf(cached) === RawModelClass) {
+      return cached as T;
+    }
+    const bound = this.bindModel(RawModelClass);
+    this.boundModels.set(modelName, bound);
+    return bound;
   }
 
   /**

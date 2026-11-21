@@ -34,9 +34,10 @@ jobs:
           pnpm automation:check:action-pins
           pnpm automation:check:action-tags
           pnpm automation:check:roadmap
-      - name: Verify shared UI, assets, and documentation links
+      - name: Verify shared UI, API addon boundary, assets, and documentation links
         run: |
           pnpm board:ui:check
+          pnpm api:addon:check
           pnpm test:assets
           pnpm assets:check:bounds
           pnpm test:ui

@@ -2,6 +2,12 @@ import type { BaseModel } from './base.model.js';
 
 export class Registry {
   private static models: Map<string, typeof BaseModel> = new Map();
+  private static generation = 0;
+
+  /** Monotonic version counter incremented on every model registration or clear. */
+  static getGeneration(): number {
+    return this.generation;
+  }
 
   /**
    * Register a model class into the registry.
@@ -14,6 +20,7 @@ export class Registry {
       );
     }
     this.models.set(name, modelClass);
+    this.generation += 1;
     return modelClass;
   }
 
@@ -54,6 +61,7 @@ export class Registry {
    */
   static clear(): void {
     this.models.clear();
+    this.generation += 1;
   }
 }
 

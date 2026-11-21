@@ -307,10 +307,15 @@ export class BaseModel extends Model {
     const qb = this.buildSearchQuery(domain, options);
 
     if (options.fields && options.fields.length > 0) {
+      const properties = this.jsonSchema?.properties;
+      const hasSchemaProperties =
+        typeof properties === 'object' && properties !== null && Object.keys(properties).length > 0;
       if (
-        this.hiddenFields.length &&
         options.fields.some(
-          (field) => !/^[a-z_][a-z0-9_]*$/i.test(field) || this.hiddenFields.includes(field)
+          (field) =>
+            !/^[a-z_][a-z0-9_]*$/i.test(field) ||
+            this.hiddenFields.includes(field) ||
+            (hasSchemaProperties && !Object.hasOwn(properties, field))
         )
       ) {
         throw Object.assign(new Error('Invalid or private field selection'), { statusCode: 400 });

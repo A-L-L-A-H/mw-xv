@@ -106,7 +106,7 @@ function requireId(value: string, reply: FastifyReply): number | null {
 function modelNotFound(name: string) {
   return {
     success: false,
-    error: `Model '${name}' not found. Available models: ${Registry.getNames().join(', ')}`,
+    error: `Model '${name}' not found`,
   };
 }
 
@@ -134,33 +134,83 @@ function hasPolymorphicResourceFields(fields: FieldMap): boolean {
   return 'resource_model' in fields && 'resource_id' in fields;
 }
 
+interface ReverseForeignKeyEntry {
+  modelName: string;
+  model: typeof BaseModel;
+  columns: string[];
+}
+
+interface ReverseReferenceCache {
+  generation: number;
+  byTarget: Map<string, ReverseForeignKeyEntry[]>;
+  polymorphic: { modelName: string; model: typeof BaseModel }[];
+}
+
+let reverseReferenceCache: ReverseReferenceCache | null = null;
+
+function getReverseReferenceIndex(): ReverseReferenceCache {
+  const generation = Registry.getGeneration();
+  if (reverseReferenceCache && reverseReferenceCache.generation === generation) {
+    return reverseReferenceCache;
+  }
+  const byTarget = new Map<string, ReverseForeignKeyEntry[]>();
+  const polymorphic: { modelName: string; model: typeof BaseModel }[] = [];
+  for (const [modelName, RegisteredModel] of Registry.getAll()) {
+    const fields = RegisteredModel.fields ?? {};
+    const columnsByTarget = new Map<string, string[]>();
+    for (const [fieldName, field] of Object.entries(fields)) {
+      if (field.kind !== 'belongsTo') continue;
+      const target = resolveFieldTarget(field);
+      if (!target?.modelName) continue;
+      const existing = columnsByTarget.get(target.modelName) ?? [];
+      existing.push(columnName(fieldName, field));
+      columnsByTarget.set(target.modelName, existing);
+    }
+    for (const [targetName, columns] of columnsByTarget) {
+      const entries = byTarget.get(targetName) ?? [];
+      entries.push({ modelName, model: RegisteredModel, columns });
+      byTarget.set(targetName, entries);
+    }
+    if (hasPolymorphicResourceFields(fields)) {
+      polymorphic.push({ modelName, model: RegisteredModel });
+    }
+  }
+  reverseReferenceCache = { generation, byTarget, polymorphic };
+  return reverseReferenceCache;
+}
+
 async function findReference(
   targetModel: string,
   targetId: number,
   activeUsersOnly = false,
   trx?: Transaction
 ): Promise<string | null> {
-  for (const [modelName, RegisteredModel] of Registry.getAll()) {
-    const fields = RegisteredModel.fields ?? {};
-    const references = Object.entries(fields).flatMap(([fieldName, field]) => {
-      if (field.kind !== 'belongsTo') return [];
-      const target = resolveFieldTarget(field);
-      return target?.modelName === targetModel ? [columnName(fieldName, field)] : [];
-    });
-    for (const column of references) {
-      let query = RegisteredModel.query(trx).where(column, targetId);
+  const index = getReverseReferenceIndex();
+  for (const { modelName, model: RegisteredModel, columns } of index.byTarget.get(targetModel) ??
+    []) {
+    for (const column of columns) {
+      let query = RegisteredModel.query(trx).select('id').where(column, targetId);
       if (activeUsersOnly && modelName === 'base.user') query = query.where('active', true);
       if (await query.first()) return modelName;
     }
-
-    if (hasPolymorphicResourceFields(fields)) {
-      const reference = await RegisteredModel.query(trx)
-        .where({ resource_model: targetModel, resource_id: targetId })
-        .first();
-      if (reference) return modelName;
-    }
+  }
+  for (const { modelName, model: RegisteredModel } of index.polymorphic) {
+    const reference = await RegisteredModel.query(trx)
+      .select('id')
+      .where({ resource_model: targetModel, resource_id: targetId })
+      .first();
+    if (reference) return modelName;
   }
   return null;
+}
+
+function readExpectedWriteDate(req: FastifyRequest): string | undefined {
+  const rawHeader = req.headers['if-match'] ?? req.headers['x-expected-write-date'];
+  const candidate = Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
+  if (typeof candidate !== 'string') return undefined;
+  const trimmed = candidate.trim();
+  if (!trimmed || trimmed === '*') return undefined;
+  return trimmed.replace(/^W\//u, '').replace(/^"(.*)"$/u, '$1');
 }
 
 async function hasActivePartner(
@@ -1130,6 +1180,13 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
     if (id === null) return;
     const record = await scopedRecord(req, Model, req.params.model, id);
     if (!record) return reply.status(404).send(recordNotFound(req.params.model, id));
+    const expectedWriteDate = readExpectedWriteDate(req);
+    if (expectedWriteDate !== undefined && String(record.write_date ?? '') !== expectedWriteDate) {
+      return reply.code(409).send({
+        success: false,
+        error: 'Record was modified by another request; reload and retry',
+      });
+    }
     const values = asJsonObject(req.body);
     if (values === null)
       return reply
@@ -1173,6 +1230,14 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
     const updated = await inRequestTransaction(req, async (trx) => {
       const locked = await scopedRecord(req, Model, req.params.model, id, true, trx);
       if (!locked) return null;
+      if (
+        expectedWriteDate !== undefined &&
+        String(locked.write_date ?? '') !== expectedWriteDate
+      ) {
+        throw Object.assign(new Error('Record was modified by another request; reload and retry'), {
+          statusCode: 409,
+        });
+      }
       if (!(await hasCompanyAccess(req, req.params.model, values, locked, trx))) return null;
       if (!(await hasValidResourceReference(req, req.params.model, values, locked, trx)))
         throw Object.assign(new Error('A valid installed model record is required'), {
