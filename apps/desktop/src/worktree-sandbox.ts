@@ -1,9 +1,10 @@
-import { spawn, execFile } from 'node:child_process';
+import { spawn, execFile, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import {
   existsSync,
   lstatSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   realpathSync,
   rmSync,
@@ -12,6 +13,7 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import type { LocalFileAttachmentStorage } from '@moonwitness/orm-storage';
 import {
   AccessDeniedError,
   ConcurrencyConflictError,
@@ -25,11 +27,15 @@ import type {
   BoundedPtyCommandResult,
   DesktopActionAuthContext,
   GitWorktreeLease,
+  RiskAuditRecord,
   WorktreeCommitResult,
   WorktreeDiffFile,
   WorktreeDiffSummary,
   WorktreeFileContent,
   WorktreeFileWriteResult,
+  WorktreeMergeResult,
+  WorktreeReadFileOptions,
+  WorktreeTreeEntry,
 } from './types.js';
 
 const execFileAsync = promisify(execFile);
@@ -125,6 +131,8 @@ export interface WorktreeSandboxOptions {
   readonly maxOutputBytes?: number;
   readonly knownSecrets?: readonly string[];
   readonly riskGate?: DesktopRiskGate;
+  readonly attachmentStorage?: LocalFileAttachmentStorage;
+  readonly onAuditRecord?: (record: RiskAuditRecord) => void;
 }
 
 export class WorktreeSandbox {
@@ -137,6 +145,9 @@ export class WorktreeSandbox {
   private readonly maxOutputBytes: number;
   private readonly knownSecrets: readonly string[];
   private readonly riskGate: DesktopRiskGate;
+  private readonly attachmentStorage?: LocalFileAttachmentStorage;
+  private readonly onAuditRecord?: (record: RiskAuditRecord) => void;
+  private readonly worktreeBaseRelDir: string;
   private readonly leases = new Map<string, GitWorktreeLease>();
   private fencingCounter = 0;
 
@@ -151,6 +162,7 @@ export class WorktreeSandbox {
         `worktreeBaseDir must be a relative path inside repoRoot: '${baseDir}'`
       );
     }
+    this.worktreeBaseRelDir = normalizePathPrefix(baseDir);
     this.worktreeRootDir = path.resolve(this.repoRoot, baseDir);
     if (!isWithinRealRoot(this.repoRoot, this.worktreeRootDir)) {
       throw new ValidationError('worktreeBaseDir escapes repoRoot');
@@ -170,6 +182,24 @@ export class WorktreeSandbox {
     );
     this.knownSecrets = options.knownSecrets ?? [];
     this.riskGate = options.riskGate ?? new DesktopRiskGate();
+    this.attachmentStorage = options.attachmentStorage;
+    this.onAuditRecord = options.onAuditRecord;
+  }
+
+  /** DSK-5.4: Ensure `.mw-worktrees/` is ignored via `.git/info/exclude`. */
+  ensureWorktreeExcluded(): void {
+    const gitDir = path.join(this.repoRoot, '.git');
+    if (!existsSync(gitDir) || !statSync(gitDir).isDirectory()) return;
+    const infoDir = path.join(gitDir, 'info');
+    mkdirSync(infoDir, { recursive: true });
+    const excludePath = path.join(infoDir, 'exclude');
+    const rule = `${this.worktreeBaseRelDir}/`;
+    const existing = existsSync(excludePath) ? readFileSync(excludePath, 'utf8') : '';
+    const lines = existing.split(/\r?\n/u).map((l) => l.trim());
+    if (!lines.includes(rule) && !lines.includes(this.worktreeBaseRelDir)) {
+      const prefix = existing.length > 0 && !existing.endsWith('\n') ? '\n' : '';
+      writeFileSync(excludePath, `${existing}${prefix}${rule}\n`, 'utf8');
+    }
   }
 
   async acquire(options: AcquireWorktreeOptions): Promise<GitWorktreeLease> {
@@ -196,6 +226,7 @@ export class WorktreeSandbox {
     }
 
     mkdirSync(this.lockRootDir, { recursive: true });
+    this.ensureWorktreeExcluded();
     const lockFile = path.join(this.lockRootDir, `run-${options.runId}.lock.json`);
     const leaseId = randomUUID();
     const createdAt = new Date().toISOString();
@@ -271,7 +302,11 @@ export class WorktreeSandbox {
     return [...this.leases.values()];
   }
 
-  async readFile(runId: string, relativePath: string): Promise<WorktreeFileContent> {
+  async readFile(
+    runId: string,
+    relativePath: string,
+    options?: WorktreeReadFileOptions
+  ): Promise<WorktreeFileContent> {
     const lease = this.getLease(runId);
     const resolved = this.resolveWorktreePath(lease, relativePath, {
       requireExists: true,
@@ -286,14 +321,124 @@ export class WorktreeSandbox {
         `File '${relativePath}' exceeds max read limit (${MAX_READ_BYTES} bytes)`
       );
     }
-    const content = readFileSync(resolved.absolutePath, 'utf8');
+
+    const rawBytes = readFileSync(resolved.absolutePath);
+    if (rawBytes.includes(0)) {
+      throw new ValidationError(`Binary file rejected by UTF-8 reader: '${relativePath}'`);
+    }
+
+    const rawText = rawBytes.toString('utf8');
+    const allLines = rawText.split(/\r?\n/u);
+    let sliced = rawText;
+    let startLine: number | undefined;
+    let endLine: number | undefined;
+
+    if (options?.startLine !== undefined || options?.endLine !== undefined) {
+      startLine = Math.max(1, Math.floor(options.startLine ?? 1));
+      endLine = Math.min(allLines.length, Math.floor(options.endLine ?? allLines.length));
+      if (startLine > endLine && allLines.length > 0) {
+        throw new ValidationError(
+          `Invalid line range [${startLine}, ${endLine}] for '${relativePath}'`
+        );
+      }
+      sliced = allLines.slice(startLine - 1, endLine).join('\n');
+    }
+
+    const redactedResult = redactSensitiveText(sliced, this.knownSecrets);
+    const content = redactedResult.text;
+
     return {
       runId,
       relativePath: resolved.relativePath,
       content,
       sha256: sha256Hex(content),
       sizeBytes: Buffer.byteLength(content, 'utf8'),
+      totalLines: allLines.length,
+      ...(startLine !== undefined ? { startLine } : {}),
+      ...(endLine !== undefined ? { endLine } : {}),
+      redacted: redactedResult.redacted,
     };
+  }
+
+  /** DSK-7.6: Allowlisted directory tree lister respecting `.gitignore`, `.git`, and `.mw-worktrees`. */
+  async listTree(
+    runId: string,
+    options?: { readonly relativeDir?: string; readonly maxEntries?: number }
+  ): Promise<readonly WorktreeTreeEntry[]> {
+    const lease = this.getLease(runId);
+    const maxEntries = Math.max(1, Math.min(5000, options?.maxEntries ?? 500));
+    const startDir = options?.relativeDir
+      ? this.resolveWorktreePath(lease, options.relativeDir, {
+          requireExists: true,
+          allowDirectory: true,
+          skipAllowlist: true,
+        }).absolutePath
+      : lease.worktreePath;
+
+    const realRoot = realpathSync(lease.worktreePath);
+    const gitignorePatterns = this.loadGitignorePatterns(lease.worktreePath);
+    const entries: WorktreeTreeEntry[] = [];
+
+    const walk = (dirPath: string): void => {
+      if (entries.length >= maxEntries) return;
+      const dirents = readdirSync(dirPath, { withFileTypes: true }).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+      for (const dirent of dirents) {
+        if (entries.length >= maxEntries) return;
+        if (dirent.name === '.git' || dirent.name === this.worktreeBaseRelDir) continue;
+        const fullPath = path.join(dirPath, dirent.name);
+        if (dirent.isSymbolicLink()) continue;
+
+        const relPath = path.relative(realRoot, fullPath).replaceAll('\\', '/');
+        if (isSecretOrSensitivePath(relPath)) continue;
+        if (matchesSimpleGitignore(relPath, dirent.name, gitignorePatterns)) continue;
+
+        try {
+          const realCandidate = realpathSync(fullPath);
+          if (!isWithinRealRoot(realRoot, realCandidate)) continue;
+        } catch {
+          continue;
+        }
+
+        const allowlist =
+          lease.allowedPaths.length > 0 ? lease.allowedPaths : this.defaultAllowedPaths;
+        if (dirent.isDirectory()) {
+          const dirRelevant =
+            allowlist.length === 0 ||
+            allowlist.some(
+              (prefix) =>
+                relPath === prefix ||
+                relPath.startsWith(`${prefix}/`) ||
+                prefix.startsWith(`${relPath}/`)
+            );
+          if (!dirRelevant) continue;
+          entries.push({ path: relPath, kind: 'dir' });
+          walk(fullPath);
+        } else if (dirent.isFile()) {
+          if (
+            allowlist.length > 0 &&
+            !allowlist.some((prefix) => relPath === prefix || relPath.startsWith(`${prefix}/`))
+          ) {
+            continue;
+          }
+          const st = statSync(fullPath);
+          entries.push({ path: relPath, kind: 'file', sizeBytes: st.size });
+        }
+      }
+    };
+
+    walk(startDir);
+    return entries;
+  }
+
+  private loadGitignorePatterns(worktreePath: string): readonly string[] {
+    const gitignorePath = path.join(worktreePath, '.gitignore');
+    if (!existsSync(gitignorePath)) return [];
+    return readFileSync(gitignorePath, 'utf8')
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith('#') && !line.startsWith('!'));
   }
 
   async writeFile(
@@ -342,7 +487,10 @@ export class WorktreeSandbox {
     };
   }
 
-  async inspectDiff(runId: string): Promise<WorktreeDiffSummary> {
+  async inspectDiff(
+    runId: string,
+    options?: { readonly attachmentStorage?: LocalFileAttachmentStorage }
+  ): Promise<WorktreeDiffSummary> {
     const lease = this.getLease(runId);
     const statusRaw = await this.runGit(lease.worktreePath, ['status', '--porcelain=v1', '-z']);
     const statusEntries = parsePorcelainZ(statusRaw);
@@ -363,6 +511,15 @@ export class WorktreeSandbox {
 
     const rawPatch = await this.runGit(lease.worktreePath, ['diff', '--no-color']);
     const patch = redactSensitiveText(rawPatch, this.knownSecrets).text;
+    const patchSha256 = sha256Hex(patch);
+
+    let patchStorageKey: string | undefined;
+    const storage = options?.attachmentStorage ?? this.attachmentStorage;
+    if (storage && patch.length > 0) {
+      const storageKey = randomUUID();
+      const stored = await storage.put(storageKey, Buffer.from(patch, 'utf8'));
+      patchStorageKey = stored.key;
+    }
 
     return {
       runId,
@@ -372,8 +529,72 @@ export class WorktreeSandbox {
       clean: statusEntries.length === 0,
       files,
       patch,
-      patchSha256: sha256Hex(patch),
+      patchSha256,
+      ...(patchStorageKey ? { patchStorageKey } : {}),
     };
+  }
+
+  /**
+   * DSK-5.6: Attempt a clean git merge into the worktree; on conflict, abort cleanly
+   * so the worktree remains intact and uncorrupted.
+   */
+  async mergeBranch(
+    runId: string,
+    sourceRef: string,
+    auth: DesktopActionAuthContext
+  ): Promise<WorktreeMergeResult> {
+    const lease = this.getLease(runId);
+    const validRef = validateGitRef(sourceRef, 'sourceRef');
+    const decision = this.riskGate.assertAllowed({
+      runId,
+      action: 'git.commit_local',
+      companyId: auth.companyId,
+      agentId: auth.agentId,
+      workContractId: auth.workContractId,
+      expectedPolicyVersion: auth.expectedPolicyVersion,
+      dataClassification: auth.dataClassification,
+      grant: auth.grant,
+      humanApproval: auth.humanApproval,
+    });
+    this.onAuditRecord?.(decision.auditEntry);
+
+    try {
+      await this.runGit(lease.worktreePath, [
+        '-c',
+        'user.name=MoonWitness Harness',
+        '-c',
+        'user.email=harness@moonwitness.local',
+        'merge',
+        '--no-edit',
+        validRef,
+      ]);
+      const headCommit = (await this.runGit(lease.worktreePath, ['rev-parse', 'HEAD'])).trim();
+      this.leases.set(runId, { ...lease, headCommit });
+      return {
+        runId,
+        sourceRef: validRef,
+        merged: true,
+        conflicted: false,
+        abortedCleanly: false,
+        message: `Merged '${validRef}' cleanly`,
+      };
+    } catch (error) {
+      let abortedCleanly = false;
+      try {
+        await this.runGit(lease.worktreePath, ['merge', '--abort']);
+        abortedCleanly = true;
+      } catch {
+        abortedCleanly = false;
+      }
+      return {
+        runId,
+        sourceRef: validRef,
+        merged: false,
+        conflicted: true,
+        abortedCleanly,
+        message: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 
   async commit(
@@ -469,7 +690,7 @@ export class WorktreeSandbox {
 
     const action = request.action ?? 'pty.exec_local';
     const fullCommandPreview = [request.command, ...request.args].join(' ');
-    this.riskGate.assertAllowed({
+    const decision = this.riskGate.assertAllowed({
       runId: request.runId,
       action,
       companyId: auth.companyId,
@@ -481,6 +702,11 @@ export class WorktreeSandbox {
       humanApproval: auth.humanApproval,
       targetCommand: fullCommandPreview,
     });
+    this.onAuditRecord?.(decision.auditEntry);
+
+    if (request.signal?.aborted) {
+      throw new ValidationError(`Command '${request.command}' aborted before start`);
+    }
 
     const cwd = request.cwdRelative
       ? this.resolveWorktreePath(lease, request.cwdRelative, {
@@ -516,6 +742,7 @@ export class WorktreeSandbox {
         env: childEnv,
         shell: false,
         windowsHide: true,
+        detached: process.platform !== 'win32',
       });
 
       const stdoutChunks: Buffer[] = [];
@@ -525,19 +752,34 @@ export class WorktreeSandbox {
       let timedOut = false;
       let settled = false;
 
+      const killTree = (): void => {
+        terminateProcessTree(child.pid);
+        try {
+          child.kill('SIGKILL');
+        } catch {
+          // already exited
+        }
+      };
+
+      const onAbort = (): void => {
+        timedOut = true;
+        killTree();
+      };
+      request.signal?.addEventListener('abort', onAbort, { once: true });
+
       const appendChunk = (target: Buffer[], chunk: Buffer): void => {
         if (truncated) return;
         const remaining = maxOutputBytes - totalBytes;
         if (remaining <= 0) {
           truncated = true;
-          child.kill();
+          killTree();
           return;
         }
         if (chunk.length > remaining) {
           target.push(chunk.subarray(0, remaining));
           totalBytes += remaining;
           truncated = true;
-          child.kill();
+          killTree();
           return;
         }
         target.push(chunk);
@@ -546,7 +788,7 @@ export class WorktreeSandbox {
 
       const timer = setTimeout(() => {
         timedOut = true;
-        child.kill();
+        killTree();
       }, timeoutMs);
 
       child.stdout.on('data', (chunk: Buffer) => appendChunk(stdoutChunks, chunk));
@@ -556,6 +798,7 @@ export class WorktreeSandbox {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        request.signal?.removeEventListener('abort', onAbort);
         reject(error);
       });
 
@@ -563,6 +806,7 @@ export class WorktreeSandbox {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        request.signal?.removeEventListener('abort', onAbort);
         resolve({
           exitCode,
           signal: signal ? String(signal) : null,
@@ -597,13 +841,33 @@ export class WorktreeSandbox {
 
   async release(
     runId: string,
-    options?: { readonly removeBranch?: boolean }
+    options?: { readonly removeBranch?: boolean; readonly maxRetries?: number }
   ): Promise<GitWorktreeLease> {
     const lease = this.getLease(runId);
     const lockFile = path.join(this.lockRootDir, `run-${runId}.lock.json`);
+    const maxRetries = Math.max(1, options?.maxRetries ?? 4);
 
     if (existsSync(lease.worktreePath)) {
-      await this.runGit(this.repoRoot, ['worktree', 'remove', '--force', lease.worktreePath]);
+      let lastError: unknown;
+      for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
+        try {
+          await this.runGit(this.repoRoot, ['worktree', 'remove', '--force', lease.worktreePath]);
+          lastError = undefined;
+          break;
+        } catch (error) {
+          lastError = error;
+          const msg = error instanceof Error ? error.message : String(error);
+          const isWindowsLock = /EBUSY|EPERM|Permission denied|Device or resource busy/iu.test(msg);
+          if (!isWindowsLock || attempt === maxRetries) {
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, attempt * 75));
+        }
+      }
+      if (lastError && existsSync(lease.worktreePath)) {
+        rmSync(lease.worktreePath, { recursive: true, force: true, maxRetries: 4, retryDelay: 75 });
+        await this.runGit(this.repoRoot, ['worktree', 'prune']).catch(() => undefined);
+      }
     }
     if (options?.removeBranch) {
       await this.runGit(this.repoRoot, ['branch', '-D', lease.branchName]).catch(() => undefined);
@@ -777,4 +1041,54 @@ function parseNumstatZ(
     map.set(filePath, { additions, deletions });
   }
   return map;
+}
+
+export function terminateProcessTree(pid: number | undefined): void {
+  if (!pid || !Number.isSafeInteger(pid) || pid <= 0) return;
+  if (process.platform === 'win32') {
+    try {
+      execFileSync('taskkill', ['/PID', String(pid), '/T', '/F'], {
+        windowsHide: true,
+        stdio: 'ignore',
+      });
+    } catch {
+      try {
+        process.kill(pid, 'SIGKILL');
+      } catch {
+        // already exited
+      }
+    }
+  } else {
+    try {
+      process.kill(-pid, 'SIGKILL');
+    } catch {
+      try {
+        process.kill(pid, 'SIGKILL');
+      } catch {
+        // already exited
+      }
+    }
+  }
+}
+
+function matchesSimpleGitignore(
+  relativePath: string,
+  baseName: string,
+  patterns: readonly string[]
+): boolean {
+  for (const raw of patterns) {
+    const cleaned = raw.replace(/^\/+/u, '').replace(/\/+$/u, '');
+    if (!cleaned) continue;
+    if (cleaned.startsWith('*.')) {
+      const ext = cleaned.slice(1);
+      if (baseName.endsWith(ext)) return true;
+    } else if (
+      baseName === cleaned ||
+      relativePath === cleaned ||
+      relativePath.startsWith(`${cleaned}/`)
+    ) {
+      return true;
+    }
+  }
+  return false;
 }

@@ -76,3 +76,38 @@ Every execution path emits structured correlation telemetry via `GenAiTelemetryC
 3. **Artifact & Worktree Retention Cleanup (`AI10.29`):**
    - Run `pnpm attachments:reconcile` (`reconcileAttachmentStorage` / `pruneOrphanAttachmentStorage` in `@moonwitness/orm-storage`, dry-run by default) to audit and prune expired or orphaned artifact blobs referenced by `ai.artifact_manifest`.
    - On `apps/desktop`, call `bridge.worktree.release(runId)` or `bridge.dispose()` to prune `.mw-worktrees/run-<id>` directories and flush synced `PcwSyncEnvelope` records in `~/.moonwitness/local.db`.
+
+---
+
+## 5. Desktop Agent Harness Troubleshooting & Diagnostics (`DSK-10.12`)
+
+### 5.1 `~/.moonwitness/local.db` SQLite Sidecar Diagnostics
+
+1. **Integrity & WAL Checkpoint Check:**
+   - Verify the local sidecar health endpoint (`GET http://127.0.0.1:<healthPort>/healthz`) or inspect the **Desktop Harness -> PCW Outbox** drawer in `apps/board` to check `pendingOutboxCount`, `failedOutboxCount`, and `conflictOutboxCount`.
+   - If the sidecar reports `degraded`, stop the desktop app cleanly (`bridge.dispose()` / exit Tauri shell) and run SQLite integrity verification on `~/.moonwitness/local.db` (`PRAGMA integrity_check; PRAGMA wal_checkpoint(TRUNCATE);`).
+2. **Stuck PCW Sync Envelopes:**
+   - Inspect `failed` or `conflict` envelopes in `bridge.sidecar.listEnvelopes()`.
+   - `conflict` envelopes indicate an upstream `fencing_token` or `idempotency_key` mismatch on `apps/api`; reconcile against the authoritative PostgreSQL `ai.agent_run` record before discarding the stale local envelope.
+
+### 5.2 OS Lockfile Recovery (`~/.moonwitness/local.db.lock`)
+
+1. `LocalSidecarController` acquires an exclusive OS lockfile (`~/.moonwitness/local.db.lock` with PID metadata) to guarantee single-writer access per desktop home directory.
+2. **Recovering from a Crashed Process:**
+   - Confirm no `moonwitness-desktop` or `node .../apps/desktop/dist/cli.js` process is still running (`Get-Process` on Windows / `pgrep -af moonwitness-desktop` on macOS/Linux).
+   - If the recorded PID is dead and the lockfile was left behind after a hard power loss, remove `~/.moonwitness/local.db.lock` (and any stale `-wal`/`-shm` only after verifying zero active handles) and restart the desktop shell.
+
+### 5.3 Orphaned `.mw-worktrees/` Garbage Collection
+
+1. Every local agent run claims an isolated git worktree under `.mw-worktrees/run-<id>` with a monotonic `fencing_token`.
+2. **Normal Cleanup:** Release leases through the **Desktop Harness -> Worktree Diff** drawer (**Release**) or `bridge.worktree.release(runId)`.
+3. **Orphaned Worktree GC:**
+   - If a host crash leaves stale directories under `.mw-worktrees/`, run `git worktree prune` from the repository root, verify `git worktree list` shows no stale `run-*` entries, and remove any unreferenced `.mw-worktrees/run-*` directories.
+
+### 5.4 OS Keychain `MW_AI_*` Secret Rotation
+
+1. Desktop provider credentials are stored exclusively by reference (`MW_AI_*` / `MW_AI_C<companyId>_*`) in the native host keychain store (`InMemoryKeychainSecretStore` / OS keychain); raw secrets never cross IPC into `apps/board` or SQLite.
+2. **Rotation Procedure:**
+   - Pause affected local runs via **Desktop Harness -> Bounded PTY -> Stop** (or `mw_desktop_emergency_stop`).
+   - Register the rotated credential under the existing `MW_AI_*` reference (or a versioned reference such as `MW_AI_C1_OPENAI_KEY_V2` matched to `ai.provider_profile.secret_ref`).
+   - Verify `bridge.keychain.hasSecretRef(<ref>)` returns `true` and confirm redacted audit logs show zero leaked secret material.

@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -312,6 +312,22 @@ function validateArtifacts(artifacts: readonly PcwArtifactDigest[]): void {
       throw new ValidationError(`Artifact '${artifact.storageKey}' must specify mimeType`);
     }
   }
+}
+
+export interface DesktopDatabaseBackupResult {
+  readonly backupId: string;
+  readonly backupPath: string;
+  readonly manifestPath: string;
+  readonly sha256: string;
+  readonly sizeBytes: number;
+  readonly schemaVersion: number;
+  readonly installedAddons: readonly string[];
+  readonly createdAt: string;
+  readonly compatibleWithAddonUpgrade: true;
+}
+
+export function resolveDesktopBackupsDir(desktopHomeDir?: string): string {
+  return path.join(resolveDesktopHomeDir(desktopHomeDir), 'backups');
 }
 
 export interface LocalSidecarControllerOptions {
@@ -999,6 +1015,7 @@ export class LocalSidecarController {
 
   recordRiskAudit(entry: RiskAuditRecord): void {
     this.assertOpen();
+    const sanitizedReason = redactSensitiveText(entry.reason, this.knownSecrets).text;
     this.db
       .prepare(
         `INSERT OR IGNORE INTO desktop_risk_audit (
@@ -1014,12 +1031,128 @@ export class LocalSidecarController {
         entry.resolvedTier,
         entry.allowed ? 1 : 0,
         entry.reasonCode,
-        redactSensitiveText(entry.reason, this.knownSecrets).text,
+        sanitizedReason,
         entry.companyId,
         entry.agentId,
         entry.grantId,
         entry.timestamp
       );
+
+    // Mirror into ORM base_audit_log when ORM addons are initialized (DSK-6.8 / DSK-8.8).
+    try {
+      const hasBaseAudit = this.db
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'base_audit_log'")
+        .get() as { name?: string } | undefined;
+      if (hasBaseAudit?.name === 'base_audit_log') {
+        this.db
+          .prepare(
+            `INSERT INTO base_audit_log (
+              model, res_id, action, user_id, changes_json, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?)`
+          )
+          .run(
+            'desktop.risk_audit',
+            entry.agentId,
+            entry.allowed ? `allow:${entry.action}` : `deny:${entry.action}`,
+            entry.agentId,
+            JSON.stringify({
+              auditId: entry.auditId,
+              runId: entry.runId,
+              requestedTier: entry.requestedTier,
+              resolvedTier: entry.resolvedTier,
+              reasonCode: entry.reasonCode,
+              reason: sanitizedReason,
+              companyId: entry.companyId,
+              grantId: entry.grantId,
+            }),
+            entry.timestamp
+          );
+      }
+    } catch {
+      // base_audit_log schema may vary across addon versions; desktop_risk_audit is authoritative.
+    }
+  }
+
+  listRiskAudits(limit = 200): readonly RiskAuditRecord[] {
+    this.assertOpen();
+    const boundedLimit = Math.max(1, Math.min(1000, Math.floor(limit)));
+    const rows = this.db
+      .prepare(
+        `SELECT audit_id, run_id, action, requested_tier, resolved_tier, allowed,
+                reason_code, reason, company_id, agent_id, grant_id, timestamp
+         FROM desktop_risk_audit
+         ORDER BY timestamp DESC
+         LIMIT ?`
+      )
+      .all(boundedLimit) as unknown as Array<{
+      audit_id: string;
+      run_id: string;
+      action: RiskAuditRecord['action'];
+      requested_tier: RiskAuditRecord['requestedTier'];
+      resolved_tier: RiskAuditRecord['resolvedTier'];
+      allowed: number;
+      reason_code: string;
+      reason: string;
+      company_id: number;
+      agent_id: number;
+      grant_id: string;
+      timestamp: string;
+    }>;
+
+    return rows.map((row) => ({
+      auditId: row.audit_id,
+      runId: row.run_id,
+      action: row.action,
+      requestedTier: row.requested_tier,
+      resolvedTier: row.resolved_tier,
+      allowed: row.allowed === 1,
+      reasonCode: row.reason_code,
+      reason: row.reason,
+      companyId: row.company_id,
+      agentId: row.agent_id,
+      grantId: row.grant_id,
+      timestamp: row.timestamp,
+    }));
+  }
+
+  backupDatabase(options?: {
+    readonly backupDir?: string;
+    readonly label?: string;
+  }): DesktopDatabaseBackupResult {
+    this.assertOpen();
+    const backupsDir = options?.backupDir ?? resolveDesktopBackupsDir(this.desktopHomeDir);
+    mkdirSync(backupsDir, { recursive: true });
+
+    const createdAt = new Date().toISOString();
+    const safeLabel = (options?.label ?? 'manual').replace(/[^a-zA-Z0-9._-]/gu, '_').slice(0, 32);
+    const stamp = createdAt.replace(/[:.]/gu, '-');
+    const backupId = `${stamp}-${safeLabel}-${randomUUID().slice(0, 8)}`;
+    const backupPath = path.join(backupsDir, `local-${backupId}.sqlite`);
+    const manifestPath = path.join(backupsDir, `local-${backupId}.manifest.json`);
+
+    // Consistent snapshot via SQLite VACUUM INTO (works for both file-backed and :memory: DBs).
+    const escapedPath = backupPath.replaceAll("'", "''");
+    this.db.exec(`VACUUM INTO '${escapedPath}'`);
+
+    const content = readFileSync(backupPath);
+    const sha256 = createHash('sha256').update(content).digest('hex');
+    const sizeBytes = statSync(backupPath).size;
+    const schemaVersion = Number.parseInt(this.getMeta('schema_version') ?? '1', 10) || 1;
+
+    const result: DesktopDatabaseBackupResult = {
+      backupId,
+      backupPath,
+      manifestPath,
+      sha256,
+      sizeBytes,
+      schemaVersion,
+      installedAddons: [...this.installedAddonNames],
+      createdAt,
+      compatibleWithAddonUpgrade: true,
+    };
+
+    writeFileSync(manifestPath, JSON.stringify(result, null, 2), 'utf8');
+    return result;
   }
 
   getCheckpoint(agentRunId: string): JsonObject | null {

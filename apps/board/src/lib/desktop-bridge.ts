@@ -133,7 +133,11 @@ export interface DesktopCapabilityBridge {
   readonly worktree: {
     listLeases(): Promise<readonly DesktopGitWorktreeLease[]>;
     diff(runId: string): Promise<DesktopWorktreeDiffSummary>;
+    readFile?(runId: string, relativePath: string): Promise<string>;
     release(runId: string): Promise<DesktopGitWorktreeLease>;
+  };
+  readonly pty?: {
+    stop?(runId: string): Promise<void> | void;
   };
   readonly risk: {
     getAuditLog(limit?: number): readonly DesktopRiskAuditRecord[];

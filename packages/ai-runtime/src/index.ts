@@ -8,6 +8,7 @@ export * from './providers/shared.js';
 export * from './providers/mock-provider.js';
 export * from './providers/ollama-adapter.js';
 export * from './providers/openai-adapter.js';
+export * from './providers/local-openai-adapter.js';
 export * from './providers/anthropic-adapter.js';
 export * from './classification-router.js';
 export * from './repo-inspector.js';

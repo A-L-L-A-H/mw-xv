@@ -29,7 +29,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.check.json"
   },
   "dependencies": {
+    "@moonwitness/ai-mcp": "workspace:*",
+    "@moonwitness/ai-runtime": "workspace:*",
     "@moonwitness/jobs": "workspace:*",
+    "@moonwitness/logger": "workspace:*",
     "@moonwitness/orm": "workspace:*",
     "@moonwitness/orm-ai": "workspace:*",
     "@moonwitness/orm-base": "workspace:*",

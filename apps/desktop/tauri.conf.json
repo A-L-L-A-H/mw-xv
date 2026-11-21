@@ -80,6 +80,23 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": ["../board/public/brand/app-icon-192.png", "../board/public/brand/app-icon-512.png"]
+    "createUpdaterArtifacts": true,
+    "icon": ["../board/public/brand/app-icon-192.png", "../board/public/brand/app-icon-512.png"],
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.digicert.com",
+      "certificateThumbprint": null,
+      "signCommand": null
+    },
+    "macOS": {
+      "minimumSystemVersion": "13.0",
+      "signingIdentity": null,
+      "hardenedRuntime": true
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"]
+      }
+    }
   }
 }

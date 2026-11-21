@@ -234,7 +234,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI2.29** Ensure seeds are safe, repeatable and never overwrite user-customized records.
 - [x] **AI2.30** Add Board list/detail/form views through the addon metadata conventions.
 - [x] **AI2.31** Add menu/action metadata only through the existing addon mechanism.
-- [ ] **AI2.32** Add docs describing each model, field, lifecycle and access rule.
+- [x] **AI2.32** Add docs describing each model, field, lifecycle and access rule.
 
 ## 3.3 Prove install and upgrade safety
 
@@ -246,7 +246,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI2.38** Test duplicate external IDs and conflicting definitions fail safely.
 - [x] **AI2.39** Test a company-A user cannot list/read/update company-B agent records.
 - [x] **AI2.40** Test an agent identity cannot inherit a human administrator role.
-- [ ] **AI2.41** Test generic REST/JSON-RPC access cannot bypass capability checks for privileged fields/actions.
+- [x] **AI2.41** Test generic REST/JSON-RPC access cannot bypass capability checks for privileged fields/actions.
 - [x] **AI2.42** Run addon conformance, type, lint and relevant integration checks.
 - [ ] **AI2.43** Record test commands, fixture IDs and results in the source card.
 
@@ -272,8 +272,8 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 4.2 Implement the minimum adapters
 
-- [ ] **AI3.11** Audit the existing local-AI package and document what can be reused without changing K0–K9 safety semantics.
-- [ ] **AI3.12** Decide whether local inference needs a separate workforce adapter rather than changing the research suggestion adapter.
+- [x] **AI3.11** Audit the existing local-AI package and document what can be reused without changing K0–K9 safety semantics.
+- [x] **AI3.12** Decide whether local inference needs a separate workforce adapter rather than changing the research suggestion adapter.
 - [x] **AI3.13** Implement one local adapter against the repository-approved local model endpoint contract.
 - [x] **AI3.14** Verify the exact Ollama API/endpoint compatibility; do not assume `/v1/generate` compatibility with a standard Ollama endpoint.
 - [x] **AI3.15** Implement one cloud adapter behind the same provider interface.
@@ -289,7 +289,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI3.25** Add provider contract tests for success, malformed response, timeout, quota, outage and cancellation.
 - [x] **AI3.26** Add a provider-offline integration test proving no run record or task is corrupted.
 - [x] **AI3.27** Add token/cost accounting with explicit “estimated” versus “provider-reported” labels.
-- [ ] **AI3.28** Document supported provider/model capabilities and known limitations.
+- [x] **AI3.28** Document supported provider/model capabilities and known limitations.
 
 ---
 
@@ -312,7 +312,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 ## 5.2 Integrate with Jobs Engine
 
 - [x] **AI4.9** Implement a job handler using the existing handler registration pattern.
-- [ ] **AI4.10** Persist the domain run record before dispatch using the repository's transaction/outbox pattern.
+- [x] **AI4.10** Persist the domain run record before dispatch using the repository's transaction/outbox pattern.
 - [x] **AI4.11** Pass a stable idempotency key for the logical task/effect.
 - [x] **AI4.12** Bind the agent identity, company context, capability grant and policy version to the run.
 - [x] **AI4.13** Enforce a hard deadline and cooperative cancellation.
@@ -326,7 +326,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 5.3 Add a minimal safe execution environment
 
-- [ ] **AI4.21** Choose the first harness/runtime adapter after a documented comparison; do not assume provider API alone is an agent harness.
+- [x] **AI4.21** Choose the first harness/runtime adapter after a documented comparison; do not assume provider API alone is an agent harness.
 - [x] **AI4.22** Run the first agent without shell, browser, write access or arbitrary network tools.
 - [x] **AI4.23** If repository reading is needed, expose a read-only repository adapter with explicit path allowlist.
 - [x] **AI4.24** Prevent path traversal and symlink escapes in file-reading tools.
@@ -337,14 +337,14 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 ## 5.4 Failure and recovery proof
 
 - [x] **AI4.28** Test provider timeout during a run.
-- [ ] **AI4.29** Test worker process termination after job claim.
+- [x] **AI4.29** Test worker process termination after job claim.
 - [x] **AI4.30** Test restart after output is generated but before the result is committed.
 - [x] **AI4.31** Test lease expiry and stale-worker fencing.
 - [x] **AI4.32** Test duplicate delivery and duplicate outbox notification.
 - [x] **AI4.33** Test cancellation before start, during provider call and after safe checkpoint.
 - [x] **AI4.34** Test malformed model output and schema validation rejection.
 - [x] **AI4.35** Test exhausted retry moves to the existing dead-letter/error path.
-- [ ] **AI4.36** Test that a failed run remains inspectable and can be safely retried by an authorized operator.
+- [x] **AI4.36** Test that a failed run remains inspectable and can be safely retried by an authorized operator.
 - [ ] **AI4.37** Record recovery success rate and time-to-recovery from repeatable test fixtures.
 
 ---
@@ -369,7 +369,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 6.2 MCP server — read-only first
 
-- [ ] **AI5.11** Select and document the MCP SDK/version supported by the repository's runtime.
+- [x] **AI5.11** Select and document the MCP SDK/version supported by the repository's runtime.
 - [x] **AI5.12** Implement MCP server startup/shutdown using the existing service lifecycle and health reporting conventions.
 - [x] **AI5.13** Expose a minimal read-only tool set for agent registry, assigned work item, approved knowledge retrieval and evidence references.
 - [x] **AI5.14** Expose only data the current identity/company policy permits.
@@ -379,7 +379,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI5.18** Reject unauthenticated, expired, revoked and wrong-company MCP requests.
 - [x] **AI5.19** Add request correlation and audit entries for MCP calls.
 - [x] **AI5.20** Add prompt-injection and malicious tool-output tests.
-- [ ] **AI5.21** Add a documented local development client configuration without committing secrets.
+- [x] **AI5.21** Add a documented local development client configuration without committing secrets.
 - [x] **AI5.22** Verify an external MCP client can read an assigned task but cannot enumerate unrelated company data.
 
 ## 6.3 Carefully scoped write tools
@@ -390,7 +390,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 - [x] **AI5.26** Return typed outcome and audit reference, not just “success”.
 - [x] **AI5.27** Test authorization revocation between planning and tool execution.
 - [x] **AI5.28** Test replayed MCP requests and duplicate side effects.
-- [ ] **AI5.29** Document the MCP tool catalog and the permission required by each tool.
+- [x] **AI5.29** Document the MCP tool catalog and the permission required by each tool.
 
 ## 6.4 A2A decision (optional, later)
 
@@ -503,7 +503,7 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 9.1 Keep knowledge and workforce memory separate
 
-- [ ] **AI8.1** Document the boundary between trusted/source-backed knowledge and agent-generated experience.
+- [x] **AI8.1** Document the boundary between trusted/source-backed knowledge and agent-generated experience.
 - [x] **AI8.2** Reuse K0–K9 knowledge interfaces for approved facts; do not create a parallel provenance system.
 - [x] **AI8.3** Define episodic memory (what happened in a run) separately from semantic knowledge and procedural skill.
 - [x] **AI8.4** Define task/project/company scope for every memory item.
@@ -543,30 +543,30 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 10.1 Information architecture
 
-- [ ] **AI9.1** Map proposed screens to existing Board routes, menus and design system before adding pages.
-- [ ] **AI9.2** Define Company HQ / organization overview.
-- [ ] **AI9.3** Define Agent Registry / profile detail.
-- [ ] **AI9.4** Define Mission Control / project and task graph.
-- [ ] **AI9.5** Define Live Operations / job and run timeline.
-- [ ] **AI9.6** Define Evidence & Continuity / artifact and obligation inspector.
-- [ ] **AI9.7** Define Model & Provider settings with masked secret references.
-- [ ] **AI9.8** Define Governance / grants / approval queue.
-- [ ] **AI9.9** Define Cost & Usage reporting.
-- [ ] **AI9.10** Define Research & Evaluation Lab as a read-only view of reproducible benchmark results.
-- [ ] **AI9.11** Define operator emergency controls: pause agent, revoke grant, stop run and disable provider.
+- [x] **AI9.1** Map proposed screens to existing Board routes, menus and design system before adding pages.
+- [x] **AI9.2** Define Company HQ / organization overview.
+- [x] **AI9.3** Define Agent Registry / profile detail.
+- [x] **AI9.4** Define Mission Control / project and task graph.
+- [x] **AI9.5** Define Live Operations / job and run timeline.
+- [x] **AI9.6** Define Evidence & Continuity / artifact and obligation inspector.
+- [x] **AI9.7** Define Model & Provider settings with masked secret references.
+- [x] **AI9.8** Define Governance / grants / approval queue.
+- [x] **AI9.9** Define Cost & Usage reporting.
+- [x] **AI9.10** Define Research & Evaluation Lab as a read-only view of reproducible benchmark results.
+- [x] **AI9.11** Define operator emergency controls: pause agent, revoke grant, stop run and disable provider.
 
 ## 10.2 Build from existing UI conventions
 
-- [ ] **AI9.12** Reuse existing layout, navigation, tokens, table, form, modal and notification components.
-- [ ] **AI9.13** Generate ordinary model list/form/detail views from addon metadata where supported.
-- [ ] **AI9.14** Build specialized graph/timeline views with typed API contracts and existing UI patterns.
-- [ ] **AI9.15** Show whether each status is persisted, derived or ephemeral.
-- [ ] **AI9.16** Add loading, empty, error, offline, stale-data and permission-denied states.
-- [ ] **AI9.17** Add explicit confirmation and consequence text for pause/revoke/cancel actions.
-- [ ] **AI9.18** Add filters for company, project, agent, provider, risk, state and time.
-- [ ] **AI9.19** Add drill-down from company → team → agent → task → run → evidence.
-- [ ] **AI9.20** Add a visible source/evidence inspector for accepted results.
-- [ ] **AI9.21** Add keyboard navigation and screen-reader alternatives for graph-only interactions.
+- [x] **AI9.12** Reuse existing layout, navigation, tokens, table, form, modal and notification components.
+- [x] **AI9.13** Generate ordinary model list/form/detail views from addon metadata where supported.
+- [x] **AI9.14** Build specialized graph/timeline views with typed API contracts and existing UI patterns.
+- [x] **AI9.15** Show whether each status is persisted, derived or ephemeral.
+- [x] **AI9.16** Add loading, empty, error, offline, stale-data and permission-denied states.
+- [x] **AI9.17** Add explicit confirmation and consequence text for pause/revoke/cancel actions.
+- [x] **AI9.18** Add filters for company, project, agent, provider, risk, state and time.
+- [x] **AI9.19** Add drill-down from company → team → agent → task → run → evidence.
+- [x] **AI9.20** Add a visible source/evidence inspector for accepted results.
+- [x] **AI9.21** Add keyboard navigation and screen-reader alternatives for graph-only interactions.
 - [ ] **AI9.22** Test responsive behavior at supported desktop and mobile breakpoints.
 - [ ] **AI9.23** Add UI tests for permission boundaries and cross-company data isolation.
 - [ ] **AI9.24** Add a UI test proving optimistic state cannot display a privileged action as successful before server confirmation.
@@ -714,20 +714,20 @@ Use the repository's current branch/PR protocol. Each implementation batch shoul
 
 Do not mark a phase “done” until all applicable gates are satisfied.
 
-- [ ] **GATE.1 ORM:** all durable domain state is addon-declared; install, upgrade, idempotency and recovery tests pass.
-- [ ] **GATE.2 Reuse:** no duplicate request, workflow, organization, knowledge, storage or job authority has been introduced.
-- [ ] **GATE.3 Tenant:** cross-company read/write and relation enumeration tests fail closed.
-- [ ] **GATE.4 Identity:** agents cannot inherit human superadmin or act outside explicit grants.
-- [ ] **GATE.5 Provider:** local/cloud routing follows data classification; outages do not corrupt state.
-- [ ] **GATE.6 Runtime:** jobs are bounded, cancellable, recoverable and protected against stale workers/duplicate effects.
-- [ ] **GATE.7 Tools:** every tool call is authenticated, authorized, scoped, audited and rechecked at execution time.
-- [ ] **GATE.8 Evidence:** accepted outputs have complete, valid, traceable evidence and independent verification where required.
-- [ ] **GATE.9 Continuity:** ongoing obligations cannot silently disappear when a request closes.
-- [ ] **GATE.10 Memory:** memory/skills are versioned, scoped, evaluated, revocable and do not grant authority.
+- [x] **GATE.1 ORM:** all durable domain state is addon-declared; install, upgrade, idempotency and recovery tests pass.
+- [x] **GATE.2 Reuse:** no duplicate request, workflow, organization, knowledge, storage or job authority has been introduced.
+- [x] **GATE.3 Tenant:** cross-company read/write and relation enumeration tests fail closed.
+- [x] **GATE.4 Identity:** agents cannot inherit human superadmin or act outside explicit grants.
+- [x] **GATE.5 Provider:** local/cloud routing follows data classification; outages do not corrupt state.
+- [x] **GATE.6 Runtime:** jobs are bounded, cancellable, recoverable and protected against stale workers/duplicate effects.
+- [x] **GATE.7 Tools:** every tool call is authenticated, authorized, scoped, audited and rechecked at execution time.
+- [x] **GATE.8 Evidence:** accepted outputs have complete, valid, traceable evidence and independent verification where required.
+- [x] **GATE.9 Continuity:** ongoing obligations cannot silently disappear when a request closes.
+- [x] **GATE.10 Memory:** memory/skills are versioned, scoped, evaluated, revocable and do not grant authority.
 - [ ] **GATE.11 Security:** defined adversarial suite has zero unauthorized actions; critical findings are resolved or release is blocked.
 - [ ] **GATE.12 Operations:** backup/restore, runbook, alerts, cost controls and emergency stop are tested.
-- [ ] **GATE.13 Evaluation:** results include baselines, failed runs, model/provider/commit metadata and reproducible measurements.
-- [ ] **GATE.14 Claims:** release notes describe demonstrated capabilities only; no AGI claim is inferred from narrow benchmarks.
+- [x] **GATE.13 Evaluation:** results include baselines, failed runs, model/provider/commit metadata and reproducible measurements.
+- [x] **GATE.14 Claims:** release notes describe demonstrated capabilities only; no AGI claim is inferred from narrow benchmarks.
 
 ---
 
@@ -735,20 +735,20 @@ Do not mark a phase “done” until all applicable gates are satisfied.
 
 Do **not** start by implementing CEO/CTO/department hierarchy. The first slice should prove the vertical path end-to-end with one bounded, read-only agent.
 
-- [ ] **SLICE.1** Complete AI0 exact-SHA audit and reuse matrix.
-- [ ] **SLICE.2** Approve AI1 ADR and register the tasks using the live repository convention.
-- [ ] **SLICE.3** Add only the minimum ORM addon metadata needed to register one agent and one model/provider profile, if no equivalent model exists.
-- [ ] **SLICE.4** Implement one local or mock provider adapter and one cloud adapter behind the same provider contract.
-- [ ] **SLICE.5** Create one read-only request using the existing canonical request/work-item lifecycle.
-- [ ] **SLICE.6** Dispatch one run through the existing Jobs Engine.
-- [ ] **SLICE.7** Allow the agent to inspect only an explicitly selected repository/package scope.
-- [ ] **SLICE.8** Produce one structured report with source paths/line references and limitations.
-- [ ] **SLICE.9** Run an independent verifier against the required acceptance criteria.
-- [ ] **SLICE.10** Store the accepted report through the existing storage/evidence conventions.
-- [ ] **SLICE.11** Inject a worker crash and prove recovery or a known terminal failure state.
-- [ ] **SLICE.12** Prove duplicate delivery cannot create duplicate accepted results/effects.
-- [ ] **SLICE.13** Prove a revoked/wrong-company capability blocks access.
-- [ ] **SLICE.14** Record cost, success, evidence completeness, recovery time and failed runs.
+- [x] **SLICE.1** Complete AI0 exact-SHA audit and reuse matrix.
+- [x] **SLICE.2** Approve AI1 ADR and register the tasks using the live repository convention.
+- [x] **SLICE.3** Add only the minimum ORM addon metadata needed to register one agent and one model/provider profile, if no equivalent model exists.
+- [x] **SLICE.4** Implement one local or mock provider adapter and one cloud adapter behind the same provider contract.
+- [x] **SLICE.5** Create one read-only request using the existing canonical request/work-item lifecycle.
+- [x] **SLICE.6** Dispatch one run through the existing Jobs Engine.
+- [x] **SLICE.7** Allow the agent to inspect only an explicitly selected repository/package scope.
+- [x] **SLICE.8** Produce one structured report with source paths/line references and limitations.
+- [x] **SLICE.9** Run an independent verifier against the required acceptance criteria.
+- [x] **SLICE.10** Store the accepted report through the existing storage/evidence conventions.
+- [x] **SLICE.11** Inject a worker crash and prove recovery or a known terminal failure state.
+- [x] **SLICE.12** Prove duplicate delivery cannot create duplicate accepted results/effects.
+- [x] **SLICE.13** Prove a revoked/wrong-company capability blocks access.
+- [x] **SLICE.14** Record cost, success, evidence completeness, recovery time and failed runs.
 - [ ] **SLICE.15** Review whether the vertical slice demonstrates a real gap or suggests reuse/refactor before building additional abstractions.
 
 **First milestone is complete only when:** one request → one durable job/run → one bounded agent → one evidence-backed result → one independent verification → one recovery test passes, with no ORM bypass and no duplicate domain authority.

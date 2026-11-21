@@ -148,12 +148,36 @@ export interface AcquireWorktreeOptions {
   readonly allowedPaths?: readonly string[];
 }
 
+export interface WorktreeReadFileOptions {
+  readonly startLine?: number;
+  readonly endLine?: number;
+}
+
 export interface WorktreeFileContent {
   readonly runId: string;
   readonly relativePath: string;
   readonly content: string;
   readonly sha256: string;
   readonly sizeBytes: number;
+  readonly totalLines?: number;
+  readonly startLine?: number;
+  readonly endLine?: number;
+  readonly redacted?: boolean;
+}
+
+export interface WorktreeTreeEntry {
+  readonly path: string;
+  readonly kind: 'file' | 'dir';
+  readonly sizeBytes?: number;
+}
+
+export interface WorktreeMergeResult {
+  readonly runId: string;
+  readonly sourceRef: string;
+  readonly merged: boolean;
+  readonly conflicted: boolean;
+  readonly abortedCleanly: boolean;
+  readonly message: string;
 }
 
 export interface WorktreeFileWriteResult {
@@ -179,6 +203,7 @@ export interface WorktreeDiffSummary {
   readonly files: readonly WorktreeDiffFile[];
   readonly patch: string;
   readonly patchSha256: string;
+  readonly patchStorageKey?: string;
 }
 
 export interface WorktreeCommitResult {
@@ -199,6 +224,7 @@ export interface BoundedPtyCommandRequest {
   readonly maxOutputBytes?: number;
   readonly envOverrides?: Readonly<Record<string, string>>;
   readonly action?: DesktopActionKind;
+  readonly signal?: AbortSignal;
 }
 
 export interface BoundedPtyCommandResult {
@@ -401,6 +427,7 @@ export interface LocalMcpToolInvocationRequest {
   readonly toolName: string;
   readonly arguments: JsonObject;
   readonly auth: DesktopActionAuthContext;
+  readonly idempotencyKey?: string;
 }
 
 export interface LocalMcpToolInvocationResult {
@@ -411,6 +438,8 @@ export interface LocalMcpToolInvocationResult {
   readonly redacted: boolean;
   readonly callCountForRun: number;
   readonly durationMs: number;
+  readonly deduplicated?: boolean;
+  readonly framedPromptContext?: string;
 }
 
 export type LocalMcpToolHandler = (
