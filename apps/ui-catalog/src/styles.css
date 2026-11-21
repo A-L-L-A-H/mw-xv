@@ -18,10 +18,18 @@
   --color-ink: var(--mw-ink);
   --color-ink-soft: var(--mw-ink-soft);
   --color-ink-faint: var(--mw-ink-faint);
-  --color-lime: var(--mw-lime);
-  --color-pink: var(--mw-pink);
+  --mw-yellow: var(--mw-lime);
+  --mw-magenta: var(--mw-pink);
+  --mw-primary: var(--mw-primary);
+  --mw-error: var(--mw-destructive);
+  --mw-yellow: var(--mw-lime); --color-lime
+  --mw-magenta: var(--mw-pink); --color-pink
   --color-background: var(--mw-background);
   --color-foreground: var(--mw-foreground);
+  --mw-yellow;
+  --mw-magenta;
+  --mw-primary;
+  --mw-error;
   --color-card: var(--mw-surface);
   --color-card-foreground: var(--mw-surface-foreground);
   --color-muted: var(--mw-muted);

@@ -459,7 +459,7 @@
       "deliverable": "Offline CLI proof and source-reconstruction report",
       "acceptance": "Network disabled; bit-identical manifests; import errors measured, not suppressed",
       "verification": "offline empty-cache fixture, broken-source retry tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
