@@ -1918,7 +1918,9 @@
       "output": "Sensitive-case disclosure protection and human-reviewed escalation procedure",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K6-004.md"
     },
     {
       "id": "K6-005",

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://moonwitness.dev/schemas/child-protection-gate.schema.json",
+  "title": "MoonWitness child protection and publication risk gate input",
+  "description": "Fail-closed minor-safety and publication risk evaluation contract preventing PUBLIC projection by default and blocking minor identifiers from public URLs, search, analytics, logs, and AI prompts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "classification",
+    "inherited_classifications",
+    "minor_involved",
+    "synthetic",
+    "requested_channel",
+    "safeguarding_process_approved",
+    "candidate_payload"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "classification": {
+      "enum": ["PUBLIC_APPROVED", "INTERNAL", "CONFIDENTIAL", "RESTRICTED", "CHILD_SENSITIVE"]
+    },
+    "inherited_classifications": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "enum": ["PUBLIC_APPROVED", "INTERNAL", "CONFIDENTIAL", "RESTRICTED", "CHILD_SENSITIVE"]
+      }
+    },
+    "program_slot": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 33
+    },
+    "minor_involved": { "type": "boolean" },
+    "synthetic": { "type": "boolean" },
+    "requested_channel": {
+      "enum": [
+        "internal_review",
+        "escalation_review",
+        "public_projection",
+        "public_url",
+        "search_index",
+        "ai_prompt",
+        "analytics",
+        "log_output"
+      ]
+    },
+    "safeguarding_process_approved": { "type": "boolean" },
+    "escalation_approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "safeguarding_owner_id",
+        "reviewer_id",
+        "requester_id",
+        "escalation_reason",
+        "approved_at",
+        "decision_ref"
+      ],
+      "properties": {
+        "safeguarding_owner_id": {
+          "type": "string",
+          "pattern": "^mw:user:[a-z0-9][a-z0-9._-]{0,127}$"
+        },
+        "reviewer_id": {
+          "type": "string",
+          "pattern": "^mw:user:[a-z0-9][a-z0-9._-]{0,127}$"
+        },
+        "requester_id": {
+          "type": "string",
+          "pattern": "^mw:user:[a-z0-9][a-z0-9._-]{0,127}$"
+        },
+        "escalation_reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decision_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        }
+      }
+    },
+    "publication_approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewer_id",
+        "requester_id",
+        "minimized",
+        "source_revision_sha256",
+        "projection_revision_sha256",
+        "decision_ref"
+      ],
+      "properties": {
+        "reviewer_id": {
+          "type": "string",
+          "pattern": "^mw:user:[a-z0-9][a-z0-9._-]{0,127}$"
+        },
+        "requester_id": {
+          "type": "string",
+          "pattern": "^mw:user:[a-z0-9][a-z0-9._-]{0,127}$"
+        },
+        "minimized": { "type": "boolean" },
+        "source_revision_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "projection_revision_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "decision_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        }
+      }
+    },
+    "candidate_payload": {
+      "type": "object"
+    }
+  }
+}

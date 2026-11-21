@@ -223,3 +223,15 @@ export {
   type TrustedAnalyticEvidenceResolution,
   type TrustedAnalyticEvidenceResolver,
 } from './analytic-responsibility.js';
+export {
+  containsProhibitedMinorIdentifiers,
+  evaluateChildProtectionAndPublicationGate,
+  validateChildProtectionGateInput,
+  type ChildProtectionAuditSummary,
+  type ChildProtectionDenialReason,
+  type ChildProtectionGateDecision,
+  type ChildProtectionGateInput,
+  type ProtectionDisclosureChannel,
+  type PublicationRiskApproval,
+  type SafeguardingEscalationApproval,
+} from './child-protection-gate.js';
