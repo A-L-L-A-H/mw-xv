@@ -398,7 +398,7 @@
       "deliverable": "Pinned, lawful, integrity-checked passage sample including Q7:46",
       "acceptance": "Exact original retrievable by edition/passage; missing text/rights flagged; reimport idempotent",
       "verification": "G1 retrieval+checksum+negative edition/passage tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
