@@ -6,6 +6,17 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceRoot = path.join(root, 'apps/board/src');
 const replacements = {
+  button: "Button from @moonwitness/ui/components/button",
+  input: "Input or Checkbox from @moonwitness/ui/components/input or @moonwitness/ui/components/checkbox",
+  select: "SelectField from @moonwitness/ui/components/select-field",
+  textarea: "Textarea from @moonwitness/ui/components/textarea",
+  
+  // Icon package bans
+  lucide-react: "Use @moonwitness/ui/icons instead of lucide-react",
+  "heroicons": "Use @moonwitness/ui/icons instead of heroicons",
+  "react-icons": "Use @moonwitness/ui/icons instead of react-icons",
+  "react-feather": "Use @moonwitness/ui/icons instead of react-feather"
+};
   button: 'Button from @moonwitness/ui/components/button',
   input:
     'Input or Checkbox from @moonwitness/ui/components/input or @moonwitness/ui/components/checkbox',
