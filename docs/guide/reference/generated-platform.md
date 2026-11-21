@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `2c505b78cf571755c14cde5f0ecb202d72a482f4442b62b90c16b6f4f115d289`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `b106f50509b6e31cc27573f245dd5e2c4cadbb4162a52b69437692161220b8c5`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -91,6 +91,7 @@ Source fingerprint: `2c505b78cf571755c14cde5f0ecb202d72a482f4442b62b90c16b6f4f11
 | `RESTORE_DRILL_SCHEMA`              | string         | No                        | No                       |
 | `SKIP_BOOT_MIGRATIONS`              | boolean        | Yes                       | No                       |
 | `SUPERADMIN_PASSWORD`               | secret         | Yes                       | Yes                      |
+| `VITEST`                            | string         | No                        | No                       |
 | `WHATSAPP_CLAMAV_URL`               | string         | No                        | No                       |
 | `WHATSAPP_FFMPEG_PATH`              | string         | Yes                       | No                       |
 | `WHATSAPP_GATEWAY_EXPECTED_VERSION` | string         | Yes                       | No                       |

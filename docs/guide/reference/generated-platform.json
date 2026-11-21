@@ -818,6 +818,12 @@
       "valueType": "secret"
     },
     {
+      "name": "VITEST",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
       "name": "WHATSAPP_CLAMAV_URL",
       "configuredInExample": false,
       "secret": false,
@@ -9307,5 +9313,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "2c505b78cf571755c14cde5f0ecb202d72a482f4442b62b90c16b6f4f115d289"
+  "generatedFromSha256": "b106f50509b6e31cc27573f245dd5e2c4cadbb4162a52b69437692161220b8c5"
 }

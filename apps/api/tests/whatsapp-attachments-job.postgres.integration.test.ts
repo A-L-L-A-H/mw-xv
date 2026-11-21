@@ -14,7 +14,7 @@ import {
   ensureWhatsAppAttachmentCron,
   registerWhatsAppAttachmentJob,
 } from '../src/commands/whatsapp-attachments-job.js';
-import { whatsappManifest } from '../src/whatsapp/manifest.js';
+import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 
 const connectionString = process.env.POSTGRES_TEST_URL;
 const postgresDescribe = connectionString ? describe : describe.skip;
