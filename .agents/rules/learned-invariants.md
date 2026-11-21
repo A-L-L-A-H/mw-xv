@@ -37,3 +37,9 @@ Structured post-mortem rules persisted by autonomous and operator loops so resol
 - **Symptom**: Documentation Pages and CI quality-and-build fail on scripts/docs/generate-reference.test.mjs and architecture:check after nested route files, models, or scripts change.
 - **Root Cause**: generate-reference.test.mjs read apps/api/src/routes non-recursively (missing nested routes like whatsapp/media.routes.ts), and commits omitted pnpm docs:generate / pnpm architecture:generate.
 - **Invariant**: Scan apps/api/src/routes recursively in doc reference tests and regenerate docs/diagrams via pnpm docs:generate and pnpm architecture:generate whenever routes, models, packages, or root scripts change.
+
+## INV-007: Shared UI Stylesheet Integrity
+
+- **Symptom**: CI and Documentation Pages fail with CssSyntaxError: Missing closing } at @layer components in apps/board and apps/ui-catalog, and packages/ui token tests fail.
+- **Root Cause**: Commit bc13117 truncated packages/ui/src/styles/components.css to line 1 while removing broken WIP component files.
+- **Invariant**: Always verify packages/ui/src/styles/components.css integrity with pnpm test:ui and downstream Tailwind builds before committing UI cleanup changes.
