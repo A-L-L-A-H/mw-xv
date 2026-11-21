@@ -81,7 +81,7 @@
       "deliverable": "One owner per domain and module-to-storage dataflow diagram",
       "acceptance": "Every data class maps to exactly one canonical owner; caches/UI are derived; contradictions recorded",
       "verification": "doc links and architecture checks",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
