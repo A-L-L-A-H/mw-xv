@@ -1,1337 +1,1557 @@
 # MoonWitness — Master Engineering Transformation TODO
 
-> Canonical root engineering checklist for transforming the MoonWitness monorepo (`@moonwitness/*`) into a unified, metadata-driven, Odoo-inspired application platform. Grounded in direct source-code audit of `apps/*`, `packages/*`, `scripts/*`, `.github/workflows/*`, and existing planning/ADR artifacts.
+> Checklist rekayasa kanonis di root repository untuk mentransformasi monorepo MoonWitness (`@moonwitness/*`) menjadi platform aplikasi modular bergaya Odoo yang terpadu dan siap produksi. Disusun dari audit langsung terhadap kode sumber `apps/*`, `packages/*`, `scripts/*`, `.github/workflows/*`, dan ADR terkait.
 
 ---
 
 ## 00 — Project Overview
 
-### Transformation Objective
+### Tujuan Transformasi
 
-Unify MoonWitness's existing Fastify 5 backend (`apps/api`), Objection/Knex programmatic ORM (`packages/orm`), 11 addon packages (`packages/orm-*`, `packages/auth`, `packages/jobs`), typed client (`packages/client`), design system (`packages/ui`, `packages/assets`), and Next.js App Router frontend (`apps/board`) into a coherent, declarative, metadata-driven application platform modeled on Odoo's core strengths—without introducing separate SQL migration-script frameworks or duplicate engines.
+Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`packages/orm`), 11 package addon (`packages/orm-*`, `packages/auth`, `packages/jobs`), client SDK (`packages/client`), design system (`packages/ui`, `packages/assets`), dan frontend Next.js App Router (`apps/board`) ke dalam satu platform deklaratif berbasis metadata (Model, Schema Sync, Addon, View, Widget, Action, Menu, Domain, Security, dan Skin).
 
-### Target Architecture Summary
+### Arsitektur Target Ringkas
 
-- **Core Runtime (`@moonwitness/orm` + `apps/api`):** Single deterministic bootstrap separating in-memory metadata registration (`registerAddons`) from transactional DDL/seed synchronization (`installAddons`), shared across HTTP servers and background workers (`jobs-worker`, `jobs-scheduler`, `outbox-worker`).
-- **ORM & Schema Engine (`@moonwitness/orm`):** Canonical `Registry` + `Environment` + `Recordset` + `defineModel` + `extendModel`, computed/stored fields, `onchange`/`default_get` hooks, constraint validation, dotted relational domains, and automatic PostgreSQL/SQLite schema diffing & synchronization.
-- **Native Addon Engine (`@moonwitness/orm` + `packages/orm-*`):** Self-contained workspace addons owning models, extensions, views, menus, actions, permissions, seeds, and Fastify `httpPlugins`, with install/enable/disable/upgrade/uninstall lifecycles and `ir.feature_flag` integration.
-- **Model–View, Widget, Action, Menu & Domain Engines:** Inheritance-capable multi-view definitions (`list`, `form`, `search`, `kanban`, `calendar`, `graph`, `pivot`), declarative field widgets (`Many2one`, `One2many`, `Many2many`, `StatusBar`, `Date`/`Monetary`), unified action/menu registries, and shared domain/context evaluation.
-- **Security, API/RPC & Frontend Runtime:** Declarative model/record/field/action security policies, streaming attachment handling, full REST + JSON-RPC parity, dynamic `apps/board` view engines with zero hardcoded model special cases, and a token-based runtime `ThemeRegistry` / Skin Engine in `@moonwitness/ui`.
+1. **Core Runtime (`@moonwitness/orm` + `apps/api`):** Bootstrap tunggal yang memisahkan registrasi metadata in-memory (`registerAddons`) dari sinkronisasi DDL/seed transaksional (`installAddons`), dipakai seragam oleh server HTTP maupun seluruh worker (`jobs-worker`, `jobs-scheduler`, `outbox-worker`).
+2. **ORM & Schema Management (`@moonwitness/orm`):** `Registry` + `Environment` + `Recordset` + `defineModel` + `extendModel`, field terkomputasi/tersimpan, hook `onchange`/`default_get`, constraint validator, domain relasional bertitik, dan sinkronisasi skema PostgreSQL/SQLite otomatis tanpa framework skrip migrasi SQL terpisah.
+3. **Native Addon Engine (`@moonwitness/orm` + `packages/orm-*`):** Addon workspace mandiri yang memiliki model, ekstensi model, view, menu, action, rule keamanan, seed, dan `httpPlugins`, lengkap dengan lifecycle install/enable/disable/upgrade/uninstall terintegrasi `ir.feature_flag`.
+4. **Model–View, Widget, Action, Menu & Domain Engines:** Registry multi-view dengan pewarisan `extendView` (`list`, `form`, `search`, `kanban`, `calendar`, `graph`, `pivot`), `FieldWidgetRegistry`, `ActionRegistry` + menu hierarkis + smart button, serta evaluator domain/context tunggal di `@moonwitness/types`.
+5. **Security, API/RPC, Frontend & Skin Engine:** Kebijakan akses deklaratif tingkat model/record/field/action, upload lampiran streaming, paritas REST & JSON-RPC penuh, renderer dinamis `apps/board` tanpa hardcode model khusus, serta `ThemeRegistry` & Skin Engine runtime di `@moonwitness/ui`.
 
-### Scope & Working Principles
+### Prinsip Kerja & Aturan Penyelesaian
 
-1. **ORM Owns Schema Evolution:** Ordinary DDL changes (tables, columns, nullability, defaults, enum `CHECK` constraints, indexes, unique keys, foreign keys) are handled programmatically by `@moonwitness/orm` + `pnpm db:migrate`. `addon.upgrade` hooks are reserved strictly for non-trivial data backfills. **No separate SQL migration-script framework will be created.**
-2. **Addon-First & Thin API (`ADR-0006`):** All domain models, views, menus, and addon manifests live in `packages/*` (`pnpm api:addon:check`), never inside `apps/api/src`.
-3. **Shared UI Discipline:** All frontend controls, icons, and tokens in `apps/board` consume `@moonwitness/ui` and `@moonwitness/assets` (`pnpm board:ui:check`), keeping `apps/board` (`@moonwitness/board`) as the canonical web application directory (`apps/web` architectural role).
-4. **One Canonical Implementation per Engine:** Eliminate duplicate type definitions (`@moonwitness/client` vs `@moonwitness/types`) and duplicate domain evaluators (`@moonwitness/client` vs `@moonwitness/orm`).
-5. **Two-Branch Promotion Governance (`ADR-0001`):** Preserve `dev` -> `main` promotion, exact-SHA verification gates, and reconciliation with existing `ROADMAP.md` (`M0`–`M11`, `K0`–`K9`).
+1. **ORM Mengelola Evolusi Skema:** Perubahan DDL biasa (tabel, kolom, nullability, default, `CHECK` constraint enum, index, unique, FK) dikelola otomatis oleh `@moonwitness/orm` + `pnpm db:migrate`. Hook `addon.upgrade` hanya untuk transformasi data khusus. **Dilarang membuat framework skrip migrasi SQL terpisah.**
+2. **Addon-First & Thin `apps/api` (`ADR-0006`):** Seluruh model domain, view, menu, dan manifest addon berada di `packages/*` (`pnpm api:addon:check`).
+3. **Shared UI Wajib (`@moonwitness/ui` + `@moonwitness/assets`):** Seluruh kontrol UI, ikon, dan token di `apps/board` memakai package shared (`pnpm board:ui:check`), mempertahankan `apps/board` (`@moonwitness/board`) sebagai lokasi fisik peran `apps/web`.
+4. **Satu Implementasi Kanonis per Engine:** Menghapus duplikasi tipe (`@moonwitness/client` vs `@moonwitness/types`) dan evaluator domain (`@moonwitness/client` vs `@moonwitness/orm`).
+5. **Aturan Checklist:** `[x]` hanya untuk fitur yang sudah ada dan terverifikasi bukti kodenya. `[ ]` berarti belum selesai atau belum diverifikasi; setiap checkbox induk dan subtask bisa dicentang langsung secara independen.
+6. **Legenda Prioritas:** **P0** Kritis/keamanan/integritas data · **P1** Fondasi inti & kontrak · **P2** Runtime platform & engine · **P3** Pengalaman UI, skin, DX & lanjutan.
 
-### Completion Rules
+### Ringkasan Progres & Penyelesaian per Fase
 
-- `[x]` denotes **implemented AND verified** by existing repository code, tests, or recorded CI/test evidence observed during audit.
-- `[ ]` denotes **incomplete, unverified, broken, or planned** work. Never check `[ ]` without running and recording the corresponding verification command after final edits.
-- Priority legend: **P0** Critical blocker/security/data integrity · **P1** Core foundation & contracts · **P2** Platform runtime & engines · **P3** Experience, skins, DX & polish.
-
-### Overall Progress & Phase Summary
-
-| Section   | Phase / Subsystem                      | Task ID Range                   | Priority Focus | Done (`[x]`) | Open (`[ ]`) |   Total |
-| :-------- | :------------------------------------- | :------------------------------ | :------------- | -----------: | -----------: | ------: |
-| 01        | Baseline Verified Capabilities         | `MW-BASE-001`–`MW-BASE-012`     | Baseline       |           12 |            0 |      12 |
-| 03        | Core Runtime                           | `MW-CORE-001`–`MW-CORE-006`     | P0–P1          |            0 |            6 |       6 |
-| 04        | ORM & Model Engine                     | `MW-ORM-001`–`MW-ORM-012`       | P1–P2          |            0 |           12 |      12 |
-| 05        | ORM Schema Management                  | `MW-SCHEMA-001`–`MW-SCHEMA-008` | P0–P1          |            0 |            8 |       8 |
-| 06        | Native Addon Engine                    | `MW-ADDON-001`–`MW-ADDON-009`   | P1–P2          |            0 |            9 |       9 |
-| 07        | Model–View Engine                      | `MW-VIEW-001`–`MW-VIEW-010`     | P1–P2          |            0 |           10 |      10 |
-| 08        | Field Widget Engine                    | `MW-WIDGET-001`–`MW-WIDGET-007` | P2–P3          |            0 |            7 |       7 |
-| 09        | Action & Menu Engine                   | `MW-ACT-001`–`MW-ACT-007`       | P2             |            0 |            7 |       7 |
-| 10        | Domain & Context Engine                | `MW-DOM-001`–`MW-DOM-006`       | P1–P2          |            0 |            6 |       6 |
-| 11        | Security & Identity                    | `MW-SEC-001`–`MW-SEC-008`       | P0–P1          |            0 |            8 |       8 |
-| 12        | API & RPC Architecture                 | `MW-API-001`–`MW-API-007`       | P1–P2          |            0 |            7 |       7 |
-| 13        | Backend Transformation (`apps/api`)    | `MW-BACK-001`–`MW-BACK-007`     | P1–P2          |            0 |            7 |       7 |
-| 14        | Frontend Transformation (`apps/board`) | `MW-WEB-001`–`MW-WEB-009`       | P2–P3          |            0 |            9 |       9 |
-| 15        | Shared UI & Design System              | `MW-UI-001`–`MW-UI-006`         | P2–P3          |            0 |            6 |       6 |
-| 16        | Skin & Theme Engine                    | `MW-SKIN-001`–`MW-SKIN-005`     | P3             |            0 |            5 |       5 |
-| 17        | Shared Packages Consolidation          | `MW-PKG-001`–`MW-PKG-006`       | P1–P2          |            0 |            6 |       6 |
-| 18        | Events, Jobs & Automation              | `MW-JOB-001`–`MW-JOB-005`       | P1–P2          |            0 |            5 |       5 |
-| 19        | Configuration, Storage & i18n          | `MW-CFG-001`–`MW-CFG-005`       | P1–P3          |            0 |            5 |       5 |
-| 20        | Performance & Optimization             | `MW-PERF-001`–`MW-PERF-005`     | P2–P3          |            0 |            5 |       5 |
-| 21        | Security & Reliability Hardening       | `MW-HARD-001`–`MW-HARD-005`     | P0–P1          |            0 |            5 |       5 |
-| 22        | Testing & Quality Assurance            | `MW-QA-001`–`MW-QA-006`         | P1–P2          |            0 |            6 |       6 |
-| 23        | Developer Experience & Tooling         | `MW-DX-001`–`MW-DX-004`         | P2–P3          |            0 |            4 |       4 |
-| 24        | Documentation                          | `MW-DOC-001`–`MW-DOC-004`       | P2–P3          |            0 |            4 |       4 |
-| 25        | CI/CD & Production Readiness           | `MW-CICD-001`–`MW-CICD-005`     | P0–P2          |            0 |            5 |       5 |
-| 26        | End-to-End Platform Integration        | `MW-E2E-001`–`MW-E2E-016`       | P0–P1          |            0 |           16 |      16 |
-| 27        | Final Audit & Cleanup                  | `MW-AUDIT-001`–`MW-AUDIT-004`   | P1–P3          |            0 |            4 |       4 |
-| **Total** | **All Tracked Sections**               | **`MW-BASE-*` + `MW-*`**        | **P0–P3**      |       **12** |      **172** | **184** |
+| Seksi     | Fase / Subsistem                     | Rentang ID Utama                | Prioritas  | Task Utama `[x]` | Task Utama `[ ]` | Subtask `[ ]` | Total Checkbox |
+| :-------- | :----------------------------------- | :------------------------------ | :--------- | ---------------: | ---------------: | ------------: | -------------: |
+| 01        | Baseline Fitur Terverifikasi         | `MW-BASE-001`–`MW-BASE-012`     | Baseline   |               12 |                0 |             0 |             12 |
+| 03        | Core Runtime                         | `MW-CORE-001`–`MW-CORE-006`     | P0–P1      |                0 |                6 |            24 |             30 |
+| 04        | ORM & Model Engine                   | `MW-ORM-001`–`MW-ORM-012`       | P1–P2      |                0 |               12 |            48 |             60 |
+| 05        | ORM Schema Management                | `MW-SCHEMA-001`–`MW-SCHEMA-008` | P0–P1      |                0 |                8 |            32 |             40 |
+| 06        | Native Addon Engine                  | `MW-ADDON-001`–`MW-ADDON-009`   | P1–P2      |                0 |                9 |            36 |             45 |
+| 07        | Model–View Engine                    | `MW-VIEW-001`–`MW-VIEW-010`     | P1–P2      |                0 |               10 |            40 |             50 |
+| 08        | Field Widget Engine                  | `MW-WIDGET-001`–`MW-WIDGET-007` | P2–P3      |                0 |                7 |            28 |             35 |
+| 09        | Action & Menu Engine                 | `MW-ACT-001`–`MW-ACT-007`       | P2         |                0 |                7 |            28 |             35 |
+| 10        | Domain & Context Engine              | `MW-DOM-001`–`MW-DOM-006`       | P1–P2      |                0 |                6 |            24 |             30 |
+| 11        | Security & Identity                  | `MW-SEC-001`–`MW-SEC-008`       | P0–P1      |                0 |                8 |            32 |             40 |
+| 12        | API & RPC Architecture               | `MW-API-001`–`MW-API-007`       | P1–P2      |                0 |                7 |            28 |             35 |
+| 13        | Transformasi Backend (`apps/api`)    | `MW-BACK-001`–`MW-BACK-007`     | P1–P2      |                0 |                7 |            28 |             35 |
+| 14        | Transformasi Frontend (`apps/board`) | `MW-WEB-001`–`MW-WEB-009`       | P2–P3      |                0 |                9 |            36 |             45 |
+| 15        | Shared UI & Design System            | `MW-UI-001`–`MW-UI-006`         | P2–P3      |                0 |                6 |            24 |             30 |
+| 16        | Skin & Theme Engine                  | `MW-SKIN-001`–`MW-SKIN-005`     | P3         |                0 |                5 |            20 |             25 |
+| 17        | Konsolidasi Shared Packages          | `MW-PKG-001`–`MW-PKG-006`       | P1–P2      |                0 |                6 |            24 |             30 |
+| 18        | Events, Jobs & Automation            | `MW-JOB-001`–`MW-JOB-005`       | P1–P2      |                0 |                5 |            20 |             25 |
+| 19        | Konfigurasi, Storage & i18n          | `MW-CFG-001`–`MW-CFG-005`       | P1–P3      |                0 |                5 |            20 |             25 |
+| 20        | Performa & Optimasi                  | `MW-PERF-001`–`MW-PERF-005`     | P2–P3      |                0 |                5 |            20 |             25 |
+| 21        | Penguatan Keamanan & Reliabilitas    | `MW-HARD-001`–`MW-HARD-005`     | P0–P1      |                0 |                5 |            20 |             25 |
+| 22        | Testing & Quality Assurance          | `MW-QA-001`–`MW-QA-006`         | P1–P2      |                0 |                6 |            24 |             30 |
+| 23        | Developer Experience & Tooling       | `MW-DX-001`–`MW-DX-004`         | P2–P3      |                0 |                4 |            16 |             20 |
+| 24        | Dokumentasi                          | `MW-DOC-001`–`MW-DOC-004`       | P2–P3      |                0 |                4 |            16 |             20 |
+| 25        | CI/CD & Kesiapan Produksi            | `MW-CICD-001`–`MW-CICD-005`     | P0–P2      |                0 |                5 |            20 |             25 |
+| 26        | Integrasi Platform End-to-End        | `MW-E2E-001`–`MW-E2E-016`       | P0–P1      |                0 |               16 |            48 |             64 |
+| 27        | Audit Akhir & Pembersihan            | `MW-AUDIT-001`–`MW-AUDIT-004`   | P1–P3      |                0 |                4 |            16 |             20 |
+| 28        | Definition of Done                   | `MW-DOD-001`–`MW-DOD-005`       | Gate Akhir |                0 |                5 |             0 |              5 |
+| **Total** | **Seluruh Seksi Terlacak**           | **`MW-BASE-*` + `MW-*`**        | **P0–P3**  |           **12** |          **177** |       **672** |        **861** |
 
 ---
 
 ## 01 — Repository Discovery & Baseline
 
-### Workspace Inventory (Measured via `node scripts/audit-workspace.mjs`)
+### Inventaris Workspace (Terukur via `node scripts/audit-workspace.mjs`)
 
-- **Monorepo Scope:** 27 workspace manifests (root `moonwitness-monorepo` + 4 apps + 22 packages), 1,234 scanned source files, **0** runtime import cycles, **0** workspace dependency cycles, and **5** type-only file-level cycles (`packages/local-ai/src/index.ts -> suggestion-generation.ts`, `packages/orm-knowledge/src/research-release-validation.ts -> research-release.ts`, `packages/orm-storage/src/index.ts -> s3.ts`, `packages/orm/src/base.model.ts -> environment.ts`, `packages/orm/src/base.model.ts -> model-definition.ts`).
-- **Registered Addon Models:** **73 models** across 11 addon manifests (`base`: 23, `auth`: 1, `jobs`: 4, `notification`: 3, `organization`: 4, `orm-storage`: 0, `workflow`: 4, `request`: 1, `orm-integration`: 2, `orm-whatsapp`: 13, `knowledge`: 18).
-- **Boundary Checks Passing at Baseline:**
-  - `node scripts/check-api-addon-boundary.mjs` -> 0 violations (empty legacy allowlists).
-  - `node scripts/check-board-shared-ui.mjs` -> 0 violations (no raw JSX controls or banned icon libraries).
-  - `node scripts/roadmap/validate-roadmap.mjs` -> 213 roadmap tasks validated (`148` M-series + `65` K-series; 81 open cards).
-- **CI Workflows Present (`.github/workflows/`):** 6 active workflow files (`ci.yml`, `pages.yml`, `release-orchestrate.yml`, `release-plan.yml`, `release-prepare.yml`, `release.yml`). Note: `scripts/platform-audit.mjs` and `scripts/check-gitleaks-config.mjs` still reference retired filenames (`gitleaks.yml`, `codeql.yml`, `browser-matrix.yml`, `deep-regression.yml`, `platform-audit.yml`).
+1. **Cakupan Monorepo:** 27 entri workspace (root `moonwitness-monorepo` + 4 apps + 22 packages), 1.234 file sumber, **0** siklus import runtime, **0** siklus dependency workspace, dan **5** siklus import file-level type-only (`packages/local-ai/src/index.ts -> suggestion-generation.ts`, `packages/orm-knowledge/src/research-release-validation.ts -> research-release.ts`, `packages/orm-storage/src/index.ts -> s3.ts`, `packages/orm/src/base.model.ts -> environment.ts`, `packages/orm/src/base.model.ts -> model-definition.ts`).
+2. **Model Addon Terdaftar:** **73 model** lintas 11 manifest addon (`base`: 23, `auth`: 1, `jobs`: 4, `notification`: 3, `organization`: 4, `orm-storage`: 0, `workflow`: 4, `request`: 1, `orm-integration`: 2, `orm-whatsapp`: 13, `knowledge`: 18).
+3. **Pemeriksaan Boundary Baseline (Lulus):** `node scripts/check-api-addon-boundary.mjs` (0 pelanggaran), `node scripts/check-board-shared-ui.mjs` (0 pelanggaran), `node scripts/roadmap/validate-roadmap.mjs` (213 task tervalidasi: 148 seri M + 65 seri K; 81 terbuka).
+4. **Workflow CI Aktif (`.github/workflows/`):** 6 file (`ci.yml`, `pages.yml`, `release-orchestrate.yml`, `release-plan.yml`, `release-prepare.yml`, `release.yml`). Catatan temuan: `scripts/platform-audit.mjs` dan `scripts/check-gitleaks-config.mjs` masih merujuk nama workflow lama yang sudah pensiun (`gitleaks.yml`, `codeql.yml`, `browser-matrix.yml`, `deep-regression.yml`, `platform-audit.yml`).
 
-### Application Audit (`apps/*`)
+### Audit Aplikasi (`apps/*`)
 
-| App               | Package Name              | Purpose & Architecture                                                                                                                                                                         | Audit Findings & Current Gaps                                                                                                                                                                                                                                                                                                                                                                            |
-| :---------------- | :------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api`        | `@moonwitness/api`        | Fastify 5 REST/JSON-RPC host, auth plugin, generic CRUD, domain routes, and 13 CLI/worker commands (`server.ts`, `db-migrate.ts`, `jobs-worker.ts`, `jobs-scheduler.ts`, `outbox-worker.ts`).  | `app.ts` (306 lines) is clean, but `registry.ts` skips `model.knex`/`views`/`menus`/`postInstall` when `SKIP_BOOT_MIGRATIONS=true`. `generic.routes.ts` is 1,586 lines; WhatsApp sub-routers `conversations.routes.ts` (1,073), `groups.routes.ts` (1,015), `messages.routes.ts` (864) and `route-helpers.ts` (831) remain large. Worker CLIs duplicate addon lists and call `installAddons()` directly. |
-| `apps/board`      | `@moonwitness/board`      | Next.js App Router app serving public `/` and authenticated `/board/*` workspace (`app-shell.tsx`, `list-view.tsx`, `form-view.tsx`, `fields.tsx`, `whatsapp-page.tsx`, `dashboard-page.tsx`). | Acts as canonical `apps/web`. Contains 0 raw JSX control violations (`board:ui:check`), but `list-view.tsx` (1,486 lines), `whatsapp-page.tsx` (2,897 lines), and `dashboard-page.tsx` (991 lines) are oversized. Hardcodes sidebar modules, 4-model omnisearch, country/state `onchange`, `Many2one` search fields, and ad-hoc Kanban grouping heuristics. `useViews` sets `staleTime: Infinity`.       |
-| `apps/docs`       | `@moonwitness/docs`       | Searchable Vite/React documentation portal and versioned GitHub Pages builder.                                                                                                                 | Local build and publication safety checks pass; hosted `main` Pages publication remains gated on promotion (`M6.07`–`M6.10`).                                                                                                                                                                                                                                                                            |
-| `apps/ui-catalog` | `@moonwitness/ui-catalog` | Interactive component specimen and Playwright visual/accessibility verification harness (`catalog.tsx`, 1,642 lines).                                                                          | Covers existing primitives and light/dark tokens; lacks multi-skin switcher matrix and data-view widgets (`KanbanBoard`, `StatusBar`, `DatePicker`).                                                                                                                                                                                                                                                     |
+| App               | Nama Package              | Peran & Implementasi Saat Ini                                                                                                                                                            | Temuan Audit & Gap                                                                                                                                                                                                                                                                                                                                                                                                |
+| :---------------- | :------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/api`        | `@moonwitness/api`        | Host Fastify 5 REST/JSON-RPC, auth plugin, CRUD generik, route domain, dan 13 CLI/worker (`server.ts`, `db-migrate.ts`, `jobs-worker.ts`, `jobs-scheduler.ts`, `outbox-worker.ts`).      | `app.ts` (306 baris) tipis, tetapi `registry.ts` melewatkan `model.knex`/`views`/`menus`/`postInstall` saat `SKIP_BOOT_MIGRATIONS=true`. `generic.routes.ts` 1.586 baris; sub-router WhatsApp `conversations.routes.ts` (1.073), `groups.routes.ts` (1.015), `messages.routes.ts` (864), dan `route-helpers.ts` (831) masih besar. CLI worker menduplikasi daftar addon dan langsung memanggil `installAddons()`. |
+| `apps/board`      | `@moonwitness/board`      | Aplikasi Next.js App Router untuk `/` publik dan `/board/*` terautentikasi (`app-shell.tsx`, `list-view.tsx`, `form-view.tsx`, `fields.tsx`, `whatsapp-page.tsx`, `dashboard-page.tsx`). | Berperan sebagai `apps/web` kanonis. Bebas kontrol HTML mentah (`board:ui:check`), tetapi `list-view.tsx` (1.486 baris), `whatsapp-page.tsx` (2.897 baris), dan `dashboard-page.tsx` (991 baris) masih besar. Hardcode sidebar, omnisearch 4 model, `onchange` `country_id`, field pencarian `Many2one`, dan heuristik Kanban. `useViews` memakai `staleTime: Infinity`.                                          |
+| `apps/docs`       | `@moonwitness/docs`       | Portal dokumentasi React/Vite dengan pencarian & build GitHub Pages berversi.                                                                                                            | Build lokal dan pengecekan keamanan publikasi lulus; publikasi `main` Pages masih menunggu gate promosi (`M6.07`–`M6.10`).                                                                                                                                                                                                                                                                                        |
+| `apps/ui-catalog` | `@moonwitness/ui-catalog` | Katalog spesimen komponen interaktif & uji visual/a11y Playwright (`catalog.tsx`, 1.642 baris).                                                                                          | Mencakup primitif dan token light/dark saat ini; belum ada switcher multi-skin atau widget data-view (`KanbanBoard`, `StatusBar`, `DatePicker`).                                                                                                                                                                                                                                                                  |
 
-### Package Audit (`packages/*` — All 22 Packages)
+### Audit Seluruh 22 Package (`packages/*`)
 
-| Package                         | Category                         | Models | Consumers                                                                   | Evaluation & Action                                                                                                                                                                                                                                |
-| :------------------------------ | :------------------------------- | -----: | :-------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@moonwitness/orm`              | Core ORM                         |      0 | `api`, all `orm-*`, `auth`, `jobs`                                          | **Keep & Expand:** Add `extendModel`, `Recordset`, computed/stored fields, `onchange`, multi-view registry, and column/enum/FK schema evolution.                                                                                                   |
-| `@moonwitness/orm-base`         | Core Addon (`base`)              |     23 | `api`, `auth`, `jobs`, all `orm-*`                                          | **Keep & Expand:** Houses `base.partner`, `base.user`, `base.company`, `ir.feature_flag`, `base.audit_log`, etc. Add `base.config_parameter`, `base.saved_filter`, `base.action`, `base.menu` or declarative contracts.                            |
-| `@moonwitness/auth`             | Addon (`auth`)                   |      1 | `api`                                                                       | **Keep:** Owns `auth.refresh_token`, scrypt hashing, refresh rotation grace/family revocation. Integrate with `httpPlugins` and request auth caching.                                                                                              |
-| `@moonwitness/jobs`             | Addon (`jobs`)                   |      4 | `api`, `orm-notification`, `orm-workflow`, `orm-integration`, `orm-request` | **Keep & Fix:** Owns `base.job`, `base.job_run`, `base.cron`, `base.outbox_event`. Fix head-of-line scheduler failure (`K7-005`) and share runtime bootstrap.                                                                                      |
-| `@moonwitness/orm-notification` | Addon (`notification`)           |      3 | `api`, `orm-workflow`, `orm-request`                                        | **Keep:** In-app/template notifications via outbox. Wire into addon `httpPlugins`.                                                                                                                                                                 |
-| `@moonwitness/orm-organization` | Addon (`organization`)           |      4 | `api`                                                                       | **Keep:** Departments, teams, positions, memberships + cross-company validation. Move generic route hook (`isValidOrganizationMutation`) into declarative model validation hook.                                                                   |
-| `@moonwitness/orm-storage`      | Storage Provider (`orm-storage`) |      0 | `api`                                                                       | **Keep & Fix Cycle:** Local + S3 attachment storage (`putStream`, `getStream`, reconciliation). Resolve type cycle `index.ts -> s3.ts`; migrate `/api/base.attachment/upload` to `putStream`.                                                      |
-| `@moonwitness/orm-workflow`     | Addon (`workflow`)               |      4 | `api`, `orm-request`, `orm-knowledge`                                       | **Keep:** State machines, approvals, append-only SQL triggers, timeout expiry job. Wire into addon `httpPlugins` and FormView statusbar.                                                                                                           |
-| `@moonwitness/orm-request`      | Addon (`request`)                |      1 | `api`                                                                       | **Keep:** `PurchaseRequest` reference domain addon atop `workflow` + `notification`.                                                                                                                                                               |
-| `@moonwitness/orm-integration`  | Addon (`orm-integration`)        |      2 | `api`                                                                       | **Keep:** Outbound webhook subscriptions, scoped `MW_WEBHOOK_SECRET_C*` refs, HMAC + SSRF DNS guards.                                                                                                                                              |
-| `@moonwitness/orm-whatsapp`     | Addon (`orm-whatsapp`)           |     13 | `api`                                                                       | **Keep & Clean:** Version `1.14.0` (mismatch with `1.0.0-rc.1` workspace policy!). Remove raw SQL enum workaround once ORM owns enum `CHECK` diffing; delete `apps/api/src/whatsapp/manifest.ts` shim.                                             |
-| `@moonwitness/orm-knowledge`    | Addon (`knowledge`)              |     18 | `api`                                                                       | **Keep & Fix Cycle:** Research graph, witness testimonies, story versions, BUG cases, publication snapshots, append-only triggers. Resolve `research-release-validation.ts -> research-release.ts`; migrate 15 API route plugins to `httpPlugins`. |
-| `@moonwitness/types`            | Shared Contracts                 |      0 | `api`, `board`, `orm`, `orm-*`, `jobs`                                      | **Keep & Consolidate:** Canonical home for DTOs, `FieldMeta`, `ViewSpec`, `ResolvedViews`, `ActionSpec`, `Domain` AST/evaluator, and route schemas.                                                                                                |
-| `@moonwitness/client`           | Frontend SDK                     |      0 | `board`                                                                     | **Consolidate Contracts:** Currently has zero dependencies on `@moonwitness/types` and duplicates `FieldMeta`, `ResolvedViews`, `Domain`, and `evalDomain`. Depend on `@moonwitness/types` and delete duplicates.                                  |
-| `@moonwitness/ui`               | Design System                    |      0 | `board`, `docs`, `ui-catalog`                                               | **Keep & Expand:** Add data-view primitives (`DataGrid`, `KanbanBoard`, `StatusBar`, `SmartButtonBox`, `DatePicker`) and `ThemeRegistry`/Skin Engine.                                                                                              |
-| `@moonwitness/assets`           | Static Assets                    |      0 | `ui`, `board`, `docs`, `ui-catalog`                                         | **Keep:** Brand SVG/raster, 82+ canonical icons, fonts, SFX audio, manifest/license provenance.                                                                                                                                                    |
-| `@moonwitness/logger`           | Observability                    |      0 | `api`                                                                       | **Keep:** Pino structured logger with secret/credential redaction.                                                                                                                                                                                 |
-| `@moonwitness/knowledge`        | Domain Core                      |      0 | `corpus`, `research`, `orm-knowledge`, `api`                                | **Keep:** Offline typed knowledge record contracts, canonical JSON hashing, PROV schemas.                                                                                                                                                          |
-| `@moonwitness/corpus`           | Domain Ingestion                 |      0 | `orm-knowledge`, `api`                                                      | **Keep:** Rights-cleared offline passage & artifact ingestion.                                                                                                                                                                                     |
-| `@moonwitness/research`         | Research Engine                  |      0 | `orm-knowledge`, `api`                                                      | **Keep:** Offline assertion, evidence, relation, privacy lifecycle, and Mizan policy contracts.                                                                                                                                                    |
-| `@moonwitness/local-ai`         | Local AI Adapter                 |      0 | `api`                                                                       | **Keep & Fix Cycle:** Loopback-only, disabled-by-default adapter with prompt-injection suite. Resolve `index.ts -> suggestion-generation.ts` cycle.                                                                                                |
-| `@moonwitness/eslint-config`    | Tooling                          |      0 | root                                                                        | **Keep:** Shared strict TypeScript/ESLint rules (zero explicit `any`).                                                                                                                                                                             |
+| Package                         | Kategori                  | Model | Konsumer                                     | Evaluasi & Arah Tindakan                                                                                                                                                                                                        |
+| :------------------------------ | :------------------------ | ----: | :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@moonwitness/orm`              | Core ORM                  |     0 | `api`, seluruh `orm-*`, `auth`, `jobs`       | **Pertahankan & Perluas:** Tambah `extendModel`, `Recordset`, field `computed`/`stored`, `onchange`, registry multi-view, dan evolusi skema kolom/enum/FK.                                                                      |
+| `@moonwitness/orm-base`         | Addon Inti (`base`)       |    23 | `api`, `auth`, `jobs`, seluruh `orm-*`       | **Pertahankan & Perluas:** Memuat `base.partner`, `base.user`, `base.company`, `ir.feature_flag`, `base.audit_log`, dll. Tambah `base.config_parameter` & `base.saved_filter`.                                                  |
+| `@moonwitness/auth`             | Addon (`auth`)            |     1 | `api`                                        | **Pertahankan:** Mengelola `auth.refresh_token`, scrypt hashing, rotasi refresh token. Integrasikan via `httpPlugins` & caching grant.                                                                                          |
+| `@moonwitness/jobs`             | Addon (`jobs`)            |     4 | `api`, `orm-*`                               | **Pertahankan & Perbaiki:** Mengelola `base.job`, `base.job_run`, `base.cron`, `base.outbox_event`. Perbaiki bug head-of-line scheduler (`K7-005`) dan satukan bootstrap worker.                                                |
+| `@moonwitness/orm-notification` | Addon (`notification`)    |     3 | `api`, `orm-workflow`, `orm-request`         | **Pertahankan:** Notifikasi in-app & template via outbox. Pindahkan registrasi route ke `httpPlugins`.                                                                                                                          |
+| `@moonwitness/orm-organization` | Addon (`organization`)    |     4 | `api`                                        | **Pertahankan:** Departemen, tim, posisi, membership. Pindahkan `isValidOrganizationMutation` dari `generic.routes.ts` ke constraint model deklaratif.                                                                          |
+| `@moonwitness/orm-storage`      | Provider Storage          |     0 | `api`                                        | **Pertahankan & Perbaiki Siklus:** Provider lokal & S3 (`putStream`, `getStream`, rekonsiliasi). Hapus siklus tipe `index.ts -> s3.ts`; gunakan `putStream` pada upload generic.                                                |
+| `@moonwitness/orm-workflow`     | Addon (`workflow`)        |     4 | `api`, `orm-request`, `orm-knowledge`        | **Pertahankan:** State machine, approval, trigger append-only SQL, job expiry. Hubungkan dengan `StatusBar` dan `httpPlugins`.                                                                                                  |
+| `@moonwitness/orm-request`      | Addon (`request`)         |     1 | `api`                                        | **Pertahankan:** Addon referensi `PurchaseRequest` di atas `workflow` + `notification`.                                                                                                                                         |
+| `@moonwitness/orm-integration`  | Addon (`orm-integration`) |     2 | `api`                                        | **Pertahankan:** Outbound webhook, `MW_WEBHOOK_SECRET_C*`, HMAC & guard DNS SSRF.                                                                                                                                               |
+| `@moonwitness/orm-whatsapp`     | Addon (`orm-whatsapp`)    |    13 | `api`                                        | **Pertahankan & Rapikan:** Versi package `1.14.0` tidak selaras dengan policy monorepo `1.0.0-rc.1`. Hapus raw SQL `setup` enum setelah ORM mendukung diff `CHECK` constraint; hapus shim `apps/api/src/whatsapp/manifest.ts`.  |
+| `@moonwitness/orm-knowledge`    | Addon (`knowledge`)       |    18 | `api`                                        | **Pertahankan & Perbaiki Siklus:** Knowledge graph, witness, story, BUG case, publication, trigger append-only. Putus siklus tipe `research-release-validation.ts -> research-release.ts`; pindahkan 15 route ke `httpPlugins`. |
+| `@moonwitness/types`            | Kontrak Shared            |     0 | `api`, `board`, `orm`, `orm-*`, `jobs`       | **Pertahankan & Konsolidasi:** Rumah tunggal kontrak DTO, `FieldMeta`, `ViewSpec`, `ResolvedViews`, `ActionSpec`, dan parser/evaluator `Domain`.                                                                                |
+| `@moonwitness/client`           | SDK Frontend              |     0 | `board`                                      | **Konsolidasi Kontrak:** Saat ini tanpa dependency `@moonwitness/types` dan menduplikasi tipe view/domain serta `evalDomain`. Wajib bergantung ke `@moonwitness/types` dan hapus duplikasi.                                     |
+| `@moonwitness/ui`               | Design System             |     0 | `board`, `docs`, `ui-catalog`                | **Pertahankan & Perluas:** Tambah komponen data-view (`DataGrid`, `KanbanBoard`, `StatusBar`, `SmartButtonBox`, `DatePicker`) dan `ThemeRegistry` / Skin Engine.                                                                |
+| `@moonwitness/assets`           | Aset Statis               |     0 | `ui`, `board`, `docs`, `ui-catalog`          | **Pertahankan:** Brand SVG/raster, 82+ ikon kanonis, font, audio SFX, manifest & lisensi.                                                                                                                                       |
+| `@moonwitness/logger`           | Observability             |     0 | `api`                                        | **Pertahankan:** Logger Pino terstruktur dengan redaksi secret otomatis.                                                                                                                                                        |
+| `@moonwitness/knowledge`        | Domain Core               |     0 | `corpus`, `research`, `orm-knowledge`, `api` | **Pertahankan:** Kontrak record knowledge offline, canonical JSON hashing, PROV schema.                                                                                                                                         |
+| `@moonwitness/corpus`           | Domain Ingestion          |     0 | `orm-knowledge`, `api`                       | **Pertahankan:** Ingesti teks/artefak offline terverifikasi lisensi.                                                                                                                                                            |
+| `@moonwitness/research`         | Research Engine           |     0 | `orm-knowledge`, `api`                       | **Pertahankan:** Evaluasi assertion, evidence, relation, privacy lifecycle, dan Mizan.                                                                                                                                          |
+| `@moonwitness/local-ai`         | Adapter AI Lokal          |     0 | `api`                                        | **Pertahankan & Perbaiki Siklus:** Adapter loopback disabled-by-default dengan uji prompt injection. Putus siklus tipe `index.ts -> suggestion-generation.ts`.                                                                  |
+| `@moonwitness/eslint-config`    | Tooling                   |     0 | root                                         | **Pertahankan:** Aturan strict TypeScript/ESLint lintas monorepo (nol explicit `any`).                                                                                                                                          |
 
-### Existing Working Features (Verified Baseline — Preserve & Do Not Rewrite)
+### Fitur Existing yang Sudah Berjalan & Terverifikasi (Wajib Dipertahankan)
 
-- [x] **MW-BASE-001** Programmatic addon topological sort, transactional `pg_advisory_xact_lock`, `_orm_addons` & `_orm_data` idempotent upsert preserving user-edited seed rows (`packages/orm/src/addon.ts`, `scripts/roadmap/addon-conformance.test.mjs`).
-- [x] **MW-BASE-002** Declarative `defineModel` schema generation, automatic password scrypt hashing, `$formatJson` hidden-field stripping, composite `(company_id, active, id)` & FK indexes, and unique constraints (`packages/orm/src/model-definition.ts`, `packages/orm/src/addon.ts`).
-- [x] **MW-BASE-003** Fastify 5 thin bootstrap with security headers, `CORS_ORIGINS` allowlist, PostgreSQL rate-limit store (`PostgresRateLimitStore`), graceful shutdown, and worker `/readyz` health servers (`apps/api/src/app.ts`, `apps/api/src/server.ts`, `apps/api/src/plugins/rate-limit-store.ts`).
-- [x] **MW-BASE-004** Refresh token family rotation with 5s concurrent rotation grace window, theft revocation, timing-safe login verification, and session revocation CLIs (`packages/auth/src/service.ts`, `apps/api/src/commands/revoke-auth-sessions.ts`).
-- [x] **MW-BASE-005** Prefix-level `knowledge.*` generic API default-deny, company isolation checks (`hasCompanyAccess`), `If-Match`/`x-expected-write-date` 409 optimistic concurrency, and append-only `base.audit_log` (`apps/api/src/auth/policy.ts`, `apps/api/src/routes/generic.routes.ts`).
-- [x] **MW-BASE-006** Durable lease/fencing job worker, cron scheduler, and transactional outbox loop (`packages/jobs/src/runtime.ts`), plus `orm-notification`, `orm-workflow` append-only triggers, `orm-integration` SSRF-guarded webhooks, and `orm-storage` local/S3 providers.
-- [x] **MW-BASE-007** Mandatory addon-first API boundary (`pnpm api:addon:check`) and zero raw JSX/icon violations in Board (`pnpm board:ui:check`) enforced in CI and `.githooks/pre-push`.
-- [x] **MW-BASE-008** Canonical design system `@moonwitness/ui`, `@moonwitness/assets` (SVG bounds/sanitization verified across 114 SVGs, deterministic generation), and `@moonwitness/ui-catalog` visual/a11y suite.
-- [x] **MW-BASE-009** Next.js App Router frontend (`apps/board`) serving `/` and `/board/*` with scoped TanStack Query keys (`scopedQueryKey`), company switcher, command palette, keyboard shortcuts, and route-aware bundle budgets (`pnpm board:budget`).
-- [x] **MW-BASE-010** Decomposed WhatsApp backend sub-routers (`apps/api/src/routes/whatsapp/*.routes.ts`) and modular Board WhatsApp UI (`apps/board/src/components/whatsapp/*`) with zero ESLint errors and zero oxlint warnings (commits `1990580`, `2ae2e92`).
-- [x] **MW-BASE-011** Tenant-scoped, offline-only knowledge/corpus/research/local-ai stack with append-only DB triggers (`packages/orm-knowledge/src/manifest.ts`) and K9-001 deterministic gate (`scripts/knowledge/run-k-gate.mjs`).
-- [x] **MW-BASE-012** Deterministic documentation & architecture diagram generators (`pnpm docs:generate`, `pnpm architecture:generate`) and 213-task roadmap validator (`pnpm automation:check:roadmap`).
+- [x] **MW-BASE-001** Urutan topologis addon, `pg_advisory_xact_lock` transaksional, serta upsert idempoten `_orm_addons` dan `_orm_data` yang menjaga edit user (`packages/orm/src/addon.ts`, `scripts/roadmap/addon-conformance.test.mjs`).
+- [x] **MW-BASE-002** Deklarasi model `defineModel`, hashing scrypt password otomatis, penyaringan `hiddenFields` di `$formatJson`, index komposit `(company_id, active, id)`, dan constraint unik (`packages/orm/src/model-definition.ts`).
+- [x] **MW-BASE-003** Bootstrap Fastify 5 tipis dengan security header, allowlist `CORS_ORIGINS`, `PostgresRateLimitStore`, graceful shutdown, dan server kesehatan worker `/readyz` (`apps/api/src/app.ts`, `apps/api/src/server.ts`).
+- [x] **MW-BASE-004** Rotasi family refresh token dengan grace window 5 detik, deteksi reuse/theft, login timing-safe, dan CLI pencabutan sesi (`packages/auth/src/service.ts`).
+- [x] **MW-BASE-005** Blokir default-deny prefix `knowledge.*` di API generik, isolasi `company_id` (`hasCompanyAccess`), concurrency optimis `If-Match`/`x-expected-write-date` (`409`), dan `base.audit_log` append-only (`apps/api/src/auth/policy.ts`, `apps/api/src/routes/generic.routes.ts`).
+- [x] **MW-BASE-006** Worker job dengan lease/fencing token, cron scheduler, dan outbox transaksional (`packages/jobs/src/runtime.ts`), plus `orm-notification`, trigger append-only `orm-workflow`, webhook `orm-integration` ber-guard SSRF, dan storage lokal/S3 `orm-storage`.
+- [x] **MW-BASE-007** Gate boundary wajib addon-first (`pnpm api:addon:check`) dan nol JSX mentah di Board (`pnpm board:ui:check`) aktif di CI & `.githooks/pre-push`.
+- [x] **MW-BASE-008** Design system `@moonwitness/ui`, `@moonwitness/assets` (114 SVG tervalidasi bounds/sanitasi), dan spesimen visual/a11y `@moonwitness/ui-catalog`.
+- [x] **MW-BASE-009** Frontend Next.js App Router (`apps/board`) untuk `/` dan `/board/*` dengan `scopedQueryKey`, company switcher, command palette, shortcut keyboard, dan budget bundle per route (`pnpm board:budget`).
+- [x] **MW-BASE-010** Dekomposisi sub-router backend WhatsApp (`apps/api/src/routes/whatsapp/*.routes.ts`) dan komponen UI WhatsApp (`apps/board/src/components/whatsapp/*`) dengan nol error ESLint dan nol warning `oxlint` (commit `1990580`, `2ae2e92`).
+- [x] **MW-BASE-011** Stack knowledge/corpus/research/local-ai offline dengan trigger append-only (`packages/orm-knowledge/src/manifest.ts`) dan gate deterministik `K9-001` (`scripts/knowledge/run-k-gate.mjs`).
+- [x] **MW-BASE-012** Generator referensi & diagram arsitektur deterministik (`pnpm docs:generate`, `pnpm architecture:generate`) serta validator 213 task roadmap (`pnpm automation:check:roadmap`).
 
-### Existing Backlog Reconciliation (`ROADMAP.md`, `todo-foundation.md`, `todo-ui.md`, `todo-wa.md`)
+### Rekonsiliasi Backlog Existing (`ROADMAP.md`, `todo-foundation.md`, `todo-ui.md`, `todo-wa.md`)
 
-- **`ROADMAP.md` (`docs/roadmap/tasks.json`):** 132/213 tasks complete, 81 open (48 M-series: mostly `M1.08`, `M3.11`, `M6.07`–`M6.11`, `M7.05`–`M7.16`, `M8.03`–`M8.11`, `M9.03`–`M9.08`, `M10.01`–`M10.10`, `M11.03`–`M11.15`; 33 K-series: `K3`–`K9`). Open code/CI items are integrated into Sections 18, 21, 22, 24, and 25; hosted/hardware-gated items are tracked in Section 29.
-- **`todo-foundation.md`:** WhatsApp `models/manifest` extraction, API route split, worker healthchecks, `db:migrate`, `PostgresRateLimitStore`, and `oxlint` cleanup are complete. Remaining open item: Node `22.x` host alignment (local Node `v24.x` vs `engines.node: "22.x"` -> `MW-DX-001`).
-- **`todo-ui.md`:** Sections A–I, visual proofs, and icon migrations are complete; remaining WhatsApp WUI visual items map to Section 14/29.
-- **`todo-wa.md`:** API/Board v1 inbox logic is implemented; remaining open items require live GoWA device QR pairing (`P0-01`–`P0-05`, `P0-08`, `P0-24`–`P0-25`, `P1-06`, `P1-28`, `P2-01`) and are tracked in Section 29.
+1. **`ROADMAP.md` (`docs/roadmap/tasks.json`):** 132/213 task selesai, 81 terbuka (48 seri M, 33 seri K). Item kode/CI terbuka direkonsiliasi ke Seksi 18, 21, 22, 24, dan 25; item yang bergantung pada approval GitHub/perangkat nyata ditempatkan eksplisit di Seksi 29.
+2. **`todo-foundation.md`:** Ekstraksi `orm-whatsapp`, pemecahan route WhatsApp awal, healthcheck worker, `db:migrate`, `PostgresRateLimitStore`, dan warning `oxlint` sudah selesai. Item tersisa (paritas Node `22.x` vs lokal `v24.x` dan pemecahan lanjutan) masuk ke `MW-DX-001`, `MW-BACK-001`, dan `MW-WEB-007`.
+3. **`todo-ui.md` & `todo-wa.md`:** Fondasi UI dan inbox v1 WhatsApp selesai; item yang tertahan koneksi/scan QR GoWA (`P0-01`–`P0-05`, `P0-08`, `P0-24`–`P0-25`, `P1-06`, `P1-28`, `P2-01`) dilacak di Seksi 29.
 
 ---
 
 ## 02 — Architecture & Design Decisions
 
-### Architectural Decision Log
+### Keputusan Arsitektur Utama
 
-| Decision ID   | Area                                 | Current Implementation                                                                                                                                                                                | Actual Problem                                                                                                                                              | Practical Alternatives Considered                                                                                                                                                                     | Chosen Simplest Robust Solution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Implementation Outcome & Risks                                                                                                                                                    |
-| :------------ | :----------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ADR-MW-01** | Web App Identity                     | `apps/board` (`@moonwitness/board`) hosts Next.js public `/` and `/board/*`.                                                                                                                          | Prompt references `apps/web`, creating potential confusion or risky directory renames.                                                                      | (A) Rename `apps/board` to `apps/web` across 23+ scripts/Docker/CI/docs; (B) Add a second app; (C) Standardize `apps/board` as the canonical `apps/web` role.                                         | **Option C:** Keep `apps/board` on disk as the canonical Next.js frontend app; treat all `apps/web` tasks as targeting `apps/board`.                                                                                                                                                                                                                                                                                                                                                                                             | Zero breakage to CI, Dockerfiles, `board:ui:check`, or `board:budget`. Risk: new contributors looking for `apps/web`; mitigated via Section 00/24 docs.                           |
-| **ADR-MW-02** | ORM Schema Evolution                 | `syncModel` creates tables, adds missing columns, and builds indexes; `orm-whatsapp` uses custom raw SQL in `setup` to update enum `CHECK` constraints.                                               | Cannot evolve existing column nullability/defaults/types, enum checks, or FK constraints automatically; no `--dry-run` preflight or destructive guardrails. | (A) Build/adopt traditional SQL migration scripts (`knex migrate`); (B) Extend `syncModel` into an Odoo-style schema diff & sync engine.                                                              | **Option B:** Extend `syncModel` in `@moonwitness/orm` to inspect `information_schema` / SQLite `PRAGMA` and apply safe DDL diffs + dry-run plan; keep `addon.upgrade` strictly for data transforms.                                                                                                                                                                                                                                                                                                                             | Preserves ADR-0001/Odoo paradigm and eliminates raw SQL hacks in addons. Risk: destructive column drops/shrinks; mitigated by fail-closed preflight checks (`MW-SCHEMA-005`).     |
-| **ADR-MW-03** | Model Inheritance                    | `defineModel` creates isolated `BaseModel` subclasses; no addon can add fields/hooks to an existing upstream model.                                                                                   | Addons cannot extend `base.partner`, `base.user`, or `base.company` cleanly without modifying `@moonwitness/orm-base`.                                      | (A) Monkey-patching prototype; (B) Declarative `extendModel(target, extension)` registry applied before `syncModel`.                                                                                  | **Option B:** Add `extendModel` to `@moonwitness/orm` merging fields, `unique`, `exposedActions`, and lifecycle hooks deterministically in addon dependency order.                                                                                                                                                                                                                                                                                                                                                               | Enables true Odoo-style modular extension. Risk: field name collisions across addons; mitigated by collision checks at addon resolution (`MW-ORM-003`).                           |
-| **ADR-MW-04** | View Registry & Inheritance          | `packages/orm/src/view.ts` stores one `ViewSpec` in `Map<string, ViewSpec>` for `list`/`form`/`search` only.                                                                                          | Later addons overwrite earlier views; no `kanban`/`calendar`/`graph`/`pivot`; no form tabs, statusbars, or smart buttons.                                   | (A) XML XPath templates (heavyweight); (B) Typed JSON/TS `defineView` + `extendView` patch operations & priority order.                                                                               | **Option B:** Priority-ordered base + `extendView` patch specs in `@moonwitness/orm` compiled into `ResolvedViews` and validated against model fields.                                                                                                                                                                                                                                                                                                                                                                           | Type-safe, IDE-checked, zero XML parser overhead. Risk: extension patch targeting removed field; mitigated by startup view validation (`MW-VIEW-002`).                            |
-| **ADR-MW-05** | Security Policy Ownership            | `INTERNAL_PREFIXES`, `ADMIN_ONLY_MODELS`, and `PUBLIC_MODELS` hardcoded in `apps/api/src/auth/{policy,rules}.ts`.                                                                                     | Adding new models/addons requires editing `apps/api` security files; no field-level ACL or declarative action grants.                                       | (A) Keep centralized lists in `apps/api`; (B) Declare access metadata, field `groups`, and `recordRules` on models/addons and compile at boot.                                                        | **Option B:** Move security metadata into `@moonwitness/orm` model/addon contracts; `apps/api` enforces the compiled policy registry while preserving `knowledge.*` prefix fail-closed deny.                                                                                                                                                                                                                                                                                                                                     | Satisfies ADR-0006 addon autonomy and prevents accidental generic API leaks. Risk: misconfigured addon defaults; mitigated by default-deny for unannotated models (`MW-SEC-001`). |
-| **ADR-MW-06** | Core Runtime Boot Separation         | `SKIP_BOOT_MIGRATIONS=true` skips `installAddons()` and only calls `Registry.register()`, bypassing `model.knex`, `registerView`, `modelMenus`, and `postInstall`. Worker CLIs duplicate addon lists. | Production boot with `SKIP_BOOT_MIGRATIONS=true` loses explicit addon views, menu groups/order, and Knex bindings; workers drift from API addons.           | (A) Always run DDL at boot; (B) Separate `registerAddons(db, addons)` (always run) from `synchronizeAddons(db, addons)` (run in `db:migrate` or non-skipped boot).                                    | **Option B:** Split `registerAddons` (in-memory models, views, menus, security, actions, jobs, Knex bindings) from `installAddons` DDL/seed sync, and share a unified workspace manifest list.                                                                                                                                                                                                                                                                                                                                   | Fixes `SKIP_BOOT_MIGRATIONS=true` data/view loss and unifies API + worker boot (`MW-CORE-001`, `MW-CORE-002`).                                                                    |
-| **ADR-MW-07** | Domain & Context Engine              | `packages/orm/src/domain.ts` and `packages/client/src/domain.ts` implement two incompatible evaluators; `client/src/types.ts` duplicates `@moonwitness/types`.                                        | Client omits `<>`, `like`, `not like`, `=like`, `is null`, `is not null`; SQL domain fails on dotted relational paths (`partner.country.code`).             | (A) Maintain two copies; (B) Put pure domain AST, validation, dynamic context resolution (`$uid`, `$company_id`), and in-memory eval in `@moonwitness/types`, and SQL compiler in `@moonwitness/orm`. | **Option B:** Single pure domain engine in `@moonwitness/types` consumed by both `@moonwitness/orm` and `@moonwitness/client`, plus SQL relational join compiler in `@moonwitness/orm`.                                                                                                                                                                                                                                                                                                                                          | Eliminates type/operator drift and enables rich relational filtering (`MW-DOM-001`, `MW-DOM-002`, `MW-PKG-002`).                                                                  |
-| **ADR-MW-08** | Action & Menu Engine                 | `AddonMenu` is flat (`group` string + `model`); `app-shell.tsx` hardcodes custom routes; actions are just `action_*` method strings.                                                                  | Cannot represent nested menus, window/server/client actions, form smart buttons, or custom workspace screens declaratively.                                 | (A) Keep hardcoded UI nav; (B) Declarative `defineAction` + hierarchical `AddonMenu` + Smart Button specs served via `/api/app/bootstrap`.                                                            | **Option B:** Unified `ActionRegistry` + hierarchical `MenuRegistry` compiled from installed addons and rendered dynamically by `AppShell` and `FormEngine`.                                                                                                                                                                                                                                                                                                                                                                     | Unlocks real modular app navigation without editing `app-shell.tsx` (`MW-ACT-001`..`MW-ACT-007`).                                                                                 |
-| **ADR-MW-09** | Skin & Theme Engine                  | `packages/ui/src/styles/tokens.css` defines `:root` and `.dark`; `useTheme` toggles `.dark` via `localStorage`.                                                                                       | Only 1 visual skin with light/dark toggle; no compact/high-contrast/custom skins or user-persisted preference synced with server.                           | (A) Build runtime CSS-in-JS theming; (B) Token-driven CSS attribute skins (`data-skin`, `data-density`, `.dark`) + typed `ThemeRegistry` in `@moonwitness/ui`.                                        | **Option B:** Zero-runtime-overhead CSS variable skin layers registered in `@moonwitness/ui` with pre-paint hydration + optional `base.user` preference sync.                                                                                                                                                                                                                                                                                                                                                                    | Preserves existing bundle budget and SSR compatibility (`MW-SKIN-001`..`MW-SKIN-005`).                                                                                            |
-| **ADR-MW-10** | Platform Capabilities Classification | 14 cross-cutting capabilities evaluated for real product necessity.                                                                                                                                   | Risk of overengineering theoretical enterprise features into core.                                                                                          | Evaluate each capability against actual workspace consumers and classify explicitly.                                                                                                                  | **Core:** Config params (`base.config_parameter`), attachments/storage (`orm-storage`), i18n, audit logs, jobs/scheduler/outbox, observability. **Addon:** Notifications (`orm-notification`), webhooks (`orm-integration`), workflow (`orm-workflow`), CSV import/export (`board`+`api` tool), reporting views (`Graph`/`Pivot`). **External:** GoWA WhatsApp (`wa.moonwitness.biz.id`), S3/RustFS, Local LLM (`ollama`/loopback). **Deferred:** Automated cloud multi-region backup orchestration, visual workflow builder UI. | Prevents scope creep while ensuring every needed platform capability has a clear owner.                                                                                           |
+| ID Keputusan  | Area                             | Implementasi Saat Ini                                                                                                        | Masalah Aktual                                                                                                           | Alternatif Praktis                                                                                                                        | Solusi Terpilih (Paling Sederhana & Tangguh)                                                                                                                                                                                                                                                  | Dampak & Risiko                                                                                                                            |
+| :------------ | :------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| **ADR-MW-01** | Identitas App Web                | `apps/board` (`@moonwitness/board`) melayani `/` dan `/board/*`.                                                             | Spesifikasi menyebut `apps/web`, berisiko menimbulkan duplikasi folder atau rename destruktif.                           | (A) Rename ke `apps/web` di 23+ skrip/CI/Docker; (B) Buat app kedua; (C) Tetapkan `apps/board` sebagai app web kanonis.                   | **Opsi C:** Pertahankan `apps/board` di disk sebagai realisasi `apps/web`; seluruh task frontend diarahkan ke `apps/board`.                                                                                                                                                                   | Nol regresi pada CI, Docker, `board:ui:check`, dan `board:budget`. Risiko: kontributor mencari `apps/web`; dimitigasi di Seksi 00 & 24.    |
+| **ADR-MW-02** | Evolusi Skema ORM                | `syncModel` membuat tabel, kolom hilang, index; `orm-whatsapp` pakai raw SQL untuk enum.                                     | Tidak bisa update nullability, default, tipe kolom aman, enum `CHECK`, atau FK tabel lama; tanpa dry-run.                | (A) Tambah skrip migrasi SQL tradisional; (B) Perluas `syncModel` menjadi schema diff & sync engine bergaya Odoo.                         | **Opsi B:** Perluas `syncModel` via introspeksi `information_schema`/SQLite `PRAGMA` + preflight aman; `addon.upgrade` hanya untuk backfill data.                                                                                                                                             | Mempertahankan ADR-0001/Odoo dan menghapus hack raw SQL. Risiko: perubahan destruktif; dimitigasi preflight fail-closed (`MW-SCHEMA-005`). |
+| **ADR-MW-03** | Pewarisan Model                  | `defineModel` membuat kelas terisolasi; belum ada ekstensi model lintas addon.                                               | Addon tidak bisa menambah field atau hook ke model upstream (`base.partner`, `base.user`).                               | (A) Monkey-patch prototype; (B) Registry `extendModel(target, ext)` dievaluasi sebelum `syncModel`.                                       | **Opsi B:** Tambah `extendModel` di `@moonwitness/orm` yang menggabungkan `fields`, `unique`, `exposedActions`, dan hooks secara topologis.                                                                                                                                                   | Memungkinkan ekstensibilitas sejati antar addon. Risiko: tabrakan nama field; dicegah saat resolusi addon (`MW-ORM-003`).                  |
+| **ADR-MW-04** | Pewarisan & Jenis View           | `views` Map menyimpan 1 `ViewSpec` (`list`, `form`, `search` saja).                                                          | Addon berikutnya menimpa view lama; belum ada `kanban`, `calendar`, `graph`, `pivot`, tab form, statusbar, smart button. | (A) Template XML XPath; (B) `defineView` + `extendView` typed TS/JSON berurutan prioritas.                                                | **Opsi B:** Registry view berprioritas dengan patch `extendView` di `@moonwitness/orm`, divalidasi ke field model.                                                                                                                                                                            | Type-safe tanpa parser XML berat. Risiko: ekstensi merujuk field yang berubah; dicegah validasi startup (`MW-VIEW-002`).                   |
+| **ADR-MW-05** | Kepemilikan Policy Keamanan      | `INTERNAL_PREFIXES`, `ADMIN_ONLY_MODELS`, `PUBLIC_MODELS` di-hardcode di `apps/api/src/auth/`.                               | Penambahan model/addon menuntut edit manual di `apps/api`; belum ada ACL field/action deklaratif.                        | (A) Tetap daftar terpusat di `apps/api`; (B) Deklarasikan metadata keamanan, ACL field, dan `recordRules` pada model/addon.               | **Opsi B:** Pindahkan deklarasi akses ke model/addon `@moonwitness/orm`, dikompilasi ke policy runtime dengan default-deny & guard `knowledge.*`.                                                                                                                                             | Memenuhi batas ADR-0006 dan mencegah kebocoran endpoint. Risiko: lupa deklarasi akses; dimitigasi default-deny (`MW-SEC-001`).             |
+| **ADR-MW-06** | Pemisahan Boot Runtime           | `SKIP_BOOT_MIGRATIONS=true` melewatkan `model.knex`, `registerView`, `modelMenus`, `postInstall`; worker menduplikasi addon. | Boot produksi tanpa migrasi kehilangan view eksplisit, urutan menu, dan binding DB; worker tidak sinkron dengan API.     | (A) Selalu jalankan DDL saat boot; (B) Pisahkan `registerAddons` (in-memory) dari `installAddons` (DDL/seed).                             | **Opsi B:** Pisahkan `registerAddons` (selalu jalan di API & worker) dari `synchronizeAddons` (`db:migrate` / boot normal) via satu daftar addon kanonis.                                                                                                                                     | Memperbaiki bug kritis produksi `SKIP_BOOT_MIGRATIONS=true` (`MW-CORE-001`, `MW-CORE-002`).                                                |
+| **ADR-MW-07** | Domain & Context Engine          | `orm/domain.ts` & `client/domain.ts` terpisah; `client/types.ts` menduplikasi `@moonwitness/types`.                          | Client kurang operator (`<>`, `like`, `=like`, `is null`, dll); SQL domain gagal pada path relasi bertitik.              | (A) Sinkronisasi manual dua file; (B) Satukan parser/evaluator murni di `@moonwitness/types` dan compiler SQL join di `@moonwitness/orm`. | **Opsi B:** Satu engine domain & token konteks (`$uid`, `$company_id`) di `@moonwitness/types`, dipakai bersama `@moonwitness/orm` dan `@moonwitness/client`.                                                                                                                                 | Menghapus inkonsistensi filter server/client dan mendukung filter relasional (`MW-DOM-001`, `MW-DOM-002`).                                 |
+| **ADR-MW-08** | Action & Menu Engine             | `AddonMenu` datar; sidebar `app-shell.tsx` meng-hardcode halaman non-model; aksi hanya string `action_*`.                    | Tidak bisa mendeklarasikan menu bertingkat, window/server/client action, atau smart button secara modular.               | (A) Pertahankan hardcode JSX; (B) `ActionRegistry` + `MenuRegistry` hierarkis + endpoint `/api/app/bootstrap`.                            | **Opsi B:** Addon mendeklarasikan action dan hierarki menu yang dirender dinamis oleh `AppShell` dan `FormEngine`.                                                                                                                                                                            | Navigasi dan workspace sepenuhnya modular per addon (`MW-ACT-001`–`MW-ACT-007`).                                                           |
+| **ADR-MW-09** | Skin & Theme Engine              | `tokens.css` hanya punya `:root` + `.dark` via `useTheme` di `localStorage`.                                                 | Belum ada dukungan skin bernama, kepadatan (`compact`), atau sinkronisasi preferensi ke profil server.                   | (A) CSS-in-JS runtime; (B) Layer CSS token `[data-skin]` / `[data-density]` + `ThemeRegistry` typed di `@moonwitness/ui`.                 | **Opsi B:** Engine skin murni CSS variables dengan registrasi metadata di `@moonwitness/ui` + hidrasi pre-paint SSR/DB.                                                                                                                                                                       | Nol penalti bundle JS dan kompatibel SSR (`MW-SKIN-001`–`MW-SKIN-005`).                                                                    |
+| **ADR-MW-10** | Klasifikasi Kapabilitas Platform | 14 kapabilitas lintas platform dievaluasi terhadap kebutuhan nyata MoonWitness.                                              | Risiko overengineering fitur enterprise teoritis ke inti platform.                                                       | Klasifikasikan tegas menjadi Inti, Addon, Eksternal, atau Ditunda.                                                                        | **Inti:** Config params, storage/attachments, i18n, audit log, jobs/scheduler/outbox, observability. **Addon:** Notification, webhook, workflow, CSV tool, view analitik. **Eksternal:** GoWA WhatsApp, S3/RustFS, Local AI loopback. **Ditunda:** Visual WYSIWYG DB builder, multi-cloud CD. | Scope tetap fokus, ramping, dan realistis.                                                                                                 |
 
-### Target Dependency Direction
+### Arah Ketergantungan Package Target
 
 ```text
-@moonwitness/types (pure schemas, domain AST/eval, API/view/action contracts)
+@moonwitness/types (kontrak API, view, action, domain AST & evaluator tunggal)
   ├── @moonwitness/logger
   ├── @moonwitness/assets
-  │     └── @moonwitness/ui (tokens, skins, primitives, data-view components, icons)
-  ├── @moonwitness/client (depends on @moonwitness/types)
-  │     └── apps/board (Next.js App Router dynamic platform shell & view engines)
+  │     └── @moonwitness/ui (token, skin, primitif, komponen data-view, ikon)
+  ├── @moonwitness/client (bergantung pada @moonwitness/types)
+  │     └── apps/board (shell & view engine dinamis Next.js App Router)
   └── @moonwitness/orm (Registry, Environment, Recordset, Model/Schema/View/Action/Security engines)
-        └── @moonwitness/orm-base (core models, menus, config, saved filters, feature flags)
-              ├── @moonwitness/auth
-              ├── @moonwitness/jobs
-              ├── @moonwitness/orm-* (domain addons)
-              └── apps/api (thin HTTP/JSON-RPC/worker host via API_ADDONS)
+        └── @moonwitness/orm-base (model inti, menu, config, saved filter, feature flag)
+              ├── @moonwitness/auth, @moonwitness/jobs, @moonwitness/orm-*
+              └── apps/api (host tipis Fastify & worker via API_ADDONS)
 ```
 
 ---
 
 ## 03 — Core Runtime
 
-- [ ] **MW-CORE-001** Separate in-memory addon metadata registration (`registerAddons`) from transactional DDL/seed synchronization (`installAddons`) so `SKIP_BOOT_MIGRATIONS=true` no longer leaves `model.knex(db)`, `views`, `modelMenus`, `actions`, and `postInstall` uninitialized.
-  - **Priority:** P0 · **Layer:** Core · **Dependencies:** None
-  - **Location:** `packages/orm/src/addon.ts`, `apps/api/src/addons/registry.ts`
-  - **Acceptance Criteria:** Calling `installApiAddons(..., { skipBootMigrations: true })` binds `model.knex(db)`, populates `Registry`, `views`, `modelMenus`, security rules, and runs read-only runtime registration without issuing DDL statements.
-  - **Verification:** Add unit + integration test in `apps/api/tests/orm.test.ts` booting `buildApp` with `SKIP_BOOT_MIGRATIONS=true` against a pre-migrated DB and asserting `/api/base.partner/views` returns explicit view sections/filters; run `pnpm --filter @moonwitness/api test`.
+| ID            | Prioritas | Layer | Dependensi                   | Lokasi Target                                                        |
+| :------------ | :-------- | :---- | :--------------------------- | :------------------------------------------------------------------- |
+| `MW-CORE-001` | P0        | Core  | —                            | `packages/orm/src/addon.ts`, `apps/api/src/addons/registry.ts`       |
+| `MW-CORE-002` | P1        | Core  | `MW-CORE-001`                | `apps/api/src/addons/registry.ts`, `apps/api/src/commands/*`         |
+| `MW-CORE-003` | P1        | Core  | `MW-CORE-002`                | `packages/orm/src/`, `apps/api/src/plugins/orm.plugin.ts`            |
+| `MW-CORE-004` | P1        | Core  | `MW-CORE-002`                | `apps/api/src/config/env.ts`, `apps/api/src/routes/health.routes.ts` |
+| `MW-CORE-005` | P2        | Core  | `MW-CORE-002`, `MW-CORE-004` | `apps/api/src/lifecycle/`, `apps/api/src/server.ts`                  |
+| `MW-CORE-006` | P1        | Core  | —                            | `packages/types/src/`, `packages/orm/src/`, `apps/api/src/app.ts`    |
 
-- [ ] **MW-CORE-002** Create a single shared runtime bootstrap module (`bootstrapMoonWitnessRuntime`) used identically by `apps/api/src/app.ts`, `apps/api/src/commands/db-migrate.ts`, `jobs-worker.ts`, `jobs-scheduler.ts`, and `outbox-worker.ts`.
-  - **Priority:** P1 · **Layer:** Core · **Dependencies:** `MW-CORE-001`
-  - **Location:** `apps/api/src/addons/registry.ts`, `apps/api/src/commands/jobs-worker.ts`, `apps/api/src/commands/jobs-scheduler.ts`, `apps/api/src/commands/outbox-worker.ts`
-  - **Acceptance Criteria:** Workers no longer maintain duplicate hardcoded addon arrays or invoke `installAddons` inconsistently; all processes register the same canonical addon list, job handlers, and outbox consumers, respecting `SKIP_BOOT_MIGRATIONS`.
-  - **Verification:** `pnpm build && pnpm --filter @moonwitness/api exec vitest run tests/startup.test.ts` (or startup suite) and `pnpm api:addon:check`.
+- [x] **MW-CORE-001** Pisahkan registrasi metadata in-memory (`registerAddons`) dari sinkronisasi DDL/seed (`installAddons`) agar mode `SKIP_BOOT_MIGRATIONS=true` tidak melompati `model.knex(db)`, `views`, `modelMenus`, dan `postInstall`
+  - [x] **MW-CORE-001.1** Ekstrak fungsi murni `registerAddons(db, addons)` di `packages/orm/src/addon.ts` untuk bind Knex, `Registry.register`, view, menu, action, dan rule keamanan tanpa DDL
+  - [x] **MW-CORE-001.2** Perbarui `installApiAddons` di `apps/api/src/addons/registry.ts` agar tetap memanggil `registerAddons` dan hook in-memory saat `skipBootMigrations` bernilai `true`
+  - [x] **MW-CORE-001.3** Tambahkan uji integrasi boot dengan `SKIP_BOOT_MIGRATIONS=true` yang membuktikan `/api/base.partner/views` mengembalikan view eksplisit (bukan fallback)
+  - [x] **MW-CORE-001.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test` lulus tanpa error
 
-- [ ] **MW-CORE-003** Introduce a typed `ServiceRegistry` on the Core Runtime / `Environment` for cross-addon services (storage, logger, job enqueueing, notification dispatch, attachment scanner, local AI).
-  - **Priority:** P1 · **Layer:** Core · **Dependencies:** `MW-CORE-002`
-  - **Location:** `packages/orm/src/`, `apps/api/src/plugins/orm.plugin.ts`
-  - **Acceptance Criteria:** Services are registered by typed token at boot and accessible via `env.services.get(token)` without importing `apps/api` singletons into `packages/orm-*`.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm audit:workspace`.
+- [ ] **MW-CORE-002** Satukan modul bootstrap runtime (`bootstrapMoonWitnessRuntime`) yang dipakai identik oleh `apps/api/src/app.ts`, `db-migrate.ts`, `jobs-worker.ts`, `jobs-scheduler.ts`, dan `outbox-worker.ts`
+  - [ ] **MW-CORE-002.1** Buat modul bootstrap kanonis di `apps/api/src/addons/registry.ts` yang mengekspor daftar manifest addon resmi tunggal
+  - [ ] **MW-CORE-002.2** Hapus duplikasi daftar addon dan pemanggilan langsung `installAddons(...)` di `jobs-worker.ts`, `jobs-scheduler.ts`, dan `outbox-worker.ts`
+  - [ ] **MW-CORE-002.3** Pastikan seluruh proses worker menghormati `SKIP_BOOT_MIGRATIONS` setelah `db:migrate` berjalan
+  - [ ] **MW-CORE-002.4** Verifikasi: `pnpm build && pnpm api:addon:check && pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-CORE-004** Implement typed startup configuration schema validation and normalized runtime diagnostics endpoint/report.
-  - **Priority:** P1 · **Layer:** Core · **Dependencies:** `MW-CORE-002`
-  - **Location:** `apps/api/src/config/env.ts`, `apps/api/src/startup-diagnostics.ts`, `apps/api/src/routes/health.routes.ts`
-  - **Acceptance Criteria:** Startup validates all required/optional env vars once at boot with redacted diagnostic summary; `/readyz` reports DB pool, registered addon versions, and service readiness without leaking secrets.
-  - **Verification:** `pnpm --filter @moonwitness/api exec vitest run tests/config.test.ts tests/health.test.ts`.
+- [ ] **MW-CORE-003** Sediakan `ServiceRegistry` bertipe pada Core Runtime & `Environment` untuk akses layanan lintas addon (`storage`, `logger`, `jobs`, `notification`, `scanner`, `localAi`)
+  - [ ] **MW-CORE-003.1** Definisikan `ServiceToken<T>` dan `ServiceContainer` di `packages/orm/src/`
+  - [ ] **MW-CORE-003.2** Sambungkan `ServiceContainer` di `apps/api/src/plugins/orm.plugin.ts` agar tersedia via `env.services.get(token)` di API maupun worker
+  - [ ] **MW-CORE-003.3** Tambahkan unit test resolusi layanan & missing-service fail-closed error di `packages/orm/tests/`
+  - [ ] **MW-CORE-003.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm audit:workspace` lulus tanpa siklus dependency baru
 
-- [ ] **MW-CORE-005** Unify runtime lifecycle hooks (`onInit`, `onReady`, `onDispose`) across API server and all worker commands via `apps/api/src/lifecycle/`.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-CORE-002`, `MW-CORE-004`
-  - **Location:** `apps/api/src/lifecycle/graceful-shutdown.ts`, `apps/api/src/lifecycle/process-shutdown.ts`, `apps/api/src/server.ts`
-  - **Acceptance Criteria:** API and worker shutdown sequences drain active HTTP requests, job leases, S3 pools, and Knex connections deterministically within configured timeout.
-  - **Verification:** `pnpm --filter @moonwitness/api test`.
+- [ ] **MW-CORE-004** Implementasikan validasi skema konfigurasi startup dan diagnostik runtime `/readyz` yang terstruktur
+  - [ ] **MW-CORE-004.1** Validasi seluruh environment variable runtime di `apps/api/src/config/env.ts` dengan pesan error terstruktur & aman dari kebocoran secret
+  - [ ] **MW-CORE-004.2** Perluas `/readyz` pada `apps/api/src/routes/health.routes.ts` dan `worker-health.ts` untuk melaporkan versi addon aktif, status DB pool, dan kesiapan layanan inti
+  - [ ] **MW-CORE-004.3** Uji startup failure formatting & `/readyz` degraded vs healthy payload di `apps/api/tests/`
+  - [ ] **MW-CORE-004.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-CORE-006** Standardize typed platform error classes (`PlatformError`, `ValidationError`, `AccessDeniedError`, `NotFoundError`, `ConcurrencyConflictError`, `SchemaSyncError`) across `@moonwitness/orm` and `apps/api`.
-  - **Priority:** P1 · **Layer:** Core · **Dependencies:** None
-  - **Location:** `packages/types/src/`, `packages/orm/src/`, `apps/api/src/app.ts`
-  - **Acceptance Criteria:** Errors thrown by ORM/addons carry stable `code`, `statusCode`, and sanitized client message; Fastify's `setErrorHandler` maps them uniformly without string heuristics.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-CORE-005** Seragamkan lifecycle proses (`onInit`, `onReady`, `onDispose`) antara server API Fastify dan seluruh worker command
+  - [ ] **MW-CORE-005.1** Integrasikan shutdown controller (`apps/api/src/lifecycle/`) dengan `ServiceContainer.disposeAll()` dan penutupan koneksi DB/S3/HTTP
+  - [ ] **MW-CORE-005.2** Pastikan timeout drain request dan pelepasan lease worker berjalan deterministik saat `SIGINT`/`SIGTERM`
+  - [ ] **MW-CORE-005.3** Uji urutan cleanup resource pada `apps/api/tests/`
+  - [ ] **MW-CORE-005.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
+
+- [ ] **MW-CORE-006** Standarisasi hierarki kelas error platform (`PlatformError`, `ValidationError`, `AccessDeniedError`, `NotFoundError`, `ConcurrencyConflictError`, `SchemaSyncError`)
+  - [ ] **MW-CORE-006.1** Definisikan kontrak kode error stabil dan status HTTP mapping di `packages/types/src/` dan `packages/orm/src/`
+  - [ ] **MW-CORE-006.2** Perbarui `setErrorHandler` di `apps/api/src/app.ts` agar memetakan instance `PlatformError` tanpa bergantung pada string-matching ad-hoc
+  - [ ] **MW-CORE-006.3** Tambahkan unit test mapping setiap subclass error pada mode development dan production (sanitasi 500)
+  - [ ] **MW-CORE-006.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test` lulus
 
 ---
 
 ## 04 — ORM & Model Engine
 
-- [ ] **MW-ORM-001** Expand canonical field definitions in `@moonwitness/orm` to support `float`, `decimal`, `date`, `datetime`, `json`, and `manyToMany` alongside existing 8 field kinds.
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** None
-  - **Location:** `packages/orm/src/model-definition.ts`, `packages/orm/src/view.ts`, `packages/types/src/`
-  - **Acceptance Criteria:** `fields.float`, `fields.decimal`, `fields.date`, `fields.datetime`, `fields.json`, and `fields.manyToMany` generate accurate TypeScript `ModelValues`, Objection `jsonSchema` + `relationMappings`, and `FieldMeta`.
-  - **Verification:** Add type + runtime serialization tests in `packages/orm/tests/`; run `pnpm --filter @moonwitness/orm test`.
+| ID           | Prioritas | Layer | Dependensi                    | Lokasi Target                                                             |
+| :----------- | :-------- | :---- | :---------------------------- | :------------------------------------------------------------------------ |
+| `MW-ORM-001` | P1        | ORM   | —                             | `packages/orm/src/model-definition.ts`, `packages/orm/src/view.ts`        |
+| `MW-ORM-002` | P1        | ORM   | `MW-ORM-001`, `MW-SCHEMA-001` | `packages/orm/src/model-definition.ts`, `packages/orm/src/addon.ts`       |
+| `MW-ORM-003` | P1        | ORM   | `MW-ORM-001`                  | `packages/orm/src/model-definition.ts`, `packages/orm/src/registry.ts`    |
+| `MW-ORM-004` | P2        | ORM   | `MW-ORM-001`, `MW-ORM-003`    | `packages/orm/src/model-definition.ts`, `packages/orm/src/base.model.ts`  |
+| `MW-ORM-005` | P2        | ORM   | `MW-ORM-003`                  | `packages/orm/src/model-definition.ts`, `packages/orm/src/base.model.ts`  |
+| `MW-ORM-006` | P1        | ORM   | `MW-ORM-003`, `MW-CORE-006`   | `packages/orm/src/model-definition.ts`, `packages/orm/src/base.model.ts`  |
+| `MW-ORM-007` | P2        | ORM   | `MW-CORE-003`                 | `packages/orm/src/environment.ts`, `packages/orm/src/base.model.ts`       |
+| `MW-ORM-008` | P2        | ORM   | `MW-ORM-001`                  | `packages/orm/src/model-definition.ts`, `packages/orm/src/base.model.ts`  |
+| `MW-ORM-009` | P1        | ORM   | `MW-CORE-006`                 | `packages/orm/src/base.model.ts`, `apps/api/src/routes/generic.routes.ts` |
+| `MW-ORM-010` | P1        | ORM   | `MW-ORM-001`                  | `packages/orm/src/model-definition.ts`, `packages/orm/src/addon.ts`       |
+| `MW-ORM-011` | P1        | ORM   | `MW-ORM-006`                  | `packages/orm/src/base.model.ts`                                          |
+| `MW-ORM-012` | P2        | ORM   | `MW-DOM-002`                  | `packages/orm/src/base.model.ts`                                          |
 
-- [ ] **MW-ORM-002** Implement `manyToMany` junction table resolution and link management in `defineModel` and `syncModel` (auto-creating/indexing deterministic relation tables with explicit `relationTable` override).
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-ORM-001`, `MW-SCHEMA-001`
-  - **Location:** `packages/orm/src/model-definition.ts`, `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** `ManyToManyRelation` works in `withGraphFetched`, `create`/`write` link commands (`set`, `link`, `unlink`), and schema sync without manual boilerplate link models for new relations.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:integration`.
+- [ ] **MW-ORM-001** Perluas definisi field kanonis di `@moonwitness/orm` dengan `float`, `decimal`, `date`, `datetime`, `json`, dan `manyToMany`
+  - [ ] **MW-ORM-001.1** Tambahkan builder `fields.float`, `fields.decimal`, `fields.date`, `fields.datetime`, `fields.json`, dan `fields.manyToMany` beserta inferensi `ModelValues<F>` di `packages/orm/src/model-definition.ts`
+  - [ ] **MW-ORM-001.2** Petakan tipe-tipe baru ke `jsonSchema` Objection (presisi desimal, format tanggal ISO, validasi JSON) dan `FieldType` di `packages/orm/src/view.ts`
+  - [ ] **MW-ORM-001.3** Tambahkan unit test inferensi tipe & serialisasi nilai di SQLite/PostgreSQL pada `packages/orm/tests/`
+  - [ ] **MW-ORM-001.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-ORM-003** Implement Odoo-inspired model inheritance & extension (`extendModel(targetModelName | ModelClass, extension)`) in `@moonwitness/orm`.
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-ORM-001`
-  - **Location:** `packages/orm/src/model-definition.ts`, `packages/orm/src/registry.ts`, `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** Addons can declare extensions adding `fields`, `unique` constraints, `exposedActions`, and lifecycle hooks (`beforeCreate`, `afterWrite`) to upstream models; extensions compose cleanly in addon topological order and fail fast on duplicate field collisions.
-  - **Verification:** Unit + integration test extending `base.partner` from a test addon verifying merged `jsonSchema`, `describeFields`, and PostgreSQL/SQLite column sync; run `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-ORM-002** Implementasikan relasi `manyToMany` otomatis dengan tabel penghubung deterministik dan manajemen link (`set`, `link`, `unlink`)
+  - [ ] **MW-ORM-002.1** Hasilkan `ManyToManyRelation` di `relationMappings` dan skema tabel junction otomatis pada `syncModel` (mendukung override `relationTable`)
+  - [ ] **MW-ORM-002.2** Dukung operasi tulis relasi M2M (`[id1, id2]`) pada `create`/`write` di `BaseModel` beserta index unik komposit dua arah
+  - [ ] **MW-ORM-002.3** Uji eager-loading `withGraphFetched` dan mutasi M2M di SQLite dan PostgreSQL
+  - [ ] **MW-ORM-002.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
 
-- [ ] **MW-ORM-004** Add declarative computed fields (`compute`, `depends`, `store`) to `FieldOptions` and ORM read/write pipelines.
-  - **Priority:** P2 · **Layer:** ORM · **Dependencies:** `MW-ORM-001`, `MW-ORM-003`
-  - **Location:** `packages/orm/src/model-definition.ts`, `packages/orm/src/base.model.ts`
-  - **Acceptance Criteria:** Non-stored computed fields evaluate on `search_read`/`browse` reads (read-only in `FieldMeta`); stored computed fields recompute transactionally whenever any field in `depends` (including dotted relation paths) changes on `create`/`write`.
-  - **Verification:** Unit + PostgreSQL integration tests covering stored recompute and non-stored evaluation; run `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-ORM-003** Bangun mekanisme pewarisan & ekstensi model bergaya Odoo (`extendModel(targetModel, extension)`) di `@moonwitness/orm`
+  - [ ] **MW-ORM-003.1** Tambahkan API `extendModel` dan koleksi `Addon.extensions` agar addon hilir dapat menambah `fields`, `unique`, `exposedActions`, dan hooks ke model hulu
+  - [ ] **MW-ORM-003.2** Terapkan penggabungan ekstensi secara deterministik sesuai urutan topologis addon sebelum `syncModel` dan deteksi tabrakan nama kolom
+  - [ ] **MW-ORM-003.3** Uji ekstensi `base.partner` dari addon pengujian (verifikasi `jsonSchema`, `describeFields`, dan sinkronisasi kolom SQL)
+  - [ ] **MW-ORM-003.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-ORM-005** Implement declarative dynamic `default` providers and `onchange` handlers on `defineModel` / `extendModel`.
-  - **Priority:** P2 · **Layer:** ORM · **Dependencies:** `MW-ORM-003`
-  - **Location:** `packages/orm/src/model-definition.ts`, `packages/orm/src/base.model.ts`
-  - **Location:** `packages/orm/src/`
-  - **Acceptance Criteria:** Models expose `defaultGet(fields, context)` and `onchange(values, changedField, fieldSpec)` returning updated field values, field domain overrides, and non-blocking warnings; replaces hardcoded `country_id` logic in Board.
-  - **Verification:** `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-ORM-004** Implementasikan field terkomputasi deklaratif (`compute`, `depends`, `store`) pada `FieldOptions`
+  - [ ] **MW-ORM-004.1** Dukung evaluasi field `compute` non-stored saat `search_read`/`browse` (otomatis `readonly: true` di `FieldMeta`)
+  - [ ] **MW-ORM-004.2** Dukung field `compute` dengan `store: true` dan `depends` (termasuk path relasi) agar terhitung ulang transaksional saat `create`/`write`
+  - [ ] **MW-ORM-004.3** Uji recompute stored & non-stored field beserta pencegahan dependensi siklik antar field terkomputasi
+  - [ ] **MW-ORM-004.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
 
-- [ ] **MW-ORM-006** Add declarative cross-field and invariant model constraints (`constraints` validators) executed inside create/write transactions before commit.
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-ORM-003`, `MW-CORE-006`
-  - **Location:** `packages/orm/src/model-definition.ts`, `packages/orm/src/base.model.ts`
-  - **Acceptance Criteria:** Synchronous and transactional async constraints run on every `create`, `write`, and `update` path (REST, JSON-RPC, and direct ORM), returning typed `ValidationError` (`400`) on failure and migrating ad-hoc checks like `isValidOrganizationMutation` cleanly into `@moonwitness/orm-organization`.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/orm-organization test`.
+- [ ] **MW-ORM-005** Tambahkan provider `default` dinamis dan handler `onchange` deklaratif pada `defineModel` / `extendModel`
+  - [ ] **MW-ORM-005.1** Implementasikan `Model.defaultGet(fields, context)` dan `Model.onchange(values, changedField)` di `packages/orm/src/base.model.ts`
+  - [ ] **MW-ORM-005.2** Kembalikan struktur standar `{ values, domainOverrides, warnings }` agar perubahan parent field (mis. `country_id` -> reset `state_id`) berasal dari model, bukan UI
+  - [ ] **MW-ORM-005.3** Migrasi logika reset `country_id -> state_id` ke definisi model `base.partner` / `base.partner_address`
+  - [ ] **MW-ORM-005.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/orm-base test` lulus
 
-- [ ] **MW-ORM-007** Implement an immutable, chainable `Recordset<M>` abstraction on `Environment` while maintaining backwards-compatible static helpers on `BaseModel`.
-  - **Priority:** P2 · **Layer:** ORM · **Dependencies:** `MW-CORE-003`
-  - **Location:** `packages/orm/src/environment.ts`, `packages/orm/src/base.model.ts`
-  - **Acceptance Criteria:** `env.get('base.partner').browse([1, 2])` or `.search(domain)` returns a `Recordset` carrying `env`, `trx`, `ids`, batch `.write()`, `.unlink()`, `.mapped()`, `.filtered()`, and single-record `.ensureOne()` invariants.
-  - **Verification:** `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-ORM-006** Implementasikan constraint validator lintas-field (`constraints`) yang berjalan transaksional di ORM sebelum commit
+  - [ ] **MW-ORM-006.1** Dukung deklarasi `constraints: [(record, env) => void | Promise<void>]` di `defineModel` dan `extendModel`
+  - [ ] **MW-ORM-006.2** Jalankan seluruh constraint pada `create`, `write`, dan `update` di `BaseModel`, dan pindahkan `isValidOrganizationMutation` ke `@moonwitness/orm-organization`
+  - [ ] **MW-ORM-006.3** Uji kegagalan constraint melempar `ValidationError` (`400`) dan membatalkan transaksi secara atomik
+  - [ ] **MW-ORM-006.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/orm-organization test` lulus
 
-- [ ] **MW-ORM-008** Add `_recName` / `displayField` declaration on `defineModel` and consistent `nameGet` / `display_name` computation across ORM and API responses.
-  - **Priority:** P2 · **Layer:** ORM · **Dependencies:** `MW-ORM-001`
-  - **Location:** `packages/orm/src/model-definition.ts`, `packages/orm/src/base.model.ts`, `packages/orm/src/view.ts`
-  - **Acceptance Criteria:** Models without a `name` column (e.g., `base.user` -> `login`, `base.sequence` -> `code`) declare `_recName` in metadata so `display_name` and `Many2one` widgets stop hardcoding model names.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance`.
+- [ ] **MW-ORM-007** Implementasikan abstraksi `Recordset<M>` yang immutable dan chainable pada `Environment`
+  - [ ] **MW-ORM-007.1** Buat kelas `Recordset<M>` di `packages/orm/src/` dengan `ids`, `env`, `.ensureOne()`, `.mapped()`, `.filtered()`, `.write()`, `.unlink()`, dan `.executeAction()`
+  - [ ] **MW-ORM-007.2** Pertahankan kompatibilitas penuh method statis `BaseModel` (`search`, `search_read`, `browse`, `create`, `write`, `unlink`)
+  - [ ] **MW-ORM-007.3** Tambahkan unit test batch operation & singleton check `.ensureOne()` di `packages/orm/tests/`
+  - [ ] **MW-ORM-007.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-ORM-009** Enforce `write_date` optimistic concurrency (`expectedWriteDate`) at `BaseModel.write()` / `BaseModel.unlink()` level so JSON-RPC and service writes share REST's `409 Conflict` safety.
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-CORE-006`
-  - **Location:** `packages/orm/src/base.model.ts`, `apps/api/src/routes/generic.routes.ts`
-  - **Acceptance Criteria:** `BaseModel.write` accepts `expectedWriteDate` in options, issues a conditional `WHERE id IN (...) AND write_date = ?` update, and throws `ConcurrencyConflictError` when 0 rows match an existing ID.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api exec vitest run tests/api-orm-hardening.test.ts`.
+- [ ] **MW-ORM-008** Tambahkan metadata `_recName` / `displayField` pada `defineModel` dan standarisasi `display_name` / `nameGet`
+  - [ ] **MW-ORM-008.1** Izinkan model mendeklarasikan `_recName` (mis. `login` untuk `base.user`, `code` untuk `base.sequence`) di `defineModel` & sertakan di `FieldMeta`/model info
+  - [ ] **MW-ORM-008.2** Perbarui getter `BaseModel.display_name` dan tambahkan `Model.nameGet(ids)` untuk lookup label relasional efisien
+  - [ ] **MW-ORM-008.3** Tambahkan unit test resolusi `_recName` untuk model tanpa kolom `name`
+  - [ ] **MW-ORM-008.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance` lulus
 
-- [ ] **MW-ORM-010** Add `onDelete` policy metadata (`'restrict' | 'cascade' | 'set null'`) to `belongsTo` fields and integrate it with `findReference` and SQL FK creation.
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-ORM-001`
-  - **Location:** `packages/orm/src/model-definition.ts`, `packages/orm/src/addon.ts`, `apps/api/src/routes/generic.routes.ts`
-  - **Acceptance Criteria:** Foreign keys honor declared `onDelete` instead of hardcoding `'RESTRICT'` everywhere, and archive/unlink reference checks respect `cascade` / `set null` semantics cleanly.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:integration`.
+- [ ] **MW-ORM-009** Tegakkan optimistic concurrency (`expectedWriteDate`) di level `BaseModel.write()` / `BaseModel.unlink()` agar REST dan JSON-RPC memiliki proteksi `409 Conflict` yang sama
+  - [ ] **MW-ORM-009.1** Tambahkan opsi `expectedWriteDate` di `BaseModel.write` & `unlink` dengan query kondisional `AND write_date = ?`
+  - [ ] **MW-ORM-009.2** Lempar `ConcurrencyConflictError` (`409`) bila baris ada namun `write_date` tidak cocok
+  - [ ] **MW-ORM-009.3** Uji konflik konkurensi melalui REST `If-Match` dan JSON-RPC `execute_kw`
+  - [ ] **MW-ORM-009.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api exec vitest run tests/api-orm-hardening.test.ts` lulus
 
-- [ ] **MW-ORM-011** Eliminate duplicate `write()` / `update()` audit field bypasses in `BaseModel` by ensuring `$beforeUpdate` and batch `write()` use a single validated hook pipeline (including `sensitive` field redaction).
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-ORM-006`
-  - **Location:** `packages/orm/src/base.model.ts`
-  - **Acceptance Criteria:** Batch `write()` runs JSON Schema partial validation, password hashing, `sensitive`/audit hooks, and computed field invalidation consistently with single-record `.update()`.
-  - **Verification:** `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-ORM-010** Tambahkan kebijakan `onDelete` (`'restrict' | 'cascade' | 'set null'`) pada field `belongsTo` dan selaraskan dengan `findReference` serta FK SQL
+  - [ ] **MW-ORM-010.1** Tambah opsi `onDelete` di `fields.belongsTo` (`packages/orm/src/model-definition.ts`) dengan default aman `'restrict'`
+  - [ ] **MW-ORM-010.2** Terapkan `onDelete` tersebut pada builder FK di `syncModel` serta logika penghapusan/pengarsipan `findReference`
+  - [ ] **MW-ORM-010.3** Uji perilaku cascade, set-null, dan restrict pada relasi parent-child di SQLite dan PostgreSQL
+  - [ ] **MW-ORM-010.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
 
-- [ ] **MW-ORM-012** Support safe relational dotted-path sorting and `search_read` field projection (e.g., `order: 'partner.name asc'`) in `BaseModel.buildSearchQuery`.
-  - **Priority:** P2 · **Layer:** ORM · **Dependencies:** `MW-DOM-002`
-  - **Location:** `packages/orm/src/base.model.ts`
-  - **Acceptance Criteria:** `order` and `domain` validate relational paths against registered model `BelongsToOneRelation` mappings, check `hiddenFields` on every hop, and generate deterministic left joins without column ambiguity.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:integration`.
+- [ ] **MW-ORM-011** Satukan pipeline validasi, hashing password, hook update, dan redaksi field `sensitive` pada `BaseModel.write()` dan `instance.update()`
+  - [ ] **MW-ORM-011.1** Pastikan `BaseModel.write()` menjalankan JSON Schema patch validation, hash password, `$beforeUpdate` hook ekstensi, dan `sensitive` field handling secara seragam
+  - [ ] **MW-ORM-011.2** Hapus celah bypass validasi/hashing antara batch `write()` dan instance `update()`
+  - [ ] **MW-ORM-011.3** Uji update batch pada model dengan field `password`, `pattern`, dan `compute`
+  - [ ] **MW-ORM-011.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
+
+- [ ] **MW-ORM-012** Dukung pengurutan (`order`) bertitik pada relasi `belongsTo` (mis. `order: 'partner.name asc'`) di `BaseModel.buildSearchQuery`
+  - [ ] **MW-ORM-012.1** Validasi path `order` terhadap `relationMappings` dan `hiddenFields` setiap model pada rantai relasi
+  - [ ] **MW-ORM-012.2** Bangun `LEFT JOIN` dengan alias deterministik yang bebas ambiguitas kolom pada PostgreSQL dan SQLite
+  - [ ] **MW-ORM-012.3** Uji sorting relasional positif dan penolakan (`400`) untuk path invalid atau `hiddenFields`
+  - [ ] **MW-ORM-012.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
 
 ---
 
 ## 05 — ORM Schema Management
 
-- [ ] **MW-SCHEMA-001** Build a unified PostgreSQL & SQLite schema introspector in `@moonwitness/orm` reading live columns, nullability, defaults, `CHECK` constraints, indexes, unique indexes, and foreign keys.
-  - **Priority:** P0 · **Layer:** ORM · **Dependencies:** `MW-CORE-001`
-  - **Location:** `packages/orm/src/`
-  - **Acceptance Criteria:** Introspector produces a normalized `TableSchemaSnapshot` for both `pg` (`information_schema` + `pg_constraint` + `pg_indexes`) and `better-sqlite3` (`PRAGMA table_info` / `index_list` / `foreign_key_list`).
-  - **Verification:** Unit tests on SQLite and integration tests on PostgreSQL (`pnpm --filter @moonwitness/orm test && pnpm test:integration`).
+| ID              | Prioritas | Layer | Dependensi                       | Lokasi Target                                                        |
+| :-------------- | :-------- | :---- | :------------------------------- | :------------------------------------------------------------------- |
+| `MW-SCHEMA-001` | P0        | ORM   | `MW-CORE-001`                    | `packages/orm/src/`                                                  |
+| `MW-SCHEMA-002` | P1        | ORM   | `MW-SCHEMA-001`, `MW-ORM-001`    | `packages/orm/src/addon.ts`                                          |
+| `MW-SCHEMA-003` | P1        | ORM   | `MW-SCHEMA-001`                  | `packages/orm/src/addon.ts`, `packages/orm-whatsapp/src/manifest.ts` |
+| `MW-SCHEMA-004` | P1        | ORM   | `MW-SCHEMA-001`, `MW-ORM-010`    | `packages/orm/src/addon.ts`                                          |
+| `MW-SCHEMA-005` | P0        | ORM   | `MW-SCHEMA-001`, `MW-SCHEMA-002` | `packages/orm/src/addon.ts`, `apps/api/src/commands/db-migrate.ts`   |
+| `MW-SCHEMA-006` | P1        | ORM   | `MW-SCHEMA-005`                  | `apps/api/src/commands/db-migrate.ts`, `package.json`                |
+| `MW-SCHEMA-007` | P2        | ORM   | `MW-SCHEMA-001`                  | `packages/orm/src/addon.ts`                                          |
+| `MW-SCHEMA-008` | P1        | ORM   | `MW-SCHEMA-002`, `MW-SCHEMA-005` | `packages/orm/src/addon.ts`                                          |
 
-- [ ] **MW-SCHEMA-002** Upgrade `syncModel` to reconcile existing column changes automatically (nullable <-> not nullable when safe, default value updates, widening `varchar`/type promotion such as `string -> text` or `integer -> decimal`).
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-SCHEMA-001`, `MW-ORM-001`
-  - **Location:** `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** Safe additive/widening column mutations execute idempotently in transactions on both PostgreSQL and SQLite; making a populated nullable column `required` without a default fails safely with an actionable error.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:integration`.
+- [ ] **MW-SCHEMA-001** Bangun introspektor skema PostgreSQL & SQLite di `@moonwitness/orm` yang membaca kolom aktual, nullability, default, `CHECK` constraint, index, unique index, dan foreign key
+  - [ ] **MW-SCHEMA-001.1** Implementasikan `introspectDatabaseSchema(trx, tableNames)` membaca `information_schema` + `pg_constraint` + `pg_indexes` untuk `pg`
+  - [ ] **MW-SCHEMA-001.2** Implementasikan backend SQLite via `PRAGMA table_info`, `index_list`, `foreign_key_list`, dan `sqlite_master` SQL check parsing
+  - [ ] **MW-SCHEMA-001.3** Tambahkan unit test paritas output `TableSchemaSnapshot` antara SQLite dan mock/live PostgreSQL
+  - [ ] **MW-SCHEMA-001.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
 
-- [ ] **MW-SCHEMA-003** Implement automatic enum `CHECK` constraint diffing and synchronization inside `syncModel`, and remove the manual PostgreSQL constraint-patching workaround in `packages/orm-whatsapp/src/manifest.ts`.
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-SCHEMA-001`
-  - **Location:** `packages/orm/src/addon.ts`, `packages/orm-whatsapp/src/manifest.ts`
-  - **Acceptance Criteria:** When a `fields.enum([...])` adds or modifies values, `syncModel` detects `CHECK` constraint drift and updates the constraint on PostgreSQL (and recreates/checks on SQLite) automatically; `orm-whatsapp` `setup` raw SQL is deleted.
-  - **Verification:** Test enum expansion on populated SQLite & PostgreSQL tables; run `pnpm test:addon-conformance && pnpm test:integration`.
+- [ ] **MW-SCHEMA-002** Perluas `syncModel` untuk mengevolusikan perubahan kolom eksisting secara aman (nullability, default value, pelebaran tipe seperti `string -> text` atau `integer -> decimal`)
+  - [ ] **MW-SCHEMA-002.1** Hitung diff antara definisi `Model.fields` dan `TableSchemaSnapshot` di dalam transaksi migrasi
+  - [ ] **MW-SCHEMA-002.2** Terapkan `ALTER TABLE` aman di PostgreSQL (dan rekonstruksi tabel transaksional aman di SQLite saat diperlukan)
+  - [ ] **MW-SCHEMA-002.3** Tolak penambahan `NOT NULL` tanpa default pada tabel berisi data dengan error `SchemaSyncError` yang jelas
+  - [ ] **MW-SCHEMA-002.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
 
-- [ ] **MW-SCHEMA-004** Reconcile foreign-key constraints and `onDelete` actions on newly added `belongsTo` columns and existing tables during `syncModel`.
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-SCHEMA-001`, `MW-ORM-010`
-  - **Location:** `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** New `belongsTo` fields added to existing PostgreSQL tables get real `FOREIGN KEY` constraints (`ALTER TABLE ADD CONSTRAINT`), and FK `onDelete` mismatches are detected and reconciled cleanly.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:integration`.
+- [ ] **MW-SCHEMA-003** Implementasikan sinkronisasi otomatis `CHECK` constraint untuk field `enum` di `syncModel` dan hapus raw SQL workaround di `packages/orm-whatsapp/src/manifest.ts`
+  - [ ] **MW-SCHEMA-003.1** Bandingkan daftar nilai `field.values` dengan `CHECK` constraint aktual di database pada `syncModel`
+  - [ ] **MW-SCHEMA-003.2** Perbarui constraint otomatis di PostgreSQL/SQLite bila himpunan enum bertambah, serta gagalkan bila nilai lama yang masih ada di data dihapus
+  - [ ] **MW-SCHEMA-003.3** Hapus blok raw SQL `setup` pada `packages/orm-whatsapp/src/manifest.ts`
+  - [ ] **MW-SCHEMA-003.4** Verifikasi: `pnpm test:addon-conformance && pnpm test:integration` lulus dengan tabel `whatsapp_accounts` teruji
 
-- [ ] **MW-SCHEMA-005** Implement a schema-diff preflight guard and destructive-change safety policy (`allowDestructiveSchema` opt-in + data-preservation checks).
-  - **Priority:** P0 · **Layer:** ORM · **Dependencies:** `MW-SCHEMA-001`, `MW-SCHEMA-002`
-  - **Location:** `packages/orm/src/addon.ts`, `apps/api/src/commands/db-migrate.ts`
-  - **Acceptance Criteria:** Schema synchronization NEVER drops columns, drops tables, narrows types, or removes enum values in use automatically; unsafe changes abort cleanly before mutating data and emit structured `SchemaDiffPlan` diagnostics.
-  - **Verification:** Negative tests proving destructive field removals or conflicting type shrinks are blocked cleanly without partial DDL commits; run `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-SCHEMA-004** Rekonsiliasi constraint foreign key (`FOREIGN KEY`) dan aksi `onDelete` pada kolom `belongsTo` baru maupun tabel eksisting
+  - [ ] **MW-SCHEMA-004.1** Deteksi kolom `belongsTo` yang belum memiliki constraint FK di PostgreSQL dan tambahkan constraint secara idempoten
+  - [ ] **MW-SCHEMA-004.2** Deteksi perubahan `onDelete` (`RESTRICT` / `CASCADE` / `SET NULL`) pada metadata model dan perbarui FK constraint secara aman
+  - [ ] **MW-SCHEMA-004.3** Uji penambahan FK dan perubahan `onDelete` di PostgreSQL dengan data relasional
+  - [ ] **MW-SCHEMA-004.4** Verifikasi: `pnpm test:integration` lulus
 
-- [ ] **MW-SCHEMA-006** Add `--dry-run` and `--json` schema inspection modes to `apps/api/src/commands/db-migrate.ts` (`pnpm db:migrate`).
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-SCHEMA-005`
-  - **Location:** `apps/api/src/commands/db-migrate.ts`, `package.json`
-  - **Acceptance Criteria:** `pnpm db:migrate -- --dry-run` computes pending table creations, column additions/alterations, indexes, constraints, and addon upgrades without writing to the database.
-  - **Verification:** `pnpm --filter @moonwitness/api test` with dry-run CLI test asserting zero DB side effects and accurate JSON diff output.
+- [ ] **MW-SCHEMA-005** Implementasikan preflight guard perubahan destruktif & generator rencana `SchemaDiffPlan` fail-closed
+  - [ ] **MW-SCHEMA-005.1** Blokir otomatis penghapusan kolom, penghapusan tabel, penyempitan tipe data, atau penghapusan nilai enum yang berisiko kehilangan data kecuali dengan flag eksplisit & hook upgrade
+  - [ ] **MW-SCHEMA-005.2** Klasifikasikan setiap item diff sebagai `safe_create`, `safe_alter`, `index_sync`, atau `destructive_blocked`
+  - [ ] **MW-SCHEMA-005.3** Uji skenario perubahan destruktif membuktikan transaksi dibatalkan sebelum DDL apa pun dieksekusi
+  - [ ] **MW-SCHEMA-005.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-SCHEMA-007** Reconcile stale ORM-managed indexes (`mw_idx_*`) and unique constraints (`mw_uq_*`) when model indexes/unique arrays evolve, preserving user/custom DB indexes.
-  - **Priority:** P2 · **Layer:** ORM · **Dependencies:** `MW-SCHEMA-001`
-  - **Location:** `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** Only ORM-prefixed (`mw_idx_*`, `mw_uq_*`) indexes no longer declared on the model are candidates for cleanup, while new unique constraints perform pre-creation duplicate checks with clear error messages.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:integration`.
+- [ ] **MW-SCHEMA-006** Tambahkan mode `--dry-run` dan `--json` pada `apps/api/src/commands/db-migrate.ts` (`pnpm db:migrate`)
+  - [ ] **MW-SCHEMA-006.1** Dukung `pnpm db:migrate -- --dry-run` untuk mencetak `SchemaDiffPlan` lengkap tanpa mengeksekusi mutasi DDL atau seed
+  - [ ] **MW-SCHEMA-006.2** Tambahkan opsi `--json` agar pipeline CI/CD dapat memvalidasi apakah perubahan skema bersifat aman atau breaking
+  - [ ] **MW-SCHEMA-006.3** Uji CLI `db-migrate` dengan fixture DB kosong & pre-populated untuk memastikan `--dry-run` nol efek samping
+  - [ ] **MW-SCHEMA-006.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-SCHEMA-008** Add transactional pre/post-sync `addon.upgrade` orchestration with schema-version checksum tracking in `_orm_addons`.
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-SCHEMA-002`, `MW-SCHEMA-005`
-  - **Location:** `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** `_orm_addons` tracks `version`, `schema_digest`, `status`, and `upgraded_at`; unchanged schema/version skips redundant DDL (`no-op` fast boot), while upgrades execute schema sync + chained semver `upgrade` hooks atomically with PostgreSQL rollback verification.
-  - **Verification:** Run upgrade rollback & idempotent re-install tests via `pnpm test:integration`.
+- [ ] **MW-SCHEMA-007** Rekonsiliasi index ORM (`mw_idx_*`) dan unique constraint (`mw_uq_*`) yang usang tanpa menyentuh index manual/DBA di luar namespace `mw_*`
+  - [ ] **MW-SCHEMA-007.1** Hapus index `mw_idx_*`/`mw_uq_*` yatim saat definisi `index` atau `unique` dihapus dari model
+  - [ ] **MW-SCHEMA-007.2** Tambahkan pre-check duplikasi data sebelum membuat `UNIQUE INDEX` baru agar error mudah didiagnosis
+  - [ ] **MW-SCHEMA-007.3** Uji pelestarian index eksternal non-`mw_*` selama sinkronisasi ulang
+  - [ ] **MW-SCHEMA-007.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
+
+- [ ] **MW-SCHEMA-008** Perkuat pelacakan versi & checksum skema pada `_orm_addons` serta eksekusi transaksional `addon.upgrade`
+  - [ ] **MW-SCHEMA-008.1** Simpan `schema_digest` deterministik per addon di `_orm_addons` agar boot normal dengan skema identik tidak melakukan DDL berulang
+  - [ ] **MW-SCHEMA-008.2** Jalankan `syncModel` + rantai `addon.upgrade` berurutan versi dalam satu transaksi PostgreSQL dengan `pg_advisory_xact_lock`
+  - [ ] **MW-SCHEMA-008.3** Uji kegagalan di tengah hook `upgrade` melakukan rollback penuh atas DDL maupun baris data
+  - [ ] **MW-SCHEMA-008.4** Verifikasi: `pnpm test:integration` lulus
 
 ---
 
 ## 06 — Native Addon Engine
 
-- [ ] **MW-ADDON-001** Expand the `Addon` manifest contract (`packages/orm/src/addon.ts`) to declare `displayName`, `category`, `summary`, `license`, `autoInstall`, `uninstallable`, `actions`, `security`, and `versionCompatibility`.
-  - **Priority:** P1 · **Layer:** Addon · **Dependencies:** `MW-CORE-001`
-  - **Location:** `packages/orm/src/addon.ts`, `packages/types/src/`
-  - **Acceptance Criteria:** `defineAddon` validates metadata, semver ranges on `depends`, and rejects conflicting action/menu/model registrations before DB transaction start.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance`.
+| ID             | Prioritas | Layer | Dependensi                      | Lokasi Target                                                               |
+| :------------- | :-------- | :---- | :------------------------------ | :-------------------------------------------------------------------------- |
+| `MW-ADDON-001` | P1        | Addon | `MW-CORE-001`                   | `packages/orm/src/addon.ts`, `packages/types/src/`                          |
+| `MW-ADDON-002` | P1        | Addon | `MW-ADDON-001`, `MW-CORE-002`   | `packages/orm/src/addon.ts`, `apps/api/src/addons/registry.ts`              |
+| `MW-ADDON-003` | P1        | Addon | `MW-ADDON-001`, `MW-SCHEMA-008` | `packages/orm/src/addon.ts`, `packages/orm-base/src/models/feature-flag.ts` |
+| `MW-ADDON-004` | P2        | Addon | `MW-ADDON-003`                  | `packages/orm/src/addon.ts`                                                 |
+| `MW-ADDON-005` | P1        | Addon | `MW-SCHEMA-008`, `MW-ADDON-003` | `packages/orm/src/addon.ts`                                                 |
+| `MW-ADDON-006` | P2        | Addon | `MW-ADDON-001`, `MW-CORE-003`   | `apps/api/src/addons/registry.ts`, `packages/*/src/manifest.ts`             |
+| `MW-ADDON-007` | P1        | Addon | `MW-ADDON-001`, `MW-ORM-003`    | `packages/orm/src/addon.ts`, `scripts/roadmap/addon-conformance.test.mjs`   |
+| `MW-ADDON-008` | P3        | Addon | `MW-ADDON-004`                  | `scripts/evolution/prune-expired-experiments.mjs`                           |
+| `MW-ADDON-009` | P3        | Addon | `MW-ADDON-001`, `MW-ADDON-007`  | `scripts/evolution/scaffold-exp-addon.mjs`, `package.json`                  |
 
-- [ ] **MW-ADDON-002** Implement automatic workspace addon discovery & dependency graph resolver (`discoverWorkspaceAddons`) replacing manual hardcoded imports in `apps/api/src/addons/registry.ts` and worker CLIs.
-  - **Priority:** P1 · **Layer:** Addon · **Dependencies:** `MW-ADDON-001`, `MW-CORE-002`
-  - **Location:** `packages/orm/src/addon.ts`, `apps/api/src/addons/registry.ts`
-  - **Acceptance Criteria:** Addons export a canonical entrypoint discovered from workspace package metadata (`moonwitness.addon: true`) or explicit registry list, validated by topological order and cycle detection.
-  - **Verification:** `pnpm test:addon-conformance && pnpm api:addon:check`.
+- [ ] **MW-ADDON-001** Perluas kontrak manifest `Addon` (`packages/orm/src/addon.ts`) dengan `displayName`, `category`, `summary`, `license`, `autoInstall`, `uninstallable`, `actions`, `security`, dan `compatibility`
+  - [ ] **MW-ADDON-001.1** Perbarui interface `Addon` dan validasi `defineAddon` termasuk semver range kompatibilitas pada `depends`
+  - [ ] **MW-ADDON-001.2** Validasi keunikan nama model, action, menu, dan ID seed lintas seluruh manifest sebelum transaksi dimulai
+  - [ ] **MW-ADDON-001.3** Perbarui 11 manifest addon workspace yang ada agar melengkapi metadata wajib baru tanpa memecahkan test lama
+  - [ ] **MW-ADDON-001.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance` lulus
 
-- [ ] **MW-ADDON-003** Track full addon lifecycle state (`uninstalled | installed | disabled | upgrade_failed`) in `_orm_addons` and integrate runtime enable/disable gating with `ir.feature_flag`.
-  - **Priority:** P1 · **Layer:** Addon · **Dependencies:** `MW-ADDON-001`, `MW-SCHEMA-008`
-  - **Location:** `packages/orm/src/addon.ts`, `packages/orm-base/src/models/feature-flag.ts`
-  - **Acceptance Criteria:** Disabling a non-core addon marks its state in `_orm_addons` and suppresses its menus, actions, and non-core generic routes without deleting its stored records; enabling re-exposes them cleanly.
-  - **Verification:** Add lifecycle enable/disable unit & integration tests; run `pnpm test:addon-conformance`.
+- [ ] **MW-ADDON-002** Implementasikan penemuan addon otomatis (`discoverWorkspaceAddons`) & resolusi graf dependensi deterministik
+  - [ ] **MW-ADDON-002.1** Tambahkan penanda `moonwitness.addon: true` pada `package.json` addon dan resolver penemuan addon di `apps/api/src/addons/`
+  - [ ] **MW-ADDON-002.2** Pastikan resolver mendeteksi dependensi hilang, versi tak kompatibel, dan dependency cycle dengan error yang jelas
+  - [ ] **MW-ADDON-002.3** Tambahkan unit test penemuan addon dengan urutan input teracak dan manifest invalid
+  - [ ] **MW-ADDON-002.4** Verifikasi: `pnpm test:addon-conformance && pnpm api:addon:check` lulus
 
-- [ ] **MW-ADDON-004** Implement safe, dependency-checked `uninstallAddon(db, addonName, options)` handling dependent addons, views, menus, actions, permissions, and `_orm_data` ownership.
-  - **Priority:** P2 · **Layer:** Addon · **Dependencies:** `MW-ADDON-003`
-  - **Location:** `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** Uninstalling an addon required by active dependents fails cleanly (`409`); uninstalling a leaf addon removes its runtime registrations (views, menus, actions, ACL seeds) and optionally purges/archives owned tables only when explicitly confirmed, leaving core data intact.
-  - **Verification:** Test dependency blocking, safe unregister, and clean reinstall in `packages/orm/tests/addon.test.ts`; run `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-ADDON-003** Lacak status siklus hidup penuh addon (`uninstalled | installed | disabled | upgrade_failed`) di `_orm_addons` serta integrasikan enable/disable dengan `ir.feature_flag`
+  - [ ] **MW-ADDON-003.1** Tambahkan kolom `status` pada tabel `_orm_addons` via schema engine (`MW-SCHEMA-002`)
+  - [ ] **MW-ADDON-003.2** Implementasikan `enableAddon(db, name)` dan `disableAddon(db, name)` yang memblokir penonaktifan addon inti (`base`, `auth`, `jobs`) atau yang masih memiliki dependen aktif
+  - [ ] **MW-ADDON-003.3** Pastikan menu, action, dan endpoint model addon berstatus `disabled` tidak terekspose pada runtime tanpa menghapus datanya di DB
+  - [ ] **MW-ADDON-003.4** Verifikasi: `pnpm test:addon-conformance && pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-ADDON-005** Implement addon install/upgrade failure recovery (transactional rollback on PostgreSQL/SQLite, atomic runtime registry snapshot swap, and diagnostic error reporting).
-  - **Priority:** P1 · **Layer:** Addon · **Dependencies:** `MW-SCHEMA-008`, `MW-ADDON-003`
-  - **Location:** `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** A mid-upgrade error rolls back DDL, seed changes, and in-memory `Registry` / `views` / `modelMenus` snapshots simultaneously so the runtime never stays half-upgraded.
-  - **Verification:** PostgreSQL fault-injection test in `apps/api/tests/postgres.integration.test.ts`; run `pnpm test:integration`.
+- [ ] **MW-ADDON-004** Implementasikan `uninstallAddon(db, name, options)` yang aman terhadap dependensi, view, menu, action, permission, dan resource `_orm_data`
+  - [ ] **MW-ADDON-004.1** Tolak uninstall (`409`) apabila ada addon aktif lain yang bergantung pada addon target
+  - [ ] **MW-ADDON-004.2** Lepaskan registrasi runtime (model dari `Registry`, view, menu, action, record rule) serta hapus entri `_orm_addons` dan `_orm_data` milik addon secara transaksional
+  - [ ] **MW-ADDON-004.3** Tambahkan opsi eksplisit `purgeData: false` (default aman) dan uji install ulang bersih sesudah uninstall
+  - [ ] **MW-ADDON-004.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-ADDON-006** Migrate addon-specific HTTP routes (`auth`, `jobs`, `notification`, `workflow`, `whatsapp`, and 15 `knowledge` routes) out of `apps/api/src/addons/registry.ts` into each package's `manifest.httpPlugins` entrypoint.
-  - **Priority:** P2 · **Layer:** Addon · **Dependencies:** `MW-ADDON-001`, `MW-CORE-003`
-  - **Location:** `apps/api/src/addons/registry.ts`, `packages/auth/`, `packages/jobs/`, `packages/orm-notification/`, `packages/orm-workflow/`, `packages/orm-whatsapp/`, `packages/orm-knowledge/`
-  - **Acceptance Criteria:** Each addon owns its HTTP endpoints via `httpPlugins` using `ServiceRegistry` (without violating `audit:workspace` dependencies); `apps/api/src/addons/registry.ts` shrinks to clean addon assembly.
-  - **Verification:** `pnpm audit:workspace && pnpm api:addon:check && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-ADDON-005** Implementasikan pemulihan kegagalan install/upgrade addon (rollback DB + snapshot registry in-memory atomik)
+  - [ ] **MW-ADDON-005.1** Simpan salinan snapshot registry in-memory sebelum `installAddons`/`upgrade` dan pulihkan otomatis bila transaksi gagal
+  - [ ] **MW-ADDON-005.2** Catat status `upgrade_failed` beserta pesan error terstruktur pada log diagnostik tanpa merusak state model aktif
+  - [ ] **MW-ADDON-005.3** Uji injeksi kegagalan di tengah upgrade pada SQLite dan PostgreSQL
+  - [ ] **MW-ADDON-005.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
 
-- [ ] **MW-ADDON-007** Implement cross-addon model/view/menu/action/seed integrity validation during `registerAddons` and in `scripts/roadmap/addon-conformance.test.mjs`.
-  - **Priority:** P1 · **Layer:** Addon · **Dependencies:** `MW-ADDON-001`, `MW-ORM-003`
-  - **Location:** `packages/orm/src/addon.ts`, `scripts/roadmap/addon-conformance.test.mjs`
-  - **Acceptance Criteria:** Conformance tests verify all 11+ workspace addons declare valid dependencies, exported models, valid views/menus/actions, non-colliding seed IDs, and compatibility metadata.
-  - **Verification:** `pnpm test:addon-conformance`.
+- [ ] **MW-ADDON-006** Pindahkan registrasi HTTP plugin fitur (`auth`, `jobs`, `notification`, `workflow`, `whatsapp`, dan 15 `knowledge` route) dari `apps/api/src/addons/registry.ts` ke `manifest.httpPlugins` milik masing-masing addon
+  - [ ] **MW-ADDON-006.1** Refactor `authRoutes`, `jobsRoutes`, `notificationRoutes`, `workflowRoutes` menjadi `httpPlugins` di package addon masing-masing dengan `ServiceRegistry` (`MW-CORE-003`)
+  - [ ] **MW-ADDON-006.2** Evaluasi & pindahkan adapter route `whatsapp` dan `knowledge` ke plugin addon bersih tanpa mengekspor internals API
+  - [ ] **MW-ADDON-006.3** Pastikan `apps/api/src/addons/registry.ts` hanya merangkai daftar addon dan runtime context
+  - [ ] **MW-ADDON-006.4** Verifikasi: `pnpm audit:workspace && pnpm api:addon:check && pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-ADDON-008** Add `addon.uninstall` / cleanup hook for `ir.feature_flag`-gated experimental addons integrated with `pnpm evolution:prune`.
-  - **Priority:** P3 · **Layer:** Addon · **Dependencies:** `MW-ADDON-004`
-  - **Location:** `scripts/evolution/prune-expired-experiments.mjs`, `packages/orm-base/src/models/feature-flag.ts`
-  - **Acceptance Criteria:** Expired `exp-*` addons can be cleanly disabled/uninstalled via the standard addon engine rather than ad-hoc file deletion alone.
-  - **Verification:** `pnpm evolution:prune -- --dry-run` and unit tests in `scripts/evolution/`.
+- [ ] **MW-ADDON-007** Perkuat validasi lintas-addon pada `registerAddons` dan `scripts/roadmap/addon-conformance.test.mjs`
+  - [ ] **MW-ADDON-007.1** Validasi eksistensi target relasi, field view, referensi seed `ref(...)`, action, menu, dan aturan keamanan lintas seluruh addon aktif
+  - [ ] **MW-ADDON-007.2** Perluas `addon-conformance.test.mjs` agar mengecek idempotensi install berulang di SQLite maupun daftar model/menu tanpa duplikasi
+  - [ ] **MW-ADDON-007.3** Tambahkan uji negatif untuk manifest rusak (referensi `ref()` hilang, circular dependency, menu invalid)
+  - [ ] **MW-ADDON-007.4** Verifikasi: `pnpm test:addon-conformance` lulus
 
-- [ ] **MW-ADDON-009** Upgrade `pnpm addon:scaffold` (`scripts/evolution/scaffold-exp-addon.mjs` + standard scaffold command) to generate full production-compliant addons (models, views, menus, actions, security rules, tests, `tsconfig.json`, `package.json`).
-  - **Priority:** P3 · **Layer:** Addon · **Dependencies:** `MW-ADDON-001`, `MW-ADDON-007`
-  - **Location:** `scripts/evolution/scaffold-exp-addon.mjs`, `package.json`
-  - **Acceptance Criteria:** Generated addon compiles, passes `pnpm api:addon:check`, passes `pnpm test:addon-conformance`, and installs cleanly into SQLite/PostgreSQL without manual boilerplate edits.
-  - **Verification:** Run scaffold dry-run & temp-dir build/conformance test; `pnpm test:addon-conformance`.
+- [ ] **MW-ADDON-008** Integrasikan `disableAddon`/`uninstallAddon` ke alur kedaluwarsa eksperimen (`pnpm evolution:prune`) dan `ir.feature_flag`
+  - [ ] **MW-ADDON-008.1** Hubungkan `scripts/evolution/prune-expired-experiments.mjs` dengan mekanisme disable/uninstall addon yang bersih
+  - [ ] **MW-ADDON-008.2** Pastikan fitur eksperimen yang sudah melewati `expiresAt` nonaktif otomatis sebelum kode dipangkas
+  - [ ] **MW-ADDON-008.3** Tambahkan uji dry-run prune di `scripts/evolution/`
+  - [ ] **MW-ADDON-008.4** Verifikasi: `pnpm evolution:prune -- --dry-run` lulus
+
+- [ ] **MW-ADDON-009** Perbarui generator scaffold (`scripts/evolution/scaffold-exp-addon.mjs` dan generator addon produksi) agar menghasilkan struktur addon lengkap
+  - [ ] **MW-ADDON-009.1** Sertakan template `defineModel`, `defineView`, `defineAction`, `menus`, `security`, `package.json`, `tsconfig.json`, dan test conformance
+  - [ ] **MW-ADDON-009.2** Dukung mode `--dry-run` dan penamaan addon standar (`orm-<nama>`) maupun eksperimental (`exp-<nama>`)
+  - [ ] **MW-ADDON-009.3** Uji output scaffold di direktori sementara lolos kompilasi TypeScript dan conformance check
+  - [ ] **MW-ADDON-009.4** Verifikasi: `pnpm test:addon-conformance` lulus
 
 ---
 
 ## 07 — Model–View Engine
 
-- [ ] **MW-VIEW-001** Replace single-slot `Map<string, ViewSpec>` in `packages/orm/src/view.ts` with a multi-view, priority-ordered View Registry supporting `extendView(model, patch)` view inheritance.
-  - **Priority:** P1 · **Layer:** Core · **Dependencies:** `MW-ORM-003`, `MW-CORE-001`
-  - **Location:** `packages/orm/src/view.ts`
-  - **Acceptance Criteria:** Downstream addons can insert fields, sections, tabs, columns, or search filters before/after/inside an upstream view (`extendView`) deterministically by priority/dependency order without overwriting the base view.
-  - **Verification:** Unit tests in `packages/orm/tests/` covering multi-addon view inheritance; run `pnpm --filter @moonwitness/orm test`.
+| ID            | Prioritas | Layer   | Dependensi                  | Lokasi Target                                                           |
+| :------------ | :-------- | :------ | :-------------------------- | :---------------------------------------------------------------------- |
+| `MW-VIEW-001` | P1        | Core    | `MW-ORM-003`, `MW-CORE-001` | `packages/orm/src/view.ts`                                              |
+| `MW-VIEW-002` | P1        | Core    | `MW-VIEW-001`, `MW-DOM-001` | `packages/orm/src/view.ts`                                              |
+| `MW-VIEW-003` | P2        | Core    | `MW-VIEW-001`, `MW-ORM-008` | `packages/orm/src/view.ts`                                              |
+| `MW-VIEW-004` | P2        | Core    | `MW-VIEW-001`, `MW-PKG-002` | `packages/orm/src/view.ts`, `packages/types/src/`                       |
+| `MW-VIEW-005` | P2        | Core    | `MW-VIEW-001`, `MW-ACT-001` | `packages/orm/src/view.ts`, `packages/types/src/`                       |
+| `MW-VIEW-006` | P2        | Core    | `MW-VIEW-001`, `MW-DOM-001` | `packages/orm/src/view.ts`, `packages/types/src/`                       |
+| `MW-VIEW-007` | P2        | Core    | `MW-VIEW-001`               | `packages/orm/src/view.ts`, `packages/types/src/`                       |
+| `MW-VIEW-008` | P3        | Core    | `MW-VIEW-001`, `MW-ORM-001` | `packages/orm/src/view.ts`, `packages/types/src/`                       |
+| `MW-VIEW-009` | P3        | Core    | `MW-VIEW-001`, `MW-ORM-001` | `packages/orm/src/view.ts`, `packages/types/src/`                       |
+| `MW-VIEW-010` | P2        | Backend | `MW-VIEW-001`               | `packages/orm/src/registry.ts`, `apps/api/src/routes/generic.routes.ts` |
 
-- [ ] **MW-VIEW-002** Enforce comprehensive view-definition validation in `defineView` / `extendView` and during `registerAddons` (checking field existence, relation fields, action names, domain syntax, and hidden/write-only exposure).
-  - **Priority:** P1 · **Layer:** Core · **Dependencies:** `MW-VIEW-001`, `MW-DOM-001`
-  - **Location:** `packages/orm/src/view.ts`
-  - **Acceptance Criteria:** Invalid field keys in `list`, `form`, `search`, `kanban`, `calendar`, `graph`, or `pivot`, invalid filter domains, or write-only fields in list/search/kanban throw clear compile/boot errors.
-  - **Verification:** Negative validation tests in `packages/orm/tests/`; run `pnpm test:addon-conformance`.
+- [ ] **MW-VIEW-001** Ganti `Map<string, ViewSpec>` tunggal pada `packages/orm/src/view.ts` dengan View Registry multi-view berprioritas yang mendukung pewarisan `extendView(model, patch)`
+  - [ ] **MW-VIEW-001.1** Simpan daftar view dasar + daftar patch `extendView` dengan `priority` dan `addonName`
+  - [ ] **MW-VIEW-001.2** Implementasikan resolver penggabungan (`before`, `after`, `replace`, `attributes`, `insertSection`, `addFilter`) secara deterministik saat `resolveViews`
+  - [ ] **MW-VIEW-001.3** Uji skenario 2 addon berurutan memperluas `base.partner` tanpa menimpa field addon lain
+  - [ ] **MW-VIEW-001.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-VIEW-003** Upgrade automatic default view generation (`resolveViews`) for models without explicit views, including sensible column prioritization, relation display fields, `active`/`state` filters, and layout grouping.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-VIEW-001`, `MW-ORM-008`
-  - **Location:** `packages/orm/src/view.ts`
-  - **Acceptance Criteria:** Any registered model with zero explicit `defineView` produces valid List, Form, Search, and default Kanban/Graph-eligible metadata automatically without exposing `password`/`hidden` fields.
-  - **Verification:** `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-VIEW-002** Terapkan validasi deklarasi view menyeluruh pada `defineView` / `extendView` dan `registerAddons`
+  - [ ] **MW-VIEW-002.1** Validasi seluruh nama field di `list`, `form`, `search`, `kanban`, `calendar`, `graph`, dan `pivot` ada di model target (termasuk field hasil `extendModel`)
+  - [ ] **MW-VIEW-002.2** Tolak field `password`/`hidden` pada list/search/kanban/graph/pivot, serta validasi sintaks `domain` filter di SearchView
+  - [ ] **MW-VIEW-002.3** Tambahkan uji negatif untuk view invalid di `packages/orm/tests/`
+  - [ ] **MW-VIEW-002.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance` lulus
 
-- [ ] **MW-VIEW-004** Extend `ListView` specification with `editable` (`'top' | 'bottom' | false`), column `widget`, `optional` (`'show' | 'hide'`), `sum`/`avg` numeric aggregations, row `decoration-*` rules, and `multiEdit`.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-VIEW-001`, `MW-PKG-002`
-  - **Location:** `packages/orm/src/view.ts`, `packages/types/src/`
-  - **Acceptance Criteria:** Addons can declare typed list badges, aggregate footer columns, and optional column visibility in `defineView`, validated and served in `/api/:model/views`.
-  - **Verification:** `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-VIEW-003** Tingkatkan generasi view default otomatis (`resolveViews`) bagi model tanpa view eksplisit
+  - [ ] **MW-VIEW-003.1** Prioritaskan field kunci (`name`, `code`, `title`, `state`, `company`, relasi utama) pada list default dan sembunyikan field teknis/sensitif
+  - [ ] **MW-VIEW-003.2** Hasilkan search fields default mencakup string + `_recName` dan filter standar `Active` / `Archived`
+  - [ ] **MW-VIEW-003.3** Uji resolusi default atas model minimal tanpa `defineView`
+  - [ ] **MW-VIEW-003.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-VIEW-005** Extend `FormView` specification with `header` (statusbar field + header buttons), `smartButtons`, `tabs` (notebooks/pages alongside `sections`), 2-column field groups, field `widget`/`placeholder`/`domain`/`context`, and `chatter` toggle.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-VIEW-001`, `MW-ACT-001`
-  - **Location:** `packages/orm/src/view.ts`, `packages/types/src/`
-  - **Acceptance Criteria:** Form views support declarative statusbars, tabbed pages, smart buttons, relational field domain overrides (replacing hardcoded `country_id` checks), and chatter configuration.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance`.
+- [ ] **MW-VIEW-004** Perluas spesifikasi `ListView` dengan `editable` (`'top' | 'bottom' | false`), kolom `widget`, `optional` (`'show' | 'hide'`), agregasi (`sum`/`avg`), dekorasi badge baris, dan `multiEdit`
+  - [ ] **MW-VIEW-004.1** Definisikan tipe kolom list terstruktur (`ListColumnSpec`) sambil mempertahankan kompatibilitas string nama kolom sederhana
+  - [ ] **MW-VIEW-004.2** Validasi agregasi numerik hanya pada field `integer`/`float`/`decimal`
+  - [ ] **MW-VIEW-004.3** Tambahkan dukungan dekorasi warna semantik berbasis domain (mis. status `draft`/`approved`/`cancelled`)
+  - [ ] **MW-VIEW-004.4** Verifikasi: `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-VIEW-006** Extend `SearchView` specification with `groupBy` presets, typed filter `facets`, date range filters, and `searchPanel` category/relation sidebar configuration.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-VIEW-001`, `MW-DOM-001`
-  - **Location:** `packages/orm/src/view.ts`, `packages/types/src/`
-  - **Acceptance Criteria:** Search metadata explicitly drives text search targets, pre-built domain chips, group-by options (connected to `/api/:model/group-count`), and facet panels.
-  - **Verification:** `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-VIEW-005** Perluas spesifikasi `FormView` dengan `header` (field statusbar + tombol aksi), `smartButtons`, `tabs` (notebook/halaman), layout grup kolom, `widget`/`domain`/`context` per field, dan opsi `chatter`
+  - [ ] **MW-VIEW-005.1** Definisikan `FormHeaderSpec`, `FormTabSpec`, `FormFieldSpec`, dan `SmartButtonSpec` di `@moonwitness/types` dan `packages/orm/src/view.ts`
+  - [ ] **MW-VIEW-005.2** Konversi field relasional bergantung (`state` pada `base.partner`, `bank` pada `base.partner_bank`) agar memakai deklarasi `domain` di metadata view/model
+  - [ ] **MW-VIEW-005.3** Uji resolusi metadata form lengkap melalui `/api/:model/views`
+  - [ ] **MW-VIEW-005.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance` lulus
 
-- [ ] **MW-VIEW-007** Add declarative `KanbanView` specification (`groupBy`, `cardTitle`, `cardFields`, `badgeField`, `quickCreate`, `stageOrder`) to replace hardcoded `groupingField` heuristics in `apps/board/src/components/views/list-view.tsx`.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-VIEW-001`
-  - **Location:** `packages/orm/src/view.ts`, `packages/types/src/`
-  - **Acceptance Criteria:** Models with stage/state/selection/many2one pipelines declare explicit `kanban` view specs; models without one degrade gracefully or disable Kanban mode cleanly.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance`.
+- [ ] **MW-VIEW-006** Perluas spesifikasi `SearchView` dengan preset `groupBy`, `facets`, filter rentang tanggal, dan konfigurasi `searchPanel`
+  - [ ] **MW-VIEW-006.1** Tambahkan `SearchGroupBy` dan `SearchPanelSpec` ke kontrak `SearchView`
+  - [ ] **MW-VIEW-006.2** Validasi field `groupBy` & `searchPanel` terhadap kolom skalar/relasi yang aman di-query (bukan `hiddenFields`)
+  - [ ] **MW-VIEW-006.3** Terapkan filter & groupBy default pada `base.partner`, `base.activity`, dan `request.purchase_request`
+  - [ ] **MW-VIEW-006.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-VIEW-008** Add declarative `CalendarView` specification (`dateStart`, `dateStop`, `colorBy`, `mode`: `'month' | 'week' | 'day'`, `fields`) for time-based models (`base.activity`, workflows, requests).
-  - **Priority:** P3 · **Layer:** Core · **Dependencies:** `MW-VIEW-001`, `MW-ORM-001`
-  - **Location:** `packages/orm/src/view.ts`, `packages/types/src/`
-  - **Acceptance Criteria:** Addons can declare `calendar` views validated against `date`/`datetime` fields and consumed via `/api/:model/views`.
-  - **Verification:** `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-VIEW-007** Tambahkan spesifikasi deklaratif `KanbanView` (`groupBy`, `cardTitle`, `cardFields`, `badgeField`, `quickCreate`, `stageOrder`) menggantikan heuristik ad-hoc di `list-view.tsx`
+  - [ ] **MW-VIEW-007.1** Definisikan kontrak `KanbanView` di `@moonwitness/types` dan `packages/orm/src/view.ts`
+  - [ ] **MW-VIEW-007.2** Deklarasikan view Kanban eksplisit untuk model ber-pipeline (`base.activity`, `request.purchase_request`, `workflow.instance`)
+  - [ ] **MW-VIEW-007.3** Validasi `groupBy` Kanban hanya menunjuk field `selection`, `belongsTo`, atau `boolean` yang valid
+  - [ ] **MW-VIEW-007.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance` lulus
 
-- [ ] **MW-VIEW-009** Add declarative `GraphView` (`type`: `'bar' | 'line' | 'pie'`, `dimension`, `measure`, `aggregation`) and `PivotView` (`rows`, `columns`, `measures`) specifications backed by `/api/:model/group-count`.
-  - **Priority:** P3 · **Layer:** Core · **Dependencies:** `MW-VIEW-001`, `MW-ORM-001`
-  - **Location:** `packages/orm/src/view.ts`, `packages/types/src/`
-  - **Acceptance Criteria:** Graph and Pivot definitions validate groupable/aggregatable fields and exclude `hiddenFields` and write-only fields.
-  - **Verification:** `pnpm --filter @moonwitness/orm test`.
+- [ ] **MW-VIEW-008** Tambahkan spesifikasi deklaratif `CalendarView` (`dateStart`, `dateStop`, `colorBy`, `mode`, `fields`) untuk model berbasis waktu
+  - [ ] **MW-VIEW-008.1** Definisikan tipe `CalendarView` dan validasi bahwa `dateStart`/`dateStop` merujuk field `date`/`datetime` yang ada
+  - [ ] **MW-VIEW-008.2** Tambahkan `calendar` view pada `base.activity` (berbasis `deadline` dan `assigned_to`)
+  - [ ] **MW-VIEW-008.3** Sertakan `calendar` pada output `/api/:model/views` saat dideklarasikan
+  - [ ] **MW-VIEW-008.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-VIEW-010** Implement registry-generation-keyed view metadata caching with HTTP `ETag` / `304 Not Modified` on `/api/:model/views` and automatic cache invalidation in `apps/board`.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-VIEW-001`
-  - **Location:** `packages/orm/src/registry.ts`, `apps/api/src/routes/generic.routes.ts`, `apps/board/src/hooks/use-model.ts`
-  - **Acceptance Criteria:** `/api/:model/views` sends deterministic `ETag` bound to `Registry.getGeneration()` + user role/permissions; `useViews` stops relying on un-invalidated `staleTime: Infinity` across addon/permission changes.
-  - **Verification:** `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/board typecheck`.
+- [ ] **MW-VIEW-009** Tambahkan spesifikasi deklaratif `GraphView` (`type`, `dimension`, `measure`, `aggregation`) dan `PivotView` (`rows`, `columns`, `measures`) yang terhubung dengan `/api/:model/group-count`
+  - [ ] **MW-VIEW-009.1** Definisikan tipe `GraphView` (`bar | line | pie`) dan `PivotView` di `@moonwitness/types` dan `@moonwitness/orm`
+  - [ ] **MW-VIEW-009.2** Validasi seluruh dimensi/baris/kolom berada dalam daftar scalar aman dan maksimal 3 grup per query sesuai batas `/api/:model/group-count`
+  - [ ] **MW-VIEW-009.3** Tambahkan view analitik pada `request.purchase_request` dan `base.activity`
+  - [ ] **MW-VIEW-009.4** Verifikasi: `pnpm --filter @moonwitness/orm test` lulus
+
+- [ ] **MW-VIEW-010** Implementasikan caching metadata view berbasis `Registry.getGeneration()` dengan HTTP `ETag` / `304 Not Modified` dan invalidasi otomatis di `apps/board`
+  - [ ] **MW-VIEW-010.1** Bangun `ETag` deterministik pada `/api/:model/views` dari `(model, generation, role, lang, fieldAclDigest)` dan layani `304` saat cocok
+  - [ ] **MW-VIEW-010.2** Ganti `staleTime: Infinity` pada `useViews` di `apps/board/src/hooks/use-model.ts` dengan stale/version key dari `/api/app/bootstrap`
+  - [ ] **MW-VIEW-010.3** Uji perubahan metadata (mis. pergantian bahasa/role/addon upgrade) langsung terefleksi tanpa hard-refresh manual
+  - [ ] **MW-VIEW-010.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/board typecheck` lulus
 
 ---
 
 ## 08 — Field Widget Engine
 
-- [ ] **MW-WIDGET-001** Create an extensible `FieldWidgetRegistry` in `apps/board/src/components/views/widget-registry.tsx` dispatching cell and form widgets by `(field.type, widgetName)` with typed fallback.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-VIEW-004`, `MW-VIEW-005`
-  - **Location:** `apps/board/src/components/views/fields.tsx`
-  - **Acceptance Criteria:** Both `FieldCell` and `FieldWidget` resolve components through `FieldWidgetRegistry` rather than monolithic `switch` statements, allowing custom widgets without editing core files.
-  - **Verification:** `pnpm --filter @moonwitness/board typecheck && pnpm board:ui:check`.
+| ID              | Prioritas | Layer    | Dependensi                                  | Lokasi Target                                         |
+| :-------------- | :-------- | :------- | :------------------------------------------ | :---------------------------------------------------- |
+| `MW-WIDGET-001` | P2        | Frontend | `MW-VIEW-004`, `MW-VIEW-005`                | `apps/board/src/components/views/fields.tsx`          |
+| `MW-WIDGET-002` | P2        | Frontend | `MW-WIDGET-001`, `MW-UI-001`                | `apps/board/src/components/views/`                    |
+| `MW-WIDGET-003` | P2        | Frontend | `MW-WIDGET-001`, `MW-VIEW-005`, `MW-UI-002` | `apps/board/src/components/views/`                    |
+| `MW-WIDGET-004` | P2        | Frontend | `MW-WIDGET-001`, `MW-ORM-008`, `MW-DOM-003` | `apps/board/src/components/views/fields.tsx`          |
+| `MW-WIDGET-005` | P2        | Frontend | `MW-WIDGET-001`, `MW-VIEW-005`              | `apps/board/src/components/views/one2many-widget.tsx` |
+| `MW-WIDGET-006` | P2        | Frontend | `MW-WIDGET-001`, `MW-ORM-002`               | `apps/board/src/components/views/`                    |
+| `MW-WIDGET-007` | P2        | Frontend | `MW-WIDGET-004`, `MW-ORM-005`, `MW-API-003` | `apps/board/src/components/views/form-view.tsx`       |
 
-- [ ] **MW-WIDGET-002** Implement scalar field widgets using `@moonwitness/ui` primitives for `text` (multiline `Textarea`), `float`, `decimal`, `monetary` (currency symbol from record/company), `date`, `datetime` (accessible date/time picker), `json`, `badge`, `color`, `email`, `url`, and `phone`.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-WIDGET-001`, `MW-UI-001`
-  - **Location:** `apps/board/src/components/views/`
-  - **Acceptance Criteria:** All new scalar field types render read-only cells and editable controls using `@moonwitness/ui` components, preserving timezone/locale formatting (`apps/board/src/lib/date-format.ts`).
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck`.
+- [ ] **MW-WIDGET-001** Bangun `FieldWidgetRegistry` yang dapat diperluas di `apps/board/src/components/views/widget-registry.tsx` untuk `FieldCell` dan `FieldWidget`
+  - [ ] **MW-WIDGET-001.1** Definisikan interface `RegisteredFieldWidget` (renderer list cell, form editor, dan formatter CSV opsional)
+  - [ ] **MW-WIDGET-001.2** Dukung resolusi bertingkat berdasarkan `widget` eksplisit di view terlebih dahulu, lalu fallback ke `field.type`
+  - [ ] **MW-WIDGET-001.3** Refactor `fields.tsx` memakai registry tanpa mengubah perilaku kontrol existing
+  - [ ] **MW-WIDGET-001.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-WIDGET-003** Implement declarative `StatusBar` header widget for `selection`/`state` fields supporting clickable allowed transitions and read-only progress display.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-WIDGET-001`, `MW-VIEW-005`, `MW-UI-002`
-  - **Location:** `apps/board/src/components/views/`
-  - **Acceptance Criteria:** `FormView` renders a declarative statusbar from `views.form.header` metadata, replacing ad-hoc badge displays while respecting field `readonly` and workflow guards.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck`.
+- [ ] **MW-WIDGET-002** Implementasikan widget skalar lengkap menggunakan primitif `@moonwitness/ui` (`text` textarea, `float`, `decimal`, `monetary`, `date`, `datetime`, `json`, `badge`, `color`, `email`, `url`, `phone`)
+  - [ ] **MW-WIDGET-002.1** Tambahkan renderer editable & read-only cell untuk seluruh tipe skalar baru dengan dukungan locale/timezone (`apps/board/src/lib/date-format.ts`)
+  - [ ] **MW-WIDGET-002.2** Pastikan `monetary` membaca simbol mata uang dari record atau default perusahaan aktif
+  - [ ] **MW-WIDGET-002.3** Pastikan `email`/`url`/`phone` menampilkan tautan aman tervalidasi (`http:`/`https:`/`mailto:`/`tel:` saja, tolak `javascript:`)
+  - [ ] **MW-WIDGET-002.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-WIDGET-004** Refactor `Many2oneWidget` (`apps/board/src/components/views/fields.tsx`) to use declarative `field.domain`, `field.context`, and target model `_recName`/`search.fields`, removing hardcoded checks for `base.country_state`, `base.country`, `base.bank`, and `base.user`.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-WIDGET-001`, `MW-ORM-008`, `MW-DOM-003`
-  - **Location:** `apps/board/src/components/views/fields.tsx`, `apps/board/src/components/views/form-view.tsx`
-  - **Acceptance Criteria:** `Many2oneWidget` dynamically evaluates `field.domain` against the live form record (e.g., `country_id` filtering `state_id` and `bank_id`), resolves target search fields from metadata, and supports "Open record" link & optional quick-create dialog.
-  - **Verification:** `pnpm --filter @moonwitness/board typecheck` and E2E relation filter test (`apps/board/e2e/`).
+- [ ] **MW-WIDGET-003** Implementasikan widget header `StatusBar` deklaratif untuk field `selection`/`state` pada form view
+  - [ ] **MW-WIDGET-003.1** Hubungkan komponen `StatusBar` dari `@moonwitness/ui` (`MW-UI-002`) dengan metadata `views.form.header`
+  - [ ] **MW-WIDGET-003.2** Izinkan klik transisi status atau pemanggilan `action_*` terotorisasi saat tidak `readonly`
+  - [ ] **MW-WIDGET-003.3** Pastikan indikator status aktif terbaca tanpa bergantung warna saja (label + border/ikon)
+  - [ ] **MW-WIDGET-003.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-WIDGET-005** Upgrade `One2ManyWidget` (`apps/board/src/components/views/one2many-widget.tsx`) to derive `foreignKey` strictly from metadata (removing hardcoded `'partner_id'` fallback) and support inline/modal child record creation & editing without full page navigation loss.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-WIDGET-001`, `MW-VIEW-005`
-  - **Location:** `apps/board/src/components/views/one2many-widget.tsx`
-  - **Acceptance Criteria:** Saving child lines works smoothly with parent context, preserves unsaved parent guards, and removes `'partner_id'` hardcoding.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` and E2E one2many test.
+- [ ] **MW-WIDGET-004** Refactor `Many2oneWidget` (`apps/board/src/components/views/fields.tsx`) agar memakai `field.domain`, `field.context`, dan `_recName`/metadata target—menghapus hardcode `base.country_state`, `base.country`, `base.bank`, dan `base.user`
+  - [ ] **MW-WIDGET-004.1** Evaluasi `field.domain` secara reaktif terhadap nilai form saat ini untuk menyaring hasil `searchRead`
+  - [ ] **MW-WIDGET-004.2** Ambil field pencarian dari metadata target (`search.fields` / `_recName`) alih-alih `if (target === 'base.user')`
+  - [ ] **MW-WIDGET-004.3** Tambahkan tautan cepat ke record relasi dan tombol clear aksesibel (bukan ikon non-button dengan `onClick`)
+  - [ ] **MW-WIDGET-004.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` + E2E dropdown filter relasi lulus
 
-- [ ] **MW-WIDGET-006** Implement `Many2ManyWidget` (tag pills + searchable multi-select / link table) backed by `manyToMany` field metadata (`MW-ORM-002`).
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-WIDGET-001`, `MW-ORM-002`
-  - **Location:** `apps/board/src/components/views/`
-  - **Acceptance Criteria:** Users can attach/detach multiple related records (`PartnerCategory`, `Tag`, `AccessGroup`) via accessible multi-select chips/dialog.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck`.
+- [ ] **MW-WIDGET-005** Perbarui `One2ManyWidget` (`apps/board/src/components/views/one2many-widget.tsx`) agar membaca `foreignKey` dari metadata (hapus default `'partner_id'`) serta dukung tambah/edit baris via dialog
+  - [ ] **MW-WIDGET-005.1** Wajibkan `field.foreignKey` berasal dari metadata relasi backend dan tampilkan error konfigurasi yang jelas bila hilang
+  - [ ] **MW-WIDGET-005.2** Sediakan mode edit/tambah anak dalam modal/drawer atau inline row dengan mempertahankan jalur navigasi parent yang ada
+  - [ ] **MW-WIDGET-005.3** Uji pembuatan & penghapusan record anak `base.partner_address` dari form `base.partner`
+  - [ ] **MW-WIDGET-005.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` + E2E one2many lulus
 
-- [ ] **MW-WIDGET-007** Remove all remaining model-specific hardcoding from `apps/board/src/components/views/form-view.tsx` (`country_id -> state_id` reset and `contextDomain`) by wiring `onchange` API execution and dynamic `field.domain`.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-WIDGET-004`, `MW-ORM-005`, `MW-API-003`
-  - **Location:** `apps/board/src/components/views/form-view.tsx`
-  - **Acceptance Criteria:** Zero model/field name literals (`country`, `state`, `bank`) remain inside generic `FormView` or `fields.tsx`; dependent resets run from server `onchange` or declarative metadata.
-  - **Verification:** `pnpm --filter @moonwitness/board typecheck && pnpm lint` + E2E partner address test.
+- [ ] **MW-WIDGET-006** Implementasikan `Many2ManyWidget` (chip tag + dialog multi-pilih) yang terhubung dengan field `manyToMany` (`MW-ORM-002`)
+  - [ ] **MW-WIDGET-006.1** Buat widget chip relasional yang mendukung penambahan/penghapusan relasi dengan pencarian asinkron ke model target
+  - [ ] **MW-WIDGET-006.2** Patuhi `field.readonly`, `field.domain`, dan izin read model target
+  - [ ] **MW-WIDGET-006.3** Uji keyboard interaction (`Backspace`/`Escape`/checkbox pilih) dan keterbacaan di viewport 320px
+  - [ ] **MW-WIDGET-006.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
+
+- [ ] **MW-WIDGET-007** Bersihkan seluruh hardcode model/field dari `apps/board/src/components/views/form-view.tsx` (`country_id -> state_id` reset dan `contextDomain`) dengan menghubungkan endpoint `/onchange`
+  - [ ] **MW-WIDGET-007.1** Panggil `client.model(model).onchange(...)` saat field dengan flag `hasOnchange` berubah dan terapkan `values` / `domainOverrides` / toast `warnings`
+  - [ ] **MW-WIDGET-007.2** Hapus seluruh kondisi `if (name === 'country_id')` dan `contextDomain` manual di `form-view.tsx`
+  - [ ] **MW-WIDGET-007.3** Pastikan dirty state, validasi lokal, dan pengeditan tetap responsif tanpa memblokir ketikan
+  - [ ] **MW-WIDGET-007.4** Verifikasi: `pnpm --filter @moonwitness/board typecheck && pnpm lint` + E2E partner address lulus
 
 ---
 
 ## 09 — Action & Menu Engine
 
-- [ ] **MW-ACT-001** Define canonical `ActionDefinition` schemas (`window`, `server`, `client`, `record`) and `ActionResult` protocol (`reload`, `navigate`, `open_window`, `notify`, `download`) in `@moonwitness/types` and `@moonwitness/orm`.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-ADDON-001`
-  - **Location:** `packages/types/src/`, `packages/orm/src/`
-  - **Acceptance Criteria:** Addons can declare typed actions via `defineAction(...)` on `Addon.actions`, validated at registration and dispatched uniformly via REST and JSON-RPC.
-  - **Verification:** `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/orm test`.
+| ID           | Prioritas | Layer    | Dependensi                   | Lokasi Target                                                               |
+| :----------- | :-------- | :------- | :--------------------------- | :-------------------------------------------------------------------------- |
+| `MW-ACT-001` | P2        | Core     | `MW-ADDON-001`               | `packages/types/src/`, `packages/orm/src/`                                  |
+| `MW-ACT-002` | P2        | Backend  | `MW-ACT-001`, `MW-SEC-003`   | `packages/orm/src/`, `apps/api/src/routes/generic.routes.ts`                |
+| `MW-ACT-003` | P2        | Core     | `MW-ACT-001`                 | `packages/orm/src/`, `packages/types/src/`                                  |
+| `MW-ACT-004` | P2        | Core     | `MW-ACT-003`, `MW-ADDON-001` | `packages/orm/src/addon.ts`, `packages/orm-base/src/manifest.ts`            |
+| `MW-ACT-005` | P2        | Backend  | `MW-ACT-004`, `MW-SEC-001`   | `apps/api/src/routes/`                                                      |
+| `MW-ACT-006` | P2        | Frontend | `MW-ACT-003`, `MW-VIEW-005`  | `apps/board/src/components/views/form-view.tsx`, `packages/orm/src/view.ts` |
+| `MW-ACT-007` | P2        | Frontend | `MW-ACT-005`                 | `apps/board/src/components/layout/app-shell.tsx`                            |
 
-- [ ] **MW-ACT-002** Implement a backend `ActionRegistry` + execution engine supporting single-record, multi-record batch (`ids[]`), and model-level server actions with context & domain pre-evaluation.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-ACT-001`, `MW-SEC-003`
-  - **Location:** `packages/orm/src/`, `apps/api/src/routes/generic.routes.ts`
-  - **Acceptance Criteria:** `POST /api/:model/action/:actionName` and `/api/:model/:id/action/:method` dispatch through `ActionRegistry`, enforce action ACLs, run inside `inRequestTransaction`, log `base.audit_log`, and return typed `ActionResult`.
-  - **Verification:** `pnpm --filter @moonwitness/api test`.
+- [ ] **MW-ACT-001** Definisikan kontrak kanonis `ActionDefinition` (`window`, `server`, `client`, `record`) dan protokol hasil `ActionResult` (`reload`, `navigate`, `open_window`, `notify`, `download`)
+  - [ ] **MW-ACT-001.1** Tambahkan skema tipe action di `@moonwitness/types` dan helper `defineAction(...)` di `@moonwitness/orm`
+  - [ ] **MW-ACT-001.2** Daftarkan action pada `Addon.actions` dengan validasi ID unik (`<addon>.<slug>`) dan target model/handler valid
+  - [ ] **MW-ACT-001.3** Tambahkan unit test validasi & serialisasi kontrak action di `packages/orm/tests/`
+  - [ ] **MW-ACT-001.4** Verifikasi: `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-ACT-003** Implement declarative Window Actions (opening a model with pre-applied `domain`, default `context`, active `viewModes`, and `target`: `'current' | 'dialog'`) and Client Actions (mounting named workspace pages like WhatsApp or Knowledge Explorer).
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-ACT-001`
-  - **Location:** `packages/orm/src/`, `packages/types/src/`
-  - **Acceptance Criteria:** Window and Client actions are returned in `/api/app/bootstrap` and `/api/:model/views`, enabling parameterized workspace links and dialog forms.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-ACT-002** Bangun `ActionRegistry` backend & mesin eksekusi untuk action per-record, batch multi-record (`ids[]`), dan server action tingkat model
+  - [ ] **MW-ACT-002.1** Implementasikan `POST /api/:model/action/:actionName` dan `/api/:model/:id/action/:method` lewat `ActionRegistry` dalam `inRequestTransaction`
+  - [ ] **MW-ACT-002.2** Terapkan pengecekan domain kondisi action (`visibleIf` / `enabledIf`), pencatatan `base.audit_log`, dan event outbox
+  - [ ] **MW-ACT-002.3** Pastikan batch action membatasi jumlah ID (`<= 100`) dan memverifikasi record rule setiap ID dalam scope company aktif
+  - [ ] **MW-ACT-002.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-ACT-004** Upgrade `AddonMenu` (`packages/orm/src/addon.ts`) into a hierarchical `MenuRegistry` (`id`, `parentId`, `label`, `icon`, `sequence`, `actionId` | `model`, `groups`, `developmentOnly`) replacing flat `getModelMenuInfo`.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-ACT-003`, `MW-ADDON-001`
-  - **Location:** `packages/orm/src/addon.ts`, `packages/orm-base/src/manifest.ts`
-  - **Acceptance Criteria:** Menus form a validated acyclic tree filtered by caller permissions, installed/enabled addons, and `developmentOnly` toggle; all existing addon menus convert cleanly to the tree contract.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance`.
+- [ ] **MW-ACT-003** Implementasikan Window Actions (membuka model dengan `domain`, `context`, `viewModes`, `target: 'current' | 'dialog'`) dan Client Actions (membuka halaman modul seperti WhatsApp & Knowledge)
+  - [ ] **MW-ACT-003.1** Dukung deklarasi Window & Client Action pada manifest `orm-whatsapp`, `orm-knowledge`, `orm-request`, dan `orm-base`
+  - [ ] **MW-ACT-003.2** Pastikan Window Action mampu mengawali filter/konteks pembuatan record (mis. "Create Address for Partner" atau "My Open Requests")
+  - [ ] **MW-ACT-003.3** Tambahkan unit test resolusi Window & Client Action di `packages/orm/tests/`
+  - [ ] **MW-ACT-003.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance` lulus
 
-- [ ] **MW-ACT-005** Expose `/api/app/bootstrap` endpoint returning authenticated user profile, company memberships, enabled addons, hierarchical menu tree, registered window/client actions, and skin preferences in one round-trip.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-ACT-004`, `MW-SEC-001`
-  - **Location:** `apps/api/src/routes/`
-  - **Acceptance Criteria:** Single authenticated endpoint supplies all shell bootstrap metadata while preserving `/api/models` backwards compatibility for existing tests/clients.
-  - **Verification:** `pnpm --filter @moonwitness/api test`.
+- [ ] **MW-ACT-004** Perbarui `AddonMenu` (`packages/orm/src/addon.ts`) menjadi `MenuRegistry` hierarkis (`id`, `parentId`, `label`, `icon`, `sequence`, `actionId` | `model`, `groups`, `developmentOnly`)
+  - [ ] **MW-ACT-004.1** Bangun pohon menu asiklik dengan deteksi orphan `parentId` dan siklus parent-child saat registrasi addon
+  - [ ] **MW-ACT-004.2** Konversi seluruh menu flat addon existing ke struktur hierarkis dengan backward compatibility
+  - [ ] **MW-ACT-004.3** Saring menu berdasarkan role/group pengguna, status aktif addon, serta mode `developmentOnly`
+  - [ ] **MW-ACT-004.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:addon-conformance` lulus
 
-- [ ] **MW-ACT-006** Implement declarative Smart Buttons (`smartButtons`) on `FormView` headers showing live related record counts and executing Window Actions scoped to the current record.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-ACT-003`, `MW-VIEW-005`
-  - **Location:** `apps/board/src/components/views/form-view.tsx`, `packages/orm/src/view.ts`
-  - **Acceptance Criteria:** E.g., `base.partner` displays Contacts/Addresses/Activities/Bank Accounts smart buttons fetched via `/api/:model/group-count` or `search_count` and navigates with parent domain/context on click.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` + Playwright E2E smart-button click test.
+- [ ] **MW-ACT-005** Sediakan endpoint `GET /api/app/bootstrap` yang mengembalikan profil user, company aktif, daftar addon aktif, pohon menu, action terotorisasi, dan preferensi skin dalam satu respons
+  - [ ] **MW-ACT-005.1** Implementasikan `GET /api/app/bootstrap` di `apps/api` sambil mempertahankan `/api/models` untuk kompatibilitas mundur
+  - [ ] **MW-ACT-005.2** Sertakan `registryGeneration` agar frontend tahu kapan harus menginvalidasi cache `/views`
+  - [ ] **MW-ACT-005.3** Uji isolasi per role (`system`, `superadmin`, `user`) dan perubahan `X-Company-Id` pada respons bootstrap
+  - [ ] **MW-ACT-005.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-ACT-007** Refactor `apps/board/src/components/layout/app-shell.tsx` to render dynamic sidebar menus and command-palette omnisearch targets from `/api/app/bootstrap` instead of hardcoded links and 4-model search queries.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-ACT-005`
-  - **Location:** `apps/board/src/components/layout/app-shell.tsx`
-  - **Acceptance Criteria:** Sidebar renders hierarchical addon menus including client-action workspace modules (WhatsApp, Knowledge Explorer, Story Workbench) dynamically based on user grants; command palette searches models declared searchable in metadata.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` and navigation E2E suite.
+- [ ] **MW-ACT-006** Implementasikan Smart Buttons deklaratif (`smartButtons`) pada header `FormView` untuk menampilkan hitungan relasi langsung dan menjalankan Window Action scoped
+  - [ ] **MW-ACT-006.1** Hubungkan komponen `SmartButtonBox` (`MW-UI-002`) ke array `views.form.smartButtons` dengan fetching hitungan batch (`search_count` / `group-count`)
+  - [ ] **MW-ACT-006.2** Terapkan Smart Buttons nyata pada `base.partner` (Addresses, Bank Accounts, Activities) dan `base.company` (Users, Partners)
+  - [ ] **MW-ACT-006.3** Pastikan klik Smart Button membuka Window Action target dengan filter parent domain & context otomatis terisi
+  - [ ] **MW-ACT-006.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` + E2E smart-button navigation lulus
+
+- [ ] **MW-ACT-007** Refactor `apps/board/src/components/layout/app-shell.tsx` untuk merender menu hierarkis dan target omnisearch secara dinamis dari `/api/app/bootstrap`
+  - [ ] **MW-ACT-007.1** Hapus tautan sidebar hardcoded (`WhatsApp`, `Knowledge explorer`, `Story workbench`) dan pindahkan ke manifest client action addon terkait
+  - [ ] **MW-ACT-007.2** Ganti pencarian omnisearch yang di-hardcode pada 4 model dengan daftar model `searchable` dari bootstrap + izin read user
+  - [ ] **MW-ACT-007.3** Uji navigasi desktop, drawer mobile, dan command palette `Ctrl+K` tidak memiliki link ke halaman 403
+  - [ ] **MW-ACT-007.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` + navigation E2E lulus
 
 ---
 
 ## 10 — Domain & Context Engine
 
-- [ ] **MW-DOM-001** Consolidate domain AST parsing, depth/size bounding, validation, and in-memory evaluation into `@moonwitness/types` (supporting all 16 `DomainOperator` values consistently on server and client).
-  - **Priority:** P1 · **Layer:** Shared · **Dependencies:** `MW-PKG-002`
-  - **Location:** `packages/types/src/domain.ts`, `packages/orm/src/domain.ts`, `packages/client/src/domain.ts`
-  - **Acceptance Criteria:** `packages/client/src/domain.ts` and `packages/orm/src/domain.ts` share the exact AST parser/evaluator from `@moonwitness/types`, fixing client missing operators (`<>`, `like`, `not like`, `=like`, `is null`, `is not null`) and removing loose `==` fallback.
-  - **Verification:** Table-driven unit tests across all 16 operators in `packages/types/tests/` and `packages/client/tests/`; run `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/client test`.
+| ID           | Prioritas | Layer    | Dependensi                 | Lokasi Target                                                                                                |
+| :----------- | :-------- | :------- | :------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `MW-DOM-001` | P1        | Shared   | `MW-PKG-002`               | `packages/types/src/domain.ts`, `packages/orm/src/domain.ts`, `packages/client/src/domain.ts`                |
+| `MW-DOM-002` | P1        | ORM      | `MW-DOM-001`               | `packages/orm/src/domain.ts`, `packages/orm/src/base.model.ts`                                               |
+| `MW-DOM-003` | P2        | Core     | `MW-DOM-001`               | `packages/types/src/`, `packages/orm/src/domain.ts`                                                          |
+| `MW-DOM-004` | P2        | Core     | `MW-DOM-003`               | `apps/api/src/plugins/orm.plugin.ts`, `packages/orm/src/environment.ts`, `packages/client/src/repository.ts` |
+| `MW-DOM-005` | P2        | Addon    | `MW-DOM-003`, `MW-SEC-002` | `packages/orm-base/src/`                                                                                     |
+| `MW-DOM-006` | P3        | Frontend | `MW-DOM-005`, `MW-WEB-003` | `apps/board/src/components/views/query-builder-dialog.tsx`, `apps/board/src/components/views/list-view.tsx`  |
 
-- [ ] **MW-DOM-002** Add bounded relational dotted-path resolution (`relation.field`, up to configurable hop depth 2) to SQL domain compilation in `packages/orm/src/domain.ts`.
-  - **Priority:** P1 · **Layer:** ORM · **Dependencies:** `MW-DOM-001`
-  - **Location:** `packages/orm/src/domain.ts`, `packages/orm/src/base.model.ts`
-  - **Acceptance Criteria:** Queries like `[['partner.country.code', '=', 'ID']]` compile safely to parameterized Knex `LEFT JOIN` / `EXISTS` subqueries across PostgreSQL and SQLite, checking field allowlists and `hiddenFields` on every traversed model.
-  - **Verification:** Cross-table domain query unit tests on SQLite and PostgreSQL integration test (`pnpm --filter @moonwitness/orm test && pnpm test:integration`).
+- [ ] **MW-DOM-001** Konsolidasikan parsing AST domain, validasi batas/kedalaman, dan evaluator in-memory ke `@moonwitness/types` (mendukung seluruh 16 `DomainOperator` seragam di server & client)
+  - [ ] **MW-DOM-001.1** Pindahkan `parseDomainToAST`, `validateDomain`, `normalizeLeaf`, dan `evalDomain` murni ke `@moonwitness/types`
+  - [ ] **MW-DOM-001.2** Hapus evaluator duplikat di `packages/client/src/domain.ts` (yang sebelumnya kehilangan operator `<>`, `like`, `not like`, `=like`, `is null`, `is not null` dan memakai `==`)
+  - [ ] **MW-DOM-001.3** Tambahkan unit test matriks 16 operator × tipe nilai (`null`, `boolean`, `number`, `string`, `array`) dan kasus negasi/nesting
+  - [ ] **MW-DOM-001.4** Verifikasi: `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-DOM-003** Implement dynamic context token interpolation (`$uid`, `$partner_id`, `$company_id`, `$today`, `$now`) in domain evaluation for saved filters, record rules, field domains, and window actions.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-DOM-001`
-  - **Location:** `packages/types/src/`, `packages/orm/src/domain.ts`
-  - **Acceptance Criteria:** Context tokens resolve purely from verified server `ExecutionContext` (`req.auth` / `env.context`) on backend and active user session on frontend, never trusting client-spoofed identity headers.
-  - **Verification:** Unit tests in `@moonwitness/types` and `@moonwitness/orm` + negative security tests in `apps/api/tests/`.
+- [ ] **MW-DOM-002** Tambahkan resolusi path relasional bertitik (`relation.field`, batas kedalaman maksimal 2 hop) pada kompilator SQL domain di `packages/orm/src/domain.ts`
+  - [ ] **MW-DOM-002.1** Kompilasi leaf bertitik seperti `['partner.country.code', '=', 'ID']` ke subquery `EXISTS` atau `LEFT JOIN` berparameter di Knex
+  - [ ] **MW-DOM-002.2** Validasi setiap hop terhadap `relationMappings`, eksistensi kolom, dan `hiddenFields` agar tidak bisa membocorkan field privat lewat domain
+  - [ ] **MW-DOM-002.3** Uji query domain bertitik pada SQLite dan PostgreSQL termasuk kasus negasi (`!`, `is null`) dan penolakan hop > 2 / `hiddenFields`
+  - [ ] **MW-DOM-002.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
 
-- [ ] **MW-DOM-004** Standardize `ExecutionContext` propagation (`userId`, `role`, `companyId`, `lang`, `tz`, `activeTest`, `default_*`) across HTTP headers/cookies, `orm.plugin.ts`, `BaseModel`, `jobs`, and `ModelRepository`.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-DOM-003`
-  - **Location:** `apps/api/src/plugins/orm.plugin.ts`, `packages/orm/src/environment.ts`, `packages/client/src/repository.ts`
-  - **Acceptance Criteria:** `default_*` values and `activeTest` propagate cleanly into `defaultGet`, `create`, and `searchRead` without breaking company isolation.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-DOM-003** Implementasikan interpolasi token konteks dinamis (`$uid`, `$partner_id`, `$company_id`, `$today`, `$now`) dalam domain untuk filter, record rule, field domain, dan window action
+  - [ ] **MW-DOM-003.1** Buat `resolveDomainContext(domain, ctx)` murni di `@moonwitness/types` dengan daftar token whitelist eksplisit
+  - [ ] **MW-DOM-003.2** Pastikan di server token selalu diisi dari `req.auth` / `env.context` terverifikasi, bukan dari payload request
+  - [ ] **MW-DOM-003.3** Uji resolusi `$uid`, `$company_id`, `$today` dan penolakan token liar
+  - [ ] **MW-DOM-003.4** Verifikasi: `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/orm test` lulus
 
-- [ ] **MW-DOM-005** Add `base.saved_filter` model in `@moonwitness/orm-base` allowing users and admins to persist named Search View filters, sort order, group-by, and default filter flag per `(model, company, user | shared)`.
-  - **Priority:** P2 · **Layer:** Addon · **Dependencies:** `MW-DOM-003`, `MW-SEC-002`
-  - **Location:** `packages/orm-base/src/`
-  - **Acceptance Criteria:** Users can create/update/delete their own saved filters; superadmins can publish company-shared default filters; record rules prevent cross-company or cross-user private filter tampering.
-  - **Verification:** `pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-DOM-004** Standarisasi propagasi `ExecutionContext` (`userId`, `role`, `companyId`, `lang`, `tz`, `activeTest`, `default_*`) di API, ORM, Job, dan `@moonwitness/client`
+  - [ ] **MW-DOM-004.1** Propagasi `lang`, `tz`, dan `activeTest` konsisten di `orm.plugin.ts`, `Environment`, dan `JobContext`
+  - [ ] **MW-DOM-004.2** Terapkan `default_*` secara aman pada `defaultGet` dan form creation context tanpa menimpa field `company_id` atau server-managed
+  - [ ] **MW-DOM-004.3** Tambahkan unit test propagasi context di API dan worker job
+  - [ ] **MW-DOM-004.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-DOM-006** Connect Search/List views and Query Builder in `apps/board` to `base.saved_filter` and full 16-operator domain serialization.
-  - **Priority:** P3 · **Layer:** Frontend · **Dependencies:** `MW-DOM-005`, `MW-WEB-003`
-  - **Location:** `apps/board/src/components/views/query-builder-dialog.tsx`, `apps/board/src/components/views/list-view.tsx`
-  - **Acceptance Criteria:** Users can save custom Search/Query Builder conditions as reusable filters, toggle them from the Search bar, and share company-wide filters when authorized.
-  - **Verification:** `pnpm --filter @moonwitness/board typecheck` + E2E saved filter test in `apps/board/e2e/`.
+- [ ] **MW-DOM-005** Tambahkan model `base.saved_filter` di `@moonwitness/orm-base` untuk menyimpan filter pencarian, sort, groupBy, dan flag default per `(model, company, user | shared)`
+  - [ ] **MW-DOM-005.1** Definisikan model `SavedFilter` (`model_name`, `name`, `domain_json`, `order`, `group_by`, `is_default`, `is_shared`, `user`, `company`) serta validasi JSON domain saat save
+  - [ ] **MW-DOM-005.2** Terapkan record rule bahwa user hanya boleh mengubah filter miliknya, sedangkan filter `is_shared: true` hanya bisa dipublikasikan oleh admin/superadmin
+  - [ ] **MW-DOM-005.3** Tambahkan views, manifest registration, dan unit/integration tests
+  - [ ] **MW-DOM-005.4** Verifikasi: `pnpm --filter @moonwitness/orm-base test && pnpm test:addon-conformance` lulus
+
+- [ ] **MW-DOM-006** Hubungkan Search View & Query Builder di `apps/board` ke `base.saved_filter` dengan dukungan penuh 16 operator domain
+  - [ ] **MW-DOM-006.1** Perbarui `query-builder-dialog.tsx` untuk mendukung seluruh operator (`is null`, `is not null`, `in`, `not in`, `ilike`, `=`, `!=`, dll.) dan pratinjau filter
+  - [ ] **MW-DOM-006.2** Tambahkan menu "Save current filter" dan daftar filter tersimpan pada `SearchEngineBar`
+  - [ ] **MW-DOM-006.3** Uji simpan, muat ulang, pilih default, dan hapus saved filter antar-company terisolasi di Playwright
+  - [ ] **MW-DOM-006.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` + E2E lulus
 
 ---
 
 ## 11 — Security & Identity
 
-- [ ] **MW-SEC-001** Move model access policy classification (`internal`, `adminOnly`, `publicRead`) out of hardcoded lists in `apps/api/src/auth/{policy,rules}.ts` into declarative `defineModel` / `defineAddon` security metadata (retaining `knowledge.*` prefix fail-closed deny).
-  - **Priority:** P0 · **Layer:** Security · **Dependencies:** `MW-CORE-001`, `MW-ADDON-001`
-  - **Location:** `packages/orm/src/model-definition.ts`, `apps/api/src/auth/policy.ts`, `apps/api/src/auth/rules.ts`
-  - **Acceptance Criteria:** Newly installed addon models default to fail-closed (`internal` or group-restricted) unless explicitly annotated; `policy.ts` queries compiled registry metadata + `knowledge.*` prefix guard.
-  - **Verification:** `pnpm --filter @moonwitness/api exec vitest run tests/security-hardening.test.ts tests/api-orm-hardening.test.ts`.
+| ID           | Prioritas | Layer    | Dependensi                               | Lokasi Target                                                                   |
+| :----------- | :-------- | :------- | :--------------------------------------- | :------------------------------------------------------------------------------ |
+| `MW-SEC-001` | P0        | Security | `MW-CORE-001`, `MW-ADDON-001`            | `packages/orm/src/model-definition.ts`, `apps/api/src/auth/policy.ts`           |
+| `MW-SEC-002` | P1        | Security | `MW-SEC-001`, `MW-DOM-003`               | `packages/orm/src/addon.ts`, `apps/api/src/auth/rules.ts`                       |
+| `MW-SEC-003` | P1        | Security | `MW-SEC-001`, `MW-ORM-011`               | `packages/orm/src/model-definition.ts`, `apps/api/src/routes/generic.routes.ts` |
+| `MW-SEC-004` | P1        | Security | `MW-ACT-001`, `MW-SEC-001`               | `apps/api/src/auth/policy.ts`, `packages/orm/src/`                              |
+| `MW-SEC-005` | P0        | Security | `MW-SEC-002`, `MW-SEC-003`, `MW-SEC-004` | `apps/api/tests/`, `apps/api/src/routes/`                                       |
+| `MW-SEC-006` | P1        | Security | `MW-SEC-002`                             | `apps/api/src/routes/generic.routes.ts`, `apps/api/src/whatsapp/media.ts`       |
+| `MW-SEC-007` | P1        | Security | `MW-SEC-001`                             | `apps/api/src/plugins/auth.plugin.ts`, `packages/auth/src/service.ts`           |
+| `MW-SEC-008` | P0        | Security | `MW-DOM-004`                             | `apps/api/src/routes/generic.routes.ts`                                         |
 
-- [ ] **MW-SEC-002** Allow addons to declare declarative `recordRules` inside manifests (replacing hardcoded `notification.*`, `base.partner`, `base.company` switches in `apps/api/src/auth/rules.ts`) while keeping immutable `company_id` tenant scoping mandatory.
-  - **Priority:** P1 · **Layer:** Security · **Dependencies:** `MW-SEC-001`, `MW-DOM-003`
-  - **Location:** `packages/orm/src/addon.ts`, `apps/api/src/auth/rules.ts`, `packages/orm-notification/`, `packages/orm-base/`
-  - **Acceptance Criteria:** Addons register operation-scoped (`read`, `create`, `write`, `unlink`) record rules using dynamic context domains (`$uid`, `$partner_id`, `$company_id`), ANDed with immutable `company_id` isolation.
-  - **Verification:** Negative cross-tenant and cross-user isolation tests in `apps/api/tests/` (`pnpm --filter @moonwitness/api test && pnpm test:integration`).
+- [ ] **MW-SEC-001** Pindahkan klasifikasi kebijakan akses model (`internal`, `adminOnly`, `publicRead`, `readOnlyForUsers`) dari list hardcoded di `apps/api/src/auth/{policy,rules}.ts` ke metadata deklaratif `defineModel` / `defineAddon` (tetap menjaga guard fail-closed prefix `knowledge.*`)
+  - [ ] **MW-SEC-001.1** Tambahkan properti `accessPolicy` pada opsi `defineModel` dengan default aman (`internal` / fail-closed) jika tidak dideklarasikan eksplisit
+  - [ ] **MW-SEC-001.2** Kompilasi kebijakan model dari `Registry` pada saat startup dan perbarui `canAccess()` agar membaca registry sambil tetap mempertahankan blokir permanen prefix `knowledge.*` dan `auth.*`
+  - [ ] **MW-SEC-001.3** Anotasi seluruh 73 model addon yang ada agar semantik izin eksisting terjaga 100% tanpa regresi
+  - [ ] **MW-SEC-001.4** Verifikasi: `pnpm --filter @moonwitness/api exec vitest run tests/security-hardening.test.ts tests/api-orm-hardening.test.ts` lulus
 
-- [ ] **MW-SEC-003** Implement field-level ACLs (`groups` / `readGroups` / `writeGroups` on `FieldOptions`) enforced consistently across `describeFields`, `search_read`, `browse`, `create`, `write`, `group-count`, and CSV export.
-  - **Priority:** P1 · **Layer:** Security · **Dependencies:** `MW-SEC-001`, `MW-ORM-011`
-  - **Location:** `packages/orm/src/model-definition.ts`, `packages/orm/src/view.ts`, `apps/api/src/auth/policy.ts`, `apps/api/src/routes/generic.routes.ts`
-  - **Acceptance Criteria:** Fields restricted to specific `base.access_group` codes are omitted from `fields`/`views`, stripped from `search_read`/`read`, blocked in domain/group-by queries, and rejected (`403`) on unauthorized `create`/`write`.
-  - **Verification:** Positive and negative field-ACL tests in `apps/api/tests/`; `pnpm --filter @moonwitness/api test`.
+- [ ] **MW-SEC-002** Izinkan addon mendeklarasikan `recordRules` langsung pada manifest (menggantikan switch-case hardcoded di `apps/api/src/auth/rules.ts`) dengan batas tenant `company_id` yang tetap wajib dan tak dapat dioverride
+  - [ ] **MW-SEC-002.1** Tambahkan tipe `AddonRecordRule` (`model`, `operations`, `domain`, `groups`) pada `Addon.security`
+  - [ ] **MW-SEC-002.2** Pastikan `getRecordRuleDomain` selalu menggabungkan (`AND`) batas `company_id` sebelum mengevaluasi rule addon kustom
+  - [ ] **MW-SEC-002.3** Migrasi rule untuk `notification.*`, `base.partner`, `base.partner_address`, `base.partner_category_link`, dan `base.company` ke manifest addon terkait
+  - [ ] **MW-SEC-002.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm test:integration` lulus
 
-- [ ] **MW-SEC-004** Implement granular action-level permissions (`allowedGroups` / `operation` on `ActionDefinition`) instead of collapsing every `action_*` call to `'write'`.
-  - **Priority:** P1 · **Layer:** Security · **Dependencies:** `MW-ACT-001`, `MW-SEC-001`
-  - **Location:** `apps/api/src/auth/policy.ts`, `packages/orm/src/`
-  - **Acceptance Criteria:** Addon actions can specify required access groups or roles (`canExecuteAction(auth, model, action)`); UI hides disallowed action buttons and API returns `403` on unauthorized invocation.
-  - **Verification:** `pnpm --filter @moonwitness/api test`.
+- [ ] **MW-SEC-003** Implementasikan ACL tingkat field (`groups` / `readGroups` / `writeGroups` pada `FieldOptions`) yang ditegakkan pada `describeFields`, `search_read`, `browse`, `create`, `write`, `group-count`, dan CSV export
+  - [ ] **MW-SEC-003.1** Saring `FieldMeta` dalam `/fields` dan `/views` berdasarkan `groupPermissions` / role caller
+  - [ ] **MW-SEC-003.2** Strip field terlarang dari hasil `search_read`/`read`, tolak (`403`) penggunaannya pada `fields`, `domain`, `order`, `group_by`, dan tolak penulisan (`403`) di `create`/`write`/`jsonrpc`
+  - [ ] **MW-SEC-003.3** Tambahkan uji positif dan negatif ACL field di REST, JSON-RPC, dan grouped-count
+  - [ ] **MW-SEC-003.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-SEC-005** Verify cross-layer authorization parity across REST `/api/:model`, JSON-RPC `/jsonrpc`, `base.attachment`, `group-count`, and addon-specific endpoints (`notification`, `workflow`, `whatsapp`, `knowledge`).
-  - **Priority:** P0 · **Layer:** Security · **Dependencies:** `MW-SEC-002`, `MW-SEC-003`, `MW-SEC-004`
-  - **Location:** `apps/api/tests/`, `apps/api/src/routes/`
-  - **Acceptance Criteria:** Every registered model/endpoint passes negative role, missing group grant, cross-company `X-Company-Id`, and cross-company relation traversal tests (`403`/`404`) via both REST and JSON-RPC.
-  - **Verification:** Expand and run authorization matrix test in `apps/api/tests/` (`pnpm --filter @moonwitness/api test && pnpm test:integration`).
+- [ ] **MW-SEC-004** Implementasikan izin akses tingkat action (`allowedGroups` / `requiredPermission` pada `ActionDefinition`), memisahkan eksekusi aksi sensitif dari izin `'write'` biasa
+  - [ ] **MW-SEC-004.1** Tambahkan fungsi `canExecuteAction(auth, model, actionDef)` di `apps/api/src/auth/policy.ts`
+  - [ ] **MW-SEC-004.2** Saring action yang tidak boleh dijalankan caller dari metadata `/api/:model/views` dan `/api/app/bootstrap`, dan kembalikan `403` pada panggilan API langsung
+  - [ ] **MW-SEC-004.3** Uji action permission terpisah antara role `user` biasa vs group khusus vs `superadmin`
+  - [ ] **MW-SEC-004.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-SEC-006** Harden `base.attachment` upload/download access control for polymorphic `resource_model`/`resource_id` links and unify shared MIME/size/filename validation across `generic.routes.ts` and `whatsapp/media.ts`.
-  - **Priority:** P1 · **Layer:** Security · **Dependencies:** `MW-SEC-002`
-  - **Location:** `apps/api/src/routes/generic.routes.ts`, `apps/api/src/whatsapp/media.ts`
-  - **Acceptance Criteria:** Attachment uploads verify magic-byte/MIME signatures consistently, validate parent record write permission (not just read), and enforce `company_id` isolation on both REST and WhatsApp media paths.
-  - **Verification:** `pnpm --filter @moonwitness/api test`.
+- [ ] **MW-SEC-005** Buktikan paritas otorisasi lintas-lapis antara REST `/api/:model`, JSON-RPC `/jsonrpc`, `base.attachment`, `group-count`, dan rute domain addon (`notification`, `workflow`, `whatsapp`, `knowledge`)
+  - [ ] **MW-SEC-005.1** Satukan helper otorisasi yang dipakai oleh REST dan JSON-RPC agar nol perbedaan jalur validasi
+  - [ ] **MW-SEC-005.2** Uji seluruh skenario negatif lintas-company (`X-Company-Id`), lintas-user, dan manipulasi FK lintas-tenant pada REST & JSON-RPC
+  - [ ] **MW-SEC-005.3** Pastikan `knowledge.*` dan `auth.*` tetap mengembalikan `403`/`404` tanpa membocorkan eksistensi tabel/model
+  - [ ] **MW-SEC-005.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm test:integration` lulus
 
-- [ ] **MW-SEC-007** Add group-scoped authentication revocation & permission-change cache invalidation so role/group/company-membership edits take effect immediately without stale JWT grant caches.
-  - **Priority:** P1 · **Layer:** Security · **Dependencies:** `MW-SEC-001`
-  - **Location:** `apps/api/src/plugins/auth.plugin.ts`, `packages/auth/src/service.ts`
-  - **Acceptance Criteria:** Modifying `base.user`, `base.group_membership`, `base.model_access`, or `base.company_membership` invalidates cached auth/grant snapshots across API requests immediately.
-  - **Verification:** `pnpm --filter @moonwitness/api exec vitest run tests/auth.test.ts` + PostgreSQL multi-request grant revocation test.
+- [ ] **MW-SEC-006** Perkuat kontrol akses upload/download `base.attachment` untuk tautan polimorfik (`resource_model`/`resource_id`) dan satukan validasi magic-byte MIME di `generic.routes.ts` & `whatsapp/media.ts`
+  - [ ] **MW-SEC-006.1** Ekstrak helper shared validasi nama file aman, ukuran maksimum, dan magic-byte signature MIME ke satu modul
+  - [ ] **MW-SEC-006.2** Wajibkan pemanggil upload `base.attachment` memiliki izin `write` (atau izin khusus attachment) pada parent record dan berada pada company yang sama
+  - [ ] **MW-SEC-006.3** Uji path traversal, MIME palsu (ekstensi `.png` berisi script), dan akses lampiran antar-tenant
+  - [ ] **MW-SEC-006.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-SEC-008** Add security checks for dynamic `context` and `domain` inputs sent from clients to `default_get`, `onchange`, and `group-count` so client-supplied context cannot override `userId`, `role`, `companyId`, or `activeTest` bypasses.
-  - **Priority:** P0 · **Layer:** Security · **Dependencies:** `MW-DOM-004`
-  - **Location:** `apps/api/src/routes/generic.routes.ts`
-  - **Acceptance Criteria:** Reserved identity/tenant context keys sent by untrusted clients are stripped or rejected (`400`/`403`) before entering `Environment`.
-  - **Verification:** Adversarial context-injection test in `apps/api/tests/security-hardening.test.ts`.
+- [ ] **MW-SEC-007** Implementasikan mekanisme invalidasi cache otorisasi & pencabutan sesi segera saat role, password, group membership, atau company membership diubah
+  - [ ] **MW-SEC-007.1** Tambahkan epoch/generation counter per user atau cluster (tersimpan aman / disinkronkan via DB timestamp/revision) yang diinvalidasi saat `base.user`, `base.group_membership`, `base.model_access`, atau `base.company_membership` dimutasi
+  - [ ] **MW-SEC-007.2** Pastikan pencabutan grant atau deaktivasi user membatalkan akses di request berikutnya secara langsung
+  - [ ] **MW-SEC-007.3** Tambahkan uji integrasi multi-request pencabutan akses group & company
+  - [ ] **MW-SEC-007.4** Verifikasi: `pnpm --filter @moonwitness/api exec vitest run tests/auth.test.ts` lulus
+
+- [ ] **MW-SEC-008** Amankan input `context` dan `domain` dari klien pada endpoint `default-get`, `onchange`, dan `group-count` agar tidak dapat memalsukan `userId`, `role`, `companyId`, atau bypass `activeTest`
+  - [ ] **MW-SEC-008.1** Terapkan allowlist ketat pada parameter `context` yang berasal dari klien (hanya izinkan `default_*`, `lang`, `tz`, dan key tampilan aman)
+  - [ ] **MW-SEC-008.2** Pastikan key keamanan (`userId`, `role`, `companyId`, `partnerId`, `trx`) selalu ditimpa dari server `req.auth`
+  - [ ] **MW-SEC-008.3** Tambahkan uji adversarial context-injection di `apps/api/tests/security-hardening.test.ts`
+  - [ ] **MW-SEC-008.4** Verifikasi: `pnpm --filter @moonwitness/api exec vitest run tests/security-hardening.test.ts` lulus
 
 ---
 
 ## 12 — API & RPC Architecture
 
-- [ ] **MW-API-001** Decompose `apps/api/src/routes/generic.routes.ts` (1,586 lines) into cohesive, single-responsibility route & policy modules (`metadata.routes.ts`, `query.routes.ts`, `mutation.routes.ts`, `attachment.routes.ts`, `jsonrpc.routes.ts`, `generic-policy.ts`).
-  - **Priority:** P1 · **Layer:** Backend · **Dependencies:** `MW-SEC-001`, `MW-SEC-005`
-  - **Location:** `apps/api/src/routes/generic.routes.ts`
-  - **Acceptance Criteria:** Each module is under ~350 lines with one clear boundary; existing generic REST, JSON-RPC, audit, outbox, and attachment behavior remains 100% preserved.
-  - **Verification:** `pnpm --filter @moonwitness/api test && pnpm test:integration` (note: capture baseline behavior tests before refactoring per `docs/engineering/refactor-map.md`).
+| ID           | Prioritas | Layer   | Dependensi                               | Lokasi Target                                               |
+| :----------- | :-------- | :------ | :--------------------------------------- | :---------------------------------------------------------- |
+| `MW-API-001` | P1        | Backend | `MW-SEC-001`, `MW-SEC-005`               | `apps/api/src/routes/generic.routes.ts`                     |
+| `MW-API-002` | P2        | Backend | `MW-API-001`, `MW-ACT-002`, `MW-ORM-005` | `apps/api/src/routes/`, `packages/types/src/jsonrpc.ts`     |
+| `MW-API-003` | P2        | Backend | `MW-ORM-005`, `MW-API-001`               | `apps/api/src/routes/`, `packages/client/src/repository.ts` |
+| `MW-API-004` | P1        | Backend | `MW-API-001`                             | `apps/api/src/routes/`, `packages/orm-storage/src/index.ts` |
+| `MW-API-005` | P3        | Backend | `MW-API-001`, `MW-ORM-001`               | `apps/api/src/app.ts`, `apps/api/src/routes/`               |
+| `MW-API-006` | P2        | Backend | `MW-CORE-006`, `MW-API-001`              | `packages/types/src/api.ts`, `apps/api/src/routes/`         |
+| `MW-API-007` | P2        | Backend | `MW-API-001`, `MW-PERF-002`              | `apps/api/src/routes/`, `packages/client/src/repository.ts` |
 
-- [ ] **MW-API-002** Achieve full REST <-> JSON-RPC (`execute_kw`) parity by exposing `read`, `search_count`, `search_group_count`, `fields_get`, `views_get`, `default_get`, `onchange`, and `call_action` via `/jsonrpc`.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-API-001`, `MW-ACT-002`, `MW-ORM-005`
-  - **Location:** `apps/api/src/routes/generic.routes.ts`, `apps/api/src/auth/policy.ts`, `packages/types/src/jsonrpc.ts`
-  - **Acceptance Criteria:** Every `execute_kw` method enforces the same `canAccess`, record rules, field ACLs, bounds checking, audit logging, and transactional outbox semantics as REST.
-  - **Verification:** `pnpm --filter @moonwitness/api test` + `packages/client/tests/` RPC contract tests.
+- [ ] **MW-API-001** Pecah `apps/api/src/routes/generic.routes.ts` (1.586 baris) menjadi modul route & policy terfokus (`metadata.routes.ts`, `query.routes.ts`, `mutation.routes.ts`, `attachment.routes.ts`, `jsonrpc.routes.ts`, `generic-policy.ts`)
+  - [ ] **MW-API-001.1** Pastikan seluruh assertion test integrasi & otorisasi berjalan hijau sebelum memulai pemecahan
+  - [ ] **MW-API-001.2** Ekstrak masing-masing domain tanggung jawab menjadi sub-plugin Fastify (< 350 baris per file) tanpa mengubah URL, header, atau error code
+  - [ ] **MW-API-001.3** Pastikan `pnpm docs:generate` (`extractRoutes`) tetap mendeteksi 100% endpoint generik pada file-file hasil pemecahan
+  - [ ] **MW-API-001.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm test:integration && pnpm docs:check` lulus
 
-- [ ] **MW-API-003** Add REST endpoints `POST /api/:model/default-get` and `POST /api/:model/onchange` backed by ORM hooks (`MW-ORM-005`).
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-ORM-005`, `MW-API-001`
-  - **Location:** `apps/api/src/routes/`, `packages/client/src/repository.ts`
-  - **Acceptance Criteria:** Creating or editing records fetches dynamic defaults and reactive `onchange` deltas (values + domain overrides + warnings) with field-level ACL filtering applied.
-  - **Verification:** `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/client test`.
+- [ ] **MW-API-002** Lengkapi paritas JSON-RPC `execute_kw` (`/jsonrpc`) agar mendukung `read`, `search_count`, `search_group_count`, `fields_get`, `views_get`, `default_get`, `onchange`, dan `call_action`
+  - [ ] **MW-API-002.1** Perbarui `rpcOperation` dan dispatcher `executeRpc` dengan pengecekan `canAccess`, record rule, field ACL, dan batas query yang identik dengan REST
+  - [ ] **MW-API-002.2** Dukung `expected_write_date` pada JSON-RPC `write` dan return JSON-RPC error code terstruktur (`-32003` Forbidden, `-32009` Conflict)
+  - [ ] **MW-API-002.3** Tambahkan client wrapper method di `packages/client` & test kontrak JSON-RPC lengkap
+  - [ ] **MW-API-002.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/client test` lulus
 
-- [ ] **MW-API-004** Upgrade `/api/base.attachment/upload` from full-buffer `application/octet-stream` memory buffering to streaming ingestion (`putStream` in `@moonwitness/orm-storage`) + multipart support.
-  - **Priority:** P1 · **Layer:** Backend · **Dependencies:** `MW-API-001`
-  - **Location:** `apps/api/src/routes/generic.routes.ts`, `packages/orm-storage/src/index.ts`, `packages/client/src/repository.ts`
-  - **Acceptance Criteria:** Large attachments (up to `MAX_ATTACHMENT_BYTES` 10 MiB) stream directly to local/S3 storage while computing SHA-256 checksum and enforcing size/MIME bounds without buffering full payloads in Node heap.
-  - **Verification:** Streaming upload + oversized abort + storage failure compensation tests in `apps/api/tests/`.
+- [ ] **MW-API-003** Sediakan endpoint REST `POST /api/:model/default-get` dan `POST /api/:model/onchange` beserta method terkait di `ModelRepository`
+  - [ ] **MW-API-003.1** Terapkan validasi skema body, strip server-managed/readonly fields, dan delegasikan ke `Model.defaultGet` / `Model.onchange`
+  - [ ] **MW-API-003.2** Pastikan `onchange` memfilter hasil sesuai field-level ACL caller sebelum dikirim kembali
+  - [ ] **MW-API-003.3** Tambah method `getDefaults` dan `onchange` pada `packages/client/src/repository.ts`
+  - [ ] **MW-API-003.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/client test` lulus
 
-- [ ] **MW-API-005** Generate dynamic OpenAPI 3.x schema descriptors for installed addon models and routes in `@fastify/swagger`.
-  - **Priority:** P3 · **Layer:** Backend · **Dependencies:** `MW-API-001`, `MW-ORM-001`
-  - **Location:** `apps/api/src/app.ts`, `apps/api/src/routes/`
-  - **Acceptance Criteria:** Swagger UI `/docs` (when enabled) reflects installed models, query/body schemas, and addon routes derived from canonical ORM metadata rather than generic untyped placeholders.
-  - **Verification:** `pnpm --filter @moonwitness/api test` + schema validation check on `app.swagger()`.
+- [ ] **MW-API-004** Ubah endpoint `/api/base.attachment/upload` dari buffering memori penuh (`Buffer`) menjadi streaming via `putStream` di `@moonwitness/orm-storage` dan dukung `multipart/form-data`
+  - [ ] **MW-API-004.1** Gunakan `putStream` untuk menghitung SHA-256 checksum dan batas ukuran `MAX_ATTACHMENT_BYTES` sambil mengalirkan stream langsung ke storage lokal/S3
+  - [ ] **MW-API-004.2** Pertahankan kompatibilitas upload `application/octet-stream` eksisting sekaligus dukung `multipart/form-data`
+  - [ ] **MW-API-004.3** Uji pembatalan stream, penolakan > 10 MiB (`413`), dan cleanup atomik jika transaksi DB gagal
+  - [ ] **MW-API-004.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/orm-storage test` lulus
 
-- [ ] **MW-API-006** Standardize JSON API response envelopes (`success`, `data`, `meta`, `error`, `code`, `requestId`) and pagination metadata (`count`, `total`, `nextCursor`, `hasMore`) across all REST endpoints.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-CORE-006`, `MW-API-001`
-  - **Location:** `packages/types/src/api.ts`, `packages/types/src/routes.ts`, `apps/api/src/routes/`
-  - **Acceptance Criteria:** Error responses consistently include `code` and `requestId`; list endpoints support consistent offset and cursor pagination envelopes without breaking existing `@moonwitness/client` callers.
-  - **Verification:** `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/client test`.
+- [ ] **MW-API-005** Hasilkan skema OpenAPI 3.x dinamis dari metadata model & route addon pada `@fastify/swagger`
+  - [ ] **MW-API-005.1** Konversikan `Model.jsonSchema` dan `FieldMeta` terdaftar menjadi skema komponen OpenAPI yang terdokumentasi rapi di `/docs`
+  - [ ] **MW-API-005.2** Jangan mengekspos model `internal` / `knowledge.*` pada spesifikasi OpenAPI generik bila tidak diizinkan
+  - [ ] **MW-API-005.3** Uji validitas dokumen `app.swagger()` saat test suite dijalankan
+  - [ ] **MW-API-005.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-API-007** Add bulk mutation support (`PATCH /api/:model/bulk`, `DELETE /api/:model/bulk`, batch `action`) bounded to safe limits (`<= 100` IDs) inside a single transaction.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-API-001`, `MW-PERF-002`
-  - **Location:** `apps/api/src/routes/`, `packages/client/src/repository.ts`
-  - **Acceptance Criteria:** Board bulk archive/tag/action operations send one transactional request instead of `Promise.all` N separate HTTP requests, enforcing per-record scopes and batched `findReference` checks.
-  - **Verification:** `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/client test`.
+- [ ] **MW-API-006** Seragamkan amplop respons JSON API (`success`, `data`, `meta`, `error`, `code`, `requestId`) dan metadata paginasi di seluruh route
+  - [ ] **MW-API-006.1** Standarisasi tipe amplop di `packages/types/src/api.ts` dan `routes.ts`
+  - [ ] **MW-API-006.2** Sertakan `code` error dan `requestId` di semua respons kegagalan `apps/api` tanpa memecahkan field existing yang dipakai client
+  - [ ] **MW-API-006.3** Tambahkan unit test kontrak respons sukses & error
+  - [ ] **MW-API-006.4** Verifikasi: `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api test` lulus
+
+- [ ] **MW-API-007** Tambahkan endpoint mutasi bulk transaksional (`PATCH /api/:model/bulk`, `DELETE /api/:model/bulk`, batch `action`) yang dibatasi maksimal 100 ID
+  - [ ] **MW-API-007.1** Validasi panjang daftar `ids` (`1..100`), cek otorisasi per record, jalankan `findReference` ter-batch (`MW-PERF-002`), dan tulis audit log + outbox dalam satu transaksi
+  - [ ] **MW-API-007.2** Tambahkan method `bulkWrite`, `bulkUnlink`, dan `bulkAction` di `packages/client/src/repository.ts`
+  - [ ] **MW-API-007.3** Uji rollback penuh apabila 1 dari N record gagal validasi atau ditolak record rule
+  - [ ] **MW-API-007.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/client test` lulus
 
 ---
 
 ## 13 — Backend Transformation: `apps/api`
 
-- [ ] **MW-BACK-001** Decompose oversized WhatsApp sub-routers (`conversations.routes.ts` 1,073 lines, `groups.routes.ts` 1,015 lines, `messages.routes.ts` 864 lines) and `apps/api/src/whatsapp/route-helpers.ts` (831 lines) into cohesive service modules.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** None
-  - **Location:** `apps/api/src/routes/whatsapp/`, `apps/api/src/whatsapp/`
-  - **Acceptance Criteria:** Business logic (GoWA sync, cursor management, LID merging, outbox enqueueing) moves from Fastify handlers into testable pure service modules; route files stay thin HTTP adapters (< 400 lines each).
-  - **Verification:** `pnpm --filter @moonwitness/api exec vitest run tests/whatsapp*.test.ts` and `pnpm lint`.
+| ID            | Prioritas | Layer   | Dependensi                    | Lokasi Target                                                         |
+| :------------ | :-------- | :------ | :---------------------------- | :-------------------------------------------------------------------- |
+| `MW-BACK-001` | P2        | Backend | —                             | `apps/api/src/routes/whatsapp/`, `apps/api/src/whatsapp/`             |
+| `MW-BACK-002` | P2        | Backend | `MW-CORE-002`                 | `apps/api/src/whatsapp/manifest.ts`, `apps/api/src/`                  |
+| `MW-BACK-003` | P2        | Backend | `MW-ADDON-006`                | `apps/api/src/research-review-workflow.ts`, `packages/orm-knowledge/` |
+| `MW-BACK-004` | P2        | Backend | `MW-CORE-003`, `MW-ORM-007`   | `apps/api/src/`                                                       |
+| `MW-BACK-005` | P2        | Backend | `MW-ADDON-006`, `MW-BACK-001` | `apps/api/src/addons/registry.ts`, `apps/api/src/routes/`             |
+| `MW-BACK-006` | P1        | Backend | `MW-CORE-004`                 | `apps/api/src/app.ts`, `apps/api/src/plugins/rate-limit-store.ts`     |
+| `MW-BACK-007` | P1        | Backend | `MW-CORE-006`                 | `apps/api/src/plugins/observability.plugin.ts`, `apps/api/src/app.ts` |
 
-- [ ] **MW-BACK-002** Remove the 1-line legacy shim `apps/api/src/whatsapp/manifest.ts` once all workers and tests import `whatsappManifest` directly from `@moonwitness/orm-whatsapp`.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-CORE-002`
-  - **Location:** `apps/api/src/whatsapp/manifest.ts`, `apps/api/src/addons/registry.ts`, `apps/api/src/commands/`
-  - **Acceptance Criteria:** `apps/api/src/whatsapp/manifest.ts` is deleted and zero references remain anywhere in `apps/api`.
-  - **Verification:** `pnpm api:addon:check && pnpm build && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-BACK-001** Pecah sub-router WhatsApp yang masih besar (`conversations.routes.ts` 1.073 baris, `groups.routes.ts` 1.015 baris, `messages.routes.ts` 864 baris, dan `route-helpers.ts` 831 baris) menjadi layanan domain terpisah
+  - [ ] **MW-BACK-001.1** Ekstrak logika bisnis sinkronisasi GoWA, rekonsiliasi cursor baca, dan penggabungan LID ke layanan murni terpisah dari adapter Fastify
+  - [ ] **MW-BACK-001.2** Jaga setiap file route handler tetap tipis (< 400 baris) tanpa mengubah kontrak HTTP atau header HMAC
+  - [ ] **MW-BACK-001.3** Pastikan seluruh test suite WhatsApp tetap hijau pada SQLite & PostgreSQL
+  - [ ] **MW-BACK-001.4** Verifikasi: `pnpm --filter @moonwitness/api exec vitest run tests/whatsapp*.test.ts && pnpm lint` lulus
 
-- [ ] **MW-BACK-003** Move `apps/api/src/research-review-workflow.ts` and `packages/orm-knowledge` workflow seeding into `knowledge` addon `setup`/`postInstall` inside `@moonwitness/orm-knowledge` (resolving workflow seeding dependency cleanly).
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-ADDON-006`
-  - **Location:** `apps/api/src/research-review-workflow.ts`, `packages/orm-knowledge/src/manifest.ts`
-  - **Acceptance Criteria:** `apps/api` contains no addon-specific post-install seed logic; `knowledge` addon owns its own workflow definition setup cleanly.
-  - **Verification:** `node scripts/knowledge/run-k-gate.mjs --json && pnpm test:addon-conformance`.
+- [ ] **MW-BACK-002** Hapus file shim legacy `apps/api/src/whatsapp/manifest.ts` setelah seluruh worker dan test mengimpor langsung dari `@moonwitness/orm-whatsapp`
+  - [ ] **MW-BACK-002.1** Perbarui sisa import `../whatsapp/manifest.js` di `registry.ts`, worker commands, dan file test
+  - [ ] **MW-BACK-002.2** Hapus file `apps/api/src/whatsapp/manifest.ts`
+  - [ ] **MW-BACK-002.3** Pastikan cek `api:addon:check` dan `docs:check` tetap bersih
+  - [ ] **MW-BACK-002.4** Verifikasi: `pnpm api:addon:check && pnpm build && pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-BACK-004** Eliminate direct `apps/api` raw DB access (`app.db('...')`) outside ORM `Environment` / `ServiceRegistry` (including `ir_feature_flags`, `auth_state`, and WhatsApp helpers) where ORM models apply.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-CORE-003`, `MW-ORM-007`
-  - **Location:** `apps/api/src/`
-  - **Acceptance Criteria:** Domain queries route through ORM models/services so audit context, tenant scoping, and schema abstraction apply consistently.
-  - **Verification:** `pnpm --filter @moonwitness/api test && pnpm test:integration`.
+- [ ] **MW-BACK-003** Pindahkan `apps/api/src/research-review-workflow.ts` ke setup/seed deklaratif milik addon `knowledge` di `@moonwitness/orm-knowledge`
+  - [ ] **MW-BACK-003.1** Integrasikan inisialisasi workflow review riset ke `manifest.setup` / `manifest.data` di `@moonwitness/orm-knowledge`
+  - [ ] **MW-BACK-003.2** Hapus hook `postInstall` khusus knowledge di `apps/api/src/addons/registry.ts`
+  - [ ] **MW-BACK-003.3** Uji install ulang idempoten dan pastikan record workflow tetap terjaga
+  - [ ] **MW-BACK-003.4** Verifikasi: `node scripts/knowledge/run-k-gate.mjs --json && pnpm test:addon-conformance` lulus
 
-- [ ] **MW-BACK-005** Move `whatsapp` and `knowledge` route plugins to addon-owned modules (`packages/orm-whatsapp` / `packages/orm-knowledge` or dedicated addon plugin adapters) mounted via `API_ADDONS` `httpPlugins`.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-ADDON-006`, `MW-BACK-001`
-  - **Location:** `apps/api/src/addons/registry.ts`, `apps/api/src/routes/`
-  - **Acceptance Criteria:** `apps/api/src/addons/registry.ts` registers addon plugins declaratively; `pnpm docs:generate` route extraction continues detecting 100% of registered routes accurately.
-  - **Verification:** `pnpm docs:check && pnpm api:addon:check && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-BACK-004** Hilangkan akses query DB mentah (`app.db('...')`) yang melewati ORM di `apps/api/src/` pada model yang dikelola addon (termasuk flag, status auth, dan helper domain)
+  - [ ] **MW-BACK-004.1** Audit seluruh kemunculan `app.db(` / `db(` di `apps/api/src/` dan alihkan ke model ORM atau helper paket domain terkait
+  - [ ] **MW-BACK-004.2** Pertahankan raw DB hanya pada mekanisme infrastruktur murni (rate-limit store, advisory lock migrasi, probe health `/readyz`)
+  - [ ] **MW-BACK-004.3** Uji regresi fungsional untuk setiap endpoint yang dialihkan ke ORM
+  - [ ] **MW-BACK-004.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm test:integration` lulus
 
-- [ ] **MW-BACK-006** Centralize rate-limit policies per route family (auth, generic bulk/upload, RPC, WhatsApp actions, local-ai) with clear `429` `Retry-After` headers and PostgreSQL distributed store parity.
-  - **Priority:** P1 · **Layer:** Backend · **Dependencies:** `MW-CORE-004`
-  - **Location:** `apps/api/src/app.ts`, `apps/api/src/plugins/rate-limit-store.ts`
-  - **Acceptance Criteria:** Distributed rate limits share consistent key generators (`companyId:userId` vs IP) and pass PostgreSQL concurrent multi-instance tests.
-  - **Verification:** `pnpm --filter @moonwitness/api exec vitest run tests/rate-limit*.test.ts` + `pnpm test:integration`.
+- [ ] **MW-BACK-005** Sambungkan registrasi seluruh plugin route fitur ke mekanisme `httpPlugins` di `API_ADDONS` agar `apps/api` murni bertindak sebagai host runtime tipis
+  - [ ] **MW-BACK-005.1** Pastikan plugin route addon menerima dependensi runtime lewat `ServiceRegistry` (`MW-CORE-003`)
+  - [ ] **MW-BACK-005.2** Kurangi import route spesifik di `apps/api/src/addons/registry.ts` hingga hanya mengorkestrasi addon aktif
+  - [ ] **MW-BACK-005.3** Jalankan generator docs untuk memverifikasi daftar endpoint di `generated-api.md` tetap akurat 100%
+  - [ ] **MW-BACK-005.4** Verifikasi: `pnpm docs:check && pnpm api:addon:check && pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-BACK-007** Add end-to-end request correlation (`requestId`), structured database error mapping, and production log-redaction assertions for all new RPC/view/action routes.
-  - **Priority:** P1 · **Layer:** Backend · **Dependencies:** `MW-CORE-006`
-  - **Location:** `apps/api/src/plugins/observability.plugin.ts`, `apps/api/src/app.ts`
-  - **Acceptance Criteria:** Sensitive headers, tokens, passwords, and `sensitive: true` model fields never appear in error payloads, Pino logs, audit logs, or metrics.
-  - **Verification:** `pnpm --filter @moonwitness/api exec vitest run tests/security-hardening.test.ts tests/observability*.test.ts`.
+- [ ] **MW-BACK-006** Sentralisasikan kebijakan rate-limit per keluarga route (auth, bulk/upload, RPC, WhatsApp, local-ai) dengan header `429 Retry-After` dan dukungan penuh `PostgresRateLimitStore`
+  - [ ] **MW-BACK-006.1** Definisikan tabel kebijakan batas per route di `apps/api/src/config/` agar tidak tersebar angka ajaib di tiap file route
+  - [ ] **MW-BACK-006.2** Gunakan key komposit `(companyId:userId)` untuk endpoint terautentikasi dan IP aman (`trustProxy`) untuk endpoint publik
+  - [ ] **MW-BACK-006.3** Uji skenario burst limit dengan `RATE_LIMIT_STORE=postgres`
+  - [ ] **MW-BACK-006.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm test:integration` lulus
+
+- [ ] **MW-BACK-007** Lengkapi korelasi `x-request-id`, pemetaan error database terstandar, dan verifikasi redaksi log untuk seluruh rute baru (`bootstrap`, `default-get`, `onchange`, `bulk`, `jsonrpc`)
+  - [ ] **MW-BACK-007.1** Pastikan setiap respons sukses maupun gagal mengembalikan header `x-request-id` yang konsisten dengan log Pino
+  - [ ] **MW-BACK-007.2** Perluas uji redaksi sentinel logger atas token, password, dan field `sensitive: true` pada rute baru
+  - [ ] **MW-BACK-007.3** Pastikan metrik Prometheus (`/metrics`) membatasi label kardinalitas rendah (route template saja)
+  - [ ] **MW-BACK-007.4** Verifikasi: `pnpm --filter @moonwitness/api exec vitest run tests/security-hardening.test.ts` lulus
 
 ---
 
 ## 14 — Frontend Transformation: `apps/web` (`apps/board`)
 
-- [ ] **MW-WEB-001** Decompose `apps/board/src/components/views/list-view.tsx` (1,486 lines) into modular engines (`ViewToolbar`, `SearchEngineBar`, `ListTableEngine`, `BulkActionBar`, and `ViewStateAdapter`).
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-VIEW-004`, `MW-VIEW-006`, `MW-API-007`
-  - **Location:** `apps/board/src/components/views/list-view.tsx`
-  - **Acceptance Criteria:** Each component has clear props and < 400 lines; CSV export, bulk archive (using `MW-API-007`), bulk tagging, sorting, pagination, and column toggle preserve 100% of existing E2E behavior.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck && pnpm --filter @moonwitness/board lint` + list E2E specs.
+| ID           | Prioritas | Layer    | Dependensi                                                 | Lokasi Target                                                                         |
+| :----------- | :-------- | :------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| `MW-WEB-001` | P2        | Frontend | `MW-VIEW-004`, `MW-VIEW-006`, `MW-API-007`                 | `apps/board/src/components/views/list-view.tsx`                                       |
+| `MW-WEB-002` | P2        | Frontend | `MW-VIEW-007`, `MW-WEB-001`, `MW-UI-003`                   | `apps/board/src/components/views/`                                                    |
+| `MW-WEB-003` | P2        | Frontend | `MW-VIEW-006`, `MW-DOM-005`, `MW-WEB-001`                  | `apps/board/src/components/views/`                                                    |
+| `MW-WEB-004` | P2        | Frontend | `MW-VIEW-005`, `MW-WIDGET-007`, `MW-ACT-006`, `MW-API-003` | `apps/board/src/components/views/form-view.tsx`                                       |
+| `MW-WEB-005` | P3        | Frontend | `MW-VIEW-008`, `MW-VIEW-009`, `MW-WEB-001`                 | `apps/board/src/components/views/`                                                    |
+| `MW-WEB-006` | P2        | Frontend | `MW-ACT-003`, `MW-WEB-002`, `MW-WEB-004`                   | `apps/board/src/board-pages/model-page.tsx`                                           |
+| `MW-WEB-007` | P2        | Frontend | —                                                          | `apps/board/src/board-pages/whatsapp-page.tsx`, `apps/board/src/components/whatsapp/` |
+| `MW-WEB-008` | P3        | Frontend | `MW-ACT-007`                                               | `apps/board/src/board-pages/dashboard-page.tsx`                                       |
+| `MW-WEB-009` | P1        | Frontend | `MW-ACT-007`                                               | `apps/board/src/hooks/use-auth.tsx`, `apps/board/src/lib/query-scope.ts`              |
 
-- [ ] **MW-WEB-002** Build a metadata-driven `KanbanEngine` connected to `views.kanban` (`MW-VIEW-007`), replacing the inline pipeline mockup inside `list-view.tsx`, supporting keyboard + drag/move stage transitions and card field rendering.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-VIEW-007`, `MW-WEB-001`, `MW-UI-003`
-  - **Location:** `apps/board/src/components/views/`
-  - **Acceptance Criteria:** Models with a `kanban` view render grouped columns, item counts, cards, and accessible keyboard stage actions; respects `permissions.write` and optimistic concurrency.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` + Kanban E2E spec.
+- [ ] **MW-WEB-001** Pecah `apps/board/src/components/views/list-view.tsx` (1.486 baris) menjadi engine terpisah (`ListEngine`, `ListTable`, `BulkActionBar`, `ColumnToggle`, `ListStateAdapter`)
+  - [ ] **MW-WEB-001.1** Ekstrak helper murni pembangun domain & paginasi ke unit terpisah dengan unit test langsung
+  - [ ] **MW-WEB-001.2** Sambungkan `BulkActionBar` ke endpoint transaksional `bulkUnlink`/`bulkAction` (`MW-API-007`) serta pertahankan CSV export formula-safe
+  - [ ] **MW-WEB-001.3** Tambahkan dukungan toggle kolom opsional (`optional: 'show' | 'hide'`), baris dekorasi warna semantik, dan footer agregasi (`sum`/`avg`)
+  - [ ] **MW-WEB-001.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck && pnpm test:board-csv` lulus
 
-- [ ] **MW-WEB-003** Build `SearchEngineBar` consuming `views.search` (`fields`, `filters`, `groupBy`, `searchPanel`) + `base.saved_filter` (`MW-DOM-005`) with removable facet chips and grouped counts.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-VIEW-006`, `MW-DOM-005`, `MW-WEB-001`
-  - **Location:** `apps/board/src/components/views/`
-  - **Acceptance Criteria:** Selecting search fields, preset filters, group-by buckets, or saved filters composes clean Polish-notation domains and displays grouped record rows lazily.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` + search/filter E2E test.
+- [ ] **MW-WEB-002** Bangun `KanbanEngine` dinamis berbasis `views.kanban` (`MW-VIEW-007`) menggunakan `@moonwitness/ui` `KanbanBoard` menggantikan blok pipeline sementara di `list-view.tsx`
+  - [ ] **MW-WEB-002.1** Render kolom stage dari urutan `views.kanban.stageOrder` / nilai selection model beserta jumlah record per stage
+  - [ ] **MW-WEB-002.2** Dukung perpindahan stage yang mudah diakses via keyboard maupun drag/menu aksi dengan optimistic update + rollback saat `403`/`409`
+  - [ ] **MW-WEB-002.3** Sembunyikan tab Kanban secara bersih bagi model yang tidak mendeklarasikan `views.kanban`
+  - [ ] **MW-WEB-002.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-WEB-004** Upgrade `FormView` (`apps/board/src/components/views/form-view.tsx`) to `FormEngine` supporting `header` StatusBar + buttons, `smartButtons`, tabbed notebooks, `onchange` API roundtrips, `If-Match` `write_date` headers, and conflict recovery banner.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-VIEW-005`, `MW-WIDGET-007`, `MW-ACT-006`, `MW-API-003`
-  - **Location:** `apps/board/src/components/views/form-view.tsx`, `apps/board/src/hooks/use-model.ts`
-  - **Acceptance Criteria:** Concurrent edits detect `409 Conflict` via `write_date` and offer clean Reload/Overwrite recovery; `onchange` updates dependent fields smoothly without losing unsaved edits.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` + form E2E tests.
+- [ ] **MW-WEB-003** Bangun `SearchEngineBar` terpadu dari metadata `views.search`, chip facet aktif, pemilih `groupBy`, `searchPanel`, dan filter tersimpan (`base.saved_filter`)
+  - [ ] **MW-WEB-003.1** Sinkronkan status pencarian, filter aktif, dan `groupBy` dengan state URL agar tautan pencarian bisa di-bookmark / di-refresh
+  - [ ] **MW-WEB-003.2** Saat `groupBy` aktif, tampilkan header grup dari `/api/:model/group-count` dengan ekspansi baris lazy per grup
+  - [ ] **MW-WEB-003.3** Gunakan chip facet `@moonwitness/ui` `FilterFacetBar` yang dapat dihapus lewat keyboard
+  - [ ] **MW-WEB-003.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-WEB-005** Implement `CalendarView`, `GraphView`, and `PivotView` dynamic renderers in `apps/board/src/components/views/` powered by `views.calendar`/`graph`/`pivot`, `/api/:model/group-count`, and `@moonwitness/ui/components/chart`.
-  - **Priority:** P3 · **Layer:** Frontend · **Dependencies:** `MW-VIEW-008`, `MW-VIEW-009`, `MW-WEB-001`
-  - **Location:** `apps/board/src/components/views/`
-  - **Acceptance Criteria:** Models declaring `calendar`, `graph`, or `pivot` views expose switcher tabs in `ModelPage`, render accessible charts/tables/calendars, and respect route-aware bundle budgets (lazy-loaded chunks).
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck && pnpm board:budget`.
+- [ ] **MW-WEB-004** Tingkatkan `FormView` menjadi `FormEngine` lengkap dengan `StatusBar`, `SmartButtonBox`, tabbed notebooks, dialog konfirmasi shared (ganti `window.confirm`/`alert`), dan pemulihan konflik `write_date` (`409`)
+  - [ ] **MW-WEB-004.1** Ganti `window.confirm` & `window.alert` pada `form-view.tsx`, `list-view.tsx`, dan `one2many-widget.tsx` dengan `Dialog` & `toast` dari `@moonwitness/ui`
+  - [ ] **MW-WEB-004.2** Kirim header `If-Match` berisi `write_date` saat update dan tampilkan banner resolusi konflik yang ramah bila server membalas `409`
+  - [ ] **MW-WEB-004.3** Render `tabs` dan `sections` secara responsif dan hormati opsi `chatter: false` bila model menonaktifkan chatter
+  - [ ] **MW-WEB-004.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-WEB-006** Add dynamic View Switcher (`list` | `kanban` | `calendar` | `graph` | `pivot`) and Action Dialog runner in `apps/board/src/board-pages/model-page.tsx` driven by active Window Action metadata.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-ACT-003`, `MW-WEB-002`, `MW-WEB-004`
-  - **Location:** `apps/board/src/board-pages/model-page.tsx`
-  - **Acceptance Criteria:** `/board/m/:model` and action routes honor URL query/action params (`view`, `domain`, `action`) and handle `ActionResult` payloads (`reload`, `navigate`, `notify`, `open_window`).
-  - **Verification:** `pnpm --filter @moonwitness/board typecheck` + model navigation E2E tests.
+- [ ] **MW-WEB-005** Implementasikan renderer `CalendarView`, `GraphView`, dan `PivotView` yang di-lazy-load (`next/dynamic`) menggunakan `@moonwitness/ui/components/chart` dan `/api/:model/group-count`
+  - [ ] **MW-WEB-005.1** Buat `CalendarView` interaktif (mode bulan/minggu) untuk model bertanggal seperti `base.activity`
+  - [ ] **MW-WEB-005.2** Buat `GraphView` (`bar`, `line`, `pie`) dengan tabel data alternatif yang aksesibel dari `@moonwitness/ui/components/chart`
+  - [ ] **MW-WEB-005.3** Buat `PivotView` ringkas berbasis matriks `/group-count` beserta tombol ekspor CSV yang aman
+  - [ ] **MW-WEB-005.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck && pnpm board:budget` lulus
 
-- [ ] **MW-WEB-007** Decompose the remaining `apps/board/src/board-pages/whatsapp-page.tsx` (2,897 lines) into modular hooks and domain components (`useWhatsAppInbox`, `InboxList`, `ConversationTimeline`, `PairingPanel`, completing `todo-foundation.md`).
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** None
-  - **Location:** `apps/board/src/board-pages/whatsapp-page.tsx`, `apps/board/src/components/whatsapp/`
-  - **Acceptance Criteria:** `whatsapp-page.tsx` delegates inbox, timeline, pairing, and polling state into focused modules (< 500 lines per file) with zero regressions on all WhatsApp E2E specs and zero `oxlint` warnings.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck && pnpm --filter @moonwitness/board lint` + WhatsApp E2E suite.
+- [ ] **MW-WEB-006** Perbarui `apps/board/src/board-pages/model-page.tsx` dengan View Switcher dinamis dan eksekutor hasil Action (`ActionResult`)
+  - [ ] **MW-WEB-006.1** Dukung perpindahan mulus antar mode view tersedia (`list`, `kanban`, `calendar`, `graph`, `pivot`) sesuai Window Action dan metadata model
+  - [ ] **MW-WEB-006.2** Tangani `ActionResult` (`open_window` di tab atau dialog, `navigate`, `reload`, `notify`, `download`) secara terpusat
+  - [ ] **MW-WEB-006.3** Pertahankan jalur direct URL `/board/m/:model` dan `/board/m/:model/:id` serta guard akses 403/404
+  - [ ] **MW-WEB-006.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-WEB-008** Modularize `apps/board/src/board-pages/dashboard-page.tsx` (991 lines) into composable KPI, admin operations, and activity widgets consuming addon dashboard cards/actions rather than hardcoded static model fetches.
-  - **Priority:** P3 · **Layer:** Frontend · **Dependencies:** `MW-ACT-007`
-  - **Location:** `apps/board/src/board-pages/dashboard-page.tsx`
-  - **Acceptance Criteria:** Dashboard tiles gracefully adapt to user permissions (omitting forbidden queries cleanly instead of relying on silent catch fallbacks) and preserve all visual audit snapshots.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck`.
+- [ ] **MW-WEB-007** Lanjutkan dekomposisi `apps/board/src/board-pages/whatsapp-page.tsx` (2.897 baris) ke komponen dan custom hooks domain terpisah (`todo-foundation.md`)
+  - [ ] **MW-WEB-007.1** Ekstrak `InboxList`, `ConversationTimeline`, `PairingPanel`, dan hook polling/state ke `apps/board/src/components/whatsapp/`
+  - [ ] **MW-WEB-007.2** Jaga `whatsapp-page.tsx` sebagai orkestrator ringan (< 450 baris) tanpa regresi UX atau polling background
+  - [ ] **MW-WEB-007.3** Pastikan nol warning `oxlint` dan nol pelanggaran `board:ui:check`
+  - [ ] **MW-WEB-007.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board lint && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-WEB-009** Enforce tenant-isolated TanStack Query cache clearing on logout, company switch, and session expiration across all Board routes and dynamic views.
-  - **Priority:** P1 · **Layer:** Frontend · **Dependencies:** `MW-ACT-007`
-  - **Location:** `apps/board/src/hooks/use-auth.tsx`, `apps/board/src/lib/query-scope.ts`, `apps/board/src/components/layout/app-shell.tsx`
-  - **Acceptance Criteria:** Switching company or user clears stale query cache immediately (`queryClient.removeQueries`) and invalidates active view/model queries without cross-tenant flash.
-  - **Verification:** E2E multi-company/multi-user isolation suite (`apps/board/e2e/`).
+- [ ] **MW-WEB-008** Modularisasi `apps/board/src/board-pages/dashboard-page.tsx` (991 baris) ke panel KPI dan modul operasional berbasis izin pengguna
+  - [ ] **MW-WEB-008.1** Pisahkan panel KPI inti, panel admin `jobs`/`outbox`/`cron`, dan panel aktivitas menjadi komponen independen
+  - [ ] **MW-WEB-008.2** Periksa izin/grant model sebelum memanggil API panel dashboard agar tidak menghasilkan 403 berisik di network console
+  - [ ] **MW-WEB-008.3** Pertahankan keselarasan visual dan baseline screenshot dashboard desktop/mobile
+  - [ ] **MW-WEB-008.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
+
+- [ ] **MW-WEB-009** Pastikan isolasi penuh cache TanStack Query di `apps/board` saat ganti perusahaan (`X-Company-Id`), ganti user, atau sesi habis
+  - [ ] **MW-WEB-009.1** Bersihkan query cache milik tenant/user sebelumnya secara sinkron saat `handleSelectCompany`, `logout`, atau `onSessionExpired`
+  - [ ] **MW-WEB-009.2** Pastikan `useModels` dan `useViews` selalu mengikat `scopedQueryKey` yang mencakup `(userId, companyId, generation)`
+  - [ ] **MW-WEB-009.3** Tambahkan atau jalankan uji E2E peralihan perusahaan untuk memastikan tidak ada data tenant lama yang sempat berkedip
+  - [ ] **MW-WEB-009.4** Verifikasi: `pnpm --filter @moonwitness/board typecheck && pnpm test:e2e` lulus
 
 ---
 
 ## 15 — Shared UI & Design System
 
-- [ ] **MW-UI-001** Add accessible `DatePicker` (date + datetime), `NumberInput` (decimal/monetary formatting), and `BadgeGroup` / `TagInput` primitives to `@moonwitness/ui` with explicit subpath exports.
-  - **Priority:** P2 · **Layer:** Shared · **Dependencies:** None
-  - **Location:** `packages/ui/src/components/`, `packages/ui/package.json`
-  - **Acceptance Criteria:** New primitives use `@moonwitness/ui/styles/tokens.css` CSS variables, include keyboard navigation + `aria-*` semantics, have unit tests, and never bundle domain/API code.
-  - **Verification:** `pnpm test:ui && pnpm test:ui-budget`.
+| ID          | Prioritas | Layer  | Dependensi                                         | Lokasi Target                                                              |
+| :---------- | :-------- | :----- | :------------------------------------------------- | :------------------------------------------------------------------------- |
+| `MW-UI-001` | P2        | Shared | —                                                  | `packages/ui/src/components/`, `packages/ui/package.json`                  |
+| `MW-UI-002` | P2        | Shared | —                                                  | `packages/ui/src/components/`, `packages/ui/package.json`                  |
+| `MW-UI-003` | P2        | Shared | —                                                  | `packages/ui/src/components/`, `packages/ui/package.json`                  |
+| `MW-UI-004` | P2        | Shared | —                                                  | `packages/ui/src/components/table.tsx`                                     |
+| `MW-UI-005` | P3        | Shared | `MW-UI-001`, `MW-UI-002`, `MW-UI-003`, `MW-UI-004` | `apps/ui-catalog/src/catalog.tsx`, `apps/ui-catalog/tests/catalog.spec.ts` |
+| `MW-UI-006` | P2        | Shared | `MW-UI-001`                                        | `scripts/check-board-shared-ui.mjs`                                        |
 
-- [ ] **MW-UI-002** Add `StatusBar` and `SmartButtonBox` composition primitives to `@moonwitness/ui` adhering to the MoonWitness ink/paper visual language.
-  - **Priority:** P2 · **Layer:** Shared · **Dependencies:** None
-  - **Location:** `packages/ui/src/components/`, `packages/ui/package.json`
-  - **Acceptance Criteria:** Both components support light/dark + skin tokens, focus-visible outlines, compact/comfortable density, and 320px responsive wrapping.
-  - **Verification:** `pnpm test:ui && pnpm test:ui-catalog`.
+- [ ] **MW-UI-001** Tambahkan primitif `DatePicker` (date & datetime), `NumberInput` (desimal/moneter), dan `TagInput` ke `@moonwitness/ui` beserta subpath export resmi
+  - [ ] **MW-UI-001.1** Implementasikan komponen terkontrol yang mendukung keyboard navigation, `aria-invalid`, dan disabled state
+  - [ ] **MW-UI-001.2** Daftarkan subpath export eksplisit di `packages/ui/package.json` (hindari barrel export berat)
+  - [ ] **MW-UI-001.3** Tambahkan unit test kontrol shared di `packages/ui/tests/shared-controls.test.mjs`
+  - [ ] **MW-UI-001.4** Verifikasi: `pnpm test:ui && pnpm test:ui-budget` lulus
 
-- [ ] **MW-UI-003** Add `KanbanBoard` / `KanbanColumn` and `FilterFacetBar` composition primitives to `@moonwitness/ui` (zero data-fetching logic, purely presentational + accessible keyboard/slot contracts).
-  - **Priority:** P2 · **Layer:** Shared · **Dependencies:** None
-  - **Location:** `packages/ui/src/components/`, `packages/ui/package.json`
-  - **Acceptance Criteria:** Components preserve native semantic roles, reduced-motion support, and bundle isolation (only imported on routes rendering Kanban/Search).
-  - **Verification:** `pnpm test:ui && pnpm test:ui-budget`.
+- [ ] **MW-UI-002** Tambahkan primitif komposisi `StatusBar` dan `SmartButtonBox` ke `@moonwitness/ui` sesuai bahasa visual MoonWitness
+  - [ ] **MW-UI-002.1** Dukung state aktif/selesai/disabled pada `StatusBar` dan angka count + ikon + label pada `SmartButtonBox`
+  - [ ] **MW-UI-002.2** Pastikan tampilan responsif pada lebar minimum 320px tanpa horizontal overflow atau clipping focus ring
+  - [ ] **MW-UI-002.3** Tambahkan unit test komposisi di `packages/ui/tests/compositions.test.mjs`
+  - [ ] **MW-UI-002.4** Verifikasi: `pnpm test:ui` lulus
 
-- [ ] **MW-UI-004** Extend `@moonwitness/ui/components/table` (`DataTable`) to support inline cell editing slots, sticky column/header accessibility, column visibility toggles, and aggregate footer rows.
-  - **Priority:** P2 · **Layer:** Shared · **Dependencies:** None
-  - **Location:** `packages/ui/src/components/table.tsx`
-  - **Acceptance Criteria:** Existing Table consumers remain 100% backwards-compatible; keyboard focus and `aria-sort` semantics remain intact.
-  - **Verification:** `pnpm test:ui`.
+- [ ] **MW-UI-003** Tambahkan primitif komposisi `KanbanBoard` / `KanbanColumn` dan `FilterFacetBar` ke `@moonwitness/ui` (murni presentasional tanpa ketergantungan router/API)
+  - [ ] **MW-UI-003.1** Sediakan slot kolom, header count, kartu fokus-aman, dan tombol hapus facet yang aksesibel keyboard
+  - [ ] **MW-UI-003.2** Hormati `prefers-reduced-motion` dan token spacing/border `@moonwitness/ui`
+  - [ ] **MW-UI-003.3** Tambahkan unit test render & subpath package verification di `packages/ui/tests/`
+  - [ ] **MW-UI-003.4** Verifikasi: `pnpm test:ui && pnpm test:ui-budget` lulus
 
-- [ ] **MW-UI-005** Add specimens and Playwright visual/Axe accessibility tests for all new UI primitives (`DatePicker`, `StatusBar`, `SmartButtonBox`, `KanbanBoard`, `FilterFacetBar`) inside `apps/ui-catalog`.
-  - **Priority:** P3 · **Layer:** Shared · **Dependencies:** `MW-UI-001`, `MW-UI-002`, `MW-UI-003`, `MW-UI-004`
-  - **Location:** `apps/ui-catalog/src/catalog.tsx`, `apps/ui-catalog/tests/catalog.spec.ts`
-  - **Acceptance Criteria:** All new specimens pass desktop (1440px) and mobile (320px/390px) WCAG 2.1 AA contrast & keyboard checks in light/dark themes.
-  - **Verification:** `pnpm test:ui-catalog && pnpm test:ui-budget`.
+- [ ] **MW-UI-004** Perluas `@moonwitness/ui/components/table` (`Table`) agar mendukung slot inline-edit, visibilitas kolom opsional, dan baris footer agregat (`tfoot`)
+  - [ ] **MW-UI-004.1** Tambahkan subkomponen `TableFooter` / `TableSummaryCell` dengan semantik `<table>` HTML native yang utuh
+  - [ ] **MW-UI-004.2** Jaga kompatibilitas penuh seluruh pemakai `Table` yang sudah ada di Board dan UI Catalog
+  - [ ] **MW-UI-004.3** Uji keyboard sorting dan scroll overflow container di unit test UI
+  - [ ] **MW-UI-004.4** Verifikasi: `pnpm test:ui` lulus
 
-- [ ] **MW-UI-006** Extend `scripts/check-board-shared-ui.mjs` to ensure zero internal `@moonwitness/ui/src` or `dist` deep imports and zero raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<svg>` across any new Board view/widget files.
-  - **Priority:** P2 · **Layer:** Shared · **Dependencies:** `MW-UI-001`
-  - **Location:** `scripts/check-board-shared-ui.mjs`
-  - **Acceptance Criteria:** Checker scans all `apps/board/src/**/*.{ts,tsx}` including newly added view engines and fails fast on any violation.
-  - **Verification:** `pnpm board:ui:check`.
+- [ ] **MW-UI-005** Tambahkan spesimen & uji visual/Axe WCAG 2.1 AA untuk seluruh komponen UI baru di `apps/ui-catalog`
+  - [ ] **MW-UI-005.1** Tambahkan spesimen interaktif untuk `DatePicker`, `NumberInput`, `StatusBar`, `SmartButtonBox`, `KanbanBoard`, dan `FilterFacetBar`
+  - [ ] **MW-UI-005.2** Uji seluruh spesimen pada light/dark dan viewport desktop (1440px) & mobile (320px/390px) dengan Playwright + Axe
+  - [ ] **MW-UI-005.3** Pastikan bundle size katalog tetap lolos `pnpm test:ui-budget`
+  - [ ] **MW-UI-005.4** Verifikasi: `pnpm test:ui-catalog && pnpm test:ui-budget` lulus
+
+- [ ] **MW-UI-006** Pertahankan & perketat checker `scripts/check-board-shared-ui.mjs` mencakup seluruh direktori komponen baru di `apps/board/src/`
+  - [ ] **MW-UI-006.1** Pastikan 0 elemen HTML kontrol mentah (`<button>`, `<input>`, `<select>`, `<textarea>`, `<svg>`) maupun import `@moonwitness/ui/dist` di file view/widget baru
+  - [ ] **MW-UI-006.2** Tambahkan kasus uji baru bila ada pola import internal yang perlu diblokir
+  - [ ] **MW-UI-006.3** Jalankan checker manual dan pastikan pre-push hook tetap memblokir pelanggaran
+  - [ ] **MW-UI-006.4** Verifikasi: `pnpm board:ui:check` lulus
 
 ---
 
 ## 16 — Skin & Theme Engine
 
-- [ ] **MW-SKIN-001** Define `SkinMetadata`, `SkinDensity` (`'comfortable' | 'compact'`), `ColorMode` (`'light' | 'dark' | 'system'`), and `ThemeRegistry` in `@moonwitness/ui` and `@moonwitness/types`.
-  - **Priority:** P3 · **Layer:** Shared · **Dependencies:** `MW-PKG-002`
-  - **Location:** `packages/types/src/`, `packages/ui/src/styles/tokens.css`, `packages/ui/src/lib/`
-  - **Acceptance Criteria:** `ThemeRegistry` validates skin IDs, CSS token packs, contrast pairings, and density scales without runtime CSS-in-JS bloat.
-  - **Verification:** `pnpm test:ui && pnpm --filter @moonwitness/types test`.
+| ID            | Prioritas | Layer    | Dependensi                     | Lokasi Target                                                                |
+| :------------ | :-------- | :------- | :----------------------------- | :--------------------------------------------------------------------------- |
+| `MW-SKIN-001` | P3        | Shared   | `MW-PKG-002`                   | `packages/types/src/`, `packages/ui/src/styles/tokens.css`                   |
+| `MW-SKIN-002` | P3        | Shared   | `MW-SKIN-001`                  | `packages/ui/src/styles/`                                                    |
+| `MW-SKIN-003` | P3        | Frontend | `MW-SKIN-002`                  | `apps/board/src/hooks/use-theme.ts`, `apps/board/src/app/layout.tsx`         |
+| `MW-SKIN-004` | P3        | Shared   | `MW-SKIN-003`, `MW-SCHEMA-002` | `packages/orm-base/src/models/user.ts`, `apps/api/src/routes/auth.routes.ts` |
+| `MW-SKIN-005` | P3        | Shared   | `MW-SKIN-002`, `MW-UI-005`     | `apps/ui-catalog/src/catalog.tsx`, `apps/ui-catalog/tests/catalog.spec.ts`   |
 
-- [ ] **MW-SKIN-002** Author built-in MoonWitness CSS skin layers on top of `packages/ui/src/styles/tokens.css`: `moonwitness-ink` (canonical zine/manga ink-paper skin), `moonwitness-compact` (dense ERP operational skin), and `moonwitness-high-contrast` (AAA accessibility skin).
-  - **Priority:** P3 · **Layer:** Shared · **Dependencies:** `MW-SKIN-001`
-  - **Location:** `packages/ui/src/styles/`
-  - **Acceptance Criteria:** Each skin maps cleanly via `[data-skin="..."]` + `.dark` + `[data-density="compact"]`, keeps MoonWitness crown/brand assets coherent, and passes automated contrast validation.
-  - **Verification:** Token contrast tests in `packages/ui/tests/tokens.test.mjs` (`pnpm test:ui`).
+- [ ] **MW-SKIN-001** Definisikan kontrak `SkinMetadata`, `SkinDensity` (`'comfortable' | 'compact'`), `ColorMode` (`'light' | 'dark'`), dan `ThemeRegistry` di `@moonwitness/types` dan `@moonwitness/ui`
+  - [ ] **MW-SKIN-001.1** Buat registry metadata skin (`id`, `label`, `description`, `supportedModes`, `supportedDensities`, `swatchPreview`) di `packages/ui/src/lib/`
+  - [ ] **MW-SKIN-001.2** Ekspor `ThemeRegistry` melalui subpath eksplisit `@moonwitness/ui/themes`
+  - [ ] **MW-SKIN-001.3** Tambahkan unit test validasi registrasi skin & fallback default saat ID skin tidak dikenal
+  - [ ] **MW-SKIN-001.4** Verifikasi: `pnpm test:ui && pnpm --filter @moonwitness/types test` lulus
 
-- [ ] **MW-SKIN-003** Implement runtime `SkinProvider` + pre-paint SSR/localStorage hydration script in `apps/board` (extending `apps/board/src/hooks/use-theme.ts`) preventing FOUC across skin, color mode, and density switches.
-  - **Priority:** P3 · **Layer:** Frontend · **Dependencies:** `MW-SKIN-002`
-  - **Location:** `apps/board/src/hooks/use-theme.ts`, `apps/board/src/app/layout.tsx`
-  - **Acceptance Criteria:** Switching skin, color mode, or density applies immediately with zero reload, zero layout breakage, and preserves pre-paint initialization.
-  - **Verification:** `pnpm --filter @moonwitness/board typecheck && pnpm board:budget`.
+- [ ] **MW-SKIN-002** Buat definisi token CSS berlapis di `@moonwitness/ui` untuk skin `moonwitness-ink` (bawaan zine/manga), `moonwitness-compact` (padat operasional), dan `moonwitness-high-contrast` (kontras tinggi aksesibilitas)
+  - [ ] **MW-SKIN-002.1** Implementasikan selector token berbasis `[data-skin="..."]` + `.dark` + `[data-density="compact"]` tanpa membebani runtime JS
+  - [ ] **MW-SKIN-002.2** Pastikan setiap skin menjaga identitas logo/aset MoonWitness serta keterbacaan tabel/form
+  - [ ] **MW-SKIN-002.3** Jalankan uji kontras WCAG AA otomatis pada seluruh pasangan foreground/background per skin di `packages/ui/tests/tokens.test.mjs`
+  - [ ] **MW-SKIN-002.4** Verifikasi: `pnpm test:ui` lulus
 
-- [ ] **MW-SKIN-004** Persist user skin/mode/density preferences on `base.user` (`skin`, `theme_mode`, `density` fields via `MW-SCHEMA-002`) and sync them via `/auth/me` & `/board/settings`.
-  - **Priority:** P3 · **Layer:** Shared · **Dependencies:** `MW-SKIN-003`, `MW-SCHEMA-002`
-  - **Location:** `packages/orm-base/src/models/user.ts`, `apps/api/src/routes/auth.routes.ts`, `apps/board/src/board-pages/settings-page.tsx`
-  - **Acceptance Criteria:** Logged-in users retain their chosen skin/theme/density across browsers/sessions while preserving anonymous `localStorage` fallback.
-  - **Verification:** `pnpm --filter @moonwitness/api test` + Board settings E2E test.
+- [ ] **MW-SKIN-003** Implementasikan `SkinProvider` runtime & script hidrasi pre-paint di `apps/board` (perluasan `use-theme.ts` dan `layout.tsx`) agar pergantian skin/mode/density berlangsung instan tanpa FOUC
+  - [ ] **MW-SKIN-003.1** Simpan state lokal di `localStorage` dan terapkan atribut `data-skin` + `data-density` + `.dark` pada `<html>` sebelum first paint
+  - [ ] **MW-SKIN-003.2** Tambahkan selector cepat Skin & Density pada menu profil/pengaturan Board
+  - [ ] **MW-SKIN-003.3** Pastikan ukuran JS tambahan di route awal tetap di bawah batas `pnpm board:budget`
+  - [ ] **MW-SKIN-003.4** Verifikasi: `pnpm --filter @moonwitness/board typecheck && pnpm board:budget` lulus
 
-- [ ] **MW-SKIN-005** Add interactive skin/density switcher and automated WCAG/visual matrix checks in `apps/ui-catalog` verifying component compatibility across every registered skin.
-  - **Priority:** P3 · **Layer:** Shared · **Dependencies:** `MW-SKIN-002`, `MW-UI-005`
-  - **Location:** `apps/ui-catalog/src/catalog.tsx`, `apps/ui-catalog/tests/catalog.spec.ts`
-  - **Acceptance Criteria:** Every primitive and composition component passes Axe WCAG 2.1 AA and zero-overflow checks in every `(skin × light/dark × density)` combination.
-  - **Verification:** `pnpm test:ui-catalog`.
+- [ ] **MW-SKIN-004** Simpan preferensi `skin`, `theme_mode`, dan `density` pada `base.user` dan sinkronkan lewat `/auth/me` serta `/board/settings`
+  - [ ] **MW-SKIN-004.1** Tambahkan field `skin`, `theme_mode`, dan `density` ber-default aman pada `packages/orm-base/src/models/user.ts` (tersinkron otomatis via `MW-SCHEMA-002`)
+  - [ ] **MW-SKIN-004.2** Izinkan user memperbarui preferensi tampilan miliknya sendiri pada endpoint profil `/auth/me/preferences`
+  - [ ] **MW-SKIN-004.3** Uji persistensi preferensi lintas-sesi saat user login ulang di Playwright
+  - [ ] **MW-SKIN-004.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm test:integration` lulus
+
+- [ ] **MW-SKIN-005** Tambahkan switcher Skin & Density di `apps/ui-catalog` dan uji kompatibilitas komponen serta kontras pada seluruh kombinasi skin
+  - [ ] **MW-SKIN-005.1** Sediakan toolbar pratinjau skin & density pada UI Catalog
+  - [ ] **MW-SKIN-005.2** Jalankan Playwright + Axe di seluruh kombinasi `(skin × light/dark × compact/comfortable)`
+  - [ ] **MW-SKIN-005.3** Dokumentasikan token dan cara menambah skin baru di `packages/ui/TOKENS.md`
+  - [ ] **MW-SKIN-005.4** Verifikasi: `pnpm test:ui-catalog` lulus
 
 ---
 
 ## 17 — Shared Packages Consolidation
 
-- [ ] **MW-PKG-001** Eliminate all 5 type-only file-level import cycles reported by `node scripts/audit-workspace.mjs` (`orm/base.model.ts <-> environment.ts / model-definition.ts`, `orm-storage/index.ts <-> s3.ts`, `local-ai/index.ts <-> suggestion-generation.ts`, `orm-knowledge/research-release-validation.ts <-> research-release.ts`).
-  - **Priority:** P1 · **Layer:** Shared · **Dependencies:** None
-  - **Location:** `packages/orm/src/`, `packages/orm-storage/src/`, `packages/local-ai/src/`, `packages/orm-knowledge/src/`
-  - **Acceptance Criteria:** `node scripts/audit-workspace.mjs` reports `"localImportCycles": []`, `"runtimeImportCycles": []`, and `"workspaceDependencyCycles": []`.
-  - **Verification:** `node scripts/audit-workspace.mjs && pnpm build && pnpm test:unit:built`.
+| ID           | Prioritas | Layer  | Dependensi                 | Lokasi Target                                                                                             |
+| :----------- | :-------- | :----- | :------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| `MW-PKG-001` | P1        | Shared | —                          | `packages/orm/src/`, `packages/orm-storage/src/`, `packages/local-ai/src/`, `packages/orm-knowledge/src/` |
+| `MW-PKG-002` | P1        | Shared | `MW-PKG-001`               | `packages/client/package.json`, `packages/client/src/types.ts`, `packages/types/src/`                     |
+| `MW-PKG-003` | P2        | Shared | `MW-PKG-001`               | `package.json`, `packages/*/package.json`, `apps/*/package.json`                                          |
+| `MW-PKG-004` | P1        | Shared | —                          | `packages/orm-whatsapp/package.json`, `packages/orm-whatsapp/src/manifest.ts`                             |
+| `MW-PKG-005` | P3        | Shared | `MW-API-001`, `MW-PKG-002` | `packages/types/src/guards.ts`, `apps/api/src/routes/`                                                    |
+| `MW-PKG-006` | P2        | Shared | `MW-PKG-001`, `MW-PKG-002` | `packages/*/package.json`, `scripts/audit-workspace.mjs`                                                  |
 
-- [ ] **MW-PKG-002** Wire `@moonwitness/client` to depend on `@moonwitness/types` and delete all duplicated types (`FieldMeta`, `ListView`, `FormView`, `SearchView`, `ResolvedViews`, `Domain`, `GroupCount*`, `SearchRead*`) from `packages/client/src/types.ts`.
-  - **Priority:** P1 · **Layer:** Shared · **Dependencies:** `MW-PKG-001`
-  - **Location:** `packages/client/package.json`, `packages/client/src/types.ts`, `packages/types/src/`
-  - **Acceptance Criteria:** Single source of truth for API, ORM metadata, view, action, and domain types lives in `@moonwitness/types` and is re-exported cleanly by `@moonwitness/client` and `@moonwitness/orm`.
-  - **Verification:** `pnpm build && pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/board typecheck`.
+- [ ] **MW-PKG-001** Hilangkan seluruh 5 siklus import file-level type-only yang terdeteksi `node scripts/audit-workspace.mjs`
+  - [ ] **MW-PKG-001.1** Putus siklus `packages/orm/src/base.model.ts <-> environment.ts / model-definition.ts` dengan mengekstrak kontrak antarmuka bersama ke `orm/src/contracts.ts`
+  - [ ] **MW-PKG-001.2** Putus siklus `packages/orm-storage/src/index.ts <-> s3.ts` dengan mengekstrak `AttachmentStorage` interface ke `storage.types.ts`
+  - [ ] **MW-PKG-001.3** Putus siklus `packages/local-ai/src/index.ts <-> suggestion-generation.ts` dan `packages/orm-knowledge/src/research-release-validation.ts <-> research-release.ts`
+  - [ ] **MW-PKG-001.4** Verifikasi: `node scripts/audit-workspace.mjs` mencetak `"localImportCycles": []`, `"runtimeImportCycles": []`, `"workspaceDependencyCycles": []` dan `pnpm test:unit:built` lulus
 
-- [ ] **MW-PKG-003** Audit and prune genuinely unused `dependencies` / `devDependencies` flagged by `audit-workspace.mjs` (verifying scripts/peer conventions like `pg`, `tailwindcss`, `oxlint`, `better-sqlite3` before touching anything).
-  - **Priority:** P2 · **Layer:** Shared · **Dependencies:** `MW-PKG-001`
-  - **Location:** Root & `packages/*/package.json`, `apps/*/package.json`
-  - **Acceptance Criteria:** Zero spurious unused runtime dependencies remain (e.g. redundant `objection` in `orm-integration` `devDependencies` if unused), while intentional runtime adapters (`pg`, `better-sqlite3`, CSS/CLI tools) are documented cleanly.
-  - **Verification:** `node scripts/audit-workspace.mjs && pnpm verify`.
+- [ ] **MW-PKG-002** Hubungkan `@moonwitness/client` ke `@moonwitness/types` dan hapus duplikasi tipe (`FieldMeta`, `ListView`, `FormView`, `SearchView`, `ResolvedViews`, `Domain`, `GroupCount*`, `SearchRead*`) di `packages/client/src/types.ts`
+  - [ ] **MW-PKG-002.1** Tambahkan `"@moonwitness/types": "workspace:*"` di `packages/client/package.json`
+  - [ ] **MW-PKG-002.2** Pindahkan tipe metadata/view/action/domain terpadu ke `@moonwitness/types` dan re-export ulang dari `@moonwitness/client` agar import konsumer di `apps/board` tidak rusak
+  - [ ] **MW-PKG-002.3** Pastikan tidak ada duplikasi interface antara `@moonwitness/orm`, `@moonwitness/types`, dan `@moonwitness/client`
+  - [ ] **MW-PKG-002.4** Verifikasi: `pnpm build && pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-PKG-004** Align package version `packages/orm-whatsapp/package.json` (`1.14.0` vs monorepo `1.0.0-rc.1`) with the workspace version policy (`scripts/workspace-version-policy.test.mjs`) while preserving its ORM addon manifest semver (`whatsappManifest.version: '1.14.0'`) independently in `_orm_addons`.
-  - **Priority:** P1 · **Layer:** Shared · **Dependencies:** None
-  - **Location:** `packages/orm-whatsapp/package.json`, `packages/orm-whatsapp/src/manifest.ts`
-  - **Acceptance Criteria:** npm workspace `package.json` version matches monorepo release version policy, while runtime addon schema version in `defineAddon({ version })` stays independent so database upgrade chains never break.
-  - **Verification:** `pnpm test:workspace-version-policy && pnpm release:check`.
+- [ ] **MW-PKG-003** Audit dan bersihkan kandidat dependency tak terpakai pada manifest `package.json` (memilah adapter runtime/CLI sah seperti `pg`, `better-sqlite3`, `tailwindcss`, `oxlint` vs dependency berlebih)
+  - [ ] **MW-PKG-003.1** Evaluasi setiap item pada `unusedDependencyCandidates` di output `audit-workspace.mjs` (mis. `objection` pada `packages/orm-integration/package.json` bila tidak pernah dipakai)
+  - [ ] **MW-PKG-003.2** Hapus hanya dependency yang terbukti benar-benar yatim dan perbarui `pnpm-lock.yaml` jika berubah
+  - [ ] **MW-PKG-003.3** Dokumentasikan pengecualian adapter dinamis/CLI pada skrip audit agar sinyal audit berikutnya tetap bersih
+  - [ ] **MW-PKG-003.4** Verifikasi: `node scripts/audit-workspace.mjs && pnpm verify` lulus
 
-- [ ] **MW-PKG-005** Consolidate duplicated `parseInteger` / `countValue` / error-code helpers only where semantic contracts match across `apps/api` and `@moonwitness/types`.
-  - **Priority:** P3 · **Layer:** Shared · **Dependencies:** `MW-API-001`, `MW-PKG-002`
-  - **Location:** `packages/types/src/guards.ts`, `apps/api/src/routes/jobs.routes.ts`, `apps/api/src/routes/notification.routes.ts`
-  - **Acceptance Criteria:** Verified identical pure parsers live in `@moonwitness/types` with direct unit tests; no bloated generic `utils` dumping ground is created.
-  - **Verification:** `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-PKG-004** Selaraskan versi `packages/orm-whatsapp/package.json` (`1.14.0` vs monorepo `1.0.0-rc.1`) dengan kebijakan versi workspace bersama tanpa mengubah versi skema addon runtime (`whatsappManifest.version: '1.14.0'`)
+  - [ ] **MW-PKG-004.1** Pisahkan jelas antara versi npm package monorepo (`package.json`) dengan versi schema addon DB (`defineAddon({ version })`)
+  - [ ] **MW-PKG-004.2** Sesuaikan `packages/orm-whatsapp/package.json` dan pastikan tes rilis & kebijakan versi lulus
+  - [ ] **MW-PKG-004.3** Pastikan `_orm_addons` di database tidak menganggap pembaruan `package.json` sebagai downgrade addon
+  - [ ] **MW-PKG-004.4** Verifikasi: `pnpm test:workspace-version-policy && pnpm release:check` lulus
 
-- [ ] **MW-PKG-006** Enforce explicit `exports` maps and forbid subpath bypasses across all 22 workspace packages via `audit:workspace` and TypeScript project references.
-  - **Priority:** P2 · **Layer:** Shared · **Dependencies:** `MW-PKG-001`, `MW-PKG-002`
-  - **Location:** `packages/*/package.json`, `scripts/audit-workspace.mjs`
-  - **Acceptance Criteria:** Every library package declares deliberate `exports` (`.` for domain packages; explicit component/asset subpaths for `@moonwitness/ui` and `@moonwitness/assets`) and fails checks on deep internal relative/dist imports across package boundaries.
-  - **Verification:** `pnpm audit:workspace && pnpm build`.
+- [ ] **MW-PKG-005** Konsolidasikan helper murni yang terbukti identik semantik (`parseInteger`, `countValue`) ke `@moonwitness/types` tanpa membuat dumping-ground package utilitas
+  - [ ] **MW-PKG-005.1** Verifikasi kesamaan perilaku null/NaN/bigint antara helper di `generic.routes.ts`, `jobs.routes.ts`, dan `notification.routes.ts`
+  - [ ] **MW-PKG-005.2** Ekstrak hanya fungsi yang identik semantiknya ke `packages/types/src/guards.ts` beserta unit test langsung
+  - [ ] **MW-PKG-005.3** Ganti salinan lokal di `apps/api/src/routes/`
+  - [ ] **MW-PKG-005.4** Verifikasi: `pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api test` lulus
+
+- [ ] **MW-PKG-006** Tegakkan peta `exports` eksplisit dan larang bypass import subpath internal lintas seluruh 22 package workspace
+  - [ ] **MW-PKG-006.1** Pastikan setiap package hanya mengekspor entry `.` (atau subpath terdaftar eksplisit untuk `@moonwitness/ui` dan `@moonwitness/assets`)
+  - [ ] **MW-PKG-006.2** Perluas `audit:workspace` agar mendeteksi import lintas-package ke `src/` atau `dist/` internal
+  - [ ] **MW-PKG-006.3** Perbaiki setiap import yang melewati public export map
+  - [ ] **MW-PKG-006.4** Verifikasi: `pnpm audit:workspace && pnpm build` lulus
 
 ---
 
 ## 18 — Events, Jobs & Automation
 
-- [ ] **MW-JOB-001** Fix the head-of-line scheduler failure documented in `ROADMAP.md` `K7-005` (`packages/jobs/src/runtime.ts`) so one failing or misfired cron entry does not starve subsequent due cron schedules.
-  - **Priority:** P1 · **Layer:** Backend · **Dependencies:** None
-  - **Location:** `packages/jobs/src/runtime.ts`, `packages/jobs/tests/runtime.test.ts`
-  - **Acceptance Criteria:** Isolate per-cron evaluation/error handling, advance/backoff failed cron safely without blocking sibling crons, and add regression test proving a failing cron no longer blocks healthy crons.
-  - **Verification:** `pnpm --filter @moonwitness/jobs test && pnpm test:integration`.
+| ID           | Prioritas | Layer   | Dependensi                    | Lokasi Target                                                                                     |
+| :----------- | :-------- | :------ | :---------------------------- | :------------------------------------------------------------------------------------------------ |
+| `MW-JOB-001` | P1        | Backend | —                             | `packages/jobs/src/runtime.ts`, `packages/jobs/tests/runtime.test.ts`                             |
+| `MW-JOB-002` | P2        | Backend | `MW-ORM-011`, `MW-JOB-001`    | `packages/orm/src/base.model.ts`, `packages/jobs/src/runtime.ts`                                  |
+| `MW-JOB-003` | P2        | Backend | `MW-JOB-001`, `MW-ACT-007`    | `apps/api/src/routes/jobs.routes.ts`, `apps/board/src/components/layout/cron-scheduler-panel.tsx` |
+| `MW-JOB-004` | P2        | Backend | `MW-JOB-001`                  | `packages/orm-workflow/tests/`, `packages/orm-integration/tests/`                                 |
+| `MW-JOB-005` | P2        | Core    | `MW-CORE-002`, `MW-ADDON-002` | `packages/orm/src/addon.ts`, `packages/jobs/src/runtime.ts`                                       |
 
-- [ ] **MW-JOB-002** Standardize ORM model lifecycle event publishing (`record.created`, `record.updated`, `record.archived`, `record.deleted`, `record.action_*`) inside `Environment` / `BaseModel` / action execution with unified outbox payload redaction (`sensitive`/`hidden` exclusion).
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-ORM-011`, `MW-JOB-001`
-  - **Location:** `packages/orm/src/base.model.ts`, `packages/jobs/src/runtime.ts`, `apps/api/src/routes/generic-audit.ts`
-  - **Acceptance Criteria:** Lifecycle outbox events trigger `@moonwitness/orm-integration` webhook subscriptions and `@moonwitness/orm-notification` templates atomically with consistent redacted snapshots.
-  - **Verification:** `pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-notification test && pnpm test:integration`.
+- [ ] **MW-JOB-001** Perbaiki bug head-of-line cron scheduler yang tercatat di `ROADMAP.md` `K7-005` (`packages/jobs/src/runtime.ts`) agar satu cron yang gagal tidak memblokir jadwal cron berikutnya
+  - [ ] **MW-JOB-001.1** Isolasi blok `try/catch` per item cron saat evaluasi tick scheduler dan majukan/backoff cron gagal secara independen
+  - [ ] **MW-JOB-001.2** Tambahkan uji regresi membuktikan 1 cron bermasalah tidak menghentikan penjadwalan cron sehat berikutnya
+  - [ ] **MW-JOB-001.3** Uji kembali seluruh kebijakan misfire & concurrency (`skip`, `coalesce`, `catch_up`, `forbid`, `replace`)
+  - [ ] **MW-JOB-001.4** Verifikasi: `pnpm --filter @moonwitness/jobs test && pnpm test:integration` lulus
 
-- [ ] **MW-JOB-003** Expose dead-letter (`status = 'dead'`) inspection, safe payload preview, and manual retry/cancel controls for `base.job` and `base.outbox_event` via `jobs.routes.ts` and Board admin panel.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-JOB-001`, `MW-ACT-007`
-  - **Location:** `apps/api/src/routes/jobs.routes.ts`, `apps/board/src/components/layout/cron-scheduler-panel.tsx`
-  - **Acceptance Criteria:** `system`/`superadmin` can inspect dead jobs/outbox failures, retry bounded batches, and audit-log every manual intervention; regular users receive `403`.
-  - **Verification:** `pnpm --filter @moonwitness/api test` + Board admin E2E test.
+- [ ] **MW-JOB-002** Standarisasi publikasi event siklus hidup model (`record.created`, `record.updated`, `record.archived`, `record.deleted`, `record.action_*`) ke `base.outbox_event` dengan redaksi `sensitive`/`hidden` terpusat
+  - [ ] **MW-JOB-002.1** Pastikan event terbit seragam baik saat record diubah lewat REST, JSON-RPC, maupun `Recordset`/Action
+  - [ ] **MW-JOB-002.2** Pastikan `auditSnapshot` menyaring field `sensitive` dan `hidden` sebelum menulis ke payload outbox
+  - [ ] **MW-JOB-002.3** Uji integrasi end-to-end dengan `@moonwitness/orm-integration` webhook dan `@moonwitness/orm-notification`
+  - [ ] **MW-JOB-002.4** Verifikasi: `pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-notification test && pnpm test:integration` lulus
 
-- [ ] **MW-JOB-004** Complete remaining `orm-workflow` (`M9.03`) and `orm-integration` (`M9.04`) verification gaps: host-level workflow concurrency/expiry verification and live receiver integration parity tests.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-JOB-001`
-  - **Location:** `packages/orm-workflow/tests/`, `packages/orm-integration/tests/`
-  - **Acceptance Criteria:** All workflow approval, timeout expiry, webhook SSRF/DNS cancellation, and outbox delivery retry paths pass both SQLite unit and PostgreSQL integration suites.
-  - **Verification:** `pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/orm-integration test && pnpm test:integration`.
+- [ ] **MW-JOB-003** Sediakan inspeksi dead-letter (`status = 'dead'`) dan kontrol retry/cancel teraudit bagi admin pada `base.job` dan `base.outbox_event`
+  - [ ] **MW-JOB-003.1** Tambah/verifikasi endpoint retry & cancel dead job/outbox di `jobs.routes.ts` khusus role `system`/`superadmin` dengan logging audit
+  - [ ] **MW-JOB-003.2** Tampilkan tabel dead-letter ringkas dan tombol retry di panel administrasi cron/jobs pada Board
+  - [ ] **MW-JOB-003.3** Pastikan user non-admin menerima `403` untuk seluruh endpoint admin jobs/outbox
+  - [ ] **MW-JOB-003.4** Verifikasi: `pnpm --filter @moonwitness/api test` + E2E admin jobs lulus
 
-- [ ] **MW-JOB-005** Register addon-contributed job handlers and outbox consumers declaratively on `Addon` manifests (`jobHandlers`, `outboxConsumers`) instead of manual wiring in worker scripts.
-  - **Priority:** P2 · **Layer:** Core · **Dependencies:** `MW-CORE-002`, `MW-ADDON-002`
-  - **Location:** `packages/orm/src/addon.ts`, `packages/jobs/src/runtime.ts`
-  - **Acceptance Criteria:** `jobs-worker` and `outbox-worker` automatically discover and register all handlers/consumers declared by active installed addons.
-  - **Verification:** `pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-JOB-004** Tutup sisa verifikasi integrasi `orm-workflow` (`M9.03`) dan `orm-integration` (`M9.04`) pada skenario timeout expiry dan delivery retry
+  - [ ] **MW-JOB-004.1** Verifikasi eksekusi job `workflow.expire_due` melalui worker/scheduler penuh di PostgreSQL
+  - [ ] **MW-JOB-004.2** Verifikasi SSRF DNS guard, batas timeout total, dan idempotency delivery webhook di PostgreSQL
+  - [ ] **MW-JOB-004.3** Rekam hasil integrasi tanpa skenario skip pada database uji
+  - [ ] **MW-JOB-004.4** Verifikasi: `pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/orm-integration test && pnpm test:integration` lulus
+
+- [ ] **MW-JOB-005** Dukung deklarasi `jobHandlers` dan `outboxConsumers` langsung pada manifest `Addon` agar worker mendaftarkannya otomatis saat boot
+  - [ ] **MW-JOB-005.1** Tambahkan properti `jobHandlers` dan `outboxConsumers` pada `Addon` di `packages/orm/src/addon.ts`
+  - [ ] **MW-JOB-005.2** Hubungkan proses `jobs-worker` dan `outbox-worker` agar meregistrasikan handler dari addon aktif melalui bootstrap tunggal (`MW-CORE-002`)
+  - [ ] **MW-JOB-005.3** Uji duplikasi nama handler dan deregistrasi bersih saat shutdown/uninstall addon
+  - [ ] **MW-JOB-005.4** Verifikasi: `pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/api test` lulus
 
 ---
 
 ## 19 — Configuration, Storage & Internationalization
 
-- [ ] **MW-CFG-001** Add `base.config_parameter` (`ir.config_parameter` pattern) model in `@moonwitness/orm-base` for runtime system & per-company configuration values (typed `string | integer | boolean | json`, `is_secret` masking, admin-only access).
-  - **Priority:** P2 · **Layer:** Addon · **Dependencies:** `MW-SEC-001`, `MW-CORE-003`
-  - **Location:** `packages/orm-base/src/`
-  - **Acceptance Criteria:** Addons and runtime services read typed config defaults with env override precedence; secret parameters are stripped from generic API reads and audit logs.
-  - **Verification:** `pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/api test`.
+| ID           | Prioritas | Layer          | Dependensi                  | Lokasi Target                                                                      |
+| :----------- | :-------- | :------------- | :-------------------------- | :--------------------------------------------------------------------------------- |
+| `MW-CFG-001` | P2        | Addon          | `MW-SEC-001`, `MW-CORE-003` | `packages/orm-base/src/`                                                           |
+| `MW-CFG-002` | P3        | Frontend       | `MW-CFG-001`, `MW-ACT-003`  | `apps/board/src/board-pages/settings-page.tsx`                                     |
+| `MW-CFG-003` | P1        | Backend        | `MW-API-004`                | `packages/orm-storage/src/s3.ts`, `apps/api/src/commands/attachments-reconcile.ts` |
+| `MW-CFG-004` | P3        | Shared         | `MW-DOM-004`                | `packages/orm/src/view.ts`, `packages/types/src/`, `apps/board/src/`               |
+| `MW-CFG-005` | P2        | Infrastructure | `MW-DOC-001`                | `docs/architecture/`, `scripts/verify-application-restore.mjs`                     |
 
-- [ ] **MW-CFG-002** Add an in-app **General Settings** workspace page in `apps/board` reading/updating non-secret company & addon parameters (`base.config_parameter` + `ir.feature_flag`) cleanly.
-  - **Priority:** P3 · **Layer:** Frontend · **Dependencies:** `MW-CFG-001`, `MW-ACT-003`
-  - **Location:** `apps/board/src/board-pages/settings-page.tsx`
-  - **Acceptance Criteria:** Admins can view/toggle company settings and feature flags with immediate validation and audit logging; non-admins cannot mutate system settings.
-  - **Verification:** `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck`.
+- [ ] **MW-CFG-001** Tambahkan model `base.config_parameter` di `@moonwitness/orm-base` untuk konfigurasi sistem dan per-company (`string | integer | boolean | json`, `is_secret`)
+  - [ ] **MW-CFG-001.1** Definisikan model `ConfigParameter` (`key`, `value_type`, `value`, `is_secret`, `company`) dengan `accessPolicy: 'adminOnly'`
+  - [ ] **MW-CFG-001.2** Sediakan helper `getConfigParam(env, key, fallback)` pada `ServiceRegistry` yang memprioritaskan env var rahasia lalu parameter DB
+  - [ ] **MW-CFG-001.3** Tandai field `value` bersyarat/sensitif agar parameter `is_secret` tidak muncul dalam audit log dan outbox
+  - [ ] **MW-CFG-001.4** Verifikasi: `pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-CFG-003** Complete S3 / RustFS presigned upload & CORS verification (`todo-wa.md` `P2-05`) and integrate unified `@moonwitness/orm-storage` streaming + orphan reconciliation (`pnpm attachments:reconcile`) across both `base.attachment` and `whatsapp.message` media.
-  - **Priority:** P1 · **Layer:** Backend · **Dependencies:** `MW-API-004`
-  - **Location:** `packages/orm-storage/src/s3.ts`, `apps/api/src/commands/attachments-reconcile.ts`, `apps/api/tests/whatsapp-attachments-job.postgres.integration.test.ts`
-  - **Acceptance Criteria:** Direct S3 presigned POST + CORS, checksum verification, streaming fallback, and dry-run/apply orphan cleanup pass against local RustFS/MinIO S3 fixture without skipping acceptance tests.
-  - **Verification:** `pnpm --filter @moonwitness/orm-storage test && pnpm test:whatsapp`.
+- [ ] **MW-CFG-002** Sediakan halaman **General Settings** di `apps/board` bagi admin untuk mengelola parameter company (`base.config_parameter`) dan feature flags (`ir.feature_flag`)
+  - [ ] **MW-CFG-002.1** Perluas `apps/board/src/board-pages/settings-page.tsx` untuk menampilkan bagian pengaturan user (semua user) dan bagian pengaturan sistem/company (admin saja)
+  - [ ] **MW-CFG-002.2** Pastikan toggle feature flag & parameter non-secret memakai kontrol `@moonwitness/ui` dan validasi tipe
+  - [ ] **MW-CFG-002.3** Uji penolakan akses (`403`) saat user biasa mencoba mengubah parameter global
+  - [ ] **MW-CFG-002.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [ ] **MW-CFG-004** Establish an internationalization (`i18n`) catalog layer translating model labels, view titles, menu groups, selection labels, and Board UI strings based on user `base.user.language` / `Accept-Language`.
-  - **Priority:** P3 · **Layer:** Shared · **Dependencies:** `MW-DOM-004`
-  - **Location:** `packages/orm/src/view.ts`, `packages/types/src/`, `apps/board/src/`
-  - **Acceptance Criteria:** `/api/:model/views` and `/api/app/bootstrap` accept `lang` / `Accept-Language` and localize registered labels (with `en-US` fallback); Board displays translated headings, buttons, and date/number formats cleanly at 320px/1440px.
-  - **Verification:** `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/board typecheck` + locale E2E test (`en-US` and `id-ID`).
+- [ ] **MW-CFG-003** Verifikasi alur upload presigned S3/RustFS & CORS (`todo-wa.md` `P2-05`) serta satukan rekonsiliasi orphan attachment (`pnpm attachments:reconcile`)
+  - [ ] **MW-CFG-003.1** Uji integrasi S3 presigned POST, verifikasi ukuran/MIME `HEAD`, streaming copy ke key final, dan penolakan replay tiket
+  - [ ] **MW-CFG-003.2** Pastikan `attachments:reconcile` memindai referensi dari `base.attachment` maupun `whatsapp.message` secara bersamaan agar tidak menghapus file aktif
+  - [ ] **MW-CFG-003.3** Tutup 1 test acceptance S3 yang sebelumnya ter-skip pada lingkungan uji ber-storage S3/RustFS
+  - [ ] **MW-CFG-003.4** Verifikasi: `pnpm --filter @moonwitness/orm-storage test && pnpm test:whatsapp` lulus
 
-- [ ] **MW-CFG-005** Document and enforce the explicit Platform Capability Classification Matrix (`Core` vs `Addon` vs `External` vs `Deferred`) for backup/recovery (`pnpm test:restore-drill`), reporting, and import/export.
-  - **Priority:** P2 · **Layer:** Infrastructure · **Dependencies:** `MW-DOC-001`
-  - **Location:** `docs/architecture/`, `scripts/verify-application-restore.mjs`
-  - **Acceptance Criteria:** Every capability in Mission Section K has a verified home, test command, or explicit deferred rationale—zero ungrounded enterprise stubs.
-  - **Verification:** `pnpm test:restore-drill` (with PostgreSQL fixture) and `pnpm docs:check`.
+- [ ] **MW-CFG-004** Bangun lapisan internasionalisasi (`i18n`) untuk terjemahan label model/view/menu/selection dan teks antarmuka `apps/board` berdasarkan `base.user.language` / `Accept-Language`
+  - [ ] **MW-CFG-004.1** Sediakan kamus terjemahan (`en-US`, `id-ID`) berbasis lookup table aman di `@moonwitness/orm` (untuk metadata model/view/menu) dan `apps/board` (untuk UI shell)
+  - [ ] **MW-CFG-004.2** Terapkan resolusi bahasa di `/api/:model/views` dan `/api/app/bootstrap` dengan fallback deterministik ke `en-US`
+  - [ ] **MW-CFG-004.3** Uji teks bahasa Indonesia yang panjang pada lebar viewport 320px tidak menyebabkan overlap atau overflow
+  - [ ] **MW-CFG-004.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm --filter @moonwitness/board typecheck` lulus
+
+- [ ] **MW-CFG-005** Verifikasi & dokumentasikan matriks klasifikasi kapabilitas platform (`Core` vs `Addon` vs `External` vs `Deferred`) beserta uji backup/restore aplikasi
+  - [ ] **MW-CFG-005.1** Pastikan seluruh tabel addon baru (termasuk `base.config_parameter`, `base.saved_filter`, dan kolom ekstensi) ikut tercakup dalam `restore-drill-fixture.ts`
+  - [ ] **MW-CFG-005.2** Jalankan `pnpm test:restore-drill` terhadap instance PostgreSQL dan verifikasi keutuhan relasi serta akun
+  - [ ] **MW-CFG-005.3** Dokumentasikan batasan kapabilitas eksternal dan opsional pada `docs/architecture/`
+  - [ ] **MW-CFG-005.4** Verifikasi: `pnpm test:restore-drill && pnpm docs:check` lulus
 
 ---
 
 ## 20 — Performance & Optimization
 
-- [ ] **MW-PERF-001** Add generation- and revocation-aware in-memory caching for user auth profile, active company memberships, and `ModelAccess` group grants in `apps/api/src/plugins/auth.plugin.ts` (replacing 3 DB queries per HTTP request).
-  - **Priority:** P1 · **Layer:** Backend · **Dependencies:** `MW-SEC-007`
-  - **Location:** `apps/api/src/plugins/auth.plugin.ts`
-  - **Acceptance Criteria:** Auth hook caches `(userId -> profile + memberships + grants)` with short bounded TTL and immediate invalidation on `base.user` / membership / grant mutations; cuts per-request auth DB overhead while passing every session-revocation & role-change security test.
-  - **Verification:** `pnpm --filter @moonwitness/api exec vitest run tests/auth.test.ts tests/postgres.performance.integration.test.ts`.
+| ID            | Prioritas | Layer    | Dependensi                    | Lokasi Target                                                                        |
+| :------------ | :-------- | :------- | :---------------------------- | :----------------------------------------------------------------------------------- |
+| `MW-PERF-001` | P1        | Backend  | `MW-SEC-007`                  | `apps/api/src/plugins/auth.plugin.ts`                                                |
+| `MW-PERF-002` | P2        | Backend  | `MW-ORM-010`                  | `apps/api/src/routes/generic.routes.ts`, `packages/orm/src/base.model.ts`            |
+| `MW-PERF-003` | P2        | Frontend | `MW-WEB-001`, `MW-WIDGET-004` | `apps/board/src/components/views/list-view.tsx`, `apps/board/src/hooks/use-model.ts` |
+| `MW-PERF-004` | P2        | QA       | `MW-DOM-002`, `MW-ORM-004`    | `apps/api/tests/postgres.performance.integration.test.ts`                            |
+| `MW-PERF-005` | P2        | Frontend | `MW-WEB-005`, `MW-SKIN-003`   | `scripts/check-board-bundle.mjs`, `scripts/check-ui-catalog-budget.mjs`              |
 
-- [ ] **MW-PERF-002** Batch `findReference()` reverse-FK lookups in `apps/api/src/routes/generic.routes.ts` and `BaseModel.unlink` so bulk archive/delete checks 100 IDs in `O(referencingModels)` `WHERE col IN (...)` queries instead of `O(N × referencingModels)` queries.
-  - **Priority:** P2 · **Layer:** Backend · **Dependencies:** `MW-ORM-010`
-  - **Location:** `apps/api/src/routes/generic.routes.ts`, `packages/orm/src/base.model.ts`
-  - **Acceptance Criteria:** Bulk archiving 50 records executes a constant number of reverse-FK queries bounded by referencing tables, never N+1.
-  - **Verification:** Query-count assertion test in `apps/api/tests/postgres.performance.integration.test.ts`.
+- [ ] **MW-PERF-001** Tambahkan cache in-memory ber-TTL pendek & sadar-invalidasi di `apps/api/src/plugins/auth.plugin.ts` untuk memangkas 3 query database per request HTTP
+  - [ ] **MW-PERF-001.1** Cache komposit `(userProfile, companyMemberships, groupPermissions)` di-key oleh `(userId, authRevisionEpoch)`
+  - [ ] **MW-PERF-001.2** Invalidasi instan setiap mutasi pada `base.user`, `base.company_membership`, `base.group_membership`, atau `base.model_access` (`MW-SEC-007`)
+  - [ ] **MW-PERF-001.3** Tambahkan benchmark jumlah query sebelum vs sesudah di `postgres.performance.integration.test.ts`
+  - [ ] **MW-PERF-001.4** Verifikasi: `pnpm --filter @moonwitness/api exec vitest run tests/auth.test.ts tests/postgres.performance.integration.test.ts` lulus
 
-- [ ] **MW-PERF-003** Optimize `ListView` / `One2ManyWidget` / `Many2oneWidget` data fetching in `apps/board`: fetch `fields` subset declared in `list.columns` (instead of `SELECT *`), debounce search/typeahead consistently (`250ms`), and avoid duplicate `count=true` queries when page state didn't change filter.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-WEB-001`, `MW-WIDGET-004`
-  - **Location:** `apps/board/src/components/views/list-view.tsx`, `apps/board/src/components/views/fields.tsx`, `apps/board/src/hooks/use-model.ts`
-  - **Acceptance Criteria:** List requests specify `fields` projection matching visible + required columns, reducing payload size and DB I/O while keeping optimistic `write_date` available for quick edits.
-  - **Verification:** `pnpm --filter @moonwitness/board typecheck` + network-payload assertion in Playwright E2E.
+- [ ] **MW-PERF-002** Ubah `findReference()` di `apps/api/src/routes/generic.routes.ts` & `BaseModel.unlink` agar melakukan batch lookup `WHERE col IN (...)` untuk operasi bulk
+  - [ ] **MW-PERF-002.1** Buat fungsi `findReferencesBatch(model, ids, activeUsersOnly, trx)` yang memetakan ID bermasalah ke model perujuk dalam 1 query per kolom FK
+  - [ ] **MW-PERF-002.2** Pastikan kasus 1 ID tetap secepat sebelumnya dan mutasi bulk 50–100 ID bebas masalah N+1
+  - [ ] **MW-PERF-002.3** Tambahkan assertion batas jumlah query saat bulk archive/delete di suite performa
+  - [ ] **MW-PERF-002.4** Verifikasi: `pnpm test:integration` lulus
 
-- [ ] **MW-PERF-004** Enforce PostgreSQL query-cost benchmarks (`apps/api/tests/postgres.performance.integration.test.ts`) and knowledge capacity benchmarks (`scripts/knowledge/benchmark-knowledge-capacity.mjs`) across extended ORM models and dotted relational queries.
-  - **Priority:** P2 · **Layer:** QA · **Dependencies:** `MW-DOM-002`, `MW-ORM-004`
-  - **Location:** `apps/api/tests/postgres.performance.integration.test.ts`, `scripts/knowledge/benchmark-knowledge-capacity.mjs`
-  - **Acceptance Criteria:** Regression benchmarks measure query counts, p95 response latency, and memory ceiling on PostgreSQL without N+1 regressions.
-  - **Verification:** `pnpm test:integration`.
+- [ ] **MW-PERF-003** Optimalkan fetching data `ListView`, `One2ManyWidget`, dan `Many2oneWidget` di `apps/board` (proyeksi `fields` kolom terlihat + debounce pencarian konsisten)
+  - [ ] **MW-PERF-003.1** Kirim parameter `fields` berisi `['id', 'write_date', ...visibleListColumns]` pada query `ListView` menggantikan pembacaan seluruh kolom tabel
+  - [ ] **MW-PERF-003.2** Terapkan debounce `250ms` seragam pada input pencarian list & `Many2oneWidget` typeahead
+  - [ ] **MW-PERF-003.3** Uji payload network lebih ramping tanpa memutus tampilan cell atau optimistic concurrency
+  - [ ] **MW-PERF-003.4** Verifikasi: `pnpm --filter @moonwitness/board typecheck && pnpm test:e2e` lulus
 
-- [ ] **MW-PERF-005** Maintain strict route-aware JavaScript/CSS bundle budgets across all `apps/board` routes (`pnpm board:budget`) and `@moonwitness/ui-catalog` (`pnpm test:ui-budget`) as new view engines (`Kanban`, `Calendar`, `Graph`, `Pivot`) are added.
-  - **Priority:** P2 · **Layer:** Frontend · **Dependencies:** `MW-WEB-005`, `MW-SKIN-003`
-  - **Location:** `scripts/check-board-bundle.mjs`, `scripts/check-ui-catalog-budget.mjs`
-  - **Acceptance Criteria:** `Calendar`, `Graph`, and `Pivot` view engines are dynamically code-split (`next/dynamic`) so initial `/`, `/login`, and `/board` JS budgets never regress.
-  - **Verification:** `pnpm build && pnpm board:budget && pnpm test:ui-budget`.
+- [ ] **MW-PERF-004** Perluas benchmark query PostgreSQL & kapasitas knowledge (`postgres.performance.integration.test.ts`, `benchmark-knowledge-capacity.mjs`) mencakup domain bertitik dan field terkomputasi
+  - [ ] **MW-PERF-004.1** Ukur latensi p50/p95, jumlah query SQL, dan RSS memori untuk daftar 1.000+ record dengan domain relasional & eager loading
+  - [ ] **MW-PERF-004.2** Pastikan index komposit otomatis ORM (`(company_id, active, id)` dan index FK) benar-benar digunakan pada query umum
+  - [ ] **MW-PERF-004.3** Rekam metrik baseline di evidence tanpa merendahkan threshold regresi
+  - [ ] **MW-PERF-004.4** Verifikasi: `pnpm test:integration` lulus
+
+- [ ] **MW-PERF-005** Pertahankan seluruh anggaran ukuran bundle Next.js per route (`pnpm board:budget`) dan katalog UI (`pnpm test:ui-budget`) setelah penambahan engine view dan skin
+  - [ ] **MW-PERF-005.1** Pastikan `CalendarView`, `GraphView`, dan `PivotView` di-import secara dinamis (`next/dynamic`) agar tidak masuk bundle awal `/`, `/login`, maupun `/board`
+  - [ ] **MW-PERF-005.2** Ukur kembali ukuran CSS & JS terkompresi di build produksi Next.js
+  - [ ] **MW-PERF-005.3** Pastikan SFX audio tetap dimuat on-demand saat interaksi user
+  - [ ] **MW-PERF-005.4** Verifikasi: `pnpm build && pnpm board:budget && pnpm test:ui-budget` lulus
 
 ---
 
 ## 21 — Security & Reliability Hardening
 
-- [ ] **MW-HARD-001** Reconcile retired `.github/workflows/{gitleaks,codeql,browser-matrix,deep-regression,platform-audit}.yml` references in `scripts/check-gitleaks-config.mjs`, `scripts/platform-audit.mjs`, and docs, and ensure `pnpm automation:check:secrets` + secret scanning run cleanly in `.github/workflows/ci.yml` (`K9-002`).
-  - **Priority:** P0 · **Layer:** Security · **Dependencies:** None
-  - **Location:** `scripts/check-gitleaks-config.mjs`, `scripts/platform-audit.mjs`, `.github/workflows/ci.yml`
-  - **Acceptance Criteria:** No automation audit script references nonexistent workflows as active scheduled failures; secret scanning (`gitleaks` / `check-gitleaks-config.mjs`) passes deterministically locally and in CI.
-  - **Verification:** `pnpm automation:check:secrets && pnpm test:secrets && pnpm test:platform-audit`.
+| ID            | Prioritas | Layer          | Dependensi                               | Lokasi Target                                                                                 |
+| :------------ | :-------- | :------------- | :--------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| `MW-HARD-001` | P0        | Security       | —                                        | `scripts/check-gitleaks-config.mjs`, `scripts/platform-audit.mjs`, `.github/workflows/ci.yml` |
+| `MW-HARD-002` | P1        | Security       | —                                        | `Dockerfile`, `docs/security/vulnerability-policy.json`, `pnpm-workspace.yaml`                |
+| `MW-HARD-003` | P0        | Security       | `MW-API-002`, `MW-API-003`, `MW-DOM-002` | `apps/api/src/routes/generic-query-graph.ts`, `apps/board/src/lib/csv-export.ts`              |
+| `MW-HARD-004` | P1        | Infrastructure | `MW-SCHEMA-008`, `MW-ADDON-005`          | `scripts/verify-application-restore.mjs`, `packages/orm-knowledge/tests/`                     |
+| `MW-HARD-005` | P1        | Security       | —                                        | `scripts/evolution/check-constitution.mjs`, `scripts/evolution/check-ratchet.mjs`             |
 
-- [ ] **MW-HARD-002** Triage and resolve or policy-document the 20 Trivy container toolchain library CVEs (`brace-expansion`, `ip-address`, `picomatch`, `pacote`, `postcss-selector-parser`, `sigstore`, `sigstore-core`) identified in `ROADMAP.md` `M8.03`, and verify `Dockerfile` builds cleanly with zero CRITICAL vulnerabilities.
-  - **Priority:** P1 · **Layer:** Security · **Dependencies:** None
-  - **Location:** `Dockerfile`, `docs/security/vulnerability-policy.json`, `pnpm-workspace.yaml`
-  - **Acceptance Criteria:** Base Node image & npm/pnpm toolchain overrides minimize reachable CVEs; any remaining non-runtime toolchain exceptions have explicit documented expiry in `vulnerability-policy.json`.
-  - **Verification:** `pnpm test:security-policy && pnpm audit --prod --audit-level=high` + container Trivy scan.
+- [ ] **MW-HARD-001** Rekonsiliasi referensi workflow pensiun (`gitleaks.yml`, `codeql.yml`, `browser-matrix.yml`, `deep-regression.yml`, `platform-audit.yml`) di skrip audit dan aktifkan gate secret scan di CI (`K9-002`)
+  - [ ] **MW-HARD-001.1** Perbarui `scripts/check-gitleaks-config.mjs` dan `scripts/platform-audit.mjs` agar selaras dengan 6 workflow aktif atau integrasikan job gitleaks ke `ci.yml`
+  - [ ] **MW-HARD-001.2** Pastikan `pnpm automation:check:secrets` memverifikasi aturan `.gitleaks.toml` tanpa bergantung pada file workflow yang telah dihapus
+  - [ ] **MW-HARD-001.3** Uji negative secret fixture memastikan deteksi entropy tinggi pada secret runtime tetap aktif
+  - [ ] **MW-HARD-001.4** Verifikasi: `pnpm automation:check:secrets && pnpm test:secrets && pnpm test:platform-audit` lulus
 
-- [ ] **MW-HARD-003** Audit and harden all `/jsonrpc`, `/api/:model/group-count`, `default-get`, and `onchange` endpoints against payload amplification, deep relation recursion, and CSV formula injection.
-  - **Priority:** P0 · **Layer:** Security · **Dependencies:** `MW-API-002`, `MW-API-003`, `MW-DOM-002`
-  - **Location:** `apps/api/src/routes/generic-query-graph.ts`, `apps/api/src/routes/generic.routes.ts`, `apps/board/src/lib/csv-export.ts`
-  - **Acceptance Criteria:** Query depth, field list length (`<= 100`), group-by cardinality (`<= 3` fields, `<= 500` groups), and payload byte limits are enforced uniformly across REST & JSON-RPC.
-  - **Verification:** `pnpm --filter @moonwitness/api exec vitest run tests/security-hardening.test.ts tests/api-orm-hardening.test.ts` and `pnpm test:board-csv`.
+- [ ] **MW-HARD-002** Triage & tangani 20 alert library Trivy pada image container (`M8.03`) dan pastikan build `Dockerfile` bebas kerentanan CRITICAL
+  - [ ] **MW-HARD-002.1** Perbarui base image Node 22 LTS & toolchain pnpm/npm di `Dockerfile` dan cek `pnpm audit --prod --audit-level=high`
+  - [ ] **MW-HARD-002.2** Catat disposisi/exception bertanggal kedaluwarsa di `docs/security/vulnerability-policy.json` untuk alert toolchain non-runtime yang belum memiliki fix upstream
+  - [ ] **MW-HARD-002.3** Jalankan `pnpm test:security-policy` serta scan Trivy image API dan Board
+  - [ ] **MW-HARD-002.4** Verifikasi: `pnpm test:security-policy && pnpm audit --prod --audit-level=high` lulus
 
-- [ ] **MW-HARD-004** Verify `pnpm test:restore-drill` (`scripts/verify-application-restore.mjs`) and `packages/orm-knowledge` interrupted-write/PITR drills (`K9-003`) against PostgreSQL after ORM schema sync and addon lifecycle updates.
-  - **Priority:** P1 · **Layer:** Infrastructure · **Dependencies:** `MW-SCHEMA-008`, `MW-ADDON-005`
-  - **Location:** `scripts/verify-application-restore.mjs`, `apps/api/src/commands/restore-drill-fixture.ts`, `packages/orm-knowledge/tests/migration-and-interrupted-write.test.ts`
-  - **Acceptance Criteria:** Backup/restore restores all addon tables, `_orm_addons`, `_orm_data`, append-only triggers, relations, and user credentials with full integrity checks passing.
-  - **Verification:** `pnpm test:restore-drill` (with PostgreSQL running) and `pnpm --filter @moonwitness/orm-knowledge test`.
+- [ ] **MW-HARD-003** Audit dan perketat batas amplifikasi payload, kedalaman join domain, dan sanitasi formula CSV di semua endpoint API/RPC baru
+  - [ ] **MW-HARD-003.1** Batasi ukuran JSON body, kedalaman AST domain (`<= 32`), jumlah term (`<= 100`), jumlah field select (`<= 100`), dan jumlah hop relasi (`<= 2`) seragam di REST & `/jsonrpc`
+  - [ ] **MW-HARD-003.2** Verifikasi `csv-export.ts` menetralkan sel awalan `=`, `+`, `-`, `@`, tab, dan newline untuk seluruh tipe widget baru
+  - [ ] **MW-HARD-003.3** Tambahkan uji fuzzing/adversarial payload pada `default-get`, `onchange`, `group-count`, dan `bulk`
+  - [ ] **MW-HARD-003.4** Verifikasi: `pnpm --filter @moonwitness/api exec vitest run tests/security-hardening.test.ts tests/api-orm-hardening.test.ts && pnpm test:board-csv` lulus
 
-- [ ] **MW-HARD-005** Verify constitutional invariants (`node scripts/evolution/check-constitution.mjs`) and monotonic fitness ratchet (`node scripts/evolution/check-ratchet.mjs`) remain strictly green throughout transformation work.
-  - **Priority:** P1 · **Layer:** Security · **Dependencies:** None
-  - **Location:** `scripts/evolution/check-constitution.mjs`, `scripts/evolution/check-ratchet.mjs`
-  - **Acceptance Criteria:** `engines.node` stays `22.x` until intentionally amended, immutable security test suites stay intact, and no legacy model/addon allowlist entries return.
-  - **Verification:** `pnpm evolution:check && pnpm api:addon:check`.
+- [ ] **MW-HARD-004** Verifikasi ulang `pnpm test:restore-drill` dan skenario interrupted-write (`K9-003`) di PostgreSQL pasca-pembaruan skema ORM & lifecycle addon
+  - [ ] **MW-HARD-004.1** Perbarui fixture restore agar mencakup field ekstensi `extendModel`, tabel M2M, dan status `_orm_addons`
+  - [ ] **MW-HARD-004.2** Buktikan proses dump/restore PostgreSQL menjaga konsistensi trigger append-only (`workflow_events`, `knowledge_*`) dan credential hash user
+  - [ ] **MW-HARD-004.3** Rekam target waktu pemulihan dan integritas row count
+  - [ ] **MW-HARD-004.4** Verifikasi: `pnpm test:restore-drill && pnpm --filter @moonwitness/orm-knowledge test` lulus
+
+- [ ] **MW-HARD-005** Pastikan seluruh invarian konstitusional (`check-constitution.mjs`) dan monotonic fitness ratchet (`check-ratchet.mjs`) selalu hijau sepanjang eksekusi transformasi
+  - [ ] **MW-HARD-005.1** Jaga file keamanan konstitusional dan nol allowlist `LEGACY_MODEL_ALLOWLIST` / `LEGACY_ADDON_ALLOWLIST`
+  - [ ] **MW-HARD-005.2** Jalankan `pnpm evolution:signals && pnpm evolution:fitness` setelah perubahan arsitektur besar
+  - [ ] **MW-HARD-005.3** Pastikan nol regresi metrik kualitas dan kebersihan boundary
+  - [ ] **MW-HARD-005.4** Verifikasi: `pnpm evolution:check && pnpm api:addon:check` lulus
 
 ---
 
 ## 22 — Testing & Quality Assurance
 
-- [ ] **MW-QA-001** Build comprehensive unit + SQLite + PostgreSQL integration suites for new ORM capabilities (`extendModel`, computed/stored fields, `onchange`, `Recordset`, `manyToMany`, schema column/enum/FK diffing, uninstall).
-  - **Priority:** P1 · **Layer:** QA · **Dependencies:** `MW-ORM-003`, `MW-ORM-004`, `MW-SCHEMA-003`, `MW-ADDON-004`
-  - **Location:** `packages/orm/tests/`, `apps/api/tests/postgres.integration.test.ts`
-  - **Acceptance Criteria:** Zero skipped assertions on PostgreSQL when `POSTGRES_TEST_URL` is configured (`REQUIRE_POSTGRES_TESTS=true`); covers both happy paths and failure rollback.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm test:integration`.
+| ID          | Prioritas | Layer | Dependensi                                                  | Lokasi Target                                                        |
+| :---------- | :-------- | :---- | :---------------------------------------------------------- | :------------------------------------------------------------------- |
+| `MW-QA-001` | P1        | QA    | `MW-ORM-003`, `MW-ORM-004`, `MW-SCHEMA-003`, `MW-ADDON-004` | `packages/orm/tests/`, `apps/api/tests/postgres.integration.test.ts` |
+| `MW-QA-002` | P1        | QA    | `MW-ADDON-007`, `MW-VIEW-002`, `MW-ACT-004`, `MW-SEC-001`   | `scripts/roadmap/addon-conformance.test.mjs`                         |
+| `MW-QA-003` | P0        | QA    | `MW-SEC-005`                                                | `apps/api/tests/`                                                    |
+| `MW-QA-004` | P2        | QA    | `MW-WEB-006`, `MW-SKIN-005`                                 | `apps/board/e2e/`                                                    |
+| `MW-QA-005` | P1        | QA    | `MW-CORE-001`, `MW-SCHEMA-006`, `MW-JOB-001`                | `apps/api/tests/`, `packages/jobs/tests/`                            |
+| `MW-QA-006` | P2        | QA    | `MW-QA-004`                                                 | `apps/board/e2e/`, `scripts/run-visual-matrix.mjs`                   |
 
-- [ ] **MW-QA-002** Expand `scripts/roadmap/addon-conformance.test.mjs` to validate views, hierarchical menus, actions, field ACLs, record rules, and repeated upgrade/disable/re-enable idempotency across all workspace addons.
-  - **Priority:** P1 · **Layer:** QA · **Dependencies:** `MW-ADDON-007`, `MW-VIEW-002`, `MW-ACT-004`, `MW-SEC-001`
-  - **Location:** `scripts/roadmap/addon-conformance.test.mjs`
-  - **Acceptance Criteria:** Any workspace addon missing views, broken domain filters, colliding seed IDs, or broken model security defaults fails conformance immediately.
-  - **Verification:** `pnpm test:addon-conformance`.
+- [ ] **MW-QA-001** Bangun suite unit + SQLite + PostgreSQL untuk seluruh kapabilitas baru ORM & Schema Engine (`extendModel`, `compute/store`, `onchange`, `Recordset`, `manyToMany`, schema evolution, `uninstall`)
+  - [ ] **MW-QA-001.1** Tambahkan unit test deterministik di `packages/orm/tests/` untuk setiap fitur baru
+  - [ ] **MW-QA-001.2** Tambahkan integration test di `apps/api/tests/postgres.integration.test.ts` dengan `REQUIRE_POSTGRES_TESTS=true` (nol silent skip)
+  - [ ] **MW-QA-001.3** Verifikasi konsistensi hasil antara SQLite test suite dan PostgreSQL 16/17
+  - [ ] **MW-QA-001.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm test:integration` lulus
 
-- [ ] **MW-QA-003** Build an automated full-matrix API authorization & tenant-isolation test covering all 73+ registered models × 3 roles (`system`, `superadmin`, `user`) × (`read`, `create`, `write`, `unlink`, `action`, `group-count`, `jsonrpc`).
-  - **Priority:** P0 · **Layer:** QA · **Dependencies:** `MW-SEC-005`
-  - **Location:** `apps/api/tests/`
-  - **Acceptance Criteria:** Matrix runs dynamically over `Registry.getNames()` so every newly added or extended model is automatically verified for negative/positive access and cross-company isolation.
-  - **Verification:** `pnpm --filter @moonwitness/api test && pnpm test:integration`.
+- [ ] **MW-QA-002** Perluas `scripts/roadmap/addon-conformance.test.mjs` untuk memverifikasi view multi-mode, hierarki menu, action, ACL field, record rules, dan idempotensi siklus hidup lintas 11+ addon
+  - [ ] **MW-QA-002.1** Uji setiap addon dapat di-install, di-reinstall tanpa duplikasi seed, dan valid seluruh metadata view/action/menu-nya
+  - [ ] **MW-QA-002.2** Uji addon non-inti yang mendukung disable/uninstall dapat dinonaktifkan tanpa mematahkan dependensi atau skema dasar
+  - [ ] **MW-QA-002.3** Pastikan nol model yatim tanpa security policy eksplisit
+  - [ ] **MW-QA-002.4** Verifikasi: `pnpm test:addon-conformance` lulus
 
-- [ ] **MW-QA-004** Add dedicated automated tests for all Board dynamic view engines (`List`, `Form`, `Kanban`, `Calendar`, `Graph`, `Pivot`, `Search`, `SmartButtons`, `Widgets`) and skin switching against real Fastify API + PostgreSQL (`pnpm test:e2e`).
-  - **Priority:** P2 · **Layer:** QA · **Dependencies:** `MW-WEB-006`, `MW-SKIN-005`
-  - **Location:** `apps/board/e2e/`
-  - **Acceptance Criteria:** Playwright specs exercise real PostgreSQL-backed CRUD, relational filtering, saved filters, `409` optimistic conflict recovery, skin persistence, and 320px/1440px responsive rendering.
-  - **Verification:** `pnpm test:e2e` and `pnpm test:e2e:visual:matrix`.
+- [ ] **MW-QA-003** Bangun matriks uji otorisasi otomatis penuh pada API mencakup seluruh 73+ model × 3 role (`system`, `superadmin`, `user`) × (`read`, `create`, `write`, `unlink`, `action`, `group-count`, `jsonrpc`)
+  - [ ] **MW-QA-003.1** Iterasi dinamis atas `Registry.getNames()` agar setiap model atau ekstensi baru otomatis diuji oleh suite keamanan
+  - [ ] **MW-QA-003.2** Uji kasus positif dengan group grant sah dan kasus negatif (`403`/`404`) lintas-tenant/tanpa grant/field terlarang
+  - [ ] **MW-QA-003.3** Pastikan tidak ada model internal (`auth.*`, `knowledge.*`, `base.job`, `base.cron`, `base.outbox_event`) yang bocor ke API generik
+  - [ ] **MW-QA-003.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm test:integration` lulus
 
-- [ ] **MW-QA-005** Add unit test coverage for `apps/api/src/commands/db-migrate.ts` (`--dry-run`, advisory lock contention, `SKIP_BOOT_MIGRATIONS=true` boot parity) and worker runtime isolation (`K7-005` cron isolation).
-  - **Priority:** P1 · **Layer:** QA · **Dependencies:** `MW-CORE-001`, `MW-SCHEMA-006`, `MW-JOB-001`
-  - **Location:** `apps/api/tests/`, `packages/jobs/tests/`
-  - **Acceptance Criteria:** Critical boot/migration/scheduler branches pass coverage thresholds in `docs/testing/coverage-thresholds.json`.
-  - **Verification:** `pnpm test:coverage-policy && pnpm test:unit`.
+- [ ] **MW-QA-004** Tambahkan suite Playwright E2E untuk view engine dinamis (`List`, `Form`, `Kanban`, `Calendar`, `Graph`, `Pivot`, `Search`, `SmartButtons`, `Widgets`, dan `Skin`) terhadap API + PostgreSQL asli
+  - [ ] **MW-QA-004.1** Uji create/edit/`onchange`/konflik `409`/saved filter/Kanban stage move/Smart Button navigation end-to-end di browser
+  - [ ] **MW-QA-004.2** Uji perpindahan skin & density tersimpan lintas-reload dan terisolasi antar company
+  - [ ] **MW-QA-004.3** Pastikan 0 console error, 0 hydration warning, dan lulus audit Axe WCAG 2.1 AA pada view baru
+  - [ ] **MW-QA-004.4** Verifikasi: `pnpm test:e2e` lulus dengan PostgreSQL asli
 
-- [ ] **MW-QA-006** Execute cross-browser (`Chromium`, `Firefox`, `WebKit`) E2E and visual regression matrix (`M3.11`) after platform transformation and eliminate any browser-specific layout/focus defects.
-  - **Priority:** P2 · **Layer:** QA · **Dependencies:** `MW-QA-004`
-  - **Location:** `apps/board/e2e/`, `scripts/run-visual-matrix.mjs`
-  - **Acceptance Criteria:** Visual & functional matrix passes across Chromium, Firefox, and WebKit on light/dark and skins without horizontal overflow or console errors.
-  - **Verification:** `pnpm test:e2e:visual:matrix`.
+- [ ] **MW-QA-005** Tambahkan test unit khusus untuk `db-migrate.ts` (`--dry-run`, advisory lock), boot `SKIP_BOOT_MIGRATIONS=true`, dan isolasi kegagalan scheduler (`K7-005`)
+  - [ ] **MW-QA-005.1** Capai dan pertahankan seluruh ambang coverage branch kritis pada `docs/testing/coverage-thresholds.json`
+  - [ ] **MW-QA-005.2** Uji negative-path ketika advisory lock gagal atau schema diff mendeteksi kolom destruktif
+  - [ ] **MW-QA-005.3** Verifikasi runner unit test (`scripts/run-unit-tests.mjs`) dan kebijakan coverage lulus
+  - [ ] **MW-QA-005.4** Verifikasi: `pnpm test:coverage-policy && pnpm test:unit` lulus
+
+- [ ] **MW-QA-006** Jalankan matriks visual & lintas-browser (`Chromium`, `Firefox`, `WebKit`) (`M3.11`) setelah transformasi UI dan selesaikan setiap ketidaksesuaian layout/fokus
+  - [ ] **MW-QA-006.1** Jalankan `pnpm test:e2e:visual:matrix` dan tinjau hasil diff di viewport 1440px, 1024px, dan 320px/390px
+  - [ ] **MW-QA-006.2** Perbarui baseline snapshot terkurasi hanya setelah inspeksi visual langsung pada halaman yang sengaja diubah
+  - [ ] **MW-QA-006.3** Dokumentasikan cakupan browser pada dokumentasi QA terkait
+  - [ ] **MW-QA-006.4** Verifikasi: `pnpm test:e2e:visual:matrix` lulus
 
 ---
 
 ## 23 — Developer Experience & Tooling
 
-- [ ] **MW-DX-001** Standardize Node `22.x` LTS toolchain parity across local dev (`.nvmrc` / `.node-version`), CI (`.github/workflows/ci.yml`), and `Dockerfile` (closing the open `v24.22.1` vs `22.x` drift noted in `todo-foundation.md`).
-  - **Priority:** P2 · **Layer:** Infrastructure · **Dependencies:** None
-  - **Location:** `.nvmrc`, `package.json`, `Dockerfile`
-  - **Acceptance Criteria:** `.nvmrc` pins `22` (matching `engines.node: "22.x"`); local verification confirms builds, native `better-sqlite3` addons, and tests behave identically under Node 22 and CI runners.
-  - **Verification:** `pnpm build && pnpm test:unit:built && pnpm test:package-manager`.
+| ID          | Prioritas | Layer          | Dependensi                     | Lokasi Target                                  |
+| :---------- | :-------- | :------------- | :----------------------------- | :--------------------------------------------- |
+| `MW-DX-001` | P2        | Infrastructure | —                              | `.nvmrc`, `package.json`, `Dockerfile`         |
+| `MW-DX-002` | P3        | Infrastructure | `MW-ADDON-009`                 | `scripts/`, `package.json`                     |
+| `MW-DX-003` | P3        | Infrastructure | `MW-SCHEMA-006`, `MW-VIEW-001` | `apps/api/src/commands/`, `package.json`       |
+| `MW-DX-004` | P3        | Infrastructure | `MW-PKG-001`                   | `turbo.json`, `scripts/ci/build-workspace.mjs` |
 
-- [ ] **MW-DX-002** Add a unified addon developer CLI command (`pnpm addon:create` / upgraded generator) producing compliant `packages/orm-<name>` packages with models, extensions, views, menus, actions, record rules, and conformance tests.
-  - **Priority:** P3 · **Layer:** Infrastructure · **Dependencies:** `MW-ADDON-009`
-  - **Location:** `scripts/`, `package.json`
-  - **Acceptance Criteria:** Running `pnpm addon:create -- --name example` creates a workspace package that builds and passes `pnpm test:addon-conformance` immediately.
-  - **Verification:** CLI dry-run + test in `scripts/`.
+- [ ] **MW-DX-001** Seragamkan runtime Node `22.x` LTS antar lokal, CI, dan Docker (menutup temuan drift lokal `v24.22.1` vs `engines.node: "22.x"` di `todo-foundation.md`)
+  - [ ] **MW-DX-001.1** Tambahkan `.nvmrc` (`22`) dan `.node-version` yang selaras dengan `engines.node: "22.x"` serta workflow CI
+  - [ ] **MW-DX-001.2** Tambahkan peringatan/cek versi Node yang ramah di skrip dev lokal agar ketidaksesuaian native module `better-sqlite3` segera terlihat
+  - [ ] **MW-DX-001.3** Validasi seluruh build dan test berjalan bersih di bawah Node `22.x`
+  - [ ] **MW-DX-001.4** Verifikasi: `pnpm build && pnpm test:unit:built && pnpm test:package-manager` lulus
 
-- [ ] **MW-DX-003** Add a runtime schema & metadata inspector CLI (`pnpm orm:inspect` / `pnpm db:migrate -- --dry-run`) showing registered addons, model fields, inherited extensions, resolved views, and pending DB schema diffs.
-  - **Priority:** P3 · **Layer:** Infrastructure · **Dependencies:** `MW-SCHEMA-006`, `MW-VIEW-001`
-  - **Location:** `apps/api/src/commands/`, `package.json`
-  - **Acceptance Criteria:** Developers can inspect effective merged models, views, actions, and security rules in JSON or table output without starting an HTTP listener.
-  - **Verification:** Unit test for CLI output format + `pnpm --filter @moonwitness/api build`.
+- [ ] **MW-DX-002** Sediakan CLI developer terpadu (`pnpm addon:create`) untuk membuat package addon produksi siap-pakai dalam hitungan detik
+  - [ ] **MW-DX-002.1** Bungkus generator scaffold untuk menghasilkan `packages/orm-<nama>` lengkap dengan model, view, menu, action, rule akses, dan conformance test
+  - [ ] **MW-DX-002.2** Integrasikan otomatis atau tampilkan langkah tepat registrasi ke workspace build & docs reference
+  - [ ] **MW-DX-002.3** Tambahkan unit test CLI generator & validasi output
+  - [ ] **MW-DX-002.4** Verifikasi: `pnpm test:addon-conformance` lulus
 
-- [ ] **MW-DX-004** Optimize `turbo.json` task pipeline inputs/outputs so incremental `pnpm build`, `typecheck`, and package-scoped test runs cache cleanly without stale `.d.ts` artifacts.
-  - **Priority:** P3 · **Layer:** Infrastructure · **Dependencies:** `MW-PKG-001`
-  - **Location:** `turbo.json`, `scripts/ci/build-workspace.mjs`
-  - **Acceptance Criteria:** Workspace incremental rebuilds respect topological dependencies (`@moonwitness/types` -> `@moonwitness/orm` -> `@moonwitness/orm-*` -> `apps/*`) with deterministic outputs.
-  - **Verification:** `pnpm build && pnpm typecheck`.
+- [ ] **MW-DX-003** Sediakan CLI inspeksi runtime ORM & metadata (`pnpm orm:inspect`) yang menampilkan addon terpasang, model, field ekstensi, view tergabung, action, dan diff skema DB
+  - [ ] **MW-DX-003.1** Buat command `apps/api/src/commands/orm-inspect.ts` mendukung flag `--model`, `--addon`, dan `--json` tanpa menjalankan server HTTP
+  - [ ] **MW-DX-003.2** Daftarkan script `orm:inspect` di `package.json` root dan `apps/api/package.json`
+  - [ ] **MW-DX-003.3** Tambahkan test output JSON inspeksi untuk memastikan bebas secret/password
+  - [ ] **MW-DX-003.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
+
+- [ ] **MW-DX-004** Optimalkan `turbo.json` dan `scripts/ci/build-workspace.mjs` agar incremental build & caching monorepo deterministik dan cepat
+  - [ ] **MW-DX-004.1** Audit `inputs` dan `outputs` task `build`, `typecheck`, dan `test` di `turbo.json` agar perubahan di `@moonwitness/types` memicu rebuild seluruh downstream tepat sasaran
+  - [ ] **MW-DX-004.2** Pastikan `pnpm verify` dan `pnpm build` tidak meninggalkan cache kotor atau `.d.ts` stale
+  - [ ] **MW-DX-004.3** Uji skrip diagnostik build (`test:e2e:diagnostics`)
+  - [ ] **MW-DX-004.4** Verifikasi: `pnpm build && pnpm typecheck && pnpm test:e2e:diagnostics` lulus
 
 ---
 
 ## 24 — Documentation
 
-- [ ] **MW-DOC-001** Extend deterministic reference generators (`scripts/docs/generate-reference.mjs` and `scripts/architecture/generate-diagrams.mjs`) to document extended model fields, inheritance edges, multi-views (`kanban`/`calendar`/`graph`/`pivot`), actions, menus, and skin tokens.
-  - **Priority:** P2 · **Layer:** Infrastructure · **Dependencies:** `MW-ADDON-001`, `MW-VIEW-001`, `MW-ACT-001`
-  - **Location:** `scripts/docs/generate-reference.mjs`, `scripts/architecture/generate-diagrams.mjs`, `docs/`
-  - **Acceptance Criteria:** Two consecutive runs of `pnpm docs:generate` and `pnpm architecture:generate` produce byte-identical output covering all 73+ models and extended contracts with zero secrets.
-  - **Verification:** `pnpm docs:generate && pnpm docs:check && pnpm architecture:check`.
+| ID           | Prioritas | Layer          | Dependensi                                  | Lokasi Target                                                                       |
+| :----------- | :-------- | :------------- | :------------------------------------------ | :---------------------------------------------------------------------------------- |
+| `MW-DOC-001` | P2        | Infrastructure | `MW-ADDON-001`, `MW-VIEW-001`, `MW-ACT-001` | `scripts/docs/generate-reference.mjs`, `scripts/architecture/generate-diagrams.mjs` |
+| `MW-DOC-002` | P2        | Infrastructure | `MW-DOC-001`, `MW-SKIN-002`                 | `docs/addons/`, `docs/architecture/`, `packages/ui/README.md`                       |
+| `MW-DOC-003` | P3        | Infrastructure | `MW-ORM-003`, `MW-VIEW-001`, `MW-ACT-001`   | `packages/orm/examples/`, `packages/orm/tests/addon.test.ts`                        |
+| `MW-DOC-004` | P3        | Infrastructure | `MW-DOC-002`, `MW-CICD-002`                 | `.github/workflows/pages.yml`, `apps/docs/`                                         |
 
-- [ ] **MW-DOC-002** Update Addon Developer Guide, ORM Schema Guide, Model–View Guide, and Security Architecture docs in `docs/` (including explaining `apps/board` as canonical web app and Skin Engine usage in `packages/ui/README.md`).
-  - **Priority:** P2 · **Layer:** Infrastructure · **Dependencies:** `MW-DOC-001`, `MW-SKIN-002`
-  - **Location:** `docs/addons/`, `docs/architecture/`, `packages/ui/README.md`, `packages/ui/TOKENS.md`
-  - **Acceptance Criteria:** Documentation matches actual implemented APIs, field kinds, inheritance hooks, and CLI commands; zero broken links or anchors.
-  - **Verification:** `pnpm docs:links && pnpm docs:examples:check && pnpm docs:build`.
+- [ ] **MW-DOC-001** Perbarui generator referensi & diagram arsitektur (`pnpm docs:generate`, `pnpm architecture:generate`) agar mencakup field ekstensi, view baru, action, menu hierarkis, dan skin token
+  - [ ] **MW-DOC-001.1** Perbarui extractor model, route, env, dan diagram relasi untuk menyertakan `extendModel`, `Kanban`/`Calendar`/`Graph`/`Pivot`, dan endpoint baru
+  - [ ] **MW-DOC-001.2** Pastikan 2 kali eksekusi berturut-turut menghasilkan output byte-identik tanpa memuat `.env` rahasia atau DB produksi
+  - [ ] **MW-DOC-001.3** Sinkronkan `README.md` otomatis di antara marker generator (`readme:check`)
+  - [ ] **MW-DOC-001.4** Verifikasi: `pnpm docs:generate && pnpm docs:check && pnpm architecture:check` lulus
 
-- [ ] **MW-DOC-003** Complete executable documentation example tests (`packages/orm/examples/`) covering `extendModel`, `extendView`, `defineAction`, computed fields, and `uninstallAddon`.
-  - **Priority:** P3 · **Layer:** Infrastructure · **Dependencies:** `MW-ORM-003`, `MW-VIEW-001`, `MW-ACT-001`
-  - **Location:** `packages/orm/examples/`, `packages/orm/tests/addon.test.ts`
-  - **Acceptance Criteria:** All documented code snippets typecheck (`tsc --noEmit`) and execute cleanly against SQLite in CI.
-  - **Verification:** `pnpm docs:examples:check`.
+- [ ] **MW-DOC-002** Perbarui panduan Addon Developer, ORM Schema Evolution, Model–View Engine, Security Model, serta UI/Skin Bible (`packages/ui/README.md`, `TOKENS.md`)
+  - [ ] **MW-DOC-002.1** Dokumentasikan secara jelas bahwa `apps/board` adalah frontend Next.js kanonis (peran `apps/web`) dan ORM mengelola evolusi skema tanpa file migrasi SQL
+  - [ ] **MW-DOC-002.2** Dokumentasikan cara membuat addon lengkap (`defineModel`, `extendModel`, `defineView`, `extendView`, `defineAction`, `recordRules`, dan `SkinMetadata`)
+  - [ ] **MW-DOC-002.3** Validasi seluruh tautan dan anchor Markdown di seluruh repository
+  - [ ] **MW-DOC-002.4** Verifikasi: `pnpm docs:links && pnpm docs:build` lulus
 
-- [ ] **MW-DOC-004** Complete GitHub Pages deployment & versioned docs retention verification (`ROADMAP.md` `M6.07`–`M6.11`, `M10.09`) once changes promote to `main`.
-  - **Priority:** P3 · **Layer:** Infrastructure · **Dependencies:** `MW-DOC-002`, `MW-CICD-002`
-  - **Location:** `.github/workflows/pages.yml`, `apps/docs/`
-  - **Acceptance Criteria:** Production docs portal deploys safely from exact `main` SHA via Actions artifact without secret leaks or broken base-path links.
-  - **Verification:** `pnpm test:docs-portal && pnpm test:docs-publication && pnpm docs:publication:check`.
+- [ ] **MW-DOC-003** Perbarui dan uji contoh kode executable (`packages/orm/examples/`) untuk `extendModel`, `extendView`, `defineAction`, computed fields, dan `uninstallAddon`
+  - [ ] **MW-DOC-003.1** Tambahkan contoh modular kecil yang mengilustrasikan pewarisan model & view antar 2 addon
+  - [ ] **MW-DOC-003.2** Pastikan contoh lulus `tsc --noEmit` ketat dan terpasang idempoten dalam pengujian Vitest SQLite
+  - [ ] **MW-DOC-003.3** Pastikan 0 explicit `any` pada seluruh contoh dokumentasi
+  - [ ] **MW-DOC-003.4** Verifikasi: `pnpm docs:examples:check` lulus
+
+- [ ] **MW-DOC-004** Selesaikan validasi publikasi GitHub Pages berversi & pemindaian keamanan output docs (`M6.07`–`M6.11`, `M10.09`) saat promosi ke `main`
+  - [ ] **MW-DOC-004.1** Jalankan `pnpm docs:publication:check` terhadap hasil build `apps/docs/dist` untuk mendeteksi kebocoran token/PII/env
+  - [ ] **MW-DOC-004.2** Verifikasi navigasi portal docs (`/roadmap`, katalog UI, base path Pages, halaman 404)
+  - [ ] **MW-DOC-004.3** Catat SHA sumber dan run URL deployment Pages di `main` setelah promosi
+  - [ ] **MW-DOC-004.4** Verifikasi: `pnpm test:docs-portal && pnpm test:docs-publication && pnpm docs:publication:check` lulus
 
 ---
 
 ## 25 — CI/CD & Production Readiness
 
-- [ ] **MW-CICD-001** Verify full local `pnpm verify` + `pnpm test:integration` (PostgreSQL) + `pnpm test:e2e` (Playwright + PostgreSQL) + `pnpm test:ui-catalog` pass with zero errors or unapproved skips after platform changes.
-  - **Priority:** P0 · **Layer:** Infrastructure · **Dependencies:** `MW-QA-001`, `MW-QA-003`, `MW-QA-004`
-  - **Location:** `.github/workflows/ci.yml`, `package.json`
-  - **Acceptance Criteria:** Every local and CI technical lane (`quality-and-build`, `unit-tests`, `knowledge-gate`, `postgres-integration`, Board E2E, UI catalog) passes on exact candidate commit SHA.
-  - **Verification:** `pnpm verify && pnpm test:integration && pnpm test:e2e && pnpm test:ui-catalog`.
+| ID            | Prioritas | Layer          | Dependensi                                    | Lokasi Target                                                         |
+| :------------ | :-------- | :------------- | :-------------------------------------------- | :-------------------------------------------------------------------- |
+| `MW-CICD-001` | P0        | Infrastructure | `MW-QA-001`, `MW-QA-003`, `MW-QA-004`         | `.github/workflows/ci.yml`, `package.json`                            |
+| `MW-CICD-002` | P1        | Infrastructure | `MW-CICD-001`, `MW-HARD-001`                  | `.github/workflows/`, `ROADMAP.md`                                    |
+| `MW-CICD-003` | P0        | Infrastructure | `MW-CORE-002`, `MW-SCHEMA-006`, `MW-HARD-002` | `Dockerfile`, `docker-compose.*.yml`                                  |
+| `MW-CICD-004` | P2        | Infrastructure | `MW-CICD-002`, `MW-CICD-003`, `MW-PKG-004`    | `.github/workflows/release*.yml`, `scripts/release-*.mjs`             |
+| `MW-CICD-005` | P1        | Infrastructure | `MW-CICD-001`, `MW-HARD-004`, `MW-JOB-004`    | `scripts/knowledge/run-k-gate.mjs`, `docs/roadmap/evidence/K9-007.md` |
 
-- [ ] **MW-CICD-002** Unblock and verify `dev -> main` PR promotion (`M1.08`), `sync-main-to-dev`, and hosted CI aggregate gate (`ci-gate`) with required CODEOWNER review.
-  - **Priority:** P1 · **Layer:** Infrastructure · **Dependencies:** `MW-CICD-001`, `MW-HARD-001`
-  - **Location:** `.github/workflows/`, `ROADMAP.md`
-  - **Acceptance Criteria:** Promotion PR merges cleanly with exact-SHA green checks; `main -> dev` sync stays consistent with zero force pushes or extra branches.
-  - **Verification:** `pnpm test:promotion-policy && pnpm test:expected-ref && pnpm test:ci-gate`.
+- [ ] **MW-CICD-001** Jalankan dan hijaukan seluruh suite lokal & CI teknis penuh (`pnpm verify`, `pnpm test:integration`, `pnpm test:e2e`, `pnpm test:ui-catalog`) setelah transformasi selesai
+  - [ ] **MW-CICD-001.1** Pastikan seluruh job di `.github/workflows/ci.yml` (`quality-and-build`, `unit-tests`, `knowledge-gate`, `postgres-integration`) lulus pada exact SHA commit terakhir
+  - [ ] **MW-CICD-001.2** Pastikan 0 test skip tersembunyi pada pengujian wajib PostgreSQL dan E2E kritis
+  - [ ] **MW-CICD-001.3** Verifikasi seluruh pemeriksaan boundary (`api:addon:check`, `board:ui:check`, `audit:workspace`, `evolution:check`) lulus
+  - [ ] **MW-CICD-001.4** Verifikasi: `pnpm verify && pnpm test:integration && pnpm test:e2e && pnpm test:ui-catalog` lulus
 
-- [ ] **MW-CICD-003** Validate production Docker image builds (`api`, `board`), Compose interpolation (`docker-compose.production.yml`, `docker-compose.prd.yml`), pre-deploy `db:migrate:built`, and `/readyz` checks across API and worker containers (`jobs-worker`, `jobs-scheduler`, `outbox-worker`).
-  - **Priority:** P0 · **Layer:** Infrastructure · **Dependencies:** `MW-CORE-002`, `MW-SCHEMA-006`, `MW-HARD-002`
-  - **Location:** `Dockerfile`, `docker-compose.production.yml`, `docker-compose.prd.yml`, `docker-compose.smoke.yml`
-  - **Acceptance Criteria:** Built production containers boot cleanly with `SKIP_BOOT_MIGRATIONS=true` after `db:migrate:built`, pass `/readyz`, serve Board -> API proxy traffic, and clean up gracefully.
-  - **Verification:** `pnpm test:e2e:diagnostics` + Linux container smoke check (`docker compose -f docker-compose.smoke.yml up` / CI smoke).
+- [ ] **MW-CICD-002** Selesaikan alur promosi PR `dev -> main` (`M1.08`), `sync-main-to-dev`, dan `ci-gate` termasuk fresh `CODEOWNER` approval pada perubahan sensitif
+  - [ ] **MW-CICD-002.1** Verifikasi aturan proteksi 2 branch (`main`/`dev`) tetap terjaga tanpa branch fitur atau force-push
+  - [ ] **MW-CICD-002.2** Pastikan skrip promotion risk classifier dan workflow trust check lulus terhadap `.github/workflows/*`
+  - [ ] **MW-CICD-002.3** Catat bukti commit SHA promosi & merge PR `dev -> main`
+  - [ ] **MW-CICD-002.4** Verifikasi: `pnpm test:promotion-policy && pnpm test:expected-ref && pnpm test:ci-gate && pnpm test:workflow-trust` lulus
 
-- [ ] **MW-CICD-004** Complete hosted release dry-run/prepare/attestation verification (`M7.05`–`M7.16`, `M10.06`–`M10.07`, `K9-006`) for the next monorepo release candidate/stable milestone.
-  - **Priority:** P2 · **Layer:** Infrastructure · **Dependencies:** `MW-CICD-002`, `MW-CICD-003`, `MW-PKG-004`
-  - **Location:** `.github/workflows/release*.yml`, `scripts/release-*.mjs`
-  - **Acceptance Criteria:** `release:check`, `release:dry-run`, `release:verify-attestations`, and hosted tag-triggered release artifacts/SBOM/GHCR provenance pass without clean-tree mismatches.
-  - **Verification:** `pnpm release:check && pnpm test:release-dry-run && pnpm test:release-workflow && pnpm test:release-verify-attestations`.
+- [ ] **MW-CICD-003** Verifikasi build image Docker produksi (`api`, `board`), konfigurasi Compose, pre-deploy `db:migrate:built`, dan `/readyz` seluruh container API & worker
+  - [ ] **MW-CICD-003.1** Uji boot kontainer produksi dengan menjalankan `db:migrate:built` terlebih dahulu lalu boot API & worker dengan `SKIP_BOOT_MIGRATIONS=true`
+  - [ ] **MW-CICD-003.2** Verifikasi Nginx/Board same-origin proxy meneruskan `/api`, `/auth`, `/jsonrpc`, `/health`, dan `/readyz` dengan benar
+  - [ ] **MW-CICD-003.3** Pastikan container smoke test dan healthcheck port `3011` (`jobs-worker`), `3012` (`jobs-scheduler`), `3013` (`outbox-worker`) sehat
+  - [ ] **MW-CICD-003.4** Verifikasi: `pnpm test:e2e:diagnostics` + smoke container Compose lulus
 
-- [ ] **MW-CICD-005** Complete `K9-001`–`K9-007` production go/no-go readiness checklist (exact-SHA hosted PostgreSQL `knowledge-gate` with `K_GATE_REQUIRE_ALL_TESTS=1`, offline egress-denial check, safeguarding/policy sign-offs).
-  - **Priority:** P1 · **Layer:** Infrastructure · **Dependencies:** `MW-CICD-001`, `MW-HARD-004`, `MW-JOB-004`
-  - **Location:** `scripts/knowledge/run-k-gate.mjs`, `docs/roadmap/evidence/K9-007.md`
-  - **Acceptance Criteria:** Automated `K9-001` gate, egress-denial suite, and restore drills pass cleanly; governance owner sign-offs are recorded before enabling any public publication endpoints.
-  - **Verification:** `node scripts/knowledge/run-k-gate.mjs --json` (with `K_GATE_REQUIRE_ALL_TESTS=1` against PostgreSQL).
+- [ ] **MW-CICD-004** Selesaikan verifikasi release otomatis (`M7.05`–`M7.16`, `M10.06`–`M10.07`, `K9-006`): `release:check`, `release:dry-run`, SBOM, provenance GHCR, dan verifikasi atestasi
+  - [ ] **MW-CICD-004.1** Jalankan `release:dry-run` dari clean worktree dan pastikan seluruh manifest versi package selaras (`MW-PKG-004`)
+  - [ ] **MW-CICD-004.2** Verifikasi aset rilis, checksum, dan tag semver terlindungi pasca-promosi `main`
+  - [ ] **MW-CICD-004.3** Rekam bukti run rilis hosted dan hasil `release:verify-attestations`
+  - [ ] **MW-CICD-004.4** Verifikasi: `pnpm release:check && pnpm test:release-dry-run && pnpm test:release-workflow && pnpm test:release-verify-attestations` lulus
+
+- [ ] **MW-CICD-005** Selesaikan evaluasi gate produksi knowledge (`K9-001`–`K9-007`) termasuk uji `K_GATE_REQUIRE_ALL_TESTS=1` di PostgreSQL dan sertifikasi offline egress-denial
+  - [ ] **MW-CICD-005.1** Jalankan `scripts/knowledge/run-k-gate.mjs` terhadap PostgreSQL aktif dengan semua suite knowledge wajib lulus
+  - [ ] **MW-CICD-005.2** Verifikasi nol koneksi outbound (`fetch`/`http`/`net`/`dns`) selama operasi offline `knowledge`, `corpus`, `research`, dan `local-ai`
+  - [ ] **MW-CICD-005.3** Pastikan syarat go/no-go pada `docs/roadmap/evidence/K9-007.md` diperbarui sebelum mengaktifkan publikasi publik
+  - [ ] **MW-CICD-005.4** Verifikasi: `node scripts/knowledge/run-k-gate.mjs --json` (dengan `K_GATE_REQUIRE_ALL_TESTS=1`) lulus
 
 ---
 
 ## 26 — End-to-End Platform Integration
 
-> **Mandatory Cross-Layer Acceptance Gate:** Proves the entire MoonWitness platform works seamlessly from addon package discovery through PostgreSQL persistence to dynamic Next.js browser UI. Execute using a representative test addon (e.g., `orm-request` or a dedicated conformance fixture addon + upstream extension) against live Fastify API + PostgreSQL + Chromium.
+> **Gerbang Penerimaan Lintas-Lapis Wajib:** Membuktikan seluruh siklus hidup addon berjalan utuh dari discovery package hingga UI browser dinamis di atas PostgreSQL sungguhan.
 
-- [ ] **MW-E2E-001** **Addon Discovery:** Workspace addon is automatically discovered from `packages/*` by the Core Runtime without hardcoding route/model imports inside `apps/api/src/app.ts`.
-  - **Priority:** P0 · **Layer:** Integration · **Dependencies:** `MW-ADDON-002`, `MW-CORE-002`
-  - **Location:** `apps/api/src/addons/registry.ts`, `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** Addon registers via canonical discovery entry and passes `pnpm api:addon:check`.
-  - **Verification:** `pnpm api:addon:check && pnpm test:addon-conformance`.
+| ID           | Prioritas | Layer       | Dependensi                                                                    | Lokasi Target                                                                                 |
+| :----------- | :-------- | :---------- | :---------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| `MW-E2E-001` | P0        | Integration | `MW-ADDON-002`, `MW-CORE-002`                                                 | `apps/api/src/addons/registry.ts`, `packages/orm/src/addon.ts`                                |
+| `MW-E2E-002` | P0        | Integration | `MW-ADDON-001`, `MW-E2E-001`                                                  | `packages/orm/src/addon.ts`                                                                   |
+| `MW-E2E-003` | P0        | Integration | `MW-E2E-002`                                                                  | `packages/orm/src/addon.ts`                                                                   |
+| `MW-E2E-004` | P0        | Integration | `MW-CORE-001`, `MW-ORM-003`, `MW-E2E-003`                                     | `packages/orm/src/registry.ts`, `packages/orm/src/model-definition.ts`                        |
+| `MW-E2E-005` | P0        | Integration | `MW-SCHEMA-003`, `MW-SCHEMA-004`, `MW-E2E-004`                                | `packages/orm/src/addon.ts`, `apps/api/src/commands/db-migrate.ts`                            |
+| `MW-E2E-006` | P0        | Integration | `MW-SEC-001`, `MW-SEC-002`, `MW-SEC-003`, `MW-E2E-005`                        | `apps/api/src/auth/`, `packages/orm-base/`                                                    |
+| `MW-E2E-007` | P1        | Integration | `MW-VIEW-001`, `MW-VIEW-002`, `MW-E2E-004`                                    | `packages/orm/src/view.ts`                                                                    |
+| `MW-E2E-008` | P1        | Integration | `MW-ACT-001`, `MW-ACT-002`, `MW-E2E-006`                                      | `packages/orm/src/`, `apps/api/src/routes/`                                                   |
+| `MW-E2E-009` | P1        | Integration | `MW-ACT-004`, `MW-ACT-005`, `MW-E2E-008`                                      | `packages/orm/src/addon.ts`, `apps/api/src/routes/`                                           |
+| `MW-E2E-010` | P1        | Integration | `MW-ACT-007`, `MW-VIEW-010`, `MW-E2E-009`                                     | `apps/board/src/components/layout/app-shell.tsx`, `apps/board/src/board-pages/model-page.tsx` |
+| `MW-E2E-011` | P1        | Integration | `MW-WEB-006`, `MW-SKIN-003`, `MW-E2E-010`                                     | `apps/board/src/components/views/`                                                            |
+| `MW-E2E-012` | P0        | Integration | `MW-WEB-004`, `MW-API-002`, `MW-E2E-011`                                      | `apps/board/e2e/`, `apps/api/tests/`                                                          |
+| `MW-E2E-013` | P1        | Integration | `MW-DOM-006`, `MW-WIDGET-004`, `MW-WIDGET-005`, `MW-WIDGET-006`, `MW-E2E-012` | `apps/board/e2e/`, `apps/api/tests/postgres.integration.test.ts`                              |
+| `MW-E2E-014` | P0        | Integration | `MW-SEC-005`, `MW-E2E-012`                                                    | `apps/board/e2e/`, `apps/api/tests/`                                                          |
+| `MW-E2E-015` | P0        | Integration | `MW-SCHEMA-008`, `MW-E2E-005`                                                 | `apps/api/tests/postgres.integration.test.ts`, `packages/orm/tests/addon.test.ts`             |
+| `MW-E2E-016` | P1        | Integration | `MW-ADDON-003`, `MW-ADDON-004`, `MW-E2E-015`                                  | `packages/orm/tests/addon.test.ts`, `apps/api/tests/`                                         |
 
-- [ ] **MW-E2E-002** **Manifest Validation:** Addon manifest (`version`, `depends`, `models`, `extensions`, `views`, `actions`, `menus`, `security`, `data`) is validated fail-closed prior to DB mutation.
-  - **Priority:** P0 · **Layer:** Integration · **Dependencies:** `MW-ADDON-001`, `MW-E2E-001`
-  - **Location:** `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** Malformed manifests or invalid references abort cleanly before acquiring transaction locks.
-  - **Verification:** `pnpm test:addon-conformance`.
+- [ ] **MW-E2E-001** **Penemuan Addon:** Addon workspace ditemukan otomatis oleh Core Runtime dari `packages/*` tanpa import manual model/route di `apps/api/src/app.ts`
+  - [ ] **MW-E2E-001.1** Addon terdeteksi otomatis dari metadata package workspace oleh resolver boot
+  - [ ] **MW-E2E-001.2** `pnpm api:addon:check` lulus nol pelanggaran boundary
+  - [ ] **MW-E2E-001.3** Verifikasi: `pnpm api:addon:check && pnpm test:addon-conformance`
 
-- [ ] **MW-E2E-003** **Dependency Resolution:** Addon topological installer resolves multi-level dependencies (`request -> workflow -> notification -> jobs -> base`) and model FK dependencies deterministically regardless of input order.
-  - **Priority:** P0 · **Layer:** Integration · **Dependencies:** `MW-E2E-002`
-  - **Location:** `packages/orm/src/addon.ts`
-  - **Acceptance Criteria:** Reversed or shuffled addon lists install in identical topological order without missing-table errors.
-  - **Verification:** `pnpm test:addon-conformance`.
+- [ ] **MW-E2E-002** **Validasi Manifest:** Manifest addon (`version`, `depends`, `models`, `extensions`, `views`, `actions`, `menus`, `security`, `data`) divalidasi fail-closed sebelum mutasi DB
+  - [ ] **MW-E2E-002.1** Manifest valid lolos registrasi sedangkan manifest dengan referensi model/field/dependensi rusak ditolak sebelum membuka transaksi
+  - [ ] **MW-E2E-002.2** Nol duplikasi nama addon, model, atau ID seed
+  - [ ] **MW-E2E-002.3** Verifikasi: `pnpm test:addon-conformance`
 
-- [ ] **MW-E2E-004** **ORM Model & Extension Registration:** Addon models and `extendModel` upstream extensions register into `Registry`, merging `fields`, computed fields, constraints, and `jsonSchema` cleanly even when `SKIP_BOOT_MIGRATIONS=true`.
-  - **Priority:** P0 · **Layer:** Integration · **Dependencies:** `MW-CORE-001`, `MW-ORM-003`, `MW-E2E-003`
-  - **Location:** `packages/orm/src/registry.ts`, `packages/orm/src/model-definition.ts`
-  - **Acceptance Criteria:** Both API server and worker processes see identical merged `Registry` model schemas regardless of `SKIP_BOOT_MIGRATIONS`.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-E2E-003** **Resolusi Dependensi:** Installer mengurutkan rantai dependensi addon (`request -> workflow -> notification -> jobs -> base`) dan relasi FK secara deterministik
+  - [ ] **MW-E2E-003.1** Input manifest dengan urutan terbalik maupun acak terinstal pada urutan topologis yang identik
+  - [ ] **MW-E2E-003.2** Tidak ada kegagalan missing foreign table selama penciptaan tabel berantai
+  - [ ] **MW-E2E-003.3** Verifikasi: `pnpm test:addon-conformance`
 
-- [ ] **MW-E2E-005** **ORM Schema Synchronization:** `db:migrate` / `installAddons` creates tables, columns, enum `CHECK` constraints, indexes, unique keys, and foreign keys in PostgreSQL automatically (without external SQL migration scripts).
-  - **Priority:** P0 · **Layer:** Integration · **Dependencies:** `MW-SCHEMA-003`, `MW-SCHEMA-004`, `MW-E2E-004`
-  - **Location:** `packages/orm/src/addon.ts`, `apps/api/src/commands/db-migrate.ts`
-  - **Acceptance Criteria:** `pnpm db:migrate` synchronizes PostgreSQL schema idempotently and `pnpm db:migrate -- --dry-run` reports zero pending changes afterwards.
-  - **Verification:** `pnpm test:integration`.
+- [ ] **MW-E2E-004** **Registrasi Model & Ekstensi ORM:** Model baru dan ekstensi `extendModel` terdaftar lengkap ke `Registry` baik saat boot normal maupun `SKIP_BOOT_MIGRATIONS=true`
+  - [ ] **MW-E2E-004.1** Field ekstensi, constraint, dan `jsonSchema` tergabung konsisten di proses API dan worker
+  - [ ] **MW-E2E-004.2** `Model.knex(db)` aktif pada setiap model saat `SKIP_BOOT_MIGRATIONS=true`
+  - [ ] **MW-E2E-004.3** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test`
 
-- [ ] **MW-E2E-006** **Permission Registration:** Addon model ACLs, field-level group restrictions, action permissions, and record rules register atomically and persist seed grants in `base.model_access`.
-  - **Priority:** P0 · **Layer:** Integration · **Dependencies:** `MW-SEC-001`, `MW-SEC-002`, `MW-SEC-003`, `MW-E2E-005`
-  - **Location:** `apps/api/src/auth/`, `packages/orm-base/`
-  - **Acceptance Criteria:** Registered security rules enforce immediately on API boot with zero manual policy edits in `apps/api`.
-  - **Verification:** `pnpm --filter @moonwitness/api test && pnpm test:integration`.
+- [ ] **MW-E2E-005** **Sinkronisasi Skema ORM:** `pnpm db:migrate` / `installAddons` menyinkronkan tabel, kolom, tipe, enum `CHECK`, index, unique key, dan FK ke PostgreSQL tanpa skrip migrasi eksternal
+  - [ ] **MW-E2E-005.1** `pnpm db:migrate` membuat seluruh tabel/kolom baru dan `pnpm db:migrate -- --dry-run` pasca-migrasi melaporkan 0 diff tersisa
+  - [ ] **MW-E2E-005.2** Tidak ada penggunaan sistem migrasi SQL manual terpisah
+  - [ ] **MW-E2E-005.3** Verifikasi: `pnpm test:integration`
 
-- [ ] **MW-E2E-007** **View Registration & Inheritance:** Addon base views and `extendView` extensions merge and validate cleanly into `ResolvedViews` (`list`, `form`, `search`, `kanban`, `calendar`, `graph`, `pivot`).
-  - **Priority:** P1 · **Layer:** Integration · **Dependencies:** `MW-VIEW-001`, `MW-VIEW-002`, `MW-E2E-004`
-  - **Location:** `packages/orm/src/view.ts`
-  - **Acceptance Criteria:** Extended fields and sections appear in `/api/:model/views` at the exact declared positions.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test`.
+- [ ] **MW-E2E-006** **Registrasi Izin Akses:** ACL model, ACL field, izin action, dan record rule milik addon terdaftar atomik ke engine keamanan dan `base.model_access`
+  - [ ] **MW-E2E-006.1** Kebijakan akses langsung aktif tanpa edit kode hardcode di `apps/api/src/auth/`
+  - [ ] **MW-E2E-006.2** Seed grant `base.model_access` tercipta idempoten dan menjaga perubahan manual administrator
+  - [ ] **MW-E2E-006.3** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm test:integration`
 
-- [ ] **MW-E2E-008** **Action Registration:** Addon Window, Server, Client, and Record actions register into `ActionRegistry` and return authorized action metadata to clients.
-  - **Priority:** P1 · **Layer:** Integration · **Dependencies:** `MW-ACT-001`, `MW-ACT-002`, `MW-E2E-006`
-  - **Location:** `packages/orm/src/`, `apps/api/src/routes/`
-  - **Acceptance Criteria:** Actions execute transactionally, audit-log invocations, and return typed `ActionResult` payloads.
-  - **Verification:** `pnpm --filter @moonwitness/api test`.
+- [ ] **MW-E2E-007** **Registrasi & Pewarisan View:** View dasar dan ekstensi `extendView` tergabung, tervalidasi, dan tersedia dalam `ResolvedViews` (`list`, `form`, `search`, `kanban`, dll.)
+  - [ ] **MW-E2E-007.1** `/api/:model/views` mengembalikan kolom/tab/smartButton/kanban hasil penggabungan addon hulu + hilir
+  - [ ] **MW-E2E-007.2** Header `ETag` valid dan berubah saat generasi registry/role/bahasa berubah
+  - [ ] **MW-E2E-007.3** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test`
 
-- [ ] **MW-E2E-009** **Menu Registration:** Addon hierarchical menus appear in `/api/app/bootstrap` filtered by user access grants, addon active state, and `developmentOnly` mode.
-  - **Priority:** P1 · **Layer:** Integration · **Dependencies:** `MW-ACT-004`, `MW-ACT-005`, `MW-E2E-008`
-  - **Location:** `packages/orm/src/addon.ts`, `apps/api/src/routes/`
-  - **Acceptance Criteria:** Authorized users see addon menus in proper hierarchy and order; unauthorized users never see restricted entries.
-  - **Verification:** `pnpm --filter @moonwitness/api test`.
+- [ ] **MW-E2E-008** **Registrasi Action:** Window, Server, Client, dan Record action terdaftar di `ActionRegistry` dan dapat dieksekusi transaksional
+  - [ ] **MW-E2E-008.1** Eksekusi action melalui REST dan JSON-RPC berjalan transaksional, menghasilkan `base.audit_log`, dan mengembalikan `ActionResult`
+  - [ ] **MW-E2E-008.2** Action yang tidak diotorisasi ditolak (`403`)
+  - [ ] **MW-E2E-008.3** Verifikasi: `pnpm --filter @moonwitness/api test`
 
-- [ ] **MW-E2E-010** **Metadata Delivery to `apps/board`:** `apps/board` fetches `/api/app/bootstrap` and `/api/:model/views` via `@moonwitness/client` without hardcoding model schemas, menus, or field rules locally.
-  - **Priority:** P1 · **Layer:** Integration · **Dependencies:** `MW-ACT-007`, `MW-VIEW-010`, `MW-E2E-009`
-  - **Location:** `apps/board/src/components/layout/app-shell.tsx`, `apps/board/src/board-pages/model-page.tsx`
-  - **Acceptance Criteria:** Browser network trace confirms menus, view sections, widgets, smart buttons, and field rules originate dynamically from API metadata.
-  - **Verification:** `pnpm test:e2e`.
+- [ ] **MW-E2E-009** **Registrasi Menu:** Menu hierarkis addon tersaji pada `/api/app/bootstrap` tersaring sesuai izin, status aktif addon, dan `developmentOnly`
+  - [ ] **MW-E2E-009.1** Menu tampil terurut berdasarkan `parentId` dan `sequence`
+  - [ ] **MW-E2E-009.2** Menu tersembunyi bila user tidak punya izin baca model/action target
+  - [ ] **MW-E2E-009.3** Verifikasi: `pnpm --filter @moonwitness/api test`
 
-- [ ] **MW-E2E-011** **Dynamic Model Rendering:** `apps/board` renders the addon's List, Form (including StatusBar, Tabs, Smart Buttons), Kanban, and Search views dynamically using `@moonwitness/ui` primitives and active skin tokens.
-  - **Priority:** P1 · **Layer:** Integration · **Dependencies:** `MW-WEB-006`, `MW-SKIN-003`, `MW-E2E-010`
-  - **Location:** `apps/board/src/components/views/`
-  - **Acceptance Criteria:** Zero console errors, zero horizontal overflow (320px/1440px), and valid accessibility tree across rendered views.
-  - **Verification:** `pnpm test:e2e`.
+- [ ] **MW-E2E-010** **Pengiriman Metadata ke `apps/board`:** Frontend mengonsumsi `/api/app/bootstrap` dan `/api/:model/views` lewat `@moonwitness/client` tanpa menduplikasi definisi model
+  - [ ] **MW-E2E-010.1** Sidebar, command palette, dan route `/board/m/:model` dibangun dinamis dari payload API
+  - [ ] **MW-E2E-010.2** Tidak ada skema field atau relasi model yang di-hardcode di kode komponen generic Board
+  - [ ] **MW-E2E-010.3** Verifikasi: `pnpm test:e2e`
 
-- [ ] **MW-E2E-012** **Full CRUD Lifecycle:** Users can Create (with `default_get` + `onchange`), Read, Update (with `write_date` optimistic concurrency), Archive, Unarchive, Execute Actions, and Hard-Delete (when allowed) records via UI + REST + JSON-RPC.
-  - **Priority:** P0 · **Layer:** Integration · **Dependencies:** `MW-WEB-004`, `MW-API-002`, `MW-E2E-011`
-  - **Location:** `apps/board/e2e/`, `apps/api/tests/`
-  - **Acceptance Criteria:** Mutations persist to PostgreSQL, generate real `base.audit_log` + `base.outbox_event` rows, and update List/Form/SmartButton counts immediately.
-  - **Verification:** `pnpm test:e2e && pnpm test:integration`.
+- [ ] **MW-E2E-011** **Rendering Model Dinamis:** `apps/board` merender List, Form (StatusBar, Tabs, Smart Buttons), Kanban, dan Search view menggunakan `@moonwitness/ui` dan token skin aktif
+  - [ ] **MW-E2E-011.1** Nol console error, nol hydration mismatch, dan nol horizontal overflow pada viewport 320px dan 1440px
+  - [ ] **MW-E2E-011.2** Lulus audit Axe WCAG 2.1 AA pada light/dark dan skin aktif
+  - [ ] **MW-E2E-011.3** Verifikasi: `pnpm test:e2e`
 
-- [ ] **MW-E2E-013** **Search & Relational Fields:** Free-text search, Polish-notation domain filters, saved filters (`base.saved_filter`), dotted relational searches, `Many2one` dynamic domain filtering, `One2many` line edits, and `Many2many` tags work end-to-end.
-  - **Priority:** P1 · **Layer:** Integration · **Dependencies:** `MW-DOM-006`, `MW-WIDGET-004`, `MW-WIDGET-005`, `MW-WIDGET-006`, `MW-E2E-012`
-  - **Location:** `apps/board/e2e/`, `apps/api/tests/postgres.integration.test.ts`
-  - **Acceptance Criteria:** Parent field changes update child `Many2one` domain dynamically via `onchange` / domain context; saved filters persist per user/company across reloads.
-  - **Verification:** `pnpm test:e2e && pnpm test:integration`.
+- [ ] **MW-E2E-012** **Siklus CRUD Lengkap:** User dapat Create (`default_get` + `onchange`), Read, Update (`If-Match` `write_date`), Archive, Unarchive, jalankan Action, dan Delete dari UI + REST + JSON-RPC
+  - [ ] **MW-E2E-012.1** Seluruh mutasi tersimpan di PostgreSQL dan menghasilkan baris `base.audit_log` + `base.outbox_event` nyata
+  - [ ] **MW-E2E-012.2** Tab `409 Conflict` muncul bersih bila record diubah secara konkuren oleh sesi lain
+  - [ ] **MW-E2E-012.3** Verifikasi: `pnpm test:e2e && pnpm test:integration`
 
-- [ ] **MW-E2E-014** **Cross-Layer Access Rules:** Model ACLs, record rules, company isolation (`X-Company-Id`), field-level ACLs, and action permissions are enforced identically in Board UI, REST API, JSON-RPC, and Attachment endpoints.
-  - **Priority:** P0 · **Layer:** Integration · **Dependencies:** `MW-SEC-005`, `MW-E2E-012`
-  - **Location:** `apps/board/e2e/`, `apps/api/tests/`
-  - **Acceptance Criteria:** Restricted fields are hidden/unwritable, cross-company records return `404`/`403`, and disallowed actions fail cleanly even on forged direct API calls.
-  - **Verification:** `pnpm test:e2e && pnpm test:integration`.
+- [ ] **MW-E2E-013** **Pencarian & Field Relasional:** Search teks bebas, domain Polish notation, `base.saved_filter`, filter relasional bertitik, `Many2one` domain dinamis, `One2many` line, dan `Many2many` tag berfungsi utuh
+  - [ ] **MW-E2E-013.1** Mengubah parent field memperbarui pilihan `Many2one` anak via `onchange`/domain dinamis
+  - [ ] **MW-E2E-013.2** Saved filter tersimpan dan terisolasi per user/company lintas reload
+  - [ ] **MW-E2E-013.3** Verifikasi: `pnpm test:e2e && pnpm test:integration`
 
-- [ ] **MW-E2E-015** **Addon Upgrade & Data Preservation:** Upgrading an installed addon (adding fields, expanding an enum, updating views/menus, running an `upgrade` data hook) updates PostgreSQL schema safely while preserving 100% of existing user records and maintainer seed edits.
-  - **Priority:** P0 · **Layer:** Integration · **Dependencies:** `MW-SCHEMA-008`, `MW-E2E-005`
-  - **Location:** `apps/api/tests/postgres.integration.test.ts`, `packages/orm/tests/addon.test.ts`
-  - **Acceptance Criteria:** Existing rows retain all user-edited values, enum columns accept newly added values, and rollback on simulated failure leaves prior version & schema untouched.
-  - **Verification:** `pnpm test:integration`.
+- [ ] **MW-E2E-014** **Penegakan Aturan Akses:** Model ACL, record rule, isolasi `X-Company-Id`, field ACL, dan action permission ditegakkan konsisten di UI, REST, JSON-RPC, dan Attachment
+  - [ ] **MW-E2E-014.1** Field terbatas tidak terkirim dan ditolak saat dikirim paksa; record company lain ditolak (`403`/`404`)
+  - [ ] **MW-E2E-014.2** Tombol aksi terlarang tersembunyi di UI dan panggilan langsung API ditolak `403`
+  - [ ] **MW-E2E-014.3** Verifikasi: `pnpm test:e2e && pnpm test:integration`
 
-- [ ] **MW-E2E-016** **Safe Addon Disable & Uninstall:** Disabling or uninstalling an addon blocks uninstall when dependents exist (`409`), removes runtime views/menus/actions/routes cleanly for leaf addons, and preserves core platform stability on restart.
-  - **Priority:** P1 · **Layer:** Integration · **Dependencies:** `MW-ADDON-003`, `MW-ADDON-004`, `MW-E2E-015`
-  - **Location:** `packages/orm/tests/addon.test.ts`, `apps/api/tests/`
-  - **Acceptance Criteria:** Leaf addon uninstallation succeeds cleanly; reinstalling the addon later restores cleanly with zero stale orphan state.
-  - **Verification:** `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test && pnpm test:integration`.
+- [ ] **MW-E2E-015** **Upgrade Addon & Pelestarian Data:** Upgrade versi addon (penambahan kolom, pelebaran enum, update view/menu, serta `upgrade` hook) memperbarui skema PostgreSQL sambil menjaga 100% data user dan edit seed
+  - [ ] **MW-E2E-015.1** Record produksi/uji lama tetap utuh dan menerima nilai enum baru setelah upgrade
+  - [ ] **MW-E2E-015.2** Kegagalan di tengah upgrade menggulung balik seluruh transaksi skema dan data
+  - [ ] **MW-E2E-015.3** Verifikasi: `pnpm test:integration`
+
+- [ ] **MW-E2E-016** **Disable & Uninstall Addon Aman:** Menonaktifkan/meng-uninstall addon menolak uninstall bila masih punya dependen aktif (`409`), membersihkan runtime metadata addon leaf secara aman, dan stabil saat restart/reinstall
+  - [ ] **MW-E2E-016.1** Menu, view, action, dan rute addon leaf yang dinonaktifkan/di-uninstall hilang bersih dari runtime tanpa merusak addon inti
+  - [ ] **MW-E2E-016.2** Reinstall kembali memulihkan registrasi runtime tanpa duplikasi record `_orm_data` atau tabel rusak
+  - [ ] **MW-E2E-016.3** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test && pnpm test:integration`
 
 ---
 
 ## 27 — Final Audit & Cleanup
 
-- [ ] **MW-AUDIT-001** Verify zero leftover legacy shims (`apps/api/src/whatsapp/manifest.ts`), duplicate contracts (`packages/client/src/types.ts`, `domain.ts`), hardcoded view/model switch blocks, or temporary scaffolding remain.
-  - **Priority:** P1 · **Layer:** Shared · **Dependencies:** `MW-BACK-002`, `MW-PKG-002`, `MW-WIDGET-007`, `MW-ACT-007`
-  - **Location:** Repository-wide
-  - **Acceptance Criteria:** `pnpm audit:workspace`, `pnpm api:addon:check`, and `pnpm board:ui:check` pass with zero violations and zero runtime/local import cycles.
-  - **Verification:** `pnpm audit:workspace && pnpm api:addon:check && pnpm board:ui:check`.
+| ID             | Prioritas | Layer          | Dependensi                                                 | Lokasi Target                            |
+| :------------- | :-------- | :------------- | :--------------------------------------------------------- | :--------------------------------------- |
+| `MW-AUDIT-001` | P1        | Shared         | `MW-BACK-002`, `MW-PKG-002`, `MW-WIDGET-007`, `MW-ACT-007` | Seluruh repository                       |
+| `MW-AUDIT-002` | P1        | QA             | `MW-AUDIT-001`                                             | `apps/*`, `packages/*`                   |
+| `MW-AUDIT-003` | P2        | Infrastructure | `MW-DOC-001`, `MW-AUDIT-001`                               | `docs/`, `README.md`, `packages/assets/` |
+| `MW-AUDIT-004` | P2        | Infrastructure | `MW-E2E-016`, `MW-AUDIT-003`                               | `todo.md`, `ROADMAP.md`, `todo-*.md`     |
 
-- [ ] **MW-AUDIT-002** Audit all TypeScript/JavaScript sources for zero explicit `any`, zero `// TODO` placeholders, and zero mock data leaking into production paths.
-  - **Priority:** P1 · **Layer:** QA · **Dependencies:** `MW-AUDIT-001`
-  - **Location:** `apps/*`, `packages/*`
-  - **Acceptance Criteria:** `pnpm lint`, `pnpm format:check`, and `pnpm typecheck` succeed cleanly with zero warnings or errors.
-  - **Verification:** `pnpm lint && pnpm format:check && pnpm typecheck`.
+- [ ] **MW-AUDIT-001** Pastikan seluruh shim legacy (`apps/api/src/whatsapp/manifest.ts`), kontrak duplikat (`packages/client/src/types.ts`, evaluator `domain.ts`), dan switch-case model hardcoded bersih dari repository
+  - [ ] **MW-AUDIT-001.1** Periksa output `pnpm audit:workspace` memiliki nol runtime cycles, nol local file cycles, dan nol workspace cycles
+  - [ ] **MW-AUDIT-001.2** Pastikan `pnpm api:addon:check` dan `pnpm board:ui:check` lulus bersih
+  - [ ] **MW-AUDIT-001.3** Pastikan nol file sementara/scratch tertinggal di direktori kode sumber
+  - [ ] **MW-AUDIT-001.4** Verifikasi: `pnpm audit:workspace && pnpm api:addon:check && pnpm board:ui:check` lulus
 
-- [ ] **MW-AUDIT-003** Regenerate all derived reference documentation, architecture diagrams, and asset manifests (`pnpm docs:generate`, `pnpm architecture:generate`, `pnpm assets:validate`) and verify zero drift.
-  - **Priority:** P2 · **Layer:** Infrastructure · **Dependencies:** `MW-DOC-001`, `MW-AUDIT-001`
-  - **Location:** `docs/`, `README.md`, `packages/assets/`
-  - **Acceptance Criteria:** Generated references match live models, routes, env vars, and packages byte-for-byte.
-  - **Verification:** `pnpm docs:check && pnpm architecture:check && pnpm test:assets`.
+- [ ] **MW-AUDIT-002** Audit seluruh source TypeScript/JavaScript dari explicit `any`, komentar `// TODO`, fungsi placeholder, dan data mock pada jalur produksi
+  - [ ] **MW-AUDIT-002.1** Jalankan pemeriksaan `pnpm lint`, `pnpm format:check`, dan `pnpm typecheck` di seluruh workspace
+  - [ ] **MW-AUDIT-002.2** Pastikan nol explicit `any` atau pengecualian lint baru yang tidak berdasar
+  - [ ] **MW-AUDIT-002.3** Pastikan fixture uji terisolasi di direktori test/katalog berlabel jelas
+  - [ ] **MW-AUDIT-002.4** Verifikasi: `pnpm lint && pnpm format:check && pnpm typecheck` lulus
 
-- [ ] **MW-AUDIT-004** Reconcile completion checkboxes and evidence links across root `todo.md`, `ROADMAP.md`, `todo-foundation.md`, `todo-ui.md`, and `todo-wa.md` without introducing duplicate backlogs.
-  - **Priority:** P2 · **Layer:** Infrastructure · **Dependencies:** `MW-E2E-016`, `MW-AUDIT-003`
-  - **Location:** `todo.md`, `ROADMAP.md`, `todo-foundation.md`, `todo-ui.md`, `todo-wa.md`
-  - **Acceptance Criteria:** All checklists reflect actual verified evidence; `pnpm automation:check:roadmap` passes cleanly.
-  - **Verification:** `pnpm automation:check:roadmap && pnpm verify`.
+- [ ] **MW-AUDIT-003** Regenerasi dan validasi seluruh dokumen referensi turunan, diagram arsitektur, serta manifest aset (`pnpm docs:generate`, `pnpm architecture:generate`, `pnpm assets:validate`)
+  - [ ] **MW-AUDIT-003.1** Pastikan referensi API, model, relasi, dan env var cocok 100% dengan source code terkini
+  - [ ] **MW-AUDIT-003.2** Pastikan 114+ SVG aset lolos sanitasi dan check bounds
+  - [ ] **MW-AUDIT-003.3** Pastikan `pnpm docs:check` dan `pnpm architecture:check` tidak melaporkan file stale
+  - [ ] **MW-AUDIT-003.4** Verifikasi: `pnpm docs:check && pnpm architecture:check && pnpm test:assets` lulus
+
+- [ ] **MW-AUDIT-004** Rekonsiliasi status checkbox dan bukti eksekusi di `todo.md`, `ROADMAP.md`, `todo-foundation.md`, `todo-ui.md`, dan `todo-wa.md`
+  - [ ] **MW-AUDIT-004.1** Perbarui status item yang benar-benar telah terverifikasi pada checklist terkait tanpa membuat backlog tandingan
+  - [ ] **MW-AUDIT-004.2** Pastikan ringkasan hitungan `[x]` / `[ ]` pada Seksi 00 `todo.md` dan `ROADMAP.md` akurat
+  - [ ] **MW-AUDIT-004.3** Jalankan validator roadmap resmi
+  - [ ] **MW-AUDIT-004.4** Verifikasi: `pnpm automation:check:roadmap && pnpm verify` lulus
 
 ---
 
 ## 28 — Definition of Done
 
-A task in this checklist may be marked `[x]` ONLY when **all** of the following conditions hold:
+Suatu task di checklist ini **hanya boleh dicentang `[x]`** apabila seluruh syarat checkable di bawah terpenuhi dan diverifikasi:
 
-1. **Concrete Implementation:** Code or configuration changes are landed on disk cleanly with zero `// TODO`, zero explicit `any`, and zero duplicated logic across packages.
-2. **Boundary & Constitution Integrity:** `pnpm api:addon:check`, `pnpm board:ui:check`, `pnpm audit:workspace`, and `pnpm evolution:check` pass with zero regressions.
-3. **Quality Gates:** `pnpm lint`, `pnpm format:check`, and `pnpm typecheck` pass across all workspaces after the final edit.
-4. **Automated Verification Observed:** All relevant unit (`pnpm test:unit`), addon conformance (`pnpm test:addon-conformance`), UI/asset (`pnpm test:ui && pnpm test:assets && pnpm board:budget`), PostgreSQL integration (`pnpm test:integration`), and E2E browser (`pnpm test:e2e`) suites for the changed scope have been executed **after the last edit** and observed passing without skipped or relaxed assertions.
-5. **Documentation Sync:** `pnpm docs:check` and `pnpm architecture:check` pass if public models, routes, env vars, or packages changed.
+- [ ] **MW-DOD-001** Implementasi kode atau konfigurasi selesai nyata pada file target tanpa `// TODO`, fungsi stub, explicit `any`, atau logika duplikat
+- [ ] **MW-DOD-002** Pemeriksaan boundary & konstitusi lulus bersih (`pnpm api:addon:check`, `pnpm board:ui:check`, `pnpm audit:workspace`, `pnpm evolution:check`)
+- [ ] **MW-DOD-003** Pemeriksaan kualitas statis lintas monorepo lulus pasca-edit terakhir (`pnpm lint`, `pnpm format:check`, `pnpm typecheck`)
+- [ ] **MW-DOD-004** Seluruh pengujian relevan pada ruang lingkup berubah dijalankan pasca-edit terakhir dan lulus tanpa skip terselubung (`pnpm test:unit`, `pnpm test:addon-conformance`, `pnpm test:ui`, `pnpm test:integration`, `pnpm test:e2e`)
+- [ ] **MW-DOD-005** Referensi docs, diagram arsitektur, dan budget bundle (`pnpm docs:check`, `pnpm architecture:check`, `pnpm board:budget`) hijau saat ada perubahan model, rute, atau UI
 
 ---
 
 ## 29 — Remaining Technical Debt & Deferred Features
 
-### A. External Hardware, Live-Service & Hosting Gates (Cannot Be Closed by Offline Code Alone)
+### A. Ketergantungan Perangkat Keras, Layanan Eksternal & Hosting (Tertunda di Luar Kode Offline)
 
-- **Live GoWA WhatsApp Device Pairing (`todo-wa.md`):** `P0-01`–`P0-05`, `P0-08`, `P0-24`–`P0-25`, `P1-06`, `P1-28`, `P2-01` remain gated on physically scanning the Board QR code against live GoWA (`wa.moonwitness.biz.id` `v9.6.0`), verifying container restart session persistence, GoWA volume backup/restore, and live delivery/read webhooks + media transfers.
-- **Live Local AI Model Evaluation (`ROADMAP.md` `K7-006`):** Runtime outage & disabled-mode tests pass; full latency/accuracy/OS-level air-gap egress certification against a live local Ollama/OpenAI-compatible model endpoint awaits dedicated local GPU/hardware benchmark execution.
-- **GitHub Hosted Governance & Promotion (`ROADMAP.md` `M1.08`, `M6.07`–`M6.11`, `M7.05`–`M7.16`, `M10.07`, `M11.03`–`M11.15`, `K9-007`):** Require repository maintainer `CODEOWNER` approval on `dev -> main`, first live tagged release run on GitHub Actions/GHCR, trusted `main` GitHub Pages deployment, and safeguarding policy sign-offs.
+1. **Pairing Perangkat Nyata GoWA WhatsApp (`todo-wa.md`):** Item `P0-01`–`P0-05`, `P0-08`, `P0-24`–`P0-25`, `P1-06`, `P1-28`, dan `P2-01` menunggu pemindaian QR langsung oleh pengguna ke instance GoWA aktif (`wa.moonwitness.biz.id` `v9.6.0`), verifikasi persistensi sesi setelah restart container, backup volume kredensial GoWA, serta pengamatan receipt/media live.
+2. **Benchmark Model Local AI Nyata (`ROADMAP.md` `K7-006`):** Runtime outage & disabled-mode sudah lulus di API; sertifikasi latensi, memori, akurasi komparatif, dan egress-denial tingkat OS menunggu ketersediaan endpoint model lokal (Ollama/OpenAI-compat) pada mesin target.
+3. **Gate Governance & Rilis Hosted GitHub (`ROADMAP.md` `M1.08`, `M6.07`–`M6.11`, `M7.05`–`M7.16`, `M10.07`, `M11.03`–`M11.15`, `K9-007`):** Membutuhkan approval `CODEOWNER` untuk PR promosi `dev -> main`, eksekusi tag rilis GitHub/GHCR perdana, publikasi GitHub Pages terpercaya dari `main`, dan sign-off kebijakan safeguarding.
 
-### B. Intentionally Deferred / Optional Enterprise Capabilities (Out of Current Core Scope)
+### B. Kapabilitas Opsional / Enterprise yang Sengaja Ditunda (Non-Goal Saat Ini)
 
-- **Visual Drag-and-Drop Workflow/Form Builder UI:** Models and workflows remain code-first typed TS declarations inside workspace addons (`defineModel`, `defineView`, `WorkflowDefinition`), prioritizing type safety and deterministic CI conformance over runtime WYSIWYG DB schema editors.
-- **Multi-Database Dialects Beyond PostgreSQL & SQLite Test Harness:** Production targets PostgreSQL 16/17 strictly; SQLite (`better-sqlite3`) remains supported solely for fast offline unit/conformance/audit suites.
-- **Advanced WhatsApp v2+ Scope (`todo-wa.md` NEXT):** Multi-attachment albums, voice-note recording, automated CRM bots/broadcasts (`P4-01`–`P4-13`), live presence (`P4-15`), and Status/Story publishing (`P3-03`–`P3-16`) remain explicitly deferred until WhatsApp v1 live pairing closes.
-- **Hosted Staging/Production Cloud Deployment (`ADR-0001` / `ADR-0004`):** Self-hosted Docker Compose and GHCR container publication remain the delivery target; automated cloud provisioning/CD remains outside current scope unless explicitly amended in ADR 0001.
+1. **Visual Drag-and-Drop Schema/Form/Workflow Builder di UI:** Model dan workflow tetap dideklarasikan code-first dalam TypeScript terketik ketat di package addon (`defineModel`, `defineView`, `WorkflowDefinition`) demi keandalan CI dan type safety.
+2. **Dialek Database di Luar PostgreSQL & SQLite Test Harness:** Target produksi tunggal adalah PostgreSQL 16/17; SQLite (`better-sqlite3`) hanya untuk unit/conformance/audit lokal cepat.
+3. **Fitur WhatsApp Lanjutan v2+ (`todo-wa.md` NEXT):** Album multi-lampiran, voice note, CRM bot/broadcast (`P4-01`–`P4-13`), live presence (`P4-15`), dan publikasi Status/Story (`P3-03`–`P3-16`) ditunda sampai v1 live pairing diterima.
+4. **Provisioning & Auto-Deploy Cloud Staging/Produksi (`ADR-0001`, `ADR-0004`):** Scope rilis terbatas pada image GHCR, GitHub Release, Docker Compose self-hosted, dan docs GitHub Pages.

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { Knex } from 'knex';
-import { installAddons, Registry, type Addon } from '@moonwitness/orm';
+import { installAddons, registerAddons, type Addon } from '@moonwitness/orm';
 import { manifest as baseAddon, initializeSuperadminPassword } from '@moonwitness/orm-base';
 import { manifest as authAddon, createAuthService } from '@moonwitness/auth';
 import { jobsManifest } from '@moonwitness/jobs';
@@ -198,11 +198,8 @@ export async function installApiAddons(
     installOptions.skipBootMigrations ?? process.env.SKIP_BOOT_MIGRATIONS === 'true';
 
   if (skipBootMigrations) {
-    for (const addon of manifests) {
-      for (const model of addon.models) {
-        if (!Registry.has(model.modelName)) Registry.register(model);
-      }
-    }
+    // In-memory registration only: models, views, menus, security (no DDL/seed)
+    await registerAddons(db, manifests);
     return;
   }
 
@@ -211,6 +208,39 @@ export async function installApiAddons(
     await addon.postInstall?.(db);
   }
   await initializeSuperadminPassword(superadminPassword);
+}
+
+/** Extract canonical addon manifests from API_ADDONS for use in workers. */
+export function getApiAddonManifests(
+  addons: readonly ApiAddonModule[] = API_ADDONS
+): readonly Addon[] {
+  return addons
+    .map((addon) => addon.manifest)
+    .filter((manifest): manifest is Addon => manifest !== undefined);
+}
+
+/** Canonical bootstrap: register in-memory metadata, optionally run DDL/seed install. */
+export async function bootstrapApiAddons(
+  db: Knex,
+  superadminPassword: string | undefined,
+  addons: readonly ApiAddonModule[] = API_ADDONS,
+  options: InstallApiAddonsOptions = {}
+): Promise<void> {
+  const manifests = getApiAddonManifests(addons);
+  const skipBootMigrations =
+    options.skipBootMigrations ?? process.env.SKIP_BOOT_MIGRATIONS === 'true';
+
+  // Always register in-memory (models, views, menus, security)
+  await registerAddons(db, manifests);
+
+  if (!skipBootMigrations) {
+    // Run DDL/seed install
+    await installAddons(db, manifests, { skipInMemoryRegistration: true });
+    for (const addon of addons) {
+      await addon.postInstall?.(db);
+    }
+    await initializeSuperadminPassword(superadminPassword);
+  }
 }
 
 export async function registerApiAddonRoutes(

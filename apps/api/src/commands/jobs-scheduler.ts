@@ -1,5 +1,5 @@
 import { createDatabase } from '../database/knex.js';
-import { installAddons } from '@moonwitness/orm';
+import { installAddons, registerAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { jobsManifest, runSchedulerLoop } from '@moonwitness/jobs';
 import { readWorkerHealthPort, startWorkerHealthServer } from './worker-health.js';
@@ -20,14 +20,20 @@ const shutdown = createProcessShutdownController(() => {
 });
 
 try {
-  await installAddons(db, [
+  const skipBootMigrations = process.env.SKIP_BOOT_MIGRATIONS === 'true';
+  const addons = [
     baseManifest,
     jobsManifest,
     notificationAddon,
     workflowAddon,
     storageManifest,
     whatsappManifest,
-  ]);
+  ];
+  if (skipBootMigrations) {
+    await registerAddons(db, addons);
+  } else {
+    await installAddons(db, addons);
+  }
   await ensureWhatsAppAttachmentCron(db);
   const unregisterWhatsAppAttachmentJob = registerWhatsAppAttachmentJob(db);
   if (!shutdown.signal.aborted) {

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createDatabase } from '../database/knex.js';
 import { installAddons } from '@moonwitness/orm';
+import { registerAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { jobsManifest, runOutboxLoop } from '@moonwitness/jobs';
 import {
@@ -35,7 +36,8 @@ const shutdown = createProcessShutdownController(() => {
 });
 
 try {
-  await installAddons(db, [
+  const skipBootMigrations = process.env.SKIP_BOOT_MIGRATIONS === 'true';
+  const addons = [
     baseManifest,
     jobsManifest,
     notificationAddon,
@@ -43,7 +45,12 @@ try {
     workflowAddon,
     requestAddon,
     whatsappManifest,
-  ]);
+  ];
+  if (skipBootMigrations) {
+    await registerAddons(db, addons);
+  } else {
+    await installAddons(db, addons);
+  }
   unregisterNotificationConsumer = registerNotificationOutboxConsumer();
   unregisterWebhookConsumer = registerWebhookOutboxConsumer(async (secretRef, companyId) => {
     if (!secretRef.startsWith(`MW_WEBHOOK_SECRET_C${companyId}_`)) return null;

@@ -369,6 +369,63 @@ async function installData(db: Knex.Transaction, data: readonly SeedRecord[]) {
   for (const record of data) await ensure(record.id);
 }
 
+/** Register addon metadata in-memory (models, views, menus, security) without DDL/seed. */
+export async function registerAddons(
+  db: Knex,
+  addons: readonly Addon[]
+): Promise<void> {
+  const ordered = sort(
+    addons,
+    (addon) => addon.name,
+    (addon) => addon.depends ?? []
+  );
+  const nextMenus = new Map<string, ModelMenuInfo>();
+  for (const addon of ordered) {
+    for (const menu of addon.menus ?? []) {
+      if (nextMenus.has(menu.model)) throw new Error('Duplicate addon menu model: ' + menu.model);
+      nextMenus.set(menu.model, {
+        ...(menu.label ? { label: menu.label } : {}),
+        group: menu.group,
+        sequence: menu.sequence ?? 1000,
+        developmentOnly: menu.developmentOnly ?? false,
+      });
+    }
+  }
+  const models = sort(
+    ordered.flatMap((addon) => [...addon.models]),
+    (model) => model.modelName,
+    (model) =>
+      Object.values(model.fields).flatMap((field) => {
+        if (field.kind !== 'belongsTo') return [];
+        const targetModel = resolveTargetModel(field.target);
+        return targetModel && targetModel.modelName !== model.modelName
+          ? [targetModel.modelName]
+          : [];
+      })
+  );
+  if (new Set(models.map((model) => model.tableName)).size !== models.length)
+    throw new Error('Duplicate addon table');
+  const data = ordered.flatMap((addon) => [...(addon.data ?? [])]);
+  for (const record of data) {
+    if (!models.includes(record.model))
+      throw new Error('Seed model not installed: ' + record.model.modelName);
+  }
+  // In-memory registration only: no DDL, no seed, no advisory lock.
+  for (const model of models) {
+    model.knex(db);
+    Registry.register(model);
+  }
+  for (const addon of ordered) {
+    for (const view of addon.views ?? []) {
+      if (!models.some((model) => model.modelName === view.model))
+        throw new Error('View model not installed: ' + view.model);
+      registerView(view);
+    }
+  }
+  modelMenus.clear();
+  for (const [name, menu] of nextMenus) modelMenus.set(name, menu);
+}
+
 /** Install an ordered set of addons atomically; restart preserves user-edited seed values. */
 export async function installAddons(db: Knex, addons: readonly Addon[]): Promise<void> {
   const ordered = sort(
