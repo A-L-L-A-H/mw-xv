@@ -858,7 +858,7 @@ Approve or reject these strategic choices before implementation:
 
 ## References
 
-See [`AI-CORPORATION-RESEARCH-REGISTER.md`](../research/AI-CORPORATION-RESEARCH-REGISTER.md) for the full evidence register and notes on relevance/limitations.
+See [`AI-CORPORATION-RESEARCH-REGISTER.md`](./AI-CORPORATION-RESEARCH-REGISTER.md) for the full evidence register and notes on relevance/limitations.
 
 - [S1] MoonWitness README and architecture, public repository snapshot: https://github.com/A-L-L-A-H/mw-xv
 - [S2] MoonWitness Master Roadmap, especially K0–K9: https://github.com/A-L-L-A-H/mw-xv/blob/main/ROADMAP.md

@@ -2,8 +2,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createDatabase } from '../database/knex.js';
-import { installAddons } from '@moonwitness/orm';
-import { registerAddons } from '@moonwitness/orm';
+import { installAddons, registerAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { jobsManifest, runOutboxLoop } from '@moonwitness/jobs';
 import {

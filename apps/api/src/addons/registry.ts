@@ -235,7 +235,7 @@ export async function bootstrapApiAddons(
 
   if (!skipBootMigrations) {
     // Run DDL/seed install
-    await installAddons(db, manifests, { skipInMemoryRegistration: true });
+    await installAddons(db, manifests);
     for (const addon of addons) {
       await addon.postInstall?.(db);
     }

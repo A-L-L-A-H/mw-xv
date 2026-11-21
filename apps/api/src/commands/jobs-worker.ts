@@ -2,18 +2,11 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createDatabase } from '../database/knex.js';
-import { installAddons, registerAddons } from '@moonwitness/orm';
-import { manifest as baseManifest } from '@moonwitness/orm-base';
-import { jobsManifest, registerJobHandler, runWorkerLoop } from '@moonwitness/jobs';
+import { bootstrapApiAddons } from '../addons/registry.js';
+import { registerJobHandler, runWorkerLoop } from '@moonwitness/jobs';
 import { readWorkerHealthPort, startWorkerHealthServer } from './worker-health.js';
-import {
-  manifest as workflowAddon,
-  registerWorkflowExpiryHandler,
-} from '@moonwitness/orm-workflow';
-import { manifest as notificationAddon } from '@moonwitness/orm-notification';
+import { registerWorkflowExpiryHandler } from '@moonwitness/orm-workflow';
 import { createProcessShutdownController } from '../lifecycle/process-shutdown.js';
-import { manifest as storageManifest } from '@moonwitness/orm-storage';
-import { whatsappManifest } from '../whatsapp/manifest.js';
 import { registerWhatsAppAttachmentJob } from './whatsapp-attachments-job.js';
 
 const db = createDatabase();
@@ -23,20 +16,9 @@ const shutdown = createProcessShutdownController(() => {
 });
 
 try {
-  const skipBootMigrations = process.env.SKIP_BOOT_MIGRATIONS === 'true';
-  const addons = [
-    baseManifest,
-    jobsManifest,
-    notificationAddon,
-    workflowAddon,
-    storageManifest,
-    whatsappManifest,
-  ];
-  if (skipBootMigrations) {
-    await registerAddons(db, addons);
-  } else {
-    await installAddons(db, addons);
-  }
+  await bootstrapApiAddons(db, process.env.SUPERADMIN_PASSWORD, undefined, {
+    skipBootMigrations: process.env.SKIP_BOOT_MIGRATIONS === 'true',
+  });
   const unregisterWhatsAppAttachmentJob = registerWhatsAppAttachmentJob(db);
   const handlerModule = process.env.JOB_HANDLERS_MODULE;
   if (handlerModule) await import(pathToFileURL(path.resolve(handlerModule)).href);
