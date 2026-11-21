@@ -559,7 +559,7 @@
       "deliverable": "Human review workflow tied to source revision and event history",
       "acceptance": "Reviewer cannot self-certify prohibited transitions; stale revision rejected; decisions historically recorded",
       "verification": "workflow revision/auth/idempotency tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
