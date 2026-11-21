@@ -317,7 +317,7 @@
       "deliverable": "Pin/parse/import recipe engine with dry-run and import report",
       "acceptance": "No hidden downloads or nondeterminism; parser failure leaves prior snapshot intact",
       "verification": "clean/repeat/invalid/partial import tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
