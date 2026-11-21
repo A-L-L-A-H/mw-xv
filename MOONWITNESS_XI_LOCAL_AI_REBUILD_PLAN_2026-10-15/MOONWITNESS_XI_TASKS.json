@@ -659,7 +659,7 @@
       "deliverable": "Explicit Quran-primary profile, candidate divine-attribute relation extraction",
       "acceptance": "No hardcoded list-of-99 as engine truth; every result tied to source and method; historical metrics marked unverified",
       "verification": "golden examples, false-positive negatives, reproducibility",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
