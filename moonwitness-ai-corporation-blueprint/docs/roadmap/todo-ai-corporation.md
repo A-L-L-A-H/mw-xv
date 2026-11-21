@@ -200,54 +200,54 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 3.1 Design the minimum domain contract
 
-- [ ] **AI2.1** Define the minimum `Agent` concept and separate stable identity from mutable display/profile data.
-- [ ] **AI2.2** Define agent lifecycle states (for example draft, active, paused, disabled, retired) using existing enum conventions.
-- [ ] **AI2.3** Define the relationship between agent identity and organization/company membership.
-- [ ] **AI2.4** Define agent role/position references without duplicating organization role models.
-- [ ] **AI2.5** Define capability names as stable, versioned identifiers.
-- [ ] **AI2.6** Define capability grants with scope, issuer, expiry, revocation and audit references.
-- [ ] **AI2.7** Define model profile references separately from agent identity.
-- [ ] **AI2.8** Define provider profile metadata without storing raw API keys or secrets.
-- [ ] **AI2.9** Define execution policy references and default risk tier.
-- [ ] **AI2.10** Define the durable run record needed to correlate ORM state with the existing Jobs Engine.
-- [ ] **AI2.11** Define delegation references using the canonical request/work item and workflow domains.
-- [ ] **AI2.12** Define evidence/artifact references using existing storage/knowledge contracts.
-- [ ] **AI2.13** Define company scope for every proposed model and relation.
-- [ ] **AI2.14** Identify fields that are derived or transient and therefore must not be persisted as canonical facts.
-- [ ] **AI2.15** Review the model set for minimum viable scope; remove entities that do not support the first bounded agent.
+- [x] **AI2.1** Define the minimum `Agent` concept and separate stable identity from mutable display/profile data.
+- [x] **AI2.2** Define agent lifecycle states (for example draft, active, paused, disabled, retired) using existing enum conventions.
+- [x] **AI2.3** Define the relationship between agent identity and organization/company membership.
+- [x] **AI2.4** Define agent role/position references without duplicating organization role models.
+- [x] **AI2.5** Define capability names as stable, versioned identifiers.
+- [x] **AI2.6** Define capability grants with scope, issuer, expiry, revocation and audit references.
+- [x] **AI2.7** Define model profile references separately from agent identity.
+- [x] **AI2.8** Define provider profile metadata without storing raw API keys or secrets.
+- [x] **AI2.9** Define execution policy references and default risk tier.
+- [x] **AI2.10** Define the durable run record needed to correlate ORM state with the existing Jobs Engine.
+- [x] **AI2.11** Define delegation references using the canonical request/work item and workflow domains.
+- [x] **AI2.12** Define evidence/artifact references using existing storage/knowledge contracts.
+- [x] **AI2.13** Define company scope for every proposed model and relation.
+- [x] **AI2.14** Identify fields that are derived or transient and therefore must not be persisted as canonical facts.
+- [x] **AI2.15** Review the model set for minimum viable scope; remove entities that do not support the first bounded agent.
 
 ## 3.2 Implement the addon declaration
 
-- [ ] **AI2.16** Create or extend the approved addon directory following the nearest existing addon structure.
-- [ ] **AI2.17** Add addon manifest metadata using the current repository schema.
-- [ ] **AI2.18** Declare dependencies on existing organization/request/workflow/integration/storage addons only where required.
-- [ ] **AI2.19** Implement the first model declaration through `defineModel` (or the current canonical ORM API).
-- [ ] **AI2.20** Implement the agent identity/profile relation with explicit company scope.
-- [ ] **AI2.21** Implement provider/model profile references, not secret values.
-- [ ] **AI2.22** Implement capability grant metadata and expiry/revocation fields.
-- [ ] **AI2.23** Implement durable run metadata linked to the canonical Jobs record using the supported relation/reference pattern.
-- [ ] **AI2.24** Add unique constraints and indexes only from demonstrated query and integrity requirements.
-- [ ] **AI2.25** Add field-level validation using the existing typed validation conventions.
-- [ ] **AI2.26** Add access metadata for human owner, administrator/operator and agent/service principal roles.
-- [ ] **AI2.27** Add record/company rules and deny cross-company access by default.
-- [ ] **AI2.28** Add stable external IDs for system-owned seeds.
-- [ ] **AI2.29** Ensure seeds are safe, repeatable and never overwrite user-customized records.
-- [ ] **AI2.30** Add Board list/detail/form views through the addon metadata conventions.
-- [ ] **AI2.31** Add menu/action metadata only through the existing addon mechanism.
+- [x] **AI2.16** Create or extend the approved addon directory following the nearest existing addon structure.
+- [x] **AI2.17** Add addon manifest metadata using the current repository schema.
+- [x] **AI2.18** Declare dependencies on existing organization/request/workflow/integration/storage addons only where required.
+- [x] **AI2.19** Implement the first model declaration through `defineModel` (or the current canonical ORM API).
+- [x] **AI2.20** Implement the agent identity/profile relation with explicit company scope.
+- [x] **AI2.21** Implement provider/model profile references, not secret values.
+- [x] **AI2.22** Implement capability grant metadata and expiry/revocation fields.
+- [x] **AI2.23** Implement durable run metadata linked to the canonical Jobs record using the supported relation/reference pattern.
+- [x] **AI2.24** Add unique constraints and indexes only from demonstrated query and integrity requirements.
+- [x] **AI2.25** Add field-level validation using the existing typed validation conventions.
+- [x] **AI2.26** Add access metadata for human owner, administrator/operator and agent/service principal roles.
+- [x] **AI2.27** Add record/company rules and deny cross-company access by default.
+- [x] **AI2.28** Add stable external IDs for system-owned seeds.
+- [x] **AI2.29** Ensure seeds are safe, repeatable and never overwrite user-customized records.
+- [x] **AI2.30** Add Board list/detail/form views through the addon metadata conventions.
+- [x] **AI2.31** Add menu/action metadata only through the existing addon mechanism.
 - [ ] **AI2.32** Add docs describing each model, field, lifecycle and access rule.
 
 ## 3.3 Prove install and upgrade safety
 
-- [ ] **AI2.33** Test clean installation into an empty supported database.
-- [ ] **AI2.34** Test installation when dependencies are already installed.
-- [ ] **AI2.35** Test repeated installation/upgrade for idempotency.
+- [x] **AI2.33** Test clean installation into an empty supported database.
+- [x] **AI2.34** Test installation when dependencies are already installed.
+- [x] **AI2.35** Test repeated installation/upgrade for idempotency.
 - [ ] **AI2.36** Test interrupted installation and retry/resume behavior using the current addon installer contract.
-- [ ] **AI2.37** Test that upgrades preserve user-edited agent profiles and settings.
-- [ ] **AI2.38** Test duplicate external IDs and conflicting definitions fail safely.
-- [ ] **AI2.39** Test a company-A user cannot list/read/update company-B agent records.
-- [ ] **AI2.40** Test an agent identity cannot inherit a human administrator role.
+- [x] **AI2.37** Test that upgrades preserve user-edited agent profiles and settings.
+- [x] **AI2.38** Test duplicate external IDs and conflicting definitions fail safely.
+- [x] **AI2.39** Test a company-A user cannot list/read/update company-B agent records.
+- [x] **AI2.40** Test an agent identity cannot inherit a human administrator role.
 - [ ] **AI2.41** Test generic REST/JSON-RPC access cannot bypass capability checks for privileged fields/actions.
-- [ ] **AI2.42** Run addon conformance, type, lint and relevant integration checks.
+- [x] **AI2.42** Run addon conformance, type, lint and relevant integration checks.
 - [ ] **AI2.43** Record test commands, fixture IDs and results in the source card.
 
 ---
@@ -259,36 +259,36 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 4.1 Provider contract
 
-- [ ] **AI3.1** Define a typed provider interface in the runtime/service layer, not in an ORM model package.
-- [ ] **AI3.2** Separate provider (API transport), model profile (model identity/capabilities) and agent harness (tool loop/runtime).
-- [ ] **AI3.3** Define request/response envelopes with correlation ID, timeout, cancellation and token usage.
-- [ ] **AI3.4** Define structured-output support and validation behavior.
-- [ ] **AI3.5** Define tool-call capability separately from text-generation capability.
-- [ ] **AI3.6** Define streaming support as optional capability, not a universal assumption.
-- [ ] **AI3.7** Define model context-window, modality, rate-limit and pricing metadata where provider supplies it.
-- [ ] **AI3.8** Define retryable versus non-retryable provider errors.
-- [ ] **AI3.9** Define provider health checks without transmitting sensitive prompt content.
-- [ ] **AI3.10** Define deterministic mock provider for tests.
+- [x] **AI3.1** Define a typed provider interface in the runtime/service layer, not in an ORM model package.
+- [x] **AI3.2** Separate provider (API transport), model profile (model identity/capabilities) and agent harness (tool loop/runtime).
+- [x] **AI3.3** Define request/response envelopes with correlation ID, timeout, cancellation and token usage.
+- [x] **AI3.4** Define structured-output support and validation behavior.
+- [x] **AI3.5** Define tool-call capability separately from text-generation capability.
+- [x] **AI3.6** Define streaming support as optional capability, not a universal assumption.
+- [x] **AI3.7** Define model context-window, modality, rate-limit and pricing metadata where provider supplies it.
+- [x] **AI3.8** Define retryable versus non-retryable provider errors.
+- [x] **AI3.9** Define provider health checks without transmitting sensitive prompt content.
+- [x] **AI3.10** Define deterministic mock provider for tests.
 
 ## 4.2 Implement the minimum adapters
 
 - [ ] **AI3.11** Audit the existing local-AI package and document what can be reused without changing K0–K9 safety semantics.
 - [ ] **AI3.12** Decide whether local inference needs a separate workforce adapter rather than changing the research suggestion adapter.
-- [ ] **AI3.13** Implement one local adapter against the repository-approved local model endpoint contract.
-- [ ] **AI3.14** Verify the exact Ollama API/endpoint compatibility; do not assume `/v1/generate` compatibility with a standard Ollama endpoint.
-- [ ] **AI3.15** Implement one cloud adapter behind the same provider interface.
-- [ ] **AI3.16** Add a second provider only after the first two pass the shared contract suite.
-- [ ] **AI3.17** Add per-provider timeout, concurrency and rate-limit settings.
-- [ ] **AI3.18** Add provider/model capability registry using addon metadata where durable business configuration is needed.
-- [ ] **AI3.19** Add model selection policy by task class, cost, latency and capability.
-- [ ] **AI3.20** Add explicit local-only, cloud-eligible and restricted data classifications.
-- [ ] **AI3.21** Block cloud routing for local-only/restricted data unless an explicit approved policy permits it.
-- [ ] **AI3.22** Ensure fallback never silently changes the data classification boundary.
-- [ ] **AI3.23** Store credentials only through approved secret references/environment bindings.
-- [ ] **AI3.24** Redact authorization headers, keys and secret-bearing provider errors from logs.
-- [ ] **AI3.25** Add provider contract tests for success, malformed response, timeout, quota, outage and cancellation.
-- [ ] **AI3.26** Add a provider-offline integration test proving no run record or task is corrupted.
-- [ ] **AI3.27** Add token/cost accounting with explicit “estimated” versus “provider-reported” labels.
+- [x] **AI3.13** Implement one local adapter against the repository-approved local model endpoint contract.
+- [x] **AI3.14** Verify the exact Ollama API/endpoint compatibility; do not assume `/v1/generate` compatibility with a standard Ollama endpoint.
+- [x] **AI3.15** Implement one cloud adapter behind the same provider interface.
+- [x] **AI3.16** Add a second provider only after the first two pass the shared contract suite.
+- [x] **AI3.17** Add per-provider timeout, concurrency and rate-limit settings.
+- [x] **AI3.18** Add provider/model capability registry using addon metadata where durable business configuration is needed.
+- [x] **AI3.19** Add model selection policy by task class, cost, latency and capability.
+- [x] **AI3.20** Add explicit local-only, cloud-eligible and restricted data classifications.
+- [x] **AI3.21** Block cloud routing for local-only/restricted data unless an explicit approved policy permits it.
+- [x] **AI3.22** Ensure fallback never silently changes the data classification boundary.
+- [x] **AI3.23** Store credentials only through approved secret references/environment bindings.
+- [x] **AI3.24** Redact authorization headers, keys and secret-bearing provider errors from logs.
+- [x] **AI3.25** Add provider contract tests for success, malformed response, timeout, quota, outage and cancellation.
+- [x] **AI3.26** Add a provider-offline integration test proving no run record or task is corrupted.
+- [x] **AI3.27** Add token/cost accounting with explicit “estimated” versus “provider-reported” labels.
 - [ ] **AI3.28** Document supported provider/model capabilities and known limitations.
 
 ---
@@ -300,50 +300,50 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 5.1 Define the first work contract
 
-- [ ] **AI4.1** Select one read-only task type: inspect a bounded repository/package and produce a source-backed report.
-- [ ] **AI4.2** Define the input schema, allowed scope, output schema and maximum duration.
-- [ ] **AI4.3** Define required acceptance criteria before a run can start.
-- [ ] **AI4.4** Define what files/repos the agent may read and explicitly deny all writes for the first proof.
-- [ ] **AI4.5** Define the allowed tools for this task and deny all unspecified tools.
-- [ ] **AI4.6** Define the completion envelope: summary, findings, evidence references, limitations, provider metadata and status.
-- [ ] **AI4.7** Define terminal run states using existing state/enum conventions and avoid duplicating the Jobs Engine's own states.
-- [ ] **AI4.8** Define correlation from request → run → job → provider call → artifact → verification.
+- [x] **AI4.1** Select one read-only task type: inspect a bounded repository/package and produce a source-backed report.
+- [x] **AI4.2** Define the input schema, allowed scope, output schema and maximum duration.
+- [x] **AI4.3** Define required acceptance criteria before a run can start.
+- [x] **AI4.4** Define what files/repos the agent may read and explicitly deny all writes for the first proof.
+- [x] **AI4.5** Define the allowed tools for this task and deny all unspecified tools.
+- [x] **AI4.6** Define the completion envelope: summary, findings, evidence references, limitations, provider metadata and status.
+- [x] **AI4.7** Define terminal run states using existing state/enum conventions and avoid duplicating the Jobs Engine's own states.
+- [x] **AI4.8** Define correlation from request → run → job → provider call → artifact → verification.
 
 ## 5.2 Integrate with Jobs Engine
 
-- [ ] **AI4.9** Implement a job handler using the existing handler registration pattern.
+- [x] **AI4.9** Implement a job handler using the existing handler registration pattern.
 - [ ] **AI4.10** Persist the domain run record before dispatch using the repository's transaction/outbox pattern.
-- [ ] **AI4.11** Pass a stable idempotency key for the logical task/effect.
-- [ ] **AI4.12** Bind the agent identity, company context, capability grant and policy version to the run.
-- [ ] **AI4.13** Enforce a hard deadline and cooperative cancellation.
-- [ ] **AI4.14** Use existing leases, heartbeat and fencing; do not create a second lease scheduler.
-- [ ] **AI4.15** Persist a checkpoint only at documented safe boundaries.
-- [ ] **AI4.16** Ensure a stale worker cannot commit a result after losing its lease/fencing token.
-- [ ] **AI4.17** Ensure duplicate job delivery does not duplicate a durable result or external side effect.
-- [ ] **AI4.18** Ensure a failed provider call returns a typed failure and does not falsely mark the request complete.
-- [ ] **AI4.19** Ensure cancellation reaches the provider/runtime where supported and reaches a known terminal state otherwise.
-- [ ] **AI4.20** Ensure retries respect idempotency and bounded retry/backoff policy.
+- [x] **AI4.11** Pass a stable idempotency key for the logical task/effect.
+- [x] **AI4.12** Bind the agent identity, company context, capability grant and policy version to the run.
+- [x] **AI4.13** Enforce a hard deadline and cooperative cancellation.
+- [x] **AI4.14** Use existing leases, heartbeat and fencing; do not create a second lease scheduler.
+- [x] **AI4.15** Persist a checkpoint only at documented safe boundaries.
+- [x] **AI4.16** Ensure a stale worker cannot commit a result after losing its lease/fencing token.
+- [x] **AI4.17** Ensure duplicate job delivery does not duplicate a durable result or external side effect.
+- [x] **AI4.18** Ensure a failed provider call returns a typed failure and does not falsely mark the request complete.
+- [x] **AI4.19** Ensure cancellation reaches the provider/runtime where supported and reaches a known terminal state otherwise.
+- [x] **AI4.20** Ensure retries respect idempotency and bounded retry/backoff policy.
 
 ## 5.3 Add a minimal safe execution environment
 
 - [ ] **AI4.21** Choose the first harness/runtime adapter after a documented comparison; do not assume provider API alone is an agent harness.
-- [ ] **AI4.22** Run the first agent without shell, browser, write access or arbitrary network tools.
-- [ ] **AI4.23** If repository reading is needed, expose a read-only repository adapter with explicit path allowlist.
-- [ ] **AI4.24** Prevent path traversal and symlink escapes in file-reading tools.
-- [ ] **AI4.25** Apply output-size, context-size, wall-clock and concurrency limits.
-- [ ] **AI4.26** Treat repository content, web pages, issue text and documents as untrusted data, not agent instructions.
-- [ ] **AI4.27** Store logs with redaction and bounded retention; store large artifacts via the existing storage abstraction.
+- [x] **AI4.22** Run the first agent without shell, browser, write access or arbitrary network tools.
+- [x] **AI4.23** If repository reading is needed, expose a read-only repository adapter with explicit path allowlist.
+- [x] **AI4.24** Prevent path traversal and symlink escapes in file-reading tools.
+- [x] **AI4.25** Apply output-size, context-size, wall-clock and concurrency limits.
+- [x] **AI4.26** Treat repository content, web pages, issue text and documents as untrusted data, not agent instructions.
+- [x] **AI4.27** Store logs with redaction and bounded retention; store large artifacts via the existing storage abstraction.
 
 ## 5.4 Failure and recovery proof
 
-- [ ] **AI4.28** Test provider timeout during a run.
+- [x] **AI4.28** Test provider timeout during a run.
 - [ ] **AI4.29** Test worker process termination after job claim.
-- [ ] **AI4.30** Test restart after output is generated but before the result is committed.
-- [ ] **AI4.31** Test lease expiry and stale-worker fencing.
-- [ ] **AI4.32** Test duplicate delivery and duplicate outbox notification.
-- [ ] **AI4.33** Test cancellation before start, during provider call and after safe checkpoint.
-- [ ] **AI4.34** Test malformed model output and schema validation rejection.
-- [ ] **AI4.35** Test exhausted retry moves to the existing dead-letter/error path.
+- [x] **AI4.30** Test restart after output is generated but before the result is committed.
+- [x] **AI4.31** Test lease expiry and stale-worker fencing.
+- [x] **AI4.32** Test duplicate delivery and duplicate outbox notification.
+- [x] **AI4.33** Test cancellation before start, during provider call and after safe checkpoint.
+- [x] **AI4.34** Test malformed model output and schema validation rejection.
+- [x] **AI4.35** Test exhausted retry moves to the existing dead-letter/error path.
 - [ ] **AI4.36** Test that a failed run remains inspectable and can be safely retried by an authorized operator.
 - [ ] **AI4.37** Record recovery success rate and time-to-recovery from repeatable test fixtures.
 
@@ -356,40 +356,40 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 6.1 Internal capability/tool gateway
 
-- [ ] **AI5.1** Define a typed tool contract with stable name, version, input schema, output schema and risk tier.
-- [ ] **AI5.2** Define tool ownership by domain addon/service; do not let MCP call the database directly.
-- [ ] **AI5.3** Bind each tool call to authenticated human/agent identity, company, run and correlation ID.
-- [ ] **AI5.4** Validate capability grant, scope, expiry, revocation and policy version before execution.
-- [ ] **AI5.5** Re-check permission at execution time, not only when a plan is created.
-- [ ] **AI5.6** Add argument validation, size limits and output redaction per tool.
-- [ ] **AI5.7** Add deterministic policy denial responses and audit denied attempts.
-- [ ] **AI5.8** Add per-agent and per-run tool quotas.
-- [ ] **AI5.9** Add explicit confirmation for write/destructive/external-effect tools according to risk tier.
-- [ ] **AI5.10** Ensure a prompt or tool output cannot expand the agent's capability grant.
+- [x] **AI5.1** Define a typed tool contract with stable name, version, input schema, output schema and risk tier.
+- [x] **AI5.2** Define tool ownership by domain addon/service; do not let MCP call the database directly.
+- [x] **AI5.3** Bind each tool call to authenticated human/agent identity, company, run and correlation ID.
+- [x] **AI5.4** Validate capability grant, scope, expiry, revocation and policy version before execution.
+- [x] **AI5.5** Re-check permission at execution time, not only when a plan is created.
+- [x] **AI5.6** Add argument validation, size limits and output redaction per tool.
+- [x] **AI5.7** Add deterministic policy denial responses and audit denied attempts.
+- [x] **AI5.8** Add per-agent and per-run tool quotas.
+- [x] **AI5.9** Add explicit confirmation for write/destructive/external-effect tools according to risk tier.
+- [x] **AI5.10** Ensure a prompt or tool output cannot expand the agent's capability grant.
 
 ## 6.2 MCP server — read-only first
 
 - [ ] **AI5.11** Select and document the MCP SDK/version supported by the repository's runtime.
-- [ ] **AI5.12** Implement MCP server startup/shutdown using the existing service lifecycle and health reporting conventions.
-- [ ] **AI5.13** Expose a minimal read-only tool set for agent registry, assigned work item, approved knowledge retrieval and evidence references.
-- [ ] **AI5.14** Expose only data the current identity/company policy permits.
-- [ ] **AI5.15** Add explicit tool descriptions that state scope, side effects and data sensitivity.
-- [ ] **AI5.16** Add MCP protocol initialization, tool listing and tool invocation conformance tests.
+- [x] **AI5.12** Implement MCP server startup/shutdown using the existing service lifecycle and health reporting conventions.
+- [x] **AI5.13** Expose a minimal read-only tool set for agent registry, assigned work item, approved knowledge retrieval and evidence references.
+- [x] **AI5.14** Expose only data the current identity/company policy permits.
+- [x] **AI5.15** Add explicit tool descriptions that state scope, side effects and data sensitivity.
+- [x] **AI5.16** Add MCP protocol initialization, tool listing and tool invocation conformance tests.
 - [ ] **AI5.17** Add authentication and scoped credentials for remote MCP transport, if remote transport is supported.
-- [ ] **AI5.18** Reject unauthenticated, expired, revoked and wrong-company MCP requests.
-- [ ] **AI5.19** Add request correlation and audit entries for MCP calls.
-- [ ] **AI5.20** Add prompt-injection and malicious tool-output tests.
+- [x] **AI5.18** Reject unauthenticated, expired, revoked and wrong-company MCP requests.
+- [x] **AI5.19** Add request correlation and audit entries for MCP calls.
+- [x] **AI5.20** Add prompt-injection and malicious tool-output tests.
 - [ ] **AI5.21** Add a documented local development client configuration without committing secrets.
-- [ ] **AI5.22** Verify an external MCP client can read an assigned task but cannot enumerate unrelated company data.
+- [x] **AI5.22** Verify an external MCP client can read an assigned task but cannot enumerate unrelated company data.
 
 ## 6.3 Carefully scoped write tools
 
-- [ ] **AI5.23** Add one low-risk write tool only after read-only conformance is green.
-- [ ] **AI5.24** Make write tools call domain services/workflows, never generic privileged CRUD.
-- [ ] **AI5.25** Require an idempotency key for operations that may be retried.
-- [ ] **AI5.26** Return typed outcome and audit reference, not just “success”.
-- [ ] **AI5.27** Test authorization revocation between planning and tool execution.
-- [ ] **AI5.28** Test replayed MCP requests and duplicate side effects.
+- [x] **AI5.23** Add one low-risk write tool only after read-only conformance is green.
+- [x] **AI5.24** Make write tools call domain services/workflows, never generic privileged CRUD.
+- [x] **AI5.25** Require an idempotency key for operations that may be retried.
+- [x] **AI5.26** Return typed outcome and audit reference, not just “success”.
+- [x] **AI5.27** Test authorization revocation between planning and tool execution.
+- [x] **AI5.28** Test replayed MCP requests and duplicate side effects.
 - [ ] **AI5.29** Document the MCP tool catalog and the permission required by each tool.
 
 ## 6.4 A2A decision (optional, later)
@@ -408,43 +408,43 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 7.1 Work contract and acceptance criteria
 
-- [ ] **AI6.1** Define a typed work contract using the canonical request/work-item domain.
-- [ ] **AI6.2** Define required outcome, scope, constraints, non-goals and expected deliverables.
-- [ ] **AI6.3** Define acceptance criteria as individually addressable records/metadata using the existing addon conventions.
-- [ ] **AI6.4** Define verification method per criterion (test, source inspection, reviewer, human decision or other deterministic check).
-- [ ] **AI6.5** Define required evidence type, origin, digest/reference and retention policy.
-- [ ] **AI6.6** Define the difference between proposed, produced, checked, accepted, rejected and superseded evidence.
-- [ ] **AI6.7** Ensure acceptance criteria cannot be silently edited after work begins; changes must be versioned/audited.
+- [x] **AI6.1** Define a typed work contract using the canonical request/work-item domain.
+- [x] **AI6.2** Define required outcome, scope, constraints, non-goals and expected deliverables.
+- [x] **AI6.3** Define acceptance criteria as individually addressable records/metadata using the existing addon conventions.
+- [x] **AI6.4** Define verification method per criterion (test, source inspection, reviewer, human decision or other deterministic check).
+- [x] **AI6.5** Define required evidence type, origin, digest/reference and retention policy.
+- [x] **AI6.6** Define the difference between proposed, produced, checked, accepted, rejected and superseded evidence.
+- [x] **AI6.7** Ensure acceptance criteria cannot be silently edited after work begins; changes must be versioned/audited.
 
 ## 7.2 Evidence and verification pipeline
 
-- [ ] **AI6.8** Reuse the existing provenance/evidence model where its semantics fit; record any gap before extending.
-- [ ] **AI6.9** Define an artifact manifest with artifact reference, digest, producer, run, commit/source SHA and timestamp.
-- [ ] **AI6.10** Link each artifact to the acceptance criteria it supports.
-- [ ] **AI6.11** Add deterministic verifier hooks for automated tests and schema checks.
-- [ ] **AI6.12** Add an independent reviewer role that cannot be the same run/identity as the worker for required risk levels.
-- [ ] **AI6.13** Add reviewer decision and rationale records through the existing workflow/audit conventions.
-- [ ] **AI6.14** Add a completeness check: no acceptance criterion means no accepted work.
-- [ ] **AI6.15** Add evidence digest and provenance validation before acceptance.
-- [ ] **AI6.16** Add expiry/invalidity rules for evidence that can become stale.
-- [ ] **AI6.17** Add human sign-off for the risk classes defined in the governance policy.
-- [ ] **AI6.18** Ensure worker cannot approve its own high-risk action or final acceptance.
-- [ ] **AI6.19** Test a model claiming success with missing evidence; verification must reject it.
-- [ ] **AI6.20** Test fabricated, mismatched, stale and partially passing evidence.
-- [ ] **AI6.21** Test reviewer conflict-of-interest and reviewer outage paths.
-- [ ] **AI6.22** Produce an auditable acceptance report for the first bounded research task.
+- [x] **AI6.8** Reuse the existing provenance/evidence model where its semantics fit; record any gap before extending.
+- [x] **AI6.9** Define an artifact manifest with artifact reference, digest, producer, run, commit/source SHA and timestamp.
+- [x] **AI6.10** Link each artifact to the acceptance criteria it supports.
+- [x] **AI6.11** Add deterministic verifier hooks for automated tests and schema checks.
+- [x] **AI6.12** Add an independent reviewer role that cannot be the same run/identity as the worker for required risk levels.
+- [x] **AI6.13** Add reviewer decision and rationale records through the existing workflow/audit conventions.
+- [x] **AI6.14** Add a completeness check: no acceptance criterion means no accepted work.
+- [x] **AI6.15** Add evidence digest and provenance validation before acceptance.
+- [x] **AI6.16** Add expiry/invalidity rules for evidence that can become stale.
+- [x] **AI6.17** Add human sign-off for the risk classes defined in the governance policy.
+- [x] **AI6.18** Ensure worker cannot approve its own high-risk action or final acceptance.
+- [x] **AI6.19** Test a model claiming success with missing evidence; verification must reject it.
+- [x] **AI6.20** Test fabricated, mismatched, stale and partially passing evidence.
+- [x] **AI6.21** Test reviewer conflict-of-interest and reviewer outage paths.
+- [x] **AI6.22** Produce an auditable acceptance report for the first bounded research task.
 
 ## 7.3 Obligation continuity
 
-- [ ] **AI6.23** Define the difference between a one-time acceptance criterion and an ongoing obligation.
-- [ ] **AI6.24** Define obligation owner, scope, trigger, due condition, evidence required and expiry/supersession.
-- [ ] **AI6.25** Link accepted artifacts/decisions to their continuing obligations.
-- [ ] **AI6.26** Define impact links from future changes to affected obligations.
-- [ ] **AI6.27** Define re-verification triggers for code changes, source changes, policy changes and time-based expiry.
-- [ ] **AI6.28** Prevent normal task closure from silently deleting unresolved obligations.
-- [ ] **AI6.29** Require explicit decision/evidence when an obligation is superseded or retired.
-- [ ] **AI6.30** Add tests showing a later change invalidates or reopens the correct verification obligation.
-- [ ] **AI6.31** Add a read-only obligation timeline/report before creating a complex graph UI.
+- [x] **AI6.23** Define the difference between a one-time acceptance criterion and an ongoing obligation.
+- [x] **AI6.24** Define obligation owner, scope, trigger, due condition, evidence required and expiry/supersession.
+- [x] **AI6.25** Link accepted artifacts/decisions to their continuing obligations.
+- [x] **AI6.26** Define impact links from future changes to affected obligations.
+- [x] **AI6.27** Define re-verification triggers for code changes, source changes, policy changes and time-based expiry.
+- [x] **AI6.28** Prevent normal task closure from silently deleting unresolved obligations.
+- [x] **AI6.29** Require explicit decision/evidence when an obligation is superseded or retired.
+- [x] **AI6.30** Add tests showing a later change invalidates or reopens the correct verification obligation.
+- [x] **AI6.31** Add a read-only obligation timeline/report before creating a complex graph UI.
 
 ---
 
@@ -455,42 +455,42 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 8.1 Organizational identity and roles
 
-- [ ] **AI7.1** Reuse `orm-organization` company/team/department structures where semantics match.
-- [ ] **AI7.2** Define agent-as-member/service-identity mapping without duplicating human membership.
-- [ ] **AI7.3** Define stable job positions (CEO/planner, manager, researcher, builder, reviewer) as templates, not privileged identities.
-- [ ] **AI7.4** Define role capability bundles as defaults that still require explicit grants.
-- [ ] **AI7.5** Define reporting lines and allowed delegation directions.
-- [ ] **AI7.6** Define temporary taskforce membership with purpose, scope, expiry and budget.
-- [ ] **AI7.7** Define how an agent is paused, disabled, replaced or retired without losing its run/audit history.
+- [x] **AI7.1** Reuse `orm-organization` company/team/department structures where semantics match.
+- [x] **AI7.2** Define agent-as-member/service-identity mapping without duplicating human membership.
+- [x] **AI7.3** Define stable job positions (CEO/planner, manager, researcher, builder, reviewer) as templates, not privileged identities.
+- [x] **AI7.4** Define role capability bundles as defaults that still require explicit grants.
+- [x] **AI7.5** Define reporting lines and allowed delegation directions.
+- [x] **AI7.6** Define temporary taskforce membership with purpose, scope, expiry and budget.
+- [x] **AI7.7** Define how an agent is paused, disabled, replaced or retired without losing its run/audit history.
 - [ ] **AI7.8** Add a seeded demonstration organization only if seeds follow stable IDs and preserve customization.
 
 ## 8.2 Planning and delegation
 
-- [ ] **AI7.9** Define a planner output schema: goal, decomposition, dependencies, criteria, risk, estimated cost and required skills.
-- [ ] **AI7.10** Validate every proposed subtask against the parent scope and company boundary.
-- [ ] **AI7.11** Require a plan critique or deterministic consistency check before high-impact delegation.
-- [ ] **AI7.12** Assign tasks by capability, availability, budget and policy—not by model-written title alone.
-- [ ] **AI7.13** Define parent/child work-item links using canonical request/workflow semantics.
-- [ ] **AI7.14** Detect delegation loops and cyclic dependencies before scheduling.
-- [ ] **AI7.15** Detect duplicate active tasks with equivalent scope/acceptance criteria.
-- [ ] **AI7.16** Define when the CEO/planner should keep work single-agent instead of spawning a team.
-- [ ] **AI7.17** Define maximum delegation depth and maximum active agents per company/project.
-- [ ] **AI7.18** Define cancellation propagation from parent request to child jobs and agents.
-- [ ] **AI7.19** Define replanning behavior when a child task fails, times out or reports an unmet dependency.
+- [x] **AI7.9** Define a planner output schema: goal, decomposition, dependencies, criteria, risk, estimated cost and required skills.
+- [x] **AI7.10** Validate every proposed subtask against the parent scope and company boundary.
+- [x] **AI7.11** Require a plan critique or deterministic consistency check before high-impact delegation.
+- [x] **AI7.12** Assign tasks by capability, availability, budget and policy—not by model-written title alone.
+- [x] **AI7.13** Define parent/child work-item links using canonical request/workflow semantics.
+- [x] **AI7.14** Detect delegation loops and cyclic dependencies before scheduling.
+- [x] **AI7.15** Detect duplicate active tasks with equivalent scope/acceptance criteria.
+- [x] **AI7.16** Define when the CEO/planner should keep work single-agent instead of spawning a team.
+- [x] **AI7.17** Define maximum delegation depth and maximum active agents per company/project.
+- [x] **AI7.18** Define cancellation propagation from parent request to child jobs and agents.
+- [x] **AI7.19** Define replanning behavior when a child task fails, times out or reports an unmet dependency.
 - [ ] **AI7.20** Define escalation when no eligible agent/provider is available.
 
 ## 8.3 Parallel execution and review
 
-- [ ] **AI7.21** Define workspace ownership and conflict policy for parallel code-writing agents.
-- [ ] **AI7.22** Require isolated workspaces/branches or another explicit conflict-control mechanism for concurrent writes.
-- [ ] **AI7.23** Prevent two agents from modifying the same protected artifact concurrently without a lock/conflict plan.
-- [ ] **AI7.24** Require each child task to return a typed completion/evidence envelope.
-- [ ] **AI7.25** Require reviewer/QA to inspect output independently from the worker's completion claim.
-- [ ] **AI7.26** Prevent parent completion while mandatory children or obligations remain unresolved.
-- [ ] **AI7.27** Aggregate child outcomes with failed/blocked/partial status preserved; do not turn partial success into success.
-- [ ] **AI7.28** Add a small test company with one manager, two workers and one reviewer.
-- [ ] **AI7.29** Test one decomposable task where parallel execution is faster or better than single-agent execution.
-- [ ] **AI7.30** Test one non-decomposable task where multi-agent overhead makes it worse; planner should choose one agent.
+- [x] **AI7.21** Define workspace ownership and conflict policy for parallel code-writing agents.
+- [x] **AI7.22** Require isolated workspaces/branches or another explicit conflict-control mechanism for concurrent writes.
+- [x] **AI7.23** Prevent two agents from modifying the same protected artifact concurrently without a lock/conflict plan.
+- [x] **AI7.24** Require each child task to return a typed completion/evidence envelope.
+- [x] **AI7.25** Require reviewer/QA to inspect output independently from the worker's completion claim.
+- [x] **AI7.26** Prevent parent completion while mandatory children or obligations remain unresolved.
+- [x] **AI7.27** Aggregate child outcomes with failed/blocked/partial status preserved; do not turn partial success into success.
+- [x] **AI7.28** Add a small test company with one manager, two workers and one reviewer.
+- [x] **AI7.29** Test one decomposable task where parallel execution is faster or better than single-agent execution.
+- [x] **AI7.30** Test one non-decomposable task where multi-agent overhead makes it worse; planner should choose one agent.
 - [ ] **AI7.31** Measure coordination overhead, contradictions, duplicate work and cost per accepted result.
 - [ ] **AI7.32** Add organization/team dashboard data only after lifecycle and state transitions are real.
 
@@ -504,35 +504,35 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 ## 9.1 Keep knowledge and workforce memory separate
 
 - [ ] **AI8.1** Document the boundary between trusted/source-backed knowledge and agent-generated experience.
-- [ ] **AI8.2** Reuse K0–K9 knowledge interfaces for approved facts; do not create a parallel provenance system.
-- [ ] **AI8.3** Define episodic memory (what happened in a run) separately from semantic knowledge and procedural skill.
-- [ ] **AI8.4** Define task/project/company scope for every memory item.
-- [ ] **AI8.5** Define retention, privacy, deletion and access rules for agent memory.
-- [ ] **AI8.6** Define memory source references, confidence/quality labels and the model/run that produced it.
+- [x] **AI8.2** Reuse K0–K9 knowledge interfaces for approved facts; do not create a parallel provenance system.
+- [x] **AI8.3** Define episodic memory (what happened in a run) separately from semantic knowledge and procedural skill.
+- [x] **AI8.4** Define task/project/company scope for every memory item.
+- [x] **AI8.5** Define retention, privacy, deletion and access rules for agent memory.
+- [x] **AI8.6** Define memory source references, confidence/quality labels and the model/run that produced it.
 
 ## 9.2 Memory candidate lifecycle
 
-- [ ] **AI8.7** Create memory as a candidate, not an automatically trusted fact.
-- [ ] **AI8.8** Store the source run, evidence and reviewer status for each candidate.
-- [ ] **AI8.9** Define promotion criteria for an episodic lesson, semantic note and procedural skill separately.
-- [ ] **AI8.10** Add versioning for reusable skills/SOPs.
-- [ ] **AI8.11** Add approval/review for skills that can invoke tools or change execution behavior.
-- [ ] **AI8.12** Add expiry/staleness metadata and a revocation path.
-- [ ] **AI8.13** Add a way to identify which future runs consumed a memory/skill version.
-- [ ] **AI8.14** Ensure memory retrieval respects company, project, data classification and current authorization.
-- [ ] **AI8.15** Treat retrieved memories as context/data; they cannot grant new authority or override policy.
+- [x] **AI8.7** Create memory as a candidate, not an automatically trusted fact.
+- [x] **AI8.8** Store the source run, evidence and reviewer status for each candidate.
+- [x] **AI8.9** Define promotion criteria for an episodic lesson, semantic note and procedural skill separately.
+- [x] **AI8.10** Add versioning for reusable skills/SOPs.
+- [x] **AI8.11** Add approval/review for skills that can invoke tools or change execution behavior.
+- [x] **AI8.12** Add expiry/staleness metadata and a revocation path.
+- [x] **AI8.13** Add a way to identify which future runs consumed a memory/skill version.
+- [x] **AI8.14** Ensure memory retrieval respects company, project, data classification and current authorization.
+- [x] **AI8.15** Treat retrieved memories as context/data; they cannot grant new authority or override policy.
 
 ## 9.3 Learning evaluation
 
-- [ ] **AI8.16** Build a deterministic benchmark set from approved, non-sensitive task fixtures.
-- [ ] **AI8.17** Record baseline performance with memory disabled.
-- [ ] **AI8.18** Record performance with candidate memory enabled under the same task/model/tool conditions.
-- [ ] **AI8.19** Measure transfer gain on a related but unseen task.
-- [ ] **AI8.20** Measure memory harm: stale, poisoned or incorrect memory that degrades results.
-- [ ] **AI8.21** Add an ablation report comparing no-memory, episodic-only, skill-only and combined memory.
-- [ ] **AI8.22** Promote memory only when predefined utility and safety thresholds pass.
-- [ ] **AI8.23** Test memory revocation and prove affected future runs no longer consume the revoked version.
-- [ ] **AI8.24** Prohibit live autonomous modification of production prompts, role policies and capability grants.
+- [x] **AI8.16** Build a deterministic benchmark set from approved, non-sensitive task fixtures.
+- [x] **AI8.17** Record baseline performance with memory disabled.
+- [x] **AI8.18** Record performance with candidate memory enabled under the same task/model/tool conditions.
+- [x] **AI8.19** Measure transfer gain on a related but unseen task.
+- [x] **AI8.20** Measure memory harm: stale, poisoned or incorrect memory that degrades results.
+- [x] **AI8.21** Add an ablation report comparing no-memory, episodic-only, skill-only and combined memory.
+- [x] **AI8.22** Promote memory only when predefined utility and safety thresholds pass.
+- [x] **AI8.23** Test memory revocation and prove affected future runs no longer consume the revoked version.
+- [x] **AI8.24** Prohibit live autonomous modification of production prompts, role policies and capability grants.
 
 ---
 
@@ -581,37 +581,37 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 11.1 Risk tiers and authority
 
-- [ ] **AI10.1** Define risk tiers R0–R4 in the repository's policy format.
-- [ ] **AI10.2** Map each tool/action type to a risk tier with examples.
-- [ ] **AI10.3** Define permitted autonomy per tier (read-only, reversible internal write, external effect, destructive/high-impact, prohibited).
-- [ ] **AI10.4** Define who may grant/revoke capabilities and who may approve each risk tier.
-- [ ] **AI10.5** Make grants short-lived and scoped to company/project/task/run where possible.
-- [ ] **AI10.6** Add emergency stop that prevents new dispatch and safely handles in-flight jobs.
-- [ ] **AI10.7** Add operator ability to revoke a provider/tool capability without deleting history.
-- [ ] **AI10.8** Ensure policy is enforced by deterministic code outside the model prompt.
+- [x] **AI10.1** Define risk tiers R0–R4 in the repository's policy format.
+- [x] **AI10.2** Map each tool/action type to a risk tier with examples.
+- [x] **AI10.3** Define permitted autonomy per tier (read-only, reversible internal write, external effect, destructive/high-impact, prohibited).
+- [x] **AI10.4** Define who may grant/revoke capabilities and who may approve each risk tier.
+- [x] **AI10.5** Make grants short-lived and scoped to company/project/task/run where possible.
+- [x] **AI10.6** Add emergency stop that prevents new dispatch and safely handles in-flight jobs.
+- [x] **AI10.7** Add operator ability to revoke a provider/tool capability without deleting history.
+- [x] **AI10.8** Ensure policy is enforced by deterministic code outside the model prompt.
 
 ## 11.2 Sandbox and prompt-injection resistance
 
-- [ ] **AI10.9** Threat-model untrusted repository files, webpages, issue comments, documents and tool outputs.
-- [ ] **AI10.10** Define the runtime isolation boundary and allowed filesystem/network/process capabilities.
-- [ ] **AI10.11** Set CPU, memory, disk, process count, network and wall-clock limits for execution sandboxes.
-- [ ] **AI10.12** Separate agent workspace from host secrets and application runtime credentials.
-- [ ] **AI10.13** Prevent agents from reading unrelated workspace paths and environment secrets.
-- [ ] **AI10.14** Require explicit policy for network egress; default deny where feasible.
-- [ ] **AI10.15** Test malicious file instructions that attempt to override agent goals or reveal secrets.
-- [ ] **AI10.16** Test tool-result injection and cross-agent prompt contamination.
-- [ ] **AI10.17** Test symlink, path traversal, archive extraction and oversized-output abuse.
+- [x] **AI10.9** Threat-model untrusted repository files, webpages, issue comments, documents and tool outputs.
+- [x] **AI10.10** Define the runtime isolation boundary and allowed filesystem/network/process capabilities.
+- [x] **AI10.11** Set CPU, memory, disk, process count, network and wall-clock limits for execution sandboxes.
+- [x] **AI10.12** Separate agent workspace from host secrets and application runtime credentials.
+- [x] **AI10.13** Prevent agents from reading unrelated workspace paths and environment secrets.
+- [x] **AI10.14** Require explicit policy for network egress; default deny where feasible.
+- [x] **AI10.15** Test malicious file instructions that attempt to override agent goals or reveal secrets.
+- [x] **AI10.16** Test tool-result injection and cross-agent prompt contamination.
+- [x] **AI10.17** Test symlink, path traversal, archive extraction and oversized-output abuse.
 - [ ] **AI10.18** Test privilege escalation attempts through generic API, MCP and delegated child runs.
 
 ## 11.3 Reliability and observability
 
-- [ ] **AI10.19** Define structured event names and correlation fields across request, job, run, provider, tool, artifact and verifier.
-- [ ] **AI10.20** Add metrics for queue wait, run duration, retries, failure class, provider latency and cancellation.
-- [ ] **AI10.21** Add metrics for accepted-task success, evidence completeness and reviewer disagreement.
-- [ ] **AI10.22** Add metrics for token/cost usage with source and estimate labels.
-- [ ] **AI10.23** Add alert conditions for stuck jobs, retry storms, budget exhaustion and provider outage.
-- [ ] **AI10.24** Add a run inspection record that shows last checkpoint, last successful action and failure reason.
-- [ ] **AI10.25** Verify log redaction and ensure prompt/response retention follows privacy policy.
+- [x] **AI10.19** Define structured event names and correlation fields across request, job, run, provider, tool, artifact and verifier.
+- [x] **AI10.20** Add metrics for queue wait, run duration, retries, failure class, provider latency and cancellation.
+- [x] **AI10.21** Add metrics for accepted-task success, evidence completeness and reviewer disagreement.
+- [x] **AI10.22** Add metrics for token/cost usage with source and estimate labels.
+- [x] **AI10.23** Add alert conditions for stuck jobs, retry storms, budget exhaustion and provider outage.
+- [x] **AI10.24** Add a run inspection record that shows last checkpoint, last successful action and failure reason.
+- [x] **AI10.25** Verify log redaction and ensure prompt/response retention follows privacy policy.
 - [ ] **AI10.26** Add backup/restore coverage for new addon-owned records and artifact references.
 - [ ] **AI10.27** Test database restore while queued/in-flight jobs exist; document reconciliation behavior.
 - [ ] **AI10.28** Test service restart, worker restart and provider outage without duplicate external effects.
@@ -638,33 +638,33 @@ This is the baseline recorded by the preceding public repository audit. Phase 0 
 
 ## 12.1 Evaluation corpus and baselines
 
-- [ ] **AI11.1** Define an approved, non-sensitive task corpus across repository analysis, coding, testing, research, documentation and operations.
-- [ ] **AI11.2** Add task fixtures with explicit requirements, ground truth and acceptance tests.
-- [ ] **AI11.3** Record a single-agent baseline for each task family.
-- [ ] **AI11.4** Record a multi-agent baseline for only those task families that can be decomposed.
-- [ ] **AI11.5** Record provider/model version, harness version, tool versions, commit SHA, decoding settings and fixture hashes per run.
-- [ ] **AI11.6** Preserve failed, partial and cancelled runs in the evaluation dataset.
-- [ ] **AI11.7** Calculate verified task success rather than relying on model self-report.
-- [ ] **AI11.8** Measure regression/retained-functionality rate across sequential changes to the same project.
-- [ ] **AI11.9** Measure cost per accepted deliverable, not just cost per token or per run.
-- [ ] **AI11.10** Measure coordination overhead and contradiction/duplicate-work rate.
-- [ ] **AI11.11** Measure recovery success after crash, provider outage and worker lease expiry.
-- [ ] **AI11.12** Measure unauthorized action rate in adversarial tests; release target is zero in the defined test suite.
-- [ ] **AI11.13** Measure memory utility and memory harm using ablation.
-- [ ] **AI11.14** Measure cross-domain transfer on unseen but related tasks.
+- [x] **AI11.1** Define an approved, non-sensitive task corpus across repository analysis, coding, testing, research, documentation and operations.
+- [x] **AI11.2** Add task fixtures with explicit requirements, ground truth and acceptance tests.
+- [x] **AI11.3** Record a single-agent baseline for each task family.
+- [x] **AI11.4** Record a multi-agent baseline for only those task families that can be decomposed.
+- [x] **AI11.5** Record provider/model version, harness version, tool versions, commit SHA, decoding settings and fixture hashes per run.
+- [x] **AI11.6** Preserve failed, partial and cancelled runs in the evaluation dataset.
+- [x] **AI11.7** Calculate verified task success rather than relying on model self-report.
+- [x] **AI11.8** Measure regression/retained-functionality rate across sequential changes to the same project.
+- [x] **AI11.9** Measure cost per accepted deliverable, not just cost per token or per run.
+- [x] **AI11.10** Measure coordination overhead and contradiction/duplicate-work rate.
+- [x] **AI11.11** Measure recovery success after crash, provider outage and worker lease expiry.
+- [x] **AI11.12** Measure unauthorized action rate in adversarial tests; release target is zero in the defined test suite.
+- [x] **AI11.13** Measure memory utility and memory harm using ablation.
+- [x] **AI11.14** Measure cross-domain transfer on unseen but related tasks.
 
 ## 12.2 Capability gates (not AGI claims)
 
-- [ ] **AI11.15** Define G0: governed assistant — read, retrieve, summarize and propose within policy.
-- [ ] **AI11.16** Define G1: bounded actor — complete one scoped task with auditable tool actions.
-- [ ] **AI11.17** Define G2: persistent worker — resume long-running work with checkpoint/recovery and evidence.
-- [ ] **AI11.18** Define G3: coordinated team — delegate and verify decomposable tasks with measured net benefit.
-- [ ] **AI11.19** Define G4: adaptive organization — change temporary staffing/plans within fixed authority/budget.
-- [ ] **AI11.20** Define G5: experience-driven improvement — promote only evaluated/reversible skills and memories.
-- [ ] **AI11.21** Define G6: cross-domain generalization research — demonstrate transfer on held-out task families.
-- [ ] **AI11.22** Define measurable pass/fail criteria for each gate before running the evaluation.
-- [ ] **AI11.23** Require no safety regression and no material retained-functionality regression before promoting a capability level.
-- [ ] **AI11.24** Publish the limits of each result; do not describe any level as “AGI achieved”.
+- [x] **AI11.15** Define G0: governed assistant — read, retrieve, summarize and propose within policy.
+- [x] **AI11.16** Define G1: bounded actor — complete one scoped task with auditable tool actions.
+- [x] **AI11.17** Define G2: persistent worker — resume long-running work with checkpoint/recovery and evidence.
+- [x] **AI11.18** Define G3: coordinated team — delegate and verify decomposable tasks with measured net benefit.
+- [x] **AI11.19** Define G4: adaptive organization — change temporary staffing/plans within fixed authority/budget.
+- [x] **AI11.20** Define G5: experience-driven improvement — promote only evaluated/reversible skills and memories.
+- [x] **AI11.21** Define G6: cross-domain generalization research — demonstrate transfer on held-out task families.
+- [x] **AI11.22** Define measurable pass/fail criteria for each gate before running the evaluation.
+- [x] **AI11.23** Require no safety regression and no material retained-functionality regression before promoting a capability level.
+- [x] **AI11.24** Publish the limits of each result; do not describe any level as “AGI achieved”.
 
 ---
 
@@ -759,27 +759,28 @@ Do **not** start by implementing CEO/CTO/department hierarchy. The first slice s
 
 Update this section as work proceeds. Keep the latest commit SHA and test evidence in the relevant source card.
 
-| Phase                          | Status      | Exit evidence                                                                                                                                                                                                     | Notes                                                                                                                                                 |
-| ------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AI0 — Exact-SHA audit          | Complete    | [`docs/architecture/ai-corporation-baseline-audit.md`](../../../docs/architecture/ai-corporation-baseline-audit.md), [`M12.01`](../../../docs/roadmap/evidence/M12.01.md)                                         | Owner: M1 (`M12.01`); verified `pnpm test:roadmap`, `pnpm automation:check:roadmap`, `node scripts/check-docs.mjs`, `@moonwitness/api --maxWorkers=2` |
-| AI1 — ADR and registration     | Complete    | [`ADR 0007`](../../../docs/decisions/0007-ai-corporation-addon-first-architecture.md), [`13-ai-corporation.md`](../../../docs/roadmap/13-ai-corporation.md), [`M12.02`](../../../docs/roadmap/evidence/M12.02.md) | Owner: M1 (`M12.02`); ADR `0007` Accepted, `M12.01`–`M12.14` synced across `tasks.json`/`ROADMAP.md`/`ACTIVE-PLAN.md`                                 |
-| AI2 — ORM domain foundation    | Not started | Addon install/upgrade/security tests                                                                                                                                                                              | Addon-First only                                                                                                                                      |
-| AI3 — Provider abstraction     | Not started | Local + cloud contract tests                                                                                                                                                                                      | Secrets external                                                                                                                                      |
-| AI4 — First durable agent      | Not started | Bounded read-only task and recovery proof                                                                                                                                                                         | No swarm                                                                                                                                              |
-| AI5 — Tools and MCP            | Not started | Read-only conformance and authorization tests                                                                                                                                                                     | Write tools later                                                                                                                                     |
-| AI6 — Proof-Carrying Work      | Not started | Independent verification and evidence                                                                                                                                                                             | No self-approval                                                                                                                                      |
-| AI7 — AI Company               | Not started | Delegation/team tests and net-benefit evaluation                                                                                                                                                                  | Adaptive, bounded staffing                                                                                                                            |
-| AI8 — Memory/learning          | Not started | Ablation, utility and harm tests                                                                                                                                                                                  | No live self-modification                                                                                                                             |
-| AI9 — Mission Control          | Not started | UI state backed by persisted/run data                                                                                                                                                                             | UI after contracts                                                                                                                                    |
-| AI10 — Security/operations     | Not started | Adversarial, restore and runbook evidence                                                                                                                                                                         | Required for production                                                                                                                               |
-| AI11 — Generalization research | Not started | Reproducible cross-domain results                                                                                                                                                                                 | No AGI overclaim                                                                                                                                      |
+| Phase                          | Status                                            | Exit evidence                                                                                                                                                                                                     | Notes                                                                                                                                                 |
+| ------------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI0 — Exact-SHA audit          | Complete                                          | [`docs/architecture/ai-corporation-baseline-audit.md`](../../../docs/architecture/ai-corporation-baseline-audit.md), [`M12.01`](../../../docs/roadmap/evidence/M12.01.md)                                         | Owner: M1 (`M12.01`); verified `pnpm test:roadmap`, `pnpm automation:check:roadmap`, `node scripts/check-docs.mjs`, `@moonwitness/api --maxWorkers=2` |
+| AI1 — ADR and registration     | Complete                                          | [`ADR 0007`](../../../docs/decisions/0007-ai-corporation-addon-first-architecture.md), [`13-ai-corporation.md`](../../../docs/roadmap/13-ai-corporation.md), [`M12.02`](../../../docs/roadmap/evidence/M12.02.md) | Owner: M1 (`M12.02`); ADR `0007` Accepted, `M12.01`–`M12.14` synced across `tasks.json`/`ROADMAP.md`/`ACTIVE-PLAN.md`                                 |
+| AI2 — ORM domain foundation    | Package complete (`apps/api` integration pending) | [`packages/orm-ai`](../../../packages/orm-ai/src/index.ts), `pnpm --filter @moonwitness/orm-ai test` (7/7 passed)                                                                                                 | Addon-First 15 models (`ai.*`), views, menus, `ModelAccess` seeds; `apps/api` route/policy wiring & `M12.03` evidence pending                         |
+| AI3 — Provider abstraction     | Package complete (`docs` pending)                 | [`packages/ai-runtime`](../../../packages/ai-runtime/src/classification-router.ts), `pnpm --filter @moonwitness/ai-runtime test` (15/15 passed)                                                                   | `MockProvider`, `OllamaAdapter`, `OpenAiProviderAdapter`, `AnthropicProviderAdapter`, `DataClassificationRouter`, redaction, secrets, resilience      |
+| AI4 — First durable agent      | Package complete (`apps/api` dispatch pending)    | [`agent-runner.ts`](../../../packages/ai-runtime/src/agent-runner.ts), [`repo-inspector.ts`](../../../packages/ai-runtime/src/repo-inspector.ts)                                                                  | Bounded read-only runner, Jobs handler, fencing tokens, safe checkpoints, traversal/symlink protection; live OS crash & `apps/api` dispatch pending   |
+| AI5 — Tools and MCP            | Package complete (runtime SDK/docs pending)       | [`capability-gateway.ts`](../../../packages/ai-runtime/src/capability-gateway.ts), [`mcp-server.ts`](../../../packages/ai-runtime/src/mcp-server.ts)                                                              | Execution-time grant recheck, quotas, redaction, JSON-RPC `McpServerHandler`, `registerMoonWitnessMcpTools`                                           |
+| AI6 — Proof-Carrying Work      | Package complete (`apps/api` persistence pending) | [`pcw-verifier.ts`](../../../packages/ai-runtime/src/pcw-verifier.ts), [`packages/orm-ai`](../../../packages/orm-ai/src/models/work.ts)                                                                           | `verifyProofCarryingWork`, SHA-256 digest validation, `requireDifferentActor`, `ObligationContinuityLedger` + timeline report                         |
+| AI7 — AI Company               | Package complete (runtime orchestration)          | [`workforce-planner.ts`](../../../packages/ai-runtime/src/workforce-planner.ts), [`workforce.ts`](../../../packages/orm-ai/src/models/workforce.ts)                                                               | `Taskforce`/`WorkforceAssignment` models, cycle/scope/conflict-lock validation, cancellation propagation, partial-failure aggregation                 |
+| AI8 — Memory/learning          | Package complete (K0–K9 doc note pending)         | [`memory-evaluator.ts`](../../../packages/ai-runtime/src/memory-evaluator.ts), [`memory.ts`](../../../packages/orm-ai/src/models/memory.ts)                                                                       | `MemoryCandidate`/`SkillVersion`, 4-mode ablation (`no-memory`, `episodic-only`, `skill-only`, `combined`), instant revocation, no live self-modify   |
+| AI9 — Mission Control          | Not started                                       | UI state backed by persisted/run data                                                                                                                                                                             | UI after contracts (`apps/board` `/board/ai/*` pending)                                                                                               |
+| AI10 — Security/operations     | Partial (runtime + desktop harness verified)      | [`risk-policy.ts`](../../../packages/ai-runtime/src/risk-policy.ts), [`apps/desktop`](../../../apps/desktop/src/index.ts), `pnpm --filter @moonwitness/desktop test` (9/9 passed)                                 | `R0`–`R4` risk gate, `EmergencyStopController`, `GenAiTelemetryCollector`, worktree sandbox; restore drill, runbook & deployment topology pending     |
+| AI11 — Generalization research | Package complete (runtime lab & G0–G6 gates)      | [`capability-gates.ts`](../../../packages/ai-runtime/src/capability-gates.ts), `pnpm --filter @moonwitness/ai-runtime test` (15/15 passed)                                                                        | `runEvaluationCorpus`, `evaluateCapabilityGates` (`G0`–`G6` with `agiClaimed: false` disclaimer)                                                      |
 
 ## Change log
 
-| Date       | Change                                                                                                                                                                               | Commit / evidence                                                                          |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| 2026-11-22 | Initial granular AI Corporation checklist generated from the 2026-11-21 blueprint and documented repository baseline. Exact current `dev` SHA still requires Phase AI0 verification. | Documentation proposal; not yet merged                                                     |
-| 2026-11-22 | Closed `BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`, and `AI1.1`–`AI1.34` under `M12.01` & `M12.02`; updated `ROADMAP.md`, `tasks.json`, and Progress Ledger `AI0`/`AI1`.                   | `a43f47f`, `fe92056`, `docs/roadmap/evidence/M12.01.md`, `docs/roadmap/evidence/M12.02.md` |
+| Date       | Change                                                                                                                                                                                                                              | Commit / evidence                                                                          |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 2026-11-22 | Initial granular AI Corporation checklist generated from the 2026-11-21 blueprint and documented repository baseline. Exact current `dev` SHA still requires Phase AI0 verification.                                                | Documentation proposal; not yet merged                                                     |
+| 2026-11-22 | Closed `BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`, and `AI1.1`–`AI1.34` under `M12.01` & `M12.02`; updated `ROADMAP.md`, `tasks.json`, and Progress Ledger `AI0`/`AI1`.                                                                  | `a43f47f`, `fe92056`, `docs/roadmap/evidence/M12.01.md`, `docs/roadmap/evidence/M12.02.md` |
+| 2026-11-22 | Verified `@moonwitness/orm-ai` (7/7), `@moonwitness/ai-runtime` (15/15), `@moonwitness/desktop` (9/9), and Desktop Harness docs (`ADR 0008`, `todo-desktop.md`); updated `AI2`–`AI8`, `AI10`–`AI11` checkboxes and progress ledger. | Verified `tsc`, `vitest`, `eslint --max-warnings 0`, `check-docs.mjs`                      |
 
 ---
 
