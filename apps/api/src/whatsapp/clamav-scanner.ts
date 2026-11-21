@@ -167,9 +167,23 @@ export class ClamAvScanner implements AttachmentScanner {
   }
 }
 
+export class DisabledAttachmentScanner implements AttachmentScanner {
+  async scan(content: Readable): Promise<MalwareScanResult> {
+    content.resume();
+    return { status: 'clean' };
+  }
+
+  async ping(): Promise<boolean> {
+    return true;
+  }
+}
+
 export function createAttachmentScanner(
-  address = process.env.WHATSAPP_CLAMAV_URL ||
-    (process.env.NODE_ENV === 'production' ? undefined : 'tcp://127.0.0.1:3310')
+  address = process.env.WHATSAPP_CLAMAV_URL,
+  env: NodeJS.ProcessEnv = process.env
 ): AttachmentScanner | null {
-  return address ? new ClamAvScanner(address) : null;
+  const resolvedAddress = address?.trim();
+  if (resolvedAddress) return new ClamAvScanner(resolvedAddress);
+  if (env.WHATSAPP_MEDIA_SCAN === 'disabled') return new DisabledAttachmentScanner();
+  return null;
 }

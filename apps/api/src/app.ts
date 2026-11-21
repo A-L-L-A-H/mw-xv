@@ -99,6 +99,43 @@ function requestIdFromHeader(value: string | string[] | undefined): string | nul
   return candidate && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$/u.test(candidate) ? candidate : null;
 }
 
+export function resolveCorsOrigin(
+  env: NodeJS.ProcessEnv = process.env,
+  nodeEnv = config.env
+): boolean | string[] {
+  const raw = env.CORS_ORIGINS?.trim();
+  if (raw) {
+    const origins = raw
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+    for (const origin of origins) {
+      let parsed: URL;
+      try {
+        parsed = new URL(origin);
+      } catch {
+        throw new Error(`CORS_ORIGINS entry must be a valid http or https origin: ${origin}`);
+      }
+      if (
+        !['http:', 'https:'].includes(parsed.protocol) ||
+        parsed.pathname !== '/' ||
+        parsed.search ||
+        parsed.hash
+      ) {
+        throw new Error(`CORS_ORIGINS entry must be an origin without path/query: ${origin}`);
+      }
+    }
+    return origins;
+  }
+  return nodeEnv === 'production' ? false : true;
+}
+
+function resolveTrustProxy(env: NodeJS.ProcessEnv = process.env, nodeEnv = config.env): boolean {
+  if (env.TRUST_PROXY === 'true') return true;
+  if (env.TRUST_PROXY === 'false') return false;
+  return nodeEnv === 'production';
+}
+
 export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
   const authConfig = config.auth ?? {
     accessTtlSeconds: 15 * 60,
@@ -142,6 +179,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
 
   const app = Fastify({
     bodyLimit: 1024 * 1024,
+    trustProxy: resolveTrustProxy(),
     requestIdHeader: false,
     logController: new LogController({ disableRequestLogging: true }),
     genReqId: (request) => requestIdFromHeader(request.headers['x-request-id']) ?? randomUUID(),
@@ -160,6 +198,13 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
 
   app.addHook('onSend', async (request, reply, payload) => {
     reply.header('x-request-id', request.id);
+    reply.header('x-content-type-options', 'nosniff');
+    reply.header('x-frame-options', 'DENY');
+    reply.header('referrer-policy', 'no-referrer');
+    reply.header('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+    if (config.env === 'production') {
+      reply.header('strict-transport-security', 'max-age=31536000; includeSubDomains');
+    }
     return payload;
   });
 
@@ -177,7 +222,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   });
 
   // Security & utility plugins
-  await app.register(cors, { origin: true });
+  await app.register(cors, { origin: resolveCorsOrigin() });
   await app.register(sensible);
 
   // Swagger Documentation
@@ -202,14 +247,16 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     },
   });
 
-  await app.register(swaggerUi, {
-    routePrefix: '/docs',
-    uiConfig: {
-      docExpansion: 'list',
-      deepLinking: true,
-    },
-    staticCSP: true,
-  });
+  if (config.env !== 'production' || process.env.ENABLE_API_DOCS === 'true') {
+    await app.register(swaggerUi, {
+      routePrefix: '/docs',
+      uiConfig: {
+        docExpansion: 'list',
+        deepLinking: true,
+      },
+      staticCSP: true,
+    });
+  }
 
   // Enterprise ORM Plugin (registers Knex, Objection, Environment, and models)
   await app.register(ormPlugin, { db });
@@ -263,13 +310,17 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     }
 
     const statusCode = errorProperty(error, 'statusCode');
-    return reply.status(typeof statusCode === 'number' ? statusCode : 500).send({
+    const resolvedStatus = typeof statusCode === 'number' ? statusCode : 500;
+    const hideInternalMessage = resolvedStatus >= 500 && config.env === 'production';
+    return reply.status(resolvedStatus).send({
       success: false,
       error: isWhatsAppRoute
         ? 'WhatsApp request failed'
-        : error instanceof Error
-          ? error.message
-          : 'Internal Server Error',
+        : hideInternalMessage
+          ? 'Internal Server Error'
+          : error instanceof Error
+            ? error.message
+            : 'Internal Server Error',
     });
   });
 

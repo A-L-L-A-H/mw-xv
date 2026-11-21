@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-and-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: '22'
+          pnpm-version: '11.17.0'
+      - name: Install frozen workspace dependencies
+        run: pnpm install --frozen-lockfile --no-runtime
+      - name: Verify workflow pins and roadmap contract
+        run: |
+          pnpm automation:check:action-pins
+          pnpm automation:check:action-tags
+          pnpm automation:check:roadmap
+      - name: Verify shared UI, assets, and documentation links
+        run: |
+          pnpm board:ui:check
+          pnpm test:assets
+          pnpm assets:check:bounds
+          pnpm test:ui
+          node scripts/check-docs.mjs
+      - name: Build workspace and verify budgets
+        run: |
+          pnpm build
+          pnpm --filter @moonwitness/board typecheck
+          pnpm board:budget
+          pnpm test:ui-budget
+
+  unit-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: '22'
+          pnpm-version: '11.17.0'
+      - name: Install frozen workspace dependencies
+        run: pnpm install --frozen-lockfile --no-runtime
+      - name: Build and run unit tests
+        run: |
+          pnpm build
+          pnpm test:unit:built

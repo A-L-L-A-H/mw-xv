@@ -29,6 +29,8 @@ x-app-environment: &app-environment
   LOG_PRETTY: 'false'
   # Point WHATSAPP_GATEWAY_URL at the real GoWA gateway; credentials come from .env.prd.
   WHATSAPP_GATEWAY_URL: ${WHATSAPP_GATEWAY_URL:-https://wa.moonwitness.biz.id}
+  WHATSAPP_MEDIA_SCAN: ${WHATSAPP_MEDIA_SCAN:-disabled}
+  CORS_ORIGINS: ${CORS_ORIGINS:-}
   ATTACHMENT_STORAGE_DIR: /var/lib/moonwitness/attachments
   # Garage bucket endpoints are non-secret defaults; the key pair comes from .env.prd.
   # Set ATTACHMENT_STORAGE_DRIVER=local to keep attachments on the local volume instead.
