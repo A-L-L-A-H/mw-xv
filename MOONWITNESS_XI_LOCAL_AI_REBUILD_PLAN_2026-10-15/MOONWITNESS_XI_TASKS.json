@@ -179,7 +179,7 @@
       "deliverable": "Typed core record contracts and JSON Schema 2020-12",
       "acceptance": "Positive and malformed records handled with path-specific validation diagnostics",
       "verification": "package typecheck/unit validation",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
