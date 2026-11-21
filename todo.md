@@ -205,11 +205,11 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-CORE-005.3** Uji urutan cleanup resource pada `apps/api/tests/`
   - [x] **MW-CORE-005.4** Verifikasi: `pnpm --filter @moonwitness/api test` lulus
 
-- [ ] **MW-CORE-006** Standarisasi hierarki kelas error platform (`PlatformError`, `ValidationError`, `AccessDeniedError`, `NotFoundError`, `ConcurrencyConflictError`, `SchemaSyncError`)
-  - [ ] **MW-CORE-006.1** Definisikan kontrak kode error stabil dan status HTTP mapping di `packages/types/src/` dan `packages/orm/src/`
-  - [ ] **MW-CORE-006.2** Perbarui `setErrorHandler` di `apps/api/src/app.ts` agar memetakan instance `PlatformError` tanpa bergantung pada string-matching ad-hoc
-  - [ ] **MW-CORE-006.3** Tambahkan unit test mapping setiap subclass error pada mode development dan production (sanitasi 500)
-  - [ ] **MW-CORE-006.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test` lulus
+- [x] **MW-CORE-006** Standarisasi hierarki kelas error platform (`PlatformError`, `ValidationError`, `AccessDeniedError`, `NotFoundError`, `ConcurrencyConflictError`, `SchemaSyncError`)
+  - [x] **MW-CORE-006.1** Definisikan kontrak kode error stabil dan status HTTP mapping di `packages/types/src/` dan `packages/orm/src/`
+  - [x] **MW-CORE-006.2** Perbarui `setErrorHandler` di `apps/api/src/app.ts` agar memetakan instance `PlatformError` tanpa bergantung pada string-matching ad-hoc
+  - [x] **MW-CORE-006.3** Tambahkan unit test mapping setiap subclass error pada mode development dan production (sanitasi 500)
+  - [x] **MW-CORE-006.4** Verifikasi: `pnpm --filter @moonwitness/orm test && pnpm --filter @moonwitness/api test` lulus
 
 ---
 

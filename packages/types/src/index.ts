@@ -5,3 +5,4 @@ export * from './routes.js';
 export * from './config.js';
 export * from './guards.js';
 export * from './attachments.js';
+export * from './errors.js';
