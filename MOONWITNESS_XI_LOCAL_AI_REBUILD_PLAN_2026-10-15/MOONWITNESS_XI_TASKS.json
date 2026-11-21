@@ -100,7 +100,7 @@
       "deliverable": "Source-rights policy and metadata-only fallback",
       "acceptance": "Unknown/restricted license blocks public-byte bundling and includes takedown/attribution paths",
       "verification": "schema and synthetic negative rights tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
