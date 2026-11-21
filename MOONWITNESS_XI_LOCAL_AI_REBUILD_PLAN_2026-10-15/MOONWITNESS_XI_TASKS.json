@@ -336,7 +336,7 @@
       "deliverable": "Raw-byte immutable blob storage contract and SHA integrity",
       "acceptance": "Checksum collision/mismatch rejects, no overwrites, no path traversal",
       "verification": "binary corruption and unsafe path cases",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
