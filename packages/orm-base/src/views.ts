@@ -14,6 +14,7 @@ import { Sequence } from './models/sequence.js';
 import { AccessGroup, GroupMembership, ModelAccess } from './models/access-group.js';
 import { CompanyMembership } from './models/company-membership.js';
 import { AuditLog } from './models/audit-log.js';
+import { IrFeatureFlag } from './models/feature-flag.js';
 
 /** Domains use API column names (`company_id`); view field lists use model field keys. */
 export const views = [
@@ -295,5 +296,19 @@ export const views = [
       ],
     },
     search: { fields: ['model', 'operation'] },
+  }),
+  defineView(IrFeatureFlag, {
+    title: 'Feature Flags',
+    list: {
+      columns: ['key', 'name', 'enabled', 'rollout_pct', 'company', 'proposal_id', 'expires_at'],
+      order: 'key asc',
+    },
+    form: {
+      sections: [
+        { title: 'Flag', fields: ['key', 'name', 'enabled', 'rollout_pct', 'company'] },
+        { title: 'Lifecycle', fields: ['proposal_id', 'expires_at', 'description'] },
+      ],
+    },
+    search: { fields: ['key', 'name', 'proposal_id'] },
   }),
 ];

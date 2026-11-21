@@ -28,3 +28,8 @@ export {
   resolveUserPreferences,
 } from './models/user.js';
 export type { UserPreferences } from './models/user.js';
+export {
+  IrFeatureFlag,
+  isFeatureFlagEnabled,
+  type FeatureFlagQueryDb,
+} from './models/feature-flag.js';
