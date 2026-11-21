@@ -579,7 +579,7 @@
       "deliverable": "Explain edges, supporting/opposing refs, alternatives/uncertainty",
       "acceptance": "Every explanation provenance-linked; no causation inference by timestamp alone",
       "verification": "golden graph test on Q7:46 and contested case",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
