@@ -1,0 +1,48 @@
+{
+  "format": "moonwitness-evolution-backlog/v1",
+  "updatedAt": "2026-11-21T15:05:00.000Z",
+  "candidates": [
+    {
+      "id": "EVO-001",
+      "title": "Continue splitting monolithic apps/api/src/routes/whatsapp.routes.ts handlers into addon helpers",
+      "priority": "high",
+      "category": "architecture",
+      "status": "open",
+      "targetFiles": [
+        "apps/api/src/routes/whatsapp.routes.ts",
+        "apps/api/src/whatsapp/route-helpers.ts"
+      ],
+      "acceptanceCheck": "node scripts/evolution/check-ratchet.mjs && pnpm --filter @moonwitness/api exec vitest run --maxWorkers=1 --no-file-parallelism tests/whatsapp.routes.test.ts"
+    },
+    {
+      "id": "EVO-002",
+      "title": "Maintain zero legacy model/addon allowlist entries across apps/api",
+      "priority": "high",
+      "category": "constitution",
+      "status": "active",
+      "targetFiles": ["scripts/check-api-addon-boundary.mjs", "apps/api/src/addons/registry.ts"],
+      "acceptanceCheck": "pnpm api:addon:check && node scripts/evolution/check-constitution.mjs"
+    },
+    {
+      "id": "EVO-003",
+      "title": "Expand local-ai golden tournament fixtures as corpus manifests grow",
+      "priority": "medium",
+      "category": "intelligence",
+      "status": "open",
+      "targetFiles": ["scripts/local-ai/eval.mjs", "scripts/local-ai/tournament.mjs"],
+      "acceptanceCheck": "pnpm local-ai:eval && pnpm local-ai:tournament"
+    },
+    {
+      "id": "EVO-004",
+      "title": "Prune unpromoted exp-* addons past expiresAt TTL",
+      "priority": "medium",
+      "category": "features",
+      "status": "active",
+      "targetFiles": [
+        "apps/api/src/addons/registry.ts",
+        "packages/orm-base/src/models/feature-flag.ts"
+      ],
+      "acceptanceCheck": "pnpm evolution:prune"
+    }
+  ]
+}
