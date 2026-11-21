@@ -9,17 +9,7 @@ import {
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { Input } from '@moonwitness/ui/components/input';
 import { useState, useRef, useMemo, useCallback } from 'react';
-import {
-  Upload,
-  FileSpreadsheet,
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Check,
-  RotateCcw,
-} from 'lucide-react';
+import { UploadIcon, FileSpreadsheetIcon, ArrowRightIcon, ArrowLeftIcon, CheckCircleIcon, AlertIcon, CheckIcon, RefreshIcon } from '@moonwitness/ui/icons';
 import type { ResolvedViews } from '@moonwitness/client';
 import { client } from '@/lib/client';
 import { Button } from '@moonwitness/ui/components/button';
@@ -377,7 +367,7 @@ export function ImportWizardDialog({
               </span>
               {missingRequired.length > 0 && (
                 <span className="inline-flex items-center gap-1 border border-pink bg-pink/10 text-pink px-2 py-0.5 font-bold">
-                  <AlertCircle className="size-3.5" /> Missing:{' '}
+                  <AlertIcon className="size-3.5" /> Missing:{' '}
                   {missingRequired.map((f) => f.label).join(', ')}
                 </span>
               )}
@@ -450,7 +440,7 @@ export function ImportWizardDialog({
               </span>
               {missingRequired.length > 0 ? (
                 <span className="text-pink font-bold flex items-center gap-1">
-                  <AlertCircle className="size-3.5" /> Warning:{' '}
+                  <AlertIcon className="size-3.5" /> Warning:{' '}
                   {missingRequired.map((f) => f.label).join(', ')} required!
                 </span>
               ) : (
@@ -551,7 +541,7 @@ export function ImportWizardDialog({
         {step === 'completed' && (
           <div className="space-y-4 py-4">
             <div className="border-2 border-ink bg-card p-5 text-center space-y-3 shadow-ink-sm">
-              <CheckCircle2 className="mx-auto size-10 text-lime" />
+              <CheckCircleIcon className="mx-auto size-10 text-lime" />
               <h3 className="font-display text-xl uppercase tracking-wider text-ink">
                 Import Finished!
               </h3>

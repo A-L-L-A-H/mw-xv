@@ -619,7 +619,7 @@
       "deliverable": "Language/script-aware tokens, original byte/text offset mapping",
       "acceptance": "Original source text preserved, offsets accurate, normalization confined to derivative",
       "verification": "Arabic token/Unicode roundtrip tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
