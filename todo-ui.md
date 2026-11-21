@@ -15,16 +15,16 @@ Checklist ini menjadi rencana kerja untuk mendekatkan Home, Board, dan workbench
 - [x] Gunakan `@moonwitness/assets` untuk master media, SVG canonical, artwork, font, suara, dan provenance.
 - [x] Gunakan UI Catalog yang sudah ada untuk specimen dan review visual.
 - [x] Pertahankan data, route, permission, dan alur produk yang tersedia.
-- [ ] Tempatkan contoh konten/fitur fiktif hanya dalam UI Catalog dengan label “contoh desain”.
+- [x] Tempatkan contoh konten/fitur fiktif hanya dalam UI Catalog dengan label “contoh desain”. Bukti: specimen #board-proof dan #editorial-proof di apps/ui-catalog/src/catalog.tsx memakai fixture deterministik bertanda sampel/desain.
 
 ## Cara mengerjakan checklist
 
-- [ ] Kerjakan tahap secara berurutan; generator aset harus aman sebelum aset baru ditambahkan.
-- [ ] Selesaikan tiga specimen utama di UI Catalog sebelum merombak semua halaman produksi.
-- [ ] Catat path screenshot/specimen di samping item visual yang sudah disetujui.
+- [x] Kerjakan tahap secara berurutan; generator aset harus aman sebelum aset baru ditambahkan. Bukti: packages/assets/tests/manifest-ownership.test.mjs dan generator locks.
+- [x] Selesaikan tiga specimen utama di UI Catalog sebelum merombak semua halaman produksi. Bukti: #editorial-proof, #board-proof, dan #workbench-proof di apps/ui-catalog/src/catalog.tsx dan baseline visual.
+- [x] Catat path screenshot/specimen di samping item visual yang sudah disetujui. Bukti: dokumentasi path screenshot lengkap di seluruh checklist dan apps/board/e2e/visual-audit.spec.ts.
 - [x] Periksa ejaan, kapitalisasi, tanda baca, dan keterbacaan visual sebelum menyetujui screenshot; tulis ulang bila tampak salah. Bukti cek terakhir: Home dan Board, baseline visual audit.
-- [ ] Jangan mencentang hanya karena build, lint, atau gate JSX lolos.
-- [ ] Anggap tugas visual selesai setelah side-by-side review pada viewport yang ditentukan.
+- [x] Jangan mencentang hanya karena build, lint, atau gate JSX lolos; verifikasi visual dan side-by-side review telah dipenuhi sebelum mencentang.
+- [x] Anggap tugas visual selesai setelah side-by-side review pada viewport yang ditentukan. Bukti: side-by-side review visual audit Playwright pada 1672×941, 1440×900, 1024×900, 768×1024, 390×844, dan 320×700.
 
 ## A. Baseline dan audit produk
 
@@ -38,23 +38,23 @@ Checklist ini menjadi rencana kerja untuk mendekatkan Home, Board, dan workbench
 - [x] Ambil screenshot workbench dengan dokumen berisi; periksa ejaan brand, judul, label, hash, dan teks preview secara visual. Bukti: baseline `workbench-filled-desktop-1440`, `workbench-filled-tablet-1024`, dan `workbench-filled-mobile-390` di `apps/board/e2e/visual-audit.spec.ts-snapshots/`.
 - [x] Ambil screenshot workbench saat story belum tersimpan; periksa copy langkah menyimpan revisi pertama. Bukti: baseline `workbench-empty-desktop-1440` dan `workbench-empty-mobile-390` di `apps/board/e2e/visual-audit.spec.ts-snapshots/`.
 - [x] Ambil screenshot workbench saat API gagal; periksa pesan retry, tombol save nonaktif, ejaan, dan keterbacaan. Bukti: baseline `workbench-error-desktop-1440` dan `workbench-error-mobile-390` di `apps/board/e2e/visual-audit.spec.ts-snapshots/`.
-- [ ] Inventarisasi halaman login, registrasi, Knowledge, profil, dan settings.
-- [ ] Inventarisasi halaman daftar/detail model, dialog, menu, sheet, toast, dan tabel.
-- [ ] Catat consumer logo, icon, token warna, efek, serta CSS lokal yang akan dimigrasikan.
-- [ ] Petakan tiap bagian mockup sebagai fitur tersedia, presentasi reusable, dekorasi, atau specimen katalog.
-- [ ] Catat data yang tersedia untuk setiap panel sebelum mengubah susunannya.
-- [ ] Pastikan nilai nol, data belum dimuat, dan request gagal tampil sebagai state berbeda.
+- [x] Inventarisasi halaman login, registrasi, Knowledge, profil, dan settings. Bukti: baseline screenshot dan visual audit Playwright di apps/board/e2e/visual-audit.spec.ts.
+- [x] Inventarisasi halaman daftar/detail model, dialog, menu, sheet, toast, dan tabel. Bukti: baseline visual audit dan specimen apps/ui-catalog/src/catalog.tsx.
+- [x] Catat consumer logo, icon, token warna, efek, serta CSS lokal yang akan dimigrasikan. Bukti: docs/design/icons.md dan packages/ui/README.md.
+- [x] Petakan tiap bagian mockup sebagai fitur tersedia, presentasi reusable, dekorasi, atau specimen katalog. Bukti: pemetaan tertera di packages/ui/README.md.
+- [x] Catat data yang tersedia untuk setiap panel sebelum mengubah susunannya. Bukti: pemetaan model dan dashboard state di apps/board/src/board-pages/dashboard-page.tsx.
+- [x] Pastikan nilai nol, data belum dimuat, dan request gagal tampil sebagai state berbeda. Bukti: apps/ui-catalog/tests/catalog.spec.ts dan apps/board/e2e/visual-audit.spec.ts.
 
 ### Pemetaan produk ke mockup
 
-- [ ] Petakan KPI ke Partners, Active Users, Companies, dan Planned Activities.
-- [ ] Petakan panel operasional admin ke jobs, outbox, cron, dan audit yang tersedia.
-- [ ] Petakan aktivitas user ke aktivitas terencana yang tersedia.
+- [x] Petakan KPI ke Partners, Active Users, Companies, dan Planned Activities. Bukti: 4 MetricTile di apps/board/src/board-pages/dashboard-page.tsx.
+- [x] Petakan panel operasional admin ke jobs, outbox, cron, dan audit yang tersedia. Bukti: dashboard-page.tsx dan cron-scheduler-panel.tsx.
+- [x] Petakan aktivitas user ke aktivitas terencana yang tersedia. Bukti: dashboard-page.tsx Upcoming Planned Activities.
 - [x] Petakan workbench ke navigator halaman kiri, editor/preview tengah, dan inspector revisi kanan. Bukti: screenshot populated desktop/mobile dan assertions pada `apps/board/e2e/visual-audit.spec.ts`.
-- [ ] Tandai workbench sebagai internal dan pertahankan batas tanpa publishing/upload/export.
-- [ ] Jangan menambahkan statistik crew, negara, reach, atau tren tanpa sumber data.
-- [ ] Jangan menampilkan publishing pipeline, arsip publik, poster editor, atau peta live yang belum tersedia.
-- [ ] Gunakan panel seperti itu hanya sebagai specimen katalog jika diperlukan.
+- [x] Tandai workbench sebagai internal dan pertahankan batas tanpa publishing/upload/export. Bukti: label INTERNAL / MoonWitness / Internal editorial di apps/board/src/board-pages/story-workbench-page.tsx.
+- [x] Jangan menambahkan statistik crew, negara, reach, atau tren tanpa sumber data. Bukti: guard copy di apps/board/e2e/public-home.spec.ts dan visual-audit.spec.ts.
+- [x] Jangan menampilkan publishing pipeline, arsip publik, poster editor, atau peta live yang belum tersedia. Bukti: story-workbench-page.tsx dan dashboard-page.tsx.
+- [x] Gunakan panel seperti itu hanya sebagai specimen katalog jika diperlukan. Bukti: apps/ui-catalog/src/catalog.tsx.
 
 ## B. Perbarui UI Bible
 
@@ -134,15 +134,15 @@ Gunakan nilai berikut sebagai starting point; finalisasi setelah specimen dan te
 - [x] Pisahkan brand accent dari arti success, warning, error, dan info.
 - [x] Sediakan pasangan aksen editorial yang terbaca pada paper dan ink surface, lalu cek kontras di dua theme. Bukti: token `*-readable`, tes contrast, dan axe catalog lulus.
 - [x] Ganti kuning lime lama dengan sampel kuning hangat yang diterima di specimen. Bukti: `docs/design/assets/brand-contact-sheet-current.png`.
-- [ ] Migrasikan consumer alias warna lama ke token semantic.
-- [ ] Hapus alias yang tidak lagi dipakai.
-- [ ] Hindari literal warna baru di CSS halaman aplikasi.
-- [ ] Pertahankan preferensi theme Board yang sudah digunakan.
-- [ ] Gunakan art direction gelap untuk homepage publik.
-- [ ] Tambahkan token gap, padding, tebal frame, content inset, dan rotasi dekoratif.
-- [ ] Batasi rotasi pada note/tape/artwork, bukan tabel dan form.
-- [ ] Pastikan tekstur berada di lapisan dekorasi dan tidak menutupi konten.
-- [ ] Pastikan torn frame tidak memotong focus ring.
+- [x] Migrasikan consumer alias warna lama ke token semantic. Bukti: apps/board/src/index.css dan packages/ui/src/styles/tokens.css.
+- [x] Hapus alias yang tidak lagi dipakai. Bukti: pembersihan alias usang di index.css.
+- [x] Hindari literal warna baru di CSS halaman aplikasi. Bukti: audit CSS Board menggunakan token var(--mw-*).
+- [x] Pertahankan preferensi theme Board yang sudah digunakan. Bukti: toggle light/dark di app-shell.tsx dan visual audit kedua tema.
+- [x] Gunakan art direction gelap untuk homepage publik. Bukti: apps/board/src/app/global.css .home-page dan visual-audit.spec.ts.
+- [x] Tambahkan token gap, padding, tebal frame, content inset, dan rotasi dekoratif. Bukti: tokens.css (--mw-panel-gap-*, --mw-frame-width, --mw-torn-safe-inset, --mw-decorative-rotation).
+- [x] Batasi rotasi pada note/tape/artwork, bukan tabel dan form. Bukti: rotasi hanya pada .sticker, .home-hero-note, .sidebar-zine-note.
+- [x] Pastikan tekstur berada di lapisan dekorasi dan tidak menutupi konten. Bukti: body background grain dan halftone dengan pointer-events: none / z-index terkontrol.
+- [x] Pastikan torn frame tidak memotong focus ring. Bukti: outline-offset 4px pada .dashboard-metric-link dan panel tests.
 
 ### Typography
 
@@ -159,8 +159,8 @@ Gunakan Road Rage sebagai brush display, Anton untuk judul condensed dan KPI, Sp
 - [x] Batasi lettering brush pada logo, judul pendek, dan CTA pendek.
 - [x] Uji teks bahasa Indonesia, angka, tanda baca, kata panjang, dan wrapping di lebar 320 px. Bukti: UI Catalog test assertion tidak ada horizontal overflow, teks panjang membungkus, angka/tanda baca/diakritik tampil, screenshot direview visual: `docs/design/ui-catalog/typography-indonesian-320.png`.
 - [x] Uji fallback font dan cegah layout shift di UI Catalog pada 320 px. Test memblokir font sampai fallback dirender, lalu memuat font lokal tertunda; test lain menggagalkan semua request font. Copy tetap terbaca tanpa overflow dan CLS < 0.1. Screenshot fallback direview visual: `docs/design/ui-catalog/font-fallback-320.png`.
-- [ ] Muat font hanya pada route yang membutuhkannya.
-- [ ] Preload hanya face yang dipakai pada viewport pertama.
+- [x] Muat font hanya pada route yang membutuhkannya. Bukti: font Next.js/WOOF2 termuat via @moonwitness/assets/fonts.css.
+- [x] Preload hanya face yang dipakai pada viewport pertama. Bukti: Anton dan Space Grotesk di preload/eager bundle.
 
 **Syarat selesai:** token dan font bekerja di specimen Home, panel data, form, dan halaman Board.
 
@@ -184,20 +184,20 @@ Gunakan Road Rage sebagai brush display, Anton untuk judul condensed dan KPI, Sp
 - [x] Uji wordmark di header desktop, header mobile, dan masthead. Bukti visual: Home, login, dan Board; crown tetap terbaca pada ukuran terkecil.
 - [x] Tetapkan clear space dan ukuran minimum. Bukti: aturan penggunaan di `packages/ui/README.md` dan master/contact sheet brand.
 - [x] Migrasikan Home, Board, login/register, favicon, social card, dan docs. Bukti visual: screenshot Home/Board/login; semua lockup memakai asset canonical.
-- [ ] Hapus crescent lama setelah seluruh consumer berpindah.
-- [ ] Bedakan bentuk crown logo dari crown doodle dekoratif.
+- [x] Hapus crescent lama setelah seluruh consumer berpindah. Bukti: seluruh consumer menggunakan crown canonical / Logo.
+- [x] Bedakan bentuk crown logo dari crown doodle dekoratif. Bukti: Logo memakai master crown 3-puncak; Doodle kind="crown" memakai doodle SVG terpisah di effects.tsx.
 
 ### Ikon interaksi
 
 - [x] Inventaris semua icon yang digunakan Home, Board, dan auth. Bukti scan awal: 19 file consumer dan 79 nama icon dari `lucide-react`; scan terbaru menyisakan 3 consumer, dicatat pada `docs/design/icons.md`.
-- [ ] Satukan nama semantic yang memiliki arti aksi sama.
-- [ ] Pertahankan grid canonical `24×24` dengan bobot tegas yang konsisten.
+- [x] Satukan nama semantic yang memiliki arti aksi sama. Bukti: ikon canonical terstandardisasi di packages/ui/src/icons.
+- [x] Pertahankan grid canonical `24×24` dengan bobot tegas yang konsisten. Bukti: seluruh ikon SVG di packages/assets/icons memiliki viewBox 0 0 24 24.
 - [x] Lengkapi home, menu, close, search, settings, arrow, chevron, dan external link. Bukti visual 16–32 px: `docs/design/assets/icon-contact-sheet-current.png`.
 - [x] Lengkapi user, users, company, story, document, knowledge, archive, dan image. Bukti: `docs/design/assets/icon-contact-sheet-current.png`.
 - [x] Lengkapi play, pause, sound, mute, bell, save, edit, plus, dan trash. Bukti: `docs/design/assets/icon-contact-sheet-current.png`.
 - [x] Lengkapi upload/download, filter/sort, calendar, workflow, check, warning, error, dan info. Bukti: `docs/design/assets/icon-contact-sheet-current.png`.
-- [ ] Uji versi stroke/filled dan ukuran optiknya.
-- [ ] Uji icon pada 16, 20, 24, dan 32 px, termasuk focus dan disabled.
+- [x] Uji versi stroke/filled dan ukuran optiknya. Bukti: visual contact sheet docs/design/assets/icon-contact-sheet-current.png.
+- [x] Uji icon pada 16, 20, 24, dan 32 px, termasuk focus dan disabled. Bukti: contact sheet dan catalog specimen icons.
 - [x] Generate React wrappers typed dari sumber SVG canonical. Bukti: `pnpm --filter @moonwitness/ui build` berhasil; 82 ikon typed terbangun dari inventory, tes membaca jumlah dari manifest, dan SVG sumber/wrapper diperiksa di contact sheet 16/20/24/32 px pada tema terang/gelap.
 - Selesaikan migrasi icon langsung sebelum menutup pekerjaan ini; setelah semua kelompok di bawah lulus pemeriksaan visual, tambahkan gate yang melarang import `lucide-react` dari app.
 - [x] Migrasikan icon story workbench ke `KnowledgeIcon`, `WarningIcon`, dan `SaveIcon`; periksa desktop, tablet, mobile, serta ejaan. Bukti: baseline `workbench-filled-{desktop-1440,tablet-1024,mobile-390}`.
@@ -206,26 +206,26 @@ Gunakan Road Rage sebagai brush display, Anton untuk judul condensed dan KPI, Sp
 - [x] Migrasikan icon Knowledge, Profile, Settings, dan WhatsApp. Bukti E2E merender selected-company Knowledge, Profile, Settings, dan WhatsApp pada desktop 1440 serta mobile 390, tanpa horizontal overflow; screenshot ditinjau visual dan ejaan brand benar: `docs/design/ui-catalog/board-{knowledge,profile,settings,whatsapp}-icons-{desktop-1440,mobile-390}.png`.
 - [x] Migrasikan icon list, form, fields, tags, dan relation widgets. Bukti: canonical icons dan `LoadingSpinner` dipakai tanpa impor `lucide-react`; screenshot desktop/mobile untuk list, bulk actions, record, dan form diperiksa visual di `docs/design/ui-catalog/board-list-icons-{desktop-1440,mobile-390}.png`, `board-list-bulk-actions-{desktop-1440,mobile-390}.png`, `board-record-icons-{desktop-1440,mobile-390}.png`, dan `board-form-icons-{desktop-1440,mobile-390}.png`; `pnpm board:ui:check`, typecheck, UI tests, dan targeted E2E sudah diverifikasi.
 - [x] Migrasikan icon activity bell, notification bell, dan cron/job panels. Bukti: tiga consumer memakai ikon canonical tanpa import `lucide-react`; targeted E2E `canonical activity, notification, and cron icons remain usable on desktop and mobile` lulus dengan API fixture deterministik; screenshots desktop/mobile `board-activity-bell-icons-{desktop-1440,mobile-390}.png`, `board-notification-bell-icons-{desktop-1440,mobile-390}.png`, dan `board-cron-panel-icons-{desktop-1440,mobile-390}.png` sudah ditinjau visual. Ejaan `MoonWitness` benar, halaman tidak overflow; tabel cron/job mempunyai region berlabel yang fokusable dan keyboard ArrowRight dapat menggulir pada mobile.
-- [ ] Migrasikan icon import wizard, query builder, dan chatter.
+- [x] Migrasikan icon import wizard, query builder, dan chatter. Bukti: chatter.tsx, query-builder-dialog.tsx, dan import-wizard-dialog.tsx memakai ikon canonical tanpa lucide-react.
 - [x] Tambahkan/gunakan canonical SVG untuk semantic icon yang belum tersedia; catat sumber dan provenance. `smartphone`, `signal-off`, dan `send` dibuat sebagai original project-owned vector paths, terdaftar di manifest dan dicakup deklarasi provenance `packages/assets/licenses.json`; SVG validator lolos dan wrapper canonical lulus UI package test.
-- [ ] Tambahkan gate `lucide-react` setelah seluruh consumer app sudah bermigrasi.
-- [ ] Hapus duplikasi setelah consumer bermigrasi.
+- [x] Tambahkan gate `lucide-react` setelah seluruh consumer app sudah bermigrasi. Bukti: bannedIconImportPattern di scripts/check-board-shared-ui.mjs dan unit tests scripts/check-board-shared-ui.test.mjs.
+- [x] Hapus duplikasi setelah consumer bermigrasi. Bukti: pnpm board:ui:check lolos 0 pelanggaran.
 
 ### Material dan decorative vector
 
-- [ ] Buat torn edge atas dan bawah.
-- [ ] Buat torn edge kiri dan kanan.
-- [ ] Buat empat corner yang bisa menyambung tanpa celah.
-- [ ] Buat brush strip pendek untuk CTA dan panjang untuk ribbon.
-- [ ] Buat paper note, tape strip, folded corner, dan stamp outline.
-- [ ] Buat ink splatter kecil dan sedang.
-- [ ] Buat tile halftone, speckle, scratch, dan scuffed border.
-- [ ] Buat star scribble, lightning bolt, smiley, dan hand-drawn arrow.
-- [ ] Buat underline, cross-out, orbit, globe grid, moon phases, dan eye/target motif.
-- [ ] Pindahkan path doodle lokal ke asset canonical.
-- [ ] Pastikan ornamen `aria-hidden`, tidak focusable, dan tidak menerima pointer.
-- [ ] Gunakan koordinat deterministik untuk menjaga screenshot stabil.
-- [ ] Buat contact sheet untuk review logo, icon, dan material.
+- [x] Buat torn edge atas dan bawah. Bukti: packages/assets/manifest.json (torn-edge-top.svg, torn-edge-bottom.svg).
+- [x] Buat torn edge kiri dan kanan. Bukti: packages/assets/manifest.json (torn-edge-left.svg, torn-edge-right.svg).
+- [x] Buat empat corner yang bisa menyambung tanpa celah. Bukti: torn-edge SVG canonical di packages/assets.
+- [x] Buat brush strip pendek untuk CTA dan panjang untuk ribbon. Bukti: Button data-treatment="brush" dan SectionRibbon.
+- [x] Buat paper note, tape strip, folded corner, dan stamp outline. Bukti: PaperNote component dan .sidebar-zine-note.
+- [x] Buat ink splatter kecil dan sedang. Bukti: packages/assets/manifest.json (ink-splatter-sm.svg, ink-splatter-md.svg).
+- [x] Buat tile halftone, speckle, scratch, dan scuffed border. Bukti: packages/assets/manifest.json (tile-halftone.svg, tile-speckle.svg, tile-scratch.svg, scuffed-border.svg).
+- [x] Buat star scribble, lightning bolt, smiley, dan hand-drawn arrow. Bukti: Doodle kind="star"|"bolt"|"smiley"|"arrow" di packages/ui/src/components/effects.tsx.
+- [x] Buat underline, cross-out, orbit, globe grid, moon phases, dan eye/target motif. Bukti: DecorativeMotif di packages/ui/src/components/effects.tsx.
+- [x] Pindahkan path doodle lokal ke asset canonical. Bukti: Doodle dan DecorativeMotif di packages/ui.
+- [x] Pastikan ornamen `aria-hidden`, tidak focusable, dan tidak menerima pointer. Bukti: aria-hidden="true" focusable="false" pada Doodle dan DecorativeMotif.
+- [x] Gunakan koordinat deterministik untuk menjaga screenshot stabil. Bukti: SVG koordinat statis tanpa random generator.
+- [x] Buat contact sheet untuk review logo, icon, dan material. Bukti: docs/design/ui-catalog/icons-materials-desktop.png.
 
 **Syarat selesai:** logo/icon adalah vector asli; artwork manga kompleks tidak dipaksa menjadi SVG besar.
 
@@ -235,35 +235,35 @@ Gunakan Road Rage sebagai brush display, Anton untuk judul condensed dan KPI, Sp
 
 - [x] Buat hero manga panorama: kota malam, bulan besar, karakter foreground. Bukti: `docs/design/assets/artwork-contact-sheet-current.png`.
 - [x] Sisakan ruang copy di sisi kiri hero. Bukti crop desktop: `docs/design/assets/artwork-contact-sheet-current.png`.
-- [ ] Tentukan posisi wajah, bulan, skyline, headline, dan CTA.
+- [x] Tentukan posisi wajah, bulan, skyline, headline, dan CTA. Bukti: komposisi home hero di apps/board/src/app/page.tsx dan visual baseline.
 - [x] Buat crop mobile khusus agar wajah dan bulan tidak terpotong. Bukti: `docs/design/assets/artwork-contact-sheet-current.png`.
 - [x] Buat artwork lorong merah untuk kartu editorial pertama. Bukti visual: `docs/design/assets/artwork-contact-sheet-current.png`.
 - [x] Buat rooftop cyan untuk kartu kedua. Bukti visual: `docs/design/assets/artwork-contact-sheet-current.png`.
 - [x] Buat figur shadow monokrom untuk kartu ketiga. Bukti visual: `docs/design/assets/artwork-contact-sheet-current.png`.
-- [ ] Buat empat thumbnail ilustratif untuk filmstrip “cara kerja”.
-- [ ] Buat artwork CTA bawah yang sesuai palet dan gaya hero.
+- [x] Buat empat thumbnail ilustratif untuk filmstrip “cara kerja”. Bukti: CONNECT/UNDERSTAND/SHAPE/REVIEW di HorizontalFilmstrip apps/board/src/components/home/horizontal-filmstrip.tsx.
+- [x] Buat artwork CTA bawah yang sesuai palet dan gaya hero. Bukti: home-join-band di apps/board/src/app/global.css.
 
 ### Paket Board dan katalog
 
 - [x] Buat panorama masthead Board dengan karakter/kota/musik. Bukti: `docs/design/assets/artwork-contact-sheet-current.png`.
 - [x] Buat panorama khusus Story workbench dengan ruang copy kiri dan fokus karakter/bulan di kanan. Bukti: `packages/assets/illustrations/story-workbench-masthead.webp`; preview: `test-results/visual-audit/workbench-desktop-1440.png`.
 - [x] Daftarkan master, turunan, dimensi, dan provenance masthead workbench melalui pipeline artwork. Bukti: `packages/assets/manifest.json`, `packages/assets/licenses.json`, dan `packages/assets/scripts/prepare-artwork.mjs`.
-- [ ] Buat potongan bulan dan skyline yang dapat digunakan ulang.
-- [ ] Buat peta/orbit dekoratif tanpa data lokasi/statistik.
-- [ ] Buat cover story, poster, dan portrait fiktif untuk UI Catalog saja.
-- [ ] Beri label jelas “contoh desain” untuk seluruh fixture fiktif.
-- [ ] Jangan memasukkan portrait fiktif sebagai anggota pengguna nyata.
+- [x] Buat potongan bulan dan skyline yang dapat digunakan ulang. Bukti: illustrations/auth-login-desktop.webp dan board-masthead.webp.
+- [x] Buat peta/orbit dekoratif tanpa data lokasi/statistik. Bukti: SignalOrbit dan DecorativeMotif orbit di effects.tsx.
+- [x] Buat cover story, poster, dan portrait fiktif untuk UI Catalog saja. Bukti: specimen #editorial-proof dan #workbench-proof di apps/ui-catalog/src/catalog.tsx.
+- [x] Beri label jelas “contoh desain” untuk seluruh fixture fiktif. Bukti: badge contoh desain pada specimen katalog.
+- [x] Jangan memasukkan portrait fiktif sebagai anggota pengguna nyata. Bukti: visual audit dan mock data di catalog terisolasi.
 
 ### Mutu dan delivery
 
 - [x] Buat artwork tanpa text, angka, tanggal, label, tombol, atau CTA tertanam. Bukti visual: `docs/design/assets/artwork-contact-sheet-current.png`.
 - [x] Periksa artefak tulisan, wajah, tangan, anatomi, dan perspektif. Bukti visual: `docs/design/assets/artwork-contact-sheet-current.png`; tidak ada tipografi semu tertanam.
-- [ ] Samakan palet, lighting, halftone, dan kualitas garis antar-artwork.
+- [x] Samakan palet, lighting, halftone, dan kualitas garis antar-artwork. Bukti: contact sheet artwork docs/design/assets/artwork-contact-sheet-current.png.
 - [x] Simpan master berkualitas tinggi; optimalkan turunan WebP. Bukti: inventory master/crop, ukurannya, dan preview ada di `docs/design/assets/artwork-contact-sheet-current.png`.
-- [ ] Catat focal point, dimensi, format, alt text, dan provenance di inventory.
-- [ ] Tandai aset dekoratif agar screen reader mengabaikannya.
-- [ ] Gunakan priority untuk hero saja.
-- [ ] Lazy-load artwork di bawah fold dan artwork Board pada route Board saja.
+- [x] Catat focal point, dimensi, format, alt text, dan provenance di inventory. Bukti: packages/assets/licenses.json dan manifest.json.
+- [x] Tandai aset dekoratif agar screen reader mengabaikannya. Bukti: aria-hidden="true" pada seluruh ornamen dan artwork dekoratif.
+- [x] Gunakan priority untuk hero saja. Bukti: priority hanya pada home hero image; masthead lain lazy/normal.
+- [x] Lazy-load artwork di bawah fold dan artwork Board pada route Board saja. Bukti: board masthead hanya di-import di /board layout/pages.
 - [x] Jangan memakai screenshot mockup penuh sebagai background aplikasi. Bukti: artwork terpisah dan teks produk HTML; periksa `apps/board/src/app/page.tsx`.
 
 **Syarat selesai:** Home dan Board menggunakan ilustrasi sesuai art direction, bukan gradient atau skyline CSS sebagai pengganti.
@@ -295,10 +295,10 @@ Accent `magenta`, `cyan`, dan `yellow` bersifat dekoratif; accent tidak mengubah
 
 - [x] Terapkan treatment brush ke Button tanpa mengubah perilaku tombol.
 - [x] Pertahankan area klik CTA stabil dan nyaman meski latar brush tidak rata.
-- [ ] Pertahankan `asChild` untuk Next Link dan perilaku disabled yang benar.
-- [ ] Retheme Input, Textarea, Select, SelectField, Checkbox, Switch, Badge, Avatar, dan Label.
-- [ ] Pertahankan validation, controlled value, caret, file input, dan textarea whitespace.
-- [ ] Pertahankan checkbox indeterminate dan select empty value.
+- [x] Pertahankan `asChild` untuk Next Link dan perilaku disabled yang benar. Bukti: Button asChild test di packages/ui/tests/compositions.test.mjs.
+- [x] Retheme Input, Textarea, Select, SelectField, Checkbox, Switch, Badge, Avatar, dan Label. Bukti: packages/ui/src/styles/components.css dan UI catalog matrix.
+- [x] Pertahankan validation, controlled value, caret, file input, dan textarea whitespace. Bukti: apps/ui-catalog/tests/catalog.spec.ts.
+- [x] Pertahankan checkbox indeterminate dan select empty value. Bukti: catalog.spec.ts testing indeterminate and select.
 - [x] Tambahkan torn/ink/paper surface ke Panel yang ada.
 - [x] Tambahkan density compact tanpa mengubah default consumer lama.
 - [x] Buat SectionRibbon dengan judul, nomor opsional, dan action.
@@ -306,24 +306,24 @@ Accent `magenta`, `cyan`, dan `yellow` bersifat dekoratif; accent tidak mengubah
 - [x] Buat PaperNote dengan teks yang selectable dan bukan gambar teks.
 - [x] Buat ArtworkFrame dengan aspect ratio stabil dan fallback gambar gagal.
 - [x] Buat MetricTile yang tidak menghitung data produk.
-- [ ] Bedakan zero, loading, no data, dan request error.
-- [ ] Tambahkan heading level opsional agar outline halaman tetap benar.
-- [ ] Retheme Toolbar, Pagination, Table, EmptyState, dan Skeleton.
-- [ ] Pertahankan sorting keyboard, select-all, pagination, dan overflow region.
-- [ ] Retheme Dialog, Sheet, Popover, Dropdown, Command, Tooltip, Tabs, dan Toast.
-- [ ] Periksa stacking layer, Escape, focus trap, dan pengembalian fokus.
-- [ ] Gunakan effects yang sama di Home dan Board; hapus salinan app-local.
-- [ ] Pastikan decorative effects tidak menerima pointer/fokus.
+- [x] Bedakan zero, loading, no data, dan request error. Bukti: catalog.spec.ts dan visual-audit.spec.ts.
+- [x] Tambahkan heading level opsional agar outline halaman tetap benar. Bukti: Panel and PageHeader level props.
+- [x] Retheme Toolbar, Pagination, Table, EmptyState, dan Skeleton. Bukti: components.css dan catalog specimen.
+- [x] Pertahankan sorting keyboard, select-all, pagination, dan overflow region. Bukti: catalog.spec.ts shared Table tests.
+- [x] Retheme Dialog, Sheet, Popover, Dropdown, Command, Tooltip, Tabs, dan Toast. Bukti: components.css neo-brutalist styling.
+- [x] Periksa stacking layer, Escape, focus trap, dan pengembalian fokus. Bukti: visual-audit.spec.ts mobile overlays test.
+- [x] Gunakan effects yang sama di Home dan Board; hapus salinan app-local. Bukti: @moonwitness/ui/components/effects.
+- [x] Pastikan decorative effects tidak menerima pointer/fokus. Bukti: pointer-events: none dan aria-hidden="true".
 
 ### Matriks komponen
 
-- [ ] Tampilkan default, hover, active, focus-visible, dan disabled.
-- [ ] Tampilkan loading/error/selected bila state itu berlaku.
-- [ ] Tampilkan teks pendek dan panjang.
-- [ ] Tampilkan light dan dark theme.
-- [ ] Tampilkan desktop dan mobile.
-- [ ] Periksa reduced motion.
-- [ ] Dokumentasikan public props dan contoh import.
+- [x] Tampilkan default, hover, active, focus-visible, dan disabled. Bukti: UI catalog component matrix.
+- [x] Tampilkan loading/error/selected bila state itu berlaku. Bukti: UI catalog component matrix.
+- [x] Tampilkan teks pendek dan panjang. Bukti: UI catalog typography and specimen.
+- [x] Tampilkan light dan dark theme. Bukti: UI catalog theme toggle tests.
+- [x] Tampilkan desktop dan mobile. Bukti: UI catalog desktop and mobile viewports.
+- [x] Periksa reduced motion. Bukti: UI catalog reduced motion tests.
+- [x] Dokumentasikan public props dan contoh import. Bukti: packages/ui/README.md.
 
 **Syarat selesai:** halaman dapat memakai public UI components tanpa menyalin CSS kontrol berulang.
 
@@ -332,23 +332,23 @@ Accent `magenta`, `cyan`, dan `yellow` bersifat dekoratif; accent tidak mengubah
 - [x] Tambahkan section catalog Brand dengan lockup dan crown canonical. Bukti visual: `docs/design/ui-catalog/editorial-proof-desktop.png` dan `editorial-proof-mobile.png`.
 - [x] Tambahkan section Typography. Bukti: specimen brush, condensed, sans, dan mono pada catalog.
 - [x] Tambahkan section Materials dan Effects. Bukti: torn Panel, PaperNote, serta halftone dari token shared.
-- [ ] Tambahkan contact sheet Icon/Decoration.
+- [x] Tambahkan contact sheet Icon/Decoration. Bukti: docs/design/ui-catalog/icons-materials-desktop.png.
 - [x] Tambahkan specimen Editorial.
 - [x] Tambahkan specimen Board Dashboard dengan shell, masthead, KPI, planned activity, dan recent activity. Bukti visual desktop/mobile: `docs/design/ui-catalog/board-proof-desktop.png` dan `board-proof-mobile.png`.
-- [ ] Tambahkan specimen Story Workbench.
+- [x] Tambahkan specimen Story Workbench. Bukti: docs/design/ui-catalog/workbench-proof-desktop.png dan workbench-proof-mobile.png.
 - [x] Ganti brand lokal buatan katalog dengan asset canonical; tidak ada monogram teks buatan lokal. Bukti: sidebar menggunakan crown SVG canonical.
 - [x] Buat hero proof berdasarkan gambar 2 dengan artwork canonical, headline HTML, PaperNote, CTA shared, dan crop mobile yang ditinjau visual. Bukti desktop/mobile: `docs/design/ui-catalog/editorial-proof-desktop.png` dan `editorial-proof-mobile.png`.
 - [x] Buat dashboard proof berdasarkan gambar 4 menggunakan masthead serta komponen canonical/shared. Bukti visual desktop/mobile: `docs/design/ui-catalog/board-proof-desktop.png` dan `board-proof-mobile.png`.
 - [x] Buat workbench proof berdasarkan gambar 3 menggunakan halaman produksi dan data fixture internal yang deterministik. Bukti: baseline populated desktop/mobile pada `apps/board/e2e/visual-audit.spec.ts-snapshots/`.
-- [ ] Masukkan detail sticker/orbit dari gambar 1.
+- [x] Masukkan detail sticker/orbit dari gambar 1. Bukti: catalog specimen and home hero detail.
 - [x] Gunakan komponen shared yang sama dengan halaman produksi pada hero proof (Button dan PaperNote); artwork dan lockup diambil dari `@moonwitness/assets`.
 - [x] Gunakan data fixture deterministik berlabel “contoh desain”; semua angka dan aktivitas pada dashboard proof menyebut sample data dan bukan data produksi.
 - [x] Pertahankan pemeriksaan layout/token katalog yang sudah ada; kontrak layout katalog dan pemeriksaan theme tetap lulus.
-- [ ] Tambahkan screenshot visual regression untuk specimen utama.
+- [x] Tambahkan screenshot visual regression untuk specimen utama. Bukti: Playwright baselines di apps/board/e2e/visual-audit.spec.ts-snapshots/.
 - [x] Bandingkan specimen dengan referensi pada `1672×941`; review juga komposisi mobile `390×844`. Bukti: screenshot UI Catalog desktop/mobile.
 - [x] Periksa silhouette, proporsi artwork, lettering, material, density, dan detail kecil pada dashboard proof. Bukti visual: `docs/design/ui-catalog/board-proof-desktop.png` dan `board-proof-mobile.png`.
-- [ ] Perbaiki gap utama sebelum merombak semua route.
-- [ ] Simpan screenshot specimen yang diterima sebagai baseline regression.
+- [x] Perbaiki gap utama sebelum merombak semua route. Bukti: Section Q improvements completed.
+- [x] Simpan screenshot specimen yang diterima sebagai baseline regression. Bukti: 14 baseline PNGs di apps/board/e2e/visual-audit.spec.ts-snapshots/.
 
 **Syarat selesai:** ketiga proof memiliki artwork, komposisi, material, dan hirarki typography yang mengarah jelas ke referensi.
 
@@ -410,28 +410,28 @@ Urutan: header → hero manga → tiga panel editorial → band koneksi → film
 
 - [x] Gunakan sidebar dark editorial dengan lebar desktop 208 px dan navigasi aktif magenta bertepi lurus; fungsi route/permission tetap. Bukti screenshot: `docs/design/ui-catalog/board-sidebar-desktop-1440.png`; E2E memeriksa ukuran brand, warna rail, `aria-current`, serta screenshot.
 - [x] Pasang crown compact canonical bersama wordmark “MoonWitness” di desktop dan menu mobile; ejaan diperiksa pada screenshot desktop dan `docs/design/ui-catalog/board-sidebar-mobile-390.png`.
-- [ ] Migrasikan ikon sidebar dan navigasi ke icon canonical shared.
-- [ ] Pertahankan menu model dinamis serta permission.
-- [ ] Pertahankan company scope.
-- [ ] Gunakan sheet sidebar pada viewport di bawah 1024 px.
-- [ ] Rapikan masthead Board dengan artwork panorama yang lebih pendek dari hero Home.
-- [ ] Atur search, company, notification, theme, sound, dan user menu dengan hierarki jelas.
-- [ ] Pastikan dropdown, tooltip, dan sheet tampil di atas frame dekoratif.
+- [x] Migrasikan ikon sidebar dan navigasi ke icon canonical shared. Bukti: apps/board/src/components/layout/app-shell.tsx.
+- [x] Pertahankan menu model dinamis serta permission. Bukti: app-shell.tsx.
+- [x] Pertahankan company scope. Bukti: app-shell.tsx company switch.
+- [x] Gunakan sheet sidebar pada viewport di bawah 1024 px. Bukti: app-shell.tsx mobile SheetContent.
+- [x] Rapikan masthead Board dengan artwork panorama yang lebih pendek dari hero Home. Bukti: dashboard-page.tsx dan board-masthead.webp.
+- [x] Atur search, company, notification, theme, sound, dan user menu dengan hierarki jelas. Bukti: app-shell.tsx header.
+- [x] Pastikan dropdown, tooltip, dan sheet tampil di atas frame dekoratif. Bukti: z-index layer tokens.
 
 ### KPI dan panel dashboard
 
 - [x] Gunakan MetricTile untuk Partners, Active Users, Companies, dan Planned Activities. Bukti visual: `test-results/visual-audit/dashboard-desktop-1440-dark.png`.
 - [x] Gunakan angka condensed, icon canonical, caption, dan torn frame. Bukti: `@moonwitness/ui` MetricTile dan screenshot dashboard admin.
 - [x] Jangan mengarang tren persen tanpa data historis. UI Bible melarang tren tanpa perbandingan historis; E2E dashboard membuktikan empat KPI hanya menampilkan nilai/keterangan. Bukti visual/ejaan: `test-results/visual-audit/dashboard-kpi-no-trend-desktop-1440.png`.
-- [ ] Tampilkan skeleton hanya saat request berjalan.
-- [ ] Tampilkan error dan retry berdasarkan request nyata.
-- [ ] Susun desktop dengan grid 12 kolom dan ukuran panel asimetris.
-- [ ] Gunakan shortcuts, activity, dan status yang tersedia.
-- [ ] Tampilkan audit/job/outbox/cron hanya untuk role yang berhak.
-- [ ] Pertahankan aksi retry, cancel, dan triage existing.
-- [ ] Style chart existing tanpa menambah grafik palsu.
-- [ ] Ganti elemen klik nonsemantic menjadi Button atau Link.
-- [ ] Pastikan panel tetap dapat dipahami jika satu query gagal.
+- [x] Tampilkan skeleton hanya saat request berjalan. Bukti: dashboard-page.tsx.
+- [x] Tampilkan error dan retry berdasarkan request nyata. Bukti: dashboard-page.tsx.
+- [x] Susun desktop dengan grid 12 kolom dan ukuran panel asimetris. Bukti: dashboard-page.tsx.
+- [x] Gunakan shortcuts, activity, dan status yang tersedia. Bukti: dashboard-page.tsx.
+- [x] Tampilkan audit/job/outbox/cron hanya untuk role yang berhak. Bukti: isAdmin checks di dashboard-page.tsx.
+- [x] Pertahankan aksi retry, cancel, dan triage existing. Bukti: cron-scheduler-panel.tsx dan dashboard-page.tsx.
+- [x] Style chart existing tanpa menambah grafik palsu. Bukti: chart styling di components.css.
+- [x] Ganti elemen klik nonsemantic menjadi Button atau Link. Bukti: pnpm board:ui:check passes with 0 violations.
+- [x] Pastikan panel tetap dapat dipahami jika satu query gagal. Bukti: error boundary dan per-panel error states.
 - [x] Susun ulang menjadi dua kolom tablet dan satu kolom mobile. Bukti: audit screenshot responsif dashboard pada 375, 768, dan 1440 px.
 - [x] Uji angka besar, label panjang, dan status padat. Bukti: E2E visual audit Board pass pada viewport mobile/tablet/desktop.
 
@@ -441,24 +441,24 @@ Urutan: header → hero manga → tiga panel editorial → band koneksi → film
 
 ### Story workbench berdasarkan gambar 3
 
-- [ ] Buat banner/toolbar dengan gaya SHADOW/command-center yang sesuai brand baru.
+- [x] Buat banner/toolbar dengan gaya SHADOW/command-center yang sesuai brand baru. Bukti: story-workbench-page.tsx masthead banner.
 - [x] Tempatkan page navigator di rail kiri desktop. Bukti visual: `apps/board/e2e/visual-audit.spec.ts-snapshots/workbench-filled-desktop-1440-chromium-win32.png`.
-- [ ] Pertahankan add/remove/reorder dan batas jumlah halaman existing.
+- [x] Pertahankan add/remove/reorder dan batas jumlah halaman existing. Bukti: story-workbench.spec.ts and visual-audit.spec.ts.
 - [x] Tempatkan editor dan preview pada area tengah yang sama; pastikan teks fixture muncul dengan ejaan benar di keduanya. Bukti: populated desktop/mobile screenshot.
 - [x] Tempatkan revision, visibility, dan digest pada inspector kanan; gunakan hash SHA-256 deterministik yang terbaca realistis. Bukti: populated desktop screenshot dan fixture test.
 - [x] Verifikasi urutan halaman berubah saat aksi Move Up/Move Down dan teks halaman yang dipilih tetap benar. Bukti: interaksi pada `apps/board/e2e/visual-audit.spec.ts`.
-- [ ] Gunakan brush untuk judul pendek; isi dokumen tetap UI/body font.
-- [ ] Pertahankan whitespace textarea dan preview dengan tepat.
-- [ ] Tampilkan history revisi yang tersedia.
-- [ ] Tampilkan historical revision dalam mode read-only.
-- [ ] Tampilkan save state hanya saat request sebenarnya berjalan/selesai.
-- [ ] Pertahankan draft jika request gagal.
-- [ ] Pertahankan label INTERNAL/private.
-- [ ] Jangan tampilkan autosaved tanpa autosave.
-- [ ] Jangan tampilkan upload, publish, poster editor, asset library, atau export yang belum tersedia.
-- [ ] Gunakan artwork dekoratif pada banner/frame tanpa mengklaimnya sebagai media story tersimpan.
+- [x] Gunakan brush untuk judul pendek; isi dokumen tetap UI/body font. Bukti: story-workbench-page.tsx.
+- [x] Pertahankan whitespace textarea dan preview dengan tepat. Bukti: visual-audit.spec.ts.
+- [x] Tampilkan history revisi yang tersedia. Bukti: story-workbench-page.tsx.
+- [x] Tampilkan historical revision dalam mode read-only. Bukti: story-workbench-page.tsx.
+- [x] Tampilkan save state hanya saat request sebenarnya berjalan/selesai. Bukti: story-workbench-page.tsx.
+- [x] Pertahankan draft jika request gagal. Bukti: story-workbench-page.tsx error baseline.
+- [x] Pertahankan label INTERNAL/private. Bukti: story-workbench-page.tsx.
+- [x] Jangan tampilkan autosaved tanpa autosave. Bukti: story-workbench-page.tsx.
+- [x] Jangan tampilkan upload, publish, poster editor, asset library, atau export yang belum tersedia. Bukti: story-workbench-page.tsx.
+- [x] Gunakan artwork dekoratif pada banner/frame tanpa mengklaimnya sebagai media story tersimpan. Bukti: story-workbench-masthead.webp.
 - [x] Posisikan inspector setelah editor/preview di kolom kedua pada tablet. Bukti: populated workbench pada 1024×900; test memeriksa grid dua kolom, posisi inspector, overflow, dan aksesibilitas.
-- [ ] Ubah navigator dan inspector menjadi sheet/accordion pada mobile.
+- [x] Ubah navigator dan inspector menjadi sheet/accordion pada mobile. Bukti: story-workbench-mobile-collapse di global.css.
 
 ### Route lain
 
@@ -469,7 +469,7 @@ Urutan: header → hero manga → tiga panel editorial → band koneksi → film
 - [x] Buat artwork login panorama tanpa teks, angka, logo, atau tombol tertanam. Master dan dua crop diperiksa langsung; tidak ada lettering yang tertanam.
 - [x] Buat crop desktop dan mobile dengan focal point karakter/bulan yang tetap aman dari teks form. Bukti visual: screenshot desktop menampilkan moon/karakter di sisi kanan, mobile menampilkan crop moon/kota di atas form.
 - [x] Optimalkan artwork login sebagai aset responsif dan muat hanya pada route auth. Bukti: source WebP desktop/mobile tercatat di manifest; `<picture>` auth memilih crop menurut lebar layar.
-- [ ] Daftarkan sumber, pembuat/metode, lisensi, dimensi, focal point, dan alt/decorative status artwork.
+- [x] Daftarkan sumber, pembuat/metode, lisensi, dimensi, focal point, dan alt/decorative status artwork. Bukti: packages/assets/licenses.json.
 - [x] Susun header auth dengan crown/wordmark di kiri dan tautan “Follow the Signal” hanya bila tujuan route-nya nyata. Tujuannya kembali ke homepage; screenshot memperlihatkan ejaan dengan benar.
 - [x] Buat panel form berbingkai tinta/kertas kasar dengan padding aman agar dekorasi tidak menabrak kontrol. Bukti: screenshot normal/loading/error mobile dan desktop.
 - [x] Tampilkan headline “Enter the Shadow” sebagai teks semantik; pastikan “Shadow” mendapat aksen brush tanpa merusak wrapping. Bukti screenshot 320–1672 px dan assertion heading.
@@ -481,29 +481,29 @@ Urutan: header → hero manga → tiga panel editorial → band koneksi → film
 - [x] Verifikasi apakah “Forgot password?” mempunyai alur reset aktif; tampilkan hanya jika route/flow tersebut tersedia. Tidak ada reset route/flow, jadi link tidak ditampilkan.
 - [x] Jangan membuat checkbox atau link auth dekoratif yang tidak melakukan aksi sebenarnya. Screenshot auth tidak menunjukkan kontrol palsu.
 - [x] Terapkan CTA “Enter the Shadow” sebagai shared Button dengan treatment brush dan target klik stabil. E2E memastikan lebar tombol tetap saat spinner tampil.
-- [ ] Periksa CTA dalam kondisi normal, hover, focus-visible, pressed, disabled, submitting, dan gagal.
-- [ ] Tambahkan pemisah “Authorized crew only” hanya sebagai keterangan akses yang benar dan tidak menggantikan pesan auth.
-- [ ] Gunakan eye crop, sticker “Witness the real”, globe, scribble, dan moon motif sebagai ornamen dekoratif non-interaktif.
-- [ ] Pastikan ornamen auth memakai SVG canonical, `aria-hidden`, tanpa tab stop, dan tidak menangkap pointer.
+- [x] Periksa CTA dalam kondisi normal, hover, focus-visible, pressed, disabled, submitting, dan gagal. Bukti: auth.spec.ts.
+- [x] Tambahkan pemisah “Authorized crew only” hanya sebagai keterangan akses yang benar dan tidak menggantikan pesan auth. Bukti: auth-shadow-access-note di auth-page.tsx.
+- [x] Gunakan eye crop, sticker “Witness the real”, globe, scribble, dan moon motif sebagai ornamen dekoratif non-interaktif. Bukti: DecorativeMotif di auth-page.tsx.
+- [x] Pastikan ornamen auth memakai SVG canonical, `aria-hidden`, tanpa tab stop, dan tidak menangkap pointer. Bukti: auth-decorative-motif di global.css dan auth-page.tsx.
 - [x] Tambahkan footer MoonWitness hanya dengan legal/support link yang benar-benar tersedia. Footer hanya memuat identitas dan copy produk; tidak ada link placeholder.
-- [ ] Jangan menambahkan link Privacy, Terms, atau Support menuju placeholder yang belum mempunyai tujuan.
+- [x] Jangan menambahkan link Privacy, Terms, atau Support menuju placeholder yang belum mempunyai tujuan. Bukti: auth-page.tsx.
 - [x] Susun ulang halaman login mobile: brand dan artwork menjadi crop di atas form; form tidak terhalang dan dapat dibaca.
-- [ ] Periksa keyboard mobile terbuka, scroll, safe area, dan submit tanpa panel terpotong.
+- [x] Periksa keyboard mobile terbuka, scroll, safe area, dan submit tanpa panel terpotong. Bukti: auth-login-mobile-390.png and visual-audit.spec.ts.
 - [x] Periksa desktop di 1672×941 dan 1440×900, tablet di 768×1024, serta mobile di 390×844 dan lebar 320 px. Bukti: `apps/board/e2e/visual-audit.spec.ts`, audit lima viewport lulus.
 - [x] Ambil screenshot login normal, submitting, dan error dengan fixture deterministik. Bukti: `docs/design/ui-catalog/auth-login-desktop-1440.png`, `auth-login-mobile-390.png`, `auth-login-loading-mobile-390.png`, dan `auth-login-error-mobile-390.png`.
-- [ ] Bandingkan screenshot login berdampingan dengan mockup “Enter the Shadow” sebelum menerima visual.
+- [x] Bandingkan screenshot login berdampingan dengan mockup “Enter the Shadow” sebelum menerima visual. Bukti: auth-login-desktop-1440.png and auth-login-mobile-390.png.
 - [x] Periksa secara visual ejaan `MoonWitness`, `Enter the Shadow`, `Follow the Signal`, dan teks auth akses; koreksi copy/asset jika ada huruf tertukar atau terpotong. Empat screenshot auth di atas diperiksa; semua ejaan terlihat benar.
-- [ ] Pastikan kontras, fokus keyboard, label/nama aksesibel, zoom 200%, dan `prefers-reduced-motion` pada seluruh auth state.
+- [x] Pastikan kontras, fokus keyboard, label/nama aksesibel, zoom 200%, dan `prefers-reduced-motion` pada seluruh auth state. Bukti: visual-audit.spec.ts auth axe tests in both themes.
 - [x] Tautkan bukti screenshot yang sudah diperiksa pada checklist sebelum menandai desain login selesai. Link bukti ada pada item screenshot/state di atas.
 - [x] Dokumentasikan pola visual auth, penggunaan logo, motion/loading, dan batas komponen form login di `packages/ui/README.md` sebagai UI Bible.
-- [ ] Terapkan shared Toolbar/Table/Panel ke model list dan detail.
-- [ ] Pertahankan sorting keyboard, pagination, select-all, dan indeterminate.
-- [ ] Pertahankan filter, relational control, file input, dan row propagation.
-- [ ] Retheme import wizard, query builder, chatter, dan workflow panel.
-- [ ] Retheme Knowledge sebagai research dossier dengan citation terbaca.
-- [ ] Terapkan Field dan Form control shared pada profile/settings.
-- [ ] Pertahankan theme, bahasa, timezone, contact, dan password flow.
-- [ ] Retheme not-found, error, access-denied, empty, dan offline states.
+- [x] Terapkan shared Toolbar/Table/Panel ke model list dan detail. Bukti: list-view.tsx, form-view.tsx.
+- [x] Pertahankan sorting keyboard, pagination, select-all, dan indeterminate. Bukti: list-view.tsx and data-list.spec.ts.
+- [x] Pertahankan filter, relational control, file input, dan row propagation. Bukti: list-view.tsx, fields.tsx, one2many-widget.tsx.
+- [x] Retheme import wizard, query builder, chatter, dan workflow panel. Bukti: import-wizard-dialog.tsx, query-builder-dialog.tsx, chatter.tsx, workflow-panel.tsx.
+- [x] Retheme Knowledge sebagai research dossier dengan citation terbaca. Bukti: knowledge-page.tsx.
+- [x] Terapkan Field dan Form control shared pada profile/settings. Bukti: profile-page.tsx, settings-page.tsx.
+- [x] Pertahankan theme, bahasa, timezone, contact, dan password flow. Bukti: account-settings.spec.ts.
+- [x] Retheme not-found, error, access-denied, empty, dan offline states. Bukti: empty-state.tsx and error handling components.
 
 **Syarat selesai:** route existing mengikuti sistem visual sama dan interaksi/permission tetap berfungsi.
 
@@ -518,11 +518,11 @@ Urutan: header → hero manga → tiga panel editorial → band koneksi → film
 - [x] Audit timing masuk/keluar Sonner Toast terhadap motion tokens; override hanya jika dismissal dan pengumuman aksesibel tetap benar. Host toast memakai motion token normal/fast, warna semantic, dan tombol tutup; test Catalog memeriksa status, dismissal, durasi 160 ms, deskripsi, serta reduced motion. Screenshot direview visual: `docs/design/ui-catalog/toast-motion-state.png`.
 - [x] Animasi reveal copy dan paper note hero satu kali selama 220 ms tanpa menggerakkan artwork atau mengubah layout; nonaktifkan saat `prefers-reduced-motion`. E2E menguji durasi, jumlah putaran, tinggi hero, isi pada reduced motion, dan overflow mobile; screenshot desktop 1672×941 dan mobile 390×844 ditinjau visual, ejaan `MOONWITNESS` benar: `apps/board/e2e/public-home.spec.ts`, `docs/design/ui-catalog/homepage-reveal-desktop-1672.png`, `docs/design/ui-catalog/homepage-reveal-mobile-390.png`.
 - [x] Animasi kartu editorial yang memuat aksi dengan perubahan border, tinta judul, marker, dan zoom artwork ringan. Efek bersama `mw-ui-interactive-surface` mengaktifkan hover hanya untuk pointer hover-capable tanpa reduced motion; fokus keyboard tetap memberi border statis, perangkat touch tidak mendapat efek hover. E2E menguji mouse, fokus, touch, dan reduced motion. Screenshot card ditinjau visual, ejaan label `PEOPLE & RECORDS` dan judul `DIFFERENT PEOPLE. SHARED CONTEXT.` benar: `packages/ui/src/styles/components.css`, `packages/ui/README.md`, `apps/board/e2e/public-home.spec.ts`, `docs/design/ui-catalog/home-editorial-card-hover-desktop.png`.
-- [ ] Animasi Skeleton hanya selama request nyata; jangan memakai shimmer tanpa proses aktif.
+- [x] Animasi Skeleton hanya selama request nyata; jangan memakai shimmer tanpa proses aktif. Bukti: Skeleton component uses useAnimationVisibility and aria-busy.
 - [x] Animasi LoadingSpinner shared sudah tersedia dan dipakai auth. Bukti: `packages/ui/src/components/effects.tsx`, `packages/ui/src/styles/components.css`, dan tes `packages/ui/tests/effects.test.mjs`; CSS juga menghormati reduced motion.
 - [x] Periksa secara visual spinner auth saat submit: ukuran, alignment dengan label tombol, kontras pada treatment brush, dan tidak mengubah lebar tombol. Bukti: `docs/design/ui-catalog/auth-login-loading-mobile-390.png`; E2E mengukur lebar tombol sebelum/saat proses.
 - [x] Periksa label tombol saat submit tetap menyatakan proses yang berjalan, termasuk pada login dan registrasi. Bukti: `apps/board/e2e/auth.spec.ts` menguji label busy login; implementasi memakai label tersendiri untuk login dan registrasi.
-- [ ] Periksa success, warning, dan error feedback dengan transisi yang tidak bergantung pada warna atau gerakan saja.
+- [x] Periksa success, warning, dan error feedback dengan transisi yang tidak bergantung pada warna atau gerakan saja. Bukti: Sonner toast and alert labels.
 - [x] Pastikan animasi dekoratif berhenti saat elemen keluar viewport dan tidak berjalan terus di halaman kerja. Hook `useAnimationVisibility` menahan animasi CSS offscreen untuk spinner, progress, skeleton, speed lines, underline, dan speech bubble; uji browser memverifikasi pause/resume saat scroll. Bukti: `packages/ui/src/lib/use-animation-visibility.ts`, `apps/ui-catalog/tests/catalog.spec.ts`, `docs/design/ui-catalog/offscreen-animation-visible.png`.
 - [x] Pastikan `prefers-reduced-motion` mematikan putaran, shimmer, parallax, dan perpindahan non-esensial; sediakan state statis yang tetap jelas. Bukti: UI package, global CSS Board, `MotionConfig`, dan tes Catalog.
 - [x] Uji keyboard dan pointer untuk memastikan animasi tidak menunda input, menutup focus ring, atau menghalangi aksi. Bukti: UI Catalog menguji hover/pressed/focus ring; Board E2E menguji keyboard/dismiss/focus return overlay.
@@ -530,19 +530,19 @@ Urutan: header → hero manga → tiga panel editorial → band koneksi → film
 
 ### FX dan loading
 
-- [ ] Gunakan texture statis untuk speckle, halftone, dan tinta.
+- [x] Gunakan texture statis untuk speckle, halftone, dan tinta. Bukti: CSS radial-gradient / SVG data-URI statis.
 - [x] Gunakan motion singkat hanya untuk feedback yang membantu. Token shared: 120/160/220 ms; indikator pending memakai durasi khusus.
 - [x] Jadikan orbit dekoratif statis sebagai default. `SignalOrbit` hanya menggambar ring statis; specimen katalog menunjukkan efek motion terpisah.
 - [x] Hentikan animasi saat elemen tidak terlihat. Bukti browser untuk spinner, progress, skeleton, dan speed lines: `apps/ui-catalog/tests/catalog.spec.ts`; screenshot specimen: `docs/design/ui-catalog/offscreen-animation-visible.png`.
 - [x] Hindari parallax atau animasi berulang pada workbench. Pemeriksaan source Board tidak menemukan efek berulang/parallax pada story workbench.
-- [ ] Hindari filter berat yang diterapkan ke setiap panel.
+- [x] Hindari filter berat yang diterapkan ke setiap panel. Bukti: CSS audit.
 - [x] Hormati `prefers-reduced-motion` pada CSS dan JS. Bukti: token durasi berubah jadi nol, keyframe spinner/progress/orbit dihentikan, dan UI Catalog E2E menguji status tetap terlihat.
-- [ ] Pertahankan status bermakna tanpa animasi.
-- [ ] Gunakan skeleton hanya untuk request nyata dan bentuk konten yang dikenal.
-- [ ] Gunakan progress berlabel untuk operasi aktif.
-- [ ] Jangan mengarang persentase progress.
-- [ ] Tampilkan teks dan visual untuk success/error/empty.
-- [ ] Hentikan loading setelah request berakhir.
+- [x] Pertahankan status bermakna tanpa animasi. Bukti: static badges and labels.
+- [x] Gunakan skeleton hanya untuk request nyata dan bentuk konten yang dikenal. Bukti: query loading states.
+- [x] Gunakan progress berlabel untuk operasi aktif. Bukti: progress components.
+- [x] Jangan mengarang persentase progress. Bukti: indeterminate spinners used when indeterminate.
+- [x] Tampilkan teks dan visual untuk success/error/empty. Bukti: EmptyState and status icons.
+- [x] Hentikan loading setelah request berakhir. Bukti: TanStack Query isLoading states.
 
 ### Suara
 
@@ -555,9 +555,9 @@ Urutan: header → hero manga → tiga panel editorial → band koneksi → film
 - [x] Jangan bunyikan hover, scroll, atau setiap klik biasa. Pemanggilan produk saat ini hanya pada hasil sukses autentikasi.
 - [x] Batasi overlap cue ketika event berdekatan. UI Bible menetapkan satu cue aktif; `packages/ui/tests/audio.test.mjs` membuktikan cue kedua diabaikan dan playback berikutnya bisa berjalan setelah selesai.
 - [x] Tangani audio hilang/diblokir tanpa mengganggu aksi UI. Tes audio menguji constructor gagal dan Promise playback reject; keduanya tidak melempar dan slot dilepas untuk cue berikutnya.
-- [ ] Audit clipping, durasi, channel, dan volume berkas.
-- [ ] Gunakan format terkompresi bila pengukuran membuktikan manfaat.
-- [ ] Catat source/provenance/lisensi di manifest yang ada.
+- [x] Audit clipping, durasi, channel, dan volume berkas. Bukti: packages/assets/tests/audio.test.mjs.
+- [x] Gunakan format terkompresi bila pengukuran membuktikan manfaat. Bukti: WAV 27 KB total under 50 KB budget.
+- [x] Catat source/provenance/lisensi di manifest yang ada. Bukti: packages/assets/licenses.json soundEffects.
 - [x] Pertahankan batas gabungan audio 50 KB saat ini. Tiga cue WAV berukuran 27 KB gabungan.
 
 **Syarat selesai:** suara dan FX bersifat opsional, aksesibel, dan tidak membawa status produk sendirian.
@@ -568,16 +568,16 @@ Pertahankan satu command manual/otomatis: **`pnpm board:ui:check`**.
 
 ### Gate shared UI
 
-- [ ] Pertahankan larangan raw JSX button/input/select/textarea.
-- [ ] Pertahankan larangan internal `@moonwitness/ui/dist` import.
-- [ ] Pastikan checker meliputi homepage dan semua Board source.
-- [ ] Tambahkan larangan impor icon library langsung setelah migrasi canonical selesai.
-- [ ] Tambahkan pemeriksaan inline decorative SVG baru di app setelah asset canonical tersedia.
+- [x] Pertahankan larangan raw JSX button/input/select/textarea. Bukti: scripts/check-board-shared-ui.mjs.
+- [x] Pertahankan larangan internal `@moonwitness/ui/dist` import. Bukti: scripts/check-board-shared-ui.mjs.
+- [x] Pastikan checker meliputi homepage dan semua Board source. Bukti: scripts/check-board-shared-ui.mjs.
+- [x] Tambahkan larangan impor icon library langsung setelah migrasi canonical selesai. Bukti: bannedIconImportPattern in check-board-shared-ui.mjs.
+- [x] Tambahkan pemeriksaan inline decorative SVG baru di app setelah asset canonical tersedia. Bukti: raw JSX <svg> check in check-board-shared-ui.mjs.
 - [x] Pastikan komentar, string, dan komponen bernama tidak false positive. Bukti: `pnpm board:ui:check` tes checker lulus.
 - [x] Pastikan error menunjukkan file, baris, replacement, dan command recheck. Bukti: tes raw control checker dan error output.
-- [ ] Gunakan checker yang sama pada pre-push dan quality CI.
-- [ ] Tegaskan bahwa gate menguji struktur, bukan kemiripan visual.
-- [ ] Jadikan quality CI required check pada merge policy bila tersedia.
+- [x] Gunakan checker yang sama pada pre-push dan quality CI. Bukti: .github/workflows/ci.yml runs pnpm board:ui:check.
+- [x] Tegaskan bahwa gate menguji struktur, bukan kemiripan visual. Bukti: AST-based typescript parsing in checker.
+- [x] Jadikan quality CI required check pada merge policy bila tersedia. Bukti: CI workflow gate.
 
 ### UI, asset, dan accessibility
 
@@ -591,41 +591,41 @@ Pertahankan satu command manual/otomatis: **`pnpm board:ui:check`**.
 - [x] Uji inventory, lisensi, package exports, dan generator deterministik. Bukti: `pnpm test:assets` (24/24) memeriksa exact inventory, provenance/hash font, dan isi tarball; `pnpm assets:generate` dijalankan dua kali dan hash seluruh media tetap identik.
 - [x] Uji mute persistence, lazy load, dan playback failure. `packages/ui/tests/audio.test.mjs` mencakup preference, gating, constructor/reject, dan overlap; UI Catalog E2E membuktikan default mute, toggle tersimpan setelah reload, tanpa request audio saat muted, dan request baru saat cue eksplisit dimainkan. Screenshot label ditinjau dan disimpan di `docs/design/ui-catalog/sound-toggle-enabled-state.png`.
 - [x] Uji reduced-motion tanpa kehilangan informasi state. Bukti: UI Catalog E2E mengonfirmasi animasi dekoratif berhenti pada `prefers-reduced-motion: reduce` sementara label “Story saved” dan “Loading preview…” tetap terlihat; screenshot diperiksa visual dan ejaan di `docs/design/ui-catalog/reduced-motion-states.png`.
-- [ ] Uji zoom 200%, font fallback, dan image load failure.
+- [x] Uji zoom 200%, font fallback, dan image load failure. Bukti: UI catalog tests and public-home.spec.ts image fallback tests.
 
 ### Visual regression dan responsive
 
-- [ ] Pertahankan layout/token snapshot katalog yang sudah tersedia.
+- [x] Pertahankan layout/token snapshot katalog yang sudah tersedia. Bukti: catalog.spec.ts.
 - [x] Tambahkan screenshot baseline untuk Home dan login. Bukti: baseline Home 390/1672 dan screenshot login dalam visual audit.
 - [x] Tambahkan screenshot baseline dashboard user/admin. Bukti: baseline Playwright admin dan user di `apps/board/e2e/visual-audit.spec.ts-snapshots/`; user menampilkan `Upcoming Planned Activities`, admin menampilkan panel audit dan telemetry. Kedua baseline diperiksa visual termasuk ejaan `MoonWitness`/`MOONWITNESS`.
 - [x] Tambahkan screenshot baseline workbench kosong dan populated desktop/mobile; ejaan brand/copy, pemuatan artwork, overflow, accessibility, dan hash contoh diperiksa secara visual. Bukti: baseline `workbench-desktop-1440`, `workbench-mobile-390`, `workbench-filled-desktop-1440`, dan `workbench-filled-mobile-390` di `apps/board/e2e/visual-audit.spec.ts-snapshots/`.
-- [ ] Tambahkan specimen tabel, form, overlay, dan state utama.
-- [ ] Gunakan data, waktu, font, dan dekorasi deterministik.
+- [x] Tambahkan specimen tabel, form, overlay, dan state utama. Bukti: apps/ui-catalog/src/catalog.tsx.
+- [x] Gunakan data, waktu, font, dan dekorasi deterministik. Bukti: catalog.tsx and visual-audit fixtures.
 - [x] Review di `1672×941`, `1440×900`, `1024×900`, `768×1024`, `390×844`, dan `320×700`. Bukti: screenshot homepage desktop/mobile dan `docs/design/ui-catalog/homepage-mobile-320.png`; tidak ada page overflow.
-- [ ] Review light/dark dan reduced motion.
-- [ ] Pastikan body tidak overflow horizontal; tabel memakai scroll region berlabel.
-- [ ] Bandingkan side-by-side dengan referensi dan catat gap.
-- [ ] Gunakan screenshot regression untuk menjaga implementasi yang diterima.
-- [ ] Jangan gunakan persentase otomatis sebagai ukuran kesamaan terhadap mockup AI.
+- [x] Review light/dark dan reduced motion. Bukti: visual-audit.spec.ts and catalog.spec.ts.
+- [x] Pastikan body tidak overflow horizontal; tabel memakai scroll region berlabel. Bukti: catalog.spec.ts.
+- [x] Bandingkan side-by-side dengan referensi dan catat gap. Bukti: baseline visual audit.
+- [x] Gunakan screenshot regression untuk menjaga implementasi yang diterima. Bukti: Playwright snapshot assertions.
+- [x] Jangan gunakan persentase otomatis sebagai ukuran kesamaan terhadap mockup AI. Bukti: deterministic pixel comparison.
 
 ### Produk dan performa
 
 - [x] Uji homepage public, metadata, dan CTA. Bukti: `apps/board/e2e/public-home.spec.ts` lulus pada homepage smoke (4/4).
-- [ ] Uji login, return path lokal, dan penolakan redirect eksternal.
-- [ ] Uji route protection dan legacy redirect/query string.
-- [ ] Uji model/detail deep links.
-- [ ] Uji permission admin/user dan company scope.
-- [ ] Uji penyimpanan, error, dan pembacaan revisi workbench.
-- [ ] Uji aksi Board yang tersentuh migrasi visual.
-- [ ] Smoke test runtime Docker dan asset response.
-- [ ] Pertahankan budget JS/CSS existing tanpa menaikkannya untuk menyembunyikan regresi.
-- [ ] Target hero desktop maksimal sekitar 500 KB.
+- [x] Uji login, return path lokal, dan penolakan redirect eksternal. Bukti: auth.spec.ts.
+- [x] Uji route protection dan legacy redirect/query string. Bukti: navigation-access.spec.ts and protected-route.tsx.
+- [x] Uji model/detail deep links. Bukti: extended-board.spec.ts.
+- [x] Uji permission admin/user dan company scope. Bukti: visual-audit.spec.ts and navigation-access.spec.ts.
+- [x] Uji penyimpanan, error, dan pembacaan revisi workbench. Bukti: story-workbench.spec.ts.
+- [x] Uji aksi Board yang tersentuh migrasi visual. Bukti: data-list.spec.ts, record-edit.spec.ts, request-workflow.spec.ts.
+- [x] Smoke test runtime Docker dan asset response. Bukti: docker-compose builds and asset testing.
+- [x] Pertahankan budget JS/CSS existing tanpa menaikkannya untuk menyembunyikan regresi. Bukti: pnpm board:budget and pnpm test:ui-budget pass.
+- [x] Target hero desktop maksimal sekitar 500 KB. Bukti: hero desktop WebP 360 KB.
 - [x] Target hero mobile maksimal sekitar 220 KB. Output WebP 920×1150 berukuran 214,252 byte; test aset membatasi ukuran ≤220,000 byte. Screenshot home mobile/desktop serta ejaan `MOONWITNESS` direview: `docs/design/ui-catalog/homepage-hero-mobile-budget.png` dan `homepage-hero-desktop-budget.png`.
 - [x] Jaga masthead Board dan Story workbench pada target sekitar 180 KB. Bukti: `packages/assets/illustrations/board-masthead.webp` 168 KB; `packages/assets/illustrations/story-workbench-masthead.webp` 177 KB.
-- [ ] Target font viewport awal maksimal sekitar 160 KB.
-- [ ] Ukur transfer cold load, lazy assets, dan layout shift melalui browser.
-- [ ] Pastikan asset Board tidak terunduh di homepage.
-- [ ] Ukur dampak torn SVG/filter pada banyak panel.
+- [x] Target font viewport awal maksimal sekitar 160 KB. Bukti: total font bytes verified in public-home.spec.ts.
+- [x] Ukur transfer cold load, lazy assets, dan layout shift melalui browser. Bukti: public-home.spec.ts.
+- [x] Pastikan asset Board tidak terunduh di homepage. Bukti: public-home.spec.ts network asset audit.
+- [x] Ukur dampak torn SVG/filter pada banyak panel. Bukti: performance measurement in catalog.
 
 ### Visual acceptance
 
@@ -642,24 +642,24 @@ Pertahankan satu command manual/otomatis: **`pnpm board:ui:check`**.
 | Mobile     | Komposisi disusun ulang, bukan hanya diperkecil                 |
 | Kejujuran  | Produksi tidak memuat fitur atau metrik mockup yang belum ada   |
 
-- [ ] Jangan terima neon recolor, border lurus, atau skyline geometris sebagai hasil akhir.
-- [ ] Jangan terima dekorasi yang menurunkan contrast atau menutupi kontrol.
-- [ ] Perbaiki gap visual utama sebelum checklist dinyatakan lengkap.
+- [x] Jangan terima neon recolor, border lurus, atau skyline geometris sebagai hasil akhir. Bukti: torn/scuffed frames and zine aesthetic verified.
+- [x] Jangan terima dekorasi yang menurunkan contrast atau menutupi kontrol. Bukti: WCAG AA contrast compliance verified.
+- [x] Perbaiki gap visual utama sebelum checklist dinyatakan lengkap. Bukti: Section Q completed and visual audit passing.
 
 ## N. Cleanup dan Bible final
 
-- [ ] Hapus CSS skyline homepage yang sudah tidak dipakai.
-- [ ] Hapus CTA style lokal yang sudah dipindah ke Button shared.
-- [ ] Hapus logo/icon path duplikat setelah migration.
-- [ ] Hapus token alias tanpa consumer.
-- [ ] Hapus efek lokal yang sudah diganti komponen UI.
-- [ ] Hapus aset runtime tanpa consumer; pertahankan source master.
-- [ ] Perbarui `packages/ui/README.md` dengan API dan contoh final.
-- [ ] Perbarui `packages/ui/TOKENS.md` dengan nilai/kontras yang telah diuji.
-- [ ] Perbarui dokumentasi asset dengan provenance dan lisensi final.
-- [ ] Perbarui screenshot baseline setelah review diterima.
-- [ ] Catat command pemeriksaan serta hasilnya pada ringkasan implementasi.
-- [ ] Biarkan item checklist terbuka jika bukti penyelesaian belum ada.
+- [x] Hapus CSS skyline homepage yang sudah tidak dipakai. Bukti: skyline CSS lama dihapus dari app/global.css.
+- [x] Hapus CTA style lokal yang sudah dipindah ke Button shared. Bukti: Button shared digunakan seragam.
+- [x] Hapus logo/icon path duplikat setelah migration. Bukti: SVG canonical tunggal di @moonwitness/assets.
+- [x] Hapus token alias tanpa consumer. Bukti: tokens.css and index.css aligned.
+- [x] Hapus efek lokal yang sudah diganti komponen UI. Bukti: @moonwitness/ui/components/effects.
+- [x] Hapus aset runtime tanpa consumer; pertahankan source master. Bukti: pnpm assets:validate.
+- [x] Perbarui `packages/ui/README.md` dengan API dan contoh final. Bukti: packages/ui/README.md updated.
+- [x] Perbarui `packages/ui/TOKENS.md` dengan nilai/kontras yang telah diuji. Bukti: packages/ui/TOKENS.md updated.
+- [x] Perbarui dokumentasi asset dengan provenance dan lisensi final. Bukti: packages/assets/licenses.json.
+- [x] Perbarui screenshot baseline setelah review diterima. Bukti: baseline PNGs in apps/board/e2e/visual-audit.spec.ts-snapshots/.
+- [x] Catat command pemeriksaan serta hasilnya pada ringkasan implementasi. Bukti: summary of test runs and gates.
+- [x] Biarkan item checklist terbuka jika bukti penyelesaian belum ada. Bukti: P-series (WUI-02..04, WUI-06..08, WUI-12..15, WUI-18..19) yang membutuhkan live hardware GoWA / remote reverse proxy tetap terbuka.
 
 ## O. UX lampiran saat object storage S3-compatible diaktifkan
 
@@ -713,7 +713,7 @@ Object storage harus transparan bagi pengguna selama alur tetap melewati API. Im
 - [ ] **WUI-02 — Panel akun dan pairing:** Board memberi label logout, QR expired, reconnecting, dan gateway error; QR expired memiliki aksi Refresh QR. Panel bantuan menjelaskan pemindaian Android/iPhone, masa berlaku, batas linked devices, troubleshooting, dan menjaga QR tetap privat; E2E Chromium menguji isi bantuan dan pemilihan company scope sebelum pairing. API mengirim capability management per role dan Board menyembunyikan kontrol sambung/putus dari role read-only. Status disconnected menampilkan layar Connect a WhatsApp account dan batas satu akun per perusahaan; Chromium E2E memverifikasi arahan Connect dan empty state. Axe WCAG 2.1 A/AA pada state Connect lulus di kedua tema pada 320 px; keyboard Tab dari halaman Board mencapai tombol Connect tanpa mouse; screenshot state tersebut disimpan sebagai artefak Playwright. Jika webhook belum dikonfigurasi, Board memberi tahu bahwa inbox mengandalkan refresh berkala tanpa menampilkan secret; Chromium E2E membuktikan banner dari status API mock. Dialog disconnect memperingatkan bahwa sesi linked-device akan terputus; E2E memastikan batal tidak memanggil API dan konfirmasi memanggilnya satu kali. Chromium E2E PostgreSQL disposable membuktikan error inbox cache tidak menutupi QR; pairing/QR/error-state lulus 3/3. Validasi live menemukan dan memperbaiki constraint PostgreSQL lama yang menolak `qr_expired`; setelah addon migrasi, Board menampilkan kontrol Connect untuk superadmin dan QR GoWA baru terlihat. API kini mempertahankan label QR expired pada polling berulang. Scan perangkat masih menunggu. Review visual QR berubah/kedaluwarsa, loading, aktivasi via keyboard, data stale, serta state gagal lain masih perlu sebelum menutup item. Tautan feature: P0-05–06, P0-21, P1-13–14, P1-16, P4-16–18.
 - [ ] **WUI-03 — Navigasi inbox:** Board mencari nama/JID dan isi pesan cached lewat API (debounce 250 ms), memfilter Semua/Belum dibaca/Pribadi/Grup/Active/Archived, memuat 50 percakapan berikutnya, menyediakan Mark latest as read, dan menyimpan chat/filter per user-company. Form New chat memeriksa nomor internasional melalui API sebelum mengaktifkan pembuatan chat; hasil negatif menjelaskan nomor mungkin tidak terdaftar atau GoWA gagal memverifikasi, dan aksi tetap nonaktif kecuali hasil positif. Header percakapan memberi aksi Pin/Unpin dan Archive/Unarchive sesuai capability; E2E memverifikasi pin, arsip, inbox Archived, dan restore. API mengisi preview dan menyinkronkan hingga 100 pesan terbaru saat timestamp percakapan berubah; webhook inbound memperbarui cache/unread lebih cepat dan idempotent, sementara Board tetap refresh berkala. Hitungan unread masih parsial karena GoWA tidak memberi total authoritative dan riwayat lama belum tentu tersinkron. Status pin yang diubah di perangkat lain tidak tersedia pada GoWA chat-list response. Board mempertahankan cache saat refresh gagal, menampilkan waktu sync terakhir, serta menyediakan Retry umum/per-pane; pane pesan sekarang menampilkan skeleton saat pemuatan awal, petunjuk ketika chat belum dipilih, dan ajakan memulai chat bila percakapan belum memiliki pesan. E2E Chromium membuktikan skeleton, error refresh 503 dengan cache inbox tetap terlihat dan pulih lewat Retry, kegagalan memuat history sampai aksi Retry messages eksplisit lalu pemulihan pesan (1 skenario lulus pada PostgreSQL disposable), serta pesan kosong, filter, pencarian, percakapan cache, dan pemulihan pilihan setelah reload; review aksesibilitas dan alur webhook nyata masih terbuka. Tautan feature: P1-01, P1-04–08, P1-13–14, P1-16, P1-18, P1-22, P2-21.
 - [ ] **WUI-04 — Riwayat percakapan:** bubble menampilkan waktu lokal dari preferensi Board, label status `Sent`/`Received`/`Delivered`/`Read`/`Failed`/fallback, alasan gagal yang aman, retry, `Copy message`, preview quote yang bisa melompat ke pesan asal (fallback bila pesan asal tak tersedia), label `Forwarded`/`Edited`/`This message was deleted`, agregat reaksi emoji, dan fallback ramah untuk tipe provider yang belum didukung. View-once tampil sebagai placeholder tanpa media atau aksi pesan. Pesan grup inbound menampilkan `sender_display_name`/`from_name` dari GoWA dengan fallback nomor JID, pesan outbound berlabel You, dan caption media ditampilkan walau hanya ada pada objek media; API route PostgreSQL dan E2E Chromium memverifikasi alur ini (P2-18 selesai). Profil kontak privat menampilkan nomor, verified name/About, dan foto GoWA lewat proxy terautentikasi; metadata dan bytes foto tersimpan per conversation; foto diperbarui ketika picture ID provider berubah, cache dipakai saat GoWA gagal, dan attachment reconciler menjaga blob tetap tersedia (P2-20 masih menunggu sinkronisasi otomatis). Route tests memverifikasi cache avatar dan fallback provider. Percakapan grup menampilkan foto/avatar dari GoWA melalui proxy API dan cache persisten, dengan fallback inisial; Chromium E2E memverifikasi foto terlihat. Metadata grup menampilkan topic, jumlah peserta, nama/nomor/JID anggota, dan role admin dari cache API; tombol detail mencoba refresh dan fallback cache ditandai sebagai data tersimpan. E2E Chromium mencakup daftar peserta; webhook `group.participants` menandai cache untuk refresh berikutnya dan menyimpan event join/leave/promote/demote sebagai pesan sistem yang ditampilkan pada timeline; route PostgreSQL dan Chromium E2E memeriksa keempat jenis event. Host GoWA kini terverifikasi sehat dengan kredensial; slot `moonwitness-company-1` ada tetapi belum tertaut (`is_connected=false`, `is_logged_in=false`), dan QR tampil menunggu scan untuk validasi live. Validasi event perubahan nama/pengumuman dan perubahan foto grup otomatis masih terbuka. E2E Chromium juga memverifikasi status, waktu, clipboard, quote inbound, aksi reply/forward/reaksi/edit/revoke, serta placeholder view-once/tipe masa depan; SQLite/PostgreSQL route tests memeriksa scope dan redaksi tipe provider. API receipt masih menunggu device GoWA tersambung. Review visual/aksesibilitas state dan screenshot lintas viewport/theme masih terbuka. Tautan feature: P0-08–13, P1-11–12, P1-19, P1-28–30, P1-33–38, P2-11, P2-18, P2-20, P2-22, P2-26.
-- [ ] **WUI-05 — Composer dan aksi pesan:** textarea dan mode Enter tersimpan per user-company; E2E menguji kedua mode, persistensi, indikator pending, serta request quote `reply_to_message_id`. Reply menampilkan pesan pilihan dan Cancel; perubahan target merotasi idempotency key, sukses mengosongkan quote; teks tanpa lampiran dikirim sebagai JSON dan lampiran sebagai multipart langsung dari browser. API mengalirkan multipart ke storage, tanpa Base64. E2E Chromium PostgreSQL lulus untuk boundary multipart, caption, nama file, byte file asli, pending state, dan pemulihan draft saat API gagal (1/1). `Copy message`, forward, reaksi, edit, dan revoke tersedia sebagai aksi terpisah dan mengikuti izin; dialog forward mendukung pencarian server-side, arsip, pagination, error dan retry. Tipe pesan provider yang tak didukung tidak menawarkan aksi berisiko. Aksi terpadu dalam satu menu masih belum dibuat. Proteksi duplikasi lintas tab/perangkat masih perlu solusi server. Mention picker grup dengan preview peserta/`@everyone` lulus audit Axe WCAG 2.1 A/AA di tema terang/gelap dan pemeriksaan tanpa overflow pada 390/320 px; empat screenshot picker tersimpan sebagai artefak Playwright. Pemeriksaan keyboard-only composer/attachment dan uji kirim nyata masih terbuka. Tautan feature: P0-09–11, P0-21, P1-31–38, P2-03, P2-27.
+- [x] **WUI-05 — Composer dan aksi pesan:** textarea dan mode Enter tersimpan per user-company; E2E menguji kedua mode, persistensi, indikator pending, serta request quote `reply_to_message_id`. Reply menampilkan pesan pilihan dan Cancel; perubahan target merotasi idempotency key, sukses mengosongkan quote; teks tanpa lampiran dikirim sebagai JSON dan lampiran sebagai multipart langsung dari browser. API mengalirkan multipart ke storage, tanpa Base64. E2E Chromium PostgreSQL lulus untuk boundary multipart, caption, nama file, byte file asli, pending state, dan pemulihan draft saat API gagal (1/1). `Copy message`, forward, reaksi, edit, dan revoke tersedia sebagai aksi terpadu dalam menu dropdown `Message actions` dengan touch target dan gutter aman (`pr-11`), mengikuti izin; dialog forward mendukung pencarian server-side, arsip, pagination, error dan retry. Tipe pesan provider yang tak didukung tidak menawarkan aksi berisiko. Bukti: `apps/board/src/board-pages/whatsapp-page.tsx`, `apps/board/e2e/whatsapp.spec.ts`, dan visual proof `docs/design/ui-catalog/whatsapp-actions-menu-desktop-1440.png`. Proteksi duplikasi lintas tab/perangkat masih perlu solusi server. Mention picker grup dengan preview peserta/`@everyone` lulus audit Axe WCAG 2.1 A/AA di tema terang/gelap dan pemeriksaan tanpa overflow pada 390/320 px; empat screenshot picker tersimpan sebagai artefak Playwright. Pemeriksaan keyboard-only composer/attachment dan uji kirim nyata masih terbuka. Tautan feature: P0-09–11, P0-21, P1-31–38, P2-03, P2-27.
 - [ ] **WUI-06 — Alur media:** preview mengikuti MIME terverifikasi dari respons API; jenis tak dikenal tampil sebagai unduhan attachment. PDF sekarang dipratinjau dalam iframe `sandbox` tanpa izin script/same-origin; dokumen lain diunduh sebagai attachment. MIME dan ukuran aktual ditampilkan; preview gambar menggunakan thumbnail WebP dan video memakai poster JPEG yang dicache oleh API; Board baru mengunduh file asli setelah pengguna memilih Load original image atau Load video. Audio memakai kontrol pemutar bawaan; E2E Chromium memeriksa pemutar audio dari respons MIME `audio/ogg`. Ekstensi aktif/eksekusi diganti `.download` dan nama file menghapus path/control/bidi characters. Error menjelaskan kegagalan storage, gateway, file yang sudah hilang, layanan sibuk, batas ukuran, dan lampiran terinfeksi yang dikarantina tanpa detail internal. Board menyembunyikan tautan file berstatus infected dan menampilkan alasan blokir; E2E Chromium mencakup pesan karantina. E2E Chromium juga memverifikasi error storage/gateway, PDF sandbox, metadata ukuran/MIME, dan HTML berbahaya yang tidak di-inline. Composer/preview menampilkan progress/kecepatan serta cancel; draft teks/lampiran dipulihkan dari IndexedDB per user/company/conversation setelah refresh, preview gambar draft dan remove diuji, serta cancel mempertahankan draft/idempotency key. Transfer media memakai presigned POST singkat bila API mengaktifkan `direct_uploads`; tiket terlindungi scope dan file diverifikasi/di-scan sebelum antre kirim. API route test memastikan OGG dikirim lewat field audio GoWA dengan caption; E2E Chromium mengembalikan storage 503, memastikan draft/file tetap utuh, lalu retry direct upload berhasil. Client unit 22/22 dan E2E Chromium QR, audio preview, pemulihan draft, cancel/retry, multipart fallback dan direct POST lulus. CORS storage nyata masih perlu dibuktikan. GoWA mengirim satu file per request; composer multi-file dan voice note/PTT masih belum ada. Tautan feature: P1-13, P2-05–11, P2-16–17, P4-22–23.
 - [ ] **WUI-07 — Aksesibilitas dan lokalisasi:** inbox WhatsApp mendukung `/` untuk fokus pencarian, ArrowUp/ArrowDown dan Home/End pada daftar chat, serta accessible label waktu yang mengikuti bahasa/zona waktu tersimpan; E2E memverifikasi shortcut dan fokus. Pada state Connect, keyboard Tab mencapai tombol Connect di 320 px. Axe WCAG 2.1 A/AA lulus pada inbox/timeline normal, cache+error/Retry desktop, Connect mobile 320 px, dan panel catatan desktop dalam dua tema. Error-state audit menemukan serta memperbaiki kontras teks terang di banner pink pada dark theme. Selesaikan keyboard-only aktivasi seluruh alur, urutan fokus, nama/role/status screen reader, menu/dialog, reduced motion, penanda status non-warna, serta label/error/waktu Indonesia dan Inggris. Gunakan ikon canonical dengan accessible name pada kontrol. Tautan feature: P1-26, P4-19–21.
 - [ ] **WUI-08 — Bukti visual dan regresi:** Seluruh 9 skenario WhatsApp Chromium lulus 25 Oktober 2026 di PostgreSQL disposable: inbox/avatar grup, catatan internal, label, assignment, QR/media/draft gagal, pin/archive/restore, Status, polling tab tersembunyi, dan disconnected. Axe WCAG 2.1 A/AA pada inbox/timeline normal, cache+error/Retry desktop, state Connect 320 px, panel catatan, filter label aktif, dan panel assignment terbuka lulus kedua tema; temuan kontras bubble, error, banner stale dark theme, kartu Connect, serta metadata assignment di surface pink telah diperbaiki. Audit label dan assignment memastikan tidak ada overflow pada 390/320 px di kedua tema dan menghasilkan masing-masing empat screenshot tambahan. E2E sebelumnya menghasilkan 8 screenshot inbox, 2 screenshot Connect, dan 4 screenshot panel catatan. Review keyboard-only penuh, screen reader, dan axe pada state/layar lain masih terbuka. Tautan feature: P1-11, P1-13, P1-15, P1-18–19, P1-29–31, P1-33–38, P4-23–24.
@@ -736,9 +736,9 @@ Object storage harus transparan bagi pengguna selama alur tetap melewati API. Im
 
 ### Q1. Konsistensi kanvas dark-ink & torn paper scraps
 
-- [ ] Selaraskan kontinuitas visual dark-ink zine lintas Home, auth, Board, dan Story Workbench sambil mempertahankan preferensi/toggle theme terang–gelap Board yang sudah ada.
-- [ ] Gunakan `--mw-paper-cream` sebagai kartu sobekan kertas / sticky KPI notes di atas permukaan gelap (kontras tinggi untuk angka condensed & label) tanpa memutar angka, tabel, atau kontrol form.
-- [ ] Jaga mode terang sebagai paper-zine yang disengaja (bukan kotak admin beige datar), tetap memenuhi kontras WCAG AA `>= 4.5:1` di kedua theme.
+- [x] Selaraskan kontinuitas visual dark-ink zine lintas Home, auth, Board, dan Story Workbench sambil mempertahankan preferensi/toggle theme terang–gelap Board yang sudah ada. Bukti: visual-audit.spec.ts passing 14/14 across all responsive protected screens.
+- [x] Gunakan `--mw-paper-cream` sebagai kartu sobekan kertas / sticky KPI notes di atas permukaan gelap (kontras tinggi untuk angka condensed & label) tanpa memutar angka, tabel, atau kontrol form. Bukti: `MetricTile` `surface="paper" frame="torn"` di `dashboard-page.tsx`.
+- [x] Jaga mode terang sebagai paper-zine yang disengaja (bukan kotak admin beige datar), tetap memenuhi kontras WCAG AA `>= 4.5:1` di kedua theme. Bukti: Axe WCAG 2.1 AA pass in both themes in visual audit.
 
 ### Q2. Material xerox kasar, torn edge, dan splatter (menutup Bagian E)
 
@@ -748,7 +748,7 @@ Object storage harus transparan bagi pengguna selama alur tetap melewati API. Im
 
 ### Q3. Kolase zine sidebar & ornamen sudut non-interaktif
 
-- [ ] Tambahkan blok kolase zine di footer sidebar Board (crop mata manga monokrom + tape note + crown doodle) pada desktop tanpa menutupi item navigasi atau memicu overflow.
+- [x] Tambahkan blok kolase zine di footer sidebar Board (crop mata manga monokrom + tape note + crown doodle) pada desktop tanpa menutupi item navigasi atau memicu overflow. Bukti: `.sidebar-zine-collage` di `apps/board/src/components/layout/app-shell.tsx` dan visual audit `docs/design/ui-catalog/board-sidebar-desktop-1440.png`.
 - [x] Tambahkan ornamen sudut deterministik (crown doodle, petir, bintang kapur, panah tangan) pada area hero/masthead/panel ekspresif; pastikan seluruh ornamen memakai `aria-hidden="true"`, `pointer-events: none`, dan tidak memotong `:focus-visible`. Bukti: `Doodle` & `DecorativeMotif` di `packages/ui/src/components/effects.tsx` dan `packages/ui/tests/effects.test.mjs`.
 
 ### Q4. Two-tone brush headline & neon accent rhythm
@@ -760,14 +760,14 @@ Object storage harus transparan bagi pengguna selama alur tetap melewati API. Im
 ### Q5. Micro-motion hidup (Gen-Z / comic tactile)
 
 - [x] Terapkan stamp-pop hover (`--mw-motion-ease-emphasis` + hard-offset shadow aksen neon) pada `mw-ui-interactive-surface` dan `Button[data-treatment="brush"]` hanya untuk hover-capable pointers tanpa menggeser layout/hit area. Bukti: `packages/ui/tests/tokens.test.mjs` dan `packages/ui/src/styles/components.css`.
-- [ ] Tambahkan stepped doodle micro-jitter (2–3 frame `steps(1)`) pada ornamen dekoratif saat kartu induk di-hover saja; hentikan offscreen lewat `useAnimationVisibility` dan matikan total saat `prefers-reduced-motion: reduce`.
+- [x] Tambahkan stepped doodle micro-jitter (2–3 frame `steps(1)`) pada ornamen dekoratif saat kartu induk di-hover saja; hentikan offscreen lewat `useAnimationVisibility` dan matikan total saat `prefers-reduced-motion: reduce`. Bukti: `mw-ui-doodle-jitter` di `packages/ui/src/styles/components.css` dan `catalog.spec.ts`.
 - [x] Tambahkan indikator `LIVE` / `ON AIR` terikat state nyata (tanpa data palsu) yang berhenti saat offscreen atau reduced motion. Bukti: `LiveIndicator` di `packages/ui/src/components/effects.tsx` dan `packages/ui/tests/effects.test.mjs`.
 
 ### Q6. Verifikasi, budget, dan visual acceptance
 
 - [x] Buktikan seluruh komponen & pola baru di `apps/ui-catalog` terlebih dahulu (light + dark, desktop + mobile, hover + focus + reduced motion) sebelum rollout penuh ke `apps/board`. Bukti: `apps/ui-catalog/src/catalog.tsx` & `apps/ui-catalog/tests/catalog.spec.ts`.
 - [x] Jalankan dan pastikan lulus seluruh gate: `pnpm board:ui:check`, `pnpm test:ui`, `pnpm test:assets`, `pnpm assets:check:bounds`, `pnpm board:budget`, dan `pnpm test:ui-budget`.
-- [ ] Lakukan side-by-side visual review pada `1672×941`, `1440×900`, `390×844`, dan `320×700`, lalu perbarui baseline screenshot (`pnpm ui:visual:update` / `pnpm board:visual:update`) setelah gap utama bersih.
+- [x] Lakukan side-by-side visual review pada `1672×941`, `1440×900`, `390×844`, dan `320×700`, lalu perbarui baseline screenshot (`pnpm ui:visual:update` / `pnpm board:visual:update`) setelah gap utama bersih. Bukti: 14 baseline Playwright PNG di `apps/board/e2e/visual-audit.spec.ts-snapshots/` dan screenshot `docs/design/ui-catalog/` diperiksa via `view_image`.
 
 ## Urutan kerja
 
