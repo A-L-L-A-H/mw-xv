@@ -449,7 +449,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
             <h1 className="ink-title text-4xl sm:text-5xl">
               <AccentMarker>{views.title}</AccentMarker>
             </h1>
-            <Doodle kind="star" className="size-6 text-pink" />
+            <Doodle kind="star" className="size-6 text-magenta-readable" />
           </div>
           <p className="mt-1 font-mono text-xs uppercase tracking-widest text-ink-faint">
             {total} total records · Model: {model}
@@ -466,7 +466,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
               className="press gap-2 shadow-ink-sm"
               title="Import records from CSV"
             >
-              <UploadIcon className="size-5 text-lime" />
+              <UploadIcon className="size-5 text-yellow-readable" />
               <span className="font-display tracking-wider">Import CSV</span>
             </Button>
             <Button
@@ -529,7 +529,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
               {customFilters.map((cf) => (
                 <span
                   key={cf.id}
-                  className="sticker text-xs border-2 border-ink bg-lime text-on-accent font-bold"
+                  className="sticker text-xs border-2 border-ink bg-primary text-primary-foreground font-bold"
                 >
                   <span>
                     {cf.fieldLabel} {cf.operator} &quot;{cf.value}&quot;
@@ -537,7 +537,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                   <Button
                     type="button"
                     onClick={() => setCustomFilters((prev) => prev.filter((f) => f.id !== cf.id))}
-                    className="ml-1 hover:text-pink transition-colors"
+                    className="ml-1 hover:text-destructive transition-colors"
                     title="Remove filter"
                   >
                     <CloseIcon className="size-3" />
@@ -558,7 +558,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                 <PopoverContent align="start" className="w-64 p-3 space-y-3 font-sans">
                   <div className="font-display text-xs uppercase tracking-wider text-ink border-b border-ink/20 pb-1.5 flex items-center justify-between">
                     <span>Add Custom Filter</span>
-                    <FilterIcon className="size-3 text-lime" />
+                    <FilterIcon className="size-3 text-yellow-readable" />
                   </div>
 
                   <div className="space-y-2 font-mono text-xs">
@@ -640,7 +640,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
               {advancedRules.map((ar) => (
                 <span
                   key={ar.id}
-                  className="sticker text-xs border-2 border-ink bg-lime text-on-accent font-bold"
+                  className="sticker text-xs border-2 border-ink bg-primary text-primary-foreground font-bold"
                 >
                   <span>
                     {views.fields.find((f) => f.name === ar.field)?.label ?? ar.field} {ar.operator}{' '}
@@ -649,7 +649,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                   <Button
                     type="button"
                     onClick={() => setAdvancedRules((prev) => prev.filter((r) => r.id !== ar.id))}
-                    className="ml-1 hover:text-pink transition-colors"
+                    className="ml-1 hover:text-destructive transition-colors"
                     title="Remove filter"
                   >
                     <CloseIcon className="size-3" />
@@ -664,7 +664,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                 className="inline-flex items-center gap-1 border-2 border-dashed border-ink/40 bg-card px-2 py-0.5 font-mono text-xs font-semibold text-ink-faint hover:border-ink hover:text-ink hover:bg-paper-raised transition-colors"
                 title="Open Advanced Query Builder"
               >
-                <FilterIcon className="size-3 text-lime" /> Advanced Query
+                <FilterIcon className="size-3 text-yellow-readable" /> Advanced Query
                 {advancedRules.length > 0 && (
                   <span className="ml-1 border border-ink bg-ink px-1 text-[10px] text-paper">
                     {advancedRules.length}
@@ -679,7 +679,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                     setCustomFilters([]);
                     setAdvancedRules([]);
                   }}
-                  className="font-mono text-[10px] uppercase text-ink-faint hover:text-pink underline"
+                  className="font-mono text-[10px] uppercase text-ink-faint hover:text-destructive underline"
                 >
                   Clear all
                 </Button>
@@ -695,7 +695,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold uppercase transition-all',
                 viewMode === 'table'
-                  ? 'border border-ink bg-lime text-on-accent shadow-[1.5px_1.5px_0_0_var(--ink)]'
+                  ? 'border border-ink bg-primary text-primary-foreground shadow-[1.5px_1.5px_0_0_var(--ink)]'
                   : 'bg-card text-ink-soft hover:text-ink'
               )}
               title="Table View"
@@ -709,7 +709,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold uppercase transition-all',
                 viewMode === 'grid'
-                  ? 'border border-ink bg-lime text-on-accent shadow-[1.5px_1.5px_0_0_var(--ink)]'
+                  ? 'border border-ink bg-primary text-primary-foreground shadow-[1.5px_1.5px_0_0_var(--ink)]'
                   : 'bg-card text-ink-soft hover:text-ink'
               )}
               title="Cards Grid View"
@@ -723,7 +723,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold uppercase transition-all',
                 viewMode === 'pipeline'
-                  ? 'border border-ink bg-lime text-on-accent shadow-[1.5px_1.5px_0_0_var(--ink)]'
+                  ? 'border border-ink bg-primary text-primary-foreground shadow-[1.5px_1.5px_0_0_var(--ink)]'
                   : 'bg-card text-ink-soft hover:text-ink'
               )}
               title="Kanban Pipeline Stages"
@@ -738,7 +738,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
       {isError && (
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-pink p-3 font-bold text-on-pink shadow-ink"
+          className="flex flex-wrap items-center justify-between gap-3 border-2 border-ink bg-destructive p-3 font-bold text-destructive-foreground shadow-ink"
         >
           <span>Could not load records. Check your connection and try again.</span>
           <Button
@@ -746,7 +746,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
             size="sm"
             disabled={isFetching}
             onClick={() => void refetch()}
-            className="border-paper text-on-pink hover:bg-white hover:text-ink"
+            className="border-current bg-transparent text-destructive-foreground hover:bg-paper hover:text-ink"
           >
             {isFetching ? 'Retrying…' : 'Retry'}
           </Button>
@@ -764,7 +764,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
               ))
             ) : data?.records.length === 0 ? (
               <div className="py-8 text-center">
-                <Doodle kind="sparkle" className="mx-auto size-8 text-lime" />
+                <Doodle kind="sparkle" className="mx-auto size-8 text-yellow-readable" />
                 <p className="mt-2 font-display text-lg uppercase">No records found</p>
                 <p className="text-sm text-ink-soft">
                   {searchTerm
@@ -794,7 +794,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                     onClick={() => onOpenRecord(row.id)}
                     className={cn(
                       'ink-panel cursor-pointer border-2 border-ink p-3',
-                      selected ? 'bg-lime/10' : 'bg-card'
+                      selected ? 'bg-primary/10' : 'bg-card'
                     )}
                   >
                     <div className="flex min-w-0 items-start justify-between gap-3">
@@ -804,7 +804,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                           checked={selected}
                           onClick={(event) => event.stopPropagation()}
                           onChange={() => toggleSelect(row.id as number)}
-                          className="mt-1 size-4 shrink-0 cursor-pointer accent-lime"
+                          className="mt-1 size-4 shrink-0 cursor-pointer accent-primary"
                         />
                         <div className="min-w-0">
                           <h2 className="break-words font-display text-lg uppercase leading-tight text-ink">
@@ -872,7 +872,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                         if (el) el.indeterminate = areSomeOnPageSelected;
                       }}
                       onChange={(e) => handleSelectAllCurrentPage(e.target.checked)}
-                      className="size-4 cursor-pointer accent-lime border-2 border-ink rounded-none bg-paper"
+                      className="size-4 cursor-pointer accent-primary border-2 border-ink rounded-none bg-paper"
                     />
                   </TableHeader>
                   {columns.map((col) => {
@@ -881,7 +881,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                       <TableHeader
                         key={col.name}
                         onClick={() => handleSort(col.name)}
-                        className="cursor-pointer select-none px-4 py-3 text-xs transition-colors hover:bg-lime/25"
+                        className="cursor-pointer select-none px-4 py-3 text-xs transition-colors hover:bg-primary/25"
                         title={`Click to sort by ${col.label}`}
                       >
                         <div className="flex items-center gap-1.5">
@@ -889,12 +889,12 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                           {isSorted ? (
                             sortState.dir === 'asc' ? (
                               <SortAscendingIcon
-                                className="size-3.5 text-lime-600 dark:text-lime"
+                                className="size-3.5 text-yellow-readable"
                                 strokeWidth={3}
                               />
                             ) : (
                               <SortDescendingIcon
-                                className="size-3.5 text-lime-600 dark:text-lime"
+                                className="size-3.5 text-yellow-readable"
                                 strokeWidth={3}
                               />
                             )
@@ -929,7 +929,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                   <TableRow>
                     <TableCell colSpan={columns.length + 2} className="py-16 text-center">
                       <div className="mx-auto max-w-sm space-y-3">
-                        <Doodle kind="sparkle" className="mx-auto size-8 text-lime" />
+                        <Doodle kind="sparkle" className="mx-auto size-8 text-yellow-readable" />
                         <p className="font-display text-xl uppercase">No records found</p>
                         <p className="text-sm text-ink-soft">
                           {searchTerm
@@ -954,7 +954,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                     <TableRow
                       key={row.id}
                       onClick={() => onOpenRecord(row.id)}
-                      className="cursor-pointer transition-colors hover:bg-lime/25"
+                      className="cursor-pointer transition-colors hover:bg-primary/25"
                     >
                       <TableCell
                         className="w-10 px-4 py-3.5 text-center"
@@ -964,7 +964,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                           aria-label={`Select record #${row.id}`}
                           checked={selectedIds.includes(row.id as number)}
                           onChange={() => toggleSelect(row.id as number)}
-                          className="size-4 cursor-pointer accent-lime border-2 border-ink rounded-none bg-paper"
+                          className="size-4 cursor-pointer accent-primary border-2 border-ink rounded-none bg-paper"
                         />
                       </TableCell>
                       {columns.map((col) => (
@@ -1005,7 +1005,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
             </div>
           ) : data?.records.length === 0 ? (
             <div className="ink-panel border-2 border-dashed bg-card/40 p-16 text-center">
-              <Doodle kind="sparkle" className="mx-auto size-8 text-lime" />
+              <Doodle kind="sparkle" className="mx-auto size-8 text-yellow-readable" />
               <p className="font-display text-xl uppercase mt-2">No records found</p>
               <p className="text-sm text-ink-soft">
                 {searchTerm
@@ -1041,7 +1041,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                     onClick={() => onOpenRecord(row.id)}
                     className={cn(
                       'ink-panel group relative border-2 border-ink p-4 transition-all hover:-translate-y-1 hover:shadow-ink-lg flex flex-col justify-between cursor-pointer',
-                      isSelected ? 'border-lime bg-lime/10' : 'bg-card'
+                      isSelected ? 'border-primary bg-primary/10' : 'bg-card'
                     )}
                   >
                     <div>
@@ -1055,7 +1055,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                             aria-label={`Select record #${row.id}`}
                             checked={isSelected}
                             onChange={() => toggleSelect(row.id as number)}
-                            className="size-4 cursor-pointer accent-lime border-2 border-ink rounded-none bg-paper"
+                            className="size-4 cursor-pointer accent-primary border-2 border-ink rounded-none bg-paper"
                           />
                           <span className="font-mono text-xs font-bold text-ink-soft">
                             #{row.id}
@@ -1066,7 +1066,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                             className={cn(
                               'border px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase',
                               row.active !== false
-                                ? 'border-lime bg-lime/20 text-lime-800 dark:text-lime-300'
+                                ? 'border-primary bg-primary/20 text-yellow-readable'
                                 : 'border-ink/30 bg-card text-ink-faint'
                             )}
                           >
@@ -1077,7 +1077,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
 
                       {/* Card Title */}
                       <div className="py-3">
-                        <h3 className="font-display text-lg uppercase tracking-wide text-ink group-hover:text-lime-600 transition-colors line-clamp-2">
+                        <h3 className="font-display text-lg uppercase tracking-wide text-ink group-hover:text-yellow-readable transition-colors line-clamp-2">
                           {titleValue || `#${row.id}`}
                         </h3>
                         {titleField && titleField.name !== 'name' && (
@@ -1113,7 +1113,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                       <Button
                         variant="ghost"
                         size="xs"
-                        className="font-mono text-xs group-hover:bg-lime group-hover:text-on-accent"
+                        className="font-mono text-xs group-hover:bg-primary group-hover:text-primary-foreground"
                         onClick={(e) => {
                           e.stopPropagation();
                           onOpenRecord(row.id);
@@ -1135,7 +1135,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
         <div>
           {!groupingField ? (
             <div className="border-2 border-ink bg-paper p-8 text-center shadow-ink">
-              <Doodle kind="sparkle" className="mx-auto size-8 text-pink mb-2" />
+              <Doodle kind="sparkle" className="mx-auto size-8 text-magenta-readable mb-2" />
               <h3 className="font-display text-lg uppercase text-ink">
                 No Workflow Pipeline Detected
               </h3>
@@ -1166,7 +1166,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                     {/* Stage Header */}
                     <div className="flex items-center justify-between border-b-2 border-ink bg-paper-raised px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="size-2.5 border border-ink bg-lime" />
+                        <span className="size-2.5 border border-ink bg-primary" />
                         <span className="font-display text-xs uppercase tracking-wider text-ink font-bold">
                           {stage}
                         </span>
@@ -1217,7 +1217,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                                     className={cn(
                                       'border px-1 py-0.2 font-mono text-[9px] font-bold uppercase',
                                       row.active !== false
-                                        ? 'border-lime bg-lime/20 text-lime-800 dark:text-lime-300'
+                                        ? 'border-primary bg-primary/20 text-yellow-readable'
                                         : 'border-ink/30 bg-card text-ink-faint'
                                     )}
                                   >
@@ -1226,7 +1226,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                                 )}
                               </div>
 
-                              <h4 className="mt-2 font-display text-sm uppercase tracking-wide text-ink group-hover:text-lime-600 transition-colors line-clamp-2">
+                              <h4 className="mt-2 font-display text-sm uppercase tracking-wide text-ink group-hover:text-yellow-readable transition-colors line-clamp-2">
                                 {titleVal ? String(titleVal) : `#${row.id}`}
                               </h4>
 
@@ -1265,7 +1265,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                                           pipelineStages[stageIdx - 1]
                                         )
                                       }
-                                      className="size-6 text-xs hover:bg-lime hover:text-on-accent"
+                                      className="size-6 text-xs hover:bg-primary hover:text-primary-foreground"
                                     >
                                       ←
                                     </Button>
@@ -1282,7 +1282,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                                           pipelineStages[stageIdx + 1]
                                         )
                                       }
-                                      className="size-6 text-xs hover:bg-lime hover:text-on-accent"
+                                      className="size-6 text-xs hover:bg-primary hover:text-primary-foreground"
                                     >
                                       →
                                     </Button>
@@ -1292,7 +1292,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                                 <Button
                                   variant="ghost"
                                   size="xs"
-                                  className="font-mono text-xs hover:bg-lime hover:text-on-accent"
+                                  className="font-mono text-xs hover:bg-primary hover:text-primary-foreground"
                                   onClick={() => onOpenRecord(row.id as number)}
                                 >
                                   Inspect →
@@ -1367,7 +1367,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
       {/* Floating Batch Action Toolbar */}
       {selectedIds.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 border-2 border-ink bg-paper px-4 py-2.5 shadow-[4px_4px_0_0_var(--ink)] animate-in fade-in slide-in-from-bottom-5">
-          <span className="border-2 border-ink bg-lime px-2.5 py-1 font-mono text-xs font-bold text-on-accent">
+          <span className="border-2 border-ink bg-primary px-2.5 py-1 font-mono text-xs font-bold text-primary-foreground">
             {selectedIds.length} SELECTED
           </span>
 
@@ -1377,7 +1377,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
               size="sm"
               onClick={handleBulkArchive}
               disabled={isBulkArchiving}
-              className="gap-1.5 hover:bg-pink hover:text-on-pink"
+              className="gap-1.5 hover:bg-destructive hover:text-destructive-foreground"
             >
               {isBulkArchiving ? (
                 <LoadingSpinner className="size-3.5" />
@@ -1409,7 +1409,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
             <PopoverContent align="center" className="w-56 p-2 space-y-2 font-sans shadow-ink-lg">
               <div className="flex items-center justify-between border-b border-ink/20 pb-1.5 px-1 font-display text-xs uppercase tracking-wider text-ink">
                 <span>Assign Sticker Tag</span>
-                <TagIcon className="size-3 text-lime" />
+                <TagIcon className="size-3 text-yellow-readable" />
               </div>
               {availableTags.length === 0 ? (
                 <div className="p-3 text-center font-mono text-xs text-ink-faint">
@@ -1422,7 +1422,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                       key={tag.id}
                       type="button"
                       onClick={() => handleMassTag(tag.id)}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-mono hover:bg-lime hover:text-on-accent text-left transition-colors border border-transparent hover:border-ink"
+                      className="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-mono hover:bg-primary hover:text-primary-foreground text-left transition-colors border border-transparent hover:border-ink"
                     >
                       <span
                         className="size-2.5 border border-ink shrink-0"

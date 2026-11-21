@@ -14,6 +14,15 @@ import {
   SecurityIcon,
   SettingsIcon,
   UserIcon,
+  ArrowLeftIcon,
+  BookmarkIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  FileSpreadsheetIcon,
+  HistoryIcon,
+  SendIcon,
+  SignalOffIcon,
+  SmartphoneIcon,
 } from '@moonwitness/ui/icons';
 import { Avatar } from '@moonwitness/ui/components/avatar';
 import { Badge } from '@moonwitness/ui/components/badge';
@@ -27,6 +36,16 @@ import boardMasthead from '@moonwitness/assets/illustrations/board-masthead.webp
 import lockupDark from '@moonwitness/assets/brand/moonwitness-lockup-dark.svg';
 import lockupLight from '@moonwitness/assets/brand/moonwitness-lockup-light.svg';
 import symbolDark from '@moonwitness/assets/brand/moonwitness-symbol-dark.svg';
+import tornEdgeTopUrl from '@moonwitness/assets/materials/torn-edge-top.svg';
+import tornCornerTlUrl from '@moonwitness/assets/materials/torn-corner-tl.svg';
+import brushStripShortUrl from '@moonwitness/assets/materials/brush-strip-short.svg';
+import paperNoteUrl from '@moonwitness/assets/materials/paper-note.svg';
+import tapeStripUrl from '@moonwitness/assets/materials/tape-strip.svg';
+import foldedCornerUrl from '@moonwitness/assets/materials/folded-corner.svg';
+import stampOutlineUrl from '@moonwitness/assets/materials/stamp-outline.svg';
+import inkSplatterSmUrl from '@moonwitness/assets/materials/ink-splatter-sm.svg';
+import tileHalftoneUrl from '@moonwitness/assets/materials/tile-halftone.svg';
+import scuffedBorderUrl from '@moonwitness/assets/materials/scuffed-border.svg';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { PaperNote } from '@moonwitness/ui/components/paper-note';
 import { SectionRibbon } from '@moonwitness/ui/components/section-ribbon';
@@ -62,6 +81,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@moonwitness/ui/components/select';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@moonwitness/ui/components/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@moonwitness/ui/components/popover';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@moonwitness/ui/components/sheet';
+import { Switch } from '@moonwitness/ui/components/switch';
+import { Textarea } from '@moonwitness/ui/components/textarea';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import {
   Table,
@@ -75,12 +122,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@moonwitness/ui/compon
 import { toast, ToastHost } from '@moonwitness/ui/components/toast';
 import { SoundProvider, SoundToggle, useSfx } from '@moonwitness/ui/components/audio';
 import {
+  DecorativeMotif,
+  Doodle,
   InkUnderline,
+  LiveIndicator,
   LoadingProgress,
   LoadingSpinner,
   SignalOrbit,
   SpeechBubble,
   SpeedLines,
+  type DecorativeMotifKind,
 } from '@moonwitness/ui/components/effects';
 import { Toolbar } from '@moonwitness/ui/components/toolbar';
 import {
@@ -96,6 +147,8 @@ const sections = [
   { id: 'brand', label: 'Brand' },
   { id: 'typography', label: 'Typography' },
   { id: 'materials', label: 'Materials' },
+  { id: 'icons-materials', label: 'Icons & Materials' },
+  { id: 'workbench-proof', label: 'Story Workbench proof' },
   { id: 'editorial-proof', label: 'Editorial proof' },
   { id: 'actions', label: 'Actions & feedback' },
   { id: 'forms', label: 'Forms' },
@@ -126,17 +179,78 @@ const iconSamples: { Component: ComponentType<SVGProps<SVGSVGElement>>; label: s
   { Component: UserIcon, label: 'User' },
 ];
 
+const iconScaleSizes = [16, 20, 24, 32] as const;
+
+const iconScaleSamples: { Component: ComponentType<SVGProps<SVGSVGElement>>; label: string }[] = [
+  { Component: ArrowLeftIcon, label: 'ArrowLeft' },
+  { Component: BookmarkIcon, label: 'Bookmark' },
+  { Component: CheckCircleIcon, label: 'CheckCircle' },
+  { Component: ClockIcon, label: 'Clock' },
+  { Component: FileSpreadsheetIcon, label: 'FileSpreadsheet' },
+  { Component: HistoryIcon, label: 'History' },
+  { Component: SendIcon, label: 'Send' },
+  { Component: SignalOffIcon, label: 'SignalOff' },
+  { Component: SmartphoneIcon, label: 'Smartphone' },
+];
+
+const materialAssets = [
+  { name: 'torn-edge-top.svg', src: tornEdgeTopUrl },
+  { name: 'torn-corner-tl.svg', src: tornCornerTlUrl },
+  { name: 'brush-strip-short.svg', src: brushStripShortUrl },
+  { name: 'paper-note.svg', src: paperNoteUrl },
+  { name: 'tape-strip.svg', src: tapeStripUrl },
+  { name: 'folded-corner.svg', src: foldedCornerUrl },
+  { name: 'stamp-outline.svg', src: stampOutlineUrl },
+  { name: 'ink-splatter-sm.svg', src: inkSplatterSmUrl },
+  { name: 'tile-halftone.svg', src: tileHalftoneUrl },
+  { name: 'scuffed-border.svg', src: scuffedBorderUrl },
+] as const;
+
+const doodleKinds = ['star', 'bolt', 'smiley', 'arrow', 'crown'] as const;
+
+const motifKinds: readonly DecorativeMotifKind[] = [
+  'underline',
+  'cross-out',
+  'orbit',
+  'globe-grid',
+  'moon-phases',
+  'eye-target',
+];
+
+const initialWorkbenchPages = [
+  {
+    id: 'page-1',
+    number: '01',
+    title: 'Opening scene',
+    draft: '  Line 01: Night market signal\n    Indented field note\n\tTabbed source cue',
+  },
+  {
+    id: 'page-2',
+    number: '02',
+    title: 'Field interview',
+    draft: '  Line 02: Harbor witness record\n    Quoted context preserved',
+  },
+  {
+    id: 'page-3',
+    number: '03',
+    title: 'Closing signal',
+    draft: '  Line 03: Shared moon epilogue\n    Final verification mark',
+  },
+];
+
 function Example({
   title,
   description,
+  wide = false,
   children,
 }: {
   title: string;
   description: string;
+  wide?: boolean;
   children: ReactNode;
 }) {
   return (
-    <article className="catalog-example">
+    <article className={wide ? 'catalog-example catalog-example-wide' : 'catalog-example'}>
       <div className="catalog-example-copy">
         <h3>{title}</h3>
         <p>{description}</p>
@@ -173,10 +287,58 @@ function CatalogContent() {
   const [dark, setDark] = useState(false);
   const [page, setPage] = useState(1);
   const [checked, setChecked] = useState(true);
+  const [indeterminateChecked, setIndeterminateChecked] = useState<boolean | 'indeterminate'>(
+    'indeterminate'
+  );
+  const [autoPublish, setAutoPublish] = useState(true);
+  const [assignment, setAssignment] = useState('none');
+  const [notesValue, setNotesValue] = useState('  First line\n    Indented detail');
   const [query, setQuery] = useState('');
   const [addonSort, setAddonSort] = useState<'ascending' | 'descending' | null>(null);
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  const [workbenchPages, setWorkbenchPages] = useState(initialWorkbenchPages);
+  const [activeWorkbenchPageId, setActiveWorkbenchPageId] = useState('page-1');
+  const [selectedCommand, setSelectedCommand] = useState('Create story');
   const { play } = useSfx();
+
+  const activeWorkbenchIndex = Math.max(
+    0,
+    workbenchPages.findIndex((entry) => entry.id === activeWorkbenchPageId)
+  );
+  const activeWorkbenchPage = workbenchPages[activeWorkbenchIndex] ?? workbenchPages[0];
+
+  function updateWorkbenchDraft(nextDraft: string) {
+    setWorkbenchPages((current) =>
+      current.map((entry) =>
+        entry.id === activeWorkbenchPage.id ? { ...entry, draft: nextDraft } : entry
+      )
+    );
+  }
+
+  function addWorkbenchPage() {
+    const nextNumber = String(workbenchPages.length + 1).padStart(2, '0');
+    const nextId = `page-${workbenchPages.length + 1}`;
+    setWorkbenchPages((current) => [
+      ...current,
+      {
+        id: nextId,
+        number: nextNumber,
+        title: `Draft page ${nextNumber}`,
+        draft: `  Line ${nextNumber}: Synthetic page body\n    Indented detail`,
+      },
+    ]);
+    setActiveWorkbenchPageId(nextId);
+  }
+
+  function moveActiveWorkbenchPageUp() {
+    if (activeWorkbenchIndex <= 0) return;
+    setWorkbenchPages((current) => {
+      const next = [...current];
+      const [moved] = next.splice(activeWorkbenchIndex, 1);
+      next.splice(activeWorkbenchIndex - 1, 0, moved);
+      return next;
+    });
+  }
 
   const addons = [
     ['Base', 'Platform team', 'Active'],
@@ -262,9 +424,8 @@ function CatalogContent() {
                 </>
               }
               description="A practical catalog of the shared MoonWitness UI package. Explore real components, keyboard behavior, themes, and responsive states."
-              actions={<Badge variant="primary">50 typed icons</Badge>}
+              actions={<Badge variant="primary">88 typed icons</Badge>}
             />
-
             <Panel
               className="catalog-intro-panel"
               title="MoonWitness visual system"
@@ -272,7 +433,7 @@ function CatalogContent() {
             >
               <div className="catalog-intro-meta">
                 <span>
-                  <strong>50</strong> typed icons
+                  <strong>88</strong> typed icons
                 </span>
                 <span>
                   <strong>4</strong> new compositions
@@ -282,7 +443,6 @@ function CatalogContent() {
                 </span>
               </div>
             </Panel>
-
             <Section
               id="foundations"
               title="Foundations"
@@ -346,7 +506,6 @@ function CatalogContent() {
                 </div>
               </Example>
             </Section>
-
             <Section
               id="board-proof"
               title="Board dashboard proof"
@@ -408,6 +567,8 @@ function CatalogContent() {
                         value="24"
                         detail="Sample records"
                         accent="magenta"
+                        surface="paper"
+                        frame="torn"
                         icon={<CompanyIcon />}
                       />
                       <MetricTile
@@ -415,6 +576,8 @@ function CatalogContent() {
                         value="18"
                         detail="Sample accounts"
                         accent="cyan"
+                        surface="paper"
+                        frame="torn"
                         icon={<UserIcon />}
                       />
                       <MetricTile
@@ -422,13 +585,17 @@ function CatalogContent() {
                         value="12"
                         detail="Sample records"
                         accent="yellow"
+                        surface="paper"
+                        frame="torn"
                         icon={<ModelIcon />}
                       />
                       <MetricTile
                         label="Planned activities"
                         value="07"
                         detail="Sample schedule"
-                        accent="green"
+                        accent="violet"
+                        surface="paper"
+                        frame="torn"
                         icon={<CalendarIcon />}
                       />
                     </div>
@@ -502,7 +669,6 @@ function CatalogContent() {
                 </div>
               </Example>
             </Section>
-
             <Section
               id="brand"
               title="Brand system"
@@ -531,7 +697,6 @@ function CatalogContent() {
                 </div>
               </Example>
             </Section>
-
             <Section
               id="typography"
               title="Typography"
@@ -574,7 +739,6 @@ function CatalogContent() {
                 </div>
               </Example>
             </Section>
-
             <Section
               id="materials"
               title="Materials & effects"
@@ -600,12 +764,49 @@ function CatalogContent() {
                   <PaperNote accent="yellow">Same moon. Different people.</PaperNote>
                   <div className="material-halftone" aria-hidden="true" />
                 </div>
+                <div className="catalog-zine-proof-grid">
+                  <Panel
+                    title="Scuffed xerox dossier"
+                    description="Dry-brush dashed boundary with stepped hover doodle."
+                    surface="ink"
+                    frame="scuffed"
+                    density="compact"
+                    headingLevel={3}
+                    className="mw-ui-interactive-surface"
+                    actions={<Doodle kind="crown" className="text-[var(--mw-yellow)]" />}
+                  >
+                    <PageHeader
+                      title="ZINE"
+                      accentTitle="DOSSIER"
+                      accent="magenta"
+                      treatment="brush"
+                      headingLevel={3}
+                    />
+                    <div className="catalog-live-row">
+                      <LiveIndicator active label="ON AIR" variant="on-air" />
+                      <LiveIndicator active={false} label="STANDBY" />
+                    </div>
+                  </Panel>
+                  <MetricTile
+                    label="Editorial violet"
+                    value="09"
+                    detail="Paper-cream torn KPI note"
+                    accent="violet"
+                    surface="paper"
+                    frame="torn"
+                    icon={<ActivityIcon />}
+                  />
+                </div>
               </Example>
               <Example
                 title="Motion and reduced motion"
                 description="Decorative motion is brief; reduced motion keeps the mark and status visible without animation."
               >
                 <div className="catalog-motion-grid">
+                  <div>
+                    <span>Live state beacon</span>
+                    <LiveIndicator active label="ON AIR" variant="on-air" />
+                  </div>
                   <div>
                     <span>Focus lines</span>
                     <div className="catalog-motion-lines">
@@ -632,7 +833,180 @@ function CatalogContent() {
                 </div>
               </Example>
             </Section>
+            <Section
+              id="icons-materials"
+              title="Icons, Materials & Decorations"
+              description="Canonical icon scales, exported material SVGs, doodles, and decorative motifs from @moonwitness/assets and @moonwitness/ui."
+            >
+              <Example
+                title="Icon scale contact sheet"
+                description="Canonical UI icons verified at 16, 20, 24, and 32 px."
+              >
+                <div className="catalog-icon-scale-list">
+                  {iconScaleSamples.map(({ Component, label }) => (
+                    <div className="catalog-icon-scale-row" key={label}>
+                      <span className="catalog-icon-scale-label">{label}</span>
+                      <div className="catalog-icon-sizes">
+                        {iconScaleSizes.map((size) => (
+                          <span className="catalog-icon-size-chip" key={size}>
+                            <Component aria-hidden="true" width={size} height={size} />
+                            <small>{size}px</small>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Example>
+              <Example
+                title="Canonical material SVGs"
+                description="Imported directly from @moonwitness/assets/materials/*.svg as Vite asset URLs."
+              >
+                <div className="catalog-material-svgs">
+                  {materialAssets.map(({ name, src }) => (
+                    <figure className="catalog-material-card" key={name}>
+                      <img src={src} alt="" />
+                      <figcaption>{name}</figcaption>
+                    </figure>
+                  ))}
+                </div>
+              </Example>
+              <Example
+                title="Doodles & decorative motifs"
+                description="Non-interactive SVG accents rendered with aria-hidden and pointer-events: none."
+              >
+                <div className="catalog-decorations-grid">
+                  {doodleKinds.map((kind) => (
+                    <div className="catalog-decoration-chip" key={kind}>
+                      <Doodle kind={kind} />
+                      <span>Doodle · {kind}</span>
+                    </div>
+                  ))}
+                  {motifKinds.map((kind) => (
+                    <div className="catalog-decoration-chip" key={kind}>
+                      <DecorativeMotif kind={kind} />
+                      <span>Motif · {kind}</span>
+                    </div>
+                  ))}
+                </div>
+              </Example>
+            </Section>
+            <Section
+              id="workbench-proof"
+              title="Story Workbench proof"
+              description="A 3-column Contoh desain editorial draft specimen pairing a torn paper page navigator, whitespace-preserving editor, and deterministic revision inspector."
+            >
+              <Example
+                wide
+                title="Story Workbench · Contoh desain"
+                description="Three-column layout on desktop collapsing to a single column at 42rem and below with zero horizontal overflow."
+              >
+                <div className="catalog-workbench-proof" data-testid="workbench-proof-grid">
+                  <Panel
+                    className="catalog-workbench-nav"
+                    title="Page Navigator"
+                    surface="paper"
+                    frame="torn"
+                    density="compact"
+                    headingLevel={4}
+                  >
+                    <ul className="catalog-workbench-pages" aria-label="Story pages">
+                      {workbenchPages.map((entry) => (
+                        <li key={entry.id}>
+                          <button
+                            type="button"
+                            className="catalog-workbench-page-btn"
+                            aria-current={entry.id === activeWorkbenchPage.id ? 'page' : undefined}
+                            onClick={() => setActiveWorkbenchPageId(entry.id)}
+                          >
+                            <span>
+                              {entry.number} · {entry.title}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="catalog-inline">
+                      <Button size="xs" variant="outline" onClick={addWorkbenchPage}>
+                        <AddIcon aria-hidden="true" /> Add page
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        disabled={activeWorkbenchIndex === 0}
+                        onClick={moveActiveWorkbenchPageUp}
+                      >
+                        Move up
+                      </Button>
+                    </div>
+                  </Panel>
 
+                  <div className="catalog-workbench-editor">
+                    <PageHeader
+                      treatment="brush"
+                      headingLevel={3}
+                      title={activeWorkbenchPage.title}
+                      description="Contoh desain · Story draft workspace"
+                      actions={<Badge variant="primary">INTERNAL</Badge>}
+                    />
+                    <SectionRibbon
+                      title="Draft body"
+                      number={activeWorkbenchPage.number}
+                      accent="magenta"
+                    />
+                    <Field
+                      htmlFor="workbench-draft-body"
+                      label="Draft content"
+                      description="Preserves leading spaces, indentation, and tabs."
+                    >
+                      <Textarea
+                        rows={4}
+                        value={activeWorkbenchPage.draft}
+                        onChange={(event) => updateWorkbenchDraft(event.currentTarget.value)}
+                      />
+                    </Field>
+                    <div className="catalog-workbench-preview" aria-label="Page preview">
+                      <div className="catalog-inline">
+                        <Badge variant="primary">INTERNAL</Badge>
+                        <small>Rendered preview · Page {activeWorkbenchPage.number}</small>
+                      </div>
+                      <pre className="catalog-workbench-pre">{activeWorkbenchPage.draft}</pre>
+                    </div>
+                  </div>
+
+                  <Panel
+                    className="catalog-workbench-inspector"
+                    title="Revision Inspector"
+                    surface="paper"
+                    density="compact"
+                    headingLevel={4}
+                  >
+                    <dl className="catalog-workbench-meta">
+                      <div>
+                        <dt>Version</dt>
+                        <dd>v1.4.0</dd>
+                      </div>
+                      <div>
+                        <dt>SHA-256</dt>
+                        <dd className="catalog-workbench-hash">
+                          e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Visibility</dt>
+                        <dd>
+                          <Badge>INTERNAL</Badge>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Sample notice</dt>
+                        <dd>Contoh desain · Synthetic sample</dd>
+                      </div>
+                    </dl>
+                  </Panel>
+                </div>
+              </Example>
+            </Section>
             <Section
               id="editorial-proof"
               title="Homepage hero proof"
@@ -648,6 +1022,16 @@ function CatalogContent() {
                     <img src={homeHeroDesktop} alt="" />
                   </picture>
                   <div className="catalog-hero-proof-shade" aria-hidden="true" />
+                  <div className="catalog-hero-decor" aria-hidden="true">
+                    <DecorativeMotif kind="moon-phases" className="catalog-hero-motif-moons" />
+                    <DecorativeMotif kind="orbit" className="catalog-hero-motif-orbit" />
+                    <DecorativeMotif kind="eye-target" className="catalog-hero-motif-eye" />
+                    <DecorativeMotif kind="globe-grid" className="catalog-hero-motif-globe" />
+                    <Doodle kind="crown" className="catalog-hero-doodle-crown" />
+                    <Doodle kind="smiley" className="catalog-hero-doodle-smiley" />
+                    <Doodle kind="star" className="catalog-hero-doodle-star" />
+                    <Doodle kind="bolt" className="catalog-hero-doodle-bolt" />
+                  </div>
                   <div className="catalog-hero-proof-copy">
                     <p className="catalog-hero-proof-kicker">PEOPLE · PLACES · STORIES</p>
                     <h3>
@@ -669,7 +1053,6 @@ function CatalogContent() {
                 </div>
               </Example>
             </Section>
-
             <Section
               id="actions"
               title="Actions & feedback"
@@ -749,7 +1132,6 @@ function CatalogContent() {
                 <ToastHost />
               </Example>
             </Section>
-
             <Section
               id="forms"
               title="Forms"
@@ -816,17 +1198,69 @@ function CatalogContent() {
                     />
                     <span>Include archived records</span>
                   </label>
+                  <label className="catalog-check-row" htmlFor="catalog-consent-indeterminate">
+                    <Checkbox
+                      id="catalog-consent-indeterminate"
+                      ref={(element) => {
+                        if (element) {
+                          element.indeterminate = indeterminateChecked === 'indeterminate';
+                        }
+                      }}
+                      checked={indeterminateChecked === true}
+                      aria-checked={
+                        indeterminateChecked === 'indeterminate' ? 'mixed' : indeterminateChecked
+                      }
+                      onChange={(event) => setIndeterminateChecked(event.currentTarget.checked)}
+                    />
+                    <span>Select partial archive batch</span>
+                  </label>
+                  <div className="catalog-field">
+                    <label id="catalog-assignment-label" htmlFor="catalog-assignment-trigger">
+                      Project assignment
+                    </label>
+                    <Select value={assignment} onValueChange={setAssignment}>
+                      <SelectTrigger
+                        id="catalog-assignment-trigger"
+                        aria-labelledby="catalog-assignment-label"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Unassigned</SelectItem>
+                        <SelectItem value="editorial">Editorial</SelectItem>
+                        <SelectItem value="research">Research</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="catalog-switch-row">
+                    <label htmlFor="catalog-switch-publish">Auto-publish snapshots</label>
+                    <Switch
+                      id="catalog-switch-publish"
+                      checked={autoPublish}
+                      onCheckedChange={setAutoPublish}
+                    />
+                  </div>
+                  <Field
+                    htmlFor="catalog-notes"
+                    label="Editorial notes"
+                    description="Multiline input preserving whitespace and indentation."
+                  >
+                    <Textarea
+                      rows={3}
+                      value={notesValue}
+                      onChange={(event) => setNotesValue(event.currentTarget.value)}
+                    />
+                  </Field>
                 </div>
               </Example>
             </Section>
-
             <Section
               id="overlays"
               title="Overlays & composition"
               description="Dialog, dropdown, tabs, toolbars, and page framing support keyboard-first workflows."
             >
               <Example
-                title="Dialog & dropdown"
+                title="Dialog, popover, sheet & dropdown"
                 description="Open with Enter or Space, move with arrow keys, close with Escape."
               >
                 <div className="catalog-inline">
@@ -874,6 +1308,86 @@ function CatalogContent() {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline">Open quick info</Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <PopoverHeader>
+                        <PopoverTitle>Revision snapshot</PopoverTitle>
+                        <PopoverDescription>
+                          Synced across editorial and archive panels.
+                        </PopoverDescription>
+                      </PopoverHeader>
+                    </PopoverContent>
+                  </Popover>
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="outline">Open detail sheet</Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                      <SheetHeader>
+                        <SheetTitle>Story metadata</SheetTitle>
+                        <SheetDescription>
+                          Slide-over drawer for inspecting story permissions and history.
+                        </SheetDescription>
+                      </SheetHeader>
+                      <SheetFooter>
+                        <SheetClose asChild>
+                          <Button variant="outline">Close sheet</Button>
+                        </SheetClose>
+                      </SheetFooter>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+              </Example>
+              <Example
+                title="Command palette"
+                description="Filterable command menu with keyboard selection."
+              >
+                <Command className="catalog-command-frame">
+                  <CommandInput
+                    aria-label="Search commands"
+                    placeholder="Search workspace commands..."
+                  />
+                  <CommandList>
+                    <CommandEmpty>No commands found.</CommandEmpty>
+                    <CommandGroup heading="Workspace actions">
+                      <CommandItem onSelect={() => setSelectedCommand('Create story')}>
+                        <AddIcon aria-hidden="true" /> Create story
+                      </CommandItem>
+                      <CommandItem onSelect={() => setSelectedCommand('Inspect revision')}>
+                        <HistoryIcon aria-hidden="true" /> Inspect revision
+                      </CommandItem>
+                      <CommandItem onSelect={() => setSelectedCommand('Export CSV')}>
+                        <FileSpreadsheetIcon aria-hidden="true" /> Export CSV
+                      </CommandItem>
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+                <small data-testid="selected-command-status">
+                  Selected command: {selectedCommand}
+                </small>
+              </Example>
+              <Example
+                title="Page header treatments"
+                description="Compare condensed display vs brush treatment at heading level 3."
+              >
+                <div className="catalog-page-header-pair">
+                  <PageHeader
+                    treatment="display"
+                    headingLevel={3}
+                    title="Display header"
+                    description="Structured condensed display header for operational views."
+                    actions={<Badge>Display</Badge>}
+                  />
+                  <PageHeader
+                    treatment="brush"
+                    headingLevel={3}
+                    title="Brush header"
+                    description="Expressive brush header for editorial workspaces."
+                    actions={<Badge variant="primary">Brush</Badge>}
+                  />
                 </div>
               </Example>
               <Example
@@ -907,7 +1421,6 @@ function CatalogContent() {
                 </Tabs>
               </Example>
             </Section>
-
             <Section
               id="data-display"
               title="Data display"
@@ -915,82 +1428,115 @@ function CatalogContent() {
             >
               <Example
                 title="Table & pagination"
-                description="Contoh desain: native table semantics, row selection, sorting, and bounded page navigation."
+                description="Contoh desain: comfortable and compact density tables, native table semantics, row selection, sorting, and bounded page navigation."
               >
-                <Table
-                  className="min-w-[36rem]"
-                  scrollLabel="Installed add-ons table horizontal scroll"
-                  aria-label="Installed add-ons"
-                >
-                  <caption className="sr-only">Sample design: installed add-ons</caption>
-                  <TableHead>
-                    <TableRow>
-                      <TableHeader scope="col" aria-sort={addonSort ?? 'none'}>
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            aria-label="Select all add-ons on this page"
-                            checked={allVisibleAddonsSelected}
-                            onChange={toggleVisibleAddons}
-                          />
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            aria-label="Sort by addon"
-                            onClick={() => {
-                              setAddonSort((current) =>
-                                current === 'ascending' ? 'descending' : 'ascending'
-                              );
-                              setPage(1);
-                            }}
-                          >
-                            Addon{' '}
-                            {addonSort === 'ascending'
-                              ? '↑'
-                              : addonSort === 'descending'
-                                ? '↓'
-                                : '↕'}
-                          </Button>
-                        </div>
-                      </TableHeader>
-                      <TableHeader scope="col">Owner</TableHeader>
-                      <TableHeader scope="col">Status</TableHeader>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {visibleAddons.map(([name, owner, status]) => (
-                      <TableRow key={name}>
-                        <TableCell>
+                <div className="catalog-table-stack">
+                  <Table
+                    className="min-w-[36rem]"
+                    density="comfortable"
+                    scrollLabel="Installed add-ons table horizontal scroll"
+                    aria-label="Installed add-ons"
+                  >
+                    <caption className="sr-only">Sample design: installed add-ons</caption>
+                    <TableHead>
+                      <TableRow>
+                        <TableHeader scope="col" aria-sort={addonSort ?? 'none'}>
                           <div className="flex items-center gap-2">
                             <Checkbox
-                              aria-label={`Select ${name}`}
-                              checked={selectedAddons.includes(name)}
-                              onChange={() =>
-                                setSelectedAddons((current) =>
-                                  current.includes(name)
-                                    ? current.filter((selected) => selected !== name)
-                                    : [...current, name]
-                                )
-                              }
+                              aria-label="Select all add-ons on this page"
+                              checked={allVisibleAddonsSelected}
+                              onChange={toggleVisibleAddons}
                             />
-                            {name}
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              aria-label="Sort by addon"
+                              onClick={() => {
+                                setAddonSort((current) =>
+                                  current === 'ascending' ? 'descending' : 'ascending'
+                                );
+                                setPage(1);
+                              }}
+                            >
+                              Addon{' '}
+                              {addonSort === 'ascending'
+                                ? '↑'
+                                : addonSort === 'descending'
+                                  ? '↓'
+                                  : '↕'}
+                            </Button>
                           </div>
-                        </TableCell>
-                        <TableCell>{owner}</TableCell>
+                        </TableHeader>
+                        <TableHeader scope="col">Owner</TableHeader>
+                        <TableHeader scope="col">Status</TableHeader>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {visibleAddons.map(([name, owner, status]) => (
+                        <TableRow key={name}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                aria-label={`Select ${name}`}
+                                checked={selectedAddons.includes(name)}
+                                onChange={() =>
+                                  setSelectedAddons((current) =>
+                                    current.includes(name)
+                                      ? current.filter((selected) => selected !== name)
+                                      : [...current, name]
+                                  )
+                                }
+                              />
+                              {name}
+                            </div>
+                          </TableCell>
+                          <TableCell>{owner}</TableCell>
+                          <TableCell>
+                            <Badge variant={status === 'Active' ? 'primary' : 'default'}>
+                              {status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <Pagination
+                    className="catalog-pagination"
+                    page={currentPage}
+                    pageCount={pageCount}
+                    onPageChange={setPage}
+                  />
+                  <Table
+                    density="compact"
+                    scrollLabel="Compact revision log horizontal scroll"
+                    aria-label="Compact revision log"
+                  >
+                    <caption className="sr-only">Sample design: compact revision log</caption>
+                    <TableHead>
+                      <TableRow>
+                        <TableHeader scope="col">Revision</TableHeader>
+                        <TableHeader scope="col">Editor</TableHeader>
+                        <TableHeader scope="col">Visibility</TableHeader>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>v1.4.0</TableCell>
+                        <TableCell>Editorial team</TableCell>
                         <TableCell>
-                          <Badge variant={status === 'Active' ? 'primary' : 'default'}>
-                            {status}
-                          </Badge>
+                          <Badge variant="primary">INTERNAL</Badge>
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <Pagination
-                  className="catalog-pagination"
-                  page={currentPage}
-                  pageCount={pageCount}
-                  onPageChange={setPage}
-                />
+                      <TableRow>
+                        <TableCell>v1.3.2</TableCell>
+                        <TableCell>Research team</TableCell>
+                        <TableCell>
+                          <Badge>DRAFT</Badge>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
               </Example>
               <Example
                 title="Loading & empty states"
@@ -1011,7 +1557,6 @@ function CatalogContent() {
                 </div>
               </Example>
             </Section>
-
             <Section
               id="charts"
               title="Charts"
@@ -1037,13 +1582,43 @@ function CatalogContent() {
                     ]}
                     locale="en-US"
                   />
+                  <BarChart
+                    title="Zero values bar example"
+                    data={[
+                      { label: 'Pending', value: 0 },
+                      { label: 'Failed', value: 0 },
+                    ]}
+                    locale="en-US"
+                    valueLabel="Count"
+                  />
+                  <LineChart
+                    title="Zero values line example"
+                    labels={['Mon', 'Tue', 'Wed']}
+                    series={[
+                      { label: 'Pending', values: [0, 0, 0] },
+                      { label: 'Failed', values: [0, 0, 0] },
+                    ]}
+                    locale="en-US"
+                  />
                   <BarChart title="Loading example" data={[]} loading />
+                  <LineChart title="Line loading example" labels={[]} series={[]} loading />
                   <BarChart title="Error example" data={[]} error="Activity could not be loaded." />
+                  <LineChart
+                    title="Line error example"
+                    labels={[]}
+                    series={[]}
+                    error="Timeline could not be loaded."
+                  />
                   <BarChart title="Empty example" data={[]} emptyMessage="No events yet." />
+                  <LineChart
+                    title="Line empty example"
+                    labels={[]}
+                    series={[]}
+                    emptyMessage="No timeline points yet."
+                  />
                 </div>
               </Example>
             </Section>
-
             <footer className="catalog-footer">
               <span>MoonWitness UI · built from public package exports</span>
               <a href="https://github.com/bjo163/moonwitness-xi/tree/dev/packages/ui">

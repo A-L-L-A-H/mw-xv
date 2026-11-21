@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "addons": ["auth", "base", "jobs", "notification"],
   "generatedFrom": "core addon manifests and model field metadata; no seed values included",
-  "sourceSha256": "5d6908379f7bfb52a6bd04741bb82034340a16ff87a2e7a4a928e61f0dd4c924",
+  "sourceSha256": "a53f5198522e9245b80d4a8b7f29545a4e98b0d3b38425f99765e9be436df0ed",
   "models": [
     {
       "name": "auth.refresh_token",
@@ -121,6 +121,18 @@
       "table": "integration_webhook_endpoints"
     },
     {
+      "name": "ir.feature_flag",
+      "table": "ir_feature_flags"
+    },
+    {
+      "name": "knowledge.bug_case",
+      "table": "knowledge_bug_cases"
+    },
+    {
+      "name": "knowledge.bug_case_event",
+      "table": "knowledge_bug_case_events"
+    },
+    {
       "name": "knowledge.concept_profile_version",
       "table": "knowledge_concept_profile_versions"
     },
@@ -131,6 +143,10 @@
     {
       "name": "knowledge.privacy_revocation",
       "table": "knowledge_privacy_revocations"
+    },
+    {
+      "name": "knowledge.publication_snapshot",
+      "table": "knowledge_publication_snapshots"
     },
     {
       "name": "knowledge.research_active_release",
@@ -211,6 +227,58 @@
     {
       "name": "request.purchase",
       "table": "purchase_requests"
+    },
+    {
+      "name": "whatsapp.account",
+      "table": "whatsapp_accounts"
+    },
+    {
+      "name": "whatsapp.conversation",
+      "table": "whatsapp_conversations"
+    },
+    {
+      "name": "whatsapp.conversation.alias",
+      "table": "whatsapp_conversation_aliases"
+    },
+    {
+      "name": "whatsapp.conversation.label",
+      "table": "whatsapp_conversation_labels"
+    },
+    {
+      "name": "whatsapp.conversation.read",
+      "table": "whatsapp_conversation_reads"
+    },
+    {
+      "name": "whatsapp.group.creation",
+      "table": "whatsapp_group_creations"
+    },
+    {
+      "name": "whatsapp.group.join",
+      "table": "whatsapp_group_joins"
+    },
+    {
+      "name": "whatsapp.group.operation",
+      "table": "whatsapp_group_operations"
+    },
+    {
+      "name": "whatsapp.internal_note",
+      "table": "whatsapp_internal_notes"
+    },
+    {
+      "name": "whatsapp.label",
+      "table": "whatsapp_labels"
+    },
+    {
+      "name": "whatsapp.message",
+      "table": "whatsapp_messages"
+    },
+    {
+      "name": "whatsapp.status",
+      "table": "whatsapp_statuses"
+    },
+    {
+      "name": "whatsapp.upload.ticket",
+      "table": "whatsapp_upload_tickets"
     },
     {
       "name": "workflow.approval",
@@ -504,6 +572,48 @@
       "kind": "belongsTo"
     },
     {
+      "from": "ir.feature_flag",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.bug_case",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.bug_case",
+      "field": "created_by",
+      "to": "base.user",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.bug_case_event",
+      "field": "actor",
+      "to": "base.user",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.bug_case_event",
+      "field": "bug_case",
+      "to": "knowledge.bug_case",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.bug_case_event",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
       "from": "knowledge.concept_profile_version",
       "field": "company",
       "to": "base.company",
@@ -535,6 +645,27 @@
       "from": "knowledge.privacy_revocation",
       "field": "company",
       "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.publication_snapshot",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.publication_snapshot",
+      "field": "requester",
+      "to": "base.user",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "knowledge.publication_snapshot",
+      "field": "reviewer",
+      "to": "base.user",
       "cardinality": "N:1",
       "kind": "belongsTo"
     },
@@ -801,6 +932,174 @@
       "from": "request.purchase",
       "field": "vendor",
       "to": "base.partner",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.account",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.conversation",
+      "field": "account",
+      "to": "whatsapp.account",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.conversation",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.conversation.alias",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.conversation.alias",
+      "field": "conversation",
+      "to": "whatsapp.conversation",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.conversation.label",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.conversation.label",
+      "field": "conversation",
+      "to": "whatsapp.conversation",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.conversation.label",
+      "field": "label",
+      "to": "whatsapp.label",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.conversation.read",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.conversation.read",
+      "field": "conversation",
+      "to": "whatsapp.conversation",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.group.creation",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.group.join",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.group.operation",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.group.operation",
+      "field": "conversation",
+      "to": "whatsapp.conversation",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.internal_note",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.internal_note",
+      "field": "conversation",
+      "to": "whatsapp.conversation",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.label",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.message",
+      "field": "account",
+      "to": "whatsapp.account",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.message",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.message",
+      "field": "conversation",
+      "to": "whatsapp.conversation",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.status",
+      "field": "account",
+      "to": "whatsapp.account",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.status",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.upload.ticket",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "whatsapp.upload.ticket",
+      "field": "conversation",
+      "to": "whatsapp.conversation",
       "cardinality": "N:1",
       "kind": "belongsTo"
     },

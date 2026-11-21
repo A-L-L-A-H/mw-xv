@@ -39,7 +39,12 @@ function pipePrefixed(stream, prefix, target) {
 }
 
 function startService(packageName, script, index) {
-  const shortName = packageName === '@moonwitness/board' ? 'board' : script === 'dev' || script.startsWith('start') ? 'api' : script;
+  const shortName =
+    packageName === '@moonwitness/board'
+      ? 'board'
+      : script === 'dev' || script.startsWith('start')
+        ? 'api'
+        : script;
   const prefix = `${colors[index % colors.length]}[${shortName}]${reset}`;
   const child = spawn(
     packageManager.command,
@@ -65,12 +70,12 @@ async function waitForApiReady(timeoutMs = 30000) {
   const deadline = Date.now() + timeoutMs;
   while (!stopping && Date.now() < deadline) {
     try {
-      const response = await fetch(url);
+      const response = await globalThis.fetch(url);
       if (response.ok) return;
     } catch {
       // API not listening yet.
     }
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await new Promise((resolve) => globalThis.setTimeout(resolve, 250));
   }
 }
 

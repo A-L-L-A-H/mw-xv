@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/hooks/use-auth-context';
 import { client } from '@/lib/client';
 import { Button } from '@moonwitness/ui/components/button';
+import { Doodle } from '@moonwitness/ui/components/effects';
 import { Panel } from '@moonwitness/ui/components/panel';
 import { SectionRibbon } from '@moonwitness/ui/components/section-ribbon';
 
@@ -161,12 +162,18 @@ export function StoryWorkbenchPage() {
           className="dashboard-masthead-art"
         />
         <div className="dashboard-masthead-shade" aria-hidden="true" />
+        <div className="dashboard-masthead-ornaments" aria-hidden="true">
+          <Doodle kind="star" className="size-4 text-[var(--mw-signal-blue)]" />
+          <Doodle kind="crown" className="size-5 text-[var(--mw-yellow)]" />
+        </div>
         <div className="dashboard-masthead-copy">
           <div className="dashboard-masthead-kicker">
             <KnowledgeIcon aria-hidden="true" className="size-4" />
             MoonWitness / Internal editorial
           </div>
-          <h1 className="dashboard-masthead-title">Story workbench</h1>
+          <h1 className="dashboard-masthead-title">
+            <span>Story</span> <span className="dashboard-masthead-title-accent">workbench</span>
+          </h1>
           <p className="dashboard-masthead-subtitle">
             Edit and arrange the pages of an internal story. Saving appends an immutable revision;
             previous text remains available by version. This workbench does not publish content or
@@ -175,75 +182,78 @@ export function StoryWorkbenchPage() {
         </div>
       </header>
       <div className="story-workbench-grid">
-        <aside className="story-workbench-aside" aria-label="Page navigator">
-          <Panel
-            title="Page navigator"
-            description={`${pages.length} page${pages.length === 1 ? '' : 's'} in this story`}
-            surface="paper"
-            frame="torn"
-            density="compact"
-          >
-            <div className="space-y-3">
-              <label className="block font-mono text-xs uppercase tracking-wider text-ink-faint">
-                <span className="mb-1 block">Select page</span>
-                <SelectField
-                  aria-label="Story page"
-                  value={selectedPage.page_id}
-                  onChange={(event) => {
-                    setSelectedPageId(event.currentTarget.value);
-                    if (!viewingHistory) setDraft(null);
-                  }}
-                  className="w-full border-2 border-ink/30 bg-paper p-2 text-sm text-ink"
+        <details open className="story-workbench-mobile-collapse">
+          <summary className="story-workbench-collapse-summary">Page navigator</summary>
+          <aside className="story-workbench-aside" aria-label="Page navigator">
+            <Panel
+              title="Page navigator"
+              description={`${pages.length} page${pages.length === 1 ? '' : 's'} in this story`}
+              surface="paper"
+              frame="torn"
+              density="compact"
+            >
+              <div className="space-y-3">
+                <label className="block font-mono text-xs uppercase tracking-wider text-ink-faint">
+                  <span className="mb-1 block">Select page</span>
+                  <SelectField
+                    aria-label="Story page"
+                    value={selectedPage.page_id}
+                    onChange={(event) => {
+                      setSelectedPageId(event.currentTarget.value);
+                      if (!viewingHistory) setDraft(null);
+                    }}
+                    className="w-full border-2 border-ink/30 bg-paper p-2 text-sm text-ink"
+                  >
+                    {pages.map((page, index) => (
+                      <option key={page.page_id} value={page.page_id}>
+                        Page {index + 1}
+                      </option>
+                    ))}
+                  </SelectField>
+                </label>
+                <p role="status" className="font-mono text-xs uppercase text-ink-faint">
+                  Page {selectedPage.page_order} of {pages.length}
+                </p>
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={addPage}
+                  disabled={!canEdit || pages.length >= 100}
                 >
-                  {pages.map((page, index) => (
-                    <option key={page.page_id} value={page.page_id}>
-                      Page {index + 1}
-                    </option>
-                  ))}
-                </SelectField>
-              </label>
-              <p role="status" className="font-mono text-xs uppercase text-ink-faint">
-                Page {selectedPage.page_order} of {pages.length}
-              </p>
-              <Button
-                type="button"
-                className="w-full"
-                onClick={addPage}
-                disabled={!canEdit || pages.length >= 100}
-              >
-                Add page
-              </Button>
-              <div className="grid grid-cols-2 gap-2">
+                  Add page
+                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => moveSelectedPage(-1)}
+                    disabled={!canEdit || pages[0]?.page_id === selectedPage.page_id}
+                  >
+                    Move up
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => moveSelectedPage(1)}
+                    disabled={!canEdit || pages.at(-1)?.page_id === selectedPage.page_id}
+                  >
+                    Move down
+                  </Button>
+                </div>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => moveSelectedPage(-1)}
-                  disabled={!canEdit || pages[0]?.page_id === selectedPage.page_id}
+                  className="w-full"
+                  onClick={removeSelectedPage}
+                  disabled={!canEdit || pages.length <= 1}
                 >
-                  Move up
+                  Remove page
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => moveSelectedPage(1)}
-                  disabled={!canEdit || pages.at(-1)?.page_id === selectedPage.page_id}
-                >
-                  Move down
-                </Button>
+                <p className="text-xs text-ink-faint">A story can contain up to 100 pages.</p>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={removeSelectedPage}
-                disabled={!canEdit || pages.length <= 1}
-              >
-                Remove page
-              </Button>
-              <p className="text-xs text-ink-faint">A story can contain up to 100 pages.</p>
-            </div>
-          </Panel>
-        </aside>
+            </Panel>
+          </aside>
+        </details>
 
         <div className="story-workbench-center">
           <section className="ink-panel space-y-4 bg-card p-5 sm:p-6">
@@ -331,7 +341,7 @@ export function StoryWorkbenchPage() {
               maxLength={1000000}
               spellCheck={false}
               readOnly={!canEdit || historyQuery.isLoading || pages.length === 0}
-              className="min-h-64 w-full resize-y border-2 border-ink/30 bg-paper p-4 font-mono text-sm leading-relaxed text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
+              className="min-h-64 w-full resize-y border-2 border-ink/30 bg-paper p-4 font-mono text-sm leading-relaxed text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               aria-describedby="story-page-help"
             />
             <p id="story-page-help" className="text-xs text-ink-faint">
@@ -396,99 +406,102 @@ export function StoryWorkbenchPage() {
           </section>
         </div>
 
-        <aside
-          className="story-workbench-aside story-workbench-inspector"
-          aria-label="Revision inspector"
-        >
-          <Panel
-            title="Revision inspector"
-            description="Version history and integrity"
-            surface="paper"
-            frame="torn"
-            density="compact"
+        <details open className="story-workbench-mobile-collapse">
+          <summary className="story-workbench-collapse-summary">Revision inspector</summary>
+          <aside
+            className="story-workbench-aside story-workbench-inspector"
+            aria-label="Revision inspector"
           >
-            {current ? (
-              <div className="space-y-3">
-                <label className="block font-mono text-xs uppercase tracking-wider text-ink-faint">
-                  <span className="mb-1 block">Inspect previous revision</span>
-                  <Input
-                    aria-label="Previous revision number"
-                    type="number"
-                    min={1}
-                    max={current.version - 1}
-                    value={revisionInput}
-                    onChange={(event) => setRevisionInput(event.currentTarget.value)}
-                    disabled={current.version <= 1}
-                    className="w-full border-2 border-ink/30 bg-paper p-2 text-sm text-ink"
-                  />
-                </label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={loadRevision}
-                  disabled={!revisionInput || current.version <= 1}
-                >
-                  Load revision
-                </Button>
-                {viewingHistory && (
+            <Panel
+              title="Revision inspector"
+              description="Version history and integrity"
+              surface="paper"
+              frame="torn"
+              density="compact"
+            >
+              {current ? (
+                <div className="space-y-3">
+                  <label className="block font-mono text-xs uppercase tracking-wider text-ink-faint">
+                    <span className="mb-1 block">Inspect previous revision</span>
+                    <Input
+                      aria-label="Previous revision number"
+                      type="number"
+                      min={1}
+                      max={current.version - 1}
+                      value={revisionInput}
+                      onChange={(event) => setRevisionInput(event.currentTarget.value)}
+                      disabled={current.version <= 1}
+                      className="w-full border-2 border-ink/30 bg-paper p-2 text-sm text-ink"
+                    />
+                  </label>
                   <Button
                     type="button"
                     variant="outline"
                     className="w-full"
-                    onClick={viewLatestRevision}
+                    onClick={loadRevision}
+                    disabled={!revisionInput || current.version <= 1}
                   >
-                    Return to latest revision
+                    Load revision
                   </Button>
-                )}
+                  {viewingHistory && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={viewLatestRevision}
+                    >
+                      Return to latest revision
+                    </Button>
+                  )}
+                  <p role="status" className="text-sm text-ink-soft">
+                    {viewingHistory
+                      ? `Viewing immutable revision ${selectedVersion}; editing is disabled.`
+                      : `Latest revision ${current.version} is open for editing.`}
+                  </p>
+                </div>
+              ) : (
                 <p role="status" className="text-sm text-ink-soft">
-                  {viewingHistory
-                    ? `Viewing immutable revision ${selectedVersion}; editing is disabled.`
-                    : `Latest revision ${current.version} is open for editing.`}
+                  The first saved revision will appear here.
                 </p>
-              </div>
-            ) : (
-              <p role="status" className="text-sm text-ink-soft">
-                The first saved revision will appear here.
+              )}
+              {viewingHistory && displayed && (
+                <p
+                  role="note"
+                  className="mt-4 border-l-4 border-amber-700/50 bg-amber-100/50 p-3 text-sm text-ink dark:bg-amber-950/20"
+                >
+                  Historical revisions are immutable. Return to the latest revision to make and save
+                  edits.
+                </p>
+              )}
+              {displayed && (
+                <section
+                  className="mt-5 border-t-2 border-ink/20 pt-4"
+                  aria-labelledby="story-integrity-title"
+                >
+                  <SectionRibbon
+                    id="story-integrity-title"
+                    title="Revision integrity"
+                    number="03"
+                    accent="yellow"
+                    surface="paper"
+                    headingLevel={3}
+                  />
+                  <dl className="mt-3 grid gap-2 font-mono text-xs sm:grid-cols-[auto_minmax(0,1fr)]">
+                    <dt className="text-ink-faint">Version</dt>
+                    <dd>{displayed.version}</dd>
+                    <dt className="text-ink-faint">SHA-256</dt>
+                    <dd className="break-all">{displayed.digest}</dd>
+                    <dt className="text-ink-faint">Visibility</dt>
+                    <dd>{displayed.visibility}</dd>
+                  </dl>
+                </section>
+              )}
+              <p role="note" className="mt-5 border-t-2 border-ink/20 pt-4 text-sm text-ink-soft">
+                Internal only. This workspace does not publish stories or upload media.
               </p>
-            )}
-            {viewingHistory && displayed && (
-              <p
-                role="note"
-                className="mt-4 border-l-4 border-amber-700/50 bg-amber-100/50 p-3 text-sm text-ink dark:bg-amber-950/20"
-              >
-                Historical revisions are immutable. Return to the latest revision to make and save
-                edits.
-              </p>
-            )}
-            {displayed && (
-              <section
-                className="mt-5 border-t-2 border-ink/20 pt-4"
-                aria-labelledby="story-integrity-title"
-              >
-                <SectionRibbon
-                  id="story-integrity-title"
-                  title="Revision integrity"
-                  number="03"
-                  accent="yellow"
-                  surface="paper"
-                  headingLevel={3}
-                />
-                <dl className="mt-3 grid gap-2 font-mono text-xs sm:grid-cols-[auto_minmax(0,1fr)]">
-                  <dt className="text-ink-faint">Version</dt>
-                  <dd>{displayed.version}</dd>
-                  <dt className="text-ink-faint">SHA-256</dt>
-                  <dd className="break-all">{displayed.digest}</dd>
-                  <dt className="text-ink-faint">Visibility</dt>
-                  <dd>{displayed.visibility}</dd>
-                </dl>
-              </section>
-            )}
-            <p role="note" className="mt-5 border-t-2 border-ink/20 pt-4 text-sm text-ink-soft">
-              Internal only. This workspace does not publish stories or upload media.
-            </p>
-          </Panel>
-        </aside>
+            </Panel>
+          </aside>
+        </details>
       </div>
     </main>
   );

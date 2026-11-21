@@ -265,6 +265,7 @@ export async function collectReferenceMetadata() {
   const requestPath = path.join(root, 'packages/orm-request/dist/manifest.js');
   const organizationPath = path.join(root, 'packages/orm-organization/dist/manifest.js');
   const integrationPath = path.join(root, 'packages/orm-integration/dist/manifest.js');
+  const whatsappPath = path.join(root, 'packages/orm-whatsapp/dist/manifest.js');
   const witnessPath = path.join(root, 'packages/orm-knowledge/dist/manifest.js');
   const [
     { manifest: base },
@@ -276,6 +277,7 @@ export async function collectReferenceMetadata() {
     { manifest: request },
     { manifest: organization },
     { manifest: integration },
+    { whatsappManifest: whatsapp },
     { manifest: witness },
   ] = await Promise.all([
     import(pathToFileURL(basePath).href),
@@ -287,6 +289,7 @@ export async function collectReferenceMetadata() {
     import(pathToFileURL(requestPath).href),
     import(pathToFileURL(organizationPath).href),
     import(pathToFileURL(integrationPath).href),
+    import(pathToFileURL(whatsappPath).href),
     import(pathToFileURL(witnessPath).href),
   ]);
   const addons = [
@@ -299,6 +302,7 @@ export async function collectReferenceMetadata() {
     request,
     organization,
     integration,
+    whatsapp,
     witness,
   ]
     .sort((left, right) => compare(left.name, right.name))
@@ -390,6 +394,7 @@ export async function collectReferenceMetadata() {
     ...(await filesUnder('packages/orm-request/src', '.ts')),
     ...(await filesUnder('packages/orm-organization/src', '.ts')),
     ...(await filesUnder('packages/orm-integration/src', '.ts')),
+    ...(await filesUnder('packages/orm-whatsapp/src', '.ts')),
     ...(await filesUnder('packages/orm-knowledge/src', '.ts')),
   ].sort(compare);
   const envSources = await Promise.all(

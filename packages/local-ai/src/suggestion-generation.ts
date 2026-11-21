@@ -29,6 +29,16 @@ export type LocalAiSuggestionResult<T> =
 
 export type SuggestionCandidateValidator<T> = (value: unknown) => T | Promise<T>;
 
+export const SUGGESTION_ENVELOPE_JSON_SCHEMA: Readonly<Record<string, unknown>> = Object.freeze({
+  type: 'object',
+  additionalProperties: false,
+  required: ['format', 'suggestions'],
+  properties: {
+    format: { type: 'string', const: 'mw-local-ai-suggestion-envelope/v1' },
+    suggestions: { type: 'array' },
+  },
+});
+
 const MAX_PASSAGES = 20;
 const MAX_PASSAGE_TEXT_LENGTH = 16_000;
 const MAX_TOTAL_TEXT_LENGTH = 18_000;
@@ -130,7 +140,7 @@ export async function generateLocalAiSuggestion<T>(input: {
 
   let generated: Awaited<ReturnType<LocalAiRuntime['generate']>>;
   try {
-    generated = await generate({ prompt });
+    generated = await generate({ prompt, jsonSchema: SUGGESTION_ENVELOPE_JSON_SCHEMA });
   } catch {
     return { status: 'unavailable', reason: 'provider_unreachable' };
   }

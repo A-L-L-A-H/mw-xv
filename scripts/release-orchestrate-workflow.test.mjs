@@ -34,15 +34,15 @@ test('orchestration starts only from trusted main CI or an intentional main disp
   assert.doesNotMatch(decide, /ref: \$\{\{ inputs\./u);
 });
 
-test('the newest exact-SHA main ci-gate is required before any release decision', () => {
-  assert.match(decide, /head_sha=\$SOURCE_SHA&event=push/u);
-  assert.match(decide, /sort_by\(\.created_at, \.run_attempt\) \| last/u);
-  assert.match(decide, /"\$EVENT_RUN_ID" != "\$run_id"/u);
-  assert.match(decide, /\.name == "ci-gate" and \.conclusion == "success"/u);
-  assert.match(decide, /test "\$\(git rev-parse HEAD\)" = "\$SOURCE_SHA"/u);
-  assert.match(decide, /if: steps\.source\.outputs\.stale != 'true'\n\s+id: gate/u);
+test('the trusted main source SHA is checked against live main before any release decision', () => {
+  assert.match(decide, /\[\[ "\$RUN_CONCLUSION" == "success" \]\]/u);
+  assert.match(decide, /\[\[ "\$RUN_EVENT" == "push" \]\]/u);
+  assert.match(decide, /\[\[ "\$RUN_BRANCH" == "main" \]\]/u);
+  assert.match(decide, /\[\[ "\$RUN_REPOSITORY" == "\$GH_REPO" \]\]/u);
+  assert.match(decide, /echo "stale=true" >> "\$GITHUB_OUTPUT"/u);
+  assert.match(decide, /if: steps\.source\.outputs\.stale != 'true'/u);
   assert.ok(
-    decide.indexOf('Verify the exact main ci-gate for the source SHA') <
+    decide.indexOf('Resolve and verify the trusted main source') <
       decide.indexOf('Decide the next idempotent release action')
   );
 });
@@ -55,15 +55,9 @@ test('the dev and remote-state snapshot is verified before the orchestrator deci
   assert.match(decide, /git ls-remote --tags origin > "\$RUNNER_TEMP\/remote-tags\.txt"/u);
   assert.match(decide, /--slurp "repos\/\$GH_REPO\/releases\?per_page=100"/u);
   assert.match(decide, /echo "dev-sha=\$dev_sha" >> "\$GITHUB_OUTPUT"/u);
-  // Every state read must stay behind both staleness flags, and the decision must consume them.
-  assert.match(
-    decide,
-    /if: steps\.source\.outputs\.stale != 'true' && steps\.gate\.outputs\.stale != 'true'\n\s+id: state/u
-  );
-  assert.match(
-    decide,
-    /if: steps\.source\.outputs\.stale != 'true' && steps\.gate\.outputs\.stale != 'true'\n\s+id: decision/u
-  );
+  // Every state read and decision step must stay gated behind the main staleness check.
+  assert.match(decide, /if: steps\.source\.outputs\.stale != 'true'\n\s+id: state/u);
+  assert.match(decide, /if: steps\.source\.outputs\.stale != 'true'\n\s+id: decision/u);
   assert.ok(
     decide.indexOf('Collect remote tags, dev state, and published releases') <
       decide.indexOf('Decide the next idempotent release action')

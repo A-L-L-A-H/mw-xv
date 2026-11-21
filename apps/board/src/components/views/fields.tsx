@@ -38,7 +38,7 @@ export function FieldCell({ field, row }: { field: FieldMeta; row: Row }) {
     case 'boolean':
       if (field.name === 'active') {
         return value ? (
-          <span className="inline-block -rotate-2 border-2 border-ink bg-lime px-2 text-xs font-bold uppercase text-on-accent">
+          <span className="inline-block -rotate-2 border-2 border-ink bg-primary px-2 text-xs font-bold uppercase text-primary-foreground">
             Active
           </span>
         ) : (
@@ -240,14 +240,14 @@ function Many2oneWidget({
           disabled={disabled}
           aria-invalid={aria['aria-invalid']}
           className={cn(
-            'flex h-10 w-full items-center gap-2 rounded-none border-2 border-ink bg-paper-raised px-3 text-left text-sm disabled:opacity-50 aria-invalid:border-pink',
+            'flex h-10 w-full items-center gap-2 rounded-none border-2 border-ink bg-paper-raised px-3 text-left text-sm disabled:opacity-50 aria-invalid:border-destructive',
             !value && 'text-ink-faint'
           )}
         >
           <span className="truncate">{label || `Pick a ${field.label.toLowerCase()}…`}</span>
           {value && !disabled && (
             <CloseIcon
-              className="ml-auto size-4 shrink-0 hover:text-pink"
+              className="ml-auto size-4 shrink-0 hover:text-destructive"
               onClick={(e) => {
                 e.stopPropagation();
                 onChange(null);

@@ -78,8 +78,15 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
 
   fastify.addHook('onRequest', async (request, reply) => {
     const url = request.routeOptions.url;
+    const routeConfig = request.routeOptions.config as { public?: boolean } | undefined;
     // Unmatched URLs fall through so they get a normal 404; CORS preflights carry no token.
-    if (request.method === 'OPTIONS' || url === undefined || isPublic(url)) return;
+    if (
+      request.method === 'OPTIONS' ||
+      url === undefined ||
+      routeConfig?.public === true ||
+      isPublic(url)
+    )
+      return;
     let userId: number;
     try {
       const payload = await request.jwtVerify<{ sub: string; role: string }>();
@@ -127,18 +134,30 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
     if (requestedCompanyHeader !== undefined && parsedCompanyHeader === undefined) {
       return reply.code(403).send({ success: false, error: 'Company access denied' });
     }
-    const companyMemberships = await CompanyMembership.query()
-      .where({ user_id: userId, active: true })
-      .orderBy('is_default', 'desc')
-      .orderBy('company_id', 'asc')
-      .select('company_id', 'is_default');
+    const membershipTable = CompanyMembership.tableName;
+    const companyTable = Company.tableName;
+    const companyMemberships = (await CompanyMembership.query()
+      .leftJoin(companyTable, `${membershipTable}.company_id`, `${companyTable}.id`)
+      .where(`${membershipTable}.user_id`, userId)
+      .where(`${membershipTable}.active`, true)
+      .orderBy(`${membershipTable}.is_default`, 'desc')
+      .orderBy(`${membershipTable}.company_id`, 'asc')
+      .select(
+        `${membershipTable}.company_id as company_id`,
+        `${membershipTable}.is_default as is_default`,
+        `${companyTable}.active as company_active`
+      )) as unknown as {
+      company_id: number;
+      is_default: boolean | number;
+      company_active: boolean | number | null;
+    }[];
     if (companyMemberships.length === 0) {
       return reply.code(403).send({ success: false, error: 'No active company membership' });
     }
     const selectedMembership =
       parsedCompanyHeader !== undefined
         ? companyMemberships.find(({ company_id }) => company_id === parsedCompanyHeader)
-        : (companyMemberships.find(({ is_default }) => is_default) ??
+        : (companyMemberships.find(({ is_default }) => Boolean(is_default)) ??
           companyMemberships.find(({ company_id }) => company_id === partner.company_id) ??
           companyMemberships[0]);
     if (parsedCompanyHeader !== undefined && !selectedMembership) {
@@ -147,37 +166,39 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
     const companyId = selectedMembership?.company_id;
     if (
       companyId !== undefined &&
-      !(await Company.query().where({ id: companyId, active: true }).first())
+      (selectedMembership?.company_active === null ||
+        selectedMembership?.company_active === false ||
+        selectedMembership?.company_active === 0)
     ) {
       return reply.code(403).send({ success: false, error: 'Company access denied' });
     }
 
     let groupPermissions: GroupModelGrant[] = [];
     if (role === 'user') {
-      const memberships = await GroupMembership.query()
-        .where({ user_id: userId, active: true })
-        .select('group_id');
-      const groupIds = memberships.map(({ group_id }) => group_id);
-      if (groupIds.length > 0) {
-        const activeGroups = await AccessGroup.query()
-          .whereIn('id', groupIds)
-          .where({ active: true })
-          .select('id');
-        const activeGroupIds = activeGroups.map(({ id }) => id);
-        if (activeGroupIds.length > 0) {
-          const grants = await ModelAccess.query()
-            .whereIn('group_id', activeGroupIds)
-            .where({ active: true })
-            .select('model_name', 'read', 'create', 'write', 'unlink');
-          groupPermissions = grants.map((grant) => ({
-            model_name: grant.model_name,
-            read: grant.read,
-            create: grant.create,
-            write: grant.write,
-            unlink: grant.unlink,
-          }));
-        }
-      }
+      const modelAccessTable = ModelAccess.tableName;
+      const accessGroupTable = AccessGroup.tableName;
+      const groupMembershipTable = GroupMembership.tableName;
+      const grants = (await ModelAccess.query()
+        .join(accessGroupTable, `${modelAccessTable}.group_id`, `${accessGroupTable}.id`)
+        .join(groupMembershipTable, `${accessGroupTable}.id`, `${groupMembershipTable}.group_id`)
+        .where(`${groupMembershipTable}.user_id`, userId)
+        .where(`${groupMembershipTable}.active`, true)
+        .where(`${accessGroupTable}.active`, true)
+        .where(`${modelAccessTable}.active`, true)
+        .select(
+          `${modelAccessTable}.model_name as model_name`,
+          `${modelAccessTable}.read as read`,
+          `${modelAccessTable}.create as create`,
+          `${modelAccessTable}.write as write`,
+          `${modelAccessTable}.unlink as unlink`
+        )) as unknown as GroupModelGrant[];
+      groupPermissions = grants.map((grant) => ({
+        model_name: grant.model_name,
+        read: Boolean(grant.read),
+        create: Boolean(grant.create),
+        write: Boolean(grant.write),
+        unlink: Boolean(grant.unlink),
+      }));
     }
 
     request.auth = { userId, role, partnerId, companyId, groupPermissions };

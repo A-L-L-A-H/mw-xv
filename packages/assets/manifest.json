@@ -256,6 +256,14 @@
       "height": 24
     },
     {
+      "path": "icons/arrow-left.svg",
+      "kind": "icon",
+      "variant": "currentColor",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
       "path": "icons/arrow-right.svg",
       "kind": "icon",
       "variant": "currentColor",
@@ -296,6 +304,14 @@
       "height": 24
     },
     {
+      "path": "icons/bookmark.svg",
+      "kind": "icon",
+      "variant": "currentColor",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
       "path": "icons/calendar-clock.svg",
       "kind": "icon",
       "variant": "currentColor",
@@ -305,6 +321,14 @@
     },
     {
       "path": "icons/calendar.svg",
+      "kind": "icon",
+      "variant": "currentColor",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "icons/check-circle.svg",
       "kind": "icon",
       "variant": "currentColor",
       "format": "svg",
@@ -345,6 +369,14 @@
     },
     {
       "path": "icons/chevrons-right.svg",
+      "kind": "icon",
+      "variant": "currentColor",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "icons/clock.svg",
       "kind": "icon",
       "variant": "currentColor",
       "format": "svg",
@@ -456,6 +488,14 @@
       "height": 24
     },
     {
+      "path": "icons/file-spreadsheet.svg",
+      "kind": "icon",
+      "variant": "currentColor",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
       "path": "icons/filter.svg",
       "kind": "icon",
       "variant": "currentColor",
@@ -481,6 +521,14 @@
     },
     {
       "path": "icons/hash.svg",
+      "kind": "icon",
+      "variant": "currentColor",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "icons/history.svg",
       "kind": "icon",
       "variant": "currentColor",
       "format": "svg",
@@ -1096,6 +1144,254 @@
       "width": 1200,
       "height": 600,
       "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+    },
+    {
+      "path": "materials/brush-strip-long.svg",
+      "kind": "material",
+      "variant": "brush-strip",
+      "format": "svg",
+      "width": 320,
+      "height": 44
+    },
+    {
+      "path": "materials/brush-strip-short.svg",
+      "kind": "material",
+      "variant": "brush-strip",
+      "format": "svg",
+      "width": 160,
+      "height": 40
+    },
+    {
+      "path": "materials/doodle-arrow.svg",
+      "kind": "ornament",
+      "variant": "doodle",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "materials/doodle-bolt.svg",
+      "kind": "ornament",
+      "variant": "doodle",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "materials/doodle-crown.svg",
+      "kind": "ornament",
+      "variant": "doodle",
+      "format": "svg",
+      "width": 28,
+      "height": 24
+    },
+    {
+      "path": "materials/doodle-smiley.svg",
+      "kind": "ornament",
+      "variant": "doodle",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "materials/doodle-star.svg",
+      "kind": "ornament",
+      "variant": "doodle",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "materials/folded-corner.svg",
+      "kind": "material",
+      "variant": "paper-corner",
+      "format": "svg",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "path": "materials/ink-splatter-md.svg",
+      "kind": "material",
+      "variant": "ink-splatter",
+      "format": "svg",
+      "width": 84,
+      "height": 84
+    },
+    {
+      "path": "materials/ink-splatter-sm.svg",
+      "kind": "material",
+      "variant": "ink-splatter",
+      "format": "svg",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "path": "materials/motif-cross-out.svg",
+      "kind": "ornament",
+      "variant": "motif",
+      "format": "svg",
+      "width": 120,
+      "height": 24
+    },
+    {
+      "path": "materials/motif-eye-target.svg",
+      "kind": "ornament",
+      "variant": "motif",
+      "format": "svg",
+      "width": 64,
+      "height": 40
+    },
+    {
+      "path": "materials/motif-globe-grid.svg",
+      "kind": "ornament",
+      "variant": "motif",
+      "format": "svg",
+      "width": 96,
+      "height": 96
+    },
+    {
+      "path": "materials/motif-moon-phases.svg",
+      "kind": "ornament",
+      "variant": "motif",
+      "format": "svg",
+      "width": 160,
+      "height": 32
+    },
+    {
+      "path": "materials/motif-orbit.svg",
+      "kind": "ornament",
+      "variant": "motif",
+      "format": "svg",
+      "width": 120,
+      "height": 120
+    },
+    {
+      "path": "materials/motif-underline.svg",
+      "kind": "ornament",
+      "variant": "motif",
+      "format": "svg",
+      "width": 200,
+      "height": 16
+    },
+    {
+      "path": "materials/paper-note.svg",
+      "kind": "material",
+      "variant": "paper-note",
+      "format": "svg",
+      "width": 180,
+      "height": 120
+    },
+    {
+      "path": "materials/scuffed-border.svg",
+      "kind": "material",
+      "variant": "border",
+      "format": "svg",
+      "width": 240,
+      "height": 120
+    },
+    {
+      "path": "materials/stamp-outline.svg",
+      "kind": "material",
+      "variant": "stamp",
+      "format": "svg",
+      "width": 120,
+      "height": 48
+    },
+    {
+      "path": "materials/tape-strip.svg",
+      "kind": "material",
+      "variant": "tape",
+      "format": "svg",
+      "width": 96,
+      "height": 28
+    },
+    {
+      "path": "materials/tile-halftone.svg",
+      "kind": "pattern",
+      "variant": "tile",
+      "format": "svg",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "materials/tile-scratch.svg",
+      "kind": "pattern",
+      "variant": "tile",
+      "format": "svg",
+      "width": 80,
+      "height": 80
+    },
+    {
+      "path": "materials/tile-speckle.svg",
+      "kind": "pattern",
+      "variant": "tile",
+      "format": "svg",
+      "width": 80,
+      "height": 80
+    },
+    {
+      "path": "materials/torn-corner-bl.svg",
+      "kind": "material",
+      "variant": "paper-corner",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "materials/torn-corner-br.svg",
+      "kind": "material",
+      "variant": "paper-corner",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "materials/torn-corner-tl.svg",
+      "kind": "material",
+      "variant": "paper-corner",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "materials/torn-corner-tr.svg",
+      "kind": "material",
+      "variant": "paper-corner",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "materials/torn-edge-bottom.svg",
+      "kind": "material",
+      "variant": "paper-edge",
+      "format": "svg",
+      "width": 240,
+      "height": 16
+    },
+    {
+      "path": "materials/torn-edge-left.svg",
+      "kind": "material",
+      "variant": "paper-edge",
+      "format": "svg",
+      "width": 16,
+      "height": 240
+    },
+    {
+      "path": "materials/torn-edge-right.svg",
+      "kind": "material",
+      "variant": "paper-edge",
+      "format": "svg",
+      "width": 16,
+      "height": 240
+    },
+    {
+      "path": "materials/torn-edge-top.svg",
+      "kind": "material",
+      "variant": "paper-edge",
+      "format": "svg",
+      "width": 240,
+      "height": 16
     },
     {
       "path": "sounds/ui-alert.wav",

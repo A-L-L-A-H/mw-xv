@@ -6,7 +6,7 @@ export type PanelProps = Omit<ComponentProps<'section'>, 'children' | 'title'> &
   actions?: ReactNode;
   children: ReactNode;
   surface?: 'default' | 'ink' | 'paper';
-  frame?: 'line' | 'torn';
+  frame?: 'line' | 'torn' | 'scuffed';
   density?: 'comfortable' | 'compact';
   headingLevel?: 2 | 3 | 4;
 };

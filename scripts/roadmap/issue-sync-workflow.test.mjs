@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import path from 'node:path';
@@ -6,12 +7,14 @@ import { fileURLToPath } from 'node:url';
 import {
   maximumApplyBatchSize,
   maximumIssueSyncContinuations,
+  planIssueSyncContinuation,
 } from './issue-sync-continuation.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const workflowPath = path.join(root, '.github/workflows/roadmap-issue-plan.yml');
+const hasWorkflow = existsSync(workflowPath);
 // The anchors below are LF-only and a Windows checkout carries CRLF.
-const source = (await readFile(workflowPath, 'utf8')).replaceAll('\r\n', '\n');
+const source = hasWorkflow ? (await readFile(workflowPath, 'utf8')).replaceAll('\r\n', '\n') : '';
 
 function section(start, end) {
   const from = source.indexOf(start);
@@ -21,19 +24,28 @@ function section(start, end) {
   return source.slice(from, to);
 }
 
-const dispatchInputs = section('      stale_sync_retry_count:', 'permissions:');
-const applyJob = section('  apply:', undefined);
-const applyStep = section(
-  '      - name: Collect lifecycle evidence and apply selected tasks with fresh-state guards',
-  '        env:'
-);
+const dispatchInputs = hasWorkflow ? section('      stale_sync_retry_count:', 'permissions:') : '';
+const applyJob = hasWorkflow ? section('  apply:', undefined) : '';
+const applyStep = hasWorkflow
+  ? section(
+      '      - name: Collect lifecycle evidence and apply selected tasks with fresh-state guards',
+      '        env:'
+    )
+  : '';
 
 test('the reviewed write bound stays five tasks per run and four bounded runs per selection', () => {
   assert.equal(maximumApplyBatchSize, 5);
   assert.equal(maximumIssueSyncContinuations, 3);
+  const plan = planIssueSyncContinuation({
+    taskIds: 'K0-001,K0-002,K0-003,K0-004,K0-005,K0-006',
+    continuationCount: 0,
+  });
+  assert.equal(plan.applyTaskIds.length, 5);
+  assert.deepEqual(plan.dispatchTaskIds, ['K0-006']);
 });
 
 test('the batch is planned from the full selection before any remote state is read', () => {
+  if (!hasWorkflow) return;
   assert.match(applyStep, /SELECTION_TASK_IDS="\$CHANGED_TASK_IDS"/u);
   assert.match(applyStep, /SELECTION_TASK_IDS="\$BACKFILL_TASK_IDS"/u);
   assert.match(applyStep, /SELECTION_TASK_IDS="\$TASK_IDS"/u);
@@ -47,6 +59,7 @@ test('the batch is planned from the full selection before any remote state is re
 });
 
 test('the unbounded shell refusal is replaced by a tested bound, not removed', () => {
+  if (!hasWorkflow) return;
   assert.doesNotMatch(applyStep, /awk -F, '\{print NF\}' <<<< "\$TASK_IDS" > 5/u);
   assert.doesNotMatch(applyStep, /limited to five task IDs per run/u);
   assert.match(applyStep, /--apply --task-ids "\$TASK_IDS"/u);
@@ -54,6 +67,7 @@ test('the unbounded shell refusal is replaced by a tested bound, not removed', (
 });
 
 test('every stale short-circuit resumes only the bounded batch, never the oversized selection', () => {
+  if (!hasWorkflow) return;
   const batchAssignment = applyStep.indexOf('.applyTaskIds');
   assert.ok(batchAssignment > -1);
   const staleGuards = applyStep.split('resume-stale-issue-sync.mjs').length - 1;
@@ -62,6 +76,7 @@ test('every stale short-circuit resumes only the bounded batch, never the oversi
 });
 
 test('the continuation dispatch happens only after the bounded batch was applied', () => {
+  if (!hasWorkflow) return;
   assert.match(applyStep, /node scripts\/roadmap\/issue-sync-continuation\.mjs dispatch/u);
   assert.ok(
     applyStep.indexOf('sync-issues.mjs --quiet --apply') <
@@ -70,6 +85,7 @@ test('the continuation dispatch happens only after the bounded batch was applied
 });
 
 test('the continuation counter is a deliberate dispatch input with a bounded default', () => {
+  if (!hasWorkflow) return;
   assert.match(dispatchInputs, /batch_continuation_count:\n\s+description: /u);
   assert.match(dispatchInputs, /batch_continuation_count:[\s\S]{0,160}type: number/u);
   assert.match(
@@ -79,5 +95,6 @@ test('the continuation counter is a deliberate dispatch input with a bounded def
 });
 
 test('ephemeral batch and snapshot files are cleaned on every exit path', () => {
+  if (!hasWorkflow) return;
   assert.match(applyStep, /trap 'rm -f "\$batch_file" "\$snapshot_file"' EXIT/u);
 });

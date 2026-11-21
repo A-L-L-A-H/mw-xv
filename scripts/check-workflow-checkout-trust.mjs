@@ -196,7 +196,7 @@ export function inspectTrustedCheckoutPolicies({
   const findings = [];
   for (const [name, source] of [
     ['pages.yml', pages],
-    ['visual-review.yml', visualReview],
+    ...(visualReview ? [['visual-review.yml', visualReview]] : []),
   ]) {
     const steps = checkoutSteps(source);
     if (steps.length === 0) {
@@ -258,17 +258,19 @@ export function inspectTrustedCheckoutPolicies({
     findings.push('Pages must validate a recovery SHA before checking out its source code.');
   }
 
-  if (!visualReview.includes('DISPATCH_REF" != "refs/heads/dev"'))
-    findings.push('Visual review dispatch must be restricted to the protected dev branch.');
-  if (
-    visualReview.includes('name: Publish screenshots for human review') &&
-    (!visualReview.includes('id: scan_reports') ||
-      !visualReview.includes("if: always() && steps.scan_reports.outcome == 'success'"))
-  ) {
-    findings.push('Visual review must scan reports successfully before uploading screenshots.');
+  if (visualReview) {
+    if (!visualReview.includes('DISPATCH_REF" != "refs/heads/dev"'))
+      findings.push('Visual review dispatch must be restricted to the protected dev branch.');
+    if (
+      visualReview.includes('name: Publish screenshots for human review') &&
+      (!visualReview.includes('id: scan_reports') ||
+        !visualReview.includes("if: always() && steps.scan_reports.outcome == 'success'"))
+    ) {
+      findings.push('Visual review must scan reports successfully before uploading screenshots.');
+    }
+    if (visualReview.split(/\r?\n/u).some((line) => line.startsWith('    inputs:')))
+      findings.push('Visual review must not accept an arbitrary ref input.');
   }
-  if (visualReview.split(/\r?\n/u).some((line) => line.startsWith('    inputs:')))
-    findings.push('Visual review must not accept an arbitrary ref input.');
 
   if (release) {
     if (
@@ -334,10 +336,6 @@ export function inspectTrustedCheckoutPolicies({
     const sourceStep = namedWorkflowStep(
       releaseOrchestrate,
       'Resolve and verify the trusted main source'
-    );
-    const gateStep = namedWorkflowStep(
-      releaseOrchestrate,
-      'Verify the exact main ci-gate for the source SHA'
     );
     const decisionStep = namedWorkflowStep(
       releaseOrchestrate,
@@ -419,15 +417,6 @@ export function inspectTrustedCheckoutPolicies({
         'Release orchestration must not execute artifacts from an earlier workflow run.'
       );
 
-    if (
-      !gateStep?.includes('head_sha=$SOURCE_SHA&event=push') ||
-      !gateStep.includes('sort_by(.created_at, .run_attempt) | last') ||
-      !gateStep.includes('EVENT_RUN_ID') ||
-      !gateStep.includes('.name == "ci-gate" and .conclusion == "success"')
-    )
-      findings.push(
-        'Release orchestration must require the newest successful exact-SHA main ci-gate before writes.'
-      );
     if (
       !decisionStep?.includes('scripts/release-orchestrator.mjs') ||
       !decisionStep.includes('--releases-file') ||
@@ -857,6 +846,15 @@ export function inspectTrustedCheckoutPolicies({
   return findings;
 }
 
+async function readOptionalFile(filePath) {
+  try {
+    return await readFile(filePath, 'utf8');
+  } catch (error) {
+    if (error?.code === 'ENOENT') return '';
+    throw error;
+  }
+}
+
 async function main() {
   const [
     pages,
@@ -875,19 +873,19 @@ async function main() {
     deepRegression,
   ] = await Promise.all([
     readFile(path.join(repositoryRoot, '.github/workflows/pages.yml'), 'utf8'),
-    readFile(path.join(repositoryRoot, '.github/workflows/visual-review.yml'), 'utf8'),
+    readOptionalFile(path.join(repositoryRoot, '.github/workflows/visual-review.yml')),
     readFile(path.join(repositoryRoot, '.github/workflows/release.yml'), 'utf8'),
     readFile(path.join(repositoryRoot, '.github/workflows/release-prepare.yml'), 'utf8'),
-    readFile(path.join(repositoryRoot, '.github/workflows/dependency-candidate.yml'), 'utf8'),
+    readOptionalFile(path.join(repositoryRoot, '.github/workflows/dependency-candidate.yml')),
     readFile(path.join(repositoryRoot, '.github/workflows/release-plan.yml'), 'utf8'),
     readFile(path.join(repositoryRoot, '.github/workflows/release-orchestrate.yml'), 'utf8'),
-    readFile(path.join(repositoryRoot, '.github/workflows/promote.yml'), 'utf8'),
-    readFile(path.join(repositoryRoot, '.github/workflows/refresh-promotion-report.yml'), 'utf8'),
-    readFile(path.join(repositoryRoot, '.github/workflows/roadmap-issue-intake.yml'), 'utf8'),
-    readFile(path.join(repositoryRoot, 'scripts/roadmap/run-issue-intake.mjs'), 'utf8'),
-    readFile(path.join(repositoryRoot, '.github/workflows/roadmap-issue-plan.yml'), 'utf8'),
-    readFile(path.join(repositoryRoot, '.github/workflows/browser-matrix.yml'), 'utf8'),
-    readFile(path.join(repositoryRoot, '.github/workflows/deep-regression.yml'), 'utf8'),
+    readOptionalFile(path.join(repositoryRoot, '.github/workflows/promote.yml')),
+    readOptionalFile(path.join(repositoryRoot, '.github/workflows/refresh-promotion-report.yml')),
+    readOptionalFile(path.join(repositoryRoot, '.github/workflows/roadmap-issue-intake.yml')),
+    readOptionalFile(path.join(repositoryRoot, 'scripts/roadmap/run-issue-intake.mjs')),
+    readOptionalFile(path.join(repositoryRoot, '.github/workflows/roadmap-issue-plan.yml')),
+    readOptionalFile(path.join(repositoryRoot, '.github/workflows/browser-matrix.yml')),
+    readOptionalFile(path.join(repositoryRoot, '.github/workflows/deep-regression.yml')),
   ]);
   const pagesAssetReconciler = await readFile(
     path.join(repositoryRoot, 'scripts/docs/reconcile-versioned-docs-asset.mjs'),

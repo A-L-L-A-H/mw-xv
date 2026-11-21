@@ -14,6 +14,7 @@ test('tracked asset media exactly matches the canonical manifest inventory', asy
     'fonts',
     'icons',
     'illustrations',
+    'materials',
     'sounds',
     'source',
   ]);

@@ -57,6 +57,12 @@ const addonManifestPaths = [
     manifest: 'manifest.ts',
   },
   {
+    entry: 'packages/orm-whatsapp/dist/manifest.js',
+    exportName: 'whatsappManifest',
+    sourceRoot: 'packages/orm-whatsapp/src',
+    manifest: 'manifest.ts',
+  },
+  {
     entry: 'packages/orm-knowledge/dist/manifest.js',
     sourceRoot: 'packages/orm-knowledge/src',
     manifest: 'manifest.ts',

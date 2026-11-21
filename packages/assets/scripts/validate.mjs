@@ -190,7 +190,15 @@ export function validateSvg(source, filePath) {
 }
 
 if (argv[1] && resolve(argv[1]) === fileURLToPath(import.meta.url)) {
-  const inventoryDirectories = ['brand', 'fonts', 'icons', 'illustrations', 'sounds', 'source'];
+  const inventoryDirectories = [
+    'brand',
+    'fonts',
+    'icons',
+    'illustrations',
+    'materials',
+    'sounds',
+    'source',
+  ];
   const packageFiles = await listInventoryMedia(packageRoot, inventoryDirectories);
   const inventoryDiff = compareAssetInventory(
     manifest.assets.map(({ path }) => path),

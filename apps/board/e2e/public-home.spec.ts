@@ -68,6 +68,55 @@ test('public homepage renders its message, canonical metadata, and workspace act
   expect(accessibility.violations).toEqual([]);
 });
 
+test('homepage keeps cold-load fonts within budget, excludes Board assets, and reflows at 200% zoom', async ({
+  page,
+}) => {
+  const requestedAssets: Array<{ url: string; contentType: string; size: number }> = [];
+  page.on('response', async (response) => {
+    const url = response.url();
+    if (
+      url.includes('/fonts/') ||
+      url.includes('.woff2') ||
+      url.includes('/illustrations/') ||
+      url.includes('/brand/')
+    ) {
+      const body = await response.body().catch(() => Buffer.alloc(0));
+      requestedAssets.push({
+        url,
+        contentType: response.headers()['content-type'] ?? '',
+        size: body.byteLength,
+      });
+    }
+  });
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/', { waitUntil: 'networkidle' });
+
+  const fontRequests = requestedAssets.filter(
+    (asset) => asset.url.includes('/fonts/') || asset.url.includes('.woff2')
+  );
+  const totalFontBytes = fontRequests.reduce((sum, asset) => sum + asset.size, 0);
+  expect(totalFontBytes).toBeGreaterThan(0);
+  expect(totalFontBytes).toBeLessThanOrEqual(165 * 1024);
+
+  const boardOnlyAssets = requestedAssets.filter(
+    (asset) =>
+      asset.url.includes('board-masthead') ||
+      asset.url.includes('story-workbench-masthead') ||
+      asset.url.includes('auth-login')
+  );
+  expect(boardOnlyAssets).toEqual([]);
+
+  await page.setViewportSize({ width: 720, height: 500 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true
+  );
+  await page.goto('/login');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true
+  );
+});
+
 test('homepage keeps its message and actions visible if hero artwork fails', async ({ page }) => {
   await page.goto('/');
   await page.locator('.home-hero-art-image').evaluate((image: HTMLImageElement) => {
@@ -123,7 +172,10 @@ test('homepage hero reveal is one-shot without layout shift and respects reduced
     heroHeight
   );
   await page.locator('.home-hero').screenshot({
-    path: resolve(process.cwd(), '../../docs/design/ui-catalog/homepage-reveal-desktop-1672.png'),
+    path: resolve(
+      import.meta.dirname,
+      '../../../docs/design/ui-catalog/homepage-reveal-desktop-1672.png'
+    ),
     animations: 'disabled',
   });
 
@@ -162,7 +214,10 @@ test('homepage hero reveal is one-shot without layout shift and respects reduced
     true
   );
   await page.locator('.home-hero').screenshot({
-    path: resolve(process.cwd(), '../../docs/design/ui-catalog/homepage-reveal-mobile-390.png'),
+    path: resolve(
+      import.meta.dirname,
+      '../../../docs/design/ui-catalog/homepage-reveal-mobile-390.png'
+    ),
     animations: 'disabled',
   });
 });
@@ -192,8 +247,8 @@ test('editorial card feedback stays subtle, keyboard-visible, and absent on touc
   await page.evaluate(() => document.querySelector('nextjs-portal')?.remove());
   await card.screenshot({
     path: resolve(
-      process.cwd(),
-      '../../docs/design/ui-catalog/home-editorial-card-hover-desktop.png'
+      import.meta.dirname,
+      '../../../docs/design/ui-catalog/home-editorial-card-hover-desktop.png'
     ),
     animations: 'disabled',
   });

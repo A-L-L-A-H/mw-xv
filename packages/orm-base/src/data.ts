@@ -15,6 +15,7 @@ import { Attachment } from './models/attachment.js';
 import { Activity } from './models/activity.js';
 import { Sequence } from './models/sequence.js';
 import { CompanyMembership } from './models/company-membership.js';
+import { IrFeatureFlag } from './models/feature-flag.js';
 
 const countryMeta: Record<
   string,
@@ -360,5 +361,15 @@ export const data = [
     create: false,
     write: false,
     unlink: false,
+  }),
+
+  // 15. Runtime Feature Flags (disabled by default)
+  seed(IrFeatureFlag, 'base.feature_flag_evolution_experiments', {
+    key: 'evolution.experimental_addons',
+    name: 'Experimental Addon Rollouts',
+    enabled: false,
+    rollout_pct: 0,
+    proposal_id: 'EVO-000',
+    description: 'Default-off runtime gate for experimental self-evolving addons.',
   }),
 ];

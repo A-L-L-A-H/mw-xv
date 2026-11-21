@@ -65,6 +65,16 @@ async function main() {
     for (const signal of signals) {
       process.once(signal, () => void shutdown(signal));
     }
+    process.once('unhandledRejection', (reason) => {
+      app.log.fatal({ err: startupErrorContext(reason) }, 'Unhandled promise rejection');
+      process.exitCode = 1;
+      void shutdown('SIGTERM');
+    });
+    process.once('uncaughtException', (error) => {
+      app.log.fatal({ err: startupErrorContext(error) }, 'Uncaught exception');
+      process.exitCode = 1;
+      void shutdown('SIGTERM');
+    });
   } catch (err) {
     console.error(formatStartupFailure(err));
     process.exit(1);

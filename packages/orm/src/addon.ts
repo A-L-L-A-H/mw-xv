@@ -58,6 +58,11 @@ export function seed<const F extends FieldMap>(
   return { id, model, values };
 }
 
+export type AddonHttpPlugin<TApp = unknown, TOptions = unknown> = (
+  app: TApp,
+  options: TOptions
+) => unknown | Promise<unknown>;
+
 export interface Addon {
   readonly name: string;
   readonly version: string;
@@ -66,6 +71,8 @@ export interface Addon {
   readonly data?: readonly SeedRecord[];
   readonly views?: readonly ViewDefinition[];
   readonly menus?: readonly AddonMenu[];
+  /** Optional declarative HTTP plugin entrypoints mounted by the API host adapter. */
+  readonly httpPlugins?: readonly AddonHttpPlugin[];
   /** Idempotent database setup run transactionally after addon tables are synchronized. */
   readonly setup?: (transaction: Knex.Transaction) => Promise<void>;
   /** Programmatic, transactional data/schema backfills keyed by the exact prior addon version. */
@@ -209,11 +216,15 @@ async function syncModel(db: Knex.Transaction, model: AddonModel) {
     }
   }
 
+  const hasCompanyColumn = entries.some(
+    ([name, field]) => columnName(name, field) === 'company_id'
+  );
   const indexes = [
     ['active', 'id'],
     ['create_uid'],
+    ...(hasCompanyColumn ? [['company_id', 'active', 'id']] : []),
     ...entries.flatMap(([name, field]) =>
-      field.kind === 'belongsTo' ? [[columnName(name, field)]] : []
+      field.kind === 'belongsTo' || field.index === true ? [[columnName(name, field)]] : []
     ),
   ];
   for (const columns of indexes) {
@@ -425,8 +436,17 @@ export async function installAddons(db: Knex, addons: readonly Addon[]): Promise
           `Addon downgrade rejected for '${addon.name}': ${installed.version} -> ${addon.version}`
         );
       }
-      if (installed && compareVersions(addon.version, installed.version) > 0) {
-        await addon.upgrade?.[installed.version]?.(trx);
+      if (installed && compareVersions(addon.version, installed.version) > 0 && addon.upgrade) {
+        const applicableVersions = Object.keys(addon.upgrade)
+          .filter(
+            (fromVersion) =>
+              compareVersions(fromVersion, installed.version) >= 0 &&
+              compareVersions(fromVersion, addon.version) < 0
+          )
+          .sort(compareVersions);
+        for (const fromVersion of applicableVersions) {
+          await addon.upgrade[fromVersion]?.(trx);
+        }
       }
     }
     for (const addon of ordered) await addon.setup?.(trx);

@@ -7,59 +7,28 @@ import sensible from '@fastify/sensible';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import rateLimit from '@fastify/rate-limit';
-import ormPlugin from './plugins/orm.plugin.js';
-import authPlugin, { validateJwtSecret } from './plugins/auth.plugin.js';
-import { authRoutes } from './routes/auth.routes.js';
-import { genericRoutes } from './routes/generic.routes.js';
-import { healthRoutes } from './routes/health.routes.js';
-import { jobsRoutes } from './routes/jobs.routes.js';
-import { notificationRoutes } from './routes/notification.routes.js';
-import { whatsappRoutes } from './routes/whatsapp.routes.js';
-import { workflowRoutes } from './routes/workflow.routes.js';
-import { corpusRoutes } from './routes/corpus.routes.js';
-import { evidenceRoutes } from './routes/evidence.routes.js';
-import { researchExplanationRoutes } from './routes/research-explanation.routes.js';
-import { researchActorIdentityRoutes } from './routes/research-actor-identity.routes.js';
-import { researchDuplicateCandidateRoutes } from './routes/research-duplicate-candidates.routes.js';
-import { researchReviewRoutes } from './routes/research-review.routes.js';
-import { researchPrivacyRoutes } from './routes/research-privacy.routes.js';
-import { researchWitnessRoutes } from './routes/research-witness.routes.js';
-import { conceptProfileRoutes } from './routes/concept-profile.routes.js';
-import { storyWorkbenchRoutes } from './routes/story-workbench.routes.js';
-import { localRetrievalRoutes } from './routes/local-retrieval.routes.js';
-import { localAiSuggestionRoutes } from './routes/local-ai-suggestion.routes.js';
-import { ensureResearchReviewWorkflow } from './research-review-workflow.js';
-import { config, localAiConfig } from './config/env.js';
-import { checkWhatsAppGatewayVersion } from './whatsapp/version-guard.js';
-import { whatsappLogErrorContext } from './whatsapp/log-redaction.js';
+import type { Knex } from 'knex';
 import {
   LocalFileAttachmentStorage,
   S3AttachmentStorage,
   closeS3AttachmentStorage,
   type AttachmentStorage,
 } from '@moonwitness/orm-storage';
+import { createLogger, type LogLevel } from '@moonwitness/logger';
+import { isRecord } from '@moonwitness/types';
+import ormPlugin from './plugins/orm.plugin.js';
+import authPlugin, { validateJwtSecret } from './plugins/auth.plugin.js';
+import observabilityPlugin from './plugins/observability.plugin.js';
+import { createPostgresRateLimitStoreCtor } from './plugins/rate-limit-store.js';
+import { config, localAiConfig } from './config/env.js';
 import { createDatabase } from './database/knex.js';
 import { databaseErrorCode, databaseErrorContext } from './database/errors.js';
-import type { Knex } from 'knex';
-import { manifest as baseAddon, initializeSuperadminPassword } from '@moonwitness/orm-base';
-import { installAddons } from '@moonwitness/orm';
-import { manifest as authAddon, createAuthService } from '@moonwitness/auth';
-import { jobsManifest } from '@moonwitness/jobs';
-import { manifest as notificationAddon } from '@moonwitness/orm-notification';
-import { manifest as workflowAddon } from '@moonwitness/orm-workflow';
-import { manifest as organizationAddon } from '@moonwitness/orm-organization';
-import { manifest as integrationAddon } from '@moonwitness/orm-integration';
-import { whatsappManifest } from './whatsapp/manifest.js';
-import { manifest as requestAddon } from '@moonwitness/orm-request';
-import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
-
-import { createLogger, type LogLevel } from '@moonwitness/logger';
 import { installPrivacySafeNotFoundHandler } from './not-found.js';
-import { isRecord } from '@moonwitness/types';
-import observabilityPlugin from './plugins/observability.plugin.js';
 import { createAttachmentStorage } from './storage/attachment-storage.js';
-import { createAttachmentScanner, type AttachmentScanner } from './whatsapp/clamav-scanner.js';
-import { createVideoPoster } from './whatsapp/media-thumbnail.js';
+import { whatsappLogErrorContext } from './whatsapp/log-redaction.js';
+import type { AttachmentScanner } from './whatsapp/clamav-scanner.js';
+import type { createVideoPoster } from './whatsapp/media-thumbnail.js';
+import { installApiAddons, registerApiAddonRoutes } from './addons/registry.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -99,6 +68,43 @@ function requestIdFromHeader(value: string | string[] | undefined): string | nul
   return candidate && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$/u.test(candidate) ? candidate : null;
 }
 
+export function resolveCorsOrigin(
+  env: NodeJS.ProcessEnv = process.env,
+  nodeEnv = config.env
+): boolean | string[] {
+  const raw = env.CORS_ORIGINS?.trim();
+  if (raw) {
+    const origins = raw
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+    for (const origin of origins) {
+      let parsed: URL;
+      try {
+        parsed = new URL(origin);
+      } catch {
+        throw new Error(`CORS_ORIGINS entry must be a valid http or https origin: ${origin}`);
+      }
+      if (
+        !['http:', 'https:'].includes(parsed.protocol) ||
+        parsed.pathname !== '/' ||
+        parsed.search ||
+        parsed.hash
+      ) {
+        throw new Error(`CORS_ORIGINS entry must be an origin without path/query: ${origin}`);
+      }
+    }
+    return origins;
+  }
+  return nodeEnv === 'production' ? false : true;
+}
+
+function resolveTrustProxy(env: NodeJS.ProcessEnv = process.env, nodeEnv = config.env): boolean {
+  if (env.TRUST_PROXY === 'true') return true;
+  if (env.TRUST_PROXY === 'false') return false;
+  return nodeEnv === 'production';
+}
+
 export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
   const authConfig = config.auth ?? {
     accessTtlSeconds: 15 * 60,
@@ -113,24 +119,12 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
 
   const db = options.db ?? createDatabase();
   try {
-    await installAddons(db, [
-      baseAddon,
-      authAddon,
-      jobsManifest,
-      integrationAddon,
-      whatsappManifest,
-      requestAddon,
-      notificationAddon,
-      organizationAddon,
-      workflowAddon,
-      knowledgeAddon,
-    ]);
-    await ensureResearchReviewWorkflow(db);
-    await initializeSuperadminPassword(superadminPassword);
+    await installApiAddons(db, superadminPassword);
   } catch (error) {
     if (!options.db) await db.destroy();
     throw error;
   }
+
   const appLogger: FastifyBaseLogger = createLogger({
     name: 'api',
     level: (config.log?.level as LogLevel) ?? (config.env === 'test' ? 'silent' : 'info'),
@@ -142,6 +136,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
 
   const app = Fastify({
     bodyLimit: 1024 * 1024,
+    trustProxy: resolveTrustProxy(),
     requestIdHeader: false,
     logController: new LogController({ disableRequestLogging: true }),
     genReqId: (request) => requestIdFromHeader(request.headers['x-request-id']) ?? randomUUID(),
@@ -160,12 +155,18 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
 
   app.addHook('onSend', async (request, reply, payload) => {
     reply.header('x-request-id', request.id);
+    reply.header('x-content-type-options', 'nosniff');
+    reply.header('x-frame-options', 'DENY');
+    reply.header('referrer-policy', 'no-referrer');
+    reply.header('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+    if (config.env === 'production') {
+      reply.header('strict-transport-security', 'max-age=31536000; includeSubDomains');
+    }
     return payload;
   });
 
   await app.register(observabilityPlugin);
 
-  // Collect routes (registered before any route) for a readable startup listing
   const routes: { method: string; url: string }[] = [];
   app.decorate('routeList', routes);
   app.addHook('onRoute', (route) => {
@@ -176,11 +177,9 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     }
   });
 
-  // Security & utility plugins
-  await app.register(cors, { origin: true });
+  await app.register(cors, { origin: resolveCorsOrigin() });
   await app.register(sensible);
 
-  // Swagger Documentation
   await app.register(swagger, {
     openapi: {
       info: {
@@ -202,32 +201,35 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     },
   });
 
-  await app.register(swaggerUi, {
-    routePrefix: '/docs',
-    uiConfig: {
-      docExpansion: 'list',
-      deepLinking: true,
-    },
-    staticCSP: true,
-  });
+  if (config.env !== 'production' || process.env.ENABLE_API_DOCS === 'true') {
+    await app.register(swaggerUi, {
+      routePrefix: '/docs',
+      uiConfig: {
+        docExpansion: 'list',
+        deepLinking: true,
+      },
+      staticCSP: true,
+    });
+  }
 
-  // Enterprise ORM Plugin (registers Knex, Objection, Environment, and models)
   await app.register(ormPlugin, { db });
   app.addHook('onClose', async () => db.destroy());
 
-  // Authentication: after the ORM plugin (it enriches request.env), before any route.
-  await app.register(rateLimit, { global: false });
+  await app.register(rateLimit, {
+    global: false,
+    ...(process.env.RATE_LIMIT_STORE === 'postgres'
+      ? { store: createPostgresRateLimitStoreCtor(db) as never }
+      : {}),
+  });
   await app.register(authPlugin, {
     jwtSecret,
     accessTtlSeconds: authConfig.accessTtlSeconds,
   });
 
-  // Error handling
   app.setErrorHandler((error, request, reply) => {
     const isWhatsAppRoute = request.routeOptions.url?.startsWith('/whatsapp/') === true;
     const code = databaseErrorCode(error);
     if (code) {
-      // Driver errors can contain SQL bindings, including password hashes.
       const name = errorProperty(error, 'name');
       request.log.error({ name, ...databaseErrorContext(error) }, 'Database request failed');
       const conflict =
@@ -251,7 +253,6 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
       request.log.error(error);
     }
 
-    // Objection.js ValidationError
     if (errorProperty(error, 'name') === 'ValidationError') {
       const message = error instanceof Error ? error.message : 'Validation failed';
       return reply.status(400).send({
@@ -263,13 +264,17 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     }
 
     const statusCode = errorProperty(error, 'statusCode');
-    return reply.status(typeof statusCode === 'number' ? statusCode : 500).send({
+    const resolvedStatus = typeof statusCode === 'number' ? statusCode : 500;
+    const hideInternalMessage = resolvedStatus >= 500 && config.env === 'production';
+    return reply.status(resolvedStatus).send({
       success: false,
       error: isWhatsAppRoute
         ? 'WhatsApp request failed'
-        : error instanceof Error
-          ? error.message
-          : 'Internal Server Error',
+        : hideInternalMessage
+          ? 'Internal Server Error'
+          : error instanceof Error
+            ? error.message
+            : 'Internal Server Error',
     });
   });
 
@@ -284,50 +289,18 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     app.addHook('onClose', async () => closeS3AttachmentStorage(attachmentStorage));
   }
 
-  // Install the handler before route plugins inherit their error handling scope.
-  await app.register(healthRoutes, {
-    metricsToken: options.metricsToken ?? config.metricsToken,
-    checkWhatsAppGateway: options.checkWhatsAppGateway ?? (() => checkWhatsAppGatewayVersion()),
-    checkAttachmentStorage: async () => {
-      await attachmentStorage.checkReady?.();
-      return true;
-    },
-  });
-  await app.register(authRoutes, {
-    authService: createAuthService({
-      refreshTtlSeconds: authConfig.refreshTtlSeconds,
-      refreshTokenSecret: jwtSecret,
-    }),
+  await registerApiAddonRoutes(app, {
+    jwtSecret,
     accessTtlSeconds: authConfig.accessTtlSeconds,
+    refreshTtlSeconds: authConfig.refreshTtlSeconds,
     loginRateMax: options.loginRateMax ?? authConfig.loginRateMax,
-  });
-  await app.register(genericRoutes, {
+    metricsToken: options.metricsToken ?? config.metricsToken,
     attachmentStorage,
-  });
-  await app.register(whatsappRoutes, {
-    attachmentStorage,
-    attachmentScanner:
-      options.attachmentScanner === undefined
-        ? createAttachmentScanner()
-        : options.attachmentScanner,
+    attachmentScanner: options.attachmentScanner,
+    checkWhatsAppGateway: options.checkWhatsAppGateway,
     createVideoPoster: options.createVideoPoster,
     fetchContactAvatar: options.fetchContactAvatar,
   });
-  await app.register(jobsRoutes);
-  await app.register(notificationRoutes);
-  await app.register(workflowRoutes);
-  await app.register(corpusRoutes);
-  await app.register(evidenceRoutes);
-  await app.register(researchExplanationRoutes);
-  await app.register(researchActorIdentityRoutes);
-  await app.register(researchDuplicateCandidateRoutes);
-  await app.register(researchReviewRoutes);
-  await app.register(researchPrivacyRoutes);
-  await app.register(researchWitnessRoutes);
-  await app.register(conceptProfileRoutes);
-  await app.register(storyWorkbenchRoutes);
-  await app.register(localRetrievalRoutes);
-  await app.register(localAiSuggestionRoutes);
 
   return app;
 }

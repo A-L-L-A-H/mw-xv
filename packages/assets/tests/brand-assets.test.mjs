@@ -91,6 +91,12 @@ test('manifest describes all stable brand and icon exports with unique paths', (
     'menu',
     'home',
     'arrow-right',
+    'arrow-left',
+    'bookmark',
+    'check-circle',
+    'clock',
+    'file-spreadsheet',
+    'history',
     'chevron-right',
     'globe',
     'moon',
@@ -166,6 +172,41 @@ test('manifest describes all stable brand and icon exports with unique paths', (
   }
   assert.ok(assetByPath.has('illustrations/orbit-pattern-light.svg'));
   assert.ok(assetByPath.has('illustrations/orbit-pattern-dark.svg'));
+  for (const material of [
+    'torn-edge-top',
+    'torn-edge-bottom',
+    'torn-edge-left',
+    'torn-edge-right',
+    'torn-corner-tl',
+    'torn-corner-tr',
+    'torn-corner-bl',
+    'torn-corner-br',
+    'brush-strip-short',
+    'brush-strip-long',
+    'paper-note',
+    'tape-strip',
+    'folded-corner',
+    'stamp-outline',
+    'ink-splatter-sm',
+    'ink-splatter-md',
+    'tile-halftone',
+    'tile-speckle',
+    'tile-scratch',
+    'scuffed-border',
+    'doodle-star',
+    'doodle-bolt',
+    'doodle-smiley',
+    'doodle-arrow',
+    'doodle-crown',
+    'motif-underline',
+    'motif-cross-out',
+    'motif-orbit',
+    'motif-globe-grid',
+    'motif-moon-phases',
+    'motif-eye-target',
+  ]) {
+    assert.ok(assetByPath.has(`materials/${material}.svg`), `${material} is exported`);
+  }
   for (const path of [
     'illustrations/home-hero-desktop.webp',
     'illustrations/home-hero-mobile.webp',
@@ -174,6 +215,29 @@ test('manifest describes all stable brand and icon exports with unique paths', (
     assert.equal(assetByPath.get(path)?.kind, 'artwork');
     assert.equal(assetByPath.get(path)?.format, 'webp');
   }
+});
+
+test('sound effects are single-channel, non-clipping, short, and within the 50 KB combined budget', async () => {
+  let totalBytes = 0;
+  for (const sound of ['ui-success.wav', 'ui-alert.wav', 'ui-signal.wav']) {
+    const bytes = await readFile(resolve(packageRoot, `sounds/${sound}`));
+    totalBytes += bytes.length;
+    assert.equal(bytes.toString('ascii', 0, 4), 'RIFF', `${sound} RIFF header`);
+    assert.equal(bytes.toString('ascii', 8, 12), 'WAVE', `${sound} WAVE header`);
+    const channels = bytes.readUInt16LE(22);
+    const sampleRate = bytes.readUInt32LE(24);
+    const bitsPerSample = bytes.readUInt16LE(34);
+    assert.equal(channels, 1, `${sound} is mono`);
+    assert.equal(sampleRate, 16000, `${sound} sample rate`);
+    assert.equal(bitsPerSample, 16, `${sound} 16-bit PCM`);
+    let peak = 0;
+    for (let offset = 44; offset + 1 < bytes.length; offset += 2) {
+      const sample = Math.abs(bytes.readInt16LE(offset));
+      if (sample > peak) peak = sample;
+    }
+    assert.ok(peak > 0 && peak < 30_000, `${sound} peak ${peak} is audible and non-clipping`);
+  }
+  assert.ok(totalBytes <= 50 * 1024, `combined sounds ${totalBytes} bytes exceed 50 KB`);
 });
 
 test('every manifest path exists and its dimensions match the declared media size', async () => {
@@ -298,6 +362,7 @@ test('package exports only framework-independent static assets', async () => {
   assert.equal(packageJson.exports['./fonts.css'], './fonts.css');
   assert.equal(packageJson.exports['./icons/*'], './icons/*');
   assert.equal(packageJson.exports['./illustrations/*'], './illustrations/*');
+  assert.equal(packageJson.exports['./materials/*'], './materials/*');
   assert.equal(packageJson.exports['./manifest.json'], './manifest.json');
   assert.equal(packageJson.exports['./licenses.json'], './licenses.json');
   assert.ok(packageJson.files.includes('brand'));
@@ -305,6 +370,7 @@ test('package exports only framework-independent static assets', async () => {
   assert.ok(packageJson.files.includes('fonts.css'));
   assert.ok(packageJson.files.includes('icons'));
   assert.ok(packageJson.files.includes('illustrations'));
+  assert.ok(packageJson.files.includes('materials'));
   assert.ok(packageJson.files.includes('manifest.json'));
   for (const asset of manifest.assets.filter(({ kind }) => kind !== 'source')) {
     assert.ok(
@@ -388,8 +454,10 @@ test('provenance covers original design assets and every externally sourced font
   const licensedArtwork = provenance.artwork.map(({ path }) => path).sort();
   assert.deepEqual(licensedArtwork, manifestArtwork);
   assert.ok(
-    provenance.artwork.every(({ terms, source, sourceFile, generatedOn, notes }) =>
-      Boolean(terms && source && sourceFile && generatedOn && notes)
+    provenance.artwork.every(
+      ({ terms, source, sourceFile, generatedOn, focalPoint, decorative, notes }) =>
+        Boolean(terms && source && sourceFile && generatedOn && focalPoint && notes) &&
+        typeof decorative === 'boolean'
     )
   );
   assert.ok(

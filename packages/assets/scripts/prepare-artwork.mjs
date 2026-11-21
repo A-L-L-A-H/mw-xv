@@ -14,6 +14,10 @@ const generated = [
     width: 1800,
     height: 900,
     quality: 78,
+    focalPoint:
+      'center-right (character foreground & moon on right; negative space on left for copy)',
+    alt: '',
+    decorative: true,
   },
   {
     source: 'source/artwork/home-hero-master.png',
@@ -22,6 +26,9 @@ const generated = [
     width: 920,
     height: 1150,
     quality: 52,
+    focalPoint: 'center-top (character face & moon centered above mobile copy)',
+    alt: '',
+    decorative: true,
   },
   {
     source: 'source/artwork/board-masthead-master.png',
@@ -30,6 +37,9 @@ const generated = [
     width: 1600,
     height: 440,
     quality: 76,
+    focalPoint: 'right (city skyline & night mood behind left masthead heading)',
+    alt: '',
+    decorative: true,
   },
   {
     source: 'source/artwork/story-workbench-masthead-master.png',
@@ -38,6 +48,9 @@ const generated = [
     width: 1200,
     height: 600,
     quality: 57,
+    focalPoint: 'right (character & moon kept clear of left copy rail)',
+    alt: '',
+    decorative: true,
   },
   {
     source: 'source/artwork/home-editorial-triptych-master.png',
@@ -47,6 +60,9 @@ const generated = [
     width: 800,
     height: 450,
     quality: 77,
+    focalPoint: 'center (red corridor scene for People & Records editorial panel)',
+    alt: '',
+    decorative: true,
   },
   {
     source: 'source/artwork/home-editorial-triptych-master.png',
@@ -56,6 +72,9 @@ const generated = [
     width: 800,
     height: 450,
     quality: 77,
+    focalPoint: 'center (cyan rooftop scene for Knowledge editorial panel)',
+    alt: '',
+    decorative: true,
   },
   {
     source: 'source/artwork/home-editorial-triptych-master.png',
@@ -65,6 +84,9 @@ const generated = [
     width: 800,
     height: 450,
     quality: 77,
+    focalPoint: 'center (monochrome shadow figure for Story Workbench editorial panel)',
+    alt: '',
+    decorative: true,
   },
 ];
 generated.push(
@@ -76,6 +98,9 @@ generated.push(
     width: 1200,
     height: 1200,
     quality: 76,
+    focalPoint: 'center-right (hooded figure & moon clear of left auth form)',
+    alt: 'A hooded person looking over a neon city beneath a full moon.',
+    decorative: false,
   },
   {
     source: 'source/artwork/auth-login-shadow-master.png',
@@ -85,6 +110,9 @@ generated.push(
     width: 1000,
     height: 600,
     quality: 72,
+    focalPoint: 'center (hooded figure & moon above mobile login panel)',
+    alt: 'A hooded person looking over a neon city beneath a full moon.',
+    decorative: false,
   }
 );
 const assets = [];
@@ -146,13 +174,16 @@ await atomicWrite(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
 const licensesPath = resolve(packageRoot, 'licenses.json');
 const licenses = JSON.parse(await readFile(licensesPath, 'utf8'));
-const artworkProvenance = generated.map(({ path, source }) => ({
+const artworkProvenance = generated.map(({ path, source, focalPoint, alt, decorative }) => ({
   path,
   sourceFile: source,
   creator: 'OpenAI image generation, commissioned by MoonWitness contributors',
   source: 'Codex image_gen using the user-provided MoonWitness visual references',
   terms: 'https://openai.com/policies/terms-of-use/',
   generatedOn: path.includes('auth-login-') ? '2026-10-24' : '2026-10-23',
+  focalPoint,
+  alt,
+  decorative,
   notes:
     'Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork.',
 }));

@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { expect, test } from '@playwright/test';
 import { E2E_SUPERADMIN_PASSWORD, loginPageUrl } from './constants.js';
 
@@ -19,7 +20,10 @@ test('login form renders and rejects invalid credentials', async ({ page }) => {
   await expect(page.getByRole('alert').filter({ hasText: 'Invalid credentials' })).toBeVisible();
   await expect(page).toHaveURL(loginPageUrl);
   await page.screenshot({
-    path: '../../docs/design/ui-catalog/auth-login-error-mobile-390.png',
+    path: path.resolve(
+      import.meta.dirname,
+      '../../../docs/design/ui-catalog/auth-login-error-mobile-390.png'
+    ),
     fullPage: true,
   });
 });
@@ -51,7 +55,10 @@ test('login submit shows the shared spinner and keeps an explicit busy label', a
   expect(idleBox && busyBox ? Math.abs(idleBox.width - busyBox.width) : 1).toBeLessThan(1);
 
   await page.screenshot({
-    path: '../../docs/design/ui-catalog/auth-login-loading-mobile-390.png',
+    path: path.resolve(
+      import.meta.dirname,
+      '../../../docs/design/ui-catalog/auth-login-loading-mobile-390.png'
+    ),
     fullPage: true,
   });
   await expect(page.getByRole('alert').filter({ hasText: 'Invalid credentials' })).toBeVisible();

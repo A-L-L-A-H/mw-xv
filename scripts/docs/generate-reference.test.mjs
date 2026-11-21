@@ -170,11 +170,23 @@ test('the plugin instance is recognised under its conventional aliases and nothi
   );
 });
 
+async function listRouteFiles(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await listRouteFiles(fullPath)));
+    } else if (entry.isFile() && entry.name.endsWith('.ts')) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
 test('generated API reference matches literal route declarations in source', async () => {
   const routesDirectory = path.join(root, 'apps/api/src/routes');
-  const routeFiles = (await readdir(routesDirectory, { withFileTypes: true }))
-    .filter((entry) => entry.isFile() && entry.name.endsWith('.ts'))
-    .map((entry) => path.join(routesDirectory, entry.name));
+  const routeFiles = await listRouteFiles(routesDirectory);
   const routeGroups = await Promise.all(
     routeFiles.map(async (file) => extractRoutes(await readFile(file, 'utf8'), file))
   );

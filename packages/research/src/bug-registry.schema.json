@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://moonwitness.dev/schemas/bug-registry.schema.json",
+  "title": "MoonWitness 33-BUG synthetic recovery and alias conflict contract",
+  "description": "Typed 33-slot planned BUG registry recovery contract separating program, case, submission, and story identities while preserving alias conflicts and preventing fabricated approvals or fixes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "registry_id",
+    "fixture_classification",
+    "legacy_import_authorized",
+    "slots",
+    "alias_observations",
+    "alias_decisions"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "registry_id": {
+      "type": "string",
+      "pattern": "^mw:bug-registry:[a-z0-9][a-z0-9._-]{0,127}$"
+    },
+    "fixture_classification": {
+      "const": "synthetic"
+    },
+    "legacy_import_authorized": {
+      "const": false
+    },
+    "slots": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 33,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "slot_number",
+          "program_id",
+          "slot_state",
+          "canonical_title",
+          "submission_status",
+          "editorial_publication_status",
+          "human_approval_status",
+          "verification_status",
+          "religious_approval_claimed",
+          "child_safety_gate"
+        ],
+        "properties": {
+          "slot_number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 33
+          },
+          "program_id": {
+            "type": "string",
+            "pattern": "^mw:bug-program:slot-(0[1-9]|[12][0-9]|3[0-3])$"
+          },
+          "case_id": {
+            "type": "string",
+            "pattern": "^mw:bug-case:[a-z0-9][a-z0-9._-]{0,127}$"
+          },
+          "submission_id": {
+            "type": "string",
+            "pattern": "^mw:bug-submission:[a-z0-9][a-z0-9._-]{0,127}$"
+          },
+          "story_id": {
+            "type": "string",
+            "pattern": "^mw:story:[a-z0-9][a-z0-9._-]{0,127}$"
+          },
+          "slot_state": {
+            "enum": ["planned_slot", "partial_mapping", "missing_source", "conflict_held"]
+          },
+          "canonical_title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "legacy_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "submission_status": {
+            "enum": ["not_submitted", "synthetic_draft"]
+          },
+          "editorial_publication_status": {
+            "enum": ["unpublished", "internal_draft"]
+          },
+          "human_approval_status": {
+            "enum": ["unreviewed", "human_approved", "human_rejected"]
+          },
+          "verification_status": {
+            "enum": ["unverified", "verified_fix"]
+          },
+          "religious_approval_claimed": {
+            "const": false
+          },
+          "child_safety_gate": {
+            "enum": ["standard", "child_sensitive_protected"]
+          },
+          "action_owner_id": {
+            "type": "string",
+            "pattern": "^mw:user:[a-z0-9][a-z0-9._-]{0,127}$"
+          },
+          "verification_reviewer_id": {
+            "type": "string",
+            "pattern": "^mw:user:[a-z0-9][a-z0-9._-]{0,127}$"
+          },
+          "verification_evidence_ref": {
+            "type": "string",
+            "pattern": "^mw:evidence:[a-z0-9][a-z0-9._-]{0,179}$"
+          },
+          "missing_fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          }
+        }
+      }
+    },
+    "alias_observations": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["observation_id", "program_id", "observed_label", "label_kind", "source_ref"],
+        "properties": {
+          "observation_id": {
+            "type": "string",
+            "pattern": "^mw:bug-alias-obs:[a-z0-9][a-z0-9._-]{0,127}$"
+          },
+          "program_id": {
+            "type": "string",
+            "pattern": "^mw:bug-program:slot-(0[1-9]|[12][0-9]|3[0-3])$"
+          },
+          "observed_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "label_kind": {
+            "enum": ["title", "code"]
+          },
+          "source_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          }
+        }
+      }
+    },
+    "alias_decisions": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "decision_id",
+          "normalized_key",
+          "program_ids",
+          "outcome",
+          "reviewer_id",
+          "reviewed_at",
+          "evidence_refs"
+        ],
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "pattern": "^mw:bug-alias-decision:[a-z0-9][a-z0-9._-]{0,127}$"
+          },
+          "normalized_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "program_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 33,
+            "items": {
+              "type": "string",
+              "pattern": "^mw:bug-program:slot-(0[1-9]|[12][0-9]|3[0-3])$"
+            }
+          },
+          "outcome": {
+            "enum": ["confirmed_alias", "distinct"]
+          },
+          "canonical_target_program_id": {
+            "type": "string",
+            "pattern": "^mw:bug-program:slot-(0[1-9]|[12][0-9]|3[0-3])$"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "pattern": "^mw:user:[a-z0-9][a-z0-9._-]{0,127}$"
+          },
+          "reviewed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 240
+            }
+          }
+        }
+      }
+    }
+  }
+}

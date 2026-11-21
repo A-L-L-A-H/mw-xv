@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://moonwitness.dev/schemas/analytic-responsibility.schema.json",
+  "title": "MoonWitness scoped analytic responsibility input",
+  "description": "Policy-versioned, evidence-bound, non-normative analytic factor calculation contract. Outputs remain advisory and cannot certify legal, moral, salvation, or divine status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "policy_profile_id",
+    "policy_version",
+    "subject_id",
+    "scope",
+    "factors"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "request_id": {
+      "type": "string",
+      "pattern": "^mw:analytic-request:[a-z0-9][a-z0-9._-]{0,127}$"
+    },
+    "policy_profile_id": {
+      "type": "string",
+      "pattern": "^mw:profile:[a-z0-9][a-z0-9._-]{0,127}$"
+    },
+    "policy_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "subject_id": {
+      "type": "string",
+      "pattern": "^mw:[a-z0-9-]+:[a-z0-9][a-z0-9._-]{0,179}$"
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "context_label", "advisory_purpose"],
+      "properties": {
+        "domain": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "context_label": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "advisory_purpose": { "type": "string", "minLength": 1, "maxLength": 400 }
+      }
+    },
+    "factors": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["factor_key", "input_state", "weight", "evidence_ids"],
+        "properties": {
+          "factor_key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "input_state": {
+            "enum": ["measured", "missing", "conflicting", "unknown"]
+          },
+          "weight": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "evidence_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^mw:evidence:[a-z0-9][a-z0-9._-]{0,179}$"
+            }
+          },
+          "note": { "type": "string", "minLength": 1, "maxLength": 400 }
+        }
+      }
+    },
+    "human_override": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["override_state", "reviewer_id", "reviewed_at", "rationale", "evidence_refs"],
+      "properties": {
+        "override_state": {
+          "enum": ["hold_for_review", "advisory_adjustment", "mark_unknown"]
+        },
+        "adjusted_advisory_band": {
+          "enum": ["low", "moderate", "elevated", "unknown"]
+        },
+        "reviewer_id": {
+          "type": "string",
+          "pattern": "^mw:user:[a-z0-9][a-z0-9._-]{0,127}$"
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1, "maxLength": 240 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "profile_id": "mw:profile:mizan-policy-boundary-v1",
+  "status": "proposed_pending_owner_approval",
+  "related_task": "K6-001",
+  "related_adr": "docs/decisions/0005-mizan-evaluation-policy-boundary.md",
+  "legacy_blueprint_disposition": {
+    "repository": "bjo163/dev-mw-blueprint",
+    "pinned_head": "cc53d63da1f34f69e20516a0b1c13514fa898725",
+    "k0_006_decision": "defer",
+    "legacy_th_ari_semantics": "rejected_pending_clean_revalidation"
+  },
+  "boundary_rules": {
+    "analytic_only": true,
+    "normative_verdicts_allowed": false,
+    "unknown_stays_unknown": true,
+    "autonomous_harm_allowed": false,
+    "autonomous_publication_allowed": false,
+    "minor_exposure_allowed": false
+  },
+  "prohibited_inferences": [
+    "human_worth",
+    "salvation_status",
+    "divine_judgment",
+    "legal_verdict",
+    "afterlife_level_gain_or_loss",
+    "autonomous_harm_action",
+    "autonomous_publication",
+    "minor_data_exposure"
+  ],
+  "human_review_gates": [
+    {
+      "gate_id": "GATE-K6-001-OWNER-APPROVAL",
+      "stage": "policy_activation",
+      "required_authority": "owner_and_codeowner",
+      "state": "pending"
+    },
+    {
+      "gate_id": "GATE-K6-002-CALIBRATION-REVIEW",
+      "stage": "analytic_engine_profile",
+      "required_authority": "independent_research_reviewer_k3_005",
+      "state": "blocked_on_k6_001_and_k3_005"
+    },
+    {
+      "gate_id": "GATE-K6-004-SAFEGUARDING",
+      "stage": "child_sensitive_and_publication",
+      "required_authority": "safeguarding_owner_and_publication_reviewer",
+      "state": "mandatory_deny_until_approved"
+    }
+  ],
+  "calibration_fixtures": [
+    {
+      "fixture_id": "CAL-01-missing-evidence",
+      "classification": "synthetic",
+      "input_state": "missing_evidence",
+      "expected_analytic_state": "unknown",
+      "expected_normative_verdict": null,
+      "must_refuse_autonomous_action": true
+    },
+    {
+      "fixture_id": "CAL-02-conflicting-evidence",
+      "classification": "synthetic",
+      "input_state": "conflicting_evidence",
+      "expected_analytic_state": "unknown",
+      "expected_normative_verdict": null,
+      "must_refuse_autonomous_action": true
+    },
+    {
+      "fixture_id": "CAL-03-evidence-bound-advisory",
+      "classification": "synthetic",
+      "input_state": "evidence_bound_synthetic",
+      "expected_analytic_state": "advisory_non_normative",
+      "expected_normative_verdict": null,
+      "must_refuse_autonomous_action": true
+    }
+  ],
+  "failure_modes": [
+    {
+      "failure_mode_id": "FM-01-score-to-verdict-conflation",
+      "description": "Treating an analytic responsibility/impact factor as moral worth, salvation status, divine judgment, or legal liability.",
+      "mitigation": "Explicit normative_verdicts_allowed=false contract and mandatory advisory scope labeling."
+    },
+    {
+      "failure_mode_id": "FM-02-missing-coerced-to-zero",
+      "description": "Defaulting absent or unreviewed evidence to numeric zero or safe status.",
+      "mitigation": "Fail-closed unknown/insufficient_evidence state propagation."
+    },
+    {
+      "failure_mode_id": "FM-03-autonomous-publication-or-harm",
+      "description": "Triggering public disclosure, case sanction, or status transitions directly from an analytic threshold or local AI suggestion.",
+      "mitigation": "Separate authenticated human reviewer gates (K3-005, K6-003, K6-004) with zero model/score execution authority."
+    },
+    {
+      "failure_mode_id": "FM-04-minor-exposure-via-metadata",
+      "description": "Leaking CHILD_SENSITIVE identifiers through factor breakdowns, logs, prompts, or public routes.",
+      "mitigation": "Deny general indexing/logging/AI prompting for CHILD_SENSITIVE records per safeguarding policy."
+    }
+  ]
+}

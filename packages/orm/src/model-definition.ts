@@ -7,6 +7,8 @@ type Scalar = string | number | boolean;
 export interface FieldOptions<T extends Scalar = Scalar> {
   required?: boolean;
   unique?: boolean;
+  /** Creates a non-unique database index on this column during addon schema sync. */
+  index?: boolean;
   /** Excludes the field from serialized records and generic query inputs. */
   hidden?: boolean;
   /** Excludes the field from audit and outbox snapshots while keeping normal authorized reads. */

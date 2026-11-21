@@ -25,9 +25,13 @@ describe('unit runner CI ownership', () => {
     const jobsBlock = workflow.split(/\njobs:\r?\n/u)[1];
     assert.ok(jobsBlock);
     const jobNames = [...jobsBlock.matchAll(/^ {2}([a-z][\w-]+):\r?$/gmu)].map(([_, name]) => name);
-    assert.deepEqual(jobNames, ['ci-gate']);
-    assert.match(jobsBlock, /name: ci-gate\r?\n/u);
-    assert.match(jobsBlock, /run: pnpm test:unit:ci/u);
+    assert.deepEqual(jobNames, [
+      'quality-and-build',
+      'unit-tests',
+      'knowledge-gate',
+      'postgres-integration',
+    ]);
+    assert.match(jobsBlock, /pnpm test:unit:built/u);
   });
 
   it('keeps the asset scripts split the way the checks expect', () => {

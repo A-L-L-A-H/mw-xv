@@ -65,7 +65,7 @@ function SheetContent({
       >
         {children}
         {showCloseButton && (
-          <SheetPrimitive.Close className="absolute top-4 right-4 border-2 border-ink bg-paper p-1 text-ink transition-transform hover:-translate-y-0.5 hover:bg-pink hover:text-on-pink shadow-[2px_2px_0_0_var(--ink)] disabled:pointer-events-none [&_svg]:size-4">
+          <SheetPrimitive.Close className="absolute top-4 right-4 border-2 border-ink bg-paper p-1 text-ink transition-transform hover:-translate-y-0.5 hover:bg-[var(--mw-magenta)] hover:text-[var(--mw-on-magenta)] shadow-[2px_2px_0_0_var(--ink)] disabled:pointer-events-none [&_svg]:size-4">
             <span aria-hidden="true">×</span>
             <span className="sr-only">Close</span>
           </SheetPrimitive.Close>

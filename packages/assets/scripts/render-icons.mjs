@@ -16,11 +16,16 @@ const artworkOutputPath = resolve(
   repositoryRoot,
   'docs/design/assets/artwork-contact-sheet-current.png'
 );
+const materialOutputPath = resolve(
+  repositoryRoot,
+  'docs/design/assets/material-contact-sheet-current.png'
+);
 const manifest = JSON.parse(await readFile(resolve(packageRoot, 'manifest.json'), 'utf8'));
 const icons = manifest.assets.filter((asset) => asset.kind === 'icon');
 const illustrations = manifest.assets.filter(
   (asset) => asset.kind === 'illustration' || asset.kind === 'pattern'
 );
+const materials = manifest.assets.filter((asset) => asset.path.startsWith('materials/'));
 
 function dataUrl(svg) {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
@@ -214,8 +219,47 @@ try {
     animations: 'disabled',
   });
   await artworkPage.close();
+
+  const materialCells = await Promise.all(
+    materials.map(async (asset) => {
+      const svg = await readFile(resolve(packageRoot, asset.path), 'utf8');
+      const light = dataUrl(svg.replaceAll('currentColor', '#0d0d0d'));
+      const dark = dataUrl(svg.replaceAll('currentColor', '#f3efe4'));
+      return `<article><h2>${asset.path.slice('materials/'.length)} (${asset.width}x${asset.height})</h2><div class="pair"><div class="swatch light"><img src="${light}" alt=""></div><div class="swatch dark"><img src="${dark}" alt=""></div></div></article>`;
+    })
+  );
+  const materialPage = await browser.newPage({
+    viewport: { width: 1440, height: 1200 },
+    deviceScaleFactor: 1,
+  });
+  await materialPage.setContent(`<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
+    *{box-sizing:border-box}body{margin:0;padding:24px;background:#e8e4d9;color:#0d0d0d;font:13px Arial,sans-serif}
+    h1{margin:0 0 12px;font-size:22px}p{margin:0 0 18px;color:#3a3a36}
+    main{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    article{padding:10px;border:2px solid #0d0d0d;background:#fffdf6;box-shadow:3px 3px #0d0d0d}
+    h2{overflow:hidden;margin:0 0 8px;font:700 11px ui-monospace,monospace;text-overflow:ellipsis;white-space:nowrap}
+    .pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .swatch{display:grid;place-items:center;height:68px;padding:6px;border:1px solid #0d0d0d}
+    .light{background:#f3efe4}.dark{background:#0e0e10}
+    .swatch img{max-width:100%;max-height:52px;object-fit:contain}
+    </style></head><body><h1>MoonWitness materials, doodles, and motifs</h1>
+    <p>Deterministic torn edges, corners, brush strips, notes, tape, splatters, tiles, doodles, and motifs on paper and ink surfaces.</p>
+    <main>${materialCells.join('')}</main></body></html>`);
+  const materialImages = await materialPage
+    .locator('main img')
+    .evaluateAll((images) => images.map((image) => image.complete && image.naturalWidth > 0));
+  if (materialImages.length !== materials.length * 2 || materialImages.includes(false)) {
+    throw new Error('Material contact sheet contains invalid SVG previews.');
+  }
+  await mkdir(dirname(materialOutputPath), { recursive: true });
+  await materialPage.screenshot({
+    path: materialOutputPath,
+    fullPage: true,
+    animations: 'disabled',
+  });
+  await materialPage.close();
   stdout.write(
-    `Rendered brand and artwork proofs to ${brandOutputPath} and ${artworkOutputPath}.\n`
+    `Rendered brand, artwork, and material proofs to ${brandOutputPath}, ${artworkOutputPath}, and ${materialOutputPath}.\n`
   );
 } finally {
   await browser.close();

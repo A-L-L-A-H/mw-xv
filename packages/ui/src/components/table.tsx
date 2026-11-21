@@ -1,6 +1,9 @@
 import type { ComponentProps } from 'react';
 
-export type TableProps = ComponentProps<'table'> & { scrollLabel?: string };
+export type TableProps = ComponentProps<'table'> & {
+  scrollLabel?: string;
+  density?: 'comfortable' | 'compact';
+};
 export type TableCaptionProps = ComponentProps<'caption'>;
 export type TableHeadProps = ComponentProps<'thead'>;
 export type TableBodyProps = ComponentProps<'tbody'>;
@@ -8,7 +11,7 @@ export type TableRowProps = ComponentProps<'tr'>;
 export type TableHeaderProps = ComponentProps<'th'>;
 export type TableCellProps = ComponentProps<'td'>;
 
-export function Table({ className, scrollLabel, ...props }: TableProps) {
+export function Table({ className, scrollLabel, density = 'comfortable', ...props }: TableProps) {
   return (
     <div
       className="mw-ui-table-wrap"
@@ -40,7 +43,11 @@ export function Table({ className, scrollLabel, ...props }: TableProps) {
           : undefined
       }
     >
-      <table className={['mw-ui-table', className].filter(Boolean).join(' ')} {...props} />
+      <table
+        data-density={density}
+        className={['mw-ui-table', className].filter(Boolean).join(' ')}
+        {...props}
+      />
     </div>
   );
 }

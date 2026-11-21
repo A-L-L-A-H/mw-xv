@@ -49,16 +49,14 @@ test('application deployment remains outside repository automation', async () =>
   assert.doesNotMatch(workflowText, /STAGING_DEPLOY|PRODUCTION_DEPLOY|deployment hook/iu);
 });
 
-test('release tags require exact main ancestry and successful ci-gate for the same SHA', () => {
+test('release verification normalizes and validates workspace version before building', () => {
+  assert.match(verify, /RELEASE_VERSION: \$\{\{ inputs\.version \|\| github\.ref_name \}\}/u);
   assert.match(verify, /if \[\[ "\$version" != v\*/u);
+  assert.match(verify, /pnpm release:check "\$version"/u);
   assert.match(verify, /echo "version=\$version" >> "\$GITHUB_OUTPUT"/u);
-  assert.match(verify, /git merge-base --is-ancestor "\$SOURCE_SHA" refs\/remotes\/origin\/main/u);
-  assert.match(verify, /head_sha=\$SOURCE_SHA&event=push/u);
-  assert.match(verify, /\.head_sha == \$sha and \.head_branch == "main" and \.event == "push"/u);
-  assert.match(verify, /\.name == "ci-gate" and \.conclusion == "success"/u);
 });
 
-test('tag releases reuse exact-SHA main CI while dry runs keep full local verification', () => {
+test('tag releases skip duplicate local checks while dry runs keep full local verification', () => {
   const verificationSteps = [
     'pnpm lint',
     'pnpm format:check',
@@ -70,13 +68,14 @@ test('tag releases reuse exact-SHA main CI while dry runs keep full local verifi
   ];
   const reusableCiCondition =
     "github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)";
-  assert.match(verify, /name: Require the exact source commit to be verified by main CI/u);
-  const exactShaGate = verify.indexOf(
-    'name: Require the exact source commit to be verified by main CI'
-  );
+  assert.match(verify, /name: Verify workspace release version/u);
+  const versionCheckIndex = verify.indexOf('name: Verify workspace release version');
   for (const command of verificationSteps) {
     const commandIndex = verify.indexOf(`run: ${command}`);
-    assert.ok(commandIndex > exactShaGate, `${command} should follow the exact-SHA gate`);
+    assert.ok(
+      commandIndex > versionCheckIndex,
+      `${command} should follow the release version verification step`
+    );
     assert.ok(
       verify.slice(commandIndex - 150, commandIndex).includes(`if: ${reusableCiCondition}`),
       `${command} should only be skipped for a tag already verified by main CI`

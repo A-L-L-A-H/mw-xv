@@ -61,8 +61,14 @@ export function pnpmSetupOrderValid(actionSource) {
     );
   }
   const nodeSetup = actionSource.indexOf('uses: actions/setup-node@');
-  const pnpmSetup = actionSource.indexOf('uses: pnpm/action-setup@');
-  return nodeSetup >= 0 && pnpmSetup > nodeSetup;
+  const pnpmActionSetup = actionSource.indexOf('uses: pnpm/action-setup@');
+  const pnpmCliInstall = actionSource.indexOf(
+    'npm install --global --no-audit --no-fund "pnpm@${{ inputs.pnpm-version }}"'
+  );
+  if (nodeSetup >= 0 && pnpmCliInstall > nodeSetup) {
+    return !/run:\s*pnpm install/u.test(actionSource);
+  }
+  return nodeSetup >= 0 && pnpmActionSetup > nodeSetup;
 }
 
 export function workflowInstallsFrozenWorkspaceAfterSetup(source, path = '') {

@@ -144,7 +144,7 @@ export function SettingsPage() {
 
       <section className="ink-panel space-y-6 bg-card p-5 sm:p-8">
         <div className="flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center border-2 border-ink bg-lime shadow-ink-sm">
+          <span className="grid size-10 shrink-0 place-items-center border-2 border-ink bg-primary text-primary-foreground shadow-ink-sm">
             <SettingsIcon className="size-5" />
           </span>
           <div>
@@ -162,7 +162,7 @@ export function SettingsPage() {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => updatePreference('theme', theme)}
-                className={`flex items-center gap-3 border-2 p-4 text-left transition-colors ${selected ? 'border-ink bg-lime/30 shadow-ink-sm' : 'border-ink/30 hover:border-ink'}`}
+                className={`flex items-center gap-3 border-2 p-4 text-left transition-colors ${selected ? 'border-ink bg-primary/30 shadow-ink-sm' : 'border-ink/30 hover:border-ink'}`}
               >
                 <Icon className="size-5" />
                 <span className="font-display uppercase">{theme} theme</span>

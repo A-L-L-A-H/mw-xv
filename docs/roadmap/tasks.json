@@ -1798,7 +1798,9 @@
       "output": "Precision/error reports, historical count reconciliation record",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/K4-006.md"
     },
     {
       "id": "K5-001",
@@ -1868,7 +1870,9 @@
       "output": "33 planned slots; reviewed partial title/code mapping; missing/conflicts shown",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K5-006.md"
     },
     {
       "id": "K6-001",
@@ -1878,7 +1882,9 @@
       "output": "Proof/rejection of legacy TH/ARI factor semantics and legal/divine boundary",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K6-001.md"
     },
     {
       "id": "K6-002",
@@ -1888,7 +1894,9 @@
       "output": "Deterministic policy-versioned nonnormative analytic factor calculation",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K6-002.md"
     },
     {
       "id": "K6-003",
@@ -1898,7 +1906,9 @@
       "output": "Case intake, triage, plan, action, verification, reopen linked to events",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K6-003.md"
     },
     {
       "id": "K6-004",
@@ -1908,7 +1918,9 @@
       "output": "Sensitive-case disclosure protection and human-reviewed escalation procedure",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K6-004.md"
     },
     {
       "id": "K6-005",
@@ -1918,7 +1930,9 @@
       "output": "Verified fix outcome proof, independent reviewer, reopen behavior",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K6-005.md"
     },
     {
       "id": "K7-001",
@@ -2024,7 +2038,9 @@
       "output": "Read-only published snapshot endpoints",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K8-003.md"
     },
     {
       "id": "K8-004",
@@ -2034,7 +2050,9 @@
       "output": "Public sources, cases/stories and provenance previews",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K8-004.md"
     },
     {
       "id": "K8-005",
@@ -2044,7 +2062,9 @@
       "output": "Safe case progress UI and limited public proposal form, if policy permits",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K8-005.md"
     },
     {
       "id": "K8-006",
@@ -2054,7 +2074,9 @@
       "output": "Publish/retract/supersede snapshots and auditable permissions",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K8-006.md"
     },
     {
       "id": "K9-001",
@@ -2063,8 +2085,10 @@
       "dependsOn": ["K8-006", "K7-006"],
       "output": "Required deterministic/unit/PostgreSQL/browser/security/offline checks",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-001.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     },
     {
       "id": "K9-002",
@@ -2074,7 +2098,9 @@
       "output": "Candidate scope audit of corpus artifacts, prompts and releases",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K9-002.md"
     },
     {
       "id": "K9-003",
@@ -2083,8 +2109,10 @@
       "dependsOn": ["K9-001"],
       "output": "Validated upgrade, point-in-time restore practice and knowledge snapshot recovery",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-003.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     },
     {
       "id": "K9-004",
@@ -2094,7 +2122,9 @@
       "output": "Actual no-network boot/reimport/search/API/Board/model-off evidence",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K9-004.md"
     },
     {
       "id": "K9-005",
@@ -2103,8 +2133,10 @@
       "dependsOn": ["K9-001"],
       "output": "Same-machine corpus size/latency/memory/IO and index build metrics",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-005.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     },
     {
       "id": "K9-006",
@@ -2113,8 +2145,10 @@
       "dependsOn": ["K9-002", "K9-003", "K9-004", "K9-005"],
       "output": "Reviewed release report, manifest, SBOM/provenance where pipeline supports",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-006.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     },
     {
       "id": "K9-007",
@@ -2123,8 +2157,10 @@
       "dependsOn": ["K9-006", "K0-005"],
       "output": "Written decision on deployment authorization, privacy, rights, operations owner, incident policy",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
+      "evidence": "docs/roadmap/evidence/K9-007.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress"
     }
   ]
 }

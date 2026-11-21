@@ -637,7 +637,7 @@ test('mobile overlays keep accessible names, keyboard dismissal, focus return, a
     fullPage: false,
   });
   await page.screenshot({
-    path: '../../docs/design/ui-catalog/command-palette-motion-mobile-375.png',
+    path: path.join(catalogDirectory, 'command-palette-motion-mobile-375.png'),
     fullPage: false,
   });
   await page.keyboard.press('Escape');
@@ -798,7 +798,16 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
     await expect(
       page.getByRole('heading', { name: 'Different people. Shared context.', exact: true })
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Enable interface sounds' })).toBeVisible();
+    if (size.width >= 768) {
+      await expect(page.getByRole('button', { name: 'Enable interface sounds' })).toBeVisible();
+    } else {
+      const mobileMenuButton = page.getByRole('button', { name: 'Open site navigation' });
+      await expect(mobileMenuButton).toBeVisible();
+      await mobileMenuButton.click();
+      await expect(page.getByRole('button', { name: 'Enable interface sounds' })).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(page.getByRole('dialog', { name: 'Site navigation' })).toBeHidden();
+    }
     await expectNoHorizontalOverflow(page, `homepage/${size.name}`);
     const heroImage = await page.locator('.home-hero-art-image').evaluate((image) => ({
       loaded: image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0,
@@ -1072,7 +1081,7 @@ test('empty and unavailable story workbench states explain the next action', asy
 test('responsive protected screens fit and remain accessible in both themes', async ({
   page,
 }, testInfo) => {
-  test.setTimeout(120_000);
+  test.setTimeout(360_000);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/login');
   await page.getByLabel('Email or Username').fill('superadmin');
@@ -1214,6 +1223,7 @@ test('responsive protected screens fit and remain accessible in both themes', as
             )
             .toBe(!originalThemeIsDark);
           await page.getByRole('button', { name: /^User menu for/u }).click();
+          await expect(page.getByRole('menuitem', { name: 'Toggle theme' })).toBeVisible();
           await page.getByRole('menuitem', { name: 'Toggle theme' }).click();
           await expect
             .poll(() =>

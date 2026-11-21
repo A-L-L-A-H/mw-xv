@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `61cc19022761469f65d169d76232a24222be60982c32e0d1b5f9ed90097679bf`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `b39e32d2061a91615847efb6fed20ab5be9e541fc7cb82d28fe4b7519f35753e`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -28,7 +28,7 @@ Models: 1; declared views: 0; menu entries: 0; seed rows: 0.
 
 Version: `1.0.0`; dependencies: none.
 
-Models: 22; declared views: 22; menu entries: 22; seed rows: 736.
+Models: 23; declared views: 23; menu entries: 23; seed rows: 737.
 
 | Model                        | Table                    | Field                  | Kind      | Required | Optional | Default    | Relation                |
 | ---------------------------- | ------------------------ | ---------------------- | --------- | -------- | -------- | ---------- | ----------------------- |
@@ -157,6 +157,14 @@ Models: 22; declared views: 22; menu entries: 22; seed rows: 736.
 | `base.user`                  | `users`                  | `password`             | password  | No       | Yes      | No         | —                       |
 | `base.user`                  | `users`                  | `role`                 | enum      | No       | Yes      | [redacted] | —                       |
 | `base.user`                  | `users`                  | `timezone`             | string    | No       | Yes      | No         | —                       |
+| `ir.feature_flag`            | `ir_feature_flags`       | `company`              | belongsTo | No       | Yes      | No         | `base.company`          |
+| `ir.feature_flag`            | `ir_feature_flags`       | `description`          | text      | No       | Yes      | No         | —                       |
+| `ir.feature_flag`            | `ir_feature_flags`       | `enabled`              | boolean   | No       | Yes      | [redacted] | —                       |
+| `ir.feature_flag`            | `ir_feature_flags`       | `expires_at`           | string    | No       | Yes      | No         | —                       |
+| `ir.feature_flag`            | `ir_feature_flags`       | `key`                  | string    | Yes      | No       | No         | —                       |
+| `ir.feature_flag`            | `ir_feature_flags`       | `name`                 | string    | Yes      | No       | No         | —                       |
+| `ir.feature_flag`            | `ir_feature_flags`       | `proposal_id`          | string    | No       | Yes      | No         | —                       |
+| `ir.feature_flag`            | `ir_feature_flags`       | `rollout_pct`          | integer   | No       | Yes      | [redacted] | —                       |
 
 ### Menus and seed coverage
 
@@ -184,6 +192,7 @@ Models: 22; declared views: 22; menu entries: 22; seed rows: 736.
 | `base.tag`                   | Tags                       | Workspace    |       60 | Standard         |
 | `base.tag_link`              | base.tag_link              | Technical    |      390 | Development mode |
 | `base.user`                  | Users                      | Organization |       30 | Standard         |
+| `ir.feature_flag`            | ir.feature_flag            | Technical    |      470 | Development mode |
 
 - Seed coverage: `base.access_group` has 3 declared seed row(s); seed values are not included.
 - Seed coverage: `base.activity` has 1 declared seed row(s); seed values are not included.
@@ -206,6 +215,7 @@ Models: 22; declared views: 22; menu entries: 22; seed rows: 736.
 - Seed coverage: `base.tag` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `base.tag_link` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `base.user` has 2 declared seed row(s); seed values are not included.
+- Seed coverage: `ir.feature_flag` has 1 declared seed row(s); seed values are not included.
 
 ### Seeded model access rules
 
@@ -289,10 +299,35 @@ Models: 4; declared views: 0; menu entries: 0; seed rows: 1.
 
 Version: `1.6.0`; dependencies: `base`.
 
-Models: 15; declared views: 3; menu entries: 3; seed rows: 26.
+Models: 18; declared views: 3; menu entries: 3; seed rows: 29.
 
 | Model                                           | Table                                            | Field                         | Kind      | Required | Optional | Default    | Relation                           |
 | ----------------------------------------------- | ------------------------------------------------ | ----------------------------- | --------- | -------- | -------- | ---------- | ---------------------------------- |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `case_id`                     | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `case_state`                  | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `classification`              | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `company`                     | belongsTo | Yes      | No       | No         | `base.company`                     |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `created_by`                  | belongsTo | Yes      | No       | No         | `base.user`                        |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `human_approval_status`       | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `program_id`                  | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `publication_status`          | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `resolved_status`             | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `revision`                    | integer   | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `synthetic`                   | boolean   | No       | Yes      | [redacted] | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `title`                       | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case`                            | `knowledge_bug_cases`                            | `workflow_instance_id`        | integer   | No       | Yes      | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `actor`                       | belongsTo | Yes      | No       | No         | `base.user`                        |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `bug_case`                    | belongsTo | Yes      | No       | No         | `knowledge.bug_case`               |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `company`                     | belongsTo | Yes      | No       | No         | `base.company`                     |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `event_digest`                | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `event_kind`                  | enum      | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `from_state`                  | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `idempotency_key`             | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `payload_json`                | text      | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `recorded_at`                 | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `to_state`                    | string    | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `workflow_event_sequence`     | integer   | Yes      | No       | No         | —                                  |
+| `knowledge.bug_case_event`                      | `knowledge_bug_case_events`                      | `workflow_instance_id`        | integer   | Yes      | No       | No         | —                                  |
 | `knowledge.concept_profile_version`             | `knowledge_concept_profile_versions`             | `company`                     | belongsTo | Yes      | No       | No         | `base.company`                     |
 | `knowledge.concept_profile_version`             | `knowledge_concept_profile_versions`             | `concept_id`                  | string    | Yes      | No       | No         | —                                  |
 | `knowledge.concept_profile_version`             | `knowledge_concept_profile_versions`             | `profile_digest`              | string    | Yes      | No       | No         | —                                  |
@@ -317,6 +352,24 @@ Models: 15; declared views: 3; menu entries: 3; seed rows: 26.
 | `knowledge.privacy_revocation`                  | `knowledge_privacy_revocations`                  | `event_digest`                | string    | Yes      | No       | No         | —                                  |
 | `knowledge.privacy_revocation`                  | `knowledge_privacy_revocations`                  | `idempotency_key`             | string    | Yes      | No       | No         | —                                  |
 | `knowledge.privacy_revocation`                  | `knowledge_privacy_revocations`                  | `subject_ref_sha256`          | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `classification`              | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `company`                     | belongsTo | Yes      | No       | No         | `base.company`                     |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `idempotency_key`             | string    | No       | Yes      | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `minor_involved`              | boolean   | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `projection_digest`           | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `projection_json`             | text      | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `publication_id`              | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `recorded_at`                 | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `requester`                   | belongsTo | Yes      | No       | No         | `base.user`                        |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `review_status`               | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `reviewer`                    | belongsTo | No       | Yes      | No         | `base.user`                        |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `revision`                    | integer   | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `rights_state`                | enum      | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `subject_id`                  | string    | Yes      | No       | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `supersedes_digest`           | string    | No       | Yes      | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `synthetic`                   | boolean   | No       | Yes      | [redacted] | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `takedown_reason_code`        | string    | No       | Yes      | No         | —                                  |
+| `knowledge.publication_snapshot`                | `knowledge_publication_snapshots`                | `title`                       | string    | Yes      | No       | No         | —                                  |
 | `knowledge.research_active_release`             | `knowledge_research_active_releases`             | `activated_at`                | string    | Yes      | No       | No         | —                                  |
 | `knowledge.research_active_release`             | `knowledge_research_active_releases`             | `corpus_key`                  | string    | Yes      | No       | No         | —                                  |
 | `knowledge.research_active_release`             | `knowledge_research_active_releases`             | `release`                     | belongsTo | Yes      | No       | No         | `knowledge.research_graph_release` |
@@ -422,7 +475,7 @@ Models: 15; declared views: 3; menu entries: 3; seed rows: 26.
 
 - Seed coverage: `base.access_group` has 2 declared seed row(s); seed values are not included.
 - Seed coverage: `base.group_membership` has 2 declared seed row(s); seed values are not included.
-- Seed coverage: `base.model_access` has 15 declared seed row(s); seed values are not included.
+- Seed coverage: `base.model_access` has 18 declared seed row(s); seed values are not included.
 - Seed coverage: `knowledge.privacy_projection` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `knowledge.witness_correction` has 2 declared seed row(s); seed values are not included.
 - Seed coverage: `knowledge.witness_interpretation` has 2 declared seed row(s); seed values are not included.
@@ -432,9 +485,12 @@ Models: 15; declared views: 3; menu entries: 3; seed rows: 26.
 
 | Group reference   | Model                                           | Read | Create | Write | Delete |
 | ----------------- | ----------------------------------------------- | ---- | ------ | ----- | ------ |
+| `base.group_user` | `knowledge.bug_case`                            | No   | No     | No    | No     |
+| `base.group_user` | `knowledge.bug_case_event`                      | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.concept_profile_version`             | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.privacy_projection`                  | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.privacy_revocation`                  | No   | No     | No    | No     |
+| `base.group_user` | `knowledge.publication_snapshot`                | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.research_active_release`             | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.research_actor_identity`             | No   | No     | No    | No     |
 | `base.group_user` | `knowledge.research_graph_record`               | No   | No     | No    | No     |
@@ -609,6 +665,168 @@ Models: 0; declared views: 0; menu entries: 0; seed rows: 0.
 
 | Menu model | Label | Group | Sequence | Visibility |
 | ---------- | ----- | ----- | -------: | ---------- |
+
+## Addon `orm-whatsapp`
+
+Version: `1.14.0`; dependencies: `base`.
+
+Models: 13; declared views: 4; menu entries: 4; seed rows: 8.
+
+| Model                         | Table                           | Field                       | Kind      | Required | Optional | Default    | Relation                |
+| ----------------------------- | ------------------------------- | --------------------------- | --------- | -------- | -------- | ---------- | ----------------------- |
+| `whatsapp.account`            | `whatsapp_accounts`             | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.account`            | `whatsapp_accounts`             | `gateway_device_id`         | string    | No       | Yes      | No         | —                       |
+| `whatsapp.account`            | `whatsapp_accounts`             | `last_error`                | string    | No       | Yes      | No         | —                       |
+| `whatsapp.account`            | `whatsapp_accounts`             | `phone_number`              | string    | No       | Yes      | No         | —                       |
+| `whatsapp.account`            | `whatsapp_accounts`             | `qr_code`                   | text      | No       | Yes      | No         | —                       |
+| `whatsapp.account`            | `whatsapp_accounts`             | `status`                    | enum      | No       | Yes      | [redacted] | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `account`                   | belongsTo | Yes      | No       | No         | `whatsapp.account`      |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `assigned_team_id`          | integer   | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `assigned_user_id`          | integer   | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `contact_avatar_key`        | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `contact_avatar_picture_id` | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `contact_picture_id`        | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `contact_profile_synced_at` | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `contact_status`            | text      | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `contact_verified_name`     | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `group_avatar_key`          | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `group_avatar_picture_id`   | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `group_is_announce`         | boolean   | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `group_is_ephemeral`        | boolean   | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `group_is_locked`           | boolean   | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `group_metadata_synced_at`  | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `group_participant_count`   | integer   | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `group_participants_json`   | text      | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `group_topic`               | text      | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `history_sync_offset`       | integer   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `is_archived`               | boolean   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `is_group`                  | boolean   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `is_pinned`                 | boolean   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `jid`                       | string    | Yes      | No       | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `last_message`              | text      | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `last_message_at`           | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `last_message_sync_at`      | string    | No       | Yes      | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `name`                      | string    | Yes      | No       | No         | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `unread_count`              | integer   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.conversation`       | `whatsapp_conversations`        | `work_state`                | enum      | No       | Yes      | [redacted] | —                       |
+| `whatsapp.conversation.alias` | `whatsapp_conversation_aliases` | `alias_jid`                 | string    | Yes      | No       | No         | —                       |
+| `whatsapp.conversation.alias` | `whatsapp_conversation_aliases` | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.conversation.alias` | `whatsapp_conversation_aliases` | `conversation`              | belongsTo | Yes      | No       | No         | `whatsapp.conversation` |
+| `whatsapp.conversation.label` | `whatsapp_conversation_labels`  | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.conversation.label` | `whatsapp_conversation_labels`  | `conversation`              | belongsTo | Yes      | No       | No         | `whatsapp.conversation` |
+| `whatsapp.conversation.label` | `whatsapp_conversation_labels`  | `label`                     | belongsTo | Yes      | No       | No         | `whatsapp.label`        |
+| `whatsapp.conversation.read`  | `whatsapp_conversation_reads`   | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.conversation.read`  | `whatsapp_conversation_reads`   | `conversation`              | belongsTo | Yes      | No       | No         | `whatsapp.conversation` |
+| `whatsapp.conversation.read`  | `whatsapp_conversation_reads`   | `last_read_at`              | string    | Yes      | No       | No         | —                       |
+| `whatsapp.conversation.read`  | `whatsapp_conversation_reads`   | `last_read_message_id`      | integer   | Yes      | No       | No         | —                       |
+| `whatsapp.conversation.read`  | `whatsapp_conversation_reads`   | `user_id`                   | integer   | Yes      | No       | No         | —                       |
+| `whatsapp.group.creation`     | `whatsapp_group_creations`      | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.group.creation`     | `whatsapp_group_creations`      | `group_jid`                 | string    | No       | Yes      | No         | —                       |
+| `whatsapp.group.creation`     | `whatsapp_group_creations`      | `idempotency_key`           | string    | Yes      | No       | No         | —                       |
+| `whatsapp.group.creation`     | `whatsapp_group_creations`      | `request_hash`              | string    | Yes      | No       | No         | —                       |
+| `whatsapp.group.creation`     | `whatsapp_group_creations`      | `status`                    | enum      | No       | Yes      | [redacted] | —                       |
+| `whatsapp.group.join`         | `whatsapp_group_joins`          | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.group.join`         | `whatsapp_group_joins`          | `group_jid`                 | string    | No       | Yes      | No         | —                       |
+| `whatsapp.group.join`         | `whatsapp_group_joins`          | `group_name`                | string    | No       | Yes      | No         | —                       |
+| `whatsapp.group.join`         | `whatsapp_group_joins`          | `idempotency_key`           | string    | Yes      | No       | No         | —                       |
+| `whatsapp.group.join`         | `whatsapp_group_joins`          | `request_hash`              | string    | Yes      | No       | No         | —                       |
+| `whatsapp.group.join`         | `whatsapp_group_joins`          | `status`                    | enum      | No       | Yes      | [redacted] | —                       |
+| `whatsapp.group.operation`    | `whatsapp_group_operations`     | `action`                    | enum      | Yes      | No       | No         | —                       |
+| `whatsapp.group.operation`    | `whatsapp_group_operations`     | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.group.operation`    | `whatsapp_group_operations`     | `conversation`              | belongsTo | Yes      | No       | No         | `whatsapp.conversation` |
+| `whatsapp.group.operation`    | `whatsapp_group_operations`     | `idempotency_key`           | string    | Yes      | No       | No         | —                       |
+| `whatsapp.group.operation`    | `whatsapp_group_operations`     | `participants_json`         | text      | Yes      | No       | No         | —                       |
+| `whatsapp.group.operation`    | `whatsapp_group_operations`     | `request_hash`              | string    | Yes      | No       | No         | —                       |
+| `whatsapp.group.operation`    | `whatsapp_group_operations`     | `result_json`               | text      | No       | Yes      | No         | —                       |
+| `whatsapp.group.operation`    | `whatsapp_group_operations`     | `status`                    | enum      | No       | Yes      | [redacted] | —                       |
+| `whatsapp.internal_note`      | `whatsapp_internal_notes`       | `body`                      | text      | Yes      | No       | No         | —                       |
+| `whatsapp.internal_note`      | `whatsapp_internal_notes`       | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.internal_note`      | `whatsapp_internal_notes`       | `conversation`              | belongsTo | Yes      | No       | No         | `whatsapp.conversation` |
+| `whatsapp.internal_note`      | `whatsapp_internal_notes`       | `user_id`                   | integer   | Yes      | No       | No         | —                       |
+| `whatsapp.label`              | `whatsapp_labels`               | `color`                     | string    | No       | Yes      | [redacted] | —                       |
+| `whatsapp.label`              | `whatsapp_labels`               | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.label`              | `whatsapp_labels`               | `name`                      | string    | Yes      | No       | No         | —                       |
+| `whatsapp.label`              | `whatsapp_labels`               | `normalized_name`           | string    | Yes      | No       | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `account`                   | belongsTo | Yes      | No       | No         | `whatsapp.account`      |
+| `whatsapp.message`            | `whatsapp_messages`             | `attempt_count`             | integer   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.message`            | `whatsapp_messages`             | `content`                   | text      | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `conversation`              | belongsTo | Yes      | No       | No         | `whatsapp.conversation` |
+| `whatsapp.message`            | `whatsapp_messages`             | `direction`                 | enum      | Yes      | No       | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `external_id`               | string    | Yes      | No       | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `forward_from_external_id`  | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `idempotency_key`           | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `is_deleted`                | boolean   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `is_edited`                 | boolean   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `is_forwarded`              | boolean   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `last_error`                | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `media_file_name`           | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `media_key`                 | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `media_mime_type`           | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `media_scan_status`         | enum      | No       | Yes      | [redacted] | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `media_size_bytes`          | integer   | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `media_thumbnail_key`       | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `message_type`              | enum      | No       | Yes      | [redacted] | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `provider_type`             | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `reactions`                 | text      | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `reply_to_external_id`      | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `reply_to_message_id`       | integer   | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `request_hash`              | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `retryable`                 | boolean   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `sender_display_name`       | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `sender_jid`                | string    | No       | Yes      | No         | —                       |
+| `whatsapp.message`            | `whatsapp_messages`             | `status`                    | enum      | No       | Yes      | [redacted] | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `account`                   | belongsTo | Yes      | No       | No         | `whatsapp.account`      |
+| `whatsapp.status`             | `whatsapp_statuses`             | `allow_reshare`             | boolean   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `attempt_count`             | integer   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.status`             | `whatsapp_statuses`             | `content`                   | text      | No       | Yes      | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `external_id`               | string    | Yes      | No       | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `idempotency_key`           | string    | Yes      | No       | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `last_error`                | string    | No       | Yes      | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `media_file_name`           | string    | No       | Yes      | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `media_key`                 | string    | No       | Yes      | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `media_mime_type`           | string    | No       | Yes      | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `media_size_bytes`          | integer   | No       | Yes      | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `published_at`              | string    | No       | Yes      | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `request_hash`              | string    | Yes      | No       | No         | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `retryable`                 | boolean   | No       | Yes      | [redacted] | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `status`                    | enum      | No       | Yes      | [redacted] | —                       |
+| `whatsapp.status`             | `whatsapp_statuses`             | `status_type`               | enum      | Yes      | No       | No         | —                       |
+| `whatsapp.upload.ticket`      | `whatsapp_upload_tickets`       | `company`                   | belongsTo | Yes      | No       | No         | `base.company`          |
+| `whatsapp.upload.ticket`      | `whatsapp_upload_tickets`       | `consumed_message_id`       | integer   | No       | Yes      | No         | —                       |
+| `whatsapp.upload.ticket`      | `whatsapp_upload_tickets`       | `content_type`              | string    | Yes      | No       | No         | —                       |
+| `whatsapp.upload.ticket`      | `whatsapp_upload_tickets`       | `conversation`              | belongsTo | Yes      | No       | No         | `whatsapp.conversation` |
+| `whatsapp.upload.ticket`      | `whatsapp_upload_tickets`       | `expires_at`                | string    | Yes      | No       | No         | —                       |
+| `whatsapp.upload.ticket`      | `whatsapp_upload_tickets`       | `file_name`                 | string    | Yes      | No       | No         | —                       |
+| `whatsapp.upload.ticket`      | `whatsapp_upload_tickets`       | `size_bytes`                | integer   | Yes      | No       | No         | —                       |
+| `whatsapp.upload.ticket`      | `whatsapp_upload_tickets`       | `storage_key`               | string    | Yes      | No       | No         | —                       |
+| `whatsapp.upload.ticket`      | `whatsapp_upload_tickets`       | `user_id`                   | integer   | Yes      | No       | No         | —                       |
+
+### Menus and seed coverage
+
+| Menu model              | Label        | Group     | Sequence | Visibility       |
+| ----------------------- | ------------ | --------- | -------: | ---------------- |
+| `whatsapp.account`      | account      | Technical |      520 | Development mode |
+| `whatsapp.conversation` | conversation | Technical |      521 | Development mode |
+| `whatsapp.message`      | message      | Technical |      522 | Development mode |
+| `whatsapp.status`       | status       | Technical |      523 | Development mode |
+
+- Seed coverage: `base.model_access` has 8 declared seed row(s); seed values are not included.
+
+### Seeded model access rules
+
+| Group reference         | Model                   | Read | Create | Write | Delete |
+| ----------------------- | ----------------------- | ---- | ------ | ----- | ------ |
+| `base.group_superadmin` | `whatsapp.account`      | Yes  | Yes    | Yes   | Yes    |
+| `base.group_superadmin` | `whatsapp.conversation` | Yes  | Yes    | Yes   | Yes    |
+| `base.group_superadmin` | `whatsapp.message`      | Yes  | Yes    | Yes   | Yes    |
+| `base.group_superadmin` | `whatsapp.status`       | Yes  | Yes    | Yes   | Yes    |
+| `base.group_user`       | `whatsapp.account`      | Yes  | No     | No    | No     |
+| `base.group_user`       | `whatsapp.conversation` | Yes  | No     | No    | No     |
+| `base.group_user`       | `whatsapp.message`      | Yes  | No     | No    | No     |
+| `base.group_user`       | `whatsapp.status`       | Yes  | No     | No    | No     |
 
 ## Addon `request`
 

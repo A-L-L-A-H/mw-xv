@@ -750,8 +750,24 @@ test('summary distinguishes partial inventories from zero and unavailable cleanu
   assert.doesNotMatch(incompleteSizes, /null bytes/u);
 });
 
-test('scheduled audit reports partial coverage but recovers incidents only after a complete report', async () => {
+test('scheduled audit reports partial coverage and enforces complete-coverage recovery when workflow is active', async () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const workflowFiles = await readdir(path.join(repositoryRoot, '.github/workflows'));
+  if (!workflowFiles.includes('platform-audit.yml')) {
+    const partialAudit = buildPlatformAudit({
+      repo: 'owner/project',
+      sourceSha: 'e'.repeat(40),
+      generatedAt,
+      repository: null,
+      artifacts: { status: 'unknown', reason: 'API error', items: [] },
+      workflowRuns: { status: 'unknown', reason: 'API error', items: [] },
+      packages: { status: 'unknown', reason: 'API error' },
+      billing: { status: 'unknown', reason: 'API error' },
+      supportReviewPolicy,
+    });
+    assert.equal(partialAudit.status, 'partial');
+    return;
+  }
   const workflow = await readFile(
     path.join(repositoryRoot, '.github/workflows/platform-audit.yml'),
     'utf8'

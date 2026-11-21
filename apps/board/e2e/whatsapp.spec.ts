@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { E2E_SUPERADMIN_PASSWORD } from './constants.js';
@@ -734,7 +735,6 @@ test('company WhatsApp inbox displays chats and sends a reply', async ({ page },
   await page.getByRole('button', { name: /Project group/u }).click();
   await expect(page.getByLabel('Loading messages')).toBeVisible();
   releaseMessageResponse?.();
-  releaseMessageResponse = null;
   await expect(page.getByRole('heading', { name: 'Project group' })).toBeVisible();
   const inboxRefreshError = page
     .getByRole('alert')
@@ -1033,9 +1033,11 @@ test('company WhatsApp inbox displays chats and sends a reply', async ({ page },
   ).toBeVisible();
   const viewOnceArticle = page.locator('#whatsapp-message-59');
   await expect(viewOnceArticle.getByText('View-once media')).toBeVisible();
+  await expect(viewOnceArticle.getByRole('button', { name: 'Message actions' })).toHaveCount(0);
   await expect(viewOnceArticle.getByRole('button', { name: 'Reply to message' })).toHaveCount(0);
   const unknownTypeArticle = page.locator('#whatsapp-message-60');
   await expect(unknownTypeArticle.getByText('Unsupported message type')).toBeVisible();
+  await expect(unknownTypeArticle.getByRole('button', { name: 'Message actions' })).toHaveCount(0);
   await expect(unknownTypeArticle.getByRole('button', { name: 'Forward message' })).toHaveCount(0);
   await expect(
     page.locator('article').filter({ hasText: 'A failed reply' }).getByRole('button', {
@@ -1056,7 +1058,11 @@ test('company WhatsApp inbox displays chats and sends a reply', async ({ page },
   await page.getByRole('button', { name: 'Load more conversations' }).click();
   await expect(page.getByRole('button', { name: /Older conversation/u })).toBeVisible();
   await expect(page.locator('#whatsapp-message-50').getByText('Can you help?')).toBeVisible();
-  await page.locator('#whatsapp-message-50').getByRole('button', { name: /React/u }).click();
+  await page
+    .locator('#whatsapp-message-50')
+    .getByRole('button', { name: 'Message actions' })
+    .click();
+  await page.getByRole('menuitem', { name: 'React to message' }).click();
   await page
     .getByRole('dialog', { name: 'React to message' })
     .getByRole('button', { name: 'React with 👍' })
@@ -1074,7 +1080,8 @@ test('company WhatsApp inbox displays chats and sends a reply', async ({ page },
   if (await loadOlderButton.isVisible().catch(() => false)) await loadOlderButton.click();
   await expect(page.locator('article').getByText('Older history')).toBeVisible();
   const inboundMessage = page.locator('#whatsapp-message-50');
-  await inboundMessage.getByRole('button', { name: 'Copy message' }).click();
+  await inboundMessage.getByRole('button', { name: 'Message actions' }).click();
+  await page.getByRole('menuitem', { name: 'Copy message' }).click();
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toBe('Can you help?');
@@ -1110,7 +1117,8 @@ test('company WhatsApp inbox displays chats and sends a reply', async ({ page },
   await composer.press('Control+Enter');
   await expect(composer).toHaveValue('');
   const replyTarget = page.locator('#whatsapp-message-50');
-  await replyTarget.getByRole('button', { name: 'Reply to message' }).click();
+  await replyTarget.getByRole('button', { name: 'Message actions' }).click();
+  await page.getByRole('menuitem', { name: 'Reply to message' }).click();
   await expect(page.getByText('Replying to: Can you help?')).toBeVisible();
   await composer.fill('Quoted response');
   await composer.press('Control+Enter');
@@ -1123,8 +1131,9 @@ test('company WhatsApp inbox displays chats and sends a reply', async ({ page },
   ]);
   await page
     .locator('#whatsapp-message-50')
-    .getByRole('button', { name: 'Forward message' })
+    .getByRole('button', { name: 'Message actions' })
     .click();
+  await page.getByRole('menuitem', { name: 'Forward message' }).click();
   const forwardDialog = page.getByRole('dialog', { name: 'Forward message' });
   await forwardDialog
     .getByRole('textbox', { name: 'Search forward destinations' })
@@ -1139,12 +1148,14 @@ test('company WhatsApp inbox displays chats and sends a reply', async ({ page },
   expect(forwardedMessages[0]?.key).toBeTruthy();
   const ownReply = page.locator('#whatsapp-message-52');
   await expect(ownReply.locator('time')).toHaveAttribute('aria-label', /^Message time:/u);
-  await ownReply.getByRole('button', { name: 'Edit message' }).click();
+  await ownReply.getByRole('button', { name: 'Message actions' }).click();
+  await page.getByRole('menuitem', { name: 'Edit message' }).click();
   await page.getByLabel('Edited message text').fill('Edited reply text');
   await page.getByRole('button', { name: 'Save edit' }).click();
   await expect(ownReply.getByText('Edited', { exact: true })).toBeVisible();
   await expect(ownReply.getByText('Edited reply text')).toBeVisible();
-  await ownReply.getByRole('button', { name: 'Delete message for everyone' }).click();
+  await ownReply.getByRole('button', { name: 'Message actions' }).click();
+  await page.getByRole('menuitem', { name: 'Delete message for everyone' }).click();
   await page
     .getByRole('alertdialog', { name: 'Delete for everyone?' })
     .getByRole('button', { name: 'Delete message' })
@@ -1153,8 +1164,9 @@ test('company WhatsApp inbox displays chats and sends a reply', async ({ page },
   await expect(ownReply.getByRole('button', { name: 'Edit message' })).toHaveCount(0);
   await page
     .locator('#whatsapp-message-50')
-    .getByRole('button', { name: 'Forward message' })
+    .getByRole('button', { name: 'Message actions' })
     .click();
+  await page.getByRole('menuitem', { name: 'Forward message' }).click();
   const secondForwardDialog = page.getByRole('dialog', { name: 'Forward message' });
   await expect(
     secondForwardDialog.getByRole('button', { name: 'Load more destinations' })
@@ -1170,6 +1182,21 @@ test('company WhatsApp inbox displays chats and sends a reply', async ({ page },
     .poll(() => forwardDestinationQueries.some((query) => query.archived === 'true'))
     .toBe(true);
   await secondForwardDialog.getByRole('button', { name: 'Cancel' }).click();
+
+  const messageActionsTrigger = page
+    .locator('#whatsapp-message-50')
+    .getByRole('button', { name: 'Message actions' });
+  await messageActionsTrigger.focus();
+  await expect(messageActionsTrigger).toBeFocused();
+  await page.keyboard.press('Enter');
+  const firstMenuItem = page.getByRole('menuitem', { name: 'Copy message' });
+  await expect(firstMenuItem).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByRole('menuitem', { name: 'Reply to message' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menuitem', { name: 'Reply to message' })).toHaveCount(0);
+  await expect(messageActionsTrigger).toBeFocused();
+
   const conversationSearch = page.getByLabel('Search conversations by name, number, or message');
   const projectChat = page.getByRole('button', { name: /Project group/u });
   const raniChat = page.getByRole('button', { name: /Rani Putri/u });
@@ -2625,4 +2652,152 @@ test('guides the user to connect a WhatsApp account before opening the inbox', a
   await page.keyboard.press('Enter');
   await expect.poll(() => disconnectRequests).toBe(1);
   await expect(page.getByRole('button', { name: 'Connect WhatsApp' })).toBeVisible();
+});
+
+test('meets WhatsApp accessibility requirements across states and themes', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto('/login');
+  await page.getByLabel('Email or Username').fill('superadmin');
+  await page.getByLabel('Password', { exact: true }).fill(E2E_SUPERADMIN_PASSWORD);
+  await page.getByRole('button', { name: 'Enter the Shadow' }).click();
+  await expect(page).toHaveURL(/\/board$/u);
+
+  await page.route('**/whatsapp/account', (route) =>
+    route.fulfill({
+      json: {
+        success: true,
+        data: {
+          status: 'connected',
+          phone_number: '6281234567890',
+          webhook_configured: true,
+          permissions: { manage: true, createConversation: true, send: true, manageMessages: true },
+        },
+      },
+    })
+  );
+  await page.route('**/whatsapp/conversations*', (route) =>
+    route.fulfill({
+      json: {
+        success: true,
+        data: [
+          {
+            id: 401,
+            jid: '628500111222@s.whatsapp.net',
+            name: 'Accessibility conversation',
+            is_group: false,
+            is_archived: false,
+            is_pinned: false,
+            unread_count: 2,
+            last_message: 'Accessible reply',
+            last_message_at: new Date().toISOString(),
+          },
+        ],
+      },
+    })
+  );
+  await page.route('**/whatsapp/conversations/401/messages*', (route) =>
+    route.fulfill({
+      json: {
+        success: true,
+        data: [
+          {
+            id: 901,
+            conversation_id: 401,
+            direction: 'inbound',
+            content: 'Accessible inbound message',
+            status: 'received',
+            message_type: 'text',
+            create_date: new Date().toISOString(),
+          },
+          {
+            id: 902,
+            conversation_id: 401,
+            direction: 'outbound',
+            content: 'Accessible outbound reply',
+            status: 'sent',
+            message_type: 'text',
+            create_date: new Date().toISOString(),
+          },
+        ],
+      },
+    })
+  );
+
+  await page.goto('/board/whatsapp');
+  await page.getByRole('button', { name: /Accessibility conversation/u }).click();
+  await expect(
+    page.locator('#whatsapp-message-901').getByText('Accessible inbound message')
+  ).toBeVisible();
+
+  const runAccessibilityAudit = async (state: string) => {
+    for (const theme of ['light', 'dark'] as const) {
+      await page.evaluate((nextTheme) => {
+        document.documentElement.classList.toggle('dark', nextTheme === 'dark');
+        window.localStorage.setItem('mw-theme', nextTheme);
+      }, theme);
+      const accessibility = await new AxeBuilder({ page })
+        .include('main')
+        .exclude('iframe')
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+      expect(
+        accessibility.violations.map(({ id, impact, help, nodes }) => ({
+          id,
+          impact,
+          help,
+          nodes: nodes.map(({ target, failureSummary }) => ({ target, failureSummary })),
+        })),
+        `WhatsApp ${state} WCAG audit failed in ${theme} theme`
+      ).toEqual([]);
+    }
+  };
+
+  await runAccessibilityAudit('inbox');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: path.resolve(
+      import.meta.dirname,
+      '../../../docs/design/ui-catalog/whatsapp-inbox-desktop-1440.png'
+    ),
+    fullPage: true,
+  });
+
+  const actionsTrigger = page
+    .locator('#whatsapp-message-901')
+    .getByRole('button', { name: 'Message actions' });
+  await actionsTrigger.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('menuitem', { name: 'Reply to message' })).toBeVisible();
+  await runAccessibilityAudit('message actions menu');
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: path.resolve(
+      import.meta.dirname,
+      '../../../docs/design/ui-catalog/whatsapp-actions-menu-desktop-1440.png'
+    ),
+    fullPage: true,
+  });
+  await page.keyboard.press('Escape');
+  await expect(actionsTrigger).toBeFocused();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await runAccessibilityAudit('mobile inbox');
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: path.resolve(
+      import.meta.dirname,
+      '../../../docs/design/ui-catalog/whatsapp-inbox-mobile-390.png'
+    ),
+    fullPage: true,
+  });
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const animationDurations = await page.evaluate(() =>
+    Array.from(document.getAnimations())
+      .map((animation) => animation.effect?.getTiming().duration)
+      .filter((duration): duration is number => typeof duration === 'number' && duration > 0)
+  );
+  expect(animationDurations).toEqual([]);
+  await runAccessibilityAudit('reduced motion');
 });

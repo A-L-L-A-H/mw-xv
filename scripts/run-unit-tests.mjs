@@ -137,6 +137,7 @@ const suites = [
     typecheck: true,
     coverage: ['src/index.ts'],
   },
+  { name: 'orm-whatsapp', packageName: '@moonwitness/orm-whatsapp', typecheck: true },
   {
     name: 'orm-workflow',
     packageName: '@moonwitness/orm-workflow',

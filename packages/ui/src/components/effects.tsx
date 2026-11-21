@@ -138,7 +138,7 @@ export function SpeedLines({
 /** Hand-drawn scribble underline, drawn in on mount. */
 export function InkUnderline({
   className,
-  color = 'var(--mw-pink)',
+  color = 'var(--mw-magenta)',
 }: {
   className?: string;
   color?: string;
@@ -171,10 +171,11 @@ export function Doodle({
   className,
   style,
 }: {
-  kind: 'star' | 'bolt' | 'crown' | 'arrow' | 'sparkle';
+  kind: 'star' | 'bolt' | 'crown' | 'arrow' | 'sparkle' | 'smiley';
   className?: string;
   style?: CSSProperties;
 }) {
+  const motion = useAnimationVisibility<SVGSVGElement>();
   const common = {
     fill: 'none',
     stroke: 'currentColor',
@@ -189,8 +190,16 @@ export function Doodle({
         d="M12 2.5l2.6 6.1 6.6.5-5 4.3 1.6 6.5L12 16.4l-5.8 3.5 1.6-6.5-5-4.3 6.6-.5z"
       />
     ),
-    bolt: <path {...common} fill="var(--mw-lime)" d="M13.5 2 5 13.5h6L9.5 22 19 9.5h-6z" />,
-    crown: <path {...common} d="M3 17.5 4.5 7l4.5 4.5L12 5l3 6.5L19.5 7 21 17.5z M3.5 20.5h17" />,
+    bolt: <path {...common} fill="var(--mw-yellow)" d="M13.5 2 5 13.5h6L9.5 22 19 9.5h-6z" />,
+    crown: (
+      <g {...common}>
+        <path d="M4 17.5 3.5 8.5l5.2 4.5L13.5 5l5.1 7.6 5.4-4.2-1 9.1Z" />
+        <path d="M5 20.5c5.5-.8 12.5-.6 18 0" />
+        <circle cx="3.5" cy="6.5" r="1.1" fill="currentColor" stroke="none" />
+        <circle cx="13.5" cy="3.3" r="1.2" fill="currentColor" stroke="none" />
+        <circle cx="24" cy="6.3" r="1.1" fill="currentColor" stroke="none" />
+      </g>
+    ),
     arrow: <path {...common} d="M3 18c4-1 8-5 10-11m0 0-4 2m4-2 1.5 4.5" />,
     sparkle: (
       <path
@@ -198,10 +207,182 @@ export function Doodle({
         d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"
       />
     ),
+    smiley: (
+      <g>
+        <circle
+          cx="12"
+          cy="12"
+          r="9.2"
+          fill="var(--mw-yellow)"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <circle cx="9" cy="10" r="1.2" fill="var(--mw-ink-black)" />
+        <circle cx="15" cy="10" r="1.2" fill="var(--mw-ink-black)" />
+        <path
+          d="M8.5 14.2c1.2 2 5.8 2 7 0"
+          fill="none"
+          stroke="var(--mw-ink-black)"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </g>
+    ),
   };
   return (
-    <svg aria-hidden viewBox="0 0 24 24" className={cn('mw-ui-doodle', className)} style={style}>
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      ref={motion.ref}
+      viewBox={kind === 'crown' ? '0 0 28 24' : '0 0 24 24'}
+      className={cn('mw-ui-doodle', motion.visibilityClass, className)}
+      style={style}
+    >
       {shapes[kind]}
+    </svg>
+  );
+}
+
+export type DecorativeMotifKind =
+  'underline' | 'cross-out' | 'orbit' | 'globe-grid' | 'moon-phases' | 'eye-target';
+
+const motifSpecs: Record<DecorativeMotifKind, { viewBox: string; content: ReactNode }> = {
+  underline: {
+    viewBox: '0 0 200 16',
+    content: (
+      <path
+        d="M2 10C40 4 80 14 120 7s60-2 78 2M10 13c50-4 110 2 180-2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+      />
+    ),
+  },
+  'cross-out': {
+    viewBox: '0 0 120 24',
+    content: (
+      <path
+        d="M4 15c34-6 78-7 112-3M8 9c38 4 72 6 106 3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.8"
+        strokeLinecap="round"
+      />
+    ),
+  },
+  orbit: {
+    viewBox: '0 0 120 120',
+    content: (
+      <>
+        <circle
+          cx="60"
+          cy="60"
+          r="48"
+          fill="none"
+          stroke="currentColor"
+          strokeOpacity="0.35"
+          strokeWidth="1.6"
+          strokeDasharray="6 4"
+        />
+        <ellipse
+          cx="60"
+          cy="60"
+          rx="52"
+          ry="20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          transform="rotate(-24 60 60)"
+        />
+        <circle
+          cx="101"
+          cy="40"
+          r="4.5"
+          fill="var(--mw-signal-blue)"
+          stroke="var(--mw-ink-black)"
+          strokeWidth="1.5"
+        />
+      </>
+    ),
+  },
+  'globe-grid': {
+    viewBox: '0 0 96 96',
+    content: (
+      <>
+        <circle cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="2" />
+        <ellipse
+          cx="48"
+          cy="48"
+          rx="19"
+          ry="40"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <path d="M10 34h76M10 62h76M48 8v80" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      </>
+    ),
+  },
+  'moon-phases': {
+    viewBox: '0 0 160 32',
+    content: (
+      <>
+        <circle cx="20" cy="16" r="10" fill="currentColor" />
+        <path d="M52 6a10 10 0 1 0 0 20 7.5 10 0 0 1 0-20Z" fill="currentColor" />
+        <path d="M84 6a10 10 0 1 0 0 20V6Z" fill="currentColor" />
+        <circle cx="84" cy="16" r="10" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <circle cx="116" cy="16" r="10" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M116 6a10 10 0 0 1 0 20 6 10 0 0 0 0-20Z" fill="currentColor" />
+        <circle cx="146" cy="16" r="10" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      </>
+    ),
+  },
+  'eye-target': {
+    viewBox: '0 0 64 40',
+    content: (
+      <>
+        <path
+          d="M4 20c8-11 18-15 28-15s20 4 28 15c-8 11-18 15-28 15S12 31 4 20Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+        <circle cx="32" cy="20" r="8" fill="none" stroke="currentColor" strokeWidth="2" />
+        <circle cx="32" cy="20" r="3" fill="currentColor" />
+        <path
+          d="M32 3v5M32 32v5M1 20h6M57 20h6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+      </>
+    ),
+  },
+};
+
+/** Non-interactive canonical decorative motif; never steals focus or pointer events. */
+export function DecorativeMotif({
+  kind,
+  className,
+  style,
+}: {
+  kind: DecorativeMotifKind;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const spec = motifSpecs[kind];
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      viewBox={spec.viewBox}
+      className={cn('mw-ui-decorative-motif', className)}
+      style={style}
+    >
+      {spec.content}
     </svg>
   );
 }
@@ -240,5 +421,31 @@ export function SpeechBubble({ children, className }: { children: ReactNode; cla
     <div ref={motion.ref} className={cn('mw-ui-speech-bubble', motion.visibilityClass, className)}>
       {children}
     </div>
+  );
+}
+
+/** Real-state live status indicator; pulses only while active, visible, and motion-enabled. */
+export function LiveIndicator({
+  label = 'LIVE',
+  active = false,
+  variant = 'live',
+  className,
+}: {
+  label?: string;
+  active?: boolean;
+  variant?: 'live' | 'on-air';
+  className?: string;
+}) {
+  const motion = useAnimationVisibility<HTMLSpanElement>();
+  return (
+    <span
+      ref={motion.ref}
+      className={cn('mw-ui-live-indicator', motion.visibilityClass, className)}
+      data-active={active ? 'true' : 'false'}
+      data-variant={variant}
+    >
+      <span aria-hidden="true" className="mw-ui-live-indicator-dot" />
+      <span>{label}</span>
+    </span>
   );
 }

@@ -10,16 +10,15 @@ import { SelectField } from '@moonwitness/ui/components/select-field';
 import { Input } from '@moonwitness/ui/components/input';
 import { useState, useRef, useMemo, useCallback } from 'react';
 import {
-  Upload,
-  FileSpreadsheet,
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Check,
-  RotateCcw,
-} from 'lucide-react';
+  UploadIcon,
+  FileSpreadsheetIcon,
+  ArrowRightIcon,
+  ArrowLeftIcon,
+  CheckCircleIcon,
+  WarningIcon,
+  CheckIcon,
+  RefreshIcon,
+} from '@moonwitness/ui/icons';
 import type { ResolvedViews } from '@moonwitness/client';
 import { client } from '@/lib/client';
 import { Button } from '@moonwitness/ui/components/button';
@@ -30,7 +29,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@moonwitness/ui/components/dialog';
-import { Doodle } from '@moonwitness/ui/components/effects';
+import { Doodle, LoadingSpinner } from '@moonwitness/ui/components/effects';
 import { cn } from '@/lib/utils';
 
 interface ImportWizardDialogProps {
@@ -269,12 +268,12 @@ export function ImportWizardDialog({
         <DialogHeader className="border-b-2 border-ink pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileSpreadsheet className="size-6 text-lime" />
+              <FileSpreadsheetIcon className="size-6 text-yellow-readable" />
               <DialogTitle className="font-display text-2xl uppercase tracking-wider text-ink">
                 Import CSV: {views.title}
               </DialogTitle>
             </div>
-            <Doodle kind="sparkle" className="size-5 text-pink" />
+            <Doodle kind="sparkle" className="size-5 text-magenta-readable" />
           </div>
           <DialogDescription className="font-mono text-xs text-ink-faint">
             Batch import records from standard CSV into{' '}
@@ -287,35 +286,41 @@ export function ImportWizardDialog({
           <div
             className={cn(
               'px-2 py-1 flex items-center gap-1.5 font-bold uppercase',
-              step === 'upload' ? 'bg-lime text-on-accent border border-ink' : 'text-ink-faint'
+              step === 'upload'
+                ? 'bg-primary text-primary-foreground border border-ink'
+                : 'text-ink-faint'
             )}
           >
             <span>1. Upload</span>
           </div>
-          <ArrowRight className="size-3 text-ink-faint" />
+          <ArrowRightIcon className="size-3 text-ink-faint" />
           <div
             className={cn(
               'px-2 py-1 flex items-center gap-1.5 font-bold uppercase',
-              step === 'mapping' ? 'bg-lime text-on-accent border border-ink' : 'text-ink-faint'
+              step === 'mapping'
+                ? 'bg-primary text-primary-foreground border border-ink'
+                : 'text-ink-faint'
             )}
           >
             <span>2. Map Columns</span>
           </div>
-          <ArrowRight className="size-3 text-ink-faint" />
+          <ArrowRightIcon className="size-3 text-ink-faint" />
           <div
             className={cn(
               'px-2 py-1 flex items-center gap-1.5 font-bold uppercase',
-              step === 'preview' ? 'bg-lime text-on-accent border border-ink' : 'text-ink-faint'
+              step === 'preview'
+                ? 'bg-primary text-primary-foreground border border-ink'
+                : 'text-ink-faint'
             )}
           >
             <span>3. Preview</span>
           </div>
-          <ArrowRight className="size-3 text-ink-faint" />
+          <ArrowRightIcon className="size-3 text-ink-faint" />
           <div
             className={cn(
               'px-2 py-1 flex items-center gap-1.5 font-bold uppercase',
               step === 'importing' || step === 'completed'
-                ? 'bg-lime text-on-accent border border-ink'
+                ? 'bg-primary text-primary-foreground border border-ink'
                 : 'text-ink-faint'
             )}
           >
@@ -342,11 +347,11 @@ export function ImportWizardDialog({
               className={cn(
                 'flex flex-col items-center justify-center border-4 border-dashed p-10 cursor-pointer transition-all',
                 isDragging
-                  ? 'border-pink bg-pink/10 shadow-ink'
+                  ? 'border-magenta bg-magenta/10 shadow-ink'
                   : 'border-ink/40 bg-card hover:border-ink hover:bg-paper-raised'
               )}
             >
-              <Upload className="size-10 text-ink-soft mb-3" />
+              <UploadIcon className="size-10 text-ink-soft mb-3" />
               <p className="font-display text-base uppercase tracking-wider text-ink text-center">
                 Click or drag & drop CSV file here
               </p>
@@ -376,8 +381,8 @@ export function ImportWizardDialog({
                 found)
               </span>
               {missingRequired.length > 0 && (
-                <span className="inline-flex items-center gap-1 border border-pink bg-pink/10 text-pink px-2 py-0.5 font-bold">
-                  <AlertCircle className="size-3.5" /> Missing:{' '}
+                <span className="inline-flex items-center gap-1 border border-destructive bg-destructive/10 text-destructive px-2 py-0.5 font-bold">
+                  <WarningIcon className="size-3.5" /> Missing:{' '}
                   {missingRequired.map((f) => f.label).join(', ')}
                 </span>
               )}
@@ -426,7 +431,7 @@ export function ImportWizardDialog({
 
             <div className="flex items-center justify-between pt-2">
               <Button variant="outline" size="sm" onClick={handleReset} className="gap-1">
-                <RotateCcw className="size-3.5" /> Re-upload
+                <RefreshIcon className="size-3.5" /> Re-upload
               </Button>
               <Button
                 size="sm"
@@ -435,7 +440,7 @@ export function ImportWizardDialog({
                 className="gap-1.5"
               >
                 <span>Preview Data</span>
-                <ArrowRight className="size-3.5" />
+                <ArrowRightIcon className="size-3.5" />
               </Button>
             </div>
           </div>
@@ -449,13 +454,13 @@ export function ImportWizardDialog({
                 Ready to import <strong className="text-ink">{parsed.rows.length} records</strong>.
               </span>
               {missingRequired.length > 0 ? (
-                <span className="text-pink font-bold flex items-center gap-1">
-                  <AlertCircle className="size-3.5" /> Warning:{' '}
+                <span className="text-destructive font-bold flex items-center gap-1">
+                  <WarningIcon className="size-3.5" /> Warning:{' '}
                   {missingRequired.map((f) => f.label).join(', ')} required!
                 </span>
               ) : (
-                <span className="text-lime-deep font-bold flex items-center gap-1">
-                  <Check className="size-3.5" /> All required fields mapped
+                <span className="text-yellow-readable font-bold flex items-center gap-1">
+                  <CheckIcon className="size-3.5" /> All required fields mapped
                 </span>
               )}
             </div>
@@ -508,7 +513,7 @@ export function ImportWizardDialog({
                 onClick={() => setStep('mapping')}
                 className="gap-1"
               >
-                <ArrowLeft className="size-3.5" /> Back to Mapping
+                <ArrowLeftIcon className="size-3.5" /> Back to Mapping
               </Button>
               <Button
                 size="sm"
@@ -516,7 +521,7 @@ export function ImportWizardDialog({
                 disabled={missingRequired.length > 0}
                 className="gap-1.5"
               >
-                <Upload className="size-3.5" />
+                <UploadIcon className="size-3.5" />
                 <span>Start Import ({parsed.rows.length} rows)</span>
               </Button>
             </div>
@@ -526,7 +531,7 @@ export function ImportWizardDialog({
         {/* STEP 4: IMPORTING IN PROGRESS */}
         {step === 'importing' && (
           <div className="space-y-6 py-6 text-center">
-            <Loader2 className="mx-auto size-10 animate-spin text-ink" />
+            <LoadingSpinner className="mx-auto size-10 text-ink" />
             <div className="space-y-2">
               <h3 className="font-display text-xl uppercase tracking-wider text-ink">
                 Importing Records...
@@ -539,7 +544,7 @@ export function ImportWizardDialog({
             {/* Neo-brutalist Progress Bar */}
             <div className="mx-auto max-w-md border-2 border-ink bg-card p-1 shadow-ink-sm">
               <div
-                className="h-5 bg-lime border border-ink transition-all duration-200"
+                className="h-5 bg-primary border border-ink transition-all duration-200"
                 style={{ width: `${importProgress}%` }}
               />
             </div>
@@ -551,24 +556,24 @@ export function ImportWizardDialog({
         {step === 'completed' && (
           <div className="space-y-4 py-4">
             <div className="border-2 border-ink bg-card p-5 text-center space-y-3 shadow-ink-sm">
-              <CheckCircle2 className="mx-auto size-10 text-lime" />
+              <CheckCircleIcon className="mx-auto size-10 text-yellow-readable" />
               <h3 className="font-display text-xl uppercase tracking-wider text-ink">
                 Import Finished!
               </h3>
               <div className="flex justify-center gap-6 font-mono text-sm pt-2">
-                <div className="border border-ink bg-lime/20 px-3 py-1.5">
+                <div className="border border-ink bg-primary/20 px-3 py-1.5">
                   <span className="block text-[10px] uppercase text-ink-faint">Success</span>
                   <strong className="text-base text-ink">{importResult.succeeded}</strong>
                 </div>
-                <div className="border border-ink bg-pink/20 px-3 py-1.5">
+                <div className="border border-ink bg-destructive/20 px-3 py-1.5">
                   <span className="block text-[10px] uppercase text-ink-faint">Failed</span>
-                  <strong className="text-base text-pink">{importResult.failed}</strong>
+                  <strong className="text-base text-destructive">{importResult.failed}</strong>
                 </div>
               </div>
             </div>
 
             {importResult.errors.length > 0 && (
-              <div className="max-h-36 overflow-y-auto border-2 border-ink bg-card p-3 font-mono text-xs text-pink space-y-1">
+              <div className="max-h-36 overflow-y-auto border-2 border-ink bg-card p-3 font-mono text-xs text-destructive space-y-1">
                 <p className="font-bold uppercase pb-1 border-b border-ink/20">Error Logs:</p>
                 {importResult.errors.map((err, i) => (
                   <p key={i}>{err}</p>

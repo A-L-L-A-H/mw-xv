@@ -245,28 +245,26 @@ function run(command, args, options = {}) {
 }
 
 function invokeFixture(mode, databaseUrl) {
-  return JSON.parse(
-    run(
-      'pnpm',
-      [
-        '--filter',
-        '@moonwitness/api',
-        'exec',
-        'tsx',
-        'src/commands/restore-drill-fixture.ts',
-        mode,
-      ],
-      {
-        env: {
-          ...process.env,
-          JWT_SECRET: fixtureJwtSecret,
-          RESTORE_DRILL_DATABASE_URL: databaseUrl,
-          RESTORE_DRILL_EXPECTATIONS_FILE: expectationsFile,
-          RESTORE_DRILL_PASSWORD: fixturePassword,
-        },
-      }
-    )
+  const rawOutput = run(
+    'pnpm',
+    ['--filter', '@moonwitness/api', 'exec', 'tsx', 'src/commands/restore-drill-fixture.ts', mode],
+    {
+      env: {
+        ...process.env,
+        JWT_SECRET: fixtureJwtSecret,
+        RESTORE_DRILL_DATABASE_URL: databaseUrl,
+        RESTORE_DRILL_EXPECTATIONS_FILE: expectationsFile,
+        RESTORE_DRILL_PASSWORD: fixturePassword,
+      },
+    }
   );
+  const jsonLine =
+    rawOutput
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith('{') && line.endsWith('}'))
+      .at(-1) ?? rawOutput;
+  return JSON.parse(jsonLine);
 }
 
 async function main() {

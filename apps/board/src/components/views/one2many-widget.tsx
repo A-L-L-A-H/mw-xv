@@ -98,7 +98,7 @@ export function One2ManyWidget({ field, parentModel, parentId, isCreate }: One2M
           asChild
           variant="outline"
           size="xs"
-          className="gap-1 font-mono text-xs hover:bg-lime hover:text-on-accent"
+          className="gap-1 font-mono text-xs hover:bg-primary hover:text-primary-foreground"
         >
           <Link href={`/board/m/${targetModel}/new?${createParams.toString()}`}>
             <AddIcon className="size-3.5" /> Add New
@@ -129,7 +129,7 @@ export function One2ManyWidget({ field, parentModel, parentId, isCreate }: One2M
               </TableHead>
               <TableBody className="divide-y-2 divide-ink/10">
                 {recordsData.records.map((row) => (
-                  <TableRow key={row.id} className="transition-colors hover:bg-lime/20">
+                  <TableRow key={row.id} className="transition-colors hover:bg-primary/20">
                     {columns.map((col) => (
                       <TableCell key={col.name} className="px-3 py-2 text-ink">
                         <FieldCell field={col} row={row} />
@@ -151,7 +151,7 @@ export function One2ManyWidget({ field, parentModel, parentId, isCreate }: One2M
                         <Button
                           variant="ghost"
                           size="xs"
-                          className="h-6 px-1.5 text-pink hover:bg-pink hover:text-on-pink"
+                          className="h-6 px-1.5 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                           onClick={() => handleDelete(row.id as number)}
                           disabled={deletingId === row.id}
                           title="Archive item"

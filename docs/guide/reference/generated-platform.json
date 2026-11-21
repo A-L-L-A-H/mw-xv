@@ -16,10 +16,14 @@
       "scripts": [
         "attachments:reconcile",
         "build",
+        "db:migrate",
+        "db:migrate:built",
         "dev",
         "jobs:outbox",
         "jobs:scheduler",
+        "jobs:scheduler:built",
         "jobs:worker",
+        "jobs:worker:built",
         "reset:superadmin-password",
         "revoke:auth-sessions",
         "start",
@@ -149,6 +153,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-whatsapp",
+      "version": "1.14.0",
+      "directory": "packages/orm-whatsapp",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-workflow",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-workflow",
@@ -177,10 +187,14 @@
     "@moonwitness/api": {
       "attachments:reconcile": "tsx src/commands/attachments-reconcile.ts",
       "build": "tsc",
+      "db:migrate": "tsx src/commands/db-migrate.ts",
+      "db:migrate:built": "node dist/commands/db-migrate.js",
       "dev": "tsx watch src/server.ts",
       "jobs:outbox": "tsx src/commands/outbox-worker.ts",
       "jobs:scheduler": "tsx src/commands/jobs-scheduler.ts",
+      "jobs:scheduler:built": "node dist/commands/jobs-scheduler.js",
       "jobs:worker": "tsx src/commands/jobs-worker.ts",
+      "jobs:worker:built": "node dist/commands/jobs-worker.js",
       "reset:superadmin-password": "tsx src/commands/reset-superadmin-password.ts",
       "revoke:auth-sessions": "tsx src/commands/revoke-auth-sessions.ts",
       "start": "node dist/server.js",
@@ -280,6 +294,10 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-whatsapp": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
+    },
     "@moonwitness/orm-workflow": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
@@ -298,13 +316,15 @@
       "test": "pnpm build && node --test tests/*.test.mjs"
     },
     "root": {
-      "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs --check",
+      "addon:scaffold": "node scripts/evolution/scaffold-exp-addon.mjs",
+      "api:addon:check": "node --test scripts/check-api-addon-boundary.test.mjs && node scripts/check-api-addon-boundary.mjs",
+      "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs --check",
       "architecture:check:built": "node scripts/architecture/generate-diagrams.mjs --check",
-      "architecture:generate": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs",
+      "architecture:generate": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs",
       "assets:check:bounds": "node packages/assets/scripts/check-svg-bounds.mjs",
       "assets:check:docs": "node scripts/export-doc-assets.mjs --check",
       "assets:export:docs": "node scripts/export-doc-assets.mjs",
-      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
+      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
       "assets:generate:illustrations": "node packages/assets/scripts/generate-illustrations.mjs && node scripts/export-doc-assets.mjs",
       "assets:render": "node packages/assets/scripts/render-social.mjs",
       "assets:validate": "node packages/assets/scripts/validate.mjs",
@@ -321,6 +341,7 @@
       "board:visual:update": "pnpm test:e2e --grep 'responsive screen audit|responsive protected screens' --update-snapshots",
       "build": "node scripts/ci/build-workspace.mjs",
       "ci:affected": "node scripts/select-affected.mjs",
+      "db:migrate": "pnpm --filter @moonwitness/api db:migrate",
       "dependency:candidate": "node scripts/dependency-candidate.mjs",
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
       "dev": "pnpm --filter @moonwitness/ui build && node scripts/run-local-services.mjs dev",
@@ -329,14 +350,19 @@
       "docs:build": "pnpm docs:check && node scripts/docs/build-guide.mjs && pnpm --filter @moonwitness/docs portal:build",
       "docs:build:built": "pnpm docs:check:built && node scripts/docs/build-guide.mjs && pnpm --filter @moonwitness/docs portal:build:built",
       "docs:change:classify": "node scripts/classify-docs-change.mjs",
-      "docs:check": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-knowledge build && node --test scripts/docs/generate-reference.test.mjs scripts/docs/update-readme.test.mjs scripts/docs/build-guide.test.mjs && node scripts/docs/generate-reference.mjs --check && node scripts/docs/update-readme.mjs --check && pnpm docs:links && pnpm docs:examples:check:built",
+      "docs:check": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && node --test scripts/docs/generate-reference.test.mjs scripts/docs/update-readme.test.mjs scripts/docs/build-guide.test.mjs && node scripts/docs/generate-reference.mjs --check && node scripts/docs/update-readme.mjs --check && pnpm docs:links && pnpm docs:examples:check:built",
       "docs:check:built": "node --test scripts/docs/generate-reference.test.mjs scripts/docs/update-readme.test.mjs scripts/docs/build-guide.test.mjs && node scripts/docs/generate-reference.mjs --check && node scripts/docs/update-readme.mjs --check && pnpm docs:links && pnpm docs:examples:check:built",
       "docs:examples:check": "pnpm --filter @moonwitness/orm build && pnpm exec tsc --noEmit -p packages/orm/examples/tsconfig.json && pnpm --filter @moonwitness/orm exec vitest run tests/addon.test.ts",
       "docs:examples:check:built": "pnpm exec tsc --noEmit -p packages/orm/examples/tsconfig.json && pnpm --filter @moonwitness/orm exec vitest run tests/addon.test.ts",
-      "docs:generate": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-knowledge build && node scripts/docs/generate-reference.mjs && node scripts/docs/update-readme.mjs",
+      "docs:generate": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && node scripts/docs/generate-reference.mjs && node scripts/docs/update-readme.mjs",
       "docs:links": "node scripts/check-docs.mjs && node scripts/check-doc-navigation.mjs && node --test scripts/check-docs.test.mjs scripts/check-doc-navigation.test.mjs scripts/check-external-doc-links.test.mjs",
       "docs:links:external": "node scripts/check-external-doc-links.mjs",
       "docs:publication:check": "node scripts/check-docs-publication.mjs apps/docs/dist",
+      "evolution:check": "node scripts/evolution/check-constitution.mjs && node scripts/evolution/check-ratchet.mjs",
+      "evolution:fitness": "node scripts/evolution/fitness-score.mjs",
+      "evolution:postmortem": "node scripts/evolution/record-postmortem.mjs",
+      "evolution:prune": "node scripts/evolution/prune-expired-experiments.mjs",
+      "evolution:signals": "node scripts/evolution/collect-signals.mjs",
       "format": "prettier --write .",
       "format:check": "prettier --check .",
       "hooks:install": "node scripts/setup-git-hooks.mjs",
@@ -345,6 +371,9 @@
       "jobs:worker": "pnpm --filter @moonwitness/api jobs:worker",
       "lint": "eslint .",
       "lint:fix": "eslint . --fix",
+      "local-ai:eval": "node scripts/local-ai/eval.mjs",
+      "local-ai:register-model": "node scripts/local-ai/register-model.mjs",
+      "local-ai:tournament": "node scripts/local-ai/tournament.mjs",
       "platform:audit": "node scripts/platform-audit.mjs",
       "promotion:approval-check": "node scripts/check-promotion-approval.mjs",
       "promotion:risk": "node scripts/check-promotion-risk.mjs",
@@ -420,10 +449,10 @@
       "test:ui-catalog": "pnpm --filter @moonwitness/ui-catalog build && pnpm --filter @moonwitness/ui-catalog test",
       "test:unit": "pnpm build && pnpm test:unit:built",
       "test:unit-runner-policy": "node --test scripts/unit-runner-policy.test.mjs",
-      "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
+      "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-whatsapp test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
       "test:unit:ci": "node scripts/run-unit-tests.mjs",
       "test:versioned-docs": "node --test scripts/docs/versioned-site.test.mjs",
-      "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
+      "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
       "test:workflow-trust": "node --test scripts/check-workflow-checkout-trust.test.mjs",
       "test:workspace-version-policy": "node --test scripts/workspace-version-policy.test.mjs",
       "typecheck": "pnpm build && pnpm --filter @moonwitness/board typecheck",
@@ -554,6 +583,12 @@
       "valueType": "integer"
     },
     {
+      "name": "ENABLE_API_DOCS",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
       "name": "HOST",
       "configuredInExample": false,
       "secret": false,
@@ -585,6 +620,18 @@
     },
     {
       "name": "LOCAL_AI_ENDPOINT",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "LOCAL_AI_MODEL",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "LOCAL_AI_PROVIDER",
       "configuredInExample": true,
       "secret": false,
       "valueType": "string"
@@ -674,6 +721,12 @@
       "valueType": "boolean"
     },
     {
+      "name": "RATE_LIMIT_STORE",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
       "name": "REFRESH_TOKEN_TTL_SECONDS",
       "configuredInExample": true,
       "secret": true,
@@ -686,6 +739,12 @@
       "valueType": "string"
     },
     {
+      "name": "SKIP_BOOT_MIGRATIONS",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "boolean"
+    },
+    {
       "name": "SUPERADMIN_PASSWORD",
       "configuredInExample": true,
       "secret": true,
@@ -693,7 +752,7 @@
     },
     {
       "name": "WHATSAPP_CLAMAV_URL",
-      "configuredInExample": true,
+      "configuredInExample": false,
       "secret": false,
       "valueType": "string"
     },
@@ -729,6 +788,12 @@
     },
     {
       "name": "WHATSAPP_GATEWAY_USERNAME",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "WHATSAPP_MEDIA_SCAN",
       "configuredInExample": true,
       "secret": false,
       "valueType": "string"
@@ -2314,6 +2379,96 @@
             }
           ],
           "uniqueConstraints": []
+        },
+        {
+          "name": "ir.feature_flag",
+          "table": "ir_feature_flags",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "description",
+              "kind": "text",
+              "column": "description",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "enabled",
+              "kind": "boolean",
+              "column": "enabled",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "expires_at",
+              "kind": "string",
+              "column": "expires_at",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "key",
+              "kind": "string",
+              "column": "key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": true,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "proposal_id",
+              "kind": "string",
+              "column": "proposal_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "rollout_pct",
+              "kind": "integer",
+              "column": "rollout_pct",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            }
+          ],
+          "uniqueConstraints": []
         }
       ],
       "menus": [
@@ -2470,6 +2625,13 @@
           "group": "Organization",
           "sequence": 30,
           "developmentOnly": false
+        },
+        {
+          "model": "ir.feature_flag",
+          "label": "ir.feature_flag",
+          "group": "Technical",
+          "sequence": 470,
+          "developmentOnly": true
         }
       ],
       "views": [
@@ -2494,7 +2656,8 @@
         "base.sequence",
         "base.tag",
         "base.tag_link",
-        "base.user"
+        "base.user",
+        "ir.feature_flag"
       ],
       "seeds": {
         "base.country": 249,
@@ -2517,7 +2680,8 @@
         "base.sequence": 2,
         "base.group_membership": 1,
         "base.company_membership": 2,
-        "base.model_access": 1
+        "base.model_access": 1,
+        "ir.feature_flag": 1
       },
       "accessRules": [
         {
@@ -3169,6 +3333,298 @@
       "depends": ["base"],
       "models": [
         {
+          "name": "knowledge.bug_case",
+          "table": "knowledge_bug_cases",
+          "fields": [
+            {
+              "name": "case_id",
+              "kind": "string",
+              "column": "case_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "case_state",
+              "kind": "enum",
+              "column": "case_state",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": [
+                "action_recorded",
+                "intake",
+                "planned",
+                "reopened",
+                "triaged",
+                "verified_resolved"
+              ]
+            },
+            {
+              "name": "classification",
+              "kind": "enum",
+              "column": "classification",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["CHILD_SENSITIVE", "CONFIDENTIAL", "INTERNAL", "RESTRICTED"]
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "created_by",
+              "kind": "belongsTo",
+              "column": "created_by_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "human_approval_status",
+              "kind": "enum",
+              "column": "human_approval_status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["human_approved", "human_rejected", "unreviewed"]
+            },
+            {
+              "name": "program_id",
+              "kind": "string",
+              "column": "program_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "publication_status",
+              "kind": "enum",
+              "column": "publication_status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["editorial_candidate", "public_approved", "unpublished"]
+            },
+            {
+              "name": "resolved_status",
+              "kind": "enum",
+              "column": "resolved_status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["reopened", "unresolved", "verified_resolved"]
+            },
+            {
+              "name": "revision",
+              "kind": "integer",
+              "column": "revision",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "synthetic",
+              "kind": "boolean",
+              "column": "synthetic",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "title",
+              "kind": "string",
+              "column": "title",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "workflow_instance_id",
+              "kind": "integer",
+              "column": "workflow_instance_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["case_id", "company"]]
+        },
+        {
+          "name": "knowledge.bug_case_event",
+          "table": "knowledge_bug_case_events",
+          "fields": [
+            {
+              "name": "actor",
+              "kind": "belongsTo",
+              "column": "actor_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "bug_case",
+              "kind": "belongsTo",
+              "column": "bug_case_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "knowledge.bug_case"
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "event_digest",
+              "kind": "string",
+              "column": "event_digest",
+              "declaredRequired": true,
+              "required": true,
+              "unique": true,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "event_kind",
+              "kind": "enum",
+              "column": "event_kind",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["action", "intake", "plan", "reopen", "triage", "verification"]
+            },
+            {
+              "name": "from_state",
+              "kind": "string",
+              "column": "from_state",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "idempotency_key",
+              "kind": "string",
+              "column": "idempotency_key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "recorded_at",
+              "kind": "string",
+              "column": "recorded_at",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "to_state",
+              "kind": "string",
+              "column": "to_state",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "workflow_event_sequence",
+              "kind": "integer",
+              "column": "workflow_event_sequence",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "workflow_instance_id",
+              "kind": "integer",
+              "column": "workflow_instance_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [
+            ["bug_case", "company", "idempotency_key"],
+            ["bug_case", "workflow_event_sequence"]
+          ]
+        },
+        {
           "name": "knowledge.concept_profile_version",
           "table": "knowledge_concept_profile_versions",
           "fields": [
@@ -3440,6 +3896,220 @@
             }
           ],
           "uniqueConstraints": [["company", "idempotency_key"]]
+        },
+        {
+          "name": "knowledge.publication_snapshot",
+          "table": "knowledge_publication_snapshots",
+          "fields": [
+            {
+              "name": "classification",
+              "kind": "enum",
+              "column": "classification",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": [
+                "CHILD_SENSITIVE",
+                "CONFIDENTIAL",
+                "INTERNAL",
+                "PUBLIC_APPROVED",
+                "RESTRICTED"
+              ]
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "idempotency_key",
+              "kind": "string",
+              "column": "idempotency_key",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "minor_involved",
+              "kind": "boolean",
+              "column": "minor_involved",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "projection_digest",
+              "kind": "string",
+              "column": "projection_digest",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "projection_json",
+              "kind": "text",
+              "column": "projection_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "publication_id",
+              "kind": "string",
+              "column": "publication_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "recorded_at",
+              "kind": "string",
+              "column": "recorded_at",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "requester",
+              "kind": "belongsTo",
+              "column": "requester_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "review_status",
+              "kind": "enum",
+              "column": "review_status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["approved", "draft", "rejected", "superseded", "taken_down"]
+            },
+            {
+              "name": "reviewer",
+              "kind": "belongsTo",
+              "column": "reviewer_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "revision",
+              "kind": "integer",
+              "column": "revision",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "rights_state",
+              "kind": "enum",
+              "column": "rights_state",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": [
+                "internal_use",
+                "metadata_only",
+                "permitted",
+                "restricted",
+                "unknown",
+                "withdrawn"
+              ]
+            },
+            {
+              "name": "subject_id",
+              "kind": "string",
+              "column": "subject_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "supersedes_digest",
+              "kind": "string",
+              "column": "supersedes_digest",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "synthetic",
+              "kind": "boolean",
+              "column": "synthetic",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "takedown_reason_code",
+              "kind": "string",
+              "column": "takedown_reason_code",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "title",
+              "kind": "string",
+              "column": "title",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [
+            ["company", "idempotency_key", "publication_id"],
+            ["publication_id", "revision"]
+          ]
         },
         {
           "name": "knowledge.research_active_release",
@@ -4547,9 +5217,25 @@
         "knowledge.witness_testimony": 2,
         "knowledge.witness_correction": 2,
         "knowledge.witness_interpretation": 2,
-        "base.model_access": 15
+        "base.model_access": 18
       },
       "accessRules": [
+        {
+          "group": "base.group_user",
+          "model": "knowledge.bug_case",
+          "read": false,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "knowledge.bug_case_event",
+          "read": false,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
         {
           "group": "base.group_user",
           "model": "knowledge.concept_profile_version",
@@ -4569,6 +5255,14 @@
         {
           "group": "base.group_user",
           "model": "knowledge.privacy_revocation",
+          "read": false,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "knowledge.publication_snapshot",
           "read": false,
           "create": false,
           "write": false,
@@ -5574,6 +6268,1576 @@
       "accessRules": []
     },
     {
+      "name": "orm-whatsapp",
+      "version": "1.14.0",
+      "depends": ["base"],
+      "models": [
+        {
+          "name": "whatsapp.account",
+          "table": "whatsapp_accounts",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "gateway_device_id",
+              "kind": "string",
+              "column": "gateway_device_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "last_error",
+              "kind": "string",
+              "column": "last_error",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "phone_number",
+              "kind": "string",
+              "column": "phone_number",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "qr_code",
+              "kind": "text",
+              "column": "qr_code",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": [
+                "connected",
+                "connecting",
+                "disconnected",
+                "error",
+                "qr",
+                "qr_expired",
+                "reconnecting"
+              ]
+            }
+          ],
+          "uniqueConstraints": [["company"]]
+        },
+        {
+          "name": "whatsapp.conversation",
+          "table": "whatsapp_conversations",
+          "fields": [
+            {
+              "name": "account",
+              "kind": "belongsTo",
+              "column": "account_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.account"
+            },
+            {
+              "name": "assigned_team_id",
+              "kind": "integer",
+              "column": "assigned_team_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "assigned_user_id",
+              "kind": "integer",
+              "column": "assigned_user_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "contact_avatar_key",
+              "kind": "string",
+              "column": "contact_avatar_key",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "contact_avatar_picture_id",
+              "kind": "string",
+              "column": "contact_avatar_picture_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "contact_picture_id",
+              "kind": "string",
+              "column": "contact_picture_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "contact_profile_synced_at",
+              "kind": "string",
+              "column": "contact_profile_synced_at",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "contact_status",
+              "kind": "text",
+              "column": "contact_status",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "contact_verified_name",
+              "kind": "string",
+              "column": "contact_verified_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_avatar_key",
+              "kind": "string",
+              "column": "group_avatar_key",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_avatar_picture_id",
+              "kind": "string",
+              "column": "group_avatar_picture_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_is_announce",
+              "kind": "boolean",
+              "column": "group_is_announce",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_is_ephemeral",
+              "kind": "boolean",
+              "column": "group_is_ephemeral",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_is_locked",
+              "kind": "boolean",
+              "column": "group_is_locked",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_metadata_synced_at",
+              "kind": "string",
+              "column": "group_metadata_synced_at",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_participant_count",
+              "kind": "integer",
+              "column": "group_participant_count",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_participants_json",
+              "kind": "text",
+              "column": "group_participants_json",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_topic",
+              "kind": "text",
+              "column": "group_topic",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "history_sync_offset",
+              "kind": "integer",
+              "column": "history_sync_offset",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "is_archived",
+              "kind": "boolean",
+              "column": "is_archived",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "is_group",
+              "kind": "boolean",
+              "column": "is_group",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "is_pinned",
+              "kind": "boolean",
+              "column": "is_pinned",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "jid",
+              "kind": "string",
+              "column": "jid",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "last_message",
+              "kind": "text",
+              "column": "last_message",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "last_message_at",
+              "kind": "string",
+              "column": "last_message_at",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "last_message_sync_at",
+              "kind": "string",
+              "column": "last_message_sync_at",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "unread_count",
+              "kind": "integer",
+              "column": "unread_count",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "work_state",
+              "kind": "enum",
+              "column": "work_state",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["closed", "open"]
+            }
+          ],
+          "uniqueConstraints": [["company", "jid"]]
+        },
+        {
+          "name": "whatsapp.conversation.alias",
+          "table": "whatsapp_conversation_aliases",
+          "fields": [
+            {
+              "name": "alias_jid",
+              "kind": "string",
+              "column": "alias_jid",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "conversation",
+              "kind": "belongsTo",
+              "column": "conversation_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.conversation"
+            }
+          ],
+          "uniqueConstraints": [["alias_jid", "company"]]
+        },
+        {
+          "name": "whatsapp.conversation.label",
+          "table": "whatsapp_conversation_labels",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "conversation",
+              "kind": "belongsTo",
+              "column": "conversation_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.conversation"
+            },
+            {
+              "name": "label",
+              "kind": "belongsTo",
+              "column": "label_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.label"
+            }
+          ],
+          "uniqueConstraints": [["company", "conversation", "label"]]
+        },
+        {
+          "name": "whatsapp.conversation.read",
+          "table": "whatsapp_conversation_reads",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "conversation",
+              "kind": "belongsTo",
+              "column": "conversation_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.conversation"
+            },
+            {
+              "name": "last_read_at",
+              "kind": "string",
+              "column": "last_read_at",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "last_read_message_id",
+              "kind": "integer",
+              "column": "last_read_message_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "user_id",
+              "kind": "integer",
+              "column": "user_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["company", "conversation", "user_id"]]
+        },
+        {
+          "name": "whatsapp.group.creation",
+          "table": "whatsapp_group_creations",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "group_jid",
+              "kind": "string",
+              "column": "group_jid",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "idempotency_key",
+              "kind": "string",
+              "column": "idempotency_key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "request_hash",
+              "kind": "string",
+              "column": "request_hash",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["completed", "failed", "started", "unknown"]
+            }
+          ],
+          "uniqueConstraints": [["company", "idempotency_key"]]
+        },
+        {
+          "name": "whatsapp.group.join",
+          "table": "whatsapp_group_joins",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "group_jid",
+              "kind": "string",
+              "column": "group_jid",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "group_name",
+              "kind": "string",
+              "column": "group_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "idempotency_key",
+              "kind": "string",
+              "column": "idempotency_key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "request_hash",
+              "kind": "string",
+              "column": "request_hash",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["completed", "failed", "started", "unknown"]
+            }
+          ],
+          "uniqueConstraints": [["company", "idempotency_key"]]
+        },
+        {
+          "name": "whatsapp.group.operation",
+          "table": "whatsapp_group_operations",
+          "fields": [
+            {
+              "name": "action",
+              "kind": "enum",
+              "column": "action",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["add", "demote", "leave", "promote", "remove"]
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "conversation",
+              "kind": "belongsTo",
+              "column": "conversation_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.conversation"
+            },
+            {
+              "name": "idempotency_key",
+              "kind": "string",
+              "column": "idempotency_key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "participants_json",
+              "kind": "text",
+              "column": "participants_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "request_hash",
+              "kind": "string",
+              "column": "request_hash",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "result_json",
+              "kind": "text",
+              "column": "result_json",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["completed", "failed", "started", "unknown"]
+            }
+          ],
+          "uniqueConstraints": [["company", "idempotency_key"]]
+        },
+        {
+          "name": "whatsapp.internal_note",
+          "table": "whatsapp_internal_notes",
+          "fields": [
+            {
+              "name": "body",
+              "kind": "text",
+              "column": "body",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "conversation",
+              "kind": "belongsTo",
+              "column": "conversation_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.conversation"
+            },
+            {
+              "name": "user_id",
+              "kind": "integer",
+              "column": "user_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": []
+        },
+        {
+          "name": "whatsapp.label",
+          "table": "whatsapp_labels",
+          "fields": [
+            {
+              "name": "color",
+              "kind": "string",
+              "column": "color",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "normalized_name",
+              "kind": "string",
+              "column": "normalized_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["company", "normalized_name"]]
+        },
+        {
+          "name": "whatsapp.message",
+          "table": "whatsapp_messages",
+          "fields": [
+            {
+              "name": "account",
+              "kind": "belongsTo",
+              "column": "account_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.account"
+            },
+            {
+              "name": "attempt_count",
+              "kind": "integer",
+              "column": "attempt_count",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "content",
+              "kind": "text",
+              "column": "content",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "conversation",
+              "kind": "belongsTo",
+              "column": "conversation_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.conversation"
+            },
+            {
+              "name": "direction",
+              "kind": "enum",
+              "column": "direction",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["inbound", "outbound"]
+            },
+            {
+              "name": "external_id",
+              "kind": "string",
+              "column": "external_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "forward_from_external_id",
+              "kind": "string",
+              "column": "forward_from_external_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "idempotency_key",
+              "kind": "string",
+              "column": "idempotency_key",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "is_deleted",
+              "kind": "boolean",
+              "column": "is_deleted",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "is_edited",
+              "kind": "boolean",
+              "column": "is_edited",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "is_forwarded",
+              "kind": "boolean",
+              "column": "is_forwarded",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "last_error",
+              "kind": "string",
+              "column": "last_error",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "media_file_name",
+              "kind": "string",
+              "column": "media_file_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "media_key",
+              "kind": "string",
+              "column": "media_key",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "media_mime_type",
+              "kind": "string",
+              "column": "media_mime_type",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "media_scan_status",
+              "kind": "enum",
+              "column": "media_scan_status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["clean", "infected", "not_applicable", "pending"]
+            },
+            {
+              "name": "media_size_bytes",
+              "kind": "integer",
+              "column": "media_size_bytes",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "media_thumbnail_key",
+              "kind": "string",
+              "column": "media_thumbnail_key",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "message_type",
+              "kind": "enum",
+              "column": "message_type",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["audio", "document", "image", "sticker", "text", "video"]
+            },
+            {
+              "name": "provider_type",
+              "kind": "string",
+              "column": "provider_type",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "reactions",
+              "kind": "text",
+              "column": "reactions",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "reply_to_external_id",
+              "kind": "string",
+              "column": "reply_to_external_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "reply_to_message_id",
+              "kind": "integer",
+              "column": "reply_to_message_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "request_hash",
+              "kind": "string",
+              "column": "request_hash",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "retryable",
+              "kind": "boolean",
+              "column": "retryable",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "sender_display_name",
+              "kind": "string",
+              "column": "sender_display_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "sender_jid",
+              "kind": "string",
+              "column": "sender_jid",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": [
+                "delivered",
+                "failed",
+                "queued",
+                "read",
+                "received",
+                "sending",
+                "sent",
+                "unknown"
+              ]
+            }
+          ],
+          "uniqueConstraints": [
+            ["company", "external_id"],
+            ["company", "idempotency_key"]
+          ]
+        },
+        {
+          "name": "whatsapp.status",
+          "table": "whatsapp_statuses",
+          "fields": [
+            {
+              "name": "account",
+              "kind": "belongsTo",
+              "column": "account_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.account"
+            },
+            {
+              "name": "allow_reshare",
+              "kind": "boolean",
+              "column": "allow_reshare",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "attempt_count",
+              "kind": "integer",
+              "column": "attempt_count",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "content",
+              "kind": "text",
+              "column": "content",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "external_id",
+              "kind": "string",
+              "column": "external_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "idempotency_key",
+              "kind": "string",
+              "column": "idempotency_key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "last_error",
+              "kind": "string",
+              "column": "last_error",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "media_file_name",
+              "kind": "string",
+              "column": "media_file_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "media_key",
+              "kind": "string",
+              "column": "media_key",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "media_mime_type",
+              "kind": "string",
+              "column": "media_mime_type",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "media_size_bytes",
+              "kind": "integer",
+              "column": "media_size_bytes",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "published_at",
+              "kind": "string",
+              "column": "published_at",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "request_hash",
+              "kind": "string",
+              "column": "request_hash",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "retryable",
+              "kind": "boolean",
+              "column": "retryable",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["failed", "queued", "sending", "sent", "unknown"]
+            },
+            {
+              "name": "status_type",
+              "kind": "enum",
+              "column": "status_type",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["image", "text", "video"]
+            }
+          ],
+          "uniqueConstraints": [
+            ["company", "external_id"],
+            ["company", "idempotency_key"]
+          ]
+        },
+        {
+          "name": "whatsapp.upload.ticket",
+          "table": "whatsapp_upload_tickets",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "consumed_message_id",
+              "kind": "integer",
+              "column": "consumed_message_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "content_type",
+              "kind": "string",
+              "column": "content_type",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "conversation",
+              "kind": "belongsTo",
+              "column": "conversation_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "whatsapp.conversation"
+            },
+            {
+              "name": "expires_at",
+              "kind": "string",
+              "column": "expires_at",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "file_name",
+              "kind": "string",
+              "column": "file_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "size_bytes",
+              "kind": "integer",
+              "column": "size_bytes",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "storage_key",
+              "kind": "string",
+              "column": "storage_key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "user_id",
+              "kind": "integer",
+              "column": "user_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["storage_key"]]
+        }
+      ],
+      "menus": [
+        {
+          "model": "whatsapp.account",
+          "label": "account",
+          "group": "Technical",
+          "sequence": 520,
+          "developmentOnly": true
+        },
+        {
+          "model": "whatsapp.conversation",
+          "label": "conversation",
+          "group": "Technical",
+          "sequence": 521,
+          "developmentOnly": true
+        },
+        {
+          "model": "whatsapp.message",
+          "label": "message",
+          "group": "Technical",
+          "sequence": 522,
+          "developmentOnly": true
+        },
+        {
+          "model": "whatsapp.status",
+          "label": "status",
+          "group": "Technical",
+          "sequence": 523,
+          "developmentOnly": true
+        }
+      ],
+      "views": ["whatsapp.account", "whatsapp.conversation", "whatsapp.message", "whatsapp.status"],
+      "seeds": {
+        "base.model_access": 8
+      },
+      "accessRules": [
+        {
+          "group": "base.group_superadmin",
+          "model": "whatsapp.account",
+          "read": true,
+          "create": true,
+          "write": true,
+          "unlink": true
+        },
+        {
+          "group": "base.group_superadmin",
+          "model": "whatsapp.conversation",
+          "read": true,
+          "create": true,
+          "write": true,
+          "unlink": true
+        },
+        {
+          "group": "base.group_superadmin",
+          "model": "whatsapp.message",
+          "read": true,
+          "create": true,
+          "write": true,
+          "unlink": true
+        },
+        {
+          "group": "base.group_superadmin",
+          "model": "whatsapp.status",
+          "read": true,
+          "create": true,
+          "write": true,
+          "unlink": true
+        },
+        {
+          "group": "base.group_user",
+          "model": "whatsapp.account",
+          "read": true,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "whatsapp.conversation",
+          "read": true,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "whatsapp.message",
+          "read": true,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "whatsapp.status",
+          "read": true,
+          "create": false,
+          "write": false,
+          "unlink": false
+        }
+      ]
+    },
+    {
       "name": "request",
       "version": "1.0.0",
       "depends": ["base", "jobs", "notification", "workflow"],
@@ -6245,8 +8509,36 @@
       "path": "/api/models"
     },
     {
+      "method": "GET",
+      "path": "/api/public/publications"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/publications/:publicationId"
+    },
+    {
       "method": "POST",
       "path": "/api/research/actor-identities"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/bug-cases"
+    },
+    {
+      "method": "GET",
+      "path": "/api/research/bug-cases/:caseId"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/bug-cases/:caseId/transitions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/bug-cases/:caseId/verify-outcome"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/child-protection/gate-check"
     },
     {
       "method": "GET",
@@ -6271,6 +8563,18 @@
     {
       "method": "POST",
       "path": "/api/research/privacy/revocations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/research/publications/:publicationId/audit"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/publications/:publicationId/supersede"
+    },
+    {
+      "method": "POST",
+      "path": "/api/research/publications/:publicationId/takedown"
     },
     {
       "method": "GET",
@@ -6581,5 +8885,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "61cc19022761469f65d169d76232a24222be60982c32e0d1b5f9ed90097679bf"
+  "generatedFromSha256": "b39e32d2061a91615847efb6fed20ab5be9e541fc7cb82d28fe4b7519f35753e"
 }

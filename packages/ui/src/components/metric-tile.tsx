@@ -5,7 +5,9 @@ export type MetricTileProps = Omit<ComponentProps<'article'>, 'children' | 'titl
   value: ReactNode;
   detail?: ReactNode;
   icon?: ReactNode;
-  accent?: 'magenta' | 'cyan' | 'yellow' | 'green';
+  accent?: 'magenta' | 'cyan' | 'yellow' | 'green' | 'violet';
+  surface?: 'default' | 'paper' | 'ink';
+  frame?: 'line' | 'torn' | 'scuffed';
 };
 
 /** Presentation only: callers own metric meaning, loading, and error states. */
@@ -15,6 +17,8 @@ export function MetricTile({
   detail,
   icon,
   accent = 'cyan',
+  surface = 'default',
+  frame = 'line',
   className,
   ...props
 }: MetricTileProps) {
@@ -22,6 +26,8 @@ export function MetricTile({
     <article
       className={['mw-ui-metric-tile', className].filter(Boolean).join(' ')}
       data-accent={accent}
+      data-frame={frame}
+      data-surface={surface}
       {...props}
     >
       <div className="mw-ui-metric-tile-heading">

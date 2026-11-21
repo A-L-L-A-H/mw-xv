@@ -14,6 +14,7 @@ import { Activity } from './models/activity.js';
 import { Sequence } from './models/sequence.js';
 import { AccessGroup, GroupMembership, ModelAccess } from './models/access-group.js';
 import { CompanyMembership } from './models/company-membership.js';
+import { IrFeatureFlag } from './models/feature-flag.js';
 import { data } from './data.js';
 import { views } from './views.js';
 
@@ -43,6 +44,7 @@ export const manifest = defineAddon({
     ModelAccess,
     CompanyMembership,
     AuditLog,
+    IrFeatureFlag,
   ],
   data,
   views,
@@ -74,5 +76,6 @@ export const manifest = defineAddon({
     { model: 'base.model_access', group: 'Technical', sequence: 440, developmentOnly: true },
     { model: 'base.company_membership', group: 'Technical', sequence: 450, developmentOnly: true },
     { model: 'base.audit_log', group: 'Technical', sequence: 460, developmentOnly: true },
+    { model: 'ir.feature_flag', group: 'Technical', sequence: 470, developmentOnly: true },
   ],
 });

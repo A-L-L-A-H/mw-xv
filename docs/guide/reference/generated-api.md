@@ -1,6 +1,6 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `61cc19022761469f65d169d76232a24222be60982c32e0d1b5f9ed90097679bf`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `b39e32d2061a91615847efb6fed20ab5be9e541fc7cb82d28fe4b7519f35753e`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                                     |
 | ------ | -------------------------------------------------------- |
@@ -31,13 +31,23 @@ Extracted from literal Fastify route declarations. Source fingerprint: `61cc1902
 | GET    | `/api/corpus/passages/:editionId/:locator`               |
 | GET    | `/api/corpus/sources/:sourceId`                          |
 | GET    | `/api/models`                                            |
+| GET    | `/api/public/publications`                               |
+| GET    | `/api/public/publications/:publicationId`                |
 | POST   | `/api/research/actor-identities`                         |
+| POST   | `/api/research/bug-cases`                                |
+| GET    | `/api/research/bug-cases/:caseId`                        |
+| POST   | `/api/research/bug-cases/:caseId/transitions`            |
+| POST   | `/api/research/bug-cases/:caseId/verify-outcome`         |
+| POST   | `/api/research/child-protection/gate-check`              |
 | GET    | `/api/research/concept-profiles/:profileId`              |
 | GET    | `/api/research/duplicate-candidates`                     |
 | POST   | `/api/research/evidence/resolve`                         |
 | GET    | `/api/research/graph/search`                             |
 | GET    | `/api/research/privacy/projections`                      |
 | POST   | `/api/research/privacy/revocations`                      |
+| GET    | `/api/research/publications/:publicationId/audit`        |
+| POST   | `/api/research/publications/:publicationId/supersede`    |
+| POST   | `/api/research/publications/:publicationId/takedown`     |
 | GET    | `/api/research/relations/:relationId/explanation`        |
 | POST   | `/api/research/retrieval/chunk`                          |
 | POST   | `/api/research/reviews`                                  |

@@ -28,7 +28,7 @@ export function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        'mw-ui-select-trigger flex w-fit items-center justify-between gap-2 rounded-none border-2 border-ink bg-paper-raised px-3 py-2 text-sm whitespace-nowrap shadow-ink-sm transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-pink data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink',
+        'mw-ui-select-trigger flex w-fit items-center justify-between gap-2 rounded-none border-2 border-ink bg-paper-raised px-3 py-2 text-sm whitespace-nowrap shadow-ink-sm transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-[var(--mw-error)] data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink',
         className
       )}
       {...props}
@@ -92,7 +92,7 @@ export function SelectItem({
     <Primitive.Item
       data-slot="select-item"
       className={cn(
-        'mw-ui-select-item relative flex w-full cursor-default items-center gap-2 rounded-none py-1.5 pr-8 pl-2.5 text-sm outline-hidden select-none focus:bg-lime focus:text-on-accent focus:font-bold data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink-soft *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
+        'mw-ui-select-item relative flex w-full cursor-default items-center gap-2 rounded-none py-1.5 pr-8 pl-2.5 text-sm outline-hidden select-none focus:bg-[var(--mw-primary)] focus:text-[var(--mw-primary-foreground)] focus:font-bold data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink-soft *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
         className
       )}
       {...props}

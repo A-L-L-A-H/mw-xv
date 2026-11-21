@@ -1,5 +1,6 @@
 'use client';
 
+import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
@@ -29,7 +30,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   if (!mounted || !user) {
     return (
       <main className="min-h-dvh p-8" aria-busy="true">
-        <div className="mw-skeleton h-12 w-48" />
+        <Skeleton label="Loading workspace" className="h-12 w-48" />
       </main>
     );
   }

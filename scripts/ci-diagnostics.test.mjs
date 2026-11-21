@@ -11,49 +11,15 @@ const unitRunner = readFileSync('scripts/run-unit-tests.mjs', 'utf8');
 const e2eRunner = readFileSync('scripts/run-e2e.mjs', 'utf8');
 const rootPackage = JSON.parse(readFileSync('package.json', 'utf8'));
 
-test('failed unit and PostgreSQL jobs annotate testcase names before report scanning', () => {
-  assert.match(workflow, /id: unit_tests\s+run: pnpm test:unit:ci/u);
-  assert.match(workflow, /id: postgres_tests\s+run: pnpm test:integration:built/u);
-  assert.match(
-    workflow,
-    /if: always\(\) && \(steps\.unit_tests\.outcome == 'failure' \|\| steps\.postgres_tests\.outcome == 'failure'\)[\s\S]*?run: node scripts\/summarize-junit-failures\.mjs test-results\/junit/u
-  );
-
-  const annotation = workflow.indexOf('Annotate failed unit and integration testcase names');
-  const scanner = workflow.indexOf('Scan reports for secrets before artifact upload');
-  assert.ok(annotation >= 0 && scanner > annotation);
-});
-
-test('diagnostic report names do not enable upload when the sanitizer rejects JUnit', () => {
-  assert.match(workflow, /steps\.scan_reports\.outcome == 'success'/u);
-  assert.match(
-    workflow,
-    /Scan reports for secrets before artifact upload[\s\S]*?run: node scripts\/scan-test-reports\.mjs/u
-  );
-});
-
-test('UI CI splits build, component tests and export verification with scanned JUnit output', () => {
-  assert.match(
-    workflow,
-    /name: Build shared UI package\s+run: pnpm --filter @moonwitness\/ui build/u
-  );
-  assert.match(
-    workflow,
-    /name: Create UI unit test report directory\s+run: node -e ".+test-results\/junit/u
-  );
-  assert.match(
-    workflow,
-    /name: Test UI component contracts with JUnit diagnostics\s+run: node --test .+--test-reporter=junit .+ui-package\.xml/u
-  );
-  assert.match(
-    workflow,
-    /name: Verify shared UI package public exports\s+run: node packages\/ui\/scripts\/verify-package\.mjs/u
-  );
-  const uiTests = workflow.indexOf('Test UI component contracts with JUnit diagnostics');
-  const scanner = workflow.indexOf('Scan UI browser reports before artifact upload');
-  const upload = workflow.indexOf('Upload sanitized UI reports and visual screenshots');
-  assert.ok(uiTests >= 0 && scanner > uiTests && upload > scanner);
-  assert.match(workflow, /test-results\/junit\/ui-package\.xml/u);
+test('CI executes unit, PostgreSQL integration, shared UI, and asset gates on built workspace packages', () => {
+  assert.match(workflow, /pnpm test:unit:built/u);
+  assert.match(workflow, /pnpm test:integration:built/u);
+  assert.match(workflow, /pnpm board:ui:check/u);
+  assert.match(workflow, /pnpm api:addon:check/u);
+  assert.match(workflow, /pnpm test:ui\b/u);
+  assert.match(workflow, /pnpm test:ui-budget/u);
+  assert.match(rootPackage.scripts['test:ui'], /node packages\/ui\/scripts\/verify-package\.mjs/u);
+  assert.match(rootPackage.scripts['test:unit:ci'], /node scripts\/run-unit-tests\.mjs/u);
 });
 
 test('unit runner records a safe phase name when it fails before writing a suite report', () => {

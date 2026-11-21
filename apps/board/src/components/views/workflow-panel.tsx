@@ -155,7 +155,7 @@ export function WorkflowPanel({ model, recordId }: { model: string; recordId: nu
     return (
       <section aria-label="Approval workflow" className="ink-panel space-y-3 p-5">
         <h2 className="font-display text-lg">Approval workflow</h2>
-        <p role="alert" className="text-sm text-pink-700">
+        <p role="alert" className="text-sm text-destructive">
           {errorMessage(definitionsQuery.error ?? instancesQuery.error)}
         </p>
       </section>
@@ -198,7 +198,7 @@ export function WorkflowPanel({ model, recordId }: { model: string; recordId: nu
               ))}
             </ol>
           ) : detailQuery.isError ? (
-            <p role="alert" className="text-sm text-pink-700">
+            <p role="alert" className="text-sm text-destructive">
               {errorMessage(detailQuery.error)}
             </p>
           ) : null}
@@ -236,7 +236,7 @@ export function WorkflowPanel({ model, recordId }: { model: string; recordId: nu
         </Button>
       )}
       {actionError && (
-        <p role="alert" className="text-sm font-semibold text-pink-700">
+        <p role="alert" className="text-sm font-semibold text-destructive">
           {actionError}
         </p>
       )}

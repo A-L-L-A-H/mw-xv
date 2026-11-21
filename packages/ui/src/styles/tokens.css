@@ -11,8 +11,6 @@
   --mw-ink: #0d0d0d;
   --mw-ink-soft: #3a3a36;
   --mw-ink-faint: #6b695f;
-  --mw-lime: #ffe031;
-  --mw-pink: #ff2e88;
   --mw-signal-blue: #00b8f0;
   --mw-night: #0d0d0d;
   --mw-night-raised: #17171a;
@@ -24,11 +22,14 @@
   --mw-moon: #b6cad7;
   --mw-yellow: #ffe031;
   --mw-magenta: #ff2e88;
+  --mw-violet: #c084fc;
   --mw-yellow-readable: #705900;
   --mw-magenta-readable: #b20f55;
   --mw-cyan-readable: #00749a;
+  --mw-violet-readable: #6d28d9;
   --mw-on-accent: #0d0d0d;
-  --mw-on-pink: #0d0d0d;
+  --mw-on-magenta: #0d0d0d;
+  --mw-on-violet: #0d0d0d;
   --mw-halftone-dot: rgb(13 13 13 / 13%);
 
   /* Semantic colors */
@@ -38,13 +39,13 @@
   --mw-surface-foreground: var(--mw-ink);
   --mw-popover: var(--mw-paper-raised);
   --mw-popover-foreground: var(--mw-ink);
-  --mw-primary: var(--mw-lime);
+  --mw-primary: var(--mw-yellow);
   --mw-primary-foreground: var(--mw-on-accent);
   --mw-secondary: var(--mw-paper);
   --mw-secondary-foreground: var(--mw-ink);
   --mw-muted: #e7e2d4;
   --mw-muted-foreground: var(--mw-ink-soft);
-  --mw-accent: var(--mw-lime);
+  --mw-accent: var(--mw-yellow);
   --mw-accent-foreground: var(--mw-on-accent);
   --mw-error: #b42318;
   --mw-on-error: #fffdf6;
@@ -124,6 +125,7 @@
   --mw-yellow-readable: var(--mw-yellow);
   --mw-magenta-readable: var(--mw-magenta);
   --mw-cyan-readable: var(--mw-signal-blue);
+  --mw-violet-readable: var(--mw-violet);
   --mw-paper: #0e0e10;
   --mw-paper-raised: #17171a;
   --mw-ink: #f3efe4;

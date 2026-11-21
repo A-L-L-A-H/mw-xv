@@ -1,0 +1,8 @@
+# Evolution Pause Kill-Switch
+
+Create an empty file named `evolution/PAUSE` (without `.example`) to immediately halt all
+autonomous background evolution sidecars (`hourly-ci-monitor-fix`,
+`nightly-tech-debt-refactor`, `weekly-architecture-planner`) and cause
+`node scripts/evolution/check-constitution.mjs --enforce-pause` to exit non-zero.
+
+Remove `evolution/PAUSE` when ready to resume autonomous evolution runs.

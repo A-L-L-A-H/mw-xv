@@ -175,7 +175,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
     <div className="space-y-8 font-sans">
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 border-2 border-ink bg-lime px-4 py-2 font-mono text-xs font-bold text-on-accent shadow-ink-lg animate-in slide-in-from-top-2">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 border-2 border-ink bg-primary px-4 py-2 font-mono text-xs font-bold text-primary-foreground shadow-ink-lg animate-in slide-in-from-top-2">
           <CheckIcon className="size-4" />
           <span>{successToast}</span>
         </div>
@@ -185,11 +185,11 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
       <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-ink pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <ActivityIcon className="size-6 text-lime" />
+            <ActivityIcon className="size-6 text-yellow-readable" />
             <h2 className="font-display text-2xl uppercase tracking-wider text-ink">
               Cron Scheduler & Background Workers
             </h2>
-            <Doodle kind="sparkle" className="size-5 text-pink" />
+            <Doodle kind="sparkle" className="size-5 text-magenta-readable" />
           </div>
           <p className="font-mono text-xs text-ink-faint mt-1">
             Automated task schedules, durable queue dispatching, and worker concurrency controls.
@@ -222,7 +222,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
             <span className="font-display text-lg uppercase tracking-wider text-ink">
               Registered Cron Schedules
             </span>
-            <span className="border border-ink bg-lime px-2 py-0.5 font-mono text-xs font-bold text-on-accent">
+            <span className="border border-ink bg-primary px-2 py-0.5 font-mono text-xs font-bold text-primary-foreground">
               {crons.length} Configured
             </span>
           </div>
@@ -269,7 +269,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
                     </span>
                   </TableCell>
                   <TableCell className="p-3 border-r border-ink/20">
-                    <code className="bg-lime/20 border border-ink/30 px-1.5 py-0.5 font-bold">
+                    <code className="bg-primary/20 border border-ink/30 px-1.5 py-0.5 font-bold">
                       {cron.cron_expression}
                     </code>
                   </TableCell>
@@ -281,7 +281,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
                   </TableCell>
                   <TableCell className="p-3 border-r border-ink/20">
                     {cron.enabled ? (
-                      <span className="border-2 border-ink bg-lime text-on-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-[1px_1px_0_0_var(--ink)]">
+                      <span className="border-2 border-ink bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-[1px_1px_0_0_var(--ink)]">
                         Active
                       </span>
                     ) : (
@@ -300,7 +300,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
                         className="gap-1 shadow-ink-sm"
                         title="Enqueue job immediately"
                       >
-                        <PlayIcon className="size-3 text-lime" />
+                        <PlayIcon className="size-3 text-yellow-readable" />
                         <span>Run Now</span>
                       </Button>
 
@@ -314,11 +314,11 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
                       >
                         {cron.enabled ? (
                           <>
-                            <PauseIcon className="size-3 text-pink" /> Pause
+                            <PauseIcon className="size-3 text-magenta-readable" /> Pause
                           </>
                         ) : (
                           <>
-                            <PlayIcon className="size-3 text-lime" /> Enable
+                            <PlayIcon className="size-3 text-yellow-readable" /> Enable
                           </>
                         )}
                       </Button>
@@ -335,7 +335,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
       <div className="border-4 border-ink bg-paper shadow-ink-lg">
         <div className="flex flex-wrap items-center justify-between border-b-2 border-ink bg-paper-raised p-4 gap-2">
           <div className="flex items-center gap-2">
-            <JobsIcon className="size-5 text-lime" />
+            <JobsIcon className="size-5 text-yellow-readable" />
             <span className="font-display text-lg uppercase tracking-wider text-ink">
               Recent Job Dispatches & Worker Leases
             </span>
@@ -346,7 +346,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
               variant="outline"
               size="xs"
               onClick={onOpenFailureTriage}
-              className="gap-1 text-pink border-pink hover:bg-pink hover:text-on-pink"
+              className="gap-1 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               <WarningIcon className="size-3.5" />
               <span>Dead Job Triage</span>
@@ -391,11 +391,11 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
                       className={cn(
                         'border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
                         job.status === 'succeeded'
-                          ? 'border-lime bg-lime text-on-accent'
+                          ? 'border-primary bg-primary text-primary-foreground'
                           : job.status === 'running'
-                            ? 'border-ink bg-lime text-on-accent animate-pulse'
+                            ? 'border-ink bg-primary text-primary-foreground animate-pulse'
                             : job.status === 'dead'
-                              ? 'border-pink bg-pink text-on-pink'
+                              ? 'border-destructive bg-destructive text-destructive-foreground'
                               : 'border-ink/40 bg-card text-ink-soft'
                       )}
                     >
@@ -423,7 +423,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
         <DialogContent className="max-w-lg border-4 border-ink bg-paper p-6 shadow-ink-lg rounded-none">
           <DialogHeader className="border-b-2 border-ink pb-3">
             <div className="flex items-center gap-2">
-              <CalendarIcon className="size-5 text-lime" />
+              <CalendarIcon className="size-5 text-yellow-readable" />
               <DialogTitle className="font-display text-xl uppercase tracking-wider text-ink">
                 Create New Cron Schedule
               </DialogTitle>
@@ -435,7 +435,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
 
           <form onSubmit={handleCreateCron} className="space-y-4 py-2 font-mono text-xs">
             {createError && (
-              <div className="border border-pink bg-pink/10 p-2 text-pink font-bold">
+              <div className="border border-destructive bg-destructive/10 p-2 text-destructive font-bold">
                 {createError}
               </div>
             )}
@@ -485,7 +485,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
                   placeholder="*/15 * * * *"
                   value={cronExpr}
                   onChange={(e) => setCronExpr(e.target.value)}
-                  className="h-9 border-2 border-ink font-bold text-lime-deep"
+                  className="h-9 border-2 border-ink font-bold text-yellow-readable"
                 />
               </div>
 
@@ -505,7 +505,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
                 id="cron-enabled-check"
                 checked={cronEnabled}
                 onChange={(e) => setCronEnabled(e.target.checked)}
-                className="size-4 accent-lime border-2 border-ink rounded-none"
+                className="size-4 accent-primary border-2 border-ink rounded-none"
               />
               <label htmlFor="cron-enabled-check" className="font-bold text-ink cursor-pointer">
                 Enable immediately upon creation

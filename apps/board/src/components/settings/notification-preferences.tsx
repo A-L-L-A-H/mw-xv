@@ -61,7 +61,7 @@ export function NotificationPreferences() {
           <Skeleton className="h-12" />
         </div>
       ) : query.isError ? (
-        <p role="alert" className="text-sm text-pink">
+        <p role="alert" className="text-sm text-destructive">
           Notification preferences could not be loaded.
         </p>
       ) : (
@@ -92,7 +92,7 @@ export function NotificationPreferences() {
             </label>
           ))}
           {update.isError && (
-            <p role="alert" className="text-sm text-pink">
+            <p role="alert" className="text-sm text-destructive">
               Preference could not be saved. Try again.
             </p>
           )}
