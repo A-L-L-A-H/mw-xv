@@ -418,7 +418,7 @@
       "deliverable": "Licensed metadata/full-text small source outside Quran, separately identified by expression",
       "acceptance": "No identity conflation; metadata-only fallback for rights restriction",
       "verification": "cross-edition compare, copyright negative test",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
