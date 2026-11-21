@@ -9,7 +9,9 @@ import {
   PublicationSnapshot,
   PublicationStoreError,
   readApprovedPublication,
+  readPublicationAuditHistory,
   recordPublicationSnapshot,
+  supersedeOrTakedownPublication,
   type PublicationActorContext,
 } from '../src/index.js';
 
@@ -268,5 +270,114 @@ describe('approved publication projection store (K8-003)', () => {
       model_name: PublicationSnapshot.modelName,
     });
     expect(access).toMatchObject({ read: false, create: false, write: false, unlink: false });
+  });
+
+  it('supports append-only superseding, immediate takedown, idempotent replay, and immutable audit lineage (K8-006)', async () => {
+    const rev1 = await recordPublicationSnapshot({
+      db,
+      actor: reviewerActor,
+      publicationId: 'mw:publication:synth-lifecycle-001',
+      subjectId: 'mw:story:lifecycle-001',
+      title: 'Lifecycle Revision 1',
+      classification: 'PUBLIC_APPROVED',
+      rightsState: 'permitted',
+      minorInvolved: false,
+      reviewStatus: 'approved',
+      synthetic: true,
+      requesterUserId,
+      projection: {
+        summary: 'Revision 1 approved summary.',
+        citations: validCitations,
+      },
+      now: new Date('2026-11-21T05:00:00.000Z'),
+    });
+
+    const rev2 = await supersedeOrTakedownPublication({
+      db,
+      actor: reviewerActor,
+      publicationId: 'mw:publication:synth-lifecycle-001',
+      expectedCurrentRevision: 1,
+      action: 'supersede',
+      reasonCode: 'correction_superseded',
+      idempotencyKey: 'supersede-rev2-001',
+      nextTitle: 'Lifecycle Revision 2',
+      nextProjection: {
+        summary: 'Revision 2 corrected summary.',
+        citations: validCitations,
+      },
+      now: new Date('2026-11-21T05:05:00.000Z'),
+    });
+
+    expect(rev2.revision).toBe(2);
+    expect(rev2.supersedes_digest).toBe(rev1.projection_digest);
+
+    // Idempotent supersede replay returns rev2 without creating rev3
+    const rev2Replay = await supersedeOrTakedownPublication({
+      db,
+      actor: reviewerActor,
+      publicationId: 'mw:publication:synth-lifecycle-001',
+      expectedCurrentRevision: 1,
+      action: 'supersede',
+      reasonCode: 'correction_superseded',
+      idempotencyKey: 'supersede-rev2-001',
+      nextTitle: 'Lifecycle Revision 2',
+      nextProjection: {
+        summary: 'Revision 2 corrected summary.',
+        citations: validCitations,
+      },
+    });
+    expect(rev2Replay.revision).toBe(2);
+
+    // Conflicting supersede with same idempotencyKey fails closed
+    await expect(
+      supersedeOrTakedownPublication({
+        db,
+        actor: reviewerActor,
+        publicationId: 'mw:publication:synth-lifecycle-001',
+        expectedCurrentRevision: 2,
+        action: 'supersede',
+        reasonCode: 'correction_superseded',
+        idempotencyKey: 'supersede-rev2-001',
+        nextTitle: 'Different Title',
+        nextProjection: {
+          summary: 'Revision 2 corrected summary.',
+          citations: validCitations,
+        },
+      })
+    ).rejects.toThrow(PublicationStoreError);
+
+    const publicAfterSupersede = await readApprovedPublication(
+      db,
+      'mw:publication:synth-lifecycle-001'
+    );
+    expect(publicAfterSupersede?.revision).toBe(2);
+    expect(publicAfterSupersede?.summary).toBe('Revision 2 corrected summary.');
+
+    // Takedown immediately removes from public read while preserving 3-revision audit trail
+    const rev3 = await supersedeOrTakedownPublication({
+      db,
+      actor: reviewerActor,
+      publicationId: 'mw:publication:synth-lifecycle-001',
+      expectedCurrentRevision: 2,
+      action: 'takedown',
+      reasonCode: 'rights_complaint',
+      idempotencyKey: 'takedown-rev3-001',
+      now: new Date('2026-11-21T05:10:00.000Z'),
+    });
+    expect(rev3.revision).toBe(3);
+    expect(rev3.review_status).toBe('taken_down');
+    expect(rev3.rights_state).toBe('withdrawn');
+    expect(rev3.supersedes_digest).toBe(rev2.projection_digest);
+
+    expect(await readApprovedPublication(db, 'mw:publication:synth-lifecycle-001')).toBeNull();
+    expect(await listApprovedPublications(db)).toEqual([]);
+
+    const audit = await readPublicationAuditHistory(
+      db,
+      'mw:publication:synth-lifecycle-001',
+      reviewerActor
+    );
+    expect(audit.map((item) => item.revision)).toEqual([1, 2, 3]);
+    expect(audit[2].takedown_reason_code).toBe('rights_complaint');
   });
 });

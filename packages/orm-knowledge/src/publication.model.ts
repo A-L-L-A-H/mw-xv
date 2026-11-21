@@ -6,7 +6,10 @@ import type { StaticHookArguments } from 'objection';
 export const PublicationSnapshot = defineModel('knowledge.publication_snapshot', {
   table: 'knowledge_publication_snapshots',
   order: 'publication_id asc, revision asc, id asc',
-  unique: [['publication_id', 'revision']],
+  unique: [
+    ['publication_id', 'revision'],
+    ['company', 'publication_id', 'idempotency_key'],
+  ],
   fields: {
     company: fields.belongsTo(Company, { required: true }),
     publication_id: fields.string({
@@ -36,6 +39,7 @@ export const PublicationSnapshot = defineModel('knowledge.publication_snapshot',
     reviewer: fields.belongsTo(User),
     supersedes_digest: fields.string({ pattern: '^[a-f0-9]{64}$' }),
     takedown_reason_code: fields.string(),
+    idempotency_key: fields.string({ hidden: true }),
     recorded_at: fields.string({ required: true }),
   },
 });

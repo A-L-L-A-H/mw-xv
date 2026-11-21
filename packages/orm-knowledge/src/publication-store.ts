@@ -85,6 +85,7 @@ export interface SupersedeOrTakedownInput {
   readonly expectedCurrentRevision: number;
   readonly action: 'supersede' | 'takedown';
   readonly reasonCode: string;
+  readonly idempotencyKey?: string;
   readonly nextTitle?: string;
   readonly nextProjection?: PublicationProjectionPayload;
   readonly nextRightsState?: PublicationRightsState;
@@ -367,10 +368,45 @@ export async function supersedeOrTakedownPublication(
     fail('INVALID_INPUT', 'Publication ID and non-empty reasonCode are required');
   }
 
+  const idempotencyKey = input.idempotencyKey?.trim();
+  if (input.idempotencyKey !== undefined && (!idempotencyKey || idempotencyKey.length < 4)) {
+    fail('INVALID_INPUT', 'idempotencyKey must be at least 4 non-whitespace characters');
+  }
+
   const nowIso = (input.now ?? new Date()).toISOString();
 
   return input.db.transaction(async (trx) => {
     await assertActiveSuperadminMembership(trx, input.actor);
+
+    if (idempotencyKey) {
+      const prior = await trx('knowledge_publication_snapshots')
+        .where({
+          company_id: input.actor.companyId,
+          publication_id: input.publicationId,
+          idempotency_key: idempotencyKey,
+        })
+        .first();
+      if (prior) {
+        const expectedStatus = input.action === 'takedown' ? 'taken_down' : 'approved';
+        const expectedTitle =
+          input.action === 'supersede' && input.nextTitle?.trim()
+            ? input.nextTitle
+            : String(prior.title);
+        const projectionMatches =
+          input.action === 'takedown' ||
+          (input.nextProjection !== undefined &&
+            canonicalResearchJson(input.nextProjection) === String(prior.projection_json));
+        if (
+          prior.review_status !== expectedStatus ||
+          String(prior.takedown_reason_code ?? '') !== input.reasonCode ||
+          String(prior.title) !== expectedTitle ||
+          !projectionMatches
+        ) {
+          fail('CONFLICT', 'Idempotency key conflicts with prior publication revision');
+        }
+        return mapAuditRow(prior);
+      }
+    }
 
     const latest = await trx('knowledge_publication_snapshots')
       .where({ publication_id: input.publicationId, company_id: input.actor.companyId })
@@ -423,6 +459,7 @@ export async function supersedeOrTakedownPublication(
         reviewer_id: input.actor.userId,
         supersedes_digest: latest.projection_digest,
         takedown_reason_code: input.reasonCode,
+        idempotency_key: idempotencyKey ?? null,
         recorded_at: nowIso,
       });
     } else {
@@ -482,6 +519,7 @@ export async function supersedeOrTakedownPublication(
         reviewer_id: input.actor.userId,
         supersedes_digest: latest.projection_digest,
         takedown_reason_code: input.reasonCode,
+        idempotency_key: idempotencyKey ?? null,
         recorded_at: nowIso,
       });
     }

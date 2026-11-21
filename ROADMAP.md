@@ -282,7 +282,7 @@ Track approved through ADR 0004 on 2026-10-15. The existing 148 M-series tasks a
 - [ ] K8-003 Approved publication read API (in progress; append-only `PublicationSnapshot` model, fail-closed public read projection, `GET /api/public/publications*` routes mounted in `apps/api/src/app.ts`, and negative disclosure tests implemented while `K6-004` safeguarding approval and `K3-005` remain open). Evidence: [K8-003](docs/roadmap/evidence/K8-003.md).
 - [ ] K8-004 Public website minimal knowledge shell.
 - [ ] K8-005 Role-safe case/status and submission prototype.
-- [ ] K8-006 Editorial/publication revision and takedown support.
+- [ ] K8-006 Editorial/publication revision and takedown support (in progress; append-only superseding, immediate takedown cache/read removal, idempotency, and audit endpoints implemented in `@moonwitness/orm-knowledge` and `apps/api` while Board/Web UI and `K8-003`/`K8-004` remain open). Evidence: [K8-006](docs/roadmap/evidence/K8-006.md).
 - [ ] K9-001 Exact-SHA full knowledge and app CI gate.
 - [ ] K9-002 Source license, PII, secrets and dependency scan.
 - [ ] K9-003 Migration, interrupted-write and backup/restore drill.
