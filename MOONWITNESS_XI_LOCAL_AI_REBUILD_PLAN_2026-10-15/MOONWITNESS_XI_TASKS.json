@@ -259,7 +259,7 @@
       "deliverable": "CLI for local source records, IDs, rights, referential integrity",
       "acceptance": "Exit nonzero on invalid/missing refs; no API/model/network requirement",
       "verification": "fresh filesystem fixture + network-denied CLI run",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
