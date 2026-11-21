@@ -538,7 +538,7 @@
       "deliverable": "Allowed relation vocabulary and adjacency queries",
       "acceptance": "Relation type/version/scope/support visible; safe graph traversal; no cycles induced in invalid ways",
       "verification": "adjacency, privacy leakage, relation guard tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {

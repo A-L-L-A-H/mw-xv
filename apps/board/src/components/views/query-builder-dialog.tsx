@@ -1,6 +1,6 @@
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { useState } from 'react';
-import { Filter, Plus, Trash2, Bookmark, Check, RotateCcw, Sparkles } from 'lucide-react';
+import { FilterIcon, AddIcon, DeleteIcon, BookmarkIcon, CheckIcon, RefreshIcon, SparkleIcon } from '@moonwitness/ui/icons';
 import type { ResolvedViews } from '@moonwitness/client';
 import { Button } from '@moonwitness/ui/components/button';
 import { Input } from '@moonwitness/ui/components/input';
