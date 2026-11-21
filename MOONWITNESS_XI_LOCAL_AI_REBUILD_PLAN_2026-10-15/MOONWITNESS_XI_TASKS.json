@@ -297,7 +297,7 @@
       "deliverable": "Version contract, semantic diff and compatibility matrix",
       "acceptance": "Old released records validate under declared schema or explicit migration; incompatible changes blocked",
       "verification": "version upgrade/downgrade negative tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
