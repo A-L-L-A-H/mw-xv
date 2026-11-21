@@ -518,7 +518,7 @@
       "deliverable": "Match candidates, explicit accepted/rejected identity decisions",
       "acceptance": "Similarity never produces auto-sameAs; conflict is not overwritten",
       "verification": "homonym and multilingual alias fixtures",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
