@@ -307,6 +307,37 @@ const icons = [
     paths: '<path d="M4 12h15m-6-6 6 6-6 6"/>',
   },
   {
+    name: 'arrow-left',
+    title: 'Arrow left',
+    paths: '<path d="M20 12H5m6 6-6-6 6-6"/>',
+  },
+  {
+    name: 'bookmark',
+    title: 'Bookmark',
+    paths: '<path d="M6 3.5h12v17l-6-4-6 4v-17Z"/>',
+  },
+  {
+    name: 'check-circle',
+    title: 'Confirmed',
+    paths: '<circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+  },
+  {
+    name: 'clock',
+    title: 'Clock',
+    paths: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  },
+  {
+    name: 'file-spreadsheet',
+    title: 'Spreadsheet',
+    paths:
+      '<path d="M6 3.5h8l4 4V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M14 3.5v5h5M8 12h8M8 16h8M12 12v7"/>',
+  },
+  {
+    name: 'history',
+    title: 'History',
+    paths: '<path d="M4 12a8 8 0 1 0 2.5-5.8L4 8.5M4 4v4.5h4.5M12 7.5v4.5l3 2"/>',
+  },
+  {
     name: 'chevron-right',
     title: 'Chevron right',
     paths: '<path d="m9 5 7 7-7 7"/>',

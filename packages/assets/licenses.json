@@ -125,6 +125,9 @@
       "source": "Codex image_gen using the user-provided MoonWitness visual references",
       "terms": "https://openai.com/policies/terms-of-use/",
       "generatedOn": "2026-10-24",
+      "focalPoint": "center-right (hooded figure & moon clear of left auth form)",
+      "alt": "A hooded person looking over a neon city beneath a full moon.",
+      "decorative": false,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     },
     {
@@ -134,6 +137,9 @@
       "source": "Codex image_gen using the user-provided MoonWitness visual references",
       "terms": "https://openai.com/policies/terms-of-use/",
       "generatedOn": "2026-10-24",
+      "focalPoint": "center (hooded figure & moon above mobile login panel)",
+      "alt": "A hooded person looking over a neon city beneath a full moon.",
+      "decorative": false,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     },
     {
@@ -143,6 +149,9 @@
       "source": "Codex image_gen using the user-provided MoonWitness visual references",
       "terms": "https://openai.com/policies/terms-of-use/",
       "generatedOn": "2026-10-23",
+      "focalPoint": "right (city skyline & night mood behind left masthead heading)",
+      "alt": "",
+      "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     },
     {
@@ -152,6 +161,9 @@
       "source": "Codex image_gen using the user-provided MoonWitness visual references",
       "terms": "https://openai.com/policies/terms-of-use/",
       "generatedOn": "2026-10-23",
+      "focalPoint": "center (cyan rooftop scene for Knowledge editorial panel)",
+      "alt": "",
+      "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     },
     {
@@ -161,6 +173,9 @@
       "source": "Codex image_gen using the user-provided MoonWitness visual references",
       "terms": "https://openai.com/policies/terms-of-use/",
       "generatedOn": "2026-10-23",
+      "focalPoint": "center (red corridor scene for People & Records editorial panel)",
+      "alt": "",
+      "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     },
     {
@@ -170,6 +185,9 @@
       "source": "Codex image_gen using the user-provided MoonWitness visual references",
       "terms": "https://openai.com/policies/terms-of-use/",
       "generatedOn": "2026-10-23",
+      "focalPoint": "center (monochrome shadow figure for Story Workbench editorial panel)",
+      "alt": "",
+      "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     },
     {
@@ -179,6 +197,9 @@
       "source": "Codex image_gen using the user-provided MoonWitness visual references",
       "terms": "https://openai.com/policies/terms-of-use/",
       "generatedOn": "2026-10-23",
+      "focalPoint": "center-right (character foreground & moon on right; negative space on left for copy)",
+      "alt": "",
+      "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     },
     {
@@ -188,6 +209,9 @@
       "source": "Codex image_gen using the user-provided MoonWitness visual references",
       "terms": "https://openai.com/policies/terms-of-use/",
       "generatedOn": "2026-10-23",
+      "focalPoint": "center-top (character face & moon centered above mobile copy)",
+      "alt": "",
+      "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     },
     {
@@ -197,6 +221,9 @@
       "source": "Codex image_gen using the user-provided MoonWitness visual references",
       "terms": "https://openai.com/policies/terms-of-use/",
       "generatedOn": "2026-10-23",
+      "focalPoint": "right (character & moon kept clear of left copy rail)",
+      "alt": "",
+      "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     }
   ]

@@ -15,6 +15,7 @@
     "fonts.css",
     "icons",
     "illustrations",
+    "materials",
     "sounds",
     "manifest.json",
     "licenses.json",
@@ -26,6 +27,7 @@
     "./fonts.css": "./fonts.css",
     "./icons/*": "./icons/*",
     "./illustrations/*": "./illustrations/*",
+    "./materials/*": "./materials/*",
     "./sounds/*": "./sounds/*",
     "./manifest.json": "./manifest.json",
     "./licenses.json": "./licenses.json"
