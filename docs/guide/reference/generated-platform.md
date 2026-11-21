@@ -1,36 +1,37 @@
 # Generated platform reference
 
-Source fingerprint: `67d759e5a60c7bbe09b79ea94963438ec76d20439c8f948f91d3efa8a394b039`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `b39e32d2061a91615847efb6fed20ab5be9e541fc7cb82d28fe4b7519f35753e`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
-| Name                            | Kind    | Version    | Scripts                                                                                                                                                                                                                                          |
-| ------------------------------- | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `@moonwitness/api`              | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
-| `@moonwitness/board`            | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                           |
-| `@moonwitness/docs`             | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                      |
-| `@moonwitness/ui-catalog`       | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `preview`, `test`                                                                                                                                                                                                 |
-| `@moonwitness/assets`           | Package | 1.0.0-rc.1 | `artwork:prepare`, `brand:prepare`, `fonts:prepare`                                                                                                                                                                                              |
-| `@moonwitness/auth`             | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/client`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/corpus`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                     |
-| `@moonwitness/eslint-config`    | Package | 1.0.0-rc.1 | —                                                                                                                                                                                                                                                |
-| `@moonwitness/jobs`             | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/knowledge`        | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                     |
-| `@moonwitness/local-ai`         | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                     |
-| `@moonwitness/logger`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/orm`              | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/orm-base`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/orm-integration`  | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/orm-knowledge`    | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/orm-notification` | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/orm-organization` | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/orm-request`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/orm-storage`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/orm-workflow`     | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/research`         | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                     |
-| `@moonwitness/types`            | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
-| `@moonwitness/ui`               | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                  |
+| Name                            | Kind    | Version    | Scripts                                                                                                                                                                                                                                                                            |
+| ------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@moonwitness/api`              | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
+| `@moonwitness/board`            | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
+| `@moonwitness/docs`             | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
+| `@moonwitness/ui-catalog`       | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `preview`, `test`                                                                                                                                                                                                                                   |
+| `@moonwitness/assets`           | Package | 1.0.0-rc.1 | `artwork:prepare`, `brand:prepare`, `fonts:prepare`                                                                                                                                                                                                                                |
+| `@moonwitness/auth`             | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/client`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/corpus`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/eslint-config`    | Package | 1.0.0-rc.1 | —                                                                                                                                                                                                                                                                                  |
+| `@moonwitness/jobs`             | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/knowledge`        | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/local-ai`         | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/logger`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm`              | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-base`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-integration`  | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-knowledge`    | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-notification` | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-organization` | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-request`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-storage`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-whatsapp`     | Package | 1.14.0     | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-workflow`     | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/research`         | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/types`            | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/ui`               | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 
 ## Environment variable names
 
@@ -63,6 +64,8 @@ Source fingerprint: `67d759e5a60c7bbe09b79ea94963438ec76d20439c8f948f91d3efa8a39
 | `JOBS_WORKER_HEALTH_PORT`           | integer        | Yes                       | No                       |
 | `JWT_SECRET`                        | secret         | Yes                       | Yes                      |
 | `LOCAL_AI_ENDPOINT`                 | string         | Yes                       | No                       |
+| `LOCAL_AI_MODEL`                    | string         | Yes                       | No                       |
+| `LOCAL_AI_PROVIDER`                 | string         | Yes                       | No                       |
 | `LOCAL_AI_TIMEOUT_MS`               | integer        | Yes                       | No                       |
 | `LOG_DIR`                           | string         | Yes                       | No                       |
 | `LOG_FILE_NAME`                     | string         | Yes                       | No                       |
@@ -77,8 +80,10 @@ Source fingerprint: `67d759e5a60c7bbe09b79ea94963438ec76d20439c8f948f91d3efa8a39
 | `PORT`                              | integer        | No                        | No                       |
 | `POSTGRES_TEST_URL`                 | url            | Yes                       | No                       |
 | `PRINT_ROUTES`                      | boolean        | Yes                       | No                       |
+| `RATE_LIMIT_STORE`                  | string         | Yes                       | No                       |
 | `REFRESH_TOKEN_TTL_SECONDS`         | secret         | Yes                       | Yes                      |
 | `RESTORE_DRILL_SCHEMA`              | string         | No                        | No                       |
+| `SKIP_BOOT_MIGRATIONS`              | boolean        | Yes                       | No                       |
 | `SUPERADMIN_PASSWORD`               | secret         | Yes                       | Yes                      |
 | `WHATSAPP_CLAMAV_URL`               | string         | No                        | No                       |
 | `WHATSAPP_FFMPEG_PATH`              | string         | Yes                       | No                       |
@@ -98,6 +103,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 
 ## Root commands
 
+- `pnpm addon:scaffold`
 - `pnpm api:addon:check`
 - `pnpm architecture:check`
 - `pnpm architecture:check:built`
@@ -122,6 +128,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm board:visual:update`
 - `pnpm build`
 - `pnpm ci:affected`
+- `pnpm db:migrate`
 - `pnpm dependency:candidate`
 - `pnpm dependency:plan`
 - `pnpm dev`
@@ -138,6 +145,11 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm docs:links`
 - `pnpm docs:links:external`
 - `pnpm docs:publication:check`
+- `pnpm evolution:check`
+- `pnpm evolution:fitness`
+- `pnpm evolution:postmortem`
+- `pnpm evolution:prune`
+- `pnpm evolution:signals`
 - `pnpm format`
 - `pnpm format:check`
 - `pnpm hooks:install`
@@ -146,6 +158,9 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm jobs:worker`
 - `pnpm lint`
 - `pnpm lint:fix`
+- `pnpm local-ai:eval`
+- `pnpm local-ai:register-model`
+- `pnpm local-ai:tournament`
 - `pnpm platform:audit`
 - `pnpm promotion:approval-check`
 - `pnpm promotion:risk`

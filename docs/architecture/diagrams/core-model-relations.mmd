@@ -28,36 +28,50 @@ flowchart LR
   model26["base.user"]
   model27["integration.webhook_delivery"]
   model28["integration.webhook_endpoint"]
-  model29["knowledge.bug_case"]
-  model30["knowledge.bug_case_event"]
-  model31["knowledge.concept_profile_version"]
-  model32["knowledge.privacy_projection"]
-  model33["knowledge.privacy_revocation"]
-  model34["knowledge.publication_snapshot"]
-  model35["knowledge.research_active_release"]
-  model36["knowledge.research_actor_identity"]
-  model37["knowledge.research_graph_record"]
-  model38["knowledge.research_graph_release"]
-  model39["knowledge.research_review_event"]
-  model40["knowledge.research_suggestion_version"]
-  model41["knowledge.story_page_version"]
-  model42["knowledge.story_version"]
-  model43["knowledge.textual_alignment_candidate_version"]
-  model44["knowledge.witness_correction"]
-  model45["knowledge.witness_interpretation"]
-  model46["knowledge.witness_testimony"]
-  model47["notification.notification"]
-  model48["notification.preference"]
-  model49["notification.template"]
-  model50["organization.department"]
-  model51["organization.membership"]
-  model52["organization.position"]
-  model53["organization.team"]
-  model54["request.purchase"]
-  model55["workflow.approval"]
-  model56["workflow.definition"]
-  model57["workflow.event"]
-  model58["workflow.instance"]
+  model29["ir.feature_flag"]
+  model30["knowledge.bug_case"]
+  model31["knowledge.bug_case_event"]
+  model32["knowledge.concept_profile_version"]
+  model33["knowledge.privacy_projection"]
+  model34["knowledge.privacy_revocation"]
+  model35["knowledge.publication_snapshot"]
+  model36["knowledge.research_active_release"]
+  model37["knowledge.research_actor_identity"]
+  model38["knowledge.research_graph_record"]
+  model39["knowledge.research_graph_release"]
+  model40["knowledge.research_review_event"]
+  model41["knowledge.research_suggestion_version"]
+  model42["knowledge.story_page_version"]
+  model43["knowledge.story_version"]
+  model44["knowledge.textual_alignment_candidate_version"]
+  model45["knowledge.witness_correction"]
+  model46["knowledge.witness_interpretation"]
+  model47["knowledge.witness_testimony"]
+  model48["notification.notification"]
+  model49["notification.preference"]
+  model50["notification.template"]
+  model51["organization.department"]
+  model52["organization.membership"]
+  model53["organization.position"]
+  model54["organization.team"]
+  model55["request.purchase"]
+  model56["whatsapp.account"]
+  model57["whatsapp.conversation"]
+  model58["whatsapp.conversation.alias"]
+  model59["whatsapp.conversation.label"]
+  model60["whatsapp.conversation.read"]
+  model61["whatsapp.group.creation"]
+  model62["whatsapp.group.join"]
+  model63["whatsapp.group.operation"]
+  model64["whatsapp.internal_note"]
+  model65["whatsapp.label"]
+  model66["whatsapp.message"]
+  model67["whatsapp.status"]
+  model68["whatsapp.upload.ticket"]
+  model69["workflow.approval"]
+  model70["workflow.definition"]
+  model71["workflow.event"]
+  model72["workflow.instance"]
   model0 -->|user N:1| model26
   model2 -->|assigned_to N:1| model26
   model5 -->|country N:1| model8
@@ -98,60 +112,85 @@ flowchart LR
   model27 -->|endpoint N:1| model28
   model28 -->|company N:1| model6
   model29 -->|company N:1| model6
-  model29 -->|created_by N:1| model26
-  model30 -->|actor N:1| model26
-  model30 -->|bug_case N:1| model29
   model30 -->|company N:1| model6
+  model30 -->|created_by N:1| model26
+  model31 -->|actor N:1| model26
+  model31 -->|bug_case N:1| model30
   model31 -->|company N:1| model6
-  model31 -->|recorded_by N:1| model26
   model32 -->|company N:1| model6
-  model33 -->|actor N:1| model26
+  model32 -->|recorded_by N:1| model26
   model33 -->|company N:1| model6
+  model34 -->|actor N:1| model26
   model34 -->|company N:1| model6
-  model34 -->|requester N:1| model26
-  model34 -->|reviewer N:1| model26
-  model35 -->|release N:1| model38
-  model36 -->|provisioned_by N:1| model26
-  model36 -->|user 1:1| model26
-  model37 -->|release N:1| model38
-  model40 -->|company N:1| model6
-  model40 -->|recorded_by N:1| model26
-  model41 -->|story_version N:1| model42
-  model42 -->|company N:1| model6
-  model42 -->|recorded_by N:1| model26
+  model35 -->|company N:1| model6
+  model35 -->|requester N:1| model26
+  model35 -->|reviewer N:1| model26
+  model36 -->|release N:1| model39
+  model37 -->|provisioned_by N:1| model26
+  model37 -->|user 1:1| model26
+  model38 -->|release N:1| model39
+  model41 -->|company N:1| model6
+  model41 -->|recorded_by N:1| model26
+  model42 -->|story_version N:1| model43
   model43 -->|company N:1| model6
   model43 -->|recorded_by N:1| model26
+  model44 -->|company N:1| model6
   model44 -->|recorded_by N:1| model26
-  model44 -->|testimony N:1| model46
   model45 -->|recorded_by N:1| model26
-  model45 -->|testimony N:1| model46
-  model46 -->|company N:1| model6
-  model46 -->|created_by N:1| model26
+  model45 -->|testimony N:1| model47
+  model46 -->|recorded_by N:1| model26
+  model46 -->|testimony N:1| model47
   model47 -->|company N:1| model6
-  model47 -->|recipient N:1| model26
-  model47 -->|template N:1| model49
+  model47 -->|created_by N:1| model26
   model48 -->|company N:1| model6
-  model48 -->|user N:1| model26
-  model50 -->|company N:1| model6
-  model50 -->|parent N:1| model50
+  model48 -->|recipient N:1| model26
+  model48 -->|template N:1| model50
+  model49 -->|company N:1| model6
+  model49 -->|user N:1| model26
   model51 -->|company N:1| model6
-  model51 -->|department N:1| model50
-  model51 -->|manager N:1| model51
-  model51 -->|position N:1| model52
-  model51 -->|team N:1| model53
-  model51 -->|user N:1| model26
+  model51 -->|parent N:1| model51
   model52 -->|company N:1| model6
-  model52 -->|department N:1| model50
+  model52 -->|department N:1| model51
+  model52 -->|manager N:1| model52
+  model52 -->|position N:1| model53
+  model52 -->|team N:1| model54
+  model52 -->|user N:1| model26
   model53 -->|company N:1| model6
-  model53 -->|department N:1| model50
-  model53 -->|parent N:1| model53
+  model53 -->|department N:1| model51
   model54 -->|company N:1| model6
-  model54 -->|currency N:1| model11
-  model54 -->|vendor N:1| model18
-  model55 -->|actor N:1| model26
-  model55 -->|instance N:1| model58
-  model57 -->|actor N:1| model26
-  model57 -->|instance N:1| model58
+  model54 -->|department N:1| model51
+  model54 -->|parent N:1| model54
+  model55 -->|company N:1| model6
+  model55 -->|currency N:1| model11
+  model55 -->|vendor N:1| model18
+  model56 -->|company N:1| model6
+  model57 -->|account N:1| model56
+  model57 -->|company N:1| model6
   model58 -->|company N:1| model6
-  model58 -->|definition N:1| model56
-  model58 -->|started_by N:1| model26
+  model58 -->|conversation N:1| model57
+  model59 -->|company N:1| model6
+  model59 -->|conversation N:1| model57
+  model59 -->|label N:1| model65
+  model60 -->|company N:1| model6
+  model60 -->|conversation N:1| model57
+  model61 -->|company N:1| model6
+  model62 -->|company N:1| model6
+  model63 -->|company N:1| model6
+  model63 -->|conversation N:1| model57
+  model64 -->|company N:1| model6
+  model64 -->|conversation N:1| model57
+  model65 -->|company N:1| model6
+  model66 -->|account N:1| model56
+  model66 -->|company N:1| model6
+  model66 -->|conversation N:1| model57
+  model67 -->|account N:1| model56
+  model67 -->|company N:1| model6
+  model68 -->|company N:1| model6
+  model68 -->|conversation N:1| model57
+  model69 -->|actor N:1| model26
+  model69 -->|instance N:1| model72
+  model71 -->|actor N:1| model26
+  model71 -->|instance N:1| model72
+  model72 -->|company N:1| model6
+  model72 -->|definition N:1| model70
+  model72 -->|started_by N:1| model26

@@ -31,3 +31,9 @@ Structured post-mortem rules persisted by autonomous and operator loops so resol
 - **Symptom**: Toolchain or CI drift when updating root metadata.
 - **Root Cause**: Automated scripts or edits altering `package.json` `engines.node`.
 - **Invariant**: Keep root `package.json` `engines.node` pinned to `"22.x"`.
+
+## INV-006: Recursive Route Discovery & Generated Reference/Diagram Sync
+
+- **Symptom**: Documentation Pages and CI quality-and-build fail on scripts/docs/generate-reference.test.mjs and architecture:check after nested route files, models, or scripts change.
+- **Root Cause**: generate-reference.test.mjs read apps/api/src/routes non-recursively (missing nested routes like whatsapp/media.routes.ts), and commits omitted pnpm docs:generate / pnpm architecture:generate.
+- **Invariant**: Scan apps/api/src/routes recursively in doc reference tests and regenerate docs/diagrams via pnpm docs:generate and pnpm architecture:generate whenever routes, models, packages, or root scripts change.
