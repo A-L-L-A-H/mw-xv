@@ -1001,7 +1001,7 @@
       "deliverable": "Retriever with canonical source spans, citation identity and visibility constraints",
       "acceptance": "No private/child snippets exposed; exact citation metadata returns",
       "verification": "restricted retrieval and citation coverage tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
