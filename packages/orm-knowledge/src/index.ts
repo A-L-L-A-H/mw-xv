@@ -148,3 +148,16 @@ export {
   type TransitionBugCaseInput,
   type UpdateBugCasePublicationInput,
 } from './bug-case-workflow.js';
+export {
+  BugOutcomeVerificationError,
+  reopenBugCaseOnEvidenceChange,
+  verifyBugCaseOutcomeWithEvidence,
+  type BugOutcomeTestProof,
+  type BugOutcomeVerificationErrorCode,
+  type OutcomeEvidenceAccess,
+  type OutcomeEvidenceReviewStatus,
+  type ReopenBugCaseOnStaleOrTamperedEvidenceInput,
+  type TrustedBugOutcomeEvidenceResolution,
+  type TrustedBugOutcomeEvidenceResolver,
+  type VerifyBugCaseOutcomeInput,
+} from './bug-outcome-verification.js';
