@@ -204,3 +204,22 @@ export {
   type BugSubmissionStatus,
   type BugVerificationStatus,
 } from './bug-registry.js';
+export {
+  AnalyticResponsibilityError,
+  evaluateScopedAnalyticResponsibility,
+  validateAnalyticResponsibilityRequest,
+  type AnalyticEvidenceAccess,
+  type AnalyticEvidenceReviewStatus,
+  type AnalyticFactorEvaluation,
+  type AnalyticFactorInput,
+  type AnalyticFactorInputState,
+  type AnalyticHumanOverride,
+  type AnalyticNormativeBoundary,
+  type AnalyticResponsibilityEngineConfig,
+  type AnalyticResponsibilityErrorCode,
+  type AnalyticResponsibilityRequest,
+  type AnalyticResponsibilityResult,
+  type AnalyticResponsibilityScope,
+  type TrustedAnalyticEvidenceResolution,
+  type TrustedAnalyticEvidenceResolver,
+} from './analytic-responsibility.js';

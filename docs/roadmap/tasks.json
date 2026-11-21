@@ -1894,7 +1894,9 @@
       "output": "Deterministic policy-versioned nonnormative analytic factor calculation",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "labels": ["local-ai-rebuild"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/K6-002.md"
     },
     {
       "id": "K6-003",
