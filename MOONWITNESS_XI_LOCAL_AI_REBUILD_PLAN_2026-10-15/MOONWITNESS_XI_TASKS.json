@@ -782,7 +782,7 @@
       "deliverable": "First-person testimony plus correction chain, separate interpretation and evidence links",
       "acceptance": "Original witness immutable in ordinary workflow; uncertainty/time precision kept; privacy default private",
       "verification": "G2 witness correction + actor access tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
