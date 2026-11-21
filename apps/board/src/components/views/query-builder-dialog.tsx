@@ -1,6 +1,14 @@
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { useState } from 'react';
-import { FilterIcon, AddIcon, DeleteIcon, BookmarkIcon, CheckIcon, RefreshIcon, SparkleIcon } from '@moonwitness/ui/icons';
+import {
+  FilterIcon,
+  AddIcon,
+  DeleteIcon,
+  BookmarkIcon,
+  CheckIcon,
+  RefreshIcon,
+  SparkleIcon,
+} from '@moonwitness/ui/icons';
 import type { ResolvedViews } from '@moonwitness/client';
 import { Button } from '@moonwitness/ui/components/button';
 import { Input } from '@moonwitness/ui/components/input';
@@ -176,7 +184,7 @@ export function QueryBuilderDialog({
         <DialogHeader className="border-b-2 border-ink pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Filter className="size-6 text-lime" />
+              <FilterIcon className="size-6 text-lime" />
               <DialogTitle className="font-display text-2xl uppercase tracking-wider text-ink">
                 Advanced Query Builder: {views.title}
               </DialogTitle>
@@ -202,7 +210,7 @@ export function QueryBuilderDialog({
                   onClick={() => handleLoadSaved(saved)}
                   className="group inline-flex items-center gap-1.5 border-2 border-ink bg-paper px-2 py-0.5 text-xs font-bold shadow-[2px_2px_0_0_var(--ink)] hover:bg-lime hover:text-on-accent transition-colors"
                 >
-                  <Bookmark className="size-3 text-ink-faint group-hover:text-on-accent" />
+                  <BookmarkIcon className="size-3 text-ink-faint group-hover:text-on-accent" />
                   <span>{saved.name}</span>
                   <span
                     onClick={(e) => handleDeleteSaved(saved.id, e)}
@@ -329,7 +337,7 @@ export function QueryBuilderDialog({
                   disabled={rules.length === 1}
                   className="size-8 text-ink-faint hover:text-pink hover:bg-pink/10 shrink-0"
                 >
-                  <Trash2 className="size-3.5" />
+                  <DeleteIcon className="size-3.5" />
                 </Button>
               </div>
             );
@@ -339,7 +347,7 @@ export function QueryBuilderDialog({
         {/* Add Condition & Save Preset Buttons */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t-2 border-ink pt-3 font-mono text-xs">
           <Button variant="outline" size="sm" onClick={handleAddRule} className="gap-1.5">
-            <Plus className="size-3.5" /> Add Condition
+            <AddIcon className="size-3.5" /> Add Condition
           </Button>
 
           <div className="flex items-center gap-2">
@@ -350,7 +358,7 @@ export function QueryBuilderDialog({
                 onClick={() => setShowSaveInput(true)}
                 className="gap-1 text-ink-soft hover:text-ink"
               >
-                <Bookmark className="size-3.5" /> Save Preset
+                <BookmarkIcon className="size-3.5" /> Save Preset
               </Button>
             ) : (
               <div className="flex items-center gap-1">
@@ -366,7 +374,7 @@ export function QueryBuilderDialog({
                   disabled={!saveName.trim()}
                   className="gap-1"
                 >
-                  <Check className="size-3" /> Save
+                  <CheckIcon className="size-3" /> Save
                 </Button>
                 <Button
                   type="button"
@@ -383,14 +391,14 @@ export function QueryBuilderDialog({
         {/* Dialog Action Buttons */}
         <div className="flex items-center justify-between pt-2">
           <Button variant="outline" size="sm" onClick={handleReset} className="gap-1">
-            <RotateCcw className="size-3.5" /> Reset
+            <RefreshIcon className="size-3.5" /> Reset
           </Button>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button size="sm" onClick={handleApply} className="gap-1.5">
-              <Sparkles className="size-3.5 text-on-accent" />
+              <SparkleIcon className="size-3.5 text-on-accent" />
               <span>Apply Filters</span>
             </Button>
           </div>

@@ -3,6 +3,7 @@
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useViews } from '@/hooks/use-model';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
 import { Doodle } from '@moonwitness/ui/components/effects';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { ListView } from '@/components/views/list-view';
@@ -65,13 +66,12 @@ export function ModelPage() {
 
   if (error || !views) {
     return (
-      <div className="ink-panel p-12 text-center bg-card">
-        <Doodle kind="star" className="mx-auto size-10 text-pink mb-4" />
-        <h2 className="font-display text-2xl uppercase">Failed to load model views</h2>
-        <p className="mt-2 text-ink-soft">
-          Model &apos;{model}&apos; might not exist or you do not have permission to view it.
-        </p>
-      </div>
+      <EmptyState
+        className="ink-panel bg-card p-12 text-center"
+        icon={<Doodle kind="star" className="mx-auto size-10 text-destructive" />}
+        title="Failed to load model views"
+        description={`Model '${model}' might not exist or you do not have permission to view it.`}
+      />
     );
   }
 

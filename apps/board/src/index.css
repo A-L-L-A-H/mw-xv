@@ -61,6 +61,8 @@
   --color-ink-faint: var(--ink-faint);
   --color-lime: var(--lime);
   --color-pink: var(--pink);
+  --color-yellow: var(--mw-yellow);
+  --color-magenta: var(--mw-magenta);
   --color-on-pink: var(--on-pink);
   --color-on-accent: var(--on-accent);
   --color-night: var(--mw-night);

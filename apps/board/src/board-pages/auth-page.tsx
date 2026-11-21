@@ -18,7 +18,7 @@ import { Input } from '@moonwitness/ui/components/input';
 import { Label } from '@moonwitness/ui/components/label';
 import { Panel } from '@moonwitness/ui/components/panel';
 import { useSfx } from '@moonwitness/ui/components/audio';
-import { LoadingSpinner } from '@moonwitness/ui/components/effects';
+import { DecorativeMotif, LoadingSpinner } from '@moonwitness/ui/components/effects';
 
 type Mode = 'login' | 'register';
 
@@ -239,12 +239,16 @@ export function AuthPage({ mode }: { mode: Mode }) {
             </p>
             <p className="auth-shadow-access-note">
               <span aria-hidden="true" />
-              Your credentials stay private and secure.
+              Authorized crew only — your credentials stay private and secure.
             </p>
           </Panel>
         </section>
 
         <aside className="auth-shadow-art" aria-label="MoonWitness night city artwork">
+          <DecorativeMotif kind="moon-phases" className="auth-decorative-motif motif-moon-phases" />
+          <DecorativeMotif kind="eye-target" className="auth-decorative-motif motif-eye-target" />
+          <DecorativeMotif kind="globe-grid" className="auth-decorative-motif motif-globe-grid" />
+          <DecorativeMotif kind="underline" className="auth-decorative-motif motif-underline" />
           <picture className="auth-shadow-picture">
             <source
               media="(max-width: 899px)"

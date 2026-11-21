@@ -22,7 +22,7 @@ import {
   UploadIcon,
   SecurityIcon,
   BoltIcon,
-} from "@moonwitness/ui/icons";
+} from '@moonwitness/ui/icons';
 import { client } from '@/lib/client';
 import { formatDateTime } from '@/lib/date-format';
 import { scopedQueryKey } from '@/lib/query-scope';
@@ -70,10 +70,10 @@ interface AuditLogRecord {
 }
 
 const TYPE_ICONS = {
-  todo: CheckCircle2,
-  call: Phone,
-  meeting: Calendar,
-  email: Mail,
+  todo: CheckCircleIcon,
+  call: PhoneIcon,
+  meeting: CalendarIcon,
+  email: MailIcon,
 };
 
 const TYPE_COLORS = {
@@ -90,13 +90,13 @@ function formatBytes(bytes: number) {
 }
 
 function getFileIcon(mimetype: string) {
-  if (mimetype.startsWith('image/')) return FileImage;
-  if (mimetype.includes('pdf') || mimetype.includes('text/')) return FileText;
+  if (mimetype.startsWith('image/')) return ImageIcon;
+  if (mimetype.includes('pdf') || mimetype.includes('text/')) return DocumentIcon;
   if (mimetype.includes('zip') || mimetype.includes('tar') || mimetype.includes('compressed'))
-    return FileArchive;
+    return ArchiveIcon;
   if (mimetype.includes('json') || mimetype.includes('javascript') || mimetype.includes('html'))
-    return FileCode;
-  return File;
+    return CodeIcon;
+  return DocumentIcon;
 }
 
 export function Chatter({ model, recordId }: ChatterProps) {
@@ -294,7 +294,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-ink pb-4">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 border-2 border-ink bg-lime px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-wider text-on-accent">
-            <Zap className="size-3.5" /> Record Chatter
+            <BoltIcon className="size-3.5" /> Record Chatter
           </div>
           <span className="font-mono text-xs text-ink-faint">
             {model} #{recordId}
@@ -313,7 +313,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                 : 'text-ink-soft hover:text-ink'
             )}
           >
-            <Clock className="size-3.5" />
+            <ClockIcon className="size-3.5" />
             Activities
             {plannedCount > 0 && (
               <span className="grid size-4 place-items-center border border-ink bg-pink text-[10px] font-bold text-on-pink shadow-[1px_1px_0_0_var(--ink)]">
@@ -331,7 +331,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                 : 'text-ink-soft hover:text-ink'
             )}
           >
-            <Paperclip className="size-3.5" />
+            <AttachmentIcon className="size-3.5" />
             Vault
             {attachments.length > 0 && (
               <span className="border border-ink bg-paper px-1 font-mono text-[10px] font-bold">
@@ -349,7 +349,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                 : 'text-ink-soft hover:text-ink'
             )}
           >
-            <History className="size-3.5" />
+            <HistoryIcon className="size-3.5" />
             Audit Pulse
           </Button>
         </div>
@@ -371,7 +371,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
               onClick={() => setShowScheduleForm((v) => !v)}
               className="gap-1.5"
             >
-              <Plus className="size-4" />
+              <AddIcon className="size-4" />
               {showScheduleForm ? 'Cancel' : 'Schedule Activity'}
             </Button>
           </div>
@@ -475,7 +475,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
             </div>
           ) : activities.length === 0 ? (
             <div className="border-2 border-dashed border-ink/30 bg-card/40 p-8 text-center">
-              <MessageSquare className="mx-auto size-8 text-ink-faint mb-2" />
+              <MessageIcon className="mx-auto size-8 text-ink-faint mb-2" />
               <p className="font-display uppercase tracking-wide text-ink-soft">
                 No activities planned yet
               </p>
@@ -486,7 +486,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
           ) : (
             <div className="space-y-2.5">
               {activities.map((act) => {
-                const Icon = TYPE_ICONS[act.activity_type] || CheckCircle2;
+                const Icon = TYPE_ICONS[act.activity_type] || CheckCircleIcon;
                 const isDone = act.state === 'done';
                 const isOverdue =
                   !isDone && act.deadline && new Date(act.deadline).getTime() < now - 86400000;
@@ -513,7 +513,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                         )}
                         title={isDone ? 'Mark as planned' : 'Mark as done'}
                       >
-                        {isDone && <CheckCircle2 className="size-3.5" />}
+                        {isDone && <CheckCircleIcon className="size-3.5" />}
                       </Button>
 
                       <div className="space-y-1">
@@ -567,7 +567,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                         className="size-7 text-ink-faint hover:text-pink hover:bg-pink/10"
                         title="Delete activity"
                       >
-                        <Trash2 className="size-3.5" />
+                        <DeleteIcon className="size-3.5" />
                       </Button>
                     </div>
                   </div>
@@ -594,7 +594,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
               disabled={uploading}
               className="gap-1.5"
             >
-              <UploadCloud className="size-4" />
+              <UploadIcon className="size-4" />
               {uploading ? 'Uploading...' : 'Upload Files'}
             </Button>
           </div>
@@ -619,7 +619,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                 : 'border-ink/30 bg-card hover:border-ink hover:bg-paper-raised'
             )}
           >
-            <UploadCloud className="mx-auto size-8 text-ink-faint mb-2" />
+            <UploadIcon className="mx-auto size-8 text-ink-faint mb-2" />
             <p className="font-bold text-sm text-ink">Drop files here or click to browse</p>
             <p className="font-mono text-xs text-ink-faint mt-1">
               Files up to 10 MiB · documents, images, spreadsheets, and archives linked to {model} #
@@ -669,7 +669,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                         className="size-7 text-ink-faint hover:text-lime hover:bg-lime/10"
                         title="Download attachment"
                       >
-                        <Download className="size-3.5" />
+                        <DownloadIcon className="size-3.5" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -678,7 +678,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
                         className="size-7 text-ink-faint hover:text-pink hover:bg-pink/10"
                         title="Delete attachment"
                       >
-                        <Trash2 className="size-3.5" />
+                        <DeleteIcon className="size-3.5" />
                       </Button>
                     </div>
                   </div>
@@ -706,7 +706,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
 
           {!isAdmin ? (
             <div className="border-2 border-dashed border-ink/30 bg-card/40 p-6 text-center space-y-2">
-              <UserCheck className="mx-auto size-7 text-ink-faint" />
+              <SecurityIcon className="mx-auto size-7 text-ink-faint" />
               <p className="font-bold text-sm">Restricted Access</p>
               <p className="text-xs text-ink-faint max-w-sm mx-auto">
                 Detailed field-level audit trails and actor security diffs are exclusively visible

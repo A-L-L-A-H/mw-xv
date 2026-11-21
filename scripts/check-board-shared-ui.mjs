@@ -6,23 +6,14 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceRoot = path.join(root, 'apps/board/src');
 const replacements = {
-  button: "Button from @moonwitness/ui/components/button",
-  input: "Input or Checkbox from @moonwitness/ui/components/input or @moonwitness/ui/components/checkbox",
-  select: "SelectField from @moonwitness/ui/components/select-field",
-  textarea: "Textarea from @moonwitness/ui/components/textarea",
-  
-  // Icon package bans
-  lucide-react: "Use @moonwitness/ui/icons instead of lucide-react",
-  "heroicons": "Use @moonwitness/ui/icons instead of heroicons",
-  "react-icons": "Use @moonwitness/ui/icons instead of react-icons",
-  "react-feather": "Use @moonwitness/ui/icons instead of react-feather"
-};
   button: 'Button from @moonwitness/ui/components/button',
   input:
     'Input or Checkbox from @moonwitness/ui/components/input or @moonwitness/ui/components/checkbox',
   select: 'SelectField from @moonwitness/ui/components/select-field',
   textarea: 'Textarea from @moonwitness/ui/components/textarea',
 };
+const bannedIconImportPattern =
+  /^(?:lucide-react|@heroicons\/react|react-icons|react-feather)(?:\/|$)/u;
 
 export function findBoardUiViolations(source, file = 'apps/board/src/fixture.tsx') {
   const violations = [];
@@ -51,16 +42,20 @@ export function findBoardUiViolations(source, file = 'apps/board/src/fixture.tsx
     }
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
       const specifier = node.moduleSpecifier;
-      if (
-        specifier &&
-        ts.isStringLiteral(specifier) &&
-        /^@moonwitness\/ui\/dist(?:\/|$)/u.test(specifier.text)
-      ) {
-        report(
-          specifier,
-          'internal @moonwitness/ui dist import is not allowed',
-          'use the public @moonwitness/ui subpath; then run pnpm board:ui:check'
-        );
+      if (specifier && ts.isStringLiteral(specifier)) {
+        if (/^@moonwitness\/ui\/dist(?:\/|$)/u.test(specifier.text)) {
+          report(
+            specifier,
+            'internal @moonwitness/ui dist import is not allowed',
+            'use the public @moonwitness/ui subpath; then run pnpm board:ui:check'
+          );
+        } else if (bannedIconImportPattern.test(specifier.text)) {
+          report(
+            specifier,
+            `direct icon library import '${specifier.text}' is not allowed`,
+            'use canonical icons from @moonwitness/ui/icons/*; then run pnpm board:ui:check'
+          );
+        }
       }
     }
     if (
@@ -69,16 +64,20 @@ export function findBoardUiViolations(source, file = 'apps/board/src/fixture.tsx
         (ts.isIdentifier(node.expression) && node.expression.text === 'require'))
     ) {
       const [argument] = node.arguments;
-      if (
-        argument &&
-        ts.isStringLiteral(argument) &&
-        /^@moonwitness\/ui\/dist(?:\/|$)/u.test(argument.text)
-      ) {
-        report(
-          argument,
-          'internal @moonwitness/ui dist import is not allowed',
-          'use the public @moonwitness/ui subpath; then run pnpm board:ui:check'
-        );
+      if (argument && ts.isStringLiteral(argument)) {
+        if (/^@moonwitness\/ui\/dist(?:\/|$)/u.test(argument.text)) {
+          report(
+            argument,
+            'internal @moonwitness/ui dist import is not allowed',
+            'use the public @moonwitness/ui subpath; then run pnpm board:ui:check'
+          );
+        } else if (bannedIconImportPattern.test(argument.text)) {
+          report(
+            argument,
+            `direct icon library import '${argument.text}' is not allowed`,
+            'use canonical icons from @moonwitness/ui/icons/*; then run pnpm board:ui:check'
+          );
+        }
       }
     }
     ts.forEachChild(node, visit);

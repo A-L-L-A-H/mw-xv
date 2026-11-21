@@ -9,7 +9,16 @@ import {
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { Input } from '@moonwitness/ui/components/input';
 import { useState, useRef, useMemo, useCallback } from 'react';
-import { UploadIcon, FileSpreadsheetIcon, ArrowRightIcon, ArrowLeftIcon, CheckCircleIcon, AlertIcon, CheckIcon, RefreshIcon } from '@moonwitness/ui/icons';
+import {
+  UploadIcon,
+  FileSpreadsheetIcon,
+  ArrowRightIcon,
+  ArrowLeftIcon,
+  CheckCircleIcon,
+  WarningIcon,
+  CheckIcon,
+  RefreshIcon,
+} from '@moonwitness/ui/icons';
 import type { ResolvedViews } from '@moonwitness/client';
 import { client } from '@/lib/client';
 import { Button } from '@moonwitness/ui/components/button';
@@ -20,7 +29,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@moonwitness/ui/components/dialog';
-import { Doodle } from '@moonwitness/ui/components/effects';
+import { Doodle, LoadingSpinner } from '@moonwitness/ui/components/effects';
 import { cn } from '@/lib/utils';
 
 interface ImportWizardDialogProps {
@@ -259,7 +268,7 @@ export function ImportWizardDialog({
         <DialogHeader className="border-b-2 border-ink pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileSpreadsheet className="size-6 text-lime" />
+              <FileSpreadsheetIcon className="size-6 text-lime" />
               <DialogTitle className="font-display text-2xl uppercase tracking-wider text-ink">
                 Import CSV: {views.title}
               </DialogTitle>
@@ -282,7 +291,7 @@ export function ImportWizardDialog({
           >
             <span>1. Upload</span>
           </div>
-          <ArrowRight className="size-3 text-ink-faint" />
+          <ArrowRightIcon className="size-3 text-ink-faint" />
           <div
             className={cn(
               'px-2 py-1 flex items-center gap-1.5 font-bold uppercase',
@@ -291,7 +300,7 @@ export function ImportWizardDialog({
           >
             <span>2. Map Columns</span>
           </div>
-          <ArrowRight className="size-3 text-ink-faint" />
+          <ArrowRightIcon className="size-3 text-ink-faint" />
           <div
             className={cn(
               'px-2 py-1 flex items-center gap-1.5 font-bold uppercase',
@@ -300,7 +309,7 @@ export function ImportWizardDialog({
           >
             <span>3. Preview</span>
           </div>
-          <ArrowRight className="size-3 text-ink-faint" />
+          <ArrowRightIcon className="size-3 text-ink-faint" />
           <div
             className={cn(
               'px-2 py-1 flex items-center gap-1.5 font-bold uppercase',
@@ -336,7 +345,7 @@ export function ImportWizardDialog({
                   : 'border-ink/40 bg-card hover:border-ink hover:bg-paper-raised'
               )}
             >
-              <Upload className="size-10 text-ink-soft mb-3" />
+              <UploadIcon className="size-10 text-ink-soft mb-3" />
               <p className="font-display text-base uppercase tracking-wider text-ink text-center">
                 Click or drag & drop CSV file here
               </p>
@@ -367,7 +376,7 @@ export function ImportWizardDialog({
               </span>
               {missingRequired.length > 0 && (
                 <span className="inline-flex items-center gap-1 border border-pink bg-pink/10 text-pink px-2 py-0.5 font-bold">
-                  <AlertIcon className="size-3.5" /> Missing:{' '}
+                  <WarningIcon className="size-3.5" /> Missing:{' '}
                   {missingRequired.map((f) => f.label).join(', ')}
                 </span>
               )}
@@ -416,7 +425,7 @@ export function ImportWizardDialog({
 
             <div className="flex items-center justify-between pt-2">
               <Button variant="outline" size="sm" onClick={handleReset} className="gap-1">
-                <RotateCcw className="size-3.5" /> Re-upload
+                <RefreshIcon className="size-3.5" /> Re-upload
               </Button>
               <Button
                 size="sm"
@@ -425,7 +434,7 @@ export function ImportWizardDialog({
                 className="gap-1.5"
               >
                 <span>Preview Data</span>
-                <ArrowRight className="size-3.5" />
+                <ArrowRightIcon className="size-3.5" />
               </Button>
             </div>
           </div>
@@ -440,12 +449,12 @@ export function ImportWizardDialog({
               </span>
               {missingRequired.length > 0 ? (
                 <span className="text-pink font-bold flex items-center gap-1">
-                  <AlertIcon className="size-3.5" /> Warning:{' '}
+                  <WarningIcon className="size-3.5" /> Warning:{' '}
                   {missingRequired.map((f) => f.label).join(', ')} required!
                 </span>
               ) : (
                 <span className="text-lime-deep font-bold flex items-center gap-1">
-                  <Check className="size-3.5" /> All required fields mapped
+                  <CheckIcon className="size-3.5" /> All required fields mapped
                 </span>
               )}
             </div>
@@ -498,7 +507,7 @@ export function ImportWizardDialog({
                 onClick={() => setStep('mapping')}
                 className="gap-1"
               >
-                <ArrowLeft className="size-3.5" /> Back to Mapping
+                <ArrowLeftIcon className="size-3.5" /> Back to Mapping
               </Button>
               <Button
                 size="sm"
@@ -506,7 +515,7 @@ export function ImportWizardDialog({
                 disabled={missingRequired.length > 0}
                 className="gap-1.5"
               >
-                <Upload className="size-3.5" />
+                <UploadIcon className="size-3.5" />
                 <span>Start Import ({parsed.rows.length} rows)</span>
               </Button>
             </div>
@@ -516,7 +525,7 @@ export function ImportWizardDialog({
         {/* STEP 4: IMPORTING IN PROGRESS */}
         {step === 'importing' && (
           <div className="space-y-6 py-6 text-center">
-            <Loader2 className="mx-auto size-10 animate-spin text-ink" />
+            <LoadingSpinner className="mx-auto size-10 text-ink" />
             <div className="space-y-2">
               <h3 className="font-display text-xl uppercase tracking-wider text-ink">
                 Importing Records...
