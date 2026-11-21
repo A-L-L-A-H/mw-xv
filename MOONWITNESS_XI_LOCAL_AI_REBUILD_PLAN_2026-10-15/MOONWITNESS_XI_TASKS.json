@@ -639,7 +639,7 @@
       "deliverable": "Structured direction, negation, quoted speaker/context schema",
       "acceptance": "Negated claims and quotations do not become positive asserted fact",
       "verification": "golden polarity fixtures",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
