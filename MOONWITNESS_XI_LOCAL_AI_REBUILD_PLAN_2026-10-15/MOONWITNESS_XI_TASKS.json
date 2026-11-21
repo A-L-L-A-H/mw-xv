@@ -237,7 +237,7 @@
       "deliverable": "Actor/source/activity/time/derivation provenance envelope",
       "acceptance": "Every derived record carries input IDs, method and version; provenance references resolve",
       "verification": "unit negative dangling-reference tests",
-      "status": "planned",
+      "status": "done",
       "evidence": null
     },
     {
