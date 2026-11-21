@@ -19,7 +19,6 @@ import {
   DeleteIcon as Trash2,
   UserIcon as UserPlus,
   UsersIcon as Users,
-  SignalIcon as Zap,
 } from '@moonwitness/ui/icons';
 import { client } from '@/lib/client';
 import { formatDateTime } from '@/lib/date-format';
@@ -29,7 +28,7 @@ import { useAuth } from '@/hooks/use-auth-context';
 import { useModels } from '@/hooks/use-model';
 import { modelIcon, modelLabel } from '@/lib/models';
 import { DEVELOPMENT_MODE_EVENT, readDevelopmentMode } from '@/lib/navigation';
-import { AccentMarker, Doodle } from '@moonwitness/ui/components/effects';
+import { AccentMarker, Doodle, LiveIndicator } from '@moonwitness/ui/components/effects';
 import { Button } from '@moonwitness/ui/components/button';
 import {
   Dialog,
@@ -294,11 +293,17 @@ export function DashboardPage() {
           className="dashboard-masthead-art"
         />
         <div className="dashboard-masthead-shade" aria-hidden="true" />
+        <div className="dashboard-masthead-ornaments" aria-hidden="true">
+          <Doodle kind="sparkle" className="size-4 text-[var(--mw-signal-blue)]" />
+          <Doodle kind="crown" className="size-5 text-[var(--mw-yellow)]" />
+        </div>
         <div className="dashboard-masthead-copy">
           <div className="dashboard-masthead-kicker">
             <Sparkles className="size-3.5" aria-hidden="true" /> MoonWitness / Command Center
           </div>
-          <h1 className="dashboard-masthead-title">Command center</h1>
+          <h1 className="dashboard-masthead-title">
+            <span>Command</span> <span className="dashboard-masthead-title-accent">center</span>
+          </h1>
           <p className="dashboard-masthead-subtitle">
             <span>Welcome,</span>
             <AccentMarker>{user?.login}</AccentMarker>
@@ -374,6 +379,9 @@ export function DashboardPage() {
                 detail="View directory"
                 icon={<Users className="size-4" />}
                 accent="magenta"
+                surface="paper"
+                frame="torn"
+                className="mw-ui-interactive-surface"
               />
             </Link>
 
@@ -385,6 +393,9 @@ export function DashboardPage() {
                 detail="System accounts"
                 icon={<UserPlus className="size-4" />}
                 accent="cyan"
+                surface="paper"
+                frame="torn"
+                className="mw-ui-interactive-surface"
               />
             </Link>
 
@@ -396,6 +407,9 @@ export function DashboardPage() {
                 detail="Tenant scopes"
                 icon={<Building2 className="size-4" />}
                 accent="yellow"
+                surface="paper"
+                frame="torn"
+                className="mw-ui-interactive-surface"
               />
             </Link>
 
@@ -406,7 +420,10 @@ export function DashboardPage() {
                 value={activityLoading ? '—' : (activityStats?.total ?? 0)}
                 detail="Active reminders"
                 icon={<CheckCircle2 className="size-4" />}
-                accent="magenta"
+                accent="violet"
+                surface="paper"
+                frame="torn"
+                className="mw-ui-interactive-surface"
               />
             </Link>
           </div>
@@ -415,9 +432,18 @@ export function DashboardPage() {
           <div className="min-w-0 border-4 border-ink bg-paper p-4 shadow-ink space-y-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-ink pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 border-2 border-ink bg-primary px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-primary-foreground">
-                  <Zap className="size-3.5" /> Live Pulse
-                </div>
+                <LiveIndicator
+                  active={
+                    isAdmin
+                      ? Boolean(
+                          jobsHealth?.data &&
+                          (jobsHealth.data.running > 0 || jobsHealth.data.queued > 0)
+                        )
+                      : (recentActivities?.records?.length ?? 0) > 0
+                  }
+                  label="Live Pulse"
+                  variant="on-air"
+                />
                 <h2 className="font-display text-xl uppercase tracking-wider">
                   {isAdmin ? 'System Audit Ledger Events' : 'Upcoming Planned Activities'}
                 </h2>

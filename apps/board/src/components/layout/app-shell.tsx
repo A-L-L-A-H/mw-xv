@@ -54,7 +54,7 @@ import {
   DropdownMenuTrigger,
 } from '@moonwitness/ui/components/dropdown-menu';
 import { Logo } from '@/components/manga/logo';
-import { Doodle } from '@moonwitness/ui/components/effects';
+import { DecorativeMotif, Doodle } from '@moonwitness/ui/components/effects';
 import { ShortcutsDialog } from '@/components/manga/shortcuts-dialog';
 import { ActivityBell } from './activity-bell';
 import { NotificationBell } from './notification-bell';
@@ -352,8 +352,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             {developmentMode ? 'Development Mode: On' : 'Development Mode'}
           </Button>
         </div>
-        <div className="flex items-center gap-2 border-t-2 border-dashed border-ink/20 px-5 py-4 font-mono text-[11px] uppercase tracking-widest text-ink-faint">
-          <Doodle kind="bolt" className="size-4" /> +1 every day
+        <div className="sidebar-zine-collage" aria-hidden="true">
+          <DecorativeMotif kind="eye-target" className="sidebar-zine-eye" />
+          <span className="sidebar-zine-note">
+            <Doodle kind="bolt" className="size-3.5" /> +1 every day
+          </span>
+          <Doodle kind="crown" className="size-4 shrink-0 text-[var(--mw-yellow)]" />
         </div>
       </aside>
 
@@ -404,8 +408,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                   {developmentMode ? 'Development Mode: On' : 'Development Mode'}
                 </Button>
               </div>
-              <div className="flex items-center gap-2 border-t-2 border-dashed border-ink/20 px-5 py-4 font-mono text-[11px] uppercase tracking-widest text-ink-faint">
-                <Doodle kind="bolt" className="size-4" /> +1 every day
+              <div className="sidebar-zine-collage" aria-hidden="true">
+                <DecorativeMotif kind="eye-target" className="sidebar-zine-eye" />
+                <span className="sidebar-zine-note">
+                  <Doodle kind="bolt" className="size-3.5" /> +1 every day
+                </span>
+                <Doodle kind="crown" className="size-4 shrink-0 text-[var(--mw-yellow)]" />
               </div>
             </SheetContent>
           </Sheet>

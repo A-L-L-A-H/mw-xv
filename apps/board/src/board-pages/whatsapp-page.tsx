@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@moonwitness/ui/components/dropdown-menu';
 import { MenuIcon } from '@moonwitness/ui/icons';
+import { LiveIndicator } from '@moonwitness/ui/components/effects';
 import { Checkbox } from '@moonwitness/ui/components/checkbox';
 import { Input } from '@moonwitness/ui/components/input';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
@@ -1738,6 +1739,11 @@ function WhatsappInbox({ inboxPreferenceScope }: { inboxPreferenceScope: string 
           <p className="mt-1 flex items-center gap-2 text-sm">
             {statusIcon}
             <span>{statusLabel[status] ?? status}</span>
+            <LiveIndicator
+              active={connected}
+              label={connected ? 'ON AIR' : 'OFFLINE'}
+              variant="on-air"
+            />
             {account?.phone_number && <span className="font-mono">+{account.phone_number}</span>}
           </p>
           {account?.last_error && <p className="mt-2 text-sm text-red-700">{account.last_error}</p>}

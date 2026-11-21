@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/hooks/use-auth-context';
 import { client } from '@/lib/client';
 import { Button } from '@moonwitness/ui/components/button';
+import { Doodle } from '@moonwitness/ui/components/effects';
 import { Panel } from '@moonwitness/ui/components/panel';
 import { SectionRibbon } from '@moonwitness/ui/components/section-ribbon';
 
@@ -161,12 +162,18 @@ export function StoryWorkbenchPage() {
           className="dashboard-masthead-art"
         />
         <div className="dashboard-masthead-shade" aria-hidden="true" />
+        <div className="dashboard-masthead-ornaments" aria-hidden="true">
+          <Doodle kind="star" className="size-4 text-[var(--mw-signal-blue)]" />
+          <Doodle kind="crown" className="size-5 text-[var(--mw-yellow)]" />
+        </div>
         <div className="dashboard-masthead-copy">
           <div className="dashboard-masthead-kicker">
             <KnowledgeIcon aria-hidden="true" className="size-4" />
             MoonWitness / Internal editorial
           </div>
-          <h1 className="dashboard-masthead-title">Story workbench</h1>
+          <h1 className="dashboard-masthead-title">
+            <span>Story</span> <span className="dashboard-masthead-title-accent">workbench</span>
+          </h1>
           <p className="dashboard-masthead-subtitle">
             Edit and arrange the pages of an internal story. Saving appends an immutable revision;
             previous text remains available by version. This workbench does not publish content or
