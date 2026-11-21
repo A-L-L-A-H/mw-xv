@@ -1,0 +1,7 @@
+# Asset provenance and licensing
+
+`@moonwitness/assets` is licensed under ISC. The logo, icon, social card, and README banner geometry are authored for MoonWitness in `packages/assets/scripts/generate.mjs`; the generated manifest refers to that source. They contain no third-party icon set or external SVG references.
+
+The Board, UI catalog, and docs portal use the local font stylesheet exported by `@moonwitness/assets`: Anton, Space Grotesk, and JetBrains Mono. The package bundles unmodified WOFF2 Latin and Latin-ext subsets with the full SIL Open Font License 1.1 notice files. Per-file upstream URLs and SHA-256 checksums are recorded in [`packages/assets/licenses.json`](../../packages/assets/licenses.json). Upstream records identify each font under SIL OFL 1.1: [Anton metadata](https://github.com/google/fonts/blob/main/ofl/anton/METADATA.pb), [Space Grotesk metadata](https://github.com/google/fonts/blob/main/ofl/spacegrotesk/METADATA.pb), and the [JetBrains Mono license](https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt). Bundling removes the Google Fonts runtime request and makes screenshot rendering independent of CDN availability.
+
+Before adding another font family or modifying these binaries, re-check the exact upstream license, preserve required notices, and update each file's source URL and checksum. The manifest's verification date records when upstream entries were reviewed; it does not replace the included license texts.

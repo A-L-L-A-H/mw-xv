@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: moonwitness_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: moonwitness_db
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d moonwitness_db]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gowa:
+    image: aldinokemal2104/go-whatsapp-web-multidevice:v9.6.0
+    container_name: moonwitness_gowa
+    restart: unless-stopped
+    command: ['rest', '--basic-auth=moonwitness:moonwitness', '--port=3000']
+    ports:
+      - '127.0.0.1:3001:3000'
+    volumes:
+      - gowa_data:/app/storages
+
+volumes:
+  pgdata:
+  gowa_data:

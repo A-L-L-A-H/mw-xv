@@ -1,0 +1,8 @@
+node_modules
+dist
+apps/board/.next*
+*.tsbuildinfo
+services
+pnpm-lock.yaml
+.env*
+coverage
