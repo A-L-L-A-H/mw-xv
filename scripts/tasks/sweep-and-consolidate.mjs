@@ -1153,6 +1153,15 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
       throw new Error('Choose only one mode: --check or --write.');
     }
 
+    if (writeEnabled) {
+      const existingRaw = await fs.readFile(targetFile, 'utf8');
+      if (existingRaw.trim()) {
+        throw new Error(
+          'Refusing to overwrite an existing TaskOS registry. This importer is for the one-time recovery of an empty registry; update task lifecycle through the canonical TaskOS workflow instead.'
+        );
+      }
+    }
+
     let generatedAt;
     if (checkOnly) {
       const currentRaw = await fs.readFile(targetFile, 'utf8');
