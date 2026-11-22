@@ -1568,6 +1568,19 @@
       "status": "review",
       "license": "ISC",
       "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/world/characters/crew-01-sheet.svg",
+      "kind": "source",
+      "variant": "canonical-character-sheet",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
     }
   ]
 }

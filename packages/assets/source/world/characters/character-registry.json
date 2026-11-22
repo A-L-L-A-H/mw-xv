@@ -30,7 +30,9 @@
         "sacred-figure",
         "real-person-likeness"
       ],
-      "masterAssetIds": [],
+      "masterAssetIds": [
+        "source/world/characters/crew-01-sheet.svg"
+      ],
       "variantAssetIds": [],
       "license": "ISC",
       "status": "review"

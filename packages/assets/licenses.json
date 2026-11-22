@@ -311,6 +311,15 @@
       "modifications": "Original canonical character registry for Moon City visual universe.",
       "status": "review",
       "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/characters/crew-01-sheet.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical character sheet for crew-01: anonymous back-facing hooded crew figure, industrial workwear, tool satchel, crew badge. No face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
     }
   ],
   "originalFonts": [

@@ -4,7 +4,7 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "88ffc752caed57d47b0fc3c9491b5eb7076046823b753b4bcdbcaa7116916fb8",
+    "assetManifestSha256": "344b3d6732f4c4f13f601043acc74fdd006505b2fe21243e3b00f4c2f6a8a1e3",
     "tokens": "packages/ui/src/styles/tokens.css",
     "tokensSha256": "d5f681a9afbe08b0d531cfb0f55633e0b0b4f94abc205b972863e29f8409eac7"
   },
