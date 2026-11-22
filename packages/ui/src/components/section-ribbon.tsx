@@ -5,7 +5,7 @@ export type SectionRibbonProps = Omit<ComponentProps<'header'>, 'children'> & {
   number?: string | number;
   accent?: 'magenta' | 'cyan' | 'yellow';
   surface?: 'paper' | 'ink';
-  frame?: 'line' | 'torn' | 'scuffed';
+  frame?: 'line' | 'torn' | 'scuffed' | 'grunge';
   action?: ReactNode;
   headingLevel?: 2 | 3 | 4;
 };

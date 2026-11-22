@@ -269,6 +269,10 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
     'shadow-anime-impact',
     'grunge-clip-rough',
     'grunge-clip-jagged',
+    'grunge-clip-tape',
+    'grunge-clip-torn-card',
+    'grunge-clip-brush-btn',
+    'grunge-radius-hand',
     'motion-ease',
     'motion-ease-emphasis',
   ]) {
@@ -294,6 +298,8 @@ test('shared controls and overlays use the semantic motion scale', async () => {
   assert.match(componentCss, /@keyframes mw-ui-anime-slam/u);
   assert.match(componentCss, /@keyframes mw-ui-anime-slash/u);
   assert.match(componentCss, /@keyframes mw-ui-grunge-cel-shake/u);
+  assert.match(componentCss, /@keyframes mw-ui-anime-brush-wipe/u);
+  assert.match(componentCss, /@keyframes mw-ui-anime-bar-grow/u);
 });
 
 test('interactive surfaces expose opt-in feedback only for hover pointers without reduced motion', async () => {

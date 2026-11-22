@@ -16,6 +16,8 @@ test('bar chart provides localized values, SVG tooltips, and accessible table al
     })
   );
   assert.match(html, /role="img" aria-label="Job state distribution"/);
+  assert.match(html, /class="mw-ui-chart-bar"/);
+  assert.match(html, /<feDisplacementMap/);
   assert.match(html, /<title>Queued: 1\.200<\/title>/);
   assert.match(html, /<caption>Job state distribution<\/caption>/);
   assert.match(html, /<th scope="row">Running<\/th><td>0<\/td>/);

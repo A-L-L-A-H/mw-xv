@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from 'react';
+import { useId, type ComponentProps, type ReactNode } from 'react';
 
 export type ChartDatum = {
   label: string;
@@ -100,6 +100,7 @@ export function BarChart({
   className,
   ...props
 }: ChartProps) {
+  const id = useId().replaceAll(':', '');
   const format = formatter(locale, renderValue);
   const maxValue = Math.max(0, ...data.map(({ value }) => (Number.isFinite(value) ? value : 0)));
   const validData = data.filter(({ value }) => Number.isFinite(value) && value >= 0);
@@ -126,6 +127,29 @@ export function BarChart({
           aria-label={title}
           preserveAspectRatio="xMinYMin meet"
         >
+          <defs>
+            <filter id={`mw-bar-rough-${id}`}>
+              <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7" />
+              <feDisplacementMap in="SourceGraphic" scale="1.6" />
+            </filter>
+            <pattern
+              id={`mw-bar-hatch-${id}`}
+              width="6"
+              height="6"
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(-32)"
+            >
+              <line
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="6"
+                stroke="var(--mw-ink)"
+                strokeOpacity="0.22"
+                strokeWidth="1.5"
+              />
+            </pattern>
+          </defs>
           {validData.map((datum, index) => {
             const chartWidth = 560;
             const labelWidth = 124;
@@ -153,13 +177,28 @@ export function BarChart({
                   rx="1"
                 />
                 <rect
+                  className="mw-ui-chart-bar"
                   x={labelWidth + 8}
                   y={rowY}
                   width={Math.max(0, barWidth)}
                   height="20"
                   fill={chartColors[index % chartColors.length]}
+                  stroke="var(--mw-ink)"
+                  strokeWidth={barWidth > 0 ? 1.5 : 0}
+                  filter={barWidth > 0 ? `url(#mw-bar-rough-${id})` : undefined}
                   rx="1"
                 />
+                {barWidth > 0 ? (
+                  <rect
+                    aria-hidden="true"
+                    className="mw-ui-chart-bar-hatch"
+                    x={labelWidth + 8}
+                    y={rowY}
+                    width={barWidth}
+                    height="20"
+                    fill={`url(#mw-bar-hatch-${id})`}
+                  />
+                ) : null}
                 <text className="mw-ui-chart-label" x="0" y={rowY + 14} textAnchor="start">
                   {datum.label.length > 18 ? `${datum.label.slice(0, 16)}…` : datum.label}
                 </text>
@@ -205,6 +244,7 @@ export function LineChart({
   className,
   ...props
 }: LineChartProps) {
+  const id = useId().replaceAll(':', '');
   const format = formatter(locale, renderValue);
   const allValues = series.flatMap(({ values }) => values).filter(Number.isFinite);
   const maxValue = Math.max(0, ...allValues);
@@ -237,6 +277,12 @@ export function LineChart({
           aria-label={title}
           preserveAspectRatio="xMinYMin meet"
         >
+          <defs>
+            <filter id={`mw-line-rough-${id}`}>
+              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="13" />
+              <feDisplacementMap in="SourceGraphic" scale="1.5" />
+            </filter>
+          </defs>
           {series.map((item, seriesIndex) => {
             const points = item.values
               .map((value, index) => (Number.isFinite(value) ? `${x(index)},${y(value)}` : null))
@@ -244,22 +290,26 @@ export function LineChart({
             return (
               <g key={item.label}>
                 <polyline
+                  className="mw-ui-chart-line"
+                  pathLength={1}
                   points={points.join(' ')}
                   fill="none"
                   stroke={item.color ?? chartColors[seriesIndex % chartColors.length]}
-                  strokeWidth="3"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
+                  strokeWidth="3.2"
+                  strokeLinejoin="miter"
+                  strokeLinecap="square"
+                  filter={`url(#mw-line-rough-${id})`}
                 />
                 {item.values.map((value, index) =>
                   Number.isFinite(value) ? (
                     <g key={`${item.label}-${labels[index] ?? index}`}>
                       <title>{`${item.label}, ${labels[index] ?? ''}: ${format(value)}`}</title>
-                      <circle
-                        cx={x(index)}
-                        cy={y(value)}
-                        r="4"
+                      <polygon
+                        className="mw-ui-chart-point"
+                        points={`${x(index)},${y(value) - 5} ${x(index) + 5},${y(value)} ${x(index)},${y(value) + 5} ${x(index) - 5},${y(value)}`}
                         fill={item.color ?? chartColors[seriesIndex % chartColors.length]}
+                        stroke="var(--mw-ink)"
+                        strokeWidth="1.5"
                       />
                     </g>
                   ) : null

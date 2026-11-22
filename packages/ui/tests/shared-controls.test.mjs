@@ -21,10 +21,14 @@ test('shared field controls keep explicit label association, invalid state and s
     )
   );
 
-  assert.match(html, /<label[^>]*for="notes"[^>]*>Notes<\/label>/u);
+  assert.match(html, /<label[^>]*class="mw-ui-label[^"]*"[^>]*for="notes"[^>]*>Notes<\/label>/u);
   assert.match(
     html,
-    /<textarea[^>]*id="notes"[^>]*aria-invalid="true"[^>]*aria-describedby="notes-error"/u
+    /<textarea[^>]*class="mw-ui-textarea[^"]*"[^>]*id="notes"[^>]*aria-invalid="true"[^>]*aria-describedby="notes-error"/u
   );
-  assert.match(html, /role="switch"[^>]*aria-checked="true"[^>]*aria-label="Enable reminders"/u);
+  assert.match(
+    html,
+    /role="switch"[^>]*aria-checked="true"[^>]*class="mw-ui-switch[^"]*"[^>]*aria-label="Enable reminders"/u
+  );
+  assert.match(html, /class="mw-ui-switch-thumb/u);
 });
