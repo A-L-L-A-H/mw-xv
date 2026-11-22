@@ -197,6 +197,15 @@
       "sha256": "83C005D49D8A6A50474C73A5A36AC0468076E9C4A29DA7BDB14995D80560A5BE"
     },
     {
+      "path": "fonts/MoonWitnessGrunge-latin.woff2",
+      "source": "source/fonts/MoonWitnessGrunge-Regular.otf",
+      "kind": "font",
+      "variant": "latin-display-subset",
+      "format": "woff2",
+      "license": "ISC",
+      "sha256": "6B5B6A40EFF4EEE47423F07AE1BE51C705D8BBE3E2A55C4BA9F6213ECA1F3A04"
+    },
+    {
       "path": "fonts/RoadRage-latin.woff2",
       "source": "source/fonts/RoadRage-Regular.ttf",
       "kind": "font",
@@ -1457,26 +1466,27 @@
       "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
     },
     {
-      "path": "source/artwork/story-workbench-masthead-master.png",
+      "path": "source/artwork/moon-city-cloud-layer.svg",
       "kind": "source",
-      "variant": "original-ai-artwork",
-      "format": "png",
-      "width": 1774,
-      "height": 887,
-      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
-    },
-    {
-      "path": "source/fonts/RoadRage-Regular.ttf",
-      "kind": "source",
-      "variant": "upstream-road-rage-regular",
-      "format": "ttf",
-      "license": "SIL Open Font License 1.1",
-      "sha256": "F476D2AAC31340C6F5ECB4F2750331F17548B18E29E4CD351ADBB006F609E29A"
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "pack": "moon-city",
+      "status": "review"
     },
     {
       "path": "source/artwork/moon-city-environment-master.png",
       "kind": "source",
       "format": "png",
+      "width": 2048,
+      "height": 1152,
+      "pack": "moon-city",
+      "status": "review"
+    },
+    {
+      "path": "source/artwork/moon-city-foreground-layer.svg",
+      "kind": "source",
+      "format": "svg",
       "width": 2048,
       "height": 1152,
       "pack": "moon-city",
@@ -1505,15 +1515,6 @@
       }
     },
     {
-      "path": "source/artwork/moon-city-skyline-layer.png",
-      "kind": "source",
-      "format": "png",
-      "width": 2048,
-      "height": 1152,
-      "pack": "moon-city",
-      "status": "review"
-    },
-    {
       "path": "source/artwork/moon-city-sky-layer.svg",
       "kind": "source",
       "format": "svg",
@@ -1523,22 +1524,39 @@
       "status": "review"
     },
     {
-      "path": "source/artwork/moon-city-cloud-layer.svg",
+      "path": "source/artwork/moon-city-skyline-layer.png",
       "kind": "source",
-      "format": "svg",
+      "format": "png",
       "width": 2048,
       "height": 1152,
       "pack": "moon-city",
       "status": "review"
     },
     {
-      "path": "source/artwork/moon-city-foreground-layer.svg",
+      "path": "source/artwork/story-workbench-masthead-master.png",
       "kind": "source",
-      "format": "svg",
-      "width": 2048,
-      "height": 1152,
-      "pack": "moon-city",
-      "status": "review"
+      "variant": "original-ai-artwork",
+      "format": "png",
+      "width": 1774,
+      "height": 887,
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+    },
+    {
+      "path": "source/fonts/MoonWitnessGrunge-Regular.otf",
+      "source": "scripts/generate-brand-font.mjs",
+      "kind": "source",
+      "variant": "moonwitness-grunge-regular",
+      "format": "otf",
+      "license": "ISC",
+      "sha256": "02E986E97FD30BA11B51630C49C8906BB97DD40B732C3BC1120F6BE9D136067F"
+    },
+    {
+      "path": "source/fonts/RoadRage-Regular.ttf",
+      "kind": "source",
+      "variant": "upstream-road-rage-regular",
+      "format": "ttf",
+      "license": "SIL Open Font License 1.1",
+      "sha256": "F476D2AAC31340C6F5ECB4F2750331F17548B18E29E4CD351ADBB006F609E29A"
     }
   ]
 }

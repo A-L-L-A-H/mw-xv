@@ -782,6 +782,15 @@ function CatalogContent() {
                 description="The specimens use local package fonts and semantic typography tokens."
               >
                 <div className="type-specimen-list">
+                  <div
+                    className="type-specimen type-specimen-brush"
+                    data-testid="typography-moonwitness-grunge"
+                  >
+                    <span>
+                      MoonWitness Grunge · proprietary grunge × funky × Gen-Z display font
+                    </span>
+                    <strong>RAW SIGNAL // ZERO FILTER 2026!</strong>
+                  </div>
                   <div className="type-specimen type-specimen-brush">
                     <span>Brush display · short headlines</span>
                     <strong>FOLLOW THE SIGNAL</strong>

@@ -303,5 +303,23 @@
       "status": "review",
       "distribution": "source-only pending visual acceptance"
     }
+  ],
+  "originalFonts": [
+    {
+      "family": "MoonWitness Grunge",
+      "designer": "MoonWitness Studio",
+      "source": "packages/assets/scripts/generate-brand-font.mjs",
+      "license": "ISC",
+      "files": [
+        {
+          "path": "fonts/MoonWitnessGrunge-latin.woff2",
+          "source": "packages/assets/scripts/generate-brand-font.mjs",
+          "sourceFile": "source/fonts/MoonWitnessGrunge-Regular.otf",
+          "sourceSha256": "02E986E97FD30BA11B51630C49C8906BB97DD40B732C3BC1120F6BE9D136067F",
+          "sha256": "6B5B6A40EFF4EEE47423F07AE1BE51C705D8BBE3E2A55C4BA9F6213ECA1F3A04"
+        }
+      ],
+      "usage": "Bundled proprietary Grunge x Funky x Gen-Z display WOFF2 for MoonWitness headlines, ribbons, and stamps."
+    }
   ]
 }
