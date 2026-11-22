@@ -83,6 +83,22 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Emit generated docs for exact one-time reconciliation
+        if: failure() && steps.build-workspace.outputs.references_generated == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            README.md \
+            docs/guide/reference/generated-api.md \
+            docs/guide/reference/generated-models.md \
+            docs/guide/reference/generated-platform.json \
+            docs/guide/reference/generated-platform.md; do
+            printf 'GENERATED_DOC_BEGIN:%s\\n' "$file"
+            base64 -w0 "$file"
+            printf '\\nGENERATED_DOC_END:%s\\n' "$file"
+          done
+
   unit-tests:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
