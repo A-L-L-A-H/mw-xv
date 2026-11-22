@@ -2214,7 +2214,7 @@
       "id": "W6-002",
       "phase": "W6",
       "title": "Define cinematic FX contracts",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "designer",
       "parallel_group": "serial",
@@ -2241,7 +2241,13 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "reviewed packages/ui/src/components/effects.tsx, component styles/tokens, reduced-motion tests and fx-reuse-map",
+          "exit_code": 0,
+          "artifact": "evidence/cinematic-fx-contract.md"
+        }
+      ],
       "commit": null
     },
     {

@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 20 · skipped 2 · in_progress 1 · blocked 0 · todo 86.
+Status counts: done 21 · skipped 2 · in_progress 1 · blocked 0 · todo 85.
 
 ## W0
 
@@ -418,12 +418,13 @@ Status counts: done 20 · skipped 2 · in_progress 1 · blocked 0 · todo 86.
   - Verify: pnpm test:ui
   - Evidence: `source inventory of shared FX exports, CSS keyframes, motion tokens and reduced-motion/audio behavior` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/fx-reuse-map.md`; `pnpm test:ui` (0) → `59 UI tests and packed consumer verification passed`
 
-- [ ] **W6-002 — Define cinematic FX contracts**
+- [x] **W6-002 — Define cinematic FX contracts**
   - Goal: Define impact, frame-freeze, slash, transition, particles, glow and camera shake with safe intensity levels.
   - Depends on: W6-001, W1-007
   - Deliverables: FX contract and design examples.
   - Acceptance: All FX have static/reduced-motion alternative.; No FX covers controls or content.; Intensity and duration are bounded.
   - Verify: FX preview review
+  - Evidence: `reviewed packages/ui/src/components/effects.tsx, component styles/tokens, reduced-motion tests and fx-reuse-map` (0) → `evidence/cinematic-fx-contract.md`
 
 - [ ] **W6-003 — Implement bounded scene particle effects**
   - Goal: Build measured lightweight particle presets for rain, dust, stars and sparks.
