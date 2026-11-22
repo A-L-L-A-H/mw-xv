@@ -32,4 +32,6 @@ pnpm roadmap:progress -- --format json
 
 ## Recovery
 
+The validator now rejects an empty/whitespace registry with a recovery-specific diagnostic and reports malformed JSON explicitly. Tests were added; execution still needs a checked-out workspace. This guard does not restore records or authorize sync.
+
 Follow [MW-XV Stabilization Plan](../roadmap/STABILIZATION-PLAN.md), work item S1. Do not populate this registry by copying only the M/K task index: TaskOS claims to include additional series and records that must be inventoried from their actual sources first.
