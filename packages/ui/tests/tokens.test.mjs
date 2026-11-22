@@ -235,6 +235,7 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
     'cyan-readable',
     'violet-readable',
     'signal-blue',
+    'font-grunge',
     'font-brush',
     'font-display',
     'font-sans',
@@ -278,6 +279,9 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
   ]) {
     assert.ok(tokenValue(name).length > 0, `Expected --mw-${name}`);
   }
+  assert.match(tokenValue('font-display'), /'MoonWitness Grunge'/u);
+  assert.match(tokenValue('font-brush'), /'MoonWitness Grunge'/u);
+  assert.match(tokenValue('font-grunge'), /'MoonWitness Grunge'/u);
   assert.equal(tokenValue('paper-cream'), '#f3efe4');
   assert.equal(tokenValue('ink-black'), '#0d0d0d');
   assert.equal(tokenValue('yellow'), '#ffe031');

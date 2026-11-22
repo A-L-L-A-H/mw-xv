@@ -70,7 +70,7 @@
   --mw-chart-5: #76519b;
 
   /* Typography: applications may self-host fonts and override these stacks. */
-  --mw-font-display: 'Anton', Impact, 'Arial Narrow', sans-serif;
+  --mw-font-display: 'MoonWitness Grunge', 'Anton', Impact, 'Arial Narrow', sans-serif;
   --mw-font-grunge: 'MoonWitness Grunge', 'Road Rage', Impact, 'Arial Narrow', sans-serif;
   --mw-font-brush: 'MoonWitness Grunge', 'Road Rage', Impact, 'Arial Narrow', sans-serif;
   --mw-font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;

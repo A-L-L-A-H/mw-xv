@@ -30,7 +30,7 @@ Normal text pairs meet WCAG AA at 4.5:1. Non-text control boundaries and focus i
 | ------------------- | ---------------------------------------------- | --------------------------------------- |
 | `--mw-font-grunge`  | MoonWitness Grunge, Road Rage, Impact fallback | Proprietary grunge/funky Gen-Z display  |
 | `--mw-font-brush`   | MoonWitness Grunge, Road Rage, Impact fallback | Short expressive headings and ribbons   |
-| `--mw-font-display` | Anton, Impact fallback                         | Metrics, section titles, compact labels |
+| `--mw-font-display` | MoonWitness Grunge, Anton, Impact fallback     | Metrics, section titles, compact labels |
 | `--mw-font-sans`    | Space Grotesk, system fallback                 | Body, navigation, controls, tables      |
 | `--mw-font-mono`    | JetBrains Mono, monospace fallback             | Technical IDs, timestamps, code         |
 

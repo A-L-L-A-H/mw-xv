@@ -50,6 +50,8 @@
 
 @theme inline {
   --font-display: var(--mw-font-display);
+  --font-brush: var(--mw-font-brush);
+  --font-grunge: var(--mw-font-grunge);
   --font-sans: var(--mw-font-sans);
   --font-mono: var(--mw-font-mono);
 
