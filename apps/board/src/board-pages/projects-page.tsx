@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AddonIcon,
   CheckCircleIcon,
+  CodeIcon,
   ColumnsIcon,
   RefreshIcon,
   SparkleIcon,
@@ -19,6 +20,11 @@ import { Panel } from '@moonwitness/ui/components/panel';
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { toast } from '@moonwitness/ui/components/toast';
 import { client } from '@/lib/client';
+import {
+  dispatchDesktopFlowPrime,
+  useDesktopBridge,
+  type DesktopGitWorktreeLease,
+} from '@/lib/desktop-bridge';
 import { scopedQueryKey } from '@/lib/query-scope';
 
 interface ProjectSummary {
@@ -98,6 +104,7 @@ function priorityVariant(
 
 export function ProjectsPage() {
   const queryClient = useQueryClient();
+  const { isDesktop, bridge, snapshot, refreshSnapshot } = useDesktopBridge();
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [todoCode, setTodoCode] = useState('TASK-0880');
   const [todoTitle, setTodoTitle] = useState('');
@@ -114,6 +121,10 @@ export function ProjectsPage() {
     code: string;
     created: boolean;
   } | null>(null);
+  const [boundLeasesByTaskId, setBoundLeasesByTaskId] = useState<
+    Record<number, DesktopGitWorktreeLease>
+  >({});
+  const [bindingTaskId, setBindingTaskId] = useState<number | null>(null);
 
   const projectsQuery = useQuery({
     queryKey: scopedQueryKey(['projects', 'list']),
@@ -245,6 +256,7 @@ export function ProjectsPage() {
   });
 
   const board = boardQuery.data;
+  const activeDesktopLeases = useMemo(() => snapshot?.activeLeases ?? [], [snapshot?.activeLeases]);
   const dagNodeById = useMemo(
     () => new Map((board?.dag.nodes ?? []).map((node) => [node.id, node])),
     [board]
@@ -253,6 +265,91 @@ export function ProjectsPage() {
     () => new Map((board?.tasks ?? []).map((task) => [task.id, task])),
     [board]
   );
+
+  const findTaskLease = (task: TaskSummary): DesktopGitWorktreeLease | null => {
+    const cached = boundLeasesByTaskId[task.id];
+    if (cached && cached.status === 'active') return cached;
+    const normalizedCode = task.code.toLowerCase().replace(/[^a-z0-9-_]/gu, '-');
+    return (
+      activeDesktopLeases.find(
+        (lease) =>
+          lease.status === 'active' &&
+          (lease.runId.toLowerCase().includes(normalizedCode) ||
+            lease.branchName.toLowerCase().includes(normalizedCode))
+      ) ?? null
+    );
+  };
+
+  const handleBindDesktopWorktree = async (task: TaskSummary) => {
+    if (!isDesktop || !bridge) {
+      toast.info(
+        `Web-only mode: open MoonWitness Desktop to bind an isolated worktree for ${task.code}.`
+      );
+      return;
+    }
+
+    const existingLease = findTaskLease(task);
+    const contractCode =
+      lastDispatchedContract?.taskCode === task.code
+        ? lastDispatchedContract.code
+        : `WC-${task.code}`;
+
+    if (existingLease) {
+      dispatchDesktopFlowPrime({
+        taskCode: task.code,
+        taskTitle: task.title,
+        runId: existingLease.runId,
+        contractCode,
+        scopePaths: existingLease.allowedPaths,
+        openDrawer: true,
+      });
+      toast.success(
+        `Opened FLOW Cockpit for ${task.code} on active lease ${existingLease.branchName}.`
+      );
+      return;
+    }
+
+    const sanitizedRunId = `task-${task.code.toLowerCase().replace(/[^a-z0-9-_]/gu, '-')}`;
+    setBindingTaskId(task.id);
+    try {
+      if (bridge.worktree.acquire) {
+        const lease = await bridge.worktree.acquire({
+          runId: sanitizedRunId,
+          taskCode: task.code,
+          workContractId:
+            lastDispatchedContract?.taskCode === task.code
+              ? lastDispatchedContract.contractId
+              : undefined,
+        });
+        setBoundLeasesByTaskId((prev) => ({ ...prev, [task.id]: lease }));
+        await refreshSnapshot();
+        dispatchDesktopFlowPrime({
+          taskCode: task.code,
+          taskTitle: task.title,
+          runId: lease.runId,
+          contractCode,
+          scopePaths: lease.allowedPaths,
+          openDrawer: true,
+        });
+        toast.success(`Bound Desktop worktree ${lease.branchName} for ${task.code}.`);
+      } else {
+        dispatchDesktopFlowPrime({
+          taskCode: task.code,
+          taskTitle: task.title,
+          runId: activeDesktopLeases[0]?.runId,
+          contractCode,
+          openDrawer: true,
+        });
+        toast.info(
+          `Primed FLOW Cockpit for ${task.code} (worktree.acquire not exposed in this preload build).`
+        );
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : `Failed to bind worktree for ${task.code}.`);
+    } finally {
+      setBindingTaskId(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -264,6 +361,9 @@ export function ProjectsPage() {
         description="Zero-overlap Kanban stages, dependency DAG blocker radar, TaskOS sync, and 1-click AI WorkContract dispatch."
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={isDesktop ? 'cyan' : 'default'}>
+              {isDesktop ? `Desktop Harness · ${activeDesktopLeases.length} lease(s)` : 'Web Mode'}
+            </Badge>
             {(projectsQuery.data ?? []).map((project) => (
               <Button
                 key={project.id}
@@ -349,6 +449,7 @@ export function ProjectsPage() {
                 ) : (
                   stageTasks.map((task) => {
                     const node = dagNodeById.get(task.id);
+                    const taskLease = findTaskLease(task);
                     const blockerCodes = (node?.blocked_by_ids ?? [])
                       .map((id) => taskById.get(id)?.code ?? `#${id}`)
                       .join(', ');
@@ -359,12 +460,15 @@ export function ProjectsPage() {
                       >
                         <div className="flex flex-wrap items-center justify-between gap-1">
                           <span className="font-mono text-xs font-bold">{task.code}</span>
-                          <div className="flex items-center gap-1">
+                          <div className="flex flex-wrap items-center gap-1">
                             <Badge variant={priorityVariant(task.priority)}>{task.priority}</Badge>
                             {blockerCodes ? (
                               <Badge variant="destructive">BLOCKED BY {blockerCodes}</Badge>
                             ) : node?.is_ready ? (
                               <Badge variant="cyan">READY</Badge>
+                            ) : null}
+                            {taskLease ? (
+                              <Badge variant="primary">LEASE: {taskLease.branchName}</Badge>
                             ) : null}
                           </div>
                         </div>
@@ -394,6 +498,23 @@ export function ProjectsPage() {
                             <SparkleIcon className="mr-1 size-3.5" />
                             Dispatch AI
                           </Button>
+                          {node?.is_ready ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={bindingTaskId === task.id}
+                              onClick={() => void handleBindDesktopWorktree(task)}
+                            >
+                              <CodeIcon className="mr-1 size-3.5" />
+                              {bindingTaskId === task.id
+                                ? 'Binding…'
+                                : taskLease
+                                  ? 'Open FLOW'
+                                  : isDesktop
+                                    ? 'Bind Worktree'
+                                    : 'Desktop Worktree'}
+                            </Button>
+                          ) : null}
                           <Button
                             size="sm"
                             variant="outline"

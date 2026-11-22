@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { validateDiffScope, type PcwCheckStatus } from '@moonwitness/ai-runtime';
 import { OutboxEvent } from '@moonwitness/jobs';
 import {
   AcceptanceCriterion,
@@ -27,6 +28,174 @@ import { requireAiCompanyContext } from './ai-corporation.routes.js';
 
 export interface AiDesktopSyncRoutesOptions {
   readonly attachmentStorage: AttachmentStorage;
+}
+
+const VALID_PCW_CHECK_STATUSES = new Set<PcwCheckStatus>([
+  'pass',
+  'fail',
+  'skipped',
+  'not_applicable',
+  'not_run',
+]);
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+}
+
+function parseContractScopePaths(scopeJson: string | null | undefined): {
+  readonly allowedPaths: string[];
+  readonly forbiddenPaths: string[];
+} {
+  if (typeof scopeJson !== 'string' || !scopeJson.trim()) {
+    return { allowedPaths: [], forbiddenPaths: [] };
+  }
+  try {
+    const parsed: unknown = JSON.parse(scopeJson);
+    if (!isRecord(parsed)) {
+      return { allowedPaths: [], forbiddenPaths: [] };
+    }
+    const allowedPaths = toStringArray(parsed.allowedPaths ?? parsed.allowed_paths ?? parsed.paths);
+    const forbiddenPaths = toStringArray(parsed.forbiddenPaths ?? parsed.forbidden_paths);
+    return { allowedPaths, forbiddenPaths };
+  } catch {
+    return { allowedPaths: [], forbiddenPaths: [] };
+  }
+}
+
+interface DesktopProofGateError {
+  readonly statusCode: number;
+  readonly code: string;
+  readonly error: string;
+  readonly details?: Record<string, unknown>;
+}
+
+function evaluateDesktopProofGateV2(
+  body: Record<string, unknown>,
+  contractScopeJson: string | null | undefined
+): DesktopProofGateError | null {
+  const proofSource = isRecord(body.proof)
+    ? body.proof
+    : isRecord(body.proofGate)
+      ? body.proofGate
+      : body;
+
+  const rawChecks = proofSource.checks ?? body.checks;
+  if (rawChecks !== undefined) {
+    if (!Array.isArray(rawChecks)) {
+      return {
+        statusCode: 422,
+        code: 'INVALID_CHECK_MATRIX',
+        error: 'Proof Gate v2 checks must be an array',
+      };
+    }
+    const failedChecks: string[] = [];
+    for (const [idx, item] of rawChecks.entries()) {
+      if (!isRecord(item)) {
+        return {
+          statusCode: 422,
+          code: 'INVALID_CHECK_MATRIX',
+          error: `Proof Gate v2 check at index ${idx} must be an object`,
+        };
+      }
+      const code =
+        typeof item.code === 'string' && item.code.trim() ? item.code.trim() : `check_${idx + 1}`;
+      const status = item.status;
+      if (typeof status !== 'string' || !VALID_PCW_CHECK_STATUSES.has(status as PcwCheckStatus)) {
+        return {
+          statusCode: 422,
+          code: 'INVALID_CHECK_STATUS',
+          error: `Proof Gate v2 check '${code}' has invalid status '${String(status)}'`,
+          details: { checkCode: code },
+        };
+      }
+      if (status === 'skipped') {
+        const reason = typeof item.reason === 'string' ? item.reason.trim() : '';
+        if (!reason) {
+          return {
+            statusCode: 422,
+            code: 'MISSING_SKIP_REASON',
+            error: `Skipped check '${code}' requires a non-empty reason`,
+            details: { checkCode: code },
+          };
+        }
+      }
+      const mandatory = item.mandatory !== false;
+      if (status === 'fail') {
+        failedChecks.push(code);
+      } else if (mandatory && status !== 'pass') {
+        return {
+          statusCode: 422,
+          code: 'MANDATORY_CHECK_NOT_PASSED',
+          error: `Mandatory check '${code}' has status '${status}' and must pass before sync`,
+          details: { checkCode: code, status },
+        };
+      }
+    }
+    if (failedChecks.length > 0) {
+      return {
+        statusCode: 422,
+        code: 'PROOF_CHECK_FAILED',
+        error: `Proof Gate v2 rejected failed check(s): ${failedChecks.join(', ')}`,
+        details: { failedChecks },
+      };
+    }
+  }
+
+  const explicitOutOfScope = toStringArray(
+    proofSource.out_of_scope_files ??
+      proofSource.outOfScopeFiles ??
+      body.out_of_scope_files ??
+      body.outOfScopeFiles
+  );
+  if (explicitOutOfScope.length > 0) {
+    return {
+      statusCode: 422,
+      code: 'OUT_OF_SCOPE_DIFF_DETECTED',
+      error: `Proof Gate v2 detected out-of-scope file modifications: ${explicitOutOfScope.join(', ')}`,
+      details: { outOfScopeFiles: explicitOutOfScope },
+    };
+  }
+
+  const changedFiles = toStringArray(
+    proofSource.changed_files ?? proofSource.changedFiles ?? body.changed_files ?? body.changedFiles
+  );
+  if (changedFiles.length > 0) {
+    const contractScope = parseContractScopePaths(contractScopeJson);
+    const bodyAllowed = toStringArray(
+      proofSource.allowed_paths ??
+        proofSource.allowedPaths ??
+        body.allowed_paths ??
+        body.allowedPaths
+    );
+    const bodyForbidden = toStringArray(
+      proofSource.forbidden_paths ??
+        proofSource.forbiddenPaths ??
+        body.forbidden_paths ??
+        body.forbiddenPaths
+    );
+    const allowedPaths = bodyAllowed.length > 0 ? bodyAllowed : contractScope.allowedPaths;
+    const forbiddenPaths = bodyForbidden.length > 0 ? bodyForbidden : contractScope.forbiddenPaths;
+
+    const diffScope = validateDiffScope(
+      changedFiles,
+      allowedPaths.length > 0 ? allowedPaths : ['.'],
+      forbiddenPaths
+    );
+    if (!diffScope.scopeClean) {
+      return {
+        statusCode: 422,
+        code: 'OUT_OF_SCOPE_DIFF_DETECTED',
+        error: 'Proof Gate v2 rejected out-of-scope or unsafe file modifications',
+        details: {
+          outOfScopeFiles: diffScope.outOfScopeFiles,
+          unsafePaths: diffScope.unsafePaths,
+        },
+      };
+    }
+  }
+
+  return null;
 }
 
 interface SyncArtifactInput {
@@ -450,11 +619,19 @@ export const aiDesktopSyncPlugin: FastifyPluginAsync<AiDesktopSyncRoutesOptions>
     const body = isRecord(req.body) ? req.body : {};
 
     // DSK-3.8 / DSK-3.9: Server-only 'accepted' transitions.
+    const nestedProof = isRecord(body.proof)
+      ? body.proof
+      : isRecord(body.proofGate)
+        ? body.proofGate
+        : null;
     if (
       body.runStatus === 'accepted' ||
       body.contractStatus === 'accepted' ||
       body.requestedContractStatus === 'accepted' ||
-      body.verificationStatus === 'accepted'
+      body.verificationStatus === 'accepted' ||
+      body.status === 'accepted' ||
+      nestedProof?.status === 'accepted' ||
+      nestedProof?.verificationStatus === 'accepted'
     ) {
       return reply.code(403).send({
         success: false,
@@ -488,6 +665,18 @@ export const aiDesktopSyncPlugin: FastifyPluginAsync<AiDesktopSyncRoutesOptions>
         success: false,
         outcome: 'conflict',
         error: 'Agent is emergency-stopped; PCW sync rejected',
+      });
+    }
+
+    // M13.10: Proof Gate v2 validation (5-state check matrix & diff-scope drift guard).
+    const desktopProofError = evaluateDesktopProofGateV2(body, contract.scope_json);
+    if (desktopProofError) {
+      return reply.code(desktopProofError.statusCode).send({
+        success: false,
+        outcome: 'rejected',
+        code: desktopProofError.code,
+        error: desktopProofError.error,
+        ...(desktopProofError.details ? desktopProofError.details : {}),
       });
     }
 

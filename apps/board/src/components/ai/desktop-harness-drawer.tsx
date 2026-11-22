@@ -1,6 +1,6 @@
 'use client';
 
-import { type KeyboardEvent, useMemo, useState } from 'react';
+import { type KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { Input } from '@moonwitness/ui/components/input';
@@ -24,22 +24,29 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@moonwitness/ui/components/tabs';
 import { Textarea } from '@moonwitness/ui/components/textarea';
 import {
+  CheckCircleIcon,
   CodeIcon,
   DocumentIcon,
   PauseIcon,
   RefreshIcon,
   SecurityIcon,
   SignalIcon,
+  SparkleIcon,
   WarningIcon,
   WorkflowIcon,
 } from '@moonwitness/ui/icons';
 import {
+  DESKTOP_FLOW_PRIME_EVENT,
   useDesktopBridge,
   type DesktopCompiledExecutionPacket,
+  type DesktopFlowPrimeDetail,
   type DesktopOverlapReport,
   type DesktopOverlapStatus,
   type DesktopPcwArtifactDigest,
   type DesktopRepoSnapshot,
+  type DesktopVisualDnaProfile,
+  type DesktopVisualDnaValidationResult,
+  type DesktopWorkspaceOrbitStatus,
   type DesktopWorktreeDiffSummary,
 } from '@/lib/desktop-bridge';
 
@@ -99,6 +106,8 @@ function getOverlapBadgeVariant(
 export function DesktopHarnessDrawer() {
   const { isDesktop, bridge, snapshot, auditLog, envelopes, refreshSnapshot } = useDesktopBridge();
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('flow');
+  const [primedTask, setPrimedTask] = useState<DesktopFlowPrimeDetail | null>(null);
   const [selectedDiff, setSelectedDiff] = useState<DesktopWorktreeDiffSummary | null>(null);
   const [activeHunkIndex, setActiveHunkIndex] = useState(0);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -117,6 +126,37 @@ export function DesktopHarnessDrawer() {
   const [packetCriteriaInput, setPacketCriteriaInput] = useState<string>('');
   const [packetVerifyCommandsInput, setPacketVerifyCommandsInput] = useState<string>('');
   const [compiledPacket, setCompiledPacket] = useState<DesktopCompiledExecutionPacket | null>(null);
+  const [visualDnaProfile, setVisualDnaProfile] = useState<DesktopVisualDnaProfile | null>(null);
+  const [visualDnaValidation, setVisualDnaValidation] =
+    useState<DesktopVisualDnaValidationResult | null>(null);
+  const [orbitStatus, setOrbitStatus] = useState<DesktopWorkspaceOrbitStatus | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleFlowPrime = (event: Event) => {
+      const customEvent = event as CustomEvent<DesktopFlowPrimeDetail>;
+      const detail = customEvent.detail;
+      if (!detail) return;
+      setPrimedTask(detail);
+      if (detail.runId) {
+        setSelectedRunId(detail.runId);
+      }
+      if (detail.contractCode) {
+        setPacketContractCode(detail.contractCode);
+      }
+      if (detail.scopePaths && detail.scopePaths.length > 0) {
+        setPacketScopePathsInput(detail.scopePaths.join('\n'));
+      }
+      setRequirementsInput((prev) => (prev.trim().length > 0 ? prev : detail.taskTitle));
+      setActiveTab('flow');
+      if (detail.openDrawer) {
+        setOpen(true);
+      }
+      setStatusMessage(`Primed FLOW Cockpit for ${detail.taskCode} — ${detail.taskTitle}`);
+    };
+    window.addEventListener(DESKTOP_FLOW_PRIME_EVENT, handleFlowPrime);
+    return () => window.removeEventListener(DESKTOP_FLOW_PRIME_EVENT, handleFlowPrime);
+  }, []);
 
   const activeLeases = snapshot?.activeLeases ?? [];
   const mcpServers = snapshot?.mcpServers ?? [];
@@ -393,9 +433,72 @@ export function DesktopHarnessDrawer() {
     }
   };
 
+  const handleLoadVisualDna = async () => {
+    if (!bridge.visualDna?.getProfile) {
+      setStatusMessage('Desktop bridge does not expose visualDna.getProfile in this build');
+      return;
+    }
+    try {
+      const profile = await bridge.visualDna.getProfile();
+      setVisualDnaProfile(profile);
+      setVisualDnaValidation(null);
+      setStatusMessage(
+        profile
+          ? `Loaded Visual DNA profile ${profile.name} (${profile.profileSha256.slice(0, 12)}…)`
+          : 'No Visual DNA profile registered for this workspace'
+      );
+    } catch (err) {
+      setStatusMessage(err instanceof Error ? err.message : 'Unable to load Visual DNA profile');
+    }
+  };
+
+  const handleValidateVisualDna = async () => {
+    const targetProfile = visualDnaProfile ?? snapshot?.visualDna ?? null;
+    if (!targetProfile) {
+      setStatusMessage('Load a Visual DNA profile before running validation');
+      return;
+    }
+    if (!bridge.visualDna?.validateProfile) {
+      setStatusMessage('Desktop bridge does not expose visualDna.validateProfile in this build');
+      return;
+    }
+    try {
+      const result = await bridge.visualDna.validateProfile(targetProfile);
+      setVisualDnaValidation(result);
+      setStatusMessage(
+        result.valid
+          ? `Visual DNA ${result.profileId} passed validation (0 violations)`
+          : `Visual DNA ${result.profileId} reported ${result.violations.length} violation(s)`
+      );
+    } catch (err) {
+      setStatusMessage(err instanceof Error ? err.message : 'Unable to validate Visual DNA');
+    }
+  };
+
+  const handleRefreshOrbit = async () => {
+    if (!bridge.workspaceOrbit?.getStatus) {
+      setStatusMessage('Desktop bridge does not expose workspaceOrbit.getStatus in this build');
+      return;
+    }
+    try {
+      const status = await bridge.workspaceOrbit.getStatus();
+      setOrbitStatus(status);
+      setStatusMessage(
+        `Workspace Orbit refreshed: ${status.repositories.length} repo(s), ${status.totalActiveLeases} active lease(s)`
+      );
+    } catch (err) {
+      setStatusMessage(
+        err instanceof Error ? err.message : 'Unable to refresh Workspace Orbit status'
+      );
+    }
+  };
+
   const activeLease =
     activeLeases.find((lease) => lease.runId === effectiveRunId) ?? activeLeases[0];
   const inspectedLines = inspectedFileContent ? inspectedFileContent.split(/\r?\n/u) : [];
+  const effectiveVisualDna = visualDnaProfile ?? snapshot?.visualDna ?? null;
+  const effectiveOrbit = orbitStatus ?? snapshot?.workspaceOrbit ?? null;
+  const driftCount = selectedDiff?.outOfScopeFiles?.length ?? 0;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -450,8 +553,12 @@ export function DesktopHarnessDrawer() {
           </div>
         ) : null}
 
-        <Tabs defaultValue="worktrees" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="flex flex-wrap gap-1">
+            <TabsTrigger value="flow">
+              <SparkleIcon className="size-3.5" />
+              FLOW Cockpit
+            </TabsTrigger>
             <TabsTrigger value="worktrees">
               <CodeIcon className="size-3.5" />
               Worktree Diff ({activeLeases.length})
@@ -481,6 +588,269 @@ export function DesktopHarnessDrawer() {
               Prompt Packet
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="flow" className="space-y-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="border-2 border-ink bg-paper-raised p-2.5 shadow-ink-sm">
+                <p className="font-mono text-[10px] uppercase text-ink-soft">Worktree Leases</p>
+                <p className="font-display text-lg uppercase">{activeLeases.length}</p>
+              </div>
+              <div className="border-2 border-ink bg-paper-raised p-2.5 shadow-ink-sm">
+                <p className="font-mono text-[10px] uppercase text-ink-soft">Proof Gate</p>
+                <p className="font-display text-lg uppercase">
+                  {driftCount > 0 ? `${driftCount} DRIFT` : 'CLEAN'}
+                </p>
+              </div>
+              <div className="border-2 border-ink bg-paper-raised p-2.5 shadow-ink-sm">
+                <p className="font-mono text-[10px] uppercase text-ink-soft">Overlap Findings</p>
+                <p className="font-display text-lg uppercase">
+                  {overlapReport ? overlapReport.findings.length : 0}
+                </p>
+              </div>
+              <div className="border-2 border-ink bg-paper-raised p-2.5 shadow-ink-sm">
+                <p className="font-mono text-[10px] uppercase text-ink-soft">Orbit Repos</p>
+                <p className="font-display text-lg uppercase">
+                  {effectiveOrbit ? effectiveOrbit.repositories.length : 0}
+                </p>
+              </div>
+            </div>
+
+            <Panel
+              title="FLOW Execution Loop"
+              description="Unified Repo Radar, Overlap Detector, Worktree Lease, and Prompt Packet launcher."
+              density="compact"
+              actions={
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={!effectiveRunId}
+                    onClick={() => void handleRunRepoSnapshot()}
+                  >
+                    Capture Radar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveTab('radar')}
+                  >
+                    Overlap
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveTab('packet')}
+                  >
+                    Packet
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={!effectiveRunId}
+                    onClick={() => {
+                      if (effectiveRunId) {
+                        void handleInspectDiff(effectiveRunId);
+                        setActiveTab('worktrees');
+                      }
+                    }}
+                  >
+                    Inspect Diff
+                  </Button>
+                </div>
+              }
+            >
+              <div className="space-y-2 font-mono text-xs">
+                {primedTask ? (
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-2 border-ink bg-paper p-2">
+                    <span>
+                      Primed Task: <strong>{primedTask.taskCode}</strong> — {primedTask.taskTitle}
+                    </span>
+                    <Badge variant="cyan">{primedTask.contractCode ?? packetContractCode}</Badge>
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={activeLease ? 'primary' : 'default'}>
+                    {activeLease ? `Lease: ${activeLease.branchName}` : 'No Active Lease'}
+                  </Badge>
+                  <Badge variant={repoSnapshot ? 'cyan' : 'default'}>
+                    {repoSnapshot
+                      ? `Radar: ${repoSnapshot.snapshotSha256.slice(0, 10)}…`
+                      : 'Radar: Not Captured'}
+                  </Badge>
+                  <Badge variant={compiledPacket ? 'primary' : 'default'}>
+                    {compiledPacket
+                      ? `Packet: ${compiledPacket.contractCode}`
+                      : 'Packet: Not Compiled'}
+                  </Badge>
+                </div>
+              </div>
+            </Panel>
+
+            <Panel
+              title="Proof Gate & Risk Telemetry"
+              description="Diff-scope drift guard, PCW outbox sync envelopes, and Desktop RiskGate audit counters."
+              density="compact"
+            >
+              <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+                <Badge variant={driftCount > 0 ? 'destructive' : 'primary'}>
+                  {driftCount > 0 ? (
+                    <>
+                      <WarningIcon className="mr-1 size-3" />
+                      Drift: {driftCount} file(s)
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircleIcon className="mr-1 size-3" />
+                      Scope Clean
+                    </>
+                  )}
+                </Badge>
+                <Badge variant="default">
+                  PCW Outbox: {sidecar?.pendingOutboxCount ?? 0} pending ·{' '}
+                  {sidecar?.syncedOutboxCount ?? 0} synced · {sidecar?.conflictOutboxCount ?? 0}{' '}
+                  conflict
+                </Badge>
+                <Badge variant="default">
+                  RiskGate: {ptyAuditSummary.allowed} allow · {ptyAuditSummary.denied} deny ·{' '}
+                  {ptyAuditSummary.elevated} R3/R4
+                </Badge>
+              </div>
+            </Panel>
+
+            <Panel
+              title="Visual DNA Profile"
+              description="Artwork-first design tokens and deterministic aesthetic validation."
+              density="compact"
+              actions={
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleLoadVisualDna()}
+                  >
+                    Load DNA
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={!effectiveVisualDna}
+                    onClick={() => void handleValidateVisualDna()}
+                  >
+                    Validate DNA
+                  </Button>
+                </div>
+              }
+            >
+              {effectiveVisualDna ? (
+                <div className="space-y-2 font-mono text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-bold">
+                      {effectiveVisualDna.name} · {effectiveVisualDna.aesthetic}
+                    </span>
+                    <Badge variant="cyan">{effectiveVisualDna.motionPolicy}</Badge>
+                  </div>
+                  <p className="text-ink-soft">
+                    Fonts: {effectiveVisualDna.typography.displayFont} /{' '}
+                    {effectiveVisualDna.typography.bodyFont} /{' '}
+                    {effectiveVisualDna.typography.monoFont}
+                  </p>
+                  <p className="break-all text-ink-soft">
+                    Profile SHA-256: {effectiveVisualDna.profileSha256}
+                  </p>
+                  {visualDnaValidation ? (
+                    <Badge variant={visualDnaValidation.valid ? 'primary' : 'destructive'}>
+                      {visualDnaValidation.valid
+                        ? 'DNA VALID'
+                        : `DNA VIOLATIONS (${visualDnaValidation.violations.length})`}
+                    </Badge>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="font-mono text-xs text-ink-soft">
+                  {bridge.visualDna?.getProfile
+                    ? 'Click Load DNA to inspect the active workspace design profile.'
+                    : 'Visual DNA bridge not exposed in this preload build (web-safe mirror ready).'}
+                </p>
+              )}
+            </Panel>
+
+            <Panel
+              title="Workspace Orbit"
+              description="Multi-repo worktree orbit health and cross-repository lease telemetry."
+              density="compact"
+              actions={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleRefreshOrbit()}
+                >
+                  Refresh Orbit
+                </Button>
+              }
+            >
+              {effectiveOrbit ? (
+                <div className="space-y-2 font-mono text-xs">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="default">Orbit: {effectiveOrbit.orbitId}</Badge>
+                    <Badge variant={effectiveOrbit.conflictCount > 0 ? 'destructive' : 'primary'}>
+                      Conflicts: {effectiveOrbit.conflictCount}
+                    </Badge>
+                  </div>
+                  {effectiveOrbit.repositories.length > 0 ? (
+                    <Table scrollLabel="Workspace Orbit repositories" density="compact">
+                      <TableHead>
+                        <TableRow>
+                          <TableHeader>Repo</TableHeader>
+                          <TableHeader>Branch</TableHeader>
+                          <TableHeader>Leases</TableHeader>
+                          <TableHeader>Health</TableHeader>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {effectiveOrbit.repositories.map((repo) => (
+                          <TableRow key={repo.repoId}>
+                            <TableCell className="font-mono text-xs">{repo.label}</TableCell>
+                            <TableCell className="font-mono text-xs">
+                              {repo.branch ?? 'detached'}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">
+                              {repo.activeLeaseCount}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  repo.health === 'healthy'
+                                    ? 'primary'
+                                    : repo.health === 'degraded' || repo.health === 'offline'
+                                      ? 'destructive'
+                                      : 'default'
+                                }
+                              >
+                                {repo.health}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="font-mono text-xs text-ink-soft">
+                  {bridge.workspaceOrbit?.getStatus
+                    ? 'Click Refresh Orbit to inspect multi-repository workspace status.'
+                    : 'Workspace Orbit bridge not exposed in this preload build (web-safe mirror ready).'}
+                </p>
+              )}
+            </Panel>
+          </TabsContent>
 
           <TabsContent value="worktrees" className="space-y-4">
             <Panel

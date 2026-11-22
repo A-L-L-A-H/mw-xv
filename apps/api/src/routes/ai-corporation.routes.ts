@@ -1,7 +1,13 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { validateDiffScope, type PcwCheckStatus } from '@moonwitness/ai-runtime';
 import { cancelJob, enqueueJob, Job } from '@moonwitness/jobs';
-import { ProjectStage, ProjectTask } from '@moonwitness/orm-project';
+import {
+  buildProjectDependencyGraph,
+  ProjectStage,
+  ProjectTask,
+  ProjectTaskDependency,
+} from '@moonwitness/orm-project';
 import {
   AcceptanceCriterion,
   Agent,
@@ -55,6 +61,176 @@ export { ensureAiJobHandlersRegistered, hasCompanyAccess, requireAiCompanyContex
 
 export interface AiCorporationRoutesOptions {
   readonly attachmentStorage: AttachmentStorage;
+}
+
+const VALID_PCW_CHECK_STATUSES = new Set<PcwCheckStatus>([
+  'pass',
+  'fail',
+  'skipped',
+  'not_applicable',
+  'not_run',
+]);
+
+const SHA256_HEX_REGEX = /^[a-f0-9]{64}$/iu;
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+}
+
+function parseContractScopePaths(scopeJson: string | null | undefined): {
+  readonly allowedPaths: string[];
+  readonly forbiddenPaths: string[];
+} {
+  if (typeof scopeJson !== 'string' || !scopeJson.trim()) {
+    return { allowedPaths: [], forbiddenPaths: [] };
+  }
+  try {
+    const parsed: unknown = JSON.parse(scopeJson);
+    if (!isRecord(parsed)) {
+      return { allowedPaths: [], forbiddenPaths: [] };
+    }
+    const allowedPaths = toStringArray(parsed.allowedPaths ?? parsed.allowed_paths ?? parsed.paths);
+    const forbiddenPaths = toStringArray(parsed.forbiddenPaths ?? parsed.forbidden_paths);
+    return { allowedPaths, forbiddenPaths };
+  } catch {
+    return { allowedPaths: [], forbiddenPaths: [] };
+  }
+}
+
+interface ProofGateEvaluationError {
+  readonly statusCode: number;
+  readonly code: string;
+  readonly error: string;
+  readonly details?: Record<string, unknown>;
+}
+
+function evaluateProofGateV2(
+  body: Record<string, unknown>,
+  contractScopeJson: string | null | undefined
+): ProofGateEvaluationError | null {
+  const proofSource = isRecord(body.proof)
+    ? body.proof
+    : isRecord(body.proofGate)
+      ? body.proofGate
+      : body;
+
+  const rawChecks = proofSource.checks ?? body.checks;
+  if (rawChecks !== undefined) {
+    if (!Array.isArray(rawChecks)) {
+      return {
+        statusCode: 422,
+        code: 'INVALID_CHECK_MATRIX',
+        error: 'Proof Gate v2 checks must be an array',
+      };
+    }
+    const failedChecks: string[] = [];
+    for (const [idx, item] of rawChecks.entries()) {
+      if (!isRecord(item)) {
+        return {
+          statusCode: 422,
+          code: 'INVALID_CHECK_MATRIX',
+          error: `Proof Gate v2 check at index ${idx} must be an object`,
+        };
+      }
+      const code =
+        typeof item.code === 'string' && item.code.trim() ? item.code.trim() : `check_${idx + 1}`;
+      const status = item.status;
+      if (typeof status !== 'string' || !VALID_PCW_CHECK_STATUSES.has(status as PcwCheckStatus)) {
+        return {
+          statusCode: 422,
+          code: 'INVALID_CHECK_STATUS',
+          error: `Proof Gate v2 check '${code}' has invalid status '${String(status)}'`,
+          details: { checkCode: code },
+        };
+      }
+      if (status === 'skipped') {
+        const reason = typeof item.reason === 'string' ? item.reason.trim() : '';
+        if (!reason) {
+          return {
+            statusCode: 422,
+            code: 'MISSING_SKIP_REASON',
+            error: `Skipped check '${code}' requires a non-empty reason`,
+            details: { checkCode: code },
+          };
+        }
+      }
+      const mandatory = item.mandatory !== false;
+      if (status === 'fail') {
+        failedChecks.push(code);
+      } else if (mandatory && status !== 'pass') {
+        return {
+          statusCode: 422,
+          code: 'MANDATORY_CHECK_NOT_PASSED',
+          error: `Mandatory check '${code}' has status '${status}' and must pass before acceptance`,
+          details: { checkCode: code, status },
+        };
+      }
+    }
+    if (failedChecks.length > 0) {
+      return {
+        statusCode: 422,
+        code: 'PROOF_CHECK_FAILED',
+        error: `Proof Gate v2 rejected failed check(s): ${failedChecks.join(', ')}`,
+        details: { failedChecks },
+      };
+    }
+  }
+
+  const explicitOutOfScope = toStringArray(
+    proofSource.out_of_scope_files ??
+      proofSource.outOfScopeFiles ??
+      body.out_of_scope_files ??
+      body.outOfScopeFiles
+  );
+  if (explicitOutOfScope.length > 0) {
+    return {
+      statusCode: 422,
+      code: 'OUT_OF_SCOPE_DIFF_DETECTED',
+      error: `Proof Gate v2 detected out-of-scope file modifications: ${explicitOutOfScope.join(', ')}`,
+      details: { outOfScopeFiles: explicitOutOfScope },
+    };
+  }
+
+  const changedFiles = toStringArray(
+    proofSource.changed_files ?? proofSource.changedFiles ?? body.changed_files ?? body.changedFiles
+  );
+  if (changedFiles.length > 0) {
+    const contractScope = parseContractScopePaths(contractScopeJson);
+    const bodyAllowed = toStringArray(
+      proofSource.allowed_paths ??
+        proofSource.allowedPaths ??
+        body.allowed_paths ??
+        body.allowedPaths
+    );
+    const bodyForbidden = toStringArray(
+      proofSource.forbidden_paths ??
+        proofSource.forbiddenPaths ??
+        body.forbidden_paths ??
+        body.forbiddenPaths
+    );
+    const allowedPaths = bodyAllowed.length > 0 ? bodyAllowed : contractScope.allowedPaths;
+    const forbiddenPaths = bodyForbidden.length > 0 ? bodyForbidden : contractScope.forbiddenPaths;
+
+    const diffScope = validateDiffScope(
+      changedFiles,
+      allowedPaths.length > 0 ? allowedPaths : ['.'],
+      forbiddenPaths
+    );
+    if (!diffScope.scopeClean) {
+      return {
+        statusCode: 422,
+        code: 'OUT_OF_SCOPE_DIFF_DETECTED',
+        error: 'Proof Gate v2 rejected out-of-scope or unsafe file modifications',
+        details: {
+          outOfScopeFiles: diffScope.outOfScopeFiles,
+          unsafePaths: diffScope.unsafePaths,
+        },
+      };
+    }
+  }
+
+  return null;
 }
 
 async function ensureDefaultProviderAndModel(companyId: number) {
@@ -678,6 +854,45 @@ export const aiCorporationPlugin: FastifyPluginAsync<AiCorporationRoutesOptions>
       }
     }
 
+    // M13.10: Proof Gate v2 (5-state check matrix, diff-scope drift guard, fencing constraints).
+    const proofGateError = evaluateProofGateV2(body, contract.scope_json);
+    if (proofGateError) {
+      return reply.code(proofGateError.statusCode).send({
+        success: false,
+        code: proofGateError.code,
+        error: proofGateError.error,
+        ...(proofGateError.details ? proofGateError.details : {}),
+      });
+    }
+
+    const rawFencingToken = body.fencing_token ?? body.fencingToken;
+    if (rawFencingToken !== undefined) {
+      const fencingToken = Number(rawFencingToken);
+      if (!Number.isSafeInteger(fencingToken) || fencingToken < 1) {
+        return reply.code(400).send({
+          success: false,
+          code: 'INVALID_FENCING_TOKEN',
+          error: 'fencing_token must be a positive integer',
+        });
+      }
+      const latestRun = await AgentRun.query()
+        .where({
+          company_id: ctx.companyId,
+          work_contract_id: contract.id,
+          active: true,
+        })
+        .orderBy('fencing_token', 'desc')
+        .first();
+      if (latestRun && latestRun.fencing_token > fencingToken) {
+        return reply.code(409).send({
+          success: false,
+          code: 'STALE_FENCING_TOKEN',
+          error: `Stale fencing token ${fencingToken} < current ${latestRun.fencing_token}`,
+          currentFencingToken: latestRun.fencing_token,
+        });
+      }
+    }
+
     const nowIso = new Date().toISOString();
     await AcceptanceCriterion.query()
       .where({ work_contract_id: contract.id, company_id: ctx.companyId })
@@ -801,6 +1016,183 @@ export const aiCorporationPlugin: FastifyPluginAsync<AiCorporationRoutesOptions>
       });
     }
 
+    // M13.09: Work-contract terminal state guard.
+    if (
+      contract.status === 'accepted' ||
+      contract.status === 'rejected' ||
+      contract.status === 'cancelled'
+    ) {
+      return reply.code(409).send({
+        success: false,
+        code: 'WORK_CONTRACT_NOT_EXECUTABLE',
+        error: `Work contract '${contract.code}' is in terminal status '${contract.status}' and cannot start a new run`,
+      });
+    }
+
+    // M13.09: DAG/Ready-Task Execution Gate when linked to a ProjectTask or explicitly supplied.
+    const explicitTaskId = body.project_task_id ?? body.projectTaskId;
+    const targetTaskId =
+      explicitTaskId !== undefined
+        ? Number(explicitTaskId)
+        : contract.source_model === ProjectTask.modelName &&
+            typeof contract.source_id === 'number' &&
+            contract.source_id > 0
+          ? contract.source_id
+          : null;
+
+    if (targetTaskId !== null) {
+      if (!Number.isSafeInteger(targetTaskId) || targetTaskId < 1) {
+        return reply.code(400).send({
+          success: false,
+          code: 'INVALID_PROJECT_TASK_ID',
+          error: 'Invalid project_task_id for run start gate',
+        });
+      }
+      const linkedTask = await ProjectTask.query().findOne({
+        id: targetTaskId,
+        company_id: ctx.companyId,
+        active: true,
+      });
+      if (!linkedTask) {
+        return reply.code(404).send({
+          success: false,
+          code: 'PROJECT_TASK_NOT_FOUND',
+          error: 'Linked project task not found in active company',
+        });
+      }
+      const projectTasks = await ProjectTask.query()
+        .where({ company_id: ctx.companyId, project_id: linkedTask.project_id, active: true })
+        .orderBy('id', 'asc');
+      const taskIds = projectTasks.map((task) => task.id);
+      const dependencies =
+        taskIds.length > 0
+          ? await ProjectTaskDependency.query()
+              .where({ company_id: ctx.companyId, active: true })
+              .whereIn('task_id', taskIds)
+              .orderBy('id', 'asc')
+          : [];
+      const dag = buildProjectDependencyGraph(projectTasks, dependencies);
+      const taskNode = dag.nodes.find((node) => node.id === linkedTask.id);
+      if (!taskNode || !taskNode.is_ready) {
+        return reply.code(409).send({
+          success: false,
+          code: 'PROJECT_TASK_NOT_READY',
+          error: `Project task '${linkedTask.code}' is not ready for execution`,
+          taskId: linkedTask.id,
+          status: linkedTask.status,
+          blockedByTaskIds: taskNode?.blocked_by_ids ?? [],
+        });
+      }
+    }
+
+    // M13.09: Execution Packet invariant gate when supplied.
+    const rawExecutionPacket = body.execution_packet ?? body.executionPacket;
+    if (rawExecutionPacket !== undefined) {
+      if (!isRecord(rawExecutionPacket)) {
+        return reply.code(422).send({
+          success: false,
+          code: 'INVALID_EXECUTION_PACKET',
+          error: 'execution_packet must be an object',
+        });
+      }
+      const packetSha = String(
+        rawExecutionPacket.contentSha256 ?? rawExecutionPacket.content_sha256 ?? ''
+      );
+      if (!SHA256_HEX_REGEX.test(packetSha)) {
+        return reply.code(422).send({
+          success: false,
+          code: 'INVALID_EXECUTION_PACKET',
+          error: 'execution_packet requires a valid 64-character hex contentSha256',
+        });
+      }
+      const packetContractId =
+        rawExecutionPacket.workContractId ?? rawExecutionPacket.work_contract_id;
+      if (packetContractId !== undefined && Number(packetContractId) !== contract.id) {
+        return reply.code(422).send({
+          success: false,
+          code: 'INVALID_EXECUTION_PACKET',
+          error: 'execution_packet workContractId does not match target work contract',
+        });
+      }
+    }
+
+    // M13.09: Worktree Lease invariant gate when supplied.
+    let runFencingToken = 1;
+    const rawWorktreeLease = body.worktree_lease ?? body.worktreeLease;
+    if (rawWorktreeLease !== undefined) {
+      if (!isRecord(rawWorktreeLease)) {
+        return reply.code(422).send({
+          success: false,
+          code: 'INVALID_WORKTREE_LEASE',
+          error: 'worktree_lease must be an object',
+        });
+      }
+      const leaseCompanyId = rawWorktreeLease.companyId ?? rawWorktreeLease.company_id;
+      if (leaseCompanyId !== undefined && Number(leaseCompanyId) !== ctx.companyId) {
+        return reply.code(403).send({
+          success: false,
+          code: 'WORKTREE_LEASE_COMPANY_MISMATCH',
+          error: 'worktree_lease companyId does not match active company',
+        });
+      }
+      const leaseToken = Number(rawWorktreeLease.fencingToken ?? rawWorktreeLease.fencing_token);
+      if (!Number.isSafeInteger(leaseToken) || leaseToken < 1) {
+        return reply.code(422).send({
+          success: false,
+          code: 'INVALID_WORKTREE_LEASE',
+          error: 'worktree_lease requires a positive integer fencingToken',
+        });
+      }
+      const leaseExpiresAt = rawWorktreeLease.expiresAt ?? rawWorktreeLease.expires_at;
+      if (typeof leaseExpiresAt === 'string') {
+        const expiresMs = Date.parse(leaseExpiresAt);
+        if (!Number.isFinite(expiresMs) || expiresMs <= Date.now()) {
+          return reply.code(409).send({
+            success: false,
+            code: 'WORKTREE_LEASE_EXPIRED',
+            error: 'worktree_lease is expired',
+          });
+        }
+      }
+      const rawAllowedPaths = rawWorktreeLease.allowedPaths ?? rawWorktreeLease.allowed_paths;
+      if (rawAllowedPaths !== undefined) {
+        const leaseAllowedPaths = toStringArray(rawAllowedPaths);
+        if (leaseAllowedPaths.length === 0) {
+          return reply.code(422).send({
+            success: false,
+            code: 'INVALID_WORKTREE_LEASE_SCOPE',
+            error: 'worktree_lease allowedPaths must be a non-empty array of relative paths',
+          });
+        }
+        const scopeCheck = validateDiffScope(leaseAllowedPaths, leaseAllowedPaths);
+        if (!scopeCheck.scopeClean) {
+          return reply.code(422).send({
+            success: false,
+            code: 'INVALID_WORKTREE_LEASE_SCOPE',
+            error: 'worktree_lease allowedPaths contains unsafe or disallowed paths',
+            unsafePaths: scopeCheck.unsafePaths,
+          });
+        }
+      }
+      const highestRun = await AgentRun.query()
+        .where({
+          company_id: ctx.companyId,
+          work_contract_id: contract.id,
+          active: true,
+        })
+        .orderBy('fencing_token', 'desc')
+        .first();
+      if (highestRun && highestRun.fencing_token > leaseToken) {
+        return reply.code(409).send({
+          success: false,
+          code: 'STALE_FENCING_TOKEN',
+          error: `Stale worktree lease fencing token ${leaseToken} < current ${highestRun.fencing_token}`,
+          currentFencingToken: highestRun.fencing_token,
+        });
+      }
+      runFencingToken = leaseToken;
+    }
+
     const defaults = await ensureDefaultProviderAndModel(ctx.companyId);
     const providerId =
       typeof body.provider_profile_id === 'number'
@@ -863,7 +1255,7 @@ export const aiCorporationPlugin: FastifyPluginAsync<AiCorporationRoutesOptions>
       idempotency_key: idempotencyKey,
       correlation_id: correlationId,
       status: 'pending' as const,
-      fencing_token: 1,
+      fencing_token: runFencingToken,
     };
 
     if (!(await isValidAiMutation(AgentRun.modelName, runPayload))) {
