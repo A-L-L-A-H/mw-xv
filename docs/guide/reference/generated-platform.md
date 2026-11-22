@@ -4,113 +4,113 @@ Source fingerprint: `d52de61b0824cb4c62de63e48e7763fbb199674e39f3b6f2c4d358c4b20
 
 ## Workspace packages and apps
 
-| Name | Kind | Version | Scripts |
-| --- | --- | --- | --- |
-| `@moonwitness/api` | App | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
-| `@moonwitness/board` | App | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck` |
-| `@moonwitness/control-plane` | App | 0.1.0 | `dev`, `docker:build`, `fmt` |
-| `@moonwitness/desktop` | App | 1.0.0-rc.1 | `build`, `test`, `typecheck` |
-| `@moonwitness/docs` | App | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck` |
-| `@moonwitness/isp` | App | 0.1.0 | `cargo:build`, `clippy`, `dev`, `fmt`, `migrate`, `start`, `test` |
-| `@moonwitness/ui-catalog` | App | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `diagnostics:generate`, `preview`, `test` |
-| `@moonwitness/ai-evaluation` | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck` |
-| `@moonwitness/ai-mcp` | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck` |
-| `@moonwitness/ai-runtime` | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck` |
-| `@moonwitness/assets` | Package | 1.0.0-rc.1 | `artwork:derivatives`, `artwork:layers`, `artwork:prepare`, `brand:prepare`, `contact-sheets`, `font:brand:generate`, `fonts:prepare`, `inventory`, `qa`, `sounds:ambience` |
-| `@moonwitness/auth` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/client` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/corpus` | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck` |
-| `@moonwitness/eslint-config` | Package | 1.0.0-rc.1 | — |
-| `@moonwitness/jobs` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/knowledge` | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck` |
-| `@moonwitness/local-ai` | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck` |
-| `@moonwitness/logger` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-ai` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-base` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-cloud` | Package | 1.0.0 | `build`, `test` |
-| `@moonwitness/orm-crm` | Package | 1.0.0 | `build`, `test` |
-| `@moonwitness/orm-integration` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-isp` | Package | 1.0.0 | `build`, `test` |
-| `@moonwitness/orm-knowledge` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-notification` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-organization` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-project` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-request` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-sales` | Package | 1.0.0 | `build`, `test` |
-| `@moonwitness/orm-storage` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-subscription` | Package | 1.0.0 | `build`, `test` |
-| `@moonwitness/orm-whatsapp` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/orm-workflow` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/research` | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck` |
-| `@moonwitness/types` | Package | 1.0.0-rc.1 | `build`, `test` |
-| `@moonwitness/ui` | Package | 1.0.0-rc.1 | `build`, `test` |
+| Name                            | Kind    | Version    | Scripts                                                                                                                                                                                                                                                                            |
+| ------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@moonwitness/api`              | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
+| `@moonwitness/board`            | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
+| `@moonwitness/control-plane`    | App     | 0.1.0      | `dev`, `docker:build`, `fmt`                                                                                                                                                                                                                                                       |
+| `@moonwitness/desktop`          | App     | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/docs`             | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
+| `@moonwitness/isp`              | App     | 0.1.0      | `cargo:build`, `clippy`, `dev`, `fmt`, `migrate`, `start`, `test`                                                                                                                                                                                                                  |
+| `@moonwitness/ui-catalog`       | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `diagnostics:generate`, `preview`, `test`                                                                                                                                                                                                           |
+| `@moonwitness/ai-evaluation`    | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/ai-mcp`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/ai-runtime`       | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/assets`           | Package | 1.0.0-rc.1 | `artwork:derivatives`, `artwork:layers`, `artwork:prepare`, `brand:prepare`, `contact-sheets`, `font:brand:generate`, `fonts:prepare`, `inventory`, `qa`, `sounds:ambience`                                                                                                        |
+| `@moonwitness/auth`             | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/client`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/corpus`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/eslint-config`    | Package | 1.0.0-rc.1 | —                                                                                                                                                                                                                                                                                  |
+| `@moonwitness/jobs`             | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/knowledge`        | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/local-ai`         | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/logger`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm`              | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-ai`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-base`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-cloud`        | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-crm`          | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-integration`  | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-isp`          | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-knowledge`    | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-notification` | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-organization` | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-project`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-request`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-sales`        | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-storage`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-subscription` | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-whatsapp`     | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-workflow`     | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/research`         | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/types`            | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/ui`               | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 
 ## Environment variable names
 
-| Name | Value category | Present in `.env.example` | Sensitive value redacted |
-| --- | --- | --- | --- |
-| `ACCESS_TOKEN_TTL_SECONDS` | secret | Yes | Yes |
-| `AI_MODE` | string | Yes | No |
-| `API_HOST` | string | Yes | No |
-| `API_PORT` | integer | Yes | No |
-| `ATTACHMENT_S3_ACCESS_KEY` | secret | Yes | Yes |
-| `ATTACHMENT_S3_BUCKET` | string | Yes | No |
-| `ATTACHMENT_S3_ENDPOINT` | string | Yes | No |
-| `ATTACHMENT_S3_FORCE_PATH_STYLE` | boolean | Yes | No |
-| `ATTACHMENT_S3_REGION` | string | Yes | No |
-| `ATTACHMENT_S3_SECRET_KEY` | secret | Yes | Yes |
-| `ATTACHMENT_STORAGE_DIR` | string | Yes | No |
-| `ATTACHMENT_STORAGE_DRIVER` | string | Yes | No |
-| `AUTH_CACHE_TTL_MS` | string | No | No |
-| `AUTH_LOGIN_RATE_MAX` | integer | Yes | No |
-| `BOARD_HOST` | string | Yes | No |
-| `BOARD_PORT` | integer | Yes | No |
-| `DATABASE_URL` | url | Yes | Yes |
-| `DB_ACQUIRE_TIMEOUT_MS` | integer | Yes | No |
-| `DB_POOL_MAX` | integer | Yes | No |
-| `DB_POOL_MIN` | integer | Yes | No |
-| `DB_STATEMENT_TIMEOUT_MS` | integer | Yes | No |
-| `ENABLE_API_DOCS` | string | No | No |
-| `HOST` | string | No | No |
-| `JOB_HANDLERS_MODULE` | string | Yes | No |
-| `JOBS_SCHEDULER_HEALTH_PORT` | integer | Yes | No |
-| `JOBS_WORKER_HEALTH_PORT` | integer | Yes | No |
-| `JWT_SECRET` | secret | Yes | Yes |
-| `LOCAL_AI_ENDPOINT` | string | Yes | No |
-| `LOCAL_AI_MODEL` | string | Yes | No |
-| `LOCAL_AI_PROVIDER` | string | Yes | No |
-| `LOCAL_AI_TIMEOUT_MS` | integer | Yes | No |
-| `LOG_DIR` | string | Yes | No |
-| `LOG_FILE_NAME` | string | Yes | No |
-| `LOG_LEVEL` | string | Yes | No |
-| `LOG_PRETTY` | boolean | Yes | No |
-| `LOG_TO_FILE` | boolean | Yes | No |
-| `METRICS_TOKEN` | secret | Yes | Yes |
-| `MOONWITNESS_CORPUS_ROOT` | string | No | No |
-| `NODE_ENV` | string | Yes | No |
-| `OUTBOX_HANDLERS_MODULE` | string | Yes | No |
-| `OUTBOX_WORKER_HEALTH_PORT` | integer | Yes | No |
-| `PORT` | integer | No | No |
-| `POSTGRES_TEST_URL` | url | Yes | No |
-| `PRINT_ROUTES` | boolean | Yes | No |
-| `RATE_LIMIT_STORE` | string | Yes | No |
-| `REFRESH_TOKEN_TTL_SECONDS` | secret | Yes | Yes |
-| `RESTORE_DRILL_SCHEMA` | string | No | No |
-| `SKIP_BOOT_MIGRATIONS` | boolean | Yes | No |
-| `SUPERADMIN_PASSWORD` | secret | Yes | Yes |
-| `VITEST` | string | No | No |
-| `WHATSAPP_CLAMAV_URL` | string | No | No |
-| `WHATSAPP_FFMPEG_PATH` | string | Yes | No |
-| `WHATSAPP_GATEWAY_EXPECTED_VERSION` | string | Yes | No |
-| `WHATSAPP_GATEWAY_PASSWORD` | secret | Yes | Yes |
-| `WHATSAPP_GATEWAY_TIMEOUT_MS` | integer | Yes | No |
-| `WHATSAPP_GATEWAY_URL` | string | Yes | No |
-| `WHATSAPP_GATEWAY_USERNAME` | string | Yes | No |
-| `WHATSAPP_MEDIA_SCAN` | string | Yes | No |
-| `WHATSAPP_WEBHOOK_SECRET` | secret | Yes | Yes |
-| `WHATSAPP_WEBHOOK_URL` | string | Yes | No |
-| `WORKER_HEALTH_HOST` | string | Yes | No |
+| Name                                | Value category | Present in `.env.example` | Sensitive value redacted |
+| ----------------------------------- | -------------- | ------------------------- | ------------------------ |
+| `ACCESS_TOKEN_TTL_SECONDS`          | secret         | Yes                       | Yes                      |
+| `AI_MODE`                           | string         | Yes                       | No                       |
+| `API_HOST`                          | string         | Yes                       | No                       |
+| `API_PORT`                          | integer        | Yes                       | No                       |
+| `ATTACHMENT_S3_ACCESS_KEY`          | secret         | Yes                       | Yes                      |
+| `ATTACHMENT_S3_BUCKET`              | string         | Yes                       | No                       |
+| `ATTACHMENT_S3_ENDPOINT`            | string         | Yes                       | No                       |
+| `ATTACHMENT_S3_FORCE_PATH_STYLE`    | boolean        | Yes                       | No                       |
+| `ATTACHMENT_S3_REGION`              | string         | Yes                       | No                       |
+| `ATTACHMENT_S3_SECRET_KEY`          | secret         | Yes                       | Yes                      |
+| `ATTACHMENT_STORAGE_DIR`            | string         | Yes                       | No                       |
+| `ATTACHMENT_STORAGE_DRIVER`         | string         | Yes                       | No                       |
+| `AUTH_CACHE_TTL_MS`                 | string         | No                        | No                       |
+| `AUTH_LOGIN_RATE_MAX`               | integer        | Yes                       | No                       |
+| `BOARD_HOST`                        | string         | Yes                       | No                       |
+| `BOARD_PORT`                        | integer        | Yes                       | No                       |
+| `DATABASE_URL`                      | url            | Yes                       | Yes                      |
+| `DB_ACQUIRE_TIMEOUT_MS`             | integer        | Yes                       | No                       |
+| `DB_POOL_MAX`                       | integer        | Yes                       | No                       |
+| `DB_POOL_MIN`                       | integer        | Yes                       | No                       |
+| `DB_STATEMENT_TIMEOUT_MS`           | integer        | Yes                       | No                       |
+| `ENABLE_API_DOCS`                   | string         | No                        | No                       |
+| `HOST`                              | string         | No                        | No                       |
+| `JOB_HANDLERS_MODULE`               | string         | Yes                       | No                       |
+| `JOBS_SCHEDULER_HEALTH_PORT`        | integer        | Yes                       | No                       |
+| `JOBS_WORKER_HEALTH_PORT`           | integer        | Yes                       | No                       |
+| `JWT_SECRET`                        | secret         | Yes                       | Yes                      |
+| `LOCAL_AI_ENDPOINT`                 | string         | Yes                       | No                       |
+| `LOCAL_AI_MODEL`                    | string         | Yes                       | No                       |
+| `LOCAL_AI_PROVIDER`                 | string         | Yes                       | No                       |
+| `LOCAL_AI_TIMEOUT_MS`               | integer        | Yes                       | No                       |
+| `LOG_DIR`                           | string         | Yes                       | No                       |
+| `LOG_FILE_NAME`                     | string         | Yes                       | No                       |
+| `LOG_LEVEL`                         | string         | Yes                       | No                       |
+| `LOG_PRETTY`                        | boolean        | Yes                       | No                       |
+| `LOG_TO_FILE`                       | boolean        | Yes                       | No                       |
+| `METRICS_TOKEN`                     | secret         | Yes                       | Yes                      |
+| `MOONWITNESS_CORPUS_ROOT`           | string         | No                        | No                       |
+| `NODE_ENV`                          | string         | Yes                       | No                       |
+| `OUTBOX_HANDLERS_MODULE`            | string         | Yes                       | No                       |
+| `OUTBOX_WORKER_HEALTH_PORT`         | integer        | Yes                       | No                       |
+| `PORT`                              | integer        | No                        | No                       |
+| `POSTGRES_TEST_URL`                 | url            | Yes                       | No                       |
+| `PRINT_ROUTES`                      | boolean        | Yes                       | No                       |
+| `RATE_LIMIT_STORE`                  | string         | Yes                       | No                       |
+| `REFRESH_TOKEN_TTL_SECONDS`         | secret         | Yes                       | Yes                      |
+| `RESTORE_DRILL_SCHEMA`              | string         | No                        | No                       |
+| `SKIP_BOOT_MIGRATIONS`              | boolean        | Yes                       | No                       |
+| `SUPERADMIN_PASSWORD`               | secret         | Yes                       | Yes                      |
+| `VITEST`                            | string         | No                        | No                       |
+| `WHATSAPP_CLAMAV_URL`               | string         | No                        | No                       |
+| `WHATSAPP_FFMPEG_PATH`              | string         | Yes                       | No                       |
+| `WHATSAPP_GATEWAY_EXPECTED_VERSION` | string         | Yes                       | No                       |
+| `WHATSAPP_GATEWAY_PASSWORD`         | secret         | Yes                       | Yes                      |
+| `WHATSAPP_GATEWAY_TIMEOUT_MS`       | integer        | Yes                       | No                       |
+| `WHATSAPP_GATEWAY_URL`              | string         | Yes                       | No                       |
+| `WHATSAPP_GATEWAY_USERNAME`         | string         | Yes                       | No                       |
+| `WHATSAPP_MEDIA_SCAN`               | string         | Yes                       | No                       |
+| `WHATSAPP_WEBHOOK_SECRET`           | secret         | Yes                       | Yes                      |
+| `WHATSAPP_WEBHOOK_URL`              | string         | Yes                       | No                       |
+| `WORKER_HEALTH_HOST`                | string         | Yes                       | No                       |
 
 The generator reads only `.env.example` and the names referenced by the typed config source. It never reads `.env` and does not emit values or defaults.
 

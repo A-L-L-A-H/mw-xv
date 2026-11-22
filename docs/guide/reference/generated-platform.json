@@ -36,105 +36,55 @@
       "name": "@moonwitness/board",
       "version": "1.0.0-rc.1",
       "directory": "apps/board",
-      "scripts": [
-        "build",
-        "dev",
-        "lint",
-        "preview",
-        "start",
-        "start:built",
-        "typecheck"
-      ]
+      "scripts": ["build", "dev", "lint", "preview", "start", "start:built", "typecheck"]
     },
     {
       "name": "@moonwitness/control-plane",
       "version": "0.1.0",
       "directory": "apps/control-plane",
-      "scripts": [
-        "dev",
-        "docker:build",
-        "fmt"
-      ]
+      "scripts": ["dev", "docker:build", "fmt"]
     },
     {
       "name": "@moonwitness/desktop",
       "version": "1.0.0-rc.1",
       "directory": "apps/desktop",
-      "scripts": [
-        "build",
-        "test",
-        "typecheck"
-      ]
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/docs",
       "version": "1.0.0-rc.1",
       "directory": "apps/docs",
-      "scripts": [
-        "dev",
-        "portal:build",
-        "portal:build:built",
-        "preview",
-        "test",
-        "typecheck"
-      ]
+      "scripts": ["dev", "portal:build", "portal:build:built", "preview", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/isp",
       "version": "0.1.0",
       "directory": "apps/isp",
-      "scripts": [
-        "cargo:build",
-        "clippy",
-        "dev",
-        "fmt",
-        "migrate",
-        "start",
-        "test"
-      ]
+      "scripts": ["cargo:build", "clippy", "dev", "fmt", "migrate", "start", "test"]
     },
     {
       "name": "@moonwitness/ui-catalog",
       "version": "1.0.0-rc.1",
       "directory": "apps/ui-catalog",
-      "scripts": [
-        "build",
-        "build:built",
-        "dev",
-        "diagnostics:generate",
-        "preview",
-        "test"
-      ]
+      "scripts": ["build", "build:built", "dev", "diagnostics:generate", "preview", "test"]
     },
     {
       "name": "@moonwitness/ai-evaluation",
       "version": "1.0.0-rc.1",
       "directory": "packages/ai-evaluation",
-      "scripts": [
-        "build",
-        "test",
-        "typecheck"
-      ]
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/ai-mcp",
       "version": "1.0.0-rc.1",
       "directory": "packages/ai-mcp",
-      "scripts": [
-        "build",
-        "test",
-        "typecheck"
-      ]
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/ai-runtime",
       "version": "1.0.0-rc.1",
       "directory": "packages/ai-runtime",
-      "scripts": [
-        "build",
-        "test",
-        "typecheck"
-      ]
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/assets",
@@ -157,29 +107,19 @@
       "name": "@moonwitness/auth",
       "version": "1.0.0-rc.1",
       "directory": "packages/auth",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/client",
       "version": "1.0.0-rc.1",
       "directory": "packages/client",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/corpus",
       "version": "1.0.0-rc.1",
       "directory": "packages/corpus",
-      "scripts": [
-        "build",
-        "test",
-        "typecheck"
-      ]
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/eslint-config",
@@ -191,220 +131,145 @@
       "name": "@moonwitness/jobs",
       "version": "1.0.0-rc.1",
       "directory": "packages/jobs",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/knowledge",
       "version": "1.0.0-rc.1",
       "directory": "packages/knowledge",
-      "scripts": [
-        "build",
-        "test",
-        "typecheck"
-      ]
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/local-ai",
       "version": "1.0.0-rc.1",
       "directory": "packages/local-ai",
-      "scripts": [
-        "build",
-        "test",
-        "typecheck"
-      ]
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/logger",
       "version": "1.0.0-rc.1",
       "directory": "packages/logger",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-ai",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-ai",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-base",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-base",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-cloud",
       "version": "1.0.0",
       "directory": "packages/orm-cloud",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-crm",
       "version": "1.0.0",
       "directory": "packages/orm-crm",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-integration",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-integration",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-isp",
       "version": "1.0.0",
       "directory": "packages/orm-isp",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-knowledge",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-knowledge",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-notification",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-notification",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-organization",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-organization",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-project",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-project",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-request",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-request",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-sales",
       "version": "1.0.0",
       "directory": "packages/orm-sales",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-storage",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-storage",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-subscription",
       "version": "1.0.0",
       "directory": "packages/orm-subscription",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-whatsapp",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-whatsapp",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-workflow",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-workflow",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/research",
       "version": "1.0.0-rc.1",
       "directory": "packages/research",
-      "scripts": [
-        "build",
-        "test",
-        "typecheck"
-      ]
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/types",
       "version": "1.0.0-rc.1",
       "directory": "packages/types",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/ui",
       "version": "1.0.0-rc.1",
       "directory": "packages/ui",
-      "scripts": [
-        "build",
-        "test"
-      ]
+      "scripts": ["build", "test"]
     }
   ],
   "scripts": {
@@ -1149,9 +1014,7 @@
     {
       "name": "auth",
       "version": "1.0.0",
-      "depends": [
-        "base"
-      ],
+      "depends": ["base"],
       "models": [
         {
           "name": "auth.refresh_token",
@@ -1304,12 +1167,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "call",
-                "email",
-                "meeting",
-                "todo"
-              ]
+              "values": ["call", "email", "meeting", "todo"]
             },
             {
               "name": "assigned_to",
@@ -1372,11 +1230,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "cancelled",
-                "done",
-                "planned"
-              ]
+              "values": ["cancelled", "done", "planned"]
             },
             {
               "name": "summary",
@@ -1591,15 +1445,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "bic"
-            ],
-            [
-              "code",
-              "country"
-            ]
-          ]
+          "uniqueConstraints": [["bic"], ["code", "country"]]
         },
         {
           "name": "base.company",
@@ -1760,12 +1606,7 @@
               "relation": "base.user"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "user"
-            ]
-          ]
+          "uniqueConstraints": [["company", "user"]]
         },
         {
           "name": "base.config_parameter",
@@ -1833,20 +1674,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "boolean",
-                "integer",
-                "json",
-                "string"
-              ]
+              "values": ["boolean", "integer", "json", "string"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "key"
-            ]
-          ]
+          "uniqueConstraints": [["company", "key"]]
         },
         {
           "name": "base.country",
@@ -1951,12 +1782,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "code",
-              "country"
-            ]
-          ]
+          "uniqueConstraints": [["code", "country"]]
         },
         {
           "name": "base.currency",
@@ -2022,12 +1848,7 @@
               "relation": "base.user"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "group",
-              "user"
-            ]
-          ]
+          "uniqueConstraints": [["group", "user"]]
         },
         {
           "name": "base.language",
@@ -2126,12 +1947,7 @@
               "default": "[redacted]"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "group",
-              "model_name"
-            ]
-          ]
+          "uniqueConstraints": [["group", "model_name"]]
         },
         {
           "name": "base.partner",
@@ -2353,12 +2169,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "contact",
-                "delivery",
-                "invoice",
-                "other"
-              ]
+              "values": ["contact", "delivery", "invoice", "other"]
             },
             {
               "name": "city",
@@ -2624,12 +2435,7 @@
               "relation": "base.partner"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "category",
-              "partner"
-            ]
-          ]
+          "uniqueConstraints": [["category", "partner"]]
         },
         {
           "name": "base.saved_filter",
@@ -2867,13 +2673,7 @@
               "relation": "base.tag"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "resource_id",
-              "resource_model",
-              "tag"
-            ]
-          ]
+          "uniqueConstraints": [["resource_id", "resource_model", "tag"]]
         },
         {
           "name": "base.user",
@@ -2931,11 +2731,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "superadmin",
-                "system",
-                "user"
-              ]
+              "values": ["superadmin", "system", "user"]
             },
             {
               "name": "timezone",
@@ -3285,9 +3081,7 @@
     {
       "name": "jobs",
       "version": "1.0.0",
-      "depends": [
-        "base"
-      ],
+      "depends": ["base"],
       "models": [
         {
           "name": "base.cron",
@@ -3324,11 +3118,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "allow",
-                "forbid",
-                "replace"
-              ]
+              "values": ["allow", "forbid", "replace"]
             },
             {
               "name": "cron_expression",
@@ -3393,11 +3183,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "catch_up",
-                "coalesce",
-                "skip"
-              ]
+              "values": ["catch_up", "coalesce", "skip"]
             },
             {
               "name": "name",
@@ -3638,13 +3424,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "cancelled",
-                "dead",
-                "queued",
-                "running",
-                "succeeded"
-              ]
+              "values": ["cancelled", "dead", "queued", "running", "succeeded"]
             }
           ],
           "uniqueConstraints": []
@@ -3733,13 +3513,7 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "cancelled",
-                "dead",
-                "retrying",
-                "running",
-                "succeeded"
-              ]
+              "values": ["cancelled", "dead", "retrying", "running", "succeeded"]
             },
             {
               "name": "worker_id",
@@ -3752,12 +3526,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "attempt",
-              "job"
-            ]
-          ]
+          "uniqueConstraints": [["attempt", "job"]]
         },
         {
           "name": "base.outbox_event",
@@ -3929,12 +3698,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "dead",
-                "pending",
-                "processing",
-                "published"
-              ]
+              "values": ["dead", "pending", "processing", "published"]
             }
           ],
           "uniqueConstraints": []
@@ -3950,9 +3714,7 @@
     {
       "name": "knowledge",
       "version": "1.6.0",
-      "depends": [
-        "base"
-      ],
+      "depends": ["base"],
       "models": [
         {
           "name": "knowledge.bug_case",
@@ -3997,12 +3759,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "CHILD_SENSITIVE",
-                "CONFIDENTIAL",
-                "INTERNAL",
-                "RESTRICTED"
-              ]
+              "values": ["CHILD_SENSITIVE", "CONFIDENTIAL", "INTERNAL", "RESTRICTED"]
             },
             {
               "name": "company",
@@ -4036,11 +3793,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "human_approved",
-                "human_rejected",
-                "unreviewed"
-              ]
+              "values": ["human_approved", "human_rejected", "unreviewed"]
             },
             {
               "name": "program_id",
@@ -4062,11 +3815,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "editorial_candidate",
-                "public_approved",
-                "unpublished"
-              ]
+              "values": ["editorial_candidate", "public_approved", "unpublished"]
             },
             {
               "name": "resolved_status",
@@ -4078,11 +3827,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "reopened",
-                "unresolved",
-                "verified_resolved"
-              ]
+              "values": ["reopened", "unresolved", "verified_resolved"]
             },
             {
               "name": "revision",
@@ -4127,12 +3872,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "case_id",
-              "company"
-            ]
-          ]
+          "uniqueConstraints": [["case_id", "company"]]
         },
         {
           "name": "knowledge.bug_case_event",
@@ -4190,14 +3930,7 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "action",
-                "intake",
-                "plan",
-                "reopen",
-                "triage",
-                "verification"
-              ]
+              "values": ["action", "intake", "plan", "reopen", "triage", "verification"]
             },
             {
               "name": "from_state",
@@ -4271,15 +4004,8 @@
             }
           ],
           "uniqueConstraints": [
-            [
-              "bug_case",
-              "company",
-              "idempotency_key"
-            ],
-            [
-              "bug_case",
-              "workflow_event_sequence"
-            ]
+            ["bug_case", "company", "idempotency_key"],
+            ["bug_case", "workflow_event_sequence"]
           ]
         },
         {
@@ -4368,18 +4094,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "INTERNAL"
-              ]
+              "values": ["INTERNAL"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "profile_id",
-              "version"
-            ]
-          ]
+          "uniqueConstraints": [["company", "profile_id", "version"]]
         },
         {
           "name": "knowledge.privacy_projection",
@@ -4446,10 +4164,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "active",
-                "revoked"
-              ]
+              "values": ["active", "revoked"]
             },
             {
               "name": "subject_ref_sha256",
@@ -4482,18 +4197,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "INTERNAL",
-                "RESTRICTED"
-              ]
+              "values": ["INTERNAL", "RESTRICTED"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "projection_key"
-            ]
-          ]
+          "uniqueConstraints": [["company", "projection_key"]]
         },
         {
           "name": "knowledge.privacy_revocation",
@@ -4572,12 +4279,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "idempotency_key"
-            ]
-          ]
+          "uniqueConstraints": [["company", "idempotency_key"]]
         },
         {
           "name": "knowledge.publication_snapshot",
@@ -4694,13 +4396,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "approved",
-                "draft",
-                "rejected",
-                "superseded",
-                "taken_down"
-              ]
+              "values": ["approved", "draft", "rejected", "superseded", "taken_down"]
             },
             {
               "name": "reviewer",
@@ -4795,15 +4491,8 @@
             }
           ],
           "uniqueConstraints": [
-            [
-              "company",
-              "idempotency_key",
-              "publication_id"
-            ],
-            [
-              "publication_id",
-              "revision"
-            ]
+            ["company", "idempotency_key", "publication_id"],
+            ["publication_id", "revision"]
           ]
         },
         {
@@ -4842,11 +4531,7 @@
               "relation": "knowledge.research_graph_release"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "corpus_key"
-            ]
-          ]
+          "uniqueConstraints": [["corpus_key"]]
         },
         {
           "name": "knowledge.research_actor_identity",
@@ -4905,11 +4590,7 @@
               "relation": "base.user"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "user"
-            ]
-          ]
+          "uniqueConstraints": [["user"]]
         },
         {
           "name": "knowledge.research_graph_record",
@@ -4954,14 +4635,7 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "assertion",
-                "evidence",
-                "expression",
-                "node",
-                "relation",
-                "source"
-              ]
+              "values": ["assertion", "evidence", "expression", "node", "relation", "source"]
             },
             {
               "name": "release",
@@ -4983,19 +4657,10 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "INTERNAL",
-                "PUBLIC",
-                "RESTRICTED"
-              ]
+              "values": ["INTERNAL", "PUBLIC", "RESTRICTED"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "record_key",
-              "release"
-            ]
-          ]
+          "uniqueConstraints": [["record_key", "release"]]
         },
         {
           "name": "knowledge.research_graph_release",
@@ -5160,13 +4825,8 @@
             }
           ],
           "uniqueConstraints": [
-            [
-              "idempotency_key"
-            ],
-            [
-              "workflow_event_sequence",
-              "workflow_instance_id"
-            ]
+            ["idempotency_key"],
+            ["workflow_event_sequence", "workflow_instance_id"]
           ]
         },
         {
@@ -5205,9 +4865,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "unreviewed"
-              ]
+              "values": ["unreviewed"]
             },
             {
               "name": "suggestion_digest",
@@ -5259,18 +4917,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "INTERNAL"
-              ]
+              "values": ["INTERNAL"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "suggestion_id",
-              "version"
-            ]
-          ]
+          "uniqueConstraints": [["company", "suggestion_id", "version"]]
         },
         {
           "name": "knowledge.story_page_version",
@@ -5339,14 +4989,8 @@
             }
           ],
           "uniqueConstraints": [
-            [
-              "page_id",
-              "story_version"
-            ],
-            [
-              "page_order",
-              "story_version"
-            ]
+            ["page_id", "story_version"],
+            ["page_order", "story_version"]
           ]
         },
         {
@@ -5455,18 +5099,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "INTERNAL"
-              ]
+              "values": ["INTERNAL"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "story_id",
-              "version"
-            ]
-          ]
+          "uniqueConstraints": [["company", "story_id", "version"]]
         },
         {
           "name": "knowledge.textual_alignment_candidate_version",
@@ -5544,18 +5180,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "INTERNAL"
-              ]
+              "values": ["INTERNAL"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "candidate_id",
-              "company",
-              "version"
-            ]
-          ]
+          "uniqueConstraints": [["candidate_id", "company", "version"]]
         },
         {
           "name": "knowledge.witness_correction",
@@ -5571,13 +5199,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "day",
-                "instant",
-                "month",
-                "unknown",
-                "year"
-              ]
+              "values": ["day", "instant", "month", "unknown", "year"]
             },
             {
               "name": "asserted_time_text",
@@ -5693,12 +5315,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "sequence",
-              "testimony"
-            ]
-          ]
+          "uniqueConstraints": [["sequence", "testimony"]]
         },
         {
           "name": "knowledge.witness_interpretation",
@@ -5724,12 +5341,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "contested",
-                "hypothesis",
-                "rejected",
-                "supported"
-              ]
+              "values": ["contested", "hypothesis", "rejected", "supported"]
             },
             {
               "name": "evidence_ref",
@@ -5814,11 +5426,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "INTERNAL",
-                "PUBLIC",
-                "RESTRICTED"
-              ]
+              "values": ["INTERNAL", "PUBLIC", "RESTRICTED"]
             }
           ],
           "uniqueConstraints": []
@@ -5879,13 +5487,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "day",
-                "instant",
-                "month",
-                "unknown",
-                "year"
-              ]
+              "values": ["day", "instant", "month", "unknown", "year"]
             },
             {
               "name": "received_time_text",
@@ -5958,11 +5560,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "INTERNAL",
-                "PUBLIC",
-                "RESTRICTED"
-              ]
+              "values": ["INTERNAL", "PUBLIC", "RESTRICTED"]
             }
           ],
           "uniqueConstraints": []
@@ -6155,10 +5753,7 @@
     {
       "name": "notification",
       "version": "1.0.0",
-      "depends": [
-        "base",
-        "jobs"
-      ],
+      "depends": ["base", "jobs"],
       "models": [
         {
           "name": "notification.notification",
@@ -6183,10 +5778,7 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "email",
-                "in_app"
-              ]
+              "values": ["email", "in_app"]
             },
             {
               "name": "company",
@@ -6218,10 +5810,7 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "delivered",
-                "suppressed"
-              ]
+              "values": ["delivered", "suppressed"]
             },
             {
               "name": "idempotency_key",
@@ -6284,11 +5873,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "archived",
-                "read",
-                "unread"
-              ]
+              "values": ["archived", "read", "unread"]
             },
             {
               "name": "template",
@@ -6327,10 +5912,7 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "email",
-                "in_app"
-              ]
+              "values": ["email", "in_app"]
             },
             {
               "name": "company",
@@ -6366,13 +5948,7 @@
               "relation": "base.user"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "channel",
-              "company",
-              "user"
-            ]
-          ]
+          "uniqueConstraints": [["channel", "company", "user"]]
         },
         {
           "name": "notification.template",
@@ -6398,10 +5974,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "email",
-                "in_app"
-              ]
+              "values": ["email", "in_app"]
             },
             {
               "name": "code",
@@ -6461,11 +6034,7 @@
           "developmentOnly": true
         }
       ],
-      "views": [
-        "notification.notification",
-        "notification.preference",
-        "notification.template"
-      ],
+      "views": ["notification.notification", "notification.preference", "notification.template"],
       "seeds": {
         "notification.template": 3,
         "notification.preference": 4,
@@ -6493,9 +6062,7 @@
     {
       "name": "organization",
       "version": "1.0.0",
-      "depends": [
-        "base"
-      ],
+      "depends": ["base"],
       "models": [
         {
           "name": "organization.department",
@@ -6554,12 +6121,7 @@
               "relation": "organization.department"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "code",
-              "company"
-            ]
-          ]
+          "uniqueConstraints": [["code", "company"]]
         },
         {
           "name": "organization.membership",
@@ -6652,12 +6214,7 @@
               "relation": "base.user"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "user"
-            ]
-          ]
+          "uniqueConstraints": [["company", "user"]]
         },
         {
           "name": "organization.position",
@@ -6716,12 +6273,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "code",
-              "company"
-            ]
-          ]
+          "uniqueConstraints": [["code", "company"]]
         },
         {
           "name": "organization.team",
@@ -6791,12 +6343,7 @@
               "relation": "organization.team"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "code",
-              "company"
-            ]
-          ]
+          "uniqueConstraints": [["code", "company"]]
         }
       ],
       "menus": [
@@ -6880,10 +6427,7 @@
     {
       "name": "orm-integration",
       "version": "1.0.0",
-      "depends": [
-        "base",
-        "jobs"
-      ],
+      "depends": ["base", "jobs"],
       "models": [
         {
           "name": "integration.webhook_delivery",
@@ -6981,19 +6525,10 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "dead",
-                "delivered",
-                "retrying"
-              ]
+              "values": ["dead", "delivered", "retrying"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "endpoint",
-              "outbox_event_id"
-            ]
-          ]
+          "uniqueConstraints": [["endpoint", "outbox_event_id"]]
         },
         {
           "name": "integration.webhook_endpoint",
@@ -7082,10 +6617,7 @@
           "developmentOnly": true
         }
       ],
-      "views": [
-        "integration.webhook_delivery",
-        "integration.webhook_endpoint"
-      ],
+      "views": ["integration.webhook_delivery", "integration.webhook_endpoint"],
       "seeds": {
         "integration.webhook_endpoint": 3,
         "base.model_access": 2
@@ -7122,9 +6654,7 @@
     {
       "name": "orm-whatsapp",
       "version": "1.14.0",
-      "depends": [
-        "base"
-      ],
+      "depends": ["base"],
       "models": [
         {
           "name": "whatsapp.account",
@@ -7202,11 +6732,7 @@
               ]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company"
-            ]
-          ]
+          "uniqueConstraints": [["company"]]
         },
         {
           "name": "whatsapp.conversation",
@@ -7519,18 +7045,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "closed",
-                "open"
-              ]
+              "values": ["closed", "open"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "jid"
-            ]
-          ]
+          "uniqueConstraints": [["company", "jid"]]
         },
         {
           "name": "whatsapp.conversation.alias",
@@ -7569,12 +7087,7 @@
               "relation": "whatsapp.conversation"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "alias_jid",
-              "company"
-            ]
-          ]
+          "uniqueConstraints": [["alias_jid", "company"]]
         },
         {
           "name": "whatsapp.conversation.label",
@@ -7614,13 +7127,7 @@
               "relation": "whatsapp.label"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "conversation",
-              "label"
-            ]
-          ]
+          "uniqueConstraints": [["company", "conversation", "label"]]
         },
         {
           "name": "whatsapp.conversation.read",
@@ -7679,13 +7186,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "conversation",
-              "user_id"
-            ]
-          ]
+          "uniqueConstraints": [["company", "conversation", "user_id"]]
         },
         {
           "name": "whatsapp.group.creation",
@@ -7742,20 +7243,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "completed",
-                "failed",
-                "started",
-                "unknown"
-              ]
+              "values": ["completed", "failed", "started", "unknown"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "idempotency_key"
-            ]
-          ]
+          "uniqueConstraints": [["company", "idempotency_key"]]
         },
         {
           "name": "whatsapp.group.join",
@@ -7822,20 +7313,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "completed",
-                "failed",
-                "started",
-                "unknown"
-              ]
+              "values": ["completed", "failed", "started", "unknown"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "idempotency_key"
-            ]
-          ]
+          "uniqueConstraints": [["company", "idempotency_key"]]
         },
         {
           "name": "whatsapp.group.operation",
@@ -7850,13 +7331,7 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "add",
-                "demote",
-                "leave",
-                "promote",
-                "remove"
-              ]
+              "values": ["add", "demote", "leave", "promote", "remove"]
             },
             {
               "name": "company",
@@ -7930,20 +7405,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "completed",
-                "failed",
-                "started",
-                "unknown"
-              ]
+              "values": ["completed", "failed", "started", "unknown"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "idempotency_key"
-            ]
-          ]
+          "uniqueConstraints": [["company", "idempotency_key"]]
         },
         {
           "name": "whatsapp.internal_note",
@@ -8041,12 +7506,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "company",
-              "normalized_name"
-            ]
-          ]
+          "uniqueConstraints": [["company", "normalized_name"]]
         },
         {
           "name": "whatsapp.message",
@@ -8115,10 +7575,7 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "inbound",
-                "outbound"
-              ]
+              "values": ["inbound", "outbound"]
             },
             {
               "name": "external_id",
@@ -8233,12 +7690,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "clean",
-                "infected",
-                "not_applicable",
-                "pending"
-              ]
+              "values": ["clean", "infected", "not_applicable", "pending"]
             },
             {
               "name": "media_size_bytes",
@@ -8270,14 +7722,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "audio",
-                "document",
-                "image",
-                "sticker",
-                "text",
-                "video"
-              ]
+              "values": ["audio", "document", "image", "sticker", "text", "video"]
             },
             {
               "name": "provider_type",
@@ -8383,14 +7828,8 @@
             }
           ],
           "uniqueConstraints": [
-            [
-              "company",
-              "external_id"
-            ],
-            [
-              "company",
-              "idempotency_key"
-            ]
+            ["company", "external_id"],
+            ["company", "idempotency_key"]
           ]
         },
         {
@@ -8562,13 +8001,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "failed",
-                "queued",
-                "sending",
-                "sent",
-                "unknown"
-              ]
+              "values": ["failed", "queued", "sending", "sent", "unknown"]
             },
             {
               "name": "status_type",
@@ -8579,22 +8012,12 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "image",
-                "text",
-                "video"
-              ]
+              "values": ["image", "text", "video"]
             }
           ],
           "uniqueConstraints": [
-            [
-              "company",
-              "external_id"
-            ],
-            [
-              "company",
-              "idempotency_key"
-            ]
+            ["company", "external_id"],
+            ["company", "idempotency_key"]
           ]
         },
         {
@@ -8694,11 +8117,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "storage_key"
-            ]
-          ]
+          "uniqueConstraints": [["storage_key"]]
         }
       ],
       "menus": [
@@ -8731,12 +8150,7 @@
           "developmentOnly": true
         }
       ],
-      "views": [
-        "whatsapp.account",
-        "whatsapp.conversation",
-        "whatsapp.message",
-        "whatsapp.status"
-      ],
+      "views": ["whatsapp.account", "whatsapp.conversation", "whatsapp.message", "whatsapp.status"],
       "seeds": {
         "whatsapp.label": 5,
         "base.model_access": 8
@@ -8811,12 +8225,7 @@
     {
       "name": "project",
       "version": "1.0.0",
-      "depends": [
-        "base",
-        "notification",
-        "organization",
-        "workflow"
-      ],
+      "depends": ["base", "notification", "organization", "workflow"],
       "models": [
         {
           "name": "project.milestone",
@@ -8905,19 +8314,10 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "missed",
-                "open",
-                "reached"
-              ]
+              "values": ["missed", "open", "reached"]
             }
           ],
-          "uniqueConstraints": [
-            [
-              "code",
-              "project"
-            ]
-          ]
+          "uniqueConstraints": [["code", "project"]]
         },
         {
           "name": "project.project",
@@ -9028,13 +8428,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "active",
-                "archived",
-                "completed",
-                "on_hold",
-                "planned"
-              ]
+              "values": ["active", "archived", "completed", "on_hold", "planned"]
             },
             {
               "name": "target_date",
@@ -9058,12 +8452,7 @@
               "relation": "organization.team"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "code",
-              "company"
-            ]
-          ]
+          "uniqueConstraints": [["code", "company"]]
         },
         {
           "name": "project.stage",
@@ -9155,13 +8544,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "code",
-              "company",
-              "project"
-            ]
-          ]
+          "uniqueConstraints": [["code", "company", "project"]]
         },
         {
           "name": "project.task",
@@ -9292,12 +8675,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "high",
-                "low",
-                "normal",
-                "urgent"
-              ]
+              "values": ["high", "low", "normal", "urgent"]
             },
             {
               "name": "project",
@@ -9342,14 +8720,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "backlog",
-                "blocked",
-                "cancelled",
-                "done",
-                "in_progress",
-                "review"
-              ]
+              "values": ["backlog", "blocked", "cancelled", "done", "in_progress", "review"]
             },
             {
               "name": "title",
@@ -9362,12 +8733,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "code",
-              "company"
-            ]
-          ]
+          "uniqueConstraints": [["code", "company"]]
         },
         {
           "name": "project.task_dependency",
@@ -9405,10 +8771,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "blocks",
-                "relates_to"
-              ]
+              "values": ["blocks", "relates_to"]
             },
             {
               "name": "task",
@@ -9422,12 +8785,7 @@
               "relation": "project.task"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "depends_on",
-              "task"
-            ]
-          ]
+          "uniqueConstraints": [["depends_on", "task"]]
         }
       ],
       "menus": [
@@ -9531,12 +8889,7 @@
     {
       "name": "request",
       "version": "1.0.0",
-      "depends": [
-        "base",
-        "jobs",
-        "notification",
-        "workflow"
-      ],
+      "depends": ["base", "jobs", "notification", "workflow"],
       "models": [
         {
           "name": "request.purchase",
@@ -9618,9 +8971,7 @@
           "developmentOnly": false
         }
       ],
-      "views": [
-        "request.purchase"
-      ],
+      "views": ["request.purchase"],
       "seeds": {
         "base.model_access": 1,
         "workflow.definition": 1,
@@ -9641,11 +8992,7 @@
     {
       "name": "workflow",
       "version": "1.2.0",
-      "depends": [
-        "base",
-        "jobs",
-        "notification"
-      ],
+      "depends": ["base", "jobs", "notification"],
       "models": [
         {
           "name": "workflow.approval",
@@ -9701,10 +9048,7 @@
               "unique": false,
               "optional": false,
               "hasDefault": false,
-              "values": [
-                "approved",
-                "rejected"
-              ]
+              "values": ["approved", "rejected"]
             },
             {
               "name": "instance",
@@ -9718,13 +9062,7 @@
               "relation": "workflow.instance"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "action",
-              "actor",
-              "instance"
-            ]
-          ]
+          "uniqueConstraints": [["action", "actor", "instance"]]
         },
         {
           "name": "workflow.definition",
@@ -9783,12 +9121,7 @@
               "default": "[redacted]"
             }
           ],
-          "uniqueConstraints": [
-            [
-              "code",
-              "version"
-            ]
-          ]
+          "uniqueConstraints": [["code", "version"]]
         },
         {
           "name": "workflow.event",
@@ -9907,12 +9240,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [
-            [
-              "instance",
-              "sequence"
-            ]
-          ]
+          "uniqueConstraints": [["instance", "sequence"]]
         },
         {
           "name": "workflow.instance",
@@ -10042,13 +9370,7 @@
               "optional": true,
               "hasDefault": true,
               "default": "[redacted]",
-              "values": [
-                "active",
-                "cancelled",
-                "completed",
-                "rejected",
-                "timed_out"
-              ]
+              "values": ["active", "cancelled", "completed", "rejected", "timed_out"]
             }
           ],
           "uniqueConstraints": []
@@ -10084,12 +9406,7 @@
           "developmentOnly": false
         }
       ],
-      "views": [
-        "workflow.approval",
-        "workflow.definition",
-        "workflow.event",
-        "workflow.instance"
-      ],
+      "views": ["workflow.approval", "workflow.definition", "workflow.event", "workflow.instance"],
       "seeds": {
         "workflow.definition": 1,
         "base.model_access": 4,
