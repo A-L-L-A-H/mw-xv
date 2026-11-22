@@ -56,3 +56,36 @@ This table is an inspection guide, not a claim that any listed capability is com
 For this documentation/audit-only task, run the narrow repository checks that are available in the checkout: roadmap task validation, roadmap/automation consistency, documentation links, formatting for changed files and `git diff --check`. Run package or application tests only if the audit uncovers an actual code change (which is outside M13.01).
 
 M13.01 remains open until the reuse map and evidence file exist and all acceptance criteria are verified.
+
+## M13.02 — Read-only revision-pinned Repo Radar Snapshot
+
+- **Status:** in_progress
+- **Prerequisites:** M13.01 (`docs/architecture/rock-soul-flow-reuse-map.md` §3).
+- **Deliverables:** `packages/ai-runtime/src/repo-snapshot.ts`, `apps/desktop/src/worktree-sandbox.ts`, and `docs/roadmap/evidence/M13.02.md`.
+
+### Goal
+
+Deliver a deterministic, read-only, revision-pinned `RepoSnapshot` builder in `@moonwitness/ai-runtime` (strictly over `ReadOnlyRepoInspector` and `createRedactor()`) and an `R0` `WorktreeSandbox.inspectRepoSnapshot` surface in `apps/desktop` gated by `DesktopRiskGate` (`repo.read` / `git.status`).
+
+### Bounded file scope
+
+- `packages/ai-runtime/src/repo-snapshot.ts` and `packages/ai-runtime/src/index.ts`
+- `packages/ai-runtime/tests/repo-snapshot.test.ts`
+- `apps/desktop/src/worktree-sandbox.ts` and `apps/desktop/src/types.ts`
+- `apps/desktop/tests/desktop-harness.test.ts`
+- `docs/roadmap/evidence/M13.02.md`
+
+### Acceptance criteria
+
+- `buildRepoSnapshot` operates strictly through `ReadOnlyRepoInspector` (no direct `fs` calls outside allowlist/containment guards, no shell execution inside `@moonwitness/ai-runtime`).
+- Every manifest, script, and doc claim in `RepoSnapshot` cites an exact relative path and SHA-256 digest; direct observations are separated from inferred metadata.
+- Sensitive paths (`.env*`, `.git/*`, keys, credentials) are excluded unconditionally and values pass through `createRedactor()`.
+- File count or byte caps set `incomplete: true` with explicit `omittedReasons`.
+- `apps/desktop` `inspectRepoSnapshot` enforces `DesktopRiskGate` at `R0` (`repo.read` / `git.status`), pins `headCommit` + `branch` + `dirty` via `execFile('git', ..., { shell: false })`, and preserves tenant `companyId` + `CapabilityGrant` validation.
+- Output is deterministic for identical inputs (stable sorted arrays and reproducible `snapshotSha256`).
+
+### Verification
+
+- `pnpm --filter @moonwitness/ai-runtime build` and `pnpm --filter @moonwitness/ai-runtime exec vitest run tests/repo-snapshot.test.ts`
+- `pnpm --filter @moonwitness/desktop build` and `pnpm --filter @moonwitness/desktop exec vitest run tests/desktop-harness.test.ts`
+- `pnpm desktop:ui:check`, `pnpm automation:check:roadmap`, `pnpm tasks:validate`, and `node scripts/check-docs.mjs`

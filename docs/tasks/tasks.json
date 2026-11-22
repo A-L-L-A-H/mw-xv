@@ -8544,6 +8544,74 @@
       "comments": []
     },
     {
+      "code": "M13.02",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Read-only revision-pinned Repo Radar Snapshot.",
+      "summary": "Read-only revision-pinned Repo Radar Snapshot.",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "packages/ai-runtime/src/repo-snapshot.ts, apps/desktop/src/worktree-sandbox.ts, and docs/roadmap/evidence/M13.02.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "doing",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "low",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.01"],
+      "blocks": [],
+      "tags": ["m", "desktop", "rock-soul-flow"],
+      "scope": {
+        "packages": ["@moonwitness/ai-runtime", "@moonwitness/desktop"],
+        "files": [
+          "packages/ai-runtime/src/repo-snapshot.ts",
+          "packages/ai-runtime/src/index.ts",
+          "packages/ai-runtime/tests/repo-snapshot.test.ts",
+          "apps/desktop/src/worktree-sandbox.ts",
+          "apps/desktop/src/types.ts",
+          "apps/desktop/tests/desktop-harness.test.ts",
+          "docs/roadmap/evidence/M13.02.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.02-ac-1",
+          "text": "Deterministic read-only RepoSnapshot builder in @moonwitness/ai-runtime and R0 WorktreeSandbox.inspectRepoSnapshot in apps/desktop with tests and evidence",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ai-runtime build",
+          "pnpm --filter @moonwitness/ai-runtime exec vitest run tests/repo-snapshot.test.ts",
+          "pnpm --filter @moonwitness/desktop build",
+          "pnpm --filter @moonwitness/desktop exec vitest run tests/desktop-harness.test.ts"
+        ],
+        "expected": "RepoSnapshot and Desktop R0 snapshot tests, roadmap validation, and doc checks pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.02.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": null
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/rock-soul-flow-reuse-map.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.02"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
       "code": "K0-001",
       "project": "moonwitness",
       "series": "K",

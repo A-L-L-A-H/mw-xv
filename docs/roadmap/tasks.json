@@ -1573,6 +1573,17 @@
       "evidence": "docs/roadmap/evidence/M13.01.md"
     },
     {
+      "id": "M13.02",
+      "title": "Read-only revision-pinned Repo Radar Snapshot.",
+      "milestone": "M13",
+      "dependsOn": ["M13.01"],
+      "output": "packages/ai-runtime/src/repo-snapshot.ts, apps/desktop/src/worktree-sandbox.ts, and docs/roadmap/evidence/M13.02.md",
+      "detailFile": "docs/roadmap/14-desktop-engineering.md",
+      "labels": ["desktop", "rock-soul-flow"],
+      "priority": "p1",
+      "status": "in_progress"
+    },
+    {
       "id": "K0-001",
       "title": "Centralization ADR and deployment boundary",
       "milestone": "K0",
