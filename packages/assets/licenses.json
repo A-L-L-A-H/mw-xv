@@ -482,6 +482,33 @@
       "modifications": "Original canonical crew-01 turn prototype clip; no face depicted.",
       "status": "review",
       "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-moon-disc-layer.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original hand-authored Moon City moon disc layer for responsive scene composition.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-clouds-loop-a.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original hand-authored primary looping Moon City cloud layer for responsive scene composition.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-clouds-loop-b.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original hand-authored secondary looping Moon City cloud layer for responsive scene composition.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
     }
   ],
   "originalFonts": [

@@ -1805,6 +1805,45 @@
       "status": "review",
       "license": "ISC",
       "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/artwork/moon-city-moon-disc-layer.svg",
+      "kind": "source",
+      "variant": "moon-disc-layer",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/artwork/moon-city-clouds-loop-a.svg",
+      "kind": "source",
+      "variant": "cloud-loop-primary",
+      "format": "svg",
+      "width": 2048,
+      "height": 512,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/artwork/moon-city-clouds-loop-b.svg",
+      "kind": "source",
+      "variant": "cloud-loop-secondary",
+      "format": "svg",
+      "width": 2048,
+      "height": 512,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
     }
   ]
 }

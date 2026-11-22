@@ -102,8 +102,9 @@ const MIGRATIONS: &[&str] = &[
          target_type TEXT NOT NULL,
          target_id   INTEGER NOT NULL,
          PRIMARY KEY (source_type, source_id, target_type, target_id)
-     );
-     CREATE VIRTUAL TABLE global_search_fts USING fts5(
+     );",
+    // Migration 10b: Optional FTS5 global search virtual table and sync triggers
+    "CREATE VIRTUAL TABLE global_search_fts USING fts5(
          entity_type,
          entity_id UNINDEXED,
          title,
@@ -465,7 +466,17 @@ impl Store {
                 ));
             }
             for sql in &MIGRATIONS[version..] {
-                c.execute_batch(sql)?;
+                // Handle FTS5 gracefully - it may not be available in some SQLite builds
+                if sql.contains("USING fts5") || sql.contains("documents_fts_") || sql.contains("tasks_fts_") {
+                    match c.execute_batch(sql) {
+                        Ok(_) => {},
+                        Err(e) => {
+                            eprintln!("Warning: FTS5 not available, skipping FTS5 virtual table and triggers: {}", e);
+                        }
+                    }
+                } else {
+                    c.execute_batch(sql)?;
+                }
             }
             c.execute(
                 "INSERT INTO meta (key, value) VALUES ('schema_version', ?1), ('compatible', ?2)
@@ -1619,24 +1630,76 @@ impl Store {
         if q.is_empty() {
             return Ok(Vec::new());
         }
-        let fts_terms: Vec<String> = q
-            .split_whitespace()
-            .map(|token| format!("\"{}\"*", token.replace('"', "\"\"")))
-            .collect();
-        let fts_query = fts_terms.join(" AND ");
-        let mut hits = Vec::new();
-        let mut stmt = self.conn.prepare(
-            "SELECT entity_type, CAST(entity_id AS INTEGER)
-             FROM global_search_fts
-             WHERE global_search_fts MATCH ?1
-             ORDER BY bm25(global_search_fts)
-             LIMIT ?2",
-        )?;
-        let matched: Vec<(String, i64)> = stmt
-            .query_map(params![fts_query, limit as i64], |r| Ok((r.get(0)?, r.get(1)?)))?
-            .collect::<rusqlite::Result<_>>()
-            .unwrap_or_default();
+        let fts_exists: bool = self
+            .conn
+            .query_row(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='global_search_fts'",
+                [],
+                |r| r.get::<_, i64>(0),
+            )
+            .map(|c| c > 0)
+            .unwrap_or(false);
 
+        let matched: Vec<(String, i64)> = if fts_exists {
+            let fts_terms: Vec<String> = q
+                .split_whitespace()
+                .map(|token| format!("\"{}\"*", token.replace('"', "\"\"")))
+                .collect();
+            let fts_query = fts_terms.join(" AND ");
+            let mut stmt = self.conn.prepare(
+                "SELECT entity_type, CAST(entity_id AS INTEGER)
+                 FROM global_search_fts
+                 WHERE global_search_fts MATCH ?1
+                 ORDER BY bm25(global_search_fts)
+                 LIMIT ?2",
+            )?;
+            stmt.query_map(params![fts_query, limit as i64], |r| Ok((r.get(0)?, r.get(1)?)))?
+                .collect::<rusqlite::Result<_>>()
+                .unwrap_or_default()
+        } else {
+            let tokens: Vec<String> = q
+                .split_whitespace()
+                .map(|t| format!("%{}%", t.to_lowercase()))
+                .collect();
+            let mut out: Vec<(String, i64)> = Vec::new();
+
+            let mut dstmt = self.conn.prepare(
+                "SELECT id, lower(title || ' ' || body || ' ' || slug || ' ' || tags) FROM documents ORDER BY updated_at DESC",
+            )?;
+            let doc_rows = dstmt
+                .query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)))?
+                .collect::<rusqlite::Result<Vec<_>>>()
+                .unwrap_or_default();
+            for (id, hay) in doc_rows {
+                if tokens.iter().all(|t| hay.contains(t.trim_matches('%'))) {
+                    out.push(("document".into(), id));
+                    if out.len() >= limit {
+                        break;
+                    }
+                }
+            }
+
+            if out.len() < limit {
+                let mut tstmt = self.conn.prepare(
+                    "SELECT id, lower(title || ' ' || description || ' ' || coalesce(summary,'') || ' ' || coalesce(code,'') || ' ' || tags) FROM tasks ORDER BY updated_at DESC",
+                )?;
+                let task_rows = tstmt
+                    .query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)))?
+                    .collect::<rusqlite::Result<Vec<_>>>()
+                    .unwrap_or_default();
+                for (id, hay) in task_rows {
+                    if tokens.iter().all(|t| hay.contains(t.trim_matches('%'))) {
+                        out.push(("task".into(), id));
+                        if out.len() >= limit {
+                            break;
+                        }
+                    }
+                }
+            }
+            out
+        };
+
+        let mut hits = Vec::new();
         for (etype, eid) in matched {
             if etype == "task" {
                 if let Ok(t) = self.get_task(eid) {
@@ -2583,7 +2646,7 @@ mod tests {
 
     #[test]
     fn migration_9_10_adds_taskos_v2_columns_and_documents_tables() {
-        let (dir, store) = store();
+        let (_dir, store) = store();
         // Verify all 22 new columns exist
         let cols: Vec<String> = store.conn
             .prepare("PRAGMA table_info(tasks)").unwrap()
@@ -2599,25 +2662,30 @@ mod tests {
             assert!(cols.contains(&col.to_string()), "Missing column: {}", col);
         }
         
-        // Verify documents, document_links, global_search_fts tables exist
+        // Verify documents and document_links tables exist
         let tables: Vec<String> = store.conn
             .prepare("SELECT name FROM sqlite_master WHERE type='table'").unwrap()
             .query_map([], |r| r.get(0)).unwrap()
             .collect::<std::result::Result<Vec<_>, _>>().unwrap();
         assert!(tables.contains(&"documents".to_string()));
         assert!(tables.contains(&"document_links".to_string()));
-        assert!(tables.contains(&"global_search_fts".to_string()));
         
-        // Verify FTS5 triggers work
+        // Verify document insert & global_search work (via FTS5 when compiled in, or LIKE fallback)
         store.conn.execute(
-            "INSERT INTO documents (slug, layer, title, body, tags) VALUES ('test/doc', 'wiki', 'Test', 'Body', 'tag1,tag2')",
+            "INSERT INTO documents (slug, layer, title, body, tags) VALUES ('test/doc', 'wiki', 'Test', 'UniqueBodyToken', 'tag1,tag2')",
             []
         ).unwrap();
-        let fts_count: i64 = store.conn.query_row(
-            "SELECT count(*) FROM global_search_fts WHERE entity_type='document'",
-            [], |r| r.get(0)
-        ).unwrap();
-        assert_eq!(fts_count, 1);
+        if tables.contains(&"global_search_fts".to_string()) {
+            let fts_count: i64 = store.conn.query_row(
+                "SELECT count(*) FROM global_search_fts WHERE entity_type='document'",
+                [], |r| r.get(0)
+            ).unwrap();
+            assert_eq!(fts_count, 1);
+        }
+        let hits = store.global_search("UniqueBodyToken", 10).unwrap();
+        assert_eq!(hits.len(), 1);
+        assert_eq!(hits[0].entity_type, "document");
+        assert_eq!(hits[0].code_or_slug, "test/doc");
     }
 
     #[test]
