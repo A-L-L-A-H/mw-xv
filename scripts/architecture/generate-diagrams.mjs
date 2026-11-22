@@ -52,6 +52,11 @@ const addonManifestPaths = [
     manifest: 'manifest.ts',
   },
   {
+    entry: 'packages/orm-project/dist/manifest.js',
+    sourceRoot: 'packages/orm-project/src',
+    manifest: 'manifest.ts',
+  },
+  {
     entry: 'packages/orm-integration/dist/manifest.js',
     sourceRoot: 'packages/orm-integration/src',
     manifest: 'manifest.ts',

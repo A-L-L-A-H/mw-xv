@@ -28,6 +28,7 @@ import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { manifest as knowledgeManifest } from '@moonwitness/orm-knowledge';
 import { manifest as notificationManifest } from '@moonwitness/orm-notification';
 import { manifest as organizationManifest } from '@moonwitness/orm-organization';
+import { manifest as projectManifest } from '@moonwitness/orm-project';
 import { LocalFileAttachmentStorage, manifest as storageManifest } from '@moonwitness/orm-storage';
 import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
 import {
@@ -68,6 +69,7 @@ export const DESKTOP_ADDONS: readonly Addon[] = Object.freeze([
   jobsManifest,
   notificationManifest,
   workflowManifest,
+  projectManifest,
   storageManifest,
   knowledgeManifest,
   aiManifest,

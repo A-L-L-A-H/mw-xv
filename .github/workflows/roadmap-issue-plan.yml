@@ -60,7 +60,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Plan read-only roadmap issue sync and select bounded batch
         id: select
         env:
@@ -113,7 +113,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Collect lifecycle evidence and apply selected tasks with fresh-state guards
         run: |
           set -euo pipefail

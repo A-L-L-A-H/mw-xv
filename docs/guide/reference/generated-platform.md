@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `280e86d893a126a2ec9c3fce0872261b2058beda0cc33b625cc1c10cf1a32762`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `490671fd70572cd1fb32a3e104b7dd3d017231a9b32b9dcd57a7922ce9c41c88`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -30,6 +30,7 @@ Source fingerprint: `280e86d893a126a2ec9c3fce0872261b2058beda0cc33b625cc1c10cf1a
 | `@moonwitness/orm-knowledge`    | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-notification` | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-organization` | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-project`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-request`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-storage`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-whatsapp`     | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |

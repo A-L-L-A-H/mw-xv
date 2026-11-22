@@ -30,7 +30,7 @@ Structured post-mortem rules persisted by autonomous and operator loops so resol
 
 - **Symptom**: Toolchain or CI drift when updating root metadata.
 - **Root Cause**: Automated scripts or edits altering `package.json` `engines.node`.
-- **Invariant**: Keep root `package.json` `engines.node` pinned to `"22.x"`.
+- **Invariant**: Keep root `package.json` and every workspace `package.json` `engines.node` pinned to `"24.x"` Active LTS (matched by `.nvmrc`, `.node-version`, `Dockerfile`, and `.github/workflows/*.yml`).
 
 ## INV-006: Recursive Route Discovery & Generated Reference/Diagram Sync
 

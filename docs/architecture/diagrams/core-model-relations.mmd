@@ -56,24 +56,29 @@ flowchart LR
   model54["organization.membership"]
   model55["organization.position"]
   model56["organization.team"]
-  model57["request.purchase"]
-  model58["whatsapp.account"]
-  model59["whatsapp.conversation"]
-  model60["whatsapp.conversation.alias"]
-  model61["whatsapp.conversation.label"]
-  model62["whatsapp.conversation.read"]
-  model63["whatsapp.group.creation"]
-  model64["whatsapp.group.join"]
-  model65["whatsapp.group.operation"]
-  model66["whatsapp.internal_note"]
-  model67["whatsapp.label"]
-  model68["whatsapp.message"]
-  model69["whatsapp.status"]
-  model70["whatsapp.upload.ticket"]
-  model71["workflow.approval"]
-  model72["workflow.definition"]
-  model73["workflow.event"]
-  model74["workflow.instance"]
+  model57["project.milestone"]
+  model58["project.project"]
+  model59["project.stage"]
+  model60["project.task"]
+  model61["project.task_dependency"]
+  model62["request.purchase"]
+  model63["whatsapp.account"]
+  model64["whatsapp.conversation"]
+  model65["whatsapp.conversation.alias"]
+  model66["whatsapp.conversation.label"]
+  model67["whatsapp.conversation.read"]
+  model68["whatsapp.group.creation"]
+  model69["whatsapp.group.join"]
+  model70["whatsapp.group.operation"]
+  model71["whatsapp.internal_note"]
+  model72["whatsapp.label"]
+  model73["whatsapp.message"]
+  model74["whatsapp.status"]
+  model75["whatsapp.upload.ticket"]
+  model76["workflow.approval"]
+  model77["workflow.definition"]
+  model78["workflow.event"]
+  model79["workflow.instance"]
   model0 -->|user N:1| model28
   model2 -->|assigned_to N:1| model28
   model5 -->|country N:1| model9
@@ -166,36 +171,56 @@ flowchart LR
   model56 -->|department N:1| model53
   model56 -->|parent N:1| model56
   model57 -->|company N:1| model6
-  model57 -->|currency N:1| model12
-  model57 -->|vendor N:1| model19
+  model57 -->|owner N:1| model28
+  model57 -->|project N:1| model58
   model58 -->|company N:1| model6
-  model59 -->|account N:1| model58
+  model58 -->|department N:1| model53
+  model58 -->|owner N:1| model28
+  model58 -->|partner N:1| model19
+  model58 -->|team N:1| model56
   model59 -->|company N:1| model6
+  model59 -->|project N:1| model58
+  model60 -->|assignee N:1| model28
   model60 -->|company N:1| model6
-  model60 -->|conversation N:1| model59
+  model60 -->|milestone N:1| model57
+  model60 -->|parent N:1| model60
+  model60 -->|project N:1| model58
+  model60 -->|reviewer N:1| model28
+  model60 -->|stage N:1| model59
   model61 -->|company N:1| model6
-  model61 -->|conversation N:1| model59
-  model61 -->|label N:1| model67
+  model61 -->|depends_on N:1| model60
+  model61 -->|task N:1| model60
   model62 -->|company N:1| model6
-  model62 -->|conversation N:1| model59
+  model62 -->|currency N:1| model12
+  model62 -->|vendor N:1| model19
   model63 -->|company N:1| model6
+  model64 -->|account N:1| model63
   model64 -->|company N:1| model6
   model65 -->|company N:1| model6
-  model65 -->|conversation N:1| model59
+  model65 -->|conversation N:1| model64
   model66 -->|company N:1| model6
-  model66 -->|conversation N:1| model59
+  model66 -->|conversation N:1| model64
+  model66 -->|label N:1| model72
   model67 -->|company N:1| model6
-  model68 -->|account N:1| model58
+  model67 -->|conversation N:1| model64
   model68 -->|company N:1| model6
-  model68 -->|conversation N:1| model59
-  model69 -->|account N:1| model58
   model69 -->|company N:1| model6
   model70 -->|company N:1| model6
-  model70 -->|conversation N:1| model59
-  model71 -->|actor N:1| model28
-  model71 -->|instance N:1| model74
-  model73 -->|actor N:1| model28
-  model73 -->|instance N:1| model74
+  model70 -->|conversation N:1| model64
+  model71 -->|company N:1| model6
+  model71 -->|conversation N:1| model64
+  model72 -->|company N:1| model6
+  model73 -->|account N:1| model63
+  model73 -->|company N:1| model6
+  model73 -->|conversation N:1| model64
+  model74 -->|account N:1| model63
   model74 -->|company N:1| model6
-  model74 -->|definition N:1| model72
-  model74 -->|started_by N:1| model28
+  model75 -->|company N:1| model6
+  model75 -->|conversation N:1| model64
+  model76 -->|actor N:1| model28
+  model76 -->|instance N:1| model79
+  model78 -->|actor N:1| model28
+  model78 -->|instance N:1| model79
+  model79 -->|company N:1| model6
+  model79 -->|definition N:1| model77
+  model79 -->|started_by N:1| model28

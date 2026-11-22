@@ -92,6 +92,7 @@ export async function scaffoldExperimentalAddon(options) {
           name: packageName,
           version: '0.1.0',
           type: 'module',
+          engines: { node: '24.x' },
           main: './dist/index.js',
           types: './dist/index.d.ts',
           exports: { '.': { types: './dist/index.d.ts', import: './dist/index.js' } },

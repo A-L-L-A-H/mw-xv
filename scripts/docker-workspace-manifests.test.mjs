@@ -35,7 +35,7 @@ test('production build copies every workspace manifest before frozen install', (
 });
 
 test('native SQLite dependency build installs its compiler toolchain only in the build stage', () => {
-  const runtimeStart = dockerfile.indexOf('\nFROM node:22-bookworm-slim AS runtime');
+  const runtimeStart = dockerfile.indexOf('\nFROM node:24-bookworm-slim AS runtime');
   const buildStage = dockerfile.slice(0, runtimeStart);
   const runtimeAndLater = dockerfile.slice(runtimeStart);
   assert.match(buildStage, /apt-get install --yes --no-install-recommends python3 make g\+\+/u);
@@ -49,7 +49,7 @@ test('native SQLite dependency build installs its compiler toolchain only in the
 
 test('runtime image applies current Debian security updates and removes apt indexes', () => {
   const runtimeStage = dockerfile.slice(
-    dockerfile.indexOf('\nFROM node:22-bookworm-slim AS runtime'),
+    dockerfile.indexOf('\nFROM node:24-bookworm-slim AS runtime'),
     dockerfile.indexOf('\nFROM build AS board-build')
   );
 
@@ -63,7 +63,7 @@ test('production image uses legacy deployment for the non-injected workspace lay
 
 test('API runtime includes offline corpus data and exposes its explicit root', () => {
   const runtimeStage = dockerfile.slice(
-    dockerfile.indexOf('\nFROM node:22-bookworm-slim AS runtime'),
+    dockerfile.indexOf('\nFROM node:24-bookworm-slim AS runtime'),
     dockerfile.indexOf('\nFROM build AS board-build')
   );
 
@@ -75,7 +75,7 @@ test('API deployment has an isolated stage so it cannot mutate the Board build w
   const buildStage = dockerfile.slice(0, dockerfile.indexOf('\nFROM build AS api-deploy'));
   const apiDeployStage = dockerfile.slice(
     dockerfile.indexOf('\nFROM build AS api-deploy'),
-    dockerfile.indexOf('\nFROM node:22-bookworm-slim AS runtime')
+    dockerfile.indexOf('\nFROM node:24-bookworm-slim AS runtime')
   );
   const boardBuildStage = dockerfile.slice(dockerfile.indexOf('\nFROM build AS board-build'));
 

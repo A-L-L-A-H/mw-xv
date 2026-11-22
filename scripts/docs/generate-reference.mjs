@@ -264,6 +264,7 @@ export async function collectReferenceMetadata() {
   const workflowPath = path.join(root, 'packages/orm-workflow/dist/manifest.js');
   const requestPath = path.join(root, 'packages/orm-request/dist/manifest.js');
   const organizationPath = path.join(root, 'packages/orm-organization/dist/manifest.js');
+  const projectPath = path.join(root, 'packages/orm-project/dist/manifest.js');
   const integrationPath = path.join(root, 'packages/orm-integration/dist/manifest.js');
   const whatsappPath = path.join(root, 'packages/orm-whatsapp/dist/manifest.js');
   const witnessPath = path.join(root, 'packages/orm-knowledge/dist/manifest.js');
@@ -276,6 +277,7 @@ export async function collectReferenceMetadata() {
     { manifest: workflow },
     { manifest: request },
     { manifest: organization },
+    { manifest: project },
     { manifest: integration },
     { whatsappManifest: whatsapp },
     { manifest: witness },
@@ -288,6 +290,7 @@ export async function collectReferenceMetadata() {
     import(pathToFileURL(workflowPath).href),
     import(pathToFileURL(requestPath).href),
     import(pathToFileURL(organizationPath).href),
+    import(pathToFileURL(projectPath).href),
     import(pathToFileURL(integrationPath).href),
     import(pathToFileURL(whatsappPath).href),
     import(pathToFileURL(witnessPath).href),
@@ -301,6 +304,7 @@ export async function collectReferenceMetadata() {
     workflow,
     request,
     organization,
+    project,
     integration,
     whatsapp,
     witness,
@@ -393,6 +397,7 @@ export async function collectReferenceMetadata() {
     ...(await filesUnder('packages/orm-workflow/src', '.ts')),
     ...(await filesUnder('packages/orm-request/src', '.ts')),
     ...(await filesUnder('packages/orm-organization/src', '.ts')),
+    ...(await filesUnder('packages/orm-project/src', '.ts')),
     ...(await filesUnder('packages/orm-integration/src', '.ts')),
     ...(await filesUnder('packages/orm-whatsapp/src', '.ts')),
     ...(await filesUnder('packages/orm-knowledge/src', '.ts')),

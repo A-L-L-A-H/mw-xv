@@ -4,7 +4,7 @@ inputs:
   node-version:
     description: Node.js major/minor configured for CI
     required: false
-    default: '22'
+    default: '24'
   pnpm-version:
     description: Exact pnpm version pinned by the workspace
     required: false

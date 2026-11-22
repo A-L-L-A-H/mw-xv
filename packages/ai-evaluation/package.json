@@ -4,6 +4,9 @@
   "private": true,
   "description": "Deterministic AI Corporation evaluation lab, 4-arm memory ablation suite, and G0-G6 capability gate evaluator",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

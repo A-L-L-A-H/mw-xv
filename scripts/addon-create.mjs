@@ -31,6 +31,9 @@ export function buildAddonFiles(slug, { version = '1.0.0-rc.1' } = {}) {
         name: pkgName,
         version,
         type: 'module',
+        engines: {
+          node: '24.x',
+        },
         main: './dist/index.js',
         types: './dist/index.d.ts',
         exports: {
