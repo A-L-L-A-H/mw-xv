@@ -50,7 +50,7 @@
 - [ ] Inventory all legitimate task sources: ROADMAP checklist/index, detailed cards, DSK ledger, autonomous packs, governance/audit registers, evolution tasks and any migration ledgers.
 - [ ] Map task sources and owners; identify which records are canonical vs historical/archive/generated.
 - [ ] Rebuild registry from authoritative sources only; preserve stable task codes, status, dependencies, project/series, acceptance and provenance. Never synthesize 1,346 records from a count claim.
-- [ ] Update schema/validator only as required; add an explicit empty-file guard and useful diagnostics before JSON parsing.
+- [x] Update schema/validator only as required; add an explicit empty-file guard and useful diagnostics before JSON parsing (implemented; tests added, hosted/local test execution pending).
 - [ ] Make generator/rebuild procedure deterministic, idempotent, lossless for human-owned fields, and previewable.
 - [ ] Validate duplicate codes, unknown dependencies, DAG cycles, orphan references, status parity, source provenance and record counts.
 - [ ] Run `pnpm tasks:validate`, `pnpm tasks:sync --dry-run` (if supported) and relevant tests; do not apply sync until the source map is approved.
@@ -103,3 +103,10 @@
 - [ ] Build/test verification evidence exists for the exact candidate SHA.
 
 **No feature expansion until S1–S4 are completed or explicitly accepted as blocked with a maintainer decision.**
+
+## TaskOS guard implementation — 2026-11-23
+
+- Added `parseTasksRegistry()` in `scripts/tasks/validate-tasks.mjs`: empty/whitespace registry and malformed JSON now return a clear recovery diagnostic instead of an opaque JSON parse failure.
+- Added tests for empty, whitespace-only, malformed and valid JSON inputs in `scripts/tasks/validate-tasks.test.mjs`.
+- This is a fail-safe diagnostic fix only. **TaskOS is still unavailable**; no records were reconstructed, and sync/rebuild remains prohibited until provenance inventory is complete.
+- Validation execution was not possible in this remote edit session. Run `node --test scripts/tasks/validate-tasks.test.mjs` and `pnpm tasks:validate` on a checked-out dev candidate; the latter should fail safely with the recovery message until registry recovery.
