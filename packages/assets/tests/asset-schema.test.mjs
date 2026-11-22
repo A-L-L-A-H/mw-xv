@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateAssetManifest, validateSourceProvenance } from '../scripts/asset-schema.mjs';
+import {
+  renderSpriteSheetGuide,
+  validateAssetManifest,
+  validateSourceProvenance,
+} from '../scripts/asset-schema.mjs';
 
 const baseManifest = () => ({
   schemaVersion: 1,
@@ -82,4 +86,33 @@ test('source provenance records block unverified rights and cover each tagged so
     () => validateSourceProvenance(manifest, { sourceAssets: [] }),
     /is missing provenance for source\/moon\.png/u
   );
+});
+
+test('sprite metadata validates atlas bounds and renders a metadata-only frame guide', () => {
+  const manifest = {
+    schemaVersion: 1,
+    assets: [
+      { path: 'source/approved-atlas.png', kind: 'source', width: 256, height: 128 },
+      {
+        path: 'animation/idle.json',
+        spriteSheet: {
+          atlas: 'source/approved-atlas.png', frameWidth: 64, frameHeight: 64,
+          frameCount: 3, frameDurationMs: 120, columns: 4, rows: 2,
+          loop: true, direction: 'forward', pivot: { x: 0.5, y: 0.92 },
+        },
+      },
+    ],
+  };
+  assert.equal(validateAssetManifest(manifest).assetCount, 2);
+  const guide = renderSpriteSheetGuide(manifest.assets[1], { label: 'idle <review>' });
+  assert.match(guide, /viewBox="0 0 256 128"/u);
+  assert.match(guide, /idle &lt;review&gt;/u);
+  assert.equal((guide.match(/<rect x=/gu) ?? []).length, 3);
+
+  const outOfBounds = structuredClone(manifest);
+  outOfBounds.assets[1].spriteSheet.columns = 5;
+  assert.throws(() => validateAssetManifest(outOfBounds), /columns exceeds atlas width/u);
+  const missingAtlas = structuredClone(manifest);
+  missingAtlas.assets[1].spriteSheet.atlas = 'missing.png';
+  assert.throws(() => validateAssetManifest(missingAtlas), /references missing asset path missing\.png/u);
 });

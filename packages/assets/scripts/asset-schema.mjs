@@ -75,6 +75,25 @@ export function validateAssetManifest(manifest, filePath = 'manifest.json') {
     for (const key of ['focalPoint', 'pivot']) {
       if (asset[key] !== undefined && typeof asset[key] !== 'string') assertNormalizedPoint(asset[key], filePath, `${field}.${key}`);
     }
+    if (asset.spriteSheet !== undefined) {
+      const sheet = asset.spriteSheet;
+      assertValid(sheet && typeof sheet === 'object' && !Array.isArray(sheet), filePath, `${field}.spriteSheet`, 'must be an object');
+      for (const key of ['atlas', 'frameWidth', 'frameHeight', 'frameCount', 'frameDurationMs', 'columns', 'rows']) {
+        assertValid(sheet[key] !== undefined, filePath, `${field}.spriteSheet.${key}`, 'is required');
+      }
+      assertValid(typeof sheet.atlas === 'string' && sheet.atlas.length > 0, filePath, `${field}.spriteSheet.atlas`, 'must be a canonical asset path');
+      for (const key of ['frameWidth', 'frameHeight', 'frameCount', 'frameDurationMs', 'columns', 'rows']) {
+        assertValid(Number.isInteger(sheet[key]) && sheet[key] > 0, filePath, `${field}.spriteSheet.${key}`, 'must be a positive integer');
+      }
+      assertValid(typeof sheet.loop === 'boolean', filePath, `${field}.spriteSheet.loop`, 'must be a boolean');
+      assertValid(['forward', 'reverse', 'ping-pong'].includes(sheet.direction), filePath, `${field}.spriteSheet.direction`, 'must be forward, reverse, or ping-pong');
+      assertNormalizedPoint(sheet.pivot, filePath, `${field}.spriteSheet.pivot`);
+      assertValid(sheet.frameCount <= sheet.columns * sheet.rows, filePath, `${field}.spriteSheet.frameCount`, 'exceeds the declared atlas grid');
+      const atlas = manifest.assets.find(({ path }) => path === sheet.atlas);
+      assertValid(Boolean(atlas), filePath, `${field}.spriteSheet.atlas`, `references missing asset path ${sheet.atlas}`);
+      assertValid(sheet.columns * sheet.frameWidth <= atlas.width, filePath, `${field}.spriteSheet.columns`, 'exceeds atlas width');
+      assertValid(sheet.rows * sheet.frameHeight <= atlas.height, filePath, `${field}.spriteSheet.rows`, 'exceeds atlas height');
+    }
   }
 
   for (const [index, asset] of manifest.assets.entries()) {
@@ -86,6 +105,28 @@ export function validateAssetManifest(manifest, filePath = 'manifest.json') {
   }
 
   return { assetCount: manifest.assets.length };
+}
+
+/** Render a metadata-only guide; this never crops or creates production frames. */
+export function renderSpriteSheetGuide(asset, { label = asset.path } = {}) {
+  const sheet = asset.spriteSheet;
+  if (!sheet) throw new Error(`${asset.path}: spriteSheet metadata is required`);
+  if (!Number.isInteger(sheet.frameCount) || sheet.frameCount < 1 || sheet.frameCount > 4096) {
+    throw new Error(`${asset.path}: frameCount must be between 1 and 4096 to render a guide`);
+  }
+  const width = sheet.columns * sheet.frameWidth;
+  const height = sheet.rows * sheet.frameHeight;
+  const escapeXml = (value) => String(value).replace(/[&<>"']/gu, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;',
+  })[character]);
+  const cells = Array.from({ length: sheet.frameCount }, (_, index) => {
+    const x = (index % sheet.columns) * sheet.frameWidth;
+    const y = Math.floor(index / sheet.columns) * sheet.frameHeight;
+    return { x, y, number: index + 1 };
+  });
+  const outlines = cells.map(({ x, y }) => `<rect x="${x}" y="${y}" width="${sheet.frameWidth}" height="${sheet.frameHeight}"/>`).join('');
+  const numbers = cells.map(({ x, y, number }) => `<text x="${x + 8}" y="${y + 24}">${number}</text>`).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Frame metadata guide for ${escapeXml(label)}"><rect width="${width}" height="${height}" fill="#10151f"/><g fill="none" stroke="#ffcc4d">${outlines}</g><g fill="#ffcc4d" font-family="monospace" font-size="16">${numbers}</g></svg>`;
 }
 
 /** Ensure source provenance is complete and unknown rights are never distributable. */

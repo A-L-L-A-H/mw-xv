@@ -1081,7 +1081,7 @@
       "id": "W2-008",
       "phase": "W2",
       "title": "Add sprite sheet and frame-sequence metadata",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -1106,8 +1106,14 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Sprite metadata and atlas bounds are validated; the generated SVG preview is explicitly metadata-only, with no unreviewed frame art. No production character atlas exists yet.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-008-sprite-metadata.md; evidence/sprite-sheet-metadata-guide.svg"
+        }
+      ],
       "commit": null
     },
     {

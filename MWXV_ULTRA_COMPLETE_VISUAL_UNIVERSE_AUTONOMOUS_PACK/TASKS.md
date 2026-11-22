@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 31 · skipped 3 · in_progress 1 · blocked 7 · todo 67.
+Status counts: done 32 · skipped 3 · in_progress 1 · blocked 7 · todo 66.
 
 ## W0
 
@@ -176,12 +176,13 @@ Status counts: done 31 · skipped 3 · in_progress 1 · blocked 7 · todo 67.
   - Acceptance: Transparent layer dimensions and origins align exactly.; Layer ordering and pivot/focal metadata preserved.; No flattening of runtime layers into a single image.
   - Verify: pnpm test:assets
 
-- [ ] **W2-008 — Add sprite sheet and frame-sequence metadata**
+- [x] **W2-008 — Add sprite sheet and frame-sequence metadata**
   - Goal: Define frame dimensions, frame count, timing, loop, direction, pivot and atlas references.
   - Depends on: W2-002
   - Deliverables: Sprite sheet metadata validator and generated preview.
   - Acceptance: Frame bounds are valid.; Timing and playback metadata are deterministic.; Frames are not generated from an unreviewed single raster crop.
   - Verify: pnpm test:assets
+  - Evidence: `pnpm test:assets` (0) → `evidence/W2-008-sprite-metadata.md; evidence/sprite-sheet-metadata-guide.svg`
 
 - [ ] **W2-009 — Add scene and animation metadata contracts**
   - Goal: Define scene descriptors and animation clips that reference canonical asset IDs.
