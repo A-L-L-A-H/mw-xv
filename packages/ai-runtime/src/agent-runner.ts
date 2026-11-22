@@ -569,7 +569,7 @@ export class BoundedReadOnlyAgentHarness implements AgentHarness {
           if (error instanceof StaleFencingTokenError) {
             throw error;
           }
-          if (runAttempt.isTimedOut()) {
+          if (runAttempt.isTimedOut() || this.clock.now() >= deadlineMs) {
             return {
               status: 'failed',
               outputText: '',
