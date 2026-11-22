@@ -3906,7 +3906,7 @@
       "id": "W8-009",
       "phase": "W8",
       "title": "Implement visual coverage for workflow addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3941,8 +3941,34 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "The existing generic Board model routes and real workflow panel are the production consumer. Added canonical workflow model icons, explicit role/actor-denied and unconfigured transition states, plus a distinct empty event history. No workflow data or transitions are invented.",
+      "evidence": [
+        {
+          "artifact": "scripts/board/workflow-action-state.test.mjs",
+          "exit_code": 0,
+          "command": "node --test scripts/board/workflow-action-state.test.mjs"
+        },
+        {
+          "artifact": "apps/board/src/components/views/workflow-panel.tsx",
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/board typecheck"
+        },
+        {
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "exit_code": 0,
+          "command": "pnpm board:ui:check"
+        },
+        {
+          "artifact": "packages/assets/tests",
+          "exit_code": 0,
+          "command": "pnpm test:assets"
+        },
+        {
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "exit_code": 0,
+          "command": "pnpm test:ui-catalog"
+        }
+      ],
       "commit": null
     },
     {
