@@ -136,3 +136,50 @@ test('registry integrity validation can run before roadmap projection repair', a
   assert.ok(fullValidation.errors.some((error) => error.includes('Status mismatch on "M0.01"')));
   assert.ok(fullValidation.errors.some((error) => error.includes('Checkbox mismatch on "M0.01"')));
 });
+
+
+test('isolated recovery candidate mode writes validated output without touching the canonical registry', async () => {
+  const { mkdtemp, readFile, rm, stat } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { spawnSync } = await import('node:child_process');
+  const path = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+  const canonicalPath = path.join(repositoryRoot, 'docs/tasks/tasks.json');
+  const canonicalBefore = await readFile(canonicalPath, 'utf8');
+  const tempRoot = await mkdtemp(path.join(tmpdir(), 'mw-taskos-candidate-'));
+  const candidatePath = path.join(tempRoot, 'candidate.json');
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      ['scripts/tasks/sweep-and-consolidate.mjs', '--candidate', candidatePath],
+      { cwd: repositoryRoot, encoding: 'utf8', env: { ...process.env, SOURCE_DATE_EPOCH: '1795392000' } }
+    );
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const candidate = JSON.parse(await readFile(candidatePath, 'utf8'));
+    const validation = await validateTaskRegistryData(candidate);
+    assert.equal(validation.valid, true, validation.errors.join('\\n'));
+    assert.equal(candidate.tasks.length, 627);
+    assert.equal(await readFile(canonicalPath, 'utf8'), canonicalBefore);
+    assert.equal((await stat(candidatePath)).isFile(), true);
+  } finally {
+    await rm(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('candidate output mode refuses paths inside the repository', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const path = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+  const insidePath = path.join(repositoryRoot, 'docs/tasks/recovery-candidate.json');
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/tasks/sweep-and-consolidate.mjs', '--candidate', insidePath],
+    { cwd: repositoryRoot, encoding: 'utf8' }
+  );
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /candidate output must be outside the repository/u);
+});

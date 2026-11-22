@@ -126,14 +126,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          candidate_path="$RUNNER_TEMP/taskos-candidate-${GITHUB_SHA}.json"
           pnpm tasks:sweep
-          pnpm tasks:sweep --write
-          pnpm tasks:validate
-          node --input-type=module <<'NODE'
+          pnpm tasks:sweep --candidate "$candidate_path"
+          TASKOS_CANDIDATE="$candidate_path" node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
           import { readFile } from 'node:fs/promises';
 
-          const registry = JSON.parse(await readFile('docs/tasks/tasks.json', 'utf8'));
+          const registry = JSON.parse(await readFile(process.env.TASKOS_CANDIDATE, 'utf8'));
           assert.equal(registry.tasks.length, 627);
           const statusCounts = Object.fromEntries(
             ['done', 'doing', 'todo', 'blocked'].map((status) => [
@@ -142,12 +142,11 @@ jobs:
             ])
           );
           assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 89, blocked: 21 });
-          console.log('Validated 627 TaskOS records with the reviewed lifecycle distribution.');
+          console.log('Validated 627 isolated TaskOS candidate records; canonical registry was not changed.');
           NODE
-          pnpm tasks:sweep --check
           echo "candidate_generated=true" >> "$GITHUB_OUTPUT"
           echo "TASKOS_CANDIDATE_BEGIN"
-          base64 -w0 docs/tasks/tasks.json
+          base64 -w0 "$candidate_path"
           echo
           echo "TASKOS_CANDIDATE_END"
       - name: Upload the source-validated TaskOS recovery candidate

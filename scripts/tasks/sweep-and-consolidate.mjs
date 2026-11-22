@@ -631,8 +631,28 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     const targetFile = path.join(rootDir, 'docs/tasks/tasks.json');
     const checkOnly = process.argv.includes('--check');
     const writeEnabled = process.argv.includes('--write');
+    const candidateIndex = process.argv.indexOf('--candidate');
+    const candidateArgument = candidateIndex >= 0 ? process.argv[candidateIndex + 1] : undefined;
+
     if (checkOnly && writeEnabled) {
       throw new Error('Choose only one mode: --check or --write.');
+    }
+    if (candidateIndex >= 0 && (!candidateArgument || candidateArgument.startsWith('--'))) {
+      throw new Error('--candidate requires an output path outside the repository.');
+    }
+    if (candidateIndex >= 0 && (checkOnly || writeEnabled)) {
+      throw new Error('Use --candidate, --check, or --write as separate modes.');
+    }
+
+    const candidateFile = candidateArgument ? path.resolve(candidateArgument) : undefined;
+    if (candidateFile) {
+      const relativeCandidate = path.relative(rootDir, candidateFile);
+      if (
+        candidateFile === targetFile ||
+        (!relativeCandidate.startsWith('..') && !path.isAbsolute(relativeCandidate))
+      ) {
+        throw new Error('TaskOS candidate output must be outside the repository; the canonical registry is never a CI scratch file.');
+      }
     }
 
     if (writeEnabled) {
@@ -656,19 +676,17 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
       }
     }
 
-    const result = await sweepAndConsolidate(
-      checkOnly ? { generatedAt } : {}
-    );
+    const result = await sweepAndConsolidate(checkOnly ? { generatedAt } : {});
     const validation = await validateTaskRegistryData(result);
     if (!validation.valid) {
       throw new Error(
         [
           `Refusing TaskOS projection with ${validation.errors.length} validation error(s):`,
           ...validation.errors.map((error) => `- ${error}`),
-        ].join('\n')
+        ].join('\\n')
       );
     }
-    const output = `${JSON.stringify(result, null, 2)}\n`;
+    const output = `${JSON.stringify(result, null, 2)}\\n`;
 
     if (checkOnly) {
       const currentRaw = await fs.readFile(targetFile, 'utf8');
@@ -676,6 +694,13 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
         throw new Error('TaskOS registry differs from deterministic source projection. Review the source inventory before writing.');
       }
       console.log(`TaskOS source projection matches ${result.tasks.length} tasks.`);
+      return;
+    }
+
+    if (candidateFile) {
+      await fs.mkdir(path.dirname(candidateFile), { recursive: true });
+      await fs.writeFile(candidateFile, output, { encoding: 'utf8', flag: 'wx' });
+      console.log(`Wrote ${result.tasks.length} validated TaskOS records to isolated candidate ${candidateFile}; canonical registry unchanged.`);
       return;
     }
 
