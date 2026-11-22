@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { validateTaskRegistryData } from './validate-tasks.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -1177,6 +1177,15 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     const result = await sweepAndConsolidate(
       checkOnly ? { generatedAt } : {}
     );
+    const validation = await validateTaskRegistryData(result);
+    if (!validation.valid) {
+      throw new Error(
+        [
+          `Refusing TaskOS projection with ${validation.errors.length} validation error(s):`,
+          ...validation.errors.map((error) => `- ${error}`),
+        ].join('\n')
+      );
+    }
     const output = `${JSON.stringify(result, null, 2)}\n`;
 
     if (checkOnly) {
@@ -1191,19 +1200,6 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     if (!writeEnabled) {
       console.log(`Dry run: source inventory resolves to ${result.tasks.length} task records. No files changed. Use --write only after reviewing the source inventory.`);
       return;
-    }
-
-    const schema = JSON.parse(
-      await fs.readFile(path.join(rootDir, 'docs/tasks/tasks.schema.json'), 'utf8')
-    );
-    const require = createRequire(new URL('../../packages/knowledge/package.json', import.meta.url));
-    const Ajv = require('ajv');
-    const addFormats = require('ajv-formats');
-    const ajv = new Ajv({ allErrors: true });
-    addFormats(ajv);
-    const validate = ajv.compile(schema);
-    if (!validate(result)) {
-      throw new Error(`Refusing to write invalid TaskOS registry: ${JSON.stringify(validate.errors)}`);
     }
 
     await fs.mkdir(path.dirname(targetFile), { recursive: true });
