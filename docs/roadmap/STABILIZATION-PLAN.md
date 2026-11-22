@@ -1,15 +1,14 @@
-# Current stabilization checkpoint — 2026-11-23
+# Current stabilization checkpoint — 2026-11-23 (exact dev audit)
 
-- **Stable branch:** `main` remains at `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
-- **Development branch:** `dev` is 149 commits ahead and 0 behind at `cb5056585539a3702bc44f89e772b113edf74fb9`; no force push or history rewrite.
-- **PR #37:** open promotion PR head is `cb5056585539a3702bc44f89e772b113edf74fb9`, base `2a9d78333433`. Report is current. Risk classification requires maintainer/CODEOWNER approval; no submitted review is recorded.
-- **CI:** Workflow run [45065672654](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45065672654) is tied to exact candidate `cb5056585539a3702bc44f89e772b113edf74fb9`. `knowledge-gate` and `dx-test` passed; `quality-and-build` failed only at the generated-reference check (four generated docs outputs stale); `unit-tests` and `postgres-integration` are still in progress. The registry remains empty; no restore write occurred.
-- **TaskOS:** `docs/tasks/tasks.json` is still zero-byte. The documented 627-record/8-source inventory remains a candidate migration projection only. `pnpm test:taskos` is included in the unit runner and is currently under hosted verification.
-- **Visual Universe:** immutable 109-task source and all 109 original task cards are preserved; every card's stored Git blob SHA was independently reproduced (109/109). Local queue files are now non-authoritative projections and currently empty/placeholder while TaskOS recovery is blocked.
-- **Recovery logic:** importer and validator are fail-closed; full candidate schema, provenance, project, reciprocal graph, dependency-cycle and roadmap parity validation is required before restore. Sync separates registry integrity preflight from projection parity and verifies parity after writing.
-- **Documentation blocker:** generator CI found four stale outputs (`generated-api.md`, `generated-models.md`, `generated-platform.json`, `generated-platform.md`). Run `pnpm docs:generate` on the actual built checkout, commit the resulting outputs, then require a fresh full CI run.
-- **M13 / Release:** M13.09–M13.12 remain pending full exact-SHA CI and promotion approval. M12.14 stable-release approval remains unresolved; promotion is not deployment.
-
+- **Stable branch (`main`):** `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
+- **Development branch (`dev`):** current candidate `7efba2c6766e5d5acde6c7e42e8f0a207ccb3400`, 163 commits ahead of `main`; no force push or history rewrite.
+- **Promotion PR #37:** [open promotion PR](https://github.com/A-L-L-A-H/mw-xv/pull/37) remains unmerged and targets `main`. Its report classifies the batch as release-surface risk and requires maintainer/CODEOWNER approval.
+- **CI:** the previous exact-head run on `9a4d99479b44670282d4cb2ac7f27a3c75a4d0ed` failed the new isolated-candidate test (29/30 TaskOS tests passed). Root cause: the JSON output suffix was escaped as a literal backslash plus `n`, making the candidate invalid JSON. Commit `7efba2c6766e5d5acde6c7e42e8f0a207ccb3400` adjusted the uploaded artifact path; a fresh exact-head CI run is pending verification.
+- **TaskOS actual state:** `docs/tasks/tasks.json` is a valid legacy registry of 1,358 records, not zero-byte. It contains 861 old entries pointing to root `todo.md`, now a pointer. The proposed current-source projection is 627 records (468 done, 49 doing, 89 todo, 21 blocked); it is not yet applied.
+- **Recovery safety:** CI now generates a candidate in `RUNNER_TEMP` via `pnpm tasks:sweep --candidate`; the importer refuses paths inside the repository and preserves the canonical registry. The candidate must pass schema/provenance/graph validation before upload.
+- **Next gate:** fix the JSON newline serialization regression, get all exact-SHA jobs green, inspect the candidate artifact, reconcile every difference against the legacy 1,358 records, and preserve the old snapshot before any deliberate migration.
+- **Visual Universe:** immutable 109-task source and all 109 original task cards are preserved; the pack remains a projection target until canonical migration.
+- **M13 / release:** M13.09–M13.12 implementation/evidence exists on dev, but the current full CI and promotion approval remain gates. M12.14 stable-release approval is separate and unresolved. Promotion is not deployment.
 
 # MW-XV Stabilization & Source-of-Truth Recovery Plan
 
@@ -24,7 +23,7 @@
 - Do not fabricate task records, completion, CI status, evidence, approvals, or release state.
 - Preserve existing architecture and completed work; fix drift, validation and integration first.
 - Canonical completion requires roadmap checkbox plus evidence; task identity/dependency index must pass its validator. GitHub Issues are projections and human triage records.
-- The expanded TaskOS registry is currently zero-byte. It is unavailable as a SOT until restored and validated.
+- The current TaskOS file is a populated 1,358-record legacy registry; the 627-record source-backed projection is a candidate, not yet the migrated SOT.
 
 ## Work status
 
@@ -34,8 +33,8 @@
 - [x] No force push or history rewrite.
 - [ ] Reconfirm `main` and `dev` equality after future pushes.
 
-### S1 — TaskOS recovery (P0, implementation prepared; execution/restore blocked)
-- [x] Confirmed `docs/tasks/tasks.json` is tracked and zero-byte on the current dev tree. The historical cause of truncation is not yet established.
+### S1 — TaskOS migration (P0, candidate generation implemented; test correction and migration review pending)
+- [x] Audited the exact Git blob: `docs/tasks/tasks.json` contains 1,358 valid JSON records; 861 legacy records still cite root `todo.md`, now a pointer.
 - [x] Inventory the current migration sources and counts in [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md), including the Visual Universe scoped task pack.
 - [x] Map source ownership: 627 candidate records across 8 source groups; root todo.md is a pointer, old completed lists remain historical, and Visual Universe metadata is preserved as a TaskOS project.
 - [ ] Rebuild registry from authoritative sources only; preserve stable task codes, status, dependencies, project/series, acceptance and provenance. Never synthesize 1,346 records from a count claim.
@@ -107,7 +106,7 @@
 - TaskOS sync now validates before any write. The one-time importer is fail-closed, defaults to dry-run and refuses to overwrite a populated registry.
 - The Visual Universe project is mapped into global TaskOS; its local `task.json`, `TASKS.md` and task cards are projections from the global registry. Local projection tests were added.
 - `pnpm test:taskos` is included in the unit-test runner, but has not yet been observed passing on a complete, non-cancelled exact-SHA CI run.
-- `docs/tasks/tasks.json` remains zero-byte. No registry records were written and no claim of restored SOT is made.
+- The existing 1,358-record legacy registry remains unchanged. No 627-record migration has been applied; TaskOS is not yet declared migrated.
 
 ## Additional implementation notes — 2026-11-23
 
@@ -117,3 +116,12 @@
 - Regression tests cover skipped state, canonical evidence additions, absent exit-code metadata, cleared canonical values and status mappings.
 - The unit CI runner includes `pnpm test:taskos`. These test definitions are committed; execution remains pending.
 
+
+
+## Audit correction and isolated candidate export — 2026-11-23
+
+Earlier zero-byte registry statements were incorrect for the exact dev tree. A direct Git blob read confirms that `docs/tasks/tasks.json` parses as 1,358 records. Its legacy source distribution includes 861 entries attributed to root `todo.md`; root `todo.md` is now a pointer, so those records require reconciliation against the archived checklist.
+
+The initial isolated candidate implementation was added in `9a4d994` and CI was adjusted in `7efba2c`. Its first exact-head TaskOS test run exposed one defect in the new CLI output: the trailing newline was double-escaped and produced invalid JSON. The regression test caught this before build/unit tests or registry mutation. The newline correction is applied in the current stabilization patch; a fresh exact-SHA CI run must verify it.
+
+The 627-record candidate is not a canonical replacement until the complete old/new diff is reviewed and the previous 1,358-record registry is preserved.

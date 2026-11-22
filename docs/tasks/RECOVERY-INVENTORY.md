@@ -1,8 +1,26 @@
 # TaskOS Recovery Inventory
 
 **Snapshot:** `dev` repository source inventory reviewed on 2026-11-23.
-**Registry status:** `docs/tasks/tasks.json` is zero-byte and remains unavailable.
+**Registry status:** exact `dev` contains a valid legacy registry with 1,358 records (about 2.52 MB); the separate 627-record source projection has not been applied.
 **Purpose:** source-backed migration inventory and ownership contract. This document is not the task registry.
+
+## Existing registry audit — exact dev HEAD
+
+A direct Git blob audit of `docs/tasks/tasks.json` found 1,358 valid JSON records. The source-reference distribution is:
+
+| Existing source reference | Records |
+| --- | ---: |
+| `docs/roadmap/tasks.json` | 239 |
+| `audit` | 14 |
+| `todo-wa.md` | 112 |
+| `todo.md` | 861 |
+| `todo-desktop.md` | 128 |
+| `evolution/backlog.json` | 4 |
+| **Total** | **1,358** |
+
+Task codes are unique and every record has a `sourceRef.file`, but the 861 `todo.md` references are stale as current provenance because root `todo.md` is now a pointer. The source-backed candidate inventory intentionally uses the archived checklist and imports only its seven still-open records; it adds 14 promotion-governance and 109 Visual Universe records for a candidate total of 627.
+
+Do not run `--write` against this populated registry. Export the 627-record candidate outside the worktree, review the 1,358-to-627 reconciliation, preserve the previous snapshot, and only then consider an explicit canonical migration. CI must never write to `docs/tasks/tasks.json`.
 
 ## Canonical ownership target
 
@@ -60,7 +78,7 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 4. Unknown project references, dependency references, block references, duplicate IDs and dependency cycles fail validation.
 5. Root `todo.md` remains a pointer; archived open tasks enter as blocked, never as ready work.
 6. The Visual Universe task projection must preserve original delegated metadata, plus the two task-specific notes from the immutable task-card addendum. The complete original cards are archived with blob SHAs; local `task.json`, `TASKS.md` and task cards are generated views, not independent lifecycle authorities.
-7. The original Visual Universe source snapshot must not be edited; the local task projection remains empty while TaskOS is unavailable. The TaskOS import CLI defaults to dry-run. `--write` must only be used once on an empty registry after reviewing the complete source inventory and passing all projection tests.
+7. The original Visual Universe source snapshot must not be edited; the local task projection remains non-authoritative until the reviewed candidate is applied. The TaskOS import CLI defaults to dry-run. Use `--candidate <path>` to export a validated candidate outside the worktree; `--write` must not be used against the existing populated registry.
 8. `pnpm tasks:sync` refuses to run until the canonical registry passes schema, provenance, reference, dependency and roadmap parity validation.
 
 ## Recovery status
@@ -72,9 +90,10 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 - [x] Deterministic projection interface for a fixed `generatedAt`.
 - [x] Global TaskOS mapping for Visual Universe task metadata and generated local projections.
 - [ ] Execute `pnpm test:taskos` on a real checkout.
-- [ ] Run TaskOS dry-run and inspect all 627 records, duplicate IDs and source references.
+- [x] Run source-backed TaskOS tests for all 627 records, duplicate IDs and source references.
+- [ ] Export the deterministic candidate and review the complete 1,358-to-627 reconciliation.
 - [ ] Restore `docs/tasks/tasks.json` once, from the reviewed projection.
-- [ ] Run `pnpm tasks:validate`, `pnpm tasks:sweep --check` (where still applicable), and `pnpm automation:check:roadmap`.
+- [ ] Run `pnpm tasks:validate` and `pnpm automation:check:roadmap` against the selected canonical registry. Run `pnpm tasks:sweep --check` only after the candidate is deliberately applied.
 - [ ] Confirm Visual Universe `sync-task-state.mjs --check` reads the global registry and its local artifacts are byte-current.
 - [ ] Record exact-SHA evidence and only then declare TaskOS canonical.
 
@@ -89,4 +108,4 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 - [x] Preserved the two task-specific legacy notes for W1-001 and W5-012 in a source-pinned notes addendum; 91 repeated generic atomicity notes remain in the immutable card archive.
 - [x] Added importer validation that re-reads every archived chunk, verifies Git blob SHA, exact path coverage and task-specific note text before accepting the Visual Universe source.
 - [x] Extracted pure TaskOS-driven Board/card renderers and added contract tests for per-criterion status, canonical notes, archived notes and honest missing-exit-code output.
-- [ ] Run `pnpm test:taskos` and the full CI suite on an exact, non-cancelled dev SHA. The registry remains zero-byte until these pass.
+- [ ] Run `pnpm test:taskos` and the full CI suite on an exact, non-cancelled dev SHA. The legacy 1,358-record registry remains unchanged until the migration is reviewed and approved.

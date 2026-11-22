@@ -160,7 +160,7 @@ test('isolated recovery candidate mode writes validated output without touching 
     assert.equal(result.status, 0, result.stderr || result.stdout);
     const candidate = JSON.parse(await readFile(candidatePath, 'utf8'));
     const validation = await validateTaskRegistryData(candidate);
-    assert.equal(validation.valid, true, validation.errors.join('\\n'));
+    assert.equal(validation.valid, true, validation.errors.join('\n'));
     assert.equal(candidate.tasks.length, 627);
     assert.equal(await readFile(canonicalPath, 'utf8'), canonicalBefore);
     assert.equal((await stat(candidatePath)).isFile(), true);

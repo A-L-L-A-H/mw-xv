@@ -683,10 +683,10 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
         [
           `Refusing TaskOS projection with ${validation.errors.length} validation error(s):`,
           ...validation.errors.map((error) => `- ${error}`),
-        ].join('\\n')
+        ].join('\n')
       );
     }
-    const output = `${JSON.stringify(result, null, 2)}\\n`;
+    const output = `${JSON.stringify(result, null, 2)}\n`;
 
     if (checkOnly) {
       const currentRaw = await fs.readFile(targetFile, 'utf8');
