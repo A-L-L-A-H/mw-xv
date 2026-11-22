@@ -85,3 +85,9 @@ Structured post-mortem rules persisted by autonomous and operator loops so resol
 - **Symptom**: Domain-specific Fastify routes accumulate inside `apps/api/src/routes/`, coupling domain HTTP handlers to the API host instead of their owning `packages/orm-*` addon.
 - **Root Cause**: Adding new route files under `apps/api/src/routes/` and wiring them via `registerRoutes` in `apps/api/src/addons/registry.ts` instead of declaring `httpPlugins` on the addon manifest.
 - **Invariant**: Never add new custom route files under `apps/api/src/routes/` or new `../routes/*` imports in `apps/api/src/addons/registry.ts`; define custom domain HTTP plugins inside the owning `packages/orm-*` addon package and export them via `manifest.httpPlugins`, enforced by `pnpm api:addon:check` (`scripts/check-api-addon-boundary.mjs`).
+
+## INV-015: Vitest Timeout Budget for Full-Addon buildApp Suites
+
+- **Symptom**: CI unit-tests and postgres-integration fail with Vitest timeout (5000ms/30000ms) in platform-error-mapping.test.ts and postgres.integration.test.ts after adding ISP and Cloud addons
+- **Root Cause**: Installing all registered API addons (base through ai/isp/cloud) inside each test exceeds Vitest default 5000ms unit timeout and tight 30000ms dual-boot PostgreSQL integration timeouts
+- **Invariant**: Always specify explicit { timeout: 30_000 } on unit test suites calling buildApp() and 60000-90000ms timeouts on multi-boot PostgreSQL integration tests; never leave full-addon buildApp() tests on Vitest default 5000ms timeout
