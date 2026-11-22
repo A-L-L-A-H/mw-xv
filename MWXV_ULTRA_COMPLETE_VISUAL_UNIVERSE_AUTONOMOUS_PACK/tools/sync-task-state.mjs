@@ -95,7 +95,7 @@ function renderBoard(tasks) {
       lines.push(`  - Acceptance: ${task.acceptance_criteria.join('; ')}`);
       lines.push(`  - Verify: ${task.verification.join('; ')}`);
       if (task.evidence.length) {
-        lines.push(`  - Evidence: ${task.evidence.map((entry) => `\`${entry.command}\` (${entry.exit_code}) → \`${entry.artifact}\``).join('; ')}`);
+        lines.push(`  - Evidence: ${task.evidence.map((entry) => `\`${entry.command}\` (${entry.exit_code ?? 'not recorded'}) → \`${entry.artifact}\``).join('; ')}`);
       }
       lines.push('');
     }
@@ -142,7 +142,7 @@ function renderTask(task, original) {
   ];
   if (task.status === 'done' || task.status === 'skipped') {
     lines.push('- Commands / exit codes:');
-    for (const evidence of task.evidence) lines.push(`  - \`${evidence.command}\` — exit ${evidence.exit_code}`);
+    for (const evidence of task.evidence) lines.push(`  - \`${evidence.command}\` — exit ${evidence.exit_code ?? 'not recorded'}`);
     lines.push('- Evidence paths:');
     for (const evidencePath of [...new Set(task.evidence.map((entry) => entry.artifact))]) lines.push(`  - \`${evidencePath}\``);
     lines.push(`- Commit SHA: ${task.commit ?? 'pending commit'}`);
