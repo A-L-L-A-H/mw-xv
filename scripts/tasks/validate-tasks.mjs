@@ -33,7 +33,7 @@ export function toRoadmapTaskStatus(status) {
   return statusMap[status] ?? null;
 }
 
-export async function validateTaskRegistryData(tasksData) {
+export async function validateTaskRegistryData(tasksData, { checkRoadmapParity = true } = {}) {
   const errors = [];
   const schemaFilePath = path.join(rootDir, 'docs/tasks/tasks.schema.json');
   const roadmapTasksPath = path.join(rootDir, 'docs/roadmap/tasks.json');
@@ -182,21 +182,23 @@ export async function validateTaskRegistryData(tasksData) {
         errors.push(`Roadmap task "${roadmapTask.id}" is missing from canonical TaskOS.`);
         continue;
       }
-      const expectedStatus = toRoadmapTaskStatus(canonical.status);
-      if (expectedStatus === null) {
-        errors.push(`Task "${canonical.code}" has status "${canonical.status}" with no roadmap projection mapping.`);
-      } else if (roadmapTask.status !== expectedStatus) {
-        errors.push(
-          `Status mismatch on "${roadmapTask.id}": roadmap index is "${roadmapTask.status}", but TaskOS maps to "${expectedStatus}".`
-        );
-      }
+      if (checkRoadmapParity) {
+        const expectedStatus = toRoadmapTaskStatus(canonical.status);
+        if (expectedStatus === null) {
+          errors.push(`Task "${canonical.code}" has status "${canonical.status}" with no roadmap projection mapping.`);
+        } else if (roadmapTask.status !== expectedStatus) {
+          errors.push(
+            `Status mismatch on "${roadmapTask.id}": roadmap index is "${roadmapTask.status}", but TaskOS maps to "${expectedStatus}".`
+          );
+        }
 
-      const isRoadmapDone = roadmapCheckState.get(roadmapTask.id) ?? false;
-      const isCanonicalDone = canonical.status === 'done';
-      if (isRoadmapDone !== isCanonicalDone) {
-        errors.push(
-          `Checkbox mismatch on "${roadmapTask.id}": ROADMAP.md is ${isRoadmapDone ? '[x]' : '[ ]'}, but TaskOS status is "${canonical.status}".`
-        );
+        const isRoadmapDone = roadmapCheckState.get(roadmapTask.id) ?? false;
+        const isCanonicalDone = canonical.status === 'done';
+        if (isRoadmapDone !== isCanonicalDone) {
+          errors.push(
+            `Checkbox mismatch on "${roadmapTask.id}": ROADMAP.md is ${isRoadmapDone ? '[x]' : '[ ]'}, but TaskOS status is "${canonical.status}".`
+          );
+        }
       }
     }
 
@@ -216,7 +218,7 @@ export async function validateTaskRegistryData(tasksData) {
   };
 }
 
-export async function validateTasks() {
+export async function validateTasks({ checkRoadmapParity = true } = {}) {
   const tasksFilePath = path.join(rootDir, 'docs/tasks/tasks.json');
   let tasksData;
   try {
@@ -225,7 +227,7 @@ export async function validateTasks() {
   } catch (error) {
     return { valid: false, taskCount: 0, errors: [error.message] };
   }
-  return validateTaskRegistryData(tasksData);
+  return validateTaskRegistryData(tasksData, { checkRoadmapParity });
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
