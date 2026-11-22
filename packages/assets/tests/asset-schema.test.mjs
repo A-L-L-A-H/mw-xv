@@ -36,9 +36,18 @@ test('accepts legacy entries and backward-compatible source/generated extensions
 
 test('rejects duplicate stable IDs and duplicate manifest paths with field context', () => {
   const duplicatePath = { schemaVersion: 1, assets: [{ path: 'a.svg' }, { path: 'a.svg' }] };
-  assert.throws(() => validateAssetManifest(duplicatePath, 'fixtures/duplicate.json'), /fixtures\/duplicate\.json: assets\[1\]\.path duplicates 0/u);
+  assert.throws(
+    () => validateAssetManifest(duplicatePath, 'fixtures/duplicate.json'),
+    /fixtures\/duplicate\.json: assets\[1\]\.path duplicates 0/u
+  );
 
-  const duplicateId = { schemaVersion: 1, assets: [{ id: 'same', path: 'a.svg' }, { id: 'same', path: 'b.svg' }] };
+  const duplicateId = {
+    schemaVersion: 1,
+    assets: [
+      { id: 'same', path: 'a.svg' },
+      { id: 'same', path: 'b.svg' },
+    ],
+  };
   assert.throws(() => validateAssetManifest(duplicateId), /assets\[1\]\.id duplicates a\.svg/u);
 });
 
@@ -47,10 +56,19 @@ test('rejects malformed variants and unresolved source or variant references', (
   assert.throws(() => validateAssetManifest(malformed), /assets\[0\]\.variants must be an array/u);
 
   const missing = { schemaVersion: 1, assets: [{ path: 'a.svg', sourceAsset: 'missing.png' }] };
-  assert.throws(() => validateAssetManifest(missing), /assets\[0\]\.sourceAsset references missing asset path missing\.png/u);
+  assert.throws(
+    () => validateAssetManifest(missing),
+    /assets\[0\]\.sourceAsset references missing asset path missing\.png/u
+  );
 
-  const missingVariant = { schemaVersion: 1, assets: [{ path: 'a.svg', variants: ['missing.svg'] }] };
-  assert.throws(() => validateAssetManifest(missingVariant), /assets\[0\]\.variants\[0\] references missing asset path missing\.svg/u);
+  const missingVariant = {
+    schemaVersion: 1,
+    assets: [{ path: 'a.svg', variants: ['missing.svg'] }],
+  };
+  assert.throws(
+    () => validateAssetManifest(missingVariant),
+    /assets\[0\]\.variants\[0\] references missing asset path missing\.svg/u
+  );
 });
 
 test('rejects invalid extension tags, status, dimensions, and normalized points', () => {
@@ -71,15 +89,24 @@ test('source provenance records block unverified rights and cover each tagged so
     assets: [{ path: 'source/moon.png', kind: 'source', pack: 'moon-city' }],
   };
   const blocked = {
-    sourceAssets: [{
-      path: 'source/moon.png', creator: 'Image tool', source: 'Local image generation',
-      license: 'unverified', modifications: 'Original output', status: 'blocked',
-      distribution: 'blocked pending terms review',
-    }],
+    sourceAssets: [
+      {
+        path: 'source/moon.png',
+        creator: 'Image tool',
+        source: 'Local image generation',
+        license: 'unverified',
+        modifications: 'Original output',
+        status: 'blocked',
+        distribution: 'blocked pending terms review',
+      },
+    ],
   };
   assert.deepEqual(validateSourceProvenance(manifest, blocked), { sourceAssetCount: 1 });
   assert.throws(
-    () => validateSourceProvenance(manifest, { sourceAssets: [{ ...blocked.sourceAssets[0], status: 'approved' }] }),
+    () =>
+      validateSourceProvenance(manifest, {
+        sourceAssets: [{ ...blocked.sourceAssets[0], status: 'approved' }],
+      }),
     /unverified rights must be blocked from distribution/u
   );
   assert.throws(
@@ -96,9 +123,16 @@ test('sprite metadata validates atlas bounds and renders a metadata-only frame g
       {
         path: 'animation/idle.json',
         spriteSheet: {
-          atlas: 'source/approved-atlas.png', frameWidth: 64, frameHeight: 64,
-          frameCount: 3, frameDurationMs: 120, columns: 4, rows: 2,
-          loop: true, direction: 'forward', pivot: { x: 0.5, y: 0.92 },
+          atlas: 'source/approved-atlas.png',
+          frameWidth: 64,
+          frameHeight: 64,
+          frameCount: 3,
+          frameDurationMs: 120,
+          columns: 4,
+          rows: 2,
+          loop: true,
+          direction: 'forward',
+          pivot: { x: 0.5, y: 0.92 },
         },
       },
     ],
@@ -109,10 +143,13 @@ test('sprite metadata validates atlas bounds and renders a metadata-only frame g
   assert.match(guide, /idle &lt;review&gt;/u);
   assert.equal((guide.match(/<rect x=/gu) ?? []).length, 3);
 
-  const outOfBounds = structuredClone(manifest);
+  const outOfBounds = JSON.parse(JSON.stringify(manifest));
   outOfBounds.assets[1].spriteSheet.columns = 5;
   assert.throws(() => validateAssetManifest(outOfBounds), /columns exceeds atlas width/u);
-  const missingAtlas = structuredClone(manifest);
+  const missingAtlas = JSON.parse(JSON.stringify(manifest));
   missingAtlas.assets[1].spriteSheet.atlas = 'missing.png';
-  assert.throws(() => validateAssetManifest(missingAtlas), /references missing asset path missing\.png/u);
+  assert.throws(
+    () => validateAssetManifest(missingAtlas),
+    /references missing asset path missing\.png/u
+  );
 });
