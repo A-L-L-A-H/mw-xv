@@ -51,7 +51,7 @@ test('Task card renderer is driven by canonical TaskOS state, not prior card con
   assert.match(rendered, /historical context; not lifecycle state/u);
   assert.match(rendered, /Git blob SHA: `a{40}`/u);
   assert.doesNotMatch(rendered, /exit not recorded/u, 'in-progress work must not render a completion exit code');
-  assert.match(rendered, /evidence\/W0-001\.md/u);
+  assert.doesNotMatch(rendered, /evidence\/W0-001\.md/u, 'in-progress work must not render completion evidence paths');
 });
 
 test('completed task cards mark missing execution exit codes as not recorded', () => {
@@ -59,6 +59,7 @@ test('completed task cards mark missing execution exit codes as not recorded', (
   assert.match(rendered, /Commands \/ exit codes:/u);
   assert.match(rendered, /exit not recorded/u);
   assert.match(rendered, /Evidence paths:/u);
+  assert.match(rendered, /evidence\\/W0-001\\.md/u);
 });
 
 test('board renderer reports partial acceptance completion accurately', () => {
