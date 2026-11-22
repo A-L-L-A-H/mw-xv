@@ -46,14 +46,14 @@
 - [ ] Reconfirm `main` and `dev` equality after future pushes.
 
 ### S1 — TaskOS recovery (P0, BLOCKED until source inventory)
-- [ ] Confirm zero-byte `docs/tasks/tasks.json` is the remote file and identify when/why it became empty.
-- [ ] Inventory all legitimate task sources: ROADMAP checklist/index, detailed cards, DSK ledger, autonomous packs, governance/audit registers, evolution tasks and any migration ledgers.
-- [ ] Map task sources and owners; identify which records are canonical vs historical/archive/generated.
+- [x] Confirmed `docs/tasks/tasks.json` is tracked and zero-byte on the current dev tree. The historical cause of truncation is not yet established.
+- [x] Inventory the current migration sources and counts in [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md), including the Visual Universe scoped task pack.
+- [x] Map source ownership: 627 candidate records across 8 source groups; root todo.md is a pointer, old completed lists remain historical, and Visual Universe metadata is preserved as a TaskOS project.
 - [ ] Rebuild registry from authoritative sources only; preserve stable task codes, status, dependencies, project/series, acceptance and provenance. Never synthesize 1,346 records from a count claim.
 - [x] Update schema/validator only as required; add an explicit empty-file guard and useful diagnostics before JSON parsing (implemented; tests added, hosted/local test execution pending).
-- [ ] Make generator/rebuild procedure deterministic, idempotent, lossless for human-owned fields, and previewable.
-- [ ] Validate duplicate codes, unknown dependencies, DAG cycles, orphan references, status parity, source provenance and record counts.
-- [ ] Run `pnpm tasks:validate`, `pnpm tasks:sync --dry-run` (if supported) and relevant tests; do not apply sync until the source map is approved.
+- [x] Rework the one-time importer: required-source fail-closed behavior, duplicate-ID rejection, fixed-timestamp deterministic output, lossless Visual Universe metadata, dry-run by default, and refusal to overwrite a populated registry.
+- [ ] Run automated validation for duplicate codes, unknown dependencies, DAG cycles, orphan references, status parity, source provenance and exact 627-record count. Static source inventory preflight found 627 unique IDs and no unknown roadmap/Visual Universe/AUD dependency references; CI/test execution is still required.
+- [ ] Run `pnpm test:taskos`, `pnpm tasks:sweep` (dry-run), `pnpm tasks:validate`, `pnpm tasks:sync` fail-closed tests and `pnpm automation:check:roadmap`; do not apply sync until review.
 - [ ] Record restoration evidence and exact SHA. Until then, TaskOS is **unavailable**, not authoritative.
 
 ### S2 — Roadmap and Issue lifecycle reconciliation (P1)
@@ -110,3 +110,12 @@
 - Added tests for empty, whitespace-only, malformed and valid JSON inputs in `scripts/tasks/validate-tasks.test.mjs`.
 - This is a fail-safe diagnostic fix only. **TaskOS is still unavailable**; no records were reconstructed, and sync/rebuild remains prohibited until provenance inventory is complete.
 - Validation execution was not possible in this remote edit session. Run `node --test scripts/tasks/validate-tasks.test.mjs` and `pnpm tasks:validate` on a checked-out dev candidate; the latter should fail safely with the recovery message until registry recovery.
+
+## Consolidated SOT work — 2026-11-23
+
+- Source-backed TaskOS inventory is documented in `docs/tasks/RECOVERY-INVENTORY.md`; the expected initial projection is 627 unique records. This is not registry restoration.
+- Task schema now requires `sourceRef.file` and supports lossless delegated metadata. Validator fails on empty/malformed files, missing source files, unknown project/dependency/block references, duplicate IDs and DAG cycles.
+- TaskOS sync now validates before any write. The one-time importer is fail-closed, defaults to dry-run and refuses to overwrite a populated registry.
+- The Visual Universe project is mapped into global TaskOS; its local `task.json`, `TASKS.md` and task cards are projections from the global registry. Local projection tests were added.
+- `pnpm test:taskos` is included in the unit-test runner, but has not yet been observed passing on a complete, non-cancelled exact-SHA CI run.
+- `docs/tasks/tasks.json` remains zero-byte. No registry records were written and no claim of restored SOT is made.
