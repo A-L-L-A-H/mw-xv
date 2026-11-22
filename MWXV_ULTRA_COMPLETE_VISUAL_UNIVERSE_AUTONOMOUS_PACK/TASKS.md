@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 60 · skipped 3 · in_progress 0 · blocked 7 · todo 39.
+Status counts: done 61 · skipped 3 · in_progress 0 · blocked 7 · todo 38.
 
 ## W0
 
@@ -202,12 +202,13 @@ Status counts: done 60 · skipped 3 · in_progress 0 · blocked 7 · todo 39.
   - Verify: pnpm --filter @moonwitness/assets pack --dry-run; pnpm test:assets
   - Evidence: `pnpm --filter @moonwitness/assets pack --dry-run --json` (0) → `packages/assets/package.json`; `pnpm test:assets` (0) → `packages/assets/tests/brand-assets.test.mjs`
 
-- [ ] **W2-011 — Build contact-sheet generator for all packs**
+- [x] **W2-011 — Build contact-sheet generator for all packs**
   - Goal: Generate deterministic contact sheets grouped by pack/category/character/scene.
   - Depends on: W2-005, W2-010
   - Deliverables: Contact sheet generator and docs output.
   - Acceptance: Contact sheets include stable IDs and variants.; No generated docs or binary output is committed without repository conventions.; Image rendering works in existing Playwright/Sharp tooling.
   - Verify: pnpm assets:render; pnpm assets:validate
+  - Evidence: `pnpm assets:render` (0) → `docs/design/assets/pack-moon-city-contact-sheet.png`; `pnpm test:assets` (0) → `packages/assets/tests/contact-sheets.test.mjs`
 
 - [ ] **W2-012 — Add duplicate, size and orphan asset gates**
   - Goal: Extend QA for duplicates, oversized files, unused outputs and wrong generated folder ownership.

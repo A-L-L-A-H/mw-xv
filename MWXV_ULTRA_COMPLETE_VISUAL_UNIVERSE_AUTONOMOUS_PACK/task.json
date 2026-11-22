@@ -1242,7 +1242,7 @@
       "id": "W2-011",
       "phase": "W2",
       "title": "Build contact-sheet generator for all packs",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -1269,9 +1269,20 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Added generate-contact-sheets.mjs with deterministic pack/category grouping, stable IDs and variants, Playwright+Sharp PNG output, and unit tests wired into pnpm assets:render.",
+      "evidence": [
+        {
+          "command": "pnpm assets:render",
+          "exit_code": 0,
+          "artifact": "docs/design/assets/pack-moon-city-contact-sheet.png"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "packages/assets/tests/contact-sheets.test.mjs"
+        }
+      ],
+      "commit": "7e7099a"
     },
     {
       "id": "W2-012",
