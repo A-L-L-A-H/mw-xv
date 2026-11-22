@@ -10,7 +10,7 @@ After the initial, reviewed migration, `docs/tasks/tasks.json` is the only canon
 
 - Task ID, project, status, priority, owner, dependency graph, acceptance criteria, validation and provenance live in TaskOS.
 - `ROADMAP.md`, `docs/roadmap/tasks.json`, root `todo.md`, and GitHub Issues are views, navigation or operational projections. Their task status must not be independently edited as a second authority after TaskOS recovery.
-- The Visual Universe package's `task.json`, `TASKS.md`, and individual task cards are generated scoped projections from TaskOS. The original 109-task source is preserved immutably at `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json`; original 109 task cards are preserved byte-for-byte in nine chunks under `legacy/task-cards-2026-11-23/`. Two non-generic card notes (W1-001 and W5-012) are preserved in `notes-addendum.json` and imported into TaskOS metadata with original blob SHA provenance. The 91 repeated generic 'keep task atomic' notes remain preserved in the card snapshots and need not be copied into every active task record. Project-specific fields are retained in TaskOS `metadata`. Pack configuration is stored separately in `pack-manifest.json`.
+- The Visual Universe package's `task.json`, `TASKS.md`, and individual task cards are generated scoped projections from TaskOS. The original 109-task source is preserved immutably at `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json`; original 109 task cards are preserved byte-for-byte in nine chunks under `legacy/task-cards-2026-11-23/`. Two non-generic card notes (W1-001 and W5-012) are preserved in `notes-addendum.json` and imported into TaskOS metadata with original blob SHA provenance. The 91 repeated generic 'keep task atomic' notes remain preserved in the card snapshots and need not be copied into every active task record. Project-specific fields are retained in TaskOS `metadata`. Pack configuration is stored separately in `pack-manifest.json`. The nine-chunk archive is indexed by `legacy/task-cards-2026-11-23/manifest.json`; an independent Git blob SHA verification matched all 109/109 archived files. Task-card generation no longer reads prior card content; it derives status, per-criterion completion and notes only from the TaskOS projection, while showing imported historical notes separately.
 - Archived TODOs remain historical source evidence. Only explicitly identified, still-open records enter the migration, and they are imported as blocked pending revalidation.
 - The import tool is a one-time recovery tool. Do not rerun it to overwrite an already populated canonical registry.
 
@@ -79,3 +79,14 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 - [ ] Record exact-SHA evidence and only then declare TaskOS canonical.
 
 **Do not describe TaskOS as restored until the empty registry has been populated, the real validation commands pass, and the exact candidate SHA is recorded.**
+
+
+## Visual Universe task-card preservation check — 2026-11-23
+
+- [x] Preserved the original 109-task source manifest separately from pack configuration.
+- [x] Preserved all 109 original individual task cards byte-for-byte in nine JSON chunks with original Git blob SHAs.
+- [x] Verified all 109 archived card contents reproduce their recorded Git blob SHA (109/109 match).
+- [x] Preserved the two task-specific legacy notes for W1-001 and W5-012 in a source-pinned notes addendum; 91 repeated generic atomicity notes remain in the immutable card archive.
+- [x] Added importer validation that re-reads every archived chunk, verifies Git blob SHA, exact path coverage and task-specific note text before accepting the Visual Universe source.
+- [x] Extracted pure TaskOS-driven Board/card renderers and added contract tests for per-criterion status, canonical notes, archived notes and honest missing-exit-code output.
+- [ ] Run `pnpm test:taskos` and the full CI suite on an exact, non-cancelled dev SHA. The registry remains zero-byte until these pass.
