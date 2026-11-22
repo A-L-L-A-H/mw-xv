@@ -1,6 +1,15 @@
-# Task Dependency Graph
+# Visual Universe Task Graph
 
-The machine-readable dependency graph is in `task.json` (`depends_on`). Execution must follow a topological order.
+**Current state: unavailable during TaskOS recovery.** The canonical task lifecycle registry is the repository-wide `docs/tasks/tasks.json`, filtered by project `visual-universe`. It is currently zero-byte, so the 109-task Visual Universe queue is not loaded and autonomous execution must remain stopped.
+
+## Source preservation
+
+- Immutable task source: `legacy/task-source-2026-11-23.json`.
+- Original individual task cards: `legacy/task-cards-2026-11-23/`, indexed by `manifest.json` and preserved with Git blob SHAs.
+- Pack configuration: `pack-manifest.json`.
+- Local `task.json`, `TASKS.md`, dependency graph and task cards are generated views only. Do not read them as a live queue or update lifecycle state directly.
+
+After TaskOS recovery and validation, regenerate this graph from the global `visual-universe` records. Execution must follow topological order of TaskOS `dependsOn` relationships. The renderer validates unique IDs, known dependencies, acyclic ordering and per-criterion status consistency before writing.
 
 ## Phase gates
 
