@@ -2,12 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { sweepAndConsolidate } from './sweep-and-consolidate.mjs';
 import { validateTaskRegistryData } from './validate-tasks.mjs';
-import fs from 'node:fs/promises';
-import { createRequire } from 'node:module';
-
-const require = createRequire(new URL('../../packages/knowledge/package.json', import.meta.url));
-const Ajv = require('ajv');
-const addFormats = require('ajv-formats');
 
 test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks.json', async () => {
   const generatedAt = '2026-11-23T00:00:00.000Z';
@@ -24,7 +18,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.equal(
     candidateValidation.valid,
     true,
-    candidateValidation.errors.join('\\n')
+    candidateValidation.errors.join('\n')
   );
   assert.equal(candidateValidation.taskCount, 627);
 
@@ -58,12 +52,31 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.equal(visualTasks.filter((task) => task.tags.includes('status:skipped')).length, 3);
   assert.ok(visualTasks.every((task) => task.metadata?.id === task.code));
 
-  // Validate against docs/tasks/tasks.schema.json
-  const schemaRaw = await fs.readFile('docs/tasks/tasks.schema.json', 'utf8');
-  const schema = JSON.parse(schemaRaw);
-  const ajv = new Ajv({ allErrors: true });
-  addFormats(ajv);
-  const validate = ajv.compile(schema);
-  const valid = validate(result);
-  assert.equal(valid, true, JSON.stringify(validate.errors, null, 2));
+
+});
+
+test('candidate validator rejects unknown graph edges before registry writes', async () => {
+  const candidate = await sweepAndConsolidate({ generatedAt: '2026-11-23T00:00:00.000Z' });
+  candidate.tasks[0].dependsOn.push('UNKNOWN-TASK');
+  const validation = await validateTaskRegistryData(candidate);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.errors.some((error) => error.includes('unknown dependency "UNKNOWN-TASK"')));
+});
+
+test('candidate validator rejects invalid provenance before registry writes', async () => {
+  const candidate = await sweepAndConsolidate({ generatedAt: '2026-11-23T00:00:00.000Z' });
+  candidate.tasks[0].sourceRef.file = '../outside-repository.json';
+  const validation = await validateTaskRegistryData(candidate);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.errors.some((error) => error.includes('repository-relative path')));
+});
+
+test('candidate validator rejects roadmap lifecycle drift before registry writes', async () => {
+  const candidate = await sweepAndConsolidate({ generatedAt: '2026-11-23T00:00:00.000Z' });
+  const roadmapTask = candidate.tasks.find((task) => task.code === 'M0.01');
+  roadmapTask.status = 'todo';
+  const validation = await validateTaskRegistryData(candidate);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.errors.some((error) => error.includes('Status mismatch on "M0.01"')));
+  assert.ok(validation.errors.some((error) => error.includes('Checkbox mismatch on "M0.01"')));
 });
