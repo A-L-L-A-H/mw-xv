@@ -1026,7 +1026,7 @@ export async function sweepAndConsolidate({
   // metadata is retained for the generated work-package mirror.
   const visualPackPath = path.join(
     rootDir,
-    'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/task.json'
+    'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json'
   );
   try {
     const visualPack = JSON.parse(await fs.readFile(visualPackPath, 'utf8'));
@@ -1090,7 +1090,7 @@ export async function sweepAndConsolidate({
           ? sourceTask.notes || 'Blocked in the delegated Visual Universe work package.'
           : null,
         sourceRef: {
-          file: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/task.json',
+          file: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json',
           legacyId: sourceTask.id
         },
         url: '',
