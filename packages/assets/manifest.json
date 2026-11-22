@@ -1694,6 +1694,43 @@
       "status": "review",
       "license": "ISC",
       "source": "MoonWitness contributors"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-01.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-02.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-clip.json",
+      "kind": "source",
+      "variant": "canonical-animation-clip",
+      "format": "json",
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
     }
   ]
 }

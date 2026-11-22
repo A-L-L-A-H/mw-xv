@@ -35,7 +35,8 @@
       ],
       "variantAssetIds": [
         "source/world/characters/crew-01-pose-idle-standing.svg",
-        "source/world/characters/crew-01-pose-waving.svg"
+        "source/world/characters/crew-01-pose-waving.svg",
+        "animation/crew-01-hair/crew-01-hair-move-clip.json"
       ],
       "license": "ISC",
       "status": "review"
