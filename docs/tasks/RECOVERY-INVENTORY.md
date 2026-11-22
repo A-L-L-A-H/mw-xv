@@ -10,7 +10,7 @@ After the initial, reviewed migration, `docs/tasks/tasks.json` is the only canon
 
 - Task ID, project, status, priority, owner, dependency graph, acceptance criteria, validation and provenance live in TaskOS.
 - `ROADMAP.md`, `docs/roadmap/tasks.json`, root `todo.md`, and GitHub Issues are views, navigation or operational projections. Their task status must not be independently edited as a second authority after TaskOS recovery.
-- The Visual Universe package's `task.json`, `TASKS.md`, and individual task cards are generated scoped projections from TaskOS. The original 109-task source is preserved immutably at `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json`; project-specific fields are retained in TaskOS `metadata`. Pack configuration is stored separately in `pack-manifest.json`.
+- The Visual Universe package's `task.json`, `TASKS.md`, and individual task cards are generated scoped projections from TaskOS. The original 109-task source is preserved immutably at `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json`; original 109 task cards are preserved byte-for-byte in nine chunks under `legacy/task-cards-2026-11-23/`. Two non-generic card notes (W1-001 and W5-012) are preserved in `notes-addendum.json` and imported into TaskOS metadata with original blob SHA provenance. The 91 repeated generic 'keep task atomic' notes remain preserved in the card snapshots and need not be copied into every active task record. Project-specific fields are retained in TaskOS `metadata`. Pack configuration is stored separately in `pack-manifest.json`.
 - Archived TODOs remain historical source evidence. Only explicitly identified, still-open records enter the migration, and they are imported as blocked pending revalidation.
 - The import tool is a one-time recovery tool. Do not rerun it to overwrite an already populated canonical registry.
 
@@ -59,7 +59,7 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 3. Every TaskOS task must carry a repository-relative `sourceRef.file`; the schema and validator enforce provenance.
 4. Unknown project references, dependency references, block references, duplicate IDs and dependency cycles fail validation.
 5. Root `todo.md` remains a pointer; archived open tasks enter as blocked, never as ready work.
-6. The Visual Universe task projection must preserve original delegated metadata. The immutable source snapshot is the provenance source; local `task.json`, `TASKS.md` and task cards are generated views, not independent lifecycle authorities.
+6. The Visual Universe task projection must preserve original delegated metadata, plus the two task-specific notes from the immutable task-card addendum. The complete original cards are archived with blob SHAs; local `task.json`, `TASKS.md` and task cards are generated views, not independent lifecycle authorities.
 7. The original Visual Universe source snapshot must not be edited; the local task projection remains empty while TaskOS is unavailable. The TaskOS import CLI defaults to dry-run. `--write` must only be used once on an empty registry after reviewing the complete source inventory and passing all projection tests.
 8. `pnpm tasks:sync` refuses to run until the canonical registry passes schema, provenance, reference, dependency and roadmap parity validation.
 
