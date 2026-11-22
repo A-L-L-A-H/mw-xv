@@ -94,9 +94,10 @@ jobs:
             docs/guide/reference/generated-models.md \
             docs/guide/reference/generated-platform.json \
             docs/guide/reference/generated-platform.md; do
-            printf 'GENERATED_DOC_BEGIN:%s\\n' "$file"
+            echo "GENERATED_DOC_BEGIN:$file"
             base64 -w0 "$file"
-            printf '\\nGENERATED_DOC_END:%s\\n' "$file"
+            echo
+            echo "GENERATED_DOC_END:$file"
           done
 
   unit-tests:
