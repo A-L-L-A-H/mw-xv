@@ -1756,6 +1756,54 @@
       "status": "complete"
     },
     {
+      "id": "M13.09",
+      "title": "Ready-Task / DAG Run Gates & Unified FLOW Cockpit Baseline.",
+      "milestone": "M13",
+      "dependsOn": ["M13.05", "M13.07", "M13.08"],
+      "output": "apps/api/src/routes/ai-corporation.routes.ts, apps/board/src/lib/desktop-bridge.ts, apps/board/src/board-pages/projects-page.tsx, apps/board/src/components/ai/desktop-harness-drawer.tsx, and docs/roadmap/evidence/M13.09.md",
+      "detailFile": "docs/roadmap/14-desktop-engineering.md",
+      "evidence": "docs/roadmap/evidence/M13.09.md",
+      "labels": ["desktop", "rock-soul-flow", "cockpit"],
+      "priority": "p1",
+      "status": "complete"
+    },
+    {
+      "id": "M13.10",
+      "title": "Proof Gate v2 & Server-Authority Verification (+ INV-014 Knowledge Wave).",
+      "milestone": "M13",
+      "dependsOn": ["M13.06", "M13.09"],
+      "output": "apps/api/src/routes/ai-corporation.routes.ts, apps/api/src/routes/ai-desktop-sync.routes.ts, packages/orm-knowledge/src/manifest.ts, and docs/roadmap/evidence/M13.10.md",
+      "detailFile": "docs/roadmap/14-desktop-engineering.md",
+      "evidence": "docs/roadmap/evidence/M13.10.md",
+      "labels": ["desktop", "rock-soul-flow", "inv-014"],
+      "priority": "p1",
+      "status": "complete"
+    },
+    {
+      "id": "M13.11",
+      "title": "Visual DNA Lab in @moonwitness/ai-runtime and Board mirror.",
+      "milestone": "M13",
+      "dependsOn": ["M13.07", "M13.08"],
+      "output": "packages/ai-runtime/src/visual-dna.ts, packages/ai-runtime/tests/visual-dna.test.ts, and docs/roadmap/evidence/M13.11.md",
+      "detailFile": "docs/roadmap/14-desktop-engineering.md",
+      "evidence": "docs/roadmap/evidence/M13.11.md",
+      "labels": ["desktop", "rock-soul-flow", "visual-dna"],
+      "priority": "p1",
+      "status": "complete"
+    },
+    {
+      "id": "M13.12",
+      "title": "Workspace Orbit Audit & Plane Boundary Matrix.",
+      "milestone": "M13",
+      "dependsOn": ["M13.07", "M13.11"],
+      "output": "packages/ai-runtime/src/workspace-orbit.ts, docs/architecture/workspace-orbit-audit.md, and docs/roadmap/evidence/M13.12.md",
+      "detailFile": "docs/roadmap/14-desktop-engineering.md",
+      "evidence": "docs/roadmap/evidence/M13.12.md",
+      "labels": ["desktop", "rock-soul-flow", "architecture"],
+      "priority": "p1",
+      "status": "complete"
+    },
+    {
       "id": "K0-001",
       "title": "Centralization ADR and deployment boundary",
       "milestone": "K0",

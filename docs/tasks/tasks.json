@@ -9032,6 +9032,267 @@
       "comments": []
     },
     {
+      "code": "M13.09",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Ready-Task / DAG Run Gates & Unified FLOW Cockpit Baseline.",
+      "summary": "Ready-Task / DAG Run Gates & Unified FLOW Cockpit Baseline.",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "apps/api/src/routes/ai-corporation.routes.ts, apps/board/src/lib/desktop-bridge.ts, apps/board/src/board-pages/projects-page.tsx, apps/board/src/components/ai/desktop-harness-drawer.tsx, and docs/roadmap/evidence/M13.09.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "medium",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.05", "M13.07", "M13.08"],
+      "blocks": ["M13.10"],
+      "tags": ["m", "desktop", "rock-soul-flow", "cockpit"],
+      "scope": {
+        "packages": ["@moonwitness/api", "@moonwitness/board"],
+        "files": [
+          "apps/api/src/routes/ai-corporation.routes.ts",
+          "apps/api/tests/m13-proof-run-gates.routes.test.ts",
+          "apps/board/src/lib/desktop-bridge.ts",
+          "apps/board/src/board-pages/projects-page.tsx",
+          "apps/board/src/components/ai/desktop-harness-drawer.tsx",
+          "docs/roadmap/evidence/M13.09.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.09-ac-1",
+          "text": "POST /api/ai/runs enforces Project DAG readiness and execution packet/worktree lease gates, and Board projects-page/DesktopHarnessDrawer expose unified FLOW Cockpit controls",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/api exec vitest run tests/m13-proof-run-gates.routes.test.ts",
+          "pnpm --filter @moonwitness/board typecheck",
+          "pnpm board:ui:check",
+          "pnpm desktop:ui:check"
+        ],
+        "expected": "Run gate tests and Board UI boundary checks pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.09.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": "c6063e1"
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/rock-soul-flow-reuse-map.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.09"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "M13.10",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Proof Gate v2 & Server-Authority Verification (+ INV-014 Knowledge Wave).",
+      "summary": "Proof Gate v2 & Server-Authority Verification (+ INV-014 Knowledge Wave).",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "apps/api/src/routes/ai-corporation.routes.ts, apps/api/src/routes/ai-desktop-sync.routes.ts, packages/orm-knowledge/src/manifest.ts, and docs/roadmap/evidence/M13.10.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "medium",
+      "effort": "l",
+      "scores": null,
+      "dependsOn": ["M13.06", "M13.09"],
+      "blocks": [],
+      "tags": ["m", "desktop", "rock-soul-flow", "inv-014"],
+      "scope": {
+        "packages": ["@moonwitness/api", "@moonwitness/orm", "@moonwitness/orm-knowledge"],
+        "files": [
+          "apps/api/src/routes/ai-corporation.routes.ts",
+          "apps/api/src/routes/ai-desktop-sync.routes.ts",
+          "apps/api/tests/m13-proof-run-gates.routes.test.ts",
+          "packages/orm-knowledge/src/manifest.ts",
+          "docs/roadmap/evidence/M13.10.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.10-ac-1",
+          "text": "Proof Gate v2 fails closed on check matrix or out-of-scope drift on /verify and /desktop/pcw-sync preserving server-only accepted authority, and 5 orm-knowledge routes migrate to INV-014 httpPlugins",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/api exec vitest run tests/m13-proof-run-gates.routes.test.ts tests/ai-corporation.routes.test.ts",
+          "pnpm api:addon:check"
+        ],
+        "expected": "Proof Gate v2 route tests and INV-014 addon boundary checks pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.10.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": "c6063e1"
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/rock-soul-flow-reuse-map.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.10"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "M13.11",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Visual DNA Lab in @moonwitness/ai-runtime and Board mirror.",
+      "summary": "Visual DNA Lab in @moonwitness/ai-runtime and Board mirror.",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "packages/ai-runtime/src/visual-dna.ts, packages/ai-runtime/tests/visual-dna.test.ts, and docs/roadmap/evidence/M13.11.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "low",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.07", "M13.08"],
+      "blocks": ["M13.12"],
+      "tags": ["m", "desktop", "rock-soul-flow", "visual-dna"],
+      "scope": {
+        "packages": ["@moonwitness/ai-runtime", "@moonwitness/board"],
+        "files": [
+          "packages/ai-runtime/src/visual-dna.ts",
+          "packages/ai-runtime/src/index.ts",
+          "packages/ai-runtime/tests/visual-dna.test.ts",
+          "apps/board/src/lib/desktop-bridge.ts",
+          "apps/board/src/components/ai/desktop-harness-drawer.tsx",
+          "docs/roadmap/evidence/M13.11.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.11-ac-1",
+          "text": "Deterministic Visual DNA profiler extracts, validates, contrast-checks, and hashes DesignProfile payloads without duplicating @moonwitness/ui",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ai-runtime exec vitest run tests/visual-dna.test.ts"
+        ],
+        "expected": "Visual DNA unit tests pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.11.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": "7495567"
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/rock-soul-flow-reuse-map.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.11"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "M13.12",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Workspace Orbit Audit & Plane Boundary Matrix.",
+      "summary": "Workspace Orbit Audit & Plane Boundary Matrix.",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "packages/ai-runtime/src/workspace-orbit.ts, docs/architecture/workspace-orbit-audit.md, and docs/roadmap/evidence/M13.12.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "low",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.07", "M13.11"],
+      "blocks": [],
+      "tags": ["m", "desktop", "rock-soul-flow", "architecture"],
+      "scope": {
+        "packages": ["@moonwitness/ai-runtime", "@moonwitness/board"],
+        "files": [
+          "packages/ai-runtime/src/workspace-orbit.ts",
+          "packages/ai-runtime/src/index.ts",
+          "packages/ai-runtime/tests/workspace-orbit.test.ts",
+          "docs/architecture/workspace-orbit-audit.md",
+          "apps/board/src/lib/desktop-bridge.ts",
+          "apps/board/src/components/ai/desktop-harness-drawer.tsx",
+          "docs/roadmap/evidence/M13.12.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.12-ac-1",
+          "text": "Workspace Orbit auditor and architecture matrix detect plane leakage, worktree lease violations, and tool capability drift",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ai-runtime exec vitest run tests/workspace-orbit.test.ts",
+          "node scripts/check-docs.mjs"
+        ],
+        "expected": "Workspace Orbit unit tests and docs checks pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.12.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": "7495567"
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/workspace-orbit-audit.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.12"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
       "code": "K0-001",
       "project": "moonwitness",
       "series": "K",

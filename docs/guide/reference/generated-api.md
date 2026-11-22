@@ -1,6 +1,6 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `538475e1821be3aa466c04eaa12d5e4cc6669256a0368802b292e65bc51bf586`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `2e560586f4cf2f9ebda807737d0264d39076e33325078859ac22fc9da9203e0c`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                                     |
 | ------ | -------------------------------------------------------- |
@@ -41,30 +41,17 @@ Extracted from literal Fastify route declarations. Source fingerprint: `538475e1
 | GET    | `/api/corpus/passages/:editionId/:locator`               |
 | GET    | `/api/corpus/sources/:sourceId`                          |
 | GET    | `/api/models`                                            |
-| GET    | `/api/public/publications`                               |
-| GET    | `/api/public/publications/:publicationId`                |
 | POST   | `/api/research/actor-identities`                         |
-| POST   | `/api/research/bug-cases`                                |
-| GET    | `/api/research/bug-cases/:caseId`                        |
-| POST   | `/api/research/bug-cases/:caseId/transitions`            |
-| POST   | `/api/research/bug-cases/:caseId/verify-outcome`         |
-| POST   | `/api/research/child-protection/gate-check`              |
-| GET    | `/api/research/concept-profiles/:profileId`              |
 | GET    | `/api/research/duplicate-candidates`                     |
 | POST   | `/api/research/evidence/resolve`                         |
 | GET    | `/api/research/graph/search`                             |
 | GET    | `/api/research/privacy/projections`                      |
 | POST   | `/api/research/privacy/revocations`                      |
-| GET    | `/api/research/publications/:publicationId/audit`        |
-| POST   | `/api/research/publications/:publicationId/supersede`    |
-| POST   | `/api/research/publications/:publicationId/takedown`     |
 | GET    | `/api/research/relations/:relationId/explanation`        |
 | POST   | `/api/research/retrieval/chunk`                          |
 | POST   | `/api/research/reviews`                                  |
 | POST   | `/api/research/reviews/:id/decision`                     |
 | GET    | `/api/research/reviews/:subjectId/history`               |
-| GET    | `/api/research/stories/:storyId`                         |
-| POST   | `/api/research/stories/:storyId`                         |
 | GET    | `/api/research/suggestions`                              |
 | GET    | `/api/research/suggestions/:suggestionId`                |
 | POST   | `/api/research/suggestions/generate`                     |

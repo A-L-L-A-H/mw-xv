@@ -9596,40 +9596,8 @@
       "path": "/api/models"
     },
     {
-      "method": "GET",
-      "path": "/api/public/publications"
-    },
-    {
-      "method": "GET",
-      "path": "/api/public/publications/:publicationId"
-    },
-    {
       "method": "POST",
       "path": "/api/research/actor-identities"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/bug-cases"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/bug-cases/:caseId"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/bug-cases/:caseId/transitions"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/bug-cases/:caseId/verify-outcome"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/child-protection/gate-check"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/concept-profiles/:profileId"
     },
     {
       "method": "GET",
@@ -9653,18 +9621,6 @@
     },
     {
       "method": "GET",
-      "path": "/api/research/publications/:publicationId/audit"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/publications/:publicationId/supersede"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/publications/:publicationId/takedown"
-    },
-    {
-      "method": "GET",
       "path": "/api/research/relations/:relationId/explanation"
     },
     {
@@ -9682,14 +9638,6 @@
     {
       "method": "GET",
       "path": "/api/research/reviews/:subjectId/history"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/stories/:storyId"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/stories/:storyId"
     },
     {
       "method": "GET",
@@ -10060,5 +10008,5 @@
       "path": "/work-contracts/:id/verify"
     }
   ],
-  "generatedFromSha256": "538475e1821be3aa466c04eaa12d5e4cc6669256a0368802b292e65bc51bf586"
+  "generatedFromSha256": "2e560586f4cf2f9ebda807737d0264d39076e33325078859ac22fc9da9203e0c"
 }

@@ -290,3 +290,127 @@ Provide a deterministic Plan Forge Markdown projection/reconciler (`plan-markdow
 
 - `pnpm --filter @moonwitness/ai-runtime build` and `pnpm --filter @moonwitness/ai-runtime exec vitest run`
 - `pnpm automation:check:roadmap`, `pnpm tasks:validate`, and `node scripts/check-docs.mjs`
+
+## M13.09 — Ready-Task / DAG Run Gates & Unified FLOW Cockpit Baseline
+
+- **Status:** complete (2026-11-23; verified over `origin/dev` base `27e3fea`)
+- **Prerequisites:** M13.05, M13.07, M13.08.
+- **Deliverables:** `apps/api/src/routes/ai-corporation.routes.ts`, `apps/board/src/lib/desktop-bridge.ts`, `apps/board/src/board-pages/projects-page.tsx`, `apps/board/src/components/ai/desktop-harness-drawer.tsx`, and `docs/roadmap/evidence/M13.09.md`.
+
+### Goal
+
+Enforce server-side Project DAG readiness, executable contract status, execution-packet integrity, and worktree lease checks on `POST /api/ai/runs`, while binding Board ready-task controls to `window.__MW_DESKTOP__.worktree` and unifying the `FLOW Cockpit` overview tab in `DesktopHarnessDrawer`.
+
+### Bounded file scope
+
+- `apps/api/src/routes/ai-corporation.routes.ts`
+- `apps/api/tests/m13-proof-run-gates.routes.test.ts`
+- `apps/board/src/lib/desktop-bridge.ts`
+- `apps/board/src/board-pages/projects-page.tsx`
+- `apps/board/src/components/ai/desktop-harness-drawer.tsx`
+- `docs/roadmap/evidence/M13.09.md`
+
+### Acceptance criteria
+
+- `POST /api/ai/runs` fails closed on non-executable contracts (`WORK_CONTRACT_NOT_EXECUTABLE`), unready project DAG dependencies (`PROJECT_TASK_NOT_READY`), or invalid execution packet / worktree lease inputs while preserving compatibility for legacy payloads omitting optional gate fields.
+- Board `projects-page.tsx` exposes ready-task Desktop worktree binding (`worktree.acquire?` + `dispatchDesktopFlowPrime`) with web-only fallback and passes `pnpm board:ui:check` and `pnpm desktop:ui:check`.
+
+### Verification
+
+- `pnpm --filter @moonwitness/api exec vitest run tests/m13-proof-run-gates.routes.test.ts tests/ai-corporation.routes.test.ts tests/project.routes.test.ts`
+- `pnpm --filter @moonwitness/board typecheck`, `pnpm --filter @moonwitness/board lint`, `pnpm board:ui:check`, and `pnpm desktop:ui:check`
+
+## M13.10 — Proof Gate v2 & Server-Authority Verification (+ INV-014 Knowledge Wave)
+
+- **Status:** complete (2026-11-23; verified over `origin/dev` base `27e3fea`)
+- **Prerequisites:** M13.06, M13.09.
+- **Deliverables:** `apps/api/src/routes/ai-corporation.routes.ts`, `apps/api/src/routes/ai-desktop-sync.routes.ts`, `apps/api/tests/m13-proof-run-gates.routes.test.ts`, `packages/orm-knowledge/src/manifest.ts`, and `docs/roadmap/evidence/M13.10.md`.
+
+### Goal
+
+Upgrade `/work-contracts/:id/verify` and `/desktop/pcw-sync` with Proof Gate v2 (5-state check matrix and `validateDiffScope` path drift enforcement) preserving exclusive server authority over `accepted` state transitions, alongside migrating 5 legacy `orm-knowledge` API routes into INV-014 `manifest.httpPlugins`.
+
+### Bounded file scope
+
+- `apps/api/src/routes/ai-corporation.routes.ts`
+- `apps/api/src/routes/ai-desktop-sync.routes.ts`
+- `apps/api/tests/m13-proof-run-gates.routes.test.ts`
+- `packages/orm/src/addon.ts`
+- `packages/orm-knowledge/src/corpus-root.ts`
+- `packages/orm-knowledge/src/http-plugins/*.plugin.ts`
+- `packages/orm-knowledge/src/manifest.ts`
+- `packages/orm-knowledge/src/index.ts`
+- `apps/api/src/routes/corpus.routes.ts`
+- `apps/api/src/addons/registry.ts`
+- `scripts/check-api-addon-boundary.mjs`
+- `docs/roadmap/evidence/M13.10.md`
+
+### Acceptance criteria
+
+- `/work-contracts/:id/verify` and `/desktop/pcw-sync` reject failed/malformed check matrices (`INVALID_CHECK_MATRIX`, `INVALID_CHECK_STATUS`, `MISSING_SKIP_REASON`) and out-of-scope file edits fail-closed (`422`) without promoting runs to `in_review`/`accepted`.
+- `concept-profile`, `publication`, `bug-case`, `child-protection`, and `story-workbench` HTTP routes register via `@moonwitness/orm-knowledge` `manifest.httpPlugins` with `pnpm api:addon:check` passing.
+
+### Verification
+
+- `pnpm --filter @moonwitness/orm build`, `pnpm --filter @moonwitness/orm-knowledge build`, `pnpm --filter @moonwitness/api build`
+- `pnpm --filter @moonwitness/api exec vitest run tests/m13-proof-run-gates.routes.test.ts tests/ai-corporation.routes.test.ts tests/concept-profile.routes.test.ts tests/publication.routes.test.ts tests/bug-case.routes.test.ts tests/child-protection.routes.test.ts tests/story-workbench.routes.test.ts tests/corpus.routes.test.ts`
+- `pnpm api:addon:check`
+
+## M13.11 — Visual DNA Lab
+
+- **Status:** complete (2026-11-23; verified over `origin/dev` base `27e3fea`)
+- **Prerequisites:** M13.07, M13.08.
+- **Deliverables:** `packages/ai-runtime/src/visual-dna.ts`, `packages/ai-runtime/tests/visual-dna.test.ts`, and `docs/roadmap/evidence/M13.11.md`.
+
+### Goal
+
+Provide deterministic Visual DNA profiling (`DesignProfile`), WCAG 2.1 contrast auditing, reduced-motion checks, provenance flags, and Board bridge mirror types without introducing a second UI library or importing runtime modules into `apps/board`.
+
+### Bounded file scope
+
+- `packages/ai-runtime/src/visual-dna.ts`
+- `packages/ai-runtime/src/index.ts`
+- `packages/ai-runtime/tests/visual-dna.test.ts`
+- `apps/board/src/lib/desktop-bridge.ts`
+- `apps/board/src/components/ai/desktop-harness-drawer.tsx`
+- `docs/roadmap/evidence/M13.11.md`
+
+### Acceptance criteria
+
+- `extractDesignProfileFromTokens`, `validateDesignProfile`, and `auditDesignProfileCompliance` deterministically extract, validate, contrast-check, redact, and hash `DesignProfile` payloads (`advisoryOnly: true`).
+- Board renders Visual DNA profile telemetry through web-safe mirror types while passing `pnpm board:ui:check` and `pnpm desktop:ui:check`.
+
+### Verification
+
+- `pnpm --filter @moonwitness/ai-runtime build` and `pnpm --filter @moonwitness/ai-runtime test`
+- `pnpm --filter @moonwitness/board typecheck`, `pnpm board:ui:check`, and `pnpm desktop:ui:check`
+
+## M13.12 — Workspace Orbit Audit & Plane Boundary Matrix
+
+- **Status:** complete (2026-11-23; verified over `origin/dev` base `27e3fea`)
+- **Prerequisites:** M13.07, M13.11.
+- **Deliverables:** `packages/ai-runtime/src/workspace-orbit.ts`, `packages/ai-runtime/tests/workspace-orbit.test.ts`, `docs/architecture/workspace-orbit-audit.md`, and `docs/roadmap/evidence/M13.12.md`.
+
+### Goal
+
+Provide deterministic Workspace Orbit inventory and plane boundary auditing (`buildWorkspaceOrbitInventory`, `auditWorkspaceOrbit`) plus an architecture boundary reference enforcing Control Plane vs Desktop Execution Plane separation, INV-014 addon ownership, tool-free `@moonwitness/local-ai`, and worktree lease hygiene.
+
+### Bounded file scope
+
+- `packages/ai-runtime/src/workspace-orbit.ts`
+- `packages/ai-runtime/src/index.ts`
+- `packages/ai-runtime/tests/workspace-orbit.test.ts`
+- `docs/architecture/workspace-orbit-audit.md`
+- `apps/board/src/lib/desktop-bridge.ts`
+- `apps/board/src/components/ai/desktop-harness-drawer.tsx`
+- `docs/roadmap/evidence/M13.12.md`
+
+### Acceptance criteria
+
+- `buildWorkspaceOrbitInventory` and `auditWorkspaceOrbit` emit deterministic SHA-256 digests (`contentSha256`, `inventorySha256`), flag Control/Desktop plane drift, expired or dirty unleased worktrees, tool capabilities on `local-ai`, and legacy routes outside `manifest.httpPlugins`.
+- `docs/architecture/workspace-orbit-audit.md` passes Markdown link and Prettier checks.
+
+### Verification
+
+- `pnpm --filter @moonwitness/ai-runtime build` and `pnpm --filter @moonwitness/ai-runtime test`
+- `node scripts/check-docs.mjs` and `pnpm automation:check:roadmap`

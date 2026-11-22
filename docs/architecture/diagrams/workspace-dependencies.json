@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "7073292800b30dc4ee938370ae6b907fb2b292c2400e360332c81ed334714e65",
+  "sourceSha256": "7dedaca5a54fbaca8a32181b85387c089147fef099364b2fc2ffda7d9cd6e448",
   "packages": [
     {
       "name": "@moonwitness/ai-evaluation",
@@ -685,12 +685,6 @@
     },
     {
       "from": "@moonwitness/orm-cloud",
-      "to": "@moonwitness/jobs",
-      "kind": "development",
-      "manifest": "packages/orm-cloud"
-    },
-    {
-      "from": "@moonwitness/orm-cloud",
       "to": "@moonwitness/orm-crm",
       "kind": "development",
       "manifest": "packages/orm-cloud"
@@ -717,6 +711,12 @@
       "from": "@moonwitness/orm-cloud",
       "to": "@moonwitness/orm-workflow",
       "kind": "development",
+      "manifest": "packages/orm-cloud"
+    },
+    {
+      "from": "@moonwitness/orm-cloud",
+      "to": "@moonwitness/jobs",
+      "kind": "runtime",
       "manifest": "packages/orm-cloud"
     },
     {
@@ -787,12 +787,6 @@
     },
     {
       "from": "@moonwitness/orm-isp",
-      "to": "@moonwitness/jobs",
-      "kind": "development",
-      "manifest": "packages/orm-isp"
-    },
-    {
-      "from": "@moonwitness/orm-isp",
       "to": "@moonwitness/orm-crm",
       "kind": "development",
       "manifest": "packages/orm-isp"
@@ -819,6 +813,12 @@
       "from": "@moonwitness/orm-isp",
       "to": "@moonwitness/orm-workflow",
       "kind": "development",
+      "manifest": "packages/orm-isp"
+    },
+    {
+      "from": "@moonwitness/orm-isp",
+      "to": "@moonwitness/jobs",
+      "kind": "runtime",
       "manifest": "packages/orm-isp"
     },
     {
@@ -1020,6 +1020,12 @@
       "manifest": "packages/orm-sales"
     },
     {
+      "from": "@moonwitness/orm-sales",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-sales"
+    },
+    {
       "from": "@moonwitness/orm-storage",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -1052,6 +1058,12 @@
     {
       "from": "@moonwitness/orm-subscription",
       "to": "@moonwitness/orm-sales",
+      "kind": "runtime",
+      "manifest": "packages/orm-subscription"
+    },
+    {
+      "from": "@moonwitness/orm-subscription",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-subscription"
     },
