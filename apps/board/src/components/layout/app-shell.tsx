@@ -138,6 +138,12 @@ function ModelNavigation({
         onNavigate={onNavigate}
       />
       <NavItem
+        to="/board/commercial"
+        label="Commercial"
+        icon={CompanyIcon}
+        onNavigate={onNavigate}
+      />
+      <NavItem
         to="/board/cloud"
         label="Cloud & ISP"
         icon={GlobeIcon}

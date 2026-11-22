@@ -302,7 +302,7 @@ export function Chatter({ model, recordId }: ChatterProps) {
         </div>
 
         {/* Tab Switcher: Activities | Attachments | Audit Pulse */}
-        <div className="flex items-center border-2 border-ink bg-card p-1">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center justify-center gap-1 border-2 border-ink bg-card p-1 sm:flex-nowrap">
           <Button
             type="button"
             onClick={() => setActiveTab('activities')}

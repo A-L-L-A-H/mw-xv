@@ -1,6 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { AddonHttpPlugin } from '@moonwitness/orm';
-import { Opportunity } from '@moonwitness/orm-crm';
 import { SaleOrder } from './models/index.js';
 import { confirmSaleOrder, convertOpportunityToSaleOrder } from './automation.js';
 

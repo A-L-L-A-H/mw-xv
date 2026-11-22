@@ -21,6 +21,7 @@ import {
   LocalSidecarController,
   buildArtifactDigest,
   createDesktopHarnessBridge,
+  executeProjectTaskInSandbox,
   parseDesktopCliArgs,
   startDesktopSidecarDaemon,
   type DesktopActionAuthContext,

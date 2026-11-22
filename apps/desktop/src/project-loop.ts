@@ -43,8 +43,8 @@ export async function executeProjectTaskInSandbox(
     runId,
   });
 
-  let exitCode: number | null = -1;
-  let timedOut = false;
+  let exitCode: number | null;
+  let timedOut: boolean;
   let committed = false;
 
   try {
