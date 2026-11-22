@@ -74,7 +74,8 @@
         "series",
         "title",
         "status",
-        "priority"
+        "priority",
+        "sourceRef"
       ],
       "additionalProperties": false,
       "properties": {
@@ -212,9 +213,10 @@
         },
         "sourceRef": {
           "type": "object",
+          "required": ["file"],
           "additionalProperties": false,
           "properties": {
-            "file": { "type": "string" },
+            "file": { "type": "string", "minLength": 1 },
             "legacyId": { "type": ["string", "null"] }
           }
         },
