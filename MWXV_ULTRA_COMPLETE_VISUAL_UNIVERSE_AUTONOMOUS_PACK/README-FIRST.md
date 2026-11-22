@@ -6,9 +6,11 @@
 - Target branch: `dev`
 - Pack baseline: `0b89060602c659efdd5e9e1a12c166fee237418e`
 - Task count: **109 atomic tasks**
-- Canonical lifecycle registry: `docs/tasks/tasks.json` (project `visual-universe`)
-- Generated local machine projection: `task.json`
-- Generated human-readable projection: `TASKS.md`
+- Canonical lifecycle registry: `docs/tasks/tasks.json` (project `visual-universe`; currently unavailable/zero-byte during recovery)
+- Pack configuration: `pack-manifest.json`
+- Immutable migration source snapshot: `legacy/task-source-2026-11-23.json`
+- Generated local machine projection: `task.json` (currently empty until TaskOS recovery)
+- Generated human-readable projection: `TASKS.md` (currently a recovery placeholder)
 
 ## Start here
 
