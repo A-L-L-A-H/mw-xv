@@ -56,7 +56,7 @@ export function validateSceneBundle(bundle, manifest, filePath = 'scene-bundle.j
   const clipById = new Map();
   for (const [index, scene] of bundle.scenes.entries()) {
     const path = `${filePath}.scenes[${index}]`;
-    assertKeys(scene, ['id', 'layers', 'staticFallback', 'includes', 'clips'], path);
+    assertKeys(scene, ['id', 'layers', 'staticFallback', 'includes', 'clips', 'breakpoints', 'accessibilityFallback'], path);
     if (!scene || typeof scene.id !== 'string' || !scene.id) fail(`${path}.id`, 'must be a non-empty stable identifier');
     if (sceneById.has(scene.id)) fail(`${path}.id`, `duplicates scene ${scene.id}`);
     if (!Array.isArray(scene.layers) || scene.layers.length === 0) fail(`${path}.layers`, 'must contain at least one layer');
@@ -83,6 +83,40 @@ export function validateSceneBundle(bundle, manifest, filePath = 'scene-bundle.j
     requireReference(scene.staticFallback, knownAssets, `${path}.staticFallback`);
     if (scene.includes !== undefined && !Array.isArray(scene.includes)) fail(`${path}.includes`, 'must be an array of scene IDs');
     if (scene.clips !== undefined && !Array.isArray(scene.clips)) fail(`${path}.clips`, 'must be an array of clip IDs');
+    if (scene.accessibilityFallback !== undefined) requireReference(scene.accessibilityFallback, knownAssets, `${path}.accessibilityFallback`);
+    if (scene.breakpoints !== undefined) {
+      if (!Array.isArray(scene.breakpoints)) fail(`${path}.breakpoints`, 'must be an array of breakpoint descriptors');
+      const bpNames = new Set();
+      for (const [bpIndex, bp] of scene.breakpoints.entries()) {
+        const bpPath = `${path}.breakpoints[${bpIndex}]`;
+        if (!bp || typeof bp !== 'object' || Array.isArray(bp)) fail(bpPath, 'must be an object');
+        assertKeys(bp, ['name', 'minWidth', 'maxWidth', 'overlay', 'layerOverrides'], bpPath);
+        if (typeof bp.name !== 'string' || !bp.name || bpNames.has(bp.name)) fail(`${bpPath}.name`, 'must be a unique non-empty breakpoint name');
+        bpNames.add(bp.name);
+        if (!Number.isInteger(bp.minWidth) || bp.minWidth < 0) fail(`${bpPath}.minWidth`, 'must be a non-negative integer');
+        if (bp.maxWidth !== undefined && (!Number.isInteger(bp.maxWidth) || bp.maxWidth < bp.minWidth)) fail(`${bpPath}.maxWidth`, 'must be an integer greater than or equal to minWidth');
+        if (bp.overlay !== undefined) requireReference(bp.overlay, knownAssets, `${bpPath}.overlay`);
+        if (bp.layerOverrides !== undefined) {
+          if (!Array.isArray(bp.layerOverrides)) fail(`${bpPath}.layerOverrides`, 'must be an array of layer overrides');
+          const overrideLayerIds = new Set();
+          for (const [ovIndex, ov] of bp.layerOverrides.entries()) {
+            const ovPath = `${bpPath}.layerOverrides[${ovIndex}]`;
+            if (!ov || typeof ov !== 'object' || Array.isArray(ov)) fail(ovPath, 'must be an object');
+            assertKeys(ov, ['layerId', 'position', 'opacity', 'parallax'], ovPath);
+            if (typeof ov.layerId !== 'string' || !ov.layerId || overrideLayerIds.has(ov.layerId)) fail(`${ovPath}.layerId`, 'must reference a unique layer id within the scene');
+            overrideLayerIds.add(ov.layerId);
+            if (!layerIds.has(ov.layerId)) fail(`${ovPath}.layerId`, `references unknown layer ${ov.layerId}`);
+            if (ov.position !== undefined) requirePoint(ov.position, `${ovPath}.position`);
+            if (ov.opacity !== undefined && (!Number.isFinite(ov.opacity) || ov.opacity < 0 || ov.opacity > 1)) fail(`${ovPath}.opacity`, 'must be between 0 and 1');
+            if (ov.parallax !== undefined) {
+              if (!ov.parallax || typeof ov.parallax !== 'object' || Array.isArray(ov.parallax)) fail(`${ovPath}.parallax`, 'must be a bounded x/y object');
+              assertKeys(ov.parallax, ['x', 'y'], `${ovPath}.parallax`);
+              for (const axis of ['x', 'y']) if (!Number.isFinite(ov.parallax[axis]) || Math.abs(ov.parallax[axis]) > 1) fail(`${ovPath}.parallax.${axis}`, 'must be bounded between -1 and 1');
+            }
+          }
+        }
+      }
+    }
   }
   assertAcyclicScenes(bundle.scenes, sceneById);
 

@@ -60,6 +60,23 @@ export interface SceneDefinition {
   readonly staticFallback: AssetId;
   readonly includes?: readonly SceneId[];
   readonly clips?: readonly ClipId[];
+  readonly breakpoints?: readonly SceneBreakpoint[];
+  readonly accessibilityFallback?: string;
+}
+
+export interface SceneBreakpoint {
+  readonly name: string;
+  readonly minWidth: number;
+  readonly maxWidth?: number;
+  readonly overlay?: AssetId;
+  readonly layerOverrides?: readonly LayerOverride[];
+}
+
+export interface LayerOverride {
+  readonly layerId: LayerId;
+  readonly position?: NormalizedPoint;
+  readonly opacity?: number;
+  readonly parallax?: BoundedParallax;
 }
 
 export interface SceneBundle {
