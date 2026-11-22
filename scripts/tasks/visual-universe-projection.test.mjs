@@ -90,3 +90,24 @@ test('Visual Universe projection rejects records without recoverable metadata', 
     /no lossless Visual Universe metadata payload/u
   );
 });
+
+test('Visual Universe projection uses canonical TaskOS evidence paths without inventing execution results', () => {
+  const source = sampleTask({
+    evidence: {
+      paths: ['evidence/W0-001.md', 'evidence/W0-001-follow-up.md'],
+      detailFile: 'tasks/W0/W0-001.md',
+      commitSha: null,
+    },
+    validation: { commands: ['pnpm test:taskos'], expected: 'Pass' },
+  });
+  const projected = projectVisualUniverseTask(source);
+  assert.deepEqual(
+    projected.evidence.map(({ artifact, exit_code }) => ({ artifact, exit_code })),
+    [
+      { artifact: 'evidence/W0-001.md', exit_code: 0 },
+      { artifact: 'evidence/W0-001-follow-up.md', exit_code: null },
+    ]
+  );
+  assert.match(projected.evidence[1].command, /not recorded/u);
+  assert.deepEqual(projected.verification, ['pnpm test:taskos']);
+});
