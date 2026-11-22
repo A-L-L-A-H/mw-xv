@@ -17,6 +17,8 @@ import * as request from '../../packages/orm-request/dist/index.js';
 import * as crm from '../../packages/orm-crm/dist/index.js';
 import * as sales from '../../packages/orm-sales/dist/index.js';
 import * as subscription from '../../packages/orm-subscription/dist/index.js';
+import * as isp from '../../packages/orm-isp/dist/index.js';
+import * as cloud from '../../packages/orm-cloud/dist/index.js';
 import * as integration from '../../packages/orm-integration/dist/index.js';
 import * as whatsapp from '../../packages/orm-whatsapp/dist/index.js';
 import * as witness from '../../packages/orm-knowledge/dist/index.js';
@@ -39,6 +41,8 @@ const addonPackages = [
   { directory: 'orm-crm', module: crm, manifest: crm.manifest },
   { directory: 'orm-sales', module: sales, manifest: sales.manifest },
   { directory: 'orm-subscription', module: subscription, manifest: subscription.manifest },
+  { directory: 'orm-isp', module: isp, manifest: isp.manifest },
+  { directory: 'orm-cloud', module: cloud, manifest: cloud.manifest },
   { directory: 'orm-integration', module: integration, manifest: integration.manifest },
   { directory: 'orm-whatsapp', module: whatsapp, manifest: whatsapp.manifest },
   { directory: 'orm-knowledge', module: witness, manifest: witness.manifest },
@@ -192,6 +196,8 @@ describe('workspace addon conformance', () => {
       { id: 'crm.lead_acme_ai_expansion', field: 'description' },
       { id: 'sales.order_acme_enterprise', field: 'description' },
       { id: 'subscription.plan_monthly_basic', field: 'description' },
+      { id: 'isp.nas_core_local', field: 'description' },
+      { id: 'cloud.app_isp_radius_node', field: 'description' },
       { id: 'orm-integration.endpoint_example_disabled', field: 'name' },
       { id: 'orm-whatsapp.label_demo_vip', field: 'name' },
       { id: 'ai.group_operator', field: 'name' },

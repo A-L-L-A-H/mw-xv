@@ -332,6 +332,64 @@ struct NextTaskArgs {
     filter: Option<String>,
 }
 
+#[derive(Deserialize, JsonSchema)]
+struct ChecklistToggleArgs {
+    /// Task key (api#12) or code (TASK-12).
+    #[schemars(with = "String")]
+    id: TaskKey,
+    /// Acceptance criterion id, e.g. "AC-1".
+    ac_id: String,
+    /// Explicit done value; omit to toggle.
+    done: Option<bool>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct SubmitReviewArgs {
+    /// Task key (api#12) or code (TASK-12).
+    #[schemars(with = "String")]
+    id: TaskKey,
+    /// Git commit SHA proving the work.
+    commit_sha: Option<String>,
+    /// Path to test/verification evidence file.
+    evidence_path: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct BrainQuickCaptureArgs {
+    /// Document slug/path, e.g. "brain/architecture".
+    slug: String,
+    /// Layer: raw | brain | wiki | blueprints | specs (default: brain).
+    layer: Option<String>,
+    /// Document title.
+    title: String,
+    /// Markdown body.
+    body: String,
+    /// Comma-separated tags.
+    tags: Option<String>,
+    /// Optional project slug.
+    project: Option<String>,
+    /// Optional linked task codes or keys.
+    linked_tasks: Option<Vec<String>>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct WikiLookupArgs {
+    /// Exact slug or search query across Second Brain documents.
+    query: Option<String>,
+    /// Optional layer filter: raw | brain | wiki | blueprints | specs.
+    layer: Option<String>,
+    /// Optional project slug.
+    project: Option<String>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct GlobalSearchArgs {
+    /// Search query across tasks and Second Brain documents.
+    query: String,
+    /// Maximum hits (default 20).
+    limit: Option<usize>,
+}
+
 impl MoonwitnessDx {
     /// Drops rmcp's `$schema` line and the `null` of optional fields: agents read this list in
     /// every session, so each byte counts.
@@ -658,6 +716,154 @@ impl MoonwitnessDx {
                     n => format!(" and its {n} comments"),
                 };
                 Ok(format!("Deleted {}{comments}: {}", task.key(), task.title))
+            })
+            .await)
+    }
+
+    #[tool(description = "Claim a task and move it to doing; refuses if blocked waiting on unfinished tasks.")]
+    async fn task_claim(&self, Parameters(args): Parameters<TaskArgs>) -> Result<CallToolResult, ErrorData> {
+        Ok(self
+            .run(move |ctx, store| {
+                let task = args.id.find(store)?;
+                let claimed = store.claim_task(task.id)?;
+                task_detail(ctx, store, &claimed)
+            })
+            .await)
+    }
+
+    #[tool(description = "Toggle or set an acceptance criterion checkbox on a task.")]
+    async fn task_checklist_toggle(
+        &self,
+        Parameters(args): Parameters<ChecklistToggleArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        Ok(self
+            .run(move |_, store| {
+                let task = args.id.find(store)?;
+                let updated = store.toggle_acceptance_criterion(task.id, &args.ac_id, args.done)?;
+                Ok(format!("Toggled {} on {}: {}", args.ac_id, updated.key(), updated.title))
+            })
+            .await)
+    }
+
+    #[tool(description = "Submit a task for review with optional commit SHA and evidence path; requires all AC done.")]
+    async fn task_submit_review(
+        &self,
+        Parameters(args): Parameters<SubmitReviewArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        Ok(self
+            .run(move |ctx, store| {
+                let task = args.id.find(store)?;
+                let updated = store.submit_task_review(
+                    task.id,
+                    args.commit_sha.as_deref(),
+                    args.evidence_path.as_deref(),
+                )?;
+                task_detail(ctx, store, &updated)
+            })
+            .await)
+    }
+
+    #[tool(description = "Capture or update a Second Brain document (raw, brain, wiki, blueprints, specs).")]
+    async fn brain_quick_capture(
+        &self,
+        Parameters(args): Parameters<BrainQuickCaptureArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        Ok(self
+            .run(move |_, store| {
+                let project_id = args
+                    .project
+                    .as_deref()
+                    .filter(|p| !p.is_empty() && *p != "all")
+                    .map(|slug| store.find_project(slug))
+                    .transpose()?
+                    .map(|p| p.id);
+                let doc = store.upsert_document(
+                    &args.slug,
+                    args.layer.as_deref().unwrap_or("brain"),
+                    &args.title,
+                    &args.body,
+                    args.tags.as_deref().unwrap_or(""),
+                    project_id,
+                    Some("draft"),
+                    args.linked_tasks.as_deref().unwrap_or(&[]),
+                )?;
+                Ok(format!("Captured [{}] {} ({}) #{}", doc.layer, doc.title, doc.slug, doc.id))
+            })
+            .await)
+    }
+
+    #[tool(description = "Lookup or search Second Brain wiki/brain/specs documents by slug, query, or layer.")]
+    async fn wiki_lookup(&self, Parameters(args): Parameters<WikiLookupArgs>) -> Result<CallToolResult, ErrorData> {
+        Ok(self
+            .run(move |_, store| {
+                if let Some(ref q) = args.query {
+                    let q_trimmed = q.trim();
+                    if let Some(doc) = store.find_document_by_slug(q_trimmed)? {
+                        return Ok(format!(
+                            "[{}] {} ({})\n{}\n\n{}",
+                            doc.layer,
+                            doc.title,
+                            doc.slug,
+                            if doc.tags.is_empty() { String::new() } else { format!("tags: {}", doc.tags.join(", ")) },
+                            doc.body
+                        ));
+                    }
+                }
+                let project_id = args
+                    .project
+                    .as_deref()
+                    .filter(|p| !p.is_empty() && *p != "all")
+                    .map(|slug| store.find_project(slug))
+                    .transpose()?
+                    .map(|p| p.id);
+                let docs = store.list_documents(args.layer.as_deref(), project_id)?;
+                let filtered: Vec<_> = match args.query.as_deref().map(str::trim).filter(|q| !q.is_empty()) {
+                    Some(q) => {
+                        let ql = q.to_lowercase();
+                        docs.into_iter()
+                            .filter(|d| {
+                                d.title.to_lowercase().contains(&ql)
+                                    || d.slug.to_lowercase().contains(&ql)
+                                    || d.body.to_lowercase().contains(&ql)
+                            })
+                            .collect()
+                    }
+                    None => docs,
+                };
+                if filtered.is_empty() {
+                    return Ok("No matching Second Brain documents.".into());
+                }
+                let mut out = String::new();
+                for d in filtered {
+                    let _ = writeln!(out, "#{} [{}] {} ({})", d.id, d.layer, d.title, d.slug);
+                }
+                out.truncate(out.trim_end().len());
+                Ok(out)
+            })
+            .await)
+    }
+
+    #[tool(description = "Global search across Kanban tasks and Second Brain documents.")]
+    async fn global_search(
+        &self,
+        Parameters(args): Parameters<GlobalSearchArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        Ok(self
+            .run(move |_, store| {
+                let hits = store.global_search(&args.query, args.limit.unwrap_or(20))?;
+                if hits.is_empty() {
+                    return Ok("No results found.".into());
+                }
+                let mut out = String::new();
+                for h in hits {
+                    let _ = writeln!(
+                        out,
+                        "[{}] {} ({}) - {}: {}",
+                        h.entity_type, h.code_or_slug, h.layer_or_status, h.title, h.snippet
+                    );
+                }
+                out.truncate(out.trim_end().len());
+                Ok(out)
             })
             .await)
     }
@@ -990,6 +1196,90 @@ mod tests {
 
             assert!(reply.contains("Comment added"), "{reply}");
             assert_eq!(authors(&home, &task), ["agent"]);
+        });
+    }
+
+    #[test]
+    fn v2_task_workflow_and_second_brain_mcp_tools_work_end_to_end() {
+        block_on(async {
+            let (dir, home, _seed) = board();
+            let mut agent = Agent::start(home.clone(), dir.path());
+            let mut call = async |name: &str, args: Value| -> (bool, String) {
+                let params = json!({ "name": name, "arguments": args, "_meta": stateless(Some("e2e-mcp")) });
+                let message = json!({ "jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": params });
+                let result = &agent.send(message).await.unwrap()["result"];
+                let is_err = result["isError"] == true;
+                let text = result["content"][0]["text"].as_str().unwrap().to_string();
+                (is_err, text)
+            };
+
+            // 1. Create a task with acceptance criteria
+            let (err, created) = call(
+                "create_task",
+                json!({
+                    "project": "api",
+                    "title": "MCP Integration Task",
+                    "code": "MCP-101",
+                    "acceptance_criteria": [{"id": "AC-1", "text": "Verify MCP claim", "done": false}]
+                }),
+            )
+            .await;
+            assert!(!err, "{created}");
+
+            // 2. Claim task -> doing
+            let (err, claimed) = call("task_claim", json!({ "id": "api#2" })).await;
+            assert!(!err, "{claimed}");
+            assert!(claimed.contains("status: doing"), "{claimed}");
+
+            // 3. Submit review fails while AC-1 incomplete
+            let (err, refused) = call("task_submit_review", json!({ "id": "api#2" })).await;
+            assert!(err, "{refused}");
+            assert!(refused.contains("AC-1"), "{refused}");
+
+            // 4. Toggle AC-1 -> done, then submit review -> review
+            let (err, toggled) = call(
+                "task_checklist_toggle",
+                json!({ "id": "api#2", "ac_id": "AC-1", "done": true }),
+            )
+            .await;
+            assert!(!err, "{toggled}");
+            let (err, reviewed) = call(
+                "task_submit_review",
+                json!({ "id": "api#2", "commit_sha": "abc1234", "evidence_path": "test.log" }),
+            )
+            .await;
+            assert!(!err, "{reviewed}");
+            assert!(reviewed.contains("status: review"), "{reviewed}");
+
+            // 5. Capture Second Brain document and look it up via wiki_lookup
+            let (err, captured) = call(
+                "brain_quick_capture",
+                json!({
+                    "slug": "wiki/mcp-guide",
+                    "layer": "wiki",
+                    "title": "MCP Integration Guide",
+                    "body": "# MCP Guide\n\nUniqueMcpNeedle inside wiki document.",
+                    "tags": "mcp,guide",
+                    "project": "api",
+                    "linked_tasks": ["MCP-101"]
+                }),
+            )
+            .await;
+            assert!(!err, "{captured}");
+            assert!(captured.contains("wiki/mcp-guide"), "{captured}");
+
+            let (err, found) = call("wiki_lookup", json!({ "query": "wiki/mcp-guide" })).await;
+            assert!(!err, "{found}");
+            assert!(found.contains("UniqueMcpNeedle"), "{found}");
+
+            // 6. Global search hits both document and task
+            let (err, doc_hits) = call("global_search", json!({ "query": "UniqueMcpNeedle" })).await;
+            assert!(!err, "{doc_hits}");
+            assert!(doc_hits.contains("wiki/mcp-guide"), "{doc_hits}");
+
+            let (err, task_hits) = call("global_search", json!({ "query": "MCP Integration Task" })).await;
+            assert!(!err, "{task_hits}");
+            assert!(task_hits.contains("MCP Integration Task"), "{task_hits}");
         });
     }
 }

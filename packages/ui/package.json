@@ -225,6 +225,18 @@
     "./lib/character-adapter": {
       "types": "./dist/lib/character-adapter.d.ts",
       "import": "./dist/lib/character-adapter.js"
+    },
+    "./components/scene-particles": {
+      "types": "./dist/components/scene-particles.d.ts",
+      "import": "./dist/components/scene-particles.js"
+    },
+    "./components/scene-transitions": {
+      "types": "./dist/components/scene-transitions.d.ts",
+      "import": "./dist/components/scene-transitions.js"
+    },
+    "./lib/scene-soundscape": {
+      "types": "./dist/lib/scene-soundscape.d.ts",
+      "import": "./dist/lib/scene-soundscape.js"
     }
   },
   "scripts": {

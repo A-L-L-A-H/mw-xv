@@ -1603,6 +1603,42 @@ a:focus-visible {
     flex-direction: column;
     align-items: flex-start;
   }
+
+.fx-lab {
+  display: grid;
+  gap: 0.75rem;
+}
+.fx-lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.fx-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.fx-lab-particle-stage,
+.fx-lab-transition-stage {
+  position: relative;
+  border: 2px solid var(--mw-border-strong);
+  background: repeating-conic-gradient(#232631 0% 25%, #181b24 0% 50%) 50% / 16px 16px;
+  overflow: hidden;
+}
+.fx-lab-caption {
+  margin: 0.35rem 0 0;
+  font: 500 0.7rem var(--mw-font-mono);
+  color: var(--mw-muted);
+}
+.fx-lab-audio-status {
+  margin: 0.35rem 0 0.5rem;
+  font: 500 0.75rem var(--mw-font-mono);
+}
+@media (max-width: 720px) {
+  .fx-lab-grid {
+    grid-template-columns: 1fr;
+  }
+}
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,33 +1,84 @@
 import { defineAddon, ref, seed } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
-import { CloudProvider, CloudServer, CloudDeploymentTarget, CloudApp, CloudDeployment } from './models/index.js';
+import {
+  CloudApp,
+  CloudDeployment,
+  CloudDeploymentTarget,
+  CloudProvider,
+  CloudServer,
+} from './models/index.js';
+import { views } from './views.js';
+import { cloudHttpPlugin } from './http.js';
 
 export const manifest = defineAddon({
   name: 'cloud',
   version: '1.0.0',
   depends: ['base', 'project', 'subscription'],
   models: [CloudProvider, CloudServer, CloudDeploymentTarget, CloudApp, CloudDeployment],
+  httpPlugins: [cloudHttpPlugin],
   data: [
     seed(CloudProvider, 'cloud.provider_docker_agent', {
-      company_id: 1,
-      name: 'Local Docker Agent',
+      company: ref('base.company_default'),
+      name: 'Local Docker Agent (Control Plane)',
       code: 'docker_agent',
       type: 'docker_agent',
-      endpoint: 'unix:///var/run/docker.sock',
-      access_key: '',
-      secret_key: '',
+      endpoint: 'http://127.0.0.1:3003',
       region: 'local',
       is_active: true,
     }),
     seed(CloudProvider, 'cloud.provider_coolify', {
-      company_id: 1,
+      company: ref('base.company_default'),
       name: 'Coolify Cloud',
       code: 'coolify',
       type: 'coolify',
       endpoint: 'https://coolify.moonwitness.local',
-      access_key: '',
-      secret_key: '',
       region: 'cloud',
+      is_active: false,
+    }),
+    seed(CloudServer, 'cloud.server_local_host', {
+      company: ref('base.company_default'),
+      provider: ref('cloud.provider_docker_agent'),
+      partner: ref('base.partner_acme'),
+      project: ref('project.example_platform_roadmap'),
+      subscription: ref('subscription.sub_acme_enterprise'),
+      name: 'local-docker-host',
+      server_name: 'moonwitness-local-node',
+      ip_address: '127.0.0.1',
+      cpu_cores: 4,
+      ram_gb: 16,
+      disk_gb: 200,
+      os: 'Alpine / Docker Desktop',
+      monthly_price_minor: 49000,
+      currency: 'USD',
+      status: 'active',
+    }),
+    seed(CloudDeploymentTarget, 'cloud.target_local_prod', {
+      company: ref('base.company_default'),
+      server: ref('cloud.server_local_host'),
+      project: ref('project.example_platform_roadmap'),
+      name: 'local-docker-production',
+      environment: 'production',
+      docker_host: 'unix:///var/run/docker.sock',
+      port: 3003,
+      api_url: 'http://127.0.0.1:3003',
+      is_active: true,
+    }),
+    seed(CloudApp, 'cloud.app_isp_radius_node', {
+      company: ref('base.company_default'),
+      deployment_target: ref('cloud.target_local_prod'),
+      partner: ref('base.partner_acme'),
+      project: ref('project.example_platform_roadmap'),
+      subscription: ref('subscription.sub_acme_enterprise'),
+      name: 'moonwitness-isp',
+      description: 'Dedicated ISP & RADIUS server container managed through local Docker Agent.',
+      image: 'mw-xv-isp',
+      image_tag: 'latest',
+      port: 3000,
+      host_port: 3002,
+      domain: 'isp.moonwitness.local',
+      health_check_url: 'http://127.0.0.1:3002/health',
+      monthly_price_minor: 29000,
+      currency: 'USD',
       is_active: true,
     }),
     seed(ModelAccess, 'cloud.access_user_provider_read', {
@@ -71,6 +122,7 @@ export const manifest = defineAddon({
       unlink: false,
     }),
   ],
+  views,
   menus: [
     {
       model: CloudProvider.modelName,
