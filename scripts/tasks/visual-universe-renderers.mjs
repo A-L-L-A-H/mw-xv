@@ -73,7 +73,7 @@ export function renderVisualUniverseBoard(tasks) {
   const lines = [
     '# Atomic Task Board',
     '',
-    `**Total: ${tasks.length} tasks.** Canonical lifecycle state is ` + '`docs/tasks/tasks.json`' + ` + ` (project ` + '`visual-universe`' + `); this file is generated from it.`,
+    `**Total: ${tasks.length} tasks.** Canonical lifecycle state is \`docs/tasks/tasks.json\` (project \`visual-universe\`); this file is generated from it.`,
     '',
     `Status counts: ${['done', 'skipped', 'in_progress', 'blocked', 'todo'].map((status) => `${status} ${counts.get(status) ?? 0}`).join(' · ')}.`,
     '',
@@ -98,7 +98,7 @@ export function renderVisualUniverseBoard(tasks) {
       lines.push('');
     }
   }
-  return `${lines.join('\\n').trimEnd()}\\n`;
+  return `${lines.join('\n').trimEnd()}\n`;
 }
 
 export function renderVisualUniverseTaskCard(task) {
@@ -172,5 +172,5 @@ export function renderVisualUniverseTaskCard(task) {
     );
   }
   lines.push('', '## Notes', '', notes, '');
-  return lines.join('\\n');
+  return lines.join('\n');
 }
