@@ -25,6 +25,30 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   // Source inventory: 239 roadmap + 14 audit + 112 WhatsApp + 7 legacy MW
   // + 14 promotion lifecycle + 128 desktop + 4 evolution + 109 Visual Universe records.
   assert.equal(result.tasks.length, 627, `Expected 627 source-backed tasks, got ${result.tasks.length}`);
+  const statusCounts = Object.fromEntries(
+    ['done', 'doing', 'todo', 'blocked'].map((status) => [
+      status,
+      result.tasks.filter((task) => task.status === status).length,
+    ])
+  );
+  assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 89, blocked: 21 });
+
+  const sourceCounts = Object.fromEntries(
+    [...new Set(result.tasks.map((task) => task.sourceRef.file))]
+      .sort()
+      .map((source) => [source, result.tasks.filter((task) => task.sourceRef.file === source).length])
+  );
+  assert.deepEqual(sourceCounts, {
+    'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json': 109,
+    'docs/archive/todos/todo.md': 7,
+    'docs/roadmap/tasks.json': 239,
+    'evolution/backlog.json': 4,
+    'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md': 14,
+    'scripts/tasks/sources/audit-tasks.mjs': 14,
+    'todo-desktop.md': 128,
+    'todo-wa.md': 112,
+  });
+
 
   // Check specific task codes
   const taskByCode = new Map(result.tasks.map((t) => [t.code, t]));

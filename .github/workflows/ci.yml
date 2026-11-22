@@ -121,6 +121,43 @@ jobs:
         run: |
           pnpm build
           pnpm test:unit:built
+      - name: Build and validate the one-time TaskOS recovery candidate
+        id: taskos-recovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm tasks:sweep
+          pnpm tasks:sweep --write
+          pnpm tasks:validate
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFile } from 'node:fs/promises';
+
+          const registry = JSON.parse(await readFile('docs/tasks/tasks.json', 'utf8'));
+          assert.equal(registry.tasks.length, 627);
+          const statusCounts = Object.fromEntries(
+            ['done', 'doing', 'todo', 'blocked'].map((status) => [
+              status,
+              registry.tasks.filter((task) => task.status === status).length,
+            ])
+          );
+          assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 89, blocked: 21 });
+          console.log('Validated 627 TaskOS records with the reviewed lifecycle distribution.');
+          NODE
+          pnpm tasks:sweep --check
+          echo "candidate_generated=true" >> "$GITHUB_OUTPUT"
+          echo "TASKOS_CANDIDATE_BEGIN"
+          base64 -w0 docs/tasks/tasks.json
+          echo
+          echo "TASKOS_CANDIDATE_END"
+      - name: Upload the source-validated TaskOS recovery candidate
+        if: always() && steps.taskos-recovery.outputs.candidate_generated == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: taskos-candidate-${{ github.sha }}
+          path: docs/tasks/tasks.json
+          if-no-files-found: error
+          retention-days: 7
 
   knowledge-gate:
     runs-on: ubuntu-24.04
