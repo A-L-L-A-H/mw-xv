@@ -1,43 +1,68 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Button } from './button.js';
 import { StatusBar } from './status-bar.js';
+import { SpritePlayer, type SpriteClipMetadata } from './sprite-player.js';
 
 export type CharacterPreviewProps = {
   /** Canonical manifest asset path for the clip JSON. */
   clipId: string;
   /** Canonical manifest asset path for the reduced-motion still fallback. */
   fallbackAsset: string;
+  /** Canonical manifest frame paths for the selected clip. */
+  frames?: readonly string[];
+  durationMs?: number;
 };
 
-export function CharacterPreview({ clipId, fallbackAsset }: CharacterPreviewProps) {
+export function CharacterPreview({ clipId, fallbackAsset, frames = [fallbackAsset], durationMs = 1200 }: CharacterPreviewProps) {
   const [playing, setPlaying] = useState(false);
-  const [frameIndex, setFrameIndex] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+  const clip = useMemo<SpriteClipMetadata>(() => ({
+    id: clipId,
+    frames,
+    durationMs,
+    loop: true,
+    pingPong: true,
+    fallbackAsset,
+    width: 1024,
+    height: 1024,
+  }), [clipId, frames, durationMs, fallbackAsset]);
 
   const reset = useCallback(() => {
-    setFrameIndex(0);
     setPlaying(false);
   }, []);
+
+  const togglePlayback = useCallback(() => {
+    if (!playing || reducedMotion) {
+      setReducedMotion(false);
+      setPlaying(true);
+      return;
+    }
+    setPlaying(false);
+  }, [playing, reducedMotion]);
 
   return (
     <div className="character-preview">
       <StatusBar steps={[{ id: 'playback', label: 'playback', state: playing ? 'active' : 'disabled' }]} />
       <div className="character-preview-surface">
-        <img
-          className="character-preview-frame"
-          src={fallbackAsset}
-          alt="crew-01 character preview (reduced-motion still)"
-          loading="lazy"
-          decoding="async"
-          width="1024"
-          height="1024"
+        <SpritePlayer
+          clip={clip}
+          playing={playing}
+          reducedMotion={reducedMotion}
+          label={`${clipId} character animation preview`}
+          scale={0.65}
         />
       </div>
       <div className="character-preview-controls">
-        <Button variant="magenta" onClick={() => setPlaying(!playing)}>
-          {playing ? 'Pause' : 'Play'}
+        <Button variant="magenta" onClick={togglePlayback}>
+          {playing && !reducedMotion ? 'Pause' : 'Play'}
         </Button>
         <Button variant="default" onClick={reset}>
           Reset
+        </Button>
+        <Button variant="default" onClick={() => setReducedMotion((value) => !value)} aria-pressed={reducedMotion}>
+          {reducedMotion ? 'Reduced motion on' : 'Reduced motion off'}
         </Button>
       </div>
     </div>

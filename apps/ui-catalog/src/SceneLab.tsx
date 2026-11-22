@@ -114,10 +114,14 @@ export function SceneLab() {
   };
 
   const viewportWidth = composition === 'mobile' ? 390 : 1280;
+  const displayedLayers = activeLayers;
 
   return (
     <div className="scene-lab" data-testid="scene-lab">
       <div className="scene-lab-toolbar">
+        <Button variant="default" onClick={() => { setLayers([...INITIAL_LAYERS]); setHiddenIds({}); setComposition('desktop'); setStaticMode(Boolean(harness.reducedMotion)); }}>
+          Reset inspector
+        </Button>
         <Button
           variant={composition === 'desktop' ? 'magenta' : 'default'}
           onClick={() => setComposition('desktop')}
@@ -150,9 +154,21 @@ export function SceneLab() {
         <Button variant="default" onClick={() => timelineRef.current?.complete()}>
           Complete timeline
         </Button>
+        <label className="scene-lab-scrubber">
+          Timeline position {timelineTimeMs} ms
+          <input
+            type="range"
+            min={0}
+            max={1800}
+            step={100}
+            value={timelineTimeMs}
+            onChange={(event) => timelineRef.current?.seek(Number(event.currentTarget.value))}
+            aria-label="Timeline position"
+          />
+        </label>
       </div>
       <p className="scene-lab-status" data-testid="scene-timeline-status">
-        Composition: {composition} ({viewportWidth}px) · Timeline: {timelineStatus} ({timelineTimeMs}ms) · Active planes: {activeLayers.length}/{layers.length}
+        Environment: Moon City · Composition: {composition} ({viewportWidth}px) · Timeline: {timelineStatus} ({timelineTimeMs}ms) · Active planes: {displayedLayers.length}
       </p>
       <div
         className={`scene-lab-stage ${composition === 'mobile' ? 'scene-lab-stage-mobile' : ''}`}
@@ -161,7 +177,7 @@ export function SceneLab() {
         <LayeredScene
           sceneId="moon-city-hero"
           label="Moon City layered environment preview"
-          layers={activeLayers}
+          layers={displayedLayers}
           breakpoints={SCENE_BREAKPOINTS}
           viewportWidth={viewportWidth}
           staticFallback={composition === 'mobile' ? fallbackHeroMobile : fallbackHeroDesktop}

@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-11-22T11:47:18.232Z",
+  "assetQa": {
+    "status": "passed",
+    "totalManifestAssets": 231,
+    "errorCount": 0,
+    "warningCount": 0,
+    "errors": [],
+    "warnings": []
+  },
+  "sceneValidation": {
+    "status": "passed",
+    "validSceneCount": 1,
+    "errorCount": 0,
+    "errors": []
+  }
+}

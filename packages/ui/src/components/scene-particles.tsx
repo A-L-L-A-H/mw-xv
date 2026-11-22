@@ -42,6 +42,13 @@ function mulberry32(seed: number) {
   };
 }
 
+function particleShape(preset: SceneParticlePreset) {
+  if (preset === 'rain') return { borderRadius: '1px', heightScale: 10, widthScale: 0.55 };
+  if (preset === 'sparks') return { borderRadius: '1px', heightScale: 1.8, widthScale: 0.55 };
+  if (preset === 'stars') return { borderRadius: '1px', heightScale: 1, widthScale: 1 };
+  return { borderRadius: '999px', heightScale: 1, widthScale: 1 };
+}
+
 export function generateSceneParticles(
   preset: SceneParticlePreset,
   options: { count?: number; intensity?: SceneParticleIntensity; seed?: number } = {}
@@ -92,6 +99,7 @@ export function SceneParticles({
     [preset, count, intensity, seed]
   );
   const staticMode = reducedMotion || paused;
+  const shape = particleShape(preset);
 
   return (
     <div
@@ -123,9 +131,9 @@ export function SceneParticles({
             position: 'absolute',
             left: `${particle.xPct}%`,
             top: `${particle.yPct}%`,
-            width: `${particle.sizePx}px`,
-            height: preset === 'rain' ? `${Math.round(particle.sizePx * 10)}px` : `${particle.sizePx}px`,
-            borderRadius: preset === 'rain' ? '1px' : '999px',
+            width: `${particle.sizePx * shape.widthScale}px`,
+            height: `${particle.sizePx * shape.heightScale}px`,
+            borderRadius: shape.borderRadius,
             opacity: particle.opacity,
             background:
               preset === 'sparks'

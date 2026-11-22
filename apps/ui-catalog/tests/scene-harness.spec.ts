@@ -43,6 +43,8 @@ test('scene runtime supports static fallback, timeline controls, keyboard camera
   // Timeline controls step & complete without trapping navigation
   await lab.getByRole('button', { name: 'Complete timeline' }).click();
   await expect(lab.getByTestId('scene-timeline-status')).toContainText('completed');
+  await lab.getByRole('slider', { name: 'Timeline position' }).fill('1200');
+  await expect(lab.getByTestId('scene-timeline-status')).toContainText('1200ms');
 
   // Keyboard camera navigation does not hijack page scroll
   const scene = lab.locator('[data-scene-id="moon-city-hero"]');
@@ -54,4 +56,28 @@ test('scene runtime supports static fallback, timeline controls, keyboard camera
   await lab.getByRole('button', { name: 'Static fallback' }).click();
   await expect(scene).toHaveAttribute('data-scene-state', 'static');
   await expect(sprite).toHaveAttribute('data-sprite-state', 'static');
+});
+
+test('environment inspector resets layer visibility, z-order and composition to the canonical baseline (W7-004)', async ({ page }) => {
+  await page.goto('./#scene-environment-inspector');
+  const lab = page.getByTestId('scene-lab');
+  await lab.locator('li[data-plane-id="prop-wires"] input[type="checkbox"]').uncheck();
+  await lab.getByRole('button', { name: 'Mobile 9:16' }).click();
+  await lab.getByRole('button', { name: 'Reset inspector' }).click();
+  await expect(lab.locator('[data-layer-id]')).toHaveCount(9);
+  await expect(lab.locator('[data-layer-id="sky"]')).toBeVisible();
+  await expect(lab.locator('.scene-lab-stage')).toHaveAttribute('data-composition', 'desktop');
+});
+
+test('asset diagnostics loads and exports the build-time validator report (W7-007)', async ({ page }) => {
+  await page.goto('./#asset-diagnostics');
+  const panel = page.getByTestId('asset-diagnostics');
+  await expect(panel.getByRole('button', { name: 'Export report' })).toBeDisabled();
+  await panel.getByRole('button', { name: 'Load build diagnostics' }).click();
+  await expect(panel.getByText('Build diagnostics: passed; scene validation: passed.')).toBeVisible();
+  await expect(panel.getByText('231')).toBeVisible();
+  const downloadPromise = page.waitForEvent('download');
+  await panel.getByRole('button', { name: 'Export report' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('moonwitness-asset-diagnostics.json');
 });

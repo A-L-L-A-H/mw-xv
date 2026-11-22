@@ -19,6 +19,18 @@ export function FXLab() {
   const [userActivated, setUserActivated] = useState(false);
   const [activePreset, setActivePreset] = useState<SceneParticlePreset>('stars');
   const [transitionState, setTransitionState] = useState<'idle' | 'entering' | 'entered' | 'cancelled'>('entered');
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = () => setPrefersReducedMotion(preference.matches);
+    preference.addEventListener('change', updatePreference);
+    return () => preference.removeEventListener('change', updatePreference);
+  }, []);
+  const reducedMotion = Boolean(harness.reducedMotion) ||
+    prefersReducedMotion ||
+    (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const soundscapeRef = useMemo(
     () => createSceneSoundscapeController({ maxVolume: 0.18 }),
     []
@@ -88,13 +100,13 @@ export function FXLab() {
               <SceneParticlesSuspense
                 preset={activePreset}
                 intensity={intensity}
-                reducedMotion={Boolean(harness.reducedMotion)}
+                reducedMotion={reducedMotion}
                 style={{ width: '100%', height: 240 }}
               />
             </Suspense>
           </div>
           <p className="fx-lab-caption">
-            Bounded to {36} max particles; offscreen paused; reduced-motion ⇒ static.
+            Intended for restrained atmospheric depth. Avoid fast flashes or masking text and controls. Bounded to 36 particles; offscreen paused; reduced-motion uses static particles.
           </p>
         </div>
 
@@ -105,7 +117,7 @@ export function FXLab() {
               variant={transition}
               active={transitionState === 'entering'}
               durationMs={300}
-              reducedMotion={Boolean(harness.reducedMotion)}
+              reducedMotion={reducedMotion}
               onComplete={handleTransitionComplete}
               style={{ width: '100%', height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
@@ -114,19 +126,20 @@ export function FXLab() {
           </div>
           <div className="fx-lab-toolbar">
             {transitionOptions.map((v) => (
-              <Button
-                key={v}
-                size="sm"
-                variant={transition === v ? 'magenta' : 'default'}
-                onClick={() => { setTransition(v); setTransitionState('entering'); }}
-              >
-                {v}
-              </Button>
+            <Button
+              key={v}
+              size="sm"
+              variant={transition === v ? 'magenta' : 'default'}
+              onClick={() => { setTransition(v); setTransitionState(reducedMotion ? 'entered' : 'entering'); }}
+            >
+              {v}
+            </Button>
             ))}
             <Button size="sm" variant="default" onClick={triggerTransition}>
               Retrigger
             </Button>
           </div>
+          <p className="fx-lab-caption">Use for short scene changes. Avoid stacking transitions or delaying navigation.</p>
         </div>
 
         <div className="fx-lab-audio" data-testid="fx-audio">
@@ -134,6 +147,7 @@ export function FXLab() {
           <div className="fx-lab-audio-status">
             Muted: {muted ? 'yes' : 'no'} · Active: {ambience ?? 'none'} · User gesture: {userActivated ? 'ok' : 'pending'}
           </div>
+          <p className="fx-lab-caption">Ambient sound is optional and consent-gated. Avoid autoplay, overlapping loops, or relying on audio to convey state.</p>
           <div className="fx-lab-toolbar">
             {ambienceOptions.map((v) => (
               <Button
