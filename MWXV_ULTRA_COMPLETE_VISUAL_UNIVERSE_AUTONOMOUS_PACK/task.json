@@ -467,7 +467,7 @@
       "id": "W1-001",
       "phase": "W1",
       "title": "Approve canonical MoonWitness art direction",
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -494,15 +494,21 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "Awaiting human approval of canonical art direction. Decision-ready proposal is documented at evidence/art-direction-proposal.md; the proposal is not locked as the production visual bible.",
-      "evidence": [],
-      "commit": null
+      "notes": "Approved by user in chat on 2026-11-22 (Asia/Jakarta). Accepted the art-direction proposal at evidence/art-direction-proposal.md as canonical, retaining the existing MoonWitness token identity and its stated safeguards.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/art-direction-proposal.md",
+          "command": "user approval in chat; checked existing UI token palette and WCAG AA tests"
+        }
+      ],
+      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
     },
     {
       "id": "W1-002",
       "phase": "W1",
       "title": "Define visual grammar by experience tier",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -527,15 +533,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Design contract completed from the approved art direction; no new visual asset is claimed.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "approved-direction design specification against current UI tokens, fonts, assets and source",
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/experience-tier-grammar.md"
+        }
+      ],
+      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
     },
     {
       "id": "W1-003",
       "phase": "W1",
       "title": "Define character identity rules",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -561,15 +573,21 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Character Bible template and continuity rules are ready at evidence/character-bible-template.md. Pilot identity selection/sheet remains subject to explicit human approval.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "character policy/template review",
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/character-bible-template.md"
+        }
+      ],
+      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
     },
     {
       "id": "W1-004",
       "phase": "W1",
       "title": "Define anime rendering and color pipeline",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -594,15 +612,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Design contract completed from the approved art direction; no new visual asset is claimed.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "approved-direction design specification against current UI tokens, fonts, assets and source",
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/rendering-color-profile.md"
+        }
+      ],
+      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
     },
     {
       "id": "W1-005",
       "phase": "W1",
       "title": "Define typography and lettering layers",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "designer",
       "parallel_group": "serial",
@@ -627,15 +651,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Design contract completed from the approved art direction; no new visual asset is claimed.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "approved-direction design specification against current UI tokens, fonts, assets and source",
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/typography-lettering-policy.md"
+        }
+      ],
+      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
     },
     {
       "id": "W1-006",
       "phase": "W1",
       "title": "Define art composition and responsive rules",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "designer",
       "parallel_group": "serial",
@@ -661,9 +691,15 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Design contract completed from the approved art direction; no new visual asset is claimed.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "approved-direction design specification against current UI tokens, fonts, assets and source",
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/responsive-composition-rules.md"
+        }
+      ],
+      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
     },
     {
       "id": "W1-007",
@@ -723,7 +759,7 @@
       "id": "W1-008",
       "phase": "W1",
       "title": "Publish Visual Universe Bible",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "technical-writer",
       "parallel_group": "serial",
@@ -755,9 +791,20 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Canonical visual guide recorded at evidence/visual-universe-bible-approved.md and linked from docs/design/visual-direction.md; built documentation and link checks passed.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "pnpm docs:check:built",
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/approval-followup-checks.md"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm docs:links",
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/approval-followup-checks.md"
+        }
+      ],
+      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
     },
     {
       "id": "W2-001",
@@ -1743,7 +1790,7 @@
       "id": "W5-001",
       "phase": "W5",
       "title": "Choose animation engine boundary",
-      "status": "in_progress",
+      "status": "done",
       "priority": "P1",
       "role": "architect",
       "parallel_group": "serial",
@@ -1771,20 +1818,20 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "Awaiting human approval of the engine boundary. CSS/SVG-first recommendation and dependency/bundle evidence: evidence/motion-boundary-proposal.md. No dependency changed.",
+      "notes": "Approved by user in chat on 2026-11-22 (Asia/Jakarta): use CSS/SVG-first scene implementation, retain the existing Motion dependency without using it absent measured need; do not add another runtime dependency.",
       "evidence": [
         {
-          "command": "pnpm --filter @moonwitness/board list motion --depth 0; source search for Motion runtime imports",
           "exit_code": 0,
-          "artifact": "evidence/motion-boundary-proposal.md"
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/motion-boundary-proposal.md",
+          "command": "user approval in chat; dependency source search"
         },
         {
-          "command": "pnpm ui:budget",
           "exit_code": 0,
-          "artifact": "JavaScript 499004 B raw/145835 B gzip and stylesheet 128222 B raw/23100 B gzip; both within budgets"
+          "artifact": "catalog JavaScript and stylesheet remain within declared raw/gzip budgets",
+          "command": "pnpm ui:budget"
         }
       ],
-      "commit": null
+      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
     },
     {
       "id": "W5-002",
@@ -2259,7 +2306,7 @@
           "artifact": "evidence/cinematic-fx-contract.md"
         }
       ],
-      "commit": null
+      "commit": "ed3ea9f95a8670b461ef5cf30ecb8a537caa3ff0"
     },
     {
       "id": "W6-003",
@@ -2480,7 +2527,7 @@
           "artifact": "25 Playwright browser tests passed during W0 baseline; existing harness/source map in evidence/ui-catalog-audit.md"
         }
       ],
-      "commit": null
+      "commit": "fd3fdc904a9645d057b8ca9c9368e5a3c23793ce"
     },
     {
       "id": "W7-002",

@@ -57,3 +57,7 @@ The Playwright audit covers login and protected dashboard, list, form, profile, 
 2. Build reusable components from repeated behavior and visual structure, not from every one-off panel. Keep data fetching, router state, permissions, and `base.*` knowledge in Board/application code.
 3. During M5.14 migration, compare the same seeded screens and viewport/theme matrix. Preserve current behavior and seeded data; fix documented visual/accessibility defects with specific regression assertions.
 4. Treat screenshot differences as review evidence, not as an automatic acceptance test. Visual regression thresholds and intentional baseline changes belong in M5.17.
+
+## Visual Universe approval
+
+The MoonWitness XV Visual Universe direction and experience-tier rules are approved in `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/visual-universe-bible-approved.md`. Production art extends the existing token and font system, keeps interface content live, uses original artwork, and preserves accessible reduced-motion/static states. Pilot character and final hero acceptance remain separate approvals.
