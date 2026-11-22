@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseTasksRegistry, validateTasks } from './validate-tasks.mjs';
+import { parseTasksRegistry, toRoadmapTaskStatus, validateTasks } from './validate-tasks.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -43,7 +43,10 @@ export async function syncRoadmap() {
   for (const rt of roadmapData.tasks) {
     const ct = canonicalMap.get(rt.id);
     if (!ct) continue;
-    const ctStatus = ct.status === 'done' ? 'complete' : ct.status === 'doing' ? 'in_progress' : ct.status === 'blocked' ? 'blocked' : 'todo';
+    const ctStatus = toRoadmapTaskStatus(ct.status);
+    if (ctStatus === null) {
+      throw new Error(`Task "${ct.code}" has unsupported TaskOS status "${ct.status}" for roadmap projection.`);
+    }
     if (rt.status !== ctStatus) {
       rt.status = ctStatus;
       updatedRoadmapTasks += 1;
