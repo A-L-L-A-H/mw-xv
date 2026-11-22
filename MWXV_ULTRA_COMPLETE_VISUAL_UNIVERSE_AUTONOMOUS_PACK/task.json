@@ -1192,7 +1192,7 @@
       "id": "W2-010",
       "phase": "W2",
       "title": "Update package exports, pack list and docs sync",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -1223,9 +1223,20 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Excluded brand/source/** and source/** from @moonwitness/assets files allowlist, expanded copy-board-public-assets.mjs for animation/environments/scenes while excluding source/, and enforced tarball non-source + export verification tests.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/assets pack --dry-run --json",
+          "exit_code": 0,
+          "artifact": "packages/assets/package.json"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "packages/assets/tests/brand-assets.test.mjs"
+        }
+      ],
+      "commit": "e325986"
     },
     {
       "id": "W2-011",

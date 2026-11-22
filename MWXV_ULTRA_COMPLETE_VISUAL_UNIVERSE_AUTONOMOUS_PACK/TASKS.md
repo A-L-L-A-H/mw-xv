@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 59 · skipped 3 · in_progress 0 · blocked 7 · todo 40.
+Status counts: done 60 · skipped 3 · in_progress 0 · blocked 7 · todo 39.
 
 ## W0
 
@@ -194,12 +194,13 @@ Status counts: done 59 · skipped 3 · in_progress 0 · blocked 7 · todo 40.
   - Verify: schema fixture tests
   - Evidence: `pnpm test:assets` (0) → `evidence/W2-009-scene-contracts.md`
 
-- [ ] **W2-010 — Update package exports, pack list and docs sync**
+- [x] **W2-010 — Update package exports, pack list and docs sync**
   - Goal: Ensure every public asset category is included in build/package and docs asset sync.
   - Depends on: W2-005, W2-006, W2-007, W2-008, W2-009
   - Deliverables: Explicit package exports and pack verification tests.
   - Acceptance: Only intended runtime outputs are shipped.; High-resolution source/master assets are not copied into consumer bundles by default.; Asset package remains framework-independent and zero-runtime-dependency.
   - Verify: pnpm --filter @moonwitness/assets pack --dry-run; pnpm test:assets
+  - Evidence: `pnpm --filter @moonwitness/assets pack --dry-run --json` (0) → `packages/assets/package.json`; `pnpm test:assets` (0) → `packages/assets/tests/brand-assets.test.mjs`
 
 - [ ] **W2-011 — Build contact-sheet generator for all packs**
   - Goal: Generate deterministic contact sheets grouped by pack/category/character/scene.
