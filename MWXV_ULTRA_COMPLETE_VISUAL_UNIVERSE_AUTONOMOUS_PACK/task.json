@@ -502,7 +502,7 @@
           "command": "user approval in chat; checked existing UI token palette and WCAG AA tests"
         }
       ],
-      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W1-002",
@@ -541,7 +541,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/experience-tier-grammar.md"
         }
       ],
-      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W1-003",
@@ -581,7 +581,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/character-bible-template.md"
         }
       ],
-      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W1-004",
@@ -620,7 +620,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/rendering-color-profile.md"
         }
       ],
-      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W1-005",
@@ -659,7 +659,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/typography-lettering-policy.md"
         }
       ],
-      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W1-006",
@@ -699,7 +699,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/responsive-composition-rules.md"
         }
       ],
-      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W1-007",
@@ -804,7 +804,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/approval-followup-checks.md"
         }
       ],
-      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W2-001",
@@ -1831,7 +1831,7 @@
           "command": "pnpm ui:budget"
         }
       ],
-      "commit": "104304fc31a6501d189ce81c510afc42b2c53a56"
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W5-002",
