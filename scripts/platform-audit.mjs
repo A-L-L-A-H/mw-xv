@@ -357,7 +357,7 @@ export function buildPlatformAudit(input) {
     (item) => item?.id === 'node'
   )?.configured;
   const configuredNodeMajor =
-    typeof configuredNodeVersion === 'string' && /^\\d+$/u.test(configuredNodeVersion)
+    typeof configuredNodeVersion === 'string' && /^\d+$/u.test(configuredNodeVersion)
       ? Number(configuredNodeVersion)
       : null;
   const nodeScheduleKey =
@@ -561,6 +561,15 @@ export function buildPlatformAudit(input) {
         : retentionPolicy.status === 'unknown'
           ? [
               'Workflow artifact retention policy is unknown because workflow source was unavailable.',
+            ]
+          : []),
+      ...(configuredNodeMajor === null
+        ? [
+            'Configured Node.js major is unknown because the runtime support ledger has no valid node entry.',
+          ]
+        : !nodeSupport?.end
+          ? [
+              `Official Node.js schedule has no end-of-life date for configured v${configuredNodeMajor}.`,
             ]
           : []),
       ...(configuredNodeMajor === null
