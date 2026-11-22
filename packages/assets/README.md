@@ -19,6 +19,10 @@ Consumers can import a static asset through a package export, for example:
 @moonwitness/assets/fonts.css
 ```
 
+## Optional scene ambience
+
+`pnpm --filter @moonwitness/assets sounds:ambience` regenerates the four original, three-second Moon City ambience loops from `scripts/generate-scene-ambience.mjs`. They are seeded, loop-continuous 8 kHz mono PCM textures, each below the 25 KiB runtime sound budget. `licenses.json` records MoonWitness authorship and ISC provenance; no recordings, licensed music, or external audio are included. UI SFX and optional scene ambience remain separate assets and consumers must keep ambience muted until explicit user consent.
+
 ## Source inventory and scene contracts
 
 Use `pnpm --filter @moonwitness/assets inventory --pack=moon-city` to query the canonical manifest by `pack`, `category`, `subject`, `domain`, `format`, or `status`. The report marks source-only and rights-blocked entries and audits missing files, unlisted files, and unresolved source/variant references. High-resolution `source/` material remains outside the published package file list.

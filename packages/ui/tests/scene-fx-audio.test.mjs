@@ -41,6 +41,12 @@ test('ComicSceneTransition never hides content on reduced-motion or initial rend
 test('createSceneSoundscapeController stays muted by default, enforces single source, and swallows errors', () => {
   const created = [];
   const ctrl = createSceneSoundscapeController({
+    sources: {
+      'moon-city-night': '/ambience/moon-city-night.wav',
+      'underground-hum': '/ambience/underground-hum.wav',
+      'archive-quiet': '/ambience/archive-quiet.wav',
+      'street-rain': '/ambience/street-rain.wav',
+    },
     createAudio(src) {
       const inst = {
         src,
@@ -71,6 +77,8 @@ test('createSceneSoundscapeController stays muted by default, enforces single so
   ctrl.enterScene('archive-quiet');
   assert.equal(created[0].paused, true);
   assert.equal(created.length, 2);
+  assert.equal(created[0].src, '/ambience/moon-city-night.wav');
+  assert.equal(created[1].src, '/ambience/archive-quiet.wav');
   assert.equal(ctrl.getSnapshot().activeSceneId, 'archive-quiet');
 
   ctrl.dispose();
@@ -88,4 +96,21 @@ test('createSceneSoundscapeController stays muted by default, enforces single so
     broken.enterScene('street-rain');
   });
   assert.equal(broken.getSnapshot().playing, false);
+});
+
+test('scene soundscape does not substitute UI cues when ambience sources are absent', () => {
+  const created = [];
+  const ctrl = createSceneSoundscapeController({
+    createAudio(src) {
+      created.push(src);
+      return { loop: false, volume: 0, play: async () => {}, pause() {} };
+    },
+  });
+  ctrl.activateUserGesture();
+  ctrl.setMuted(false);
+  ctrl.enterScene('moon-city-night');
+  assert.deepEqual(created, []);
+  assert.equal(ctrl.getSnapshot().activeSceneId, 'moon-city-night');
+  assert.equal(ctrl.getSnapshot().playing, false);
+  ctrl.dispose();
 });

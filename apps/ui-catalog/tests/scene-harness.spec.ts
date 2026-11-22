@@ -99,7 +99,8 @@ test('asset diagnostics loads and exports the build-time validator report (W7-00
   await expect(panel.getByRole('button', { name: 'Export report' })).toBeDisabled();
   await panel.getByRole('button', { name: 'Load build diagnostics' }).click();
   await expect(panel.getByText('Build diagnostics: passed; scene validation: passed.')).toBeVisible();
-  await expect(panel.getByText('231')).toBeVisible();
+  await expect(panel.locator('.auth-coverage-facts')).toContainText('Asset QA errors0');
+  await expect(panel.locator('.auth-coverage-facts')).toContainText('Scene validation errors0');
   const downloadPromise = page.waitForEvent('download');
   await panel.getByRole('button', { name: 'Export report' }).click();
   const download = await downloadPromise;

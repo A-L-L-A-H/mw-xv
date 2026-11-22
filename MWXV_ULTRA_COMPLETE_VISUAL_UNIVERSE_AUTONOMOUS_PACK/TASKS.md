@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 87 · skipped 4 · in_progress 0 · blocked 1 · todo 17.
+Status counts: done 89 · skipped 3 · in_progress 0 · blocked 0 · todo 17.
 
 ## W0
 
@@ -490,21 +490,21 @@ Status counts: done 87 · skipped 4 · in_progress 0 · blocked 1 · todo 17.
   - Verify: pnpm test:ui-catalog
   - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1` (0) → `evidence/W6-W7-execution.md; reduced-motion transition content test passed`; `node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs` (0) → `evidence/W6-W7-execution.md; 6/6 passed`
 
-- [x] **W6-005 — Create environment ambience pack** — **SKIPPED:** Existing localized UI sound consent and provenance are verified in evidence/audio-consent-audit.md. The distinct scene ambience deliverable is not authorized/generated: W1-001 canonical art direction and W2-003 soundscape provenance contract are still gated/uncompleted, and no additional ambience asset is claimed. Reopen when the dependent scene audio contract is approved.
+- [x] **W6-005 — Create environment ambience pack**
   - Goal: Create/procure approved short ambient loops and document provenance.
   - Depends on: W1-007, W2-003
   - Deliverables: Optional ambience masters and optimized variants.
   - Acceptance: No copyrighted music or unlicensed sound effects.; User must explicitly enable ambience.; Audio is lazy-loaded and has mute/stop lifecycle.
   - Verify: audio tests; provenance validation
-  - Evidence: `pnpm test:assets` (0) → `27 asset tests, canonical audio provenance and short PCM budget passed`; `pnpm test:ui` (0) → `audio interaction-consent tests passed within 59 UI tests`
+  - Evidence: `pnpm test:assets` (0) → `27 asset tests, canonical audio provenance and short PCM budget passed`; `pnpm test:ui` (0) → `audio interaction-consent tests passed within 59 UI tests`; `pnpm test:assets` (0) → `evidence/W6-ambience-pack.md; 56 asset tests and static docs export verification passed`; `pnpm test:ui` (0) → `evidence/W6-ambience-pack.md; 71 UI tests passed`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1` (0) → `evidence/W6-ambience-pack.md; 12 browser tests passed, including consent, source switching, mute, responsive scene diagnostics`
 
-- [ ] **W6-006 — Implement scene soundscape controller** — **BLOCKED:** Blocked by prerequisite W6-005, which is skipped because no provenance-complete, authorized scene ambience assets exist. Existing localized UI sound consent does not fulfill the distinct ambience pack. Reopen after the scene audio provenance contract and source/license are approved.
+- [x] **W6-006 — Implement scene soundscape controller**
   - Goal: Integrate optional scene ambience without coupling playback to hover/scroll.
   - Depends on: W6-005, W5-004
   - Deliverables: Soundscape controller and settings integration.
   - Acceptance: Default is muted.; One or policy-limited set of sources only; avoid overlapping loops.; Scene changes stop/fade old ambience.; Audio failure cannot break UX.
   - Verify: pnpm test:ui; browser audio tests
-  - Evidence: `dependency audit: W6-005 status and notes` (0) → `evidence/W6-W7-execution.md`; `node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs` (0) → `evidence/W6-W7-execution.md; existing controller contract 6/6 passed but is not scene ambience integration`
+  - Evidence: `dependency audit: W6-005 status and notes` (0) → `evidence/W6-W7-execution.md`; `node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs` (0) → `evidence/W6-W7-execution.md; existing controller contract 6/6 passed but is not scene ambience integration`; `pnpm test:assets` (0) → `evidence/W6-ambience-pack.md; 56 asset tests and static docs export verification passed`; `pnpm test:ui` (0) → `evidence/W6-ambience-pack.md; 71 UI tests passed`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1` (0) → `evidence/W6-ambience-pack.md; 12 browser tests passed, including consent, source switching, mute, responsive scene diagnostics`
 
 - [x] **W6-007 — Create FX contact sheet and preview catalogue**
   - Goal: Expose each effect in UI Catalog with light/dark, reduced-motion and intensity variants.
