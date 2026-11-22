@@ -1576,7 +1576,7 @@
       "format": "svg",
       "width": 2048,
       "height": 512,
-      "sha256": "0d540a3b826fd0a2fa64d859b13711602864bc0818f77daada1c7d766d8f91e6"
+      "sha256": "c58aa398233918cef28dc197f06169dcf2f503259ef45985fb6a6935af47fb4a"
     },
     {
       "source": "packages/assets/environments/moon-city-skyline-far.svg",
@@ -1594,7 +1594,7 @@
       "format": "svg",
       "width": 2048,
       "height": 512,
-      "sha256": "ad93de9d7c10f09ae2496b41e63e34494607147e2cdd147280b1450893d47ba7"
+      "sha256": "10ac4be7adc9ef6fca6c1d24c20531e04d4731ccb4dc4bb554fe20331ff7746a"
     },
     {
       "source": "packages/assets/environments/moon-city-skyline-mid.svg",
@@ -1630,7 +1630,7 @@
       "format": "svg",
       "width": 2048,
       "height": 360,
-      "sha256": "41926599fa99a72798f702279e764350ef8632c818e4a773c7acaa9026bd9f28"
+      "sha256": "f7d5b1501709fe12d05fd9bf992ae5e8f177be76c6dbc1e91f811162e91eedf4"
     }
   ],
   "stylesheets": [

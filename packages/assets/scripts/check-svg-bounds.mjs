@@ -17,7 +17,7 @@ const intentionalBleed = new Map([
   [
     'environments/moon-city-clouds-near.svg',
     {
-      elements: ['mw-moon-city-clouds-loop-a-layer'],
+      elements: ['mw-environments-moon-city-clouds-near-layer'],
       reason:
         'seamless horizontal parallax cloud loop intentionally extends past horizontal viewBox edges',
     },
@@ -25,7 +25,7 @@ const intentionalBleed = new Map([
   [
     'environments/moon-city-clouds-far.svg',
     {
-      elements: ['mw-moon-city-clouds-loop-b-layer'],
+      elements: ['mw-environments-moon-city-clouds-far-layer'],
       reason:
         'secondary seamless parallax cloud loop intentionally extends past horizontal viewBox edges',
     },
@@ -33,7 +33,7 @@ const intentionalBleed = new Map([
   [
     'environments/moon-city-prop-wires.svg',
     {
-      elements: ['mw-moon-city-prop-wires-cables'],
+      elements: ['mw-environments-moon-city-prop-wires-cables'],
       reason:
         'overhead utility cable curves intentionally anchor past the horizontal canvas edges',
     },
@@ -41,7 +41,7 @@ const intentionalBleed = new Map([
   [
     'source/artwork/moon-city-clouds-loop-a.svg',
     {
-      elements: ['mw-moon-city-clouds-loop-a-layer'],
+      elements: ['mw-source-artwork-moon-city-clouds-loop-a-layer'],
       reason:
         'seamless horizontal parallax cloud loop source intentionally extends past horizontal viewBox edges',
     },
@@ -49,7 +49,7 @@ const intentionalBleed = new Map([
   [
     'source/artwork/moon-city-clouds-loop-b.svg',
     {
-      elements: ['mw-moon-city-clouds-loop-b-layer'],
+      elements: ['mw-source-artwork-moon-city-clouds-loop-b-layer'],
       reason:
         'secondary seamless parallax cloud loop source intentionally extends past horizontal viewBox edges',
     },
@@ -57,7 +57,7 @@ const intentionalBleed = new Map([
   [
     'source/world/environments/moon-city-prop-wires.svg',
     {
-      elements: ['mw-moon-city-prop-wires-cables'],
+      elements: ['mw-source-world-environments-moon-city-prop-wires-cables'],
       reason:
         'overhead utility cable curves source intentionally anchor past the horizontal canvas edges',
     },

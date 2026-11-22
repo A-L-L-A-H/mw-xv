@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 360" width="2048" height="360" role="img" aria-label="Foreground overhead Moon City utility cables">
   <title>Moon City overhead wires prop</title>
-  <g id="mw-moon-city-prop-wires-cables" fill="none" stroke="#0d0f17" stroke-linecap="round">
+  <g id="mw-environments-moon-city-prop-wires-cables" fill="none" stroke="#0d0f17" stroke-linecap="round">
     <path d="M-20 44C420 156 1120 176 2068 62" stroke-width="6"/>
     <path d="M-20 92C510 218 1240 228 2068 118" stroke-width="4.5"/>
     <path d="M-20 144C620 264 1390 250 2068 164" stroke-width="3"/>
