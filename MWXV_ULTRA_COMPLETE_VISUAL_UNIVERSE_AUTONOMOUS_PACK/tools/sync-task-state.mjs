@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseTasksRegistry } from '../../scripts/tasks/validate-tasks.mjs';
+import { parseTasksRegistry, validateTaskRegistryData } from '../../scripts/tasks/validate-tasks.mjs';
 import { projectVisualUniverseTask } from '../../scripts/tasks/visual-universe-projection.mjs';
 
 const packRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -14,6 +14,12 @@ const registryPath = path.join(repositoryRoot, 'docs/tasks/tasks.json');
 const packManifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const registry = parseTasksRegistry(await readFile(registryPath, 'utf8'));
 assert.ok(Array.isArray(registry.tasks), 'Canonical TaskOS registry must contain a tasks array.');
+const registryValidation = await validateTaskRegistryData(registry);
+assert.equal(
+  registryValidation.valid,
+  true,
+  `Canonical TaskOS registry failed validation:\\n${registryValidation.errors.join('\\n')}`
+);
 const visualUniverseRecords = registry.tasks.filter((task) => task.project === 'visual-universe');
 assert.ok(
   visualUniverseRecords.length > 0,
