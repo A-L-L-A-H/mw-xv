@@ -36,9 +36,9 @@ test('asset browser filters canonical manifest entries and exposes rights status
   await expect(browser).toBeVisible();
   await expect(browser.getByRole('status')).toContainText(/\d+ of \d+ canonical assets/u);
   await browser.getByLabel('Pack').selectOption('moon-city');
-  await expect(browser.getByRole('status')).toHaveText(/^7 of \d+ canonical assets$/u);
+        await expect(browser.getByRole('status')).toHaveText(/^11 of \d+ canonical assets$/u);
   await browser.getByLabel('Category').selectOption('source');
-  await expect(browser.locator('.asset-browser-card')).toHaveCount(7);
+        await expect(browser.locator('.asset-browser-card')).toHaveCount(11);
   await expect(browser.getByText('Blocked · rights review').first()).toBeVisible();
   await browser.getByRole('searchbox', { name: 'Find an asset' }).fill('moon-layer.png');
   await expect(browser.locator('.asset-browser-card')).toHaveCount(1);

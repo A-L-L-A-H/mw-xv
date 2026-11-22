@@ -4051,7 +4051,7 @@
       "id": "W8-011",
       "phase": "W8",
       "title": "Implement visual coverage for orm-storage addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -4086,15 +4086,36 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Committed: ui-catalog orm-storage + ai contract-only specimens; board:ui:check green, board typecheck green, pnpm test:assets 44/44, pnpm test:ui-catalog 29/29.",
+      "evidence": [
+        {
+          "command": "pnpm board:ui:check",
+          "exit_code": 0,
+          "artifact": "scripts/check-board-shared-ui"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "tsc --noEmit"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "44/44 pass"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "29/29 pass"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-012",
       "phase": "W8",
       "title": "Implement visual coverage for ai addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -4130,8 +4151,29 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Committed: ui-catalog orm-storage + ai contract-only specimens; board:ui:check green, board typecheck green, pnpm test:assets 44/44, pnpm test:ui-catalog 29/29.",
+      "evidence": [
+        {
+          "command": "pnpm board:ui:check",
+          "exit_code": 0,
+          "artifact": "scripts/check-board-shared-ui"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "tsc --noEmit"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "44/44 pass"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "29/29 pass"
+        }
+      ],
       "commit": null
     },
     {
