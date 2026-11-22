@@ -25,7 +25,7 @@ export async function syncRoadmap() {
   const roadmapTasksPath = path.join(rootDir, 'docs/roadmap/tasks.json');
   const roadmapMdPath = path.join(rootDir, 'ROADMAP.md');
 
-  const validation = await validateTasks();
+  const validation = await validateTasks({ checkRoadmapParity: false });
   assertTaskRegistryValid(validation);
 
   const tasksRaw = await fs.readFile(tasksFilePath, 'utf8');
@@ -80,6 +80,9 @@ export async function syncRoadmap() {
     await fs.writeFile(roadmapMdPath, newLines.join('\n'), 'utf8');
     console.log(`Updated ${updatedLines} checkboxes in ${roadmapMdPath}`);
   }
+
+  const postSyncValidation = await validateTasks();
+  assertTaskRegistryValid(postSyncValidation);
 
   return { updatedRoadmapTasks, updatedLines };
 }
