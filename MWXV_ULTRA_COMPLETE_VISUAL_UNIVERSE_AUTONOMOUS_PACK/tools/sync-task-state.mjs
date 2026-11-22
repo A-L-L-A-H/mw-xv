@@ -76,7 +76,7 @@ function renderBoard(tasks) {
   const lines = [
     '# Atomic Task Board',
     '',
-    `**Total: ${tasks.length} tasks.** Canonical state is \`task.json\`; this file is generated from it.`,
+    `**Total: ${tasks.length} tasks.** Canonical lifecycle state is \`docs/tasks/tasks.json\` (project \`visual-universe\`); this file is generated from it.`,
     '',
     `Status counts: ${['done', 'skipped', 'in_progress', 'blocked', 'todo'].map((status) => `${status} ${counts.get(status) ?? 0}`).join(' · ')}.`,
     '',
