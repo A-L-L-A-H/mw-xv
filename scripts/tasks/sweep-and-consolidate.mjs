@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateTaskRegistryData } from './validate-tasks.mjs';
@@ -389,11 +390,76 @@ export async function sweepAndConsolidate({
       'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/notes-addendum.json'
     );
     const visualCardNotes = JSON.parse(await fs.readFile(visualCardNotesPath, 'utf8'));
-    if (visualCardNotes.snapshot !== 'visual-universe-task-card-notes-addendum/2026-11-23'
-      || !Array.isArray(visualCardNotes.entries)) {
+    if (
+      visualCardNotes.snapshot !== 'visual-universe-task-card-notes-addendum/2026-11-23' ||
+      !Array.isArray(visualCardNotes.entries)
+    ) {
       throw new Error('Visual Universe task-card notes addendum has an unsupported format.');
     }
+
     const visualTaskIds = new Set(visualPack.tasks.map((task) => task.id));
+    const visualCardArchiveManifestPath = path.join(
+      rootDir,
+      'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/manifest.json'
+    );
+    const visualCardArchiveManifest = JSON.parse(
+      await fs.readFile(visualCardArchiveManifestPath, 'utf8')
+    );
+    if (
+      visualCardArchiveManifest.snapshot !== 'visual-universe-task-cards/2026-11-23' ||
+      visualCardArchiveManifest.entryCount !== visualPack.tasks.length ||
+      !Array.isArray(visualCardArchiveManifest.chunks)
+    ) {
+      throw new Error('Visual Universe task-card archive manifest is missing, malformed or has the wrong record count.');
+    }
+    if (visualCardNotes.sourceSnapshot !== 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/manifest.json') {
+      throw new Error('Visual Universe task-card notes addendum points to an unexpected archive manifest.');
+    }
+
+    const archivedCardsByPath = new Map();
+    for (const chunk of visualCardArchiveManifest.chunks) {
+      if (
+        typeof chunk.path !== 'string' ||
+        path.isAbsolute(chunk.path) ||
+        chunk.path.split(/[\\/]+/u).includes('..')
+      ) {
+        throw new Error('Visual Universe task-card archive contains an unsafe chunk path.');
+      }
+      const chunkPath = path.join(rootDir, chunk.path);
+      const chunkData = JSON.parse(await fs.readFile(chunkPath, 'utf8'));
+      if (chunkData.snapshot !== visualCardArchiveManifest.snapshot || !Array.isArray(chunkData.entries)) {
+        throw new Error(`Visual Universe task-card archive chunk "${chunk.path}" has an invalid format.`);
+      }
+      for (const card of chunkData.entries) {
+        if (typeof card.path !== 'string' || typeof card.content !== 'string' || typeof card.blobSha !== 'string') {
+          throw new Error(`Visual Universe task-card archive chunk "${chunk.path}" has a malformed entry.`);
+        }
+        const actualBlobSha = createHash('sha1')
+          .update(`blob ${Buffer.byteLength(card.content, 'utf8')}\\0`)
+          .update(card.content, 'utf8')
+          .digest('hex');
+        if (actualBlobSha !== card.blobSha) {
+          throw new Error(`Archived task card "${card.path}" does not match its recorded Git blob SHA.`);
+        }
+        if (archivedCardsByPath.has(card.path)) {
+          throw new Error(`Duplicate archived Visual Universe task-card path "${card.path}".`);
+        }
+        archivedCardsByPath.set(card.path, card);
+      }
+    }
+    if (archivedCardsByPath.size !== visualCardArchiveManifest.entryCount) {
+      throw new Error(
+        `Visual Universe task-card archive expected ${visualCardArchiveManifest.entryCount} cards, found ${archivedCardsByPath.size}.`
+      );
+    }
+
+    for (const sourceTask of visualPack.tasks) {
+      const expectedCardPath = `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/${sourceTask.phase}/${sourceTask.id}.md`;
+      if (!archivedCardsByPath.has(expectedCardPath)) {
+        throw new Error(`Immutable Visual Universe task-card archive is missing "${expectedCardPath}".`);
+      }
+    }
+
     const visualCardNotesByTask = new Map();
     for (const note of visualCardNotes.entries) {
       if (!visualTaskIds.has(note.taskId)) {
@@ -410,6 +476,14 @@ export async function sweepAndConsolidate({
         !/^[a-f0-9]{40}$/u.test(note.sourceBlobSha)
       ) {
         throw new Error(`Task-card notes addendum entry for "${note.taskId}" has invalid provenance or text.`);
+      }
+      const archivedCard = archivedCardsByPath.get(note.sourcePath);
+      if (!archivedCard || archivedCard.blobSha !== note.sourceBlobSha) {
+        throw new Error(`Task-card note provenance for "${note.taskId}" does not match the immutable card archive.`);
+      }
+      const originalNote = (archivedCard.content.match(/^## Notes\\s*\\n([\\s\\S]*)$/m)?.[1] ?? '').trim();
+      if (originalNote !== note.text.trim()) {
+        throw new Error(`Task-card note text for "${note.taskId}" differs from its immutable card archive.`);
       }
       visualCardNotesByTask.set(note.taskId, note);
     }
