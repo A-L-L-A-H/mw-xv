@@ -481,7 +481,7 @@ export async function sweepAndConsolidate({
       if (!archivedCard || archivedCard.blobSha !== note.sourceBlobSha) {
         throw new Error(`Task-card note provenance for "${note.taskId}" does not match the immutable card archive.`);
       }
-      const originalNote = (archivedCard.content.match(/^## Notes\\s*\\n([\\s\\S]*)$/m)?.[1] ?? '').trim();
+      const originalNote = (archivedCard.content.match(/^## Notes\s*\n([\s\S]*)$/m)?.[1] ?? '').trim();
       if (originalNote !== note.text.trim()) {
         throw new Error(`Task-card note text for "${note.taskId}" differs from its immutable card archive.`);
       }
