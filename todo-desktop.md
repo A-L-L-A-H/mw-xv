@@ -1,5 +1,7 @@
 # MoonWitness XV — `apps/desktop` Local-First Agent Harness TODO
 
+> **TaskOS migration freeze:** This completed checklist is retained as source evidence for 128 `DSK-` records. Preserve the original checkbox states for provenance. After TaskOS recovery, the canonical registry owns lifecycle state; do not reopen or edit this historical checklist as a parallel task queue.
+
 > **Document type:** Granular engineering checklist / living work ledger (`DSK-0`–`DSK-10`)  
 > **Scope:** `apps/desktop` (`@moonwitness/desktop`) — MoonWitness Local-First Agent Harness (inspired by Antigravity, Codex Desktop, and DeepSeek dsh-superagent; derived from `apps/board` with **zero overlap**)  
 > **Architecture invariants:**
