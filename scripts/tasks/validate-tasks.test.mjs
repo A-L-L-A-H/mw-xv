@@ -90,7 +90,7 @@ test('TaskOS registry parser fails with recovery guidance on empty input', () =>
 
 test('TaskOS registry parser fails with recovery guidance on whitespace-only input', () => {
   assert.throws(
-    () => parseTasksRegistry('  \\n\\t'),
+    () => parseTasksRegistry('  ' + String.fromCharCode(10, 9)),
     /TaskOS registry.*empty.*Recovery mode is active/i
   );
 });
