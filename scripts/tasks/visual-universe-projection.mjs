@@ -72,7 +72,7 @@ export function projectVisualUniverseTask(task) {
     evidence,
     risk: task.risk ?? null,
     human_approval_required: task.human === true,
-    notes: task.blockedReason ?? '',
+    notes: task.status === 'blocked' ? (task.blockedReason ?? '') : (source.notes ?? ''),
     commit: task.evidence?.commitSha ?? null,
   };
 }
