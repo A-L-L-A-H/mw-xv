@@ -29,6 +29,20 @@ After the initial, reviewed migration, `docs/tasks/tasks.json` is the only canon
 
 **Expected initial TaskOS projection: 627 task records** (239 + 112 + 128 + 7 + 14 + 4 + 14 + 109). This is a source-inventory expectation, not a claim that the registry has been restored or validated. The automated projection test must confirm the exact total and schema before the one-time write is allowed.
 
+### Expected canonical status distribution
+
+The source statuses resolve to this expected TaskOS distribution after import:
+
+| TaskOS status | Records | Derivation |
+| --- | ---: | --- |
+| `done` | 468 | 157 roadmap + 72 WhatsApp + 128 Desktop + 13 PR governance + 2 Evolution + 96 Visual Universe (including 3 explicitly tagged skipped) |
+| `doing` | 49 | 47 roadmap in progress + 2 active Evolution |
+| `todo` | 89 | 35 roadmap + 40 WhatsApp + 14 audit |
+| `blocked` | 21 | 7 archived legacy + 1 PR.14 human approval + 13 Visual Universe |
+| **Total** | **627** | No duplicate IDs across the eight source groups |
+
+The three Visual Universe tasks originally marked `skipped` are represented as TaskOS `done` plus the explicit `status:skipped` tag and preserved original metadata. They remain distinguishable in the generated pack projection. These are calculated migration expectations, not live restored-registry counts.
+
 ## Reviewed but excluded from active import
 
 | Source | Observed state | Reason |
