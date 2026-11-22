@@ -411,24 +411,16 @@ function CatalogContent() {
         </a>
         <aside className="catalog-sidebar" aria-label="Catalog navigation">
           <a className="catalog-brand" href="#top" aria-label="MoonWitness UI catalog home">
-            <img className="catalog-brand-symbol" src={symbolDark} alt="" width={43} height={43} />
+            <img className="catalog-brand-symbol" src={symbolDark} alt="" />
             <span>
               <strong>MOONWITNESS</strong>
               <small>UI CATALOG</small>
             </span>
           </a>
-          <nav
-            className="catalog-nav"
-            aria-label="Component sections"
-            style={{ minHeight: '2.625rem' }}
-          >
+          <nav className="catalog-nav" aria-label="Component sections">
             <span className="catalog-nav-label">LIBRARY</span>
             {sections.map((section) => (
-              <a
-                key={section.id}
-                href={`#${section.id}`}
-                style={{ lineHeight: '1.35rem', minHeight: '2.25rem' }}
-              >
+              <a key={section.id} href={`#${section.id}`}>
                 {section.label}
               </a>
             ))}
@@ -443,119 +435,36 @@ function CatalogContent() {
           <header className="catalog-topbar" id="top">
             <div>
               <span className="catalog-breadcrumb">Design system / UI package</span>
-              <span className="catalog-version" style={{ whiteSpace: 'nowrap' }}>
-                v1.0.0-rc.1
-              </span>
+              <span className="catalog-version">v1.0.0-rc.1</span>
             </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                flexWrap: 'wrap',
-                maxWidth: '100%',
-              }}
-            >
-              <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
-                <SelectTrigger
-                  aria-label="Preview skin"
-                  style={{
-                    minHeight: '2rem',
-                    height: '2rem',
-                    width: '8.5rem',
-                    maxWidth: '100%',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <SelectValue placeholder="Skin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {themeRegistry.list().map((entry) => (
-                    <SelectItem key={entry.id} value={entry.id}>
-                      {entry.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleDensity}
-                aria-pressed={density === 'compact'}
-                style={{ whiteSpace: 'nowrap', height: '2rem' }}
-              >
-                {density === 'compact' ? 'Use comfortable density' : 'Use compact density'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleTheme}
-                aria-pressed={dark}
-                style={{ whiteSpace: 'nowrap', height: '2rem' }}
-              >
-                {dark ? 'Use light theme' : 'Use dark theme'}
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={toggleTheme} aria-pressed={dark}>
+              {dark ? 'Use light theme' : 'Use dark theme'}
+            </Button>
           </header>
 
           <div className="catalog-content">
             <PageHeader
               title={
-                <span
-                  style={{
-                    display: 'block',
-                    height: '6.72rem',
-                    lineHeight: '3.36rem',
-                    overflow: 'hidden',
-                  }}
-                >
+                <>
                   One system. <span className="catalog-highlight">Every screen.</span>
-                </span>
+                </>
               }
-              description={
-                <span
-                  style={{
-                    display: 'block',
-                    height: '7rem',
-                    lineHeight: '1.75rem',
-                    overflow: 'hidden',
-                  }}
-                >
-                  A practical catalog of the shared MoonWitness UI package. Explore real components,
-                  keyboard behavior, themes, and responsive states.
-                </span>
-              }
+              description="A practical catalog of the shared MoonWitness UI package. Explore real components, keyboard behavior, themes, and responsive states."
               actions={<Badge variant="primary">88 typed icons</Badge>}
             />
             <Panel
               className="catalog-intro-panel"
               title="MoonWitness visual system"
-              description={
-                <span
-                  style={{
-                    display: 'block',
-                    height: '4.5rem',
-                    lineHeight: '1.5rem',
-                    overflow: 'hidden',
-                  }}
-                >
-                  Shared assets, readable controls, and expressive editorial details are built from
-                  the public @moonwitness/ui package.
-                </span>
-              }
-              style={{ minHeight: '15.5rem' }}
+              description="Shared assets, readable controls, and expressive editorial details are built from the public @moonwitness/ui package."
             >
-              <div
-                className="catalog-intro-meta"
-                style={{ minHeight: '2rem', alignItems: 'center' }}
-              >
-                <span style={{ whiteSpace: 'nowrap' }}>
+              <div className="catalog-intro-meta">
+                <span>
                   <strong>88</strong> typed icons
                 </span>
-                <span style={{ whiteSpace: 'nowrap' }}>
+                <span>
                   <strong>4</strong> new compositions
                 </span>
-                <span style={{ whiteSpace: 'nowrap' }}>
+                <span>
                   <strong>AA</strong> contrast checked
                 </span>
               </div>
@@ -565,6 +474,41 @@ function CatalogContent() {
               title="Foundations"
               description="Semantic color, type, identity, and surface primitives. Switch themes to inspect both token maps."
             >
+              <Example
+                title="Skin & density switcher"
+                description="Preview built-in MoonWitness skins and comfortable vs compact density across live specimens."
+              >
+                <div className="catalog-inline">
+                  <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
+                    <SelectTrigger
+                      aria-label="Preview skin"
+                      style={{
+                        minHeight: '2rem',
+                        height: '2rem',
+                        width: '13rem',
+                        maxWidth: '100%',
+                      }}
+                    >
+                      <SelectValue placeholder="Skin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {themeRegistry.list().map((entry) => (
+                        <SelectItem key={entry.id} value={entry.id}>
+                          {entry.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleDensity}
+                    aria-pressed={density === 'compact'}
+                  >
+                    {density === 'compact' ? 'Use comfortable density' : 'Use compact density'}
+                  </Button>
+                </div>
+              </Example>
               <Example
                 title="Semantic colors"
                 description="Theme-aware surfaces and status colors keep meaning stable."

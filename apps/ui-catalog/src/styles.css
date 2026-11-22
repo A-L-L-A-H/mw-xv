@@ -168,7 +168,6 @@ a:focus-visible {
   top: 0;
   z-index: 8;
   display: flex;
-  flex-wrap: wrap;
   min-height: 4.25rem;
   align-items: center;
   justify-content: space-between;
