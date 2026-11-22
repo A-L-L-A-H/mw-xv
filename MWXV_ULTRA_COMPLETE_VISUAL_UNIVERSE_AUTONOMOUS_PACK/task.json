@@ -885,7 +885,7 @@
           "artifact": "evidence/W2-002-schema-validation.md"
         }
       ],
-      "commit": null
+      "commit": "e6644108cd62833361fe1ce6980c32676bd4fd69"
     },
     {
       "id": "W2-003",
@@ -924,7 +924,7 @@
           "artifact": "evidence/W2-003-provenance-validation.md"
         }
       ],
-      "commit": null
+      "commit": "e6644108cd62833361fe1ce6980c32676bd4fd69"
     },
     {
       "id": "W2-004",
@@ -963,7 +963,7 @@
           "artifact": "evidence/W2-004-existing-ownership.md"
         }
       ],
-      "commit": null
+      "commit": "e6644108cd62833361fe1ce6980c32676bd4fd69"
     },
     {
       "id": "W2-005",
@@ -1006,7 +1006,7 @@
           "artifact": "evidence/W2-005-asset-inventory.md"
         }
       ],
-      "commit": null
+      "commit": "e6644108cd62833361fe1ce6980c32676bd4fd69"
     },
     {
       "id": "W2-006",
