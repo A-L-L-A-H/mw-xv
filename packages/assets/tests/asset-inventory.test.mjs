@@ -22,6 +22,7 @@ test('tracked asset media exactly matches the canonical manifest inventory', asy
     'materials',
     'sounds',
     'source',
+    'animation',
   ]);
   assert.deepEqual(
     compareAssetInventory(

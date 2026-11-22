@@ -69,24 +69,56 @@ export const whatsappManifest = defineAddon({
        CHECK ("status" IN (${statusValues}))`
     );
   },
-  data: userFacingModels.flatMap((model) => [
-    seed(ModelAccess, `orm-whatsapp.access_user_read_${model.modelName.replaceAll('.', '_')}`, {
-      group: ref('base.group_user'),
-      model_name: model.modelName,
-      read: true,
-      create: false,
-      write: false,
-      unlink: false,
+  data: [
+    seed(WhatsappLabel, 'orm-whatsapp.label_demo_vip', {
+      company: ref('base.company_default'),
+      name: 'Demo VIP Customer',
+      normalized_name: 'demo vip customer',
+      color: '#f59e0b',
     }),
-    seed(ModelAccess, `orm-whatsapp.access_superadmin_${model.modelName.replaceAll('.', '_')}`, {
-      group: ref('base.group_superadmin'),
-      model_name: model.modelName,
-      read: true,
-      create: true,
-      write: true,
-      unlink: true,
+    seed(WhatsappLabel, 'orm-whatsapp.label_demo_sales', {
+      company: ref('base.company_default'),
+      name: 'Demo Sales Pipeline',
+      normalized_name: 'demo sales pipeline',
+      color: '#3b82f6',
     }),
-  ]),
+    seed(WhatsappLabel, 'orm-whatsapp.label_demo_support', {
+      company: ref('base.company_default'),
+      name: 'Demo Support Desk',
+      normalized_name: 'demo support desk',
+      color: '#10b981',
+    }),
+    seed(WhatsappLabel, 'orm-whatsapp.label_demo_billing', {
+      company: ref('base.company_default'),
+      name: 'Demo Billing Inquiry',
+      normalized_name: 'demo billing inquiry',
+      color: '#8b5cf6',
+    }),
+    seed(WhatsappLabel, 'orm-whatsapp.label_demo_onboarding', {
+      company: ref('base.company_default'),
+      name: 'Demo Onboarding',
+      normalized_name: 'demo onboarding',
+      color: '#ec4899',
+    }),
+    ...userFacingModels.flatMap((model) => [
+      seed(ModelAccess, `orm-whatsapp.access_user_read_${model.modelName.replaceAll('.', '_')}`, {
+        group: ref('base.group_user'),
+        model_name: model.modelName,
+        read: true,
+        create: false,
+        write: false,
+        unlink: false,
+      }),
+      seed(ModelAccess, `orm-whatsapp.access_superadmin_${model.modelName.replaceAll('.', '_')}`, {
+        group: ref('base.group_superadmin'),
+        model_name: model.modelName,
+        read: true,
+        create: true,
+        write: true,
+        unlink: true,
+      }),
+    ]),
+  ],
   views: [
     defineView(WhatsappAccount, {
       title: 'WhatsApp Accounts',

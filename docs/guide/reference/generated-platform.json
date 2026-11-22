@@ -39,6 +39,12 @@
       "scripts": ["build", "dev", "lint", "preview", "start", "start:built", "typecheck"]
     },
     {
+      "name": "@moonwitness/control-plane",
+      "version": "0.1.0",
+      "directory": "apps/control-plane",
+      "scripts": ["dev", "docker:build", "fmt"]
+    },
+    {
       "name": "@moonwitness/desktop",
       "version": "1.0.0-rc.1",
       "directory": "apps/desktop",
@@ -49,6 +55,12 @@
       "version": "1.0.0-rc.1",
       "directory": "apps/docs",
       "scripts": ["dev", "portal:build", "portal:build:built", "preview", "test", "typecheck"]
+    },
+    {
+      "name": "@moonwitness/isp",
+      "version": "0.1.0",
+      "directory": "apps/isp",
+      "scripts": ["cargo:build", "clippy", "dev", "fmt", "migrate", "start", "test"]
     },
     {
       "name": "@moonwitness/ui-catalog",
@@ -79,6 +91,8 @@
       "version": "1.0.0-rc.1",
       "directory": "packages/assets",
       "scripts": [
+        "artwork:derivatives",
+        "artwork:layers",
         "artwork:prepare",
         "brand:prepare",
         "font:brand:generate",
@@ -153,6 +167,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-crm",
+      "version": "1.0.0",
+      "directory": "packages/orm-crm",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-integration",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-integration",
@@ -189,9 +209,21 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-sales",
+      "version": "1.0.0",
+      "directory": "packages/orm-sales",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-storage",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-storage",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-subscription",
+      "version": "1.0.0",
+      "directory": "packages/orm-subscription",
       "scripts": ["build", "test"]
     },
     {
@@ -253,6 +285,11 @@
       "start:built": "node ../../scripts/prepare-board-standalone.mjs && node ../../scripts/start-board.mjs",
       "typecheck": "tsc --noEmit"
     },
+    "@moonwitness/control-plane": {
+      "dev": "go run .",
+      "docker:build": "docker build -t mw-xv-control-plane:latest -f Dockerfile .",
+      "fmt": "go fmt ./..."
+    },
     "@moonwitness/desktop": {
       "build": "tsc",
       "test": "vitest run",
@@ -265,6 +302,15 @@
       "preview": "vite preview",
       "test": "playwright test",
       "typecheck": "tsc -p tsconfig.json"
+    },
+    "@moonwitness/isp": {
+      "cargo:build": "cargo build --release",
+      "clippy": "cargo clippy",
+      "dev": "cargo run",
+      "fmt": "cargo fmt",
+      "migrate": "cargo run -- --migrate",
+      "start": "./target/release/moonwitness-isp",
+      "test": "cargo test"
     },
     "@moonwitness/ui-catalog": {
       "build": "pnpm --filter @moonwitness/ui build && tsc -p tsconfig.json && vite build",
@@ -289,6 +335,8 @@
       "typecheck": "tsc --noEmit -p tsconfig.check.json"
     },
     "@moonwitness/assets": {
+      "artwork:derivatives": "node scripts/responsive-derivatives.mjs",
+      "artwork:layers": "node scripts/layered-art-pipeline.mjs",
       "artwork:prepare": "node scripts/prepare-artwork.mjs",
       "brand:prepare": "node scripts/prepare-brand-master.mjs",
       "font:brand:generate": "node scripts/generate-brand-font.mjs",
@@ -338,6 +386,10 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-crm": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
     "@moonwitness/orm-integration": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
@@ -362,9 +414,17 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-sales": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
     "@moonwitness/orm-storage": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
+    },
+    "@moonwitness/orm-subscription": {
+      "build": "tsc",
+      "test": "vitest run"
     },
     "@moonwitness/orm-whatsapp": {
       "build": "tsc",
@@ -415,6 +475,8 @@
       "board:visual:update": "pnpm test:e2e --grep 'responsive screen audit|responsive protected screens' --update-snapshots",
       "build": "node scripts/ci/build-workspace.mjs",
       "ci:affected": "node scripts/select-affected.mjs",
+      "control-plane:build": "pnpm --filter @moonwitness/control-plane docker:build",
+      "control-plane:dev": "pnpm --filter @moonwitness/control-plane dev",
       "db:migrate": "pnpm --filter @moonwitness/api db:migrate",
       "dependency:candidate": "node scripts/dependency-candidate.mjs",
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
@@ -450,12 +512,16 @@
       "local-ai:register-model": "node scripts/local-ai/register-model.mjs",
       "local-ai:tournament": "node scripts/local-ai/tournament.mjs",
       "node:parity": "node scripts/check-node-version.mjs",
+      "orm:check:seeds": "node scripts/check-orm-default-data.mjs",
       "orm:codegen": "node scripts/orm-codegen.mjs",
       "orm:inspect": "node scripts/orm-inspect.mjs",
       "platform:audit": "node scripts/platform-audit.mjs",
       "preflight:fast": "node scripts/preflight-fast.mjs",
       "promotion:approval-check": "node scripts/check-promotion-approval.mjs",
       "promotion:risk": "node scripts/check-promotion-risk.mjs",
+      "radius:build": "pnpm --filter @moonwitness/isp cargo:build",
+      "radius:dev": "pnpm --filter @moonwitness/isp dev",
+      "radius:migrate": "pnpm --filter @moonwitness/isp migrate",
       "readme:check": "node scripts/docs/update-readme.mjs --check",
       "readme:generate": "pnpm docs:generate",
       "release:changelog": "node scripts/generate-changelog.mjs",
@@ -6283,9 +6349,9 @@
         "organization.team"
       ],
       "seeds": {
-        "organization.department": 2,
-        "organization.team": 2,
-        "organization.position": 2,
+        "organization.department": 4,
+        "organization.team": 4,
+        "organization.position": 4,
         "organization.membership": 2,
         "base.model_access": 4
       },
@@ -6519,7 +6585,7 @@
       ],
       "views": ["integration.webhook_delivery", "integration.webhook_endpoint"],
       "seeds": {
-        "integration.webhook_endpoint": 1,
+        "integration.webhook_endpoint": 3,
         "base.model_access": 2
       },
       "accessRules": [
@@ -8052,6 +8118,7 @@
       ],
       "views": ["whatsapp.account", "whatsapp.conversation", "whatsapp.message", "whatsapp.status"],
       "seeds": {
+        "whatsapp.label": 5,
         "base.model_access": 8
       },
       "accessRules": [
@@ -8737,10 +8804,10 @@
         "workflow.definition": 1,
         "base.model_access": 5,
         "project.stage": 4,
-        "project.project": 1,
-        "project.milestone": 1,
-        "project.task": 2,
-        "project.task_dependency": 1
+        "project.project": 2,
+        "project.milestone": 3,
+        "project.task": 6,
+        "project.task_dependency": 3
       },
       "accessRules": [
         {
@@ -8875,7 +8942,7 @@
         "base.model_access": 1,
         "workflow.definition": 1,
         "notification.template": 3,
-        "request.purchase": 2
+        "request.purchase": 4
       },
       "accessRules": [
         {
@@ -9754,6 +9821,18 @@
     },
     {
       "method": "GET",
+      "path": "/projects/:id/board"
+    },
+    {
+      "method": "POST",
+      "path": "/projects/:id/todo-sync"
+    },
+    {
+      "method": "POST",
+      "path": "/projects/tasks/:id/work-contract"
+    },
+    {
+      "method": "GET",
       "path": "/providers"
     },
     {
@@ -9997,5 +10076,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "18c7ce30f521289a6e2251eafd52424671ad2fbef84762e86f3e8f0443aaae13"
+  "generatedFromSha256": "4db0eac467c617467e7b2e66b5ed243e70918fc84655c021c720f0b58edf9a7a"
 }

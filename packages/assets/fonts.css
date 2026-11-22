@@ -173,3 +173,11 @@
   font-display: swap;
   src: url('./fonts/MoonWitnessGrunge-latin.woff2') format('woff2');
 }
+
+@font-face {
+  font-family: 'MoonWitness Grunge';
+  font-style: oblique;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/MoonWitnessGrunge-latin.woff2') format('woff2');
+}

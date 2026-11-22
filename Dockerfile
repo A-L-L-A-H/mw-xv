@@ -9,8 +9,10 @@ WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/board/package.json ./apps/board/package.json
+COPY apps/control-plane/package.json ./apps/control-plane/package.json
 COPY apps/desktop/package.json ./apps/desktop/package.json
 COPY apps/docs/package.json ./apps/docs/package.json
+COPY apps/isp/package.json ./apps/isp/package.json
 COPY apps/ui-catalog/package.json ./apps/ui-catalog/package.json
 COPY packages/ai-evaluation/package.json ./packages/ai-evaluation/package.json
 COPY packages/ai-mcp/package.json ./packages/ai-mcp/package.json
@@ -26,6 +28,7 @@ COPY packages/local-ai/package.json ./packages/local-ai/package.json
 COPY packages/logger/package.json ./packages/logger/package.json
 COPY packages/orm-ai/package.json ./packages/orm-ai/package.json
 COPY packages/orm-base/package.json ./packages/orm-base/package.json
+COPY packages/orm-crm/package.json ./packages/orm-crm/package.json
 COPY packages/orm-integration/package.json ./packages/orm-integration/package.json
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json
 COPY packages/orm-notification/package.json ./packages/orm-notification/package.json
@@ -33,7 +36,9 @@ COPY packages/orm-organization/package.json ./packages/orm-organization/package.
 COPY packages/orm-project/package.json ./packages/orm-project/package.json
 COPY packages/orm/package.json ./packages/orm/package.json
 COPY packages/orm-request/package.json ./packages/orm-request/package.json
+COPY packages/orm-sales/package.json ./packages/orm-sales/package.json
 COPY packages/orm-storage/package.json ./packages/orm-storage/package.json
+COPY packages/orm-subscription/package.json ./packages/orm-subscription/package.json
 COPY packages/orm-whatsapp/package.json ./packages/orm-whatsapp/package.json
 COPY packages/research/package.json ./packages/research/package.json
 COPY packages/types/package.json ./packages/types/package.json

@@ -9,3 +9,4 @@ export * from './guards.js';
 export * from './attachments.js';
 export * from './errors.js';
 export * from './theme.js';
+export * from './scene.js';

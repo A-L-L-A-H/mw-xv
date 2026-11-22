@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="crew-01 hood layer">
+  <title>crew-01 hood layer</title>
+  <defs>
+    <linearGradient id="mw-source-world-characters-crew-01-layer-hood-fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1f2e"/>
+      <stop offset="1" stop-color="#0d0d0d"/>
+    </linearGradient>
+  </defs>
+  <path id="mw-source-world-characters-crew-01-layer-hood-path" d="M 410 230 Q 410 300 465 360 L 559 360 Q 614 300 614 230 Q 614 150 512 150 Q 410 150 410 230 Z" fill="url(#mw-source-world-characters-crew-01-layer-hood-fill)" stroke="#0d0d0d" stroke-width="6"/>
+</svg>

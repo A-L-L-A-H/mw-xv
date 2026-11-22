@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `18c7ce30f521289a6e2251eafd52424671ad2fbef84762e86f3e8f0443aaae13`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `4db0eac467c617467e7b2e66b5ed243e70918fc84655c021c720f0b58edf9a7a`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -577,7 +577,7 @@ Models: 3; declared views: 3; menu entries: 3; seed rows: 9.
 
 Version: `1.0.0`; dependencies: `base`.
 
-Models: 4; declared views: 4; menu entries: 4; seed rows: 12.
+Models: 4; declared views: 4; menu entries: 4; seed rows: 18.
 
 | Model                     | Table                      | Field         | Kind      | Required | Optional | Default | Relation                  |
 | ------------------------- | -------------------------- | ------------- | --------- | -------- | -------- | ------- | ------------------------- |
@@ -616,10 +616,10 @@ Models: 4; declared views: 4; menu entries: 4; seed rows: 12.
 | `organization.team`       | Teams                | Organization |       36 | Standard   |
 
 - Seed coverage: `base.model_access` has 4 declared seed row(s); seed values are not included.
-- Seed coverage: `organization.department` has 2 declared seed row(s); seed values are not included.
+- Seed coverage: `organization.department` has 4 declared seed row(s); seed values are not included.
 - Seed coverage: `organization.membership` has 2 declared seed row(s); seed values are not included.
-- Seed coverage: `organization.position` has 2 declared seed row(s); seed values are not included.
-- Seed coverage: `organization.team` has 2 declared seed row(s); seed values are not included.
+- Seed coverage: `organization.position` has 4 declared seed row(s); seed values are not included.
+- Seed coverage: `organization.team` has 4 declared seed row(s); seed values are not included.
 
 ### Seeded model access rules
 
@@ -634,7 +634,7 @@ Models: 4; declared views: 4; menu entries: 4; seed rows: 12.
 
 Version: `1.0.0`; dependencies: `base`, `jobs`.
 
-Models: 2; declared views: 2; menu entries: 2; seed rows: 3.
+Models: 2; declared views: 2; menu entries: 2; seed rows: 5.
 
 | Model                          | Table                            | Field             | Kind      | Required | Optional | Default    | Relation                       |
 | ------------------------------ | -------------------------------- | ----------------- | --------- | -------- | -------- | ---------- | ------------------------------ |
@@ -662,7 +662,7 @@ Models: 2; declared views: 2; menu entries: 2; seed rows: 3.
 | `integration.webhook_endpoint` | Webhook Endpoints  | Technical |      490 | Development mode |
 
 - Seed coverage: `base.model_access` has 2 declared seed row(s); seed values are not included.
-- Seed coverage: `integration.webhook_endpoint` has 1 declared seed row(s); seed values are not included.
+- Seed coverage: `integration.webhook_endpoint` has 3 declared seed row(s); seed values are not included.
 
 ### Seeded model access rules
 
@@ -689,7 +689,7 @@ Models: 0; declared views: 0; menu entries: 0; seed rows: 0.
 
 Version: `1.14.0`; dependencies: `base`.
 
-Models: 13; declared views: 4; menu entries: 4; seed rows: 8.
+Models: 13; declared views: 4; menu entries: 4; seed rows: 13.
 
 | Model                         | Table                           | Field                       | Kind      | Required | Optional | Default    | Relation                |
 | ----------------------------- | ------------------------------- | --------------------------- | --------- | -------- | -------- | ---------- | ----------------------- |
@@ -833,6 +833,7 @@ Models: 13; declared views: 4; menu entries: 4; seed rows: 8.
 | `whatsapp.status`       | status       | Technical |      523 | Development mode |
 
 - Seed coverage: `base.model_access` has 8 declared seed row(s); seed values are not included.
+- Seed coverage: `whatsapp.label` has 5 declared seed row(s); seed values are not included.
 
 ### Seeded model access rules
 
@@ -851,7 +852,7 @@ Models: 13; declared views: 4; menu entries: 4; seed rows: 8.
 
 Version: `1.0.0`; dependencies: `base`, `notification`, `organization`, `workflow`.
 
-Models: 5; declared views: 5; menu entries: 5; seed rows: 19.
+Models: 5; declared views: 5; menu entries: 5; seed rows: 28.
 
 | Model                     | Table                       | Field              | Kind      | Required | Optional | Default    | Relation                  |
 | ------------------------- | --------------------------- | ------------------ | --------- | -------- | -------- | ---------- | ------------------------- |
@@ -918,11 +919,11 @@ Models: 5; declared views: 5; menu entries: 5; seed rows: 19.
 - Seed coverage: `base.model_access` has 5 declared seed row(s); seed values are not included.
 - Seed coverage: `base.sequence` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `notification.template` has 3 declared seed row(s); seed values are not included.
-- Seed coverage: `project.milestone` has 1 declared seed row(s); seed values are not included.
-- Seed coverage: `project.project` has 1 declared seed row(s); seed values are not included.
+- Seed coverage: `project.milestone` has 3 declared seed row(s); seed values are not included.
+- Seed coverage: `project.project` has 2 declared seed row(s); seed values are not included.
 - Seed coverage: `project.stage` has 4 declared seed row(s); seed values are not included.
-- Seed coverage: `project.task` has 2 declared seed row(s); seed values are not included.
-- Seed coverage: `project.task_dependency` has 1 declared seed row(s); seed values are not included.
+- Seed coverage: `project.task` has 6 declared seed row(s); seed values are not included.
+- Seed coverage: `project.task_dependency` has 3 declared seed row(s); seed values are not included.
 - Seed coverage: `workflow.definition` has 1 declared seed row(s); seed values are not included.
 
 ### Seeded model access rules
@@ -939,7 +940,7 @@ Models: 5; declared views: 5; menu entries: 5; seed rows: 19.
 
 Version: `1.0.0`; dependencies: `base`, `jobs`, `notification`, `workflow`.
 
-Models: 1; declared views: 1; menu entries: 1; seed rows: 7.
+Models: 1; declared views: 1; menu entries: 1; seed rows: 9.
 
 | Model              | Table               | Field          | Kind      | Required | Optional | Default | Relation        |
 | ------------------ | ------------------- | -------------- | --------- | -------- | -------- | ------- | --------------- |
@@ -958,7 +959,7 @@ Models: 1; declared views: 1; menu entries: 1; seed rows: 7.
 
 - Seed coverage: `base.model_access` has 1 declared seed row(s); seed values are not included.
 - Seed coverage: `notification.template` has 3 declared seed row(s); seed values are not included.
-- Seed coverage: `request.purchase` has 2 declared seed row(s); seed values are not included.
+- Seed coverage: `request.purchase` has 4 declared seed row(s); seed values are not included.
 - Seed coverage: `workflow.definition` has 1 declared seed row(s); seed values are not included.
 
 ### Seeded model access rules

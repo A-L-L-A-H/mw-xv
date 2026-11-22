@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { after, describe, it } from 'node:test';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { installAddons } from '../../packages/orm/dist/index.js';
+import { assertAddonDefaultDataPolicy, installAddons } from '../../packages/orm/dist/index.js';
 import * as base from '../../packages/orm-base/dist/index.js';
 import * as auth from '../../packages/auth/dist/index.js';
 import * as jobs from '../../packages/jobs/dist/index.js';
@@ -14,6 +14,9 @@ import * as project from '../../packages/orm-project/dist/index.js';
 import * as storage from '../../packages/orm-storage/dist/index.js';
 import * as workflow from '../../packages/orm-workflow/dist/index.js';
 import * as request from '../../packages/orm-request/dist/index.js';
+import * as crm from '../../packages/orm-crm/dist/index.js';
+import * as sales from '../../packages/orm-sales/dist/index.js';
+import * as subscription from '../../packages/orm-subscription/dist/index.js';
 import * as integration from '../../packages/orm-integration/dist/index.js';
 import * as whatsapp from '../../packages/orm-whatsapp/dist/index.js';
 import * as witness from '../../packages/orm-knowledge/dist/index.js';
@@ -33,6 +36,9 @@ const addonPackages = [
   { directory: 'orm-storage', module: storage, manifest: storage.manifest },
   { directory: 'orm-workflow', module: workflow, manifest: workflow.manifest },
   { directory: 'orm-request', module: request, manifest: request.manifest },
+  { directory: 'orm-crm', module: crm, manifest: crm.manifest },
+  { directory: 'orm-sales', module: sales, manifest: sales.manifest },
+  { directory: 'orm-subscription', module: subscription, manifest: subscription.manifest },
   { directory: 'orm-integration', module: integration, manifest: integration.manifest },
   { directory: 'orm-whatsapp', module: whatsapp, manifest: whatsapp.manifest },
   { directory: 'orm-knowledge', module: witness, manifest: witness.manifest },
@@ -116,6 +122,13 @@ describe('workspace addon conformance', () => {
     assert.deepEqual(storage.manifest.models, []);
     assert.equal(storage.manifest.data, undefined);
     assert.equal(auth.manifest.data, undefined, 'auth sessions must never be seeded as demo data');
+
+    assertAddonDefaultDataPolicy(addonManifests);
+    assertAddonDefaultDataPolicy(
+      addonPackages
+        .filter(({ directory }) => directory.startsWith('orm-'))
+        .map(({ manifest }) => manifest)
+    );
   });
 
   it('reinstalls all runtime addons without duplicating seeds or overwriting example edits', async () => {
@@ -156,12 +169,12 @@ describe('workspace addon conformance', () => {
     );
     assert.equal(
       Number((await db('organization_departments').count({ count: '*' }).first())?.count),
-      2
+      4
     );
-    assert.equal(Number((await db('organization_teams').count({ count: '*' }).first())?.count), 2);
+    assert.equal(Number((await db('organization_teams').count({ count: '*' }).first())?.count), 4);
     assert.equal(
       Number((await db('organization_positions').count({ count: '*' }).first())?.count),
-      2
+      4
     );
     assert.equal(
       Number((await db('organization_memberships').count({ count: '*' }).first())?.count),
@@ -176,8 +189,11 @@ describe('workspace addon conformance', () => {
       { id: 'project.example_platform_roadmap', field: 'description' },
       { id: 'workflow.definition_sample_request_v1', field: 'name' },
       { id: 'request.example_laptop', field: 'description' },
+      { id: 'crm.lead_acme_ai_expansion', field: 'description' },
+      { id: 'sales.order_acme_enterprise', field: 'description' },
+      { id: 'subscription.plan_monthly_basic', field: 'description' },
       { id: 'orm-integration.endpoint_example_disabled', field: 'name' },
-      { id: 'orm-whatsapp.access_user_read_whatsapp_account', field: 'model_name' },
+      { id: 'orm-whatsapp.label_demo_vip', field: 'name' },
       { id: 'ai.group_operator', field: 'name' },
     ];
     const immutableSeeds = [
@@ -312,7 +328,7 @@ describe('workspace addon conformance', () => {
     }
   });
 
-  it('installs all 13 addons deterministically when supplied in reverse dependency order', async () => {
+  it('installs all 16 addons deterministically when supplied in reverse dependency order', async () => {
     const db = knex({
       client: 'better-sqlite3',
       connection: { filename: ':memory:' },

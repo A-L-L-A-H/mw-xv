@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="crew-01 canonical character sheet, anonymous back-facing hooded crew figure">
+  <title>crew-01 character identity sheet</title>
+  <defs>
+    <linearGradient id="mw-source-world-characters-crew-01-sheet-hood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1f2e"/>
+      <stop offset="1" stop-color="#0d0d0d"/>
+    </linearGradient>
+    <linearGradient id="mw-source-world-characters-crew-01-sheet-torso" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff2e88"/>
+      <stop offset="1" stop-color="#c21a6b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="#f3efe4"/>
+  <line x1="512" y1="0" x2="512" y2="1024" stroke="#c9c3b4" stroke-width="1" stroke-dasharray="6 6"/>
+  <line x1="0" y1="160" x2="1024" y2="160" stroke="#c9c3b4" stroke-width="1" stroke-dasharray="6 6"/>
+  <line x1="0" y1="520" x2="1024" y2="520" stroke="#c9c3b4" stroke-width="1" stroke-dasharray="6 6"/>
+  <line x1="0" y1="880" x2="1024" y2="880" stroke="#c9c3b4" stroke-width="1" stroke-dasharray="6 6"/>
+  <path d="M 410 230 Q 410 300 465 360 L 559 360 Q 614 300 614 230 Q 614 150 512 150 Q 410 150 410 230 Z" fill="url(#mw-source-world-characters-crew-01-sheet-hood)" stroke="#0d0d0d" stroke-width="6"/>
+  <path d="M 440 250 Q 440 330 512 380 Q 584 330 584 250 Q 584 170 512 170 Q 440 170 440 250 Z" fill="none" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M 370 420 L 300 620 Q 280 720 330 800 L 360 880 L 664 880 L 694 800 Q 744 720 724 620 L 654 420 Z" fill="url(#mw-source-world-characters-crew-01-sheet-torso)" stroke="#0d0d0d" stroke-width="6"/>
+  <path d="M 390 450 L 470 560 Q 512 600 554 560 L 634 450" fill="none" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M 470 500 Q 512 540 554 500" fill="none" stroke="#0d0d0d" stroke-width="5"/>
+  <path d="M 390 450 Q 512 560 634 450" fill="none" stroke="#0d0d0d" stroke-width="4"/>
+  <path d="M 360 820 Q 360 900 430 940 L 594 940 Q 664 900 664 820 Z" fill="#0d0d0d" stroke="#0d0d0d" stroke-width="3"/>
+  <rect x="440" y="840" width="24" height="70" fill="#ffe031"/>
+  <rect x="560" y="840" width="24" height="70" fill="#ffe031"/>
+  <circle cx="512" cy="470" r="26" fill="#ffe031" stroke="#0d0d0d" stroke-width="3"/>
+  <path d="M 512 448 L 512 492 M 486 470 L 538 470" stroke="#0d0d0d" stroke-width="3"/>
+  <text x="512" y="990" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" fill="#0d0d0d">crew-01 — 1024×1024 identity sheet · anonymous back-facing</text>
+</svg>

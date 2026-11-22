@@ -25,8 +25,10 @@ import {
   ProjectStage,
   ProjectTask,
   ProjectTaskDependency,
+  buildProjectDependencyGraph,
   isValidProjectMutation,
   manifest,
+  mapProjectTaskToTodoSnapshot,
   mapTodoTaskToProjectTaskFields,
   toPolymorphicResource,
   toWorkContractSource,
@@ -71,13 +73,13 @@ describe('project addon', () => {
     expect(manifest.depends).toEqual(['base', 'organization', 'notification', 'workflow']);
     expect(await db('users').count({ count: '*' }).first()).toMatchObject({ count: 2 });
     expect(await db('project_stages').count({ count: '*' }).first()).toMatchObject({ count: 4 });
-    expect(await db('project_projects').count({ count: '*' }).first()).toMatchObject({ count: 1 });
+    expect(await db('project_projects').count({ count: '*' }).first()).toMatchObject({ count: 2 });
     expect(await db('project_milestones').count({ count: '*' }).first()).toMatchObject({
-      count: 1,
+      count: 3,
     });
-    expect(await db('project_tasks').count({ count: '*' }).first()).toMatchObject({ count: 2 });
+    expect(await db('project_tasks').count({ count: '*' }).first()).toMatchObject({ count: 6 });
     expect(await db('project_task_dependencies').count({ count: '*' }).first()).toMatchObject({
-      count: 1,
+      count: 3,
     });
 
     const workflow = await WorkflowDefinition.query().findOne({ code: 'project.task_review' });
@@ -93,7 +95,7 @@ describe('project addon', () => {
 
     // Reinstall is idempotent and does not duplicate seeds.
     await installEcosystem();
-    expect(await db('project_tasks').count({ count: '*' }).first()).toMatchObject({ count: 2 });
+    expect(await db('project_tasks').count({ count: '*' }).first()).toMatchObject({ count: 6 });
   });
 
   it('enforces company isolation, org department/team alignment, dates, and member ownership on projects', async () => {
@@ -378,5 +380,27 @@ describe('project addon', () => {
       status: 'in_progress',
       due_date: '2026-12-20',
     });
+
+    const roundTrip = mapProjectTaskToTodoSnapshot({
+      ...mapped,
+      external_ref: mapped.external_ref,
+    });
+    expect(roundTrip).toEqual({
+      code: 'TASK-0420',
+      title: 'Sync local board with ORM project',
+      summary: 'Keep local TaskOS and Board aligned.',
+      priority: 'p1',
+      status: 'doing',
+      due_date: '2026-12-20',
+    });
+
+    const task2 = await ProjectTask.query().findOne({ code: 'TASK-0002' }).throwIfNotFound();
+    const deps = await ProjectTaskDependency.query().where({ company_id: 1, active: true });
+    const dag = buildProjectDependencyGraph([task.toJSON(), task2.toJSON()], deps);
+    expect(dag.ready_task_ids).toContain(task.id);
+    expect(dag.blocked_task_ids).toContain(task2.id);
+    const blockedNode = dag.nodes.find((n) => n.id === task2.id);
+    expect(blockedNode?.blocked_by_ids).toContain(task.id);
+    expect(blockedNode?.is_ready).toBe(false);
   });
 });

@@ -90,6 +90,22 @@ export const manifest = defineAddon({
       currency: ref('base.currency_usd'),
       company: ref('base.company_default'),
     }),
+    seed(PurchaseRequest, 'request.demo_workstation_monitors', {
+      title: 'Ultrawide engineering monitors',
+      description: 'Ergonomic display upgrades for Board UI & AI workflow teams.',
+      amount_minor: 185000,
+      currency: ref('base.currency_usd'),
+      company: ref('base.company_default'),
+      vendor: ref('base.partner_northstar'),
+    }),
+    seed(PurchaseRequest, 'request.demo_annual_security_audit', {
+      title: 'Annual external security audit',
+      description: 'Independent penetration test for API & RADIUS ISP endpoints.',
+      amount_minor: 450000,
+      currency: ref('base.currency_usd'),
+      company: ref('base.company_default'),
+      vendor: ref('base.partner_acme'),
+    }),
   ],
   views,
   menus: [

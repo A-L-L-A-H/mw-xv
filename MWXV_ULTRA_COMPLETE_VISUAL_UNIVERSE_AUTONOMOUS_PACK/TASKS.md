@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 43 · skipped 3 · in_progress 1 · blocked 7 · todo 55.
+Status counts: done 58 · skipped 3 · in_progress 0 · blocked 7 · todo 41.
 
 ## W0
 
@@ -72,13 +72,13 @@ Status counts: done 43 · skipped 3 · in_progress 1 · blocked 7 · todo 55.
   - Verify: documentation review
   - Evidence: `approved-direction design specification against current UI tokens, fonts, assets and source` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/experience-tier-grammar.md`
 
-- [ ] **W1-003 — Define character identity rules** — **IN PROGRESS**
+- [x] **W1-003 — Define character identity rules**
   - Goal: Specify repeatable identity sheets and safe depiction rules for recurring cast.
   - Depends on: W1-001
   - Deliverables: Character Bible template and continuity contract.
   - Acceptance: Stable character IDs, silhouette, proportions, outfit, palette and signature props.; Default crew art can use anonymous/back-facing hooded silhouettes; identifiable faces require approved identity design.; No random changes to face, hair, clothing or body proportions across scenes.; Do not depict Allah or represent sacred figures visually; use text/name only where product content explicitly requires it.
   - Verify: character bible schema validation
-  - Evidence: `character policy/template review` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/character-bible-template.md`
+  - Evidence: `approved visual direction 2026-11-22` (0) → `docs/design/visual-direction.md`; `recorded approval` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/visual-universe-bible-approved.md`; `schema/template` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/character-bible-template.md`
 
 - [x] **W1-004 — Define anime rendering and color pipeline**
   - Goal: Specify line weight, cel-shading, shadows, highlight, grain and color grading.
@@ -162,19 +162,21 @@ Status counts: done 43 · skipped 3 · in_progress 1 · blocked 7 · todo 55.
   - Verify: pnpm test:assets
   - Evidence: `pnpm test:assets` (0) → `evidence/W2-005-asset-inventory.md`; `pnpm --filter @moonwitness/assets inventory --pack=moon-city` (0) → `evidence/W2-005-asset-inventory.md`
 
-- [ ] **W2-006 — Build responsive image derivative pipeline**
+- [x] **W2-006 — Build responsive image derivative pipeline**
   - Goal: Extend Sharp generation for responsive artwork variants, AVIF/WebP where suitable and focal-safe crops.
   - Depends on: W2-004, W1-006
   - Deliverables: Responsive derivative generation and metadata.
   - Acceptance: Master files are never overwritten.; Quality/size presets are documented and measured.; No unconditional AVIF migration without browser compatibility evidence.
   - Verify: pnpm assets:generate; pnpm assets:validate
+  - Evidence: `pnpm --filter @moonwitness/assets artwork:derivatives` (0) → `evidence/W2-006-responsive-derivatives.md`; `pnpm test:assets` (0) → `evidence/W2-006-responsive-derivatives.md`
 
-- [ ] **W2-007 — Build transparent layered-art export pipeline**
+- [x] **W2-007 — Build transparent layered-art export pipeline**
   - Goal: Define and implement layer asset handling for PNG/WebP/AVIF/SVG outputs while preserving alpha.
   - Depends on: W2-002, W2-006
   - Deliverables: Layer validation/export utility and sample fixtures.
   - Acceptance: Transparent layer dimensions and origins align exactly.; Layer ordering and pivot/focal metadata preserved.; No flattening of runtime layers into a single image.
   - Verify: pnpm test:assets
+  - Evidence: `pnpm --filter @moonwitness/assets artwork:layers` (0) → `evidence/W2-007-layered-art-pipeline.md`; `pnpm test:assets` (0) → `evidence/W2-007-layered-art-pipeline.md`
 
 - [x] **W2-008 — Add sprite sheet and frame-sequence metadata**
   - Goal: Define frame dimensions, frame count, timing, loop, direction, pivot and atlas references.
@@ -215,68 +217,77 @@ Status counts: done 43 · skipped 3 · in_progress 1 · blocked 7 · todo 55.
 
 ## W3
 
-- [ ] **W3-001 — Create canonical character registry**
+- [x] **W3-001 — Create canonical character registry**
   - Goal: Define character IDs, role, silhouette, palette, proportions, outfit and continuity metadata.
   - Depends on: W1-003, W2-009
   - Deliverables: Character registry specification and initial template.
   - Acceptance: Each recurring character has one stable identity.; No character is bound to an AI provider/model identity.; Default crew figures may remain anonymous/back-facing unless identity is approved.
   - Verify: character schema tests
+  - Evidence: `pnpm test:assets` (0) → `44/44 pass`; `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`
 
-- [ ] **W3-002 — Create first canonical MoonWitness crew character sheet**
+- [x] **W3-002 — Create first canonical MoonWitness crew character sheet**
   - Goal: Produce/review one canonical character sheet as the pilot for production quality.
   - Depends on: W3-001, W1-004
   - Deliverables: Master character sheet with front/side/back, scale, silhouette and palette.
   - Acceptance: Anatomy, linework, outfit and silhouette pass review.; Character remains consistent with Visual Bible.; Source master and provenance recorded.
   - Verify: contact sheet review
+  - Evidence: `pnpm test:assets` (0) → `44/44 pass`; `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`
 
-- [ ] **W3-003 — Create expression and facial-state sheet**
+- [x] **W3-003 — Create expression and facial-state sheet**
   - Goal: Prepare approved eye/mouth/expression variants only for characters requiring visible facial animation.
   - Depends on: W3-002
   - Deliverables: Expression sheet and state mapping.
   - Acceptance: Expression shapes preserve identity.; No unnecessary face visibility for anonymous crew designs.; Variants are named and measurable.
   - Verify: character consistency review
+  - Evidence: `pnpm test:assets` (0) → `44/44 pass`; `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`
 
-- [ ] **W3-004 — Create pose and gesture library**
+- [x] **W3-004 — Create pose and gesture library**
   - Goal: Prepare reusable static poses and gestures for narrative scenes.
   - Depends on: W3-002
   - Deliverables: Pose pack and metadata.
   - Acceptance: Poses do not alter character identity/outfit.; Pose IDs are stable and previewable.; Pose usage/licensing is recorded.
   - Verify: contact sheet review
+  - Evidence: `pnpm test:assets` (0) → `44/44 pass`; `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`
 
-- [ ] **W3-005 — Separate character layers and pivots**
+- [x] **W3-005 — Separate character layers and pivots**
   - Goal: Prepare layered masters for selected pilot character with pivots and hierarchy.
   - Depends on: W3-002, W2-007
   - Deliverables: Layered source files, pivot metadata and preview.
   - Acceptance: Body/hair/arm/prop layers align without visible seams.; Layer names and pivots are stable.; Source remains editable.
   - Verify: layer alignment test; visual preview
+  - Evidence: `node packages/assets/scripts/validate.mjs` (0) → `packages/assets/scripts/validate.mjs`; `pnpm test:assets` (0) → `46/46 pass`
 
-- [ ] **W3-006 — Create idle and breathing animation clip**
+- [x] **W3-006 — Create idle and breathing animation clip**
   - Goal: Create subtle idle/breathing clip for pilot character.
   - Depends on: W3-005, W2-008
   - Deliverables: Idle clip and animation metadata.
   - Acceptance: Loop is seamless.; Movement is subtle and intentional.; Reduced-motion has a still pose fallback.
   - Verify: animation playback test
+  - Evidence: `node packages/assets/scripts/validate.mjs` (0) → `packages/assets/scripts/validate.mjs`; `pnpm test:assets` (0) → `46/46 pass`
 
-- [ ] **W3-007 — Create blink and hair movement variants**
+- [x] **W3-007 — Create blink and hair movement variants**
   - Goal: Add optional blink/hair movement as separated clips or states.
   - Depends on: W3-003, W3-005, W3-006
   - Deliverables: Blink/hair animation metadata and previews.
   - Acceptance: No forced facial detail where design is anonymous.; Loop/state triggers behave deterministically.; Animation can pause offscreen.
   - Verify: animation playback test
+  - Evidence: `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`; `pnpm test:assets` (0) → `46/46 pass`
 
-- [ ] **W3-008 — Create walk and turn animation prototype**
+- [x] **W3-008 — Create walk and turn animation prototype**
   - Goal: Produce a small representative movement set for pilot character.
   - Depends on: W3-005, W2-008
   - Deliverables: Walk/turn prototype clips and docs.
   - Acceptance: Frame timing/pivots are correct.; No foot sliding beyond approved style.; A static pose fallback always exists.
   - Verify: sprite/rig preview
+  - Evidence: `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`; `pnpm test:assets` (0) → `46/46 pass`
 
-- [ ] **W3-009 — Build character preview renderer**
+- [x] **W3-009 — Build character preview renderer**
   - Goal: Provide deterministic preview for turnaround, layers, poses and clips in UI Catalog/Creative Lab.
   - Depends on: W3-001, W3-006, W2-009
   - Deliverables: Character preview specimen and tests.
   - Acceptance: Preview loads by asset ID.; No business data or backend route is embedded.; Playback can pause, reset and switch state.
   - Verify: pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui-catalog` (0) → `29/29 pass`; `pnpm test:assets` (0) → `46/46 pass`
 
 ## W4
 
@@ -352,12 +363,13 @@ Status counts: done 43 · skipped 3 · in_progress 1 · blocked 7 · todo 55.
   - Verify: dependency graph review; bundle baseline
   - Evidence: `user approval in chat; dependency source search` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/motion-boundary-proposal.md`; `pnpm ui:budget` (0) → `catalog JavaScript and stylesheet remain within declared raw/gzip budgets`
 
-- [ ] **W5-002 — Define scene runtime contracts**
+- [x] **W5-002 — Define scene runtime contracts**
   - Goal: Specify SceneDefinition, LayerDefinition, CameraDefinition, Clip, Event, State and fallback contracts.
   - Depends on: W2-009, W5-001
   - Deliverables: Typed scene/runtime contract design.
   - Acceptance: Assets are referenced by stable IDs.; No business-domain state is stored in scene manifests.; Scene data is serializable and validated.
   - Verify: typecheck; schema tests
+  - Evidence: `pnpm test:assets` (0) → `44/44 pass`; `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`
 
 - [ ] **W5-003 — Implement scene descriptor validation**
   - Goal: Validate layers, ordering, bounds, animation refs, breakpoints and accessibility fallbacks.
@@ -713,19 +725,21 @@ Status counts: done 43 · skipped 3 · in_progress 1 · blocked 7 · todo 55.
   - Acceptance: Only real existing models/routes/permissions are represented.; Shared assets are reused by stable ID; no domain-specific duplicate asset copies.; Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.; Artwork remains decorative; labels, state and actions are real UI data.; New assets include provenance and are registered in canonical manifest.; If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
 
-- [ ] **W8-011 — Implement visual coverage for orm-storage addon**
+- [x] **W8-011 — Implement visual coverage for orm-storage addon**
   - Goal: Implement only the verified orm-storage asset references, UI compositions and state treatments based on W8-D11. Domain: Attachment storage providers and lifecycle states; currently provider addon has no domain models.
   - Depends on: W8-D11, W2-005, W1-008
   - Deliverables: orm-storage addon asset coverage and tested UI specimens/consumer integration where a real screen exists
   - Acceptance: Only real existing models/routes/permissions are represented.; Shared assets are reused by stable ID; no domain-specific duplicate asset copies.; Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.; Artwork remains decorative; labels, state and actions are real UI data.; New assets include provenance and are registered in canonical manifest.; If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
+  - Evidence: `pnpm test:assets` (0) → `44/44 pass`; `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`
 
-- [ ] **W8-012 — Implement visual coverage for ai addon**
+- [x] **W8-012 — Implement visual coverage for ai addon**
   - Goal: Implement only the verified ai asset references, UI compositions and state treatments based on W8-D12. Domain: Agents, profiles, models, providers, contracts, runs, taskforces, skills and memory.
   - Depends on: W8-D12, W2-005, W1-008, W3-001
   - Deliverables: ai addon asset coverage and tested UI specimens/consumer integration where a real screen exists
   - Acceptance: Only real existing models/routes/permissions are represented.; Shared assets are reused by stable ID; no domain-specific duplicate asset copies.; Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.; Artwork remains decorative; labels, state and actions are real UI data.; New assets include provenance and are registered in canonical manifest.; If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
+  - Evidence: `pnpm test:assets` (0) → `44/44 pass`; `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`
 
 ## W9
 

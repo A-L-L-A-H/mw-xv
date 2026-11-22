@@ -37,13 +37,13 @@ describe('organization addon', () => {
     await installAddons(db, [manifest, baseManifest]);
     expect(await db('users').count({ count: '*' }).first()).toMatchObject({ count: 2 });
     expect(await db('organization_departments').count({ count: '*' }).first()).toMatchObject({
-      count: 2,
+      count: 4,
     });
     expect(await db('organization_teams').count({ count: '*' }).first()).toMatchObject({
-      count: 2,
+      count: 4,
     });
     expect(await db('organization_positions').count({ count: '*' }).first()).toMatchObject({
-      count: 2,
+      count: 4,
     });
     expect(await db('organization_memberships').count({ count: '*' }).first()).toMatchObject({
       count: 2,

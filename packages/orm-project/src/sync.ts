@@ -2,6 +2,7 @@ import {
   ProjectTask,
   type Project,
   type ProjectMilestone,
+  type TaskDependencyKind,
   type TaskPriority,
   type TaskStatus,
 } from './models.js';
@@ -124,5 +125,134 @@ export function mapTodoTaskToProjectTaskFields(
     status: normalizeTodoStatus(snapshot.status),
     ...(snapshot.blocked_reason?.trim() ? { blocked_reason: snapshot.blocked_reason.trim() } : {}),
     ...(dueDate && ISO_DATE_REGEX.test(dueDate) ? { due_date: dueDate } : {}),
+  };
+}
+
+export interface ProjectDependencyGraphNode {
+  readonly id: number;
+  readonly code: string;
+  readonly title: string;
+  readonly status: TaskStatus;
+  readonly priority: TaskPriority;
+  readonly stage_id: number | null;
+  readonly blocked_by_ids: readonly number[];
+  readonly blocks_ids: readonly number[];
+  readonly is_ready: boolean;
+}
+
+export interface ProjectDependencyGraphSummary {
+  readonly nodes: readonly ProjectDependencyGraphNode[];
+  readonly blocked_task_ids: readonly number[];
+  readonly ready_task_ids: readonly number[];
+}
+
+const REVERSE_TODO_PRIORITY_MAP: Readonly<Record<TaskPriority, string>> = {
+  urgent: 'p0',
+  high: 'p1',
+  normal: 'p2',
+  low: 'p3',
+};
+
+const REVERSE_TODO_STATUS_MAP: Readonly<Record<TaskStatus, string>> = {
+  backlog: 'todo',
+  in_progress: 'doing',
+  blocked: 'blocked',
+  review: 'review',
+  done: 'done',
+  cancelled: 'cancelled',
+};
+
+export function mapProjectTaskToTodoSnapshot(task: {
+  readonly code: string;
+  readonly external_ref?: string | null;
+  readonly title: string;
+  readonly description?: string | null;
+  readonly priority: TaskPriority;
+  readonly status: TaskStatus;
+  readonly blocked_reason?: string | null;
+  readonly due_date?: string | null;
+}): LocalTodoTaskSnapshot {
+  const code = task.external_ref?.trim() || task.code.trim();
+  const title = task.title.trim();
+  return {
+    code,
+    title,
+    ...(task.description?.trim() ? { summary: task.description.trim() } : {}),
+    priority: REVERSE_TODO_PRIORITY_MAP[task.priority] ?? 'p2',
+    status: REVERSE_TODO_STATUS_MAP[task.status] ?? 'todo',
+    ...(task.blocked_reason?.trim() ? { blocked_reason: task.blocked_reason.trim() } : {}),
+    ...(task.due_date?.trim() ? { due_date: task.due_date.trim() } : {}),
+  };
+}
+
+export function buildProjectDependencyGraph(
+  tasks: ReadonlyArray<{
+    readonly id: number;
+    readonly code: string;
+    readonly title: string;
+    readonly status: TaskStatus;
+    readonly priority: TaskPriority;
+    readonly stage_id?: number | null;
+  }>,
+  dependencies: ReadonlyArray<{
+    readonly id?: number;
+    readonly task_id: number;
+    readonly depends_on_id: number;
+    readonly kind: TaskDependencyKind;
+    readonly active?: boolean;
+  }>
+): ProjectDependencyGraphSummary {
+  const byId = new Map(tasks.map((task) => [task.id, task]));
+  const blockedByMap = new Map<number, number[]>();
+  const blocksMap = new Map<number, number[]>();
+
+  for (const edge of dependencies) {
+    if (edge.active === false || edge.kind !== 'blocks') continue;
+    const target = byId.get(edge.task_id);
+    const blocker = byId.get(edge.depends_on_id);
+    if (!target || !blocker) continue;
+    if (blocker.status !== 'done' && blocker.status !== 'cancelled') {
+      const blockedList = blockedByMap.get(target.id) ?? [];
+      if (!blockedList.includes(blocker.id)) blockedList.push(blocker.id);
+      blockedByMap.set(target.id, blockedList);
+
+      const blocksList = blocksMap.get(blocker.id) ?? [];
+      if (!blocksList.includes(target.id)) blocksList.push(target.id);
+      blocksMap.set(blocker.id, blocksList);
+    }
+  }
+
+  const nodes: ProjectDependencyGraphNode[] = [];
+  const blockedTaskIds: number[] = [];
+  const readyTaskIds: number[] = [];
+
+  for (const task of tasks) {
+    const blockedBy = blockedByMap.get(task.id) ?? [];
+    const blocks = blocksMap.get(task.id) ?? [];
+    const isTerminalOrExplicitBlocked =
+      task.status === 'done' || task.status === 'cancelled' || task.status === 'blocked';
+    const isBlocked = !['done', 'cancelled'].includes(task.status) && blockedBy.length > 0;
+    const isReady = !isTerminalOrExplicitBlocked && blockedBy.length === 0;
+
+    if (isBlocked || task.status === 'blocked') blockedTaskIds.push(task.id);
+    if (isReady) readyTaskIds.push(task.id);
+
+    nodes.push({
+      id: task.id,
+      code: task.code,
+      title: task.title,
+      status: task.status,
+      priority: task.priority,
+      stage_id: task.stage_id ?? null,
+      blocked_by_ids: blockedBy,
+      blocks_ids: blocks,
+      is_ready: isReady,
+    });
+  }
+
+  return {
+    nodes,
+    blocked_task_ids: blockedTaskIds,
+    ready_task_ids: readyTaskIds,
   };
 }

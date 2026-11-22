@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "clipId": "crew-01-idle",
+  "characterId": "crew-01",
+  "pack": "moon-city",
+  "domain": "visual-universe",
+  "description": "Subtle idle/breathing loop for crew-01: torso expands on inhale (frame 2) and returns on exhale (frame 1), ping-pong for a seamless loop. Reduced-motion fallback uses frame 1 as a still pose.",
+  "clip": {
+    "id": "crew-01-idle",
+    "loop": true,
+    "direction": "ping-pong",
+    "pivot": { "x": 0.5, "y": 0.5 },
+    "frames": [
+      { "asset": "animation/crew-01-idle/crew-01-idle-frame-01.svg", "durationMs": 700 },
+      { "asset": "animation/crew-01-idle/crew-01-idle-frame-02.svg", "durationMs": 700 }
+    ]
+  },
+  "reducedMotionFallback": "animation/crew-01-idle/crew-01-idle-frame-01.svg",
+  "license": "ISC",
+  "status": "review"
+}

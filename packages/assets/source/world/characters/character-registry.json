@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "pack": "moon-city",
+  "domain": "visual-universe",
+  "description": "Canonical recurring character registry. Identity sheets define stable visual continuity; no entry binds a character to an AI provider/model identity or a real crew member. Faces are intentionally unspecified pending separate pilot identity approval.",
+  "characters": [
+    {
+      "characterId": "crew-01",
+      "role": "crew-member",
+      "depictionPolicy": "anonymous-back-facing",
+      "silhouette": "hooded crew figure, adult proportions, standard build",
+      "outfit": "industrial workwear shirt and trousers",
+      "paletteTokens": [
+        "ink-900",
+        "paper-white",
+        "hot-magenta-500"
+      ],
+      "proportions": "standard adult",
+      "signatureProps": [
+        "tool-satchel",
+        "crew-badge"
+      ],
+      "allowedVariants": [
+        "idle-standing",
+        "waving",
+        "walking-loop"
+      ],
+      "prohibitedVariants": [
+        "recognizable-face",
+        "sacred-figure",
+        "real-person-likeness"
+      ],
+      "masterAssetIds": [
+        "source/world/characters/crew-01-sheet.svg"
+      ],
+      "variantAssetIds": [
+        "source/world/characters/crew-01-pose-idle-standing.svg",
+        "source/world/characters/crew-01-pose-waving.svg",
+        "animation/crew-01-hair/crew-01-hair-move-clip.json",
+        "animation/crew-01-walk/crew-01-walk-clip.json",
+        "animation/crew-01-turn/crew-01-turn-clip.json"
+      ],
+      "license": "ISC",
+      "status": "review"
+    }
+  ]
+}

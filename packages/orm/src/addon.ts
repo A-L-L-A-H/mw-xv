@@ -139,6 +139,52 @@ export function getModelMenuInfo(model: string): ModelMenuInfo {
   );
 }
 
+export interface AddonDefaultDataPolicyOptions {
+  /** Addon names exempt from default seed requirements (e.g. session-token or provider-only addons). */
+  readonly exemptAddons?: ReadonlySet<string>;
+}
+
+/** Addons that intentionally hold zero demo data for security/provider-only boundaries. */
+export const DEFAULT_DATA_EXEMPT_ADDONS: ReadonlySet<string> = new Set(['auth', 'orm-storage']);
+
+/**
+ * Enforces that every model-owning addon declares non-empty default seed data (`manifest.data`)
+ * with at least one record targeting one of its own declared models (`manifest.models`).
+ */
+export function assertAddonDefaultDataPolicy(
+  addons: readonly Addon[],
+  options: AddonDefaultDataPolicyOptions = {}
+): void {
+  const exemptAddons = options.exemptAddons ?? DEFAULT_DATA_EXEMPT_ADDONS;
+  const violations: string[] = [];
+
+  for (const addon of addons) {
+    if (exemptAddons.has(addon.name) || addon.models.length === 0) continue;
+
+    const ownModels = new Set(addon.models.map((model) => model.modelName));
+    const seeds = addon.data ?? [];
+    if (seeds.length === 0) {
+      violations.push(
+        `Addon '${addon.name}' declares ${addon.models.length} model(s) [${[...ownModels].join(', ')}] but manifest.data is empty`
+      );
+      continue;
+    }
+
+    const ownSeedsCount = seeds.filter((record) => ownModels.has(record.model.modelName)).length;
+    if (ownSeedsCount === 0) {
+      violations.push(
+        `Addon '${addon.name}' declares ${seeds.length} seed record(s) (e.g. access/config) but 0 records targeting its own models [${[...ownModels].join(', ')}]`
+      );
+    }
+  }
+
+  if (violations.length > 0) {
+    throw new Error(
+      `ORM default data policy violation (${violations.length}):\n- ${violations.join('\n- ')}`
+    );
+  }
+}
+
 export function defineAddon(addon: Addon): Readonly<Addon> {
   if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(addon.version)) {
     throw new Error(`Addon '${addon.name}' must use a semantic version (major.minor.patch)`);

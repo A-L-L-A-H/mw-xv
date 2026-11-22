@@ -54,6 +54,7 @@ import inkSplatterSmUrl from '@moonwitness/assets/materials/ink-splatter-sm.svg'
 import tileHalftoneUrl from '@moonwitness/assets/materials/tile-halftone.svg';
 import scuffedBorderUrl from '@moonwitness/assets/materials/scuffed-border.svg';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
+import { CharacterPreview } from '@moonwitness/ui/components/character-preview';
 import { PaperNote } from '@moonwitness/ui/components/paper-note';
 import { SectionRibbon } from '@moonwitness/ui/components/section-ribbon';
 import {
@@ -1875,6 +1876,182 @@ function CatalogContent() {
               description="Browse registered package assets and review their source status without creating production records."
             >
               <AssetBrowser />
+            </Section>
+            <Section
+              id="orm-storage-coverage"
+              title="Attachment storage (orm-storage)"
+              description="Contract-only design specimen for orm-storage attachment storage providers; no production Board storage screen or attachment management route is registered."
+            >
+              <div className="auth-coverage-grid" data-testid="orm-storage-specimen">
+                <Panel
+                  title="Attachment storage provider"
+                  description="Provider-neutral storage primitives (LocalFileAttachmentStorage, S3AttachmentStorage); models: none — addon has no domain models."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>Providers</dt>
+                      <dd>Local file · S3-compatible (Garage)</dd>
+                    </div>
+                    <div>
+                      <dt>Empty</dt>
+                      <dd>No stored objects returned by the storage provider.</dd>
+                    </div>
+                    <div>
+                      <dt>Unavailable</dt>
+                      <dd>Storage readiness check failed; bucket or directory not reachable.</dd>
+                    </div>
+                    <div>
+                      <dt>Uploading / downloading</dt>
+                      <dd>Streaming attachment transfer with size limit and checksum verification.</dd>
+                    </div>
+                    <div>
+                      <dt>Rejected / infected / clean</dt>
+                      <dd>Only where an attached scanner reports actual scan results; otherwise not displayed.</dd>
+                    </div>
+                    <div>
+                      <dt>Permission denied</dt>
+                      <dd>Attachment access governed by the record's model access grant.</dd>
+                    </div>
+                  </dl>
+                  <p className="auth-coverage-boundary">
+                    Catalog boundary specimen · schema and lifecycle states only; no attachment,
+                    object, route, or record fixture is represented.
+                  </p>
+                </Panel>
+                <Panel
+                  title="Orphan reconciliation"
+                  description="PruneOrphanResult / ReconcileResult report scanned, orphaned, deleted, and failed object keys."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>States</dt>
+                      <dd>Ready · unavailable · scanning · truncated</dd>
+                    </div>
+                    <div>
+                      <dt>Empty</dt>
+                      <dd>No orphaned or stale objects detected.</dd>
+                    </div>
+                    <div>
+                      <dt>Failure</dt>
+                      <dd>Object deletion failures are listed per key.</dd>
+                    </div>
+                  </dl>
+                  <p className="auth-coverage-boundary">
+                    Catalog boundary specimen · no production storage route or Board consumer screen exists.
+                  </p>
+                </Panel>
+              </div>
+            </Section>
+            <Section
+              id="ai-coverage"
+              title="AI Corporation (orm-ai)"
+              description="Contract-only design specimen for ai models and Board consumers at /board/ai/hq, /board/ai/providers, /board/ai/mission-control, /board/ai/continuity, /board/ai/governance, /board/ai/eval-lab."
+            >
+              <div className="auth-coverage-grid" data-testid="ai-specimen">
+                <Panel
+                  title="Agents"
+                  description="Model: ai.agent · read/create/update granted to authorized AI Corporation users."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>Fields</dt>
+                      <dd>name · kind · provider · status · capability_grants</dd>
+                    </div>
+                    <div>
+                      <dt>States</dt>
+                      <dd>draft · active · retired · emergency stop</dd>
+                    </div>
+                    <div>
+                      <dt>Empty</dt>
+                      <dd>No agents are available to the authorized user.</dd>
+                    </div>
+                    <div>
+                      <dt>Permission denied</dt>
+                      <dd>Requires the registered ai.agent access grant.</dd>
+                    </div>
+                  </dl>
+                </Panel>
+                <Panel
+                  title="Models & providers"
+                  description="Model: ai.provider_profile, ai.model_profile · technical models (developmentOnly)."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>States</dt>
+                      <dd>active · retired</dd>
+                    </div>
+                    <div>
+                      <dt>Permission denied</dt>
+                      <dd>Technical models require development-only access grant.</dd>
+                    </div>
+                  </dl>
+                </Panel>
+                <Panel
+                  title="Agent runs"
+                  description="Model: ai.agent_run · run states and artifacts tied to a work contract."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>States</dt>
+                      <dd>queued · running · succeeded · failed · cancelled</dd>
+                    </div>
+                    <div>
+                      <dt>Empty</dt>
+                      <dd>No runs returned by the authorized consumer.</dd>
+                    </div>
+                  </dl>
+                </Panel>
+                <Panel
+                  title="Obligations & work contracts"
+                  description="Model: ai.obligation, ai.work_contract · execution policy and acceptance criteria."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>States</dt>
+                      <dd>draft · active · completed · rejected</dd>
+                    </div>
+                    <div>
+                      <dt>Permission denied</dt>
+                      <dd>Actions remain unavailable outside registered roles.</dd>
+                    </div>
+                  </dl>
+                </Panel>
+              </div>
+            </Section>
+            <Section
+              id="character-preview"
+              title="Character preview (crew-01)"
+              description="Deterministic preview of crew-01 layers, poses and animation clips loaded by canonical asset ID; no backend route or business data is embedded."
+            >
+              <div className="auth-coverage-grid" data-testid="character-preview-specimen">
+                <Panel
+                  title="Idle clip"
+                  description="Subtle breathing loop; ping-pong playback, pausable, resettable, with reduced-motion still fallback."
+                >
+                  <CharacterPreview
+                    clipId="animation/crew-01-idle/crew-01-idle-clip.json"
+                    fallbackAsset="animation/crew-01-idle/crew-01-idle-frame-01.svg"
+                  />
+                </Panel>
+                <Panel
+                  title="Hair movement clip"
+                  description="Optional subtle hair sway for the anonymous back-facing figure; no facial detail forced."
+                >
+                  <CharacterPreview
+                    clipId="animation/crew-01-hair/crew-01-hair-move-clip.json"
+                    fallbackAsset="animation/crew-01-hair/crew-01-hair-move-frame-01.svg"
+                  />
+                </Panel>
+                <Panel
+                  title="Walk & turn prototype"
+                  description="Representative movement set with aligned pivots and static pose fallback."
+                >
+                  <CharacterPreview
+                    clipId="animation/crew-01-walk/crew-01-walk-clip.json"
+                    fallbackAsset="animation/crew-01-walk/crew-01-walk-frame-01.svg"
+                  />
+                </Panel>
+              </div>
             </Section>
             <Section
               id="charts"

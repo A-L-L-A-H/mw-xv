@@ -20,6 +20,8 @@ describe('@moonwitness/orm-whatsapp addon manifest', () => {
       await installAddons(db, [baseAddon, manifest]);
       const tableExists = await db.schema.hasTable('whatsapp_accounts');
       assert.equal(tableExists, true);
+      const labelCount = await db('whatsapp_labels').count({ count: '*' }).first();
+      assert.equal(Number(labelCount?.count), 5);
     } finally {
       await db.destroy();
     }

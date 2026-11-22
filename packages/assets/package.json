@@ -12,7 +12,9 @@
     "brand:prepare": "node scripts/prepare-brand-master.mjs",
     "fonts:prepare": "node scripts/prepare-fonts.mjs",
     "font:brand:generate": "node scripts/generate-brand-font.mjs",
-    "artwork:prepare": "node scripts/prepare-artwork.mjs"
+    "artwork:prepare": "node scripts/prepare-artwork.mjs",
+    "artwork:derivatives": "node scripts/responsive-derivatives.mjs",
+    "artwork:layers": "node scripts/layered-art-pipeline.mjs"
   },
   "files": [
     "brand",
@@ -22,6 +24,7 @@
     "illustrations",
     "materials",
     "sounds",
+    "animation",
     "manifest.json",
     "licenses.json",
     "README.md"
@@ -35,7 +38,8 @@
     "./materials/*": "./materials/*",
     "./sounds/*": "./sounds/*",
     "./manifest.json": "./manifest.json",
-    "./licenses.json": "./licenses.json"
+    "./licenses.json": "./licenses.json",
+    "./animation/*": "./animation/*"
   },
   "devDependencies": {
     "opentype.js": "^2.0.0",

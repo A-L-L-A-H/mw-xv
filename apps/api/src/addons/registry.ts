@@ -29,6 +29,7 @@ import { whatsappRoutes } from '../routes/whatsapp.routes.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
 import { notificationRoutes } from '../routes/notification.routes.js';
 import { workflowRoutes } from '../routes/workflow.routes.js';
+import { projectRoutes } from '../routes/project.routes.js';
 import { corpusRoutes } from '../routes/corpus.routes.js';
 import { evidenceRoutes } from '../routes/evidence.routes.js';
 import { researchExplanationRoutes } from '../routes/research-explanation.routes.js';
@@ -164,6 +165,9 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'project',
     manifest: projectAddon,
+    async registerRoutes(app) {
+      await app.register(projectRoutes);
+    },
   },
   {
     name: 'workflow',

@@ -161,6 +161,10 @@
       "types": "./dist/components/chart.d.ts",
       "import": "./dist/components/chart.js"
     },
+    "./components/character-preview": {
+      "types": "./dist/components/character-preview.d.ts",
+      "import": "./dist/components/character-preview.js"
+    },
     "./components/effects": {
       "types": "./dist/components/effects.d.ts",
       "import": "./dist/components/effects.js"

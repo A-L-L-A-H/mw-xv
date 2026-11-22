@@ -27,6 +27,49 @@ services:
     volumes:
       - gowa_data:/app/storages
 
+  radius:
+    build:
+      context: .
+      dockerfile: apps/isp/Dockerfile
+    container_name: moonwitness_isp
+    restart: unless-stopped
+    ports:
+      - '1812:1812/udp'
+      - '1813:1813/udp'
+      - '3002:3000'
+    environment:
+      - MW_ISP_DB_PATH=/data/isp.db
+      - MW_ISP_RADIUS_SECRET=testing123
+      - MW_ISP_ADMIN_TOKEN=moonwitness-isp-admin
+      - RUST_LOG=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - isp_data:/data
+
+  control-plane:
+    build:
+      context: .
+      dockerfile: apps/control-plane/Dockerfile
+    container_name: moonwitness-control-plane
+    restart: unless-stopped
+    ports:
+      - '3003:3003'
+    environment:
+      - MW_CONTROL_PLANE_ADDR=0.0.0.0:3003
+      - MW_CONTROL_PLANE_DB_PATH=/data/control-plane.db
+      - DOCKER_BIN=docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - control-plane_data:/data
+    depends_on:
+      - moonwitness-postgres
+      - moonwitness-gowa
+      - moonwitness-isp
+
 volumes:
   pgdata:
   gowa_data:
+  isp_data:
+  control-plane_data:
