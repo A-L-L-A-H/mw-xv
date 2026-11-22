@@ -98,3 +98,17 @@ test('evolution status import accepts only explicit lifecycle states', () => {
     /Unsupported evolution backlog status "planned"/u
   );
 });
+
+test('registry integrity validation can run before roadmap projection repair', async () => {
+  const candidate = await sweepAndConsolidate({ generatedAt: '2026-11-23T00:00:00.000Z' });
+  const roadmapTask = candidate.tasks.find((task) => task.code === 'M0.01');
+  roadmapTask.status = 'todo';
+
+  const integrityOnly = await validateTaskRegistryData(candidate, { checkRoadmapParity: false });
+  assert.equal(integrityOnly.valid, true, integrityOnly.errors.join('\\n'));
+
+  const fullValidation = await validateTaskRegistryData(candidate);
+  assert.equal(fullValidation.valid, false);
+  assert.ok(fullValidation.errors.some((error) => error.includes('Status mismatch on "M0.01"')));
+  assert.ok(fullValidation.errors.some((error) => error.includes('Checkbox mismatch on "M0.01"')));
+});
