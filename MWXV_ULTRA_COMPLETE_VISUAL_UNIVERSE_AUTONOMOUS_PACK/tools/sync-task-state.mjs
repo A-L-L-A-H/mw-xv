@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseTasksRegistry, validateTaskRegistryData } from '../../scripts/tasks/validate-tasks.mjs';
@@ -98,7 +98,8 @@ function renderBoard(tasks) {
       lines.push(`  - Goal: ${task.objective}`);
       lines.push(`  - Depends on: ${task.depends_on.length ? task.depends_on.join(', ') : 'none'}`);
       lines.push(`  - Deliverables: ${task.deliverables.join('; ')}`);
-      lines.push(`  - Acceptance: ${task.acceptance_criteria.join('; ')}`);
+      const criteriaProgress = `${task.acceptance_criteria_state.filter((criterion) => criterion.done).length}/${task.acceptance_criteria_state.length}`;
+      lines.push(`  - Acceptance (${criteriaProgress} complete): ${task.acceptance_criteria_state.map((criterion) => `[${criterion.done ? 'x' : ' '}] ${criterion.text}`).join('; ')}`);
       lines.push(`  - Verify: ${task.verification.join('; ')}`);
       if (task.evidence.length) {
         lines.push(`  - Evidence: ${task.evidence.map((entry) => `\`${entry.command}\` (${entry.exit_code ?? 'not recorded'}) → \`${entry.artifact}\``).join('; ')}`);
@@ -109,8 +110,8 @@ function renderBoard(tasks) {
   return `${lines.join('\n').trimEnd()}\n`;
 }
 
-function renderTask(task, original) {
-  const notes = original.match(/## Notes\n([\s\S]*)$/)?.[1]?.trim() ?? '';
+function renderTask(task) {
+  const notes = task.notes ?? '';
   const lines = [
     `# ${task.id} — ${task.title}`,
     '',
@@ -137,7 +138,7 @@ function renderTask(task, original) {
     '',
     '## Acceptance criteria',
     '',
-    ...task.acceptance_criteria.map((criterion) => `- [${task.status === 'done' || task.status === 'skipped' ? 'x' : ' '}] ${criterion}`),
+    ...task.acceptance_criteria_state.map((criterion) => `- [${criterion.done ? 'x' : ' '}] ${criterion.text}`),
     '',
     '## Verification',
     '',
@@ -159,7 +160,7 @@ function renderTask(task, original) {
     lines.push('- Evidence paths:');
     lines.push(`- Commit SHA: ${task.commit ?? 'pending'}`);
     lines.push('- Reviewer decision:');
-    const residual = task.status === 'blocked' ? task.notes : '';
+    const residual = task.notes ?? '';
     lines.push(`- Residual issues:${residual ? ` ${residual}` : ''}`);
   }
   lines.push('', '## Notes', '', notes, '');
@@ -170,10 +171,16 @@ const checkOnly = process.argv.includes('--check');
 for (const task of plan.tasks) {
   if (typeof task.deliverables === 'string') task.deliverables = [task.deliverables];
   assert.ok(Array.isArray(task.deliverables), `${task.id} deliverables must be an array`);
+  assert.ok(Array.isArray(task.acceptance_criteria), `${task.id} acceptance_criteria must be an array`);
+  assert.ok(Array.isArray(task.acceptance_criteria_state), `${task.id} acceptance_criteria_state must be an array`);
+  assert.equal(
+    task.acceptance_criteria_state.length,
+    task.acceptance_criteria.length,
+    `${task.id} acceptance criterion text/state lengths must match`
+  );
   const phaseDirectory = path.join(packRoot, 'tasks', task.phase);
   const taskPath = path.join(phaseDirectory, `${task.id}.md`);
-  const original = await readText(taskPath);
-  taskFiles.set(taskPath, renderTask(task, original));
+  taskFiles.set(taskPath, renderTask(task));
 }
 validateGraph(plan.tasks);
 const normalizedPlan = `${JSON.stringify(plan, null, 2)}\n`;
@@ -187,6 +194,9 @@ if (checkOnly) {
 } else {
   await writeFile(planPath, normalizedPlan);
   await writeFile(boardPath, normalizedBoard);
-  for (const [taskPath, content] of taskFiles) await writeFile(taskPath, content);
+  for (const [taskPath, content] of taskFiles) {
+    await mkdir(path.dirname(taskPath), { recursive: true });
+    await writeFile(taskPath, content);
+  }
   console.log(`Synchronized ${plan.tasks.length} task records, individual task documents, and TASKS.md.`);
 }
