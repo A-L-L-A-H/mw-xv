@@ -2852,7 +2852,7 @@
           "artifact": "evidence/W6-ambience-pack.md; 12 browser tests passed, including consent, source switching, mute, responsive scene diagnostics"
         }
       ],
-      "commit": null
+      "commit": "5f91fc232062200e83643e0358677335936ee0ff"
     },
     {
       "id": "W6-006",
@@ -2914,7 +2914,7 @@
           "artifact": "evidence/W6-ambience-pack.md; 12 browser tests passed, including consent, source switching, mute, responsive scene diagnostics"
         }
       ],
-      "commit": null
+      "commit": "5f91fc232062200e83643e0358677335936ee0ff"
     },
     {
       "id": "W6-007",
