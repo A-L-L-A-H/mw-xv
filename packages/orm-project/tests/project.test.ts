@@ -25,8 +25,10 @@ import {
   ProjectStage,
   ProjectTask,
   ProjectTaskDependency,
+  buildProjectDependencyGraph,
   isValidProjectMutation,
   manifest,
+  mapProjectTaskToTodoSnapshot,
   mapTodoTaskToProjectTaskFields,
   toPolymorphicResource,
   toWorkContractSource,
@@ -378,5 +380,27 @@ describe('project addon', () => {
       status: 'in_progress',
       due_date: '2026-12-20',
     });
+
+    const roundTrip = mapProjectTaskToTodoSnapshot({
+      ...mapped,
+      external_ref: mapped.external_ref,
+    });
+    expect(roundTrip).toEqual({
+      code: 'TASK-0420',
+      title: 'Sync local board with ORM project',
+      summary: 'Keep local TaskOS and Board aligned.',
+      priority: 'p1',
+      status: 'doing',
+      due_date: '2026-12-20',
+    });
+
+    const task2 = await ProjectTask.query().findOne({ code: 'TASK-0002' }).throwIfNotFound();
+    const deps = await ProjectTaskDependency.query().where({ company_id: 1, active: true });
+    const dag = buildProjectDependencyGraph([task.toJSON(), task2.toJSON()], deps);
+    expect(dag.ready_task_ids).toContain(task.id);
+    expect(dag.blocked_task_ids).toContain(task2.id);
+    const blockedNode = dag.nodes.find((n) => n.id === task2.id);
+    expect(blockedNode?.blocked_by_ids).toContain(task.id);
+    expect(blockedNode?.is_ready).toBe(false);
   });
 });

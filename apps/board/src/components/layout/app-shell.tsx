@@ -10,6 +10,7 @@ import {
   CalendarIcon,
   CheckIcon,
   CodeIcon,
+  ColumnsIcon,
   CompanyIcon,
   GlobeIcon,
   KeyboardIcon,
@@ -130,6 +131,12 @@ function ModelNavigation({
         />
       )}
       <NavItem to="/board/whatsapp" label="WhatsApp" icon={MessageIcon} onNavigate={onNavigate} />
+      <NavItem
+        to="/board/projects"
+        label="Project Command"
+        icon={ColumnsIcon}
+        onNavigate={onNavigate}
+      />
       <NavItem
         to="/board/ai/hq"
         label="AI Mission Control"

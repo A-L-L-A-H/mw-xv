@@ -18,6 +18,8 @@ export {
 } from './models.js';
 export { isValidProjectMutation } from './validation.js';
 export {
+  buildProjectDependencyGraph,
+  mapProjectTaskToTodoSnapshot,
   mapTodoTaskToProjectTaskFields,
   normalizeTodoPriority,
   normalizeTodoStatus,
@@ -25,6 +27,8 @@ export {
   toWorkContractSource,
   type LocalTodoTaskSnapshot,
   type PolymorphicResourceRef,
+  type ProjectDependencyGraphNode,
+  type ProjectDependencyGraphSummary,
   type ProjectPolymorphicModel,
   type ProjectTaskSyncFields,
   type WorkContractSourceRef,

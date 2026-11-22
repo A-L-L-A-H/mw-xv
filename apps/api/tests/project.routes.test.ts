@@ -101,5 +101,72 @@ describe('project addon REST, SDK & workflow integration', () => {
       kind: 'relates_to',
     });
     expect(created.kind).toBe('relates_to');
+
+    const projectModel = client.model<{ id: number; code: string }>('project.project');
+    const { records: projects } = await projectModel.searchRead({ limit: 10 });
+    const project = projects.find((item) => item.code === 'platform-roadmap');
+    expect(project).toBeDefined();
+
+    const boardRes = await client.request<{
+      success: boolean;
+      data: {
+        dag: { blocked_task_ids: number[]; ready_task_ids: number[] };
+      };
+    }>(`/projects/${project!.id}/board`);
+    expect(boardRes.success).toBe(true);
+    expect(boardRes.data.dag.ready_task_ids).toContain(task1!.id);
+    expect(boardRes.data.dag.blocked_task_ids).toContain(task2!.id);
+
+    const syncRes = await client.request<{
+      success: boolean;
+      data: {
+        imported: number;
+        updated: number;
+        snapshots: Array<{ code: string; priority: string; status: string }>;
+      };
+    }>(`/projects/${project!.id}/todo-sync`, {
+      method: 'POST',
+      body: {
+        tasks: [
+          {
+            code: 'TASK-0777',
+            title: 'TaskOS bi-directional sync probe',
+            summary: 'Imported via /projects/:id/todo-sync',
+            priority: 'p0',
+            status: 'doing',
+            due_date: '2026-12-25',
+          },
+        ],
+      },
+    });
+    expect(syncRes.success).toBe(true);
+    expect(syncRes.data.imported).toBe(1);
+    const syncedSnapshot = syncRes.data.snapshots.find((s) => s.code === 'TASK-0777');
+    expect(syncedSnapshot?.priority).toBe('p0');
+    expect(syncedSnapshot?.status).toBe('doing');
+
+    const wcFirst = await client.request<{
+      success: boolean;
+      created: boolean;
+      data: { id: number; source_model: string; source_id: number; risk_tier: string };
+    }>(`/projects/tasks/${task1!.id}/work-contract`, {
+      method: 'POST',
+      body: {},
+    });
+    expect(wcFirst.success).toBe(true);
+    expect(wcFirst.created).toBe(true);
+    expect(wcFirst.data.source_model).toBe('project.task');
+    expect(wcFirst.data.source_id).toBe(task1!.id);
+
+    const wcRepeat = await client.request<{
+      success: boolean;
+      created: boolean;
+      data: { id: number };
+    }>(`/projects/tasks/${task1!.id}/work-contract`, {
+      method: 'POST',
+      body: {},
+    });
+    expect(wcRepeat.created).toBe(false);
+    expect(wcRepeat.data.id).toBe(wcFirst.data.id);
   });
 });

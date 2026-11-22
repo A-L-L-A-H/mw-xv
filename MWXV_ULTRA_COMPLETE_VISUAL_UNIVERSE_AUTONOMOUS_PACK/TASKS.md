@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 44 · skipped 3 · in_progress 0 · blocked 7 · todo 55.
+Status counts: done 46 · skipped 3 · in_progress 0 · blocked 7 · todo 53.
 
 ## W0
 
@@ -162,19 +162,21 @@ Status counts: done 44 · skipped 3 · in_progress 0 · blocked 7 · todo 55.
   - Verify: pnpm test:assets
   - Evidence: `pnpm test:assets` (0) → `evidence/W2-005-asset-inventory.md`; `pnpm --filter @moonwitness/assets inventory --pack=moon-city` (0) → `evidence/W2-005-asset-inventory.md`
 
-- [ ] **W2-006 — Build responsive image derivative pipeline**
+- [x] **W2-006 — Build responsive image derivative pipeline**
   - Goal: Extend Sharp generation for responsive artwork variants, AVIF/WebP where suitable and focal-safe crops.
   - Depends on: W2-004, W1-006
   - Deliverables: Responsive derivative generation and metadata.
   - Acceptance: Master files are never overwritten.; Quality/size presets are documented and measured.; No unconditional AVIF migration without browser compatibility evidence.
   - Verify: pnpm assets:generate; pnpm assets:validate
+  - Evidence: `pnpm --filter @moonwitness/assets artwork:derivatives` (0) → `evidence/W2-006-responsive-derivatives.md`; `pnpm test:assets` (0) → `evidence/W2-006-responsive-derivatives.md`
 
-- [ ] **W2-007 — Build transparent layered-art export pipeline**
+- [x] **W2-007 — Build transparent layered-art export pipeline**
   - Goal: Define and implement layer asset handling for PNG/WebP/AVIF/SVG outputs while preserving alpha.
   - Depends on: W2-002, W2-006
   - Deliverables: Layer validation/export utility and sample fixtures.
   - Acceptance: Transparent layer dimensions and origins align exactly.; Layer ordering and pivot/focal metadata preserved.; No flattening of runtime layers into a single image.
   - Verify: pnpm test:assets
+  - Evidence: `pnpm --filter @moonwitness/assets artwork:layers` (0) → `evidence/W2-007-layered-art-pipeline.md`; `pnpm test:assets` (0) → `evidence/W2-007-layered-art-pipeline.md`
 
 - [x] **W2-008 — Add sprite sheet and frame-sequence metadata**
   - Goal: Define frame dimensions, frame count, timing, loop, direction, pivot and atlas references.

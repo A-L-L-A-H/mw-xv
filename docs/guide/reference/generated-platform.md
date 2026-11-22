@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `18c7ce30f521289a6e2251eafd52424671ad2fbef84762e86f3e8f0443aaae13`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `f11fc9d3437dcefeb5a9e286e0192c62d9e1e3b4534ec6c721de10bc11edb7a4`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -8,13 +8,15 @@ Source fingerprint: `18c7ce30f521289a6e2251eafd52424671ad2fbef84762e86f3e8f0443a
 | ------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@moonwitness/api`              | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
 | `@moonwitness/board`            | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
+| `@moonwitness/control-plane`    | App     | 0.1.0      | `build`, `dev`, `fmt`                                                                                                                                                                                                                                                              |
 | `@moonwitness/desktop`          | App     | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/docs`             | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
+| `@moonwitness/isp`              | App     | 0.1.0      | `build`, `clippy`, `dev`, `fmt`, `migrate`, `start`, `test`                                                                                                                                                                                                                        |
 | `@moonwitness/ui-catalog`       | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `preview`, `test`                                                                                                                                                                                                                                   |
 | `@moonwitness/ai-evaluation`    | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/ai-mcp`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/ai-runtime`       | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
-| `@moonwitness/assets`           | Package | 1.0.0-rc.1 | `artwork:prepare`, `brand:prepare`, `font:brand:generate`, `fonts:prepare`, `inventory`                                                                                                                                                                                            |
+| `@moonwitness/assets`           | Package | 1.0.0-rc.1 | `artwork:derivatives`, `artwork:layers`, `artwork:prepare`, `brand:prepare`, `font:brand:generate`, `fonts:prepare`, `inventory`                                                                                                                                                   |
 | `@moonwitness/auth`             | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/client`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/corpus`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
@@ -138,6 +140,8 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm board:visual:update`
 - `pnpm build`
 - `pnpm ci:affected`
+- `pnpm control-plane:build`
+- `pnpm control-plane:dev`
 - `pnpm db:migrate`
 - `pnpm dependency:candidate`
 - `pnpm dependency:plan`
@@ -179,6 +183,9 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm preflight:fast`
 - `pnpm promotion:approval-check`
 - `pnpm promotion:risk`
+- `pnpm radius:build`
+- `pnpm radius:dev`
+- `pnpm radius:migrate`
 - `pnpm readme:check`
 - `pnpm readme:generate`
 - `pnpm release:changelog`

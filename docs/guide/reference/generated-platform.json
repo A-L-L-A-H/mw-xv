@@ -39,6 +39,12 @@
       "scripts": ["build", "dev", "lint", "preview", "start", "start:built", "typecheck"]
     },
     {
+      "name": "@moonwitness/control-plane",
+      "version": "0.1.0",
+      "directory": "apps/control-plane",
+      "scripts": ["build", "dev", "fmt"]
+    },
+    {
       "name": "@moonwitness/desktop",
       "version": "1.0.0-rc.1",
       "directory": "apps/desktop",
@@ -49,6 +55,12 @@
       "version": "1.0.0-rc.1",
       "directory": "apps/docs",
       "scripts": ["dev", "portal:build", "portal:build:built", "preview", "test", "typecheck"]
+    },
+    {
+      "name": "@moonwitness/isp",
+      "version": "0.1.0",
+      "directory": "apps/isp",
+      "scripts": ["build", "clippy", "dev", "fmt", "migrate", "start", "test"]
     },
     {
       "name": "@moonwitness/ui-catalog",
@@ -79,6 +91,8 @@
       "version": "1.0.0-rc.1",
       "directory": "packages/assets",
       "scripts": [
+        "artwork:derivatives",
+        "artwork:layers",
         "artwork:prepare",
         "brand:prepare",
         "font:brand:generate",
@@ -253,6 +267,11 @@
       "start:built": "node ../../scripts/prepare-board-standalone.mjs && node ../../scripts/start-board.mjs",
       "typecheck": "tsc --noEmit"
     },
+    "@moonwitness/control-plane": {
+      "build": "docker build -t mw-xv-control-plane:latest -f apps/control-plane/Dockerfile .",
+      "dev": "go run .",
+      "fmt": "go fmt ./..."
+    },
     "@moonwitness/desktop": {
       "build": "tsc",
       "test": "vitest run",
@@ -265,6 +284,15 @@
       "preview": "vite preview",
       "test": "playwright test",
       "typecheck": "tsc -p tsconfig.json"
+    },
+    "@moonwitness/isp": {
+      "build": "cargo build --release",
+      "clippy": "cargo clippy",
+      "dev": "cargo run",
+      "fmt": "cargo fmt",
+      "migrate": "cargo run -- --migrate",
+      "start": "./target/release/moonwitness-isp",
+      "test": "cargo test"
     },
     "@moonwitness/ui-catalog": {
       "build": "pnpm --filter @moonwitness/ui build && tsc -p tsconfig.json && vite build",
@@ -289,6 +317,8 @@
       "typecheck": "tsc --noEmit -p tsconfig.check.json"
     },
     "@moonwitness/assets": {
+      "artwork:derivatives": "node scripts/responsive-derivatives.mjs",
+      "artwork:layers": "node scripts/layered-art-pipeline.mjs",
       "artwork:prepare": "node scripts/prepare-artwork.mjs",
       "brand:prepare": "node scripts/prepare-brand-master.mjs",
       "font:brand:generate": "node scripts/generate-brand-font.mjs",
@@ -415,6 +445,8 @@
       "board:visual:update": "pnpm test:e2e --grep 'responsive screen audit|responsive protected screens' --update-snapshots",
       "build": "node scripts/ci/build-workspace.mjs",
       "ci:affected": "node scripts/select-affected.mjs",
+      "control-plane:build": "pnpm --filter @moonwitness/control-plane build",
+      "control-plane:dev": "pnpm --filter @moonwitness/control-plane dev",
       "db:migrate": "pnpm --filter @moonwitness/api db:migrate",
       "dependency:candidate": "node scripts/dependency-candidate.mjs",
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
@@ -456,6 +488,9 @@
       "preflight:fast": "node scripts/preflight-fast.mjs",
       "promotion:approval-check": "node scripts/check-promotion-approval.mjs",
       "promotion:risk": "node scripts/check-promotion-risk.mjs",
+      "radius:build": "pnpm --filter @moonwitness/isp build",
+      "radius:dev": "pnpm --filter @moonwitness/isp dev",
+      "radius:migrate": "pnpm --filter @moonwitness/isp migrate",
       "readme:check": "node scripts/docs/update-readme.mjs --check",
       "readme:generate": "pnpm docs:generate",
       "release:changelog": "node scripts/generate-changelog.mjs",
@@ -9754,6 +9789,18 @@
     },
     {
       "method": "GET",
+      "path": "/projects/:id/board"
+    },
+    {
+      "method": "POST",
+      "path": "/projects/:id/todo-sync"
+    },
+    {
+      "method": "POST",
+      "path": "/projects/tasks/:id/work-contract"
+    },
+    {
+      "method": "GET",
       "path": "/providers"
     },
     {
@@ -9997,5 +10044,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "18c7ce30f521289a6e2251eafd52424671ad2fbef84762e86f3e8f0443aaae13"
+  "generatedFromSha256": "f11fc9d3437dcefeb5a9e286e0192c62d9e1e3b4534ec6c721de10bc11edb7a4"
 }

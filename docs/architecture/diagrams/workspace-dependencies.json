@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "3c3f9dfa109e324863906ecbfcf374502fc5067f716cabf9547e47374ae21560",
+  "sourceSha256": "53c476b555c8c6066eb7d15671933f2de6c8a7fb3223774347a3d73c2856ffed",
   "packages": [
     {
       "name": "@moonwitness/ai-evaluation",
@@ -52,6 +52,12 @@
       "manifest": "packages/client"
     },
     {
+      "name": "@moonwitness/control-plane",
+      "kind": "app",
+      "version": "0.1.0",
+      "manifest": "apps/control-plane"
+    },
+    {
       "name": "@moonwitness/corpus",
       "kind": "package",
       "version": "1.0.0-rc.1",
@@ -74,6 +80,12 @@
       "kind": "package",
       "version": "1.0.0-rc.1",
       "manifest": "packages/eslint-config"
+    },
+    {
+      "name": "@moonwitness/isp",
+      "kind": "app",
+      "version": "0.1.0",
+      "manifest": "apps/isp"
     },
     {
       "name": "@moonwitness/jobs",

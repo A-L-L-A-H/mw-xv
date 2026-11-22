@@ -1022,7 +1022,7 @@
       "id": "W2-006",
       "phase": "W2",
       "title": "Build responsive image derivative pipeline",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -1050,14 +1050,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/assets artwork:derivatives",
+          "exit_code": 0,
+          "artifact": "evidence/W2-006-responsive-derivatives.md"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-006-responsive-derivatives.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W2-007",
       "phase": "W2",
       "title": "Build transparent layered-art export pipeline",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -1084,7 +1095,18 @@
       "risk": "medium",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/assets artwork:layers",
+          "exit_code": 0,
+          "artifact": "evidence/W2-007-layered-art-pipeline.md"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-007-layered-art-pipeline.md"
+        }
+      ],
       "commit": null
     },
     {
