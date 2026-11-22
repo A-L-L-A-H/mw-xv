@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 43 · skipped 3 · in_progress 1 · blocked 7 · todo 55.
+Status counts: done 44 · skipped 3 · in_progress 0 · blocked 7 · todo 55.
 
 ## W0
 
@@ -72,13 +72,13 @@ Status counts: done 43 · skipped 3 · in_progress 1 · blocked 7 · todo 55.
   - Verify: documentation review
   - Evidence: `approved-direction design specification against current UI tokens, fonts, assets and source` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/experience-tier-grammar.md`
 
-- [ ] **W1-003 — Define character identity rules** — **IN PROGRESS**
+- [x] **W1-003 — Define character identity rules**
   - Goal: Specify repeatable identity sheets and safe depiction rules for recurring cast.
   - Depends on: W1-001
   - Deliverables: Character Bible template and continuity contract.
   - Acceptance: Stable character IDs, silhouette, proportions, outfit, palette and signature props.; Default crew art can use anonymous/back-facing hooded silhouettes; identifiable faces require approved identity design.; No random changes to face, hair, clothing or body proportions across scenes.; Do not depict Allah or represent sacred figures visually; use text/name only where product content explicitly requires it.
   - Verify: character bible schema validation
-  - Evidence: `character policy/template review` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/character-bible-template.md`
+  - Evidence: `approved visual direction 2026-11-22` (0) → `docs/design/visual-direction.md`; `recorded approval` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/visual-universe-bible-approved.md`; `schema/template` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/character-bible-template.md`
 
 - [x] **W1-004 — Define anime rendering and color pipeline**
   - Goal: Specify line weight, cel-shading, shadows, highlight, grain and color grading.

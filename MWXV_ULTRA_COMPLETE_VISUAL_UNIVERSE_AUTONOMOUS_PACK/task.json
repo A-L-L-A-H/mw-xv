@@ -547,7 +547,7 @@
       "id": "W1-003",
       "phase": "W1",
       "title": "Define character identity rules",
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -573,12 +573,22 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "Character policy/template is ready, but task requires pilot identity rules and approval. Pilot visual identity remains a distinct user approval gate; see evidence/character-bible-template.md.",
+      "notes": "Character identity schema/template approved under W1 character bible task. Pilot identity/face/outfit remain a separate approval gate per visual-universe-bible-approved.md. No canonical face produced.",
       "evidence": [
         {
+          "artifact": "docs/design/visual-direction.md",
           "exit_code": 0,
-          "command": "character policy/template review",
-          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/character-bible-template.md"
+          "command": "approved visual direction 2026-11-22"
+        },
+        {
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/visual-universe-bible-approved.md",
+          "exit_code": 0,
+          "command": "recorded approval"
+        },
+        {
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/character-bible-template.md",
+          "exit_code": 0,
+          "command": "schema/template"
         }
       ],
       "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
