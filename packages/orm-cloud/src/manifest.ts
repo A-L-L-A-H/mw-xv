@@ -1,0 +1,106 @@
+import { defineAddon, ref, seed } from '@moonwitness/orm';
+import { ModelAccess } from '@moonwitness/orm-base';
+import { CloudProvider, CloudServer, CloudDeploymentTarget, CloudApp, CloudDeployment } from './models/index.js';
+
+export const manifest = defineAddon({
+  name: 'cloud',
+  version: '1.0.0',
+  depends: ['base', 'project', 'subscription'],
+  models: [CloudProvider, CloudServer, CloudDeploymentTarget, CloudApp, CloudDeployment],
+  data: [
+    seed(CloudProvider, 'cloud.provider_docker_agent', {
+      company_id: ref('base.company_default'),
+      name: 'Local Docker Agent',
+      code: 'docker_agent',
+      type: 'docker_agent',
+      endpoint: 'unix:///var/run/docker.sock',
+      access_key: '',
+      secret_key: '',
+      region: 'local',
+      is_active: true,
+    }),
+    seed(CloudProvider, 'cloud.provider_coolify', {
+      company_id: ref('base.company_default'),
+      name: 'Coolify Cloud',
+      code: 'coolify',
+      type: 'coolify',
+      endpoint: 'https://coolify.moonwitness.local',
+      access_key: '',
+      secret_key: '',
+      region: 'cloud',
+      is_active: true,
+    }),
+    seed(ModelAccess, 'cloud.access_user_provider_read', {
+      group: ref('base.group_user'),
+      model_name: CloudProvider.modelName,
+      read: true,
+      create: false,
+      write: false,
+      unlink: false,
+    }),
+    seed(ModelAccess, 'isp.access_user_server_read', {
+      group: ref('base.group_user'),
+      model_name: CloudServer.modelName,
+      read: true,
+      create: false,
+      write: false,
+      unlink: false,
+    }),
+    seed(ModelAccess, 'cloud.access_user_target_read', {
+      group: ref('base.group_user'),
+      model_name: CloudDeploymentTarget.modelName,
+      read: true,
+      create: false,
+      write: false,
+      unlink: false,
+    }),
+    seed(ModelAccess, 'cloud.access_user_app_read', {
+      group: ref('base.group_user'),
+      model_name: CloudApp.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: false,
+    }),
+    seed(ModelAccess, 'cloud.access_user_deployment_read', {
+      group: ref('base.group_user'),
+      model_name: CloudDeployment.modelName,
+      read: true,
+      create: false,
+      write: false,
+      unlink: false,
+    }),
+  ],
+  menus: [
+    {
+      model: CloudProvider.modelName,
+      label: 'Cloud Providers',
+      group: 'Cloud',
+      sequence: 40,
+    },
+    {
+      model: CloudServer.modelName,
+      label: 'Cloud Servers',
+      group: 'Cloud',
+      sequence: 41,
+    },
+    {
+      model: CloudDeploymentTarget.modelName,
+      label: 'Deployment Targets',
+      group: 'Cloud',
+      sequence: 42,
+    },
+    {
+      model: CloudApp.modelName,
+      label: 'Applications',
+      group: 'Cloud',
+      sequence: 43,
+    },
+    {
+      model: CloudDeployment.modelName,
+      label: 'Deployments',
+      group: 'Cloud',
+      sequence: 44,
+    },
+  ],
+});

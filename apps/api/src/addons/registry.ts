@@ -15,6 +15,8 @@ import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
 import { manifest as aiAddon } from '@moonwitness/orm-ai';
 import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
 import { whatsappManifest } from '@moonwitness/orm-whatsapp';
+import { manifest as ispAddon } from '@moonwitness/orm-isp';
+import { manifest as cloudAddon } from '@moonwitness/orm-cloud';
 import { createAttachmentScanner, type AttachmentScanner } from '../whatsapp/clamav-scanner.js';
 import type { createVideoPoster } from '../whatsapp/media-thumbnail.js';
 import { checkWhatsAppGatewayVersion } from '../whatsapp/version-guard.js';
@@ -203,6 +205,14 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'orm-storage',
     manifest: storageAddon,
+  },
+  {
+    name: 'isp',
+    manifest: ispAddon,
+  },
+  {
+    name: 'cloud',
+    manifest: cloudAddon,
   },
   {
     name: 'ai',
