@@ -91,6 +91,9 @@ importers:
       '@moonwitness/orm-base':
         specifier: workspace:*
         version: link:../../packages/orm-base
+      '@moonwitness/orm-crm':
+        specifier: workspace:*
+        version: link:../../packages/orm-crm
       '@moonwitness/orm-integration':
         specifier: workspace:*
         version: link:../../packages/orm-integration
@@ -109,9 +112,15 @@ importers:
       '@moonwitness/orm-request':
         specifier: workspace:*
         version: link:../../packages/orm-request
+      '@moonwitness/orm-sales':
+        specifier: workspace:*
+        version: link:../../packages/orm-sales
       '@moonwitness/orm-storage':
         specifier: workspace:*
         version: link:../../packages/orm-storage
+      '@moonwitness/orm-subscription':
+        specifier: workspace:*
+        version: link:../../packages/orm-subscription
       '@moonwitness/orm-whatsapp':
         specifier: workspace:*
         version: link:../../packages/orm-whatsapp

@@ -95,6 +95,7 @@
         "artwork:layers",
         "artwork:prepare",
         "brand:prepare",
+        "contact-sheets",
         "font:brand:generate",
         "fonts:prepare",
         "inventory"
@@ -339,6 +340,7 @@
       "artwork:layers": "node scripts/layered-art-pipeline.mjs",
       "artwork:prepare": "node scripts/prepare-artwork.mjs",
       "brand:prepare": "node scripts/prepare-brand-master.mjs",
+      "contact-sheets": "node scripts/generate-contact-sheets.mjs",
       "font:brand:generate": "node scripts/generate-brand-font.mjs",
       "fonts:prepare": "node scripts/prepare-fonts.mjs",
       "inventory": "node scripts/asset-inventory.mjs"
@@ -9832,6 +9834,10 @@
       "path": "/projects/tasks/:id/work-contract"
     },
     {
+      "method": "POST",
+      "path": "/projects/tasks/:id/work-contract/sync-stage"
+    },
+    {
       "method": "GET",
       "path": "/providers"
     },
@@ -10076,5 +10082,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "4db0eac467c617467e7b2e66b5ed243e70918fc84655c021c720f0b58edf9a7a"
+  "generatedFromSha256": "035e23e36e95152814fc09ffecfffabfbcf03f015634b2e66a8e0ef3e9a4427f"
 }

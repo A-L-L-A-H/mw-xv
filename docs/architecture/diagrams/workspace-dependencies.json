@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "4c3c6a3820157eae25c2df69b7513a3557d04437d10277cfda50610d5e2bcd50",
+  "sourceSha256": "8c1c57c8d13d1615b8308d7ac18debc0bdfe48f19bbc267eaa077bc9cb668074",
   "packages": [
     {
       "name": "@moonwitness/ai-evaluation",
@@ -367,6 +367,12 @@
     },
     {
       "from": "@moonwitness/api",
+      "to": "@moonwitness/orm-crm",
+      "kind": "runtime",
+      "manifest": "apps/api"
+    },
+    {
+      "from": "@moonwitness/api",
       "to": "@moonwitness/orm-integration",
       "kind": "runtime",
       "manifest": "apps/api"
@@ -403,7 +409,19 @@
     },
     {
       "from": "@moonwitness/api",
+      "to": "@moonwitness/orm-sales",
+      "kind": "runtime",
+      "manifest": "apps/api"
+    },
+    {
+      "from": "@moonwitness/api",
       "to": "@moonwitness/orm-storage",
+      "kind": "runtime",
+      "manifest": "apps/api"
+    },
+    {
+      "from": "@moonwitness/api",
+      "to": "@moonwitness/orm-subscription",
       "kind": "runtime",
       "manifest": "apps/api"
     },

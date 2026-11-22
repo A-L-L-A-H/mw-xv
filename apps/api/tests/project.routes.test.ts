@@ -168,5 +168,25 @@ describe('project addon REST, SDK & workflow integration', () => {
     });
     expect(wcRepeat.created).toBe(false);
     expect(wcRepeat.data.id).toBe(wcFirst.data.id);
+
+    // Advance linked WorkContract to in_review -> task syncs to review stage/status.
+    await db('ai_work_contracts').where({ id: wcFirst.data.id }).update({ status: 'in_review' });
+    const syncReview = await client.request<{
+      success: boolean;
+      data: { task: { status: string }; advanced: boolean };
+    }>(`/projects/tasks/${task1!.id}/work-contract/sync-stage`, { method: 'POST', body: {} });
+    expect(syncReview.success).toBe(true);
+    expect(syncReview.data.advanced).toBe(true);
+    expect(syncReview.data.task.status).toBe('review');
+
+    // Advance linked WorkContract to accepted -> task syncs to done stage/status.
+    await db('ai_work_contracts').where({ id: wcFirst.data.id }).update({ status: 'accepted' });
+    const syncDone = await client.request<{
+      success: boolean;
+      data: { task: { status: string }; advanced: boolean };
+    }>(`/projects/tasks/${task1!.id}/work-contract/sync-stage`, { method: 'POST', body: {} });
+    expect(syncDone.success).toBe(true);
+    expect(syncDone.data.advanced).toBe(true);
+    expect(syncDone.data.task.status).toBe('done');
   });
 });
