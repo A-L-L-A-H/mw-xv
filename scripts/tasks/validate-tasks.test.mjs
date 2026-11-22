@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { parseTasksRegistry } from './validate-tasks.mjs';
+import { parseTasksRegistry, toRoadmapTaskStatus } from './validate-tasks.mjs';
 
 const require = createRequire(new URL('../../packages/knowledge/package.json', import.meta.url));
 const Ajv = require('ajv');
@@ -104,4 +104,14 @@ test('TaskOS registry parser reports invalid JSON clearly', () => {
 
 test('TaskOS registry parser accepts syntactically valid JSON', () => {
   assert.deepEqual(parseTasksRegistry('{"tasks":[]}'), { tasks: [] });
+});
+
+test('TaskOS statuses map consistently to the roadmap projection', () => {
+  assert.equal(toRoadmapTaskStatus('done'), 'complete');
+  assert.equal(toRoadmapTaskStatus('doing'), 'in_progress');
+  assert.equal(toRoadmapTaskStatus('review'), 'in_progress');
+  assert.equal(toRoadmapTaskStatus('blocked'), 'blocked');
+  assert.equal(toRoadmapTaskStatus('backlog'), 'todo');
+  assert.equal(toRoadmapTaskStatus('todo'), 'todo');
+  assert.equal(toRoadmapTaskStatus('unknown'), null);
 });
