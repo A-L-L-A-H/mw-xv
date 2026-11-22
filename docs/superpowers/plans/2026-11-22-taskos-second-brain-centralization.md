@@ -1,5 +1,8 @@
 # TaskOS & Second Brain Centralization Implementation Plan
 
+> **Historical planning artifact — not a current status report or active backlog.** The original 1,346-task estimate was not verified. On 2026-11-23, `docs/tasks/tasks.json` was confirmed zero-byte; the verified source inventory contains 627 candidate IDs, not a restored registry. No task records may be inferred from this plan or its original checklist. Current status and approval gates are maintained in `docs/tasks/README.md`, `docs/tasks/RECOVERY-INVENTORY.md`, and `docs/roadmap/STABILIZATION-PLAN.md`. Do not resume execution from this historical plan until TaskOS recovery is validated.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Centralize all project work items, documentation backlog, and governance into a unified Smart TaskOS + Second Brain (`raw/`, `brain/`, `wiki/`), Release Manager, Changelog Engine, and Blueprint Registry powered by `apps/todo` (`moonwitness-dx`: Rust 2024 + SQLite + React 19 + MCP) with a canonical lossless JSON v2 contract (`docs/tasks/tasks.json`).
@@ -462,7 +465,7 @@ git commit --allow-empty -m "chore(tasks): complete TaskOS and Second Brain cent
 
 ## Execution Options
 
-Plan complete and saved to `docs/superpowers/plans/2026-11-22-taskos-second-brain-centralization.md`. Two execution options:
+This plan document was created and saved; that does **not** prove its implementation steps completed. The original execution checklist is historical context only. Use the current stabilization and TaskOS recovery records before planning or executing new work.
 
 1. **Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 2. **Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
