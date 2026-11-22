@@ -1,26 +1,16 @@
-## Promotion candidate freshness correction
+# Current stabilization checkpoint — 2026-11-23
 
-- PR #37 head SHA was observed as `b16f6f4ef57942f710f605c6f5814af563ec017b`, 22 commits ahead of main.
-- The PR's managed promotion report still references earlier source `b2951b4`; associated CI runs `45055213276` and `45055208613` are both **cancelled**. The commit status API has no statuses for observed head `b16f6f4`.
-- This is a source/report mismatch. Do not merge PR #37 until promotion automation refreshes the report and required CI runs complete on the exact current head. Any subsequent docs commit will move the head again, so use the latest PR head SHA and checks at review time.
-- Issues #40–#43 are open; work status is complete, delivery stage remains planned, and the blocker is CI/approval.
-
-## Progress reconciliation — 2026-11-23
-
-- **S0:** Fast-forward sync from main to dev completed earlier. Current development is now 19 commits ahead of main and has an open promotion PR #37; keep it unmerged until approval and exact-source CI finish.
-- **S2:** M13.01 and M13.02–M13.08 issues were reconciled and closed after exact-source CI success and promotion. Missing issues M13.02 and M13.03 were created (#38 and #39). New dev milestones M13.09–M13.12 now have open issues #40–#43; work is recorded complete, delivery remains planned until candidate CI/promotion is verified.
-- **S3:** README, support policy, Desktop TODO, Desktop architecture and Node support review ledger now consistently reflect configured Node.js 24 (root engines, Docker, CI and Desktop package). Runtime support review for other toolchain components is still overdue.
-- **S4:** Promotion PR #37 is open and requires approval. Latest known exact-source CI run [45055213276](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45055213276) was running on candidate `b2951b4`; verify the latest run after this docs commit because each push refreshes the promotion candidate.
-- **S5:** Current dev evidence covers M13.01–M13.12. M13.09–M13.12 narrow checks are recorded as passed, but full PostgreSQL and Playwright E2E were not run in the milestone evidence. Visual DNA core is implemented; external-repository profile intake/export remains a follow-up gap.
-- **S1:** TaskOS recovery remains blocked: `docs/tasks/tasks.json` is still zero-byte. No task records were fabricated.
-
-## Current branch update — 2026-11-23
-
-- `main`: `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
-- `dev`: latest promotion candidate source is `0a33aff64d79d51e30e2298ff64d6a68da5ce6a4`; branch comparison reports 16 commits ahead of main.
-- Open promotion PR [#37](https://github.com/A-L-L-A-H/mw-xv/pull/37) carries M13.09–M13.12. Exact-source CI run [45054939356](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45054939356) was cancelled; risk report requires approval. Do not merge or claim verified-dev/in-main for these tasks yet.
-- M13.09–M13.12 have narrow implementation evidence (local package/API tests, typecheck/lint/UI boundary checks), but full PostgreSQL integration and Playwright Chromium E2E are explicitly not run in those evidence batches.
-- TaskOS remains zero-byte at the current dev source. Its README now documents the temporary SOT boundary; registry reconstruction remains blocked on source inventory and provenance.
+- **Stable branch:** `main` remains at `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
+- **Development branch:** latest confirmed dev source before this checkpoint update is `5a8bd9c5c99ce5d7306fbd3f1f54b21a38d9d259`; last branch comparison reported 74 commits ahead and 0 behind. Continue dev-first. No force push, rewrite, merge or deployment has occurred.
+- **PR #37:** managed promotion report currently references `6da2f0ba969a`, behind the confirmed dev source. Refresh it and verify the latest exact source before considering promotion. Risk classification requires maintainer/CODEOWNER approval.
+- **CI:** latest broad application CI run observed for the prior candidate `e9b14f6` was cancelled when later changes advanced the branch. On the PR's current report snapshot, documentation path detection passed, docs build was queued, and promotion/report automation was still running. A separate CI workflow run for the confirmed dev source was pending with no completed job evidence observed. No full exact-current-SHA test suite is claimed as passed.
+- **TaskOS:** `docs/tasks/tasks.json` is still zero-byte. The [recovery inventory](../tasks/RECOVERY-INVENTORY.md) records 627 candidate task IDs from eight source groups, with no duplicates found in static inventory and an expected status split of 468 done, 49 doing, 89 todo and 21 blocked. These are source-derived migration expectations, not live registry contents. No records have been written.
+- **TaskOS protection:** validator rejects empty/malformed registry, requires repository-local provenance, checks projects, unknown and duplicate dependency/block references, reciprocal graph edges, cycles and exact roadmap-index/checkbox status parity. Sync refuses to write unless validation passes. Importer is fail-closed, dry-run by default, deterministic for a fixed timestamp and refuses to overwrite a non-empty registry.
+- **Visual Universe:** its 109 records are represented as a project in the TaskOS importer, with the original delegated task payload retained under `metadata`. The local task.json/TASKS.md/task-card files are projections; evidence paths and cleared fields follow TaskOS. Unknown execution exit codes display as “not recorded”.
+- **S1 execution blocker:** `pnpm test:taskos`, the 627-record dry-run, schema/provenance/graph/status validation and the one-time recovery write still need execution on a complete checked-out workspace or a completed exact-SHA CI run. The registry is **not restored**.
+- **M13:** M13.01–M13.12 are recorded complete on dev. M13.09–M13.12 remain pending exact-current-SHA CI, approval and promotion. Their narrow milestone checks did not include full PostgreSQL integration and Playwright E2E.
+- **Issue tracking:** M13.09–M13.12 remain open; TaskOS recovery is tracked in [issue #44](https://github.com/A-L-L-A-H/mw-xv/issues/44).
+- **Release:** M12.14 stable-release approval remains unresolved. Promotion, stable release and application deployment are separate gates.
 
 # MW-XV Stabilization & Source-of-Truth Recovery Plan
 
@@ -45,7 +35,7 @@
 - [x] No force push or history rewrite.
 - [ ] Reconfirm `main` and `dev` equality after future pushes.
 
-### S1 — TaskOS recovery (P0, BLOCKED until source inventory)
+### S1 — TaskOS recovery (P0, implementation prepared; execution/restore blocked)
 - [x] Confirmed `docs/tasks/tasks.json` is tracked and zero-byte on the current dev tree. The historical cause of truncation is not yet established.
 - [x] Inventory the current migration sources and counts in [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md), including the Visual Universe scoped task pack.
 - [x] Map source ownership: 627 candidate records across 8 source groups; root todo.md is a pointer, old completed lists remain historical, and Visual Universe metadata is preserved as a TaskOS project.
@@ -59,12 +49,12 @@
 ### S2 — Roadmap and Issue lifecycle reconciliation (P1)
 - [ ] Recompute task counts from `ROADMAP.md` and `docs/roadmap/tasks.json`; remove stale static totals.
 - [ ] Cross-check M13.01–M13.08 source status and evidence.
-- [ ] Reconcile issues #32–#36 against exact source/evidence/merged SHA and delivery lifecycle; update managed fields only, preserve human fields/comments, then close only when contract permits.
+- [x] Reconcile completed issue lifecycle #32–#36 against promoted sources/evidence; preserve human fields and comments.
 - [ ] Audit stale open/closed issues and duplicate task markers; no mass-close.
 - [ ] Ensure roadmap index, evidence links, managed Issue blocks and generated progress artifacts agree.
 
 ### S3 — Runtime/toolchain documentation (P1)
-- [ ] Reconcile all Node references to Node 24 where root engines, Docker, CI setup and Desktop package agree.
+- [x] Align primary Node policy references across root engines, Docker, CI setup, Desktop package and docs to Node 24; runtime ledger refresh remains a separate review.
 - [ ] Refresh runtime support review ledger (Node reviewed; other overdue entries remain separately due).
 - [ ] Validate README Quickstart, support policy, Desktop architecture, Desktop TODO and Docker/CI statements.
 - [ ] Keep exact pnpm version/config consistent with Corepack, CI and package-manager policy.
@@ -72,7 +62,7 @@
 ### S4 — Release/CI truth audit (P1)
 - [ ] Inspect required checks and rulesets on `main` and `dev`; record access/API limitations.
 - [ ] Fetch PR #31 CI runs and verify all required jobs on exact source SHA; resolve pending/ambiguous checks.
-- [ ] Verify M12.14 approval, CODEOWNER and release blockers from source/evidence; don't infer from merge.
+- [x] Confirm M12.14 stable-release approval remains a separate unresolved human gate; do not infer from merge.
 - [ ] Confirm promotion workflow cannot promote stale heads and promotion report correctly distinguishes pending, failed, skipped and success.
 - [ ] Confirm release tagging/publication remains gated and deployment is not implicitly authorized.
 
@@ -119,3 +109,12 @@
 - The Visual Universe project is mapped into global TaskOS; its local `task.json`, `TASKS.md` and task cards are projections from the global registry. Local projection tests were added.
 - `pnpm test:taskos` is included in the unit-test runner, but has not yet been observed passing on a complete, non-cancelled exact-SHA CI run.
 - `docs/tasks/tasks.json` remains zero-byte. No registry records were written and no claim of restored SOT is made.
+
+## Additional implementation notes — 2026-11-23
+
+- Added a shared TaskOS-to-roadmap status map so `review` projects to `in_progress` (not silently to `todo`); the validator now compares exact lifecycle values against `docs/roadmap/tasks.json` as well as ROADMAP checkboxes.
+- Dependency and `blocks` edges must be reciprocal and unique, not merely reference existing IDs.
+- Visual Universe projection now applies canonical TaskOS evidence paths/commit/owner/notes/risk and cleared fields; retained source metadata no longer overrides an intentional canonical clear.
+- Regression tests cover skipped state, canonical evidence additions, absent exit-code metadata, cleared canonical values and status mappings.
+- The unit CI runner includes `pnpm test:taskos`. These test definitions are committed; execution remains pending.
+
