@@ -1557,6 +1557,17 @@
       "format": "ttf",
       "license": "SIL Open Font License 1.1",
       "sha256": "F476D2AAC31340C6F5ECB4F2750331F17548B18E29E4CD351ADBB006F609E29A"
+    },
+    {
+      "path": "source/world/characters/character-registry.json",
+      "kind": "source",
+      "variant": "canonical-character-registry",
+      "format": "json",
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
     }
   ]
 }

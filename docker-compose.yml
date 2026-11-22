@@ -58,9 +58,11 @@ services:
       - '3003:3003'
     environment:
       - MW_CONTROL_PLANE_ADDR=0.0.0.0:3003
+      - MW_CONTROL_PLANE_DB_PATH=/data/control-plane.db
       - DOCKER_BIN=docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - control-plane_data:/data
     depends_on:
       - moonwitness-postgres
       - moonwitness-gowa
@@ -70,3 +72,4 @@ volumes:
   pgdata:
   gowa_data:
   isp_data:
+  control-plane_data:
