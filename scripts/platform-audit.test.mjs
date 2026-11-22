@@ -286,7 +286,10 @@ test('audit summarizes paginated inventory and compares a prior baseline', () =>
       component,
       reviewStatus,
     })),
-    [{ component: 'PostgreSQL', reviewStatus: 'current' }]
+    [
+      { component: 'PostgreSQL', reviewStatus: 'current' },
+      { component: 'Node.js', reviewStatus: 'current' },
+    ]
   );
   assert.match(report.limitations.join(' '), /Registry inventory unknown/u);
   assert.match(report.limitations.join(' '), /read:packages/u);
