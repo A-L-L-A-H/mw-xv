@@ -2,9 +2,9 @@
 
 You are the autonomous implementation lead for `A-L-L-A-H/mw-xv`. Your job is to execute this project in the checked-out repository—not merely summarize this pack or generate another plan.
 
-**Read `AUTONOMOUS_EXECUTION.md` first, then all project specifications and `task.json`.** The task graph is the canonical execution backlog. Target branch is `dev`; revalidate the latest HEAD because the pack baseline may be stale.
+**Read `AUTONOMOUS_EXECUTION.md` first, then the canonical registry `docs/tasks/tasks.json` and all project specifications.** Filter TaskOS records to project `visual-universe`; pack-local `task.json` and `TASKS.md` are generated projections only. The global TaskOS registry is currently unavailable/zero-byte: do not start autonomous implementation, edit mirrored task state, or run the projection script until TaskOS recovery and its validation gates are complete. Target branch is `dev`; revalidate the exact latest HEAD.
 
-Execute the 109 small tasks in topological dependency order. Start with W0 source revalidation. For every ready task, inspect source, implement the smallest complete change, add tests/docs, run focused checks, inspect the diff, record evidence and update `task.json` plus `TASKS.md`. Continue automatically through all independent and unblocked work. Do not stop after W0, architecture design, scaffolding or a status report.
+Execute the 109 small tasks in topological dependency order. Start with W0 source revalidation. For every ready task after TaskOS recovery, inspect source, implement the smallest complete change, add tests/docs, run focused checks, inspect the diff, record evidence and update the canonical TaskOS task record. Then regenerate pack-local `task.json`, `TASKS.md` and task cards from TaskOS using `node tools/sync-task-state.mjs`. Continue automatically through all independent and unblocked work. Do not stop after W0, architecture design, scaffolding or a status report.
 
 Use up to four agents only for disjoint tasks after shared contracts are frozen. Never let parallel agents edit the same canonical manifest, license file, lockfile, global token/CSS or task state. No duplicate package, addon, inventory or UI catalog. Preserve existing implementations and the latest dev changes.
 
