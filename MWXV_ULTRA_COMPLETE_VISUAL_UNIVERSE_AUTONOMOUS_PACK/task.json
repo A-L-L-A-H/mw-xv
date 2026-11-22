@@ -3773,7 +3773,7 @@
       "id": "W8-007",
       "phase": "W8",
       "title": "Implement visual coverage for notification addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3808,8 +3808,34 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Reused the actual authenticated notification inbox and canonical icons. Fixed the bell so unavailable count and stale cached inbox data are distinct from a verified zero/empty inbox; added retry and browser coverage. No additional routes or fixtures.",
+      "evidence": [
+        {
+          "command": "pnpm test:e2e:visual --grep \"canonical activity, notification, and cron icons\"",
+          "artifact": "apps/board/e2e/visual-audit.spec.ts",
+          "exit_code": 0
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "artifact": "apps/board/src/components/layout/notification-bell.tsx",
+          "exit_code": 0
+        },
+        {
+          "command": "pnpm board:ui:check",
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "exit_code": 0
+        },
+        {
+          "command": "pnpm test:assets",
+          "artifact": "packages/assets/tests",
+          "exit_code": 0
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "exit_code": 0
+        }
+      ],
       "commit": null
     },
     {

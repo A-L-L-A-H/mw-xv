@@ -336,6 +336,7 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
     },
   ];
   const browserErrors: string[] = [];
+  let notificationRequestFails = false;
   page.on('pageerror', (error) => browserErrors.push(error.message));
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
@@ -349,6 +350,9 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
     }
     if (pathname.startsWith('/api/')) return respond({ data: [], total: 0 });
     if (pathname === '/notifications/inbox') {
+      if (notificationRequestFails) {
+        return route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+      }
       return respond({
         success: true,
         data: {
@@ -433,6 +437,22 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   });
   await expectNoHorizontalOverflow(page, 'activity-bell/icons/desktop-1440');
 
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: /Notifications/u }).click();
+  await expect(page.getByText('Editorial review is ready')).toBeVisible();
+  await page.keyboard.press('Escape');
+  notificationRequestFails = true;
+  await page.reload();
+  const unavailableBell = page.getByRole('button', { name: 'Notifications, count unavailable' });
+  await expect(unavailableBell).toBeVisible();
+  await unavailableBell.click();
+  await expect(
+    page.getByRole('alert').getByText('Notifications could not be loaded.')
+  ).toBeVisible();
+  await expect(page.getByText('0 unread · in-app inbox')).toHaveCount(0);
+  notificationRequestFails = false;
+  await page.getByRole('button', { name: 'Retry' }).click();
+  await expect(page.getByRole('button', { name: 'Notifications, 1 unread' })).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: /Notifications/u }).click();
   await expect(page.getByText('Editorial review is ready')).toBeVisible();
