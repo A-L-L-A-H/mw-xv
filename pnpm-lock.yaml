@@ -776,6 +776,40 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
+  packages/orm-cloud:
+    dependencies:
+      '@moonwitness/orm':
+        specifier: workspace:*
+        version: link:../orm
+      '@moonwitness/orm-base':
+        specifier: workspace:*
+        version: link:../orm-base
+      '@moonwitness/orm-project':
+        specifier: workspace:*
+        version: link:../orm-project
+      '@moonwitness/orm-subscription':
+        specifier: workspace:*
+        version: link:../orm-subscription
+      knex:
+        specifier: ^3.3.0
+        version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)
+      objection:
+        specifier: ^3.1.5
+        version: 3.1.5(knex@3.3.0(better-sqlite3@13.0.3)(pg@8.23.1))
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: 5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      typescript:
+        specifier: ~5.7.3
+        version: 5.7.3
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
   packages/orm-crm:
     dependencies:
       '@moonwitness/orm':
@@ -839,6 +873,37 @@ importers:
         version: 5.7.3
       vitest:
         specifier: 5.0.3
+        version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/orm-isp:
+    dependencies:
+      '@moonwitness/orm':
+        specifier: workspace:*
+        version: link:../orm
+      '@moonwitness/orm-base':
+        specifier: workspace:*
+        version: link:../orm-base
+      '@moonwitness/orm-crm':
+        specifier: workspace:*
+        version: link:../orm-crm
+      knex:
+        specifier: ^3.3.0
+        version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)
+      objection:
+        specifier: ^3.1.5
+        version: 3.1.5(knex@3.3.0(better-sqlite3@13.0.3)(pg@8.23.1))
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: 5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      typescript:
+        specifier: ~5.7.3
+        version: 5.7.3
+      vitest:
+        specifier: ^5.0.3
         version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
   packages/orm-knowledge:
