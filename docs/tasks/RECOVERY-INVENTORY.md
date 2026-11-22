@@ -10,7 +10,7 @@ After the initial, reviewed migration, `docs/tasks/tasks.json` is the only canon
 
 - Task ID, project, status, priority, owner, dependency graph, acceptance criteria, validation and provenance live in TaskOS.
 - `ROADMAP.md`, `docs/roadmap/tasks.json`, root `todo.md`, and GitHub Issues are views, navigation or operational projections. Their task status must not be independently edited as a second authority after TaskOS recovery.
-- The Visual Universe package's `task.json`, `TASKS.md`, and individual task cards are generated scoped projections from TaskOS. Project-specific fields are preserved in the TaskOS `metadata` field; TaskOS root fields own lifecycle state.
+- The Visual Universe package's `task.json`, `TASKS.md`, and individual task cards are generated scoped projections from TaskOS. The original 109-task source is preserved immutably at `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json`; project-specific fields are retained in TaskOS `metadata`. Pack configuration is stored separately in `pack-manifest.json`.
 - Archived TODOs remain historical source evidence. Only explicitly identified, still-open records enter the migration, and they are imported as blocked pending revalidation.
 - The import tool is a one-time recovery tool. Do not rerun it to overwrite an already populated canonical registry.
 
@@ -25,7 +25,7 @@ After the initial, reviewed migration, `docs/tasks/tasks.json` is the only canon
 | `moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md` | 14 PR lifecycle IDs | PR.01–PR.13 checked; PR.14 unchecked | Import 13 completed records and PR.14 as a human-owned blocked approval gate; AI0/AI1-style proposal IDs are not promoted as official tasks |
 | `evolution/backlog.json` | 4 | 2 completed, 2 active | Import with completed/active status preserved |
 | `AUDIT_TASKS` in `scripts/tasks/sweep-and-consolidate.mjs` | 14 | Explicit audit backlog entries | Import with provenance pointing to the source definition; later extract this data from code into a dedicated source file |
-| `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/task.json` | 109 | 93 done, 3 skipped, 13 blocked | Import into project `visual-universe`; skipped is mapped to TaskOS done plus `status:skipped` tag, and the original task object is retained losslessly in `metadata` |
+| `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json` | 109 | 93 done, 3 skipped, 13 blocked | Import into project `visual-universe`; skipped is mapped to TaskOS done plus `status:skipped` tag, and the original task object is retained losslessly in `metadata` |
 
 **Expected initial TaskOS projection: 627 task records** (239 + 112 + 128 + 7 + 14 + 4 + 14 + 109). This is a source-inventory expectation, not a claim that the registry has been restored or validated. The automated projection test must confirm the exact total and schema before the one-time write is allowed.
 
@@ -59,8 +59,8 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 3. Every TaskOS task must carry a repository-relative `sourceRef.file`; the schema and validator enforce provenance.
 4. Unknown project references, dependency references, block references, duplicate IDs and dependency cycles fail validation.
 5. Root `todo.md` remains a pointer; archived open tasks enter as blocked, never as ready work.
-6. The Visual Universe task projection must preserve its original delegated metadata. Its generated files are not independent lifecycle authorities.
-7. The TaskOS import CLI defaults to dry-run. `--write` must only be used once on an empty registry after reviewing the complete source inventory and passing all projection tests.
+6. The Visual Universe task projection must preserve original delegated metadata. The immutable source snapshot is the provenance source; local `task.json`, `TASKS.md` and task cards are generated views, not independent lifecycle authorities.
+7. The original Visual Universe source snapshot must not be edited; the local task projection remains empty while TaskOS is unavailable. The TaskOS import CLI defaults to dry-run. `--write` must only be used once on an empty registry after reviewing the complete source inventory and passing all projection tests.
 8. `pnpm tasks:sync` refuses to run until the canonical registry passes schema, provenance, reference, dependency and roadmap parity validation.
 
 ## Recovery status
