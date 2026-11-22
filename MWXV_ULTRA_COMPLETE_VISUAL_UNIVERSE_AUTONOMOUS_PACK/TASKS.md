@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 55 · skipped 3 · in_progress 0 · blocked 7 · todo 44.
+Status counts: done 58 · skipped 3 · in_progress 0 · blocked 7 · todo 41.
 
 ## W0
 
@@ -265,26 +265,29 @@ Status counts: done 55 · skipped 3 · in_progress 0 · blocked 7 · todo 44.
   - Verify: animation playback test
   - Evidence: `node packages/assets/scripts/validate.mjs` (0) → `packages/assets/scripts/validate.mjs`; `pnpm test:assets` (0) → `46/46 pass`
 
-- [ ] **W3-007 — Create blink and hair movement variants**
+- [x] **W3-007 — Create blink and hair movement variants**
   - Goal: Add optional blink/hair movement as separated clips or states.
   - Depends on: W3-003, W3-005, W3-006
   - Deliverables: Blink/hair animation metadata and previews.
   - Acceptance: No forced facial detail where design is anonymous.; Loop/state triggers behave deterministically.; Animation can pause offscreen.
   - Verify: animation playback test
+  - Evidence: `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`; `pnpm test:assets` (0) → `46/46 pass`
 
-- [ ] **W3-008 — Create walk and turn animation prototype**
+- [x] **W3-008 — Create walk and turn animation prototype**
   - Goal: Produce a small representative movement set for pilot character.
   - Depends on: W3-005, W2-008
   - Deliverables: Walk/turn prototype clips and docs.
   - Acceptance: Frame timing/pivots are correct.; No foot sliding beyond approved style.; A static pose fallback always exists.
   - Verify: sprite/rig preview
+  - Evidence: `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`; `pnpm test:assets` (0) → `46/46 pass`
 
-- [ ] **W3-009 — Build character preview renderer**
+- [x] **W3-009 — Build character preview renderer**
   - Goal: Provide deterministic preview for turnaround, layers, poses and clips in UI Catalog/Creative Lab.
   - Depends on: W3-001, W3-006, W2-009
   - Deliverables: Character preview specimen and tests.
   - Acceptance: Preview loads by asset ID.; No business data or backend route is embedded.; Playback can pause, reset and switch state.
   - Verify: pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui-catalog` (0) → `29/29 pass`; `pnpm test:assets` (0) → `46/46 pass`
 
 ## W4
 

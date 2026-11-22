@@ -1564,7 +1564,7 @@
       "id": "W3-007",
       "phase": "W3",
       "title": "Create blink and hair movement variants",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "animator",
       "parallel_group": "serial",
@@ -1590,15 +1590,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Committed 30f3719. crew-01 hair-move ping-pong clip (2 frames + clip.json), no facial detail, reduced-motion fallback. validate.mjs green, pnpm test:assets 46/46.",
+      "evidence": [
+        {
+          "command": "node packages/assets/scripts/validate.mjs",
+          "exit_code": 0,
+          "artifact": "validate.mjs"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "46/46 pass"
+        }
+      ],
+      "commit": "30f3719"
     },
     {
       "id": "W3-008",
       "phase": "W3",
       "title": "Create walk and turn animation prototype",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "animator",
       "parallel_group": "serial",
@@ -1623,15 +1634,26 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Committed 1da1b3a. crew-01 walk + turn prototype clips (2 frames each + clip.json), aligned pivots, static pose fallbacks. validate.mjs green, pnpm test:assets 46/46.",
+      "evidence": [
+        {
+          "command": "node packages/assets/scripts/validate.mjs",
+          "exit_code": 0,
+          "artifact": "validate.mjs"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "46/46 pass"
+        }
+      ],
+      "commit": "1da1b3a"
     },
     {
       "id": "W3-009",
       "phase": "W3",
       "title": "Build character preview renderer",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -1658,9 +1680,20 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Committed 1cd0c68. CharacterPreview component + UI Catalog specimen; animation assets exposed via @moonwitness/assets. ui build green, board typecheck green, board:ui:check green, test:assets 46/46, test:ui-catalog 29/29.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "29/29 pass"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "46/46 pass"
+        }
+      ],
+      "commit": "1cd0c68"
     },
     {
       "id": "W4-001",
