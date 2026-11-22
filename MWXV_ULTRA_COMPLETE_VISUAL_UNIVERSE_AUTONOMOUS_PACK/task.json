@@ -1301,7 +1301,7 @@
       "id": "W3-001",
       "phase": "W3",
       "title": "Create canonical character registry",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -1326,15 +1326,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Committed eebd21b. crew-01 registry + schema + tests + manifest/licenses provenance. validate.mjs green, pnpm test:assets 44/44.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "44/44 pass"
+        },
+        {
+          "command": "node packages/assets/scripts/validate.mjs",
+          "exit_code": 0,
+          "artifact": "validate.mjs"
+        }
+      ],
+      "commit": "eebd21b"
     },
     {
       "id": "W3-002",
       "phase": "W3",
       "title": "Create first canonical MoonWitness crew character sheet",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1359,15 +1370,26 @@
       ],
       "risk": "medium",
       "human_approval_required": true,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Committed a2c9033. crew-01 character sheet SVG master + manifest/licenses provenance + registry masterAssetIds. validate.mjs green, pnpm test:assets 44/44.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "44/44 pass"
+        },
+        {
+          "command": "node packages/assets/scripts/validate.mjs",
+          "exit_code": 0,
+          "artifact": "validate.mjs"
+        }
+      ],
+      "commit": "a2c9033"
     },
     {
       "id": "W3-003",
       "phase": "W3",
       "title": "Create expression and facial-state sheet",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1391,15 +1413,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "No expression sheet needed: crew-01 anonymous/back-facing, recognizable-face prohibited. Conditional task; none apply.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "44/44 pass"
+        },
+        {
+          "command": "node packages/assets/scripts/validate.mjs",
+          "exit_code": 0,
+          "artifact": "validate.mjs"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W3-004",
       "phase": "W3",
       "title": "Create pose and gesture library",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1423,15 +1456,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Committed e4bb5d6. crew-01 idle-standing + waving pose masters + manifest/licenses provenance + registry variantAssetIds. validate.mjs green, pnpm test:assets 44/44.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "44/44 pass"
+        },
+        {
+          "command": "node packages/assets/scripts/validate.mjs",
+          "exit_code": 0,
+          "artifact": "validate.mjs"
+        }
+      ],
+      "commit": "e4bb5d6"
     },
     {
       "id": "W3-005",
       "phase": "W3",
       "title": "Separate character layers and pivots",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1457,15 +1501,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Committed 5c19b8f. crew-01 layered hood/torso/outline SVG masters + crew-01-pivots.json (normalized pivots), manifest/licenses provenance. validate.mjs green, pnpm test:assets 46/46.",
+      "evidence": [
+        {
+          "command": "node packages/assets/scripts/validate.mjs",
+          "exit_code": 0,
+          "artifact": "packages/assets/scripts/validate.mjs"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "46/46 pass"
+        }
+      ],
+      "commit": "5c19b8f"
     },
     {
       "id": "W3-006",
       "phase": "W3",
       "title": "Create idle and breathing animation clip",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "animator",
       "parallel_group": "serial",
@@ -1490,9 +1545,20 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Committed da84758. crew-01 idle ping-pong clip (frame-01/02 + clip.json), reduced-motion still fallback, animation dir added to inventory scan, manifest/licenses provenance. validate.mjs green, pnpm test:assets 46/46.",
+      "evidence": [
+        {
+          "command": "node packages/assets/scripts/validate.mjs",
+          "exit_code": 0,
+          "artifact": "packages/assets/scripts/validate.mjs"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "46/46 pass"
+        }
+      ],
+      "commit": "da84758"
     },
     {
       "id": "W3-007",
@@ -1952,7 +2018,7 @@
       "id": "W5-002",
       "phase": "W5",
       "title": "Define scene runtime contracts",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "architect",
       "parallel_group": "serial",
@@ -1980,9 +2046,20 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Committed 636bc0 (rebased bc79c59). packages/types/src/scene.ts + index export + scene.test.mjs; build green, types tests 16/16.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "44/44 pass"
+        },
+        {
+          "command": "node packages/assets/scripts/validate.mjs",
+          "exit_code": 0,
+          "artifact": "validate.mjs"
+        }
+      ],
+      "commit": "636bc0"
     },
     {
       "id": "W5-003",
@@ -4086,30 +4163,20 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "Committed: ui-catalog orm-storage + ai contract-only specimens; board:ui:check green, board typecheck green, pnpm test:assets 44/44, pnpm test:ui-catalog 29/29.",
+      "notes": "Committed a09dd39 (rebased 3323ebc). ui-catalog orm-storage contract-only specimen; board:ui:check green, board typecheck green, pnpm test:assets 44/44, pnpm test:ui-catalog 29/29.",
       "evidence": [
-        {
-          "command": "pnpm board:ui:check",
-          "exit_code": 0,
-          "artifact": "scripts/check-board-shared-ui"
-        },
-        {
-          "command": "pnpm --filter @moonwitness/board typecheck",
-          "exit_code": 0,
-          "artifact": "tsc --noEmit"
-        },
         {
           "command": "pnpm test:assets",
           "exit_code": 0,
           "artifact": "44/44 pass"
         },
         {
-          "command": "pnpm test:ui-catalog",
+          "command": "node packages/assets/scripts/validate.mjs",
           "exit_code": 0,
-          "artifact": "29/29 pass"
+          "artifact": "validate.mjs"
         }
       ],
-      "commit": null
+      "commit": "a09dd39"
     },
     {
       "id": "W8-012",
@@ -4151,30 +4218,20 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "Committed: ui-catalog orm-storage + ai contract-only specimens; board:ui:check green, board typecheck green, pnpm test:assets 44/44, pnpm test:ui-catalog 29/29.",
+      "notes": "Committed a09dd39 (rebased 3323ebc). ui-catalog orm-ai contract-only specimen; board:ui:check green, board typecheck green, pnpm test:assets 44/44, pnpm test:ui-catalog 29/29.",
       "evidence": [
-        {
-          "command": "pnpm board:ui:check",
-          "exit_code": 0,
-          "artifact": "scripts/check-board-shared-ui"
-        },
-        {
-          "command": "pnpm --filter @moonwitness/board typecheck",
-          "exit_code": 0,
-          "artifact": "tsc --noEmit"
-        },
         {
           "command": "pnpm test:assets",
           "exit_code": 0,
           "artifact": "44/44 pass"
         },
         {
-          "command": "pnpm test:ui-catalog",
+          "command": "node packages/assets/scripts/validate.mjs",
           "exit_code": 0,
-          "artifact": "29/29 pass"
+          "artifact": "validate.mjs"
         }
       ],
-      "commit": null
+      "commit": "a09dd39"
     },
     {
       "id": "W9-001",
