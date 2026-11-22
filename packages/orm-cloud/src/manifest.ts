@@ -9,7 +9,7 @@ export const manifest = defineAddon({
   models: [CloudProvider, CloudServer, CloudDeploymentTarget, CloudApp, CloudDeployment],
   data: [
     seed(CloudProvider, 'cloud.provider_docker_agent', {
-      company_id: ref('base.company_default'),
+      company_id: 1,
       name: 'Local Docker Agent',
       code: 'docker_agent',
       type: 'docker_agent',
@@ -20,7 +20,7 @@ export const manifest = defineAddon({
       is_active: true,
     }),
     seed(CloudProvider, 'cloud.provider_coolify', {
-      company_id: ref('base.company_default'),
+      company_id: 1,
       name: 'Coolify Cloud',
       code: 'coolify',
       type: 'coolify',
@@ -38,7 +38,7 @@ export const manifest = defineAddon({
       write: false,
       unlink: false,
     }),
-    seed(ModelAccess, 'isp.access_user_server_read', {
+    seed(ModelAccess, 'cloud.access_user_server_read', {
       group: ref('base.group_user'),
       model_name: CloudServer.modelName,
       read: true,

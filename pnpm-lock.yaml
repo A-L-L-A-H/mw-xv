@@ -91,12 +91,18 @@ importers:
       '@moonwitness/orm-base':
         specifier: workspace:*
         version: link:../../packages/orm-base
+      '@moonwitness/orm-cloud':
+        specifier: workspace:*
+        version: link:../../packages/orm-cloud
       '@moonwitness/orm-crm':
         specifier: workspace:*
         version: link:../../packages/orm-crm
       '@moonwitness/orm-integration':
         specifier: workspace:*
         version: link:../../packages/orm-integration
+      '@moonwitness/orm-isp':
+        specifier: workspace:*
+        version: link:../../packages/orm-isp
       '@moonwitness/orm-knowledge':
         specifier: workspace:*
         version: link:../../packages/orm-knowledge

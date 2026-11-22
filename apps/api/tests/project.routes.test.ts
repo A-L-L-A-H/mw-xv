@@ -188,5 +188,31 @@ describe('project addon REST, SDK & workflow integration', () => {
     expect(syncDone.success).toBe(true);
     expect(syncDone.data.advanced).toBe(true);
     expect(syncDone.data.task.status).toBe('done');
+
+    // Verify WorkContract via /ai/work-contracts/:id/verify -> auto-advances linked task2 to done.
+    const wcTask2 = await client.request<{
+      success: boolean;
+      data: { id: number };
+    }>(`/projects/tasks/${task2!.id}/work-contract`, { method: 'POST', body: {} });
+    const otherUser = await db('users').whereNot({ login: 'superadmin' }).first();
+    await db('ai_work_contracts')
+      .where({ id: wcTask2.data.id })
+      .update({ requested_by_id: otherUser.id });
+    await client.request('/ai/artifacts', {
+      method: 'POST',
+      body: {
+        work_contract_id: wcTask2.data.id,
+        artifact_kind: 'evidence_bundle',
+        content: 'task2-verified-evidence',
+      },
+    });
+    const verifyRes = await client.request<{
+      success: boolean;
+      data: { status: string };
+    }>(`/ai/work-contracts/${wcTask2.data.id}/verify`, { method: 'POST', body: {} });
+    expect(verifyRes.success).toBe(true);
+    expect(verifyRes.data.status).toBe('accepted');
+    const updatedTask2 = await db('project_tasks').where({ id: task2!.id }).first();
+    expect(updatedTask2.status).toBe('done');
   });
 });

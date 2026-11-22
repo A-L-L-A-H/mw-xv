@@ -14,6 +14,54 @@ const intentionalBleed = new Map([
         'the outer orbit ring is intentionally cropped at the right edge of the social-card canvas',
     },
   ],
+  [
+    'environments/moon-city-clouds-near.svg',
+    {
+      elements: ['mw-moon-city-clouds-loop-a-layer'],
+      reason:
+        'seamless horizontal parallax cloud loop intentionally extends past horizontal viewBox edges',
+    },
+  ],
+  [
+    'environments/moon-city-clouds-far.svg',
+    {
+      elements: ['mw-moon-city-clouds-loop-b-layer'],
+      reason:
+        'secondary seamless parallax cloud loop intentionally extends past horizontal viewBox edges',
+    },
+  ],
+  [
+    'environments/moon-city-prop-wires.svg',
+    {
+      elements: ['mw-moon-city-prop-wires-cables'],
+      reason:
+        'overhead utility cable curves intentionally anchor past the horizontal canvas edges',
+    },
+  ],
+  [
+    'source/artwork/moon-city-clouds-loop-a.svg',
+    {
+      elements: ['mw-moon-city-clouds-loop-a-layer'],
+      reason:
+        'seamless horizontal parallax cloud loop source intentionally extends past horizontal viewBox edges',
+    },
+  ],
+  [
+    'source/artwork/moon-city-clouds-loop-b.svg',
+    {
+      elements: ['mw-moon-city-clouds-loop-b-layer'],
+      reason:
+        'secondary seamless parallax cloud loop source intentionally extends past horizontal viewBox edges',
+    },
+  ],
+  [
+    'source/world/environments/moon-city-prop-wires.svg',
+    {
+      elements: ['mw-moon-city-prop-wires-cables'],
+      reason:
+        'overhead utility cable curves source intentionally anchor past the horizontal canvas edges',
+    },
+  ],
 ]);
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage();
