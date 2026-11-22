@@ -2616,7 +2616,7 @@
       "id": "W7-002",
       "phase": "W7",
       "title": "Add asset browser specimen",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2641,8 +2641,14 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Asset browser uses canonical manifest and provenance with accessible filters, loading/error states, responsive layout, and no fabricated domain data. Its bundle stays inside configured budgets.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "evidence/W7-002-asset-browser.md; test-results/junit/ui-catalog.xml"
+        }
+      ],
       "commit": null
     },
     {

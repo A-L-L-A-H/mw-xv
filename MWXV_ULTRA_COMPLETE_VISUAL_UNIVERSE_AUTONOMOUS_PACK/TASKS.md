@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 33 · skipped 3 · in_progress 1 · blocked 7 · todo 65.
+Status counts: done 34 · skipped 3 · in_progress 1 · blocked 7 · todo 64.
 
 ## W0
 
@@ -493,12 +493,13 @@ Status counts: done 33 · skipped 3 · in_progress 1 · blocked 7 · todo 65.
   - Verify: pnpm test:ui-catalog
   - Evidence: `pnpm test:ui-catalog` (0) → `25 Playwright browser tests passed during W0 baseline; existing harness/source map in evidence/ui-catalog-audit.md`
 
-- [ ] **W7-002 — Add asset browser specimen**
+- [x] **W7-002 — Add asset browser specimen**
   - Goal: Browse canonical assets by category, pack, subject, domain, variant and status.
   - Depends on: W7-001, W2-005
   - Deliverables: Asset browser UI with deterministic fixture data.
   - Acceptance: Uses manifest data.; No fabricated production domain records.; Keyboard/filter/accessibility supported.
   - Verify: pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui-catalog` (0) → `evidence/W7-002-asset-browser.md; test-results/junit/ui-catalog.xml`
 
 - [ ] **W7-003 — Add character studio specimen**
   - Goal: Preview identity sheets, poses, expressions and animation states.

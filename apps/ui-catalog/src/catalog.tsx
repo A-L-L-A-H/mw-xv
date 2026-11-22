@@ -152,6 +152,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@moonwitness/ui/components/tooltip';
+import { AssetBrowser } from './AssetBrowser.js';
 
 const sections = [
   { id: 'foundations', label: 'Foundations' },
@@ -166,6 +167,7 @@ const sections = [
   { id: 'forms', label: 'Forms' },
   { id: 'overlays', label: 'Overlays' },
   { id: 'data-display', label: 'Data display' },
+  { id: 'assets', label: 'Asset inventory' },
   { id: 'charts', label: 'Charts' },
 ] as const;
 
@@ -1694,6 +1696,13 @@ function CatalogContent() {
                   />
                 </div>
               </Example>
+            </Section>
+            <Section
+              id="assets"
+              title="Canonical asset inventory"
+              description="Browse registered package assets and review their source status without creating production records."
+            >
+              <AssetBrowser />
             </Section>
             <Section
               id="charts"
