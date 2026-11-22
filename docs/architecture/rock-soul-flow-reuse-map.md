@@ -1,3 +1,29 @@
+## Current status reconciliation — 2026-11-23
+
+This section supersedes the **status/gap column only** in the M13.01 historical baseline below. M13.01 remains evidence of the original source audit, not a live capability snapshot.
+
+| Capability | Current status from roadmap/evidence | Current implementation evidence | Remaining gap / next validation |
+|---|---|---|---|
+| Repo Radar | Implemented (M13.02 complete) | Revision-pinned snapshot builder, bounded read-only inspection, digest/incomplete markers | Validate end-to-end on representative repositories and large/incomplete scans |
+| Overlap Detector | Implemented R0 advisory (M13.03 complete) | Deterministic detector and benchmark; Desktop bridge added in M13.07 | Validate real-repository findings, false-positive/false-negative behavior, and user workflow |
+| Plan Forge | Implemented projection/reconciler (M13.08 complete) | Deterministic Markdown projection/reconciliation over canonical project/task contracts | Exercise realistic plans and conflict handling; preserve completed IDs and never create second task authority |
+| Prompt Forge | Implemented (M13.04 complete) | Deterministic execution packet compiler with scope/redaction/criteria gates | End-to-end validate packets from real WorkContracts and RepoSnapshots |
+| Task Deck | Implemented foundation (M13.05 complete) | Dependency readiness gate; WorkContract dispatch; autonomous Desktop loop; task sync recorded in promoted source | Verify race/concurrency and real user journey; issue lifecycle synchronization remains outstanding |
+| Proof Gate | Implemented v2 (M13.06 complete) | 5-state check matrix, scope drift guard, PCW evidence verification | Run full execution/review integration and validate edge-case policies on real worktrees |
+| Memory Ledger | Implemented advisory export (M13.08 complete) | Candidate filtering, doc proposals, redaction, deterministic hashes, human approval required | Test real approved memory proposals and ensure policy updates never auto-write |
+| Visual DNA Lab | Partial / existing UI and asset system | Asset provenance, tokens, UI Catalog, SceneLab, FXLab, visual audits | Lightweight per-external-repository DesignProfile export remains missing |
+
+### Current governance issues discovered
+
+- The TaskOS registry `docs/tasks/tasks.json` is zero-byte at this checkpoint. Its documented canonical role is unavailable until it is restored and validated. Do not trust task-sync operations against this file.
+- The original M13.01 audit table records baseline gaps; it must not be used to claim those gaps remain current after M13.02–M13.08.
+- M13.05–M13.08 GitHub Issues still have stale managed lifecycle fields despite promoted evidence; reconcile against exact SHA before closing.
+- Current Board/Desktop end-to-end integration is not proven by milestone package-level evidence alone.
+
+See [Stabilization Plan](../roadmap/STABILIZATION-PLAN.md) for sequenced recovery tasks.
+
+---
+
 # ROCKSOUL FLOW Capability Audit & Reuse Map (`M13.01`)
 
 - **Task ID:** `M13.01` ([`docs/roadmap/14-desktop-engineering.md`](../roadmap/14-desktop-engineering.md))
