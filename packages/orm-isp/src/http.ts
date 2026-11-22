@@ -1,11 +1,30 @@
+import { randomBytes } from 'node:crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { AddonHttpPlugin } from '@moonwitness/orm';
-import { ISPNAS, ISPRadiusOutbox, ISPSubscriber } from './models/index.js';
+import { AuditLog } from '@moonwitness/orm-base';
+import { Subscription } from '@moonwitness/orm-subscription';
+import { meterSessionsToSubscriptionInvoices } from './metering.js';
+import {
+  ISPBandwidthProfile,
+  ISPNAS,
+  ISPRadiusOutbox,
+  ISPRadiusSession,
+  ISPSubscriber,
+} from './models/index.js';
+
+interface GroupGrant {
+  readonly model_name: string;
+  readonly read: boolean;
+  readonly create: boolean;
+  readonly write: boolean;
+  readonly unlink: boolean;
+}
 
 interface RequestAuth {
   readonly userId: number;
   readonly role: string;
   readonly companyId?: number;
+  readonly groupPermissions?: readonly GroupGrant[];
 }
 
 export interface IspHttpPluginOptions {
@@ -23,9 +42,21 @@ function parsePositiveId(raw: string): number | null {
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
-function requireAuthorizedCompany(
+function hasModelAccess(
+  auth: RequestAuth,
+  modelName: string,
+  op: 'read' | 'create' | 'write' | 'unlink'
+): boolean {
+  if (auth.role === 'system' || auth.role === 'superadmin') return true;
+  if (auth.role !== 'user') return false;
+  return (auth.groupPermissions ?? []).some((g) => g.model_name === modelName && g[op] === true);
+}
+
+function requireAuthorizedModelAccess(
   req: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
+  modelName: string,
+  op: 'read' | 'create' | 'write' | 'unlink'
 ): { auth: RequestAuth; companyId: number } | null {
   const auth = requestAuth(req);
   if (!auth) {
@@ -36,11 +67,11 @@ function requireAuthorizedCompany(
     void reply.code(403).send({ success: false, error: 'Active company context required' });
     return null;
   }
+  if (!hasModelAccess(auth, modelName, op)) {
+    void reply.code(403).send({ success: false, error: `Access denied for ${modelName}:${op}` });
+    return null;
+  }
   return { auth, companyId: auth.companyId };
-}
-
-function isAdminRole(role: string): boolean {
-  return role === 'system' || role === 'superadmin';
 }
 
 export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHttpPlugin {
@@ -53,7 +84,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     const fetchImpl = options.fetchImpl ?? globalThis.fetch;
 
     fastify.get('/api/isp/health', async (req, reply) => {
-      const ctx = requireAuthorizedCompany(req, reply);
+      const ctx = requireAuthorizedModelAccess(req, reply, ISPNAS.modelName, 'read');
       if (!ctx) return;
 
       let runtime: 'connected' | 'unreachable' = 'unreachable';
@@ -82,11 +113,8 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     });
 
     fastify.post<{ Params: { id: string } }>('/api/isp/nas/:id/sync', async (req, reply) => {
-      const ctx = requireAuthorizedCompany(req, reply);
+      const ctx = requireAuthorizedModelAccess(req, reply, ISPNAS.modelName, 'write');
       if (!ctx) return;
-      if (!isAdminRole(ctx.auth.role)) {
-        return reply.code(403).send({ success: false, error: 'Admin role required to sync NAS' });
-      }
       const nasId = parsePositiveId(req.params.id);
       if (!nasId) return reply.code(400).send({ success: false, error: 'Invalid NAS ID' });
 
@@ -126,10 +154,137 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
       };
     });
 
+    fastify.post<{ Params: { id: string }; Body: { reason?: string } | undefined }>(
+      '/api/isp/nas/:id/rotate-secret',
+      async (req, reply) => {
+        const ctx = requireAuthorizedModelAccess(req, reply, ISPNAS.modelName, 'write');
+        if (!ctx) return;
+        const nasId = parsePositiveId(req.params.id);
+        if (!nasId) return reply.code(400).send({ success: false, error: 'Invalid NAS ID' });
+
+        const nas = await ISPNAS.query().findOne({
+          id: nasId,
+          company_id: ctx.companyId,
+          active: true,
+        });
+        if (!nas) return reply.code(404).send({ success: false, error: 'NAS device not found' });
+
+        const newSecret = randomBytes(24).toString('base64url');
+        const reason = req.body?.reason?.trim() || 'manual_rotation';
+
+        await ISPNAS.query().findById(nas.id).patch({ secret: newSecret });
+        await AuditLog.query().insert({
+          model: ISPNAS.modelName,
+          record_id: nas.id,
+          operation: 'rotate_secret',
+          actor_id: ctx.auth.userId,
+          changes: JSON.stringify({ reason, secret: '[redacted]' }),
+        });
+
+        let runtimeSynced = false;
+        try {
+          const res = await fetchImpl(
+            `${baseUrl}/api/clients/${encodeURIComponent(nas.ip_address)}/rotate-secret`,
+            {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ secret: newSecret, reason }),
+              signal: AbortSignal.timeout(5_000),
+            }
+          );
+          runtimeSynced = res.ok;
+        } catch {
+          runtimeSynced = false;
+        }
+
+        return {
+          success: true,
+          data: {
+            nasId: nas.id,
+            ipAddress: nas.ip_address,
+            rotated: true,
+            runtimeSynced,
+          },
+        };
+      }
+    );
+
+    fastify.post<{ Params: { id: string } }>(
+      '/api/isp/subscribers/:id/sync',
+      async (req, reply) => {
+        const ctx = requireAuthorizedModelAccess(req, reply, ISPSubscriber.modelName, 'write');
+        if (!ctx) return;
+        const subscriberId = parsePositiveId(req.params.id);
+        if (!subscriberId) {
+          return reply.code(400).send({ success: false, error: 'Invalid subscriber ID' });
+        }
+
+        const subscriber = await ISPSubscriber.query().findOne({
+          id: subscriberId,
+          company_id: ctx.companyId,
+          active: true,
+        });
+        if (!subscriber) {
+          return reply.code(404).send({ success: false, error: 'Subscriber not found' });
+        }
+
+        if (subscriber.subscription_id) {
+          const subscription = await Subscription.query().findOne({
+            id: subscriber.subscription_id,
+            company_id: ctx.companyId,
+            active: true,
+          });
+          if (!subscription || subscription.state !== 'active') {
+            return reply.code(402).send({
+              success: false,
+              code: 'SUBSCRIPTION_INACTIVE',
+              error: `Linked subscription is ${subscription?.state ?? 'missing'}`,
+            });
+          }
+        }
+
+        const profile = subscriber.profile_id
+          ? await ISPBandwidthProfile.query().findById(subscriber.profile_id)
+          : undefined;
+
+        const response = await fetchImpl(`${baseUrl}/api/subscribers`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            username: subscriber.username,
+            password: subscriber.password,
+            connection_type: subscriber.type,
+            framed_ip: subscriber.ip_address ?? null,
+            download_kbps: profile?.download_kbps ?? 20480,
+            upload_kbps: profile?.upload_kbps ?? 10240,
+            status: subscriber.status,
+          }),
+          signal: AbortSignal.timeout(5_000),
+        });
+
+        if (!response.ok) {
+          return reply.code(502).send({
+            success: false,
+            error: `ISP subscriber sync failed (${response.status})`,
+          });
+        }
+
+        return {
+          success: true,
+          data: {
+            id: subscriber.id,
+            username: subscriber.username,
+            status: subscriber.status,
+            synced: true,
+          },
+        };
+      }
+    );
+
     fastify.post<{ Params: { id: string } }>(
       '/api/isp/subscribers/:id/suspend',
       async (req, reply) => {
-        const ctx = requireAuthorizedCompany(req, reply);
+        const ctx = requireAuthorizedModelAccess(req, reply, ISPSubscriber.modelName, 'write');
         if (!ctx) return;
         const subscriberId = parsePositiveId(req.params.id);
         if (!subscriberId) {
@@ -163,6 +318,107 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
             status: 'suspended',
           },
         };
+      }
+    );
+
+    fastify.post<{ Params: { id: string } }>(
+      '/api/isp/subscriptions/:id/enforce',
+      async (req, reply) => {
+        const ctx = requireAuthorizedModelAccess(req, reply, ISPSubscriber.modelName, 'write');
+        if (!ctx) return;
+        const subscriptionId = parsePositiveId(req.params.id);
+        if (!subscriptionId) {
+          return reply.code(400).send({ success: false, error: 'Invalid subscription ID' });
+        }
+
+        const subscription = await Subscription.query().findOne({
+          id: subscriptionId,
+          company_id: ctx.companyId,
+          active: true,
+        });
+        if (!subscription) {
+          return reply.code(404).send({ success: false, error: 'Subscription not found' });
+        }
+
+        if (subscription.state === 'active') {
+          return { success: true, data: { suspendedCount: 0, state: subscription.state } };
+        }
+
+        const affected = await ISPSubscriber.query().where({
+          company_id: ctx.companyId,
+          subscription_id: subscription.id,
+          status: 'active',
+          active: true,
+        });
+
+        for (const sub of affected) {
+          await ISPSubscriber.query().findById(sub.id).patch({ status: 'suspended' });
+          await ISPRadiusOutbox.query().insert({
+            company_id: ctx.companyId,
+            username: sub.username,
+            type: 'disconnect',
+            status: 'pending',
+            framed_ip_address: sub.ip_address ?? null,
+            created_at: new Date().toISOString().slice(0, 19),
+          });
+          try {
+            await fetchImpl(`${baseUrl}/api/subscribers/${encodeURIComponent(sub.username)}/suspend`, {
+              method: 'POST',
+              signal: AbortSignal.timeout(3_000),
+            });
+          } catch {
+            // Outbox retains disconnect intent if runtime is temporarily offline.
+          }
+        }
+
+        return {
+          success: true,
+          data: { suspendedCount: affected.length, state: subscription.state },
+        };
+      }
+    );
+
+    fastify.get('/api/isp/sessions/live', async (req, reply) => {
+      const ctx = requireAuthorizedModelAccess(req, reply, ISPRadiusSession.modelName, 'read');
+      if (!ctx) return;
+
+      const dbSessions = await ISPRadiusSession.query()
+        .where({ company_id: ctx.companyId, active: true })
+        .orderBy('id', 'desc')
+        .limit(50);
+
+      let runtimeSessions: unknown[] = [];
+      try {
+        const res = await fetchImpl(`${baseUrl}/api/sessions`, {
+          signal: AbortSignal.timeout(3_000),
+        });
+        if (res.ok) {
+          const parsed = await res.json();
+          if (Array.isArray(parsed)) runtimeSessions = parsed;
+        }
+      } catch {
+        runtimeSessions = [];
+      }
+
+      return {
+        success: true,
+        data: {
+          dbSessions,
+          runtimeSessions,
+        },
+      };
+    });
+
+    fastify.post<{ Body: { pricePerGbMinor?: number } | undefined }>(
+      '/api/isp/metering/run',
+      async (req, reply) => {
+        const ctx = requireAuthorizedModelAccess(req, reply, ISPRadiusSession.modelName, 'write');
+        if (!ctx) return;
+        const result = await meterSessionsToSubscriptionInvoices({
+          companyId: ctx.companyId,
+          pricePerGbMinor: req.body?.pricePerGbMinor,
+        });
+        return { success: true, data: result };
       }
     );
   };

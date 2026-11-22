@@ -14,7 +14,7 @@ import { manifest as notificationManifest } from '@moonwitness/orm-notification'
 import { manifest as organizationManifest } from '@moonwitness/orm-organization';
 import { manifest as projectManifest } from '@moonwitness/orm-project';
 import { manifest as salesManifest } from '@moonwitness/orm-sales';
-import { manifest as subscriptionManifest } from '@moonwitness/orm-subscription';
+import { manifest as subscriptionManifest, Subscription } from '@moonwitness/orm-subscription';
 import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
 import {
   CloudApp,
@@ -23,7 +23,9 @@ import {
   CloudProvider,
   CloudServer,
   createCloudHttpPlugin,
+  exportCloudTerraformHcl,
   manifest,
+  selectHealthyDeploymentTarget,
 } from '../src/index.js';
 
 describe('@moonwitness/orm-cloud addon', () => {
@@ -109,7 +111,18 @@ describe('@moonwitness/orm-cloud addon', () => {
 
     const calls: Array<{ url: string; method: string; body?: string }> = [];
     const app = Fastify({ logger: false });
-    let currentAuth: { userId: number; role: string; companyId?: number } | null = {
+    let currentAuth: {
+      userId: number;
+      role: string;
+      companyId?: number;
+      groupPermissions?: Array<{
+        model_name: string;
+        read: boolean;
+        create: boolean;
+        write: boolean;
+        unlink: boolean;
+      }>;
+    } | null = {
       userId: 2,
       role: 'superadmin',
       companyId: 1,
@@ -143,6 +156,12 @@ describe('@moonwitness/orm-cloud addon', () => {
             return new Response(
               JSON.stringify({ id: 'ctr987654321', name: 'mw-xv-isp:latest', status: 'success' }),
               { status: 201 }
+            );
+          }
+          if (url.includes('/api/v1/deploy')) {
+            return new Response(
+              JSON.stringify({ deployment_uuid: 'coolify-dep-001', message: 'Deployment queued' }),
+              { status: 200 }
             );
           }
           return new Response('{}', { status: 404 });
@@ -182,6 +201,116 @@ describe('@moonwitness/orm-cloud addon', () => {
       expect(await db(CloudDeployment.tableName).count({ count: '*' }).first()).toMatchObject({
         count: 1,
       });
+
+      const deployId = deployRes.json().data.deploymentId as number;
+      const logsRes = await app.inject({
+        method: 'GET',
+        url: `/api/cloud/deployments/${deployId}/logs`,
+      });
+      expect(logsRes.statusCode).toBe(200);
+      expect(logsRes.json()).toMatchObject({
+        success: true,
+        data: { id: deployId, status: 'running', containerId: 'ctr987654321' },
+      });
+
+      const sseRes = await app.inject({
+        method: 'GET',
+        url: `/api/cloud/deployments/${deployId}/logs/stream`,
+      });
+      expect(sseRes.statusCode).toBe(200);
+      expect(sseRes.headers['content-type']).toContain('text/event-stream');
+      expect(sseRes.body).toContain('ctr987654321');
+
+      const tfRes = await app.inject({
+        method: 'GET',
+        url: '/api/cloud/export/terraform',
+      });
+      expect(tfRes.statusCode).toBe(200);
+      expect(tfRes.body).toContain('resource "docker_container"');
+      expect(tfRes.body).toContain('moonwitness-isp');
+
+      const coolifyProvider = await CloudProvider.query().findOne({ code: 'coolify' });
+      await CloudProvider.query().findById(coolifyProvider!.id).patch({
+        is_active: true,
+        secret_key: 'coolify-api-token',
+      });
+      const coolifyServer = await CloudServer.query().insertAndFetch({
+        company_id: 1,
+        provider_id: coolifyProvider!.id,
+        name: 'coolify-eu-node',
+        region: 'eu-central',
+        ha_group: 'prod-eu',
+        ha_priority: 10,
+        status: 'active',
+      });
+      const coolifyTarget = await CloudDeploymentTarget.query().insertAndFetch({
+        company_id: 1,
+        server_id: coolifyServer.id,
+        name: 'coolify-production',
+        environment: 'production',
+        api_url: 'https://coolify.moonwitness.local',
+        ha_group: 'prod-eu',
+        priority: 10,
+        health_status: 'healthy',
+        is_active: true,
+      });
+      const coolifyApp = await CloudApp.query().insertAndFetch({
+        company_id: 1,
+        deployment_target_id: coolifyTarget.id,
+        subscription_id: cloudApp!.subscription_id,
+        name: 'coolify-edge-app',
+        image: 'ghcr.io/moonwitness/edge',
+        image_tag: '1.0.0',
+        is_active: true,
+      });
+
+      const coolifyDeploy = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${coolifyApp.id}/deploy`,
+      });
+      expect(coolifyDeploy.statusCode).toBe(201);
+      expect(
+        calls.some((c) => c.url.includes('https://coolify.moonwitness.local/api/v1/deploy'))
+      ).toBe(true);
+
+      const tfDirect = await exportCloudTerraformHcl(1);
+      expect(tfDirect).toContain('resource "coolify_application"');
+      expect(tfDirect).not.toContain('coolify-api-token');
+
+      const selected = selectHealthyDeploymentTarget([
+        { id: 1, name: 'primary', priority: 10, health_status: 'offline', is_active: true },
+        { id: 2, name: 'secondary', priority: 20, health_status: 'healthy', is_active: true },
+      ]);
+      expect(selected?.name).toBe('secondary');
+
+      currentAuth = { userId: 98, role: 'user', companyId: 1 };
+      expect(
+        (await app.inject({ method: 'POST', url: `/api/cloud/apps/${cloudApp!.id}/deploy` }))
+          .statusCode
+      ).toBe(403);
+
+      currentAuth = {
+        userId: 98,
+        role: 'user',
+        companyId: 1,
+        groupPermissions: [
+          { model_name: 'cloud.app', read: true, create: false, write: true, unlink: false },
+          { model_name: 'cloud.deployment', read: true, create: false, write: true, unlink: false },
+        ],
+      };
+      await Subscription.query().findById(cloudApp!.subscription_id!).patch({ state: 'expired' });
+      const blockedDeploy = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${cloudApp!.id}/deploy`,
+      });
+      expect(blockedDeploy.statusCode).toBe(402);
+
+      const enforceRes = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/subscriptions/${cloudApp!.subscription_id}/enforce`,
+      });
+      expect(enforceRes.statusCode).toBe(200);
+      expect(enforceRes.json()).toMatchObject({ success: true, data: { suspendedApps: 2 } });
 
       currentAuth = { userId: 99, role: 'superadmin', companyId: 999 };
       const foreignRes = await app.inject({
