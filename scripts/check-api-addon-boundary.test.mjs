@@ -61,3 +61,33 @@ test('blocks legacy whatsapp paths from defining models or addons directly in ap
   );
   assert.deepEqual(reexport, []);
 });
+
+test('forbids new custom route files in apps/api/src/routes and requires manifest.httpPlugins', () => {
+  const newRouteViolation = findApiAddonBoundaryViolations(
+    `export async function billingRoutes() {}`,
+    'apps/api/src/routes/billing.routes.ts'
+  );
+  assert.equal(newRouteViolation.length, 1);
+  assert.match(newRouteViolation[0], /Custom route files are forbidden/u);
+  assert.match(newRouteViolation[0], /manifest\.httpPlugins/u);
+
+  const registryImportViolation = findApiAddonBoundaryViolations(
+    `import { billingRoutes } from '../routes/billing.routes.js';`,
+    'apps/api/src/addons/registry.ts'
+  );
+  assert.equal(registryImportViolation.length, 1);
+  assert.match(registryImportViolation[0], /New custom route imports/u);
+  assert.match(registryImportViolation[0], /manifest\.httpPlugins/u);
+
+  const allowedCoreRoute = findApiAddonBoundaryViolations(
+    `export async function healthRoutes() {}`,
+    'apps/api/src/routes/health.routes.ts'
+  );
+  assert.deepEqual(allowedCoreRoute, []);
+
+  const allowedLegacyImport = findApiAddonBoundaryViolations(
+    `import { projectRoutes } from '../routes/project.routes.js';`,
+    'apps/api/src/addons/registry.ts'
+  );
+  assert.deepEqual(allowedLegacyImport, []);
+});

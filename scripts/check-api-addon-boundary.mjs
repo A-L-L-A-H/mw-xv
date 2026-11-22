@@ -13,9 +13,76 @@ const apiSourceRoot = path.join(root, 'apps/api/src');
 const LEGACY_MODEL_ALLOWLIST = new Set();
 const LEGACY_ADDON_ALLOWLIST = new Set();
 
+/**
+ * Core HTTP host routes that belong to `apps/api` itself (not domain addons).
+ */
+const CORE_API_ROUTE_ALLOWLIST = new Set([
+  'apps/api/src/routes/auth.routes.ts',
+  'apps/api/src/routes/bootstrap.routes.ts',
+  'apps/api/src/routes/generic.routes.ts',
+  'apps/api/src/routes/generic-addon-validation.ts',
+  'apps/api/src/routes/generic-audit.ts',
+  'apps/api/src/routes/generic-extended.routes.ts',
+  'apps/api/src/routes/generic-query-graph.ts',
+  'apps/api/src/routes/generic-references.ts',
+  'apps/api/src/routes/health.routes.ts',
+  'apps/api/src/routes/jobs.routes.ts',
+]);
+
+/**
+ * Frozen shrink-only allowlist of pre-existing domain route files in `apps/api/src/routes/`.
+ * NEVER add new entries here. All new custom domain routes MUST be defined inside their
+ * workspace addon package (`packages/orm-*`) and exported via `manifest.httpPlugins`.
+ */
+const LEGACY_DOMAIN_ROUTE_ALLOWLIST = new Set([
+  'apps/api/src/routes/ai-corporation.routes.ts',
+  'apps/api/src/routes/ai-desktop-sync.routes.ts',
+  'apps/api/src/routes/bug-case.routes.ts',
+  'apps/api/src/routes/child-protection.routes.ts',
+  'apps/api/src/routes/concept-profile.routes.ts',
+  'apps/api/src/routes/corpus.routes.ts',
+  'apps/api/src/routes/evidence.routes.ts',
+  'apps/api/src/routes/local-ai-suggestion.routes.ts',
+  'apps/api/src/routes/local-retrieval.routes.ts',
+  'apps/api/src/routes/notification.routes.ts',
+  'apps/api/src/routes/project.routes.ts',
+  'apps/api/src/routes/publication.routes.ts',
+  'apps/api/src/routes/research-actor-identity.routes.ts',
+  'apps/api/src/routes/research-duplicate-candidates.routes.ts',
+  'apps/api/src/routes/research-explanation.routes.ts',
+  'apps/api/src/routes/research-privacy.routes.ts',
+  'apps/api/src/routes/research-review.routes.ts',
+  'apps/api/src/routes/research-witness.routes.ts',
+  'apps/api/src/routes/story-workbench.routes.ts',
+  'apps/api/src/routes/whatsapp.routes.ts',
+  'apps/api/src/routes/whatsapp/accounts.routes.ts',
+  'apps/api/src/routes/whatsapp/conversations.routes.ts',
+  'apps/api/src/routes/whatsapp/group-management.routes.ts',
+  'apps/api/src/routes/whatsapp/groups.routes.ts',
+  'apps/api/src/routes/whatsapp/media.routes.ts',
+  'apps/api/src/routes/whatsapp/message-actions.routes.ts',
+  'apps/api/src/routes/whatsapp/messages.routes.ts',
+  'apps/api/src/routes/whatsapp/statuses.routes.ts',
+  'apps/api/src/routes/whatsapp/triage.routes.ts',
+  'apps/api/src/routes/whatsapp/webhooks.routes.ts',
+  'apps/api/src/routes/workflow.routes.ts',
+]);
+
+function isAllowedApiRouteFile(normalizedPath) {
+  return (
+    CORE_API_ROUTE_ALLOWLIST.has(normalizedPath) ||
+    LEGACY_DOMAIN_ROUTE_ALLOWLIST.has(normalizedPath)
+  );
+}
+
 export function findApiAddonBoundaryViolations(source, file = 'apps/api/src/fixture.ts') {
   const normalized = file.replaceAll('\\', '/');
   const violations = [];
+  if (normalized.startsWith('apps/api/src/routes/') && !isAllowedApiRouteFile(normalized)) {
+    violations.push(
+      `${normalized}:1: Custom route files are forbidden inside apps/api/src/routes (define custom HTTP routes inside your workspace addon package under packages/orm-* and export them via manifest.httpPlugins)`
+    );
+  }
   const parsed = ts.createSourceFile(normalized, source, ts.ScriptTarget.Latest, true);
   const report = (node, rule, detail) => {
     const { line } = parsed.getLineAndCharacterOfPosition(node.getStart(parsed));
@@ -67,6 +134,25 @@ export function findApiAddonBoundaryViolations(source, file = 'apps/api/src/fixt
           'apps/api/src/app.ts must stay thin and must not import route plugins directly',
           'register addon routes through apps/api/src/addons/registry.ts'
         );
+      }
+    }
+
+    if (
+      normalized === 'apps/api/src/addons/registry.ts' &&
+      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
+      const specifier = node.moduleSpecifier.text;
+      if (/^\.\.\/routes\//u.test(specifier)) {
+        const targetTs = `apps/api/src/${specifier.slice(3).replace(/\.js$/u, '.ts')}`;
+        if (!isAllowedApiRouteFile(targetTs)) {
+          report(
+            node.moduleSpecifier,
+            'New custom route imports in apps/api/src/addons/registry.ts are forbidden',
+            'expose custom HTTP routes via manifest.httpPlugins in your workspace addon package under packages/orm-*'
+          );
+        }
       }
     }
 
