@@ -2,11 +2,28 @@ import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseTasksRegistry } from '../../scripts/tasks/validate-tasks.mjs';
+import { projectVisualUniverseTask } from '../../scripts/tasks/visual-universe-projection.mjs';
 
 const packRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const repositoryRoot = path.resolve(packRoot, '..');
 const planPath = path.join(packRoot, 'task.json');
 const boardPath = path.join(packRoot, 'TASKS.md');
-const plan = JSON.parse(await readFile(planPath, 'utf8'));
+const registryPath = path.join(repositoryRoot, 'docs/tasks/tasks.json');
+const planTemplate = JSON.parse(await readFile(planPath, 'utf8'));
+const registry = parseTasksRegistry(await readFile(registryPath, 'utf8'));
+assert.ok(Array.isArray(registry.tasks), 'Canonical TaskOS registry must contain a tasks array.');
+const visualUniverseRecords = registry.tasks.filter((task) => task.project === 'visual-universe');
+assert.equal(
+  visualUniverseRecords.length,
+  planTemplate.task_count,
+  'Canonical TaskOS registry must contain every Visual Universe task before projecting the work package.'
+);
+const plan = {
+  ...planTemplate,
+  tasks: visualUniverseRecords.map(projectVisualUniverseTask),
+  task_count: visualUniverseRecords.length,
+};
 const taskFiles = new Map();
 
 async function readText(filePath) {
