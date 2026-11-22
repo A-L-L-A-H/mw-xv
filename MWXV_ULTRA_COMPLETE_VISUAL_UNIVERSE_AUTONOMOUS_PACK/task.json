@@ -1114,7 +1114,7 @@
           "artifact": "evidence/W2-008-sprite-metadata.md; evidence/sprite-sheet-metadata-guide.svg"
         }
       ],
-      "commit": null
+      "commit": "b3b4554971884fd45d13b5d0d25ed2cdd9b0d4f4"
     },
     {
       "id": "W2-009",
@@ -1154,7 +1154,7 @@
           "artifact": "evidence/W2-009-scene-contracts.md"
         }
       ],
-      "commit": null
+      "commit": "4a1e4c7eb3c7c2d840ea57b5099661628dcdbde2"
     },
     {
       "id": "W2-010",
