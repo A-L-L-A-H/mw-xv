@@ -55,7 +55,7 @@ This table is an inspection guide, not a claim that any listed capability is com
 
 For this documentation/audit-only task, run the narrow repository checks that are available in the checkout: roadmap task validation, roadmap/automation consistency, documentation links, formatting for changed files and `git diff --check`. Run package or application tests only if the audit uncovers an actual code change (which is outside M13.01).
 
-M13.01 remains open until the reuse map and evidence file exist and all acceptance criteria are verified.
+M13.01 is complete: the reuse map and evidence file are present; the read-only audit selected M13.02 as the first implementation slice.
 
 ## M13.02 — Read-only revision-pinned Repo Radar Snapshot
 
@@ -147,3 +147,53 @@ Compile a deterministic, redacted, scope-validated Markdown/JSON Execution Packe
 - `pnpm --filter @moonwitness/ai-runtime exec vitest run tests/prompt-forge.test.ts`
 - `pnpm --filter @moonwitness/desktop exec vitest run tests/desktop-harness.test.ts tests/desktop-adversarial.test.ts tests/desktop-dual-dialect.test.ts`
 - `pnpm desktop:ui:check`, `pnpm api:addon:check`, `pnpm automation:check:roadmap`, `pnpm tasks:validate`, and `node scripts/check-docs.mjs`
+
+
+## M13.05 — Gate WorkContract creation on project-task dependency readiness
+
+- **Status:** todo (next bounded implementation task; no code change is included in this consolidation commit).
+- **Prerequisite:** M13.04.
+- **Observed gap:** `apps/api/src/routes/project.routes.ts` creates a new `WorkContract` at `POST /projects/tasks/:id/work-contract` after loading the company-scoped task, but does not check the canonical project dependency DAG before insertion. `apps/api/tests/project.routes.test.ts` already demonstrates that `task2` is in `dag.blocked_task_ids`, yet later uses that task to create a WorkContract. This is a concrete mismatch between Board readiness and the server-side creation path.
+- **Canonical graph:** `buildProjectDependencyGraph` in `packages/orm-project/src/sync.ts` treats only active `blocks` edges as blockers, and considers blocker tasks with status `done` or `cancelled` resolved. Inactive edges and `relates_to` links are not blockers. Explicit task status `blocked` is not ready either.
+- **Codex handoff:** [M13.05 focused implementation brief](rock-soul-flow-m13-05-handoff.md).
+
+### Goal
+
+Fail closed when a caller attempts to create a **new** WorkContract for a Project task that is not ready according to the canonical dependency DAG. Preserve the existing company boundary, idempotency and WorkContract authority. This route creates or returns a WorkContract; it is not itself proof that a local agent run has started.
+
+### Bounded file scope
+
+- `apps/api/src/routes/project.routes.ts`
+- `apps/api/tests/project.routes.test.ts`
+- Existing project dependency helper only if a minimal, justified change is needed: `packages/orm-project/src/sync.ts`
+- `docs/roadmap/evidence/M13.05.md` and this roadmap card.
+
+Do not add another dependency graph, task database, route, model, ORM addon or workflow engine. Any new route, durable model or ownership move requires a separate architecture review under ADR 0006/0007.
+
+### Required behavior
+
+1. Keep the existing company-scoped task lookup. Read the active tasks and dependency edges needed to build the project's canonical DAG.
+2. Reuse `buildProjectDependencyGraph`; do not implement a second interpretation of dependency semantics.
+3. Before inserting a new WorkContract, reject a task whose DAG node is not ready. Return a stable conflict/validation response with a non-sensitive reason and only company-scoped blocker references.
+4. Preserve existing WorkContract idempotency. An already-linked contract may be returned without creating a second contract; this endpoint must not silently cancel or mutate an existing run/contract merely because dependencies changed later.
+5. Do not claim this creation gate also protects a later run-start path. Identify and document the separate run-start boundary if one exists.
+6. Inspect the existing transaction/locking conventions. Revalidate dependency readiness within the safe creation boundary where supported. If a race cannot be eliminated because dependency writers do not share the same lock/transaction, document the residual limitation and propose a separate bounded follow-up rather than claiming full race safety.
+
+### Acceptance criteria
+
+- A task with an active unresolved `blocks` dependency cannot create a new WorkContract.
+- Inactive edges and `relates_to` links do not block; blockers in `done` or `cancelled` state are resolved; an explicitly `blocked`, `done` or `cancelled` task cannot start a new WorkContract.
+- The check is company/tenant scoped and does not reveal another company's task IDs or details.
+- Tests prove denial for a blocked task, creation for a ready task, idempotent retrieval for an existing linked contract, dependency-edge semantics, and company isolation.
+- The existing test fixture that currently creates a WorkContract for its blocked `task2` is updated to use a separate ready task or otherwise assert the intended blocked behavior.
+- Any transaction/locking limitation is recorded explicitly in evidence.
+
+### Focused verification
+
+- `pnpm --filter @moonwitness/api exec vitest run tests/project.routes.test.ts`
+- `pnpm --filter @moonwitness/api build`
+- Add isolated PostgreSQL/concurrency coverage only if the implementation changes transaction or locking semantics.
+
+### Non-goals
+
+No Board redesign, no local-agent UI binding, no auto-dispatch, no auto-commit/push, no approval bypass, no new package/model/route, and no changes to `@moonwitness/local-ai`. Those are separate decisions after this server-side invariant is proven.

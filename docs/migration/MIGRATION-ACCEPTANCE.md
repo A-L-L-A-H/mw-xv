@@ -1,4 +1,6 @@
-# Migration Acceptance and Legacy Retirement Gates
+# Legacy Preservation, Clean-Room Rebuild & Retirement Gates
+
+> **Binding scope:** K0-006 was completed with the owner-approved no-legacy-import decision dated 2026-10-15. This checklist preserves source history and manages eventual retirement; it is not authority to import legacy code, data, prompts, assets or private records. P1–P3 below are dormant unless K0-006 is explicitly reopened and source-specific rights/privacy approval is recorded.
 
 Prepared: 2026-11-22. Status: operational checklist. Target: A-L-L-A-H/mw-xv. Legacy owner intended for retirement: bjo163.
 
@@ -7,7 +9,7 @@ Prepared: 2026-11-22. Status: operational checklist. Target: A-L-L-A-H/mw-xv. Le
 - Do not delete repositories, account data, packages or deployment resources until all gates pass.
 - Preserve source commit, branch, tag and blob identity. README blob SHA is not a repository commit.
 - The 148-row inventory covers public owner-search results only. Check private repos, gists, packages, container registries, Pages, Actions artifacts, secrets, deployments and local-only assets.
-- Do not copy unknown-license assets, third-party code, credentials, private data or personal conversations by default.
+- Do not copy any legacy source code, corpus data, prompts, fixtures, assets, credentials, private data or personal conversations under the current K0-006 scope. Unknown or unverified rights always mean no redistribution.
 - Reuse target ORM/addons, auth, workflow, storage, research, AI runtime and UI before adding systems.
 - Keep sources read-only. Do not rewrite source history.
 - Follow protected-branch, CODEOWNER and repository governance gates; no bypass.
@@ -26,20 +28,20 @@ Prepared: 2026-11-22. Status: operational checklist. Target: A-L-L-A-H/mw-xv. Le
 
 Exit: all public/private repos and external artifacts are accounted for; snapshots/checksums are restorable; unresolved items block retirement.
 
-## P1 — Target reconciliation
+## P1 — Target requirement reconciliation (metadata and clean-room scope only)
 
 - [ ] Inspect target dev contracts and package/app inventory at exact candidate SHA.
 - [ ] Map each source item to one canonical target domain.
-- [ ] Record disposition: ADAPT, ADOPT_SELECTIVELY, REFERENCE_ONLY, RESEARCH_FIRST, ARCHIVE or DO_NOT_IMPORT.
+- [ ] Record disposition: CLEAN_ROOM_REBUILD, REFERENCE_ONLY, METADATA_ARCHIVE, RESEARCH_FIRST or DO_NOT_IMPORT.
 - [ ] Prove each new addon addresses a real gap and does not duplicate orm-*, IAM, storage or AI runtime.
-- [ ] Preserve original data separately from normalized/derived records.
-- [ ] Verify access policy, tenant scope, audit, retention, revocation/takedown and API surfaces before import.
-- [ ] Create target import manifest with source repo/ref/commit/path/hash, rights evidence, transformation and destination.
-- [ ] Keep private witness/account/child/conversation data out of public corpus unless approved policy and scoped consent exist.
+- [ ] Preserve source identity and metadata separately; do not copy source bytes or normalized legacy records.
+- [ ] Reconcile target access policy, tenant scope, audit, retention, revocation/takedown and API ownership from locally authored requirements.
+- [ ] Do not create a target import manifest under current K0-006. If the owner explicitly reopens K0-006, create a source/path/revision/hash/rights/privacy manifest before considering any import.
+- [ ] Keep private witness/account/child/conversation data out of public corpus; any future use requires scoped consent and separate privacy approval.
 
 Exit: every import has provenance and reviewable destination; no unresolved high-risk rights/privacy issue.
 
-## P2 — Data and content
+## P2 — Data and content (dormant unless K0-006 is reopened)
 
 - [ ] Run deterministic dry-run against pinned snapshot.
 - [ ] Validate schema, unique IDs, references, encodings and required metadata.
@@ -52,7 +54,7 @@ Exit: every import has provenance and reviewable destination; no unresolved high
 
 Exit: deterministic replay, integrity, quality and rights acceptance pass.
 
-## P3 — Code and asset integration
+## P3 — Code and asset integration (dormant unless K0-006 is reopened)
 
 - [ ] Compare code with target interfaces; prefer bounded adapter/port over bulk copy.
 - [ ] Complete license/notices review for upstream/fork-derived code.
@@ -90,13 +92,13 @@ Exit: owner approval and evidence are recorded. Until then, keep old owner intac
 
 ## Evidence record
 
-For every imported item record:
+For metadata-only references, record repository/ref/commit and the observed notice/license status. Only if K0-006 is reopened and a source-specific import is expressly approved, record for every imported item:
 - source repository, ref, exact commit, path and Git blob SHA;
 - SHA-256 of exported bytes;
 - SPDX license or unknown status, attribution and rights evidence;
 - disposition and target path;
 - transformation type, reviewer, test commands, target commit and acceptance status.
 
-A repository is migrated only when target commit, import manifest, test evidence and rights/privacy decisions are complete and the target has no hidden dependency on source.
+A repository is not considered migrated by being inventoried or referenced. Any future approved import is complete only when target commit, source/path/hash manifest, test evidence and rights/privacy decisions are complete and the target has no hidden dependency on source.
 
-A repository is retired only after its checklist passes and an authorized owner performs the archival/closure action. A plan is not a completed migration.
+A repository is retired only after its preservation/retirement checklist passes and an authorized owner performs the archival/closure action. A plan or public inventory is not a completed migration.
