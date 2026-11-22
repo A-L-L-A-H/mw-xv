@@ -1165,8 +1165,7 @@ a:focus-visible {
   }
 }
 @media (max-width: 42rem) {
-  .catalog-content > .mw-ui-page-header,
-  .catalog-intro-panel {
+  .catalog-content > .mw-ui-page-header {
     height: 17.5rem;
     overflow: hidden;
   }

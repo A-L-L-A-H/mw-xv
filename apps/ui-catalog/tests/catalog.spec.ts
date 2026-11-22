@@ -178,6 +178,7 @@ test('webfont fallback remains readable while local fonts load without a large l
   expect(shiftData.total, JSON.stringify(shiftData.shifts)).toBeLessThan(0.1);
   expect(finalBox).not.toBeNull();
   expect(finalBox!.height).toBeLessThanOrEqual(fallbackBox!.height + 4);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true
   );

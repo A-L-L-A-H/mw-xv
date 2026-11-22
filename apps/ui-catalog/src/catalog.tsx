@@ -1406,7 +1406,7 @@ function CatalogContent() {
                 title="Command palette"
                 description="Filterable command menu with keyboard selection."
               >
-                <Command className="catalog-command-frame">
+                <Command className="catalog-command-frame" defaultValue="__none__">
                   <CommandInput
                     aria-label="Search commands"
                     placeholder="Search workspace commands..."

@@ -67,3 +67,9 @@ Structured post-mortem rules persisted by autonomous and operator loops so resol
 - **Symptom**: `scripts/docs/generate-reference.mjs` fails with `Route '<METHOD>' in '<file>' must use a static absolute path`.
 - **Root Cause**: Passing helper expressions, template substitutions, or variables as the first path argument to `fastify.get/post/put/patch/delete` in `apps/api/src/routes/**/*.ts`.
 - **Invariant**: Always declare literal string paths starting with `'/'` as the first argument to Fastify route registration methods (`fastify`, `app`, `server`) across `apps/api/src/routes/**/*.ts`.
+
+## INV-012: Inline Command Palette Mount Scroll Hijack and Mobile Webfont CLS
+
+- **Symptom**: apps/ui-catalog webfont fallback CLS test fails on Linux CI with 0.13-0.41 layout shift on section.catalog-section
+- **Root Cause**: Inline Command without an unmatched defaultValue auto-selects item 0 and calls scrollIntoView on mount, scrolling window ~16000px down to #overlays so webfont reflow above shifts the visible section
+- **Invariant**: Pass defaultValue='**none**' on inline showcase Command widgets outside dialogs so initial page load stays at scrollY=0 without layout-shift amplification
