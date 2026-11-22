@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 58 · skipped 3 · in_progress 0 · blocked 7 · todo 41.
+Status counts: done 59 · skipped 3 · in_progress 0 · blocked 7 · todo 40.
 
 ## W0
 
@@ -371,12 +371,13 @@ Status counts: done 58 · skipped 3 · in_progress 0 · blocked 7 · todo 41.
   - Verify: typecheck; schema tests
   - Evidence: `pnpm test:assets` (0) → `44/44 pass`; `node packages/assets/scripts/validate.mjs` (0) → `validate.mjs`
 
-- [ ] **W5-003 — Implement scene descriptor validation**
+- [x] **W5-003 — Implement scene descriptor validation**
   - Goal: Validate layers, ordering, bounds, animation refs, breakpoints and accessibility fallbacks.
   - Depends on: W5-002, W2-002
   - Deliverables: Scene validator and test fixtures.
   - Acceptance: Reject missing assets, cyclic references, invalid depth and missing fallback.; Reports actionable file/field locations.
   - Verify: unit tests
+  - Evidence: `pnpm test:assets` (0) → `packages/assets/tests/scene-schema.test.mjs`; `pnpm --filter @moonwitness/types test` (0) → `packages/types/src/scene.ts`
 
 - [ ] **W5-004 — Implement scene lifecycle and playback controller**
   - Goal: Create deterministic play/pause/seek/reset lifecycle with visibility and unmount cleanup.

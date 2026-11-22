@@ -2098,7 +2098,7 @@
       "id": "W5-003",
       "phase": "W5",
       "title": "Implement scene descriptor validation",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2123,9 +2123,20 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Extended scene-schema.mjs and packages/types/src/scene.ts with breakpoints, layerOverrides, and accessibilityFallback validation and unit tests.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "packages/assets/tests/scene-schema.test.mjs"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/types test",
+          "exit_code": 0,
+          "artifact": "packages/types/src/scene.ts"
+        }
+      ],
+      "commit": "261d099"
     },
     {
       "id": "W5-004",
