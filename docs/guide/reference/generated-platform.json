@@ -98,7 +98,8 @@
         "contact-sheets",
         "font:brand:generate",
         "fonts:prepare",
-        "inventory"
+        "inventory",
+        "qa"
       ]
     },
     {
@@ -168,6 +169,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-cloud",
+      "version": "1.0.0",
+      "directory": "packages/orm-cloud",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-crm",
       "version": "1.0.0",
       "directory": "packages/orm-crm",
@@ -177,6 +184,12 @@
       "name": "@moonwitness/orm-integration",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-integration",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-isp",
+      "version": "1.0.0",
+      "directory": "packages/orm-isp",
       "scripts": ["build", "test"]
     },
     {
@@ -343,7 +356,8 @@
       "contact-sheets": "node scripts/generate-contact-sheets.mjs",
       "font:brand:generate": "node scripts/generate-brand-font.mjs",
       "fonts:prepare": "node scripts/prepare-fonts.mjs",
-      "inventory": "node scripts/asset-inventory.mjs"
+      "inventory": "node scripts/asset-inventory.mjs",
+      "qa": "node scripts/asset-qa.mjs"
     },
     "@moonwitness/auth": {
       "build": "tsc",
@@ -388,6 +402,10 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-cloud": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
     "@moonwitness/orm-crm": {
       "build": "tsc",
       "test": "vitest run"
@@ -395,6 +413,10 @@
     "@moonwitness/orm-integration": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
+    },
+    "@moonwitness/orm-isp": {
+      "build": "tsc",
+      "test": "vitest run"
     },
     "@moonwitness/orm-knowledge": {
       "build": "tsc",
@@ -9794,22 +9816,6 @@
       "path": "/metrics"
     },
     {
-      "method": "PATCH",
-      "path": "/notifications/:id/read"
-    },
-    {
-      "method": "GET",
-      "path": "/notifications/inbox"
-    },
-    {
-      "method": "GET",
-      "path": "/notifications/preferences"
-    },
-    {
-      "method": "PUT",
-      "path": "/notifications/preferences/:channel"
-    },
-    {
       "method": "GET",
       "path": "/obligations"
     },
@@ -10082,5 +10088,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "035e23e36e95152814fc09ffecfffabfbcf03f015634b2e66a8e0ef3e9a4427f"
+  "generatedFromSha256": "05a2e042f23695e7611201119c417c489037741fc3c10c6573fa9068896cb9c2"
 }

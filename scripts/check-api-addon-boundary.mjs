@@ -44,7 +44,6 @@ const LEGACY_DOMAIN_ROUTE_ALLOWLIST = new Set([
   'apps/api/src/routes/evidence.routes.ts',
   'apps/api/src/routes/local-ai-suggestion.routes.ts',
   'apps/api/src/routes/local-retrieval.routes.ts',
-  'apps/api/src/routes/notification.routes.ts',
   'apps/api/src/routes/project.routes.ts',
   'apps/api/src/routes/publication.routes.ts',
   'apps/api/src/routes/research-actor-identity.routes.ts',

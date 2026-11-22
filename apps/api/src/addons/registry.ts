@@ -32,7 +32,6 @@ import { bootstrapRoutes } from '../routes/bootstrap.routes.js';
 import { menuRegistry } from './action-menu-registry.js';
 import { whatsappRoutes } from '../routes/whatsapp.routes.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
-import { notificationRoutes } from '../routes/notification.routes.js';
 import { workflowRoutes } from '../routes/workflow.routes.js';
 import { projectRoutes } from '../routes/project.routes.js';
 import { corpusRoutes } from '../routes/corpus.routes.js';
@@ -159,9 +158,6 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'notification',
     manifest: notificationAddon,
-    async registerRoutes(app) {
-      await app.register(notificationRoutes);
-    },
   },
   {
     name: 'organization',

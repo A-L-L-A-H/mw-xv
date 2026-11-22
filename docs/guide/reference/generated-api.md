@@ -1,6 +1,6 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `035e23e36e95152814fc09ffecfffabfbcf03f015634b2e66a8e0ef3e9a4427f`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `05a2e042f23695e7611201119c417c489037741fc3c10c6573fa9068896cb9c2`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                                     |
 | ------ | -------------------------------------------------------- |
@@ -98,10 +98,6 @@ Extracted from literal Fastify route declarations. Source fingerprint: `035e23e3
 | POST   | `/memory`                                                |
 | POST   | `/memory/:id/revoke`                                     |
 | GET    | `/metrics`                                               |
-| PATCH  | `/notifications/:id/read`                                |
-| GET    | `/notifications/inbox`                                   |
-| GET    | `/notifications/preferences`                             |
-| PUT    | `/notifications/preferences/:channel`                    |
 | GET    | `/obligations`                                           |
 | POST   | `/obligations`                                           |
 | PATCH  | `/obligations/:id`                                       |
