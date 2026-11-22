@@ -339,7 +339,9 @@ export function Card({
             <EditIcon className="h-4 w-4 mr-2" />
             {tr("Edit")}
           </button>
-          <button className="popover-item" onClick={() => { /* copy link */ }}>
+          <button className="popover-item" onClick={() => {
+            navigator.clipboard.writeText(`${window.location.origin}/#task-${task.id}`).catch(() => {});
+          }}>
             <DownloadIcon className="h-4 w-4 mr-2" />
             {tr("Copy link")}
           </button>
