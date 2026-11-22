@@ -1,19 +1,19 @@
 # Jalur rilis aktif
 
-## Current checkpoint — 2026-11-23 (remote reconciliation; current dev work not yet promoted)
+## Current checkpoint — 2026-11-23 (stabilization edits; current dev candidate not promoted)
 
-- **Stable branch:** `main` is at promotion merge SHA `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
-- **Development branch:** `dev` is ahead of `main` by 16 commits in the latest compare; promotion PR [#37](https://github.com/A-L-L-A-H/mw-xv/pull/37) is open with source `0a33aff64d79d51e30e2298ff64d6a68da5ce6a4`. Do not merge until risk approval and required checks are verified. No force-push/history rewrite occurred.
-- **PR #37 status:** promotion report identifies M13.09–M13.12 as complete, but PR #37 report is stale: it references `b2951b4`, while observed head `b16f6f4` has no status records. Both associated CI runs `45055213276` and `45055208613` are cancelled. This final stabilization-doc push triggers another candidate; refresh report and verify required CI on exact current head. Approval remains required. The milestone evidence records narrow local checks; full PostgreSQL and Playwright E2E were not run in that batch.
-- **Task completion authority (temporary recovery mode):** `ROADMAP.md` checkbox + evidence is completion truth; `docs/roadmap/tasks.json` is task ID/dependency/detail index; Issues are projections/human triage. `docs/tasks/tasks.json` remains zero-byte/invalid JSON and must not be used by TaskOS sync until recovered and validated.
-- **M13 current:** M13.01–M13.12 are marked complete in roadmap/evidence. M13.09 adds server-side run gates and unified FLOW Cockpit; M13.10 strengthens server-authoritative Proof Gate and migrates five knowledge HTTP plugins; M13.11 implements Visual DNA profile/audit core and Board mirror; M13.12 adds Workspace Orbit/boundary audit. These are **dev work pending verification/promotion**, not released.
-- **Issues:** M13.01 and M13.02–M13.08 issues were reconciled to completed/in-main after exact-source CI success and promotion PRs #29–#31. M13.09–M13.12 issues [#40–#43](https://github.com/A-L-L-A-H/mw-xv/issues/40) were created; work is complete, delivery remains planned, and the current source/report/CI mismatch is a lifecycle blocker.
-- **Release readiness:** M12.14 stable-release approval remains unresolved; main equality or promotion merge alone is not stable release or deployment authorization.
-- **Runtime policy:** root package, Docker, CI, Desktop package and docs now align on Node.js 24. Runtime support ledger refresh is separate from configuration consistency.
+- **Stable branch:** `main` remains at promotion merge SHA `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
+- **Development branch:** compare `main...dev` currently reports 28 commits ahead, 0 behind. Stabilization edits were made on `dev`; latest confirmed file-update commit is `25c1ed0c89d35852ba78433159b26d29cd101a5c`. Keep dev-first; no force push/history rewrite.
+- **Promotion PR #37:** still open and not merged. Its promotion report has been observed stale in earlier checks. No PR-triggered workflow runs were returned for the latest confirmed documentation commit; do not merge or claim CI green until PR metadata/report and required checks are refreshed for exact current head and approval is present.
+- **TaskOS:** `docs/tasks/tasks.json` remains zero-byte. Temporary SOT boundary: ROADMAP checkboxes+evidence for completion, `docs/roadmap/tasks.json` for task identity/dependency/detail, Issues for human triage, exact SHA/CI/promotion/release evidence for delivery. New validator guard now reports empty registry and malformed JSON with recovery guidance; tests were added but not executed in this remote session. Registry restoration is still blocked on provenance inventory.
+- **M13:** M13.01–M13.12 are recorded complete in dev; M13.09–M13.12 are pending exact-source CI and promotion. Narrow evidence exists, but full PostgreSQL and Playwright E2E were not run in that milestone batch.
+- **Issue lifecycle:** M13.01–M13.08 reconciled against promoted evidence; issues #40–#43 remain open until delivery checks and promotion verified.
+- **Release readiness:** M12.14 stable-release approval remains unresolved. Branch/promotion merge does not equal stable release or deployment authorization.
+- **Runtime policy:** Node.js 24 is aligned across root package, Docker, CI, Desktop and docs. Other runtime-support review remains due.
 
-Follow [Stabilization Plan](STABILIZATION-PLAN.md). No feature expansion or release promotion until TaskOS recovery, issue lifecycle, required CI, approval and release gates are resolved.
+Follow [Stabilization Plan](STABILIZATION-PLAN.md). No feature expansion, merge or release promotion until TaskOS recovery, lifecycle reconciliation, exact-head required CI, approvals and release gates are resolved.
 
-Use `pnpm roadmap:progress -- --format json` for live progress; ignore static historical counts.
+Use `pnpm roadmap:progress -- --format json` for live progress; ignore static historical totals.
 
 ## Checkpoint historis — 2026-10-23
 
