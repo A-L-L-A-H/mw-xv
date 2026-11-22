@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "clipId": "crew-01-hair-move",
+  "characterId": "crew-01",
+  "pack": "moon-city",
+  "domain": "visual-universe",
+  "description": "Optional subtle hair sway for anonymous back-facing crew-01. No facial detail forced; ping-pong loop for deterministic, pausable playback.",
+  "clip": {
+    "id": "crew-01-hair-move",
+    "loop": true,
+    "direction": "ping-pong",
+    "pivot": { "x": 0.5, "y": 0.5 },
+    "frames": [
+      { "asset": "animation/crew-01-hair/crew-01-hair-move-frame-01.svg", "durationMs": 600 },
+      { "asset": "animation/crew-01-hair/crew-01-hair-move-frame-02.svg", "durationMs": 600 }
+    ]
+  },
+  "reducedMotionFallback": "animation/crew-01-hair/crew-01-hair-move-frame-01.svg",
+  "license": "ISC",
+  "status": "review"
+}
