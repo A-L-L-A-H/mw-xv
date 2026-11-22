@@ -2746,7 +2746,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed, W6-003 frame report p95 16.7ms/max 16.8ms"
         }
       ],
-      "commit": null
+      "commit": "3a51513"
     },
     {
       "id": "W6-004",
@@ -2929,7 +2929,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed, FX catalogue test passed"
         }
       ],
-      "commit": null
+      "commit": "3a51513"
     },
     {
       "id": "W7-001",
@@ -3060,7 +3060,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed including motion allowed and reduced motion Character Studio cases"
         }
       ],
-      "commit": null
+      "commit": "3a51513"
     },
     {
       "id": "W7-004",
@@ -3144,7 +3144,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed including timeline seek assertion"
         }
       ],
-      "commit": null
+      "commit": "3a51513"
     },
     {
       "id": "W7-006",
@@ -3193,7 +3193,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W7-006-scene-preview-desktop.png; MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W7-006-scene-preview-mobile.png"
         }
       ],
-      "commit": null
+      "commit": "3a51513"
     },
     {
       "id": "W7-007",
@@ -3255,7 +3255,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed including disabled-before-load and JSON download checks"
         }
       ],
-      "commit": null
+      "commit": "3a51513"
     },
     {
       "id": "W8-D01",
