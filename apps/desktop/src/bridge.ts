@@ -10,6 +10,7 @@ import type {
   DesktopBridgeHostSurface,
   DesktopBridgeSnapshot,
   DesktopCapabilityBridge,
+  DesktopExecutionPacketRequest,
   DesktopHarnessConfig,
   DesktopKeychainSecretStore,
   DesktopRepoSnapshotOptions,
@@ -403,6 +404,11 @@ export function createDesktopHarnessBridge(
         auth: DesktopActionAuthContext,
         snapshotOpts?: DesktopRepoSnapshotOptions
       ) => sandbox.inspectRepoSnapshot(runId, auth, snapshotOpts),
+      compileExecutionPacket: (
+        runId: string,
+        auth: DesktopActionAuthContext,
+        request: DesktopExecutionPacketRequest
+      ) => sandbox.compileExecutionPacket(runId, auth, request),
       commit: (runId: string, message: string, auth: DesktopActionAuthContext) =>
         sandbox.commit(runId, message, auth),
       release: (runId: string) => sandbox.release(runId),

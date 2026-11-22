@@ -1,5 +1,12 @@
 export * from './types.js';
-export type { RepoGitRevision, RepoSnapshot } from '@moonwitness/ai-runtime';
+export type {
+  CompiledExecutionPacket,
+  ExecutionPacketInput,
+  OverlapFinding,
+  OverlapReport,
+  RepoGitRevision,
+  RepoSnapshot,
+} from '@moonwitness/ai-runtime';
 export {
   DesktopRiskGate,
   NativeHumanApprovalIssuer,

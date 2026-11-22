@@ -1636,4 +1636,147 @@ describe('MoonWitness Desktop Harness', () => {
 
     await bridge.worktree.release('radar-sec-1');
   });
+
+  it('compiles a deterministic R0 ExecutionPacket from worktree lease and rejects out-of-lease/unsafe scope (M13.04)', async () => {
+    const repoRoot = initTempGitRepo();
+    const bridge = createDesktopHarnessBridge(
+      {
+        repoRoot,
+        sqlitePath: ':memory:',
+        boardOrigin: 'http://127.0.0.1:5173',
+        apiBaseUrl: 'http://127.0.0.1:3000',
+        allowedPathPrefixes: ['src'],
+      },
+      { autoAttach: false }
+    );
+    activeBridges.push(bridge);
+
+    const lease = await bridge.worktree.acquire({ runId: 'forge-1', allowedPaths: ['src'] });
+    const r0Auth = makeAuth({
+      grant: makeGrant({
+        allowedRiskTier: 'R0',
+        allowedPaths: ['src'],
+        maxCallsPerRun: 10,
+      }),
+    });
+
+    const packet = await bridge.worktree.compileExecutionPacket('forge-1', r0Auth, {
+      allowedCapabilities: ['repo.read@v1'],
+      verificationCommands: ['pnpm --filter @moonwitness/desktop test'],
+      contract: {
+        id: 77,
+        code: 'wc_forge_1',
+        companyId: 1,
+        title: 'Inspect Desktop Module',
+        objective: 'Compile revision-pinned packet for src inspection.',
+        scopePaths: ['src'],
+        protectedPaths: ['.env', '.git', 'apps/api'],
+        riskTier: 'R0',
+        dataClassification: 'local_only',
+        criteriaLockedAt: '2026-11-22T01:00:00.000Z',
+        criteria: [
+          {
+            code: 'c_inspect',
+            title: 'Verify src module',
+            verificationMethod: 'source_inspection',
+            requiredEvidenceType: 'evidence_bundle',
+            mandatory: true,
+          },
+        ],
+      },
+    });
+
+    expect(packet.contractCode).toBe('wc_forge_1');
+    expect(packet.repoRevision?.headCommit).toBe(lease.headCommit);
+    expect(packet.targetBranch).toBe(lease.branchName);
+    expect(packet.allowedScopePaths).toEqual(['src']);
+    expect(packet.markdown).toContain('# Execution Packet: wc_forge_1');
+    expect(packet.contentSha256).toMatch(/^[a-f0-9]{64}$/u);
+
+    // Out-of-lease scope path is rejected.
+    await expect(
+      bridge.worktree.compileExecutionPacket('forge-1', r0Auth, {
+        allowedCapabilities: ['repo.read@v1'],
+        verificationCommands: ['pnpm test'],
+        contract: {
+          id: 78,
+          code: 'wc_forge_escape',
+          companyId: 1,
+          title: 'Out of lease',
+          objective: 'Attempt out-of-lease edit',
+          scopePaths: ['docs'],
+          riskTier: 'R0',
+          dataClassification: 'local_only',
+          criteriaLockedAt: '2026-11-22T01:00:00.000Z',
+          criteria: [
+            {
+              code: 'c1',
+              title: 'c1',
+              verificationMethod: 'automated_test',
+              requiredEvidenceType: 'evidence_bundle',
+              mandatory: true,
+            },
+          ],
+        },
+      })
+    ).rejects.toThrow(/outside worktree lease/iu);
+
+    // Sensitive .env scope path fails closed.
+    await expect(
+      bridge.worktree.compileExecutionPacket('forge-1', r0Auth, {
+        allowedCapabilities: ['repo.read@v1'],
+        verificationCommands: ['pnpm test'],
+        contract: {
+          id: 79,
+          code: 'wc_forge_secret',
+          companyId: 1,
+          title: 'Secret read',
+          objective: 'Read env',
+          scopePaths: ['.env'],
+          riskTier: 'R0',
+          dataClassification: 'local_only',
+          criteriaLockedAt: '2026-11-22T01:00:00.000Z',
+          criteria: [
+            {
+              code: 'c1',
+              title: 'c1',
+              verificationMethod: 'automated_test',
+              requiredEvidenceType: 'evidence_bundle',
+              mandatory: true,
+            },
+          ],
+        },
+      })
+    ).rejects.toThrow(/Sensitive or unsafe/iu);
+
+    // Cross-company mismatch fails closed.
+    await expect(
+      bridge.worktree.compileExecutionPacket('forge-1', r0Auth, {
+        allowedCapabilities: ['repo.read@v1'],
+        verificationCommands: ['pnpm test'],
+        contract: {
+          id: 80,
+          code: 'wc_forge_tenant',
+          companyId: 2,
+          title: 'Wrong tenant',
+          objective: 'Wrong tenant',
+          scopePaths: ['src'],
+          riskTier: 'R0',
+          dataClassification: 'local_only',
+          criteriaLockedAt: '2026-11-22T01:00:00.000Z',
+          criteria: [
+            {
+              code: 'c1',
+              title: 'c1',
+              verificationMethod: 'automated_test',
+              requiredEvidenceType: 'evidence_bundle',
+              mandatory: true,
+            },
+          ],
+        },
+      })
+    ).rejects.toThrow(/Cross-company/iu);
+
+    await bridge.worktree.release('forge-1');
+  });
 });

@@ -16,7 +16,9 @@ import { promisify } from 'node:util';
 import {
   ReadOnlyRepoInspector,
   buildRepoSnapshot,
+  compileExecutionPacket,
   createRedactor,
+  type CompiledExecutionPacket,
   type RepoGitRevision,
   type RepoSnapshot,
 } from '@moonwitness/ai-runtime';
@@ -33,6 +35,7 @@ import type {
   BoundedPtyCommandRequest,
   BoundedPtyCommandResult,
   DesktopActionAuthContext,
+  DesktopExecutionPacketRequest,
   DesktopRepoSnapshotOptions,
   GitWorktreeLease,
   RiskAuditRecord,
@@ -630,6 +633,62 @@ export class WorktreeSandbox {
         ? { maxManifestBytes: options.maxManifestBytes }
         : {}),
       ...(options?.maxDocHeadings !== undefined ? { maxDocHeadings: options.maxDocHeadings } : {}),
+      redactor,
+    });
+  }
+
+  /**
+   * M13.04: R0 deterministic Execution Packet compiler bound to an active worktree lease.
+   * Enforces company match, out-of-lease scope blocking, and `inspectRepoSnapshot` R0 gates.
+   */
+  async compileExecutionPacket(
+    runId: string,
+    auth: DesktopActionAuthContext,
+    request: DesktopExecutionPacketRequest
+  ): Promise<CompiledExecutionPacket> {
+    if (request.contract.companyId !== auth.companyId) {
+      throw new AccessDeniedError(
+        `Cross-company contract ${request.contract.companyId} rejected for auth company ${auth.companyId}`
+      );
+    }
+
+    const lease = this.getLease(runId);
+    const effectiveLeasePaths =
+      lease.allowedPaths.length > 0 ? lease.allowedPaths : this.defaultAllowedPaths;
+
+    for (const scopePath of request.contract.scopePaths) {
+      const normalizedScope = normalizePathPrefix(scopePath);
+      if (
+        !normalizedScope ||
+        normalizedScope.split('/').includes('..') ||
+        isSecretOrSensitivePath(normalizedScope)
+      ) {
+        throw new AccessDeniedError(
+          `Sensitive or unsafe scope path rejected in execution packet: '${scopePath}'`
+        );
+      }
+      const withinLease = effectiveLeasePaths.some((allowed) => {
+        const prefix = normalizePathPrefix(allowed);
+        if (!prefix || prefix === '.') return true;
+        return normalizedScope === prefix || normalizedScope.startsWith(`${prefix}/`);
+      });
+      if (!withinLease) {
+        throw new AccessDeniedError(
+          `Execution packet scope path '${scopePath}' is outside worktree lease allowedPaths`
+        );
+      }
+    }
+
+    const snapshot = await this.inspectRepoSnapshot(runId, auth, request.snapshotOptions);
+    const redactor = createRedactor(this.knownSecrets);
+    return compileExecutionPacket({
+      contract: request.contract,
+      repoSnapshot: snapshot,
+      allowedCapabilities: request.allowedCapabilities,
+      verificationCommands: request.verificationCommands,
+      ...(request.approvedSkills !== undefined ? { approvedSkills: request.approvedSkills } : {}),
+      ...(request.policyLimits !== undefined ? { policyLimits: request.policyLimits } : {}),
+      ...(request.targetBranch !== undefined ? { targetBranch: request.targetBranch } : {}),
       redactor,
     });
   }
