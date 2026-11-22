@@ -72,6 +72,9 @@ test('environment inspector resets layer visibility, z-order and composition to 
 test('character studio plays, pauses and resets imported clip frames when motion is allowed (W7-003)', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#character-preview');
+  await expect(
+    page.getByText(/Catalog-only fictional example\. crew-01 is not a real crew member/u)
+  ).toBeVisible();
   const specimen = page.getByTestId('character-preview-specimen');
   const player = specimen.locator('[data-sprite-clip="animation/crew-01-idle/crew-01-idle-clip.json"]');
   await expect(player).toHaveAttribute('data-sprite-state', 'paused');
