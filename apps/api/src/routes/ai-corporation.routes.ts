@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { cancelJob, enqueueJob, Job } from '@moonwitness/jobs';
+import { ProjectStage, ProjectTask } from '@moonwitness/orm-project';
 import {
   AcceptanceCriterion,
   Agent,
@@ -693,6 +694,30 @@ export const aiCorporationPlugin: FastifyPluginAsync<AiCorporationRoutesOptions>
       accepted_at: nowIso,
       criteria_locked_at: contract.criteria_locked_at ?? nowIso,
     });
+
+    if (
+      updated.source_model === ProjectTask.modelName &&
+      typeof updated.source_id === 'number' &&
+      updated.source_id > 0
+    ) {
+      const linkedTask = await ProjectTask.query().findOne({
+        id: updated.source_id,
+        company_id: ctx.companyId,
+      });
+      if (linkedTask) {
+        const doneStage = await ProjectStage.query()
+          .where({ company_id: ctx.companyId, code: 'done' })
+          .andWhere((qb) => {
+            qb.where({ project_id: linkedTask.project_id }).orWhereNull('project_id');
+          })
+          .orderBy('project_id', 'desc')
+          .first();
+        await ProjectTask.query().patchAndFetchById(linkedTask.id, {
+          status: 'done',
+          ...(doneStage ? { stage_id: doneStage.id } : {}),
+        });
+      }
+    }
 
     await recordAiAudit(ctx.userId, WorkContract.modelName, contract.id, 'accept', {
       status: 'accepted',

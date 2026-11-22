@@ -7,7 +7,7 @@
       <stop offset="1" stop-color="#d7e4ee"/>
     </linearGradient>
   </defs>
-  <g fill="url(#mw-source-artwork-moon-city-clouds-loop-a-clouds)">
+  <g id="mw-moon-city-clouds-loop-a-layer" fill="url(#mw-source-artwork-moon-city-clouds-loop-a-clouds)">
     <g opacity="0.5">
       <ellipse cx="140" cy="164" rx="176" ry="48"/>
       <ellipse cx="238" cy="132" rx="112" ry="62"/>
