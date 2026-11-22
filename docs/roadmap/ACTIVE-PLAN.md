@@ -1,22 +1,22 @@
 # Jalur rilis aktif
 
-## Current checkpoint — 2026-11-23 (TaskOS recovery implementation; not released)
+## Current checkpoint — 2026-11-23 (TaskOS recovery in progress; not released)
 
 - **Stable branch:** `main` remains at `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`. No main write, merge or deployment was performed.
-- **Development branch:** `dev` is 75 commits ahead and 0 behind at checkpoint source `94d7048ac35d59d557c8cdc28367731666f02a04`. Keep work dev-first; no force push or history rewrite.
-- **Promotion PR #37:** the managed report last referenced `5a8bd9c5c99c`, behind this checkpoint. Refresh it and verify required checks on the latest exact source. The promotion risk classifier requires maintainer/CODEOWNER approval.
-- **CI:** report and read-only roadmap planning completed successfully on the previous candidate. The broad CI run for that candidate was still pending in `unit-tests`, `quality-and-build`, `knowledge-gate`, `postgres-integration` and `dx-test` when dev advanced. It is not proof for this checkpoint. A fresh exact-head CI run must complete without cancellation before any promotion claim.
-- **TaskOS registry:** `docs/tasks/tasks.json` remains zero-byte. The [recovery inventory](../tasks/RECOVERY-INVENTORY.md) identifies 627 unique candidate IDs across eight source groups and expected status counts (468 done, 49 doing, 89 todo, 21 blocked). These are migration expectations, not live registry contents; no rows have been written.
-- **TaskOS safeguards:** the importer is dry-run by default, fail-closed on missing sources/duplicate IDs, deterministic for a fixed timestamp, schema-validated and refuses to overwrite a populated registry. The validator requires provenance, known projects, reciprocal dependency/block edges, acyclic dependencies and exact roadmap status/checkbox parity. Roadmap sync refuses to write until validation succeeds.
-- **TaskOS test coverage:** `pnpm test:taskos` covers parser failures, importer inventory/determinism/schema, shared roadmap status mapping, fail-closed sync and Visual Universe round-trip behavior. The suite is wired into the unit CI runner but has not yet been observed passing on a completed exact-current-SHA CI run.
-- **Visual Universe:** 109 tasks are mapped to the global `visual-universe` project with their original delegated metadata retained. Pack-local `task.json`, `TASKS.md` and task cards are projections only; TaskOS fields override stale metadata, including cleared fields and evidence paths. Unknown execution exit codes display as “not recorded”.
-- **SOT transition:** TaskOS will own task lifecycle. `ROADMAP.md`, `docs/roadmap/tasks.json`, GitHub Issues and Visual Universe local task files are views/operational projections. Temporary recovery mode remains active until registry restoration and validation are proven.
-- **M13:** M13.01–M13.12 are recorded complete on dev. M13.09–M13.12 remain pending complete exact-SHA CI, required review and promotion; prior narrow milestone evidence did not include full PostgreSQL integration and Playwright E2E.
+- **Development branch:** `dev` is 149 commits ahead and 0 behind at `cb5056585539a3702bc44f89e772b113edf74fb9`. Continue dev-first; no force push or history rewrite.
+- **Promotion PR #37:** [open promotion PR](https://github.com/A-L-L-A-H/mw-xv/pull/37) points to exact head `cb5056585539a3702bc44f89e772b113edf74fb9` and base `2a9d78333433`. The report is current for this SHA. Promotion risk classification requires maintainer/CODEOWNER approval; there are no submitted reviews recorded in the latest review list.
+- **CI:** Workflow run [45065672654](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45065672654) is tied to exact candidate `cb5056585539a3702bc44f89e772b113edf74fb9`. `knowledge-gate` and `dx-test` passed; `quality-and-build` failed only at the generated-reference check (four generated docs outputs stale); `unit-tests` and `postgres-integration` are still in progress.
+- **TaskOS registry:** `docs/tasks/tasks.json` remains zero-byte (0 characters). The [recovery inventory](../tasks/RECOVERY-INVENTORY.md) contains 627 distinct candidate task IDs across eight source groups and expected status counts 468 done, 49 doing, 89 todo, 21 blocked. These are migration expectations, not live registry content. No records were written.
+- **TaskOS safeguards:** importer is fail-closed, dry-run by default, deterministic for a fixed timestamp, schema/provenance/graph validated before a restore write, and refuses to overwrite a populated registry. Roadmap sync first checks registry integrity, updates projections, then runs full status/checkbox parity validation.
+- **TaskOS tests:** `pnpm test:taskos` is wired into `scripts/run-unit-tests.mjs` before the workspace build. This current unit job is the first hosted proof for that suite; do not mark it passed before its completed result.
+- **Visual Universe:** 109 source tasks have immutable source and original card snapshots, with 109/109 Git blob SHA matches. Local `task.json`, `TASKS.md`, and cards are projections; the local active queue remains empty while TaskOS is unavailable.
+- **Documentation gate:** current quality failure is a generated-reference drift, not evidence of a build/type failure. The four files must be regenerated from the built workspace with `pnpm docs:generate`; do not hand-author generated API/model output or weaken check mode.
+- **M13:** M13.01–M13.12 are recorded complete on dev. M13.09–M13.12 remain pending complete exact-SHA CI and human promotion approval; narrow milestone checks did not include full PostgreSQL integration and Playwright E2E.
 - **Issues:** #40–#43 remain open pending delivery verification. TaskOS recovery is tracked in [#44](https://github.com/A-L-L-A-H/mw-xv/issues/44).
-- **Release readiness:** M12.14 stable-release approval remains unresolved. Promotion is not stable release or deployment authorization.
-- **Runtime policy:** Node.js 24 is aligned across root package, Docker, CI, Desktop and primary docs. Platform audit derives the Node major from the runtime support ledger, with regression coverage in the unit suite.
+- **Release readiness:** M12.14 stable-release approval remains unresolved. Promotion is not release or deployment authorization.
+- **Runtime policy:** Node.js 24 is aligned across root package, Docker, CI, Desktop and primary docs. Platform audit derives the Node major from the support ledger; the outdated test expectation has been corrected in this candidate.
 
-Follow [Stabilization Plan](STABILIZATION-PLAN.md) and [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md). Do not write the canonical registry, merge, release or deploy until a complete exact-source CI run and approval gates pass.
+Follow [Stabilization Plan](STABILIZATION-PLAN.md) and [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md). Do not restore TaskOS, merge, release or deploy until a complete exact-SHA CI run, generated-reference synchronization and approval gates pass.
 
 ## Checkpoint historis — 2026-10-23
 
