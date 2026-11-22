@@ -1,0 +1,14 @@
+{
+  "name": "@moonwitness/isp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "cargo build --release",
+    "dev": "cargo run",
+    "start": "./target/release/moonwitness-isp",
+    "migrate": "cargo run -- --migrate",
+    "test": "cargo test",
+    "fmt": "cargo fmt",
+    "clippy": "cargo clippy"
+  }
+}

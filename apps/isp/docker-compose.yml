@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  radius:
+    build:
+      context: ../../..
+      dockerfile: apps/radius/Dockerfile
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+      - "3000:3000"
+    environment:
+      - MW_RADIUS_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/moonwitness_radius
+      - MW_RADIUS_RADIUS_SECRET=testing123
+      - MW_RADIUS_ADMIN_TOKEN=moonwitness-radius-admin
+      - RUST_LOG=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./apps/radius/config.toml:/app/config.toml:ro
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: moonwitness_radius
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - radius_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d moonwitness_radius"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  radius_pgdata:
