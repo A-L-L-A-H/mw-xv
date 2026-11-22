@@ -111,3 +111,24 @@ test('Visual Universe projection uses canonical TaskOS evidence paths without in
   assert.match(projected.evidence[1].command, /not recorded/u);
   assert.deepEqual(projected.verification, ['pnpm test:taskos']);
 });
+
+test('canonical empty fields do not resurrect stale source metadata', () => {
+  const source = sampleTask({
+    owner: null,
+    problem: '',
+    proposedSolution: '',
+    scope: { packages: [], files: [] },
+    risk: null,
+    blockedReason: null,
+    evidence: { paths: [], detailFile: null, commitSha: null },
+  });
+  const projected = projectVisualUniverseTask(source);
+  assert.equal(projected.role, null);
+  assert.equal(projected.objective, '');
+  assert.deepEqual(projected.deliverables, []);
+  assert.deepEqual(projected.scope_hints, []);
+  assert.equal(projected.risk, null);
+  assert.equal(projected.notes, '');
+  assert.equal(projected.commit, null);
+  assert.deepEqual(projected.evidence, []);
+});
