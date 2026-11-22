@@ -48,20 +48,62 @@ export async function validateTasks() {
     for (const err of validate.errors ?? []) {
       errors.push(`Schema Error at ${err.instancePath}: ${err.message}`);
     }
+    return { valid: false, taskCount: tasksData.tasks?.length ?? 0, errors };
   }
 
-  // 2. Uniqueness of task codes
-  const codeSet = new Set();
-  const taskMap = new Map();
-  for (const t of tasksData.tasks ?? []) {
-    if (codeSet.has(t.code)) {
-      errors.push(`Duplicate task code: "${t.code}"`);
+  // Project slugs and task codes are globally unique.
+  const projectSlugs = new Set();
+  for (const project of tasksData.projects) {
+    if (projectSlugs.has(project.slug)) {
+      errors.push(`Duplicate project slug: "${project.slug}"`);
     }
-    codeSet.add(t.code);
-    taskMap.set(t.code, t);
+    projectSlugs.add(project.slug);
   }
 
-  // 3. Cycle-free DAG validation on dependsOn
+  const taskMap = new Map();
+  for (const task of tasksData.tasks) {
+    if (taskMap.has(task.code)) {
+      errors.push(`Duplicate task code: "${task.code}"`);
+    }
+    taskMap.set(task.code, task);
+    if (!projectSlugs.has(task.project)) {
+      errors.push(`Task "${task.code}" references unknown project "${task.project}".`);
+    }
+  }
+
+  // Reject unresolved dependency/block references instead of silently ignoring them.
+  for (const task of tasksData.tasks) {
+    for (const dependency of task.dependsOn ?? []) {
+      if (!taskMap.has(dependency)) {
+        errors.push(`Task "${task.code}" references unknown dependency "${dependency}".`);
+      }
+    }
+    for (const blockedTask of task.blocks ?? []) {
+      if (!taskMap.has(blockedTask)) {
+        errors.push(`Task "${task.code}" references unknown blocked task "${blockedTask}".`);
+      }
+    }
+  }
+
+  // Each task must retain a real, repository-local provenance source.
+  const sourceFiles = new Set(tasksData.tasks.map((task) => task.sourceRef.file));
+  for (const sourceFile of sourceFiles) {
+    if (
+      path.isAbsolute(sourceFile) ||
+      sourceFile.split(/[\\/]+/u).includes('..') ||
+      /^[a-z][a-z0-9+.-]*:\/\//iu.test(sourceFile)
+    ) {
+      errors.push(`Task source reference must be a repository-relative path: "${sourceFile}".`);
+      continue;
+    }
+    try {
+      await fs.access(path.resolve(rootDir, sourceFile));
+    } catch {
+      errors.push(`Task source reference does not exist: "${sourceFile}".`);
+    }
+  }
+
+  // Validate the dependency DAG.
   const visiting = new Set();
   const visited = new Set();
   function checkCycle(code) {
@@ -71,18 +113,14 @@ export async function validateTasks() {
     }
     if (visited.has(code)) return;
     visiting.add(code);
-    const deps = taskMap.get(code)?.dependsOn ?? [];
-    for (const dep of deps) {
-      if (taskMap.has(dep)) {
-        checkCycle(dep);
-      }
+    const task = taskMap.get(code);
+    for (const dependency of task?.dependsOn ?? []) {
+      if (taskMap.has(dependency)) checkCycle(dependency);
     }
     visiting.delete(code);
     visited.add(code);
   }
-  for (const code of taskMap.keys()) {
-    checkCycle(code);
-  }
+  for (const code of taskMap.keys()) checkCycle(code);
 
   // 4. Parity with ROADMAP.md and docs/roadmap/tasks.json
   try {
