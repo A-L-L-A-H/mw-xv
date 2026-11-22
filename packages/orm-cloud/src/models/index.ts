@@ -47,6 +47,9 @@ export const CloudServer = defineModel('cloud.server', {
     ram_gb: fields.integer({ label: 'RAM (GB)' }),
     disk_gb: fields.integer({ label: 'Disk (GB)' }),
     os: fields.string({ label: 'OS' }),
+    region: fields.string({ default: 'local', label: 'Region' }),
+    ha_group: fields.string({ label: 'HA Group' }),
+    ha_priority: fields.integer({ default: 100, label: 'HA Priority' }),
     monthly_price_minor: fields.integer({ label: 'Monthly Price (minor units)' }),
     currency: fields.string({ required: true, default: 'USD', label: 'Currency' }),
     status: fields.enum(['active', 'inactive', 'maintenance'], {
@@ -73,6 +76,13 @@ export const CloudDeploymentTarget = defineModel('cloud.deployment_target', {
     docker_host: fields.string({ label: 'Docker Host' }),
     port: fields.integer({ default: 3003, label: 'Agent Port' }),
     api_url: fields.string({ label: 'Control Plane API URL' }),
+    ha_group: fields.string({ label: 'HA Group' }),
+    priority: fields.integer({ default: 100, label: 'Failover Priority' }),
+    health_status: fields.enum(['healthy', 'degraded', 'offline'], {
+      required: true,
+      default: 'healthy',
+      label: 'Health Status',
+    }),
     is_active: fields.boolean({ required: true, default: true, label: 'Active' }),
   },
 });
@@ -98,6 +108,7 @@ export const CloudApp = defineModel('cloud.app', {
     env_vars: fields.json({ label: 'Environment Variables' }),
     volumes: fields.text({ label: 'Volume Mappings' }),
     domain: fields.string({ label: 'Custom Domain' }),
+    coolify_uuid: fields.string({ label: 'Coolify Application UUID' }),
     health_check_url: fields.string({ label: 'Health Check URL' }),
     monthly_price_minor: fields.integer({ label: 'Monthly Price (minor units)' }),
     currency: fields.string({ required: true, default: 'USD', label: 'Currency' }),

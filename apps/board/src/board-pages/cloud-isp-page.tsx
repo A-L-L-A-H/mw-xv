@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AddonIcon, GlobeIcon, RefreshIcon } from '@moonwitness/ui/icons';
+import { AddonIcon, CodeIcon, GlobeIcon, KeyIcon, RefreshIcon } from '@moonwitness/ui/icons';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
@@ -38,6 +39,7 @@ interface CloudDeploymentRecord {
   status: string;
   container_id?: string | null;
   started_at?: string | null;
+  log?: string | null;
   error_message?: string | null;
 }
 
@@ -57,8 +59,27 @@ interface IspSubscriberRecord {
   ip_address?: string | null;
 }
 
+interface LiveSessionsPayload {
+  dbSessions: Array<{
+    id: number;
+    session_id: string;
+    username: string;
+    framed_ip?: string | null;
+    acct_input_octets?: number;
+    acct_output_octets?: number;
+  }>;
+  runtimeSessions: Array<{
+    session_id: string;
+    username: string;
+    status: string;
+    framed_ip?: string | null;
+  }>;
+}
+
 export function CloudIspPage() {
   const queryClient = useQueryClient();
+  const [selectedLog, setSelectedLog] = useState<string | null>(null);
+  const [terraformPreview, setTerraformPreview] = useState<string | null>(null);
 
   const cloudHealthQuery = useQuery({
     queryKey: scopedQueryKey(['cloud', 'health']),
@@ -116,18 +137,54 @@ export function CloudIspPage() {
     },
   });
 
+  const liveSessionsQuery = useQuery({
+    queryKey: scopedQueryKey(['isp', 'sessions', 'live']),
+    queryFn: async () => {
+      const response = await client.request<{ success: boolean; data: LiveSessionsPayload }>(
+        '/api/isp/sessions/live'
+      );
+      return response.data;
+    },
+    refetchInterval: 10_000,
+  });
+
   const deployAppMutation = useMutation({
     mutationFn: async (appId: number) =>
-      client.request<{ success: boolean; data: { containerId?: string; status: string } }>(
+      client.request<{ success: boolean; data: { deploymentId: number; status: string } }>(
         `/api/cloud/apps/${appId}/deploy`,
         { method: 'POST' }
       ),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['cloud'] });
-      toast.success('Deployment triggered through Docker Agent.');
+      toast.success('Deployment triggered through provider.');
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Unable to deploy cloud application.');
+    },
+  });
+
+  const loadDeploymentLogMutation = useMutation({
+    mutationFn: async (deploymentId: number) =>
+      client.request<{
+        success: boolean;
+        data: { id: number; status: string; log: string; errorMessage: string | null };
+      }>(`/api/cloud/deployments/${deploymentId}/logs`),
+    onSuccess: (res) => {
+      setSelectedLog(
+        `Deployment #${res.data.id} [${res.data.status}]\n${res.data.log || res.data.errorMessage || 'No log output yet.'}`
+      );
+    },
+  });
+
+  const exportTerraformMutation = useMutation({
+    mutationFn: async () =>
+      client.request<string>('/api/cloud/export/terraform'),
+    onSuccess: (hcl) => {
+      setTerraformPreview(typeof hcl === 'string' ? hcl : JSON.stringify(hcl, null, 2));
+      toast.success('Terraform HCL generated.');
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Unable to export Terraform HCL.');
     },
   });
 
@@ -140,6 +197,35 @@ export function CloudIspPage() {
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Unable to sync NAS device.');
+    },
+  });
+
+  const rotateNasSecretMutation = useMutation({
+    mutationFn: async (nasId: number) =>
+      client.request<{ success: boolean; data: { runtimeSynced: boolean } }>(
+        `/api/isp/nas/${nasId}/rotate-secret`,
+        { method: 'POST', body: {} }
+      ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['isp'] });
+      toast.success('NAS secret rotated cleanly.');
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Unable to rotate NAS secret.');
+    },
+  });
+
+  const syncSubscriberMutation = useMutation({
+    mutationFn: async (subscriberId: number) =>
+      client.request<{ success: boolean }>(`/api/isp/subscribers/${subscriberId}/sync`, {
+        method: 'POST',
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['isp'] });
+      toast.success('Subscriber synced to ISP RADIUS.');
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Unable to sync subscriber.');
     },
   });
 
@@ -157,6 +243,20 @@ export function CloudIspPage() {
     },
   });
 
+  const runMeteringMutation = useMutation({
+    mutationFn: async () =>
+      client.request<{ success: boolean; data: { createdInvoiceLines: number } }>(
+        '/api/isp/metering/run',
+        { method: 'POST', body: {} }
+      ),
+    onSuccess: (res) => {
+      toast.success(`Usage metering complete: ${res.data.createdInvoiceLines} line(s) created.`);
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Unable to run usage metering.');
+    },
+  });
+
   const refreshAll = async () => {
     await Promise.all([
       cloudHealthQuery.refetch(),
@@ -165,6 +265,7 @@ export function CloudIspPage() {
       deploymentsQuery.refetch(),
       nasQuery.refetch(),
       subscribersQuery.refetch(),
+      liveSessionsQuery.refetch(),
     ]);
   };
 
@@ -173,12 +274,23 @@ export function CloudIspPage() {
       <PageHeader
         title="Cloud & ISP"
         accentTitle="Operations"
-        description="Trigger container deployments via the local Docker Agent and manage ISP RADIUS gateways and subscribers."
+        description="Deploy containers via Docker Agent or Coolify, export Terraform HCL, and operate ISP RADIUS gateways."
         actions={
-          <Button variant="outline" size="sm" onClick={() => void refreshAll()}>
-            <RefreshIcon className="mr-2 size-4" />
-            Refresh
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={exportTerraformMutation.isPending}
+              onClick={() => exportTerraformMutation.mutate()}
+            >
+              <CodeIcon className="mr-2 size-4" />
+              Export Terraform
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => void refreshAll()}>
+              <RefreshIcon className="mr-2 size-4" />
+              Refresh
+            </Button>
+          </div>
         }
       />
 
@@ -199,9 +311,9 @@ export function CloudIspPage() {
           detail="Active gateways"
         />
         <MetricTile
-          label="Subscribers"
-          value={String(ispHealthQuery.data?.subscriberCount ?? subscribersQuery.data?.length ?? 0)}
-          detail="Managed accounts"
+          label="Live Sessions"
+          value={String(liveSessionsQuery.data?.runtimeSessions.length ?? 0)}
+          detail={`${ispHealthQuery.data?.subscriberCount ?? subscribersQuery.data?.length ?? 0} subscribers`}
         />
       </div>
 
@@ -251,25 +363,58 @@ export function CloudIspPage() {
                 Recent Deployments
               </p>
               {deploymentsQuery.data.slice(0, 5).map((dep) => (
-                <div key={dep.id} className="flex items-center justify-between text-xs">
+                <div key={dep.id} className="flex items-center justify-between gap-2 text-xs">
                   <span className="font-mono">
                     #{dep.id} · {dep.container_id ?? 'no-container'}
                   </span>
-                  <Badge variant={dep.status === 'running' ? 'cyan' : 'magenta'}>
-                    {dep.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={dep.status === 'running' ? 'cyan' : 'magenta'}>
+                      {dep.status}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => loadDeploymentLogMutation.mutate(dep.id)}
+                    >
+                      Logs
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
+
+          {selectedLog && (
+            <pre className="mt-4 overflow-x-auto border-2 border-ink/20 bg-paper p-3 font-mono text-xs">
+              {selectedLog}
+            </pre>
+          )}
+          {terraformPreview && (
+            <pre className="mt-4 overflow-x-auto border-2 border-ink/20 bg-paper p-3 font-mono text-xs">
+              {terraformPreview}
+            </pre>
+          )}
         </Panel>
 
-        <Panel title="ISP Gateways & Subscribers" description="Sync NAS devices and manage access">
+        <Panel
+          title="ISP Gateways, Subscribers & Sessions"
+          description="Sync NAS devices, rotate secrets, and meter RADIUS usage"
+        >
           <div className="space-y-4">
             <div>
-              <p className="mb-2 font-mono text-xs uppercase tracking-wider text-ink-faint">
-                NAS Gateways
-              </p>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
+                  NAS Gateways
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={runMeteringMutation.isPending}
+                  onClick={() => runMeteringMutation.mutate()}
+                >
+                  Run Metering
+                </Button>
+              </div>
               {nasQuery.isLoading ? (
                 <Skeleton className="h-20 bg-ink/10" />
               ) : !nasQuery.data?.length ? (
@@ -291,14 +436,25 @@ export function CloudIspPage() {
                           {nas.vendor ? ` · ${nas.vendor}` : ''}
                         </p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={syncNasMutation.isPending}
-                        onClick={() => syncNasMutation.mutate(nas.id)}
-                      >
-                        Sync RADIUS
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={syncNasMutation.isPending}
+                          onClick={() => syncNasMutation.mutate(nas.id)}
+                        >
+                          Sync RADIUS
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={rotateNasSecretMutation.isPending}
+                          onClick={() => rotateNasSecretMutation.mutate(nas.id)}
+                        >
+                          <KeyIcon className="mr-1 size-3" />
+                          Rotate Secret
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -327,14 +483,44 @@ export function CloudIspPage() {
                         </Badge>
                         <span className="font-mono text-xs text-ink-faint">{sub.type}</span>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        disabled={sub.status === 'suspended' || suspendSubscriberMutation.isPending}
-                        onClick={() => suspendSubscriberMutation.mutate(sub.id)}
-                      >
-                        Suspend
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={syncSubscriberMutation.isPending}
+                          onClick={() => syncSubscriberMutation.mutate(sub.id)}
+                        >
+                          Sync
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={sub.status === 'suspended' || suspendSubscriberMutation.isPending}
+                          onClick={() => suspendSubscriberMutation.mutate(sub.id)}
+                        >
+                          Suspend
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="border-t-2 border-ink/15 pt-4">
+              <p className="mb-2 font-mono text-xs uppercase tracking-wider text-ink-faint">
+                Live RADIUS Feed
+              </p>
+              {!liveSessionsQuery.data?.runtimeSessions.length ? (
+                <p className="text-xs text-ink-faint">No live RADIUS sessions reported.</p>
+              ) : (
+                <div className="space-y-1">
+                  {liveSessionsQuery.data.runtimeSessions.slice(0, 5).map((sess) => (
+                    <div key={sess.session_id} className="flex justify-between font-mono text-xs">
+                      <span>
+                        {sess.username} ({sess.framed_ip ?? 'dynamic'})
+                      </span>
+                      <Badge variant="cyan">{sess.status}</Badge>
                     </div>
                   ))}
                 </div>

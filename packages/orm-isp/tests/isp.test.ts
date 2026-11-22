@@ -14,7 +14,8 @@ import { manifest as projectManifest } from '@moonwitness/orm-project';
 import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
 import { manifest as crmManifest } from '@moonwitness/orm-crm';
 import { manifest as salesManifest } from '@moonwitness/orm-sales';
-import { manifest as subscriptionManifest } from '@moonwitness/orm-subscription';
+import { manifest as subscriptionManifest, Subscription, SubscriptionInvoiceLine } from '@moonwitness/orm-subscription';
+import { AuditLog } from '@moonwitness/orm-base';
 import { jobsManifest } from '@moonwitness/jobs';
 import {
   ISPBandwidthProfile,
@@ -26,6 +27,7 @@ import {
   ISPType,
   createIspHttpPlugin,
   manifest,
+  selectHealthyNas,
 } from '../src/index.js';
 
 describe('@moonwitness/orm-isp addon', () => {
@@ -92,6 +94,12 @@ describe('@moonwitness/orm-isp addon', () => {
       expect(() => validateViews(model, resolved)).not.toThrow();
     }
     expect(ISPRadiusSession.modelName).toBe('isp.radius_session');
+
+    const failoverNas = selectHealthyNas([
+      { id: 1, name: 'core-1', ha_priority: 10, health_status: 'offline', is_active: true },
+      { id: 2, name: 'core-2', ha_priority: 20, health_status: 'healthy', is_active: true },
+    ]);
+    expect(failoverNas?.name).toBe('core-2');
   });
 
   it('mounts ispHttpPlugin routes for NAS sync and subscriber suspension with company isolation', async () => {
@@ -110,7 +118,18 @@ describe('@moonwitness/orm-isp addon', () => {
 
     const syncedRequests: Array<{ url: string; body?: string }> = [];
     const app = Fastify({ logger: false });
-    let currentAuth: { userId: number; role: string; companyId?: number } | null = {
+    let currentAuth: {
+      userId: number;
+      role: string;
+      companyId?: number;
+      groupPermissions?: Array<{
+        model_name: string;
+        read: boolean;
+        create: boolean;
+        write: boolean;
+        unlink: boolean;
+      }>;
+    } | null = {
       userId: 2,
       role: 'superadmin',
       companyId: 1,
@@ -127,6 +146,18 @@ describe('@moonwitness/orm-isp addon', () => {
           if (url.endsWith('/health')) return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
           if (url.endsWith('/api/clients')) {
             return new Response(JSON.stringify({ id: 9, name: 'MikroTik Core' }), { status: 200 });
+          }
+          if (url.includes('/rotate-secret')) {
+            return new Response(JSON.stringify({ id: 9, name: 'MikroTik Core' }), { status: 200 });
+          }
+          if (url.endsWith('/api/subscribers')) {
+            return new Response(JSON.stringify({ id: 1, username: 'acme-fiber-01' }), { status: 200 });
+          }
+          if (url.endsWith('/api/sessions')) {
+            return new Response(
+              JSON.stringify([{ session_id: 'live-sess-1', username: 'acme-fiber-01', status: 'active' }]),
+              { status: 200 }
+            );
           }
           return new Response('{}', { status: 404 });
         },
@@ -168,6 +199,86 @@ describe('@moonwitness/orm-isp addon', () => {
         url: `/api/isp/nas/${nas!.id}/sync`,
       });
       expect(userRes.statusCode).toBe(403);
+
+      currentAuth = {
+        userId: 98,
+        role: 'user',
+        companyId: 1,
+        groupPermissions: [
+          { model_name: 'isp.nas', read: true, create: false, write: true, unlink: false },
+          { model_name: 'isp.subscriber', read: true, create: false, write: true, unlink: false },
+          { model_name: 'isp.radius_session', read: true, create: false, write: true, unlink: false },
+        ],
+      };
+      const grantedUserRotate = await app.inject({
+        method: 'POST',
+        url: `/api/isp/nas/${nas!.id}/rotate-secret`,
+      });
+      expect(grantedUserRotate.statusCode).toBe(200);
+      expect(grantedUserRotate.json()).toMatchObject({ success: true, data: { rotated: true } });
+      expect(JSON.stringify(grantedUserRotate.json())).not.toContain('secret');
+      const updatedNas = await ISPNAS.query().findById(nas!.id);
+      expect(updatedNas?.secret).not.toBe('testing123');
+      expect(await db(AuditLog.tableName).where({ model: ISPNAS.modelName, operation: 'rotate_secret' }).count({ count: '*' }).first()).toMatchObject({ count: 1 });
+
+      const subSyncOk = await app.inject({
+        method: 'POST',
+        url: `/api/isp/subscribers/${subscriber!.id}/sync`,
+      });
+      expect(subSyncOk.statusCode).toBe(200);
+
+      const liveSessions = await app.inject({
+        method: 'GET',
+        url: '/api/isp/sessions/live',
+      });
+      expect(liveSessions.statusCode).toBe(200);
+      expect(liveSessions.json().data.runtimeSessions).toHaveLength(1);
+
+      await ISPRadiusSession.query().insert({
+        company_id: 1,
+        subscriber_id: subscriber!.id,
+        session_id: 'closed-meter-001',
+        username: subscriber!.username,
+        acct_input_octets: 1_500_000_000,
+        acct_output_octets: 500_000_000,
+        acct_session_time: 7200,
+        start_time: '2026-11-22T01:00:00',
+        stop_time: '2026-11-22T03:00:00',
+      });
+      const meterRes = await app.inject({
+        method: 'POST',
+        url: '/api/isp/metering/run',
+      });
+      expect(meterRes.statusCode).toBe(200);
+      expect(meterRes.json()).toMatchObject({
+        success: true,
+        data: { createdInvoiceLines: 1, totalAmountMinor: 200 },
+      });
+      const meterSecond = await app.inject({ method: 'POST', url: '/api/isp/metering/run' });
+      expect(meterSecond.json()).toMatchObject({
+        success: true,
+        data: { createdInvoiceLines: 0 },
+      });
+      expect(
+        await db(SubscriptionInvoiceLine.tableName)
+          .where({ name: 'ISP Usage · closed-meter-001' })
+          .count({ count: '*' })
+          .first()
+      ).toMatchObject({ count: 1 });
+
+      await ISPSubscriber.query().findById(subscriber!.id).patch({ status: 'active' });
+      await Subscription.query().findById(subscriber!.subscription_id!).patch({ state: 'expired' });
+      const enforceRes = await app.inject({
+        method: 'POST',
+        url: `/api/isp/subscriptions/${subscriber!.subscription_id}/enforce`,
+      });
+      expect(enforceRes.statusCode).toBe(200);
+      expect(enforceRes.json()).toMatchObject({ success: true, data: { suspendedCount: 1 } });
+      const blockedSubSync = await app.inject({
+        method: 'POST',
+        url: `/api/isp/subscribers/${subscriber!.id}/sync`,
+      });
+      expect(blockedSubSync.statusCode).toBe(402);
 
       currentAuth = { userId: 99, role: 'superadmin', companyId: 999 };
       const foreignRes = await app.inject({

@@ -32,6 +32,13 @@ export const ISPNAS = defineModel('isp.nas', {
     vendor: fields.string({ label: 'Vendor' }),
     model: fields.string({ label: 'Hardware Model' }),
     location: fields.string({ label: 'Location' }),
+    ha_group: fields.string({ label: 'HA Pool Group' }),
+    ha_priority: fields.integer({ default: 100, label: 'HA Failover Priority' }),
+    health_status: fields.enum(['healthy', 'degraded', 'offline'], {
+      required: true,
+      default: 'healthy',
+      label: 'Health Status',
+    }),
     is_active: fields.boolean({ required: true, default: true, label: 'Active' }),
   },
 });
