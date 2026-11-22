@@ -451,10 +451,9 @@ function CatalogContent() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.35rem',
-                flexWrap: 'nowrap',
+                gap: '0.5rem',
+                flexWrap: 'wrap',
                 maxWidth: '100%',
-                overflowX: 'auto',
               }}
             >
               <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
@@ -463,7 +462,7 @@ function CatalogContent() {
                   style={{
                     minHeight: '2rem',
                     height: '2rem',
-                    width: 'auto',
+                    width: '8.5rem',
                     maxWidth: '100%',
                     whiteSpace: 'nowrap',
                   }}
@@ -483,7 +482,7 @@ function CatalogContent() {
                 size="sm"
                 onClick={toggleDensity}
                 aria-pressed={density === 'compact'}
-                style={{ whiteSpace: 'nowrap', height: '2rem', flexShrink: 0 }}
+                style={{ whiteSpace: 'nowrap', height: '2rem' }}
               >
                 {density === 'compact' ? 'Use comfortable density' : 'Use compact density'}
               </Button>
@@ -492,7 +491,7 @@ function CatalogContent() {
                 size="sm"
                 onClick={toggleTheme}
                 aria-pressed={dark}
-                style={{ whiteSpace: 'nowrap', height: '2rem', flexShrink: 0 }}
+                style={{ whiteSpace: 'nowrap', height: '2rem' }}
               >
                 {dark ? 'Use light theme' : 'Use dark theme'}
               </Button>
@@ -502,12 +501,26 @@ function CatalogContent() {
           <div className="catalog-content">
             <PageHeader
               title={
-                <span style={{ display: 'block', minHeight: '6.72rem', lineHeight: '3.36rem' }}>
+                <span
+                  style={{
+                    display: 'block',
+                    height: '6.72rem',
+                    lineHeight: '3.36rem',
+                    overflow: 'hidden',
+                  }}
+                >
                   One system. <span className="catalog-highlight">Every screen.</span>
                 </span>
               }
               description={
-                <span style={{ display: 'block', minHeight: '8.75rem', lineHeight: '1.75rem' }}>
+                <span
+                  style={{
+                    display: 'block',
+                    height: '7rem',
+                    lineHeight: '1.75rem',
+                    overflow: 'hidden',
+                  }}
+                >
                   A practical catalog of the shared MoonWitness UI package. Explore real components,
                   keyboard behavior, themes, and responsive states.
                 </span>
@@ -518,12 +531,19 @@ function CatalogContent() {
               className="catalog-intro-panel"
               title="MoonWitness visual system"
               description={
-                <span style={{ display: 'block', minHeight: '4.5rem', lineHeight: '1.5rem' }}>
+                <span
+                  style={{
+                    display: 'block',
+                    height: '4.5rem',
+                    lineHeight: '1.5rem',
+                    overflow: 'hidden',
+                  }}
+                >
                   Shared assets, readable controls, and expressive editorial details are built from
                   the public @moonwitness/ui package.
                 </span>
               }
-              style={{ minHeight: '16.5rem' }}
+              style={{ minHeight: '15.5rem' }}
             >
               <div
                 className="catalog-intro-meta"

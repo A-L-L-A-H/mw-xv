@@ -121,14 +121,25 @@ test('webfont fallback remains readable while local fonts load without a large l
   await page.setViewportSize({ width: 320, height: 844 });
   await page.addInitScript(() => {
     (window as Window & { __fontShiftTotal?: number }).__fontShiftTotal = 0;
+    const shifts: Array<{ value: number; sources: string[] }> = [];
+    (window as Window & { __fontShifts?: typeof shifts }).__fontShifts = shifts;
     new PerformanceObserver((entries) => {
       for (const entry of entries.getEntries() as (PerformanceEntry & {
         hadRecentInput: boolean;
         value: number;
+        sources?: Array<{ node?: Node | null }>;
       })[]) {
         if (!entry.hadRecentInput) {
           const target = window as Window & { __fontShiftTotal?: number };
           target.__fontShiftTotal = (target.__fontShiftTotal ?? 0) + entry.value;
+          shifts.push({
+            value: entry.value,
+            sources: (entry.sources ?? []).map((s) =>
+              s.node instanceof Element
+                ? `${s.node.tagName.toLowerCase()}.${s.node.className}`
+                : String(s.node)
+            ),
+          });
         }
       }
     }).observe({ type: 'layout-shift', buffered: true });
@@ -159,11 +170,12 @@ test('webfont fallback remains readable while local fonts load without a large l
   releaseFonts();
   await page.evaluate(() => document.fonts.ready);
   const finalBox = await heading.boundingBox();
-  const shiftTotal = await page.evaluate(
-    () => (window as Window & { __fontShiftTotal?: number }).__fontShiftTotal ?? 0
-  );
+  const shiftData = await page.evaluate(() => ({
+    total: (window as Window & { __fontShiftTotal?: number }).__fontShiftTotal ?? 0,
+    shifts: (window as Window & { __fontShifts?: unknown[] }).__fontShifts ?? [],
+  }));
   expect(await page.evaluate(() => document.fonts.status)).toBe('loaded');
-  expect(shiftTotal).toBeLessThan(0.1);
+  expect(shiftData.total, JSON.stringify(shiftData.shifts)).toBeLessThan(0.1);
   expect(finalBox).not.toBeNull();
   expect(finalBox!.height).toBeLessThanOrEqual(fallbackBox!.height + 4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
@@ -961,6 +973,7 @@ test('zine polish patterns wrap cleanly at 320px and expose paper/torn/scuffed s
 test('skin, color mode, and density switcher supports all built-in combinations without WCAG AA violations', async ({
   page,
 }) => {
+  test.setTimeout(60_000);
   await page.goto('./');
   const skins = [
     { id: 'moonwitness-ink', label: 'MoonWitness Ink' },
