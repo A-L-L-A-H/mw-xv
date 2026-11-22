@@ -69,6 +69,30 @@ test('environment inspector resets layer visibility, z-order and composition to 
   await expect(lab.locator('.scene-lab-stage')).toHaveAttribute('data-composition', 'desktop');
 });
 
+test('character studio plays, pauses and resets imported clip frames when motion is allowed (W7-003)', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('./#character-preview');
+  const specimen = page.getByTestId('character-preview-specimen');
+  const player = specimen.locator('[data-sprite-clip="animation/crew-01-idle/crew-01-idle-clip.json"]');
+  await expect(player).toHaveAttribute('data-sprite-state', 'paused');
+  await specimen.getByRole('button', { name: 'Play' }).first().click();
+  await expect(player).toHaveAttribute('data-sprite-state', 'playing');
+  await specimen.getByRole('button', { name: 'Pause' }).first().click();
+  await expect(player).toHaveAttribute('data-sprite-state', 'paused');
+  await specimen.getByRole('button', { name: 'Reset' }).first().click();
+  await expect(specimen.getByRole('button', { name: 'Play' }).first()).toBeVisible();
+});
+
+test('character studio starts static for reduced motion and offers explicit preview playback (W7-003)', async ({ page }) => {
+  await page.goto('./#character-preview');
+  const specimen = page.getByTestId('character-preview-specimen');
+  const player = specimen.locator('[data-sprite-clip="animation/crew-01-idle/crew-01-idle-clip.json"]');
+  await expect(player).toHaveAttribute('data-sprite-state', 'static');
+  await expect(specimen.getByRole('button', { name: 'Reduced motion on' }).first()).toHaveAttribute('aria-pressed', 'true');
+  await specimen.getByRole('button', { name: 'Play' }).first().click();
+  await expect(player).toHaveAttribute('data-sprite-state', 'playing');
+});
+
 test('asset diagnostics loads and exports the build-time validator report (W7-007)', async ({ page }) => {
   await page.goto('./#asset-diagnostics');
   const panel = page.getByTestId('asset-diagnostics');
@@ -80,4 +104,39 @@ test('asset diagnostics loads and exports the build-time validator report (W7-00
   await panel.getByRole('button', { name: 'Export report' }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe('moonwitness-asset-diagnostics.json');
+});
+
+test('scene inspector captures desktop/mobile compositions and reduced-motion fallback (W7-006)', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('./#scene-environment-inspector');
+  const lab = page.getByTestId('scene-lab');
+  const stage = lab.locator('.scene-lab-stage');
+  const desktopScene = lab.locator('[data-scene-id="moon-city-hero"]');
+  await expect(stage).toHaveAttribute('data-composition', 'desktop');
+  const desktopMoon = desktopScene.locator('[data-layer-id="moon"]');
+  const desktopPivotRatio = await desktopMoon.evaluate((layer) => {
+    const [originX, originY] = getComputedStyle(layer).transformOrigin.split(' ').map(Number.parseFloat);
+    const bounds = layer.getBoundingClientRect();
+    return [originX / bounds.width, originY / bounds.height];
+  });
+  expect(desktopPivotRatio[0]).toBeCloseTo(0.72, 2);
+  expect(desktopPivotRatio[1]).toBeCloseTo(0.24, 2);
+  await stage.scrollIntoViewIfNeeded();
+  await stage.screenshot({ path: testInfo.outputPath('scene-preview-desktop.png') });
+
+  await lab.getByRole('button', { name: 'Mobile 9:16' }).click();
+  await expect(stage).toHaveAttribute('data-composition', 'mobile');
+  const mobileMoon = desktopScene.locator('[data-layer-id="moon"]');
+  const mobilePivotRatio = await mobileMoon.evaluate((layer) => {
+    const [originX, originY] = getComputedStyle(layer).transformOrigin.split(' ').map(Number.parseFloat);
+    const bounds = layer.getBoundingClientRect();
+    return [originX / bounds.width, originY / bounds.height];
+  });
+  expect(mobilePivotRatio[0]).toBeCloseTo(0.52, 2);
+  expect(mobilePivotRatio[1]).toBeCloseTo(0.2, 2);
+  await stage.screenshot({ path: testInfo.outputPath('scene-preview-mobile.png') });
+
+  await lab.getByRole('button', { name: 'Static fallback' }).click();
+  await expect(desktopScene).toHaveAttribute('data-scene-state', 'static');
+  await expect(desktopScene.locator('[data-scene-fallback="true"]')).toBeVisible();
 });

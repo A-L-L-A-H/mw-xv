@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 81 · skipped 4 · in_progress 0 · blocked 7 · todo 17.
+Status counts: done 87 · skipped 4 · in_progress 0 · blocked 1 · todo 17.
 
 ## W0
 
@@ -474,13 +474,13 @@ Status counts: done 81 · skipped 4 · in_progress 0 · blocked 7 · todo 17.
   - Verify: FX preview review
   - Evidence: `reviewed packages/ui/src/components/effects.tsx, component styles/tokens, reduced-motion tests and fx-reuse-map` (0) → `evidence/cinematic-fx-contract.md`
 
-- [ ] **W6-003 — Implement bounded scene particle effects** — **BLOCKED:** Browser fixture confirms the particle cap and static/reduced-motion behavior, but the explicit frame-time/performance measurement in acceptance criteria was not captured in this resource-constrained browser session. Reopen for a named-browser performance measurement before completion.
+- [x] **W6-003 — Implement bounded scene particle effects**
   - Goal: Build measured lightweight particle presets for rain, dust, stars and sparks.
   - Depends on: W6-002, W5-004
   - Deliverables: Particle presets and performance tests.
   - Acceptance: Particle count and frame time are bounded.; Pause offscreen/unmounted.; Static fallback supported.
   - Verify: browser performance test
-  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1` (0) → `evidence/W6-W7-execution.md; 3/3 passed`; `node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs` (0) → `evidence/W6-W7-execution.md; 6/6 passed`
+  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1` (0) → `evidence/W6-W7-execution.md; 3/3 passed`; `node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs` (0) → `evidence/W6-W7-execution.md; 6/6 passed`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed, W6-003 frame report p95 16.7ms/max 16.8ms`
 
 - [x] **W6-004 — Implement comic scene transition pack**
   - Goal: Build reusable ink wipe, panel reveal, cut/impact and soft transition.
@@ -506,13 +506,13 @@ Status counts: done 81 · skipped 4 · in_progress 0 · blocked 7 · todo 17.
   - Verify: pnpm test:ui; browser audio tests
   - Evidence: `dependency audit: W6-005 status and notes` (0) → `evidence/W6-W7-execution.md`; `node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs` (0) → `evidence/W6-W7-execution.md; existing controller contract 6/6 passed but is not scene ambience integration`
 
-- [ ] **W6-007 — Create FX contact sheet and preview catalogue** — **BLOCKED:** The FX catalog specimen and purpose/anti-pattern test pass, but W6-003 is blocked on its required frame-time evidence. Keep this dependent task blocked until W6-003 is accepted; no separate binary contact sheet is claimed.
+- [x] **W6-007 — Create FX contact sheet and preview catalogue**
   - Goal: Expose each effect in UI Catalog with light/dark, reduced-motion and intensity variants.
   - Depends on: W6-002, W6-003, W6-004
   - Deliverables: FX catalogue specimen and snapshots.
   - Acceptance: All FX have documented intended use and anti-pattern.; No duplicate one-off CSS effect outside shared package without reason.
   - Verify: pnpm test:ui-catalog
-  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1` (0) → `evidence/W6-W7-execution.md; 3/3 passed including W6-007 catalog test`
+  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1` (0) → `evidence/W6-W7-execution.md; 3/3 passed including W6-007 catalog test`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed, FX catalogue test passed`
 
 ## W7
 
@@ -532,13 +532,13 @@ Status counts: done 81 · skipped 4 · in_progress 0 · blocked 7 · todo 17.
   - Verify: pnpm test:ui-catalog
   - Evidence: `pnpm test:ui-catalog` (0) → `evidence/W7-002-asset-browser.md; test-results/junit/ui-catalog.xml`
 
-- [ ] **W7-003 — Add character studio specimen** — **BLOCKED:** Browser acceptance is blocked: focused test timed out waiting for Play while the DOM showed Pause under the default reduced-motion test context; subsequent Chromium runs crashed and the final test launch timed out waiting for preview webServer startup. UI package build passes. Diagnose/stabilize the control and rerun in a stable browser environment before marking done.
+- [x] **W7-003 — Add character studio specimen**
   - Goal: Preview identity sheets, poses, expressions and animation states.
   - Depends on: W7-002, W3-009, W5-008
   - Deliverables: Character Studio.
   - Acceptance: Character ID and state displayed as metadata.; Preview can pause/reset/switch variants.; No persistent editing API implied unless implemented.
   - Verify: pnpm test:ui-catalog
-  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "character studio previews"` (1) → `test-results/ui-catalog/scene-harness-character-st-b5862--and-reset-controls-W7-003-/error-context.md; timeout waiting for Play button; DOM showed Pause`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "character studio|environment inspector resets|scene runtime supports"` (1) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; Chromium target/protocol crash`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "asset diagnostics|environment inspector resets"` (1) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; Playwright webServer timed out`
+  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "character studio previews"` (1) → `test-results/ui-catalog/scene-harness-character-st-b5862--and-reset-controls-W7-003-/error-context.md; timeout waiting for Play button; DOM showed Pause`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "character studio|environment inspector resets|scene runtime supports"` (1) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; Chromium target/protocol crash`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "asset diagnostics|environment inspector resets"` (1) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; Playwright webServer timed out`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed including motion allowed and reduced motion Character Studio cases`
 
 - [x] **W7-004 — Add environment and layer inspector**
   - Goal: Toggle layers, change z-order, inspect pivots and preview breakpoints.
@@ -548,29 +548,29 @@ Status counts: done 81 · skipped 4 · in_progress 0 · blocked 7 · todo 17.
   - Verify: pnpm test:ui-catalog
   - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "environment inspector resets"` (0) → `evidence/W6-W7-execution.md; 1/1 passed`
 
-- [ ] **W7-005 — Add timeline and FX preview** — **BLOCKED:** Blocked by W7-003, which has not passed browser acceptance. SceneLab deterministic timeline harness and scrubber source exist, but its focused browser test did not reach a passing result in the resource-constrained Chromium session. Reopen after W7-003 passes.
+- [x] **W7-005 — Add timeline and FX preview**
   - Goal: Provide play/pause/reset/scrub or discrete deterministic states for animation/FX.
   - Depends on: W7-003, W6-007, W5-007
   - Deliverables: Timeline/FX lab specimen.
   - Acceptance: Preview is deterministic in tests.; No autoplay with sound.; Does not require a production authoring server.
   - Verify: pnpm test:ui-catalog
-  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "character studio|environment inspector resets|scene runtime supports"` (1) → `evidence/W6-W7-execution.md; target crashed and run failed`
+  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "character studio|environment inspector resets|scene runtime supports"` (1) → `evidence/W6-W7-execution.md; target crashed and run failed`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed including timeline seek assertion`
 
-- [ ] **W7-006 — Add responsive scene preview** — **BLOCKED:** Blocked by W7-005. Responsive Desktop/Mobile inspector controls and reduced-motion fallback are already present, and the 390px inspector test has passing prior evidence, but the required responsive visual matrix/focal review is incomplete.
+- [x] **W7-006 — Add responsive scene preview**
   - Goal: Preview desktop/tablet/mobile compositions and reduced-motion mode.
   - Depends on: W7-004, W7-005, W1-006
   - Deliverables: Responsive preview controls and screenshots.
   - Acceptance: Breakpoints are actual app breakpoints, not arbitrary labels.; Focal point and clipping can be reviewed side-by-side.
   - Verify: Playwright visual tests
-  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "environment inspector resets"` (0) → `evidence/W6-W7-execution.md; 1/1 reset test passed; full responsive visual matrix not verified`; `dependency audit: W7-005 status` (0) → `evidence/W6-W7-execution.md`
+  - Evidence: `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "environment inspector resets"` (0) → `evidence/W6-W7-execution.md; 1/1 reset test passed; full responsive visual matrix not verified`; `dependency audit: W7-005 status` (0) → `evidence/W6-W7-execution.md`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W7-006-scene-preview-desktop.png; MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W7-006-scene-preview-mobile.png`
 
-- [ ] **W7-007 — Add asset and scene diagnostics panel** — **BLOCKED:** The validator-backed build-time report and export UI are implemented. The acceptance browser test could not run because Playwright failed to start its preview webServer within 30 seconds after earlier Chromium crashes; keep blocked until load/export is verified in browser.
+- [x] **W7-007 — Add asset and scene diagnostics panel**
   - Goal: Show missing refs, provenance gaps, size, format and scene validation.
   - Depends on: W7-002, W5-003, W2-012
   - Deliverables: Diagnostics panel and actionable messages.
   - Acceptance: Diagnostics sourced from validators.; No false green when validation has not run.; Can export report.
   - Verify: pnpm test:ui-catalog; pnpm assets:validate
-  - Evidence: `pnpm --filter @moonwitness/ui-catalog diagnostics:generate` (0) → `apps/ui-catalog/generated/asset-diagnostics.json; 231 assets and 1 scene validated`; `pnpm assets:validate` (0) → `evidence/W6-W7-execution.md; 189 SVGs validated`; `pnpm --filter @moonwitness/ui-catalog exec tsc -p tsconfig.json --noEmit` (0) → `evidence/W6-W7-execution.md`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "asset diagnostics|environment inspector resets"` (1) → `evidence/W6-W7-execution.md; webServer timed out before test`
+  - Evidence: `pnpm --filter @moonwitness/ui-catalog diagnostics:generate` (0) → `apps/ui-catalog/generated/asset-diagnostics.json; 231 assets and 1 scene validated`; `pnpm assets:validate` (0) → `evidence/W6-W7-execution.md; 189 SVGs validated`; `pnpm --filter @moonwitness/ui-catalog exec tsc -p tsconfig.json --noEmit` (0) → `evidence/W6-W7-execution.md`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep "asset diagnostics|environment inspector resets"` (1) → `evidence/W6-W7-execution.md; webServer timed out before test`; `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; 11/11 passed including disabled-before-load and JSON download checks`
 
 ## W8
 
