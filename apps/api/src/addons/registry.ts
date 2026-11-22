@@ -349,8 +349,8 @@ export async function registerApiAddonRoutes(
     getRecordRuleDomain,
     hasCompanyAccess,
     recordAudit: recordAiAudit,
-    validateModelMutation: (model: string, payload: Record<string, unknown>) =>
-      isValidAiMutation(model, payload),
+    validateModelMutation: (model: string, payload: Record<string, unknown>, trx?: unknown) =>
+      isValidAiMutation(model, payload, undefined, trx as Parameters<typeof isValidAiMutation>[3]),
   };
   for (const addon of addons) {
     if (addon.manifest?.httpPlugins) {

@@ -63,7 +63,7 @@ interface DynamicModelQuery {
 }
 
 interface DynamicModelClass {
-  query(): DynamicModelQuery;
+  query(trx?: unknown): DynamicModelQuery;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -187,14 +187,15 @@ function resolveDynamicModel(modelName: string): DynamicModelClass | null {
 
 async function ensureDefaultExecutionPolicy(
   ExecutionPolicy: DynamicModelClass,
-  companyId: number
+  companyId: number,
+  trx?: unknown
 ): Promise<DynamicModelRecord> {
-  const existing = await ExecutionPolicy.query()
+  const existing = await ExecutionPolicy.query(trx)
     .where({ company_id: companyId, active: true })
     .orderBy('id', 'asc')
     .first();
   if (existing) return existing;
-  return ExecutionPolicy.query().insertAndFetch({
+  return ExecutionPolicy.query(trx).insertAndFetch({
     company_id: companyId,
     code: 'default_r0_policy',
     policy_version: 1,
@@ -456,126 +457,199 @@ export const projectHttpPlugin: AddonHttpPlugin = async (app, options) => {
           return reply.code(200).send({ success: true, data: existing, created: false });
         }
 
-        // M13.06 Task Deck Blocker Gate: block dispatch if any active 'blocks' dependency is incomplete.
-        const blockingDeps = await ProjectTaskDependency.query()
-          .where({
+        const body = isRecord(req.body) ? req.body : {};
+        const riskOrder: Record<RiskTier, number> = { R0: 0, R1: 1, R2: 2, R3: 3, R4: 4 };
+
+        type TransactionOutcome =
+          | {
+              readonly kind: 'error';
+              readonly status: 400 | 404 | 409;
+              readonly body: Record<string, unknown>;
+            }
+          | { readonly kind: 'existing'; readonly data: DynamicModelRecord | undefined }
+          | {
+              readonly kind: 'created';
+              readonly data: DynamicModelRecord | undefined;
+              readonly contractId: number;
+              readonly contractCode: string;
+            };
+
+        const outcome: TransactionOutcome = await ProjectTask.transaction(async (trx) => {
+          const freshTask = await ProjectTask.query(trx).findOne({
+            id: taskId,
             company_id: ctx.companyId,
-            task_id: task.id,
-            kind: 'blocks',
             active: true,
-          })
-          .orderBy('id', 'asc');
-        if (blockingDeps.length > 0) {
-          const blockerIds = [...new Set(blockingDeps.map((dep) => dep.depends_on_id))];
-          const blockerTasks = await ProjectTask.query()
-            .where({ company_id: ctx.companyId, active: true })
-            .whereIn('id', blockerIds);
-          const blockerById = new Map(blockerTasks.map((t) => [t.id, t]));
-          const incompleteBlockers: Array<{
-            id: number;
-            code: string;
-            title: string;
-            status: string;
-          }> = [];
-          for (const dep of blockingDeps) {
-            const blocker = blockerById.get(dep.depends_on_id);
-            if (!blocker) {
-              incompleteBlockers.push({
-                id: dep.depends_on_id,
-                code: `TASK-${dep.depends_on_id}`,
-                title: 'Missing or inactive dependency',
-                status: 'missing',
-              });
-            } else if (blocker.status !== 'done' && blocker.status !== 'cancelled') {
-              incompleteBlockers.push({
+          });
+          if (!freshTask) {
+            return {
+              kind: 'error',
+              status: 404,
+              body: { success: false, error: 'Project task not found' },
+            };
+          }
+
+          const existingInTrx = await WorkContract.query(trx)
+            .findOne({
+              company_id: ctx.companyId,
+              source_model: sourceRef.source_model,
+              source_id: sourceRef.source_id,
+              active: true,
+            })
+            .withGraphFetched('criteria');
+          if (existingInTrx) {
+            return { kind: 'existing', data: existingInTrx };
+          }
+
+          // M13.05: Reuse canonical buildProjectDependencyGraph within company scope before inserting.
+          const projectTasks = await ProjectTask.query(trx)
+            .where({ project_id: freshTask.project_id, company_id: ctx.companyId, active: true })
+            .orderBy('id', 'asc');
+          const projectTaskIds = projectTasks.map((item) => item.id);
+          const projectDependencies =
+            projectTaskIds.length > 0
+              ? await ProjectTaskDependency.query(trx)
+                  .where({ company_id: ctx.companyId, active: true })
+                  .whereIn('task_id', projectTaskIds)
+                  .orderBy('id', 'asc')
+              : [];
+
+          const knownTaskIdSet = new Set(projectTaskIds);
+          const externalBlockerIds = [
+            ...new Set(
+              projectDependencies
+                .filter((dep) => dep.kind === 'blocks' && !knownTaskIdSet.has(dep.depends_on_id))
+                .map((dep) => dep.depends_on_id)
+            ),
+          ];
+          const externalBlockers =
+            externalBlockerIds.length > 0
+              ? await ProjectTask.query(trx)
+                  .where({ company_id: ctx.companyId, active: true })
+                  .whereIn('id', externalBlockerIds)
+              : [];
+
+          const scopedTasks = [...projectTasks, ...externalBlockers];
+          const dag = buildProjectDependencyGraph(scopedTasks, projectDependencies);
+          const taskNode = dag.nodes.find((node) => node.id === freshTask.id);
+          if (!taskNode || !taskNode.is_ready) {
+            const byId = new Map(scopedTasks.map((item) => [item.id, item]));
+            const blockers = (taskNode?.blocked_by_ids ?? [])
+              .map((blockerId) => byId.get(blockerId))
+              .filter((blocker): blocker is NonNullable<typeof blocker> => blocker !== undefined)
+              .map((blocker) => ({
                 id: blocker.id,
                 code: blocker.code,
                 title: blocker.title,
                 status: blocker.status,
-              });
-            }
+              }));
+            const error =
+              freshTask.status === 'blocked' ||
+              freshTask.status === 'done' ||
+              freshTask.status === 'cancelled'
+                ? `Task ${freshTask.code} is in status "${freshTask.status}" and is not ready for a new WorkContract`
+                : `Task ${freshTask.code} is blocked by incomplete dependencies`;
+            return {
+              kind: 'error',
+              status: 409,
+              body: {
+                success: false,
+                code: 'TASK_NOT_READY',
+                error,
+                task_status: freshTask.status,
+                blockers,
+              },
+            };
           }
-          if (incompleteBlockers.length > 0) {
-            return reply.code(409).send({
-              success: false,
-              error: `Task ${task.code} is blocked by incomplete dependencies`,
-              blockers: incompleteBlockers,
-            });
+
+          const policy = await ensureDefaultExecutionPolicy(ExecutionPolicy, ctx.companyId, trx);
+          const desiredTier: RiskTier =
+            freshTask.priority === 'urgent' ? 'R2' : freshTask.priority === 'high' ? 'R1' : 'R0';
+          const maxPolicyTier = (policy.max_risk_tier as RiskTier | undefined) ?? 'R0';
+          const riskTier: RiskTier =
+            typeof body.risk_tier === 'string' && body.risk_tier in riskOrder
+              ? (body.risk_tier as RiskTier)
+              : riskOrder[desiredTier] <= riskOrder[maxPolicyTier]
+                ? desiredTier
+                : maxPolicyTier;
+          const mutation: Record<string, unknown> = {
+            company_id: ctx.companyId,
+            code: normalizeSlugCode(`wc_${freshTask.code}`, `wc_task_${freshTask.id}`),
+            title: freshTask.title,
+            objective: freshTask.description?.trim() || freshTask.title,
+            scope_json: JSON.stringify({
+              project_id: freshTask.project_id,
+              task_id: freshTask.id,
+              task_code: freshTask.code,
+              external_ref: freshTask.external_ref ?? null,
+            }),
+            constraints_json: '{}',
+            non_goals_json: '[]',
+            expected_deliverables_json: JSON.stringify([freshTask.title]),
+            source_model: sourceRef.source_model,
+            source_id: sourceRef.source_id,
+            execution_policy_id: policy.id,
+            requested_by_id: ctx.userId,
+            risk_tier: riskTier,
+            data_classification: 'local_only' as const,
+            status: 'draft' as const,
+            ...(typeof body.assigned_agent_id === 'number'
+              ? { assigned_agent_id: body.assigned_agent_id }
+              : {}),
+          };
+
+          if (
+            options.validateModelMutation &&
+            !(await options.validateModelMutation('ai.work_contract', mutation, trx))
+          ) {
+            return {
+              kind: 'error',
+              status: 400,
+              body: {
+                success: false,
+                error: 'Invalid work contract payload for project task',
+              },
+            };
           }
-        }
 
-        const policy = await ensureDefaultExecutionPolicy(ExecutionPolicy, ctx.companyId);
-        const body = isRecord(req.body) ? req.body : {};
-        const riskOrder: Record<RiskTier, number> = { R0: 0, R1: 1, R2: 2, R3: 3, R4: 4 };
-        const desiredTier: RiskTier =
-          task.priority === 'urgent' ? 'R2' : task.priority === 'high' ? 'R1' : 'R0';
-        const maxPolicyTier = (policy.max_risk_tier as RiskTier | undefined) ?? 'R0';
-        const riskTier: RiskTier =
-          typeof body.risk_tier === 'string' && body.risk_tier in riskOrder
-            ? (body.risk_tier as RiskTier)
-            : riskOrder[desiredTier] <= riskOrder[maxPolicyTier]
-              ? desiredTier
-              : maxPolicyTier;
-        const mutation: Record<string, unknown> = {
-          company_id: ctx.companyId,
-          code: normalizeSlugCode(`wc_${task.code}`, `wc_task_${task.id}`),
-          title: task.title,
-          objective: task.description?.trim() || task.title,
-          scope_json: JSON.stringify({
-            project_id: task.project_id,
-            task_id: task.id,
-            task_code: task.code,
-            external_ref: task.external_ref ?? null,
-          }),
-          constraints_json: '{}',
-          non_goals_json: '[]',
-          expected_deliverables_json: JSON.stringify([task.title]),
-          source_model: sourceRef.source_model,
-          source_id: sourceRef.source_id,
-          execution_policy_id: policy.id,
-          requested_by_id: ctx.userId,
-          risk_tier: riskTier,
-          data_classification: 'local_only' as const,
-          status: 'draft' as const,
-          ...(typeof body.assigned_agent_id === 'number'
-            ? { assigned_agent_id: body.assigned_agent_id }
-            : {}),
-        };
-
-        if (
-          options.validateModelMutation &&
-          !(await options.validateModelMutation('ai.work_contract', mutation))
-        ) {
-          return reply.code(400).send({
-            success: false,
-            error: 'Invalid work contract payload for project task',
+          const contract = await WorkContract.query(trx).insertAndFetch(mutation);
+          await AcceptanceCriterion.query(trx).insert({
+            company_id: ctx.companyId,
+            work_contract_id: contract.id,
+            sequence: 1,
+            code: 'task_completion',
+            title: `Verify ${freshTask.code} completion`,
+            verification_method: 'automated_test',
+            required_evidence_type: 'evidence_bundle',
+            mandatory: true,
+            version: 1,
+            status: 'pending',
           });
-        }
 
-        const contract = await WorkContract.query().insertAndFetch(mutation);
-        await AcceptanceCriterion.query().insert({
-          company_id: ctx.companyId,
-          work_contract_id: contract.id,
-          sequence: 1,
-          code: 'task_completion',
-          title: `Verify ${task.code} completion`,
-          verification_method: 'automated_test',
-          required_evidence_type: 'evidence_bundle',
-          mandatory: true,
-          version: 1,
-          status: 'pending',
+          const loaded = await WorkContract.query(trx)
+            .findById(contract.id)
+            .withGraphFetched('criteria');
+          return {
+            kind: 'created',
+            data: loaded,
+            contractId: contract.id,
+            contractCode: String(contract.code ?? mutation.code),
+          };
         });
 
-        const loaded = await WorkContract.query()
-          .findById(contract.id)
-          .withGraphFetched('criteria');
-        await recordAudit(ctx.userId, 'ai.work_contract', contract.id, 'create', {
-          code: contract.code,
+        if (outcome.kind === 'error') {
+          return reply.code(outcome.status).send(outcome.body);
+        }
+        if (outcome.kind === 'existing') {
+          return reply.code(200).send({ success: true, data: outcome.data, created: false });
+        }
+
+        await recordAudit(ctx.userId, 'ai.work_contract', outcome.contractId, 'create', {
+          code: outcome.contractCode,
           source_model: sourceRef.source_model,
           source_id: sourceRef.source_id,
         });
 
-        return reply.code(201).send({ success: true, data: loaded, created: true });
+        return reply.code(201).send({ success: true, data: outcome.data, created: true });
       }
     );
 

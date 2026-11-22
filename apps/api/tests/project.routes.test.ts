@@ -174,7 +174,7 @@ describe('project addon REST, SDK & workflow integration', () => {
     expect(wcRepeat.created).toBe(false);
     expect(wcRepeat.data.id).toBe(wcFirst.data.id);
 
-    // M13.06 Task Deck Blocker Gate: task2 is blocked by TASK-0001 (not yet done) -> HTTP 409.
+    // M13.05 Readiness Gate: task2 is blocked by TASK-0001 (not yet done) -> HTTP 409.
     const blockedRes = await app.inject({
       method: 'POST',
       url: `/projects/tasks/${task2!.id}/work-contract`,
@@ -187,10 +187,12 @@ describe('project addon REST, SDK & workflow integration', () => {
     expect(blockedRes.statusCode).toBe(409);
     const blockedBody = blockedRes.json() as {
       success: boolean;
+      code: string;
       error: string;
       blockers: Array<{ id: number; code: string; title: string; status: string }>;
     };
     expect(blockedBody.success).toBe(false);
+    expect(blockedBody.code).toBe('TASK_NOT_READY');
     expect(blockedBody.blockers.some((b) => b.code === 'TASK-0001')).toBe(true);
 
     // Advance linked WorkContract to in_review -> task syncs to review stage/status.
@@ -213,7 +215,7 @@ describe('project addon REST, SDK & workflow integration', () => {
     expect(syncDone.data.advanced).toBe(true);
     expect(syncDone.data.task.status).toBe('done');
 
-    // Verify WorkContract via /ai/work-contracts/:id/verify -> auto-advances linked task2 to done.
+    // Now that blocker TASK-0001 is done, task2 is ready and can create a WorkContract -> verify -> done.
     const wcTask2 = await client.request<{
       success: boolean;
       data: { id: number };
@@ -238,5 +240,187 @@ describe('project addon REST, SDK & workflow integration', () => {
     expect(verifyRes.data.status).toBe('accepted');
     const updatedTask2 = await db('project_tasks').where({ id: task2!.id }).first();
     expect(updatedTask2.status).toBe('done');
+  });
+
+  it('M13.05: enforces relates_to, inactive blocks, cancelled blockers, explicit task states, idempotency, and company isolation', async () => {
+    const project = await db('project_projects').where({ company_id: 1, active: true }).first();
+    const stage = await db('project_stages').where({ company_id: 1, active: true }).first();
+    expect(project).toBeDefined();
+    expect(stage).toBeDefined();
+
+    const insertTask = async (
+      companyId: number,
+      projectId: number,
+      stageId: number,
+      code: string,
+      status: string
+    ): Promise<number> => {
+      const [inserted] = await db('project_tasks').insert({
+        company_id: companyId,
+        project_id: projectId,
+        stage_id: stageId,
+        code,
+        title: `Task ${code}`,
+        priority: 'normal',
+        status,
+        position: 900,
+        active: true,
+      });
+      return typeof inserted === 'object' && inserted !== null && 'id' in inserted
+        ? Number((inserted as { id: number }).id)
+        : Number(inserted);
+    };
+
+    const callCreateWc = (taskId: number) =>
+      app.inject({
+        method: 'POST',
+        url: `/projects/tasks/${taskId}/work-contract`,
+        headers: {
+          authorization: lastAuthHeader,
+          'content-type': 'application/json',
+        },
+        payload: JSON.stringify({}),
+      });
+
+    const openBlockerId = await insertTask(
+      1,
+      project.id,
+      stage.id,
+      'TASK-M1305-OPEN',
+      'in_progress'
+    );
+    const cancelledBlockerId = await insertTask(
+      1,
+      project.id,
+      stage.id,
+      'TASK-M1305-CANCELLED-BLK',
+      'cancelled'
+    );
+
+    // 1. relates_to dependency on an open task does NOT block WorkContract creation.
+    const relatesTargetId = await insertTask(
+      1,
+      project.id,
+      stage.id,
+      'TASK-M1305-RELATES',
+      'backlog'
+    );
+    await db('project_task_dependencies').insert({
+      company_id: 1,
+      task_id: relatesTargetId,
+      depends_on_id: openBlockerId,
+      kind: 'relates_to',
+      active: true,
+    });
+    const relatesRes = await callCreateWc(relatesTargetId);
+    expect(relatesRes.statusCode).toBe(201);
+
+    // Idempotency preserved even if the edge is later escalated to blocking `blocks`.
+    await db('project_task_dependencies')
+      .where({ task_id: relatesTargetId, depends_on_id: openBlockerId })
+      .update({ kind: 'blocks' });
+    const repeatAfterBlockRes = await callCreateWc(relatesTargetId);
+    expect(repeatAfterBlockRes.statusCode).toBe(200);
+    expect((repeatAfterBlockRes.json() as { created: boolean }).created).toBe(false);
+
+    // 2. Inactive `blocks` edge does NOT block.
+    const inactiveBlockTargetId = await insertTask(
+      1,
+      project.id,
+      stage.id,
+      'TASK-M1305-INACTIVE-BLK',
+      'backlog'
+    );
+    await db('project_task_dependencies').insert({
+      company_id: 1,
+      task_id: inactiveBlockTargetId,
+      depends_on_id: openBlockerId,
+      kind: 'blocks',
+      active: false,
+    });
+    const inactiveRes = await callCreateWc(inactiveBlockTargetId);
+    expect(inactiveRes.statusCode).toBe(201);
+
+    // 3. `blocks` edge whose blocker is `cancelled` is resolved -> 201.
+    const cancelledBlockerTargetId = await insertTask(
+      1,
+      project.id,
+      stage.id,
+      'TASK-M1305-CAN-TGT',
+      'backlog'
+    );
+    await db('project_task_dependencies').insert({
+      company_id: 1,
+      task_id: cancelledBlockerTargetId,
+      depends_on_id: cancelledBlockerId,
+      kind: 'blocks',
+      active: true,
+    });
+    const cancelledBlockerRes = await callCreateWc(cancelledBlockerTargetId);
+    expect(cancelledBlockerRes.statusCode).toBe(201);
+
+    // 4. Explicit `blocked`, `done`, and `cancelled` task states are rejected with 409.
+    for (const status of ['blocked', 'done', 'cancelled'] as const) {
+      const id = await insertTask(
+        1,
+        project.id,
+        stage.id,
+        `TASK-M1305-${status.toUpperCase()}`,
+        status
+      );
+      const res = await callCreateWc(id);
+      expect(res.statusCode).toBe(409);
+      const body = res.json() as { success: boolean; code: string; task_status: string };
+      expect(body.success).toBe(false);
+      expect(body.code).toBe('TASK_NOT_READY');
+      expect(body.task_status).toBe(status);
+    }
+
+    // 5. Company isolation: another company's task is 404, and cross-company rows never leak.
+    const [otherCompanyInsert] = await db('companies').insert({
+      name: 'Isolation Corp M13.05',
+      timezone: 'UTC',
+      active: true,
+    });
+    const otherCompanyId =
+      typeof otherCompanyInsert === 'object' &&
+      otherCompanyInsert !== null &&
+      'id' in otherCompanyInsert
+        ? Number((otherCompanyInsert as { id: number }).id)
+        : Number(otherCompanyInsert);
+    const [otherProjectInsert] = await db('project_projects').insert({
+      company_id: otherCompanyId,
+      code: 'iso-m1305-proj',
+      name: 'Isolation Project',
+      status: 'active',
+      active: true,
+    });
+    const otherProjectId =
+      typeof otherProjectInsert === 'object' &&
+      otherProjectInsert !== null &&
+      'id' in otherProjectInsert
+        ? Number((otherProjectInsert as { id: number }).id)
+        : Number(otherProjectInsert);
+    const otherTaskId = await insertTask(
+      otherCompanyId,
+      otherProjectId,
+      stage.id,
+      'TASK-OTHER-SECRET',
+      'backlog'
+    );
+    await db('project_task_dependencies').insert({
+      company_id: otherCompanyId,
+      task_id: openBlockerId,
+      depends_on_id: otherTaskId,
+      kind: 'blocks',
+      active: true,
+    });
+
+    const crossCompanyRes = await callCreateWc(otherTaskId);
+    expect(crossCompanyRes.statusCode).toBe(404);
+
+    // Company 2's injected dependency edge referencing Company 1 task must NOT block Company 1.
+    const company1ReadyRes = await callCreateWc(openBlockerId);
+    expect(company1ReadyRes.statusCode).toBe(201);
   });
 });

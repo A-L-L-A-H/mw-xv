@@ -233,7 +233,8 @@ export interface AddonHttpHostContext {
   ) => void | Promise<void>;
   readonly validateModelMutation?: (
     modelName: string,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
+    trx?: unknown
   ) => boolean | Promise<boolean>;
   readonly [key: string]: unknown;
 }
