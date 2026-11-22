@@ -1472,6 +1472,73 @@
       "format": "ttf",
       "license": "SIL Open Font License 1.1",
       "sha256": "F476D2AAC31340C6F5ECB4F2750331F17548B18E29E4CD351ADBB006F609E29A"
+    },
+    {
+      "path": "source/artwork/moon-city-environment-master.png",
+      "kind": "source",
+      "format": "png",
+      "width": 2048,
+      "height": 1152,
+      "pack": "moon-city",
+      "status": "review"
+    },
+    {
+      "path": "source/artwork/moon-city-midground-layer-2.png",
+      "kind": "source",
+      "format": "png",
+      "width": 2048,
+      "height": 1152,
+      "pack": "moon-city",
+      "status": "review"
+    },
+    {
+      "path": "source/artwork/moon-city-moon-layer.png",
+      "kind": "source",
+      "format": "png",
+      "width": 2048,
+      "height": 1152,
+      "pack": "moon-city",
+      "status": "review",
+      "focalPoint": {
+        "x": 0.779,
+        "y": 0.236
+      }
+    },
+    {
+      "path": "source/artwork/moon-city-skyline-layer.png",
+      "kind": "source",
+      "format": "png",
+      "width": 2048,
+      "height": 1152,
+      "pack": "moon-city",
+      "status": "review"
+    },
+    {
+      "path": "source/artwork/moon-city-sky-layer.svg",
+      "kind": "source",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "pack": "moon-city",
+      "status": "review"
+    },
+    {
+      "path": "source/artwork/moon-city-cloud-layer.svg",
+      "kind": "source",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "pack": "moon-city",
+      "status": "review"
+    },
+    {
+      "path": "source/artwork/moon-city-foreground-layer.svg",
+      "kind": "source",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "pack": "moon-city",
+      "status": "review"
     }
   ]
 }

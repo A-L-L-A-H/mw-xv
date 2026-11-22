@@ -573,7 +573,7 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "Character Bible template and continuity rules are ready at evidence/character-bible-template.md. Pilot identity selection/sheet remains subject to explicit human approval.",
+      "notes": "Character policy/template is ready, but task requires pilot identity rules and approval. Pilot visual identity remains a distinct user approval gate; see evidence/character-bible-template.md.",
       "evidence": [
         {
           "exit_code": 0,
@@ -665,7 +665,7 @@
       "id": "W1-006",
       "phase": "W1",
       "title": "Define art composition and responsive rules",
-      "status": "done",
+      "status": "blocked",
       "priority": "P0",
       "role": "designer",
       "parallel_group": "serial",
@@ -691,12 +691,12 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Design contract completed from the approved art direction; no new visual asset is claimed.",
+      "notes": "Responsive composition rules have been drafted, but acceptance explicitly requires a responsive UI Catalog preview. The diagnosed Playwright/Vite preview gate failure is recorded in evidence/approval-followup-checks.md; retry exhausted.",
       "evidence": [
         {
-          "exit_code": 0,
-          "command": "approved-direction design specification against current UI tokens, fonts, assets and source",
-          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/responsive-composition-rules.md"
+          "exit_code": 1,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/approval-followup-checks.md",
+          "command": "asset-tool availability audit and/or responsive catalog verification retry"
         }
       ],
       "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
@@ -810,7 +810,7 @@
       "id": "W2-001",
       "phase": "W2",
       "title": "Design backward-compatible asset manifest extension",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
@@ -838,15 +838,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Backward-compatible extension proposal only. Existing manifest schema v1 and licenses.json remain unchanged. Future stable IDs derive from canonical paths; no competing inventory created.",
+      "evidence": [
+        {
+          "command": "node --test packages/assets/tests/*.test.mjs",
+          "artifact": "23 asset tests passed against the legacy v1 manifest and path-based canonical inventory",
+          "exit_code": 0
+        }
+      ],
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W2-002",
       "phase": "W2",
       "title": "Implement manifest schema validation",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -871,15 +877,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Validated optional schema-v1 metadata and references while retaining legacy entries. Generated source provenance is recorded as blocked from distribution pending terms review.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-002-schema-validation.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W2-003",
       "phase": "W2",
       "title": "Extend license and provenance contract",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -904,15 +916,21 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Source provenance is validated for tagged sources; AI-generated rights remain explicitly blocked until terms are verified.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-003-provenance-validation.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W2-004",
       "phase": "W2",
       "title": "Define source, master and generated ownership rules",
-      "status": "todo",
+      "status": "skipped",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -937,15 +955,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Existing explicit generator ownership helper and focused tests satisfy all acceptance criteria; verified against current source.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-004-existing-ownership.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W2-005",
       "phase": "W2",
       "title": "Build asset inventory and query tooling",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -969,8 +993,19 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Canonical manifest query CLI supports pack/category/subject/domain/format/status filters, source/distribution classification, and orphan/missing/broken-reference audits.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-005-asset-inventory.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/assets inventory --pack=moon-city",
+          "exit_code": 0,
+          "artifact": "evidence/W2-005-asset-inventory.md"
+        }
+      ],
       "commit": null
     },
     {
@@ -1521,7 +1556,7 @@
       "id": "W4-001",
       "phase": "W4",
       "title": "Define Moon City environment kit",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -1546,15 +1581,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Environment Bible and reviewed contact sheet exist, but final responsive scene preview is not accepted and W1-006 remains blocked; cannot complete required review/dependency gate. Image generation was available; see evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-002",
       "phase": "W4",
       "title": "Produce Moon City sky and moon layers",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1580,15 +1621,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Partial source set exists and is inventoried. Complete transparent sky/moon layer set and responsive safe-zone review are missing; generated rasters are non-distributable pending terms review. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-003",
       "phase": "W4",
       "title": "Produce cloud and atmosphere layers",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1612,15 +1659,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "A hand-authored static cloud SVG exists, but no loop seam preview or reviewed atmospheric pack exists. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-004",
       "phase": "W4",
       "title": "Produce distant and midground city layers",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1645,15 +1698,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Generated opaque skyline source and derived cutout exist, but clean alpha/perspective/mobile preview and distribution rights remain unverified. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-005",
       "phase": "W4",
       "title": "Produce foreground rooftop and props",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1679,15 +1738,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "A hand-authored foreground SVG exists, but safe occlusion and clean responsive preview acceptance are outstanding. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-006",
       "phase": "W4",
       "title": "Create alternate MoonWitness environments",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1713,8 +1778,14 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Alternate underground/archive/rooftop/street environment assets and contact sheet have not been produced. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {

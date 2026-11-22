@@ -3,10 +3,13 @@ import { dirname, isAbsolute, resolve, sep } from 'node:path';
 import { argv, stdout } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { compareAssetInventory, listInventoryMedia } from './asset-inventory.mjs';
+import { validateAssetManifest, validateSourceProvenance } from './asset-schema.mjs';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(await readFile(resolve(packageRoot, 'manifest.json'), 'utf8'));
 const licenses = JSON.parse(await readFile(resolve(packageRoot, 'licenses.json'), 'utf8'));
+validateAssetManifest(manifest, 'packages/assets/manifest.json');
+validateSourceProvenance(manifest, licenses, 'packages/assets/licenses.json');
 const allowedTags = new Set([
   'svg',
   'title',
