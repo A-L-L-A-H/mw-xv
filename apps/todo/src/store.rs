@@ -11,7 +11,7 @@ use std::time::Duration;
 use rusqlite::functions::FunctionFlags;
 use rusqlite::types::Value;
 use rusqlite::{Connection, OptionalExtension, Row, params};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// The oldest schema version whose moonwitness-dx can still use a database at the latest one.
 /// Adding a table or a column with a default leaves older versions working, so a board
@@ -296,6 +296,45 @@ pub struct TaskPatch {
     pub blocks: Option<Vec<String>>,
     pub references: Option<Vec<String>>,
     pub task_type: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Document {
+    pub id: i64,
+    pub slug: String,
+    pub layer: String,
+    pub title: String,
+    pub body: String,
+    pub tags: Vec<String>,
+    pub project_id: Option<i64>,
+    pub project: Option<String>,
+    pub status: String,
+    pub linked_tasks: Vec<String>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct DocumentPatch {
+    pub slug: Option<String>,
+    pub layer: Option<String>,
+    pub title: Option<String>,
+    pub body: Option<String>,
+    pub tags: Option<String>,
+    pub project_id: Option<i64>,
+    pub status: Option<String>,
+    pub linked_tasks: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SearchHit {
+    pub entity_type: String,
+    pub entity_id: i64,
+    pub code_or_slug: String,
+    pub layer_or_status: String,
+    pub title: String,
+    pub snippet: String,
+    pub tags: Vec<String>,
 }
 
 const STATUSES: [&str; 4] = ["todo", "doing", "review", "done"];
@@ -684,9 +723,9 @@ impl Store {
             source_ref_json: r.get(28)?,
             scope_json: r.get(29)?,
             depends_on: r.get(30)?,
-            blocks_json: r.get(30)?,
-            refs_json: r.get(31)?,
-            task_type: r.get(32)?,
+            blocks_json: r.get(31)?,
+            refs_json: r.get(32)?,
+            task_type: r.get(33)?,
         })
     }
 
@@ -802,7 +841,33 @@ impl Store {
         Ok(task)
     }
 
+    pub fn find_task_by_code(&self, code: &str) -> Result<Option<Task>> {
+        let code = code.trim();
+        if code.is_empty() {
+            return Ok(None);
+        }
+        let sql = format!("{} WHERE t.code = ?1", Self::TASK_SELECT);
+        let mut task = self.conn.prepare_cached(&sql)?.query_row([code], Self::task_row).optional()?;
+        if let Some(ref mut t) = task {
+            t.waiting_on = self.task_links(t.id, false)?.into_iter().filter(|l| l.status != DONE).map(|l| l.id).collect();
+        }
+        Ok(task)
+    }
+
     pub fn find_task(&self, key: &str) -> Result<Task> {
+        let key = key.trim();
+        if let Ok((slug, id)) = parse_task_key(key) {
+            let task = self.get_task(id)?;
+            if let Some(slug) = slug
+                && slug != task.project
+            {
+                return Err(Error::NotFound(format!("no task {key} (#{id} is {})", task.key())));
+            }
+            return Ok(task);
+        }
+        if let Some(task) = self.find_task_by_code(key)? {
+            return Ok(task);
+        }
         let (slug, id) = parse_task_key(key)?;
         let task = self.get_task(id)?;
         if let Some(slug) = slug
@@ -814,7 +879,7 @@ impl Store {
     }
 
     pub fn check_status(&self, status: &str) -> Result<()> {
-        if self.statuses().iter().any(|s| s == status) {
+        if self.statuses().iter().any(|s| s == status) || status == "blocked" {
             Ok(())
         } else {
             Err(Error::Invalid(format!("unknown status {status:?}; use one of: {}", self.statuses().join(", "))))
@@ -843,45 +908,32 @@ impl Store {
         self.check_status(status)?;
         let description = patch.description.as_deref().unwrap_or("").trim();
         let tags = clean_tags(patch.tags.as_deref().unwrap_or("")).join(",");
-        let code = patch.code.unwrap_or_else(|| format!("TASK-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis()));
-        let series = patch.series.unwrap_or_default();
-        let milestone = patch.milestone.unwrap_or_default();
-        let horizon = patch.horizon.unwrap_or_default();
-        let category = patch.category.unwrap_or_default();
-        let priority = patch.priority.unwrap_or_default();
-        let effort = patch.effort.unwrap_or_default();
-        let risk = patch.risk.unwrap_or_default();
-        let owner = patch.owner.unwrap_or_default();
-        let summary = patch.summary.unwrap_or_default();
-        let problem = patch.problem.unwrap_or_else(|| description.to_string());
-        let proposed_solution = patch.proposed_solution.unwrap_or_default();
-        let acceptance_json = patch.acceptance_criteria.as_ref()
-            .map(|ac| serde_json::to_string(ac).unwrap_or_default())
-            .unwrap_or_default();
-        let validation_json = patch.validation.as_ref()
-            .map(|v| serde_json::to_string(v).unwrap_or_default())
-            .unwrap_or_default();
-        let evidence_json = patch.evidence.as_ref()
-            .map(|e| serde_json::to_string(e).unwrap_or_default())
-            .unwrap_or_default();
-        let blocked_reason = patch.blocked_reason.unwrap_or_default();
-        let source_ref_json = patch.source_ref.as_ref()
-            .map(|s| serde_json::to_string(s).unwrap_or_default())
-            .unwrap_or_default();
-        let scope_json = patch.scope.as_ref()
-            .map(|s| serde_json::to_string(s).unwrap_or_default())
-            .unwrap_or_default();
-        let depends_on_json = patch.depends_on.as_ref()
-            .map(|d| serde_json::to_string(d).unwrap_or_default())
-            .unwrap_or_default();
-        let blocks_json = patch.blocks.as_ref()
-            .map(|b| serde_json::to_string(b).unwrap_or_default())
-            .unwrap_or_default();
-        let refs_json = patch.references.as_ref()
-            .map(|r| serde_json::to_string(r).unwrap_or_default())
-            .unwrap_or_default();
-        let task_type = patch.task_type.unwrap_or_default();
-        let url = patch.url.unwrap_or_default();
+        let explicit_code = patch.code.as_deref().map(str::trim).filter(|c| !c.is_empty()).map(String::from);
+        let series = patch.series;
+        let milestone = patch.milestone;
+        let horizon = patch.horizon;
+        let category = patch.category;
+        let priority = patch.priority;
+        let effort = patch.effort;
+        let risk = patch.risk;
+        let owner = patch.owner;
+        let summary = patch.summary;
+        let problem = patch.problem.or_else(|| (!description.is_empty()).then(|| description.to_string()));
+        let proposed_solution = patch.proposed_solution;
+        let acceptance_json = patch
+            .acceptance_criteria
+            .as_ref()
+            .and_then(|ac| serde_json::to_string(ac).ok());
+        let validation_json = patch.validation.as_ref().and_then(|v| serde_json::to_string(v).ok());
+        let evidence_json = patch.evidence.as_ref().and_then(|e| serde_json::to_string(e).ok());
+        let blocked_reason = patch.blocked_reason;
+        let source_ref_json = patch.source_ref.as_ref().and_then(|s| serde_json::to_string(s).ok());
+        let scope_json = patch.scope.as_ref().and_then(|s| serde_json::to_string(s).ok());
+        let depends_on_json = patch.depends_on.as_ref().and_then(|d| serde_json::to_string(d).ok());
+        let blocks_json = patch.blocks.as_ref().and_then(|b| serde_json::to_string(b).ok());
+        let refs_json = patch.references.as_ref().and_then(|r| serde_json::to_string(r).ok());
+        let task_type = patch.task_type;
+        let url = patch.url.as_deref().map(clean_url).transpose()?.unwrap_or_default();
 
         let new_id = self.write(|c| {
             let position = Self::end_of_column(c, status, 0)?;
@@ -895,11 +947,36 @@ impl Store {
                     source_ref_json, scope_json, depends_on, blocks_json, refs_json, task_type
                  ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27, ?28, ?29, ?30)",
                 params![
-                    project_id, title, description, status, position, tags,
-                    patch.human.unwrap_or(false), url, code, series, milestone, horizon, category,
-                    priority, effort, risk, owner, summary, problem,
-                    proposed_solution, acceptance_json, validation_json,
-                    evidence_json, blocked_reason, source_ref_json, scope_json, depends_on_json, blocks_json, refs_json, task_type
+                    project_id,
+                    title,
+                    description,
+                    status,
+                    position,
+                    tags,
+                    patch.human.unwrap_or(false),
+                    url,
+                    explicit_code,
+                    series,
+                    milestone,
+                    horizon,
+                    category,
+                    priority,
+                    effort,
+                    risk,
+                    owner,
+                    summary,
+                    problem,
+                    proposed_solution,
+                    acceptance_json,
+                    validation_json,
+                    evidence_json,
+                    blocked_reason,
+                    source_ref_json,
+                    scope_json,
+                    depends_on_json,
+                    blocks_json,
+                    refs_json,
+                    task_type
                 ],
             )?;
             let new_id = c.last_insert_rowid();
@@ -994,6 +1071,92 @@ impl Store {
             }
             if let Some(keys) = &patch.waits_on {
                 self.set_waits(c, id, keys)?;
+            }
+            let ac_json = patch.acceptance_criteria.as_ref().and_then(|v| serde_json::to_string(v).ok());
+            let val_json = patch.validation.as_ref().and_then(|v| serde_json::to_string(v).ok());
+            let ev_json = patch.evidence.as_ref().and_then(|v| serde_json::to_string(v).ok());
+            let sr_json = patch.source_ref.as_ref().and_then(|v| serde_json::to_string(v).ok());
+            let sc_json = patch.scope.as_ref().and_then(|v| serde_json::to_string(v).ok());
+            let dep_json = patch.depends_on.as_ref().and_then(|v| serde_json::to_string(v).ok());
+            let blk_json = patch.blocks.as_ref().and_then(|v| serde_json::to_string(v).ok());
+            let ref_json = patch.references.as_ref().and_then(|v| serde_json::to_string(v).ok());
+            if patch.code.is_some()
+                || patch.series.is_some()
+                || patch.milestone.is_some()
+                || patch.horizon.is_some()
+                || patch.category.is_some()
+                || patch.priority.is_some()
+                || patch.effort.is_some()
+                || patch.risk.is_some()
+                || patch.owner.is_some()
+                || patch.summary.is_some()
+                || patch.problem.is_some()
+                || patch.proposed_solution.is_some()
+                || ac_json.is_some()
+                || val_json.is_some()
+                || ev_json.is_some()
+                || patch.blocked_reason.is_some()
+                || sr_json.is_some()
+                || sc_json.is_some()
+                || dep_json.is_some()
+                || blk_json.is_some()
+                || ref_json.is_some()
+                || patch.task_type.is_some()
+            {
+                c.execute(
+                    &format!(
+                        "UPDATE tasks SET
+                           code = coalesce(?1, code),
+                           series = coalesce(?2, series),
+                           milestone = coalesce(?3, milestone),
+                           horizon = coalesce(?4, horizon),
+                           category = coalesce(?5, category),
+                           priority = coalesce(?6, priority),
+                           effort = coalesce(?7, effort),
+                           risk = coalesce(?8, risk),
+                           owner = coalesce(?9, owner),
+                           summary = coalesce(?10, summary),
+                           problem = coalesce(?11, problem),
+                           proposed_solution = coalesce(?12, proposed_solution),
+                           acceptance_criteria_json = coalesce(?13, acceptance_criteria_json),
+                           validation_json = coalesce(?14, validation_json),
+                           evidence_json = coalesce(?15, evidence_json),
+                           blocked_reason = coalesce(?16, blocked_reason),
+                           source_ref_json = coalesce(?17, source_ref_json),
+                           scope_json = coalesce(?18, scope_json),
+                           depends_on = coalesce(?19, depends_on),
+                           blocks_json = coalesce(?20, blocks_json),
+                           refs_json = coalesce(?21, refs_json),
+                           task_type = coalesce(?22, task_type),
+                           updated_at = {NOW}
+                         WHERE id = ?23"
+                    ),
+                    params![
+                        patch.code,
+                        patch.series,
+                        patch.milestone,
+                        patch.horizon,
+                        patch.category,
+                        patch.priority,
+                        patch.effort,
+                        patch.risk,
+                        patch.owner,
+                        patch.summary,
+                        patch.problem,
+                        patch.proposed_solution,
+                        ac_json,
+                        val_json,
+                        ev_json,
+                        patch.blocked_reason,
+                        sr_json,
+                        sc_json,
+                        dep_json,
+                        blk_json,
+                        ref_json,
+                        patch.task_type,
+                        id
+                    ],
+                )?;
             }
             Ok(())
         })?;
@@ -1274,6 +1437,342 @@ impl Store {
             }
         }
         Ok(unused)
+    }
+
+    pub fn with_write<T>(&self, f: impl FnOnce(&Connection) -> Result<T>) -> Result<T> {
+        self.write(f)
+    }
+
+    const DOCUMENT_SELECT: &str = "SELECT d.id, d.slug, d.layer, d.title, d.body, d.tags, d.project_id,
+            p.slug, d.status, d.created_at, d.updated_at
+        FROM documents d LEFT JOIN projects p ON p.id = d.project_id";
+
+    fn document_row(r: &Row) -> rusqlite::Result<Document> {
+        Ok(Document {
+            id: r.get(0)?,
+            slug: r.get(1)?,
+            layer: r.get(2)?,
+            title: r.get(3)?,
+            body: r.get(4)?,
+            tags: r.get::<_, String>(5)?.split(',').filter(|t| !t.is_empty()).map(String::from).collect(),
+            project_id: r.get(6)?,
+            project: r.get(7)?,
+            status: r.get(8)?,
+            linked_tasks: Vec::new(),
+            created_at: r.get(9)?,
+            updated_at: r.get(10)?,
+        })
+    }
+
+    pub fn document_linked_task_codes(&self, doc_id: i64) -> Result<Vec<String>> {
+        let mut stmt = self.conn.prepare_cached(
+            "SELECT coalesce(t.code, 'TASK-' || t.id)
+             FROM document_links l JOIN tasks t ON t.id = l.target_id
+             WHERE l.source_type = 'document' AND l.source_id = ?1 AND l.target_type = 'task'
+             ORDER BY t.id",
+        )?;
+        let rows = stmt.query_map([doc_id], |r| r.get::<_, String>(0))?;
+        Ok(rows.collect::<rusqlite::Result<_>>()?)
+    }
+
+    pub fn list_documents(&self, layer: Option<&str>, project_id: Option<i64>) -> Result<Vec<Document>> {
+        let sql = format!(
+            "{} WHERE (?1 IS NULL OR d.layer = ?1) AND (?2 IS NULL OR d.project_id = ?2)
+             ORDER BY d.layer, d.slug",
+            Self::DOCUMENT_SELECT
+        );
+        let mut stmt = self.conn.prepare(&sql)?;
+        let rows = stmt.query_map(params![layer, project_id], Self::document_row)?;
+        let mut docs: Vec<Document> = rows.collect::<rusqlite::Result<_>>()?;
+        for doc in &mut docs {
+            doc.linked_tasks = self.document_linked_task_codes(doc.id)?;
+        }
+        Ok(docs)
+    }
+
+    pub fn get_document(&self, id: i64) -> Result<Document> {
+        let sql = format!("{} WHERE d.id = ?1", Self::DOCUMENT_SELECT);
+        let mut doc = self
+            .conn
+            .prepare_cached(&sql)?
+            .query_row([id], Self::document_row)
+            .optional()?
+            .ok_or_else(|| Error::NotFound(format!("no document #{id}")))?;
+        doc.linked_tasks = self.document_linked_task_codes(doc.id)?;
+        Ok(doc)
+    }
+
+    pub fn find_document_by_slug(&self, slug: &str) -> Result<Option<Document>> {
+        let slug = slug.trim();
+        let sql = format!("{} WHERE d.slug = ?1", Self::DOCUMENT_SELECT);
+        let mut doc = self.conn.prepare_cached(&sql)?.query_row([slug], Self::document_row).optional()?;
+        if let Some(ref mut d) = doc {
+            d.linked_tasks = self.document_linked_task_codes(d.id)?;
+        }
+        Ok(doc)
+    }
+
+    pub fn set_document_links(&self, c: &Connection, doc_id: i64, task_codes: &[String]) -> Result<()> {
+        c.execute(
+            "DELETE FROM document_links WHERE source_type = 'document' AND source_id = ?1 AND target_type = 'task'",
+            [doc_id],
+        )?;
+        for code in task_codes {
+            let code = code.trim();
+            if code.is_empty() {
+                continue;
+            }
+            let target_id: Option<i64> = c
+                .query_row("SELECT id FROM tasks WHERE code = ?1", [code], |r| r.get(0))
+                .optional()?;
+            if let Some(tid) = target_id {
+                c.execute(
+                    "INSERT OR IGNORE INTO document_links (source_type, source_id, target_type, target_id)
+                     VALUES ('document', ?1, 'task', ?2)",
+                    params![doc_id, tid],
+                )?;
+            }
+        }
+        Ok(())
+    }
+
+    pub fn upsert_document(
+        &self,
+        slug: &str,
+        layer: &str,
+        title: &str,
+        body: &str,
+        tags: &str,
+        project_id: Option<i64>,
+        status: Option<&str>,
+        linked_tasks: &[String],
+    ) -> Result<Document> {
+        let slug = slug.trim();
+        let layer = layer.trim().to_ascii_lowercase();
+        let title = clean_title(title)?;
+        if slug.is_empty() {
+            return Err(Error::Invalid("document slug is empty".into()));
+        }
+        if !["raw", "brain", "wiki", "blueprints", "specs"].contains(&layer.as_str()) {
+            return Err(Error::Invalid(format!(
+                "unknown layer {layer:?}; use one of: raw, brain, wiki, blueprints, specs"
+            )));
+        }
+        let tags = clean_tags(tags).join(",");
+        let status = status.unwrap_or("draft").trim();
+        let id = self.write(|c| {
+            let existing: Option<i64> = c
+                .query_row("SELECT id FROM documents WHERE slug = ?1", [slug], |r| r.get(0))
+                .optional()?;
+            let doc_id = if let Some(id) = existing {
+                c.execute(
+                    &format!(
+                        "UPDATE documents SET layer = ?1, title = ?2, body = ?3, tags = ?4,
+                           project_id = ?5, status = ?6, updated_at = {NOW}
+                         WHERE id = ?7"
+                    ),
+                    params![layer, title, body, tags, project_id, status, id],
+                )?;
+                id
+            } else {
+                c.execute(
+                    "INSERT INTO documents (slug, layer, title, body, tags, project_id, status)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                    params![slug, layer, title, body, tags, project_id, status],
+                )?;
+                c.last_insert_rowid()
+            };
+            self.set_document_links(c, doc_id, linked_tasks)?;
+            c.execute("UPDATE meta SET value = value + 1 WHERE key = 'changes'", [])?;
+            Ok(doc_id)
+        })?;
+        self.get_document(id)
+    }
+
+    pub fn update_document(&self, id: i64, patch: DocumentPatch) -> Result<Document> {
+        let current = self.get_document(id)?;
+        let slug = patch.slug.as_deref().unwrap_or(&current.slug);
+        let layer = patch.layer.as_deref().unwrap_or(&current.layer);
+        let title = patch.title.as_deref().unwrap_or(&current.title);
+        let body = patch.body.as_deref().unwrap_or(&current.body);
+        let tags_joined = current.tags.join(",");
+        let tags = patch.tags.as_deref().unwrap_or(&tags_joined);
+        let project_id = patch.project_id.or(current.project_id);
+        let status = patch.status.as_deref().unwrap_or(&current.status);
+        let linked = patch.linked_tasks.as_deref().unwrap_or(&current.linked_tasks);
+        self.upsert_document(slug, layer, title, body, tags, project_id, Some(status), linked)
+    }
+
+    pub fn delete_document(&self, id: i64) -> Result<Document> {
+        let doc = self.get_document(id)?;
+        self.write(|c| {
+            c.execute("DELETE FROM document_links WHERE source_type = 'document' AND source_id = ?1", [id])?;
+            c.execute("DELETE FROM documents WHERE id = ?1", [id])?;
+            c.execute("UPDATE meta SET value = value + 1 WHERE key = 'changes'", [])?;
+            Ok(())
+        })?;
+        Ok(doc)
+    }
+
+    pub fn global_search(&self, query: &str, limit: usize) -> Result<Vec<SearchHit>> {
+        let q = query.trim();
+        if q.is_empty() {
+            return Ok(Vec::new());
+        }
+        let fts_terms: Vec<String> = q
+            .split_whitespace()
+            .map(|token| format!("\"{}\"*", token.replace('"', "\"\"")))
+            .collect();
+        let fts_query = fts_terms.join(" AND ");
+        let mut hits = Vec::new();
+        let mut stmt = self.conn.prepare(
+            "SELECT entity_type, CAST(entity_id AS INTEGER)
+             FROM global_search_fts
+             WHERE global_search_fts MATCH ?1
+             ORDER BY bm25(global_search_fts)
+             LIMIT ?2",
+        )?;
+        let matched: Vec<(String, i64)> = stmt
+            .query_map(params![fts_query, limit as i64], |r| Ok((r.get(0)?, r.get(1)?)))?
+            .collect::<rusqlite::Result<_>>()
+            .unwrap_or_default();
+
+        for (etype, eid) in matched {
+            if etype == "task" {
+                if let Ok(t) = self.get_task(eid) {
+                    let snippet_src = t.summary.as_deref().filter(|s| !s.is_empty()).unwrap_or(&t.description);
+                    hits.push(SearchHit {
+                        entity_type: "task".into(),
+                        entity_id: t.id,
+                        code_or_slug: t.code.clone().unwrap_or_else(|| t.key()),
+                        layer_or_status: t.status,
+                        title: t.title,
+                        snippet: snippet_src.chars().take(160).collect(),
+                        tags: t.tags,
+                    });
+                }
+            } else if etype == "document" {
+                if let Ok(d) = self.get_document(eid) {
+                    hits.push(SearchHit {
+                        entity_type: "document".into(),
+                        entity_id: d.id,
+                        code_or_slug: d.slug,
+                        layer_or_status: d.layer,
+                        title: d.title,
+                        snippet: d.body.chars().take(160).collect(),
+                        tags: d.tags,
+                    });
+                }
+            }
+        }
+        Ok(hits)
+    }
+
+    pub fn claim_task(&self, id: i64) -> Result<Task> {
+        let task = self.get_task(id)?;
+        if !task.waiting_on.is_empty() {
+            let blockers: Vec<String> = self
+                .task_links(id, false)?
+                .into_iter()
+                .filter(|l| l.status != DONE)
+                .map(|l| format!("{}#{} ({})", l.project, l.id, l.title))
+                .collect();
+            return Err(Error::Invalid(format!(
+                "task {} is blocked waiting on: {}",
+                task.code.as_deref().unwrap_or(&task.key()),
+                blockers.join(", ")
+            )));
+        }
+        self.update_task(
+            id,
+            TaskPatch {
+                status: Some("doing".into()),
+                ..Default::default()
+            },
+        )
+    }
+
+    pub fn toggle_acceptance_criterion(&self, id: i64, ac_id: &str, done: Option<bool>) -> Result<Task> {
+        let task = self.get_task(id)?;
+        let mut criteria: Vec<serde_json::Value> = task
+            .acceptance_criteria_json
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .and_then(|s| serde_json::from_str(s).ok())
+            .unwrap_or_default();
+        let mut found = false;
+        for item in &mut criteria {
+            if item.get("id").and_then(|v| v.as_str()) == Some(ac_id) {
+                let current_done = item.get("done").and_then(|v| v.as_bool()).unwrap_or(false);
+                let next_done = done.unwrap_or(!current_done);
+                if let Some(obj) = item.as_object_mut() {
+                    obj.insert("done".into(), serde_json::Value::Bool(next_done));
+                }
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            return Err(Error::NotFound(format!("no acceptance criterion {ac_id:?} on task #{id}")));
+        }
+        self.update_task(
+            id,
+            TaskPatch {
+                acceptance_criteria: Some(criteria),
+                ..Default::default()
+            },
+        )
+    }
+
+    pub fn submit_task_review(&self, id: i64, commit_sha: Option<&str>, evidence_path: Option<&str>) -> Result<Task> {
+        let task = self.get_task(id)?;
+        let criteria: Vec<serde_json::Value> = task
+            .acceptance_criteria_json
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .and_then(|s| serde_json::from_str(s).ok())
+            .unwrap_or_default();
+        let incomplete: Vec<String> = criteria
+            .iter()
+            .filter(|c| !c.get("done").and_then(|v| v.as_bool()).unwrap_or(false))
+            .filter_map(|c| c.get("id").and_then(|v| v.as_str()).map(String::from))
+            .collect();
+        if !incomplete.is_empty() {
+            return Err(Error::Invalid(format!(
+                "cannot submit task for review while acceptance criteria are incomplete: {}",
+                incomplete.join(", ")
+            )));
+        }
+        let mut ev: serde_json::Value = task
+            .evidence_json
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .and_then(|s| serde_json::from_str(s).ok())
+            .unwrap_or_else(|| serde_json::json!({"paths": [], "detailFile": null, "commitSha": null}));
+        if let Some(obj) = ev.as_object_mut() {
+            if let Some(sha) = commit_sha.map(str::trim).filter(|s| !s.is_empty()) {
+                obj.insert("commitSha".into(), serde_json::Value::String(sha.into()));
+            }
+            if let Some(p) = evidence_path.map(str::trim).filter(|s| !s.is_empty()) {
+                let mut paths: Vec<String> = obj
+                    .get("paths")
+                    .and_then(|v| v.as_array())
+                    .map(|arr| arr.iter().filter_map(|x| x.as_str().map(String::from)).collect())
+                    .unwrap_or_default();
+                if !paths.iter().any(|existing| existing == p) {
+                    paths.push(p.into());
+                }
+                obj.insert("paths".into(), serde_json::json!(paths));
+            }
+        }
+        self.update_task(
+            id,
+            TaskPatch {
+                status: Some("review".into()),
+                evidence: Some(ev),
+                ..Default::default()
+            },
+        )
     }
 }
 
