@@ -61,7 +61,7 @@ test('package exposes explicit stylesheet and tree-shakeable typed icon entries'
   assert.equal(packageJson.peerDependenciesMeta.sonner.optional, true);
   assert.deepEqual(packageJson.sideEffects, ['**/*.css']);
   assert.equal(packageJson.publishConfig.access, 'public');
-  assert.equal(packageJson.engines.node, '>=20');
+  assert.equal(packageJson.engines.node, '>=24');
   assert.equal(packageJson.version, '1.0.0-rc.1');
   for (const component of ['dialog', 'dropdown-menu', 'select', 'tabs', 'tooltip', 'toast']) {
     assert.equal(
