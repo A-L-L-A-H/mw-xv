@@ -2,6 +2,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { localServiceScripts } from './local-service-scripts.mjs';
 import { resolvePackageManager } from './package-manager.mjs';
+import { isApiFatalLine, waitForApiReady } from './local-service-orchestrator.mjs';
 
 const mode = process.argv[2];
 const selected = localServiceScripts[mode];
@@ -32,10 +33,13 @@ function stopAll(code = 0) {
   process.exit(code);
 }
 
-function pipePrefixed(stream, prefix, target) {
+function pipePrefixed(stream, prefix, target, onLine) {
   if (!stream) return;
   const rl = createInterface({ input: stream, crlfDelay: Infinity });
-  rl.on('line', (line) => target.write(`${prefix} ${line}\n`));
+  rl.on('line', (line) => {
+    target.write(`${prefix} ${line}\n`);
+    onLine?.(line);
+  });
 }
 
 function startService(packageName, script, index) {
@@ -56,27 +60,15 @@ function startService(packageName, script, index) {
     }
   );
   processes.push(child);
-  pipePrefixed(child.stdout, prefix, process.stdout);
-  pipePrefixed(child.stderr, prefix, process.stderr);
+  const handleLine = (line) => {
+    if (shortName === 'api' && isApiFatalLine(line)) stopAll(1);
+  };
+  pipePrefixed(child.stdout, prefix, process.stdout, handleLine);
+  pipePrefixed(child.stderr, prefix, process.stderr, handleLine);
   child.on('error', () => stopAll(1));
   child.on('exit', (code, signal) => {
     if (!stopping) stopAll(code ?? (signal ? 1 : 0));
   });
-}
-
-async function waitForApiReady(timeoutMs = 30000) {
-  const port = process.env.API_PORT || '3000';
-  const url = `http://127.0.0.1:${port}/readyz`;
-  const deadline = Date.now() + timeoutMs;
-  while (!stopping && Date.now() < deadline) {
-    try {
-      const response = await globalThis.fetch(url);
-      if (response.ok) return;
-    } catch {
-      // API not listening yet.
-    }
-    await new Promise((resolve) => globalThis.setTimeout(resolve, 250));
-  }
 }
 
 process.on('SIGINT', () => stopAll(130));
@@ -90,8 +82,14 @@ backendServices.forEach(([packageName, script], index) => {
 });
 
 if (boardServices.length > 0) {
-  await waitForApiReady();
-  if (!stopping) {
+  const port = process.env.API_PORT || '3000';
+  const apiReady = await waitForApiReady({
+    url: `http://127.0.0.1:${port}/readyz`,
+    isStopping: () => stopping,
+  });
+  if (!apiReady) {
+    stopAll(1);
+  } else {
     boardServices.forEach(([packageName, script], index) => {
       startService(packageName, script, backendServices.length + index);
     });

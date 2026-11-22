@@ -6,6 +6,7 @@ export * from './services.js';
 export * from './base.model.js';
 export * from './model-definition.js';
 export * from './schema-sync.js';
+export * from './schema-state.js';
 export * from './addon.js';
 export {
   humanize,

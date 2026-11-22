@@ -39,14 +39,24 @@ export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (fast
         }
       : undefined;
 
-    const status = dbOk && storageOk ? 200 : 503;
+    const schemaReady = fastify.schemaReadiness.ready;
+    const status = dbOk && storageOk && schemaReady ? 200 : 503;
     const responseBody: HealthResponse = {
-      status: dbOk && storageOk ? 'healthy' : 'unhealthy',
+      status: dbOk && storageOk && schemaReady ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       database: dbOk ? 'connected' : 'disconnected',
       databasePool,
       installedAddons,
+      schema: {
+        status: fastify.schemaReadiness.status ?? (schemaReady ? 'applied' : 'pending'),
+        ...(fastify.schemaReadiness.version === undefined
+          ? {}
+          : { version: fastify.schemaReadiness.version }),
+        ...(fastify.schemaReadiness.digest === undefined
+          ? {}
+          : { digest: fastify.schemaReadiness.digest }),
+      },
       attachmentStorage: storageOk ? 'connected' : 'disconnected',
       registeredModels: Registry.getNames(),
     };

@@ -28,11 +28,13 @@ import { createAttachmentStorage } from './storage/attachment-storage.js';
 import { whatsappLogErrorContext } from './whatsapp/log-redaction.js';
 import type { AttachmentScanner } from './whatsapp/clamav-scanner.js';
 import type { createVideoPoster } from './whatsapp/media-thumbnail.js';
-import { installApiAddons, registerApiAddonRoutes } from './addons/registry.js';
+import { installApiAddons, registerApiAddons, registerApiAddonRoutes } from './addons/registry.js';
+import type { SchemaReadinessState } from './database/schema-state.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
     localAi: LocalAiRuntime;
+    schemaReadiness: AppSchemaReadiness;
   }
 }
 
@@ -40,8 +42,12 @@ function errorProperty(error: unknown, key: string): unknown {
   return isRecord(error) && key in error ? error[key] : undefined;
 }
 
+export type AppSchemaReadiness = SchemaReadinessState;
+
 export interface BuildAppOptions {
   db?: Knex;
+  installSchema?: boolean;
+  schemaReadiness?: AppSchemaReadiness;
   /** Overrides SUPERADMIN_PASSWORD (used by tests). */
   superadminPassword?: string;
   /** Overrides JWT_SECRET (used by tests). */
@@ -118,8 +124,13 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   }
 
   const db = options.db ?? createDatabase();
+  const installSchema = options.installSchema ?? true;
   try {
-    await installApiAddons(db, superadminPassword);
+    if (installSchema) {
+      await installApiAddons(db, superadminPassword);
+    } else {
+      await registerApiAddons(db);
+    }
   } catch (error) {
     if (!options.db) await db.destroy();
     throw error;
@@ -148,6 +159,30 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     },
   });
   app.decorate('localAi', createLocalAiRuntime(localAiConfig));
+  const schemaReadiness = options.schemaReadiness ?? {
+    ready: installSchema,
+    status: installSchema ? 'applied' : 'pending',
+  };
+  app.decorate('schemaReadiness', schemaReadiness);
+
+  const readinessExemptPaths = new Set([
+    '/livez',
+    '/readyz',
+    '/health',
+    '/metrics',
+    '/whatsapp/readyz',
+  ]);
+  app.addHook('onRequest', async (request, reply) => {
+    if (schemaReadiness.ready) return;
+    const path = request.url.split('?', 1)[0];
+    if (readinessExemptPaths.has(path)) return;
+    return reply.status(503).send({
+      success: false,
+      error: 'Database schema is not ready',
+      code: 'SCHEMA_NOT_READY',
+      requestId: request.id,
+    });
+  });
 
   app.addHook('onResponse', async (request, reply) => {
     request.log.info({ req: request, res: { statusCode: reply.statusCode } }, 'request completed');

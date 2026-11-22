@@ -3,6 +3,7 @@ export interface DatabaseRuntimeLimits {
   poolMax: number;
   acquireTimeoutMs: number;
   statementTimeoutMs: number;
+  migrationStatementTimeoutMs: number;
 }
 
 function readInteger(
@@ -32,5 +33,12 @@ export function readDatabaseRuntimeLimits(
     poolMax,
     acquireTimeoutMs: readInteger(values, 'DB_ACQUIRE_TIMEOUT_MS', 30_000, 100, 120_000),
     statementTimeoutMs: readInteger(values, 'DB_STATEMENT_TIMEOUT_MS', 30_000, 100, 600_000),
+    migrationStatementTimeoutMs: readInteger(
+      values,
+      'DB_MIGRATION_STATEMENT_TIMEOUT_MS',
+      300_000,
+      100,
+      600_000
+    ),
   };
 }

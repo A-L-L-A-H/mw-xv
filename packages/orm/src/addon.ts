@@ -246,7 +246,7 @@ export function discoverWorkspaceAddons(addons: readonly Addon[]): Addon[] {
   return ordered;
 }
 
-function computeAddonSchemaDigest(addon: Addon): string {
+export function computeAddonSchemaDigest(addon: Addon): string {
   const payload = addon.models
     .map((m) => ({
       model: m.modelName,

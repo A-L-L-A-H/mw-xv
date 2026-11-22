@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createDatabase } from '../database/knex.js';
-import { bootstrapApiAddons } from '../addons/registry.js';
+import { bootstrapApiWorker } from '../addons/registry.js';
 import { registerJobHandler, runWorkerLoop } from '@moonwitness/jobs';
 import {
   readWorkerHealthPort,
@@ -21,9 +21,7 @@ const workerHealthToken = createServiceToken<WorkerHealthServer>('api.workerHeal
 const shutdown = createProcessShutdownController(() => workerHealth?.setReady(false), { services });
 
 try {
-  await bootstrapApiAddons(db, process.env.SUPERADMIN_PASSWORD, undefined, {
-    skipBootMigrations: process.env.SKIP_BOOT_MIGRATIONS === 'true',
-  });
+  await bootstrapApiWorker(db);
   const unregisterWhatsAppAttachmentJob = registerWhatsAppAttachmentJob(db);
   const handlerModule = process.env.JOB_HANDLERS_MODULE;
   if (handlerModule) await import(pathToFileURL(path.resolve(handlerModule)).href);

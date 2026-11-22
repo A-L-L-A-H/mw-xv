@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createDatabase } from '../database/knex.js';
-import { bootstrapApiAddons } from '../addons/registry.js';
+import { bootstrapApiWorker } from '../addons/registry.js';
 import { runOutboxLoop } from '@moonwitness/jobs';
 import { registerNotificationOutboxConsumer } from '@moonwitness/orm-notification';
 import {
@@ -30,9 +30,7 @@ const workerHealthToken = createServiceToken<WorkerHealthServer>('api.workerHeal
 const shutdown = createProcessShutdownController(() => workerHealth?.setReady(false), { services });
 
 try {
-  await bootstrapApiAddons(db, process.env.SUPERADMIN_PASSWORD, undefined, {
-    skipBootMigrations: process.env.SKIP_BOOT_MIGRATIONS === 'true',
-  });
+  await bootstrapApiWorker(db);
   unregisterNotificationConsumer = registerNotificationOutboxConsumer();
   unregisterWebhookConsumer = registerWebhookOutboxConsumer(async (secretRef, companyId) => {
     if (!secretRef.startsWith(`MW_WEBHOOK_SECRET_C${companyId}_`)) return null;

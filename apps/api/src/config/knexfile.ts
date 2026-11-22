@@ -21,6 +21,29 @@ export function createPostgresKnexConfig(
   };
 }
 
+export function createMigrationPostgresKnexConfig(
+  connectionString: string,
+  limits: Pick<
+    typeof config.db,
+    'poolMin' | 'poolMax' | 'acquireTimeoutMs' | 'statementTimeoutMs' | 'migrationStatementTimeoutMs'
+  >,
+  overrides: Pick<Knex.Config, 'searchPath'> = {}
+): Knex.Config {
+  return {
+    client: 'pg',
+    connection: {
+      connectionString,
+      statement_timeout: limits.migrationStatementTimeoutMs,
+    },
+    pool: {
+      min: 0,
+      max: 1,
+      acquireTimeoutMillis: limits.acquireTimeoutMs,
+    },
+    ...overrides,
+  };
+}
+
 export const knexConfig: Record<string, Knex.Config> = {
   development: createPostgresKnexConfig(config.db.connection, config.db),
   production: createPostgresKnexConfig(config.db.connection, config.db),

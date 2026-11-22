@@ -1,5 +1,5 @@
 import { createDatabase } from '../database/knex.js';
-import { bootstrapApiAddons } from '../addons/registry.js';
+import { bootstrapApiWorker } from '../addons/registry.js';
 import { runSchedulerLoop } from '@moonwitness/jobs';
 import {
   readWorkerHealthPort,
@@ -20,9 +20,7 @@ const workerHealthToken = createServiceToken<WorkerHealthServer>('api.workerHeal
 const shutdown = createProcessShutdownController(() => workerHealth?.setReady(false), { services });
 
 try {
-  await bootstrapApiAddons(db, process.env.SUPERADMIN_PASSWORD, undefined, {
-    skipBootMigrations: process.env.SKIP_BOOT_MIGRATIONS === 'true',
-  });
+  await bootstrapApiWorker(db);
   await ensureWhatsAppAttachmentCron(db);
   const unregisterWhatsAppAttachmentJob = registerWhatsAppAttachmentJob(db);
   if (!shutdown.signal.aborted) {

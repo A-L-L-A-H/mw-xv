@@ -1,6 +1,6 @@
 import knex, { type Knex } from 'knex';
 import { Model } from 'objection';
-import knexConfig from '../config/knexfile.js';
+import knexConfig, { createMigrationPostgresKnexConfig } from '../config/knexfile.js';
 import { config } from '../config/env.js';
 
 export function createDatabase(): Knex {
@@ -9,6 +9,10 @@ export function createDatabase(): Knex {
   const db = knex(knexConfig[environment] ?? knexConfig.development);
   Model.knex(db);
   return db;
+}
+
+export function createMigrationDatabase(): Knex {
+  return knex(createMigrationPostgresKnexConfig(config.db.connection, config.db));
 }
 
 export async function testConnection(db: Knex): Promise<boolean> {
