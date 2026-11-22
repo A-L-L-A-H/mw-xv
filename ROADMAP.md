@@ -248,7 +248,7 @@ Workstream Desktop yang diaktifkan secara terpisah untuk mengembangkan pengalama
 - [x] M13.02 Read-only revision-pinned Repo Radar Snapshot (`buildRepoSnapshot` di `@moonwitness/ai-runtime` dan `R0` `WorktreeSandbox.inspectRepoSnapshot` di `apps/desktop`). Evidence: [M13.02](docs/roadmap/evidence/M13.02.md).
 - [x] M13.03 Read-only Overlap Detector (`detectCapabilityOverlap` dan `runOverlapDetectorBenchmark` di `@moonwitness/ai-runtime` / `@moonwitness/ai-evaluation`). Evidence: [M13.03](docs/roadmap/evidence/M13.03.md).
 - [x] M13.04 Read-only Prompt Forge Execution Packet compiler (`compileExecutionPacket` di `@moonwitness/ai-runtime` dan `R0` `WorktreeSandbox.compileExecutionPacket` di `apps/desktop`). Evidence: [M13.04](docs/roadmap/evidence/M13.04.md).
-- [ ] M13.05 Gate pembuatan WorkContract pada kesiapan dependency task Project; gunakan DAG kanonik, isolasi company, dan bukti route test. Handoff: [M13.05 Codex handoff](docs/roadmap/rock-soul-flow-m13-05-handoff.md). Evidence: [M13.05](docs/roadmap/evidence/M13.05.md) (belum dibuat; task masih todo).
+- [ ] M13.05 Gate pembuatan WorkContract pada kesiapan dependency task Project; gunakan DAG kanonik dan isolasi company. Handoff: [M13.05 Codex handoff](docs/roadmap/rock-soul-flow-m13-05-handoff.md). Evidence akan dicatat setelah acceptance terverifikasi.
 
 ## K — Local AI knowledge rebuild (K0–K9)
 
