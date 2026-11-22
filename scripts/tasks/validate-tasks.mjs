@@ -33,37 +33,27 @@ export function toRoadmapTaskStatus(status) {
   return statusMap[status] ?? null;
 }
 
-export async function validateTasks() {
+export async function validateTaskRegistryData(tasksData) {
   const errors = [];
-  const tasksFilePath = path.join(rootDir, 'docs/tasks/tasks.json');
   const schemaFilePath = path.join(rootDir, 'docs/tasks/tasks.schema.json');
   const roadmapTasksPath = path.join(rootDir, 'docs/roadmap/tasks.json');
   const roadmapMdPath = path.join(rootDir, 'ROADMAP.md');
 
-  // 1. JSON Schema validation
+  // 1. Validate the complete candidate before any registry write.
   const schemaRaw = await fs.readFile(schemaFilePath, 'utf8');
-  const tasksRaw = await fs.readFile(tasksFilePath, 'utf8');
   const schema = JSON.parse(schemaRaw);
-  let tasksData;
-  try {
-    tasksData = parseTasksRegistry(tasksRaw);
-  } catch (error) {
-    return { valid: false, taskCount: 0, errors: [error.message] };
-  }
-
   const ajv = new Ajv({ allErrors: true });
   addFormats(ajv);
   const validate = ajv.compile(schema);
   const isValid = validate(tasksData);
-
   if (!isValid) {
     for (const err of validate.errors ?? []) {
       errors.push(`Schema Error at ${err.instancePath}: ${err.message}`);
     }
-    return { valid: false, taskCount: tasksData.tasks?.length ?? 0, errors };
+    return { valid: false, taskCount: tasksData?.tasks?.length ?? 0, errors };
   }
 
-  // Project slugs and task codes are globally unique.
+  // 2. Project slugs, task codes and project ownership are unique and resolvable.
   const projectSlugs = new Set();
   for (const project of tasksData.projects) {
     if (projectSlugs.has(project.slug)) {
@@ -83,7 +73,7 @@ export async function validateTasks() {
     }
   }
 
-  // Reject unresolved dependency/block references instead of silently ignoring them.
+  // 3. Require known, unique and reciprocal dependency/block relationships.
   for (const task of tasksData.tasks) {
     const dependencies = task.dependsOn ?? [];
     const blockedTasks = task.blocks ?? [];
@@ -111,7 +101,7 @@ export async function validateTasks() {
     }
   }
 
-  // Each task must retain a real, repository-local provenance source.
+  // 4. Every task must point to an existing repository-local provenance source.
   const sourceFiles = new Set(tasksData.tasks.map((task) => task.sourceRef.file));
   for (const sourceFile of sourceFiles) {
     if (
@@ -129,7 +119,7 @@ export async function validateTasks() {
     }
   }
 
-  // Validate the dependency DAG.
+  // 5. Validate the dependency DAG.
   const visiting = new Set();
   const visited = new Set();
   function checkCycle(code) {
@@ -148,8 +138,7 @@ export async function validateTasks() {
   }
   for (const code of taskMap.keys()) checkCycle(code);
 
-  // Cross-check the complete lifecycle status against the roadmap index and
-  // the completion checkbox mirror. Do not silently treat "review" as "todo".
+  // 6. Exact lifecycle parity with roadmap index plus completion checkbox mirror.
   try {
     const roadmapTasksRaw = await fs.readFile(roadmapTasksPath, 'utf8');
     const roadmapData = JSON.parse(roadmapTasksRaw);
@@ -176,7 +165,7 @@ export async function validateTasks() {
     for (const roadmapTask of roadmapData.tasks) {
       const canonical = taskMap.get(roadmapTask.id);
       if (!canonical) {
-        errors.push(`Roadmap task "${roadmapTask.id}" is missing from canonical docs/tasks/tasks.json`);
+        errors.push(`Roadmap task "${roadmapTask.id}" is missing from canonical TaskOS.`);
         continue;
       }
       const expectedStatus = toRoadmapTaskStatus(canonical.status);
@@ -208,9 +197,21 @@ export async function validateTasks() {
 
   return {
     valid: errors.length === 0,
-    taskCount: tasksData.tasks?.length ?? 0,
+    taskCount: tasksData.tasks.length,
     errors
   };
+}
+
+export async function validateTasks() {
+  const tasksFilePath = path.join(rootDir, 'docs/tasks/tasks.json');
+  let tasksData;
+  try {
+    const tasksRaw = await fs.readFile(tasksFilePath, 'utf8');
+    tasksData = parseTasksRegistry(tasksRaw);
+  } catch (error) {
+    return { valid: false, taskCount: 0, errors: [error.message] };
+  }
+  return validateTaskRegistryData(tasksData);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
