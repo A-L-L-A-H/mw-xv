@@ -4,7 +4,7 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "55a3536a05e4f2720d89c5d7a3c10a5afb88d25800b9bbddcc34a2a272b6bc63",
+    "assetManifestSha256": "06a8aa72677e41b8812cb4f4334654f7e22f261bc756521093c45d8f615fcc47",
     "tokens": "packages/ui/src/styles/tokens.css",
     "tokensSha256": "d5f681a9afbe08b0d531cfb0f55633e0b0b4f94abc205b972863e29f8409eac7"
   },
@@ -1549,7 +1549,88 @@
       "output": "docs/assets/moonwitness/scenes/moon-city-scene.json",
       "kind": "scene",
       "format": "json",
-      "sha256": "f818c85ed47431c305352ca5efd2ce1f117afcfe4e78bafe39e340cdb8ad8ab3"
+      "sha256": "dee17b91aa3d332094153ebec27a13d7b7006e5ff53d9f363a94f482bda73c28"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-sky.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-sky.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "9eb4ce7d7040ff9d9bd582b3c010abd3e5d0d13419534ed72ff11ac79805eb17"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-moon.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-moon.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "14efb9b61584bcf941c34e6afb073eb9eb139b06a7a05f73a945f818a58e4751"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-clouds-far.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-clouds-far.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 512,
+      "sha256": "0d540a3b826fd0a2fa64d859b13711602864bc0818f77daada1c7d766d8f91e6"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-skyline-far.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-skyline-far.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "173af9939c7999ddc15c16995fb9885846ae105e456c26134c78600cfcb489a1"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-clouds-near.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-clouds-near.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 512,
+      "sha256": "ad93de9d7c10f09ae2496b41e63e34494607147e2cdd147280b1450893d47ba7"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-skyline-mid.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-skyline-mid.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "a8f0a0d34b100c3c75af917b3a9fd17f8f963524804fd5c171378ac923cae500"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-foreground.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-foreground.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "381c55fb7d2e7e58f57c5054e0b01c2769e74957849f0d93fe63995be42fbc1a"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-prop-railing.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-prop-railing.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 420,
+      "sha256": "652a6cc7edbe6512b53472c7faeb851c8cf6a58c8936ae90f8d3225904377d8e"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-prop-wires.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-prop-wires.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 360,
+      "sha256": "41926599fa99a72798f702279e764350ef8632c818e4a773c7acaa9026bd9f28"
     }
   ],
   "stylesheets": [

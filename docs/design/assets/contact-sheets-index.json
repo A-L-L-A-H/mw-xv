@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "totalGroups": 7,
-  "totalVisualAssets": 201,
+  "totalVisualAssets": 210,
   "renderedSheets": [
     {
       "group": "moon-city",
       "file": "docs/design/assets/pack-moon-city-contact-sheet.png",
       "width": 1280,
-      "height": 2682,
-      "itemCount": 33
+      "height": 3384,
+      "itemCount": 42
     }
   ],
   "groups": [
@@ -2006,7 +2006,7 @@
     {
       "name": "moon-city",
       "slug": "moon-city",
-      "count": 33,
+      "count": 42,
       "items": [
         {
           "id": "animation/crew-01-hair/crew-01-hair-move-frame-01.svg",
@@ -2103,6 +2103,114 @@
           "width": 1024,
           "height": 1024,
           "status": "review"
+        },
+        {
+          "id": "environments/moon-city-clouds-far.svg",
+          "path": "environments/moon-city-clouds-far.svg",
+          "kind": "environment",
+          "category": "environment",
+          "pack": "moon-city",
+          "variant": "moon-city-clouds-far",
+          "format": "svg",
+          "width": 2048,
+          "height": 512,
+          "status": "approved"
+        },
+        {
+          "id": "environments/moon-city-clouds-near.svg",
+          "path": "environments/moon-city-clouds-near.svg",
+          "kind": "environment",
+          "category": "environment",
+          "pack": "moon-city",
+          "variant": "moon-city-clouds-near",
+          "format": "svg",
+          "width": 2048,
+          "height": 512,
+          "status": "approved"
+        },
+        {
+          "id": "environments/moon-city-foreground.svg",
+          "path": "environments/moon-city-foreground.svg",
+          "kind": "environment",
+          "category": "environment",
+          "pack": "moon-city",
+          "variant": "moon-city-foreground",
+          "format": "svg",
+          "width": 2048,
+          "height": 1152,
+          "status": "approved"
+        },
+        {
+          "id": "environments/moon-city-moon.svg",
+          "path": "environments/moon-city-moon.svg",
+          "kind": "environment",
+          "category": "environment",
+          "pack": "moon-city",
+          "variant": "moon-city-moon",
+          "format": "svg",
+          "width": 1024,
+          "height": 1024,
+          "status": "approved"
+        },
+        {
+          "id": "environments/moon-city-prop-railing.svg",
+          "path": "environments/moon-city-prop-railing.svg",
+          "kind": "environment",
+          "category": "environment",
+          "pack": "moon-city",
+          "variant": "moon-city-prop-railing",
+          "format": "svg",
+          "width": 2048,
+          "height": 420,
+          "status": "approved"
+        },
+        {
+          "id": "environments/moon-city-prop-wires.svg",
+          "path": "environments/moon-city-prop-wires.svg",
+          "kind": "environment",
+          "category": "environment",
+          "pack": "moon-city",
+          "variant": "moon-city-prop-wires",
+          "format": "svg",
+          "width": 2048,
+          "height": 360,
+          "status": "approved"
+        },
+        {
+          "id": "environments/moon-city-sky.svg",
+          "path": "environments/moon-city-sky.svg",
+          "kind": "environment",
+          "category": "environment",
+          "pack": "moon-city",
+          "variant": "moon-city-sky",
+          "format": "svg",
+          "width": 2048,
+          "height": 1152,
+          "status": "approved"
+        },
+        {
+          "id": "environments/moon-city-skyline-far.svg",
+          "path": "environments/moon-city-skyline-far.svg",
+          "kind": "environment",
+          "category": "environment",
+          "pack": "moon-city",
+          "variant": "moon-city-skyline-far",
+          "format": "svg",
+          "width": 2048,
+          "height": 1152,
+          "status": "approved"
+        },
+        {
+          "id": "environments/moon-city-skyline-mid.svg",
+          "path": "environments/moon-city-skyline-mid.svg",
+          "kind": "environment",
+          "category": "environment",
+          "pack": "moon-city",
+          "variant": "moon-city-skyline-mid",
+          "format": "svg",
+          "width": 2048,
+          "height": 1152,
+          "status": "approved"
         },
         {
           "id": "source/artwork/moon-city-cloud-layer.svg",

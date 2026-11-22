@@ -29,6 +29,7 @@
     "materials",
     "sounds",
     "animation",
+    "environments",
     "scenes",
     "manifest.json",
     "licenses.json",
@@ -45,6 +46,7 @@
     "./manifest.json": "./manifest.json",
     "./licenses.json": "./licenses.json",
     "./animation/*": "./animation/*",
+    "./environments/*": "./environments/*",
     "./scenes/*": "./scenes/*"
   },
   "devDependencies": {

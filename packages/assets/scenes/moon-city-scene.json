@@ -12,7 +12,7 @@
       "layers": [
         {
           "id": "sky",
-          "asset": "source/artwork/moon-city-sky-layer.svg",
+          "asset": "environments/moon-city-sky.svg",
           "order": 0,
           "position": { "x": 0.5, "y": 0.5 },
           "opacity": 1,
@@ -21,7 +21,7 @@
         },
         {
           "id": "moon",
-          "asset": "source/artwork/moon-city-moon-disc-layer.svg",
+          "asset": "environments/moon-city-moon.svg",
           "order": 10,
           "position": { "x": 0.72, "y": 0.24 },
           "opacity": 1,
@@ -30,7 +30,7 @@
         },
         {
           "id": "clouds-far",
-          "asset": "source/artwork/moon-city-clouds-loop-b.svg",
+          "asset": "environments/moon-city-clouds-far.svg",
           "order": 20,
           "position": { "x": 0.5, "y": 0.28 },
           "opacity": 0.85,
@@ -39,7 +39,7 @@
         },
         {
           "id": "skyline-far",
-          "asset": "source/world/environments/moon-city-skyline-far.svg",
+          "asset": "environments/moon-city-skyline-far.svg",
           "order": 30,
           "position": { "x": 0.5, "y": 0.75 },
           "opacity": 1,
@@ -48,7 +48,7 @@
         },
         {
           "id": "clouds-near",
-          "asset": "source/artwork/moon-city-clouds-loop-a.svg",
+          "asset": "environments/moon-city-clouds-near.svg",
           "order": 40,
           "position": { "x": 0.5, "y": 0.34 },
           "opacity": 0.9,
@@ -57,7 +57,7 @@
         },
         {
           "id": "skyline-mid",
-          "asset": "source/world/environments/moon-city-skyline-mid.svg",
+          "asset": "environments/moon-city-skyline-mid.svg",
           "order": 50,
           "position": { "x": 0.5, "y": 0.8 },
           "opacity": 1,
@@ -66,7 +66,7 @@
         },
         {
           "id": "rooftop-foreground",
-          "asset": "source/artwork/moon-city-foreground-layer.svg",
+          "asset": "environments/moon-city-foreground.svg",
           "order": 70,
           "position": { "x": 0.5, "y": 0.92 },
           "opacity": 1,
@@ -75,7 +75,7 @@
         },
         {
           "id": "prop-railing",
-          "asset": "source/world/environments/moon-city-prop-railing.svg",
+          "asset": "environments/moon-city-prop-railing.svg",
           "order": 80,
           "position": { "x": 0.5, "y": 0.95 },
           "opacity": 1,
@@ -84,7 +84,7 @@
         },
         {
           "id": "prop-wires",
-          "asset": "source/world/environments/moon-city-prop-wires.svg",
+          "asset": "environments/moon-city-prop-wires.svg",
           "order": 85,
           "position": { "x": 0.5, "y": 0.12 },
           "opacity": 0.92,
@@ -118,7 +118,7 @@
       "direction": "forward",
       "pivot": { "x": 0.5, "y": 0.28 },
       "frames": [
-        { "asset": "source/artwork/moon-city-clouds-loop-b.svg", "durationMs": 24000 }
+        { "asset": "environments/moon-city-clouds-far.svg", "durationMs": 24000 }
       ]
     },
     {
@@ -127,7 +127,7 @@
       "direction": "forward",
       "pivot": { "x": 0.5, "y": 0.34 },
       "frames": [
-        { "asset": "source/artwork/moon-city-clouds-loop-a.svg", "durationMs": 14000 }
+        { "asset": "environments/moon-city-clouds-near.svg", "durationMs": 14000 }
       ]
     },
     {

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Silver crescent moon disc for Moon City with a soft halo">
+  <title>Moon City moon disc layer</title>
+  <defs>
+    <radialGradient id="mw-environments-moon-city-moon-halo">
+      <stop offset="0.52" stop-color="#f3efe4" stop-opacity="0"/>
+      <stop offset="0.72" stop-color="#d7e4ee" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#d7e4ee" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mw-environments-moon-city-moon-surface" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8df"/>
+      <stop offset="0.58" stop-color="#dce7ee"/>
+      <stop offset="1" stop-color="#aabbd0"/>
+    </linearGradient>
+    <mask id="mw-environments-moon-city-moon-crescent">
+      <rect width="1024" height="1024" fill="black"/>
+      <circle cx="512" cy="512" r="326" fill="white"/>
+      <circle cx="618" cy="430" r="310" fill="black"/>
+    </mask>
+  </defs>
+  <circle cx="512" cy="512" r="500" fill="url(#mw-environments-moon-city-moon-halo)"/>
+  <g mask="url(#mw-environments-moon-city-moon-crescent)">
+    <circle cx="512" cy="512" r="326" fill="url(#mw-environments-moon-city-moon-surface)"/>
+    <g fill="#9fadc1" opacity="0.28">
+      <ellipse cx="400" cy="616" rx="44" ry="26"/>
+      <ellipse cx="478" cy="698" rx="27" ry="18"/>
+      <ellipse cx="338" cy="536" rx="20" ry="13"/>
+      <ellipse cx="432" cy="508" rx="17" ry="11"/>
+    </g>
+  </g>
+  <path d="M256 636C358 782 545 844 704 744" fill="none" stroke="#f3efe4" stroke-width="8" stroke-linecap="round" opacity="0.34"/>
+</svg>
