@@ -73,3 +73,9 @@ Structured post-mortem rules persisted by autonomous and operator loops so resol
 - **Symptom**: apps/ui-catalog webfont fallback CLS test fails on Linux CI with 0.13-0.41 layout shift on section.catalog-section
 - **Root Cause**: Inline Command without an unmatched defaultValue auto-selects item 0 and calls scrollIntoView on mount, scrolling window ~16000px down to #overlays so webfont reflow above shifts the visible section
 - **Invariant**: Pass defaultValue='**none**' on inline showcase Command widgets outside dialogs so initial page load stays at scrollY=0 without layout-shift amplification
+
+## INV-013: Workspace Package Build Scripts Run in Package Directory
+
+- **Symptom**: CI quality-and-build, unit-tests, and postgres-integration fail in pnpm -r build with lstat apps: no such file or directory on apps/control-plane
+- **Root Cause**: apps/control-plane/package.json build script invoked docker build -f apps/control-plane/Dockerfile . assuming repo root cwd, while pnpm recursive build executes inside the package directory
+- **Invariant**: Workspace package build scripts must execute natively inside their own package directory (e.g., go build -o dist/control-plane .) without assuming repo-root cwd, and docker builds belong in package-relative docker:build scripts followed by pnpm docs:generate

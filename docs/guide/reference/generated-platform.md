@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `f11fc9d3437dcefeb5a9e286e0192c62d9e1e3b4534ec6c721de10bc11edb7a4`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `084cdb95bf07373453d4434175de76fc2ab948f896013cfdebef686b8f29b9e4`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -8,7 +8,7 @@ Source fingerprint: `f11fc9d3437dcefeb5a9e286e0192c62d9e1e3b4534ec6c721de10bc11e
 | ------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@moonwitness/api`              | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
 | `@moonwitness/board`            | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
-| `@moonwitness/control-plane`    | App     | 0.1.0      | `build`, `dev`, `fmt`                                                                                                                                                                                                                                                              |
+| `@moonwitness/control-plane`    | App     | 0.1.0      | `build`, `dev`, `docker:build`, `fmt`                                                                                                                                                                                                                                              |
 | `@moonwitness/desktop`          | App     | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/docs`             | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
 | `@moonwitness/isp`              | App     | 0.1.0      | `build`, `clippy`, `dev`, `fmt`, `migrate`, `start`, `test`                                                                                                                                                                                                                        |
