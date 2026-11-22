@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { sweepAndConsolidate } from './sweep-and-consolidate.mjs';
+import { validateTaskRegistryData } from './validate-tasks.mjs';
 import fs from 'node:fs/promises';
 import { createRequire } from 'node:module';
 
@@ -18,6 +19,14 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.equal(result.format, 'moonwitness-tasks/v2');
   assert.ok(Array.isArray(result.projects));
   assert.ok(Array.isArray(result.tasks));
+
+  const candidateValidation = await validateTaskRegistryData(result);
+  assert.equal(
+    candidateValidation.valid,
+    true,
+    candidateValidation.errors.join('\\n')
+  );
+  assert.equal(candidateValidation.taskCount, 627);
 
   // Source inventory: 239 roadmap + 14 audit + 112 WhatsApp + 7 legacy MW
   // + 14 promotion lifecycle + 128 desktop + 4 evolution + 109 Visual Universe records.
