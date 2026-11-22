@@ -1,3 +1,12 @@
+## Progress reconciliation — 2026-11-23
+
+- **S0:** Fast-forward sync from main to dev completed earlier. Current development is now 19 commits ahead of main and has an open promotion PR #37; keep it unmerged until approval and exact-source CI finish.
+- **S2:** M13.01 and M13.02–M13.08 issues were reconciled and closed after exact-source CI success and promotion. Missing issues M13.02 and M13.03 were created (#38 and #39). New dev milestones M13.09–M13.12 now have open issues #40–#43; work is recorded complete, delivery remains planned until candidate CI/promotion is verified.
+- **S3:** README, support policy, Desktop TODO, Desktop architecture and Node support review ledger now consistently reflect configured Node.js 24 (root engines, Docker, CI and Desktop package). Runtime support review for other toolchain components is still overdue.
+- **S4:** Promotion PR #37 is open and requires approval. Latest known exact-source CI run [45055213276](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45055213276) was running on candidate `b2951b4`; verify the latest run after this docs commit because each push refreshes the promotion candidate.
+- **S5:** Current dev evidence covers M13.01–M13.12. M13.09–M13.12 narrow checks are recorded as passed, but full PostgreSQL and Playwright E2E were not run in the milestone evidence. Visual DNA core is implemented; external-repository profile intake/export remains a follow-up gap.
+- **S1:** TaskOS recovery remains blocked: `docs/tasks/tasks.json` is still zero-byte. No task records were fabricated.
+
 ## Current branch update — 2026-11-23
 
 - `main`: `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
