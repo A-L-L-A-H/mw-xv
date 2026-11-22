@@ -705,7 +705,7 @@ Object storage harus transparan bagi pengguna selama alur tetap melewati API. Im
 
 ## P. Board WhatsApp
 
-> Checklist feature dan kesiapan GoWA tetap menjadi [`todo-wa.md`](./todo-wa.md). Item di sini hanya mencatat pekerjaan presentasi dan interaksi Board; tiap item menggunakan ID `WUI-*` sebagai rujukan silang dari backlog WhatsApp. Ikuti UI Bible, import kontrol dan ikon melalui public subpath `@moonwitness/ui`, dan jangan menambah primitive shared sebelum pola yang sama benar-benar diperlukan di beberapa surface.
+> Checklist feature dan kesiapan GoWA tetap menjadi [`todo-wa.md`](todo-wa.md). Item di sini hanya mencatat pekerjaan presentasi dan interaksi Board; tiap item menggunakan ID `WUI-*` sebagai rujukan silang dari backlog WhatsApp. Ikuti UI Bible, import kontrol dan ikon melalui public subpath `@moonwitness/ui`, dan jangan menambah primitive shared sebelum pola yang sama benar-benar diperlukan di beberapa surface.
 
 > **Prioritas selaras dengan goal WhatsApp aktif:** WUI-02–06 adalah alur utama akun, inbox, percakapan, composer, dan media; WUI-07/08 menutup audit aksesibilitas/regresi yang diperlukan untuk v1. **⏭ NEXT — tunda di luar goal ini:** WUI-10 (audit batas package khusus WhatsApp), WUI-15 (penyempurnaan toolbar lintas Board), WUI-18 (administrasi grup lanjutan), dan WUI-19 (pengaturan grup). Pekerjaan ini tetap terbuka dan tidak menghalangi inbox v1; lihat prioritas P2/P4 pada `todo-wa.md`.
 

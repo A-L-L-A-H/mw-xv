@@ -5,7 +5,10 @@ import { jobsManifest } from '@moonwitness/jobs';
 import { manifest as notificationManifest } from '@moonwitness/orm-notification';
 import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
 import { manifest as requestManifest, PurchaseRequest } from '@moonwitness/orm-request';
+import { manifest as organizationManifest } from '@moonwitness/orm-organization';
+import { manifest as storageManifest } from '@moonwitness/orm-storage';
 import { manifest as knowledgeManifest } from '@moonwitness/orm-knowledge';
+import { manifest as aiManifest } from '@moonwitness/orm-ai';
 import { installAddons } from '@moonwitness/orm';
 import { config } from '../config/env.js';
 import { validateJwtSecret } from '../plugins/auth.plugin.js';
@@ -40,6 +43,9 @@ const tableNames = [
   'knowledge_research_active_releases',
   'knowledge_research_review_events',
   'knowledge_research_actor_identities',
+  'ai_agents',
+  'ai_work_contracts',
+  'ai_obligations',
 ] as const;
 const fixture = {
   businessName: 'Restore Drill Business',
@@ -69,6 +75,9 @@ interface RestoreExpectations {
     researchReviewEvent: number;
     requesterIdentity: number;
     reviewerIdentity: number;
+    aiAgent: number;
+    aiWorkContract: number;
+    aiObligation: number;
   };
 }
 
@@ -93,10 +102,17 @@ async function countTables(db: Knex): Promise<RestoreExpectations['counts']> {
 }
 
 function bindFixtureModels(db: Knex): void {
-  for (const addon of [baseManifest, authManifest, jobsManifest, notificationManifest]) {
+  for (const addon of [
+    baseManifest,
+    authManifest,
+    organizationManifest,
+    storageManifest,
+    jobsManifest,
+    notificationManifest,
+  ]) {
     for (const model of addon.models) model.knex(db);
   }
-  for (const addon of [workflowManifest, requestManifest, knowledgeManifest]) {
+  for (const addon of [workflowManifest, requestManifest, knowledgeManifest, aiManifest]) {
     for (const model of addon.models) model.knex(db);
   }
 }
@@ -148,6 +164,15 @@ async function recordExpectations(db: Knex): Promise<RestoreExpectations> {
       reviewerIdentity: Number(
         (await db('knowledge_research_actor_identities').orderBy('id', 'desc').first('id'))?.id
       ),
+      aiAgent: Number(
+        (await db('ai_agents').where({ code: 'example_researcher' }).first('id'))?.id
+      ),
+      aiWorkContract: Number(
+        (await db('ai_work_contracts').where({ code: 'restore_drill_contract' }).first('id'))?.id
+      ),
+      aiObligation: Number(
+        (await db('ai_obligations').where({ code: 'restore_drill_obligation' }).first('id'))?.id
+      ),
     },
   };
 }
@@ -156,11 +181,14 @@ async function seed(db: Knex, expectationsPath: string): Promise<void> {
   await installAddons(db, [
     baseManifest,
     authManifest,
+    organizationManifest,
+    storageManifest,
     jobsManifest,
     notificationManifest,
     workflowManifest,
     requestManifest,
     knowledgeManifest,
+    aiManifest,
   ]);
   await initializeSuperadminPassword('synthetic-restore-drill-admin-password');
 
@@ -309,6 +337,40 @@ async function seed(db: Knex, expectationsPath: string): Promise<void> {
   });
   assert(workflowEvent.length > 0, 'Synthetic linked workflow event did not persist');
 
+  const aiAgentId = await recordId(db, 'ai.agent_example_researcher', 'ai.agent');
+  const aiPolicyId = await recordId(db, 'ai.policy_r0_readonly', 'ai.execution_policy');
+  const aiWorkContract = await db('ai_work_contracts')
+    .insert({
+      company_id: companyId,
+      code: 'restore_drill_contract',
+      title: 'Synthetic restore drill AI work contract',
+      objective: 'Verify orm-ai persistence and relational integrity across restore',
+      scope_json: '{"paths":["packages/orm-ai"]}',
+      constraints_json: '{"readOnly":true}',
+      non_goals_json: '[]',
+      expected_deliverables_json: '["report"]',
+      assigned_agent_id: aiAgentId,
+      execution_policy_id: aiPolicyId,
+      requested_by_id: reviewerId,
+      risk_tier: 'R0',
+      data_classification: 'local_only',
+      status: 'draft',
+    })
+    .returning('id');
+  const aiWorkContractId = Number(aiWorkContract[0]?.id);
+  await db('ai_obligations').insert({
+    company_id: companyId,
+    code: 'restore_drill_obligation',
+    origin_contract_id: aiWorkContractId,
+    owner_agent_id: aiAgentId,
+    owner_user_id: reviewerId,
+    scope_json: '{"paths":["packages/orm-ai"]}',
+    trigger_kind: 'manual',
+    impact_links_json: '[]',
+    required_evidence: 'restore_drill_report',
+    status: 'open',
+  });
+
   const expected = await recordExpectations(db);
   assert(expected.ids.child === child.id, 'Synthetic child identity changed');
   assert(expected.ids.address === address.id, 'Synthetic address identity changed');
@@ -407,6 +469,23 @@ async function verify(db: Knex, expectationsPath: string): Promise<void> {
     'Synthetic user company membership was not restored'
   );
 
+  assert(
+    await db('ai_work_contracts')
+      .where({ id: expected.ids.aiWorkContract, assigned_agent_id: expected.ids.aiAgent })
+      .first(),
+    'Synthetic orm-ai work contract was not restored with its agent link'
+  );
+  assert(
+    await db('ai_obligations')
+      .where({
+        id: expected.ids.aiObligation,
+        origin_contract_id: expected.ids.aiWorkContract,
+        owner_agent_id: expected.ids.aiAgent,
+      })
+      .first(),
+    'Synthetic orm-ai obligation was not restored with its contract link'
+  );
+
   const session = await createFixtureAuthService().login(
     fixture.login,
     requiredEnvironment('RESTORE_DRILL_PASSWORD')
@@ -426,6 +505,7 @@ async function verify(db: Knex, expectationsPath: string): Promise<void> {
         'active-research-release-record',
         'actor-mappings',
         'research-review-workflow-event',
+        'orm-ai-contract-obligation',
       ],
       syntheticLogin: 'passed',
     })}\n`

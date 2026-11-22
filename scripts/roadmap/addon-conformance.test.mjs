@@ -16,6 +16,7 @@ import * as request from '../../packages/orm-request/dist/index.js';
 import * as integration from '../../packages/orm-integration/dist/index.js';
 import * as whatsapp from '../../packages/orm-whatsapp/dist/index.js';
 import * as witness from '../../packages/orm-knowledge/dist/index.js';
+import * as ai from '../../packages/orm-ai/dist/index.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const requireFromApi = createRequire(path.join(root, 'apps/api/package.json'));
@@ -33,6 +34,7 @@ const addonPackages = [
   { directory: 'orm-integration', module: integration, manifest: integration.manifest },
   { directory: 'orm-whatsapp', module: whatsapp, manifest: whatsapp.manifest },
   { directory: 'orm-knowledge', module: witness, manifest: witness.manifest },
+  { directory: 'orm-ai', module: ai, manifest: ai.manifest },
 ];
 const addonManifests = addonPackages.map(({ manifest }) => manifest);
 const modelName = (model) => model.modelName;
@@ -173,6 +175,7 @@ describe('workspace addon conformance', () => {
       { id: 'request.example_laptop', field: 'description' },
       { id: 'orm-integration.endpoint_example_disabled', field: 'name' },
       { id: 'orm-whatsapp.access_user_read_whatsapp_account', field: 'model_name' },
+      { id: 'ai.group_operator', field: 'name' },
     ];
     const immutableSeeds = [
       {
@@ -306,7 +309,7 @@ describe('workspace addon conformance', () => {
     }
   });
 
-  it('installs all 11 addons deterministically when supplied in reverse dependency order', async () => {
+  it('installs all 12 addons deterministically when supplied in reverse dependency order', async () => {
     const db = knex({
       client: 'better-sqlite3',
       connection: { filename: ':memory:' },

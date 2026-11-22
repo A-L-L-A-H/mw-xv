@@ -8,12 +8,12 @@
 > - **ORM Addon-First & Dual-Dialect Parity:** Local SQLite sidecar (`~/.moonwitness/local.db`) runs the exact same workspace addon manifests (`orm-base`, `orm-organization`, `jobs`, `orm-notification`, `orm-workflow`, `orm-storage`, `orm-knowledge`, `orm-ai`) as central `apps/api` PostgreSQL.
 > - **Proof-Carrying Work (PCW):** Local execution never equates to `accepted` completion; evidence blobs (`~/.moonwitness/storage/`), `ai.artifact_manifest` (`ai.evidence_artifact` SHA-256 digests), `ai.agent_run`, and `base.outbox_event` sync via `PcwSyncEnvelope` to central `apps/api` for independent verification.
 >   **Governing documents:**
-> - [ADR 0008: Local-First Desktop Agent Harness](docs/architecture/adr/0008-local-first-desktop-agent-harness.md)
-> - [Desktop Local-First Harness Architecture](docs/architecture/desktop-local-first-harness.md)
-> - [Blueprint: AI Corporation Desktop Harness](moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
-> - [ADR 0006: Mandatory Addon-First & Thin `apps/api`](docs/decisions/0006-mandatory-addon-thin-api.md)
-> - [ADR 0007: AI Corporation Addon-First Architecture](docs/decisions/0007-ai-corporation-addon-first-architecture.md)
-> - [Master Monorepo Transformation TODO](todo.md) · [AI Corporation TODO](moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md)
+> - [ADR 0008: Local-First Desktop Agent Harness](../../../docs/architecture/adr/0008-local-first-desktop-agent-harness.md)
+> - [Desktop Local-First Harness Architecture](../../../docs/architecture/desktop-local-first-harness.md)
+> - [Blueprint: AI Corporation Desktop Harness](../../../moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
+> - [ADR 0006: Mandatory Addon-First & Thin `apps/api`](../../../docs/decisions/0006-mandatory-addon-thin-api.md)
+> - [ADR 0007: AI Corporation Addon-First Architecture](../../../docs/decisions/0007-ai-corporation-addon-first-architecture.md)
+> - [Master Monorepo Transformation TODO](todo.md) · [AI Corporation TODO](../../../moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md)
 
 ---
 
@@ -46,18 +46,18 @@
 
 **Goal:** Lock the zero-overlap architecture between `apps/board`, `apps/api`, and `apps/desktop` against verified repository code before merging `apps/desktop`.
 
-- [x] **DSK-0.1** Audit existing dual-dialect ORM installation (`better-sqlite3` and `pg`), composite indexes, `_orm_addons`, and `_orm_data` behavior in [`packages/orm/src/addon.ts`](packages/orm/src/addon.ts) and [`packages/orm/tests/orm-hardening.test.ts`](packages/orm/tests/orm-hardening.test.ts).
-- [x] **DSK-0.2** Audit existing append-only SQLite/PostgreSQL triggers in [`packages/orm-workflow/src/manifest.ts`](packages/orm-workflow/src/manifest.ts) and [`packages/orm-knowledge/src/manifest.ts`](packages/orm-knowledge/src/manifest.ts) plus `supportsSkipLocked` SQLite fallback in [`packages/jobs/src/runtime.ts`](packages/jobs/src/runtime.ts).
-- [x] **DSK-0.3** Audit `apps/board` standalone configuration (`output: 'standalone'`), security headers, proxy rewrites in [`apps/board/next.config.ts`](apps/board/next.config.ts), shared UI gate [`scripts/check-board-shared-ui.mjs`](scripts/check-board-shared-ui.mjs), and shell layout [`apps/board/src/components/layout/app-shell.tsx`](apps/board/src/components/layout/app-shell.tsx).
-- [x] **DSK-0.4** Audit `apps/api` thin adapter registry [`apps/api/src/addons/registry.ts`](apps/api/src/addons/registry.ts), generic API `INTERNAL_PREFIXES` policy [`apps/api/src/auth/policy.ts`](apps/api/src/auth/policy.ts), and `pnpm api:addon:check` ([`scripts/check-api-addon-boundary.mjs`](scripts/check-api-addon-boundary.mjs)).
-- [x] **DSK-0.5** Audit `@moonwitness/orm-ai` schema & validation foundations (`ai.agent`, `ai.provider_profile`, `ai.model_profile`, `ai.execution_policy`, `ai.capability_grant`, `ai.work_contract`, `ai.acceptance_criterion`, `ai.agent_run`, `ai.artifact_manifest`, `ai.obligation`, `isActiveCapabilityGrant`, `isAllowedClassificationRoute`) in [`packages/orm-ai/src/manifest.ts`](packages/orm-ai/src/manifest.ts) and [`packages/orm-ai/src/validation.ts`](packages/orm-ai/src/validation.ts).
-- [x] **DSK-0.6** Audit `@moonwitness/ai-runtime` provider/redaction/secret primitives and verify isolation of K7 loopback-only `@moonwitness/local-ai` in [`packages/ai-runtime/src/types.ts`](packages/ai-runtime/src/types.ts), [`packages/ai-runtime/src/providers/ollama-adapter.ts`](packages/ai-runtime/src/providers/ollama-adapter.ts), [`packages/ai-runtime/src/redaction.ts`](packages/ai-runtime/src/redaction.ts), [`packages/ai-runtime/src/secrets.ts`](packages/ai-runtime/src/secrets.ts), and [`packages/local-ai/src/index.ts`](packages/local-ai/src/index.ts).
-- [x] **DSK-0.7** Authoritative Desktop Architecture Decision Record created at [`docs/architecture/adr/0008-local-first-desktop-agent-harness.md`](docs/architecture/adr/0008-local-first-desktop-agent-harness.md).
-- [x] **DSK-0.8** Detailed Desktop Local-First Architecture, Mermaid diagrams, sync protocol, and STRIDE threat model created at [`docs/architecture/desktop-local-first-harness.md`](docs/architecture/desktop-local-first-harness.md).
-- [x] **DSK-0.9** AI Corporation Blueprint extension created at [`moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md`](moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md).
-- [x] **DSK-0.10** Granular `DSK-0`–`DSK-10` checklist created at [`todo-desktop.md`](todo-desktop.md) and verified with [`scripts/check-docs.mjs`](scripts/check-docs.mjs) (zero broken Markdown links).
-- [x] **DSK-0.11** Reconcile ADR numbering in `docs/decisions/` between Desktop Harness ADR (`0008`) and `M12.06` A2A ADR slot referenced in [`docs/roadmap/13-ai-corporation.md`](docs/roadmap/13-ai-corporation.md) before opening desktop code PRs.
-- [ ] **DSK-0.12** Register desktop engineering track tasks in `docs/roadmap/tasks.json` and `ROADMAP.md` (only when maintainer activates desktop implementation batch under [`docs/decisions/0001-platform-contracts.md`](docs/decisions/0001-platform-contracts.md)).
+- [x] **DSK-0.1** Audit existing dual-dialect ORM installation (`better-sqlite3` and `pg`), composite indexes, `_orm_addons`, and `_orm_data` behavior in [`packages/orm/src/addon.ts`](../../../packages/orm/src/addon.ts) and [`packages/orm/tests/orm-hardening.test.ts`](../../../packages/orm/tests/orm-hardening.test.ts).
+- [x] **DSK-0.2** Audit existing append-only SQLite/PostgreSQL triggers in [`packages/orm-workflow/src/manifest.ts`](../../../packages/orm-workflow/src/manifest.ts) and [`packages/orm-knowledge/src/manifest.ts`](../../../packages/orm-knowledge/src/manifest.ts) plus `supportsSkipLocked` SQLite fallback in [`packages/jobs/src/runtime.ts`](../../../packages/jobs/src/runtime.ts).
+- [x] **DSK-0.3** Audit `apps/board` standalone configuration (`output: 'standalone'`), security headers, proxy rewrites in [`apps/board/next.config.ts`](../../../apps/board/next.config.ts), shared UI gate [`scripts/check-board-shared-ui.mjs`](../../../scripts/check-board-shared-ui.mjs), and shell layout [`apps/board/src/components/layout/app-shell.tsx`](../../../apps/board/src/components/layout/app-shell.tsx).
+- [x] **DSK-0.4** Audit `apps/api` thin adapter registry [`apps/api/src/addons/registry.ts`](../../../apps/api/src/addons/registry.ts), generic API `INTERNAL_PREFIXES` policy [`apps/api/src/auth/policy.ts`](../../../apps/api/src/auth/policy.ts), and `pnpm api:addon:check` ([`scripts/check-api-addon-boundary.mjs`](../../../scripts/check-api-addon-boundary.mjs)).
+- [x] **DSK-0.5** Audit `@moonwitness/orm-ai` schema & validation foundations (`ai.agent`, `ai.provider_profile`, `ai.model_profile`, `ai.execution_policy`, `ai.capability_grant`, `ai.work_contract`, `ai.acceptance_criterion`, `ai.agent_run`, `ai.artifact_manifest`, `ai.obligation`, `isActiveCapabilityGrant`, `isAllowedClassificationRoute`) in [`packages/orm-ai/src/manifest.ts`](../../../packages/orm-ai/src/manifest.ts) and [`packages/orm-ai/src/validation.ts`](../../../packages/orm-ai/src/validation.ts).
+- [x] **DSK-0.6** Audit `@moonwitness/ai-runtime` provider/redaction/secret primitives and verify isolation of K7 loopback-only `@moonwitness/local-ai` in [`packages/ai-runtime/src/types.ts`](../../../packages/ai-runtime/src/types.ts), [`packages/ai-runtime/src/providers/ollama-adapter.ts`](../../../packages/ai-runtime/src/providers/ollama-adapter.ts), [`packages/ai-runtime/src/redaction.ts`](../../../packages/ai-runtime/src/redaction.ts), [`packages/ai-runtime/src/secrets.ts`](../../../packages/ai-runtime/src/secrets.ts), and [`packages/local-ai/src/index.ts`](../../../packages/local-ai/src/index.ts).
+- [x] **DSK-0.7** Authoritative Desktop Architecture Decision Record created at [`docs/architecture/adr/0008-local-first-desktop-agent-harness.md`](../../../docs/architecture/adr/0008-local-first-desktop-agent-harness.md).
+- [x] **DSK-0.8** Detailed Desktop Local-First Architecture, Mermaid diagrams, sync protocol, and STRIDE threat model created at [`docs/architecture/desktop-local-first-harness.md`](../../../docs/architecture/desktop-local-first-harness.md).
+- [x] **DSK-0.9** AI Corporation Blueprint extension created at [`moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md`](../../../moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md).
+- [x] **DSK-0.10** Granular `DSK-0`–`DSK-10` checklist created at [`todo-desktop.md`](todo-desktop.md) and verified with [`scripts/check-docs.mjs`](../../../scripts/check-docs.mjs) (zero broken Markdown links).
+- [x] **DSK-0.11** Reconcile ADR numbering in `docs/decisions/` between Desktop Harness ADR (`0008`) and `M12.06` A2A ADR slot referenced in [`docs/roadmap/13-ai-corporation.md`](../../../docs/roadmap/13-ai-corporation.md) before opening desktop code PRs.
+- [ ] **DSK-0.12** Register desktop engineering track tasks in `docs/roadmap/tasks.json` and `ROADMAP.md` (only when maintainer activates desktop implementation batch under [`docs/decisions/0001-platform-contracts.md`](../../../docs/decisions/0001-platform-contracts.md)).
 
 ---
 
@@ -157,7 +157,7 @@
 **Goal:** Execute verification commands and scoped build/test tools inside a bounded runner gated at execution time by `DesktopRiskGate` (`R0–R4`) and active `ai.capability_grant` records.
 
 - [x] **DSK-6.1** Implement bounded command/PTY runner (`apps/desktop/src/worktree-sandbox.ts` / `pty.execute`) supporting Windows (direct `execFile` / PowerShell 5.1 safe spawning without `&&` assumptions) and macOS/Linux (`node-pty` / POSIX process groups).
-- [x] **DSK-6.2** **INVARIANT:** Evaluate `DesktopRiskGate.assertAllowed(...)` (`apps/desktop/src/risk-gate.ts`) and [`isActiveCapabilityGrant`](packages/orm-ai/src/validation.ts#L200-L226) (`companyId`, `agentId`, `workContractId`, `expectedPolicyVersion`, `expiresAt`, `revokedAt`, `maxCallsPerRun`) at **execution time** for every command.
+- [x] **DSK-6.2** **INVARIANT:** Evaluate `DesktopRiskGate.assertAllowed(...)` (`apps/desktop/src/risk-gate.ts`) and [`isActiveCapabilityGrant`](../../../packages/orm-ai/src/validation.ts#L200-L226) (`companyId`, `agentId`, `workContractId`, `expectedPolicyVersion`, `expiresAt`, `revokedAt`, `maxCallsPerRun`) at **execution time** for every command.
 - [x] **DSK-6.3** Enforce deterministic `DesktopRiskGate` (`R0–R4`) action classification (`BASE_ACTION_TIER` + dynamic path/command/URL escalation):
   - `R0`: `repo.read`, `repo.search`, `git.status`, `git.diff`, `sidecar.read`, `mcp.read` (PTY denied).
   - `R1`: `worktree.create`, `worktree.write`, `worktree.test`, `pty.exec_local`, `mcp.local_write` (scoped inside `.mw-worktrees/run-<id>`).
@@ -167,7 +167,7 @@
 - [x] **DSK-6.4** Pin `cwd` strictly inside verified `realpath` of `.mw-worktrees/run-<id>` via `cwdRelative`; reject external or traversal `cwd` inputs.
 - [x] **DSK-6.5** Construct scrubbed child environment allowlist (`PATH`, `HOME`/`USERPROFILE`, `TEMP`/`TMP`, `LANG`, `NODE_ENV`), stripping all `MW_AI_*`, `JWT_SECRET`, `METRICS_TOKEN`, `WHATSAPP_*`, and cloud credentials (and rejecting forbidden `envOverrides`).
 - [x] **DSK-6.6** Enforce hard `timeoutMs` wall-clock deadline and `AbortSignal` cancellation with cross-platform full process-tree termination (`taskkill /PID <pid> /T /F` on Windows, `process.kill(-pid, 'SIGKILL')` on POSIX).
-- [x] **DSK-6.7** Enforce bounded `maxOutputBytes` stdout/stderr truncation (`truncated: true`) with real-time `redactSensitiveText` / [`createRedactor()`](packages/ai-runtime/src/redaction.ts#L207-L244) scrubbing and compute `stdoutSha256` & `stderrSha256`.
+- [x] **DSK-6.7** Enforce bounded `maxOutputBytes` stdout/stderr truncation (`truncated: true`) with real-time `redactSensitiveText` / [`createRedactor()`](../../../packages/ai-runtime/src/redaction.ts#L207-L244) scrubbing and compute `stdoutSha256` & `stderrSha256`.
 - [x] **DSK-6.8** Record every PTY evaluation and execution (`RiskAuditRecord` + `BoundedPtyCommandResult` digests) into `~/.moonwitness/local.db` + `base.audit_log`.
 - [x] **DSK-6.9** Enforce `maxCallsPerRun` quota tracking (`RUN_QUOTA_EXCEEDED`) and concurrent process cap per run to prevent fork bombs or quota exhaustion.
 - [x] **DSK-6.10** Build Bounded PTY Console drawer in `apps/board` (using `@moonwitness/ui` scroll/badge/button primitives + `Stop` emergency kill button).
@@ -187,7 +187,7 @@
 - [x] **DSK-7.5** Implement bounded UTF-8 reader (`worktree.readFile`) returning `WorktreeFileContent` with `sha256`, `sizeBytes`, line-range slicing, and binary/NUL-byte guard.
 - [x] **DSK-7.6** Implement allowlisted directory tree lister respecting `.gitignore` / `.mw-worktrees` filters and deterministic entry caps to prevent context flooding.
 - [x] **DSK-7.7** Implement `worktree.writeFile(runId, relativePath, content, auth)` requiring `DesktopActionAuthContext`, `PathAllowlist` + `grant.allowedPaths` validation, and atomic temp-file write inside `.mw-worktrees/run-<id>` only.
-- [x] **DSK-7.8** Apply `redactSensitiveText` / [`createRedactor()`](packages/ai-runtime/src/redaction.ts#L207-L244) safety scan on inspected content before returning across IPC or logging.
+- [x] **DSK-7.8** Apply `redactSensitiveText` / [`createRedactor()`](../../../packages/ai-runtime/src/redaction.ts#L207-L244) safety scan on inspected content before returning across IPC or logging.
 - [x] **DSK-7.9** Build Path-Allowlisted File & Diff Inspector panel in `apps/board` (accessible keyboard navigation, line-range citations linking to `PcwArtifactDigest`).
 - [x] **DSK-7.10** Write comprehensive traversal & symlink/junction escape tests (`../`, symlink to `/etc/passwd` or `C:\Windows\System32`, Windows NTFS junction escape, `.env` read denial, binary file rejection).
 
@@ -216,7 +216,7 @@
 
 - [x] **DSK-9.1** Verify `@moonwitness/ai-runtime` defines `AiProvider`, `ModelProfileConfig`, `AgentHarness`, `ProviderError`, and `DataClassification` (`local_only`, `cloud_eligible`, `restricted`) (`packages/ai-runtime/src/types.ts`).
 - [x] **DSK-9.2** Verify `OllamaAdapter` implements `/api/tags` health check, `/api/chat` & `/api/generate`, loopback URL validation (`localhost`, `127.0.0.1`, `::1`), `redirect: 'error'`, and streaming/non-streaming bounds (`packages/ai-runtime/src/providers/ollama-adapter.ts`).
-- [x] **DSK-9.3** Verify [`isAllowedClassificationRoute`](packages/orm-ai/src/validation.ts#L154-L177) blocks cloud routing for `local_only` and `restricted` classifications and verify `@moonwitness/local-ai` remains tool-free (`AI_MODE=disabled` default).
+- [x] **DSK-9.3** Verify [`isAllowedClassificationRoute`](../../../packages/orm-ai/src/validation.ts#L154-L177) blocks cloud routing for `local_only` and `restricted` classifications and verify `@moonwitness/local-ai` remains tool-free (`AI_MODE=disabled` default).
 - [x] **DSK-9.4** Add OpenAI-compatible local loopback adapter support in `@moonwitness/ai-runtime` (for local **DeepSeek**, **vLLM**, **llama.cpp** endpoints pinned strictly via `validateLoopbackEndpointUrl`, distinct from external HTTPS `openai` adapter).
 - [x] **DSK-9.5** Implement `DataClassificationRouter` (`packages/ai-runtime/src/router.ts`) enforcing fail-closed provider selection: zero silent fallback from `local_only` / `restricted` to cloud; SSRF DNS resolution check (`assertPublicDnsResolution`) on HTTPS cloud calls.
 - [x] **DSK-9.6** Implement `PlanExecuteVerifyHarness` (`AgentHarness.execute(...)`) in `@moonwitness/ai-runtime` wired to `apps/desktop`:

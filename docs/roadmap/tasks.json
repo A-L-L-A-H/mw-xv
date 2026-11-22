@@ -1424,7 +1424,9 @@
       "output": "packages/orm-ai, registrasi API_ADDONS, INTERNAL_PREFIXES 'ai.', dan addon conformance tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.03.md"
     },
     {
       "id": "M12.04",
@@ -1434,7 +1436,9 @@
       "output": "packages/ai-runtime provider contracts, Mock/Ollama/Cloud adapters, DataClassificationRouter, dan contract suite",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.04.md"
     },
     {
       "id": "M12.05",
@@ -1444,7 +1448,9 @@
       "output": "Bounded read-only agent harness, ai.agent_run.* job handlers, dan crash/fencing/cancellation tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.05.md"
     },
     {
       "id": "M12.06",
@@ -1454,7 +1460,9 @@
       "output": "Capability gateway, packages/ai-mcp (read-only + 1 scoped idempotent write tool), dan ADR 0008 A2A",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.06.md"
     },
     {
       "id": "M12.07",
@@ -1464,7 +1472,9 @@
       "output": "PCW verifier pipeline, independent reviewer workflow, dan ai.obligation continuity ledger",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.07.md"
     },
     {
       "id": "M12.08",
@@ -1474,7 +1484,9 @@
       "output": "Workforce planner/delegation controller, cycle/duplicate guards, dan parallel conflict control tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p1"
+      "priority": "p1",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.08.md"
     },
     {
       "id": "M12.09",
@@ -1484,7 +1496,9 @@
       "output": "Memory/skill candidate lifecycle terpisah dari K0–K9, ablation benchmarks, dan revocation tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p1"
+      "priority": "p1",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.09.md"
     },
     {
       "id": "M12.10",
@@ -1494,7 +1508,9 @@
       "output": "apps/board/src/app/board/ai/* pages dengan @moonwitness/ui, badge persisted/derived/ephemeral, dan isolation tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p1"
+      "priority": "p1",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.10.md"
     },
     {
       "id": "M12.11",
@@ -1504,7 +1520,9 @@
       "output": "R0–R4 policy engine, adversarial/injection tests, OTel GenAI telemetry, dan restore-drill-fixture coverage",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.11.md"
     },
     {
       "id": "M12.12",
@@ -1514,7 +1532,9 @@
       "output": "packages/ai-evaluation corpus, single vs multi-agent baselines, dan G0–G6 gate runners",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p1"
+      "priority": "p1",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.12.md"
     },
     {
       "id": "M12.13",
@@ -1524,7 +1544,9 @@
       "output": "docs/ai-corporation/*, runbooks, threat model, eval methodology, dan docs:check:built green",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p1"
+      "priority": "p1",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M12.13.md"
     },
     {
       "id": "M12.14",
@@ -1534,7 +1556,9 @@
       "output": "End-to-end vertical slice, G1–G14 gates, sinkronisasi ledger todo-ai-corporation.md, dan hosted CI green",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
       "labels": ["ai-corporation"],
-      "priority": "p0"
+      "priority": "p0",
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/M12.14.md"
     },
     {
       "id": "K0-001",

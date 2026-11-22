@@ -4,7 +4,7 @@ Dokumen ini adalah sumber utama rencana lintas milestone. Dibuat 2026-10-04 berd
 
 **Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 162 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
 
-**Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-11-22):** checklist dokumen ini berisi 93 kartu terbuka (60 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
+**Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-11-22):** checklist dokumen ini berisi 82 kartu terbuka (49 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
 
 Urutan nomor bukan urutan aktivasi mutlak: misalnya required checks M1.06 baru diaktifkan setelah ci-gate M2.05 tersedia. Kontrak automation, spesifikasi UI/asset, skenario test minimum, dan template bukti ada pada panduan detail.
 
@@ -227,18 +227,18 @@ Workstream arsitektur Addon-First untuk AI Corporation sesuai [ADR 0007](docs/de
 
 - [x] M12.01 Exact-SHA baseline audit dan source-backed reuse matrix (`BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`). Bukti: [M12.01](docs/roadmap/evidence/M12.01.md), [baseline audit](docs/architecture/ai-corporation-baseline-audit.md).
 - [x] M12.02 Official ADR `0007` dan rekonsiliasi roadmap/workstream (`AI1.1`–`AI1.34`). Bukti: [M12.02](docs/roadmap/evidence/M12.02.md), [ADR 0007](docs/decisions/0007-ai-corporation-addon-first-architecture.md).
-- [ ] M12.03 Addon-First domain foundation `@moonwitness/orm-ai` (`AI2.1`–`AI2.43`).
-- [ ] M12.04 Provider & model abstraction dengan data-classification routing (`AI3.1`–`AI3.28`).
-- [ ] M12.05 First durable, bounded read-only agent via `@moonwitness/jobs` (`AI4.1`–`AI4.37`).
-- [ ] M12.06 Capability/tool gateway, MCP server & A2A ADR (`AI5.1`–`AI5.33`).
-- [ ] M12.07 Proof-Carrying Work (PCW), independent verification & obligation continuity (`AI6.1`–`AI6.31`).
-- [ ] M12.08 AI Company workforce organization & bounded multi-agent orchestration (`AI7.1`–`AI7.32`).
-- [ ] M12.09 Episodic/semantic/procedural memory & controlled learning (`AI8.1`–`AI8.24`).
-- [ ] M12.10 Mission Control UI & operator experience di `apps/board` (`AI9.1`–`AI9.25`).
-- [ ] M12.11 Security risk tiers R0–R4, sandboxing, observability & restore drill (`AI10.1`–`AI10.38`).
-- [ ] M12.12 Evaluation lab, baselines & G0–G6 capability gates (`AI11.1`–`AI11.24`).
-- [ ] M12.13 Documentation, operator runbooks, threat model & doc gates (`DOC.1`–`DOC.16`).
-- [ ] M12.14 Vertical slice, release gates G1–G14, E2E Tiers 1–5 & CI verification (`SLICE.1`–`SLICE.15`, `GATE.1`–`GATE.14`, `PR.1`–`PR.14`).
+- [x] M12.03 Addon-First domain foundation `@moonwitness/orm-ai` (`AI2.1`–`AI2.43`). Bukti: [M12.03](docs/roadmap/evidence/M12.03.md).
+- [x] M12.04 Provider & model abstraction dengan data-classification routing (`AI3.1`–`AI3.28`). Bukti: [M12.04](docs/roadmap/evidence/M12.04.md).
+- [x] M12.05 First durable, bounded read-only agent via `@moonwitness/jobs` (`AI4.1`–`AI4.37`). Bukti: [M12.05](docs/roadmap/evidence/M12.05.md).
+- [x] M12.06 Capability/tool gateway, MCP server & A2A ADR (`AI5.1`–`AI5.33`). Bukti: [M12.06](docs/roadmap/evidence/M12.06.md).
+- [x] M12.07 Proof-Carrying Work (PCW), independent verification & obligation continuity (`AI6.1`–`AI6.31`). Bukti: [M12.07](docs/roadmap/evidence/M12.07.md).
+- [x] M12.08 AI Company workforce organization & bounded multi-agent orchestration (`AI7.1`–`AI7.32`). Bukti: [M12.08](docs/roadmap/evidence/M12.08.md).
+- [x] M12.09 Episodic/semantic/procedural memory & controlled learning (`AI8.1`–`AI8.24`). Bukti: [M12.09](docs/roadmap/evidence/M12.09.md).
+- [x] M12.10 Mission Control UI & operator experience di `apps/board` (`AI9.1`–`AI9.25`). Bukti: [M12.10](docs/roadmap/evidence/M12.10.md).
+- [x] M12.11 Security risk tiers R0–R4, sandboxing, observability & restore drill (`AI10.1`–`AI10.38`). Bukti: [M12.11](docs/roadmap/evidence/M12.11.md).
+- [x] M12.12 Evaluation lab, baselines & G0–G6 capability gates (`AI11.1`–`AI11.24`). Bukti: [M12.12](docs/roadmap/evidence/M12.12.md).
+- [x] M12.13 Documentation, operator runbooks, threat model & doc gates (`DOC.1`–`DOC.16`). Bukti: [M12.13](docs/roadmap/evidence/M12.13.md).
+- [ ] M12.14 Vertical slice, release gates G1–G14, E2E Tiers 1–5 & CI verification (`SLICE.1`–`SLICE.15`, `GATE.1`–`GATE.14`, `PR.1`–`PR.14`). `SLICE` dan `GATE` selesai lokal/CI `dev`; menunggu `PR.14` maintainer approval untuk promosi ke `main`: [M12.14](docs/roadmap/evidence/M12.14.md).
 
 ## K — Local AI knowledge rebuild (K0–K9)
 

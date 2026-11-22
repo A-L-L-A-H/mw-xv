@@ -404,12 +404,12 @@ export function evaluateCapabilityGate(
 
 export const evaluateGate = evaluateCapabilityGate;
 
-export async function validateEvaluationReport(report: {
+export function validateEvaluationReport(report: {
   readonly sourceSha?: string | null;
   readonly fixtureHash?: string | null;
   readonly droppedFailedRuns?: boolean;
   readonly runs?: readonly unknown[];
-}): Promise<true> {
+}): true {
   if (!report.sourceSha || typeof report.sourceSha !== 'string' || !report.sourceSha.trim()) {
     throw new Error('Invalid evaluation report: missing provenance sourceSha');
   }
