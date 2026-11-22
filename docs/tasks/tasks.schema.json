@@ -223,6 +223,10 @@
         "url": {
           "type": "string"
         },
+        "metadata": {
+          "type": "object",
+          "description": "Lossless source-specific fields retained for delegated work-package projections. Canonical lifecycle fields remain at the TaskOS task root."
+        },
         "comments": {
           "type": "array",
           "items": {
