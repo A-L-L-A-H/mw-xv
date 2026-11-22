@@ -1,55 +1,40 @@
-# MoonWitness Central Task Directory
+# MoonWitness TaskOS — Work Entry Point
 
-> **PENGUMUMAN PENTING — SUMBER KEBENARAN TUNGGAL:**
-> Seluruh pelacakan pekerjaan, TODO, backlog, dan tata kelola tugas proyek MoonWitness telah **disentralisasi secara kanonik** ke:
-> 
-> **`docs/tasks/tasks.json`** (TaskOS v2 Standard Contract)
-> 
-> Seluruh arsip histori TODO lama tersimpan aman di:
-> - `docs/archive/todos/todo.md` (arsip 850+ riwayat checklist)
-> - `docs/archive/todos/todo-wa.md` (arsip checklist WhatsApp)
-> - `docs/archive/todos/todo-desktop.md` (arsip checklist Desktop)
-> - `docs/archive/todos/todo-ui.md` (arsip 100% selesai checklist UI)
-> - `docs/archive/todos/todo-foundation.md` (arsip 100% selesai checklist fondasi)
+> **Recovery status: BLOCKED.** The canonical registry `docs/tasks/tasks.json` is tracked but currently zero-byte. Do not run TaskOS sync, start autonomous task execution, or treat old TODO snapshots as independent active backlogs.
 
----
+## Canonical source of truth
 
-## 1. Akses & Antarmuka TaskOS
+The intended single task lifecycle registry is:
 
-1. **Web UI & Local Kanban Server (`apps/todo` / `moonwitness-dx`):**
-   ```bash
-   # Jalankan papan Kanban dan Second Brain lokal
-   pnpm --filter moonwitness-dx dev
-   ```
+- `docs/tasks/tasks.json` — canonical task identity, project, status, priority, ownership, dependencies, acceptance criteria, validation and provenance.
 
-2. **Perintah Validasi & Sinkronisasi:**
-   ```bash
-   # Validasi kepatuhan skema dan pohon dependensi bebas siklus
-   pnpm tasks:validate
+Current recovery references:
 
-   # Sinkronisasi status dua arah dengan ROADMAP.md
-   pnpm tasks:sync
-   ```
+- `docs/tasks/README.md` — TaskOS usage and authority rules.
+- `docs/tasks/RECOVERY-INVENTORY.md` — verified source inventory, record counts and migration decisions.
+- `docs/roadmap/STABILIZATION-PLAN.md` — recovery gates and repository stabilization sequence.
+- `docs/roadmap/tasks.json` and `ROADMAP.md` — temporary M/K task index and checklist source while TaskOS remains unavailable.
 
-3. **Master Roadmap Verifikasi Rilis:**
-   - [ROADMAP.md](ROADMAP.md) tetap menjadi gerbang resmi penerimaan rilis master 227 kartu M-series dan K-series.
+## Recovery commands
 
----
+Run from a checked-out repository:
 
-## 2. Status Pekerjaan Terbuka Prioritas Tinggi (Snapshot Terkonsolidasi)
+```bash
+pnpm test:taskos
+pnpm tasks:sweep
+pnpm tasks:validate
+pnpm automation:check:roadmap
+```
 
-Semua item di bawah ini dikelola secara dinamis di `docs/tasks/tasks.json`:
+- `pnpm tasks:sweep` is a read-only source projection preview and must pass full schema, provenance, graph and roadmap parity validation.
+- `pnpm tasks:validate` must pass after the registry is restored.
+- `pnpm tasks:sync` is fail-closed and must not run while the registry is empty or invalid.
+- `pnpm tasks:sweep -- --write` is a one-time recovery write only. Use it only after the dry-run, tests and exact-SHA CI pass and the source inventory has been reviewed. It refuses to overwrite a non-empty registry.
 
-- `AUD-001` [P0]: Wire `@moonwitness/ai-runtime` to production job handlers in `ai-corporation.routes.ts`.
-- `AUD-002` [P0]: Integrate all AI and Desktop packages to CI gate, unit runner, and docs generator.
-- `AUD-003` [P0]: Resolve AGPL-3.0-only license anomaly and workspace boundary in `apps/todo`.
-- `AUD-004` [P0]: Harden multi-tier rate limiting and fix `PostgresRateLimitStore` `timeWindow` bug.
-- `AUD-008` [P1]: Activate Turborepo build caching in workspace and CI pipeline.
-- `AUD-009` [P1]: Fix logger synchronous file I/O and implement deep recursive secret redaction.
-- `AUD-005` [P1]: Implement automated PostgreSQL `FORCE ROW LEVEL SECURITY` for zero-trust multi-tenancy.
-- `AUD-006` [P1]: Harden multi-replica auth with `token_version` and PG `NOTIFY` cache invalidation.
-- `AUD-007` [P1]: Migrate `@moonwitness/ai-mcp` to official `@modelcontextprotocol/sdk` with PROV-AGENT lineage.
-- `AUD-010` [P2]: Optimize PostgreSQL query engine (native `ILIKE` and `pg_trgm`) and post-transaction `CONCURRENTLY` index sync.
-- `AUD-012` [P2]: Realtime eventing layer with PostgreSQL `LISTEN/NOTIFY` and Fastify SSE.
-- `AUD-013` [P2]: Behavior-led decomposition of 4 core god-files (`generic.routes.ts`, `list-view.tsx`, `base.model.ts`, `addon.ts`).
-- `AUD-014` [P3]: End-to-end metadata reflection via `orm:codegen` v2.
+## Temporary migration sources
+
+The current migration inputs are frozen snapshots, not permanent parallel backlogs: `todo-wa.md`, `todo-desktop.md`, `docs/archive/todos/todo.md`, the AI Corporation PR checklist, `evolution/backlog.json`, `scripts/tasks/sources/audit-tasks.mjs`, and the immutable Visual Universe source snapshot.
+
+After TaskOS restoration, update task lifecycle through TaskOS only. Roadmap, GitHub Issues and Visual Universe local task files are projections or operational views. Preserve source snapshots and human-owned approval gates; never fabricate task records from totals.
+
+**Do not resume autonomous implementation from any legacy TODO or Visual Universe task card until TaskOS recovery and validation are complete.**
