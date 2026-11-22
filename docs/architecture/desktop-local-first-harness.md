@@ -35,10 +35,10 @@ flowchart TB
     Board --> ClientSDK
   end
 
-  subgraph DesktopHost["apps/desktop (Tauri v2 Shell + Node 22.x Local-First Harness Host)"]
+  subgraph DesktopHost["apps/desktop (Tauri v2 Shell + Node 24.x Local-First Harness Host)"]
     TauriShell["Tauri v2 Native Window (tauri.conf.json: CSP, freezePrototype, withGlobalTauri=false)"]
     Bridge["Frozen Bridge (window.__MW_DESKTOP__ / DesktopCapabilityBridge)"]
-    SidecarHost["Node 22.x ESM Harness Sidecar (@moonwitness/desktop)"]
+    SidecarHost["Node 24.x ESM Harness Sidecar (@moonwitness/desktop)"]
     RiskGate["DesktopRiskGate (R0-R4 + ai.capability_grant + HumanApprovalToken)"]
     LocalDB[("~/.moonwitness/local.db (SQLite WAL via @moonwitness/orm)")]
     LocalStore[("~/.moonwitness/storage/ (LocalFileAttachmentStorage)")]
@@ -113,7 +113,7 @@ sequenceDiagram
   autonumber
   participant Board as "apps/board (Tauri WebView)"
   participant Bridge as "DesktopCapabilityBridge"
-  participant Sidecar as "Node 22.x Harness Sidecar"
+  participant Sidecar as "Node 24.x Harness Sidecar"
   participant LocalDB as "~/.moonwitness/local.db"
   participant API as "apps/api (Fastify + PostgreSQL)"
 
