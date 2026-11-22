@@ -46,17 +46,39 @@ jobs:
           pnpm test:ui
           node scripts/check-docs.mjs
       - name: Build workspace and verify budgets
+        id: build-workspace
         run: |
+          set -euo pipefail
           pnpm build
           pnpm orm:check:seeds
           pnpm --filter @moonwitness/desktop build
           pnpm --filter @moonwitness/desktop typecheck
           pnpm --filter @moonwitness/desktop test
+          node scripts/docs/generate-reference.mjs
+          echo "references_generated=true" >> "$GITHUB_OUTPUT"
           pnpm docs:check:built
           pnpm --filter @moonwitness/board typecheck
           pnpm board:budget
           pnpm test:ui-budget
           pnpm test:ui-catalog
+          git diff --exit-code -- \
+            docs/guide/reference/generated-api.md \
+            docs/guide/reference/generated-models.md \
+            docs/guide/reference/generated-platform.json \
+            docs/guide/reference/generated-platform.md
+
+      - name: Upload generated reference outputs for exact reconciliation
+        if: always() && steps.build-workspace.outputs.references_generated == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: generated-reference-${{ github.sha }}
+          path: |
+            docs/guide/reference/generated-api.md
+            docs/guide/reference/generated-models.md
+            docs/guide/reference/generated-platform.json
+            docs/guide/reference/generated-platform.md
+          if-no-files-found: error
+          retention-days: 7
 
   unit-tests:
     runs-on: ubuntu-24.04

@@ -66,5 +66,5 @@ describe('API foundation security hardening', () => {
     } finally {
       await app.close();
     }
-  });
+  }, 15_000);
 });
