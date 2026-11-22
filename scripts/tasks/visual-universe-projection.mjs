@@ -36,6 +36,21 @@ export function projectVisualUniverseTask(task) {
     && task.proposedSolution !== originalDeliverables.join('; ')
     ? [task.proposedSolution]
     : originalDeliverables;
+  const originalEvidence = Array.isArray(source.evidence) ? source.evidence : [];
+  const originalEvidenceByPath = new Map(
+    originalEvidence
+      .filter((entry) => typeof entry?.artifact === 'string')
+      .map((entry) => [entry.artifact, entry])
+  );
+  const canonicalEvidencePaths = task.evidence?.paths ?? originalEvidence.map((entry) => entry.artifact);
+  const evidence = canonicalEvidencePaths.map((artifact) => {
+    const existing = originalEvidenceByPath.get(artifact);
+    return existing ?? {
+      artifact,
+      command: 'Evidence path recorded in canonical TaskOS; execution metadata not recorded.',
+      exit_code: null,
+    };
+  });
 
   return {
     ...source,
@@ -51,6 +66,7 @@ export function projectVisualUniverseTask(task) {
     deliverables,
     acceptance_criteria: (task.acceptanceCriteria ?? []).map((criterion) => criterion.text),
     verification: [...(task.validation?.commands ?? [])],
+    evidence,
     risk: task.risk ?? source.risk ?? 'medium',
     human_approval_required: task.human === true,
     notes: task.blockedReason ?? source.notes ?? '',
