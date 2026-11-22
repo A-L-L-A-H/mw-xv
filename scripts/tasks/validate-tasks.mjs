@@ -21,6 +21,18 @@ export function parseTasksRegistry(raw) {
   }
 }
 
+export function toRoadmapTaskStatus(status) {
+  const statusMap = {
+    done: 'complete',
+    doing: 'in_progress',
+    review: 'in_progress',
+    blocked: 'blocked',
+    backlog: 'todo',
+    todo: 'todo',
+  };
+  return statusMap[status] ?? null;
+}
+
 export async function validateTasks() {
   const errors = [];
   const tasksFilePath = path.join(rootDir, 'docs/tasks/tasks.json');
@@ -122,12 +134,23 @@ export async function validateTasks() {
   }
   for (const code of taskMap.keys()) checkCycle(code);
 
-  // 4. Parity with ROADMAP.md and docs/roadmap/tasks.json
+  // Cross-check the complete lifecycle status against the roadmap index and
+  // the completion checkbox mirror. Do not silently treat "review" as "todo".
   try {
     const roadmapTasksRaw = await fs.readFile(roadmapTasksPath, 'utf8');
-    const roadmapTasks = JSON.parse(roadmapTasksRaw).tasks;
-    const roadmapText = await fs.readFile(roadmapMdPath, 'utf8');
+    const roadmapData = JSON.parse(roadmapTasksRaw);
+    if (!Array.isArray(roadmapData.tasks)) {
+      throw new Error('docs/roadmap/tasks.json must contain a tasks array.');
+    }
+    const roadmapById = new Map();
+    for (const roadmapTask of roadmapData.tasks) {
+      if (roadmapById.has(roadmapTask.id)) {
+        errors.push(`Duplicate roadmap task ID "${roadmapTask.id}".`);
+      }
+      roadmapById.set(roadmapTask.id, roadmapTask);
+    }
 
+    const roadmapText = await fs.readFile(roadmapMdPath, 'utf8');
     const roadmapCheckState = new Map();
     for (const line of roadmapText.split(/\r?\n/)) {
       const match = /^\s*-\s*\[([ xX])\]\s+([A-Za-z0-9_.-]+)\b/.exec(line);
@@ -136,18 +159,33 @@ export async function validateTasks() {
       }
     }
 
-    for (const rt of roadmapTasks) {
-      const canonical = taskMap.get(rt.id);
+    for (const roadmapTask of roadmapData.tasks) {
+      const canonical = taskMap.get(roadmapTask.id);
       if (!canonical) {
-        errors.push(`Roadmap task "${rt.id}" is missing from canonical docs/tasks/tasks.json`);
+        errors.push(`Roadmap task "${roadmapTask.id}" is missing from canonical docs/tasks/tasks.json`);
         continue;
       }
-      const isRoadmapDone = roadmapCheckState.get(rt.id) ?? false;
+      const expectedStatus = toRoadmapTaskStatus(canonical.status);
+      if (expectedStatus === null) {
+        errors.push(`Task "${canonical.code}" has status "${canonical.status}" with no roadmap projection mapping.`);
+      } else if (roadmapTask.status !== expectedStatus) {
+        errors.push(
+          `Status mismatch on "${roadmapTask.id}": roadmap index is "${roadmapTask.status}", but TaskOS maps to "${expectedStatus}".`
+        );
+      }
+
+      const isRoadmapDone = roadmapCheckState.get(roadmapTask.id) ?? false;
       const isCanonicalDone = canonical.status === 'done';
       if (isRoadmapDone !== isCanonicalDone) {
         errors.push(
-          `Status mismatch on "${rt.id}": ROADMAP.md is ${isRoadmapDone ? '[x]' : '[ ]'}, but tasks.json status is "${canonical.status}"`
+          `Checkbox mismatch on "${roadmapTask.id}": ROADMAP.md is ${isRoadmapDone ? '[x]' : '[ ]'}, but TaskOS status is "${canonical.status}".`
         );
+      }
+    }
+
+    for (const canonical of tasksData.tasks) {
+      if (/^(?:M\d+\.\d+|K\d+-\d+)$/u.test(canonical.code) && !roadmapById.has(canonical.code)) {
+        errors.push(`TaskOS roadmap task "${canonical.code}" is missing from docs/roadmap/tasks.json.`);
       }
     }
   } catch (err) {
