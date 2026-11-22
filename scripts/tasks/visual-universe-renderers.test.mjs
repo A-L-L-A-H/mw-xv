@@ -50,8 +50,15 @@ test('Task card renderer is driven by canonical TaskOS state, not prior card con
   assert.match(rendered, /Legacy note preserved from the archived card\./u);
   assert.match(rendered, /historical context; not lifecycle state/u);
   assert.match(rendered, /Git blob SHA: `a{40}`/u);
-  assert.match(rendered, /exit not recorded/u);
+  assert.doesNotMatch(rendered, /exit not recorded/u, 'in-progress work must not render a completion exit code');
   assert.match(rendered, /evidence\/W0-001\.md/u);
+});
+
+test('completed task cards mark missing execution exit codes as not recorded', () => {
+  const rendered = renderVisualUniverseTaskCard(makeTask({ status: 'done' }));
+  assert.match(rendered, /Commands \/ exit codes:/u);
+  assert.match(rendered, /exit not recorded/u);
+  assert.match(rendered, /Evidence paths:/u);
 });
 
 test('board renderer reports partial acceptance completion accurately', () => {
