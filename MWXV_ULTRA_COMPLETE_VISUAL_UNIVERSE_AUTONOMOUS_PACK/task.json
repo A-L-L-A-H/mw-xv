@@ -209,7 +209,7 @@
           "command": "git ls-remote origin refs/heads/dev"
         }
       ],
-      "commit": null
+      "commit": "c8041a9cf5cce526af4315dea04294aea7e2ac4a"
     },
     {
       "id": "W0-002",
@@ -256,7 +256,7 @@
           "command": "inspect pnpm-workspace.yaml and app/package manifests"
         }
       ],
-      "commit": null
+      "commit": "c8041a9cf5cce526af4315dea04294aea7e2ac4a"
     },
     {
       "id": "W0-003",
@@ -301,7 +301,7 @@
           "command": "pnpm --filter @moonwitness/api build"
         }
       ],
-      "commit": null
+      "commit": "c8041a9cf5cce526af4315dea04294aea7e2ac4a"
     },
     {
       "id": "W0-004",
@@ -352,7 +352,7 @@
           "notes": "59 tests passed; packed-consumer checks passed after contract assertion was aligned."
         }
       ],
-      "commit": null
+      "commit": "c8041a9cf5cce526af4315dea04294aea7e2ac4a"
     },
     {
       "id": "W0-005",
@@ -401,7 +401,7 @@
           "command": "pnpm --filter @moonwitness/api build"
         }
       ],
-      "commit": null
+      "commit": "c8041a9cf5cce526af4315dea04294aea7e2ac4a"
     },
     {
       "id": "W0-006",
@@ -461,7 +461,7 @@
           "exit_code": 0
         }
       ],
-      "commit": null
+      "commit": "c8041a9cf5cce526af4315dea04294aea7e2ac4a"
     },
     {
       "id": "W1-001",
@@ -717,7 +717,7 @@
           "artifact": "evidence/W0-006-implementation-delta.md"
         }
       ],
-      "commit": null
+      "commit": "c8041a9cf5cce526af4315dea04294aea7e2ac4a"
     },
     {
       "id": "W1-008",
