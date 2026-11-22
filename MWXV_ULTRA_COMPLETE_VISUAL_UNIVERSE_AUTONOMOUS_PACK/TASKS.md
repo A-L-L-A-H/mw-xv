@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 61 · skipped 3 · in_progress 0 · blocked 7 · todo 38.
+Status counts: done 62 · skipped 3 · in_progress 0 · blocked 7 · todo 37.
 
 ## W0
 
@@ -210,12 +210,13 @@ Status counts: done 61 · skipped 3 · in_progress 0 · blocked 7 · todo 38.
   - Verify: pnpm assets:render; pnpm assets:validate
   - Evidence: `pnpm assets:render` (0) → `docs/design/assets/pack-moon-city-contact-sheet.png`; `pnpm test:assets` (0) → `packages/assets/tests/contact-sheets.test.mjs`
 
-- [ ] **W2-012 — Add duplicate, size and orphan asset gates**
+- [x] **W2-012 — Add duplicate, size and orphan asset gates**
   - Goal: Extend QA for duplicates, oversized files, unused outputs and wrong generated folder ownership.
   - Depends on: W2-005, W2-010
   - Deliverables: Asset quality report and thresholds.
   - Acceptance: Thresholds are based on measured consumer budgets.; Large source masters are exempt from runtime budgets but included in repository tracking review.; All exceptions are documented and narrow.
   - Verify: pnpm test:assets; pnpm ui:budget
+  - Evidence: `pnpm --filter @moonwitness/assets qa` (0) → `packages/assets/scripts/asset-qa.mjs`; `pnpm test:assets` (0) → `packages/assets/tests/asset-qa.test.mjs`; `pnpm ui:budget` (0) → `scripts/check-ui-catalog-budget.mjs`
 
 ## W3
 

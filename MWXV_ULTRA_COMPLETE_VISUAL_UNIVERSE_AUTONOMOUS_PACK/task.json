@@ -1288,7 +1288,7 @@
       "id": "W2-012",
       "phase": "W2",
       "title": "Add duplicate, size and orphan asset gates",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "qa",
       "parallel_group": "serial",
@@ -1315,9 +1315,25 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Added packages/assets/scripts/asset-qa.mjs and asset-qa.test.mjs verifying runtime budgets, source-master exemptions, duplicate detection with narrow documented exceptions, and folder/manifest ownership.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/assets qa",
+          "exit_code": 0,
+          "artifact": "packages/assets/scripts/asset-qa.mjs"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "packages/assets/tests/asset-qa.test.mjs"
+        },
+        {
+          "command": "pnpm ui:budget",
+          "exit_code": 0,
+          "artifact": "scripts/check-ui-catalog-budget.mjs"
+        }
+      ],
+      "commit": "7acb377"
     },
     {
       "id": "W3-001",
