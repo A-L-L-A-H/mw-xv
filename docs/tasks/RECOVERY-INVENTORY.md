@@ -24,7 +24,7 @@ After the initial, reviewed migration, `docs/tasks/tasks.json` is the only canon
 | `docs/archive/todos/todo.md` | 7 open records | 854 other checklist rows checked; archive contains 861 checklist rows | Import only 7 unchecked MW records as blocked / needs re-triage; retain the archive |
 | `moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md` | 14 PR lifecycle IDs | PR.01–PR.13 checked; PR.14 unchecked | Import 13 completed records and PR.14 as a human-owned blocked approval gate; AI0/AI1-style proposal IDs are not promoted as official tasks |
 | `evolution/backlog.json` | 4 | 2 completed, 2 active | Import with completed/active status preserved |
-| `AUDIT_TASKS` in `scripts/tasks/sweep-and-consolidate.mjs` | 14 | Explicit audit backlog entries | Import with provenance pointing to the source definition; later extract this data from code into a dedicated source file |
+| `scripts/tasks/sources/audit-tasks.mjs` | 14 | Explicit audit backlog entries | Import with provenance pointing to the dedicated source data file; importer logic remains separate |
 | `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json` | 109 | 93 done, 3 skipped, 13 blocked | Import into project `visual-universe`; skipped is mapped to TaskOS done plus `status:skipped` tag, and the original task object is retained losslessly in `metadata` |
 
 **Expected initial TaskOS projection: 627 task records** (239 + 112 + 128 + 7 + 14 + 4 + 14 + 109). This is a source-inventory expectation, not a claim that the registry has been restored or validated. The automated projection test must confirm the exact total and schema before the one-time write is allowed.
