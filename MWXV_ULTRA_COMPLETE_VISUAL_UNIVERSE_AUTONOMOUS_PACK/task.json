@@ -4620,7 +4620,7 @@
       "id": "W9-001",
       "phase": "W9",
       "title": "Create first Moon City scene definition",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "scene-composer",
       "parallel_group": "serial",
@@ -4647,15 +4647,21 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "",
-      "evidence": [],
+      "notes": "Pilot character identity and source licensing need explicit approval; current crew registry is review-only and generated Moon City art is not distributable.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-001-W9-004-hero-route-blockers.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W9-002",
       "phase": "W9",
       "title": "Build immersive homepage hero vertical slice",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -4688,15 +4694,21 @@
       ],
       "risk": "high",
       "human_approval_required": true,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W9-001; the approved layered scene, character, loopable idle, and final hero composition are not available.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-001-W9-004-hero-route-blockers.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W9-003",
       "phase": "W9",
       "title": "Add cinematic scroll/story section transitions",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -4724,15 +4736,21 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W9-002; no production scene exists to transition between.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-001-W9-004-hero-route-blockers.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W9-004",
       "phase": "W9",
       "title": "Extend selected Signals and Archive scenes",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -4758,15 +4776,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W9-001 and absent /signals and /archive routes; no route or production data will be invented.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-001-W9-004-hero-route-blockers.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W9-005",
       "phase": "W9",
       "title": "Integrate Crew and Story visual compositions",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -4793,15 +4817,28 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Story editorial composition and catalog-only crew sample are verified, but the required shared visual E2E gate remains red on snapshot and locator drift. Resume after W9-006 visual baseline/gate is repaired; do not add fictional crew data or assets to production.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md",
+          "notes": "41 tests passed; story workbench and fictional catalog sample are covered."
+        },
+        {
+          "command": "pnpm test:e2e:visual:matrix",
+          "exit_code": 1,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md",
+          "notes": "Shared visual gate has screenshot, locator, and browser-install failures."
+        }
+      ],
+      "commit": "a3fa6da"
     },
     {
       "id": "W9-006",
       "phase": "W9",
       "title": "Preserve operational Board visual tier",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "qa",
       "parallel_group": "serial",
@@ -4829,9 +4866,43 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Board boundary, typecheck, lint, responsive overflow and bundle budgets pass, but visual matrix fails: Chromium baseline/write/locator issues and missing Firefox/WebKit executables. No snapshots were updated. Resume after reviewing current UI against expected baselines and restoring the browser matrix.",
+      "evidence": [
+        {
+          "command": "pnpm board:ui:check",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md",
+          "notes": "6 boundary tests passed."
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board lint",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        },
+        {
+          "command": "pnpm test:ui-budget",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        },
+        {
+          "command": "pnpm board:budget",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md",
+          "notes": "27,012 bytes of interface audio."
+        },
+        {
+          "command": "pnpm test:e2e:visual:matrix",
+          "exit_code": 1,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md",
+          "notes": "5 passed, 37 failed; Chromium visual drift/write/locator failures; Firefox and WebKit executables absent."
+        }
+      ],
+      "commit": "3d04f0f"
     },
     {
       "id": "W9-007",
@@ -4951,7 +5022,7 @@
       "id": "W10-001",
       "phase": "W10",
       "title": "Establish runtime performance baselines",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "performance",
       "parallel_group": "serial",
@@ -4978,15 +5049,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W9-002; performance measurements for the new scene cannot be recorded before that route exists. Existing Board bundle budget passes.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W10-002",
       "phase": "W10",
       "title": "Optimize scene asset loading and caching",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -5014,15 +5091,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W9-002 and W10-001; no approved scene assets exist for loading/cache optimization.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W10-003",
       "phase": "W10",
       "title": "Add reduced-motion and low-power scene modes",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "accessibility",
       "parallel_group": "serial",
@@ -5049,15 +5132,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W9-002; reduced-motion and low-power scene policy needs the production scene consumer.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W10-004",
       "phase": "W10",
       "title": "Add full visual and accessibility matrix",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "qa",
       "parallel_group": "serial",
@@ -5086,15 +5175,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W9-002, W9-006, and W10-003; visual matrix remains red and the scene is absent.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W10-005",
       "phase": "W10",
       "title": "Verify package build and consumer contracts",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "qa",
       "parallel_group": "serial",
@@ -5128,15 +5223,94 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "All package and consumer checks pass at pushed dev source a3fa6da. API has no typecheck script; its build runs tsc and passes. Audio/UI budgets and package boundaries verified.",
+      "evidence": [
+        {
+          "command": "pnpm build",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md",
+          "notes": "56 tests passed"
+        },
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md",
+          "notes": "71 tests passed"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md",
+          "notes": "41 tests passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/api typecheck",
+          "exit_code": 1,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md",
+          "notes": "No typecheck script is declared; fallback build passed."
+        },
+        {
+          "command": "pnpm --filter @moonwitness/api build",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/desktop typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/desktop test",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md",
+          "notes": "31 tests passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/orm-sales test",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md",
+          "notes": "2 tests passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/orm-subscription test",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md",
+          "notes": "2 tests passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/api exec vitest run tests/commercial-addons.routes.test.ts",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md",
+          "notes": "2 tests passed"
+        },
+        {
+          "command": "pnpm test:ui-budget",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md"
+        },
+        {
+          "command": "pnpm board:budget",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md"
+        },
+        {
+          "command": "pnpm board:ui:check",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md"
+        }
+      ],
+      "commit": "a3fa6da"
     },
     {
       "id": "W10-006",
       "phase": "W10",
       "title": "Run full quality and security review",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "release-engineer",
       "parallel_group": "serial",
@@ -5167,15 +5341,21 @@
       ],
       "risk": "high",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W10-004; full release quality/security review requires the scene and visual/accessibility matrix.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W10-007",
       "phase": "W10",
       "title": "Finalize docs, release notes and handoff",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "technical-writer",
       "parallel_group": "serial",
@@ -5204,15 +5384,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W10-006; final handoff cannot claim hero acceptance while upstream gates remain blocked.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W10-008",
       "phase": "W10",
       "title": "Commit and push verified work to dev",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "release-engineer",
       "parallel_group": "serial",
@@ -5239,8 +5425,14 @@
       ],
       "risk": "high",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Blocked by W10-007; incremental commits are pushed, but final release closeout depends on all prior acceptance.",
+      "evidence": [
+        {
+          "command": "review current task dependencies and source evidence",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md"
+        }
+      ],
       "commit": null
     }
   ],

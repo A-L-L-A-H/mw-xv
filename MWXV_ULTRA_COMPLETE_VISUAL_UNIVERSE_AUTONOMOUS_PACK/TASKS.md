@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 92 · skipped 3 · in_progress 0 · blocked 0 · todo 14.
+Status counts: done 93 · skipped 3 · in_progress 0 · blocked 13 · todo 0.
 
 ## W0
 
@@ -768,47 +768,53 @@ Status counts: done 92 · skipped 3 · in_progress 0 · blocked 0 · todo 14.
 
 ## W9
 
-- [ ] **W9-001 — Create first Moon City scene definition**
+- [ ] **W9-001 — Create first Moon City scene definition** — **BLOCKED:** Pilot character identity and source licensing need explicit approval; current crew registry is review-only and generated Moon City art is not distributable.
   - Goal: Compose approved sky, moon, cloud, city, character and foreground assets into one scene.
   - Depends on: W3-006, W4-007, W5-003
   - Deliverables: Versioned Moon City scene manifest.
   - Acceptance: All references resolve.; Scene has desktop/mobile variants or responsive composition rules.; Scene contains no UI copy or product metrics.
   - Verify: scene validation; contact sheet
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-002 — Build immersive homepage hero vertical slice**
+- [ ] **W9-002 — Build immersive homepage hero vertical slice** — **BLOCKED:** Blocked by W9-001; the approved layered scene, character, loopable idle, and final hero composition are not available.
   - Goal: Integrate first living scene into homepage without replacing real HTML navigation/copy/CTA.
   - Depends on: W9-001, W5-005, W5-006, W5-007, W5-009
   - Deliverables: Production homepage hero scene.
   - Acceptance: Visual hierarchy matches approved reference DNA.; Character and environment animation are visible but not distracting.; Static fallback always loads.; No full-page screenshot used as background.
   - Verify: pnpm --filter @moonwitness/board typecheck; pnpm --filter @moonwitness/board build; pnpm test:e2e:visual
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-003 — Add cinematic scroll/story section transitions**
+- [ ] **W9-003 — Add cinematic scroll/story section transitions** — **BLOCKED:** Blocked by W9-002; no production scene exists to transition between.
   - Goal: Connect homepage story sections with controlled reveal/camera transitions.
   - Depends on: W9-002, W6-004, W5-006
   - Deliverables: Scroll-linked scene transition specimens and production integration.
   - Acceptance: No scroll hijacking or hidden content.; Reduced-motion has direct static order.; Mobile touch scrolling remains native.
   - Verify: Playwright scroll tests; reduced-motion tests
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-004 — Extend selected Signals and Archive scenes**
+- [ ] **W9-004 — Extend selected Signals and Archive scenes** — **BLOCKED:** Blocked by W9-001 and absent /signals and /archive routes; no route or production data will be invented.
   - Goal: Use existing asset IDs and scene contracts for the next two content experiences when those routes exist.
   - Depends on: W8-009, W8-010, W9-001
   - Deliverables: Signals/Archive scene integration or documented route-gap decision.
   - Acceptance: No fake routes or unsupported live data.; If actual route is absent, create approved catalog specimen only and record blocker.
   - Verify: pnpm --filter @moonwitness/board typecheck; pnpm test:e2e
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-005 — Integrate Crew and Story visual compositions**
+- [ ] **W9-005 — Integrate Crew and Story visual compositions** — **BLOCKED:** Story editorial composition and catalog-only crew sample are verified, but the required shared visual E2E gate remains red on snapshot and locator drift. Resume after W9-006 visual baseline/gate is repaired; do not add fictional crew data or assets to production.
   - Goal: Apply character/environment assets to existing user and story experiences only where supported by product data.
   - Depends on: W8-001, W8-010, W3-009
   - Deliverables: Crew/Story scene or editorial compositions.
   - Acceptance: Real users remain real data or neutral avatars.; Fictional character examples are visibly marked as examples in catalog.; No fictional crew metrics or maps in production.
   - Verify: pnpm test:e2e:visual; pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui-catalog` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`; `pnpm test:e2e:visual:matrix` (1) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`
 
-- [ ] **W9-006 — Preserve operational Board visual tier**
+- [ ] **W9-006 — Preserve operational Board visual tier** — **BLOCKED:** Board boundary, typecheck, lint, responsive overflow and bundle budgets pass, but visual matrix fails: Chromium baseline/write/locator issues and missing Firefox/WebKit executables. No snapshots were updated. Resume after reviewing current UI against expected baselines and restoring the browser matrix.
   - Goal: Ensure new immersive runtime does not leak into dense forms, tables or admin data flows.
   - Depends on: W5-005, W6-002, W8-001
   - Deliverables: Board regression report.
   - Acceptance: Existing Board light/dark themes, skins and density remain intact.; Operational screens use restrained motion and valid focus boundaries.; No measurable layout shift/regression.
   - Verify: pnpm board:ui:check; pnpm test:e2e:visual:matrix
+  - Evidence: `pnpm board:ui:check` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`; `pnpm --filter @moonwitness/board lint` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`; `pnpm test:ui-budget` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`; `pnpm board:budget` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`; `pnpm test:e2e:visual:matrix` (1) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`
 
 - [x] **W9-007 — Decide desktop app scene adoption**
   - Goal: Audit desktop UI technology and performance before adopting world runtime.
@@ -828,58 +834,66 @@ Status counts: done 92 · skipped 3 · in_progress 0 · blocked 0 · todo 14.
 
 ## W10
 
-- [ ] **W10-001 — Establish runtime performance baselines**
+- [ ] **W10-001 — Establish runtime performance baselines** — **BLOCKED:** Blocked by W9-002; performance measurements for the new scene cannot be recorded before that route exists. Existing Board bundle budget passes.
   - Goal: Measure current and new scene route cold load, JS/CSS, asset transfer, CPU/GPU and frame cadence.
   - Depends on: W9-002
   - Deliverables: Baseline and budget document.
   - Acceptance: Measurements on named reference devices/browser.; Initial route and deferred scene budgets are separated.; No arbitrary performance claim.
   - Verify: pnpm board:budget; Playwright performance run
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`
 
-- [ ] **W10-002 — Optimize scene asset loading and caching**
+- [ ] **W10-002 — Optimize scene asset loading and caching** — **BLOCKED:** Blocked by W9-002 and W10-001; no approved scene assets exist for loading/cache optimization.
   - Goal: Implement lazy scene loading, preloading policy and responsive media selection.
   - Depends on: W10-001, W2-006, W9-002
   - Deliverables: Loading/cache policy and tests.
   - Acceptance: Only initial scene critical assets are eagerly loaded.; Offscreen scenes do not download unnecessary media.; Failed loads show fallback and retry where relevant.
   - Verify: network asset audit; pnpm test:e2e
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`
 
-- [ ] **W10-003 — Add reduced-motion and low-power scene modes**
+- [ ] **W10-003 — Add reduced-motion and low-power scene modes** — **BLOCKED:** Blocked by W9-002; reduced-motion and low-power scene policy needs the production scene consumer.
   - Goal: Support reduced-motion, data-saver/low-capability settings where detectably appropriate.
   - Depends on: W1-007, W5-004, W9-002
   - Deliverables: Motion mode policy and tests.
   - Acceptance: User preference is respected before first meaningful playback.; Low-power mode does not imply inaccessible hidden content.; No preference is silently overridden.
   - Verify: Playwright reduced-motion tests
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`
 
-- [ ] **W10-004 — Add full visual and accessibility matrix**
+- [ ] **W10-004 — Add full visual and accessibility matrix** — **BLOCKED:** Blocked by W9-002, W9-006, and W10-003; visual matrix remains red and the scene is absent.
   - Goal: Run desktop/tablet/mobile, light/dark, keyboard, touch, reduced motion and fallback tests.
   - Depends on: W9-002, W9-006, W10-003
   - Deliverables: Visual evidence matrix and issues list.
   - Acceptance: Critical production pages have review evidence.; Axe/keyboard checks cover changed user flows.; Known limitations are explicit.
   - Verify: pnpm test:ui; pnpm test:ui-catalog; pnpm test:e2e:visual:matrix
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`
 
-- [ ] **W10-005 — Verify package build and consumer contracts**
+- [x] **W10-005 — Verify package build and consumer contracts**
   - Goal: Build, pack and consume assets/UI packages from apps and run API/desktop boundaries.
   - Depends on: W2-010, W5-011, W9-007
   - Deliverables: Package verification report.
   - Acceptance: Public exports resolve from actual consumer apps.; No private dist imports.; No unwanted runtime dependencies.; API and ORM builds remain unaffected by visual dependencies.
   - Verify: pnpm build; pnpm test:assets; pnpm test:ui; pnpm test:ui-catalog; pnpm --filter @moonwitness/api typecheck; pnpm --filter @moonwitness/desktop typecheck
+  - Evidence: `pnpm build` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm test:assets` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm test:ui` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm test:ui-catalog` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm --filter @moonwitness/api typecheck` (1) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm --filter @moonwitness/api build` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm --filter @moonwitness/desktop typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm --filter @moonwitness/desktop test` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm --filter @moonwitness/orm-sales test` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm --filter @moonwitness/orm-subscription test` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm --filter @moonwitness/api exec vitest run tests/commercial-addons.routes.test.ts` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm test:ui-budget` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm board:budget` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`; `pnpm board:ui:check` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W10-005-package-verification.md`
 
-- [ ] **W10-006 — Run full quality and security review**
+- [ ] **W10-006 — Run full quality and security review** — **BLOCKED:** Blocked by W10-004; full release quality/security review requires the scene and visual/accessibility matrix.
   - Goal: Run relevant repository CI gates and check license, provenance, dependencies, performance and accessibility.
   - Depends on: W10-004, W10-005
   - Deliverables: Release-quality report.
   - Acceptance: No secrets or licensing violations.; No broken source manifests or generated artifacts.; No unreviewed breaking API changes.; No failing relevant required gate.
   - Verify: pnpm lint; pnpm test; pnpm test:integration; pnpm test:e2e
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`
 
-- [ ] **W10-007 — Finalize docs, release notes and handoff**
+- [ ] **W10-007 — Finalize docs, release notes and handoff** — **BLOCKED:** Blocked by W10-006; final handoff cannot claim hero acceptance while upstream gates remain blocked.
   - Goal: Publish final implementation, asset catalog and evidence guide.
   - Depends on: W10-006
   - Deliverables: Final changelog, README/docs index, evidence links and closure report.
   - Acceptance: All tasks have accurate statuses and evidence.; Deferred/blocked tasks are not claimed complete.; Version bump follows repo release policy, not every commit.
   - Verify: pnpm docs:check; pnpm docs:links; git diff --check
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`
 
-- [ ] **W10-008 — Commit and push verified work to dev**
+- [ ] **W10-008 — Commit and push verified work to dev** — **BLOCKED:** Blocked by W10-007; incremental commits are pushed, but final release closeout depends on all prior acceptance.
   - Goal: Commit coherent completed batches and push only through repository-approved branch workflow.
   - Depends on: W10-007
   - Deliverables: Commit hashes and dev push/PR evidence.
   - Acceptance: No force push or protected branch bypass.; Never push main/master directly.; If dev is protected and direct push is rejected, use repository-approved PR path or stop and report exact blocker.; No empty commits.
   - Verify: git status --short --branch; git log -n 10 --oneline; git remote -v
+  - Evidence: `review current task dependencies and source evidence` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md`
