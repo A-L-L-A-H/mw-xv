@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 21 · skipped 2 · in_progress 1 · blocked 0 · todo 85.
+Status counts: done 21 · skipped 2 · in_progress 2 · blocked 0 · todo 84.
 
 ## W0
 
@@ -324,12 +324,13 @@ Status counts: done 21 · skipped 2 · in_progress 1 · blocked 0 · todo 85.
 
 ## W5
 
-- [ ] **W5-001 — Choose animation engine boundary**
+- [ ] **W5-001 — Choose animation engine boundary** — **IN PROGRESS**
   - Goal: Audit existing Motion dependency in Board and choose CSS/SVG/Motion first; adapter seams for specialist character SDKs.
   - Depends on: W0-006, W1-007
   - Deliverables: Decision record and dependency/licensing matrix.
   - Acceptance: Use existing motion package where capable.; Do not add GSAP/Rive/Live2D/Three/Pixi by default.; Paid/proprietary SDK requires explicit human approval.; No runtime dependency is added to assets package.
   - Verify: dependency graph review; bundle baseline
+  - Evidence: `pnpm --filter @moonwitness/board list motion --depth 0; source search for Motion runtime imports` (0) → `evidence/motion-boundary-proposal.md`; `pnpm ui:budget` (0) → `JavaScript 499004 B raw/145835 B gzip and stylesheet 128222 B raw/23100 B gzip; both within budgets`
 
 - [ ] **W5-002 — Define scene runtime contracts**
   - Goal: Specify SceneDefinition, LayerDefinition, CameraDefinition, Clip, Event, State and fallback contracts.

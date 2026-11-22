@@ -1743,7 +1743,7 @@
       "id": "W5-001",
       "phase": "W5",
       "title": "Choose animation engine boundary",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P1",
       "role": "architect",
       "parallel_group": "serial",
@@ -1771,8 +1771,19 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "",
-      "evidence": [],
+      "notes": "Awaiting human approval of the engine boundary. CSS/SVG-first recommendation and dependency/bundle evidence: evidence/motion-boundary-proposal.md. No dependency changed.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/board list motion --depth 0; source search for Motion runtime imports",
+          "exit_code": 0,
+          "artifact": "evidence/motion-boundary-proposal.md"
+        },
+        {
+          "command": "pnpm ui:budget",
+          "exit_code": 0,
+          "artifact": "JavaScript 499004 B raw/145835 B gzip and stylesheet 128222 B raw/23100 B gzip; both within budgets"
+        }
+      ],
       "commit": null
     },
     {
