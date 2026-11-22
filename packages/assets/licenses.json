@@ -374,6 +374,33 @@
       "modifications": "Original canonical crew-01 layer/pivot master; no face depicted.",
       "status": "review",
       "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-01.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical crew-01 idle animation clip master; no face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-02.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical crew-01 idle animation clip master; no face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-clip.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Original canonical crew-01 idle animation clip master; no face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
     }
   ],
   "originalFonts": [

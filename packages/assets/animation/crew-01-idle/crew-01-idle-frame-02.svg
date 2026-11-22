@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="crew-01 idle frame 2 breathing">
+  <title>crew-01 idle frame 2 (breathing in)</title>
+  <rect width="1024" height="1024" fill="#f3efe4"/>
+  <path d="M 410 234 Q 410 304 465 364 L 559 364 Q 614 304 614 234 Q 614 154 512 154 Q 410 154 410 234 Z" fill="#1a1f2e" stroke="#0d0d0d" stroke-width="6"/>
+  <path d="M 440 254 Q 440 334 512 384 Q 584 334 584 254 Q 584 174 512 174 Q 440 174 440 254 Z" fill="none" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M 370 414 L 300 626 Q 280 726 330 806 L 360 886 L 664 886 L 694 806 Q 744 726 724 626 L 654 414 Z" fill="#ff2e88" stroke="#0d0d0d" stroke-width="6"/>
+  <path d="M 390 454 L 470 564 Q 512 604 554 564 L 634 454" fill="none" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M 470 504 Q 512 544 554 504" fill="none" stroke="#0d0d0d" stroke-width="5"/>
+  <path d="M 390 454 Q 512 564 634 454" fill="none" stroke="#0d0d0d" stroke-width="4"/>
+  <path d="M 360 826 Q 360 906 430 946 L 594 946 Q 664 906 664 826 Z" fill="#0d0d0d" stroke="#0d0d0d" stroke-width="3"/>
+  <rect x="440" y="846" width="24" height="70" fill="#ffe031"/>
+  <rect x="560" y="846" width="24" height="70" fill="#ffe031"/>
+  <circle cx="512" cy="474" r="26" fill="#ffe031" stroke="#0d0d0d" stroke-width="3"/>
+  <path d="M 512 452 L 512 496 M 486 474 L 538 474" stroke="#0d0d0d" stroke-width="3"/>
+</svg>
