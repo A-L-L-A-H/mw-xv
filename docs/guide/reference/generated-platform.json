@@ -519,6 +519,11 @@
       "docs:links": "node scripts/check-docs.mjs && node scripts/check-doc-navigation.mjs && node --test scripts/check-docs.test.mjs scripts/check-doc-navigation.test.mjs scripts/check-external-doc-links.test.mjs",
       "docs:links:external": "node scripts/check-external-doc-links.mjs",
       "docs:publication:check": "node scripts/check-docs-publication.mjs apps/docs/dist",
+      "dx:build": "node scripts/dx.mjs build",
+      "dx:dev": "node scripts/dx.mjs dev",
+      "dx:e2e": "node scripts/dx.mjs e2e",
+      "dx:start": "node scripts/dx.mjs start",
+      "dx:test": "node scripts/dx.mjs test",
       "evolution:check": "node scripts/evolution/check-constitution.mjs && node scripts/evolution/check-ratchet.mjs",
       "evolution:fitness": "node scripts/evolution/fitness-score.mjs",
       "evolution:postmortem": "node scripts/evolution/record-postmortem.mjs",
@@ -10088,5 +10093,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "05a2e042f23695e7611201119c417c489037741fc3c10c6573fa9068896cb9c2"
+  "generatedFromSha256": "41741360054a386ac06e5fcb82f51bc5796738e12b4cb98830e700021b021725"
 }
