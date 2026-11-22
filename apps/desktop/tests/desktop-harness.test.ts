@@ -1981,7 +1981,11 @@ describe('MoonWitness Desktop Harness', () => {
           return;
         }
 
-        if (req.method === 'POST' && url.includes('/work-contract') && !url.includes('/sync-stage')) {
+        if (
+          req.method === 'POST' &&
+          url.includes('/work-contract') &&
+          !url.includes('/sync-stage')
+        ) {
           contractDispatched = true;
           res.writeHead(201);
           res.end(
