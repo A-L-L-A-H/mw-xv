@@ -18,6 +18,7 @@ import {
   RelationIcon,
   SecurityIcon,
   TeamIcon,
+  UserIcon,
   UsersIcon,
 } from '@moonwitness/ui/icons';
 
@@ -32,7 +33,10 @@ const ICONS = {
   'base.sequence': HashIcon,
   'base.currency': CurrencyIcon,
   'base.language': LanguageIcon,
+  'organization.department': CompanyIcon,
   'organization.team': TeamIcon,
+  'organization.position': UserIcon,
+  'organization.membership': UsersIcon,
   'project.project': GridIcon,
   'project.task': CheckSquareIcon,
   'project.milestone': BookmarkIcon,

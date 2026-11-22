@@ -3842,7 +3842,7 @@
       "id": "W8-008",
       "phase": "W8",
       "title": "Implement visual coverage for organization addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3877,8 +3877,29 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "The existing generic Board model navigation/list is the real consumer. Added canonical icon reuse for department, team, position and membership; retained ordinary model relations and did not invent an org chart, headcount or portraits.",
+      "evidence": [
+        {
+          "artifact": "apps/board/src/lib/models.ts",
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/board typecheck"
+        },
+        {
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "exit_code": 0,
+          "command": "pnpm board:ui:check"
+        },
+        {
+          "artifact": "packages/assets/tests",
+          "exit_code": 0,
+          "command": "pnpm test:assets"
+        },
+        {
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "exit_code": 0,
+          "command": "pnpm test:ui-catalog"
+        }
+      ],
       "commit": null
     },
     {

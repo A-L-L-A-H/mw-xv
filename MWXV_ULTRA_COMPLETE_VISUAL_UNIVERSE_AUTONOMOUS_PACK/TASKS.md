@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 41 · skipped 3 · in_progress 1 · blocked 7 · todo 57.
+Status counts: done 42 · skipped 3 · in_progress 1 · blocked 7 · todo 56.
 
 ## W0
 
@@ -690,12 +690,13 @@ Status counts: done 41 · skipped 3 · in_progress 1 · blocked 7 · todo 57.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
   - Evidence: `pnpm test:e2e:visual --grep "canonical activity, notification, and cron icons"` (0) → `apps/board/e2e/visual-audit.spec.ts`; `pnpm --filter @moonwitness/board typecheck` (0) → `apps/board/src/components/layout/notification-bell.tsx`; `pnpm board:ui:check` (0) → `scripts/check-board-shared-ui.mjs`; `pnpm test:assets` (0) → `packages/assets/tests`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/catalog.spec.ts`
 
-- [ ] **W8-008 — Implement visual coverage for organization addon**
+- [x] **W8-008 — Implement visual coverage for organization addon**
   - Goal: Implement only the verified organization asset references, UI compositions and state treatments based on W8-D08. Domain: Departments, teams, positions, memberships and hierarchy.
   - Depends on: W8-D08, W2-005, W1-008
   - Deliverables: organization addon asset coverage and tested UI specimens/consumer integration where a real screen exists
   - Acceptance: Only real existing models/routes/permissions are represented.; Shared assets are reused by stable ID; no domain-specific duplicate asset copies.; Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.; Artwork remains decorative; labels, state and actions are real UI data.; New assets include provenance and are registered in canonical manifest.; If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
+  - Evidence: `pnpm --filter @moonwitness/board typecheck` (0) → `apps/board/src/lib/models.ts`; `pnpm board:ui:check` (0) → `scripts/check-board-shared-ui.mjs`; `pnpm test:assets` (0) → `packages/assets/tests`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/catalog.spec.ts`
 
 - [ ] **W8-009 — Implement visual coverage for workflow addon**
   - Goal: Implement only the verified workflow asset references, UI compositions and state treatments based on W8-D09. Domain: Definitions, instances, transitions, approvals and event history.
