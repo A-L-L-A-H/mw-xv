@@ -22,6 +22,9 @@ The operating principle is to reuse existing domain owners. A new package or ser
 
 ## 2. Exact target baseline and current governance
 
+> **Current SOT correction — 2026-11-23:** This strategy predates the TaskOS recovery audit. Its original count and branch figures are historical, not current execution status. `docs/tasks/tasks.json` is currently zero-byte and unavailable. The verified recovery inventory contains **627 candidate IDs** from eight source groups; no canonical records have been restored or fabricated. See [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md), [Active Plan](../roadmap/ACTIVE-PLAN.md), and [Stabilization Plan](../roadmap/STABILIZATION-PLAN.md). Until recovery passes, completion authority is the roadmap checkbox plus evidence; `docs/roadmap/tasks.json` is the M/K ID/dependency/detail index; GitHub Issues are operational and human-triage views. After recovery, TaskOS owns lifecycle and all TODO/roadmap/card lists are projections.
+
+
 ### 2.1 Repository state checked
 
 | Item | Observed state |
@@ -30,24 +33,21 @@ The operating principle is to reuse existing domain owners. A new package or ser
 | Default branch | `main`; engineering work is performed on `dev` |
 | `dev` at first source audit | `7871a592db5488eafbaeeb0bfbbdc079a4231cfe` |
 | `dev` immediately before this consolidation commit | `a58a43327fbc9267a9840bb65b0ad2735b069907` |
-| `main` at checkpoint | `c9df672332540639981180b38ab8c675d8964a80` |
+| `main` at the current stabilization baseline | `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d` |
 | Common ancestor at checkpoint | `a6cd74a6f189e7ea053b046e94a06ea2d36530fc` |
-| Branch relationship | Diverged: `main` had 17 commits after the merge base; `dev` had 2 |
+| Branch relationship | `dev` is ahead of `main`; exact count and current SHA are maintained in [Active Plan](../roadmap/ACTIVE-PLAN.md) |
 | Release status | M12.14 remains `in_progress`; its evidence still lists PR.14 as awaiting maintainer/CODEOWNER approval |
-| Desktop status | M13.01–M13.04 are complete with source/evidence records; M13.05 is the next registered task |
+| Desktop / FLOW status | M13.01–M13.12 are recorded complete on `dev`; M13.09–M13.12 still need exact-current-SHA CI and promotion review |
 
 PR #30 merged the older `dev` head `a6cd74a` into `main`. That does not mean the current `dev` head was promoted. Before another promotion, reconcile the 17 main-only commits and 2 dev-only commits using the accepted main→dev synchronization process (M1.09), review the full diff, and rerun the relevant acceptance gates. Do not solve divergence with force-push, blind rebase, or a third branch.
 
 ### 2.2 Roadmap and TaskOS counts
 
-After this consolidation is pushed, the expected master index is:
+The verified source inventory currently has **239 roadmap-index tasks** (174 M-series + 65 K-series): **157 complete**, **47 in progress**, and **35 todo**. `ROADMAP.md` has 157 checked and 82 unchecked task IDs, matching the 239-task index.
 
-- **232 roadmap tasks:** 167 M-series + 65 K-series.
-- **149 complete**, **47 in progress**, **36 todo** (including the new M13.05 card), **0 blocked** in the roadmap status index.
-- The master `ROADMAP.md` should show 149 checked and 83 unchecked task cards (50 M-series + 33 K-series).
-- `docs/tasks/tasks.json` remains the larger canonical TaskOS registry; it contains additional granular and operational tasks beyond the 232 master roadmap cards.
+The expanded TaskOS registry is **not currently populated**: `docs/tasks/tasks.json` is zero-byte. A source audit identified 627 unique candidate task IDs across eight source groups (roadmap, WhatsApp, Desktop, archived legacy MW, AI Corporation PR governance, evolution, audit, and Visual Universe). The calculated initial import distribution is 468 done, 49 doing, 89 todo and 21 blocked; these are migration expectations, not live TaskOS counts. The earlier 1,346-record claim was not substantiated and is not used as an import target.
 
-The previous `docs/roadmap/tasks.json` had a status drift: 64 task statuses differed from canonical TaskOS / master checkbox state. This commit aligns those status fields using the existing `scripts/tasks/sync-roadmap.mjs` mapping: `done → complete`, `doing → in_progress`, other non-done states → `todo` (with blocked preserved). No existing completion checkbox is invented or removed.
+During recovery, completion authority is the roadmap checkbox plus evidence; `docs/roadmap/tasks.json` is the M/K identity/dependency/detail index; GitHub Issues are operational/human triage views; delivery state requires exact SHA, CI, promotion and release evidence. After a fully validated one-time restore, TaskOS will own lifecycle for all repository projects, and roadmap/TODO/Visual Universe lists become projections. No static totals should be used as current progress.
 
 ### 2.3 Release boundary
 
