@@ -1,3 +1,11 @@
+## Current branch update — 2026-11-23
+
+- `main`: `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
+- `dev`: latest promotion candidate source is `0a33aff64d79d51e30e2298ff64d6a68da5ce6a4`; branch comparison reports 16 commits ahead of main.
+- Open promotion PR [#37](https://github.com/A-L-L-A-H/mw-xv/pull/37) carries M13.09–M13.12. Exact-source CI run [45054939356](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45054939356) was cancelled; risk report requires approval. Do not merge or claim verified-dev/in-main for these tasks yet.
+- M13.09–M13.12 have narrow implementation evidence (local package/API tests, typecheck/lint/UI boundary checks), but full PostgreSQL integration and Playwright Chromium E2E are explicitly not run in those evidence batches.
+- TaskOS remains zero-byte at the current dev source. Its README now documents the temporary SOT boundary; registry reconstruction remains blocked on source inventory and provenance.
+
 # MW-XV Stabilization & Source-of-Truth Recovery Plan
 
 **Scope:** Clean, stabilize, and reconcile `A-L-L-A-H/mw-xv` without architectural rewrites or feature expansion.
