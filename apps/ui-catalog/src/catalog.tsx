@@ -54,6 +54,7 @@ import inkSplatterSmUrl from '@moonwitness/assets/materials/ink-splatter-sm.svg'
 import tileHalftoneUrl from '@moonwitness/assets/materials/tile-halftone.svg';
 import scuffedBorderUrl from '@moonwitness/assets/materials/scuffed-border.svg';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
+import { CharacterPreview } from '@moonwitness/ui/components/character-preview';
 import { PaperNote } from '@moonwitness/ui/components/paper-note';
 import { SectionRibbon } from '@moonwitness/ui/components/section-ribbon';
 import {
@@ -2014,6 +2015,41 @@ function CatalogContent() {
                       <dd>Actions remain unavailable outside registered roles.</dd>
                     </div>
                   </dl>
+                </Panel>
+              </div>
+            </Section>
+            <Section
+              id="character-preview"
+              title="Character preview (crew-01)"
+              description="Deterministic preview of crew-01 layers, poses and animation clips loaded by canonical asset ID; no backend route or business data is embedded."
+            >
+              <div className="auth-coverage-grid" data-testid="character-preview-specimen">
+                <Panel
+                  title="Idle clip"
+                  description="Subtle breathing loop; ping-pong playback, pausable, resettable, with reduced-motion still fallback."
+                >
+                  <CharacterPreview
+                    clipId="animation/crew-01-idle/crew-01-idle-clip.json"
+                    fallbackAsset="animation/crew-01-idle/crew-01-idle-frame-01.svg"
+                  />
+                </Panel>
+                <Panel
+                  title="Hair movement clip"
+                  description="Optional subtle hair sway for the anonymous back-facing figure; no facial detail forced."
+                >
+                  <CharacterPreview
+                    clipId="animation/crew-01-hair/crew-01-hair-move-clip.json"
+                    fallbackAsset="animation/crew-01-hair/crew-01-hair-move-frame-01.svg"
+                  />
+                </Panel>
+                <Panel
+                  title="Walk & turn prototype"
+                  description="Representative movement set with aligned pivots and static pose fallback."
+                >
+                  <CharacterPreview
+                    clipId="animation/crew-01-walk/crew-01-walk-clip.json"
+                    fallbackAsset="animation/crew-01-walk/crew-01-walk-frame-01.svg"
+                  />
                 </Panel>
               </div>
             </Section>
