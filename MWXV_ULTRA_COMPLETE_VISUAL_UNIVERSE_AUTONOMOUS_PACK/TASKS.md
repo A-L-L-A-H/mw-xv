@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 19 · skipped 1 · in_progress 0 · blocked 0 · todo 89.
+Status counts: done 19 · skipped 1 · in_progress 1 · blocked 0 · todo 88.
 
 ## W0
 
@@ -56,7 +56,7 @@ Status counts: done 19 · skipped 1 · in_progress 0 · blocked 0 · todo 89.
 
 ## W1
 
-- [ ] **W1-001 — Approve canonical MoonWitness art direction**
+- [ ] **W1-001 — Approve canonical MoonWitness art direction** — **IN PROGRESS**
   - Goal: Formalize the user's zine/punk/manga reference into a production-grade visual bible while preserving current brand identity.
   - Depends on: W0-006
   - Deliverables: Visual Bible section: art direction, palette roles, linework, cel shading, grunge, composition and exclusions.

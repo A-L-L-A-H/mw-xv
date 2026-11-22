@@ -467,7 +467,7 @@
       "id": "W1-001",
       "phase": "W1",
       "title": "Approve canonical MoonWitness art direction",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -494,7 +494,7 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "Human approval required only for canonical style lock. Continue other independent audit work while waiting.",
+      "notes": "Awaiting human approval of canonical art direction. Decision-ready proposal is documented at evidence/art-direction-proposal.md; the proposal is not locked as the production visual bible.",
       "evidence": [],
       "commit": null
     },
