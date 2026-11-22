@@ -1,3 +1,4 @@
+import type { RepoSnapshot } from '@moonwitness/ai-runtime';
 import type { Domain, JsonObject, JsonValue } from '@moonwitness/types';
 
 export type RiskTier = 'R0' | 'R1' | 'R2' | 'R3' | 'R4';
@@ -151,6 +152,14 @@ export interface AcquireWorktreeOptions {
 export interface WorktreeReadFileOptions {
   readonly startLine?: number;
   readonly endLine?: number;
+}
+
+export interface DesktopRepoSnapshotOptions {
+  readonly rootLabel?: string;
+  readonly targetPath?: string;
+  readonly maxFiles?: number;
+  readonly maxManifestBytes?: number;
+  readonly maxDocHeadings?: number;
 }
 
 export interface WorktreeFileContent {
@@ -528,6 +537,11 @@ export interface DesktopCapabilityBridge {
       auth: DesktopActionAuthContext
     ): Promise<WorktreeFileWriteResult>;
     diff(runId: string): Promise<WorktreeDiffSummary>;
+    repoSnapshot(
+      runId: string,
+      auth: DesktopActionAuthContext,
+      options?: DesktopRepoSnapshotOptions
+    ): Promise<RepoSnapshot>;
     commit(
       runId: string,
       message: string,

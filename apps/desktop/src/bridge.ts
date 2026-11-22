@@ -12,6 +12,7 @@ import type {
   DesktopCapabilityBridge,
   DesktopHarnessConfig,
   DesktopKeychainSecretStore,
+  DesktopRepoSnapshotOptions,
   DesktopStreamEvent,
   DesktopStreamEventKind,
   DesktopStreamSubscribeOptions,
@@ -397,6 +398,11 @@ export function createDesktopHarnessBridge(
         auth: DesktopActionAuthContext
       ) => sandbox.writeFile(runId, relativePath, content, auth),
       diff: (runId: string) => sandbox.inspectDiff(runId),
+      repoSnapshot: (
+        runId: string,
+        auth: DesktopActionAuthContext,
+        snapshotOpts?: DesktopRepoSnapshotOptions
+      ) => sandbox.inspectRepoSnapshot(runId, auth, snapshotOpts),
       commit: (runId: string, message: string, auth: DesktopActionAuthContext) =>
         sandbox.commit(runId, message, auth),
       release: (runId: string) => sandbox.release(runId),
