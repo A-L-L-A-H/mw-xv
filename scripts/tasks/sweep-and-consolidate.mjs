@@ -435,7 +435,7 @@ export async function sweepAndConsolidate({
           throw new Error(`Visual Universe task-card archive chunk "${chunk.path}" has a malformed entry.`);
         }
         const actualBlobSha = createHash('sha1')
-          .update(`blob ${Buffer.byteLength(card.content, 'utf8')}\\0`)
+          .update(`blob ${Buffer.byteLength(card.content, 'utf8')}\0`)
           .update(card.content, 'utf8')
           .digest('hex');
         if (actualBlobSha !== card.blobSha) {
