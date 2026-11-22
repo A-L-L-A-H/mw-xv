@@ -49,7 +49,7 @@ export const AUDIT_TASKS = [
     },
     references: ['docs/decisions/0007-ai-corporation-addon-first-architecture.md'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-001' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-001' },
     url: '',
     comments: []
   },
@@ -96,7 +96,7 @@ export const AUDIT_TASKS = [
     },
     references: ['ROADMAP.md#M2.04', 'ROADMAP.md#M9.07'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-002' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-002' },
     url: '',
     comments: []
   },
@@ -142,7 +142,7 @@ export const AUDIT_TASKS = [
     },
     references: ['apps/todo/Cargo.toml'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-003' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-003' },
     url: '',
     comments: []
   },
@@ -189,7 +189,7 @@ export const AUDIT_TASKS = [
     },
     references: ['apps/api/src/plugins/rate-limit-store.ts'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-004' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-004' },
     url: '',
     comments: []
   },
@@ -235,7 +235,7 @@ export const AUDIT_TASKS = [
     },
     references: ['ROADMAP.md#M4.06', 'ROADMAP.md#M10.05'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-005' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-005' },
     url: '',
     comments: []
   },
@@ -282,7 +282,7 @@ export const AUDIT_TASKS = [
     },
     references: ['docs/engineering/authentication-security.md'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-006' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-006' },
     url: '',
     comments: []
   },
@@ -329,7 +329,7 @@ export const AUDIT_TASKS = [
     },
     references: ['arXiv:2508.02866'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-007' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-007' },
     url: '',
     comments: []
   },
@@ -376,7 +376,7 @@ export const AUDIT_TASKS = [
     },
     references: ['turbo.json'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-008' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-008' },
     url: '',
     comments: []
   },
@@ -422,7 +422,7 @@ export const AUDIT_TASKS = [
     },
     references: ['packages/logger/src/index.ts'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-009' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-009' },
     url: '',
     comments: []
   },
@@ -468,7 +468,7 @@ export const AUDIT_TASKS = [
     },
     references: ['packages/orm/src/schema-sync.ts'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-010' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-010' },
     url: '',
     comments: []
   },
@@ -513,7 +513,7 @@ export const AUDIT_TASKS = [
     },
     references: ['arXiv:2503.18813', 'arXiv:2605.17634'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-011' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-011' },
     url: '',
     comments: []
   },
@@ -559,7 +559,7 @@ export const AUDIT_TASKS = [
     },
     references: ['docs/guide/how-to/jobs-outbox.md'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-012' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-012' },
     url: '',
     comments: []
   },
@@ -606,7 +606,7 @@ export const AUDIT_TASKS = [
     },
     references: ['docs/engineering/refactor-map.md'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-013' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-013' },
     url: '',
     comments: []
   },
@@ -652,7 +652,7 @@ export const AUDIT_TASKS = [
     },
     references: ['scripts/orm-codegen.mjs'],
     blockedReason: null,
-    sourceRef: { file: 'audit', legacyId: 'AUD-014' },
+    sourceRef: { file: 'scripts/tasks/sweep-and-consolidate.mjs', legacyId: 'AUD-014' },
     url: '',
     comments: []
   }
