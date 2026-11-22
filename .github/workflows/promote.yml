@@ -1,0 +1,145 @@
+name: Promote dev to main
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promotion-pr-metadata
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      checks: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - name: Skip stale promotion events
+        id: stale
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          current_sha="$(git ls-remote origin refs/heads/dev | cut -f1)"
+          if [[ "$current_sha" != "$EXPECTED_SHA" ]]; then
+            echo 'stale=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main refs/heads/dev:refs/remotes/origin/dev
+          git fetch --tags origin --quiet || true
+          base_sha="$(git rev-parse refs/remotes/origin/main)"
+          head_sha="$(git rev-parse refs/remotes/origin/dev)"
+          if [[ "$head_sha" != "$EXPECTED_SHA" ]]; then
+            echo 'stale=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          ahead="$(git rev-list --count "${base_sha}..${EXPECTED_SHA}")"
+          if [[ "$ahead" == "0" ]]; then
+            echo 'stale=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "stale=false" >> "$GITHUB_OUTPUT"
+          echo "base_sha=$base_sha" >> "$GITHUB_OUTPUT"
+      - name: Create or find the promotion pull request
+        id: pr
+        if: steps.stale.outputs.stale != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          number="$(gh pr list --base main --head dev --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$number" ]; then
+            url="$(gh pr create --base main --head dev --title "release: promote dev to main" --body "Automated promotion pull request from dev to main.")"
+            number="${url##*/}"
+          fi
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+      - name: Classify risk from commits and changed paths
+        id: risk
+        if: steps.stale.outputs.stale != 'true'
+        env:
+          BASE_SHA: ${{ steps.stale.outputs.base_sha }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/check-promotion-risk.mjs "$BASE_SHA" "$EXPECTED_SHA" > promotion-risk.json
+          node scripts/check-promotion-risk.mjs "$BASE_SHA" "$EXPECTED_SHA" --summary >> "$GITHUB_OUTPUT"
+      - name: Refresh exact-SHA promotion report
+        if: steps.stale.outputs.stale != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BASE_SHA: ${{ steps.stale.outputs.base_sha }}
+          EXPECTED_SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/commits/$EXPECTED_SHA/check-runs?per_page=100" > promotion-checks.json
+          latest_tag="$(git tag --list 'v[0-9]*' --sort=-v:refname | head -n 1 || true)"
+          if [[ -n "$latest_tag" ]] && node scripts/release-plan.mjs --current-version "$latest_tag" --from "$BASE_SHA" --to "$EXPECTED_SHA" > promotion-release-plan.json 2>/dev/null; then
+            true
+          else
+            echo '{"status":"unavailable"}' > promotion-release-plan.json
+          fi
+          gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json body --jq '.body // ""' > promotion-current-body.md
+          report_file="$(mktemp)"
+          trap 'rm -f "$report_file" promotion-risk.json promotion-checks.json promotion-release-plan.json promotion-current-body.md' EXIT
+          node scripts/render-promotion-report.mjs \
+            "$BASE_SHA" \
+            "$EXPECTED_SHA" \
+            promotion-risk.json \
+            promotion-checks.json \
+            promotion-release-plan.json \
+            promotion-current-body.md \
+            "$report_file" \
+            "$GH_REPO"
+          gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --body-file "$report_file"
+      - name: Ensure approval-required label exists
+        if: steps.stale.outputs.stale != 'true' && steps.risk.outputs.approval_required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh label create approval-required --repo "$GH_REPO" --color B60205 --description "Requires CODEOWNER approval before merging to main" --force
+      - name: Disable auto-merge and mark sensitive promotion
+        if: steps.stale.outputs.stale != 'true' && steps.risk.outputs.approval_required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          set -euo pipefail
+          gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label approval-required
+          gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --disable-auto || true
+      - name: Enable merge for compatible, low-risk promotion
+        if: steps.stale.outputs.stale != 'true' && steps.risk.outputs.approval_required != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          labels="$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json labels --jq '[.labels[].name]')"
+          if jq -e 'index("approval-required") != null' <<< "$labels" >/dev/null; then
+            gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --remove-label approval-required
+          fi
+          gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --auto --merge --match-head-commit "$EXPECTED_SHA"

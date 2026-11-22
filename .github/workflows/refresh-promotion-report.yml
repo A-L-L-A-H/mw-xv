@@ -1,0 +1,92 @@
+name: Refresh promotion report
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types: [completed]
+    branches: [dev]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promotion-pr-metadata
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: >-
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == 'dev'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      checks: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - name: Verify current dev and fetch trusted comparison refs
+        id: source
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          current_sha="$(git ls-remote origin refs/heads/dev | cut -f1)"
+          if [[ "$current_sha" != "$EXPECTED_SHA" ]]; then
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main refs/heads/dev:refs/remotes/origin/dev
+          git fetch --tags origin --quiet || true
+          test "$(git rev-parse refs/remotes/origin/dev)" = "$EXPECTED_SHA"
+          base_sha="$(git rev-parse refs/remotes/origin/main)"
+          ahead="$(git rev-list --count "${base_sha}..${EXPECTED_SHA}")"
+          if [[ "$ahead" == "0" ]]; then
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo 'current=true' >> "$GITHUB_OUTPUT"
+          echo "base_sha=$base_sha" >> "$GITHUB_OUTPUT"
+      - name: Refresh exact-SHA report after hosted checks complete
+        if: steps.source.outputs.current == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BASE_SHA: ${{ steps.source.outputs.base_sha }}
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          PR_NUMBER="$(gh pr list --base main --head dev --state open --json number --jq '.[0].number // empty')"
+          if [[ -z "$PR_NUMBER" ]]; then
+            exit 0
+          fi
+          node scripts/check-promotion-risk.mjs "$BASE_SHA" "$EXPECTED_SHA" > promotion-risk.json
+          gh api "repos/$GH_REPO/commits/$EXPECTED_SHA/check-runs?per_page=100" > promotion-checks.json
+          latest_tag="$(git tag --list 'v[0-9]*' --sort=-v:refname | head -n 1 || true)"
+          if [[ -n "$latest_tag" ]] && node scripts/release-plan.mjs --current-version "$latest_tag" --from "$BASE_SHA" --to "$EXPECTED_SHA" > promotion-release-plan.json 2>/dev/null; then
+            true
+          else
+            echo '{"status":"unavailable"}' > promotion-release-plan.json
+          fi
+          gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json body --jq '.body // ""' > promotion-current-body.md
+          report_file="$(mktemp)"
+          trap 'rm -f "$report_file" promotion-risk.json promotion-checks.json promotion-release-plan.json promotion-current-body.md' EXIT
+          node scripts/render-promotion-report.mjs \
+            "$BASE_SHA" \
+            "$EXPECTED_SHA" \
+            promotion-risk.json \
+            promotion-checks.json \
+            promotion-release-plan.json \
+            promotion-current-body.md \
+            "$report_file" \
+            "$GH_REPO"
+          gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --body-file "$report_file"
