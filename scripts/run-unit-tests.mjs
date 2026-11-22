@@ -151,6 +151,12 @@ const suites = [
     coverage: ['src/validation.ts'],
   },
   {
+    name: 'orm-project',
+    packageName: '@moonwitness/orm-project',
+    typecheck: true,
+    coverage: ['src/validation.ts'],
+  },
+  {
     name: 'orm-knowledge',
     packageName: '@moonwitness/orm-knowledge',
     typecheck: true,

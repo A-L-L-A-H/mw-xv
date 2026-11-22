@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "addons": ["auth", "base", "jobs", "notification"],
   "generatedFrom": "core addon manifests and model field metadata; no seed values included",
-  "sourceSha256": "50a9fec79e7caf1138439c2ae34896cdcfd8409cd67fd9deda78d383d3be30b2",
+  "sourceSha256": "8e3970cdf4e50767b4edfe533fe200ce842aded17346cc81586ed09464696de3",
   "models": [
     {
       "name": "auth.refresh_token",
@@ -231,6 +231,26 @@
     {
       "name": "organization.team",
       "table": "organization_teams"
+    },
+    {
+      "name": "project.milestone",
+      "table": "project_milestones"
+    },
+    {
+      "name": "project.project",
+      "table": "project_projects"
+    },
+    {
+      "name": "project.stage",
+      "table": "project_stages"
+    },
+    {
+      "name": "project.task",
+      "table": "project_tasks"
+    },
+    {
+      "name": "project.task_dependency",
+      "table": "project_task_dependencies"
     },
     {
       "name": "request.purchase",
@@ -940,6 +960,146 @@
       "from": "organization.team",
       "field": "parent",
       "to": "organization.team",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.milestone",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.milestone",
+      "field": "owner",
+      "to": "base.user",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.milestone",
+      "field": "project",
+      "to": "project.project",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.project",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.project",
+      "field": "department",
+      "to": "organization.department",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.project",
+      "field": "owner",
+      "to": "base.user",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.project",
+      "field": "partner",
+      "to": "base.partner",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.project",
+      "field": "team",
+      "to": "organization.team",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.stage",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.stage",
+      "field": "project",
+      "to": "project.project",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task",
+      "field": "assignee",
+      "to": "base.user",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task",
+      "field": "milestone",
+      "to": "project.milestone",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task",
+      "field": "parent",
+      "to": "project.task",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task",
+      "field": "project",
+      "to": "project.project",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task",
+      "field": "reviewer",
+      "to": "base.user",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task",
+      "field": "stage",
+      "to": "project.stage",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task_dependency",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task_dependency",
+      "field": "depends_on",
+      "to": "project.task",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "project.task_dependency",
+      "field": "task",
+      "to": "project.task",
       "cardinality": "N:1",
       "kind": "belongsTo"
     },

@@ -4,6 +4,9 @@
   "version": "1.0.0-rc.1",
   "description": "MoonWitness admin board: data-driven views rendered from API metadata",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "node ../../scripts/copy-board-public-assets.mjs && next dev -p 5173",
     "build": "node ../../scripts/copy-board-public-assets.mjs && next build",

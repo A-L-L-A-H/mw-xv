@@ -7,6 +7,7 @@ import { jobsManifest } from '@moonwitness/jobs';
 import { manifest as notificationAddon } from '@moonwitness/orm-notification';
 import { manifest as workflowAddon } from '@moonwitness/orm-workflow';
 import { manifest as organizationAddon } from '@moonwitness/orm-organization';
+import { manifest as projectAddon } from '@moonwitness/orm-project';
 import { manifest as integrationAddon } from '@moonwitness/orm-integration';
 import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
@@ -157,6 +158,10 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'organization',
     manifest: organizationAddon,
+  },
+  {
+    name: 'project',
+    manifest: projectAddon,
   },
   {
     name: 'workflow',

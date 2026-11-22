@@ -10,6 +10,7 @@ import * as auth from '../../packages/auth/dist/index.js';
 import * as jobs from '../../packages/jobs/dist/index.js';
 import * as notification from '../../packages/orm-notification/dist/index.js';
 import * as organization from '../../packages/orm-organization/dist/index.js';
+import * as project from '../../packages/orm-project/dist/index.js';
 import * as storage from '../../packages/orm-storage/dist/index.js';
 import * as workflow from '../../packages/orm-workflow/dist/index.js';
 import * as request from '../../packages/orm-request/dist/index.js';
@@ -28,6 +29,7 @@ const addonPackages = [
   { directory: 'jobs', module: jobs, manifest: jobs.jobsManifest },
   { directory: 'orm-notification', module: notification, manifest: notification.manifest },
   { directory: 'orm-organization', module: organization, manifest: organization.manifest },
+  { directory: 'orm-project', module: project, manifest: project.manifest },
   { directory: 'orm-storage', module: storage, manifest: storage.manifest },
   { directory: 'orm-workflow', module: workflow, manifest: workflow.manifest },
   { directory: 'orm-request', module: request, manifest: request.manifest },
@@ -171,6 +173,7 @@ describe('workspace addon conformance', () => {
       { id: 'jobs.cron_example_disabled', field: 'name' },
       { id: 'notification.template_example_in_app', field: 'body' },
       { id: 'organization.department_operations', field: 'description' },
+      { id: 'project.example_platform_roadmap', field: 'description' },
       { id: 'workflow.definition_sample_request_v1', field: 'name' },
       { id: 'request.example_laptop', field: 'description' },
       { id: 'orm-integration.endpoint_example_disabled', field: 'name' },
@@ -309,7 +312,7 @@ describe('workspace addon conformance', () => {
     }
   });
 
-  it('installs all 12 addons deterministically when supplied in reverse dependency order', async () => {
+  it('installs all 13 addons deterministically when supplied in reverse dependency order', async () => {
     const db = knex({
       client: 'better-sqlite3',
       connection: { filename: ':memory:' },

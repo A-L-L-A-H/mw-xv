@@ -222,7 +222,7 @@ jobs:
           printf 'kind=%s\nbase_path=%s\nsource_ref=%s\nchannel=%s\n' "$kind" "$base_path" "$source_ref" "$channel" >> "$GITHUB_OUTPUT"
       - uses: ./.github/actions/setup-pnpm
         with:
-          node-version: '22'
+          node-version: '24'
           pnpm-version: '11.17.0'
       - name: Install frozen workspace dependencies
         run: pnpm install --frozen-lockfile --no-runtime
@@ -263,6 +263,8 @@ jobs:
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-organization
       - name: Build documentation package workflow
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-workflow
+      - name: Build documentation package project
+        run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-project
       - name: Build documentation package requests
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-request
       - name: Build documentation package storage
@@ -402,7 +404,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-pnpm
         with:
-          node-version: '22'
+          node-version: '24'
           pnpm-version: '11.17.0'
       - name: Install frozen workspace dependencies
         run: pnpm install --frozen-lockfile --no-runtime

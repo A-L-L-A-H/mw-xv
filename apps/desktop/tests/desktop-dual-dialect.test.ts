@@ -164,20 +164,23 @@ describe('DSK-2.8 & DSK-2.12: Dual-dialect SQLite / Postgres conformance', () =>
     try {
       const installed = await sidecar.initializeOrmAddons(DESKTOP_ADDONS);
       expect(installed).toEqual(DESKTOP_ADDONS.map((addon) => addon.name));
-      expect(installed).toHaveLength(8);
+      expect(installed).toHaveLength(9);
       expect(installed).toContain('ai');
       expect(installed).toContain('jobs');
+      expect(installed).toContain('project');
 
       const knexInstance = sidecar.getOrmKnex();
       expect(knexInstance).not.toBeNull();
       const tables = await knexInstance!('sqlite_master').select('name').where({ type: 'table' });
       const tableNames = new Set(tables.map((row: { name: string }) => row.name));
 
-      // Verify core @moonwitness/orm-ai and @moonwitness/jobs tables exist in local.db
+      // Verify core @moonwitness/orm-ai, @moonwitness/orm-project, and @moonwitness/jobs tables exist in local.db
       const agentRunTable = Registry.get('ai.agent_run').tableName;
       const workContractTable = Registry.get('ai.work_contract').tableName;
+      const projectTaskTable = Registry.get('project.task').tableName;
       expect(tableNames.has(agentRunTable)).toBe(true);
       expect(tableNames.has(workContractTable)).toBe(true);
+      expect(tableNames.has(projectTaskTable)).toBe(true);
       expect([...tableNames].some((name) => name.includes('job'))).toBe(true);
     } finally {
       await sidecar.closeAsync();

@@ -100,6 +100,7 @@ test('documentation builds are isolated and portal failures annotate sanitized J
     ['@moonwitness/orm-notification', 'notifications'],
     ['@moonwitness/orm-organization', 'organization'],
     ['@moonwitness/orm-workflow', 'workflow'],
+    ['@moonwitness/orm-project', 'project'],
     ['@moonwitness/orm-request', 'requests'],
     ['@moonwitness/orm-storage', 'storage'],
     ['@moonwitness/orm-knowledge', 'knowledge'],

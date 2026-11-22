@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `280e86d893a126a2ec9c3fce0872261b2058beda0cc33b625cc1c10cf1a32762`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `490671fd70572cd1fb32a3e104b7dd3d017231a9b32b9dcd57a7922ce9c41c88`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -846,6 +846,94 @@ Models: 13; declared views: 4; menu entries: 4; seed rows: 8.
 | `base.group_user`       | `whatsapp.conversation` | Yes  | No     | No    | No     |
 | `base.group_user`       | `whatsapp.message`      | Yes  | No     | No    | No     |
 | `base.group_user`       | `whatsapp.status`       | Yes  | No     | No    | No     |
+
+## Addon `project`
+
+Version: `1.0.0`; dependencies: `base`, `notification`, `organization`, `workflow`.
+
+Models: 5; declared views: 5; menu entries: 5; seed rows: 19.
+
+| Model                     | Table                       | Field              | Kind      | Required | Optional | Default    | Relation                  |
+| ------------------------- | --------------------------- | ------------------ | --------- | -------- | -------- | ---------- | ------------------------- |
+| `project.milestone`       | `project_milestones`        | `code`             | string    | Yes      | No       | No         | —                         |
+| `project.milestone`       | `project_milestones`        | `company`          | belongsTo | Yes      | No       | No         | `base.company`            |
+| `project.milestone`       | `project_milestones`        | `description`      | text      | No       | Yes      | No         | —                         |
+| `project.milestone`       | `project_milestones`        | `due_date`         | string    | No       | Yes      | No         | —                         |
+| `project.milestone`       | `project_milestones`        | `name`             | string    | Yes      | No       | No         | —                         |
+| `project.milestone`       | `project_milestones`        | `owner`            | belongsTo | No       | Yes      | No         | `base.user`               |
+| `project.milestone`       | `project_milestones`        | `project`          | belongsTo | Yes      | No       | No         | `project.project`         |
+| `project.milestone`       | `project_milestones`        | `status`           | enum      | No       | Yes      | [redacted] | —                         |
+| `project.project`         | `project_projects`          | `code`             | string    | Yes      | No       | No         | —                         |
+| `project.project`         | `project_projects`          | `company`          | belongsTo | Yes      | No       | No         | `base.company`            |
+| `project.project`         | `project_projects`          | `department`       | belongsTo | No       | Yes      | No         | `organization.department` |
+| `project.project`         | `project_projects`          | `description`      | text      | No       | Yes      | No         | —                         |
+| `project.project`         | `project_projects`          | `name`             | string    | Yes      | No       | No         | —                         |
+| `project.project`         | `project_projects`          | `owner`            | belongsTo | No       | Yes      | No         | `base.user`               |
+| `project.project`         | `project_projects`          | `partner`          | belongsTo | No       | Yes      | No         | `base.partner`            |
+| `project.project`         | `project_projects`          | `sequence`         | integer   | No       | Yes      | [redacted] | —                         |
+| `project.project`         | `project_projects`          | `start_date`       | string    | No       | Yes      | No         | —                         |
+| `project.project`         | `project_projects`          | `status`           | enum      | No       | Yes      | [redacted] | —                         |
+| `project.project`         | `project_projects`          | `target_date`      | string    | No       | Yes      | No         | —                         |
+| `project.project`         | `project_projects`          | `team`             | belongsTo | No       | Yes      | No         | `organization.team`       |
+| `project.stage`           | `project_stages`            | `code`             | string    | Yes      | No       | No         | —                         |
+| `project.stage`           | `project_stages`            | `company`          | belongsTo | Yes      | No       | No         | `base.company`            |
+| `project.stage`           | `project_stages`            | `fold`             | boolean   | No       | Yes      | [redacted] | —                         |
+| `project.stage`           | `project_stages`            | `is_closed`        | boolean   | No       | Yes      | [redacted] | —                         |
+| `project.stage`           | `project_stages`            | `name`             | string    | Yes      | No       | No         | —                         |
+| `project.stage`           | `project_stages`            | `project`          | belongsTo | No       | Yes      | No         | `project.project`         |
+| `project.stage`           | `project_stages`            | `sequence`         | integer   | No       | Yes      | [redacted] | —                         |
+| `project.stage`           | `project_stages`            | `wip_limit`        | integer   | No       | Yes      | No         | —                         |
+| `project.task`            | `project_tasks`             | `assignee`         | belongsTo | No       | Yes      | No         | `base.user`               |
+| `project.task`            | `project_tasks`             | `blocked_reason`   | text      | No       | Yes      | No         | —                         |
+| `project.task`            | `project_tasks`             | `code`             | string    | Yes      | No       | No         | —                         |
+| `project.task`            | `project_tasks`             | `company`          | belongsTo | Yes      | No       | No         | `base.company`            |
+| `project.task`            | `project_tasks`             | `description`      | text      | No       | Yes      | No         | —                         |
+| `project.task`            | `project_tasks`             | `due_date`         | string    | No       | Yes      | No         | —                         |
+| `project.task`            | `project_tasks`             | `estimate_minutes` | integer   | No       | Yes      | No         | —                         |
+| `project.task`            | `project_tasks`             | `external_ref`     | string    | No       | Yes      | No         | —                         |
+| `project.task`            | `project_tasks`             | `milestone`        | belongsTo | No       | Yes      | No         | `project.milestone`       |
+| `project.task`            | `project_tasks`             | `parent`           | belongsTo | No       | Yes      | No         | `project.task`            |
+| `project.task`            | `project_tasks`             | `position`         | integer   | No       | Yes      | [redacted] | —                         |
+| `project.task`            | `project_tasks`             | `priority`         | enum      | No       | Yes      | [redacted] | —                         |
+| `project.task`            | `project_tasks`             | `project`          | belongsTo | Yes      | No       | No         | `project.project`         |
+| `project.task`            | `project_tasks`             | `reviewer`         | belongsTo | No       | Yes      | No         | `base.user`               |
+| `project.task`            | `project_tasks`             | `stage`            | belongsTo | Yes      | No       | No         | `project.stage`           |
+| `project.task`            | `project_tasks`             | `status`           | enum      | No       | Yes      | [redacted] | —                         |
+| `project.task`            | `project_tasks`             | `title`            | string    | Yes      | No       | No         | —                         |
+| `project.task_dependency` | `project_task_dependencies` | `company`          | belongsTo | Yes      | No       | No         | `base.company`            |
+| `project.task_dependency` | `project_task_dependencies` | `depends_on`       | belongsTo | Yes      | No       | No         | `project.task`            |
+| `project.task_dependency` | `project_task_dependencies` | `kind`             | enum      | No       | Yes      | [redacted] | —                         |
+| `project.task_dependency` | `project_task_dependencies` | `task`             | belongsTo | Yes      | No       | No         | `project.task`            |
+
+### Menus and seed coverage
+
+| Menu model                | Label             | Group    | Sequence | Visibility       |
+| ------------------------- | ----------------- | -------- | -------: | ---------------- |
+| `project.milestone`       | Milestones        | Projects |       22 | Standard         |
+| `project.project`         | Projects          | Projects |       20 | Standard         |
+| `project.stage`           | Project Stages    | Projects |       23 | Standard         |
+| `project.task`            | Tasks             | Projects |       21 | Standard         |
+| `project.task_dependency` | Task Dependencies | Projects |       24 | Development mode |
+
+- Seed coverage: `base.model_access` has 5 declared seed row(s); seed values are not included.
+- Seed coverage: `base.sequence` has 1 declared seed row(s); seed values are not included.
+- Seed coverage: `notification.template` has 3 declared seed row(s); seed values are not included.
+- Seed coverage: `project.milestone` has 1 declared seed row(s); seed values are not included.
+- Seed coverage: `project.project` has 1 declared seed row(s); seed values are not included.
+- Seed coverage: `project.stage` has 4 declared seed row(s); seed values are not included.
+- Seed coverage: `project.task` has 2 declared seed row(s); seed values are not included.
+- Seed coverage: `project.task_dependency` has 1 declared seed row(s); seed values are not included.
+- Seed coverage: `workflow.definition` has 1 declared seed row(s); seed values are not included.
+
+### Seeded model access rules
+
+| Group reference   | Model                     | Read | Create | Write | Delete |
+| ----------------- | ------------------------- | ---- | ------ | ----- | ------ |
+| `base.group_user` | `project.milestone`       | Yes  | No     | No    | No     |
+| `base.group_user` | `project.project`         | Yes  | No     | No    | No     |
+| `base.group_user` | `project.stage`           | Yes  | No     | No    | No     |
+| `base.group_user` | `project.task`            | Yes  | Yes    | Yes   | No     |
+| `base.group_user` | `project.task_dependency` | Yes  | Yes    | Yes   | No     |
 
 ## Addon `request`
 

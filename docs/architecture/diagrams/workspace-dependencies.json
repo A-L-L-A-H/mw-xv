@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "f70254db544861af2748bdb9c9668dab380ef1b367f5e0a6084b26d47a3c7124",
+  "sourceSha256": "3c3f9dfa109e324863906ecbfcf374502fc5067f716cabf9547e47374ae21560",
   "packages": [
     {
       "name": "@moonwitness/ai-evaluation",
@@ -140,6 +140,12 @@
       "kind": "package",
       "version": "1.0.0-rc.1",
       "manifest": "packages/orm-organization"
+    },
+    {
+      "name": "@moonwitness/orm-project",
+      "kind": "package",
+      "version": "1.0.0-rc.1",
+      "manifest": "packages/orm-project"
     },
     {
       "name": "@moonwitness/orm-request",
@@ -355,6 +361,12 @@
     },
     {
       "from": "@moonwitness/api",
+      "to": "@moonwitness/orm-project",
+      "kind": "runtime",
+      "manifest": "apps/api"
+    },
+    {
+      "from": "@moonwitness/api",
       "to": "@moonwitness/orm-request",
       "kind": "runtime",
       "manifest": "apps/api"
@@ -494,6 +506,12 @@
     {
       "from": "@moonwitness/desktop",
       "to": "@moonwitness/orm-organization",
+      "kind": "runtime",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
+      "to": "@moonwitness/orm-project",
       "kind": "runtime",
       "manifest": "apps/desktop"
     },
@@ -700,6 +718,42 @@
       "to": "@moonwitness/orm-base",
       "kind": "runtime",
       "manifest": "packages/orm-organization"
+    },
+    {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/jobs",
+      "kind": "development",
+      "manifest": "packages/orm-project"
+    },
+    {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-project"
+    },
+    {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-project"
+    },
+    {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/orm-notification",
+      "kind": "runtime",
+      "manifest": "packages/orm-project"
+    },
+    {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/orm-organization",
+      "kind": "runtime",
+      "manifest": "packages/orm-project"
+    },
+    {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/orm-workflow",
+      "kind": "runtime",
+      "manifest": "packages/orm-project"
     },
     {
       "from": "@moonwitness/orm-request",
