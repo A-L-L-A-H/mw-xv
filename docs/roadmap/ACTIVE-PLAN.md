@@ -1,19 +1,21 @@
 # Jalur rilis aktif
 
-## Current checkpoint — 2026-11-23 (SOT recovery and stabilization; not released)
+## Current checkpoint — 2026-11-23 (TaskOS recovery implementation; not released)
 
-- **Stable branch:** `main` remains at `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`; no main changes or deployment were made.
-- **Development branch:** `dev` is 60 commits ahead and 0 behind at pre-checkpoint snapshot `d5cb3406ac7fc0b2e20268875fb990ee678599fd`. Keep work dev-first; no force push or history rewrite.
-- **Promotion PR #37:** current promotion report still references earlier candidate `ce9b09df1e1d`, while dev advanced to `d5cb3406ac7f`. Refresh report and verify required checks on the exact latest source before merge. Risk classification still requires maintainer/CODEOWNER approval.
-- **CI:** earlier full CI run `45058239301` was cancelled after a later documentation commit advanced the branch. The exact current candidate has not yet been observed with a completed full application CI suite through the available status view. Documentation/promotion automation run [45058471838](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45058471838) completed promotion classification, and docs verification [45058471938](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45058471938) is still being checked. Do not merge on these partial results.
-- **TaskOS:** `docs/tasks/tasks.json` remains zero-byte. [Recovery inventory](../tasks/RECOVERY-INVENTORY.md) documents 627 distinct candidate records across eight source groups. No records have been written. The importer defaults to dry-run, rejects missing sources/duplicate IDs, preserves Visual Universe metadata and refuses to overwrite a populated registry. Validator and sync gates now enforce provenance, project/dependency references and DAG integrity; `pnpm test:taskos` is included in the unit CI runner but has not yet been observed passing on a completed exact-SHA run.
-- **SOT target:** TaskOS will own task lifecycle; `ROADMAP.md`, `docs/roadmap/tasks.json`, GitHub Issues and Visual Universe local task files become projections/operational views. Temporary recovery boundary stays active until registry and validation are proven.
-- **M13:** M13.01–M13.12 are recorded complete on dev. M13.09–M13.12 remain work-complete but pending exact-current-SHA CI, approval and promotion; narrow milestone evidence did not include full PostgreSQL and Playwright E2E.
+- **Stable branch:** `main` remains at `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`. No main write, merge or deployment was performed.
+- **Development branch:** `dev` is 72 commits ahead and 0 behind at checkpoint source `6da2f0ba969a449a210b260179ce3504ec22c984`. All stabilization work remains dev-first; no force push or history rewrite.
+- **Promotion PR #37:** the managed report last referenced `e9b14f6e6c79`, not the current checkpoint. Its previous full CI attempts were cancelled after new pushes. Refresh the report and verify required checks on the latest exact head. The report still requires maintainer/CODEOWNER approval.
+- **Latest hosted CI:** exact checkpoint `6da2f0b` has a pending CI run [45059304210](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45059304210); no completed jobs/results have been verified at this checkpoint. Do not claim build/test green or merge based on pending state.
+- **TaskOS registry:** `docs/tasks/tasks.json` remains zero-byte. The [recovery inventory](../tasks/RECOVERY-INVENTORY.md) documents 627 distinct candidate records across eight source groups and an expected state distribution (468 done, 49 doing, 89 todo, 21 blocked); these are calculated migration expectations, not live registry counts. No records were written.
+- **TaskOS safeguards:** importer defaults to dry-run, rejects missing sources/duplicate IDs, validates its schema, supports deterministic output and refuses to overwrite a populated registry. Validator checks provenance, project refs, reciprocal dependency/block edges, cycles, exact roadmap-index status parity and checkbox completion parity. Roadmap sync refuses to write before validation. Regression coverage is included in `pnpm test:taskos` and the unit CI runner; it has not yet been observed passing on a completed exact-head CI run.
+- **SOT target:** TaskOS will own task lifecycle; `ROADMAP.md`, `docs/roadmap/tasks.json`, GitHub Issues and Visual Universe local task files are views/projections. Temporary recovery mode remains active until the registry is restored and validated.
+- **Visual Universe:** the 109-task project is integrated into the global TaskOS projection, retaining all delegated source metadata. Local `task.json`, `TASKS.md` and task cards are generated views; they are not independent lifecycle authorities. Evidence paths follow TaskOS, and unknown execution exit codes are labelled “not recorded”.
+- **M13:** M13.01–M13.12 remain recorded complete on dev. M13.09–M13.12 remain pending full exact-current-SHA CI, approval and promotion; milestone evidence did not include full PostgreSQL integration and Playwright E2E.
 - **Issues:** #40–#43 remain open pending delivery verification. TaskOS recovery is tracked in [#44](https://github.com/A-L-L-A-H/mw-xv/issues/44).
-- **Release readiness:** M12.14 stable-release approval remains unresolved. Promotion is not release or deployment authorization.
-- **Runtime policy:** Node.js 24 is aligned across root package, Docker, CI, Desktop and docs. Runtime-support review for other components remains due.
+- **Release readiness:** M12.14 stable-release approval remains unresolved. Promotion is not a stable release or deployment authorization.
+- **Runtime policy:** Node.js 24 is aligned across root package, Docker, CI, Desktop and docs. Platform audit now derives the major from the support ledger rather than assuming Node 22; its regression test is part of unit CI.
 
-Follow [Stabilization Plan](STABILIZATION-PLAN.md) and [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md). No feature expansion, promotion merge or deployment until TaskOS recovery, complete exact-source CI, reviews and release gates are done.
+Follow [Stabilization Plan](STABILIZATION-PLAN.md) and [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md). Do not write the canonical registry, merge, release or deploy until the exact-source checks and approval gates are complete.
 
 ## Checkpoint historis — 2026-10-23
 
