@@ -2649,7 +2649,7 @@
           "artifact": "evidence/W7-002-asset-browser.md; test-results/junit/ui-catalog.xml"
         }
       ],
-      "commit": null
+      "commit": "568d3a47bce0e68c4d5c79a34ee645baf0bcee96"
     },
     {
       "id": "W7-003",
