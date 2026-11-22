@@ -16,6 +16,7 @@ import { Input } from '@moonwitness/ui/components/input';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { PageHeader } from '@moonwitness/ui/components/page-header';
 import { Panel } from '@moonwitness/ui/components/panel';
+import { SelectField } from '@moonwitness/ui/components/select-field';
 import { toast } from '@moonwitness/ui/components/toast';
 import { client } from '@/lib/client';
 import { scopedQueryKey } from '@/lib/query-scope';
@@ -395,29 +396,27 @@ export function ProjectsPage() {
             placeholder="New synced task title (optional for export-only)"
             className="md:col-span-2"
           />
-          <select
+          <SelectField
             aria-label="TaskOS Priority"
             value={todoPriority}
             onChange={(e) => setTodoPriority(e.target.value as typeof todoPriority)}
-            className="mw-ui-input px-2 py-1.5 text-sm"
           >
             <option value="p0">p0 (urgent)</option>
             <option value="p1">p1 (high)</option>
             <option value="p2">p2 (normal)</option>
             <option value="p3">p3 (low)</option>
-          </select>
-          <select
+          </SelectField>
+          <SelectField
             aria-label="TaskOS Status"
             value={todoStatus}
             onChange={(e) => setTodoStatus(e.target.value as typeof todoStatus)}
-            className="mw-ui-input px-2 py-1.5 text-sm"
           >
             <option value="todo">todo</option>
             <option value="doing">doing</option>
             <option value="blocked">blocked</option>
             <option value="review">review</option>
             <option value="done">done</option>
-          </select>
+          </SelectField>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <Button

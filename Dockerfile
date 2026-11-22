@@ -9,8 +9,10 @@ WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/board/package.json ./apps/board/package.json
+COPY apps/control-plane/package.json ./apps/control-plane/package.json
 COPY apps/desktop/package.json ./apps/desktop/package.json
 COPY apps/docs/package.json ./apps/docs/package.json
+COPY apps/isp/package.json ./apps/isp/package.json
 COPY apps/ui-catalog/package.json ./apps/ui-catalog/package.json
 COPY packages/ai-evaluation/package.json ./packages/ai-evaluation/package.json
 COPY packages/ai-mcp/package.json ./packages/ai-mcp/package.json

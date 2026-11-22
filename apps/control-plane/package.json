@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "docker build -t mw-xv-control-plane:latest -f apps/control-plane/Dockerfile .",
+    "docker:build": "docker build -t mw-xv-control-plane:latest -f Dockerfile .",
     "dev": "go run .",
     "fmt": "go fmt ./..."
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

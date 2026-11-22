@@ -1,7 +1,6 @@
 packages:
   - 'apps/*'
   - 'packages/*'
-  - 'apps/radius'
 allowBuilds:
   better-sqlite3: true
   esbuild: true
