@@ -85,14 +85,28 @@ export async function validateTasks() {
 
   // Reject unresolved dependency/block references instead of silently ignoring them.
   for (const task of tasksData.tasks) {
-    for (const dependency of task.dependsOn ?? []) {
-      if (!taskMap.has(dependency)) {
+    const dependencies = task.dependsOn ?? [];
+    const blockedTasks = task.blocks ?? [];
+    if (new Set(dependencies).size !== dependencies.length) {
+      errors.push(`Task "${task.code}" contains duplicate dependency references.`);
+    }
+    if (new Set(blockedTasks).size !== blockedTasks.length) {
+      errors.push(`Task "${task.code}" contains duplicate blocked-task references.`);
+    }
+    for (const dependency of dependencies) {
+      const dependencyTask = taskMap.get(dependency);
+      if (!dependencyTask) {
         errors.push(`Task "${task.code}" references unknown dependency "${dependency}".`);
+      } else if (!(dependencyTask.blocks ?? []).includes(task.code)) {
+        errors.push(`Dependency edge "${task.code}" -> "${dependency}" is missing its reciprocal blocks reference.`);
       }
     }
-    for (const blockedTask of task.blocks ?? []) {
-      if (!taskMap.has(blockedTask)) {
+    for (const blockedTask of blockedTasks) {
+      const target = taskMap.get(blockedTask);
+      if (!target) {
         errors.push(`Task "${task.code}" references unknown blocked task "${blockedTask}".`);
+      } else if (!(target.dependsOn ?? []).includes(task.code)) {
+        errors.push(`Blocks edge "${task.code}" -> "${blockedTask}" has no reciprocal dependency reference.`);
       }
     }
   }
