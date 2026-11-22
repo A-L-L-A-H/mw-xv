@@ -3,8 +3,13 @@ import { test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
+  AnimeActionLines,
+  AnimeImpactBurst,
   DecorativeMotif,
   Doodle,
+  EditorialTexture,
+  GrungeCanvas,
+  GrungeStamp,
   InkFrame,
   InkUnderline,
   LiveIndicator,
@@ -12,6 +17,7 @@ import {
   SpeedLines,
   SpeechBubble,
 } from '../dist/components/effects.js';
+import { ArtworkFrame } from '../dist/components/artwork-frame.js';
 
 test('ink effects render as decorative shared primitives', () => {
   const html = renderToStaticMarkup(
@@ -84,4 +90,45 @@ test('live indicator binds to active state with non-color label and offscreen pa
   assert.match(activeHtml, /ON AIR/u);
   assert.match(idleHtml, /data-active="false"/u);
   assert.match(idleHtml, /STANDBY/u);
+});
+
+test('anime effect animations and rough grunge artwork primitives render with decorative attributes', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(EditorialTexture, { variant: 'grunge' }),
+      React.createElement(
+        InkFrame,
+        { roughness: 'brutal' },
+        React.createElement('span', null, 'Brutal')
+      ),
+      React.createElement(AnimeImpactBurst, { variant: 'slash' }),
+      React.createElement(AnimeActionLines, { direction: 'diagonal', density: 'dense', seed: 11 }),
+      React.createElement(
+        GrungeCanvas,
+        { intensity: 'heavy', surface: 'ink', scratches: true },
+        React.createElement('span', null, 'Raw artwork')
+      ),
+      React.createElement(GrungeStamp, { tone: 'magenta', tilt: 'left' }, 'IMPACT'),
+      React.createElement(
+        ArtworkFrame,
+        { frame: 'grunge', animeEffect: 'slash', shape: 'landscape' },
+        React.createElement('img', { src: '/art.webp', alt: 'Grunge panel' })
+      )
+    )
+  );
+
+  assert.match(html, /mw-ui-editorial-texture[^"]*".*data-variant="grunge"/u);
+  assert.match(html, /class="mw-ui-ink-frame" data-roughness="brutal"/u);
+  assert.match(html, /class="mw-ui-anime-burst mw-ui-anime-burst-active/u);
+  assert.match(html, /data-variant="slash"/u);
+  assert.match(html, /class="mw-ui-anime-action-lines mw-ui-anime-action-lines-sweep/u);
+  assert.match(html, /data-density="dense" data-direction="diagonal"/u);
+  assert.match(html, /class="mw-ui-grunge-canvas/u);
+  assert.match(html, /class="mw-ui-grunge-canvas-scratches"/u);
+  assert.match(html, /class="mw-ui-grunge-stamp/u);
+  assert.match(html, /data-tone="magenta"/u);
+  assert.match(html, /class="mw-ui-artwork-frame" data-anime-effect="slash" data-frame="grunge"/u);
+  assert.match(html, /class="mw-ui-artwork-frame-grunge"/u);
 });

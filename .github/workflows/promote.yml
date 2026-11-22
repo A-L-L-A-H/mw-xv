@@ -111,8 +111,20 @@ jobs:
             "$report_file" \
             "$GH_REPO"
           gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --body-file "$report_file"
+      - name: Verify evolution constitution and fitness ratchet
+        id: evolution_gate
+        if: steps.stale.outputs.stale != 'true'
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          node scripts/evolution/check-constitution.mjs --enforce-pause
+          node scripts/evolution/check-ratchet.mjs
       - name: Ensure approval-required label exists
-        if: steps.stale.outputs.stale != 'true' && steps.risk.outputs.approval_required == 'true'
+        if: >-
+          steps.stale.outputs.stale != 'true' && (
+            steps.evolution_gate.outcome != 'success' ||
+            (steps.risk.outputs.approval_required == 'true' && vars.AUTONOMOUS_PROMOTE != 'true')
+          )
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -120,7 +132,11 @@ jobs:
           set -euo pipefail
           gh label create approval-required --repo "$GH_REPO" --color B60205 --description "Requires CODEOWNER approval before merging to main" --force
       - name: Disable auto-merge and mark sensitive promotion
-        if: steps.stale.outputs.stale != 'true' && steps.risk.outputs.approval_required == 'true'
+        if: >-
+          steps.stale.outputs.stale != 'true' && (
+            steps.evolution_gate.outcome != 'success' ||
+            (steps.risk.outputs.approval_required == 'true' && vars.AUTONOMOUS_PROMOTE != 'true')
+          )
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -130,7 +146,10 @@ jobs:
           gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label approval-required
           gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --disable-auto || true
       - name: Enable merge for compatible, low-risk promotion
-        if: steps.stale.outputs.stale != 'true' && steps.risk.outputs.approval_required != 'true'
+        if: >-
+          steps.stale.outputs.stale != 'true' &&
+          steps.evolution_gate.outcome == 'success' &&
+          (steps.risk.outputs.approval_required != 'true' || vars.AUTONOMOUS_PROMOTE == 'true')
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -142,4 +161,6 @@ jobs:
           if jq -e 'index("approval-required") != null' <<< "$labels" >/dev/null; then
             gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --remove-label approval-required
           fi
-          gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --auto --merge --match-head-commit "$EXPECTED_SHA"
+          if ! gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --auto --merge --match-head-commit "$EXPECTED_SHA"; then
+            gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --merge --match-head-commit "$EXPECTED_SHA"
+          fi

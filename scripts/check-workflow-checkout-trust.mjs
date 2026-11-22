@@ -18,6 +18,7 @@ const requiredWriteConcurrencyGroups = new Map([
   ['promote.yml:*', 'promotion-pr-metadata'],
   ['refresh-promotion-report.yml:*', 'promotion-pr-metadata'],
   ['sync-main-to-dev.yml:*', 'dev-branch-updates'],
+  ['self-evolving.yml:evolve', 'dev-branch-updates'],
   ['release-prepare.yml:prepare', 'dev-branch-updates'],
   ['dependency-candidate.yml:publish', 'dev-branch-updates'],
   ['roadmap-issue-plan.yml:apply', 'roadmap-issue-sync'],
@@ -526,6 +527,10 @@ export function inspectTrustedCheckoutPolicies({
     const pullRequest = namedWorkflowStep(promote, 'Create or find the promotion pull request');
     const riskStep = namedWorkflowStep(promote, 'Classify risk from commits and changed paths');
     const report = namedWorkflowStep(promote, 'Refresh exact-SHA promotion report');
+    const evolutionGate = namedWorkflowStep(
+      promote,
+      'Verify evolution constitution and fitness ratchet'
+    );
     const ensureLabel = namedWorkflowStep(promote, 'Ensure approval-required label exists');
     const sensitive = namedWorkflowStep(promote, 'Disable auto-merge and mark sensitive promotion');
     const lowRisk = namedWorkflowStep(promote, 'Enable merge for compatible, low-risk promotion');
@@ -567,15 +572,24 @@ export function inspectTrustedCheckoutPolicies({
         'Promotion must render an exact-SHA report with read-only check results and preserve/update the managed PR body safely.'
       );
     }
+    if (
+      !evolutionGate?.includes('node scripts/evolution/check-constitution.mjs --enforce-pause') ||
+      !evolutionGate?.includes('node scripts/evolution/check-ratchet.mjs')
+    ) {
+      findings.push(
+        'Promotion must verify the evolution constitution and fitness ratchet before merging.'
+      );
+    }
     for (const [name, step] of [
       ['PR lookup/create', pullRequest],
       ['risk classification', riskStep],
       ['promotion report', report],
+      ['evolution gate', evolutionGate],
       ['approval label', ensureLabel],
       ['sensitive approval', sensitive],
       ['low-risk merge', lowRisk],
     ]) {
-      if (!step?.includes("if: steps.stale.outputs.stale != 'true'"))
+      if (!step?.includes("steps.stale.outputs.stale != 'true'"))
         findings.push(`Promotion ${name} must not run for a stale dev push event.`);
     }
     if (
@@ -585,19 +599,32 @@ export function inspectTrustedCheckoutPolicies({
       findings.push('Promotion must reject a stale dev event before reconciling its pull request.');
     }
     if (
+      promote.indexOf('name: Verify evolution constitution and fitness ratchet') >
+      promote.indexOf('name: Enable merge for compatible, low-risk promotion')
+    ) {
+      findings.push(
+        'Promotion must evaluate the evolution gate before attempting any merge action.'
+      );
+    }
+    if (
+      !sensitive?.includes("steps.evolution_gate.outcome != 'success'") ||
       !sensitive?.includes("steps.risk.outputs.approval_required == 'true'") ||
+      !sensitive?.includes("vars.AUTONOMOUS_PROMOTE != 'true'") ||
       !sensitive.includes('gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label approval-required')
     ) {
-      findings.push('Sensitive promotion must be labeled for CODEOWNER approval.');
+      findings.push(
+        'Sensitive promotion must require approval unless autonomous evolution gating explicitly allows it.'
+      );
     }
     if (
       !sensitive?.includes('gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --disable-auto') ||
-      !sensitive?.includes("steps.risk.outputs.approval_required == 'true'") ||
-      sensitive?.includes('--auto') ||
-      !lowRisk?.includes("steps.risk.outputs.approval_required != 'true'")
+      sensitive?.includes('--auto --merge') ||
+      !lowRisk?.includes("steps.evolution_gate.outcome == 'success'") ||
+      (!lowRisk?.includes("steps.risk.outputs.approval_required != 'true'") &&
+        !lowRisk?.includes("vars.AUTONOMOUS_PROMOTE == 'true'"))
     ) {
       findings.push(
-        'Sensitive promotion must disable auto-merge; only low-risk promotion may enable it.'
+        'Promotion hold must disable auto-merge; auto-merge must require evolution gate success and compatible policy.'
       );
     }
     if (
