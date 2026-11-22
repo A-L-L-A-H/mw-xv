@@ -92,7 +92,13 @@ test('new component subdirectories under apps/board/src/components/ are covered 
   );
 
   assert.equal(viewsViolations.length, 1);
-  assert.match(viewsViolations[0], /apps\/board\/src\/components\/views\/custom-view\.tsx:2: raw JSX <button>/u);
+  assert.match(
+    viewsViolations[0],
+    /apps\/board\/src\/components\/views\/custom-view\.tsx:2: raw JSX <button>/u
+  );
   assert.equal(dashboardViolations.length, 1);
-  assert.match(dashboardViolations[0], /apps\/board\/src\/components\/dashboard\/widget\.tsx:2: raw JSX <input>/u);
+  assert.match(
+    dashboardViolations[0],
+    /apps\/board\/src\/components\/dashboard\/widget\.tsx:2: raw JSX <input>/u
+  );
 });

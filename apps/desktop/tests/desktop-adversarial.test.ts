@@ -169,7 +169,11 @@ describe('Wave 3 Desktop Harness — Adversarial Security, Chaos & Contracts', (
       expect(excludeContent).toContain('.mw-worktrees/');
 
       // Create a conflicting commit on main
-      writeFileSync(path.join(repoRoot, 'src', 'app.ts'), 'export const conflict = "main";\n', 'utf8');
+      writeFileSync(
+        path.join(repoRoot, 'src', 'app.ts'),
+        'export const conflict = "main";\n',
+        'utf8'
+      );
       execFileSync('git', ['add', 'src/app.ts'], { cwd: repoRoot, windowsHide: true });
       execFileSync('git', ['commit', '-m', 'main-conflict'], { cwd: repoRoot, windowsHide: true });
 
@@ -250,9 +254,9 @@ describe('Wave 3 Desktop Harness — Adversarial Security, Chaos & Contracts', (
       }
 
       const persistedAudits = sidecar.listRiskAudits(20);
-      expect(persistedAudits.some((a) => a.runId === 'run-pty-tree' && a.action === 'pty.exec_local')).toBe(
-        true
-      );
+      expect(
+        persistedAudits.some((a) => a.runId === 'run-pty-tree' && a.action === 'pty.exec_local')
+      ).toBe(true);
 
       await sandbox.release('run-pty-tree', { removeBranch: true });
     } finally {
@@ -282,8 +286,13 @@ describe('Wave 3 Desktop Harness — Adversarial Security, Chaos & Contracts', (
       expect(sliced.redacted).toBe(true);
 
       // Binary / NUL-byte guard
-      writeFileSync(path.join(lease.worktreePath, 'src', 'blob.bin'), Buffer.from([0x00, 0x01, 0x02]));
-      await expect(sandbox.readFile('run-fs-adv', 'src/blob.bin')).rejects.toThrow(/Binary file rejected/i);
+      writeFileSync(
+        path.join(lease.worktreePath, 'src', 'blob.bin'),
+        Buffer.from([0x00, 0x01, 0x02])
+      );
+      await expect(sandbox.readFile('run-fs-adv', 'src/blob.bin')).rejects.toThrow(
+        /Binary file rejected/i
+      );
 
       // Tree lister respects allowlist & .gitignore & excludes .git/.mw-worktrees
       const tree = await sandbox.listTree('run-fs-adv');
@@ -295,7 +304,9 @@ describe('Wave 3 Desktop Harness — Adversarial Security, Chaos & Contracts', (
       // Escape attempts: ../, /etc/passwd, C:\Windows\System32, .env
       await expect(sandbox.readFile('run-fs-adv', '../package.json')).rejects.toThrow();
       await expect(sandbox.readFile('run-fs-adv', '/etc/passwd')).rejects.toThrow();
-      await expect(sandbox.readFile('run-fs-adv', 'C:\\Windows\\System32\\drivers\\etc\\hosts')).rejects.toThrow();
+      await expect(
+        sandbox.readFile('run-fs-adv', 'C:\\Windows\\System32\\drivers\\etc\\hosts')
+      ).rejects.toThrow();
       await expect(sandbox.readFile('run-fs-adv', 'src/.env')).rejects.toThrow();
 
       // Symlink / junction escape attempt
@@ -304,7 +315,9 @@ describe('Wave 3 Desktop Harness — Adversarial Security, Chaos & Contracts', (
       const junctionPath = path.join(lease.worktreePath, 'src', 'escape-link');
       try {
         symlinkSync(outsideDir, junctionPath, process.platform === 'win32' ? 'junction' : 'dir');
-        await expect(sandbox.readFile('run-fs-adv', 'src/escape-link/secret.txt')).rejects.toThrow();
+        await expect(
+          sandbox.readFile('run-fs-adv', 'src/escape-link/secret.txt')
+        ).rejects.toThrow();
       } catch {
         // Ignore if OS blocks symlink creation without privilege
       }
@@ -519,7 +532,11 @@ describe('Wave 3 Desktop Harness — Adversarial Security, Chaos & Contracts', (
           systemPolicy: 'You are a local desktop agent.',
           taskPrompt: 'Summarize status.',
         },
-        { heartbeat: (cp) => { heartbeats.push(cp); } }
+        {
+          heartbeat: (cp) => {
+            heartbeats.push(cp);
+          },
+        }
       );
       expect(outcome.status).toBe('completed');
       expect(outcome.outputText).toContain('Verified local loopback response');
@@ -549,13 +566,20 @@ describe('Wave 3 Desktop Harness — Adversarial Security, Chaos & Contracts', (
         providerId: 'cloud-openai-sim',
         providerKind: 'openai',
         modelName: 'gpt-4o',
-        capabilities: { textGeneration: true, toolCall: true, streaming: false, structuredOutput: true },
+        capabilities: {
+          textGeneration: true,
+          toolCall: true,
+          streaming: false,
+          structuredOutput: true,
+        },
         contextWindowTokens: 128_000,
         maxOutputTokens: 4_096,
         modalities: ['text'],
       };
       const cloudOnlyRunner = new DesktopAgentRunner({
-        targets: [{ id: cloudModel.id, provider: cloudMock, model: cloudModel, deploymentZone: 'cloud' }],
+        targets: [
+          { id: cloudModel.id, provider: cloudMock, model: cloudModel, deploymentZone: 'cloud' },
+        ],
       });
       await expect(
         cloudOnlyRunner.executeRun({

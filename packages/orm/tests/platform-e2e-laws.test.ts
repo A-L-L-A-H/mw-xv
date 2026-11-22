@@ -255,9 +255,10 @@ describe('MW-E2E-001..MW-E2E-016: End-to-End Platform Law Conformance Suite', ()
 
     // Synchronize schema and verify extended fields persist
     await installAddons(db, [baseAddon, taxExtensionAddon]);
-    const rec = (await Partner.create({ name: 'Nusantara Corp', tax_id: 'NPWP-001' })) as InstanceType<
-      typeof Partner
-    > & { tax_id: string; credit_limit: number };
+    const rec = (await Partner.create({
+      name: 'Nusantara Corp',
+      tax_id: 'NPWP-001',
+    })) as InstanceType<typeof Partner> & { tax_id: string; credit_limit: number };
     expect(rec.tax_id).toBe('NPWP-001');
     expect(rec.credit_limit).toBe(5000);
   });
@@ -683,11 +684,7 @@ describe('MW-E2E-001..MW-E2E-016: End-to-End Platform Law Conformance Suite', ()
     expect(created.write_date).toBeDefined();
 
     // Update with matching expectedWriteDate succeeds
-    await Invoice.write(
-      [created.id],
-      { units: 5 },
-      { expectedWriteDate: created.write_date }
-    );
+    await Invoice.write([created.id], { units: 5 }, { expectedWriteDate: created.write_date });
     const afterUpdate = (await Invoice.browse(created.id)) as InstanceType<typeof Invoice>;
     expect(afterUpdate.total).toBe(250);
 
@@ -782,9 +779,9 @@ describe('MW-E2E-001..MW-E2E-016: End-to-End Platform Law Conformance Suite', ()
     expect(matches[0]?.skills.map((s) => s.label).sort()).toEqual(['PostgreSQL', 'TypeScript']);
 
     // Exceeding 2 relational hops fails closed
-    await expect(
-      Consultant.search([['country.region.parent.code', '=', 'WORLD']])
-    ).rejects.toThrow(/exceeds max depth of 2 hops/i);
+    await expect(Consultant.search([['country.region.parent.code', '=', 'WORLD']])).rejects.toThrow(
+      /exceeds max depth of 2 hops/i
+    );
   });
 
   it('MW-E2E-014: Access Rule Enforcement — enforces tenant isolation domain rules and blocks hidden/private field leaks', async () => {
@@ -815,11 +812,7 @@ describe('MW-E2E-001..MW-E2E-016: End-to-End Platform Law Conformance Suite', ()
     });
 
     // Apply tenant record rule domain + malicious OR attempt
-    const clientDomain = validateDomain([
-      '|',
-      ['company_id', '=', 1],
-      ['company_id', '=', 2],
-    ]);
+    const clientDomain = validateDomain(['|', ['company_id', '=', 1], ['company_id', '=', 2]]);
     const recordRuleScope = [['company_id', '=', 1]] as const;
     const rows = await applyDomain(
       VaultEntry.query(),
@@ -842,9 +835,9 @@ describe('MW-E2E-001..MW-E2E-016: End-to-End Platform Law Conformance Suite', ()
     expect(redacted.audit_note).toBe('[REDACTED]');
 
     // Selecting hidden field in search_read is rejected
-    await expect(
-      VaultEntry.search_read([], { fields: ['id', 'api_token'] })
-    ).rejects.toThrow(/Invalid or private field selection/i);
+    await expect(VaultEntry.search_read([], { fields: ['id', 'api_token'] })).rejects.toThrow(
+      /Invalid or private field selection/i
+    );
   });
 
   it('MW-E2E-015: Addon Upgrade & Data Preservation — upgrades addon schema and runs versioned upgrade hooks while preserving 100% of user data and rolling back on failure', async () => {
@@ -872,7 +865,7 @@ describe('MW-E2E-001..MW-E2E-016: End-to-End Platform Law Conformance Suite', ()
       fields: {
         title: fields.string({ required: true }),
         status: fields.enum(['draft', 'active', 'renewed'] as const, { default: 'draft' }),
-         tier_code: fields.string({ default: 'STANDARD' }),
+        tier_code: fields.string({ default: 'STANDARD' }),
       },
     });
 
@@ -882,9 +875,7 @@ describe('MW-E2E-001..MW-E2E-016: End-to-End Platform Law Conformance Suite', ()
       models: [ContractV2],
       upgrade: {
         '1.0.0': async (trx) => {
-          await trx('e2e_contract')
-            .where({ status: 'active' })
-            .update({ tier_code: 'ENTERPRISE' });
+          await trx('e2e_contract').where({ status: 'active' }).update({ tier_code: 'ENTERPRISE' });
         },
       },
     });

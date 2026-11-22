@@ -260,8 +260,14 @@ export function createDesktopAgentRunJobHandler(runner: DesktopAgentRunner) {
       payload: DesktopAgentJobPayload,
       context: DesktopAgentJobContext = {}
     ): Promise<DesktopAgentRunOutcome> {
-      if (!payload.runId || !Number.isSafeInteger(payload.fencingToken) || payload.fencingToken < 1) {
-        throw new ValidationError('Invalid desktop agent job payload: missing runId or fencingToken');
+      if (
+        !payload.runId ||
+        !Number.isSafeInteger(payload.fencingToken) ||
+        payload.fencingToken < 1
+      ) {
+        throw new ValidationError(
+          'Invalid desktop agent job payload: missing runId or fencingToken'
+        );
       }
       const outcome = await runner.executeRun({
         ...payload,

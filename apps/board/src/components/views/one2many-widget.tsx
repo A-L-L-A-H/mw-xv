@@ -16,7 +16,7 @@ import { Button } from '@moonwitness/ui/components/button';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { toast } from '@moonwitness/ui/components/toast';
 import { ConfirmDialog } from './confirm-dialog';
-import { FieldCell } from './fields';
+import { FieldCell } from './widget-registry';
 
 interface One2ManyWidgetProps {
   field: FieldMeta;

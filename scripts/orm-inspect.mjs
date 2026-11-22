@@ -87,8 +87,8 @@ async function main() {
   const asJson = args.includes('--json');
   const addonIdx = args.indexOf('--addon');
   const modelIdx = args.indexOf('--model');
-  const addonFilter = addonIdx >= 0 ? args[addonIdx + 1] ?? null : null;
-  const modelFilter = modelIdx >= 0 ? args[modelIdx + 1] ?? null : null;
+  const addonFilter = addonIdx >= 0 ? (args[addonIdx + 1] ?? null) : null;
+  const modelFilter = modelIdx >= 0 ? (args[modelIdx + 1] ?? null) : null;
 
   const report = await inspectWorkspaceOrm({ addonFilter, modelFilter });
   if (asJson) {

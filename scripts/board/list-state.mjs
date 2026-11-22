@@ -16,9 +16,11 @@ export function coerceFilterValue(value) {
 }
 
 export function customFilterDomain(filters) {
-  return filters.flatMap((filter) => filter.operator === 'ilike'
-    ? [[filter.field, 'ilike', `%${escapeLike(filter.value)}%`]]
-    : [[filter.field, filter.operator, coerceFilterValue(filter.value)]]);
+  return filters.flatMap((filter) =>
+    filter.operator === 'ilike'
+      ? [[filter.field, 'ilike', `%${escapeLike(filter.value)}%`]]
+      : [[filter.field, filter.operator, coerceFilterValue(filter.value)]]
+  );
 }
 
 export function advancedFilterDomain(rules, conjunction) {
@@ -36,7 +38,10 @@ export function searchDomain(views, searchTerm) {
   if (!query) return [];
   const fields = views.search?.fields?.length
     ? views.search.fields
-    : (views.fields ?? []).filter((field) => field.type === 'string').map((field) => field.name).slice(0, 3);
+    : (views.fields ?? [])
+        .filter((field) => field.type === 'string')
+        .map((field) => field.name)
+        .slice(0, 3);
   return orDomain(fields.map((field) => [field, 'ilike', `%${escapeLike(query)}%`]));
 }
 
@@ -44,7 +49,13 @@ export function pagination(total, page, pageSize) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(Math.max(1, page), totalPages);
   const offset = (safePage - 1) * pageSize;
-  return { totalPages, page: safePage, offset, first: total === 0 ? 0 : offset + 1, last: Math.min(offset + pageSize, total) };
+  return {
+    totalPages,
+    page: safePage,
+    offset,
+    first: total === 0 ? 0 : offset + 1,
+    last: Math.min(offset + pageSize, total),
+  };
 }
 
 export function selectionState(recordIds, selectedIds) {
@@ -55,7 +66,9 @@ export function selectionState(recordIds, selectedIds) {
 }
 
 export function aggregate(columnName, rows, operation) {
-  const values = rows.map((row) => row[columnName]).filter((value) => typeof value === 'number' && Number.isFinite(value));
+  const values = rows
+    .map((row) => row[columnName])
+    .filter((value) => typeof value === 'number' && Number.isFinite(value));
   if (!values.length) return undefined;
   const sum = values.reduce((total, value) => total + value, 0);
   return operation === 'avg' ? sum / values.length : sum;

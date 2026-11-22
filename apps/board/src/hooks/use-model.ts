@@ -73,15 +73,8 @@ export function useRecordMutations(model: string) {
       onSuccess: invalidate,
     }),
     archive: useMutation({
-      mutationFn: ({
-        id,
-        hard,
-        writeDate,
-      }: {
-        id: number;
-        hard?: boolean;
-        writeDate?: string;
-      }) => repo.unlink(id, { hard, writeDate }),
+      mutationFn: ({ id, hard, writeDate }: { id: number; hard?: boolean; writeDate?: string }) =>
+        repo.unlink(id, { hard, writeDate }),
       onSuccess: invalidate,
     }),
     action: useMutation({

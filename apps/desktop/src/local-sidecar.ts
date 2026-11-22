@@ -1,5 +1,13 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -36,6 +44,8 @@ import type {
   DataClassification,
   EnqueuePcwEnvelopeInput,
   LocalSidecarState,
+  OrphanAttachmentGcOptions,
+  OrphanAttachmentGcResult,
   PcwArtifactDigest,
   PcwArtifactKind,
   PcwOutboxModelName,
@@ -44,6 +54,7 @@ import type {
   PcwSyncStatus,
   RiskAuditRecord,
   SingleWriterLockMetadata,
+  SqliteRecordSchema,
   UpstreamPcwSyncTransport,
 } from './types.js';
 
@@ -61,6 +72,97 @@ export const DESKTOP_ADDONS: readonly Addon[] = Object.freeze([
   knowledgeManifest,
   aiManifest,
 ]);
+
+/**
+ * Dual-dialect SQLite / Postgres column normalization helpers (DSK-2.8).
+ * Ensures ISO-8601 UTC timestamps, 0/1 booleans, and JSON payloads normalize
+ * identically between local `better-sqlite3` and upstream PostgreSQL.
+ */
+export function toIsoUtcTimestamp(value: string | number | Date | null | undefined): string | null {
+  if (value === null || value === undefined) return null;
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      throw new ValidationError('Invalid Date value for ISO-8601 UTC timestamp');
+    }
+    return value.toISOString();
+  }
+  if (typeof value === 'number') {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new ValidationError(`Invalid numeric timestamp: ${value}`);
+    }
+    return parsed.toISOString();
+  }
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  // Normalize SQLite CURRENT_TIMESTAMP format ("YYYY-MM-DD HH:MM:SS") to UTC ISO-8601.
+  const normalizedInput = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/u.test(trimmed)
+    ? `${trimmed.replace(' ', 'T')}Z`
+    : trimmed;
+  const parsed = new Date(normalizedInput);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new ValidationError(`Invalid timestamp string: '${value}'`);
+  }
+  return parsed.toISOString();
+}
+
+export function toSqliteBoolean(value: boolean | number | null | undefined): 0 | 1 | null {
+  if (value === null || value === undefined) return null;
+  return value === true || value === 1 ? 1 : 0;
+}
+
+export function fromSqliteBoolean(value: boolean | number | string | null | undefined): boolean {
+  if (value === true || value === 1 || value === '1' || value === 'true') {
+    return true;
+  }
+  return false;
+}
+
+export function serializeSqliteJson(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  return JSON.stringify(value);
+}
+
+export function deserializeSqliteJson<T = unknown>(value: unknown): T | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'string') {
+    return JSON.parse(value) as T;
+  }
+  return value as T;
+}
+
+export function normalizeSqliteRecord<T extends Record<string, unknown>>(
+  row: Readonly<Record<string, unknown>>,
+  schema: SqliteRecordSchema
+): T {
+  const normalized: Record<string, unknown> = { ...row };
+  for (const [column, kind] of Object.entries(schema)) {
+    if (!Object.hasOwn(row, column)) continue;
+    const raw = row[column];
+    if (raw === null || raw === undefined) {
+      normalized[column] = null;
+      continue;
+    }
+    switch (kind) {
+      case 'boolean':
+        normalized[column] = fromSqliteBoolean(raw as boolean | number | string);
+        break;
+      case 'timestamp':
+        normalized[column] = toIsoUtcTimestamp(raw as string | number | Date);
+        break;
+      case 'json':
+        normalized[column] = deserializeSqliteJson(raw);
+        break;
+      case 'integer':
+        normalized[column] = typeof raw === 'number' ? raw : Number.parseInt(String(raw), 10);
+        break;
+      case 'text':
+        normalized[column] = String(raw);
+        break;
+    }
+  }
+  return normalized as T;
+}
 
 const ALLOWED_DOMAIN_FIELDS: ReadonlySet<string> = new Set([
   'envelope_id',
@@ -732,9 +834,9 @@ export class LocalSidecarController {
       );
     }
 
-    const now = new Date().toISOString();
-    const artifactsJson = JSON.stringify(input.artifacts);
-    const checkpointJson = input.checkpoint ? JSON.stringify(input.checkpoint) : null;
+    const now = toIsoUtcTimestamp(new Date())!;
+    const artifactsJson = serializeSqliteJson(input.artifacts)!;
+    const checkpointJson = serializeSqliteJson(input.checkpoint ?? null);
 
     this.runInTransaction(() => {
       this.db
@@ -1029,13 +1131,13 @@ export class LocalSidecarController {
         entry.action,
         entry.requestedTier,
         entry.resolvedTier,
-        entry.allowed ? 1 : 0,
+        toSqliteBoolean(entry.allowed) ?? 0,
         entry.reasonCode,
         sanitizedReason,
         entry.companyId,
         entry.agentId,
         entry.grantId,
-        entry.timestamp
+        toIsoUtcTimestamp(entry.timestamp) ?? new Date().toISOString()
       );
 
     // Mirror into ORM base_audit_log when ORM addons are initialized (DSK-6.8 / DSK-8.8).
@@ -1105,13 +1207,13 @@ export class LocalSidecarController {
       action: row.action,
       requestedTier: row.requested_tier,
       resolvedTier: row.resolved_tier,
-      allowed: row.allowed === 1,
+      allowed: fromSqliteBoolean(row.allowed),
       reasonCode: row.reason_code,
       reason: row.reason,
       companyId: row.company_id,
       agentId: row.agent_id,
       grantId: row.grant_id,
-      timestamp: row.timestamp,
+      timestamp: toIsoUtcTimestamp(row.timestamp) ?? row.timestamp,
     }));
   }
 
@@ -1166,7 +1268,113 @@ export class LocalSidecarController {
       throw new AccessDeniedError(`Run '${agentRunId}' belongs to another company partition`);
     }
     if (!row.checkpoint_json) return null;
-    return JSON.parse(row.checkpoint_json) as JsonObject;
+    return deserializeSqliteJson<JsonObject>(row.checkpoint_json);
+  }
+
+  /**
+   * Prune orphaned or post-sync expired local attachment blobs under `~/.moonwitness/storage/` (DSK-3.12).
+   * Never deletes blobs referenced by pending/processing/failed/conflict envelopes, nor synced envelopes
+   * whose `synced_at` timestamp is still within `retentionMs`.
+   */
+  pruneOrphanAttachmentStorage(options?: OrphanAttachmentGcOptions): OrphanAttachmentGcResult {
+    this.assertOpen();
+    const retentionMs = options?.retentionMs ?? 7 * 24 * 60 * 60 * 1000;
+    if (!Number.isFinite(retentionMs) || retentionMs < 0) {
+      throw new ValidationError('retentionMs must be a non-negative finite number');
+    }
+    const nowMs = (options?.now ?? new Date()).getTime();
+    const dryRun = options?.dryRun ?? false;
+
+    if (!existsSync(this.storageDir)) {
+      return {
+        scannedFiles: 0,
+        retainedFiles: 0,
+        deletedFiles: [],
+        freedBytes: 0,
+        dryRun,
+      };
+    }
+
+    const artifactRows = this.db
+      .prepare(
+        `SELECT a.storage_key, o.sync_status, o.synced_at
+         FROM desktop_pcw_artifacts a
+         INNER JOIN desktop_pcw_outbox o ON o.envelope_id = a.envelope_id`
+      )
+      .all() as unknown as Array<{
+      storage_key: string;
+      sync_status: PcwSyncStatus;
+      synced_at: string | null;
+    }>;
+
+    const retainedKeys = new Set<string>();
+    const expiredSyncedKeys = new Set<string>();
+    for (const row of artifactRows) {
+      if (row.sync_status !== 'synced') {
+        retainedKeys.add(row.storage_key);
+        continue;
+      }
+      const syncedIso = toIsoUtcTimestamp(row.synced_at);
+      const syncedMs = syncedIso ? Date.parse(syncedIso) : Number.NaN;
+      if (Number.isNaN(syncedMs) || nowMs - syncedMs < retentionMs) {
+        retainedKeys.add(row.storage_key);
+      } else {
+        expiredSyncedKeys.add(row.storage_key);
+      }
+    }
+
+    const filesToScan: string[] = [];
+    const walkDir = (dir: string): void => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walkDir(fullPath);
+        } else if (entry.isFile()) {
+          filesToScan.push(fullPath);
+        }
+      }
+    };
+    walkDir(this.storageDir);
+
+    let retainedFiles = 0;
+    let freedBytes = 0;
+    const deletedFiles: string[] = [];
+
+    for (const fullPath of filesToScan) {
+      const relPath = path.relative(this.storageDir, fullPath).replaceAll('\\', '/');
+      const baseName = path.basename(fullPath);
+      const baseNoExt = path.parse(fullPath).name;
+
+      if (retainedKeys.has(baseName) || retainedKeys.has(baseNoExt) || retainedKeys.has(relPath)) {
+        retainedFiles += 1;
+        continue;
+      }
+
+      const stat = statSync(fullPath);
+      const isExpiredSynced =
+        expiredSyncedKeys.has(baseName) ||
+        expiredSyncedKeys.has(baseNoExt) ||
+        expiredSyncedKeys.has(relPath);
+
+      if (!isExpiredSynced && nowMs - stat.mtimeMs < retentionMs) {
+        retainedFiles += 1;
+        continue;
+      }
+
+      deletedFiles.push(relPath);
+      freedBytes += stat.size;
+      if (!dryRun) {
+        rmSync(fullPath, { force: true });
+      }
+    }
+
+    return {
+      scannedFiles: filesToScan.length,
+      retainedFiles,
+      deletedFiles,
+      freedBytes,
+      dryRun,
+    };
   }
 
   async closeAsync(): Promise<void> {
@@ -1275,12 +1483,12 @@ export class LocalSidecarController {
       modelName: row.model_name,
       fencingToken: row.fencing_token,
       runStatus: row.run_status,
-      artifacts: JSON.parse(row.artifacts_json) as PcwArtifactDigest[],
+      artifacts: deserializeSqliteJson<PcwArtifactDigest[]>(row.artifacts_json) ?? [],
       envelopeSha256: row.envelope_sha256,
       syncStatus: row.sync_status,
       attempts: row.attempts,
-      createdAt: row.created_at,
-      syncedAt: row.synced_at,
+      createdAt: toIsoUtcTimestamp(row.created_at) ?? row.created_at,
+      syncedAt: toIsoUtcTimestamp(row.synced_at),
       upstreamRecordId: row.upstream_record_id,
       lastError: row.last_error,
     };

@@ -2,10 +2,7 @@ export type ColorMode = 'light' | 'dark';
 
 export type SkinDensity = 'comfortable' | 'compact';
 
-export type BuiltinSkinId =
-  | 'moonwitness-ink'
-  | 'moonwitness-compact'
-  | 'moonwitness-high-contrast';
+export type BuiltinSkinId = 'moonwitness-ink' | 'moonwitness-compact' | 'moonwitness-high-contrast';
 
 export type SkinId = BuiltinSkinId | (string & {});
 
@@ -42,9 +39,7 @@ export interface ThemeRegistry {
   has(id: string): boolean;
   isModeSupported(skinId: string, mode: ColorMode): boolean;
   isDensitySupported(skinId: string, density: SkinDensity): boolean;
-  normalizePreferences(
-    preferences?: Partial<UserThemePreferences> | null
-  ): UserThemePreferences;
+  normalizePreferences(preferences?: Partial<UserThemePreferences> | null): UserThemePreferences;
 }
 
 export const DEFAULT_SKIN_ID: BuiltinSkinId = 'moonwitness-ink';

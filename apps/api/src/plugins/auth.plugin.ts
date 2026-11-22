@@ -9,16 +9,9 @@ import {
   GroupMembership,
   ModelAccess,
 } from '@moonwitness/orm-base';
-import type { GroupModelGrant } from '../auth/policy.js';
+import type { AuthContext, GroupModelGrant } from '../auth/policy.js';
 
-export interface AuthContext {
-  userId: number;
-  role: Role;
-  partnerId?: number;
-  companyId?: number;
-  groupPermissions: readonly GroupModelGrant[];
-  groupNames?: readonly string[];
-}
+export type { AuthContext };
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -295,7 +288,9 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
       parsedCompanyHeader !== undefined
         ? cached.companyMemberships.find(({ company_id }) => company_id === parsedCompanyHeader)
         : (cached.companyMemberships.find(({ is_default }) => Boolean(is_default)) ??
-          cached.companyMemberships.find(({ company_id }) => company_id === cached.partnerCompanyId) ??
+          cached.companyMemberships.find(
+            ({ company_id }) => company_id === cached.partnerCompanyId
+          ) ??
           cached.companyMemberships[0]);
     if (parsedCompanyHeader !== undefined && !selectedMembership) {
       return reply.code(403).send({ success: false, error: 'Company access denied' });

@@ -299,10 +299,7 @@ export function GroupActionsPanel({
         <Button
           type="submit"
           disabled={
-            startingChat ||
-            checkingPhone ||
-            !newPhone.trim() ||
-            phoneCheck?.is_on_whatsapp !== true
+            startingChat || checkingPhone || !newPhone.trim() || phoneCheck?.is_on_whatsapp !== true
           }
         >
           New chat
@@ -489,9 +486,7 @@ export function GroupActionsPanel({
           )}
           {groupJoinError && <p role="alert">{groupJoinError}</p>}
           {groupJoinPending && groupJoinError && (
-            <p role="status">
-              Retry keeps the same request key and will check membership safely.
-            </p>
+            <p role="status">Retry keeps the same request key and will check membership safely.</p>
           )}
         </section>
       )}

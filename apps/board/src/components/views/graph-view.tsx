@@ -16,8 +16,20 @@ export function GraphView({ model, views }: { model: string; views: ResolvedView
   const labels = groups.map((group) => String(group.values[metadata.groupBy] ?? 'Unset'));
   const series = [{ label: views.title, values: groups.map((group) => group.count) }];
   return metadata.type === 'line' ? (
-    <LineChart title={`${views.title} by ${metadata.groupBy}`} labels={labels} series={series} loading={query.isLoading} />
+    <LineChart
+      title={`${views.title} by ${metadata.groupBy}`}
+      labels={labels}
+      series={series}
+      loading={query.isLoading}
+    />
   ) : (
-    <BarChart title={`${views.title} by ${metadata.groupBy}`} data={groups.map((group) => ({ label: String(group.values[metadata.groupBy] ?? 'Unset'), value: group.count }))} loading={query.isLoading} />
+    <BarChart
+      title={`${views.title} by ${metadata.groupBy}`}
+      data={groups.map((group) => ({
+        label: String(group.values[metadata.groupBy] ?? 'Unset'),
+        value: group.count,
+      }))}
+      loading={query.isLoading}
+    />
   );
 }

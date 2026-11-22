@@ -1,4 +1,11 @@
-import { isColorMode, isRecord, isSkinDensity, type ColorMode, type SkinDensity, type SkinId } from '@moonwitness/types';
+import {
+  isColorMode,
+  isRecord,
+  isSkinDensity,
+  type ColorMode,
+  type SkinDensity,
+  type SkinId,
+} from '@moonwitness/types';
 import { DEFAULT_SKIN_ID, themeRegistry } from '@moonwitness/ui/themes';
 
 export interface BoardPreferences {

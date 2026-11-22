@@ -1,10 +1,4 @@
-import {
-  Registry,
-  columnName,
-  type BaseModel,
-  type Field,
-  type FieldMap,
-} from '@moonwitness/orm';
+import { Registry, columnName, type BaseModel, type Field, type FieldMap } from '@moonwitness/orm';
 import type { Transaction } from 'objection';
 
 interface ReverseForeignKeyEntry {

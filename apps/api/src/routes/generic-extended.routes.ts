@@ -1,9 +1,5 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import {
-  BaseModel,
-  Registry,
-  type Domain,
-} from '@moonwitness/orm';
+import { BaseModel, Registry, type Domain } from '@moonwitness/orm';
 import type { Transaction } from 'objection';
 import { isRecord, type JsonObject } from '@moonwitness/types';
 import {
@@ -127,7 +123,9 @@ export const genericExtendedRoutes: FastifyPluginAsync = async (fastify) => {
             defaults[fieldName] = safeContext[ctxKey];
           } else if (field.default !== undefined) {
             defaults[fieldName] =
-              typeof field.default === 'function' ? (field.default as () => unknown)() : field.default;
+              typeof field.default === 'function'
+                ? (field.default as () => unknown)()
+                : field.default;
           }
         }
       }
@@ -189,10 +187,12 @@ export const genericExtendedRoutes: FastifyPluginAsync = async (fastify) => {
           values: JsonObject,
           changedFields: string[],
           ctx: Record<string, unknown>
-        ) => Promise<{ values?: Record<string, unknown>; warning?: unknown }> | {
-          values?: Record<string, unknown>;
-          warning?: unknown;
-        };
+        ) =>
+          | Promise<{ values?: Record<string, unknown>; warning?: unknown }>
+          | {
+              values?: Record<string, unknown>;
+              warning?: unknown;
+            };
       };
 
       let resultValues: Record<string, unknown> = {};
@@ -396,7 +396,8 @@ export const genericExtendedRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (req, reply) => {
       const { model: modelName, actionName } = req.params;
-      const actionDef = actionRegistry.get(actionName) ?? actionRegistry.get(`${modelName}.${actionName}`);
+      const actionDef =
+        actionRegistry.get(actionName) ?? actionRegistry.get(`${modelName}.${actionName}`);
       if (!canExecuteAction(req.auth, modelName, actionDef)) {
         return forbidden(reply, req);
       }

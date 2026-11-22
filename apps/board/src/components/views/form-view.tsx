@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  ArchiveIcon,
-  ArrowRightIcon,
-  BoltIcon,
-  DeleteIcon,
-  SaveIcon,
-} from '@moonwitness/ui/icons';
+import { ArchiveIcon, ArrowRightIcon, BoltIcon, DeleteIcon, SaveIcon } from '@moonwitness/ui/icons';
 import { LoadingSpinner } from '@moonwitness/ui/components/effects';
 import { toast } from '@moonwitness/ui/components/toast';
 import { ConflictError } from '@moonwitness/client';
@@ -201,7 +195,18 @@ function FormEditor({
         saveInFlight.current = false;
       }
     },
-    [fieldMap, formData, views.fields, mutations.save, recordId, isCreate, onSaved, initialRecord, model, queryClient]
+    [
+      fieldMap,
+      formData,
+      views.fields,
+      mutations.save,
+      recordId,
+      isCreate,
+      onSaved,
+      initialRecord,
+      model,
+      queryClient,
+    ]
   );
 
   // Keyboard shortcut listener: Ctrl+S to save, Esc to go back
@@ -261,7 +266,9 @@ function FormEditor({
       ...section,
       title: section.title ?? `Section ${index + 1}`,
     }));
-    const labels = views.form?.tabs?.length ? views.form.tabs : visibleSections.map((s) => s.title!);
+    const labels = views.form?.tabs?.length
+      ? views.form.tabs
+      : visibleSections.map((s) => s.title!);
     return { visibleSections, labels };
   }, [views.fields, views.form]);
 
@@ -338,7 +345,11 @@ function FormEditor({
                 {
                   id: 'save',
                   label: 'Save Record',
-                  icon: mutations.save.isPending ? <LoadingSpinner className="size-4" /> : <SaveIcon className="size-4" />,
+                  icon: mutations.save.isPending ? (
+                    <LoadingSpinner className="size-4" />
+                  ) : (
+                    <SaveIcon className="size-4" />
+                  ),
                   onClick: () => void handleSave(),
                   disabled: !dirty || mutations.save.isPending,
                   primary: true,
@@ -348,15 +359,17 @@ function FormEditor({
                 !isCreate && views.permissions.unlink
                   ? [
                       ...(initialRecord?.active !== false
-                        ? [{
-                            id: 'archive',
-                            label: 'Archive',
-                            icon: <ArchiveIcon className="size-4" />,
-                            variant: 'outline' as const,
-                            ariaLabel: 'Archive record',
-                            onClick: () => setConfirmAction({ kind: 'archive', hard: false }),
-                            disabled: mutations.archive.isPending,
-                          }]
+                        ? [
+                            {
+                              id: 'archive',
+                              label: 'Archive',
+                              icon: <ArchiveIcon className="size-4" />,
+                              variant: 'outline' as const,
+                              ariaLabel: 'Archive record',
+                              onClick: () => setConfirmAction({ kind: 'archive', hard: false }),
+                              disabled: mutations.archive.isPending,
+                            },
+                          ]
                         : []),
                       {
                         id: 'delete-permanently',
@@ -402,106 +415,113 @@ function FormEditor({
         <Tabs defaultValue="0" className="min-w-0 space-y-5">
           <TabsList className="flex-wrap">
             {formSections.visibleSections.map((section, index) => (
-              <TabsTrigger key={index} value={String(index)}>{section.title}</TabsTrigger>
+              <TabsTrigger key={index} value={String(index)}>
+                {section.title}
+              </TabsTrigger>
             ))}
           </TabsList>
-        {formSections.visibleSections.map((section, sIdx) => {
-          const visibleFields = section.fields
-            .map((fieldName) => fieldMap.get(fieldName))
-            .filter((f): f is FieldMeta => f !== undefined && f.name !== 'id');
+          {formSections.visibleSections.map((section, sIdx) => {
+            const visibleFields = section.fields
+              .map((fieldName) => fieldMap.get(fieldName))
+              .filter((f): f is FieldMeta => f !== undefined && f.name !== 'id');
 
-          return (
-            <TabsContent key={sIdx} value={String(sIdx)} className="ink-panel min-w-0 bg-card p-6 sm:p-8">
-              <div className="grid min-w-0 gap-6 sm:grid-cols-2">
-                {visibleFields.map((field) => {
-                  const isInvisible = evalDomain(field.invisible, formData);
-                  if (isInvisible) return null;
+            return (
+              <TabsContent
+                key={sIdx}
+                value={String(sIdx)}
+                className="ink-panel min-w-0 bg-card p-6 sm:p-8"
+              >
+                <div className="grid min-w-0 gap-6 sm:grid-cols-2">
+                  {visibleFields.map((field) => {
+                    const isInvisible = evalDomain(field.invisible, formData);
+                    if (isInvisible) return null;
 
-                  const isReadonly = field.readonly || evalDomain(field.readonlyIf, formData);
-                  const isRequired = field.required || evalDomain(field.requiredIf, formData);
+                    const isReadonly = field.readonly || evalDomain(field.readonlyIf, formData);
+                    const isRequired = field.required || evalDomain(field.requiredIf, formData);
 
-                  if (field.type === 'one2many') {
+                    if (field.type === 'one2many') {
+                      return (
+                        <div key={field.name} className="min-w-0 pt-2 sm:col-span-2">
+                          <One2ManyWidget
+                            field={field}
+                            parentModel={model}
+                            parentId={recordId}
+                            isCreate={isCreate}
+                          />
+                        </div>
+                      );
+                    }
+
+                    const isFullWidth =
+                      field.type === 'string' && field.name.includes('description');
+                    const relatedObj = initialRecord?.[relationKey(field)] as Record<
+                      string,
+                      unknown
+                    > | null;
+
+                    const effectiveField: FieldMeta = {
+                      ...field,
+                      readonly: isReadonly,
+                      required: isRequired,
+                    };
+
+                    const contextDomain = (() => {
+                      if (field.name === 'state' || field.name === 'state_id') {
+                        const countryVal = formData.country_id ?? formData.country;
+                        if (countryVal) {
+                          return [['country_id', '=', countryVal]] as Array<
+                            [string, string, unknown]
+                          >;
+                        }
+                      }
+                      if (field.name === 'bank' || field.name === 'bank_id') {
+                        const countryVal = formData.country_id ?? formData.country;
+                        if (countryVal) {
+                          return [['country_id', '=', countryVal]] as Array<
+                            [string, string, unknown]
+                          >;
+                        }
+                      }
+                      return undefined;
+                    })();
+
                     return (
-                      <div key={field.name} className="min-w-0 pt-2 sm:col-span-2">
-                        <One2ManyWidget
-                          field={field}
-                          parentModel={model}
-                          parentId={recordId}
-                          isCreate={isCreate}
+                      <div
+                        key={field.name}
+                        className={isFullWidth ? 'sm:col-span-2 space-y-2' : 'space-y-2'}
+                      >
+                        <div className="flex items-center justify-between">
+                          <Label
+                            htmlFor={`field-${field.name}`}
+                            className="font-bold text-xs uppercase tracking-wider"
+                          >
+                            {field.label}
+                            {isRequired && <span className="ml-1 text-destructive">*</span>}
+                          </Label>
+                          {isReadonly && (
+                            <span className="font-mono text-[10px] uppercase text-ink-faint">
+                              Readonly
+                            </span>
+                          )}
+                        </div>
+
+                        <FieldWidget
+                          id={`field-${field.name}`}
+                          field={effectiveField}
+                          value={formData[field.name] ?? field.default}
+                          onChange={(val) => handleChange(field.name, val)}
+                          related={relatedObj}
+                          contextDomain={contextDomain}
                         />
+
+                        {field.help && <p className="text-xs text-ink-faint">{field.help}</p>}
                       </div>
                     );
-                  }
-
-                  const isFullWidth = field.type === 'string' && field.name.includes('description');
-                  const relatedObj = initialRecord?.[relationKey(field)] as Record<
-                    string,
-                    unknown
-                  > | null;
-
-                  const effectiveField: FieldMeta = {
-                    ...field,
-                    readonly: isReadonly,
-                    required: isRequired,
-                  };
-
-                  const contextDomain = (() => {
-                    if (field.name === 'state' || field.name === 'state_id') {
-                      const countryVal = formData.country_id ?? formData.country;
-                      if (countryVal) {
-                        return [['country_id', '=', countryVal]] as Array<
-                          [string, string, unknown]
-                        >;
-                      }
-                    }
-                    if (field.name === 'bank' || field.name === 'bank_id') {
-                      const countryVal = formData.country_id ?? formData.country;
-                      if (countryVal) {
-                        return [['country_id', '=', countryVal]] as Array<
-                          [string, string, unknown]
-                        >;
-                      }
-                    }
-                    return undefined;
-                  })();
-
-                  return (
-                    <div
-                      key={field.name}
-                      className={isFullWidth ? 'sm:col-span-2 space-y-2' : 'space-y-2'}
-                    >
-                      <div className="flex items-center justify-between">
-                        <Label
-                          htmlFor={`field-${field.name}`}
-                          className="font-bold text-xs uppercase tracking-wider"
-                        >
-                          {field.label}
-                          {isRequired && <span className="ml-1 text-destructive">*</span>}
-                        </Label>
-                        {isReadonly && (
-                          <span className="font-mono text-[10px] uppercase text-ink-faint">
-                            Readonly
-                          </span>
-                        )}
-                      </div>
-
-                      <FieldWidget
-                        id={`field-${field.name}`}
-                        field={effectiveField}
-                        value={formData[field.name] ?? field.default}
-                        onChange={(val) => handleChange(field.name, val)}
-                        related={relatedObj}
-                        contextDomain={contextDomain}
-                      />
-
-                      {field.help && <p className="text-xs text-ink-faint">{field.help}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-            </TabsContent>
-          );
-        })}
+                  })}
+                </div>
+              </TabsContent>
+            );
+          })}
         </Tabs>
       </form>
 
@@ -547,7 +567,13 @@ function FormEditor({
       )}
       <ConfirmDialog
         open={confirmAction !== null}
-        title={confirmAction?.kind === 'back' ? 'Discard unsaved changes?' : archiveTarget?.hard ? 'Delete permanently?' : 'Archive record?'}
+        title={
+          confirmAction?.kind === 'back'
+            ? 'Discard unsaved changes?'
+            : archiveTarget?.hard
+              ? 'Delete permanently?'
+              : 'Archive record?'
+        }
         description={
           confirmAction?.kind === 'back'
             ? 'Your local changes will be lost if you leave this record.'
@@ -555,7 +581,13 @@ function FormEditor({
               ? 'This record will be permanently removed. This action cannot be undone.'
               : 'The record will be archived and remain recoverable.'
         }
-        confirmLabel={confirmAction?.kind === 'back' ? 'Discard changes' : archiveTarget?.hard ? 'Delete permanently' : 'Archive'}
+        confirmLabel={
+          confirmAction?.kind === 'back'
+            ? 'Discard changes'
+            : archiveTarget?.hard
+              ? 'Delete permanently'
+              : 'Archive'
+        }
         destructive={confirmAction?.kind === 'archive'}
         busy={mutations.archive.isPending}
         onConfirm={() => {

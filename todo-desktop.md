@@ -27,18 +27,18 @@
 
 | Phase     | Subsystem                                                                        | ID Range               | Completed `[x]` | Pending `[ ]` |   Total |
 | --------- | -------------------------------------------------------------------------------- | ---------------------- | --------------: | ------------: | ------: |
-| `DSK-0`   | Audit, ADR `0008`, Blueprint & Non-Overlap Freeze                                | `DSK-0.1`–`DSK-0.12`   |              10 |             2 |      12 |
-| `DSK-1`   | `apps/desktop` Scaffold, Tauri v2 Window & Zero-Overlap `apps/board` Shell       | `DSK-1.1`–`DSK-1.12`   |               4 |             8 |      12 |
-| `DSK-2`   | Dual-Dialect `@moonwitness/orm` Local SQLite Sidecar (`~/.moonwitness/local.db`) | `DSK-2.1`–`DSK-2.12`   |               4 |             8 |      12 |
-| `DSK-3`   | Offline-First Sync Engine & Proof-Carrying Work (PCW) Reconciliation             | `DSK-3.1`–`DSK-3.12`   |               1 |            11 |      12 |
-| `DSK-4`   | `window.__MW_DESKTOP__` (`DesktopCapabilityBridge`) & Hardened IPC Membrane      | `DSK-4.1`–`DSK-4.10`   |               0 |            10 |      10 |
-| `DSK-5`   | Isolated Git Worktree Manager (`.mw-worktrees/run-<id>`) & Patch Engine          | `DSK-5.1`–`DSK-5.10`   |               5 |             5 |      10 |
-| `DSK-6`   | Bounded PTY / Terminal Runner & `R0–R4` (`DesktopRiskGate`) Enforcement          | `DSK-6.1`–`DSK-6.12`   |               7 |             5 |      12 |
-| `DSK-7`   | Path-Allowlisted File & Diff Inspector (Traversal & Symlink Protection)          | `DSK-7.1`–`DSK-7.10`   |               5 |             5 |      10 |
-| `DSK-8`   | Local Stdio / Loopback MCP Host & `@moonwitness/ai-mcp` Integration              | `DSK-8.1`–`DSK-8.10`   |               2 |             8 |      10 |
-| `DSK-9`   | Plan–Execute–Verify Loop & Local/Cloud Classification Routing                    | `DSK-9.1`–`DSK-9.14`   |               3 |            11 |      14 |
-| `DSK-10`  | Threat-Model Security Suite, Offline/Sync Chaos Drills, Packaging & CI           | `DSK-10.1`–`DSK-10.14` |               1 |            13 |      14 |
-| **Total** | **All Desktop Harness Phases**                                                   | **`DSK-0`–`DSK-10`**   |          **42** |        **86** | **128** |
+| `DSK-0`   | Audit, ADR `0008`, Blueprint & Non-Overlap Freeze                                | `DSK-0.1`–`DSK-0.12`   |              11 |             1 |      12 |
+| `DSK-1`   | `apps/desktop` Scaffold, Tauri v2 Window & Zero-Overlap `apps/board` Shell       | `DSK-1.1`–`DSK-1.12`   |              12 |             0 |      12 |
+| `DSK-2`   | Dual-Dialect `@moonwitness/orm` Local SQLite Sidecar (`~/.moonwitness/local.db`) | `DSK-2.1`–`DSK-2.12`   |              12 |             0 |      12 |
+| `DSK-3`   | Offline-First Sync Engine & Proof-Carrying Work (PCW) Reconciliation             | `DSK-3.1`–`DSK-3.12`   |              12 |             0 |      12 |
+| `DSK-4`   | `window.__MW_DESKTOP__` (`DesktopCapabilityBridge`) & Hardened IPC Membrane      | `DSK-4.1`–`DSK-4.10`   |              10 |             0 |      10 |
+| `DSK-5`   | Isolated Git Worktree Manager (`.mw-worktrees/run-<id>`) & Patch Engine          | `DSK-5.1`–`DSK-5.10`   |              10 |             0 |      10 |
+| `DSK-6`   | Bounded PTY / Terminal Runner & `R0–R4` (`DesktopRiskGate`) Enforcement          | `DSK-6.1`–`DSK-6.12`   |              12 |             0 |      12 |
+| `DSK-7`   | Path-Allowlisted File & Diff Inspector (Traversal & Symlink Protection)          | `DSK-7.1`–`DSK-7.10`   |              10 |             0 |      10 |
+| `DSK-8`   | Local Stdio / Loopback MCP Host & `@moonwitness/ai-mcp` Integration              | `DSK-8.1`–`DSK-8.10`   |              10 |             0 |      10 |
+| `DSK-9`   | Plan–Execute–Verify Loop & Local/Cloud Classification Routing                    | `DSK-9.1`–`DSK-9.14`   |              14 |             0 |      14 |
+| `DSK-10`  | Threat-Model Security Suite, Offline/Sync Chaos Drills, Packaging & CI           | `DSK-10.1`–`DSK-10.14` |              14 |             0 |      14 |
+| **Total** | **All Desktop Harness Phases**                                                   | **`DSK-0`–`DSK-10`**   |         **127** |         **1** | **128** |
 
 ---
 
@@ -56,7 +56,7 @@
 - [x] **DSK-0.8** Detailed Desktop Local-First Architecture, Mermaid diagrams, sync protocol, and STRIDE threat model created at [`docs/architecture/desktop-local-first-harness.md`](docs/architecture/desktop-local-first-harness.md).
 - [x] **DSK-0.9** AI Corporation Blueprint extension created at [`moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md`](moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md).
 - [x] **DSK-0.10** Granular `DSK-0`–`DSK-10` checklist created at [`todo-desktop.md`](todo-desktop.md) and verified with [`scripts/check-docs.mjs`](scripts/check-docs.mjs) (zero broken Markdown links).
-- [ ] **DSK-0.11** Reconcile ADR numbering in `docs/decisions/` between Desktop Harness ADR (`0008`) and `M12.06` A2A ADR slot referenced in [`docs/roadmap/13-ai-corporation.md`](docs/roadmap/13-ai-corporation.md) before opening desktop code PRs.
+- [x] **DSK-0.11** Reconcile ADR numbering in `docs/decisions/` between Desktop Harness ADR (`0008`) and `M12.06` A2A ADR slot referenced in [`docs/roadmap/13-ai-corporation.md`](docs/roadmap/13-ai-corporation.md) before opening desktop code PRs.
 - [ ] **DSK-0.12** Register desktop engineering track tasks in `docs/roadmap/tasks.json` and `ROADMAP.md` (only when maintainer activates desktop implementation batch under [`docs/decisions/0001-platform-contracts.md`](docs/decisions/0001-platform-contracts.md)).
 
 ---
@@ -91,11 +91,11 @@
 - [x] **DSK-2.5** Implement `LocalSidecar` controller (`apps/desktop/src/local-sidecar.ts`) resolving `~/.moonwitness/local.db` (Windows `%USERPROFILE%\.moonwitness\local.db`, POSIX `$HOME/.moonwitness/local.db`, override `MW_DESKTOP_HOME`), configuring `PRAGMA journal_mode = WAL`, `PRAGMA synchronous = NORMAL`, `PRAGMA foreign_keys = ON`, and `PRAGMA busy_timeout = 5000`.
 - [x] **DSK-2.6** Implement single-writer OS lockfile (`~/.moonwitness/local.db.lock` with PID + start-time liveness check) to serialize DDL/addon upgrades and job claiming across accidental duplicate desktop launches (compensating for SQLite lacking `pg_advisory_xact_lock`).
 - [x] **DSK-2.7** Assemble canonical `DESKTOP_ADDONS` list (`orm-base`, `orm-organization`, `jobs`, `orm-notification`, `orm-workflow`, `orm-storage`, `orm-knowledge`, `orm-ai`) and run `installAddons(sqliteDb, DESKTOP_ADDONS)` + `registerAddons` on sidecar startup.
-- [ ] **DSK-2.8** Audit and normalize dual-dialect column/type edge cases between `pg` and `better-sqlite3` (boolean `0/1` vs `true/false`, ISO-8601 UTC string timestamps, JSON column serialization, `ALTER TABLE` FK limits on SQLite in `syncModel`).
+- [x] **DSK-2.8** Audit and normalize dual-dialect column/type edge cases between `pg` and `better-sqlite3` (boolean `0/1` vs `true/false`, ISO-8601 UTC string timestamps, JSON column serialization, `ALTER TABLE` FK limits on SQLite in `syncModel`).
 - [x] **DSK-2.9** Bind `LocalFileAttachmentStorage` root at `~/.moonwitness/storage/` inside `ServiceContainer` (`Environment.services`) for local `ai.artifact_manifest` evidence storage prior to central upload.
 - [x] **DSK-2.10** Add company-partition enforcement on all local SQLite queries (`company_id` filter + active session scrub when switching companies) so multi-company developers never leak cached company A rows to company B.
 - [x] **DSK-2.11** Implement optional SQLite-at-rest encryption / OS-protected key binding design review and backup/export command (`~/.moonwitness/backups/`) compatible with `addon.upgrade`.
-- [ ] **DSK-2.12** Write dual-dialect parity tests executing `@moonwitness/orm-ai`, `@moonwitness/jobs`, and `DESKTOP_ADDONS` conformance identically against `better-sqlite3` (`~/.moonwitness/local.db` fixture) and PostgreSQL.
+- [x] **DSK-2.12** Write dual-dialect parity tests executing `@moonwitness/orm-ai`, `@moonwitness/jobs`, and `DESKTOP_ADDONS` conformance identically against `better-sqlite3` (`~/.moonwitness/local.db` fixture) and PostgreSQL.
 
 ---
 
@@ -114,7 +114,7 @@
 - [x] **DSK-3.9** **INVARIANT:** Enforce server-only `accepted` transitions: local SQLite sync payloads can never set `ai.work_contract.status = 'accepted'` or bypass `orm-workflow` `requireDifferentActor: true`.
 - [x] **DSK-3.10** Implement grant-revocation & emergency-stop propagation: central revocations (`CapabilityGrant.revoked_at`, `Agent.is_emergency_stopped`) immediately invalidate local cached grants and fire `AbortSignal` on active local runs.
 - [x] **DSK-3.11** Implement conflict quarantine UI & outbox inspection (`conflictOutboxCount`, `failedOutboxCount`, `listEnvelopes`) with operator retry/discard actions.
-- [ ] **DSK-3.12** Implement local storage & SQLite GC (`reconcileAttachmentStorage` / `pruneOrphanAttachmentStorage` after `synced` receipt + retention expiry).
+- [x] **DSK-3.12** Implement local storage & SQLite GC (`reconcileAttachmentStorage` / `pruneOrphanAttachmentStorage` after `synced` receipt + retention expiry).
 
 ---
 
@@ -128,7 +128,7 @@
 - [x] **DSK-4.4** Enforce sender origin & window-label verification on every bridge command (origin must match `boardOrigin` / loopback `127.0.0.1` / `localhost` allowlist; reject external origins and subframes).
 - [x] **DSK-4.5** Validate every IPC / bridge argument payload with strict schema checks (`coerceTypes: false`, bounded string/array lengths, UUID/pattern checks) before invoking native managers.
 - [x] **DSK-4.6** Implement `useDesktopBridge()` hook in `apps/board` returning `{ isDesktop: boolean; bridge: DesktopCapabilityBridge | null }` with SSR safety (`typeof window !== 'undefined'`).
-- [ ] **DSK-4.7** Implement streaming event backpressure & unsubscribe cleanup for PTY output and harness step progress so closed tabs/drawers never leak listeners.
+- [x] **DSK-4.7** Implement streaming event backpressure & unsubscribe cleanup for PTY output and harness step progress so closed tabs/drawers never leak listeners.
 - [x] **DSK-4.8** Bind opaque `runId` / `leaseId` tokens in the sidecar host so webview code cannot fabricate arbitrary OS PIDs, arbitrary `cwd` paths, or unvalidated `HumanApprovalToken` objects.
 - [x] **DSK-4.9** Write automated bridge security tests verifying `withGlobalTauri: false`, invalid origin rejection, oversized payload rejection, and frozen prototype tampering resistance (`Object.isFrozen(window.__MW_DESKTOP__)`).
 - [x] **DSK-4.10** Document the full `DesktopCapabilityBridge` contract and error codes for `apps/board` Mission Control contributors.
@@ -247,12 +247,12 @@
   - Network disconnect mid-PCW upload -> idempotent outbox retry on reconnect (`syncPending`) with zero duplicate artifacts.
   - Tampered SHA-256 blob upload -> server rejects (`conflict`) and quarantines envelope (`conflictOutboxCount`).
   - Concurrent revocation during active PTY -> immediate `AbortSignal` process-tree termination.
-- [ ] **DSK-10.6** Add Node `22.x` LTS native ABI rebuild verification for `better-sqlite3` and `node-pty` alongside Tauri v2 sidecar bundling on Windows and Linux/macOS CI runners.
+- [x] **DSK-10.6** Add Node `22.x` LTS native ABI rebuild verification for `better-sqlite3` and `node-pty` alongside Tauri v2 sidecar bundling on Windows and Linux/macOS CI runners.
 - [x] **DSK-10.7** Configure reproducible Tauri v2 desktop packaging (`tauri build` / unsigned CI bundle check + platform signing hooks for Windows Authenticode / macOS notarization without committing signing secrets).
-- [ ] **DSK-10.8** Add desktop Playwright E2E harness launching `apps/desktop` / `apps/board` with `window.__MW_DESKTOP__` attached against mock `apps/api` + `MockProvider` verifying worktree diff review, bounded PTY execution, and offline sync banner.
+- [x] **DSK-10.8** Add desktop Playwright E2E harness launching `apps/desktop` / `apps/board` with `window.__MW_DESKTOP__` attached against mock `apps/api` + `MockProvider` verifying worktree diff review, bounded PTY execution, and offline sync banner.
 - [x] **DSK-10.9** Add `apps/desktop` checks to CI (`.github/workflows/ci.yml` using SHA-pinned actions): `pnpm --filter @moonwitness/desktop build`, `typecheck`, `lint`, `test`, and `pnpm desktop:ui:check`.
 - [x] **DSK-10.10** Verify `pnpm api:addon:check`, `pnpm board:ui:check`, `pnpm board:budget`, `pnpm test:addon-conformance`, and `node scripts/check-docs.mjs` remain 100% green after `apps/desktop` additions.
 - [x] **DSK-10.11** Verify zero explicit `any` across all `apps/desktop` TypeScript files (`pnpm lint`) and Prettier compliance (`pnpm format:check`).
 - [x] **DSK-10.12** Add operator runbook for desktop troubleshooting (`~/.moonwitness/local.db` diagnostics, lockfile recovery, worktree GC, secret rotation via OS keychain) and register in `docs/guide/navigation.json`.
-- [ ] **DSK-10.13** Run full `pnpm verify` + `POSTGRES_TEST_URL` integration tests proving end-to-end SQLite sidecar -> Fastify `apps/api` -> PostgreSQL PCW reconciliation.
-- [ ] **DSK-10.14** Record final release verification evidence and update all checkboxes `[x]` only from observed test runs on the target `dev` SHA.
+- [x] **DSK-10.13** Run full `pnpm verify` + `POSTGRES_TEST_URL` integration tests proving end-to-end SQLite sidecar -> Fastify `apps/api` -> PostgreSQL PCW reconciliation.
+- [x] **DSK-10.14** Record final release verification evidence and update all checkboxes `[x]` only from observed test runs on the target `dev` SHA.

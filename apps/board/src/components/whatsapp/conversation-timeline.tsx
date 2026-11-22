@@ -188,44 +188,42 @@ export function ConversationTimeline({
           </p>
         )}
         {messageList.map((message, index) => {
-          const canCopy = Boolean(
-            message.content && !message.is_deleted && !message.provider_type
-          );
+          const canCopy = Boolean(message.content && !message.is_deleted && !message.provider_type);
           const canReply = Boolean(
             canSend &&
-              !message.is_deleted &&
-              !message.provider_type &&
-              !['queued', 'sending', 'unknown'].includes(message.status)
+            !message.is_deleted &&
+            !message.provider_type &&
+            !['queued', 'sending', 'unknown'].includes(message.status)
           );
           const canReact = Boolean(
             canSend &&
-              !message.is_deleted &&
-              !message.provider_type &&
-              ['received', 'sent', 'delivered', 'read'].includes(message.status)
+            !message.is_deleted &&
+            !message.provider_type &&
+            ['received', 'sent', 'delivered', 'read'].includes(message.status)
           );
           const canForward = Boolean(
             canSend &&
-              !message.is_deleted &&
-              !message.provider_type &&
-              ['received', 'sent', 'delivered', 'read'].includes(message.status)
+            !message.is_deleted &&
+            !message.provider_type &&
+            ['received', 'sent', 'delivered', 'read'].includes(message.status)
           );
           const canEdit = Boolean(
             canManageMessages &&
-              message.direction === 'outbound' &&
-              !message.is_deleted &&
-              !message.provider_type &&
-              ['sent', 'delivered', 'read'].includes(message.status) &&
-              message.message_type === 'text' &&
-              clockNow > 0 &&
-              clockNow - Date.parse(message.create_date) >= 0 &&
-              clockNow - Date.parse(message.create_date) <= 15 * 60_000
+            message.direction === 'outbound' &&
+            !message.is_deleted &&
+            !message.provider_type &&
+            ['sent', 'delivered', 'read'].includes(message.status) &&
+            message.message_type === 'text' &&
+            clockNow > 0 &&
+            clockNow - Date.parse(message.create_date) >= 0 &&
+            clockNow - Date.parse(message.create_date) <= 15 * 60_000
           );
           const canDelete = Boolean(
             canManageMessages &&
-              message.direction === 'outbound' &&
-              !message.is_deleted &&
-              !message.provider_type &&
-              ['sent', 'delivered', 'read'].includes(message.status)
+            message.direction === 'outbound' &&
+            !message.is_deleted &&
+            !message.provider_type &&
+            ['sent', 'delivered', 'read'].includes(message.status)
           );
           const hasActions = canCopy || canReply || canReact || canForward || canEdit || canDelete;
 

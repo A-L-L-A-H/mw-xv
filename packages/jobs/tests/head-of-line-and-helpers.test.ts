@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  redactLifecyclePayload,
-  registerAddonJobsAndConsumers,
-} from '../src/index.js';
+import { redactLifecyclePayload, registerAddonJobsAndConsumers } from '../src/index.js';
 
 describe('jobs lifecycle & addon registration helpers', () => {
   it('redacts default, hidden, and sensitive fields from lifecycle payloads', () => {

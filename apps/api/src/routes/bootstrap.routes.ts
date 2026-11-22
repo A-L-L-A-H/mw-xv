@@ -113,9 +113,7 @@ export const bootstrapRoutes: FastifyPluginAsync<BootstrapRoutesOptions> = async
             partnerId: req.auth.partnerId ?? null,
             companyId: req.auth.companyId ?? null,
           },
-          activeCompany: activeCompany
-            ? { id: activeCompany.id, name: activeCompany.name }
-            : null,
+          activeCompany: activeCompany ? { id: activeCompany.id, name: activeCompany.name } : null,
           companies: companies.map((c) => ({
             id: c.id,
             name: c.name,

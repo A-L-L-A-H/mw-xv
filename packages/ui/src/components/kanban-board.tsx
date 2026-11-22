@@ -42,7 +42,9 @@ export function KanbanBoard({ columns, className, onCardAction, ...props }: Kanb
                   type="button"
                 >
                   <span className="mw-ui-kanban-card-title">{card.title}</span>
-                  {card.detail ? <span className="mw-ui-kanban-card-detail">{card.detail}</span> : null}
+                  {card.detail ? (
+                    <span className="mw-ui-kanban-card-detail">{card.detail}</span>
+                  ) : null}
                 </button>
               ))
             ) : (

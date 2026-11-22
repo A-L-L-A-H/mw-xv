@@ -18,24 +18,20 @@ export async function listDeadJobs(
 }
 
 export async function retryDeadJob(jobId: number, transaction?: Transaction): Promise<boolean> {
-  const updated = await Job.query(transaction)
-    .where({ id: jobId, status: 'dead' })
-    .patch({
-      status: 'queued',
-      attempts: 0,
-      cancel_requested: false,
-      available_at: new Date().toISOString(),
-    });
+  const updated = await Job.query(transaction).where({ id: jobId, status: 'dead' }).patch({
+    status: 'queued',
+    attempts: 0,
+    cancel_requested: false,
+    available_at: new Date().toISOString(),
+  });
   return updated > 0;
 }
 
 export async function cancelDeadJob(jobId: number, transaction?: Transaction): Promise<boolean> {
-  const updated = await Job.query(transaction)
-    .where({ id: jobId, status: 'dead' })
-    .patch({
-      status: 'cancelled',
-      cancel_requested: true,
-    });
+  const updated = await Job.query(transaction).where({ id: jobId, status: 'dead' }).patch({
+    status: 'cancelled',
+    cancel_requested: true,
+  });
   return updated > 0;
 }
 

@@ -37,7 +37,8 @@ export function customFilterDomain(
   filters: ReadonlyArray<{ field: string; operator: string; value: string }>
 ): Domain {
   return filters.flatMap((filter): Domain => {
-    if (filter.operator === 'ilike') return [[filter.field, 'ilike', `%${escapeLike(filter.value)}%`]];
+    if (filter.operator === 'ilike')
+      return [[filter.field, 'ilike', `%${escapeLike(filter.value)}%`]];
     return [[filter.field, filter.operator, coerceFilterValue(filter.value)]];
   });
 }
@@ -56,30 +57,38 @@ export function advancedFilterDomain(
   return orDomain(clauses as [string, string, unknown][]);
 }
 
-export function searchDomain(
-  views: ResolvedViews,
-  searchTerm: string
-): Domain {
+export function searchDomain(views: ResolvedViews, searchTerm: string): Domain {
   const query = searchTerm.trim();
   if (!query) return [];
-  const fields =
-    views.search?.fields?.length
-      ? views.search.fields
-      : views.fields.filter((f) => f.type === 'string').map((f) => f.name).slice(0, 3);
+  const fields = views.search?.fields?.length
+    ? views.search.fields
+    : views.fields
+        .filter((f) => f.type === 'string')
+        .map((f) => f.name)
+        .slice(0, 3);
   return orDomain(fields.map((field) => [field, 'ilike', `%${escapeLike(query)}%`]));
 }
 
 export function listColumns(views: ResolvedViews, hiddenColumns: ReadonlySet<string>) {
   return views.list.columns
     .map((name) => views.fields.find((field) => field.name === name))
-    .filter((field): field is FieldMeta => Boolean(field) && !field!.writeOnly && !hiddenColumns.has(field!.name));
+    .filter(
+      (field): field is FieldMeta =>
+        Boolean(field) && !field!.writeOnly && !hiddenColumns.has(field!.name)
+    );
 }
 
 export function pagination(total: number, page: number, pageSize: number) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(Math.max(1, page), totalPages);
   const offset = (safePage - 1) * pageSize;
-  return { totalPages, page: safePage, offset, first: total === 0 ? 0 : offset + 1, last: Math.min(offset + pageSize, total) };
+  return {
+    totalPages,
+    page: safePage,
+    offset,
+    first: total === 0 ? 0 : offset + 1,
+    last: Math.min(offset + pageSize, total),
+  };
 }
 
 export function selectionState(recordIds: readonly number[], selectedIds: readonly number[]) {
@@ -90,12 +99,20 @@ export function selectionState(recordIds: readonly number[], selectedIds: readon
 }
 
 export function titleField(columns: readonly FieldMeta[]): FieldMeta | undefined {
-  return columns.find((field) => ['name', 'login', 'summary', 'code'].includes(field.name)) ??
-    columns.find((field) => field.type === 'string');
+  return (
+    columns.find((field) => ['name', 'login', 'summary', 'code'].includes(field.name)) ??
+    columns.find((field) => field.type === 'string')
+  );
 }
 
-export function aggregate(columnName: string, rows: readonly Record<string, unknown>[], operation: 'sum' | 'avg'): number | undefined {
-  const values = rows.map((row) => row[columnName]).filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
+export function aggregate(
+  columnName: string,
+  rows: readonly Record<string, unknown>[],
+  operation: 'sum' | 'avg'
+): number | undefined {
+  const values = rows
+    .map((row) => row[columnName])
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
   if (!values.length) return undefined;
   const sum = values.reduce((total, value) => total + value, 0);
   return operation === 'sum' ? sum : sum / values.length;

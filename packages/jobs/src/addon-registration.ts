@@ -1,8 +1,4 @@
-import {
-  registerJobHandler,
-  registerOutboxConsumer,
-  type JobHandler,
-} from './runtime.js';
+import { registerJobHandler, registerOutboxConsumer, type JobHandler } from './runtime.js';
 
 export type AddonOutboxConsumerHandler = Parameters<typeof registerOutboxConsumer>[1];
 
@@ -21,9 +17,7 @@ export interface AddonJobManifestLike {
  * Registers all `jobHandlers` and `outboxConsumers` declared on active addon manifests.
  * Rejects duplicate job handler names across addons and returns a clean deregister function.
  */
-export function registerAddonJobsAndConsumers(
-  addons: readonly AddonJobManifestLike[]
-): () => void {
+export function registerAddonJobsAndConsumers(addons: readonly AddonJobManifestLike[]): () => void {
   const seenHandlers = new Set<string>();
   const disposers: Array<() => void> = [];
 

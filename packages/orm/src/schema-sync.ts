@@ -52,10 +52,7 @@ export interface TableSchemaSnapshot {
 }
 
 export type SchemaDiffCategory =
-  | 'safe_create'
-  | 'safe_alter'
-  | 'index_sync'
-  | 'destructive_blocked';
+  'safe_create' | 'safe_alter' | 'index_sync' | 'destructive_blocked';
 
 export interface SchemaDiffItem {
   table: string;
@@ -151,7 +148,14 @@ export async function introspectDatabaseSchema(
          WHERE table_schema = current_schema() AND table_name = ?
          ORDER BY ordinal_position`,
         [tableName]
-      )) as { rows: Array<{ column_name: string; data_type: string; is_nullable: string; column_default: string | null }> };
+      )) as {
+        rows: Array<{
+          column_name: string;
+          data_type: string;
+          is_nullable: string;
+          column_default: string | null;
+        }>;
+      };
 
       const columns: ColumnSnapshot[] = colRows.rows.map((r) => ({
         name: r.column_name,
@@ -351,7 +355,10 @@ function isSafeWidening(fromFamily: string, toFamily: string): boolean {
   if (fromFamily === 'float' && toFamily === 'decimal') return true;
   if (fromFamily === 'date' && toFamily === 'datetime') return true;
   // SQLite stores json/date/datetime/string as text/varchar
-  if (fromFamily === 'text' && (toFamily === 'json' || toFamily === 'datetime' || toFamily === 'date')) {
+  if (
+    fromFamily === 'text' &&
+    (toFamily === 'json' || toFamily === 'datetime' || toFamily === 'date')
+  ) {
     return true;
   }
   return false;
@@ -362,7 +369,9 @@ export function expectedIndexNames(model: SyncModelClass): {
   uniques: Array<{ name: string; columns: string[] }>;
 } {
   const entries = Object.entries(model.fields).filter(([, f]) => isStoredField(f));
-  const hasCompanyColumn = entries.some(([name, field]) => columnName(name, field) === 'company_id');
+  const hasCompanyColumn = entries.some(
+    ([name, field]) => columnName(name, field) === 'company_id'
+  );
   const rawIndexes: string[][] = [
     ['active', 'id'],
     ['create_uid'],

@@ -296,7 +296,11 @@ describe('workspace addon conformance', () => {
       }
       for (const menu of addon.menus ?? []) {
         if (menu.parentId) {
-          assert.notEqual(menu.parentId, menu.id, `${addon.name} menu ${menu.id} cannot parent itself`);
+          assert.notEqual(
+            menu.parentId,
+            menu.id,
+            `${addon.name} menu ${menu.id} cannot parent itself`
+          );
         }
       }
     }

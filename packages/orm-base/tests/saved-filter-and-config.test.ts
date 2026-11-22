@@ -15,10 +15,18 @@ describe('base.saved_filter & base.config_parameter', () => {
     expect(() => validateSavedFilterDomainJson('not-json')).toThrow(/valid JSON/);
     expect(() => validateSavedFilterDomainJson('{"bad":true}')).toThrow(/Invalid domain/);
 
-    expect(canMutateSavedFilter({ userId: 5, role: 'user' }, { user_id: 5, is_shared: false })).toBe(true);
-    expect(canMutateSavedFilter({ userId: 5, role: 'user' }, { user_id: 9, is_shared: false })).toBe(false);
-    expect(canMutateSavedFilter({ userId: 5, role: 'user' }, { user_id: 5, is_shared: true })).toBe(false);
-    expect(canMutateSavedFilter({ userId: 1, role: 'superadmin' }, { user_id: 5, is_shared: true })).toBe(true);
+    expect(
+      canMutateSavedFilter({ userId: 5, role: 'user' }, { user_id: 5, is_shared: false })
+    ).toBe(true);
+    expect(
+      canMutateSavedFilter({ userId: 5, role: 'user' }, { user_id: 9, is_shared: false })
+    ).toBe(false);
+    expect(canMutateSavedFilter({ userId: 5, role: 'user' }, { user_id: 5, is_shared: true })).toBe(
+      false
+    );
+    expect(
+      canMutateSavedFilter({ userId: 1, role: 'superadmin' }, { user_id: 5, is_shared: true })
+    ).toBe(true);
   });
 
   it('resolves config parameters with env override, company scope, and audit redaction', async () => {
@@ -28,7 +36,13 @@ describe('base.saved_filter & base.config_parameter', () => {
       where: () => ({
         orderBy: async () => [
           { key: 'app.max_rows', value_type: 'integer', value: '250', company_id: 2, active: true },
-          { key: 'app.max_rows', value_type: 'integer', value: '100', company_id: null, active: true },
+          {
+            key: 'app.max_rows',
+            value_type: 'integer',
+            value: '100',
+            company_id: null,
+            active: true,
+          },
         ],
       }),
     });

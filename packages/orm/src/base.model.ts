@@ -6,17 +6,95 @@ import {
   type QueryContext,
 } from 'objection';
 import { applyDomain } from './domain.js';
-import { Environment } from './environment.js';
 import { isRecord } from '@moonwitness/types';
 import { hashPassword } from './password.js';
-import type {
-  Field,
-  FieldMap,
-  ManyToManyTableMeta,
-  ModelConstraint,
-  OnchangeHandler,
-  OnchangeResult,
-} from './model-definition.js';
+import { ServiceContainer } from './services.js';
+import {
+  ConcurrencyConflictError,
+  ValidationError,
+  type Domain,
+  type EnvironmentLike,
+  type FieldDefault,
+  type FieldKind,
+  type GroupCountOptions,
+  type GroupCountPage,
+  type GroupCountRow,
+  type JsonValue,
+  type ManyToManyTableMeta,
+  type ModelContext,
+  type OnchangeHandler,
+  type OnchangeResult,
+  type OnDeletePolicy,
+  type Scalar,
+  type SearchOptions,
+  type SearchReadOptions,
+} from './types.js';
+
+export type ModelConstraint<TEnv = EnvironmentLike> = (
+  record: Record<string, unknown>,
+  env?: TEnv
+) => void | Promise<void>;
+
+export interface FieldOptions<T = Scalar, TEnv = EnvironmentLike> {
+  required?: boolean;
+  unique?: boolean;
+  /** Creates a non-unique database index on this column during addon schema sync. */
+  index?: boolean;
+  /** Excludes the field from serialized records and generic query inputs. */
+  hidden?: boolean;
+  /** Excludes the field from audit and outbox snapshots while keeping normal authorized reads. */
+  sensitive?: boolean;
+  readonly?: boolean;
+  default?: FieldDefault<T>;
+  /** Human-readable label for generated UIs; defaults to the humanized field name. */
+  label?: string;
+  /** Tooltip / helper text for generated UIs. */
+  help?: string;
+  /** Optional regular expression used by generated JSON Schema validation. */
+  pattern?: string;
+  /** Conditional visibility based on domain */
+  invisible?: Domain | boolean;
+  /** Conditional readonly based on domain */
+  readonlyIf?: Domain;
+  /** Conditional required based on domain */
+  requiredIf?: Domain;
+  /** Declarative computed field evaluator */
+  compute?: (record: Record<string, unknown>, env?: TEnv) => unknown | Promise<unknown>;
+  /** Dependency field names (or dotted relation paths) that trigger recomputation */
+  depends?: readonly string[];
+  /** When true, computed value is persisted in the database column */
+  store?: boolean;
+}
+
+export interface DecimalOptions<TEnv = EnvironmentLike> extends FieldOptions<
+  number | string,
+  TEnv
+> {
+  precision?: number;
+  scale?: number;
+}
+
+export interface BelongsToOptions<TEnv = EnvironmentLike> extends FieldOptions<number, TEnv> {
+  /** Foreign key delete policy; defaults to 'restrict'. */
+  onDelete?: OnDeletePolicy;
+}
+
+export interface Field<T = unknown, TEnv = EnvironmentLike> extends FieldOptions<T, TEnv> {
+  kind: FieldKind;
+  values?: readonly string[];
+  target?: typeof BaseModel | (() => typeof BaseModel);
+  foreignKey?: string;
+  onDelete?: OnDeletePolicy;
+  precision?: number;
+  scale?: number;
+  relationTable?: string;
+  joinColumn?: string;
+  inverseJoinColumn?: string;
+  /** Type-only marker used to infer the model's record shape. */
+  readonly valueType?: T;
+}
+
+export type FieldMap<TEnv = EnvironmentLike> = Readonly<Record<string, Field<unknown, TEnv>>>;
 
 function columnName(name: string, field: Field): string {
   return field.kind === 'belongsTo' ? `${name}_id` : name;
@@ -44,18 +122,6 @@ function manyToManyTableMeta(
       field.inverseJoinColumn ?? (isSelf ? `${targetTable}_target_id` : `${targetTable}_id`),
   };
 }
-import {
-  ConcurrencyConflictError,
-  ValidationError,
-  type Domain,
-  type GroupCountOptions,
-  type GroupCountPage,
-  type GroupCountRow,
-  type JsonValue,
-  type ModelContext,
-  type SearchOptions,
-  type SearchReadOptions,
-} from './types.js';
 
 const SERVER_MANAGED_FIELDS = new Set([
   'id',
@@ -103,16 +169,23 @@ export class BaseModel extends Model {
   /**
    * The Environment associated with this model class execution.
    */
-  private static _env?: Environment;
+  private static _env?: EnvironmentLike;
+  private static _defaultEnvFactory?: () => EnvironmentLike;
 
-  static get env(): Environment {
+  static setDefaultEnvironmentFactory(factory: () => EnvironmentLike): void {
+    this._defaultEnvFactory = factory;
+  }
+
+  static get env(): EnvironmentLike {
     if (!this._env) {
-      this._env = new Environment();
+      this._env = this._defaultEnvFactory
+        ? this._defaultEnvFactory()
+        : { context: { activeTest: true }, services: new ServiceContainer() };
     }
     return this._env;
   }
 
-  static set env(value: Environment) {
+  static set env(value: EnvironmentLike) {
     this._env = value;
   }
 
@@ -257,7 +330,9 @@ export class BaseModel extends Model {
           : undefined;
 
     const selectCols = recField ? ['id', recField] : ['id'];
-    const rows = await this.query(trx).whereIn('id', [...ids]).select(selectCols);
+    const rows = await this.query(trx)
+      .whereIn('id', [...ids])
+      .select(selectCols);
     return rows.map((row) => [row.id, row.display_name]);
   }
 
@@ -339,7 +414,7 @@ export class BaseModel extends Model {
    */
   protected static async runConstraints(
     record: Record<string, unknown>,
-    env?: Environment
+    env?: EnvironmentLike
   ): Promise<void> {
     if (this.constraints.length === 0) return;
     for (const constraint of this.constraints) {
@@ -375,9 +450,7 @@ export class BaseModel extends Model {
   /**
    * Populate non-stored computed fields on read records.
    */
-  protected static async populateComputedFields(
-    records: Record<string, unknown>[]
-  ): Promise<void> {
+  protected static async populateComputedFields(records: Record<string, unknown>[]): Promise<void> {
     if (!this.fields || records.length === 0) return;
     const nonStored = Object.entries(this.fields).filter(([, f]) => Boolean(f.compute) && !f.store);
     if (nonStored.length === 0) return;
@@ -635,7 +708,9 @@ export class BaseModel extends Model {
         const count = await qb.patch({
           ...withComputed,
           write_date: new Date().toISOString(),
-          ...(this.env?.context?.userId !== undefined ? { write_uid: this.env.context.userId } : {}),
+          ...(this.env?.context?.userId !== undefined
+            ? { write_uid: this.env.context.userId }
+            : {}),
         });
         if (options.expectedWriteDate !== undefined && count === 0) {
           throw new ConcurrencyConflictError(
@@ -691,7 +766,6 @@ export class BaseModel extends Model {
    */
   async remove(hardDelete = false, options: UnlinkOptions = {}): Promise<boolean> {
     const ModelClass = this.$modelClass as unknown as typeof BaseModel;
-    const trx = ModelClass.resolveTrx(options.transaction);
 
     if (hardDelete) {
       const deleted = await ModelClass.unlink(this.id, true, options);
@@ -1027,6 +1101,7 @@ export class BaseModel extends Model {
         });
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       let currentModel: typeof BaseModel = this;
       let currentAlias = this.tableName;
       let pathKey = '';
@@ -1034,8 +1109,7 @@ export class BaseModel extends Model {
       for (let i = 0; i < segments.length - 1; i += 1) {
         const relName = segments[i]!;
         const rawMappings = currentModel.relationMappings;
-        const resolvedMappings =
-          typeof rawMappings === 'function' ? rawMappings() : rawMappings;
+        const resolvedMappings = typeof rawMappings === 'function' ? rawMappings() : rawMappings;
         const relMapping = resolvedMappings?.[relName];
         if (!relMapping || relMapping.relation !== BaseModel.BelongsToOneRelation) {
           throw Object.assign(

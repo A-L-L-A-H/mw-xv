@@ -101,12 +101,12 @@ export function SmartButtonBox({
         direction === 'vertical' && 'mw-ui-smart-button-box--vertical',
         className
       )}
-      data-slot='smart-button-box'
-      role='group'
+      data-slot="smart-button-box"
+      role="group"
       aria-label={ariaLabel ?? 'Actions'}
       aria-busy={pending ? 'true' : undefined}
     >
-      <div className='mw-ui-smart-button-box-primary'>
+      <div className="mw-ui-smart-button-box-primary">
         {resolvedPrimaryActions.map((action) => (
           <Button
             key={action.id}
@@ -115,20 +115,21 @@ export function SmartButtonBox({
             disabled={action.disabled}
             onClick={action.onClick}
             aria-label={action.ariaLabel}
-            className='mw-ui-smart-button'
+            className="mw-ui-smart-button"
           >
-            {action.icon && <span className='mw-ui-smart-button-box-icon' aria-hidden='true'>{action.icon}</span>}
-            <span className='mw-ui-smart-button-content'>
-              <span className='mw-ui-smart-button-label'>{action.label}</span>
+            {action.icon && (
+              <span className="mw-ui-smart-button-box-icon" aria-hidden="true">
+                {action.icon}
+              </span>
+            )}
+            <span className="mw-ui-smart-button-content">
+              <span className="mw-ui-smart-button-label">{action.label}</span>
               {action.description ? (
-                <span className='mw-ui-smart-button-description'>{action.description}</span>
+                <span className="mw-ui-smart-button-description">{action.description}</span>
               ) : null}
             </span>
             {action.count !== undefined && action.count > 0 && (
-              <span
-                className='mw-ui-smart-button-count'
-                aria-label={action.count + ' items'}
-              >
+              <span className="mw-ui-smart-button-count" aria-label={action.count + ' items'}>
                 {action.count > 99 ? '99+' : action.count}
               </span>
             )}
@@ -137,43 +138,45 @@ export function SmartButtonBox({
       </div>
 
       {hasSecondaryActions && (
-        <div className='mw-ui-smart-button-box-secondary'>
+        <div className="mw-ui-smart-button-box-secondary">
           <Button
-            type='button'
-            variant='outline'
-            size='default'
+            type="button"
+            variant="outline"
+            size="default"
             onClick={() => setOpen?.(!open)}
             aria-expanded={open}
-            aria-haspopup='menu'
-            aria-label='More actions'
-            className='mw-ui-smart-button'
+            aria-haspopup="menu"
+            aria-label="More actions"
+            className="mw-ui-smart-button"
           >
-            <span className='mw-ui-smart-button-label'>More</span>
-            <ChevronDownIcon aria-hidden='true' />
+            <span className="mw-ui-smart-button-label">More</span>
+            <ChevronDownIcon aria-hidden="true" />
           </Button>
 
           {open && (
-            <div className='mw-ui-smart-button-box-dropdown' role='menu'>
+            <div className="mw-ui-smart-button-box-dropdown" role="menu">
               {secondaryActions.map((action) => (
                 <button
                   key={action.id}
-                  type='button'
-                  role='menuitem'
+                  type="button"
+                  role="menuitem"
                   tabIndex={-1}
                   disabled={action.disabled}
                   onClick={() => {
                     action.onClick?.();
                     setOpen?.(false);
                   }}
-                  className='mw-ui-smart-button'
+                  className="mw-ui-smart-button"
                 >
-                  {action.icon && <span aria-hidden='true'>{action.icon}</span>}
-                  <span className='mw-ui-smart-button-label'>{action.label}</span>
+                  {action.icon && <span aria-hidden="true">{action.icon}</span>}
+                  <span className="mw-ui-smart-button-label">{action.label}</span>
                   {action.count !== undefined && action.count > 0 && (
-                    <span className='mw-ui-smart-button-count'>{action.count > 99 ? '99+' : action.count}</span>
+                    <span className="mw-ui-smart-button-count">
+                      {action.count > 99 ? '99+' : action.count}
+                    </span>
                   )}
                   {action.description && (
-                    <span className='mw-ui-smart-button-description'>{action.description}</span>
+                    <span className="mw-ui-smart-button-description">{action.description}</span>
                   )}
                 </button>
               ))}

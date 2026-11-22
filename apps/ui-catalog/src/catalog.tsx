@@ -1491,7 +1491,7 @@ function CatalogContent() {
               >
                 <div className="catalog-table-stack">
                   <Table
-                    className="min-w-[36rem]"
+                    className="catalog-addons-table"
                     density="comfortable"
                     scrollLabel="Installed add-ons table horizontal scroll"
                     aria-label="Installed add-ons"
@@ -1500,7 +1500,7 @@ function CatalogContent() {
                     <TableHead>
                       <TableRow>
                         <TableHeader scope="col" aria-sort={addonSort ?? 'none'}>
-                          <div className="flex items-center gap-2">
+                          <div className="catalog-inline">
                             <Checkbox
                               aria-label="Select all add-ons on this page"
                               checked={allVisibleAddonsSelected}
@@ -1534,7 +1534,7 @@ function CatalogContent() {
                       {visibleAddons.map(([name, owner, status]) => (
                         <TableRow key={name}>
                           <TableCell>
-                            <div className="flex items-center gap-2">
+                            <div className="catalog-inline">
                               <Checkbox
                                 aria-label={`Select ${name}`}
                                 checked={selectedAddons.includes(name)}

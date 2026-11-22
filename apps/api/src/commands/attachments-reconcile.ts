@@ -22,32 +22,33 @@ export interface AttachmentReconcileOptions {
 
 const ORPHAN_GRACE_PERIOD_MS = 24 * 60 * 60 * 1000;
 
+export async function* allAttachmentReferences(
+  db: ReturnType<typeof createDatabase>,
+  now = new Date()
+): AsyncIterable<AttachmentReference> {
+  const rows = await db('attachments').select('storage_key', 'size_bytes', 'checksum');
+  for (const row of rows) {
+    if (typeof row.storage_key !== 'string' || typeof row.size_bytes !== 'number') continue;
+    yield {
+      storageKey: row.storage_key,
+      sizeBytes: row.size_bytes,
+      ...(typeof row.checksum === 'string' ? { checksum: row.checksum } : {}),
+    };
+  }
+  yield* whatsappAttachmentReferences(db, now);
+}
+
 export async function reconcileAttachments(options: AttachmentReconcileOptions) {
   const db = createDatabase();
   try {
     await installAddons(db, [baseManifest, storageManifest, whatsappManifest]);
     const storage = createAttachmentStorage();
-    async function* references(): AsyncIterable<AttachmentReference> {
-      const rows = await db('attachments').select('storage_key', 'size_bytes', 'checksum');
-      for (const row of rows) {
-        if (typeof row.storage_key !== 'string' || typeof row.size_bytes !== 'number') continue;
-        yield {
-          storageKey: row.storage_key,
-          sizeBytes: row.size_bytes,
-          ...(typeof row.checksum === 'string' ? { checksum: row.checksum } : {}),
-        };
-      }
-      yield* whatsappAttachmentReferences(db);
-      const now = new Date().toISOString();
-      const pendingUploadRows = await db('whatsapp_upload_tickets')
-        .where('expires_at', '>', now)
-        .select('storage_key');
-      for (const row of pendingUploadRows) {
-        if (typeof row.storage_key === 'string') yield { storageKey: row.storage_key };
-      }
-    }
     try {
-      const result = await reconcileAttachmentStorage(storage, references(), options);
+      const result = await reconcileAttachmentStorage(
+        storage,
+        allAttachmentReferences(db),
+        options
+      );
       if (options.apply) {
         await db('whatsapp_upload_tickets')
           .where('expires_at', '<=', options.olderThan.toISOString())

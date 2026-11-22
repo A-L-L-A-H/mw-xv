@@ -280,7 +280,11 @@ export class FieldWidgetRegistry {
     field: Pick<ExtendedFieldMeta, 'type' | 'widget'> & Partial<ExtendedFieldMeta>,
     explicitWidget?: string
   ): RegisteredFieldWidget {
-    const candidates = [explicitWidget, field?.widget, field?.type ? String(field.type) : undefined];
+    const candidates = [
+      explicitWidget,
+      field?.widget,
+      field?.type ? String(field.type) : undefined,
+    ];
     for (const candidate of candidates) {
       if (!candidate) continue;
       const direct = this.widgets.get(candidate);
@@ -316,4 +320,26 @@ export function formatFieldValue(
   return widget.formatValue
     ? widget.formatValue(value, field, row)
     : defaultFormatValue(value, field, row);
+}
+
+/** Read-only cell renderer shared across list views and relational widgets. */
+export function FieldCell({
+  field,
+  row,
+  widget,
+}: {
+  field: FieldMeta | ExtendedFieldMeta;
+  row: Row;
+  widget?: string;
+}) {
+  const extendedField = field as ExtendedFieldMeta;
+  const resolved = resolveFieldWidget(extendedField, widget);
+  if (resolved.renderCell) {
+    return <>{resolved.renderCell({ field: extendedField, row, widget })}</>;
+  }
+  const value = row[extendedField.name];
+  if (value === null || value === undefined || value === '') {
+    return <span className="text-ink-faint">—</span>;
+  }
+  return <span className="truncate">{formatFieldValue(extendedField, value, row, widget)}</span>;
 }

@@ -1,121 +1,47 @@
 import type { JSONSchema, RelationMappings, QueryContext, ModelOptions } from 'objection';
-import { BaseModel } from './base.model.js';
+import {
+  BaseModel,
+  type BelongsToOptions,
+  type DecimalOptions,
+  type Field,
+  type FieldMap,
+  type FieldOptions,
+  type ModelConstraint,
+} from './base.model.js';
 import { hashPassword } from './password.js';
-import type { Environment } from './environment.js';
-import type { Domain, ModelContext } from './types.js';
+import type {
+  Domain,
+  FieldDefault,
+  FieldKind,
+  HasManyOptions,
+  ManyToManyOptions,
+  ManyToManyTableMeta,
+  ModelContext,
+  OnchangeHandler,
+  OnchangeResult,
+  OnDeletePolicy,
+  Scalar,
+} from './types.js';
 
-export type Scalar = string | number | boolean;
-export type FieldDefault<T> = T | ((context?: ModelContext) => T);
-export type OnDeletePolicy = 'restrict' | 'cascade' | 'set null';
-
-export type ModelConstraint = (
-  record: Record<string, unknown>,
-  env?: Environment
-) => void | Promise<void>;
-
-export interface OnchangeResult {
-  values?: Record<string, unknown>;
-  domainOverrides?: Record<string, Domain>;
-  warnings?: string[];
-}
-
-export type OnchangeHandler = (
-  values: Record<string, unknown>,
-  context?: ModelContext
-) => OnchangeResult | Promise<OnchangeResult>;
-
-export interface FieldOptions<T = Scalar> {
-  required?: boolean;
-  unique?: boolean;
-  /** Creates a non-unique database index on this column during addon schema sync. */
-  index?: boolean;
-  /** Excludes the field from serialized records and generic query inputs. */
-  hidden?: boolean;
-  /** Excludes the field from audit and outbox snapshots while keeping normal authorized reads. */
-  sensitive?: boolean;
-  readonly?: boolean;
-  default?: FieldDefault<T>;
-  /** Human-readable label for generated UIs; defaults to the humanized field name. */
-  label?: string;
-  /** Tooltip / helper text for generated UIs. */
-  help?: string;
-  /** Optional regular expression used by generated JSON Schema validation. */
-  pattern?: string;
-  /** Conditional visibility based on domain */
-  invisible?: Domain | boolean;
-  /** Conditional readonly based on domain */
-  readonlyIf?: Domain;
-  /** Conditional required based on domain */
-  requiredIf?: Domain;
-  /** Declarative computed field evaluator */
-  compute?: (record: Record<string, unknown>, env?: Environment) => unknown | Promise<unknown>;
-  /** Dependency field names (or dotted relation paths) that trigger recomputation */
-  depends?: readonly string[];
-  /** When true, computed value is persisted in the database column */
-  store?: boolean;
-}
-
-export interface DecimalOptions extends FieldOptions<number | string> {
-  precision?: number;
-  scale?: number;
-}
-
-export interface BelongsToOptions extends FieldOptions<number> {
-  /** Foreign key delete policy; defaults to 'restrict'. */
-  onDelete?: OnDeletePolicy;
-}
-
-export interface HasManyOptions {
-  label?: string;
-  help?: string;
-  foreignKey?: string;
-  invisible?: Domain | boolean;
-}
-
-export interface ManyToManyOptions {
-  label?: string;
-  help?: string;
-  /** Optional explicit junction table name. */
-  relationTable?: string;
-  /** Optional explicit column name referencing the source table. */
-  joinColumn?: string;
-  /** Optional explicit column name referencing the target table. */
-  inverseJoinColumn?: string;
-  invisible?: Domain | boolean;
-  readonlyIf?: Domain;
-  readonly?: boolean;
-}
-
-export type FieldKind =
-  | 'string'
-  | 'text'
-  | 'integer'
-  | 'float'
-  | 'decimal'
-  | 'boolean'
-  | 'date'
-  | 'datetime'
-  | 'json'
-  | 'enum'
-  | 'belongsTo'
-  | 'hasMany'
-  | 'manyToMany'
-  | 'password';
-
-export interface Field<T = unknown> extends FieldOptions<T> {
-  kind: FieldKind;
-  values?: readonly string[];
-  target?: typeof BaseModel | (() => typeof BaseModel);
-  foreignKey?: string;
-  onDelete?: OnDeletePolicy;
-  precision?: number;
-  scale?: number;
-  relationTable?: string;
-  joinColumn?: string;
-  inverseJoinColumn?: string;
-  /** Type-only marker used to infer the model's record shape. */
-  readonly valueType?: T;
-}
+export type {
+  BelongsToOptions,
+  DecimalOptions,
+  Domain,
+  Field,
+  FieldDefault,
+  FieldKind,
+  FieldMap,
+  FieldOptions,
+  HasManyOptions,
+  ManyToManyOptions,
+  ManyToManyTableMeta,
+  ModelConstraint,
+  ModelContext,
+  OnchangeHandler,
+  OnchangeResult,
+  OnDeletePolicy,
+  Scalar,
+};
 
 export const fields = {
   password(options: Pick<FieldOptions<string>, 'label' | 'help'> = {}) {
@@ -158,7 +84,12 @@ export const fields = {
     target: M | (() => M),
     options: O = {} as O
   ) {
-    return { onDelete: 'restrict' as OnDeletePolicy, ...options, kind: 'belongsTo' as const, target };
+    return {
+      onDelete: 'restrict' as OnDeletePolicy,
+      ...options,
+      kind: 'belongsTo' as const,
+      target,
+    };
   },
   hasMany<M extends typeof BaseModel>(target: M | (() => M), options: HasManyOptions = {}) {
     return { ...options, kind: 'hasMany' as const, target };
@@ -174,7 +105,6 @@ export const fields = {
   },
 };
 
-export type FieldMap = Readonly<Record<string, Field>>;
 type FieldValue<F> = F extends { kind: 'belongsTo' }
   ? number
   : F extends { kind: 'manyToMany' }
@@ -233,14 +163,6 @@ export function extendModel(
   return Object.freeze({ target, ...extension });
 }
 
-export interface ManyToManyTableMeta {
-  relationTable: string;
-  sourceTable: string;
-  targetTable: string;
-  joinColumn: string;
-  inverseJoinColumn: string;
-}
-
 export function resolveFieldTarget(
   target: typeof BaseModel | (() => typeof BaseModel) | undefined
 ): typeof BaseModel | undefined {
@@ -262,7 +184,8 @@ export function manyToManyTableMeta(
   const targetTable = targetModel.tableName;
   const isSelf = sourceTable === targetTable;
   const relationTable = field.relationTable ?? `${sourceTable}_${targetTable}_${key}_rel`;
-  const joinColumn = field.joinColumn ?? (isSelf ? `${sourceTable}_source_id` : `${sourceTable}_id`);
+  const joinColumn =
+    field.joinColumn ?? (isSelf ? `${sourceTable}_source_id` : `${sourceTable}_id`);
   const inverseJoinColumn =
     field.inverseJoinColumn ?? (isSelf ? `${targetTable}_target_id` : `${targetTable}_id`);
   return {

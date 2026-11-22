@@ -407,7 +407,9 @@ export function ConversationHeader({
                           }
                           aria-pressed={activeConversation.assigned_user_id === agent.id}
                           disabled={updatingConversation}
-                          onClick={() => void updateConversationAssignment(agent.id, teamIdForAgent)}
+                          onClick={() =>
+                            void updateConversationAssignment(agent.id, teamIdForAgent)
+                          }
                         >
                           Assign to {agent.id === client.currentUser?.id ? 'you' : agent.login}
                         </Button>

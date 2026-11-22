@@ -1,6 +1,13 @@
 'use client';
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@moonwitness/ui/components/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@moonwitness/ui/components/dialog';
 import { Button } from '@moonwitness/ui/components/button';
 
 export interface ConfirmDialogProps {
@@ -34,8 +41,14 @@ export function ConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={onCancel} disabled={busy}>{cancelLabel}</Button>
-          <Button variant={destructive ? 'destructive' : 'default'} onClick={onConfirm} disabled={busy}>
+          <Button variant="outline" onClick={onCancel} disabled={busy}>
+            {cancelLabel}
+          </Button>
+          <Button
+            variant={destructive ? 'destructive' : 'default'}
+            onClick={onConfirm}
+            disabled={busy}
+          >
             {busy ? 'Working…' : confirmLabel}
           </Button>
         </DialogFooter>

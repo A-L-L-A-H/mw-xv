@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
@@ -54,6 +54,7 @@ import { cn } from '@/lib/utils';
 import { displayName, relationKey, type Row } from './field-utils';
 import { One2ManyWidget } from './one2many-widget';
 import {
+  FieldCell,
   formatFieldValue,
   registerFieldWidget,
   resolveFieldWidget,
@@ -63,6 +64,7 @@ import {
   type RegisteredFieldWidget,
 } from './widget-registry';
 
+export { FieldCell };
 export type {
   ExtendedFieldMeta,
   FieldCellRendererProps,
@@ -74,10 +76,7 @@ export type {
 
 const SAFE_WEB_PROTOCOLS = new Set(['http:', 'https:']);
 
-function sanitizeExternalHref(
-  rawValue: unknown,
-  kind: 'url' | 'email' | 'phone'
-): string | null {
+function sanitizeExternalHref(rawValue: unknown, kind: 'url' | 'email' | 'phone'): string | null {
   if (typeof rawValue !== 'string') return null;
   const trimmed = rawValue.trim();
   if (!trimmed) return null;
@@ -147,10 +146,7 @@ function resolveCurrencyCode(field: ExtendedFieldMeta, row?: Row): string {
   return 'USD';
 }
 
-function formatLocalizedNumber(
-  value: unknown,
-  options?: Intl.NumberFormatOptions
-): string {
+function formatLocalizedNumber(value: unknown, options?: Intl.NumberFormatOptions): string {
   const num = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(num)) return String(value ?? '');
   try {
@@ -477,7 +473,10 @@ function registerDefaultWidgets(): void {
             : Number(value);
       return (
         <div className="flex items-center gap-2">
-          <Badge variant="default" className="shrink-0 border-2 border-ink px-2 py-1 font-mono text-xs font-bold">
+          <Badge
+            variant="default"
+            className="shrink-0 border-2 border-ink px-2 py-1 font-mono text-xs font-bold"
+          >
             {currency}
           </Badge>
           <NumberInput
@@ -653,7 +652,10 @@ function registerDefaultWidgets(): void {
       const label =
         field.selection?.find((option) => option.value === value)?.label ?? String(value);
       return (
-        <Badge variant="primary" className="border-2 border-ink px-2 py-0.5 font-mono text-xs uppercase">
+        <Badge
+          variant="primary"
+          className="border-2 border-ink px-2 py-0.5 font-mono text-xs uppercase"
+        >
           {label}
         </Badge>
       );
@@ -666,17 +668,17 @@ function registerDefaultWidgets(): void {
         id: opt.value,
         label: opt.label,
         state:
-          idx === activeIdx
-            ? 'active'
-            : activeIdx !== -1 && idx < activeIdx
-              ? 'done'
-              : 'disabled',
+          idx === activeIdx ? 'active' : activeIdx !== -1 && idx < activeIdx ? 'done' : 'disabled',
       }));
       return (
         <div id={id} className="space-y-2">
           {steps.length > 0 && <StatusBar steps={steps} />}
           {!field.readonly && options.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={field.label}>
+            <div
+              className="flex flex-wrap items-center gap-1.5"
+              role="group"
+              aria-label={field.label}
+            >
               {options.map((opt) => {
                 const isCurrent = opt.value === currentVal;
                 return (
@@ -786,7 +788,11 @@ function registerDefaultWidgets(): void {
                 ? resolveRecordLabel(entry as Row, field.relationField)
                 : `#${String(entry)}`;
             return (
-              <Badge key={idx} variant="default" className="border border-ink px-1.5 py-0 font-mono text-[10px]">
+              <Badge
+                key={idx}
+                variant="default"
+                className="border border-ink px-1.5 py-0 font-mono text-[10px]"
+              >
                 {label}
               </Badge>
             );
@@ -840,7 +846,10 @@ function registerDefaultWidgets(): void {
       const label =
         field.selection?.find((option) => option.value === value)?.label ?? String(value);
       return (
-        <Badge variant="primary" className="border-2 border-ink px-2 py-0.5 font-mono text-xs uppercase">
+        <Badge
+          variant="primary"
+          className="border-2 border-ink px-2 py-0.5 font-mono text-xs uppercase"
+        >
           {label}
         </Badge>
       );
@@ -1009,13 +1018,7 @@ registerDefaultWidgets();
 
 /* ─────────────────────────────── JSON Widget ─────────────────────────────── */
 
-function JsonFieldWidget({
-  id,
-  field,
-  value,
-  onChange,
-  invalid,
-}: FieldWidgetRendererProps) {
+function JsonFieldWidget({ id, field, value, onChange, invalid }: FieldWidgetRendererProps) {
   const serialized = useMemo(() => {
     if (value === null || value === undefined || value === '') return '';
     if (typeof value === 'string') return value;
@@ -1064,29 +1067,6 @@ function JsonFieldWidget({
   );
 }
 
-/* ─────────────────────────────── Read-only cell ─────────────────────────────── */
-
-export function FieldCell({
-  field,
-  row,
-  widget,
-}: {
-  field: FieldMeta | ExtendedFieldMeta;
-  row: Row;
-  widget?: string;
-}) {
-  const extendedField = field as ExtendedFieldMeta;
-  const resolved = resolveFieldWidget(extendedField, widget);
-  if (resolved.renderCell) {
-    return <>{resolved.renderCell({ field: extendedField, row, widget })}</>;
-  }
-  const value = row[extendedField.name];
-  if (value === null || value === undefined || value === '') {
-    return <span className="text-ink-faint">—</span>;
-  }
-  return <span className="truncate">{formatFieldValue(extendedField, value, row, widget)}</span>;
-}
-
 /* ─────────────────────────────── Editable widget ─────────────────────────────── */
 
 export interface WidgetProps {
@@ -1122,7 +1102,11 @@ export function FieldWidget({
   const extendedField = field as ExtendedFieldMeta;
   const resolved = resolveFieldWidget(extendedField, widget);
   const effectiveValue =
-    value !== undefined ? value : extendedField.default !== undefined ? extendedField.default : null;
+    value !== undefined
+      ? value
+      : extendedField.default !== undefined
+        ? extendedField.default
+        : null;
   return (
     <>
       {resolved.renderWidget({
@@ -1171,8 +1155,16 @@ export function Many2oneWidget({
 }) {
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState('');
   const [picked, setPicked] = useState<Row | null>(null);
   const target = field.relation ?? '';
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedTerm(term);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [term]);
 
   const { data: targetViews } = useQuery({
     queryKey: scopedQueryKey(['views', target]),
@@ -1194,7 +1186,7 @@ export function Many2oneWidget({
     queryKey: scopedQueryKey([
       'm2o',
       target,
-      term,
+      debouncedTerm,
       effectiveDomain,
       field.relationField,
       targetDisplayField,
@@ -1202,7 +1194,7 @@ export function Many2oneWidget({
     ]),
     queryFn: () => {
       const searchDomain = buildTargetSearchDomain(
-        term,
+        debouncedTerm,
         field.relationField,
         targetSearchFields,
         targetDisplayField
@@ -1341,8 +1333,16 @@ export function Many2ManyWidget({
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [term, setTerm] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState('');
   const [knownLabels, setKnownLabels] = useState<Record<number, string>>({});
   const target = field.relation ?? '';
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedTerm(term);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [term]);
 
   const selectedIds = useMemo<number[]>(() => {
     if (!Array.isArray(value)) return [];
@@ -1388,11 +1388,15 @@ export function Many2ManyWidget({
   const targetSearchFields = targetViews?.search?.fields;
   const targetDefaultOrder = targetViews?.list?.order;
 
-  const { data: searchData, isFetching, error } = useQuery({
+  const {
+    data: searchData,
+    isFetching,
+    error,
+  } = useQuery({
     queryKey: scopedQueryKey([
       'm2m',
       target,
-      term,
+      debouncedTerm,
       effectiveDomain,
       field.relationField,
       targetDisplayField,
@@ -1400,7 +1404,7 @@ export function Many2ManyWidget({
     ]),
     queryFn: () => {
       const searchDomain = buildTargetSearchDomain(
-        term,
+        debouncedTerm,
         field.relationField,
         targetSearchFields,
         targetDisplayField
@@ -1418,8 +1422,7 @@ export function Many2ManyWidget({
   const tagEntries = useMemo(
     () =>
       selectedIds.map((recordId) => {
-        const label =
-          knownLabels[recordId] ?? inlineLabels[recordId] ?? `#${String(recordId)}`;
+        const label = knownLabels[recordId] ?? inlineLabels[recordId] ?? `#${String(recordId)}`;
         return {
           id: recordId,
           tag: `${label} (#${String(recordId)})`,
@@ -1505,9 +1508,7 @@ export function Many2ManyWidget({
                     You do not have permission to read {target}.
                   </div>
                 ) : isFetching && !searchData?.records.length ? (
-                  <div className="p-4 text-center font-mono text-xs text-ink-faint">
-                    Searching…
-                  </div>
+                  <div className="p-4 text-center font-mono text-xs text-ink-faint">Searching…</div>
                 ) : !searchData?.records.length ? (
                   <div className="p-4 text-center font-mono text-xs text-ink-faint">
                     No matching records.

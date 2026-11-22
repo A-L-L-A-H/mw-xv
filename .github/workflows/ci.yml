@@ -54,6 +54,7 @@ jobs:
           pnpm --filter @moonwitness/board typecheck
           pnpm board:budget
           pnpm test:ui-budget
+          pnpm test:ui-catalog
 
   unit-tests:
     runs-on: ubuntu-24.04

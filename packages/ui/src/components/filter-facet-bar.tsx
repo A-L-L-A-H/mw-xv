@@ -14,7 +14,12 @@ export type FilterFacetBarProps = {
   className?: string;
 };
 
-export function FilterFacetBar({ facets, onFacetRemove, children, className }: FilterFacetBarProps) {
+export function FilterFacetBar({
+  facets,
+  onFacetRemove,
+  children,
+  className,
+}: FilterFacetBarProps) {
   if (facets.length === 0 && !children) return null;
 
   return (

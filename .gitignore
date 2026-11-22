@@ -19,4 +19,5 @@ coverage/
 apps/board/next-env.d.ts
 playwright-report/
 .qoder-tmp/
+apps/todo/
 .DS_Store

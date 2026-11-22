@@ -1,9 +1,19 @@
-import type { AuthContext } from '../plugins/auth.plugin.js';
+import type { Role } from '@moonwitness/auth';
+
+export interface AuthContext {
+  userId: number;
+  role: Role;
+  partnerId?: number;
+  companyId?: number;
+  groupPermissions: readonly GroupModelGrant[];
+  groupNames?: readonly string[];
+}
 
 /** Operations a role may perform on a model through the generic REST / JSON-RPC API. */
 export type Operation = 'read' | 'create' | 'write' | 'unlink' | 'action';
 
-export type ModelAccessPolicyKind = 'internal' | 'adminOnly' | 'publicRead' | 'readOnlyForUsers' | 'standard';
+export type ModelAccessPolicyKind =
+  'internal' | 'adminOnly' | 'publicRead' | 'readOnlyForUsers' | 'standard';
 
 export interface FieldAclMeta {
   readonly groups?: readonly string[];
@@ -188,7 +198,8 @@ export function canManageBaseUser(
 
 /** Maps an HTTP request on `/api/:model...` to the operation it performs. */
 export function operationFor(method: string, routeUrl: string): Operation {
-  if (routeUrl.endsWith('/action/:method') || routeUrl.endsWith('/action/:actionName')) return 'action';
+  if (routeUrl.endsWith('/action/:method') || routeUrl.endsWith('/action/:actionName'))
+    return 'action';
   if (routeUrl.endsWith('/default-get') || routeUrl.endsWith('/onchange')) return 'read';
   switch (method) {
     case 'GET':

@@ -206,7 +206,8 @@ export interface ViewDefinition {
 
 export interface ViewPatchOperation {
   target: 'list' | 'form' | 'search';
-  position: 'before' | 'after' | 'replace' | 'attributes' | 'insertSection' | 'addFilter' | 'addGroupBy';
+  position:
+    'before' | 'after' | 'replace' | 'attributes' | 'insertSection' | 'addFilter' | 'addGroupBy';
   anchor?: string;
   fields?: (string | ListColumnSpec | FormFieldSpec)[];
   section?: FormSection;
@@ -731,7 +732,9 @@ export function resolveViews(model: typeof BaseModel): ResolvedViews {
       ...(model.displayField && visible.some((f) => f.name === model.displayField)
         ? [model.displayField]
         : []),
-      ...visible.filter((field) => field.type === 'string' || field.type === 'text').map((f) => f.name),
+      ...visible
+        .filter((field) => field.type === 'string' || field.type === 'text')
+        .map((f) => f.name),
     ])
   );
   const searchFields: string[] = [
@@ -746,9 +749,7 @@ export function resolveViews(model: typeof BaseModel): ResolvedViews {
         { label: 'Archived', domain: [['active', '=', false]] },
       ];
   const searchGroupBy: SearchGroupBy[] = [
-    ...(spec.search?.groupBy
-      ? spec.search.groupBy.filter((gb) => fieldNameSet.has(gb.field))
-      : []),
+    ...(spec.search?.groupBy ? spec.search.groupBy.filter((gb) => fieldNameSet.has(gb.field)) : []),
   ];
 
   // Apply registered view extensions in priority order

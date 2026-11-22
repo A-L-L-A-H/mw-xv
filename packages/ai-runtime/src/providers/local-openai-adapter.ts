@@ -372,8 +372,7 @@ export class LocalOpenAiAdapter implements AiProvider {
       });
     }
 
-    const text =
-      typeof firstChoice.message.content === 'string' ? firstChoice.message.content : '';
+    const text = typeof firstChoice.message.content === 'string' ? firstChoice.message.content : '';
     const toolCalls = parseToolCalls(
       firstChoice.message.tool_calls,
       this.id,
@@ -401,8 +400,7 @@ export class LocalOpenAiAdapter implements AiProvider {
         ? usageRaw.completion_tokens
         : estimateTokenCount(text);
     const usageSource =
-      typeof usageRaw?.prompt_tokens === 'number' &&
-      typeof usageRaw?.completion_tokens === 'number'
+      typeof usageRaw?.prompt_tokens === 'number' && typeof usageRaw?.completion_tokens === 'number'
         ? 'provider_reported'
         : 'estimated';
 

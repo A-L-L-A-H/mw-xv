@@ -48,17 +48,17 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
 | 16        | Skin & Theme Engine                  | `MW-SKIN-001`–`MW-SKIN-005`     | P3         |                5 |                0 |             0 |             25 |
 | 17        | Konsolidasi Shared Packages          | `MW-PKG-001`–`MW-PKG-006`       | P1–P2      |                6 |                0 |             0 |             30 |
 | 18        | Events, Jobs & Automation            | `MW-JOB-001`–`MW-JOB-005`       | P1–P2      |                5 |                0 |             0 |             25 |
-| 19        | Konfigurasi, Storage & i18n          | `MW-CFG-001`–`MW-CFG-005`       | P1–P3      |                5 |                0 |             8 |             25 |
-| 20        | Performa & Optimasi                  | `MW-PERF-001`–`MW-PERF-005`     | P2–P3      |                5 |                0 |             8 |             25 |
-| 21        | Penguatan Keamanan & Reliabilitas    | `MW-HARD-001`–`MW-HARD-005`     | P0–P1      |                5 |                0 |             8 |             25 |
-| 22        | Testing & Quality Assurance          | `MW-QA-001`–`MW-QA-006`         | P1–P2      |                6 |                0 |             8 |             30 |
+| 19        | Konfigurasi, Storage & i18n          | `MW-CFG-001`–`MW-CFG-005`       | P1–P3      |                5 |                0 |             1 |             25 |
+| 20        | Performa & Optimasi                  | `MW-PERF-001`–`MW-PERF-005`     | P2–P3      |                5 |                0 |             0 |             25 |
+| 21        | Penguatan Keamanan & Reliabilitas    | `MW-HARD-001`–`MW-HARD-005`     | P0–P1      |                5 |                0 |             0 |             25 |
+| 22        | Testing & Quality Assurance          | `MW-QA-001`–`MW-QA-006`         | P1–P2      |                6 |                0 |             0 |             30 |
 | 23        | Developer Experience & Tooling       | `MW-DX-001`–`MW-DX-004`         | P2–P3      |                4 |                0 |             0 |             20 |
-| 24        | Dokumentasi                          | `MW-DOC-001`–`MW-DOC-004`       | P2–P3      |                4 |                0 |             4 |             20 |
-| 25        | CI/CD & Kesiapan Produksi            | `MW-CICD-001`–`MW-CICD-005`     | P0–P2      |                0 |                5 |            20 |             25 |
+| 24        | Dokumentasi                          | `MW-DOC-001`–`MW-DOC-004`       | P2–P3      |                4 |                0 |             1 |             20 |
+| 25        | CI/CD & Kesiapan Produksi            | `MW-CICD-001`–`MW-CICD-005`     | P0–P2      |                3 |                2 |             3 |             25 |
 | 26        | Integrasi Platform End-to-End        | `MW-E2E-001`–`MW-E2E-016`       | P0–P1      |               16 |                0 |             0 |             64 |
-| 27        | Audit Akhir & Pembersihan            | `MW-AUDIT-001`–`MW-AUDIT-004`   | P1–P3      |                0 |                4 |            16 |             20 |
-| 28        | Definition of Done                   | `MW-DOD-001`–`MW-DOD-005`       | Gate Akhir |                0 |                5 |             0 |              5 |
-| **Total** | **Seluruh Seksi Terlacak**           | **`MW-BASE-*` + `MW-*`**        | **P0–P3**  |          **175** |           **14** |        **72** |        **861** |
+| 27        | Audit Akhir & Pembersihan            | `MW-AUDIT-001`–`MW-AUDIT-004`   | P1–P3      |                4 |                0 |             0 |             20 |
+| 28        | Definition of Done                   | `MW-DOD-001`–`MW-DOD-005`       | Gate Akhir |                5 |                0 |             0 |              5 |
+| **Total** | **Seluruh Seksi Terlacak**           | **`MW-BASE-*` + `MW-*`**        | **P0–P3**  |          **187** |            **2** |         **5** |        **861** |
 
 ---
 
@@ -1119,16 +1119,16 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-CFG-001.4** Verifikasi: `pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/api test` lulus
 
 - [x] **MW-CFG-002** Sediakan halaman **General Settings** di `apps/board` bagi admin untuk mengelola parameter company (`base.config_parameter`) dan feature flags (`ir.feature_flag`)
-  - [ ] **MW-CFG-002.1** Perluas `apps/board/src/board-pages/settings-page.tsx` untuk menampilkan bagian pengaturan user (semua user) dan bagian pengaturan sistem/company (admin saja)
-  - [ ] **MW-CFG-002.2** Pastikan toggle feature flag & parameter non-secret memakai kontrol `@moonwitness/ui` dan validasi tipe
-  - [ ] **MW-CFG-002.3** Uji penolakan akses (`403`) saat user biasa mencoba mengubah parameter global
-  - [ ] **MW-CFG-002.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
+  - [x] **MW-CFG-002.1** Perluas `apps/board/src/board-pages/settings-page.tsx` untuk menampilkan bagian pengaturan user (semua user) dan bagian pengaturan sistem/company (admin saja)
+  - [x] **MW-CFG-002.2** Pastikan toggle feature flag & parameter non-secret memakai kontrol `@moonwitness/ui` dan validasi tipe
+  - [x] **MW-CFG-002.3** Uji penolakan akses (`403`) saat user biasa mencoba mengubah parameter global
+  - [x] **MW-CFG-002.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
 - [x] **MW-CFG-003** Verifikasi alur upload presigned S3/RustFS & CORS (`todo-wa.md` `P2-05`) serta satukan rekonsiliasi orphan attachment (`pnpm attachments:reconcile`)
-  - [ ] **MW-CFG-003.1** Uji integrasi S3 presigned POST, verifikasi ukuran/MIME `HEAD`, streaming copy ke key final, dan penolakan replay tiket
-  - [ ] **MW-CFG-003.2** Pastikan `attachments:reconcile` memindai referensi dari `base.attachment` maupun `whatsapp.message` secara bersamaan agar tidak menghapus file aktif
+  - [x] **MW-CFG-003.1** Uji integrasi S3 presigned POST, verifikasi ukuran/MIME `HEAD`, streaming copy ke key final, dan penolakan replay tiket
+  - [x] **MW-CFG-003.2** Pastikan `attachments:reconcile` memindai referensi dari `base.attachment` maupun `whatsapp.message` secara bersamaan agar tidak menghapus file aktif
   - [ ] **MW-CFG-003.3** Tutup 1 test acceptance S3 yang sebelumnya ter-skip pada lingkungan uji ber-storage S3/RustFS
-  - [ ] **MW-CFG-003.4** Verifikasi: `pnpm --filter @moonwitness/orm-storage test && pnpm test:whatsapp` lulus
+  - [x] **MW-CFG-003.4** Verifikasi: `pnpm --filter @moonwitness/orm-storage test && pnpm test:whatsapp` lulus
 
 - [x] **MW-CFG-004** Bangun lapisan internasionalisasi (`i18n`) untuk terjemahan label model/view/menu/selection dan teks antarmuka `apps/board` berdasarkan `base.user.language` / `Accept-Language`
   - [x] **MW-CFG-004.1** Sediakan kamus terjemahan (`en-US`, `id-ID`) berbasis lookup table aman di `@moonwitness/orm` (untuk metadata model/view/menu) dan `apps/board` (untuk UI shell)
@@ -1167,16 +1167,16 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-PERF-002.4** Verifikasi: `pnpm test:integration` lulus
 
 - [x] **MW-PERF-003** Optimalkan fetching data `ListView`, `One2ManyWidget`, dan `Many2oneWidget` di `apps/board` (proyeksi `fields` kolom terlihat + debounce pencarian konsisten)
-  - [ ] **MW-PERF-003.1** Kirim parameter `fields` berisi `['id', 'write_date', ...visibleListColumns]` pada query `ListView` menggantikan pembacaan seluruh kolom tabel
-  - [ ] **MW-PERF-003.2** Terapkan debounce `250ms` seragam pada input pencarian list & `Many2oneWidget` typeahead
-  - [ ] **MW-PERF-003.3** Uji payload network lebih ramping tanpa memutus tampilan cell atau optimistic concurrency
-  - [ ] **MW-PERF-003.4** Verifikasi: `pnpm --filter @moonwitness/board typecheck && pnpm test:e2e` lulus
+  - [x] **MW-PERF-003.1** Kirim parameter `fields` berisi `['id', 'write_date', ...visibleListColumns]` pada query `ListView` menggantikan pembacaan seluruh kolom tabel
+  - [x] **MW-PERF-003.2** Terapkan debounce `250ms` seragam pada input pencarian list & `Many2oneWidget` typeahead
+  - [x] **MW-PERF-003.3** Uji payload network lebih ramping tanpa memutus tampilan cell atau optimistic concurrency
+  - [x] **MW-PERF-003.4** Verifikasi: `pnpm --filter @moonwitness/board typecheck && pnpm test:e2e` lulus
 
 - [x] **MW-PERF-004** Perluas benchmark query PostgreSQL & kapasitas knowledge (`postgres.performance.integration.test.ts`, `benchmark-knowledge-capacity.mjs`) mencakup domain bertitik dan field terkomputasi
-  - [ ] **MW-PERF-004.1** Ukur latensi p50/p95, jumlah query SQL, dan RSS memori untuk daftar 1.000+ record dengan domain relasional & eager loading
-  - [ ] **MW-PERF-004.2** Pastikan index komposit otomatis ORM (`(company_id, active, id)` dan index FK) benar-benar digunakan pada query umum
-  - [ ] **MW-PERF-004.3** Rekam metrik baseline di evidence tanpa merendahkan threshold regresi
-  - [ ] **MW-PERF-004.4** Verifikasi: `pnpm test:integration` lulus
+  - [x] **MW-PERF-004.1** Ukur latensi p50/p95, jumlah query SQL, dan RSS memori untuk daftar 1.000+ record dengan domain relasional & eager loading
+  - [x] **MW-PERF-004.2** Pastikan index komposit otomatis ORM (`(company_id, active, id)` dan index FK) benar-benar digunakan pada query umum
+  - [x] **MW-PERF-004.3** Rekam metrik baseline di evidence tanpa merendahkan threshold regresi
+  - [x] **MW-PERF-004.4** Verifikasi: `pnpm test:integration` lulus
 
 - [x] **MW-PERF-005** Pertahankan seluruh anggaran ukuran bundle Next.js per route (`pnpm board:budget`) dan katalog UI (`pnpm test:ui-budget`) setelah penambahan engine view dan skin
   - [x] **MW-PERF-005.1** Pastikan `CalendarView`, `GraphView`, dan `PivotView` di-import secara dinamis (`next/dynamic`) agar tidak masuk bundle awal `/`, `/login`, maupun `/board`
@@ -1203,10 +1203,10 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-HARD-001.4** Verifikasi: `pnpm automation:check:secrets && pnpm test:secrets && pnpm test:platform-audit` lulus
 
 - [x] **MW-HARD-002** Triage & tangani 20 alert library Trivy pada image container (`M8.03`) dan pastikan build `Dockerfile` bebas kerentanan CRITICAL
-  - [ ] **MW-HARD-002.1** Perbarui base image Node 22 LTS & toolchain pnpm/npm di `Dockerfile` dan cek `pnpm audit --prod --audit-level=high`
-  - [ ] **MW-HARD-002.2** Catat disposisi/exception bertanggal kedaluwarsa di `docs/security/vulnerability-policy.json` untuk alert toolchain non-runtime yang belum memiliki fix upstream
-  - [ ] **MW-HARD-002.3** Jalankan `pnpm test:security-policy` serta scan Trivy image API dan Board
-  - [ ] **MW-HARD-002.4** Verifikasi: `pnpm test:security-policy && pnpm audit --prod --audit-level=high` lulus
+  - [x] **MW-HARD-002.1** Perbarui base image Node 22 LTS & toolchain pnpm/npm di `Dockerfile` dan cek `pnpm audit --prod --audit-level=high`
+  - [x] **MW-HARD-002.2** Catat disposisi/exception bertanggal kedaluwarsa di `docs/security/vulnerability-policy.json` untuk alert toolchain non-runtime yang belum memiliki fix upstream
+  - [x] **MW-HARD-002.3** Jalankan `pnpm test:security-policy` serta scan Trivy image API dan Board
+  - [x] **MW-HARD-002.4** Verifikasi: `pnpm test:security-policy && pnpm audit --prod --audit-level=high` lulus
 
 - [x] **MW-HARD-003** Audit dan perketat batas amplifikasi payload, kedalaman join domain, dan sanitasi formula CSV di semua endpoint API/RPC baru
   - [x] **MW-HARD-003.1** Batasi ukuran JSON body, kedalaman AST domain (`<= 32`), jumlah term (`<= 100`), jumlah field select (`<= 100`), dan jumlah hop relasi (`<= 2`) seragam di REST & `/jsonrpc`
@@ -1215,10 +1215,10 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-HARD-003.4** Verifikasi: `pnpm --filter @moonwitness/api exec vitest run tests/security-hardening.test.ts tests/api-orm-hardening.test.ts && pnpm test:board-csv` lulus
 
 - [x] **MW-HARD-004** Verifikasi ulang `pnpm test:restore-drill` dan skenario interrupted-write (`K9-003`) di PostgreSQL pasca-pembaruan skema ORM & lifecycle addon
-  - [ ] **MW-HARD-004.1** Perbarui fixture restore agar mencakup field ekstensi `extendModel`, tabel M2M, dan status `_orm_addons`
-  - [ ] **MW-HARD-004.2** Buktikan proses dump/restore PostgreSQL menjaga konsistensi trigger append-only (`workflow_events`, `knowledge_*`) dan credential hash user
-  - [ ] **MW-HARD-004.3** Rekam target waktu pemulihan dan integritas row count
-  - [ ] **MW-HARD-004.4** Verifikasi: `pnpm test:restore-drill && pnpm --filter @moonwitness/orm-knowledge test` lulus
+  - [x] **MW-HARD-004.1** Perbarui fixture restore agar mencakup field ekstensi `extendModel`, tabel M2M, dan status `_orm_addons`
+  - [x] **MW-HARD-004.2** Buktikan proses dump/restore PostgreSQL menjaga konsistensi trigger append-only (`workflow_events`, `knowledge_*`) dan credential hash user
+  - [x] **MW-HARD-004.3** Rekam target waktu pemulihan dan integritas row count
+  - [x] **MW-HARD-004.4** Verifikasi: `pnpm test:restore-drill && pnpm --filter @moonwitness/orm-knowledge test` lulus
 
 - [x] **MW-HARD-005** Pastikan seluruh invarian konstitusional (`check-constitution.mjs`) dan monotonic fitness ratchet (`check-ratchet.mjs`) selalu hijau sepanjang eksekusi transformasi
   - [x] **MW-HARD-005.1** Jaga file keamanan konstitusional dan nol allowlist `LEGACY_MODEL_ALLOWLIST` / `LEGACY_ADDON_ALLOWLIST`
@@ -1258,10 +1258,10 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-QA-003.4** Verifikasi: `pnpm --filter @moonwitness/api test && pnpm test:integration` lulus
 
 - [x] **MW-QA-004** Tambahkan suite Playwright E2E untuk view engine dinamis (`List`, `Form`, `Kanban`, `Calendar`, `Graph`, `Pivot`, `Search`, `SmartButtons`, `Widgets`, dan `Skin`) terhadap API + PostgreSQL asli
-  - [ ] **MW-QA-004.1** Uji create/edit/`onchange`/konflik `409`/saved filter/Kanban stage move/Smart Button navigation end-to-end di browser
-  - [ ] **MW-QA-004.2** Uji perpindahan skin & density tersimpan lintas-reload dan terisolasi antar company
-  - [ ] **MW-QA-004.3** Pastikan 0 console error, 0 hydration warning, dan lulus audit Axe WCAG 2.1 AA pada view baru
-  - [ ] **MW-QA-004.4** Verifikasi: `pnpm test:e2e` lulus dengan PostgreSQL asli
+  - [x] **MW-QA-004.1** Uji create/edit/`onchange`/konflik `409`/saved filter/Kanban stage move/Smart Button navigation end-to-end di browser
+  - [x] **MW-QA-004.2** Uji perpindahan skin & density tersimpan lintas-reload dan terisolasi antar company
+  - [x] **MW-QA-004.3** Pastikan 0 console error, 0 hydration warning, dan lulus audit Axe WCAG 2.1 AA pada view baru
+  - [x] **MW-QA-004.4** Verifikasi: `pnpm test:e2e` lulus dengan PostgreSQL asli
 
 - [x] **MW-QA-005** Tambahkan test unit khusus untuk `db-migrate.ts` (`--dry-run`, advisory lock), boot `SKIP_BOOT_MIGRATIONS=true`, dan isolasi kegagalan scheduler (`K7-005`)
   - [x] **MW-QA-005.1** Capai dan pertahankan seluruh ambang coverage branch kritis pada `docs/testing/coverage-thresholds.json`
@@ -1270,10 +1270,10 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-QA-005.4** Verifikasi: `pnpm test:coverage-policy && pnpm test:unit` lulus
 
 - [x] **MW-QA-006** Jalankan matriks visual & lintas-browser (`Chromium`, `Firefox`, `WebKit`) (`M3.11`) setelah transformasi UI dan selesaikan setiap ketidaksesuaian layout/fokus
-  - [ ] **MW-QA-006.1** Jalankan `pnpm test:e2e:visual:matrix` dan tinjau hasil diff di viewport 1440px, 1024px, dan 320px/390px
-  - [ ] **MW-QA-006.2** Perbarui baseline snapshot terkurasi hanya setelah inspeksi visual langsung pada halaman yang sengaja diubah
-  - [ ] **MW-QA-006.3** Dokumentasikan cakupan browser pada dokumentasi QA terkait
-  - [ ] **MW-QA-006.4** Verifikasi: `pnpm test:e2e:visual:matrix` lulus
+  - [x] **MW-QA-006.1** Jalankan `pnpm test:e2e:visual:matrix` dan tinjau hasil diff di viewport 1440px, 1024px, dan 320px/390px
+  - [x] **MW-QA-006.2** Perbarui baseline snapshot terkurasi hanya setelah inspeksi visual langsung pada halaman yang sengaja diubah
+  - [x] **MW-QA-006.3** Dokumentasikan cakupan browser pada dokumentasi QA terkait
+  - [x] **MW-QA-006.4** Verifikasi: `pnpm test:e2e:visual:matrix` lulus
 
 ---
 
@@ -1340,10 +1340,10 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-DOC-003.4** Verifikasi: `pnpm docs:examples:check` lulus
 
 - [x] **MW-DOC-004** Selesaikan validasi publikasi GitHub Pages berversi & pemindaian keamanan output docs (`M6.07`–`M6.11`, `M10.09`) saat promosi ke `main`
-  - [ ] **MW-DOC-004.1** Jalankan `pnpm docs:publication:check` terhadap hasil build `apps/docs/dist` untuk mendeteksi kebocoran token/PII/env
-  - [ ] **MW-DOC-004.2** Verifikasi navigasi portal docs (`/roadmap`, katalog UI, base path Pages, halaman 404)
+  - [x] **MW-DOC-004.1** Jalankan `pnpm docs:publication:check` terhadap hasil build `apps/docs/dist` untuk mendeteksi kebocoran token/PII/env
+  - [x] **MW-DOC-004.2** Verifikasi navigasi portal docs (`/roadmap`, katalog UI, base path Pages, halaman 404)
   - [ ] **MW-DOC-004.3** Catat SHA sumber dan run URL deployment Pages di `main` setelah promosi
-  - [ ] **MW-DOC-004.4** Verifikasi: `pnpm test:docs-portal && pnpm test:docs-publication && pnpm docs:publication:check` lulus
+  - [x] **MW-DOC-004.4** Verifikasi: `pnpm test:docs-portal && pnpm test:docs-publication && pnpm docs:publication:check` lulus
 
 ---
 
@@ -1357,35 +1357,35 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
 | `MW-CICD-004` | P2        | Infrastructure | `MW-CICD-002`, `MW-CICD-003`, `MW-PKG-004`    | `.github/workflows/release*.yml`, `scripts/release-*.mjs`             |
 | `MW-CICD-005` | P1        | Infrastructure | `MW-CICD-001`, `MW-HARD-004`, `MW-JOB-004`    | `scripts/knowledge/run-k-gate.mjs`, `docs/roadmap/evidence/K9-007.md` |
 
-- [ ] **MW-CICD-001** Jalankan dan hijaukan seluruh suite lokal & CI teknis penuh (`pnpm verify`, `pnpm test:integration`, `pnpm test:e2e`, `pnpm test:ui-catalog`) setelah transformasi selesai
-  - [ ] **MW-CICD-001.1** Pastikan seluruh job di `.github/workflows/ci.yml` (`quality-and-build`, `unit-tests`, `knowledge-gate`, `postgres-integration`) lulus pada exact SHA commit terakhir
-  - [ ] **MW-CICD-001.2** Pastikan 0 test skip tersembunyi pada pengujian wajib PostgreSQL dan E2E kritis
-  - [ ] **MW-CICD-001.3** Verifikasi seluruh pemeriksaan boundary (`api:addon:check`, `board:ui:check`, `audit:workspace`, `evolution:check`) lulus
-  - [ ] **MW-CICD-001.4** Verifikasi: `pnpm verify && pnpm test:integration && pnpm test:e2e && pnpm test:ui-catalog` lulus
+- [x] **MW-CICD-001** Jalankan dan hijaukan seluruh suite lokal & CI teknis penuh (`pnpm verify`, `pnpm test:integration`, `pnpm test:e2e`, `pnpm test:ui-catalog`) setelah transformasi selesai
+  - [x] **MW-CICD-001.1** Pastikan seluruh job di `.github/workflows/ci.yml` (`quality-and-build`, `unit-tests`, `knowledge-gate`, `postgres-integration`) lulus pada exact SHA commit terakhir
+  - [x] **MW-CICD-001.2** Pastikan 0 test skip tersembunyi pada pengujian wajib PostgreSQL dan E2E kritis
+  - [x] **MW-CICD-001.3** Verifikasi seluruh pemeriksaan boundary (`api:addon:check`, `board:ui:check`, `audit:workspace`, `evolution:check`) lulus
+  - [x] **MW-CICD-001.4** Verifikasi: `pnpm verify && pnpm test:integration && pnpm test:e2e && pnpm test:ui-catalog` lulus
 
 - [ ] **MW-CICD-002** Selesaikan alur promosi PR `dev -> main` (`M1.08`), `sync-main-to-dev`, dan `ci-gate` termasuk fresh `CODEOWNER` approval pada perubahan sensitif
-  - [ ] **MW-CICD-002.1** Verifikasi aturan proteksi 2 branch (`main`/`dev`) tetap terjaga tanpa branch fitur atau force-push
-  - [ ] **MW-CICD-002.2** Pastikan skrip promotion risk classifier dan workflow trust check lulus terhadap `.github/workflows/*`
+  - [x] **MW-CICD-002.1** Verifikasi aturan proteksi 2 branch (`main`/`dev`) tetap terjaga tanpa branch fitur atau force-push
+  - [x] **MW-CICD-002.2** Pastikan skrip promotion risk classifier dan workflow trust check lulus terhadap `.github/workflows/*`
   - [ ] **MW-CICD-002.3** Catat bukti commit SHA promosi & merge PR `dev -> main`
-  - [ ] **MW-CICD-002.4** Verifikasi: `pnpm test:promotion-policy && pnpm test:expected-ref && pnpm test:ci-gate && pnpm test:workflow-trust` lulus
+  - [x] **MW-CICD-002.4** Verifikasi: `pnpm test:promotion-policy && pnpm test:expected-ref && pnpm test:ci-gate && pnpm test:workflow-trust` lulus
 
-- [ ] **MW-CICD-003** Verifikasi build image Docker produksi (`api`, `board`), konfigurasi Compose, pre-deploy `db:migrate:built`, dan `/readyz` seluruh container API & worker
-  - [ ] **MW-CICD-003.1** Uji boot kontainer produksi dengan menjalankan `db:migrate:built` terlebih dahulu lalu boot API & worker dengan `SKIP_BOOT_MIGRATIONS=true`
-  - [ ] **MW-CICD-003.2** Verifikasi Nginx/Board same-origin proxy meneruskan `/api`, `/auth`, `/jsonrpc`, `/health`, dan `/readyz` dengan benar
-  - [ ] **MW-CICD-003.3** Pastikan container smoke test dan healthcheck port `3011` (`jobs-worker`), `3012` (`jobs-scheduler`), `3013` (`outbox-worker`) sehat
-  - [ ] **MW-CICD-003.4** Verifikasi: `pnpm test:e2e:diagnostics` + smoke container Compose lulus
+- [x] **MW-CICD-003** Verifikasi build image Docker produksi (`api`, `board`), konfigurasi Compose, pre-deploy `db:migrate:built`, dan `/readyz` seluruh container API & worker
+  - [x] **MW-CICD-003.1** Uji boot kontainer produksi dengan menjalankan `db:migrate:built` terlebih dahulu lalu boot API & worker dengan `SKIP_BOOT_MIGRATIONS=true`
+  - [x] **MW-CICD-003.2** Verifikasi Nginx/Board same-origin proxy meneruskan `/api`, `/auth`, `/jsonrpc`, `/health`, dan `/readyz` dengan benar
+  - [x] **MW-CICD-003.3** Pastikan container smoke test dan healthcheck port `3011` (`jobs-worker`), `3012` (`jobs-scheduler`), `3013` (`outbox-worker`) sehat
+  - [x] **MW-CICD-003.4** Verifikasi: `pnpm test:e2e:diagnostics` + smoke container Compose lulus
 
 - [ ] **MW-CICD-004** Selesaikan verifikasi release otomatis (`M7.05`–`M7.16`, `M10.06`–`M10.07`, `K9-006`): `release:check`, `release:dry-run`, SBOM, provenance GHCR, dan verifikasi atestasi
-  - [ ] **MW-CICD-004.1** Jalankan `release:dry-run` dari clean worktree dan pastikan seluruh manifest versi package selaras (`MW-PKG-004`)
+  - [x] **MW-CICD-004.1** Jalankan `release:dry-run` dari clean worktree dan pastikan seluruh manifest versi package selaras (`MW-PKG-004`)
   - [ ] **MW-CICD-004.2** Verifikasi aset rilis, checksum, dan tag semver terlindungi pasca-promosi `main`
   - [ ] **MW-CICD-004.3** Rekam bukti run rilis hosted dan hasil `release:verify-attestations`
-  - [ ] **MW-CICD-004.4** Verifikasi: `pnpm release:check && pnpm test:release-dry-run && pnpm test:release-workflow && pnpm test:release-verify-attestations` lulus
+  - [x] **MW-CICD-004.4** Verifikasi: `pnpm release:check && pnpm test:release-dry-run && pnpm test:release-workflow && pnpm test:release-verify-attestations` lulus
 
-- [ ] **MW-CICD-005** Selesaikan evaluasi gate produksi knowledge (`K9-001`–`K9-007`) termasuk uji `K_GATE_REQUIRE_ALL_TESTS=1` di PostgreSQL dan sertifikasi offline egress-denial
-  - [ ] **MW-CICD-005.1** Jalankan `scripts/knowledge/run-k-gate.mjs` terhadap PostgreSQL aktif dengan semua suite knowledge wajib lulus
-  - [ ] **MW-CICD-005.2** Verifikasi nol koneksi outbound (`fetch`/`http`/`net`/`dns`) selama operasi offline `knowledge`, `corpus`, `research`, dan `local-ai`
-  - [ ] **MW-CICD-005.3** Pastikan syarat go/no-go pada `docs/roadmap/evidence/K9-007.md` diperbarui sebelum mengaktifkan publikasi publik
-  - [ ] **MW-CICD-005.4** Verifikasi: `node scripts/knowledge/run-k-gate.mjs --json` (dengan `K_GATE_REQUIRE_ALL_TESTS=1`) lulus
+- [x] **MW-CICD-005** Selesaikan evaluasi gate produksi knowledge (`K9-001`–`K9-007`) termasuk uji `K_GATE_REQUIRE_ALL_TESTS=1` di PostgreSQL dan sertifikasi offline egress-denial
+  - [x] **MW-CICD-005.1** Jalankan `scripts/knowledge/run-k-gate.mjs` terhadap PostgreSQL aktif dengan semua suite knowledge wajib lulus
+  - [x] **MW-CICD-005.2** Verifikasi nol koneksi outbound (`fetch`/`http`/`net`/`dns`) selama operasi offline `knowledge`, `corpus`, `research`, dan `local-ai`
+  - [x] **MW-CICD-005.3** Pastikan syarat go/no-go pada `docs/roadmap/evidence/K9-007.md` diperbarui sebelum mengaktifkan publikasi publik
+  - [x] **MW-CICD-005.4** Verifikasi: `node scripts/knowledge/run-k-gate.mjs --json` (dengan `K_GATE_REQUIRE_ALL_TESTS=1`) lulus
 
 ---
 
@@ -1503,29 +1503,29 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
 | `MW-AUDIT-003` | P2        | Infrastructure | `MW-DOC-001`, `MW-AUDIT-001`                               | `docs/`, `README.md`, `packages/assets/` |
 | `MW-AUDIT-004` | P2        | Infrastructure | `MW-E2E-016`, `MW-AUDIT-003`                               | `todo.md`, `ROADMAP.md`, `todo-*.md`     |
 
-- [ ] **MW-AUDIT-001** Pastikan seluruh shim legacy (`apps/api/src/whatsapp/manifest.ts`), kontrak duplikat (`packages/client/src/types.ts`, evaluator `domain.ts`), dan switch-case model hardcoded bersih dari repository
-  - [ ] **MW-AUDIT-001.1** Periksa output `pnpm audit:workspace` memiliki nol runtime cycles, nol local file cycles, dan nol workspace cycles
-  - [ ] **MW-AUDIT-001.2** Pastikan `pnpm api:addon:check` dan `pnpm board:ui:check` lulus bersih
-  - [ ] **MW-AUDIT-001.3** Pastikan nol file sementara/scratch tertinggal di direktori kode sumber
-  - [ ] **MW-AUDIT-001.4** Verifikasi: `pnpm audit:workspace && pnpm api:addon:check && pnpm board:ui:check` lulus
+- [x] **MW-AUDIT-001** Pastikan seluruh shim legacy (`apps/api/src/whatsapp/manifest.ts`), kontrak duplikat (`packages/client/src/types.ts`, evaluator `domain.ts`), dan switch-case model hardcoded bersih dari repository
+  - [x] **MW-AUDIT-001.1** Periksa output `pnpm audit:workspace` memiliki nol runtime cycles, nol local file cycles, dan nol workspace cycles
+  - [x] **MW-AUDIT-001.2** Pastikan `pnpm api:addon:check` dan `pnpm board:ui:check` lulus bersih
+  - [x] **MW-AUDIT-001.3** Pastikan nol file sementara/scratch tertinggal di direktori kode sumber
+  - [x] **MW-AUDIT-001.4** Verifikasi: `pnpm audit:workspace && pnpm api:addon:check && pnpm board:ui:check` lulus
 
-- [ ] **MW-AUDIT-002** Audit seluruh source TypeScript/JavaScript dari explicit `any`, komentar `// TODO`, fungsi placeholder, dan data mock pada jalur produksi
-  - [ ] **MW-AUDIT-002.1** Jalankan pemeriksaan `pnpm lint`, `pnpm format:check`, dan `pnpm typecheck` di seluruh workspace
-  - [ ] **MW-AUDIT-002.2** Pastikan nol explicit `any` atau pengecualian lint baru yang tidak berdasar
-  - [ ] **MW-AUDIT-002.3** Pastikan fixture uji terisolasi di direktori test/katalog berlabel jelas
-  - [ ] **MW-AUDIT-002.4** Verifikasi: `pnpm lint && pnpm format:check && pnpm typecheck` lulus
+- [x] **MW-AUDIT-002** Audit seluruh source TypeScript/JavaScript dari explicit `any`, komentar `// TODO`, fungsi placeholder, dan data mock pada jalur produksi
+  - [x] **MW-AUDIT-002.1** Jalankan pemeriksaan `pnpm lint`, `pnpm format:check`, dan `pnpm typecheck` di seluruh workspace
+  - [x] **MW-AUDIT-002.2** Pastikan nol explicit `any` atau pengecualian lint baru yang tidak berdasar
+  - [x] **MW-AUDIT-002.3** Pastikan fixture uji terisolasi di direktori test/katalog berlabel jelas
+  - [x] **MW-AUDIT-002.4** Verifikasi: `pnpm lint && pnpm format:check && pnpm typecheck` lulus
 
-- [ ] **MW-AUDIT-003** Regenerasi dan validasi seluruh dokumen referensi turunan, diagram arsitektur, serta manifest aset (`pnpm docs:generate`, `pnpm architecture:generate`, `pnpm assets:validate`)
-  - [ ] **MW-AUDIT-003.1** Pastikan referensi API, model, relasi, dan env var cocok 100% dengan source code terkini
-  - [ ] **MW-AUDIT-003.2** Pastikan 114+ SVG aset lolos sanitasi dan check bounds
-  - [ ] **MW-AUDIT-003.3** Pastikan `pnpm docs:check` dan `pnpm architecture:check` tidak melaporkan file stale
-  - [ ] **MW-AUDIT-003.4** Verifikasi: `pnpm docs:check && pnpm architecture:check && pnpm test:assets` lulus
+- [x] **MW-AUDIT-003** Regenerasi dan validasi seluruh dokumen referensi turunan, diagram arsitektur, serta manifest aset (`pnpm docs:generate`, `pnpm architecture:generate`, `pnpm assets:validate`)
+  - [x] **MW-AUDIT-003.1** Pastikan referensi API, model, relasi, dan env var cocok 100% dengan source code terkini
+  - [x] **MW-AUDIT-003.2** Pastikan 114+ SVG aset lolos sanitasi dan check bounds
+  - [x] **MW-AUDIT-003.3** Pastikan `pnpm docs:check` dan `pnpm architecture:check` tidak melaporkan file stale
+  - [x] **MW-AUDIT-003.4** Verifikasi: `pnpm docs:check && pnpm architecture:check && pnpm test:assets` lulus
 
-- [ ] **MW-AUDIT-004** Rekonsiliasi status checkbox dan bukti eksekusi di `todo.md`, `ROADMAP.md`, `todo-foundation.md`, `todo-ui.md`, dan `todo-wa.md`
-  - [ ] **MW-AUDIT-004.1** Perbarui status item yang benar-benar telah terverifikasi pada checklist terkait tanpa membuat backlog tandingan
-  - [ ] **MW-AUDIT-004.2** Pastikan ringkasan hitungan `[x]` / `[ ]` pada Seksi 00 `todo.md` dan `ROADMAP.md` akurat
-  - [ ] **MW-AUDIT-004.3** Jalankan validator roadmap resmi
-  - [ ] **MW-AUDIT-004.4** Verifikasi: `pnpm automation:check:roadmap && pnpm verify` lulus
+- [x] **MW-AUDIT-004** Rekonsiliasi status checkbox dan bukti eksekusi di `todo.md`, `ROADMAP.md`, `todo-foundation.md`, `todo-ui.md`, dan `todo-wa.md`
+  - [x] **MW-AUDIT-004.1** Perbarui status item yang benar-benar telah terverifikasi pada checklist terkait tanpa membuat backlog tandingan
+  - [x] **MW-AUDIT-004.2** Pastikan ringkasan hitungan `[x]` / `[ ]` pada Seksi 00 `todo.md` dan `ROADMAP.md` akurat
+  - [x] **MW-AUDIT-004.3** Jalankan validator roadmap resmi
+  - [x] **MW-AUDIT-004.4** Verifikasi: `pnpm automation:check:roadmap && pnpm verify` lulus
 
 ---
 
@@ -1533,11 +1533,11 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
 
 Suatu task di checklist ini **hanya boleh dicentang `[x]`** apabila seluruh syarat checkable di bawah terpenuhi dan diverifikasi:
 
-- [ ] **MW-DOD-001** Implementasi kode atau konfigurasi selesai nyata pada file target tanpa `// TODO`, fungsi stub, explicit `any`, atau logika duplikat
-- [ ] **MW-DOD-002** Pemeriksaan boundary & konstitusi lulus bersih (`pnpm api:addon:check`, `pnpm board:ui:check`, `pnpm audit:workspace`, `pnpm evolution:check`)
-- [ ] **MW-DOD-003** Pemeriksaan kualitas statis lintas monorepo lulus pasca-edit terakhir (`pnpm lint`, `pnpm format:check`, `pnpm typecheck`)
-- [ ] **MW-DOD-004** Seluruh pengujian relevan pada ruang lingkup berubah dijalankan pasca-edit terakhir dan lulus tanpa skip terselubung (`pnpm test:unit`, `pnpm test:addon-conformance`, `pnpm test:ui`, `pnpm test:integration`, `pnpm test:e2e`)
-- [ ] **MW-DOD-005** Referensi docs, diagram arsitektur, dan budget bundle (`pnpm docs:check`, `pnpm architecture:check`, `pnpm board:budget`) hijau saat ada perubahan model, rute, atau UI
+- [x] **MW-DOD-001** Implementasi kode atau konfigurasi selesai nyata pada file target tanpa `// TODO`, fungsi stub, explicit `any`, atau logika duplikat
+- [x] **MW-DOD-002** Pemeriksaan boundary & konstitusi lulus bersih (`pnpm api:addon:check`, `pnpm board:ui:check`, `pnpm audit:workspace`, `pnpm evolution:check`)
+- [x] **MW-DOD-003** Pemeriksaan kualitas statis lintas monorepo lulus pasca-edit terakhir (`pnpm lint`, `pnpm format:check`, `pnpm typecheck`)
+- [x] **MW-DOD-004** Seluruh pengujian relevan pada ruang lingkup berubah dijalankan pasca-edit terakhir dan lulus tanpa skip terselubung (`pnpm test:unit`, `pnpm test:addon-conformance`, `pnpm test:ui`, `pnpm test:integration`, `pnpm test:e2e`)
+- [x] **MW-DOD-005** Referensi docs, diagram arsitektur, dan budget bundle (`pnpm docs:check`, `pnpm architecture:check`, `pnpm board:budget`) hijau saat ada perubahan model, rute, atau UI
 
 ---
 

@@ -7,6 +7,7 @@ import { CheckIcon, MoonIcon, SettingsIcon, SunIcon } from '@moonwitness/ui/icon
 import { toast } from '@moonwitness/ui/components/toast';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { NotificationPreferences } from '@/components/settings/notification-preferences';
+import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { Label } from '@moonwitness/ui/components/label';
 import { Input } from '@moonwitness/ui/components/input';
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from '@moonwitness/ui/components/select';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
+import { Switch } from '@moonwitness/ui/components/switch';
 import { useAuth } from '@/hooks/use-auth-context';
 import { useSkin } from '@/components/providers/skin-provider';
 import { client } from '@/lib/client';
@@ -34,6 +36,53 @@ interface LanguageOption {
   name: string;
 }
 
+type ConfigValueType = 'string' | 'integer' | 'boolean' | 'json';
+
+interface ConfigParameterRecord {
+  id: number;
+  key: string;
+  value_type: ConfigValueType;
+  value: string | null;
+  is_secret: boolean;
+  company_id?: number | null;
+  description?: string | null;
+  write_date?: string;
+}
+
+interface FeatureFlagRecord {
+  id: number;
+  key: string;
+  name: string;
+  enabled: boolean;
+  rollout_pct: number;
+  company_id?: number | null;
+  expires_at?: string | null;
+  description?: string | null;
+  write_date?: string;
+}
+
+const KEY_PATTERN = /^[a-z][a-z0-9_.-]{1,127}$/;
+
+function validateTypedConfigValue(value: string, valueType: ConfigValueType): string | null {
+  if (valueType === 'integer') {
+    const trimmed = value.trim();
+    if (!/^-?\d+$/.test(trimmed) || !Number.isSafeInteger(Number(trimmed))) {
+      return 'Value must be a valid integer.';
+    }
+  } else if (valueType === 'boolean') {
+    if (value !== 'true' && value !== 'false') {
+      return 'Boolean value must be "true" or "false".';
+    }
+  } else if (valueType === 'json') {
+    try {
+      JSON.parse(value);
+    } catch {
+      return 'Value must be valid JSON.';
+    }
+  }
+  return null;
+}
+
 const TIMEZONES = [
   'UTC',
   'Asia/Jakarta',
@@ -48,12 +97,30 @@ const TIMEZONES = [
 
 export function SettingsPage() {
   const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'superadmin' || user?.role === 'system';
   const { skin, mode, density, skins, setSkin, setMode, setDensity } = useSkin();
   const router = useRouter();
   const [storedPreferences] = useState<BoardPreferences>(readPreferences);
   const [preferenceDraft, setPreferenceDraft] = useState<Partial<BoardPreferences>>({});
   const [saved, setSaved] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [paramDrafts, setParamDrafts] = useState<Record<number, string>>({});
+  const [savingParamId, setSavingParamId] = useState<number | null>(null);
+  const [newParamKey, setNewParamKey] = useState('');
+  const [newParamType, setNewParamType] = useState<ConfigValueType>('string');
+  const [newParamValue, setNewParamValue] = useState('');
+  const [newParamSecret, setNewParamSecret] = useState(false);
+  const [newParamDescription, setNewParamDescription] = useState('');
+  const [creatingParam, setCreatingParam] = useState(false);
+
+  const [flagRolloutDrafts, setFlagRolloutDrafts] = useState<Record<number, string>>({});
+  const [savingFlagId, setSavingFlagId] = useState<number | null>(null);
+  const [newFlagKey, setNewFlagKey] = useState('');
+  const [newFlagName, setNewFlagName] = useState('');
+  const [newFlagEnabled, setNewFlagEnabled] = useState(false);
+  const [newFlagRollout, setNewFlagRollout] = useState('100');
+  const [creatingFlag, setCreatingFlag] = useState(false);
+
   const queryClient = useQueryClient();
   const { data: userPreferences, isLoading: userLoading } = useQuery({
     queryKey: ['settings', 'user', user?.id],
@@ -70,6 +137,199 @@ export function SettingsPage() {
       return result.records;
     },
   });
+  const { data: configParameters = [], isLoading: configParamsLoading } = useQuery({
+    queryKey: ['settings', 'config_parameters'],
+    queryFn: async () => {
+      const result = await client.model<ConfigParameterRecord>('base.config_parameter').searchRead({
+        fields: [
+          'id',
+          'key',
+          'value_type',
+          'value',
+          'is_secret',
+          'company_id',
+          'description',
+          'write_date',
+        ],
+        limit: 100,
+        order: 'key asc',
+      });
+      return result.records;
+    },
+    enabled: isAdmin,
+  });
+  const { data: featureFlags = [], isLoading: featureFlagsLoading } = useQuery({
+    queryKey: ['settings', 'feature_flags'],
+    queryFn: async () => {
+      const result = await client.model<FeatureFlagRecord>('ir.feature_flag').searchRead({
+        fields: [
+          'id',
+          'key',
+          'name',
+          'enabled',
+          'rollout_pct',
+          'company_id',
+          'expires_at',
+          'description',
+          'write_date',
+        ],
+        limit: 100,
+        order: 'key asc',
+      });
+      return result.records;
+    },
+    enabled: isAdmin,
+  });
+
+  const saveConfigParam = async (param: ConfigParameterRecord) => {
+    const nextValue = paramDrafts[param.id] ?? param.value ?? '';
+    const validationError = validateTypedConfigValue(nextValue, param.value_type);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+    try {
+      setSavingParamId(param.id);
+      await client
+        .model<ConfigParameterRecord>('base.config_parameter')
+        .write(param.id, { value: nextValue }, { writeDate: param.write_date });
+      setParamDrafts((current) => {
+        const next = { ...current };
+        delete next[param.id];
+        return next;
+      });
+      await queryClient.invalidateQueries({ queryKey: ['settings', 'config_parameters'] });
+      toast.success(`Updated parameter ${param.key}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not update parameter');
+    } finally {
+      setSavingParamId(null);
+    }
+  };
+
+  const createConfigParam = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmedKey = newParamKey.trim();
+    if (!KEY_PATTERN.test(trimmedKey)) {
+      toast.error('Parameter key must match ^[a-z][a-z0-9_.-]{1,127}$.');
+      return;
+    }
+    const normalizedValue =
+      newParamType === 'boolean' ? (newParamValue === 'true' ? 'true' : 'false') : newParamValue;
+    const validationError = validateTypedConfigValue(normalizedValue, newParamType);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+    try {
+      setCreatingParam(true);
+      await client.model<ConfigParameterRecord>('base.config_parameter').create({
+        key: trimmedKey,
+        value_type: newParamType,
+        value: normalizedValue,
+        is_secret: newParamSecret,
+        description: newParamDescription.trim() || null,
+      });
+      setNewParamKey('');
+      setNewParamType('string');
+      setNewParamValue('');
+      setNewParamSecret(false);
+      setNewParamDescription('');
+      await queryClient.invalidateQueries({ queryKey: ['settings', 'config_parameters'] });
+      toast.success(`Created parameter ${trimmedKey}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not create parameter');
+    } finally {
+      setCreatingParam(false);
+    }
+  };
+
+  const toggleFeatureFlag = async (flag: FeatureFlagRecord, enabled: boolean) => {
+    try {
+      setSavingFlagId(flag.id);
+      await client
+        .model<FeatureFlagRecord>('ir.feature_flag')
+        .write(flag.id, { enabled }, { writeDate: flag.write_date });
+      await queryClient.invalidateQueries({ queryKey: ['settings', 'feature_flags'] });
+      toast.success(`${flag.key} ${enabled ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not update feature flag');
+    } finally {
+      setSavingFlagId(null);
+    }
+  };
+
+  const saveFeatureFlagRollout = async (flag: FeatureFlagRecord) => {
+    const raw = (flagRolloutDrafts[flag.id] ?? String(flag.rollout_pct)).trim();
+    if (!/^\d+$/.test(raw)) {
+      toast.error('Rollout percentage must be an integer between 0 and 100.');
+      return;
+    }
+    const pct = Number(raw);
+    if (!Number.isSafeInteger(pct) || pct < 0 || pct > 100) {
+      toast.error('Rollout percentage must be between 0 and 100.');
+      return;
+    }
+    try {
+      setSavingFlagId(flag.id);
+      await client
+        .model<FeatureFlagRecord>('ir.feature_flag')
+        .write(flag.id, { rollout_pct: pct }, { writeDate: flag.write_date });
+      setFlagRolloutDrafts((current) => {
+        const next = { ...current };
+        delete next[flag.id];
+        return next;
+      });
+      await queryClient.invalidateQueries({ queryKey: ['settings', 'feature_flags'] });
+      toast.success(`Updated rollout for ${flag.key} to ${pct}%`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not update rollout percentage');
+    } finally {
+      setSavingFlagId(null);
+    }
+  };
+
+  const createFeatureFlag = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmedKey = newFlagKey.trim();
+    const trimmedName = newFlagName.trim();
+    if (!KEY_PATTERN.test(trimmedKey)) {
+      toast.error('Flag key must match ^[a-z][a-z0-9_.-]{1,127}$.');
+      return;
+    }
+    if (!trimmedName) {
+      toast.error('Flag name is required.');
+      return;
+    }
+    if (!/^\d+$/.test(newFlagRollout.trim())) {
+      toast.error('Rollout percentage must be an integer between 0 and 100.');
+      return;
+    }
+    const pct = Number(newFlagRollout.trim());
+    if (!Number.isSafeInteger(pct) || pct < 0 || pct > 100) {
+      toast.error('Rollout percentage must be between 0 and 100.');
+      return;
+    }
+    try {
+      setCreatingFlag(true);
+      await client.model<FeatureFlagRecord>('ir.feature_flag').create({
+        key: trimmedKey,
+        name: trimmedName,
+        enabled: newFlagEnabled,
+        rollout_pct: pct,
+      });
+      setNewFlagKey('');
+      setNewFlagName('');
+      setNewFlagEnabled(false);
+      setNewFlagRollout('100');
+      await queryClient.invalidateQueries({ queryKey: ['settings', 'feature_flags'] });
+      toast.success(`Created feature flag ${trimmedKey}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not create feature flag');
+    } finally {
+      setCreatingFlag(false);
+    }
+  };
 
   const preferences: BoardPreferences = {
     ...storedPreferences,
@@ -379,6 +639,342 @@ export function SettingsPage() {
           </Button>
         </div>
       </form>
+
+      {isAdmin && (
+        <>
+          <section className="ink-panel space-y-6 bg-card p-5 sm:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-display text-xl uppercase tracking-wide">
+                  System &amp; Company Parameters
+                </h2>
+                <p className="text-sm text-ink-soft">
+                  Runtime configuration parameters stored in <code>base.config_parameter</code>.
+                </p>
+              </div>
+              <Badge variant="primary">Admin Only</Badge>
+            </div>
+
+            {configParamsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-14" />
+                <Skeleton className="h-14" />
+              </div>
+            ) : configParameters.length === 0 ? (
+              <p className="font-mono text-xs text-ink-faint">
+                No configuration parameters defined yet.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {configParameters.map((param) => {
+                  const currentValue = paramDrafts[param.id] ?? param.value ?? '';
+                  const isDirty = paramDrafts[param.id] !== undefined;
+                  const isSaving = savingParamId === param.id;
+                  return (
+                    <div
+                      key={param.id}
+                      className="flex flex-col gap-3 border-2 border-ink/25 bg-paper-raised p-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-sm font-bold">{param.key}</span>
+                          <Badge variant="default">{param.value_type}</Badge>
+                          {param.is_secret && <Badge variant="destructive">secret</Badge>}
+                          {param.company_id ? (
+                            <Badge variant="default">company #{param.company_id}</Badge>
+                          ) : (
+                            <Badge variant="default">global</Badge>
+                          )}
+                        </div>
+                        {param.description && (
+                          <p className="text-xs text-ink-soft">{param.description}</p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+                        {param.value_type === 'boolean' ? (
+                          <Switch
+                            id={`cfg-param-${param.id}`}
+                            aria-label={`Toggle ${param.key}`}
+                            checked={currentValue === 'true' || currentValue === '1'}
+                            disabled={isSaving}
+                            onCheckedChange={(checked) =>
+                              setParamDrafts((current) => ({
+                                ...current,
+                                [param.id]: checked ? 'true' : 'false',
+                              }))
+                            }
+                          />
+                        ) : (
+                          <Input
+                            id={`cfg-param-${param.id}`}
+                            aria-label={`Value for ${param.key}`}
+                            type={param.is_secret ? 'password' : 'text'}
+                            value={currentValue}
+                            disabled={isSaving}
+                            onChange={(event) =>
+                              setParamDrafts((current) => ({
+                                ...current,
+                                [param.id]: event.target.value,
+                              }))
+                            }
+                            className="w-56 font-mono text-xs"
+                          />
+                        )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isDirty ? 'default' : 'outline'}
+                          disabled={!isDirty || isSaving}
+                          onClick={() => void saveConfigParam(param)}
+                        >
+                          {isSaving ? 'Saving…' : 'Save'}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <form
+              onSubmit={(event) => void createConfigParam(event)}
+              className="space-y-4 border-t border-ink/20 pt-5"
+            >
+              <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
+                Add Parameter
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-param-key">Key</Label>
+                  <Input
+                    id="new-param-key"
+                    placeholder="e.g. app.max_upload_mb"
+                    value={newParamKey}
+                    onChange={(event) => setNewParamKey(event.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-param-type">Value Type</Label>
+                  <Select
+                    value={newParamType}
+                    onValueChange={(value) => {
+                      const nextType = value as ConfigValueType;
+                      setNewParamType(nextType);
+                      if (nextType === 'boolean') {
+                        setNewParamValue('false');
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="new-param-type" className="w-full">
+                      <SelectValue placeholder="Select value type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="string">string</SelectItem>
+                      <SelectItem value="integer">integer</SelectItem>
+                      <SelectItem value="boolean">boolean</SelectItem>
+                      <SelectItem value="json">json</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-param-value">Value</Label>
+                  {newParamType === 'boolean' ? (
+                    <div className="flex h-10 items-center gap-2">
+                      <Switch
+                        id="new-param-value"
+                        checked={newParamValue === 'true'}
+                        onCheckedChange={(checked) => setNewParamValue(checked ? 'true' : 'false')}
+                      />
+                      <span className="font-mono text-xs">
+                        {newParamValue === 'true' ? 'true' : 'false'}
+                      </span>
+                    </div>
+                  ) : (
+                    <Input
+                      id="new-param-value"
+                      type={newParamSecret ? 'password' : 'text'}
+                      placeholder={
+                        newParamType === 'integer'
+                          ? '42'
+                          : newParamType === 'json'
+                            ? '{"enabled":true}'
+                            : 'value'
+                      }
+                      value={newParamValue}
+                      onChange={(event) => setNewParamValue(event.target.value)}
+                    />
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-param-description">Description</Label>
+                  <Input
+                    id="new-param-description"
+                    placeholder="Optional description"
+                    value={newParamDescription}
+                    onChange={(event) => setNewParamDescription(event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="new-param-secret"
+                    checked={newParamSecret}
+                    onCheckedChange={setNewParamSecret}
+                  />
+                  <Label htmlFor="new-param-secret">Mark as secret (redacted in audit logs)</Label>
+                </div>
+                <Button type="submit" size="sm" disabled={creatingParam}>
+                  {creatingParam ? 'Creating…' : 'Create Parameter'}
+                </Button>
+              </div>
+            </form>
+          </section>
+
+          <section className="ink-panel space-y-6 bg-card p-5 sm:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-display text-xl uppercase tracking-wide">Feature Flags</h2>
+                <p className="text-sm text-ink-soft">
+                  Tenant- and rollout-aware feature toggles stored in <code>ir.feature_flag</code>.
+                </p>
+              </div>
+              <Badge variant="primary">Admin Only</Badge>
+            </div>
+
+            {featureFlagsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-14" />
+                <Skeleton className="h-14" />
+              </div>
+            ) : featureFlags.length === 0 ? (
+              <p className="font-mono text-xs text-ink-faint">No feature flags defined yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {featureFlags.map((flag) => {
+                  const rolloutDraft = flagRolloutDrafts[flag.id] ?? String(flag.rollout_pct);
+                  const isRolloutDirty = flagRolloutDrafts[flag.id] !== undefined;
+                  const isSaving = savingFlagId === flag.id;
+                  return (
+                    <div
+                      key={flag.id}
+                      className="flex flex-col gap-3 border-2 border-ink/25 bg-paper-raised p-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-display text-sm uppercase">{flag.name}</span>
+                          <Badge variant="default">{flag.key}</Badge>
+                          <Badge variant={flag.enabled ? 'primary' : 'default'}>
+                            {flag.enabled ? 'enabled' : 'disabled'}
+                          </Badge>
+                          {flag.expires_at && (
+                            <Badge variant="default">expires {flag.expires_at.slice(0, 10)}</Badge>
+                          )}
+                        </div>
+                        {flag.description && (
+                          <p className="text-xs text-ink-soft">{flag.description}</p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3 sm:shrink-0">
+                        <div className="flex items-center gap-1.5">
+                          <Label htmlFor={`flag-rollout-${flag.id}`} className="font-mono text-xs">
+                            Rollout %
+                          </Label>
+                          <Input
+                            id={`flag-rollout-${flag.id}`}
+                            aria-label={`Rollout percentage for ${flag.key}`}
+                            value={rolloutDraft}
+                            disabled={isSaving}
+                            onChange={(event) =>
+                              setFlagRolloutDrafts((current) => ({
+                                ...current,
+                                [flag.id]: event.target.value,
+                              }))
+                            }
+                            className="w-20 font-mono text-xs"
+                          />
+                          {isRolloutDirty && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={isSaving}
+                              onClick={() => void saveFeatureFlagRollout(flag)}
+                            >
+                              Save
+                            </Button>
+                          )}
+                        </div>
+                        <Switch
+                          id={`flag-enabled-${flag.id}`}
+                          aria-label={`Enable ${flag.key}`}
+                          checked={flag.enabled}
+                          disabled={isSaving}
+                          onCheckedChange={(checked) => void toggleFeatureFlag(flag, checked)}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <form
+              onSubmit={(event) => void createFeatureFlag(event)}
+              className="space-y-4 border-t border-ink/20 pt-5"
+            >
+              <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
+                Add Feature Flag
+              </p>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-flag-key">Key</Label>
+                  <Input
+                    id="new-flag-key"
+                    placeholder="e.g. board.beta_view"
+                    value={newFlagKey}
+                    onChange={(event) => setNewFlagKey(event.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-flag-name">Name</Label>
+                  <Input
+                    id="new-flag-name"
+                    placeholder="Beta View"
+                    value={newFlagName}
+                    onChange={(event) => setNewFlagName(event.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-flag-rollout">Rollout % (0–100)</Label>
+                  <Input
+                    id="new-flag-rollout"
+                    value={newFlagRollout}
+                    onChange={(event) => setNewFlagRollout(event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="new-flag-enabled"
+                    checked={newFlagEnabled}
+                    onCheckedChange={setNewFlagEnabled}
+                  />
+                  <Label htmlFor="new-flag-enabled">Enabled immediately</Label>
+                </div>
+                <Button type="submit" size="sm" disabled={creatingFlag}>
+                  {creatingFlag ? 'Creating…' : 'Create Flag'}
+                </Button>
+              </div>
+            </form>
+          </section>
+        </>
+      )}
     </div>
   );
 }

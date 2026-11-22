@@ -1,11 +1,4 @@
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  statSync,
-  unlinkSync,
-} from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from 'node:fs';
 import path from 'node:path';
 import { createLogger } from '@moonwitness/logger';
 import { AI_LOGGER_REDACT_PATHS, createRedactor } from '@moonwitness/ai-runtime';

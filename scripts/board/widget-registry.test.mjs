@@ -60,10 +60,7 @@ test('FieldWidgetRegistry seeds all required canonical default widget mappings',
   ];
 
   for (const typeName of requiredTypes) {
-    assert.ok(
-      registry.has(typeName),
-      `Expected default widget registry to contain "${typeName}"`
-    );
+    assert.ok(registry.has(typeName), `Expected default widget registry to contain "${typeName}"`);
     const resolved = registry.resolve({ type: typeName });
     assert.equal(resolved.name, normalizeWidgetKey(typeName));
   }
@@ -81,10 +78,7 @@ test('resolveFieldWidget resolves explicit widget override before field.widget a
   });
 
   // 1. Explicit widget parameter takes top precedence
-  const byParam = registry.resolve(
-    { type: 'integer', widget: 'statusbar' },
-    'custom_rating'
-  );
+  const byParam = registry.resolve({ type: 'integer', widget: 'statusbar' }, 'custom_rating');
   assert.equal(byParam.name, 'custom_rating');
 
   // 2. field.widget attribute overrides field.type
@@ -266,19 +260,19 @@ test('fields.tsx and widget-registry.tsx contain zero hardcoded model checks and
 
   // Verify shared @moonwitness/ui component integrations in fields.tsx
   assert.ok(
-    fieldsSource.includes("@moonwitness/ui/components/date-picker"),
+    fieldsSource.includes('@moonwitness/ui/components/date-picker'),
     'fields.tsx must integrate DatePicker from @moonwitness/ui/components/date-picker'
   );
   assert.ok(
-    fieldsSource.includes("@moonwitness/ui/components/number-input"),
+    fieldsSource.includes('@moonwitness/ui/components/number-input'),
     'fields.tsx must integrate NumberInput from @moonwitness/ui/components/number-input'
   );
   assert.ok(
-    fieldsSource.includes("@moonwitness/ui/components/tag-input"),
+    fieldsSource.includes('@moonwitness/ui/components/tag-input'),
     'fields.tsx must integrate TagInput from @moonwitness/ui/components/tag-input'
   );
   assert.ok(
-    fieldsSource.includes("@moonwitness/ui/components/status-bar"),
+    fieldsSource.includes('@moonwitness/ui/components/status-bar'),
     'fields.tsx must integrate StatusBar from @moonwitness/ui/components/status-bar'
   );
 });

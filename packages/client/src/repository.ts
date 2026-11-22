@@ -121,10 +121,7 @@ export class ModelRepository<TRecord = Record<string, unknown>> {
   }
 
   /** Archives (active=false) by default; `hard: true` deletes permanently. */
-  async unlink(
-    id: number,
-    options: { hard?: boolean; writeDate?: string } = {}
-  ): Promise<void> {
+  async unlink(id: number, options: { hard?: boolean; writeDate?: string } = {}): Promise<void> {
     await this.http.request(this.path(id), {
       method: 'DELETE',
       ...(options.writeDate ? { headers: { 'If-Match': `"${options.writeDate}"` } } : {}),

@@ -116,7 +116,11 @@ export function ModelPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Breadcrumbs items={breadcrumbs} />
         {!isCreate && !isEdit && supportedViews.length > 1 && (
-          <div className="flex flex-wrap items-center gap-1" role="tablist" aria-label="View switcher">
+          <div
+            className="flex flex-wrap items-center gap-1"
+            role="tablist"
+            aria-label="View switcher"
+          >
             {supportedViews.map((viewName) => (
               <Button
                 key={viewName}

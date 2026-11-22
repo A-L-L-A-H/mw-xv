@@ -17,16 +17,9 @@ export type DomainOperator =
   | 'is not null';
 
 export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [key: string]: JsonValue };
+  string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
-export type DomainLeaf =
-  | [string, DomainOperator | (string & {}), unknown]
-  | [string, unknown];
+export type DomainLeaf = [string, DomainOperator | (string & {}), unknown] | [string, unknown];
 
 export type DomainLogical = '&' | '|' | '!';
 
@@ -170,9 +163,7 @@ export function validateDomain(input: unknown, allowedFields?: ReadonlySet<strin
         operand.length > MAX_DOMAIN_LIST_LENGTH ||
         !operand.every(isDomainScalar)
       ) {
-        throw new Error(
-          `Invalid domain: term ${index} must use a scalar or a bounded scalar list`
-        );
+        throw new Error(`Invalid domain: term ${index} must use a scalar or a bounded scalar list`);
       }
     }
     if (

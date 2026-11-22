@@ -463,6 +463,49 @@ export interface DesktopBridgeHostSurface {
   __MW_DESKTOP__?: DesktopCapabilityBridge;
 }
 
+export type SqliteColumnKind = 'boolean' | 'timestamp' | 'json' | 'integer' | 'text';
+
+export type SqliteRecordSchema = Readonly<Record<string, SqliteColumnKind>>;
+
+export interface OrphanAttachmentGcOptions {
+  readonly retentionMs?: number;
+  readonly now?: Date;
+  readonly dryRun?: boolean;
+}
+
+export interface OrphanAttachmentGcResult {
+  readonly scannedFiles: number;
+  readonly retainedFiles: number;
+  readonly deletedFiles: readonly string[];
+  readonly freedBytes: number;
+  readonly dryRun: boolean;
+}
+
+export type DesktopStreamEventKind = 'pty.output' | 'pty.exit' | 'harness.step' | 'sync.progress';
+
+export interface DesktopStreamEvent {
+  readonly eventId: string;
+  readonly kind: DesktopStreamEventKind;
+  readonly runId: string;
+  readonly timestamp: string;
+  readonly payload: JsonObject;
+}
+
+export interface DesktopStreamSubscribeOptions {
+  readonly runId?: string;
+  readonly kinds?: readonly DesktopStreamEventKind[];
+  readonly maxBufferedEvents?: number;
+}
+
+export interface DesktopStreamSubscription {
+  readonly subscriptionId: string;
+  readonly maxBufferedEvents: number;
+  getDroppedCount(): number;
+  getBufferedCount(): number;
+  flush(): readonly DesktopStreamEvent[];
+  unsubscribe(): void;
+}
+
 export interface DesktopCapabilityBridge {
   readonly protocolVersion: '1.0';
   readonly hostSurface: 'apps/board';
@@ -514,12 +557,21 @@ export interface DesktopCapabilityBridge {
       options?: { readonly companyId?: number }
     ): readonly PcwSyncEnvelope[];
     syncPending(transport: UpstreamPcwSyncTransport): Promise<PcwSyncBatchResult>;
+    pruneOrphanAttachmentStorage(options?: OrphanAttachmentGcOptions): OrphanAttachmentGcResult;
   };
   readonly mcp: {
     registerServer(config: LocalMcpServerConfig): LocalMcpServerConfig;
     registerHandler(serverId: string, handler: LocalMcpToolHandler): void;
     listServers(): readonly LocalMcpServerConfig[];
     invoke(request: LocalMcpToolInvocationRequest): Promise<LocalMcpToolInvocationResult>;
+  };
+  readonly events: {
+    subscribe(
+      listener: (event: DesktopStreamEvent) => void,
+      options?: DesktopStreamSubscribeOptions
+    ): DesktopStreamSubscription;
+    emit(event: Omit<DesktopStreamEvent, 'eventId' | 'timestamp'>): DesktopStreamEvent;
+    getActiveListenerCount(): number;
   };
   dispose(): void;
 }

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { AccessDeniedError, ValidationError, type Domain } from '@moonwitness/types';
 import { LocalSidecarController } from './local-sidecar.js';
 import { LocalMcpHostRegistry } from './mcp-host.js';
@@ -11,17 +12,142 @@ import type {
   DesktopCapabilityBridge,
   DesktopHarnessConfig,
   DesktopKeychainSecretStore,
+  DesktopStreamEvent,
+  DesktopStreamEventKind,
+  DesktopStreamSubscribeOptions,
+  DesktopStreamSubscription,
   EnqueuePcwEnvelopeInput,
   GitWorktreeLease,
   LocalMcpServerConfig,
   LocalMcpToolHandler,
   LocalMcpToolInvocationRequest,
+  OrphanAttachmentGcOptions,
   RiskEvaluationRequest,
   UpstreamPcwSyncTransport,
 } from './types.js';
 import { WorktreeSandbox } from './worktree-sandbox.js';
 
 const SECRET_REF_REGEX = /^MW_AI_(?:C[1-9][0-9]*_)?[A-Z0-9_]{1,100}$/u;
+
+export const DEFAULT_MAX_BUFFERED_EVENTS = 256;
+
+interface StreamSubscriberEntry {
+  readonly subscriptionId: string;
+  readonly listener: (event: DesktopStreamEvent) => void;
+  readonly runId?: string;
+  readonly kinds?: ReadonlySet<DesktopStreamEventKind>;
+  readonly maxBufferedEvents: number;
+  readonly buffer: DesktopStreamEvent[];
+  droppedCount: number;
+  flushScheduled: boolean;
+  unsubscribed: boolean;
+}
+
+/**
+ * Bounded streaming event hub for PTY output and harness step progress (DSK-4.7).
+ * Enforces `maxBufferedEvents` backpressure (dropping oldest buffered events when full)
+ * and deterministic `unsubscribe()` cleanup so closed UI drawers never leak listeners.
+ */
+export class DesktopEventStreamHub {
+  private readonly subscribers = new Map<string, StreamSubscriberEntry>();
+
+  subscribe(
+    listener: (event: DesktopStreamEvent) => void,
+    options?: DesktopStreamSubscribeOptions
+  ): DesktopStreamSubscription {
+    const rawMax = options?.maxBufferedEvents ?? DEFAULT_MAX_BUFFERED_EVENTS;
+    const maxBufferedEvents = Math.max(1, Math.floor(rawMax));
+    const subscriptionId = randomUUID();
+    const entry: StreamSubscriberEntry = {
+      subscriptionId,
+      listener,
+      ...(options?.runId !== undefined ? { runId: options.runId } : {}),
+      ...(options?.kinds && options.kinds.length > 0 ? { kinds: new Set(options.kinds) } : {}),
+      maxBufferedEvents,
+      buffer: [],
+      droppedCount: 0,
+      flushScheduled: false,
+      unsubscribed: false,
+    };
+
+    this.subscribers.set(subscriptionId, entry);
+
+    const flush = (): readonly DesktopStreamEvent[] => {
+      if (entry.unsubscribed || entry.buffer.length === 0) {
+        return [];
+      }
+      const batch = entry.buffer.splice(0, entry.buffer.length);
+      for (const event of batch) {
+        if (entry.unsubscribed) break;
+        entry.listener(event);
+      }
+      return batch;
+    };
+
+    return {
+      subscriptionId,
+      maxBufferedEvents,
+      getDroppedCount: () => entry.droppedCount,
+      getBufferedCount: () => entry.buffer.length,
+      flush,
+      unsubscribe: () => {
+        if (entry.unsubscribed) return;
+        entry.unsubscribed = true;
+        entry.buffer.length = 0;
+        this.subscribers.delete(subscriptionId);
+      },
+    };
+  }
+
+  emit(input: Omit<DesktopStreamEvent, 'eventId' | 'timestamp'>): DesktopStreamEvent {
+    const event: DesktopStreamEvent = {
+      eventId: randomUUID(),
+      kind: input.kind,
+      runId: input.runId,
+      timestamp: new Date().toISOString(),
+      payload: input.payload,
+    };
+
+    for (const entry of this.subscribers.values()) {
+      if (entry.unsubscribed) continue;
+      if (entry.runId !== undefined && entry.runId !== event.runId) continue;
+      if (entry.kinds !== undefined && !entry.kinds.has(event.kind)) continue;
+
+      if (entry.buffer.length >= entry.maxBufferedEvents) {
+        entry.buffer.shift();
+        entry.droppedCount += 1;
+      }
+      entry.buffer.push(event);
+
+      if (!entry.flushScheduled) {
+        entry.flushScheduled = true;
+        queueMicrotask(() => {
+          entry.flushScheduled = false;
+          if (entry.unsubscribed || entry.buffer.length === 0) return;
+          const batch = entry.buffer.splice(0, entry.buffer.length);
+          for (const queued of batch) {
+            if (entry.unsubscribed) break;
+            entry.listener(queued);
+          }
+        });
+      }
+    }
+
+    return event;
+  }
+
+  getActiveListenerCount(): number {
+    return this.subscribers.size;
+  }
+
+  dispose(): void {
+    for (const entry of this.subscribers.values()) {
+      entry.unsubscribed = true;
+      entry.buffer.length = 0;
+    }
+    this.subscribers.clear();
+  }
+}
 
 export const DEFAULT_ALLOWED_IPC_ORIGINS: readonly string[] = Object.freeze([
   'http://127.0.0.1:5173',
@@ -216,6 +342,8 @@ export function createDesktopHarnessBridge(
     initialServers: config.mcpServers,
   });
 
+  const eventHub = new DesktopEventStreamHub();
+
   if (options?.mcpHandlers) {
     for (const [serverId, handler] of Object.entries(options.mcpHandlers)) {
       mcpHost.registerHandler(serverId, handler);
@@ -274,8 +402,32 @@ export function createDesktopHarnessBridge(
       release: (runId: string) => sandbox.release(runId),
     },
     pty: {
-      execute: (request: BoundedPtyCommandRequest, auth: DesktopActionAuthContext) =>
-        sandbox.executeBoundedCommand(request, auth),
+      execute: async (request: BoundedPtyCommandRequest, auth: DesktopActionAuthContext) => {
+        const result = await sandbox.executeBoundedCommand(request, auth);
+        if (!disposed) {
+          if (result.stdout.length > 0) {
+            eventHub.emit({
+              kind: 'pty.output',
+              runId: request.runId,
+              payload: {
+                stream: 'stdout',
+                chunk: result.stdout,
+                truncated: result.truncated,
+              },
+            });
+          }
+          eventHub.emit({
+            kind: 'pty.exit',
+            runId: request.runId,
+            payload: {
+              exitCode: result.exitCode,
+              timedOut: result.timedOut,
+              durationMs: result.durationMs,
+            },
+          });
+        }
+        return result;
+      },
     },
     risk: {
       evaluate: (request: RiskEvaluationRequest) => riskGate.evaluate(request),
@@ -291,6 +443,8 @@ export function createDesktopHarnessBridge(
       listEnvelopes: (domain?: Domain, listOpts?: { readonly companyId?: number }) =>
         sidecar.listEnvelopes(domain, listOpts),
       syncPending: (transport: UpstreamPcwSyncTransport) => sidecar.syncPending(transport),
+      pruneOrphanAttachmentStorage: (gcOpts?: OrphanAttachmentGcOptions) =>
+        sidecar.pruneOrphanAttachmentStorage(gcOpts),
     },
     mcp: {
       registerServer: (serverConfig: LocalMcpServerConfig) => mcpHost.registerServer(serverConfig),
@@ -299,9 +453,15 @@ export function createDesktopHarnessBridge(
       listServers: () => mcpHost.listServers(),
       invoke: (request: LocalMcpToolInvocationRequest) => mcpHost.invoke(request),
     },
+    events: {
+      subscribe: (listener, subscribeOpts) => eventHub.subscribe(listener, subscribeOpts),
+      emit: (event) => eventHub.emit(event),
+      getActiveListenerCount: () => eventHub.getActiveListenerCount(),
+    },
     dispose(): void {
       if (disposed) return;
       disposed = true;
+      eventHub.dispose();
       if (options?.surface) {
         detachDesktopBridgeFromSurface(options.surface);
       }
@@ -315,6 +475,7 @@ export function createDesktopHarnessBridge(
   Object.freeze(rawBridge.risk);
   Object.freeze(rawBridge.sidecar);
   Object.freeze(rawBridge.mcp);
+  Object.freeze(rawBridge.events);
   const bridge = Object.freeze(rawBridge);
 
   if (options?.surface || options?.autoAttach !== false) {

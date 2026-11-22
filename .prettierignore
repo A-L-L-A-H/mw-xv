@@ -1,6 +1,7 @@
 node_modules
 dist
 apps/board/.next*
+apps/todo
 *.tsbuildinfo
 services
 pnpm-lock.yaml

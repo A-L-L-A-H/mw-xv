@@ -32,8 +32,7 @@ export interface RelationMappingLike {
 export interface DomainModelClassLike {
   tableName?: string;
   relationMappings?:
-    | Record<string, RelationMappingLike>
-    | (() => Record<string, RelationMappingLike>);
+    Record<string, RelationMappingLike> | (() => Record<string, RelationMappingLike>);
   hiddenFields?: readonly string[];
   jsonSchema?: {
     properties?: Record<string, unknown>;
@@ -149,18 +148,14 @@ function applyDottedLeafToQuery(
   }
 
   const rootTable = rootModel.tableName;
-  const applyHop = (
-    parentQb: DomainQuery,
-    hopIndex: number,
-    parentAlias: string
-  ): void => {
+  const applyHop = (parentQb: DomainQuery, hopIndex: number, parentAlias: string): void => {
     const hop = hops[hopIndex]!;
     const alias = `__dom_rel_${hopIndex}`;
     parentQb.whereExists!((subQb: DomainQuery) => {
-      subQb
-        .select!(1)
-        .from!(`${hop.toTable} as ${alias}`)
-        .whereRaw('?? = ??', [`${alias}.${hop.toCol}`, `${parentAlias}.${hop.fromCol}`]);
+      subQb.select!(1).from!(`${hop.toTable} as ${alias}`).whereRaw('?? = ??', [
+        `${alias}.${hop.toCol}`,
+        `${parentAlias}.${hop.fromCol}`,
+      ]);
 
       if (hopIndex === hops.length - 1) {
         applyScalarLeafToQuery(subQb, `${alias}.${leafColumn}`, op, value);
@@ -184,7 +179,8 @@ export function applyAstToQuery(
   node: ASTNode,
   modelClass?: DomainModelClassLike
 ): void {
-  const resolvedModel = modelClass ?? (typeof qb.modelClass === 'function' ? qb.modelClass() : undefined);
+  const resolvedModel =
+    modelClass ?? (typeof qb.modelClass === 'function' ? qb.modelClass() : undefined);
   switch (node.type) {
     case 'LEAF':
       applyLeafToQuery(qb, node.field, node.op, node.value, resolvedModel);
@@ -313,11 +309,7 @@ function applyScalarLeafToQuery(
 /**
  * Applies a filter domain directly to an Objection QueryBuilder.
  */
-export function applyDomain<QB>(
-  qb: QB,
-  domain?: Domain,
-  modelClass?: DomainModelClassLike
-): QB {
+export function applyDomain<QB>(qb: QB, domain?: Domain, modelClass?: DomainModelClassLike): QB {
   if (!domain || domain.length === 0) {
     return qb;
   }

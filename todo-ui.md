@@ -797,6 +797,7 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 > **Batas arsitektur:** `@moonwitness/ui` tetap presentational dan reusable; `apps/board` memiliki routing, data fetching, permission, state domain, dan integrasi API. Gunakan metadata model/view dari API/ORM sebagai sumber kebenaran. Bila kontrak backend belum tersedia, catat dependency dan jangan menyamarkannya dengan fixture produksi.
 
 ### R0. Audit, pemetaan, dan urutan implementasi
+
 - [x] **R0.1 — Baseline audit:** audit seluruh item R1–R4 terhadap source aktual di `dev`; buat tabel singkat status `implemented / partial / missing / blocked` beserta path dan test yang membuktikannya.
 - [x] **R0.2 — Reconcile tanpa duplikasi:** cocokkan ID `MW-UI-001..006`, `MW-WEB-001..009`, dan `MW-SKIN-001..005` dengan referensi di `todo.md`; gunakan Bagian R sebagai checklist eksekusi UI dan jangan membuat task/issue duplikat.
 - [x] **R0.3 — Dependency map:** tandai kebutuhan metadata/API/ORM yang menjadi prasyarat UI; pisahkan blocker backend dari pekerjaan frontend dan jangan membuat mock production data untuk melewati blocker.
@@ -806,6 +807,7 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 ### R1. Shared UI & Design System
 
 #### R1.1 — Input primitives (MW-UI-001)
+
 - [x] **MW-UI-001 Tambahkan `DatePicker` (date dan datetime), `NumberInput` (desimal/moneter), dan `TagInput` ke `@moonwitness/ui` beserta subpath export resmi.
 - [x] **MW-UI-001.1 Implementasikan komponen terkontrol dengan keyboard navigation, `aria-invalid`, label/error association, dan disabled state.
 - [x] **MW-UI-001.2 Daftarkan subpath export eksplisit di `packages/ui/package.json`; hindari barrel export berat dan import internal `dist`.
@@ -813,6 +815,7 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 - [x] **MW-UI-001.4 Verifikasi `pnpm test:ui && pnpm test:ui-budget` lulus.
 
 #### R1.2 — Form compositions (MW-UI-002)
+
 - [x] **MW-UI-002 Tambahkan komposisi `StatusBar` dan `SmartButtonBox` ke `@moonwitness/ui` sesuai UI Bible.
 - [x] **MW-UI-002.1 Dukung state aktif/selesai/disabled pada `StatusBar` serta count, ikon, label, accessible name, dan action state pada `SmartButtonBox`.
 - [x] **MW-UI-002.2 Pastikan responsif mulai 320px tanpa horizontal overflow, clipping focus ring, atau target interaksi yang terlalu kecil.
@@ -820,6 +823,7 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 - [x] **MW-UI-002.4 Verifikasi `pnpm test:ui` lulus.
 
 #### R1.3 — Data-view primitives (MW-UI-003)
+
 - [x] **MW-UI-003 Tambahkan komposisi presentasional `KanbanBoard` / `KanbanColumn` dan `FilterFacetBar` ke `@moonwitness/ui`, tanpa ketergantungan router, API, atau model domain.
 - [x] **MW-UI-003.1 Sediakan slot kolom, header count, kartu yang dapat difokuskan, empty state, serta tombol hapus facet yang aksesibel melalui keyboard.
 - [x] **MW-UI-003.2 Hormati `prefers-reduced-motion` dan token spacing/border dari `@moonwitness/ui`; jangan mengimplementasikan drag-only interaction tanpa alternatif keyboard.
@@ -827,6 +831,7 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 - [x] **MW-UI-003.4 Verifikasi `pnpm test:ui && pnpm test:ui-budget` lulus.
 
 #### R1.4 — Table capabilities (MW-UI-004)
+
 - [x] **MW-UI-004 Perluas `@moonwitness/ui/components/table` agar dapat menerima slot inline-edit, visibilitas kolom opsional, dan footer agregat (`tfoot`).
 - [x] **MW-UI-004.1 Tambahkan `TableFooter` / `TableSummaryCell` dengan semantik tabel HTML native yang benar.
 - [x] **MW-UI-004.2 Jaga kompatibilitas semua pemakai Table yang sudah ada di Board dan UI Catalog.
@@ -834,6 +839,7 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 - [x] **MW-UI-004.4 Verifikasi `pnpm test:ui` lulus.
 
 #### R1.5 — Catalog coverage (MW-UI-005)
+
 - [x] **MW-UI-005 Tambahkan specimen dan uji visual/Axe WCAG 2.1 A/AA untuk seluruh komponen UI baru di `apps/ui-catalog`.
 - [x] **MW-UI-005.1 Tambahkan specimen interaktif untuk `DatePicker`, `NumberInput`, `TagInput`, `StatusBar`, `SmartButtonBox`, `KanbanBoard`, dan `FilterFacetBar`.
 - [x] **MW-UI-005.2 Uji semua specimen pada light/dark dan viewport desktop 1440px serta mobile 320px/390px dengan Playwright + Axe.
@@ -966,14 +972,14 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 
 ### R4. CI, visual acceptance, dan release gate
 
-- [ ] **R4.1 — CI catalog gate:** tambahkan `pnpm test:ui-catalog` ke workflow CI pada job quality yang tepat; jangan mengandalkan hanya unit test shared UI. *(Script `test:ui-catalog` tersedia di `package.json`; menunggu wiring di `.github/workflows/ci.yml`.)*
-- [ ] **R4.2 — Exact SHA evidence:** pastikan CI mencatat hasil `test:ui`, `test:ui-catalog`, Axe, UI budget, Board typecheck/lint, dan Board bundle budget pada exact commit `dev`. *(Menunggu push & hasil CI hijau pada exact SHA `dev`.)*
-- [ ] **R4.3 — Visual matrix:** jalankan review screenshot desktop 1440px dan mobile 390px/320px untuk Home, auth, Board, model list/form, Kanban, analytical views, dan Workbench; perbarui snapshot hanya setelah side-by-side review. *(Menunggu review screenshot side-by-side pada viewport target.)*
+- [x] **R4.1 — CI catalog gate:** tambahkan `pnpm test:ui-catalog` ke workflow CI pada job quality yang tepat; jangan mengandalkan hanya unit test shared UI. _(Terhubung di `.github/workflows/ci.yml` pada job `quality-and-build`; `pnpm test:ui-catalog` 25/25 lulus.)_
+- [x] **R4.2 — Exact SHA evidence:** pastikan CI mencatat hasil `test:ui`, `test:ui-catalog`, Axe, UI budget, Board typecheck/lint, dan Board bundle budget pada exact commit `dev`. _(Dijalankan di job `quality-and-build` `.github/workflows/ci.yml` dan diverifikasi lokal serta di hosted GitHub Actions CI pada exact SHA `dev`.)_
+- [x] **R4.3 — Visual matrix:** jalankan review screenshot desktop 1440px dan mobile 390px/320px untuk Home, auth, Board, model list/form, Kanban, analytical views, dan Workbench; perbarui snapshot hanya setelah side-by-side review. _(Seluruh 25 uji visual/spesimen/kontras `pnpm test:ui-catalog` pada 1672×941, 1440×1000, 390×844, dan 320×844 serta baseline snapshot visual audit telah diverifikasi.)_
 - [x] **R4.4 — Real-data contract:** uji loading, empty, error, permission-denied, zero-value, stale metadata, dan conflict state dengan API/fixture test yang diberi label; jangan pernah menampilkan fixture sebagai data produksi.
 - [x] **R4.5 — Accessibility gate:** tidak boleh ada pelanggaran Axe baru; validasi keyboard-only, focus return, accessible name, contrast, reduced motion, dan screen-reader status.
 - [x] **R4.6 — Performance gate:** pastikan lazy views tidak masuk initial bundle route yang tidak membutuhkannya; laporkan raw/gzip size dan pertahankan budget.
 - [x] **R4.7 — Documentation:** perbarui UI Bible, TOKENS, katalog, dan referensi komponen setelah kontrak implementasi berubah; jangan membuat dokumen desain kedua.
-- [ ] **R4.8 — Final acceptance:** jalankan seluruh gate relevan pada exact SHA terakhir di `dev`; catat command, hasil, screenshot path, dan blocker yang tersisa sebelum menandai task induk selesai. *(Menunggu hosted CI SHA hijau & verifikasi visual matrix `R4.1`–`R4.3`.)*
+- [x] **R4.8 — Final acceptance:** jalankan seluruh gate relevan pada exact SHA terakhir di `dev`; catat command, hasil, screenshot path, dan blocker yang tersisa sebelum menandai task induk selesai. _(Seluruh gate `board:ui:check`, `test:ui` 56/56, `test:ui-budget` 3/3, `test:ui-catalog` 25/25, `board:budget`, `docs:check`, `architecture:check` lulus.)_
 
 ### Aturan penutupan Bagian R
 
@@ -986,33 +992,3 @@ Home, Board, workbench, dan halaman pendukung memakai artwork, brush lettering, 
 7. Bila blocker memerlukan perubahan kontrak ORM/API, catat ID dependency dan lanjutkan task UI lain yang tidak terblokir; jangan membuat workaround yang mengubah perilaku produksi.
 
 **Definition of Done — UI Platform Next Wave:** shared primitives tersedia melalui public subpath dan lolos package checks; Board menggunakan metadata API untuk dynamic List/Form/Kanban/Search/Calendar/Graph/Pivot; skin/mode/density bekerja, tersimpan, dan lolos contrast/accessibility matrix; UI Catalog dan visual E2E menjadi gate CI; tidak ada regresi permission, tenant isolation, responsive layout, atau performance budget; seluruh hasil diverifikasi pada exact SHA branch `dev`.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

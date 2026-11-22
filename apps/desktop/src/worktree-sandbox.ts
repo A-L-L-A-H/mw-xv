@@ -579,7 +579,7 @@ export class WorktreeSandbox {
         message: `Merged '${validRef}' cleanly`,
       };
     } catch (error) {
-      let abortedCleanly = false;
+      let abortedCleanly: boolean;
       try {
         await this.runGit(lease.worktreePath, ['merge', '--abort']);
         abortedCleanly = true;

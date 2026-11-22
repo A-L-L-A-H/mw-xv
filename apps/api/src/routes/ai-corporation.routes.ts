@@ -84,10 +84,9 @@ export function ensureAiJobHandlersRegistered(): void {
           });
           if (!run) return { skipped: true };
           if (context.signal.aborted || run.status === 'cancelled') {
-            await AgentRun.query().findById(run.id).patch({
-              status: 'cancelled',
-              finished_at: new Date().toISOString(),
-            });
+            await AgentRun.query()
+              .findById(run.id)
+              .patch({ status: 'cancelled', finished_at: new Date().toISOString() });
             return { status: 'cancelled' };
           }
           const agent = await Agent.query().findOne({
@@ -785,119 +784,117 @@ export const aiCorporationPlugin: FastifyPluginAsync<AiCorporationRoutesOptions>
     return reply.code(201).send({ success: true, data: loaded });
   });
 
-  fastify.post<{ Params: { id: string } }>('/work-contracts/:id/verify',
-    async (req, reply) => {
-      const ctx = await requireAiCompanyContext(req, reply);
-      if (!ctx) return;
-      const id = Number(req.params.id);
-      if (!Number.isSafeInteger(id) || id < 1) {
-        return reply.code(400).send({ success: false, error: 'Invalid work contract ID' });
-      }
-      const contract = await WorkContract.query().findOne({
-        id,
-        company_id: ctx.companyId,
-        active: true,
-      });
-      if (!contract) {
-        return reply.code(404).send({ success: false, error: 'Work contract not found' });
-      }
-      const body = isRecord(req.body) ? req.body : {};
+  fastify.post<{ Params: { id: string } }>('/work-contracts/:id/verify', async (req, reply) => {
+    const ctx = await requireAiCompanyContext(req, reply);
+    if (!ctx) return;
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) {
+      return reply.code(400).send({ success: false, error: 'Invalid work contract ID' });
+    }
+    const contract = await WorkContract.query().findOne({
+      id,
+      company_id: ctx.companyId,
+      active: true,
+    });
+    if (!contract) {
+      return reply.code(404).send({ success: false, error: 'Work contract not found' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
 
-      // Enforce independent reviewer (disallow worker/requester self-approval).
-      if (
-        contract.requested_by_id === ctx.userId ||
-        (typeof body.producer_user_id === 'number' && body.producer_user_id === ctx.userId) ||
-        (typeof body.reviewer_agent_id === 'number' &&
-          contract.assigned_agent_id === body.reviewer_agent_id)
-      ) {
-        return reply.code(403).send({
+    // Enforce independent reviewer (disallow worker/requester self-approval).
+    if (
+      contract.requested_by_id === ctx.userId ||
+      (typeof body.producer_user_id === 'number' && body.producer_user_id === ctx.userId) ||
+      (typeof body.reviewer_agent_id === 'number' &&
+        contract.assigned_agent_id === body.reviewer_agent_id)
+    ) {
+      return reply.code(403).send({
+        success: false,
+        error: 'Independent reviewer required; worker or requester cannot self-approve work',
+      });
+    }
+
+    const criteria = await AcceptanceCriterion.query().where({
+      work_contract_id: contract.id,
+      company_id: ctx.companyId,
+      active: true,
+    });
+    if (criteria.length === 0) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Work contract has no acceptance criteria; PCW requires explicit criteria',
+      });
+    }
+
+    const artifacts = await ArtifactManifest.query().where({
+      work_contract_id: contract.id,
+      company_id: ctx.companyId,
+      active: true,
+    });
+    if (artifacts.length === 0) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Missing evidence artifacts for work contract acceptance',
+      });
+    }
+
+    // Verify SHA-256 against AttachmentStorage when blob exists.
+    const nowMs = Date.now();
+    for (const artifact of artifacts) {
+      if (artifact.stale_at && Date.parse(artifact.stale_at) <= nowMs) {
+        return reply.code(409).send({
           success: false,
-          error: 'Independent reviewer required; worker or requester cannot self-approve work',
+          error: `Evidence artifact ${artifact.storage_key} is stale`,
         });
       }
-
-      const criteria = await AcceptanceCriterion.query().where({
-        work_contract_id: contract.id,
-        company_id: ctx.companyId,
-        active: true,
-      });
-      if (criteria.length === 0) {
-        return reply.code(400).send({
-          success: false,
-          error: 'Work contract has no acceptance criteria; PCW requires explicit criteria',
-        });
-      }
-
-      const artifacts = await ArtifactManifest.query().where({
-        work_contract_id: contract.id,
-        company_id: ctx.companyId,
-        active: true,
-      });
-      if (artifacts.length === 0) {
-        return reply.code(400).send({
-          success: false,
-          error: 'Missing evidence artifacts for work contract acceptance',
-        });
-      }
-
-      // Verify SHA-256 against AttachmentStorage when blob exists.
-      const nowMs = Date.now();
-      for (const artifact of artifacts) {
-        if (artifact.stale_at && Date.parse(artifact.stale_at) <= nowMs) {
+      const blob = await options.attachmentStorage.get(artifact.storage_key);
+      if (blob) {
+        const actualSha = createHash('sha256').update(blob).digest('hex');
+        if (actualSha !== artifact.sha256.toLowerCase()) {
           return reply.code(409).send({
             success: false,
-            error: `Evidence artifact ${artifact.storage_key} is stale`,
-          });
-        }
-        const blob = await options.attachmentStorage.get(artifact.storage_key);
-        if (blob) {
-          const actualSha = createHash('sha256').update(blob).digest('hex');
-          if (actualSha !== artifact.sha256.toLowerCase()) {
-            return reply.code(409).send({
-              success: false,
-              error: `Evidence artifact ${artifact.storage_key} SHA-256 digest mismatch`,
-            });
-          }
-        }
-      }
-
-      const mandatoryCriteria = criteria.filter((c) => c.mandatory !== false);
-      for (const criterion of mandatoryCriteria) {
-        const matching = artifacts.find(
-          (a) => a.acceptance_criterion_id === criterion.id || artifacts.length > 0
-        );
-        if (!matching) {
-          return reply.code(400).send({
-            success: false,
-            error: `Mandatory criterion ${criterion.code} has no supporting evidence`,
+            error: `Evidence artifact ${artifact.storage_key} SHA-256 digest mismatch`,
           });
         }
       }
-
-      const nowIso = new Date().toISOString();
-      await AcceptanceCriterion.query()
-        .where({ work_contract_id: contract.id, company_id: ctx.companyId })
-        .patch({ status: 'accepted', checked_at: nowIso });
-      await ArtifactManifest.query()
-        .where({ work_contract_id: contract.id, company_id: ctx.companyId })
-        .patch({
-          verification_status: 'accepted',
-          reviewed_by_id: ctx.userId,
-          reviewed_at: nowIso,
-        });
-      const updated = await WorkContract.query().patchAndFetchById(contract.id, {
-        status: 'accepted',
-        accepted_at: nowIso,
-        criteria_locked_at: contract.criteria_locked_at ?? nowIso,
-      });
-
-      await recordAiAudit(ctx.userId, WorkContract.modelName, contract.id, 'accept', {
-        status: 'accepted',
-        artifactCount: artifacts.length,
-      });
-      return { success: true, data: updated };
     }
-  );
+
+    const mandatoryCriteria = criteria.filter((c) => c.mandatory !== false);
+    for (const criterion of mandatoryCriteria) {
+      const matching = artifacts.find(
+        (a) => a.acceptance_criterion_id === criterion.id || artifacts.length > 0
+      );
+      if (!matching) {
+        return reply.code(400).send({
+          success: false,
+          error: `Mandatory criterion ${criterion.code} has no supporting evidence`,
+        });
+      }
+    }
+
+    const nowIso = new Date().toISOString();
+    await AcceptanceCriterion.query()
+      .where({ work_contract_id: contract.id, company_id: ctx.companyId })
+      .patch({ status: 'accepted', checked_at: nowIso });
+    await ArtifactManifest.query()
+      .where({ work_contract_id: contract.id, company_id: ctx.companyId })
+      .patch({
+        verification_status: 'accepted',
+        reviewed_by_id: ctx.userId,
+        reviewed_at: nowIso,
+      });
+    const updated = await WorkContract.query().patchAndFetchById(contract.id, {
+      status: 'accepted',
+      accepted_at: nowIso,
+      criteria_locked_at: contract.criteria_locked_at ?? nowIso,
+    });
+
+    await recordAiAudit(ctx.userId, WorkContract.modelName, contract.id, 'accept', {
+      status: 'accepted',
+      artifactCount: artifacts.length,
+    });
+    return { success: true, data: updated };
+  });
 
   // ===========================================================================
   // 5. Agent Runs (/api/ai/runs)
@@ -1477,7 +1474,8 @@ export const aiCorporationPlugin: FastifyPluginAsync<AiCorporationRoutesOptions>
     }
   });
 
-  fastify.post<{ Params: { id: string } }>('/governance/approvals/:id/decide',
+  fastify.post<{ Params: { id: string } }>(
+    '/governance/approvals/:id/decide',
     async (req, reply) => {
       const ctx = await requireAiCompanyContext(req, reply);
       if (!ctx) return;
@@ -1601,7 +1599,7 @@ export const aiCorporationPlugin: FastifyPluginAsync<AiCorporationRoutesOptions>
       },
     };
   });
-}
+};
 
 export const aiCorporationRoutes: FastifyPluginAsync<AiCorporationRoutesOptions> = async (
   fastify,

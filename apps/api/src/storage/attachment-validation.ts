@@ -1,16 +1,46 @@
 export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024; // 10 MiB
 
+export const ATTACHMENT_MIME_TYPES = new Set([
+  'application/octet-stream',
+  'application/pdf',
+  'application/json',
+  'application/zip',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/msword',
+  'application/vnd.ms-excel',
+  'application/vnd.ms-powerpoint',
+  'text/plain',
+  'text/csv',
+  'image/gif',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
+
 export function safeAttachmentName(value: string | undefined): string | null {
-  if (!value) return null;
-  const trimmed = value.trim();
-  if (!trimmed || trimmed.length > 255) return null;
-  if (trimmed.includes('/') || trimmed.includes('\\') || trimmed.includes('\0')) return null;
-  if (trimmed === '.' || trimmed === '..' || trimmed.includes('..')) return null;
-  return trimmed;
+  if (
+    !value ||
+    value.length > 255 ||
+    value.includes('/') ||
+    value.includes('\\') ||
+    [...value].some((character) => {
+      const code = character.charCodeAt(0);
+      return code < 32 || code === 127;
+    })
+  )
+    return null;
+  const name = value.normalize('NFC').trim();
+  if (!name || name === '.' || name === '..' || name.includes('..')) return null;
+  return name;
 }
 
 export function encodedAttachmentName(name: string): string {
-  return encodeURIComponent(name).replace(/['()]/g, escape).replace(/\*/g, '%2A');
+  return encodeURIComponent(name).replace(
+    /[!'()*]/gu,
+    (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`
+  );
 }
 
 interface MagicSignature {
@@ -32,7 +62,10 @@ const MAGIC_SIGNATURES: readonly MagicSignature[] = [
  * Validates that binary content matches the magic-byte signature for declared binary MIME types
  * (PNG, JPEG, GIF, WEBP, PDF, ZIP). Rejects spoofed files (e.g., HTML/script disguised as image/png).
  */
-export function validateAttachmentMagicBytes(buffer: Buffer, mimeType: string | undefined): boolean {
+export function validateAttachmentMagicBytes(
+  buffer: Buffer,
+  mimeType: string | undefined
+): boolean {
   if (!mimeType) return true;
   const normalized = mimeType.split(';')[0]?.trim().toLowerCase() ?? '';
   const signature = MAGIC_SIGNATURES.find((sig) =>

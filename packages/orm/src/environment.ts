@@ -1,15 +1,10 @@
 import { Model, type Transaction } from 'objection';
 import type { Knex } from 'knex';
 import { transaction } from 'objection';
-import type { BaseModel } from './base.model.js';
+import { BaseModel } from './base.model.js';
 import { Registry } from './registry.js';
 import { ServiceContainer } from './services.js';
-import {
-  ValidationError,
-  type Domain,
-  type ModelContext,
-  type SearchOptions,
-} from './types.js';
+import { ValidationError, type Domain, type ModelContext, type SearchOptions } from './types.js';
 
 /**
  * Immutable, chainable collection of model records bound to an Environment.
@@ -211,8 +206,9 @@ export class Environment {
     options: SearchOptions = {}
   ): Promise<Recordset<M>> {
     const BoundModel = this.get(modelName);
-    const records = (await BoundModel.search(domain, options)) as M[];
-    return new Recordset<M>(BoundModel, this, records);
+    return BoundModel.search(domain, options).then(
+      (records) => new Recordset<M>(BoundModel, this, records as M[])
+    );
   }
 
   /**
@@ -226,3 +222,5 @@ export class Environment {
     });
   }
 }
+
+BaseModel.setDefaultEnvironmentFactory(() => new Environment());

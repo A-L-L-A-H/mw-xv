@@ -816,7 +816,7 @@ export const aiDesktopSyncPlugin: FastifyPluginAsync<AiDesktopSyncRoutesOptions>
       },
     };
   });
-}
+};
 
 export const aiDesktopSyncRoutes: FastifyPluginAsync<AiDesktopSyncRoutesOptions> = async (
   fastify,

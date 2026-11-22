@@ -4,7 +4,6 @@ import {
   ConcurrencyConflictError,
   Environment,
   Registry,
-  SchemaSyncError,
   ValidationError,
   defineAddon,
   defineModel,
@@ -13,6 +12,7 @@ import {
   disableAddon,
   discoverWorkspaceAddons,
   enableAddon,
+  expectedIndexNames,
   extendModel,
   extendView,
   fields,
@@ -181,7 +181,9 @@ describe('ORM Engine (Sections 04-07)', () => {
       ],
     });
 
-    await installAddons(db, [defineAddon({ name: 'test_sales', version: '1.0.0', models: [Order] })]);
+    await installAddons(db, [
+      defineAddon({ name: 'test_sales', version: '1.0.0', models: [Order] }),
+    ]);
 
     // defaultGet
     const defs = await Order.defaultGet();
@@ -476,5 +478,128 @@ describe('ORM Engine (Sections 04-07)', () => {
         calendar: { dateStart: 'title' },
       })
     ).toThrow(/Calendar date field/i);
+  });
+
+  it('MW-PERF-004.1..3: benchmarks 1,000+ record relational domain & eager-loading query latency (p50/p95) and verifies composite index (company_id, active, id) usage', async () => {
+    const Company = defineModel('perf.company', {
+      fields: {
+        name: fields.string({ required: true }),
+        region: fields.string({ required: true, index: true }),
+      },
+    });
+    const Department = defineModel('perf.department', {
+      fields: {
+        name: fields.string({ required: true }),
+        code: fields.string({ required: true, index: true }),
+      },
+    });
+    const Employee = defineModel('perf.employee', {
+      fields: {
+        name: fields.string({ required: true }),
+        company: fields.belongsTo(Company, { required: true }),
+        department: fields.belongsTo(Department, { required: true }),
+        salary: fields.integer({ required: true, default: 5000 }),
+        bonus: fields.integer({ required: true, default: 500 }),
+        total_comp: fields.integer({
+          store: true,
+          depends: ['salary', 'bonus'],
+          compute: (rec) => Number(rec.salary ?? 0) + Number(rec.bonus ?? 0),
+        }),
+      },
+    });
+
+    await installAddons(db, [
+      defineAddon({
+        name: 'perf_bench',
+        version: '1.0.0',
+        models: [Company, Department, Employee],
+      }),
+    ]);
+
+    // MW-PERF-004.2: Verify composite index (company_id, active, id) and FK indexes exist and are used by query planner
+    const expectedIdx = expectedIndexNames(Employee);
+    const compositeIdx = expectedIdx.indexes.find(
+      (idx) => idx.columns.join(',') === 'company_id,active,id'
+    );
+    expect(compositeIdx).toBeDefined();
+
+    const snapshots = await introspectDatabaseSchema(db, ['perf_employee']);
+    const empSnap = snapshots.get('perf_employee')!;
+    expect(empSnap.indexes.some((idx) => idx.name === compositeIdx!.name)).toBe(true);
+    expect(
+      empSnap.indexes.some(
+        (idx) => idx.columns.length === 3 && idx.columns.join(',') === 'company_id,active,id'
+      )
+    ).toBe(true);
+
+    // Seed 2 companies, 4 departments, and 1,200 employee records
+    const c1 = (await Company.create({ name: 'Alpha Corp', region: 'APAC' })) as InstanceType<
+      typeof Company
+    >;
+    const c2 = (await Company.create({ name: 'Beta Corp', region: 'EMEA' })) as InstanceType<
+      typeof Company
+    >;
+    const d1 = (await Department.create({ name: 'Engineering', code: 'ENG' })) as InstanceType<
+      typeof Department
+    >;
+    const d2 = (await Department.create({ name: 'Operations', code: 'OPS' })) as InstanceType<
+      typeof Department
+    >;
+
+    const nowIso = new Date().toISOString();
+    const bulkRows = Array.from({ length: 1200 }, (_, i) => {
+      const salary = 4000 + (i % 50) * 100;
+      const bonus = (i % 10) * 100;
+      return {
+        name: `Employee ${i + 1}`,
+        company_id: i % 2 === 0 ? c1.id : c2.id,
+        department_id: i % 3 === 0 ? d1.id : d2.id,
+        salary,
+        bonus,
+        total_comp: salary + bonus,
+        active: true,
+        create_date: nowIso,
+        write_date: nowIso,
+      };
+    });
+    await db.batchInsert('perf_employee', bulkRows, 200);
+
+    // Verify EXPLAIN QUERY PLAN uses the composite index (company_id, active, id)
+    const explainRows = (await db.raw(
+      'EXPLAIN QUERY PLAN SELECT id, name, total_comp FROM perf_employee WHERE company_id = ? AND active = 1 ORDER BY id ASC LIMIT 100',
+      [c1.id]
+    )) as Array<{ detail?: string }>;
+    const planDetails = explainRows.map((r) => r.detail ?? '').join(' ');
+    expect(planDetails).toContain(compositeIdx!.name);
+
+    // MW-PERF-004.1 & MW-PERF-004.3: Measure p50/p95 latency over 15 iterations for 1,200+ record relational domain + eager loading
+    const latenciesMs: number[] = [];
+    let lastCount = 0;
+    for (let iter = 0; iter < 15; iter += 1) {
+      const t0 = performance.now();
+      const results = await Employee.search_read(
+        [
+          ['company_id', '=', c1.id],
+          ['department.code', '=', 'ENG'],
+        ],
+        ['id', 'name', 'total_comp', 'company_id', 'department_id'],
+        {
+          withGraphFetched: '[company, department]',
+          limit: 500,
+          order: 'id asc',
+        }
+      );
+      latenciesMs.push(performance.now() - t0);
+      lastCount = results.length;
+    }
+
+    const sorted = [...latenciesMs].sort((a, b) => a - b);
+    const p50Ms = sorted[Math.floor(sorted.length * 0.5)]!;
+    const p95Ms = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))]!;
+
+    expect(lastCount).toBe(200);
+    expect(p50Ms).toBeGreaterThan(0);
+    expect(p50Ms).toBeLessThan(250);
+    expect(p95Ms).toBeLessThan(500);
   });
 });

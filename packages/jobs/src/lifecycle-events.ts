@@ -30,11 +30,7 @@ export function redactLifecyclePayload(
   sensitiveFields: readonly string[] = []
 ): Record<string, unknown> {
   if (!snapshot) return {};
-  const blocked = new Set<string>([
-    ...DEFAULT_REDACTED_KEYS,
-    ...hiddenFields,
-    ...sensitiveFields,
-  ]);
+  const blocked = new Set<string>([...DEFAULT_REDACTED_KEYS, ...hiddenFields, ...sensitiveFields]);
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(snapshot)) {
     if (blocked.has(key)) continue;

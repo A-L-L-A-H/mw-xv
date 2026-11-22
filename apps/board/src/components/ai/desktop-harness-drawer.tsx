@@ -253,7 +253,8 @@ export function DesktopHarnessDrawer() {
     }
   };
 
-  const activeLease = activeLeases.find((lease) => lease.runId === effectiveRunId) ?? activeLeases[0];
+  const activeLease =
+    activeLeases.find((lease) => lease.runId === effectiveRunId) ?? activeLeases[0];
   const inspectedLines = inspectedFileContent ? inspectedFileContent.split(/\r?\n/u) : [];
 
   return (
@@ -575,7 +576,9 @@ export function DesktopHarnessDrawer() {
                           <TableCell className="font-mono text-xs">{entry.runId}</TableCell>
                           <TableCell className="font-mono text-xs">{entry.action}</TableCell>
                           <TableCell>
-                            <Badge variant={entry.resolvedTier === 'R4' ? 'destructive' : 'default'}>
+                            <Badge
+                              variant={entry.resolvedTier === 'R4' ? 'destructive' : 'default'}
+                            >
                               {entry.resolvedTier}
                             </Badge>
                           </TableCell>

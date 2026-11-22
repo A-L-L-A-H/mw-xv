@@ -231,7 +231,9 @@ export function discoverWorkspaceAddons(addons: readonly Addon[]): Addon[] {
       for (const [depName, range] of Object.entries(addon.compatibility)) {
         const dep = byName.get(depName);
         if (!dep) {
-          throw new Error(`Addon '${addon.name}' requires compatible addon '${depName}' (${range})`);
+          throw new Error(
+            `Addon '${addon.name}' requires compatible addon '${depName}' (${range})`
+          );
         }
         if (!satisfiesRange(dep.version, range)) {
           throw new Error(
@@ -295,7 +297,9 @@ function resolveAddonsAndModels(addons: readonly Addon[]): {
     for (const ext of addon.extensions ?? []) {
       const target = modelByName.get(ext.target);
       if (!target) {
-        throw new Error(`Extension target model not found: ${ext.target} (in addon '${addon.name}')`);
+        throw new Error(
+          `Extension target model not found: ${ext.target} (in addon '${addon.name}')`
+        );
       }
       if (!appliedExtensions.has(ext)) {
         applyModelExtension(target, ext);

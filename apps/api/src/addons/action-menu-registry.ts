@@ -158,7 +158,9 @@ export class MenuRegistry {
     }
 
     const sortNodes = (nodes: MenuTreeNode[]): MenuTreeNode[] => {
-      nodes.sort((a, b) => (a.sequence ?? 100) - (b.sequence ?? 100) || a.label.localeCompare(b.label));
+      nodes.sort(
+        (a, b) => (a.sequence ?? 100) - (b.sequence ?? 100) || a.label.localeCompare(b.label)
+      );
       for (const node of nodes) {
         sortNodes(node.children);
       }
