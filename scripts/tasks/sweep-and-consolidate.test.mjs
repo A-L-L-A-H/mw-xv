@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { sweepAndConsolidate } from './sweep-and-consolidate.mjs';
+import { mapEvolutionStatus, sweepAndConsolidate } from './sweep-and-consolidate.mjs';
 import { validateTaskRegistryData } from './validate-tasks.mjs';
 
 test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks.json', async () => {
@@ -88,4 +88,13 @@ test('candidate validator rejects roadmap lifecycle drift before registry writes
   assert.equal(validation.valid, false);
   assert.ok(validation.errors.some((error) => error.includes('Status mismatch on "M0.01"')));
   assert.ok(validation.errors.some((error) => error.includes('Checkbox mismatch on "M0.01"')));
+});
+
+test('evolution status import accepts only explicit lifecycle states', () => {
+  assert.equal(mapEvolutionStatus('completed'), 'done');
+  assert.equal(mapEvolutionStatus('active'), 'doing');
+  assert.throws(
+    () => mapEvolutionStatus('planned'),
+    /Unsupported evolution backlog status "planned"/u
+  );
 });
