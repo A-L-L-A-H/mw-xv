@@ -18,7 +18,7 @@ const registryValidation = await validateTaskRegistryData(registry);
 assert.equal(
   registryValidation.valid,
   true,
-  `Canonical TaskOS registry failed validation:\\n${registryValidation.errors.join('\\n')}`
+  `Canonical TaskOS registry failed validation:\n${registryValidation.errors.join('\n')}`
 );
 const visualUniverseRecords = registry.tasks.filter((task) => task.project === 'visual-universe');
 assert.ok(
