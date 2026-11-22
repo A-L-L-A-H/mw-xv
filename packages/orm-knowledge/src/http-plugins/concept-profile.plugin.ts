@@ -1,16 +1,30 @@
-import type { FastifyPluginAsync } from 'fastify';
-import { readConceptProfileVersion } from '@moonwitness/orm-knowledge';
-import { resolveCorpusDataRoot } from './corpus.routes.js';
+import type { AddonHttpPlugin } from '@moonwitness/orm';
+import { readConceptProfileVersion } from '../concept-profile-store.js';
+import { resolveCorpusDataRoot } from '../corpus-root.js';
 
-const error = {
+const errorSchema = {
   type: 'object',
   additionalProperties: false,
   required: ['success', 'error'],
   properties: { success: { const: false }, error: { type: 'string' } },
 } as const;
 
-export const conceptProfileRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.get<{ Params: { profileId: string }; Querystring: { version?: string } }>(
+function hasValidationError(request: unknown): boolean {
+  return (
+    typeof request === 'object' &&
+    request !== null &&
+    'validationError' in request &&
+    Boolean((request as { readonly validationError?: unknown }).validationError)
+  );
+}
+
+export const conceptProfileHttpPlugin: AddonHttpPlugin = async (app) => {
+  if (!app.db) {
+    throw new Error('conceptProfileHttpPlugin requires app.db to be initialized');
+  }
+  const db = app.db;
+
+  app.get<{ Params: { profileId: string }; Querystring: { version?: string } }>(
     '/api/research/concept-profiles/:profileId',
     {
       attachValidation: true,
@@ -58,10 +72,10 @@ export const conceptProfileRoutes: FastifyPluginAsync = async (fastify) => {
               },
             },
           },
-          400: error,
-          401: error,
-          403: error,
-          404: error,
+          400: errorSchema,
+          401: errorSchema,
+          403: errorSchema,
+          404: errorSchema,
         },
       },
     },
@@ -72,38 +86,41 @@ export const conceptProfileRoutes: FastifyPluginAsync = async (fastify) => {
       const userId = auth.userId;
       const companyId = auth.companyId;
       if (
-        !['user', 'superadmin'].includes(auth.role) ||
+        (auth.role !== 'user' && auth.role !== 'superadmin') ||
         !Number.isSafeInteger(userId) ||
         !userId ||
         userId < 1 ||
         !Number.isSafeInteger(companyId) ||
         !companyId ||
         companyId < 1
-      )
+      ) {
         return reply.code(403).send({ success: false, error: 'Profile is unavailable' });
+      }
       const version =
         request.query.version === undefined ? undefined : Number(request.query.version);
       if (
-        request.validationError ||
+        hasValidationError(request) ||
         (version !== undefined &&
           (!Number.isSafeInteger(version) ||
             version < 1 ||
             String(version) !== request.query.version))
-      )
+      ) {
         return reply.code(400).send({ success: false, error: 'Invalid profile version' });
+      }
       try {
-        const profile = await readConceptProfileVersion(fastify.db, {
+        const profile = await readConceptProfileVersion(db, {
           authenticatedReader: {
             userId,
             companyId,
-            role: auth.role as 'user' | 'superadmin',
+            role: auth.role,
           },
           corpusRootDirectory: resolveCorpusDataRoot(),
           profileId: request.params.profileId,
           version,
         });
-        if (!profile)
+        if (!profile) {
           return reply.code(404).send({ success: false, error: 'Profile is unavailable' });
+        }
         return reply.send({
           success: true,
           data: {

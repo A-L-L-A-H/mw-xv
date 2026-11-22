@@ -181,3 +181,12 @@ export {
   type StoredPublicationAuditRevision,
   type SupersedeOrTakedownInput,
 } from './publication-store.js';
+export { resolveCorpusDataRoot } from './corpus-root.js';
+export { conceptProfileHttpPlugin } from './http-plugins/concept-profile.plugin.js';
+export { publicationHttpPlugin } from './http-plugins/publication.plugin.js';
+export {
+  bugCaseHttpPlugin,
+  type BugCaseHttpPluginOptions,
+} from './http-plugins/bug-case.plugin.js';
+export { childProtectionHttpPlugin } from './http-plugins/child-protection.plugin.js';
+export { storyWorkbenchHttpPlugin } from './http-plugins/story-workbench.plugin.js';

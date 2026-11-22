@@ -8,11 +8,12 @@ import { jobsManifest } from '@moonwitness/jobs';
 import { manifest as notificationManifest } from '@moonwitness/orm-notification';
 import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
 import {
+  bugCaseHttpPlugin,
   ensureBugCaseWorkflowDefinition,
   manifest as knowledgeManifest,
+  type BugCaseHttpPluginOptions,
 } from '@moonwitness/orm-knowledge';
 import type { ResearchEvidenceReference } from '@moonwitness/research';
-import { bugCaseRoutes } from '../src/routes/bug-case.routes.js';
 
 const sha = (label: string) => createHash('sha256').update(label, 'utf8').digest('hex');
 
@@ -89,7 +90,7 @@ describe('role-safe BUG case submission & status prototype (K8-005)', () => {
         };
       }
     });
-    await app.register(bugCaseRoutes, {
+    const bugCaseOptions: BugCaseHttpPluginOptions = {
       resolveTrustedOutcomeEvidence: async (evidenceId) =>
         evidenceId === validEvidence.id
           ? {
@@ -100,7 +101,8 @@ describe('role-safe BUG case submission & status prototype (K8-005)', () => {
               capturedAt: new Date().toISOString(),
             }
           : null,
-    });
+    };
+    await app.register(bugCaseHttpPlugin as Parameters<typeof app.register>[0], bugCaseOptions);
   });
 
   afterEach(async () => {

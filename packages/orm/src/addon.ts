@@ -90,6 +90,7 @@ export interface AddonHttpRequestEnv {
 export interface AddonHttpRequestBase {
   readonly auth?: AddonHttpAuthContext;
   readonly env?: AddonHttpRequestEnv;
+  readonly headers?: Readonly<Record<string, string | string[] | undefined>>;
   readonly params?: unknown;
   readonly query?: unknown;
   readonly body?: unknown;
@@ -113,13 +114,14 @@ export interface AddonHttpRequest<
     ? Record<string, string | undefined>
     : NonNullable<TGeneric['Querystring']>;
   readonly body: TGeneric['Body'];
+  readonly headers: Readonly<Record<string, string | string[] | undefined>>;
   readonly auth?: AddonHttpAuthContext;
   readonly env?: AddonHttpRequestEnv;
 }
 
 export interface AddonHttpReply {
   code(statusCode: number): AddonHttpReply;
-  header?(name: string, value: string): AddonHttpReply;
+  header(name: string, value: string): AddonHttpReply;
   send(payload?: unknown): unknown;
 }
 
@@ -151,7 +153,51 @@ export interface AddonHttpApp {
     path: string,
     handler: AddonHttpRouteHandler<TGeneric>
   ): unknown;
+  get<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(
+    path: string,
+    options: Readonly<Record<string, unknown>>,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
   post<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(
+    path: string,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
+  post<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(
+    path: string,
+    options: Readonly<Record<string, unknown>>,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
+  put<
     TGeneric extends {
       Params?: Record<string, string>;
       Querystring?: Record<string, string | undefined>;
@@ -177,9 +223,39 @@ export interface AddonHttpApp {
     },
   >(
     path: string,
+    options: Readonly<Record<string, unknown>>,
     handler: AddonHttpRouteHandler<TGeneric>
   ): unknown;
   patch<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(
+    path: string,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
+  patch<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(
+    path: string,
+    options: Readonly<Record<string, unknown>>,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
+  delete<
     TGeneric extends {
       Params?: Record<string, string>;
       Querystring?: Record<string, string | undefined>;
@@ -205,6 +281,7 @@ export interface AddonHttpApp {
     },
   >(
     path: string,
+    options: Readonly<Record<string, unknown>>,
     handler: AddonHttpRouteHandler<TGeneric>
   ): unknown;
 }

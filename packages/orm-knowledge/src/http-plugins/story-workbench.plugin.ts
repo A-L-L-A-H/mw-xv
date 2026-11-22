@@ -1,18 +1,18 @@
-import type { FastifyPluginAsync } from 'fastify';
-import {
-  readStoryVersion,
-  storeStoryVersion,
-  validateStoryVersion,
-  type StoryMediaReference,
-  type StoryVersionDocument,
-} from '@moonwitness/orm-knowledge';
+import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { readTextualWitnessPassageSnapshot } from '@moonwitness/corpus';
 import {
   parseCanonicalJson,
   validateSourceArtifactManifest,
   type SourceBytesManifest,
 } from '@moonwitness/knowledge';
-import { resolveCorpusDataRoot } from './corpus.routes.js';
+import { resolveCorpusDataRoot } from '../corpus-root.js';
+import {
+  readStoryVersion,
+  storeStoryVersion,
+  validateStoryVersion,
+  type StoryMediaReference,
+  type StoryVersionDocument,
+} from '../story-version-store.js';
 
 const storyIdPattern = '^mw:story:[a-z0-9][a-z0-9._-]{0,179}$';
 const mediaReferenceSchema = {
@@ -62,6 +62,16 @@ const errorSchema = {
   required: ['success', 'error'],
   properties: { success: { const: false }, error: { type: 'string' } },
 } as const;
+
+function hasValidationError(request: unknown): boolean {
+  return (
+    typeof request === 'object' &&
+    request !== null &&
+    'validationError' in request &&
+    Boolean((request as { readonly validationError?: unknown }).validationError)
+  );
+}
+
 function validateStoryPayload(value: unknown): ReturnType<typeof validateStoryVersion> {
   return validateStoryVersion(value);
 }
@@ -80,8 +90,9 @@ async function resolveApprovedLocalMedia(reference: StoryMediaReference): Promis
     reference.sha256 !== 'ae5c2799fad97b0e65334aa39be6193d487419f0d31713caaac58a47f6b4d8b1' ||
     reference.media_type !== 'text/plain; charset=utf-8' ||
     reference.rights_ref !== 'docs/roadmap/evidence/K2-006.md#source-and-rights'
-  )
+  ) {
     return null;
+  }
   const snapshot = await readTextualWitnessPassageSnapshot({
     rootDirectory: resolveCorpusDataRoot(),
     expressionId: 'mw:expression:webp-protestant',
@@ -94,8 +105,9 @@ async function resolveApprovedLocalMedia(reference: StoryMediaReference): Promis
     new TextDecoder('utf-8', { fatal: true }).decode(snapshot.sourceManifestBytes)
   );
   const validation = validateSourceArtifactManifest(raw);
-  if (!validation.valid || typeof raw !== 'object' || raw === null || Array.isArray(raw))
+  if (!validation.valid || typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     return null;
+  }
   const manifest = raw as unknown as SourceBytesManifest;
   if (
     manifest.artifact.sha256 !== reference.sha256 ||
@@ -103,8 +115,9 @@ async function resolveApprovedLocalMedia(reference: StoryMediaReference): Promis
     manifest.rights.evidence_ref !== reference.rights_ref ||
     manifest.rights.state !== 'permitted' ||
     !manifest.rights.allowed_uses.includes('store')
-  )
+  ) {
     return null;
+  }
   return {
     artifact_id: reference.artifact_id,
     sha256: reference.sha256,
@@ -116,8 +129,13 @@ async function resolveApprovedLocalMedia(reference: StoryMediaReference): Promis
   };
 }
 
-export const storyWorkbenchRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.get<{ Params: { storyId: string }; Querystring: { version?: string } }>(
+export const storyWorkbenchHttpPlugin: AddonHttpPlugin = async (app) => {
+  if (!app.db) {
+    throw new Error('storyWorkbenchHttpPlugin requires app.db to be initialized');
+  }
+  const db = app.db;
+
+  app.get<{ Params: { storyId: string }; Querystring: { version?: string } }>(
     '/api/research/stories/:storyId',
     {
       attachValidation: true,
@@ -158,25 +176,27 @@ export const storyWorkbenchRoutes: FastifyPluginAsync = async (fastify) => {
       const auth = request.auth;
       if (!auth) return reply.code(401).send({ success: false, error: 'Authentication required' });
       if (
-        !['user', 'superadmin'].includes(auth.role) ||
+        (auth.role !== 'user' && auth.role !== 'superadmin') ||
         !Number.isSafeInteger(auth.userId) ||
         !auth.companyId ||
         auth.companyId < 1
-      )
+      ) {
         return reply.code(403).send({ success: false, error: 'Story is unavailable' });
+      }
       const version =
         request.query.version === undefined ? undefined : Number(request.query.version);
       if (
-        request.validationError ||
+        hasValidationError(request) ||
         (version !== undefined && String(version) !== request.query.version)
-      )
+      ) {
         return reply.code(400).send({ success: false, error: 'Invalid story version' });
+      }
       try {
-        const result = await readStoryVersion(fastify.db, {
+        const result = await readStoryVersion(db, {
           authenticatedReader: {
             userId: auth.userId,
             companyId: auth.companyId,
-            role: auth.role as 'user' | 'superadmin',
+            role: auth.role,
           },
           storyId: request.params.storyId,
           version,
@@ -190,11 +210,11 @@ export const storyWorkbenchRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 
-  fastify.post<{ Params: { storyId: string }; Body: StoryVersionDocument }>(
+  app.post<{ Params: { storyId: string }; Body: StoryVersionDocument }>(
     '/api/research/stories/:storyId',
     {
       attachValidation: true,
-      validatorCompiler: ({ schema }) => {
+      validatorCompiler: ({ schema }: { readonly schema: unknown }) => {
         return (data: unknown) => {
           if (schema !== storySchema) return true;
           const result = validateStoryPayload(data);
@@ -243,20 +263,22 @@ export const storyWorkbenchRoutes: FastifyPluginAsync = async (fastify) => {
       const auth = request.auth;
       if (!auth) return reply.code(401).send({ success: false, error: 'Authentication required' });
       if (
-        !['user', 'superadmin'].includes(auth.role) ||
+        (auth.role !== 'user' && auth.role !== 'superadmin') ||
         !Number.isSafeInteger(auth.userId) ||
         !auth.companyId ||
         auth.companyId < 1
-      )
+      ) {
         return reply.code(403).send({ success: false, error: 'Story is unavailable' });
-      if (request.validationError || request.params.storyId !== request.body?.story_id)
+      }
+      if (hasValidationError(request) || request.params.storyId !== request.body?.story_id) {
         return reply.code(400).send({ success: false, error: 'Invalid story document' });
+      }
       try {
-        const result = await storeStoryVersion(fastify.db, {
+        const result = await storeStoryVersion(db, {
           authenticatedActor: {
             userId: auth.userId,
             companyId: auth.companyId,
-            role: auth.role as 'user' | 'superadmin',
+            role: auth.role,
           },
           story: request.body,
           resolveMedia: resolveApprovedLocalMedia,

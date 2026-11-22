@@ -21,6 +21,11 @@ import {
 } from './privacy-revocation.model.js';
 import { BugCaseActionOutcomeEvent, BugCaseRecord } from './bug-case.model.js';
 import { PublicationSnapshot } from './publication.model.js';
+import { bugCaseHttpPlugin } from './http-plugins/bug-case.plugin.js';
+import { childProtectionHttpPlugin } from './http-plugins/child-protection.plugin.js';
+import { conceptProfileHttpPlugin } from './http-plugins/concept-profile.plugin.js';
+import { publicationHttpPlugin } from './http-plugins/publication.plugin.js';
+import { storyWorkbenchHttpPlugin } from './http-plugins/story-workbench.plugin.js';
 import { views } from './views.js';
 
 const syntheticDigest = 'a'.repeat(64);
@@ -284,6 +289,13 @@ export const manifest = defineAddon({
     ),
   ],
   views,
+  httpPlugins: [
+    conceptProfileHttpPlugin,
+    storyWorkbenchHttpPlugin,
+    childProtectionHttpPlugin,
+    publicationHttpPlugin,
+    bugCaseHttpPlugin,
+  ],
   menus: [
     {
       model: WitnessTestimony.modelName,

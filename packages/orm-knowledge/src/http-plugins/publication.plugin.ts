@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { AddonHttpPlugin } from '@moonwitness/orm';
 import {
   listApprovedPublications,
   PublicationStoreError,
@@ -6,7 +6,7 @@ import {
   readPublicationAuditHistory,
   supersedeOrTakedownPublication,
   type PublicationProjectionPayload,
-} from '@moonwitness/orm-knowledge';
+} from '../publication-store.js';
 
 const citationSchema = {
   type: 'object',
@@ -113,8 +113,13 @@ function mapStoreError(error: unknown): { status: 400 | 403 | 404 | 409; message
  * K8-003 fail-closed public publication read API + K8-006 editorial revision
  * superseding, immediate takedown, and immutable audit history routes.
  */
-export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.get(
+export const publicationHttpPlugin: AddonHttpPlugin = async (app) => {
+  if (!app.db) {
+    throw new Error('publicationHttpPlugin requires app.db to be initialized');
+  }
+  const db = app.db;
+
+  app.get(
     '/api/public/publications',
     {
       schema: {
@@ -143,12 +148,12 @@ export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       reply.header('Cache-Control', 'no-store, must-revalidate');
       const query = request.query as { limit?: number };
-      const data = await listApprovedPublications(fastify.db, query.limit ?? 50);
+      const data = await listApprovedPublications(db, query.limit ?? 50);
       return reply.send({ success: true, data });
     }
   );
 
-  fastify.get(
+  app.get(
     '/api/public/publications/:publicationId',
     {
       schema: {
@@ -180,7 +185,7 @@ export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       reply.header('Cache-Control', 'no-store, must-revalidate');
       const { publicationId } = request.params as { publicationId: string };
-      const publication = await readApprovedPublication(fastify.db, publicationId);
+      const publication = await readApprovedPublication(db, publicationId);
       if (!publication) {
         return reply.code(404).send({ success: false, error: 'Publication not found' });
       }
@@ -193,7 +198,7 @@ export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 
-  fastify.post(
+  app.post(
     '/api/research/publications/:publicationId/supersede',
     {
       schema: {
@@ -262,7 +267,7 @@ export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
       };
       try {
         const revision = await supersedeOrTakedownPublication({
-          db: fastify.db,
+          db,
           actor: { userId: auth.userId, companyId: auth.companyId, role: auth.role },
           publicationId,
           expectedCurrentRevision: body.expected_current_revision,
@@ -275,14 +280,15 @@ export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.send({ success: true, data: revision });
       } catch (error) {
         const mapped = mapStoreError(error);
-        if (mapped)
+        if (mapped) {
           return reply.code(mapped.status).send({ success: false, error: mapped.message });
+        }
         throw error;
       }
     }
   );
 
-  fastify.post(
+  app.post(
     '/api/research/publications/:publicationId/takedown',
     {
       schema: {
@@ -340,7 +346,7 @@ export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
       };
       try {
         const revision = await supersedeOrTakedownPublication({
-          db: fastify.db,
+          db,
           actor: { userId: auth.userId, companyId: auth.companyId, role: auth.role },
           publicationId,
           expectedCurrentRevision: body.expected_current_revision,
@@ -351,14 +357,15 @@ export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.send({ success: true, data: revision });
       } catch (error) {
         const mapped = mapStoreError(error);
-        if (mapped)
+        if (mapped) {
           return reply.code(mapped.status).send({ success: false, error: mapped.message });
+        }
         throw error;
       }
     }
   );
 
-  fastify.get(
+  app.get(
     '/api/research/publications/:publicationId/audit',
     {
       schema: {
@@ -400,7 +407,7 @@ export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
       }
       const { publicationId } = request.params as { publicationId: string };
       try {
-        const audit = await readPublicationAuditHistory(fastify.db, publicationId, {
+        const audit = await readPublicationAuditHistory(db, publicationId, {
           userId: auth.userId,
           companyId: auth.companyId,
           role: auth.role,
@@ -408,8 +415,9 @@ export const publicationRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.send({ success: true, data: audit });
       } catch (error) {
         const mapped = mapStoreError(error);
-        if (mapped)
+        if (mapped) {
           return reply.code(mapped.status).send({ success: false, error: mapped.message });
+        }
         throw error;
       }
     }

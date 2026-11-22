@@ -1,10 +1,10 @@
 import type { CorpusPassage, SourceCitation } from '@moonwitness/client';
 import type { FastifyPluginAsync } from 'fastify';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { readQuranPassage, readTextualWitnessPassage } from '@moonwitness/corpus';
+import { resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
 
-const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+export { resolveCorpusDataRoot };
+
 const quranSourceId = 'mw:source:tanzil-quran-text';
 const quranEditionId = 'mw:edition:tanzil-quran-text-v1.1-uthmani-txt2';
 const quranLocator = 'Q7:46';
@@ -145,12 +145,6 @@ const errorResponses = {
     ...errorResponseSchema,
   },
 } as const;
-
-/** Resolve the data root while supporting the container layout (`/app/corpus`). */
-export function resolveCorpusDataRoot(): string {
-  const corpusDirectory = process.env.MOONWITNESS_CORPUS_ROOT;
-  return corpusDirectory ? path.dirname(path.resolve(corpusDirectory)) : repositoryRoot;
-}
 
 async function readPublishedPassage(
   editionId: string,

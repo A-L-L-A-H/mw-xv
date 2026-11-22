@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { AddonHttpPlugin } from '@moonwitness/orm';
 import {
   evaluateChildProtectionAndPublicationGate,
   validateChildProtectionGateInput,
@@ -45,8 +45,13 @@ const gateResponseSchema = {
   },
 } as const;
 
-export const childProtectionRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.post(
+export const childProtectionHttpPlugin: AddonHttpPlugin = async (app) => {
+  if (!app.db) {
+    throw new Error('childProtectionHttpPlugin requires app.db to be initialized');
+  }
+  const db = app.db;
+
+  app.post(
     '/api/research/child-protection/gate-check',
     {
       schema: {
@@ -85,7 +90,7 @@ export const childProtectionRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
 
-      const activeMembership = await fastify.db.transaction(async (trx) => {
+      const activeMembership = await db.transaction(async (trx) => {
         const user = await trx('users')
           .where({ id: auth.userId, role: auth.role, active: true })
           .first('id');

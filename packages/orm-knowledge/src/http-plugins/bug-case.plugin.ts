@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { AddonHttpHostContext, AddonHttpPlugin } from '@moonwitness/orm';
 import {
   containsProhibitedMinorIdentifiers,
   evaluateChildProtectionAndPublicationGate,
@@ -6,17 +6,19 @@ import {
 } from '@moonwitness/research';
 import {
   BugCaseWorkflowError,
-  BugOutcomeVerificationError,
   intakeBugCase,
   readBugCaseHistory,
   transitionBugCaseWorkflow,
-  verifyBugCaseOutcomeWithEvidence,
   type BugCaseClassification,
+} from '../bug-case-workflow.js';
+import {
+  BugOutcomeVerificationError,
+  verifyBugCaseOutcomeWithEvidence,
   type BugOutcomeTestProof,
   type TrustedBugOutcomeEvidenceResolver,
-} from '@moonwitness/orm-knowledge';
+} from '../bug-outcome-verification.js';
 
-export interface BugCaseRoutesOptions {
+export interface BugCaseHttpPluginOptions extends AddonHttpHostContext {
   readonly resolveTrustedOutcomeEvidence?: TrustedBugOutcomeEvidenceResolver;
   readonly safeguardingProcessApproved?: boolean;
 }
@@ -85,13 +87,20 @@ function mapWorkflowError(
   return null;
 }
 
-export const bugCaseRoutes: FastifyPluginAsync<BugCaseRoutesOptions> = async (fastify, options) => {
+export const bugCaseHttpPlugin: AddonHttpPlugin = async (app, options) => {
+  if (!app.db) {
+    throw new Error('bugCaseHttpPlugin requires app.db to be initialized');
+  }
+  const db = app.db;
+  const pluginOptions = options as BugCaseHttpPluginOptions | undefined;
   const defaultDenyEvidenceResolver: TrustedBugOutcomeEvidenceResolver = async () => null;
   const resolveOutcomeEvidence =
-    options.resolveTrustedOutcomeEvidence ?? defaultDenyEvidenceResolver;
-  const safeguardingApproved = options.safeguardingProcessApproved === true;
+    typeof pluginOptions?.resolveTrustedOutcomeEvidence === 'function'
+      ? pluginOptions.resolveTrustedOutcomeEvidence
+      : defaultDenyEvidenceResolver;
+  const safeguardingApproved = pluginOptions?.safeguardingProcessApproved === true;
 
-  fastify.post(
+  app.post(
     '/api/research/bug-cases',
     {
       schema: {
@@ -194,7 +203,7 @@ export const bugCaseRoutes: FastifyPluginAsync<BugCaseRoutesOptions> = async (fa
 
       try {
         const created = await intakeBugCase({
-          db: fastify.db,
+          db,
           actor: { userId: auth.userId, companyId: auth.companyId, role: auth.role },
           programId: body.program_id,
           caseId: body.case_id,
@@ -222,14 +231,15 @@ export const bugCaseRoutes: FastifyPluginAsync<BugCaseRoutesOptions> = async (fa
         });
       } catch (error) {
         const mapped = mapWorkflowError(error);
-        if (mapped)
+        if (mapped) {
           return reply.code(mapped.status).send({ success: false, error: mapped.message });
+        }
         throw error;
       }
     }
   );
 
-  fastify.post(
+  app.post(
     '/api/research/bug-cases/:caseId/transitions',
     {
       schema: {
@@ -284,7 +294,7 @@ export const bugCaseRoutes: FastifyPluginAsync<BugCaseRoutesOptions> = async (fa
       };
       try {
         const result = await transitionBugCaseWorkflow({
-          db: fastify.db,
+          db,
           actor: { userId: auth.userId, companyId: auth.companyId, role: auth.role },
           caseId,
           action: body.action,
@@ -310,14 +320,15 @@ export const bugCaseRoutes: FastifyPluginAsync<BugCaseRoutesOptions> = async (fa
         });
       } catch (error) {
         const mapped = mapWorkflowError(error);
-        if (mapped)
+        if (mapped) {
           return reply.code(mapped.status).send({ success: false, error: mapped.message });
+        }
         throw error;
       }
     }
   );
 
-  fastify.post(
+  app.post(
     '/api/research/bug-cases/:caseId/verify-outcome',
     {
       schema: {
@@ -387,7 +398,7 @@ export const bugCaseRoutes: FastifyPluginAsync<BugCaseRoutesOptions> = async (fa
       };
       try {
         const result = await verifyBugCaseOutcomeWithEvidence({
-          db: fastify.db,
+          db,
           actor: { userId: auth.userId, companyId: auth.companyId, role: auth.role },
           caseId,
           expectedWorkflowRevision: body.expected_workflow_revision,
@@ -414,14 +425,15 @@ export const bugCaseRoutes: FastifyPluginAsync<BugCaseRoutesOptions> = async (fa
         });
       } catch (error) {
         const mapped = mapWorkflowError(error);
-        if (mapped)
+        if (mapped) {
           return reply.code(mapped.status).send({ success: false, error: mapped.message });
+        }
         throw error;
       }
     }
   );
 
-  fastify.get(
+  app.get(
     '/api/research/bug-cases/:caseId',
     {
       schema: {
@@ -458,7 +470,7 @@ export const bugCaseRoutes: FastifyPluginAsync<BugCaseRoutesOptions> = async (fa
       }
       const { caseId } = request.params as { caseId: string };
       try {
-        const result = await readBugCaseHistory(fastify.db, caseId, {
+        const result = await readBugCaseHistory(db, caseId, {
           userId: auth.userId,
           companyId: auth.companyId,
           role: auth.role,
@@ -484,8 +496,9 @@ export const bugCaseRoutes: FastifyPluginAsync<BugCaseRoutesOptions> = async (fa
         });
       } catch (error) {
         const mapped = mapWorkflowError(error);
-        if (mapped)
+        if (mapped) {
           return reply.code(mapped.status).send({ success: false, error: mapped.message });
+        }
         throw error;
       }
     }
