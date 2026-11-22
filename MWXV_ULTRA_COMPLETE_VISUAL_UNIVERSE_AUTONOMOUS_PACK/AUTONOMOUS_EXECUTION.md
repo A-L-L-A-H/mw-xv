@@ -84,7 +84,7 @@ For each ready task:
 
 ## Task state and evidence
 
-`docs/tasks/tasks.json` is the repository-wide canonical task lifecycle registry. The records for this pack use project `visual-universe`; each one retains its complete pack-specific source object under `metadata`. `task.json`, `TASKS.md`, and `tasks/<phase>/*.md` are generated local projections. Do not edit their status or dependency fields directly. Rebuild them with `node tools/sync-task-state.mjs` after the global registry validates.
+`docs/tasks/tasks.json` is the repository-wide canonical task lifecycle registry, but it is currently unavailable/zero-byte. Do not start autonomous task execution. The original 109-record source is preserved immutably at `legacy/task-source-2026-11-23.json`, and pack configuration lives in `pack-manifest.json`. After recovery, records will use project `visual-universe` and retain the full original task payload under TaskOS `metadata`. `task.json`, `TASKS.md`, and `tasks/<phase>/*.md` are generated local projections. Do not edit their status or dependency fields directly. Rebuild them with `node tools/sync-task-state.mjs` only after the global registry validates.
 
 Allowed statuses: `todo`, `in_progress`, `blocked`, `done`, `skipped`.
 
