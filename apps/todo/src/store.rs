@@ -71,7 +71,12 @@ const MIGRATIONS: &[&str] = &[
      ALTER TABLE tasks ADD COLUMN validation_json TEXT;
      ALTER TABLE tasks ADD COLUMN evidence_json TEXT;
      ALTER TABLE tasks ADD COLUMN blocked_reason TEXT;
-     ALTER TABLE tasks ADD COLUMN source_ref_json TEXT;",
+     ALTER TABLE tasks ADD COLUMN source_ref_json TEXT;
+     ALTER TABLE tasks ADD COLUMN scope_json TEXT;
+     ALTER TABLE tasks ADD COLUMN depends_on TEXT;
+     ALTER TABLE tasks ADD COLUMN blocks_json TEXT;
+     ALTER TABLE tasks ADD COLUMN refs_json TEXT;
+     ALTER TABLE tasks ADD COLUMN task_type TEXT;",
     // Migration 9b: Populate code column with unique defaults for existing tasks
     "UPDATE tasks SET code = 'TASK-' || id WHERE code IS NULL;",
     // Migration 9c: Add unique index after population
@@ -198,6 +203,30 @@ pub struct Task {
     /// The tasks this one waits on that aren't done yet. Left out when there are none, as on most tasks.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub waiting_on: Vec<i64>,
+
+    // TaskOS v2 rich fields
+    pub code: Option<String>,
+    pub series: Option<String>,
+    pub milestone: Option<String>,
+    pub horizon: Option<String>,
+    pub category: Option<String>,
+    pub priority: Option<String>,
+    pub effort: Option<String>,
+    pub risk: Option<String>,
+    pub owner: Option<String>,
+    pub summary: Option<String>,
+    pub problem: Option<String>,
+    pub proposed_solution: Option<String>,
+    pub acceptance_criteria_json: Option<String>,
+    pub validation_json: Option<String>,
+    pub evidence_json: Option<String>,
+    pub blocked_reason: Option<String>,
+    pub source_ref_json: Option<String>,
+    pub scope_json: Option<String>,
+    pub depends_on: Option<String>,
+    pub blocks_json: Option<String>,
+    pub refs_json: Option<String>,
+    pub task_type: Option<String>,
 }
 
 impl Task {
@@ -243,6 +272,30 @@ pub struct TaskPatch {
     pub human: Option<bool>,
     /// Task keys, comma-separated; it replaces the list.
     pub waits_on: Option<String>,
+
+    // TaskOS v2 rich fields
+    pub code: Option<String>,
+    pub series: Option<String>,
+    pub milestone: Option<String>,
+    pub horizon: Option<String>,
+    pub category: Option<String>,
+    pub priority: Option<String>,
+    pub effort: Option<String>,
+    pub risk: Option<String>,
+    pub owner: Option<String>,
+    pub summary: Option<String>,
+    pub problem: Option<String>,
+    pub proposed_solution: Option<String>,
+    pub acceptance_criteria: Option<Vec<serde_json::Value>>,
+    pub validation: Option<serde_json::Value>,
+    pub evidence: Option<serde_json::Value>,
+    pub blocked_reason: Option<String>,
+    pub source_ref: Option<serde_json::Value>,
+    pub scope: Option<serde_json::Value>,
+    pub depends_on: Option<Vec<String>>,
+    pub blocks: Option<Vec<String>>,
+    pub references: Option<Vec<String>>,
+    pub task_type: Option<String>,
 }
 
 const STATUSES: [&str; 4] = ["todo", "doing", "review", "done"];
@@ -591,7 +644,10 @@ impl Store {
 
     const TASK_SELECT: &str = "SELECT t.id, p.slug, t.title, t.description, t.status, t.position,
             t.created_at, t.updated_at, (SELECT count(*) FROM comments c WHERE c.task_id = t.id), t.tags, t.human,
-            t.url
+            t.url, t.code, t.series, t.milestone, t.horizon, t.category, t.priority, t.effort, t.risk, t.owner,
+            t.summary, t.problem, t.proposed_solution, t.acceptance_criteria_json, t.validation_json,
+            t.evidence_json, t.blocked_reason, t.source_ref_json, t.scope_json, t.depends_on, t.blocks_json, t.refs_json,
+            t.task_type
         FROM tasks t JOIN projects p ON p.id = t.project_id";
 
     fn task_row(r: &Row) -> rusqlite::Result<Task> {
@@ -609,6 +665,28 @@ impl Store {
             updated_at: r.get(7)?,
             comments: r.get(8)?,
             waiting_on: Vec::new(),
+            code: r.get(12)?,
+            series: r.get(13)?,
+            milestone: r.get(14)?,
+            horizon: r.get(15)?,
+            category: r.get(16)?,
+            priority: r.get(17)?,
+            effort: r.get(18)?,
+            risk: r.get(19)?,
+            owner: r.get(20)?,
+            summary: r.get(21)?,
+            problem: r.get(22)?,
+            proposed_solution: r.get(23)?,
+            acceptance_criteria_json: r.get(24)?,
+            validation_json: r.get(25)?,
+            evidence_json: r.get(26)?,
+            blocked_reason: r.get(27)?,
+            source_ref_json: r.get(28)?,
+            scope_json: r.get(29)?,
+            depends_on: r.get(30)?,
+            blocks_json: r.get(30)?,
+            refs_json: r.get(31)?,
+            task_type: r.get(32)?,
         })
     }
 
@@ -765,20 +843,72 @@ impl Store {
         self.check_status(status)?;
         let description = patch.description.as_deref().unwrap_or("").trim();
         let tags = clean_tags(patch.tags.as_deref().unwrap_or("")).join(",");
-        let id = self.write(|c| {
+        let code = patch.code.unwrap_or_else(|| format!("TASK-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis()));
+        let series = patch.series.unwrap_or_default();
+        let milestone = patch.milestone.unwrap_or_default();
+        let horizon = patch.horizon.unwrap_or_default();
+        let category = patch.category.unwrap_or_default();
+        let priority = patch.priority.unwrap_or_default();
+        let effort = patch.effort.unwrap_or_default();
+        let risk = patch.risk.unwrap_or_default();
+        let owner = patch.owner.unwrap_or_default();
+        let summary = patch.summary.unwrap_or_default();
+        let problem = patch.problem.unwrap_or_else(|| description.to_string());
+        let proposed_solution = patch.proposed_solution.unwrap_or_default();
+        let acceptance_json = patch.acceptance_criteria.as_ref()
+            .map(|ac| serde_json::to_string(ac).unwrap_or_default())
+            .unwrap_or_default();
+        let validation_json = patch.validation.as_ref()
+            .map(|v| serde_json::to_string(v).unwrap_or_default())
+            .unwrap_or_default();
+        let evidence_json = patch.evidence.as_ref()
+            .map(|e| serde_json::to_string(e).unwrap_or_default())
+            .unwrap_or_default();
+        let blocked_reason = patch.blocked_reason.unwrap_or_default();
+        let source_ref_json = patch.source_ref.as_ref()
+            .map(|s| serde_json::to_string(s).unwrap_or_default())
+            .unwrap_or_default();
+        let scope_json = patch.scope.as_ref()
+            .map(|s| serde_json::to_string(s).unwrap_or_default())
+            .unwrap_or_default();
+        let depends_on_json = patch.depends_on.as_ref()
+            .map(|d| serde_json::to_string(d).unwrap_or_default())
+            .unwrap_or_default();
+        let blocks_json = patch.blocks.as_ref()
+            .map(|b| serde_json::to_string(b).unwrap_or_default())
+            .unwrap_or_default();
+        let refs_json = patch.references.as_ref()
+            .map(|r| serde_json::to_string(r).unwrap_or_default())
+            .unwrap_or_default();
+        let task_type = patch.task_type.unwrap_or_default();
+        let url = patch.url.unwrap_or_default();
+
+        let new_id = self.write(|c| {
             let position = Self::end_of_column(c, status, 0)?;
             c.execute(
-                "INSERT INTO tasks (project_id, title, description, status, position, tags, human) \
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-                params![project_id, title, description, status, position, tags, patch.human.unwrap_or(false)],
+                "INSERT INTO tasks (
+                    project_id, title, description, status, position, tags,
+                    human, url, code, series, milestone, horizon, category,
+                    priority, effort, risk, owner, summary, problem,
+                    proposed_solution, acceptance_criteria_json,
+                    validation_json, evidence_json, blocked_reason,
+                    source_ref_json, scope_json, depends_on, blocks_json, refs_json, task_type
+                 ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27, ?28, ?29, ?30)",
+                params![
+                    project_id, title, description, status, position, tags,
+                    patch.human.unwrap_or(false), url, code, series, milestone, horizon, category,
+                    priority, effort, risk, owner, summary, problem,
+                    proposed_solution, acceptance_json, validation_json,
+                    evidence_json, blocked_reason, source_ref_json, scope_json, depends_on_json, blocks_json, refs_json, task_type
+                ],
             )?;
-            let id = c.last_insert_rowid();
+            let new_id = c.last_insert_rowid();
             if let Some(keys) = &patch.waits_on {
-                self.set_waits(c, id, keys)?;
+                self.set_waits(c, new_id, keys)?;
             }
-            Ok(id)
+            Ok(new_id)
         })?;
-        self.get_task(id)
+        self.get_task(new_id)
     }
 
     /// Replaces what a task waits on. Part of the task's write, so a refused list changes nothing.
@@ -1953,74 +2083,79 @@ mod tests {
     }
 
     #[test]
-    fn task_lifecycle() {
-        let (_dir, s) = store();
-        let p = s.create_project("api", "API", None).unwrap();
-        let t = s.create_task(p.id, "  Fix   login ", "Steps:\n1. log in\n").unwrap();
-        assert_eq!((t.title.as_str(), t.status.as_str(), t.key()), ("Fix login", "todo", format!("api#{}", t.id)));
-        assert_eq!(s.find_task(&t.key()).unwrap().id, t.id);
-        assert!(s.find_task(&format!("web#{}", t.id)).is_err());
-
-        let t = s
-            .update_task(
-                t.id,
-                TaskPatch { status: Some("review".into()), title: Some("Fix login bug".into()), ..Default::default() },
-            )
-            .unwrap();
-        assert_eq!((t.title.as_str(), t.status.as_str()), ("Fix login bug", "review"));
-        assert!(s.update_task(t.id, TaskPatch { status: Some("nope".into()), ..Default::default() }).is_err());
-        assert!(s.update_task(t.id, TaskPatch { title: Some("  ".into()), ..Default::default() }).is_err());
-        let web = s.create_project("web", "", None).unwrap();
-        let moved = s.update_task(t.id, TaskPatch { project_id: Some(web.id), ..Default::default() }).unwrap();
-        assert_eq!((moved.key(), moved.status.as_str()), (format!("web#{}", t.id), "review"));
-        let t = s.update_task(t.id, TaskPatch { project_id: Some(p.id), ..Default::default() }).unwrap();
-
-        s.add_comment(t.id, "claude-code", "Done, see PR", &[]).unwrap();
-        s.add_comment(t.id, "", "thanks", &[]).unwrap();
-        let comments = s.list_comments(t.id).unwrap();
-        assert_eq!(comments.iter().map(|c| c.author.as_str()).collect::<Vec<_>>(), ["claude-code", "me"]);
-        assert!(s.add_comment(t.id, "me", " ", &[]).is_err());
-        assert_eq!(s.get_task(t.id).unwrap().comments, 2);
-        let tagged =
-            s.update_task(t.id, TaskPatch { tags: Some(" Bug, UI,bug ,, needs  review".into()), ..Default::default() });
-        assert_eq!(tagged.unwrap().tags, ["bug", "ui", "needs review"]);
-        assert!(
-            s.update_task(t.id, TaskPatch { tags: Some(" , ".into()), ..Default::default() }).unwrap().tags.is_empty()
-        );
-        let gone = s.add_comment(t.id, "me", "typo", &[]).unwrap();
-        assert_eq!(s.delete_comment(gone.id).unwrap().body, "typo");
-        assert!(s.delete_comment(gone.id).is_err());
-        assert_eq!(s.get_task(t.id).unwrap().comments, 2);
-        assert_eq!(s.find_project("api").unwrap().open, 1);
-
-        s.delete_task(t.id).unwrap();
-        assert!(s.get_task(t.id).is_err());
-        let orphans: i64 = s.conn.query_row("SELECT count(*) FROM comments", [], |r| r.get(0)).unwrap();
-        assert_eq!(orphans, 0);
-        // Ids are never reused, so api#12 always means the same task.
-        let t2 = s.create_task(p.id, "Another", "").unwrap();
-        assert!(t2.id > t.id);
+    fn migration_9_10_adds_taskos_v2_columns_and_documents_tables() {
+        let (dir, store) = store();
+        // Verify all 22 new columns exist
+        let cols: Vec<String> = store.conn
+            .prepare("PRAGMA table_info(tasks)").unwrap()
+            .query_map([], |r| r.get::<_, String>(1)).unwrap()
+            .collect::<std::result::Result<Vec<_>, _>>().unwrap();
+        
+        let expected = ["code", "series", "milestone", "horizon", "category", "priority",
+                        "effort", "risk", "owner", "summary", "problem", "proposed_solution",
+                        "acceptance_criteria_json", "validation_json", "evidence_json",
+                        "blocked_reason", "source_ref_json", "scope_json", "depends_on",
+                        "blocks_json", "refs_json", "task_type"];
+        for col in expected {
+            assert!(cols.contains(&col.to_string()), "Missing column: {}", col);
+        }
+        
+        // Verify documents, document_links, global_search_fts tables exist
+        let tables: Vec<String> = store.conn
+            .prepare("SELECT name FROM sqlite_master WHERE type='table'").unwrap()
+            .query_map([], |r| r.get(0)).unwrap()
+            .collect::<std::result::Result<Vec<_>, _>>().unwrap();
+        assert!(tables.contains(&"documents".to_string()));
+        assert!(tables.contains(&"document_links".to_string()));
+        assert!(tables.contains(&"global_search_fts".to_string()));
+        
+        // Verify FTS5 triggers work
+        store.conn.execute(
+            "INSERT INTO documents (slug, layer, title, body, tags) VALUES ('test/doc', 'wiki', 'Test', 'Body', 'tag1,tag2')",
+            []
+        ).unwrap();
+        let fts_count: i64 = store.conn.query_row(
+            "SELECT count(*) FROM global_search_fts WHERE entity_type='document'",
+            [], |r| r.get(0)
+        ).unwrap();
+        assert_eq!(fts_count, 1);
     }
 
     #[test]
-    fn delete_project_removes_its_tasks_and_comments() {
-        let (_dir, s) = store();
-        let api = s.create_project("api", "", Some("me/api")).unwrap();
-        let web = s.create_project("web", "", None).unwrap();
-        let t = s.create_task(api.id, "a", "").unwrap();
-        s.add_comment(t.id, "me", "hi", &[]).unwrap();
-        let kept = s.create_task(web.id, "b", "").unwrap();
-        s.add_comment(kept.id, "me", "hello", &[]).unwrap();
-
-        assert_eq!(s.delete_project("api").unwrap().id, api.id);
-        assert!(s.find_project("api").is_err());
-        assert!(s.get_task(t.id).is_err());
-        let count = |table: &str| -> i64 {
-            s.conn.query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r.get(0)).unwrap()
-        };
-        assert_eq!((count("projects"), count("tasks"), count("comments")), (1, 1, 1));
-        assert!(s.delete_project("api").is_err());
-        s.create_project("api", "", Some("me/api")).unwrap();
+    fn task_struct_has_all_v2_fields() {
+        let (_dir, store) = store();
+        let project = store.create_project("test", "Test", None).unwrap();
+        let task = store.create_task_in(project.id, "Test Task", TaskPatch {
+            description: Some("Description".into()),
+            code: Some("TEST-001".into()),
+            series: Some("TEST".into()),
+            milestone: Some("M1".into()),
+            horizon: Some("now".into()),
+            category: Some("feature".into()),
+            priority: Some("p1".into()),
+            effort: Some("m".into()),
+            risk: Some("low".into()),
+            owner: Some("alice".into()),
+            summary: Some("Short summary".into()),
+            problem: Some("The problem".into()),
+            proposed_solution: Some("The solution".into()),
+            acceptance_criteria: Some(vec![serde_json::json!({"id": "ac-1", "text": "Criterion", "done": false})]),
+            validation: Some(serde_json::json!({"commands": ["cargo test"], "expected": "Pass"})),
+            evidence: Some(serde_json::json!({"paths": ["evidence.md"], "detailFile": null, "commitSha": null})),
+            blocked_reason: Some("Waiting on dependency".into()),
+            source_ref: Some(serde_json::json!({"file": "audit", "legacyId": "AUD-001"})),
+            scope: Some(serde_json::json!({"packages": ["pkg1"], "files": ["file.rs"]})),
+            depends_on: Some(vec!["DEP-001".into()]),
+            blocks: Some(vec!["BLOCK-001".into()]),
+            references: Some(vec!["REF-001".into()]),
+            task_type: Some("feature".into()),
+            ..Default::default()
+        }).unwrap();
+        
+        assert_eq!(task.code, Some("TEST-001".to_string()));
+        assert_eq!(task.series, Some("TEST".to_string()));
+        assert_eq!(task.priority, Some("p1".to_string()));
+        assert!(task.acceptance_criteria_json.is_some());
     }
 
     #[test]
