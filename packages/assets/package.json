@@ -14,7 +14,8 @@
     "font:brand:generate": "node scripts/generate-brand-font.mjs",
     "artwork:prepare": "node scripts/prepare-artwork.mjs",
     "artwork:derivatives": "node scripts/responsive-derivatives.mjs",
-    "artwork:layers": "node scripts/layered-art-pipeline.mjs"
+    "artwork:layers": "node scripts/layered-art-pipeline.mjs",
+    "contact-sheets": "node scripts/generate-contact-sheets.mjs"
   },
   "files": [
     "brand",
