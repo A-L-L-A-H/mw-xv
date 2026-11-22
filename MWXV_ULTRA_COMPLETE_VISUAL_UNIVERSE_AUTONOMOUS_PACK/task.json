@@ -4441,7 +4441,7 @@
       "id": "W8-010",
       "phase": "W8",
       "title": "Implement visual coverage for knowledge addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -4477,8 +4477,34 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Existing Knowledge consumer and source-backed state treatments were audited and verified; no duplicate route, artwork, or synthetic production record was added. Authenticated browser E2E was attempted but the local E2E API did not become ready because PostgreSQL is unavailable and the uncommitted compose file references undefined moonwitness-postgres. See evidence for exact boundary.",
+      "evidence": [
+        {
+          "command": "pnpm board:ui:check",
+          "exit_code": 0,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md; 6 boundary checks passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md; 56 tests passed and docs exports verified"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md; 41 browser tests passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board exec playwright test e2e/knowledge-explorer.spec.ts --workers=1",
+          "exit_code": 1,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md; API webServer timeout; local E2E database/compose blocker"
+        }
+      ],
       "commit": null
     },
     {
@@ -4811,7 +4837,7 @@
       "id": "W9-007",
       "phase": "W9",
       "title": "Decide desktop app scene adoption",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
@@ -4837,8 +4863,24 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Desktop is a Node/Tauri host with no scene-rendering consumer. No @moonwitness/ui or @moonwitness/assets dependency was introduced; portable scene contracts remain in their existing packages. Desktop typecheck and isolated suite passed after building stale ignored ai-runtime declarations from current source.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ai-runtime build",
+          "exit_code": 0,
+          "artifact": "evidence/W9-007-desktop-adoption.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/desktop typecheck",
+          "exit_code": 0,
+          "artifact": "evidence/W9-007-desktop-adoption.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/desktop test",
+          "exit_code": 0,
+          "artifact": "evidence/W9-007-desktop-adoption.md; isolated retry 28/28 passed"
+        }
+      ],
       "commit": null
     },
     {

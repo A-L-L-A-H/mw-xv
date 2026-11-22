@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 89 · skipped 3 · in_progress 0 · blocked 0 · todo 17.
+Status counts: done 91 · skipped 3 · in_progress 0 · blocked 0 · todo 15.
 
 ## W0
 
@@ -742,12 +742,13 @@ Status counts: done 89 · skipped 3 · in_progress 0 · blocked 0 · todo 17.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
   - Evidence: `node --test scripts/board/workflow-action-state.test.mjs` (0) → `scripts/board/workflow-action-state.test.mjs`; `pnpm --filter @moonwitness/board typecheck` (0) → `apps/board/src/components/views/workflow-panel.tsx`; `pnpm board:ui:check` (0) → `scripts/check-board-shared-ui.mjs`; `pnpm test:assets` (0) → `packages/assets/tests`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/catalog.spec.ts`
 
-- [ ] **W8-010 — Implement visual coverage for knowledge addon**
+- [x] **W8-010 — Implement visual coverage for knowledge addon**
   - Goal: Implement only the verified knowledge asset references, UI compositions and state treatments based on W8-D10. Domain: Witness testimony, source, evidence, corrections, interpretations and research graph.
   - Depends on: W8-D10, W2-005, W1-008, W4-001
   - Deliverables: knowledge addon asset coverage and tested UI specimens/consumer integration where a real screen exists
   - Acceptance: Only real existing models/routes/permissions are represented.; Shared assets are reused by stable ID; no domain-specific duplicate asset copies.; Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.; Artwork remains decorative; labels, state and actions are real UI data.; New assets include provenance and are registered in canonical manifest.; If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
+  - Evidence: `pnpm board:ui:check` (0) → `evidence/W8-010-knowledge-visual-coverage.md; 6 boundary checks passed`; `pnpm --filter @moonwitness/board typecheck` (0) → `evidence/W8-010-knowledge-visual-coverage.md`; `pnpm test:assets` (0) → `evidence/W8-010-knowledge-visual-coverage.md; 56 tests passed and docs exports verified`; `pnpm test:ui-catalog` (0) → `evidence/W8-010-knowledge-visual-coverage.md; 41 browser tests passed`; `pnpm --filter @moonwitness/board exec playwright test e2e/knowledge-explorer.spec.ts --workers=1` (1) → `evidence/W8-010-knowledge-visual-coverage.md; API webServer timeout; local E2E database/compose blocker`
 
 - [x] **W8-011 — Implement visual coverage for orm-storage addon**
   - Goal: Implement only the verified orm-storage asset references, UI compositions and state treatments based on W8-D11. Domain: Attachment storage providers and lifecycle states; currently provider addon has no domain models.
@@ -809,12 +810,13 @@ Status counts: done 89 · skipped 3 · in_progress 0 · blocked 0 · todo 17.
   - Acceptance: Existing Board light/dark themes, skins and density remain intact.; Operational screens use restrained motion and valid focus boundaries.; No measurable layout shift/regression.
   - Verify: pnpm board:ui:check; pnpm test:e2e:visual:matrix
 
-- [ ] **W9-007 — Decide desktop app scene adoption**
+- [x] **W9-007 — Decide desktop app scene adoption**
   - Goal: Audit desktop UI technology and performance before adopting world runtime.
   - Depends on: W5-002, W5-011
   - Deliverables: Desktop integration decision and optional proof.
   - Acceptance: No UI/assets dependency added blindly.; Shared formats can be consumed without browser-only globals leaking into shared contracts.; No unsupported desktop capability is assumed.
   - Verify: pnpm --filter @moonwitness/desktop typecheck; pnpm --filter @moonwitness/desktop test
+  - Evidence: `pnpm --filter @moonwitness/ai-runtime build` (0) → `evidence/W9-007-desktop-adoption.md`; `pnpm --filter @moonwitness/desktop typecheck` (0) → `evidence/W9-007-desktop-adoption.md`; `pnpm --filter @moonwitness/desktop test` (0) → `evidence/W9-007-desktop-adoption.md; isolated retry 28/28 passed`
 
 - [ ] **W9-008 — Document complete addon asset handoff**
   - Goal: Document how addons request/reuse UI asset IDs without importing artwork into ORM/server.
