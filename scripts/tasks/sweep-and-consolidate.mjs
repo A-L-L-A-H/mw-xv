@@ -1021,6 +1021,87 @@ export async function sweepAndConsolidate({
     throw new Error(`Failed to ingest required evolution source evolution/backlog.json: ${error.message}`, { cause: error });
   }
 
+  // Import the scoped Visual Universe execution graph without losing its
+  // project-specific fields. The global TaskOS record owns lifecycle state;
+  // metadata is retained for the generated work-package mirror.
+  const visualPackPath = path.join(
+    rootDir,
+    'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/task.json'
+  );
+  try {
+    const visualPack = JSON.parse(await fs.readFile(visualPackPath, 'utf8'));
+    if (!Array.isArray(visualPack.tasks) || visualPack.tasks.length === 0) {
+      throw new Error('Visual Universe task.json has no task records.');
+    }
+    for (const sourceTask of visualPack.tasks) {
+      const statusMap = {
+        todo: 'todo',
+        in_progress: 'doing',
+        blocked: 'blocked',
+        done: 'done',
+        skipped: 'done'
+      };
+      if (!statusMap[sourceTask.status]) {
+        throw new Error(`Unsupported status "${sourceTask.status}" for ${sourceTask.id}.`);
+      }
+      const isComplete = sourceTask.status === 'done' || sourceTask.status === 'skipped';
+      const tags = ['visual-universe', sourceTask.phase, sourceTask.role].filter(Boolean);
+      if (sourceTask.status === 'skipped') tags.push('status:skipped');
+      addTask({
+        code: sourceTask.id,
+        project: 'visual-universe',
+        series: sourceTask.phase,
+        milestone: sourceTask.phase,
+        horizon: 'later',
+        title: sourceTask.title,
+        summary: (sourceTask.objective ?? sourceTask.title).slice(0, 140),
+        problem: sourceTask.objective ?? sourceTask.title,
+        proposedSolution: (sourceTask.deliverables ?? []).join('; '),
+        category: 'other',
+        type: 'other',
+        priority: sourceTask.priority === 'P0' ? 'p0' : 'p1',
+        status: statusMap[sourceTask.status],
+        human: sourceTask.human_approval_required === true,
+        owner: sourceTask.role ?? null,
+        assignee: null,
+        risk: sourceTask.risk ?? null,
+        effort: null,
+        scores: null,
+        dependsOn: sourceTask.depends_on ?? [],
+        blocks: [],
+        tags,
+        scope: { packages: [], files: sourceTask.scope_hints ?? [] },
+        acceptanceCriteria: (sourceTask.acceptance_criteria ?? []).map((text, index) => ({
+          id: `${sourceTask.id}-ac-${index + 1}`,
+          text,
+          done: isComplete
+        })),
+        validation: {
+          commands: sourceTask.verification ?? [],
+          expected: 'All delegated work-package acceptance criteria are met.'
+        },
+        evidence: {
+          paths: [...new Set((sourceTask.evidence ?? []).map((entry) => entry.artifact).filter(Boolean))],
+          detailFile: `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/${sourceTask.phase}/${sourceTask.id}.md`,
+          commitSha: sourceTask.commit ?? null
+        },
+        references: sourceTask.scope_hints ?? [],
+        blockedReason: sourceTask.status === 'blocked'
+          ? sourceTask.notes || 'Blocked in the delegated Visual Universe work package.'
+          : null,
+        sourceRef: {
+          file: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/task.json',
+          legacyId: sourceTask.id
+        },
+        url: '',
+        comments: [],
+        metadata: sourceTask
+      });
+    }
+  } catch (error) {
+    throw new Error(`Failed to ingest required Visual Universe task source "${visualPackPath}": ${error.message}`, { cause: error });
+  }
+
   // Populate reverse blocks graph
   const codeSet = new Set(tasks.map((t) => t.code));
   const blocksMap = new Map();
@@ -1049,6 +1130,13 @@ export async function sweepAndConsolidate({
         name: 'MoonWitness Enterprise Platform',
         repos: ['A-L-L-A-H/mw-xv'],
         color: 'blue',
+        statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done']
+      },
+      {
+        slug: 'visual-universe',
+        name: 'MoonWitness Visual Universe',
+        repos: ['A-L-L-A-H/mw-xv'],
+        color: 'purple',
         statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done']
       }
     ],
