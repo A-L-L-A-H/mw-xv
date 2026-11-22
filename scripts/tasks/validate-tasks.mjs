@@ -8,6 +8,19 @@ const require = createRequire(new URL('../../packages/knowledge/package.json', i
 const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
 
+export function parseTasksRegistry(raw) {
+  if (typeof raw !== 'string' || raw.trim().length === 0) {
+    throw new Error(
+      'TaskOS registry docs/tasks/tasks.json is empty. Recovery mode is active; do not run sync or rebuild from counts. Restore from provenance-verified sources.'
+    );
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`TaskOS registry docs/tasks/tasks.json is invalid JSON: ${error.message}`);
+  }
+}
+
 export async function validateTasks() {
   const errors = [];
   const tasksFilePath = path.join(rootDir, 'docs/tasks/tasks.json');
@@ -19,7 +32,12 @@ export async function validateTasks() {
   const schemaRaw = await fs.readFile(schemaFilePath, 'utf8');
   const tasksRaw = await fs.readFile(tasksFilePath, 'utf8');
   const schema = JSON.parse(schemaRaw);
-  const tasksData = JSON.parse(tasksRaw);
+  let tasksData;
+  try {
+    tasksData = parseTasksRegistry(tasksRaw);
+  } catch (error) {
+    return { valid: false, taskCount: 0, errors: [error.message] };
+  }
 
   const ajv = new Ajv({ allErrors: true });
   addFormats(ajv);
