@@ -68,6 +68,11 @@ export function projectVisualUniverseTask(task) {
     scope_hints: [...(task.scope?.files ?? [])],
     deliverables,
     acceptance_criteria: (task.acceptanceCriteria ?? []).map((criterion) => criterion.text),
+    acceptance_criteria_state: (task.acceptanceCriteria ?? []).map((criterion) => ({
+      id: criterion.id,
+      text: criterion.text,
+      done: criterion.done === true,
+    })),
     verification: [...(task.validation?.commands ?? [])],
     evidence,
     risk: task.risk ?? null,
