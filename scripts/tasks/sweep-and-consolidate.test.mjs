@@ -20,8 +20,8 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.ok(Array.isArray(result.tasks));
 
   // Source inventory: 239 roadmap + 14 audit + 112 WhatsApp + 7 legacy MW
-  // + 14 promotion lifecycle + 128 desktop + 4 evolution records.
-  assert.equal(result.tasks.length, 518, `Expected 518 source-backed tasks, got ${result.tasks.length}`);
+  // + 14 promotion lifecycle + 128 desktop + 4 evolution + 109 Visual Universe records.
+  assert.equal(result.tasks.length, 627, `Expected 627 source-backed tasks, got ${result.tasks.length}`);
 
   // Check specific task codes
   const taskByCode = new Map(result.tasks.map((t) => [t.code, t]));
@@ -33,6 +33,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.ok(taskByCode.has('DSK-0.12'), 'Must include DSK-0.12');
   assert.ok(taskByCode.has('MW-CFG-003.3'), 'Must include MW-CFG-003.3 from the archived legacy checklist.');
   assert.ok(taskByCode.has('PR.14'), 'Must include the explicit human promotion approval gate.');
+  assert.ok(taskByCode.has('W0-001'), 'Must include delegated Visual Universe work.');
 
   // Verify status mapping: M0.01 is complete in ROADMAP.md, so it must be 'done'
   assert.equal(taskByCode.get('M0.01').status, 'done');
@@ -41,6 +42,12 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.equal(taskByCode.get('PR.14').human, true);
   assert.equal(taskByCode.get('DSK-0.12').status, 'done');
   assert.equal(taskByCode.get('EVO-002').status, 'doing');
+  const visualTasks = result.tasks.filter((task) => task.project === 'visual-universe');
+  assert.equal(visualTasks.length, 109);
+  assert.equal(visualTasks.filter((task) => task.status === 'blocked').length, 13);
+  assert.equal(visualTasks.filter((task) => task.status === 'done').length, 96);
+  assert.equal(visualTasks.filter((task) => task.tags.includes('status:skipped')).length, 3);
+  assert.ok(visualTasks.every((task) => task.metadata?.id === task.code));
 
   // Validate against docs/tasks/tasks.schema.json
   const schemaRaw = await fs.readFile('docs/tasks/tasks.schema.json', 'utf8');
