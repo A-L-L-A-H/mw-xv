@@ -48,6 +48,7 @@ jobs:
       - name: Build workspace and verify budgets
         run: |
           pnpm build
+          pnpm orm:check:seeds
           pnpm --filter @moonwitness/desktop build
           pnpm --filter @moonwitness/desktop typecheck
           pnpm --filter @moonwitness/desktop test

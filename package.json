@@ -144,6 +144,7 @@
     "addon:create": "node scripts/addon-create.mjs",
     "orm:inspect": "node scripts/orm-inspect.mjs",
     "orm:codegen": "node scripts/orm-codegen.mjs",
+    "orm:check:seeds": "node scripts/check-orm-default-data.mjs",
     "preflight:fast": "node scripts/preflight-fast.mjs",
     "ai:watchdog": "node scripts/ai-drift-watchdog.mjs",
     "node:parity": "node scripts/check-node-version.mjs",

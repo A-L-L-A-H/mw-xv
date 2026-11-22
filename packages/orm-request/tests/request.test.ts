@@ -59,7 +59,7 @@ describe('purchase request example addon', () => {
     expect(manifest.views?.map((view) => view.model)).toEqual([PurchaseRequest.modelName]);
     expect(PurchaseRequest.fields).not.toHaveProperty('requester');
     expect(manifest.menus?.map((menu) => menu.model)).toEqual([PurchaseRequest.modelName]);
-    expect(await PurchaseRequest.query().count({ count: '*' }).first()).toMatchObject({ count: 2 });
+    expect(await PurchaseRequest.query().count({ count: '*' }).first()).toMatchObject({ count: 4 });
     expect(
       await database('workflow_definitions').where({ code: 'request.purchase_approval' }).first()
     ).toBeDefined();

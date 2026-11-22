@@ -1,6 +1,6 @@
 import knex, { type Knex } from 'knex';
 import { afterEach, describe, expect, it } from 'vitest';
-import { defineAddon, installAddons, seed } from '../src/addon.js';
+import { assertAddonDefaultDataPolicy, defineAddon, installAddons, seed } from '../src/addon.js';
 import { defineModel, fields, type BaseModel } from '../src/model-definition.js';
 import { Registry } from '../src/registry.js';
 import { manifest as documentedManifest } from '../examples/sales/manifest.js';
@@ -248,5 +248,43 @@ describe('programmatic addon installer', () => {
         defineAddon({ name: 'one', version: '1.0.0', depends: ['missing'], models: [Parent] }),
       ])
     ).rejects.toThrow('Missing dependency');
+  });
+
+  it('enforces mandatory default data policy for model-owning addons', () => {
+    const emptyAddon = defineAddon({ name: 'orm-empty', version: '1.0.0', models: [Parent] });
+    expect(() => assertAddonDefaultDataPolicy([emptyAddon])).toThrow(
+      /Addon 'orm-empty' declares 1 model\(s\).*manifest\.data is empty/u
+    );
+
+    const foreignOnlyAddon = defineAddon({
+      name: 'orm-foreign-only',
+      version: '1.0.0',
+      models: [Child],
+      data: [seed(Parent, 'orm-foreign-only.parent', { name: 'External only' })],
+    });
+    expect(() => assertAddonDefaultDataPolicy([foreignOnlyAddon])).toThrow(
+      /0 records targeting its own models/u
+    );
+
+    const compliantAddon = defineAddon({
+      name: 'orm-compliant',
+      version: '1.0.0',
+      models: [Parent],
+      data: [seed(Parent, 'orm-compliant.parent', { name: 'Demo Parent' })],
+    });
+    const providerOnlyAddon = defineAddon({
+      name: 'orm-storage',
+      version: '1.0.0',
+      models: [],
+    });
+    const authExemptAddon = defineAddon({
+      name: 'auth',
+      version: '1.0.0',
+      models: [Child],
+    });
+
+    expect(() =>
+      assertAddonDefaultDataPolicy([compliantAddon, providerOnlyAddon, authExemptAddon])
+    ).not.toThrow();
   });
 });

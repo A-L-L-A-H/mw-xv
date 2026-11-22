@@ -28,6 +28,7 @@ COPY packages/local-ai/package.json ./packages/local-ai/package.json
 COPY packages/logger/package.json ./packages/logger/package.json
 COPY packages/orm-ai/package.json ./packages/orm-ai/package.json
 COPY packages/orm-base/package.json ./packages/orm-base/package.json
+COPY packages/orm-crm/package.json ./packages/orm-crm/package.json
 COPY packages/orm-integration/package.json ./packages/orm-integration/package.json
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json
 COPY packages/orm-notification/package.json ./packages/orm-notification/package.json
@@ -35,7 +36,9 @@ COPY packages/orm-organization/package.json ./packages/orm-organization/package.
 COPY packages/orm-project/package.json ./packages/orm-project/package.json
 COPY packages/orm/package.json ./packages/orm/package.json
 COPY packages/orm-request/package.json ./packages/orm-request/package.json
+COPY packages/orm-sales/package.json ./packages/orm-sales/package.json
 COPY packages/orm-storage/package.json ./packages/orm-storage/package.json
+COPY packages/orm-subscription/package.json ./packages/orm-subscription/package.json
 COPY packages/orm-whatsapp/package.json ./packages/orm-whatsapp/package.json
 COPY packages/research/package.json ./packages/research/package.json
 COPY packages/types/package.json ./packages/types/package.json

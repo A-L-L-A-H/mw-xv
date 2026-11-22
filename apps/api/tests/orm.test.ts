@@ -457,6 +457,8 @@ describe('Enterprise BaseModel & Fastify Integration', () => {
     });
     expect(list.statusCode, list.payload).toBe(200);
     expect(list.json<{ data: { code: string }[] }>().data.map(({ code }) => code)).toEqual([
+      'support',
+      'growth',
       'operations',
       'product',
     ]);
@@ -490,7 +492,7 @@ describe('Enterprise BaseModel & Fastify Integration', () => {
     });
     expect(crossCompany.statusCode, crossCompany.payload).toBe(403);
     expect(await testDb('organization_teams').count({ count: '*' }).first()).toMatchObject({
-      count: 2,
+      count: 4,
     });
   });
 

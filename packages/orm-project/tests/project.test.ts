@@ -73,13 +73,13 @@ describe('project addon', () => {
     expect(manifest.depends).toEqual(['base', 'organization', 'notification', 'workflow']);
     expect(await db('users').count({ count: '*' }).first()).toMatchObject({ count: 2 });
     expect(await db('project_stages').count({ count: '*' }).first()).toMatchObject({ count: 4 });
-    expect(await db('project_projects').count({ count: '*' }).first()).toMatchObject({ count: 1 });
+    expect(await db('project_projects').count({ count: '*' }).first()).toMatchObject({ count: 2 });
     expect(await db('project_milestones').count({ count: '*' }).first()).toMatchObject({
-      count: 1,
+      count: 3,
     });
-    expect(await db('project_tasks').count({ count: '*' }).first()).toMatchObject({ count: 2 });
+    expect(await db('project_tasks').count({ count: '*' }).first()).toMatchObject({ count: 6 });
     expect(await db('project_task_dependencies').count({ count: '*' }).first()).toMatchObject({
-      count: 1,
+      count: 3,
     });
 
     const workflow = await WorkflowDefinition.query().findOne({ code: 'project.task_review' });
@@ -95,7 +95,7 @@ describe('project addon', () => {
 
     // Reinstall is idempotent and does not duplicate seeds.
     await installEcosystem();
-    expect(await db('project_tasks').count({ count: '*' }).first()).toMatchObject({ count: 2 });
+    expect(await db('project_tasks').count({ count: '*' }).first()).toMatchObject({ count: 6 });
   });
 
   it('enforces company isolation, org department/team alignment, dates, and member ownership on projects', async () => {

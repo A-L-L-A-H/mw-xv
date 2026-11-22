@@ -18,6 +18,22 @@ export const manifest = defineAddon({
       secret_ref: 'MW_WEBHOOK_SECRET_C1_EXAMPLE',
       enabled: false,
     }),
+    seed(WebhookEndpoint, 'orm-integration.endpoint_demo_crm_pipeline', {
+      company: ref('base.company_default'),
+      name: 'Demo disabled CRM webhook',
+      url: 'https://example.invalid/webhooks/crm',
+      event_types: '["crm.lead.qualified","crm.opportunity.won"]',
+      secret_ref: 'MW_WEBHOOK_SECRET_C1_CRM_DEMO',
+      enabled: false,
+    }),
+    seed(WebhookEndpoint, 'orm-integration.endpoint_demo_project_events', {
+      company: ref('base.company_default'),
+      name: 'Demo disabled project milestone webhook',
+      url: 'https://example.invalid/webhooks/projects',
+      event_types: '["project.task.completed","project.milestone.reached"]',
+      secret_ref: 'MW_WEBHOOK_SECRET_C1_PROJECT_DEMO',
+      enabled: false,
+    }),
     ...adminModels.map((model) =>
       seed(
         ModelAccess,

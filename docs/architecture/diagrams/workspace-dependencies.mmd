@@ -20,31 +20,34 @@ flowchart LR
   pkg18["@moonwitness/orm"]
   pkg19["@moonwitness/orm-ai"]
   pkg20["@moonwitness/orm-base"]
-  pkg21["@moonwitness/orm-integration"]
-  pkg22["@moonwitness/orm-knowledge"]
-  pkg23["@moonwitness/orm-notification"]
-  pkg24["@moonwitness/orm-organization"]
-  pkg25["@moonwitness/orm-project"]
-  pkg26["@moonwitness/orm-request"]
-  pkg27["@moonwitness/orm-storage"]
-  pkg28["@moonwitness/orm-whatsapp"]
-  pkg29["@moonwitness/orm-workflow"]
-  pkg30["@moonwitness/research"]
-  pkg31["@moonwitness/types"]
-  pkg32["@moonwitness/ui"]
-  pkg33["@moonwitness/ui-catalog"]
+  pkg21["@moonwitness/orm-crm"]
+  pkg22["@moonwitness/orm-integration"]
+  pkg23["@moonwitness/orm-knowledge"]
+  pkg24["@moonwitness/orm-notification"]
+  pkg25["@moonwitness/orm-organization"]
+  pkg26["@moonwitness/orm-project"]
+  pkg27["@moonwitness/orm-request"]
+  pkg28["@moonwitness/orm-sales"]
+  pkg29["@moonwitness/orm-storage"]
+  pkg30["@moonwitness/orm-subscription"]
+  pkg31["@moonwitness/orm-whatsapp"]
+  pkg32["@moonwitness/orm-workflow"]
+  pkg33["@moonwitness/research"]
+  pkg34["@moonwitness/types"]
+  pkg35["@moonwitness/ui"]
+  pkg36["@moonwitness/ui-catalog"]
   pkg0 -->|runtime| pkg2
   pkg0 -->|runtime| pkg19
-  pkg0 -->|runtime| pkg31
+  pkg0 -->|runtime| pkg34
   pkg1 -->|runtime| pkg2
   pkg1 -->|runtime| pkg18
   pkg1 -->|runtime| pkg19
   pkg1 -->|runtime| pkg20
-  pkg1 -->|runtime| pkg22
-  pkg1 -->|runtime| pkg31
+  pkg1 -->|runtime| pkg23
+  pkg1 -->|runtime| pkg34
   pkg2 -->|runtime| pkg17
-  pkg2 -->|runtime| pkg21
-  pkg2 -->|runtime| pkg31
+  pkg2 -->|runtime| pkg22
+  pkg2 -->|runtime| pkg34
   pkg3 -->|development| pkg7
   pkg3 -->|runtime| pkg2
   pkg3 -->|runtime| pkg5
@@ -56,24 +59,24 @@ flowchart LR
   pkg3 -->|runtime| pkg18
   pkg3 -->|runtime| pkg19
   pkg3 -->|runtime| pkg20
-  pkg3 -->|runtime| pkg21
   pkg3 -->|runtime| pkg22
   pkg3 -->|runtime| pkg23
   pkg3 -->|runtime| pkg24
   pkg3 -->|runtime| pkg25
   pkg3 -->|runtime| pkg26
   pkg3 -->|runtime| pkg27
-  pkg3 -->|runtime| pkg28
   pkg3 -->|runtime| pkg29
-  pkg3 -->|runtime| pkg30
   pkg3 -->|runtime| pkg31
+  pkg3 -->|runtime| pkg32
+  pkg3 -->|runtime| pkg33
+  pkg3 -->|runtime| pkg34
   pkg5 -->|runtime| pkg18
   pkg5 -->|runtime| pkg20
   pkg6 -->|runtime| pkg4
   pkg6 -->|runtime| pkg7
-  pkg6 -->|runtime| pkg31
-  pkg6 -->|runtime| pkg32
-  pkg7 -->|runtime| pkg31
+  pkg6 -->|runtime| pkg34
+  pkg6 -->|runtime| pkg35
+  pkg7 -->|runtime| pkg34
   pkg9 -->|runtime| pkg15
   pkg10 -->|runtime| pkg1
   pkg10 -->|runtime| pkg2
@@ -82,64 +85,73 @@ flowchart LR
   pkg10 -->|runtime| pkg18
   pkg10 -->|runtime| pkg19
   pkg10 -->|runtime| pkg20
-  pkg10 -->|runtime| pkg22
   pkg10 -->|runtime| pkg23
   pkg10 -->|runtime| pkg24
   pkg10 -->|runtime| pkg25
-  pkg10 -->|runtime| pkg27
+  pkg10 -->|runtime| pkg26
   pkg10 -->|runtime| pkg29
-  pkg10 -->|runtime| pkg31
+  pkg10 -->|runtime| pkg32
+  pkg10 -->|runtime| pkg34
   pkg11 -->|runtime| pkg4
-  pkg11 -->|runtime| pkg32
+  pkg11 -->|runtime| pkg35
   pkg14 -->|runtime| pkg18
   pkg14 -->|runtime| pkg20
-  pkg18 -->|runtime| pkg31
+  pkg18 -->|runtime| pkg34
   pkg19 -->|runtime| pkg14
   pkg19 -->|runtime| pkg18
   pkg19 -->|runtime| pkg20
-  pkg19 -->|runtime| pkg24
-  pkg19 -->|runtime| pkg27
+  pkg19 -->|runtime| pkg25
   pkg19 -->|runtime| pkg29
+  pkg19 -->|runtime| pkg32
   pkg20 -->|runtime| pkg18
-  pkg20 -->|runtime| pkg31
-  pkg21 -->|runtime| pkg14
+  pkg20 -->|runtime| pkg34
   pkg21 -->|runtime| pkg18
   pkg21 -->|runtime| pkg20
-  pkg21 -->|runtime| pkg31
-  pkg22 -->|development| pkg14
-  pkg22 -->|development| pkg23
-  pkg22 -->|runtime| pkg9
-  pkg22 -->|runtime| pkg15
+  pkg22 -->|runtime| pkg14
   pkg22 -->|runtime| pkg18
   pkg22 -->|runtime| pkg20
-  pkg22 -->|runtime| pkg29
-  pkg22 -->|runtime| pkg30
-  pkg23 -->|runtime| pkg14
+  pkg22 -->|runtime| pkg34
+  pkg23 -->|development| pkg14
+  pkg23 -->|development| pkg24
+  pkg23 -->|runtime| pkg9
+  pkg23 -->|runtime| pkg15
   pkg23 -->|runtime| pkg18
   pkg23 -->|runtime| pkg20
-  pkg23 -->|runtime| pkg31
+  pkg23 -->|runtime| pkg32
+  pkg23 -->|runtime| pkg33
+  pkg24 -->|runtime| pkg14
   pkg24 -->|runtime| pkg18
   pkg24 -->|runtime| pkg20
-  pkg25 -->|development| pkg14
+  pkg24 -->|runtime| pkg34
   pkg25 -->|runtime| pkg18
   pkg25 -->|runtime| pkg20
-  pkg25 -->|runtime| pkg23
-  pkg25 -->|runtime| pkg24
-  pkg25 -->|runtime| pkg29
-  pkg26 -->|runtime| pkg14
+  pkg26 -->|development| pkg14
   pkg26 -->|runtime| pkg18
   pkg26 -->|runtime| pkg20
-  pkg26 -->|runtime| pkg23
-  pkg26 -->|runtime| pkg29
+  pkg26 -->|runtime| pkg24
+  pkg26 -->|runtime| pkg25
+  pkg26 -->|runtime| pkg32
+  pkg27 -->|runtime| pkg14
   pkg27 -->|runtime| pkg18
-  pkg27 -->|runtime| pkg31
+  pkg27 -->|runtime| pkg20
+  pkg27 -->|runtime| pkg24
+  pkg27 -->|runtime| pkg32
   pkg28 -->|runtime| pkg18
   pkg28 -->|runtime| pkg20
-  pkg29 -->|runtime| pkg14
+  pkg28 -->|runtime| pkg21
   pkg29 -->|runtime| pkg18
-  pkg29 -->|runtime| pkg20
-  pkg29 -->|runtime| pkg23
-  pkg29 -->|runtime| pkg31
-  pkg30 -->|runtime| pkg15
-  pkg33 -->|runtime| pkg4
-  pkg33 -->|runtime| pkg32
+  pkg29 -->|runtime| pkg34
+  pkg30 -->|runtime| pkg18
+  pkg30 -->|runtime| pkg20
+  pkg30 -->|runtime| pkg21
+  pkg30 -->|runtime| pkg28
+  pkg31 -->|runtime| pkg18
+  pkg31 -->|runtime| pkg20
+  pkg32 -->|runtime| pkg14
+  pkg32 -->|runtime| pkg18
+  pkg32 -->|runtime| pkg20
+  pkg32 -->|runtime| pkg24
+  pkg32 -->|runtime| pkg34
+  pkg33 -->|runtime| pkg15
+  pkg36 -->|runtime| pkg4
+  pkg36 -->|runtime| pkg35

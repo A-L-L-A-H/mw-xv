@@ -167,6 +167,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-crm",
+      "version": "1.0.0",
+      "directory": "packages/orm-crm",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-integration",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-integration",
@@ -203,9 +209,21 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-sales",
+      "version": "1.0.0",
+      "directory": "packages/orm-sales",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-storage",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-storage",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-subscription",
+      "version": "1.0.0",
+      "directory": "packages/orm-subscription",
       "scripts": ["build", "test"]
     },
     {
@@ -368,6 +386,10 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-crm": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
     "@moonwitness/orm-integration": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
@@ -392,9 +414,17 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-sales": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
     "@moonwitness/orm-storage": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
+    },
+    "@moonwitness/orm-subscription": {
+      "build": "tsc",
+      "test": "vitest run"
     },
     "@moonwitness/orm-whatsapp": {
       "build": "tsc",
@@ -482,6 +512,7 @@
       "local-ai:register-model": "node scripts/local-ai/register-model.mjs",
       "local-ai:tournament": "node scripts/local-ai/tournament.mjs",
       "node:parity": "node scripts/check-node-version.mjs",
+      "orm:check:seeds": "node scripts/check-orm-default-data.mjs",
       "orm:codegen": "node scripts/orm-codegen.mjs",
       "orm:inspect": "node scripts/orm-inspect.mjs",
       "platform:audit": "node scripts/platform-audit.mjs",
@@ -6318,9 +6349,9 @@
         "organization.team"
       ],
       "seeds": {
-        "organization.department": 2,
-        "organization.team": 2,
-        "organization.position": 2,
+        "organization.department": 4,
+        "organization.team": 4,
+        "organization.position": 4,
         "organization.membership": 2,
         "base.model_access": 4
       },
@@ -6554,7 +6585,7 @@
       ],
       "views": ["integration.webhook_delivery", "integration.webhook_endpoint"],
       "seeds": {
-        "integration.webhook_endpoint": 1,
+        "integration.webhook_endpoint": 3,
         "base.model_access": 2
       },
       "accessRules": [
@@ -8087,6 +8118,7 @@
       ],
       "views": ["whatsapp.account", "whatsapp.conversation", "whatsapp.message", "whatsapp.status"],
       "seeds": {
+        "whatsapp.label": 5,
         "base.model_access": 8
       },
       "accessRules": [
@@ -8772,10 +8804,10 @@
         "workflow.definition": 1,
         "base.model_access": 5,
         "project.stage": 4,
-        "project.project": 1,
-        "project.milestone": 1,
-        "project.task": 2,
-        "project.task_dependency": 1
+        "project.project": 2,
+        "project.milestone": 3,
+        "project.task": 6,
+        "project.task_dependency": 3
       },
       "accessRules": [
         {
@@ -8910,7 +8942,7 @@
         "base.model_access": 1,
         "workflow.definition": 1,
         "notification.template": 3,
-        "request.purchase": 2
+        "request.purchase": 4
       },
       "accessRules": [
         {
@@ -10044,5 +10076,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "e8281f9236d7b78f96528b68958e4dea049237c669287c3b0300281fe0993511"
+  "generatedFromSha256": "4db0eac467c617467e7b2e66b5ed243e70918fc84655c021c720f0b58edf9a7a"
 }

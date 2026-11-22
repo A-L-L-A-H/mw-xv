@@ -26,6 +26,18 @@ export const manifest = defineAddon({
       name: 'Product',
       description: 'Product engineering example.',
     }),
+    seed(OrganizationDepartment, 'organization.department_growth', {
+      company: ref('base.company_default'),
+      code: 'growth',
+      name: 'Growth & Revenue',
+      description: 'CRM pipeline, enterprise sales, and recurring subscription growth.',
+    }),
+    seed(OrganizationDepartment, 'organization.department_support', {
+      company: ref('base.company_default'),
+      code: 'support',
+      name: 'Customer Support',
+      description: 'Customer onboarding, WhatsApp desk, and SLA response operations.',
+    }),
     seed(OrganizationTeam, 'organization.team_api', {
       company: ref('base.company_default'),
       department: ref('organization.department_product'),
@@ -40,6 +52,20 @@ export const manifest = defineAddon({
       name: 'Board',
       description: 'Board application team example.',
     }),
+    seed(OrganizationTeam, 'organization.team_solutions', {
+      company: ref('base.company_default'),
+      department: ref('organization.department_growth'),
+      code: 'solutions',
+      name: 'Solutions Engineering',
+      description: 'Enterprise demos, proof-of-concept onboarding, and deal engineering.',
+    }),
+    seed(OrganizationTeam, 'organization.team_helpdesk', {
+      company: ref('base.company_default'),
+      department: ref('organization.department_support'),
+      code: 'helpdesk',
+      name: 'Omnichannel Helpdesk',
+      description: 'Customer support desk covering WhatsApp labels and escalations.',
+    }),
     seed(OrganizationPosition, 'organization.position_engineer', {
       company: ref('base.company_default'),
       department: ref('organization.department_product'),
@@ -51,6 +77,18 @@ export const manifest = defineAddon({
       department: ref('organization.department_product'),
       code: 'team_lead',
       name: 'Team Lead',
+    }),
+    seed(OrganizationPosition, 'organization.position_solutions_architect', {
+      company: ref('base.company_default'),
+      department: ref('organization.department_growth'),
+      code: 'solutions_architect',
+      name: 'Solutions Architect',
+    }),
+    seed(OrganizationPosition, 'organization.position_support_specialist', {
+      company: ref('base.company_default'),
+      department: ref('organization.department_support'),
+      code: 'support_specialist',
+      name: 'Support Specialist',
     }),
     seed(OrganizationMembership, 'organization.member_system', {
       company: ref('base.company_default'),
