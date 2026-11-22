@@ -59,7 +59,7 @@ test('completed task cards mark missing execution exit codes as not recorded', (
   assert.match(rendered, /Commands \/ exit codes:/u);
   assert.match(rendered, /exit not recorded/u);
   assert.match(rendered, /Evidence paths:/u);
-  assert.match(rendered, /evidence\\/W0-001\\.md/u);
+  assert.ok(rendered.includes('evidence/W0-001.md'));
 });
 
 test('board renderer reports partial acceptance completion accurately', () => {
