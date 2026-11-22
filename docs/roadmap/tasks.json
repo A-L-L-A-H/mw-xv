@@ -2249,7 +2249,6 @@
       ],
       "output": "Server-side dependency gate in the existing project WorkContract route, focused route tests, and docs/roadmap/evidence/M13.05.md",
       "detailFile": "docs/roadmap/14-desktop-engineering.md",
-      "evidence": "docs/roadmap/evidence/M13.05.md",
       "labels": [
         "desktop",
         "rock-soul-flow",

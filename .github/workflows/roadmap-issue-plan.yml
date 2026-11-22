@@ -72,7 +72,8 @@ jobs:
           EVENT_REF: ${{ github.ref }}
         run: |
           set -euo pipefail
-          plan_file="$(mktemp)"
+          mkdir -p dist/roadmap-issue-sync
+          plan_file="$(mktemp "$GITHUB_WORKSPACE/dist/roadmap-issue-sync/plan.XXXXXX")"
           trap 'rm -f "$plan_file"' EXIT
           SOURCE_SHA="$(git rev-parse HEAD)"
           export SOURCE_SHA
@@ -117,8 +118,9 @@ jobs:
       - name: Collect lifecycle evidence and apply selected tasks with fresh-state guards
         run: |
           set -euo pipefail
-          batch_file="$(mktemp)"
-          snapshot_file="$(mktemp)"
+          mkdir -p dist/roadmap-issue-sync
+          batch_file="$(mktemp "$GITHUB_WORKSPACE/dist/roadmap-issue-sync/batch.XXXXXX")"
+          snapshot_file="$(mktemp "$GITHUB_WORKSPACE/dist/roadmap-issue-sync/snapshot.XXXXXX")"
           trap 'rm -f "$batch_file" "$snapshot_file"' EXIT
 
           SELECTION_TASK_IDS=""
