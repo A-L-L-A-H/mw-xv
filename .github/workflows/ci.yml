@@ -55,6 +55,7 @@ jobs:
           pnpm --filter @moonwitness/desktop typecheck
           pnpm --filter @moonwitness/desktop test
           node scripts/docs/generate-reference.mjs
+          node scripts/docs/update-readme.mjs
           echo "references_generated=true" >> "$GITHUB_OUTPUT"
           pnpm docs:check:built
           pnpm --filter @moonwitness/board typecheck
@@ -62,6 +63,7 @@ jobs:
           pnpm test:ui-budget
           pnpm test:ui-catalog
           git diff --exit-code -- \
+            README.md \
             docs/guide/reference/generated-api.md \
             docs/guide/reference/generated-models.md \
             docs/guide/reference/generated-platform.json \
@@ -71,8 +73,9 @@ jobs:
         if: always() && steps.build-workspace.outputs.references_generated == 'true'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          name: generated-reference-${{ github.sha }}
+          name: generated-docs-${{ github.sha }}
           path: |
+            README.md
             docs/guide/reference/generated-api.md
             docs/guide/reference/generated-models.md
             docs/guide/reference/generated-platform.json
