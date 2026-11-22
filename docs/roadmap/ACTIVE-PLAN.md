@@ -1,16 +1,19 @@
 # Jalur rilis aktif
 
-## Current checkpoint — 2026-11-23 (remote repository reconciliation)
+## Current checkpoint — 2026-11-23 (remote reconciliation; current dev work not yet promoted)
 
-- **Branch synchronization:** `main` and `dev` were reconciled by fast-forwarding `dev` from the exact promoted source `a3fa6da5b6b4e47e42240c8ec2c9ef8561416064` to the promotion merge commit `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`. No force push or divergent history rewrite was used. Re-check both remote heads before future writes or promotion.
-- **Promotion evidence:** PR [#31](https://github.com/A-L-L-A-H/mw-xv/pull/31) promoted source `a3fa6da5b6b4` to `main`; report lists M13.05–M13.08 complete and core checks successful, but one unit-test run was pending in the report. The status API returned no commit statuses for merge SHA `2a9d783`; hosted CI state must be rechecked before treating this checkpoint as a verified release.
-- **Current source of task completion:** `ROADMAP.md` checkboxes and matching evidence are the completion authority; `docs/roadmap/tasks.json` is the validated task index for ID/dependencies/details. GitHub Issues are managed projections plus human-owned triage/discussion. `docs/tasks/tasks.json` is documented as the expanded TaskOS registry but is **zero-byte/invalid JSON at this checkpoint**; do not use it or run `tasks:sync` as an authority until restored and validated.
-- **Release readiness:** M12.14 approval/release gate remains unresolved from the evidence available here. A promotion merge does not authorize stable release or application deployment.
-- **ROCKSOUL FLOW:** M13.01–M13.08 are marked complete in roadmap/evidence. The M13.01 reuse map is a historical baseline; current status and remaining gaps are summarized at the top of that document. Visual DNA per-external-repo profile export remains a documented gap; no additional feature work is authorized by this checkpoint.
-- **Runtime consistency:** Root package engines, Dockerfile, CI workflow and Desktop package use Node.js 24. README, support policy, support-review ledger and Desktop architecture/TODO contained stale Node 22 statements. Docs are being reconciled to the source configuration; CI has Node 24 configured.
-- **Next:** Follow [Stabilization Plan](STABILIZATION-PLAN.md). Priority is restoring TaskOS safely, reconciling task lifecycle/evidence, refreshing overdue support review metadata, and validating required CI/release gates. Do not invent missing task records or mark checks passed without exact-SHA evidence.
+- **Stable branch:** `main` is at promotion merge SHA `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
+- **Development branch:** `dev` is ahead of `main` by 16 commits in the latest compare; promotion PR [#37](https://github.com/A-L-L-A-H/mw-xv/pull/37) is open with source `0a33aff64d79d51e30e2298ff64d6a68da5ce6a4`. Do not merge until risk approval and required checks are verified. No force-push/history rewrite occurred.
+- **PR #37 status:** promotion report identifies M13.09–M13.12 as complete, but exact-source CI run [45054939356](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45054939356) is **cancelled** and promotion approval is required. The milestone evidence records narrow local checks; full PostgreSQL and Playwright E2E were not run in that batch.
+- **Task completion authority (temporary recovery mode):** `ROADMAP.md` checkbox + evidence is completion truth; `docs/roadmap/tasks.json` is task ID/dependency/detail index; Issues are projections/human triage. `docs/tasks/tasks.json` remains zero-byte/invalid JSON and must not be used by TaskOS sync until recovered and validated.
+- **M13 current:** M13.01–M13.12 are marked complete in roadmap/evidence. M13.09 adds server-side run gates and unified FLOW Cockpit; M13.10 strengthens server-authoritative Proof Gate and migrates five knowledge HTTP plugins; M13.11 implements Visual DNA profile/audit core and Board mirror; M13.12 adds Workspace Orbit/boundary audit. These are **dev work pending verification/promotion**, not released.
+- **Issues:** M13.01 and M13.02–M13.08 issues were reconciled to completed/in-main after exact-source CI success and promotion PRs #29–#31. M13.09–M13.12 need managed issues/lifecycle reconciliation; keep them open until CI and promotion evidence is verified.
+- **Release readiness:** M12.14 stable-release approval remains unresolved; main equality or promotion merge alone is not stable release or deployment authorization.
+- **Runtime policy:** root package, Docker, CI, Desktop package and docs now align on Node.js 24. Runtime support ledger refresh is separate from configuration consistency.
 
-Use `pnpm roadmap:progress -- --format json` for live checklist progress. Static totals in historical checkpoints are not current truth.
+Follow [Stabilization Plan](STABILIZATION-PLAN.md). No feature expansion or release promotion until TaskOS recovery, issue lifecycle, required CI, approval and release gates are resolved.
+
+Use `pnpm roadmap:progress -- --format json` for live progress; ignore static historical counts.
 
 ## Checkpoint historis — 2026-10-23
 
