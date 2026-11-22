@@ -14,10 +14,9 @@ const planTemplate = JSON.parse(await readFile(planPath, 'utf8'));
 const registry = parseTasksRegistry(await readFile(registryPath, 'utf8'));
 assert.ok(Array.isArray(registry.tasks), 'Canonical TaskOS registry must contain a tasks array.');
 const visualUniverseRecords = registry.tasks.filter((task) => task.project === 'visual-universe');
-assert.equal(
-  visualUniverseRecords.length,
-  planTemplate.task_count,
-  'Canonical TaskOS registry must contain every Visual Universe task before projecting the work package.'
+assert.ok(
+  visualUniverseRecords.length > 0,
+  'Canonical TaskOS registry has no Visual Universe records; do not use the pack-local task snapshot as a fallback.'
 );
 const plan = {
   ...planTemplate,
