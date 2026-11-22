@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 6 · skipped 1 · in_progress 0 · blocked 0 · todo 102.
+Status counts: done 19 · skipped 1 · in_progress 0 · blocked 0 · todo 89.
 
 ## W0
 
@@ -410,12 +410,13 @@ Status counts: done 6 · skipped 1 · in_progress 0 · blocked 0 · todo 102.
 
 ## W6
 
-- [ ] **W6-001 — Inventory and preserve existing anime FX**
+- [x] **W6-001 — Inventory and preserve existing anime FX**
   - Goal: Audit all exported effects and CSS keyframes including latest raw-art grunge kinetics.
   - Depends on: W0-004
   - Deliverables: FX reuse map and gap list.
   - Acceptance: Existing effects are not duplicated.; Latest dev commit and budget changes are preserved.; Effects are grouped by UI micro, cinematic and ambient.
   - Verify: pnpm test:ui
+  - Evidence: `source inventory of shared FX exports, CSS keyframes, motion tokens and reduced-motion/audio behavior` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/fx-reuse-map.md`; `pnpm test:ui` (0) → `59 UI tests and packed consumer verification passed`
 
 - [ ] **W6-002 — Define cinematic FX contracts**
   - Goal: Define impact, frame-freeze, slash, transition, particles, glow and camera shake with safe intensity levels.
@@ -512,89 +513,101 @@ Status counts: done 6 · skipped 1 · in_progress 0 · blocked 0 · todo 102.
 
 ## W8
 
-- [ ] **W8-D01 — Audit base addon visual requirements**
+- [x] **W8-D01 — Audit base addon visual requirements**
   - Goal: Inspect the real base models, views, menu/access rules, API routes and current Board consumer. Domain: People, partners, companies, users, activities, attachments, tags, records.
   - Depends on: W0-005
   - Deliverables: base domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/base.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D02 — Audit auth addon visual requirements**
+- [x] **W8-D02 — Audit auth addon visual requirements**
   - Goal: Inspect the real auth models, views, menu/access rules, API routes and current Board consumer. Domain: Identity, login, registration, security and session states.
   - Depends on: W0-005
   - Deliverables: auth domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/auth.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D03 — Audit jobs addon visual requirements**
+- [x] **W8-D03 — Audit jobs addon visual requirements**
   - Goal: Inspect the real jobs models, views, menu/access rules, API routes and current Board consumer. Domain: Queues, jobs, scheduled work, execution and failure states.
   - Depends on: W0-005
   - Deliverables: jobs domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/jobs.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D04 — Audit integration addon visual requirements**
+- [x] **W8-D04 — Audit integration addon visual requirements**
   - Goal: Inspect the real integration models, views, menu/access rules, API routes and current Board consumer. Domain: Webhook endpoints, delivery and connector states.
   - Depends on: W0-005
   - Deliverables: integration domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/integration.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D05 — Audit whatsapp addon visual requirements**
+- [x] **W8-D05 — Audit whatsapp addon visual requirements**
   - Goal: Inspect the real whatsapp models, views, menu/access rules, API routes and current Board consumer. Domain: Accounts, conversations, messages, media and contact states.
   - Depends on: W0-005
   - Deliverables: whatsapp domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/whatsapp.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D06 — Audit request addon visual requirements**
+- [x] **W8-D06 — Audit request addon visual requirements**
   - Goal: Inspect the real request models, views, menu/access rules, API routes and current Board consumer. Domain: Purchase requests and approval lifecycle.
   - Depends on: W0-005
   - Deliverables: request domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/request.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D07 — Audit notification addon visual requirements**
+- [x] **W8-D07 — Audit notification addon visual requirements**
   - Goal: Inspect the real notification models, views, menu/access rules, API routes and current Board consumer. Domain: Inbox, unread/read/archived and channel states.
   - Depends on: W0-005
   - Deliverables: notification domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/notification.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D08 — Audit organization addon visual requirements**
+- [x] **W8-D08 — Audit organization addon visual requirements**
   - Goal: Inspect the real organization models, views, menu/access rules, API routes and current Board consumer. Domain: Departments, teams, positions, memberships and hierarchy.
   - Depends on: W0-005
   - Deliverables: organization domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/organization.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D09 — Audit workflow addon visual requirements**
+- [x] **W8-D09 — Audit workflow addon visual requirements**
   - Goal: Inspect the real workflow models, views, menu/access rules, API routes and current Board consumer. Domain: Definitions, instances, transitions, approvals and event history.
   - Depends on: W0-005
   - Deliverables: workflow domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/workflow.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D10 — Audit knowledge addon visual requirements**
+- [x] **W8-D10 — Audit knowledge addon visual requirements**
   - Goal: Inspect the real knowledge models, views, menu/access rules, API routes and current Board consumer. Domain: Witness testimony, source, evidence, corrections, interpretations and research graph.
   - Depends on: W0-005
   - Deliverables: knowledge domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/knowledge.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D11 — Audit orm-storage addon visual requirements**
+- [x] **W8-D11 — Audit orm-storage addon visual requirements**
   - Goal: Inspect the real orm-storage models, views, menu/access rules, API routes and current Board consumer. Domain: Attachment storage providers and lifecycle states; currently provider addon has no domain models.
   - Depends on: W0-005
   - Deliverables: orm-storage domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/storage.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-D12 — Audit ai addon visual requirements**
+- [x] **W8-D12 — Audit ai addon visual requirements**
   - Goal: Inspect the real ai models, views, menu/access rules, API routes and current Board consumer. Domain: Agents, profiles, models, providers, contracts, runs, taskforces, skills and memory.
   - Depends on: W0-005
   - Deliverables: ai domain-to-screen-to-asset mapping with source paths and real states
   - Acceptance: Every model, view, route and permission cited is verified in current source.; Missing or unavailable consumer routes are explicitly marked, not invented.; Existing visual assets/components are identified for reuse.; ORM/API ownership boundaries remain unchanged.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
+  - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/ai.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
 - [ ] **W8-001 — Implement visual coverage for base addon**
   - Goal: Implement only the verified base asset references, UI compositions and state treatments based on W8-D01. Domain: People, partners, companies, users, activities, attachments, tags, records.

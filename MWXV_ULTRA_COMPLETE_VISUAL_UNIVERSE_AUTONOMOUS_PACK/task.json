@@ -2169,7 +2169,7 @@
       "id": "W6-001",
       "phase": "W6",
       "title": "Inventory and preserve existing anime FX",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "serial",
@@ -2196,7 +2196,18 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "source inventory of shared FX exports, CSS keyframes, motion tokens and reduced-motion/audio behavior",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/fx-reuse-map.md"
+        },
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "59 UI tests and packed consumer verification passed"
+        }
+      ],
       "commit": null
     },
     {
@@ -2644,7 +2655,7 @@
       "id": "W8-D01",
       "phase": "W8",
       "title": "Audit base addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2673,14 +2684,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/base.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D02",
       "phase": "W8",
       "title": "Audit auth addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2709,14 +2731,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/auth.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D03",
       "phase": "W8",
       "title": "Audit jobs addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2745,14 +2778,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/jobs.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D04",
       "phase": "W8",
       "title": "Audit integration addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2781,14 +2825,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/integration.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D05",
       "phase": "W8",
       "title": "Audit whatsapp addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2817,14 +2872,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/whatsapp.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D06",
       "phase": "W8",
       "title": "Audit request addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2853,14 +2919,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/request.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D07",
       "phase": "W8",
       "title": "Audit notification addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2889,14 +2966,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/notification.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D08",
       "phase": "W8",
       "title": "Audit organization addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2925,14 +3013,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/organization.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D09",
       "phase": "W8",
       "title": "Audit workflow addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2961,14 +3060,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/workflow.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D10",
       "phase": "W8",
       "title": "Audit knowledge addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -2997,14 +3107,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/knowledge.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D11",
       "phase": "W8",
       "title": "Audit orm-storage addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -3033,14 +3154,25 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/storage.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W8-D12",
       "phase": "W8",
       "title": "Audit ai addon visual requirements",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
@@ -3069,7 +3201,18 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
+      "evidence": [
+        {
+          "command": "focused source review of addon manifest/models/views/access/API registry and Board consumers",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/ai.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md"
+        }
+      ],
       "commit": null
     },
     {
