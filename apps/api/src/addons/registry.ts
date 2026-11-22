@@ -9,6 +9,9 @@ import { manifest as notificationAddon } from '@moonwitness/orm-notification';
 import { manifest as workflowAddon } from '@moonwitness/orm-workflow';
 import { manifest as organizationAddon } from '@moonwitness/orm-organization';
 import { manifest as projectAddon } from '@moonwitness/orm-project';
+import { manifest as crmAddon } from '@moonwitness/orm-crm';
+import { manifest as salesAddon } from '@moonwitness/orm-sales';
+import { manifest as subscriptionAddon } from '@moonwitness/orm-subscription';
 import { manifest as integrationAddon } from '@moonwitness/orm-integration';
 import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
@@ -170,6 +173,18 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
     async registerRoutes(app) {
       await app.register(projectRoutes);
     },
+  },
+  {
+    name: 'crm',
+    manifest: crmAddon,
+  },
+  {
+    name: 'sales',
+    manifest: salesAddon,
+  },
+  {
+    name: 'subscription',
+    manifest: subscriptionAddon,
   },
   {
     name: 'workflow',

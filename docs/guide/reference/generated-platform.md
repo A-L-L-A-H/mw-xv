@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `4db0eac467c617467e7b2e66b5ed243e70918fc84655c021c720f0b58edf9a7a`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `035e23e36e95152814fc09ffecfffabfbcf03f015634b2e66a8e0ef3e9a4427f`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -16,7 +16,7 @@ Source fingerprint: `4db0eac467c617467e7b2e66b5ed243e70918fc84655c021c720f0b58ed
 | `@moonwitness/ai-evaluation`    | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/ai-mcp`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/ai-runtime`       | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
-| `@moonwitness/assets`           | Package | 1.0.0-rc.1 | `artwork:derivatives`, `artwork:layers`, `artwork:prepare`, `brand:prepare`, `font:brand:generate`, `fonts:prepare`, `inventory`                                                                                                                                                   |
+| `@moonwitness/assets`           | Package | 1.0.0-rc.1 | `artwork:derivatives`, `artwork:layers`, `artwork:prepare`, `brand:prepare`, `contact-sheets`, `font:brand:generate`, `fonts:prepare`, `inventory`                                                                                                                                 |
 | `@moonwitness/auth`             | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/client`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/corpus`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |

@@ -1,6 +1,6 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `4db0eac467c617467e7b2e66b5ed243e70918fc84655c021c720f0b58edf9a7a`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `035e23e36e95152814fc09ffecfffabfbcf03f015634b2e66a8e0ef3e9a4427f`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                                     |
 | ------ | -------------------------------------------------------- |
@@ -108,6 +108,7 @@ Extracted from literal Fastify route declarations. Source fingerprint: `4db0eac4
 | GET    | `/projects/:id/board`                                    |
 | POST   | `/projects/:id/todo-sync`                                |
 | POST   | `/projects/tasks/:id/work-contract`                      |
+| POST   | `/projects/tasks/:id/work-contract/sync-stage`           |
 | GET    | `/providers`                                             |
 | POST   | `/providers`                                             |
 | PATCH  | `/providers/:id`                                         |

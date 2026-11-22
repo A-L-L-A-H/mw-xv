@@ -332,6 +332,85 @@ const projectRoutesPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.code(201).send({ success: true, data: loaded, created: true });
     }
   );
+
+  fastify.post<{ Params: { id: string } }>(
+    '/projects/tasks/:id/work-contract/sync-stage',
+    async (req, reply) => {
+      const ctx = await requireAiCompanyContext(req, reply);
+      if (!ctx) return;
+      if (!canAccess(ctx.role, ProjectTask.modelName, 'write', req.auth?.groupPermissions)) {
+        return reply.code(403).send({ success: false, error: 'Project task stage sync denied' });
+      }
+      const taskId = parsePositiveIntId(req.params.id);
+      if (!taskId) {
+        return reply.code(400).send({ success: false, error: 'Invalid project task ID' });
+      }
+
+      const task = await ProjectTask.query().findOne({
+        id: taskId,
+        company_id: ctx.companyId,
+        active: true,
+      });
+      if (!task) {
+        return reply.code(404).send({ success: false, error: 'Project task not found' });
+      }
+
+      const sourceRef = toWorkContractSource(task.id);
+      const contract = await WorkContract.query().findOne({
+        company_id: ctx.companyId,
+        source_model: sourceRef.source_model,
+        source_id: sourceRef.source_id,
+        active: true,
+      });
+      if (!contract) {
+        return reply.code(404).send({
+          success: false,
+          error: 'No linked WorkContract found for this project task',
+        });
+      }
+
+      const targetStatusMap: Record<
+        string,
+        { status: 'backlog' | 'in_progress' | 'blocked' | 'review' | 'done'; stageCode: string }
+      > = {
+        draft: { status: 'backlog', stageCode: 'backlog' },
+        queued: { status: 'in_progress', stageCode: 'in_progress' },
+        running: { status: 'in_progress', stageCode: 'in_progress' },
+        in_review: { status: 'review', stageCode: 'review' },
+        accepted: { status: 'done', stageCode: 'done' },
+        rejected: { status: 'blocked', stageCode: 'in_progress' },
+        failed: { status: 'blocked', stageCode: 'in_progress' },
+      };
+      const target = targetStatusMap[String(contract.status)];
+      if (!target) {
+        return { success: true, data: { task, work_contract: contract, advanced: false } };
+      }
+
+      const targetStage = await ProjectStage.query()
+        .where({ company_id: ctx.companyId, code: target.stageCode, active: true })
+        .andWhere((qb) => qb.where({ project_id: task.project_id }).orWhereNull('project_id'))
+        .orderBy('project_id', 'desc')
+        .first();
+
+      const nextStageId = targetStage?.id ?? task.stage_id;
+      const advanced = task.status !== target.status || task.stage_id !== nextStageId;
+      const updatedTask = advanced
+        ? await ProjectTask.query().patchAndFetchById(task.id, {
+            status: target.status,
+            stage_id: nextStageId,
+          })
+        : task;
+
+      return {
+        success: true,
+        data: {
+          task: updatedTask,
+          work_contract: contract,
+          advanced,
+        },
+      };
+    }
+  );
 };
 
 export const projectRoutes: FastifyPluginAsync = async (fastify) => {
