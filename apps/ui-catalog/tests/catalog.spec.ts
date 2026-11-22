@@ -86,6 +86,26 @@ test('integration boundary specimen documents models and permissions without inv
   await expect(specimen.getByText(/secret material stays outside the UI/u)).toBeVisible();
 });
 
+test('request workflow specimen follows model fields and registered approval permissions', async ({
+  page,
+}) => {
+  await page.goto('./#request-coverage');
+  const specimen = page.getByTestId('request-workflow-specimen');
+  await expect(specimen).toBeVisible();
+  await expect(
+    specimen.getByText('title · description · amount_minor · currency · company · vendor', {
+      exact: true,
+    })
+  ).toBeVisible();
+  await expect(
+    specimen.getByText('draft → submitted → approved or rejected', { exact: true })
+  ).toBeVisible();
+  await expect(specimen.getByText(/approval requires a distinct actor/u)).toBeVisible();
+  await expect(
+    specimen.getByText(/no request amounts, vendors, routes or records are shown/u)
+  ).toBeVisible();
+});
+
 test('theme toggle changes the shared token map without hiding readable labels', async ({
   page,
 }) => {

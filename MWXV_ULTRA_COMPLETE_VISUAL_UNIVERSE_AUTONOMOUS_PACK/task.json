@@ -3704,7 +3704,7 @@
       "id": "W8-006",
       "phase": "W8",
       "title": "Implement visual coverage for request addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3739,8 +3739,34 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "No request-specific production route exists. Added a labelled, contract-only Catalog specimen showing real model fields, workflow transitions, roles, and empty/unavailable/permission-denied states without fictional records or spend metrics.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/ui-catalog build",
+          "artifact": "apps/ui-catalog/dist"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/ui-catalog test",
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm board:ui:check",
+          "artifact": "scripts/check-board-shared-ui.mjs"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "artifact": "apps/board"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm test:assets",
+          "artifact": "packages/assets/tests"
+        }
+      ],
       "commit": null
     },
     {

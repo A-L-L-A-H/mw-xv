@@ -170,6 +170,7 @@ const sections = [
   { id: 'data-display', label: 'Data display' },
   { id: 'auth-coverage', label: 'Auth route coverage' },
   { id: 'integration-coverage', label: 'Integration boundary' },
+  { id: 'request-coverage', label: 'Purchase request workflow' },
   { id: 'assets', label: 'Asset inventory' },
   { id: 'charts', label: 'Charts' },
 ] as const;
@@ -1797,6 +1798,64 @@ function CatalogContent() {
                   <p className="auth-coverage-boundary">
                     Catalog boundary specimen · schema and permission states only; no endpoint,
                     delivery, count, or route fixture is represented.
+                  </p>
+                </Panel>
+              </div>
+            </Section>
+            <Section
+              id="request-coverage"
+              title="Purchase request workflow"
+              description="A contract-only design specimen for request.purchase and its reusable approval workflow; no request record or spend metric is represented."
+            >
+              <div className="auth-coverage-grid" data-testid="request-workflow-specimen">
+                <Panel
+                  title="Purchase request"
+                  description="The model stores request details; approval status belongs to request.purchase_approval."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>Fields</dt>
+                      <dd>title · description · amount_minor · currency · company · vendor</dd>
+                    </div>
+                    <div>
+                      <dt>User access</dt>
+                      <dd>Read, create and update; delete is denied.</dd>
+                    </div>
+                    <div>
+                      <dt>Empty</dt>
+                      <dd>No requests are available to the authorized user.</dd>
+                    </div>
+                    <div>
+                      <dt>Unavailable</dt>
+                      <dd>Request records could not be loaded.</dd>
+                    </div>
+                  </dl>
+                </Panel>
+                <Panel
+                  title="Approval lifecycle"
+                  description="Workflow state, action and actor permissions come from the registered workflow definition."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>States</dt>
+                      <dd>draft → submitted → approved or rejected</dd>
+                    </div>
+                    <div>
+                      <dt>Submit</dt>
+                      <dd>User, superadmin or system; draft to submitted.</dd>
+                    </div>
+                    <div>
+                      <dt>Approve / reject</dt>
+                      <dd>Superadmin or system; approval requires a distinct actor.</dd>
+                    </div>
+                    <div>
+                      <dt>Permission denied</dt>
+                      <dd>Actions remain unavailable outside their registered roles.</dd>
+                    </div>
+                  </dl>
+                  <p className="auth-coverage-boundary">
+                    Catalog boundary specimen · schema and workflow states only; no request amounts,
+                    vendors, routes or records are shown.
                   </p>
                 </Panel>
               </div>
