@@ -11,6 +11,8 @@ import {
 } from './models/index.js';
 import { deployViaCoolify } from './providers/coolify.js';
 import { exportCloudTerraformHcl } from './terraform.js';
+import { probeCloudTargetsHealth } from './probe.js';
+import { controlPlaneAuthHeaders, resolveControlPlaneToken } from './auth.js';
 
 interface GroupGrant {
   readonly model_name: string;
@@ -30,6 +32,8 @@ interface RequestAuth {
 export interface CloudHttpPluginOptions {
   readonly controlPlaneUrl?: string;
   readonly fetchImpl?: typeof fetch;
+  readonly adminToken?: string;
+  readonly jwtSecret?: string;
 }
 
 function requestAuth(req: FastifyRequest): RequestAuth | null {
@@ -98,6 +102,19 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       'http://127.0.0.1:3003'
     ).replace(/\/+$/u, '');
     const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+    const resolvedToken =
+      options.adminToken ?? resolveControlPlaneToken({ jwtSecret: options.jwtSecret });
+
+    async function controlPlaneFetch(input: string, init?: RequestInit): Promise<Response> {
+      return fetchImpl(input, {
+        ...init,
+        headers: {
+          ...controlPlaneAuthHeaders(resolvedToken),
+          ...init?.headers,
+        },
+        signal: AbortSignal.timeout(30_000),
+      });
+    }
 
     fastify.get('/api/cloud/health', async (req, reply) => {
       const ctx = requireAuthorizedModelAccess(req, reply, CloudApp.modelName, 'read');
@@ -135,7 +152,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
 
       try {
-        const res = await fetchImpl(`${defaultAgentUrl}/services`, {
+        const res = await controlPlaneFetch(`${defaultAgentUrl}/services`, {
           signal: AbortSignal.timeout(5_000),
         });
         if (!res.ok) {
@@ -271,10 +288,11 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       const ports =
         cloudApp.host_port && cloudApp.port ? [`${cloudApp.host_port}:${cloudApp.port}`] : [];
       try {
-        const res = await fetchImpl(`${agentUrl}/api/deploy`, {
+        const res = await controlPlaneFetch(`${agentUrl}/api/deploy`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
+            name: cloudApp.name,
             image: imageRef,
             ports,
             volumes: parseVolumes(cloudApp.volumes),
@@ -399,6 +417,41 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           return reply.code(404).send({ success: false, error: 'Deployment not found' });
         }
 
+        let liveLog: string | null = null;
+        let live = false;
+        if (deployment.container_id) {
+          try {
+            const cloudAppRecord = await CloudApp.query().findById(deployment.app_id);
+            const target = cloudAppRecord
+              ? await CloudDeploymentTarget.query().findById(cloudAppRecord.deployment_target_id)
+              : undefined;
+            const server = target?.server_id
+              ? await CloudServer.query().findById(target.server_id)
+              : undefined;
+            const provider = server
+              ? await CloudProvider.query().findById(server.provider_id)
+              : undefined;
+            if (provider?.type !== 'coolify') {
+              const agentUrl = (
+                options.controlPlaneUrl ??
+                process.env.MW_CONTROL_PLANE_URL ??
+                defaultAgentUrl
+              ).replace(/\/+$/u, '');
+              const res = await controlPlaneFetch(
+                `${agentUrl}/api/containers/${encodeURIComponent(deployment.container_id)}/logs?tail=200`,
+                { signal: AbortSignal.timeout(5_000) }
+              );
+              if (res.ok) {
+                const body = (await res.json()) as { id?: string; logs?: string };
+                liveLog = body?.logs ?? null;
+                live = true;
+              }
+            }
+          } catch {
+            // fall back to stored deployment.log below
+          }
+        }
+
         return {
           success: true,
           data: {
@@ -408,8 +461,9 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
             containerId: deployment.container_id ?? null,
             startedAt: deployment.started_at ?? null,
             completedAt: deployment.completed_at ?? null,
-            log: deployment.log ?? '',
+            log: liveLog ?? deployment.log ?? '',
             errorMessage: deployment.error_message ?? null,
+            live,
           },
         };
       }
@@ -441,12 +495,87 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           log: deployment.log ?? '',
           errorMessage: deployment.error_message ?? null,
         });
-        return reply
-          .header('content-type', 'text/event-stream; charset=utf-8')
-          .header('cache-control', 'no-cache')
-          .send(`event: deployment\ndata: ${payload}\n\n`);
+
+        let upstream: Response | null = null;
+        let upstreamUrl: string | null = null;
+        if (deployment.container_id) {
+          try {
+            const cloudAppRecord = await CloudApp.query().findById(deployment.app_id);
+            const target = cloudAppRecord
+              ? await CloudDeploymentTarget.query().findById(cloudAppRecord.deployment_target_id)
+              : undefined;
+            const server = target?.server_id
+              ? await CloudServer.query().findById(target.server_id)
+              : undefined;
+            const provider = server
+              ? await CloudProvider.query().findById(server.provider_id)
+              : undefined;
+            if (provider?.type !== 'coolify') {
+              const agentUrl = (
+                options.controlPlaneUrl ??
+                process.env.MW_CONTROL_PLANE_URL ??
+                defaultAgentUrl
+              ).replace(/\/+$/u, '');
+              upstreamUrl = `${agentUrl}/api/containers/${encodeURIComponent(deployment.container_id)}/logs?follow=true&tail=100`;
+              const controller = new AbortController();
+              req.raw.once('close', () => controller.abort());
+              const res = await fetchImpl(upstreamUrl, {
+                headers: controlPlaneAuthHeaders(resolvedToken),
+                signal: controller.signal,
+              });
+              if (res.ok && res.body) upstream = res;
+            }
+          } catch {
+            upstream = null;
+          }
+        }
+
+        if (!upstream) {
+          return reply
+            .header('content-type', 'text/event-stream; charset=utf-8')
+            .header('cache-control', 'no-cache')
+            .send(`event: deployment\ndata: ${payload}\n\n`);
+        }
+
+        reply.hijack();
+        const raw = reply.raw;
+        raw.statusCode = 200;
+        raw.setHeader('content-type', 'text/event-stream; charset=utf-8');
+        raw.setHeader('cache-control', 'no-cache');
+        raw.setHeader('connection', 'keep-alive');
+        raw.write(`event: deployment\ndata: ${payload}\n\n`);
+        const reader = upstream.body!.getReader();
+        const decoder = new TextDecoder();
+        try {
+          for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            if (value) raw.write(decoder.decode(value, { stream: true }));
+          }
+        } catch {
+          // upstream closed or client disconnected
+        } finally {
+          try {
+            await reader.cancel();
+          } catch {
+            // ignore
+          }
+          raw.end();
+        }
+        return reply;
       }
     );
+
+    fastify.post('/api/cloud/targets/probe', async (req, reply) => {
+      const ctx = requireAuthorizedModelAccess(req, reply, CloudDeploymentTarget.modelName, 'write');
+      if (!ctx) return;
+      const result = await probeCloudTargetsHealth({
+        companyId: ctx.companyId,
+        adminToken: resolvedToken,
+        fetchImpl,
+      });
+      return { success: true, data: result };
+    });
 
     fastify.get('/api/cloud/export/terraform', async (req, reply) => {
       const ctx = requireAuthorizedModelAccess(req, reply, CloudApp.modelName, 'read');

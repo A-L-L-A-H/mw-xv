@@ -10,6 +10,8 @@ import {
   type WorkerHealthServer,
 } from './worker-health.js';
 import { registerWorkflowExpiryHandler } from '@moonwitness/orm-workflow';
+import { registerIspJobHandlers } from '@moonwitness/orm-isp';
+import { registerCloudJobHandlers } from '@moonwitness/orm-cloud';
 import { createProcessShutdownController } from '../lifecycle/process-shutdown.js';
 import { ServiceContainer, createServiceToken } from '@moonwitness/orm';
 import { registerWhatsAppAttachmentJob } from './whatsapp-attachments-job.js';
@@ -45,9 +47,13 @@ try {
     },
   });
   const unregisterWorkflow = registerWorkflowExpiryHandler();
+  const unregisterIsp = registerIspJobHandlers();
+  const unregisterCloud = registerCloudJobHandlers();
   try {
     await runWorkerLoop({ workerId: `moonwitness-${randomUUID()}` }, shutdown.signal);
   } finally {
+    unregisterCloud();
+    unregisterIsp();
     unregisterWorkflow();
     unregisterExample();
     unregisterWhatsAppAttachmentJob();

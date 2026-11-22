@@ -12,6 +12,8 @@ import {
   ensureWhatsAppAttachmentCron,
   registerWhatsAppAttachmentJob,
 } from './whatsapp-attachments-job.js';
+import { ensureIspCrons, registerIspJobHandlers } from '@moonwitness/orm-isp';
+import { ensureCloudCrons, registerCloudJobHandlers } from '@moonwitness/orm-cloud';
 
 const db = createDatabase();
 let workerHealth: Awaited<ReturnType<typeof startWorkerHealthServer>> = null;
@@ -22,7 +24,11 @@ const shutdown = createProcessShutdownController(() => workerHealth?.setReady(fa
 try {
   await bootstrapApiWorker(db);
   await ensureWhatsAppAttachmentCron(db);
+  await ensureIspCrons(db);
+  await ensureCloudCrons(db);
   const unregisterWhatsAppAttachmentJob = registerWhatsAppAttachmentJob(db);
+  const unregisterIsp = registerIspJobHandlers();
+  const unregisterCloud = registerCloudJobHandlers();
   if (!shutdown.signal.aborted) {
     workerHealth = await startWorkerHealthServer({
       db,
@@ -38,6 +44,8 @@ try {
   try {
     await runSchedulerLoop(shutdown.signal);
   } finally {
+    unregisterCloud();
+    unregisterIsp();
     unregisterWhatsAppAttachmentJob();
   }
 } finally {

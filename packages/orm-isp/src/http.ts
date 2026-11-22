@@ -3,7 +3,14 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { AuditLog } from '@moonwitness/orm-base';
 import { Subscription } from '@moonwitness/orm-subscription';
+import { ispAuthHeaders, resolveIspAdminToken } from './auth.js';
 import { meterSessionsToSubscriptionInvoices } from './metering.js';
+import {
+  probeIspNasHealth,
+  processIspRadiusOutbox,
+  syncIspRuntimeSessions,
+  type NasHealthStatus,
+} from './reconcile.js';
 import {
   ISPBandwidthProfile,
   ISPNAS,
@@ -29,6 +36,8 @@ interface RequestAuth {
 
 export interface IspHttpPluginOptions {
   readonly ispServiceUrl?: string;
+  readonly adminToken?: string;
+  readonly jwtSecret?: string;
   readonly fetchImpl?: typeof fetch;
 }
 
@@ -55,7 +64,7 @@ function hasModelAccess(
 function requireAuthorizedModelAccess(
   req: FastifyRequest,
   reply: FastifyReply,
-  modelName: string,
+  modelNames: readonly string[],
   op: 'read' | 'create' | 'write' | 'unlink'
 ): { auth: RequestAuth; companyId: number } | null {
   const auth = requestAuth(req);
@@ -67,8 +76,11 @@ function requireAuthorizedModelAccess(
     void reply.code(403).send({ success: false, error: 'Active company context required' });
     return null;
   }
-  if (!hasModelAccess(auth, modelName, op)) {
-    void reply.code(403).send({ success: false, error: `Access denied for ${modelName}:${op}` });
+  const allowed = modelNames.some((modelName) => hasModelAccess(auth, modelName, op));
+  if (!allowed) {
+    void reply
+      .code(403)
+      .send({ success: false, error: `Access denied for ${modelNames.join('|')}:${op}` });
     return null;
   }
   return { auth, companyId: auth.companyId };
@@ -82,14 +94,19 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
       ''
     );
     const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+    const adminToken = resolveIspAdminToken({
+      adminToken: options.adminToken,
+      jwtSecret: options.jwtSecret,
+    });
 
     fastify.get('/api/isp/health', async (req, reply) => {
-      const ctx = requireAuthorizedModelAccess(req, reply, ISPNAS.modelName, 'read');
+      const ctx = requireAuthorizedModelAccess(req, reply, [ISPNAS.modelName], 'read');
       if (!ctx) return;
 
       let runtime: 'connected' | 'unreachable' = 'unreachable';
       try {
         const res = await fetchImpl(`${baseUrl}/health`, {
+          headers: ispAuthHeaders(adminToken),
           signal: AbortSignal.timeout(3_000),
         });
         if (res.ok) runtime = 'connected';
@@ -113,7 +130,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     });
 
     fastify.post<{ Params: { id: string } }>('/api/isp/nas/:id/sync', async (req, reply) => {
-      const ctx = requireAuthorizedModelAccess(req, reply, ISPNAS.modelName, 'write');
+      const ctx = requireAuthorizedModelAccess(req, reply, [ISPNAS.modelName], 'write');
       if (!ctx) return;
       const nasId = parsePositiveId(req.params.id);
       if (!nasId) return reply.code(400).send({ success: false, error: 'Invalid NAS ID' });
@@ -127,7 +144,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
 
       const response = await fetchImpl(`${baseUrl}/api/clients`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: ispAuthHeaders(adminToken, { 'content-type': 'application/json' }),
         body: JSON.stringify({
           name: nas.name,
           ip_address: nas.ip_address,
@@ -157,7 +174,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     fastify.post<{ Params: { id: string }; Body: { reason?: string } | undefined }>(
       '/api/isp/nas/:id/rotate-secret',
       async (req, reply) => {
-        const ctx = requireAuthorizedModelAccess(req, reply, ISPNAS.modelName, 'write');
+        const ctx = requireAuthorizedModelAccess(req, reply, [ISPNAS.modelName], 'write');
         if (!ctx) return;
         const nasId = parsePositiveId(req.params.id);
         if (!nasId) return reply.code(400).send({ success: false, error: 'Invalid NAS ID' });
@@ -187,7 +204,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
             `${baseUrl}/api/clients/${encodeURIComponent(nas.ip_address)}/rotate-secret`,
             {
               method: 'POST',
-              headers: { 'content-type': 'application/json' },
+              headers: ispAuthHeaders(adminToken, { 'content-type': 'application/json' }),
               body: JSON.stringify({ secret: newSecret, reason }),
               signal: AbortSignal.timeout(5_000),
             }
@@ -212,7 +229,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     fastify.post<{ Params: { id: string } }>(
       '/api/isp/subscribers/:id/sync',
       async (req, reply) => {
-        const ctx = requireAuthorizedModelAccess(req, reply, ISPSubscriber.modelName, 'write');
+        const ctx = requireAuthorizedModelAccess(req, reply, [ISPSubscriber.modelName], 'write');
         if (!ctx) return;
         const subscriberId = parsePositiveId(req.params.id);
         if (!subscriberId) {
@@ -249,7 +266,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
 
         const response = await fetchImpl(`${baseUrl}/api/subscribers`, {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: ispAuthHeaders(adminToken, { 'content-type': 'application/json' }),
           body: JSON.stringify({
             username: subscriber.username,
             password: subscriber.password,
@@ -284,7 +301,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     fastify.post<{ Params: { id: string } }>(
       '/api/isp/subscribers/:id/suspend',
       async (req, reply) => {
-        const ctx = requireAuthorizedModelAccess(req, reply, ISPSubscriber.modelName, 'write');
+        const ctx = requireAuthorizedModelAccess(req, reply, [ISPSubscriber.modelName], 'write');
         if (!ctx) return;
         const subscriberId = parsePositiveId(req.params.id);
         if (!subscriberId) {
@@ -301,7 +318,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
         }
 
         await ISPSubscriber.query().findById(subscriber.id).patch({ status: 'suspended' });
-        await ISPRadiusOutbox.query().insert({
+        const outboxRow = await ISPRadiusOutbox.query().insertAndFetch({
           company_id: ctx.companyId,
           username: subscriber.username,
           type: 'disconnect',
@@ -310,12 +327,50 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
           created_at: new Date().toISOString().slice(0, 19),
         });
 
+        let dispatched = false;
+        try {
+          const suspendRes = await fetchImpl(
+            `${baseUrl}/api/subscribers/${encodeURIComponent(subscriber.username)}/suspend`,
+            {
+              method: 'POST',
+              headers: ispAuthHeaders(adminToken),
+              signal: AbortSignal.timeout(5_000),
+            }
+          );
+          if (suspendRes.ok) {
+            const disconnectRes = await fetchImpl(`${baseUrl}/api/sessions/disconnect`, {
+              method: 'POST',
+              headers: ispAuthHeaders(adminToken, { 'content-type': 'application/json' }),
+              body: JSON.stringify({
+                username: subscriber.username,
+                nas_ip: undefined,
+                acct_session_id: undefined,
+                framed_ip: subscriber.ip_address ?? undefined,
+              }),
+              signal: AbortSignal.timeout(5_000),
+            });
+            dispatched = disconnectRes.ok || disconnectRes.status === 404;
+          }
+        } catch {
+          dispatched = false;
+        }
+
+        if (dispatched) {
+          await ISPRadiusOutbox.query().findById(outboxRow.id).patch({
+            status: 'sent',
+            sent_at: new Date().toISOString().slice(0, 19),
+            response: JSON.stringify({ immediateDispatch: true }),
+            error_message: null,
+          });
+        }
+
         return {
           success: true,
           data: {
             id: subscriber.id,
             username: subscriber.username,
             status: 'suspended',
+            dispatched,
           },
         };
       }
@@ -324,7 +379,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     fastify.post<{ Params: { id: string } }>(
       '/api/isp/subscriptions/:id/enforce',
       async (req, reply) => {
-        const ctx = requireAuthorizedModelAccess(req, reply, ISPSubscriber.modelName, 'write');
+        const ctx = requireAuthorizedModelAccess(req, reply, [ISPSubscriber.modelName], 'write');
         if (!ctx) return;
         const subscriptionId = parsePositiveId(req.params.id);
         if (!subscriptionId) {
@@ -362,10 +417,14 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
             created_at: new Date().toISOString().slice(0, 19),
           });
           try {
-            await fetchImpl(`${baseUrl}/api/subscribers/${encodeURIComponent(sub.username)}/suspend`, {
-              method: 'POST',
-              signal: AbortSignal.timeout(3_000),
-            });
+            await fetchImpl(
+              `${baseUrl}/api/subscribers/${encodeURIComponent(sub.username)}/suspend`,
+              {
+                method: 'POST',
+                headers: ispAuthHeaders(adminToken),
+                signal: AbortSignal.timeout(3_000),
+              }
+            );
           } catch {
             // Outbox retains disconnect intent if runtime is temporarily offline.
           }
@@ -379,7 +438,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     );
 
     fastify.get('/api/isp/sessions/live', async (req, reply) => {
-      const ctx = requireAuthorizedModelAccess(req, reply, ISPRadiusSession.modelName, 'read');
+      const ctx = requireAuthorizedModelAccess(req, reply, [ISPRadiusSession.modelName], 'read');
       if (!ctx) return;
 
       const dbSessions = await ISPRadiusSession.query()
@@ -390,6 +449,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
       let runtimeSessions: unknown[] = [];
       try {
         const res = await fetchImpl(`${baseUrl}/api/sessions`, {
+          headers: ispAuthHeaders(adminToken),
           signal: AbortSignal.timeout(3_000),
         });
         if (res.ok) {
@@ -410,9 +470,92 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     });
 
     fastify.post<{ Body: { pricePerGbMinor?: number } | undefined }>(
+      '/api/isp/sessions/sync',
+      async (req, reply) => {
+        const ctx = requireAuthorizedModelAccess(req, reply, [ISPRadiusSession.modelName], 'write');
+        if (!ctx) return;
+
+        try {
+          const result = await syncIspRuntimeSessions({
+            companyId: ctx.companyId,
+            ispServiceUrl: baseUrl,
+            adminToken,
+            pricePerGbMinor: req.body?.pricePerGbMinor,
+            fetchImpl,
+          });
+          return { success: true, data: result };
+        } catch (error) {
+          return reply.code(502).send({
+            success: false,
+            error:
+              error instanceof Error
+                ? error.message
+                : 'ISP runtime session sync failed unexpectedly',
+          });
+        }
+      }
+    );
+
+    fastify.post('/api/isp/outbox/process', async (req, reply) => {
+      const ctx = requireAuthorizedModelAccess(
+        req,
+        reply,
+        [ISPRadiusOutbox.modelName, ISPSubscriber.modelName],
+        'write'
+      );
+      if (!ctx) return;
+
+      try {
+        const result = await processIspRadiusOutbox({
+          companyId: ctx.companyId,
+          ispServiceUrl: baseUrl,
+          adminToken,
+          fetchImpl,
+        });
+        return { success: true, data: result };
+      } catch (error) {
+        return reply.code(502).send({
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'ISP RADIUS outbox processing failed unexpectedly',
+        });
+      }
+    });
+
+    fastify.post<{ Body: { timeoutMs?: number } | undefined }>(
+      '/api/isp/nas/probe',
+      async (req, reply) => {
+        const ctx = requireAuthorizedModelAccess(req, reply, [ISPNAS.modelName], 'write');
+        if (!ctx) return;
+
+        const result = await probeIspNasHealth({
+          companyId: ctx.companyId,
+          timeoutMs: req.body?.timeoutMs,
+          probeFn: async (nas): Promise<NasHealthStatus> => {
+            try {
+              const res = await fetchImpl(
+                `${baseUrl}/api/clients/${encodeURIComponent(nas.ip_address)}`,
+                {
+                  headers: ispAuthHeaders(adminToken),
+                  signal: AbortSignal.timeout(req.body?.timeoutMs ?? 2_000),
+                }
+              );
+              return res.ok ? 'healthy' : res.status === 503 ? 'degraded' : 'offline';
+            } catch {
+              return 'offline';
+            }
+          },
+        });
+        return { success: true, data: result };
+      }
+    );
+
+    fastify.post<{ Body: { pricePerGbMinor?: number } | undefined }>(
       '/api/isp/metering/run',
       async (req, reply) => {
-        const ctx = requireAuthorizedModelAccess(req, reply, ISPRadiusSession.modelName, 'write');
+        const ctx = requireAuthorizedModelAccess(req, reply, [ISPRadiusSession.modelName], 'write');
         if (!ctx) return;
         const result = await meterSessionsToSubscriptionInvoices({
           companyId: ctx.companyId,

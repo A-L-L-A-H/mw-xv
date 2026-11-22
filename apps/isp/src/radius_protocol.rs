@@ -9,6 +9,9 @@ pub mod codes {
     pub const ACCESS_REJECT: u8 = 3;
     pub const ACCOUNTING_REQUEST: u8 = 4;
     pub const ACCOUNTING_RESPONSE: u8 = 5;
+    pub const DISCONNECT_REQUEST: u8 = 40;
+    pub const DISCONNECT_ACK: u8 = 41;
+    pub const DISCONNECT_NAK: u8 = 42;
 }
 
 #[allow(dead_code)]
@@ -301,6 +304,58 @@ pub fn verify_accounting_authenticator(raw_packet: &[u8], secret: &[u8]) -> bool
     constant_time_eq(&raw_packet[4..20], &expected)
 }
 
+/// RFC 5176 §3.2 Dynamic Authorization Request (CoA / Disconnect):
+/// Request-Authenticator = MD5(Code + ID + Length + 16*0 + Attributes + Secret)
+pub fn encode_disconnect_request(
+    identifier: u8,
+    attributes: &[RadiusAttribute],
+    secret: &[u8],
+) -> Vec<u8> {
+    let mut attr_bytes = BytesMut::new();
+    for attr in attributes {
+        attr.encode(&mut attr_bytes);
+    }
+    let total_len = (20 + attr_bytes.len()) as u16;
+
+    let mut buf = BytesMut::with_capacity(total_len as usize);
+    buf.put_u8(codes::DISCONNECT_REQUEST);
+    buf.put_u8(identifier);
+    buf.put_u16(total_len);
+    buf.extend_from_slice(&[0u8; 16]);
+    buf.extend_from_slice(&attr_bytes);
+
+    let mut hasher = Md5::new();
+    hasher.update(&buf);
+    hasher.update(secret);
+    let digest = hasher.finalize();
+    buf[4..20].copy_from_slice(&digest);
+
+    buf.to_vec()
+}
+
+/// RFC 2865 §3 / RFC 5176 §3.3 Response-Authenticator verification:
+/// MD5(Code + ID + Length + RequestAuth + ResponseAttributes + Secret)
+pub fn verify_response_authenticator(
+    raw_packet: &[u8],
+    request_authenticator: &[u8; 16],
+    secret: &[u8],
+) -> bool {
+    if raw_packet.len() < 20 {
+        return false;
+    }
+    let declared_len = u16::from_be_bytes([raw_packet[2], raw_packet[3]]) as usize;
+    if declared_len < 20 || declared_len > raw_packet.len() {
+        return false;
+    }
+    let mut hasher = Md5::new();
+    hasher.update(&raw_packet[0..4]);
+    hasher.update(request_authenticator);
+    hasher.update(&raw_packet[20..declared_len]);
+    hasher.update(secret);
+    let expected = hasher.finalize();
+    constant_time_eq(&raw_packet[4..20], &expected)
+}
+
 pub fn sign_accounting_request(raw_packet: &mut [u8], secret: &[u8]) {
     if raw_packet.len() < 20 {
         return;
@@ -385,5 +440,82 @@ mod tests {
 
         assert!(verify_accounting_authenticator(&acct, secret));
         assert!(!verify_accounting_authenticator(&acct, b"bad-secret"));
+    }
+
+    #[test]
+    fn encodes_disconnect_request_per_rfc5176() {
+        let secret = b"testing123";
+        let attrs = vec![
+            RadiusAttribute::string(attr_type::USER_NAME, "alice"),
+            RadiusAttribute::string(attr_type::ACCT_SESSION_ID, "sess-42"),
+        ];
+        let raw = encode_disconnect_request(9, &attrs, secret);
+
+        assert_eq!(raw[0], codes::DISCONNECT_REQUEST);
+        assert_eq!(raw[1], 9);
+        let len = u16::from_be_bytes([raw[2], raw[3]]) as usize;
+        assert_eq!(len, raw.len());
+
+        let decoded = decode_packet(&raw).expect("disconnect packet decodes");
+        assert_eq!(decoded.code, codes::DISCONNECT_REQUEST);
+        assert_eq!(decoded.identifier, 9);
+        assert_eq!(
+            decoded.attribute(attr_type::USER_NAME).map(RadiusAttribute::as_str),
+            Some("alice".to_string())
+        );
+
+        // Recompute MD5(Code + ID + Length + 16*0 + Attributes + Secret)
+        let mut hasher = Md5::new();
+        hasher.update(&raw[0..4]);
+        hasher.update([0u8; 16]);
+        hasher.update(&raw[20..]);
+        hasher.update(secret);
+        let expected: [u8; 16] = hasher.finalize().into();
+        assert!(constant_time_eq(&decoded.authenticator, &expected));
+    }
+
+    #[test]
+    fn verifies_disconnect_ack_and_nak_response_authenticators() {
+        let secret = b"testing123";
+        let req_auth = [0xA5u8; 16];
+
+        let build_signed_reply = |code: u8| {
+            let mut buf = BytesMut::new();
+            buf.put_u8(code);
+            buf.put_u8(9);
+            buf.put_u16(0);
+            buf.extend_from_slice(&req_auth);
+            RadiusAttribute::string(attr_type::REPLY_MESSAGE, "done").encode(&mut buf);
+            let total = buf.len() as u16;
+            buf[2..4].copy_from_slice(&total.to_be_bytes());
+            let mut hasher = Md5::new();
+            hasher.update(&buf[0..4]);
+            hasher.update(&req_auth);
+            hasher.update(&buf[20..]);
+            hasher.update(secret);
+            let digest: [u8; 16] = hasher.finalize().into();
+            buf[4..20].copy_from_slice(&digest);
+            buf.to_vec()
+        };
+
+        let ack = build_signed_reply(codes::DISCONNECT_ACK);
+        let nak = build_signed_reply(codes::DISCONNECT_NAK);
+
+        assert!(verify_response_authenticator(&ack, &req_auth, secret));
+        assert!(verify_response_authenticator(&nak, &req_auth, secret));
+
+        let decoded_ack = decode_packet(&ack).unwrap();
+        assert_eq!(decoded_ack.code, codes::DISCONNECT_ACK);
+        let decoded_nak = decode_packet(&nak).unwrap();
+        assert_eq!(decoded_nak.code, codes::DISCONNECT_NAK);
+
+        // Tampered authenticator / wrong secret / wrong request authenticator must fail.
+        let mut tampered = ack.clone();
+        tampered[4] ^= 0xFF;
+        assert!(!verify_response_authenticator(&tampered, &req_auth, secret));
+        assert!(!verify_response_authenticator(&ack, &req_auth, b"bad-secret"));
+        let wrong_req_auth = [0x5Au8; 16];
+        assert!(!verify_response_authenticator(&ack, &wrong_req_auth, secret));
+        assert!(!verify_response_authenticator(&ack[..10], &req_auth, secret));
     }
 }

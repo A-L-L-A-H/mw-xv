@@ -36,11 +36,11 @@ services:
     ports:
       - '1812:1812/udp'
       - '1813:1813/udp'
-      - '3002:3000'
+      - '127.0.0.1:3002:3000'
     environment:
       - MW_ISP_DB_PATH=/data/isp.db
       - MW_ISP_RADIUS_SECRET=testing123
-      - MW_ISP_ADMIN_TOKEN=moonwitness-isp-admin
+      - MW_INTERNAL_SECRET=${MW_INTERNAL_SECRET:-${JWT_SECRET:-}}
       - RUST_LOG=info
     depends_on:
       postgres:
@@ -50,23 +50,24 @@ services:
 
   control-plane:
     build:
-      context: .
-      dockerfile: apps/control-plane/Dockerfile
+      context: ./apps/control-plane
+      dockerfile: Dockerfile
     container_name: moonwitness-control-plane
     restart: unless-stopped
     ports:
-      - '3003:3003'
+      - '127.0.0.1:3003:3003'
     environment:
       - MW_CONTROL_PLANE_ADDR=0.0.0.0:3003
       - MW_CONTROL_PLANE_DB_PATH=/data/control-plane.db
+      - MW_INTERNAL_SECRET=${MW_INTERNAL_SECRET:-${JWT_SECRET:-}}
       - DOCKER_BIN=docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - control-plane_data:/data
     depends_on:
-      - moonwitness-postgres
-      - moonwitness-gowa
-      - moonwitness-isp
+      - postgres
+      - gowa
+      - radius
 
 volumes:
   pgdata:
