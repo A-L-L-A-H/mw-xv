@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 19 · skipped 2 · in_progress 1 · blocked 0 · todo 87.
+Status counts: done 20 · skipped 2 · in_progress 1 · blocked 0 · todo 86.
 
 ## W0
 
@@ -463,12 +463,13 @@ Status counts: done 19 · skipped 2 · in_progress 1 · blocked 0 · todo 87.
 
 ## W7
 
-- [ ] **W7-001 — Audit existing UI Catalog architecture**
+- [x] **W7-001 — Audit existing UI Catalog architecture**
   - Goal: Map current specimens, state controls, screenshot harness and bundle budget.
   - Depends on: W0-006
   - Deliverables: Creative Lab integration plan.
   - Acceptance: Extend existing app and test harness.; Do not create a duplicate catalog app.
   - Verify: pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui-catalog` (0) → `25 Playwright browser tests passed during W0 baseline; existing harness/source map in evidence/ui-catalog-audit.md`
 
 - [ ] **W7-002 — Add asset browser specimen**
   - Goal: Browse canonical assets by category, pack, subject, domain, variant and status.
