@@ -1941,4 +1941,128 @@ describe('MoonWitness Desktop Harness', () => {
 
     await bridge.worktree.release('overlap-1');
   });
+
+  it('unifies the autonomous engineering execution loop (todo-sync, work-contract dispatch, and sandbox verification)', async () => {
+    const repoRoot = initTempGitRepo();
+    const bridge = createDesktopHarnessBridge(
+      {
+        repoRoot,
+        sqlitePath: ':memory:',
+        boardOrigin: 'http://127.0.0.1:5173',
+        apiBaseUrl: 'http://127.0.0.1:3000',
+      },
+      { autoAttach: false }
+    );
+    activeBridges.push(bridge);
+
+    let syncedTasksCount = 0;
+    let contractDispatched = false;
+    let stageSynced = false;
+
+    const mockApiServer = createServer((req, res) => {
+      const chunks: Buffer[] = [];
+      req.on('data', (c: Buffer) => chunks.push(c));
+      req.on('end', () => {
+        const url = req.url ?? '/';
+        const bodyText = Buffer.concat(chunks).toString('utf8');
+        res.setHeader('content-type', 'application/json');
+
+        if (req.method === 'POST' && url.includes('/todo-sync')) {
+          const body = JSON.parse(bodyText) as { tasks: unknown[] };
+          syncedTasksCount = body.tasks?.length ?? 0;
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({
+              success: true,
+              data: { imported: 1, updated: 0, snapshots: body.tasks },
+            })
+          );
+          return;
+        }
+
+        if (req.method === 'POST' && url.includes('/work-contract') && !url.includes('/sync-stage')) {
+          contractDispatched = true;
+          res.writeHead(201);
+          res.end(
+            JSON.stringify({
+              success: true,
+              created: true,
+              data: {
+                id: 55,
+                code: 'wc_task_123',
+                status: 'running',
+              },
+            })
+          );
+          return;
+        }
+
+        if (req.method === 'POST' && url.includes('/work-contract/sync-stage')) {
+          stageSynced = true;
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({
+              success: true,
+              data: {
+                advanced: true,
+                task: { status: 'done' },
+                work_contract: { status: 'accepted' },
+              },
+            })
+          );
+          return;
+        }
+
+        res.writeHead(404);
+        res.end(JSON.stringify({ error: 'Not Found' }));
+      });
+    });
+
+    await new Promise<void>((resolve) => mockApiServer.listen(0, '127.0.0.1', () => resolve()));
+
+    try {
+      const addr = mockApiServer.address();
+      if (!addr || typeof addr === 'string') throw new Error('Cannot bind mock API');
+
+      const syncClient = new DesktopUpstreamSyncClient({
+        apiBaseUrl: `http://127.0.0.1:${addr.port}`,
+        authToken: 'test-token',
+      });
+
+      const syncResult = await syncClient.syncTodoTasksToProject(1, [
+        {
+          code: 'TASK-001',
+          title: 'Implement autonomous loop',
+          priority: 'high',
+          status: 'in_progress',
+        },
+      ]);
+      expect(syncResult.imported).toBe(1);
+      expect(syncedTasksCount).toBe(1);
+
+      const auth = makeAuth({
+        grant: makeGrant({
+          capability: 'desktop.worktree@v1',
+          allowedRiskTier: 'R2',
+          allowedPaths: ['src'],
+        }),
+      });
+
+      const outcome = await executeProjectTaskInSandbox(bridge, syncClient, 123, auth, {
+        command: 'git',
+        commandArgs: ['status', '--short'],
+        commitMessage: 'feat(loop): verified autonomous task execution',
+      });
+
+      expect(contractDispatched).toBe(true);
+      expect(stageSynced).toBe(true);
+      expect(outcome.workContractId).toBe(55);
+      expect(outcome.workContractCode).toBe('wc_task_123');
+      expect(outcome.exitCode).toBe(0);
+      expect(outcome.advanced).toBe(true);
+      expect(outcome.taskStatus).toBe('done');
+    } finally {
+      await new Promise<void>((resolve) => mockApiServer.close(() => resolve()));
+    }
+  });
 });

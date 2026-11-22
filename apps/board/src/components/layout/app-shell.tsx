@@ -86,7 +86,7 @@ function NavItem({
       className={cn(
         'board-nav-item group relative flex min-h-10 min-w-0 items-center gap-3 border-l-4 border-transparent px-2 py-2 font-display text-base uppercase tracking-wide text-ink/75 hover:bg-ink/10 hover:text-ink',
         active &&
-          'board-nav-item-active bg-magenta text-on-magenta hover:bg-magenta hover:text-on-magenta'
+          'board-nav-item-active border-magenta bg-magenta text-on-magenta hover:bg-magenta hover:text-on-magenta'
       )}
       aria-current={active ? 'page' : undefined}
     >

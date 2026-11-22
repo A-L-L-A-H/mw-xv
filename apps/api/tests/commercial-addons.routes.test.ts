@@ -27,6 +27,7 @@ describe('CRM, Sales, and Subscription live API addons', () => {
   let db: Knex;
   let app: FastifyInstance;
   let client: MoonWitnessClient;
+  let accessToken: string;
 
   beforeAll(async () => {
     db = knex({
@@ -48,7 +49,8 @@ describe('CRM, Sales, and Subscription live API addons', () => {
       fetch: injectFetch(app),
       storage: new MemoryStorage(),
     });
-    await client.login({ login: 'superadmin', password: ADMIN_PASSWORD });
+    const tokens = await client.login({ login: 'superadmin', password: ADMIN_PASSWORD });
+    accessToken = tokens.access_token;
   }, 30000);
 
   afterAll(async () => {
@@ -86,5 +88,65 @@ describe('CRM, Sales, and Subscription live API addons', () => {
 
     const leadViews = await client.model('crm.lead').getViews();
     expect(leadViews.kanban?.groupBy).toBe('stage_id');
+  });
+
+  it('automates the commercial pipeline from opportunity conversion to order confirmation and subscription creation', async () => {
+    const opps = await client
+      .model<{ id: number; name: string }>('crm.opportunity')
+      .searchRead({ limit: 1 });
+    const oppId = opps.records[0]!.id;
+
+    const convertRes = await app.inject({
+      method: 'POST',
+      url: `/api/sales/opportunities/${oppId}/convert-to-order`,
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+      },
+    });
+    expect(convertRes.statusCode).toBe(201);
+    const order = convertRes.json().data;
+    expect(order.opportunity_id).toBe(oppId);
+
+    const confirmRes = await app.inject({
+      method: 'POST',
+      url: `/api/sales/orders/${order.id}/confirm`,
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+      },
+    });
+    expect(confirmRes.statusCode).toBe(200);
+    expect(confirmRes.json().data.confirm_date).toBeDefined();
+
+    const subRes = await app.inject({
+      method: 'POST',
+      url: `/api/subscriptions/from-order/${order.id}`,
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+      },
+    });
+    expect(subRes.statusCode).toBe(201);
+    const sub = subRes.json().data;
+    expect(sub.sale_order_id).toBe(order.id);
+    expect(sub.state).toBe('active');
+
+    const suspendRes = await app.inject({
+      method: 'POST',
+      url: `/api/subscriptions/${sub.id}/suspend`,
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+      },
+    });
+    expect(suspendRes.statusCode).toBe(200);
+    expect(suspendRes.json().data.state).toBe('paused');
+
+    const activateRes = await app.inject({
+      method: 'POST',
+      url: `/api/subscriptions/${sub.id}/activate`,
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+      },
+    });
+    expect(activateRes.statusCode).toBe(200);
+    expect(activateRes.json().data.state).toBe('active');
   });
 });

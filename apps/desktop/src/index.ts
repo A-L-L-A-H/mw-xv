@@ -89,3 +89,8 @@ export {
   type DesktopCliOptions,
   type DesktopSidecarDaemonHandle,
 } from './cli.js';
+export {
+  executeProjectTaskInSandbox,
+  type AutonomousTaskExecutionOptions,
+  type AutonomousTaskExecutionResult,
+} from './project-loop.js';

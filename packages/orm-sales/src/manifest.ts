@@ -2,12 +2,14 @@ import { defineAddon, ref, seed } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
 import { SaleOrder, SaleOrderLine, SaleOrderState, SaleOrderTagLink } from './models/index.js';
 import { views } from './views.js';
+import { salesHttpPlugin } from './http.js';
 
 export const manifest = defineAddon({
   name: 'sales',
   version: '1.0.0',
   depends: ['base', 'crm'],
   models: [SaleOrderState, SaleOrder, SaleOrderLine, SaleOrderTagLink],
+  httpPlugins: [salesHttpPlugin],
   data: [
     seed(SaleOrderState, 'sales.state_draft', {
       company: ref('base.company_default'),
