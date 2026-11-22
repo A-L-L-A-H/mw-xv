@@ -71,7 +71,8 @@
 
   /* Typography: applications may self-host fonts and override these stacks. */
   --mw-font-display: 'Anton', Impact, 'Arial Narrow', sans-serif;
-  --mw-font-brush: 'Road Rage', Impact, 'Arial Narrow', sans-serif;
+  --mw-font-grunge: 'MoonWitness Grunge', 'Road Rage', Impact, 'Arial Narrow', sans-serif;
+  --mw-font-brush: 'MoonWitness Grunge', 'Road Rage', Impact, 'Arial Narrow', sans-serif;
   --mw-font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --mw-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   --mw-font-size-xs: 0.75rem;

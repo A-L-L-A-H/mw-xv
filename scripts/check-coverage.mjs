@@ -43,6 +43,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     'orm-workflow',
     'orm-integration',
     'orm-organization',
+    'orm-project',
   ]) {
     const file = path.join(root, 'test-results/coverage', directory, 'coverage-summary.json');
     const report = JSON.parse(await readFile(file, 'utf8'));

@@ -58,6 +58,10 @@ describe('Wave 2 API multi-replica and addon-first v2 contracts', () => {
 
     await runPreDeployMigrations(db, undefined);
     assert.equal(await db.schema.hasTable('whatsapp_accounts'), true);
+    const schemaState = await db('_orm_schema_state').where({ id: 'global' }).first();
+    assert.equal(schemaState.status, 'applied');
+    assert.equal(schemaState.applied_version, 1);
+    assert.match(schemaState.applied_digest, /^[a-f0-9]{16}$/u);
 
     Registry.clear();
     const secondDb: Knex = knex({

@@ -27,7 +27,7 @@ export function validateUbuntuRunnerCandidate(source) {
     ['built documentation checks', 'pnpm docs:build:built'],
     ['PostgreSQL integration tests', 'pnpm test:integration'],
     ['PostgreSQL service', 'image: postgres:16-alpine'],
-    ['Node 22 toolchain', "node-version: '22'"],
+    ['Node 24 toolchain', "node-version: '24'"],
     ['pinned pnpm toolchain', "pnpm-version: '11.17.0'"],
   ]) {
     if (!source.includes(required)) findings.push(`Candidate workflow is missing ${label}.`);

@@ -49,6 +49,11 @@ export interface HealthResponse {
     capacity: number;
   };
   installedAddons?: Array<{ name: string; version: string }>;
+  schema?: {
+    status: 'pending' | 'running' | 'retrying' | 'applied';
+    version?: number;
+    digest?: string;
+  };
   attachmentStorage?: 'connected' | 'disconnected';
   registeredModels: string[];
 }

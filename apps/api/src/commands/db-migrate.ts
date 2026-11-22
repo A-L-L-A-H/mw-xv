@@ -1,9 +1,13 @@
 import type { Knex } from 'knex';
-import { planAddonsSchemaSync, type SchemaDiffPlan } from '@moonwitness/orm';
-import { createDatabase } from '../database/knex.js';
+import {
+  computeDesiredSchemaState,
+  planAddonsSchemaSync,
+  type SchemaDiffPlan,
+} from '@moonwitness/orm';
+import { createMigrationDatabase } from '../database/knex.js';
+import { API_SCHEMA_VERSION, coordinateApiMigration } from '../database/schema-state.js';
 import { getApiAddonManifests, installApiAddons } from '../addons/registry.js';
-
-const MIGRATION_ADVISORY_LOCK_ID = 77490122;
+import { startupErrorContext, redactStartupErrorText } from '../startup-diagnostics.js';
 
 export interface PreDeployMigrationOptions {
   dryRun?: boolean;
@@ -20,17 +24,13 @@ export async function runPreDeployMigrations(
     return planAddonsSchemaSync(db, manifests);
   }
 
-  const isPostgres = db.client?.config?.client === 'pg';
-  if (isPostgres) {
-    await db.raw('SELECT pg_advisory_lock(?)', [MIGRATION_ADVISORY_LOCK_ID]);
-  }
-  try {
-    await installApiAddons(db, superadminPassword, undefined, { skipBootMigrations: false });
-  } finally {
-    if (isPostgres) {
-      await db.raw('SELECT pg_advisory_unlock(?)', [MIGRATION_ADVISORY_LOCK_ID]).catch(() => {});
-    }
-  }
+  const desired = computeDesiredSchemaState(getApiAddonManifests(), API_SCHEMA_VERSION);
+  await coordinateApiMigration(db, {
+    desired,
+    migrate: async () => {
+      await installApiAddons(db, superadminPassword, undefined, { skipBootMigrations: false });
+    },
+  });
 }
 
 async function main(): Promise<void> {
@@ -38,7 +38,7 @@ async function main(): Promise<void> {
   const dryRun = args.has('--dry-run');
   const json = args.has('--json');
 
-  const db = createDatabase();
+  const db = createMigrationDatabase();
   try {
     const plan = await runPreDeployMigrations(db, process.env.SUPERADMIN_PASSWORD, {
       dryRun,
@@ -70,7 +70,7 @@ async function main(): Promise<void> {
 
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replaceAll('\\', '/'))) {
   main().catch((error) => {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error ? redactStartupErrorText(error.message) : String(error);
     process.stderr.write(`Pre-deploy migration failed: ${message}\n`);
     process.exitCode = 1;
   });

@@ -52,9 +52,9 @@ export async function checkConstitution(options = {}) {
 
   const rootPkgPath = path.join(repositoryRoot, 'package.json');
   const rootPkg = JSON.parse(await readFile(rootPkgPath, 'utf8'));
-  if (rootPkg?.engines?.node !== '22.x') {
+  if (rootPkg?.engines?.node !== '24.x') {
     violations.push(
-      `package.json engines.node must remain "22.x" (found "${rootPkg?.engines?.node}")`
+      `package.json engines.node must remain "24.x" (found "${rootPkg?.engines?.node}")`
     );
   }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readDatabaseRuntimeLimits } from '../src/config/database-runtime.js';
-import knexConfig from '../src/config/knexfile.js';
+import knexConfig, { createMigrationPostgresKnexConfig } from '../src/config/knexfile.js';
 
 describe('database runtime limits', () => {
   it('uses bounded pool and statement timeout defaults for PostgreSQL', () => {
@@ -9,10 +9,23 @@ describe('database runtime limits', () => {
       poolMax: 10,
       acquireTimeoutMs: 30_000,
       statementTimeoutMs: 30_000,
+      migrationStatementTimeoutMs: 300_000,
     });
     expect(knexConfig.production).toMatchObject({
       pool: { min: 0, max: 10, acquireTimeoutMillis: 30_000 },
       connection: { statement_timeout: 30_000 },
+    });
+    expect(
+      createMigrationPostgresKnexConfig('postgresql://postgres:postgres@127.0.0.1:5432/app', {
+        poolMin: 0,
+        poolMax: 10,
+        acquireTimeoutMs: 30_000,
+        statementTimeoutMs: 30_000,
+        migrationStatementTimeoutMs: 300_000,
+      })
+    ).toMatchObject({
+      pool: { min: 0, max: 1, acquireTimeoutMillis: 30_000 },
+      connection: { statement_timeout: 300_000 },
     });
   });
 
@@ -23,12 +36,14 @@ describe('database runtime limits', () => {
         DB_POOL_MAX: '16',
         DB_ACQUIRE_TIMEOUT_MS: '15000',
         DB_STATEMENT_TIMEOUT_MS: '90000',
+        DB_MIGRATION_STATEMENT_TIMEOUT_MS: '420000',
       })
     ).toEqual({
       poolMin: 2,
       poolMax: 16,
       acquireTimeoutMs: 15_000,
       statementTimeoutMs: 90_000,
+      migrationStatementTimeoutMs: 420_000,
     });
     expect(() => readDatabaseRuntimeLimits({ DB_POOL_MIN: '4', DB_POOL_MAX: '3' })).toThrow(
       'DB_POOL_MIN must not exceed DB_POOL_MAX'

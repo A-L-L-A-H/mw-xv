@@ -10,7 +10,7 @@ function safeName(error: unknown): string {
   return 'Error';
 }
 
-function redactSensitiveText(value: string): string {
+export function redactStartupErrorText(value: string): string {
   return value
     .replace(/\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?):\/\/[^\s"'`]+/giu, '[redacted-url]')
     .replace(/\bBearer\s+[^\s,;]+/giu, 'Bearer [redacted]')
@@ -32,7 +32,7 @@ export function startupErrorContext(error: unknown): StartupErrorContext {
   const context = databaseErrorContext(error);
   if (Object.keys(context).length > 0) return { name: safeName(error), ...context };
   const message =
-    error instanceof Error ? redactSensitiveText(error.message) : 'Unknown startup error';
+    error instanceof Error ? redactStartupErrorText(error.message) : 'Unknown startup error';
   return { name: safeName(error), message };
 }
 

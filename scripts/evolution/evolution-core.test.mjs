@@ -30,7 +30,7 @@ describe('Wave 4 Autonomous Self-Evolving Core', () => {
     await mkdir(path.join(dir, 'scripts'), { recursive: true });
     await mkdir(path.join(dir, 'packages/local-ai/tests'), { recursive: true });
 
-    await writeFile(path.join(dir, 'package.json'), JSON.stringify({ engines: { node: '22.x' } }));
+    await writeFile(path.join(dir, 'package.json'), JSON.stringify({ engines: { node: '24.x' } }));
     await writeFile(
       path.join(dir, 'scripts/check-api-addon-boundary.mjs'),
       'const LEGACY_MODEL_ALLOWLIST = new Set();\nconst LEGACY_ADDON_ALLOWLIST = new Set();\n'

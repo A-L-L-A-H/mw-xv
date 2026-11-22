@@ -4,11 +4,11 @@
 
 - Manifest/model: `packages/orm-request/src/manifest.ts` and `models.ts` register only `request.purchase` with a list/form/search view. It has a Workspace menu and a `base.group_user` access seed granting read/create/write and denying unlink.
 - Lifecycle: approval is defined as workflow `request.purchase_approval`: user/system may start and submit; superadmin/system may approve or reject; approval requires one distinct actor. The model itself does not declare a status field; workflow owns lifecycle state.
-- API/Board: request has no custom registry route; generic model/API metadata is the consumer when enabled. No request-specific Board route was found.
+- API/Board: request has no custom registry route; generic model/API metadata is the consumer when enabled. No request-specific Board route was found. The UI Catalog contains a clearly labelled contract-only specimen for the purchase model and workflow, not a production route or production consumer.
 - Existing assets: `document`, `credit-card`, `currency`, `partner`, `check`, `check-circle`, `close`, `workflow`, `history`, `warning`; reusable form/table/approval UI only.
 
 ## Real states and boundaries
 
 The configured workflow states are `draft`, `submitted`, `approved`, and `rejected`. Do not imply withdrawn/cancelled states absent from this definition. Amount and currency come from request records; do not invent spend totals or savings.
 
-Source review covered request model/view/manifest, the workflow definition and generic model route. Board typecheck is recorded in the W8-D batch evidence.
+Source review covered request model/view/manifest, the workflow definition and generic model route. The specimen lists only source-defined model fields, workflow states, roles and empty/unavailable/permission-denied treatments; it contains no request values or invented spend metrics. Verified with its focused Catalog browser test, Catalog build/suite, Board checks and asset validation; W8-006 records the command evidence.

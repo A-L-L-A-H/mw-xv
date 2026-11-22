@@ -4,6 +4,9 @@
   "private": true,
   "description": "Local-first MoonWitness desktop agent harness and Tauri v2 host bridge derived from apps/board",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
@@ -39,6 +42,7 @@
     "@moonwitness/orm-knowledge": "workspace:*",
     "@moonwitness/orm-notification": "workspace:*",
     "@moonwitness/orm-organization": "workspace:*",
+    "@moonwitness/orm-project": "workspace:*",
     "@moonwitness/orm-storage": "workspace:*",
     "@moonwitness/orm-workflow": "workspace:*",
     "@moonwitness/types": "workspace:*",

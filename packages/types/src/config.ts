@@ -21,6 +21,7 @@ export interface EnvConfig {
     poolMax: number;
     acquireTimeoutMs: number;
     statementTimeoutMs: number;
+    migrationStatementTimeoutMs: number;
   };
   log?: {
     level?: string;

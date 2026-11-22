@@ -4,9 +4,9 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "1e0be0432ca7b022a57b315a2b6eff84643c6ed941951364079c0dba53283762",
+    "assetManifestSha256": "6dba73e93b0f7d1c6134723104e726c5ca117fecc3394c4728b60baf9e60485f",
     "tokens": "packages/ui/src/styles/tokens.css",
-    "tokensSha256": "c07e9a3417c214d273238647a5820bd8c3b98dc2a79e35f9e8410beba6f97477"
+    "tokensSha256": "3e90c96eeadd078b70dd18385138b9887a841f16a14bdf8004bbf2640ebe2705"
   },
   "assets": [
     {
@@ -198,6 +198,13 @@
       "kind": "font",
       "format": "woff2",
       "sha256": "83c005d49d8a6a50474c73a5a36ac0468076e9c4a29da7bdb14995d80560a5be"
+    },
+    {
+      "source": "packages/assets/fonts/MoonWitnessGrunge-latin.woff2",
+      "output": "docs/assets/moonwitness/fonts/MoonWitnessGrunge-latin.woff2",
+      "kind": "font",
+      "format": "woff2",
+      "sha256": "6b5b6a40eff4eee47423f07ae1be51c705d8bbe3e2a55c4ba9f6213eca1f3a04"
     },
     {
       "source": "packages/assets/fonts/RoadRage-latin.woff2",
@@ -1542,7 +1549,7 @@
     {
       "source": "packages/ui/src/styles/tokens.css",
       "output": "docs/assets/moonwitness/styles/tokens.css",
-      "sha256": "c07e9a3417c214d273238647a5820bd8c3b98dc2a79e35f9e8410beba6f97477"
+      "sha256": "3e90c96eeadd078b70dd18385138b9887a841f16a14bdf8004bbf2640ebe2705"
     }
   ]
 }

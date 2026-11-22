@@ -1,0 +1,105 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import knex, { type Knex } from 'knex';
+import { Model } from 'objection';
+import type { FastifyInstance } from 'fastify';
+import { MemoryStorage, MoonWitnessClient, PermissionDeniedError } from '@moonwitness/client';
+import { buildApp } from '../src/app.js';
+
+const ADMIN_PASSWORD = 'project-test-password';
+
+function injectFetch(app: FastifyInstance): typeof fetch {
+  return (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = new URL(String(input));
+    const res = await app.inject({
+      method: (init?.method ?? 'GET') as 'GET',
+      url: url.pathname + url.search,
+      headers: init?.headers as Record<string, string>,
+      payload: init?.body as string | undefined,
+    });
+    return new Response(res.statusCode === 204 ? null : res.body, {
+      status: res.statusCode,
+      headers: res.headers as Record<string, string>,
+    });
+  }) as typeof fetch;
+}
+
+describe('project addon REST, SDK & workflow integration', () => {
+  let db: Knex;
+  let app: FastifyInstance;
+  let client: MoonWitnessClient;
+
+  beforeAll(async () => {
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+    Model.knex(db);
+    process.env.NODE_ENV = 'test';
+    app = await buildApp({
+      db,
+      superadminPassword: ADMIN_PASSWORD,
+      jwtSecret: 'project-test-secret-project-test-secret-123',
+      loginRateMax: 1000,
+    });
+    await app.ready();
+    client = new MoonWitnessClient({
+      baseUrl: 'http://api.test',
+      fetch: injectFetch(app),
+      storage: new MemoryStorage(),
+    });
+    await client.login({ login: 'superadmin', password: ADMIN_PASSWORD });
+  }, 30000);
+
+  afterAll(async () => {
+    await app.close();
+    await db.destroy();
+  });
+
+  it('exposes seeded project models, Kanban views, and enforces acyclic dependencies via SDK & REST API', async () => {
+    const models = await client.getModels();
+    const modelNames = models.map((m) => m.model);
+    expect(modelNames).toContain('project.project');
+    expect(modelNames).toContain('project.task');
+    expect(modelNames).toContain('project.milestone');
+    expect(modelNames).toContain('project.stage');
+    expect(modelNames).toContain('project.task_dependency');
+
+    const taskModel = client.model<{ id: number; code: string; title: string }>('project.task');
+    const views = await taskModel.getViews();
+    expect(views.kanban?.groupBy).toBe('stage_id');
+
+    const { records: tasks } = await taskModel.searchRead({ limit: 20 });
+    const task1 = tasks.find((t) => t.code === 'TASK-0001');
+    const task2 = tasks.find((t) => t.code === 'TASK-0002');
+    expect(task1).toBeDefined();
+    expect(task2).toBeDefined();
+
+    const depModel = client.model<{
+      id: number;
+      company_id: number;
+      task_id: number;
+      depends_on_id: number;
+      kind: 'blocks' | 'relates_to';
+    }>('project.task_dependency');
+
+    // Reverse `blocks` edge creates a cycle (TASK-0002 already depends on TASK-0001) -> rejected with 403.
+    await expect(
+      depModel.create({
+        company_id: 1,
+        task_id: task1!.id,
+        depends_on_id: task2!.id,
+        kind: 'blocks',
+      })
+    ).rejects.toThrow(PermissionDeniedError);
+
+    // Non-blocking `relates_to` link succeeds.
+    const created = await depModel.create({
+      company_id: 1,
+      task_id: task1!.id,
+      depends_on_id: task2!.id,
+      kind: 'relates_to',
+    });
+    expect(created.kind).toBe('relates_to');
+  });
+});

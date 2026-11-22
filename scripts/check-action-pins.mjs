@@ -152,7 +152,7 @@ export function findNodeVersionDrift(sources, enginesNode) {
         path: 'package.json',
         line: 1,
         reference: String(enginesNode ?? ''),
-        reason: 'engines.node must pin one exact major such as "22.x"',
+        reason: 'engines.node must pin one exact major such as "24.x"',
       },
     ];
   }

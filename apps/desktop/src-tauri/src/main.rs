@@ -146,7 +146,7 @@ impl SidecarProcessState {
 
         let child = cmd
             .spawn()
-            .map_err(|err| format!("Failed to spawn Node 22.x @moonwitness/desktop sidecar: {err}"))?;
+            .map_err(|err| format!("Failed to spawn Node 24.x @moonwitness/desktop sidecar: {err}"))?;
         let pid = child.id();
         *guard = Some(child);
         Ok(Some(pid))

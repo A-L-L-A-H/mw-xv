@@ -169,6 +169,8 @@ const sections = [
   { id: 'overlays', label: 'Overlays' },
   { id: 'data-display', label: 'Data display' },
   { id: 'auth-coverage', label: 'Auth route coverage' },
+  { id: 'integration-coverage', label: 'Integration boundary' },
+  { id: 'request-coverage', label: 'Purchase request workflow' },
   { id: 'assets', label: 'Asset inventory' },
   { id: 'charts', label: 'Charts' },
 ] as const;
@@ -780,6 +782,15 @@ function CatalogContent() {
                 description="The specimens use local package fonts and semantic typography tokens."
               >
                 <div className="type-specimen-list">
+                  <div
+                    className="type-specimen type-specimen-brush"
+                    data-testid="typography-moonwitness-grunge"
+                  >
+                    <span>
+                      MoonWitness Grunge · proprietary grunge × funky × Gen-Z display font
+                    </span>
+                    <strong>RAW SIGNAL // ZERO FILTER 2026!</strong>
+                  </div>
                   <div className="type-specimen type-specimen-brush">
                     <span>Brush display · short headlines</span>
                     <strong>FOLLOW THE SIGNAL</strong>
@@ -1711,9 +1722,22 @@ function CatalogContent() {
                 >
                   <img className="auth-coverage-art" src={authLoginDesktop} alt="" />
                   <dl className="auth-coverage-facts">
-                    <div><dt>Sign in</dt><dd><code>/login</code></dd></div>
-                    <div><dt>Registration</dt><dd><code>/register</code></dd></div>
-                    <div><dt>States</dt><dd>Idle · submitting · returned error</dd></div>
+                    <div>
+                      <dt>Sign in</dt>
+                      <dd>
+                        <code>/login</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Registration</dt>
+                      <dd>
+                        <code>/register</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>States</dt>
+                      <dd>Idle · submitting · returned error</dd>
+                    </div>
                   </dl>
                 </Panel>
                 <Panel
@@ -1722,6 +1746,125 @@ function CatalogContent() {
                 >
                   <p className="auth-coverage-boundary">
                     Catalog boundary specimen · no session route or token fixture is represented.
+                  </p>
+                </Panel>
+              </div>
+            </Section>
+            <Section
+              id="integration-coverage"
+              title="Integration boundary"
+              description="A contract-only specimen for the superadmin-only webhook models; it does not imply that a production Board route exists."
+            >
+              <div className="auth-coverage-grid" data-testid="integration-boundary-specimen">
+                <Panel
+                  title="Webhook endpoint contract"
+                  description="Model: integration.webhook_endpoint · create, read, update and delete are granted only to base.group_superadmin."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>Fields</dt>
+                      <dd>name · company · url · event_types · enabled</dd>
+                    </div>
+                    <div>
+                      <dt>Secret reference</dt>
+                      <dd>Reference only; secret material stays outside the UI.</dd>
+                    </div>
+                    <div>
+                      <dt>Empty</dt>
+                      <dd>No endpoints returned by the authorized consumer.</dd>
+                    </div>
+                    <div>
+                      <dt>Unavailable</dt>
+                      <dd>Endpoint records could not be loaded.</dd>
+                    </div>
+                  </dl>
+                </Panel>
+                <Panel
+                  title="Webhook delivery contract"
+                  description="Model: integration.webhook_delivery · no custom integration route or production Board screen is registered."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>Fields</dt>
+                      <dd>
+                        endpoint · company · event_type · status · attempts · response_status ·
+                        delivered_at
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Delivery states</dt>
+                      <dd>delivered · retrying · dead</dd>
+                    </div>
+                    <div>
+                      <dt>Error state</dt>
+                      <dd>Delivery details unavailable; private error fields stay hidden.</dd>
+                    </div>
+                    <div>
+                      <dt>Permission denied</dt>
+                      <dd>Requires the existing superadmin model access grant.</dd>
+                    </div>
+                  </dl>
+                  <p className="auth-coverage-boundary">
+                    Catalog boundary specimen · schema and permission states only; no endpoint,
+                    delivery, count, or route fixture is represented.
+                  </p>
+                </Panel>
+              </div>
+            </Section>
+            <Section
+              id="request-coverage"
+              title="Purchase request workflow"
+              description="A contract-only design specimen for request.purchase and its reusable approval workflow; no request record or spend metric is represented."
+            >
+              <div className="auth-coverage-grid" data-testid="request-workflow-specimen">
+                <Panel
+                  title="Purchase request"
+                  description="The model stores request details; approval status belongs to request.purchase_approval."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>Fields</dt>
+                      <dd>title · description · amount_minor · currency · company · vendor</dd>
+                    </div>
+                    <div>
+                      <dt>User access</dt>
+                      <dd>Read, create and update; delete is denied.</dd>
+                    </div>
+                    <div>
+                      <dt>Empty</dt>
+                      <dd>No requests are available to the authorized user.</dd>
+                    </div>
+                    <div>
+                      <dt>Unavailable</dt>
+                      <dd>Request records could not be loaded.</dd>
+                    </div>
+                  </dl>
+                </Panel>
+                <Panel
+                  title="Approval lifecycle"
+                  description="Workflow state, action and actor permissions come from the registered workflow definition."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>States</dt>
+                      <dd>draft → submitted → approved or rejected</dd>
+                    </div>
+                    <div>
+                      <dt>Submit</dt>
+                      <dd>User, superadmin or system; draft to submitted.</dd>
+                    </div>
+                    <div>
+                      <dt>Approve / reject</dt>
+                      <dd>Superadmin or system; approval requires a distinct actor.</dd>
+                    </div>
+                    <div>
+                      <dt>Permission denied</dt>
+                      <dd>Actions remain unavailable outside their registered roles.</dd>
+                    </div>
+                  </dl>
+                  <p className="auth-coverage-boundary">
+                    Catalog boundary specimen · schema and workflow states only; no request amounts,
+                    vendors, routes or records are shown.
                   </p>
                 </Panel>
               </div>

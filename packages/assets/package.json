@@ -4,10 +4,14 @@
   "description": "Framework-independent MoonWitness brand and visual assets",
   "type": "module",
   "license": "ISC",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "inventory": "node scripts/asset-inventory.mjs",
     "brand:prepare": "node scripts/prepare-brand-master.mjs",
     "fonts:prepare": "node scripts/prepare-fonts.mjs",
+    "font:brand:generate": "node scripts/generate-brand-font.mjs",
     "artwork:prepare": "node scripts/prepare-artwork.mjs"
   },
   "files": [

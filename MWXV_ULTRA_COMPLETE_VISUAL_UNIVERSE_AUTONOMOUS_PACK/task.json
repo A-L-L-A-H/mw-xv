@@ -3502,7 +3502,7 @@
       "id": "W8-003",
       "phase": "W8",
       "title": "Implement visual coverage for jobs addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3527,7 +3527,7 @@
         "Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.",
         "Artwork remains decorative; labels, state and actions are real UI data.",
         "New assets include provenance and are registered in canonical manifest.",
-        "If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route."
+        "If no production consumer exists, provide a labelled UI Catalog specimen and document that gap; when a verified consumer exists, document and reuse it without inventing routes."
       ],
       "verification": [
         "pnpm board:ui:check",
@@ -3537,15 +3537,41 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Revalidated the existing admin-only dashboard and its role-checked API routes; distinct loading, error, unavailable, empty and populated states are now implemented. Catalog specimen was unnecessary because a real dashboard consumer exists. No new artwork was needed; canonical shared assets remain reused.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "artifact": "scripts/board/jobs-resource-state.test.mjs",
+          "command": "node --test scripts/board/jobs-resource-state.test.mjs"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "apps/board/src/board-pages/dashboard-page.tsx",
+          "command": "pnpm --filter @moonwitness/board typecheck"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "command": "pnpm board:ui:check"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "packages/assets/tests",
+          "command": "pnpm test:assets"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "command": "pnpm test:ui-catalog"
+        }
+      ],
+      "commit": "c11169a"
     },
     {
       "id": "W8-004",
       "phase": "W8",
       "title": "Implement visual coverage for integration addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3580,15 +3606,41 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "The verified models have development-only menus and no production Board route. Added a labelled contract-only UI Catalog specimen using real fields, states and superadmin permissions; it contains no record fixtures, counts, secrets or invented route.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/ui-catalog build",
+          "artifact": "apps/ui-catalog/dist"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/ui-catalog test",
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm board:ui:check",
+          "artifact": "scripts/check-board-shared-ui.mjs"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "artifact": "apps/board"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm test:assets",
+          "artifact": "packages/assets/tests"
+        }
+      ],
+      "commit": "eaff82c"
     },
     {
       "id": "W8-005",
       "phase": "W8",
       "title": "Implement visual coverage for whatsapp addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3623,15 +3675,36 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "The existing real WhatsApp inbox and status routes already cover source-backed states and API permissions; canonical shared icons are reused. No generated contact, message or profile artwork was introduced.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "command": "pnpm board:ui:check"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "apps/board/src",
+          "command": "pnpm --filter @moonwitness/board typecheck"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "packages/assets/tests",
+          "command": "pnpm test:assets"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "command": "pnpm test:ui-catalog"
+        }
+      ],
+      "commit": "e9bcf44"
     },
     {
       "id": "W8-006",
       "phase": "W8",
       "title": "Implement visual coverage for request addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3666,15 +3739,41 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "No request-specific production route exists. Added a labelled, contract-only Catalog specimen showing real model fields, workflow transitions, roles, and empty/unavailable/permission-denied states without fictional records or spend metrics.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/ui-catalog build",
+          "artifact": "apps/ui-catalog/dist"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/ui-catalog test",
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm board:ui:check",
+          "artifact": "scripts/check-board-shared-ui.mjs"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "artifact": "apps/board"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm test:assets",
+          "artifact": "packages/assets/tests"
+        }
+      ],
+      "commit": "273264d"
     },
     {
       "id": "W8-007",
       "phase": "W8",
       "title": "Implement visual coverage for notification addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3709,15 +3808,41 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Reused the actual authenticated notification inbox and canonical icons. Fixed the bell so unavailable count and stale cached inbox data are distinct from a verified zero/empty inbox; added retry and browser coverage. No additional routes or fixtures.",
+      "evidence": [
+        {
+          "command": "pnpm test:e2e:visual --grep \"canonical activity, notification, and cron icons\"",
+          "artifact": "apps/board/e2e/visual-audit.spec.ts",
+          "exit_code": 0
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "artifact": "apps/board/src/components/layout/notification-bell.tsx",
+          "exit_code": 0
+        },
+        {
+          "command": "pnpm board:ui:check",
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "exit_code": 0
+        },
+        {
+          "command": "pnpm test:assets",
+          "artifact": "packages/assets/tests",
+          "exit_code": 0
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "exit_code": 0
+        }
+      ],
+      "commit": "544fdec"
     },
     {
       "id": "W8-008",
       "phase": "W8",
       "title": "Implement visual coverage for organization addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3752,15 +3877,36 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "The existing generic Board model navigation/list is the real consumer. Added canonical icon reuse for department, team, position and membership; retained ordinary model relations and did not invent an org chart, headcount or portraits.",
+      "evidence": [
+        {
+          "artifact": "apps/board/src/lib/models.ts",
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/board typecheck"
+        },
+        {
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "exit_code": 0,
+          "command": "pnpm board:ui:check"
+        },
+        {
+          "artifact": "packages/assets/tests",
+          "exit_code": 0,
+          "command": "pnpm test:assets"
+        },
+        {
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "exit_code": 0,
+          "command": "pnpm test:ui-catalog"
+        }
+      ],
+      "commit": "8c76d3a"
     },
     {
       "id": "W8-009",
       "phase": "W8",
       "title": "Implement visual coverage for workflow addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3795,9 +3941,35 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "The existing generic Board model routes and real workflow panel are the production consumer. Added canonical workflow model icons, explicit role/actor-denied and unconfigured transition states, plus a distinct empty event history. No workflow data or transitions are invented.",
+      "evidence": [
+        {
+          "artifact": "scripts/board/workflow-action-state.test.mjs",
+          "exit_code": 0,
+          "command": "node --test scripts/board/workflow-action-state.test.mjs"
+        },
+        {
+          "artifact": "apps/board/src/components/views/workflow-panel.tsx",
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/board typecheck"
+        },
+        {
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "exit_code": 0,
+          "command": "pnpm board:ui:check"
+        },
+        {
+          "artifact": "packages/assets/tests",
+          "exit_code": 0,
+          "command": "pnpm test:assets"
+        },
+        {
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "exit_code": 0,
+          "command": "pnpm test:ui-catalog"
+        }
+      ],
+      "commit": "1843d8439b83519eb5d26204cef3329171858f5f"
     },
     {
       "id": "W8-010",

@@ -10,13 +10,12 @@ import {
   validateDomain,
   resolveViews,
   getModelMenuInfo,
-  columnName,
   type Field,
   type FieldMap,
   type Domain,
 } from '@moonwitness/orm';
 import { assignDefaultCompanyMembership, assignDefaultUserGroup } from '@moonwitness/orm-base';
-import { isValidOrganizationMutation } from '@moonwitness/orm-organization';
+import { isValidAddonMutation } from './generic-addon-validation.js';
 import {
   asJsonObject,
   isRecord as isObject,
@@ -221,7 +220,7 @@ async function hasCompanyAccess(
         return false;
     }
   }
-  return isValidOrganizationMutation(modelName, values, current?.toJSON(), trx);
+  return isValidAddonMutation(modelName, values, current?.toJSON(), trx);
 }
 
 function forbidden(reply: FastifyReply) {

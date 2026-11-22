@@ -78,7 +78,13 @@
       "name": "@moonwitness/assets",
       "version": "1.0.0-rc.1",
       "directory": "packages/assets",
-      "scripts": ["artwork:prepare", "brand:prepare", "fonts:prepare", "inventory"]
+      "scripts": [
+        "artwork:prepare",
+        "brand:prepare",
+        "font:brand:generate",
+        "fonts:prepare",
+        "inventory"
+      ]
     },
     {
       "name": "@moonwitness/auth",
@@ -168,6 +174,12 @@
       "name": "@moonwitness/orm-organization",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-organization",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-project",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/orm-project",
       "scripts": ["build", "test"]
     },
     {
@@ -279,6 +291,7 @@
     "@moonwitness/assets": {
       "artwork:prepare": "node scripts/prepare-artwork.mjs",
       "brand:prepare": "node scripts/prepare-brand-master.mjs",
+      "font:brand:generate": "node scripts/generate-brand-font.mjs",
       "fonts:prepare": "node scripts/prepare-fonts.mjs",
       "inventory": "node scripts/asset-inventory.mjs"
     },
@@ -341,6 +354,10 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-project": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
+    },
     "@moonwitness/orm-request": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
@@ -375,9 +392,9 @@
       "addon:scaffold": "node scripts/evolution/scaffold-exp-addon.mjs",
       "ai:watchdog": "node scripts/ai-drift-watchdog.mjs",
       "api:addon:check": "node --test scripts/check-api-addon-boundary.test.mjs && node scripts/check-api-addon-boundary.mjs",
-      "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs --check",
+      "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs --check",
       "architecture:check:built": "node scripts/architecture/generate-diagrams.mjs --check",
-      "architecture:generate": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs",
+      "architecture:generate": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs",
       "assets:check:bounds": "node packages/assets/scripts/check-svg-bounds.mjs",
       "assets:check:docs": "node scripts/export-doc-assets.mjs --check",
       "assets:export:docs": "node scripts/export-doc-assets.mjs",
@@ -408,11 +425,11 @@
       "docs:build": "pnpm docs:check && node scripts/docs/build-guide.mjs && pnpm --filter @moonwitness/docs portal:build",
       "docs:build:built": "pnpm docs:check:built && node scripts/docs/build-guide.mjs && pnpm --filter @moonwitness/docs portal:build:built",
       "docs:change:classify": "node scripts/classify-docs-change.mjs",
-      "docs:check": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && node --test scripts/docs/generate-reference.test.mjs scripts/docs/update-readme.test.mjs scripts/docs/build-guide.test.mjs && node scripts/docs/generate-reference.mjs --check && node scripts/docs/update-readme.mjs --check && pnpm docs:links && pnpm docs:examples:check:built",
+      "docs:check": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && node --test scripts/docs/generate-reference.test.mjs scripts/docs/update-readme.test.mjs scripts/docs/build-guide.test.mjs && node scripts/docs/generate-reference.mjs --check && node scripts/docs/update-readme.mjs --check && pnpm docs:links && pnpm docs:examples:check:built",
       "docs:check:built": "node --test scripts/docs/generate-reference.test.mjs scripts/docs/update-readme.test.mjs scripts/docs/build-guide.test.mjs && node scripts/docs/generate-reference.mjs --check && node scripts/docs/update-readme.mjs --check && pnpm docs:links && pnpm docs:examples:check:built",
       "docs:examples:check": "pnpm --filter @moonwitness/orm build && pnpm exec tsc --noEmit -p packages/orm/examples/tsconfig.json && pnpm --filter @moonwitness/orm exec vitest run tests/addon.test.ts",
       "docs:examples:check:built": "pnpm exec tsc --noEmit -p packages/orm/examples/tsconfig.json && pnpm --filter @moonwitness/orm exec vitest run tests/addon.test.ts",
-      "docs:generate": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && node scripts/docs/generate-reference.mjs && node scripts/docs/update-readme.mjs",
+      "docs:generate": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && node scripts/docs/generate-reference.mjs && node scripts/docs/update-readme.mjs",
       "docs:links": "node scripts/check-docs.mjs && node scripts/check-doc-navigation.mjs && node --test scripts/check-docs.test.mjs scripts/check-doc-navigation.test.mjs scripts/check-external-doc-links.test.mjs",
       "docs:links:external": "node scripts/check-external-doc-links.mjs",
       "docs:publication:check": "node scripts/check-docs-publication.mjs apps/docs/dist",
@@ -513,7 +530,7 @@
       "test:ui-catalog": "pnpm --filter @moonwitness/ui-catalog build && pnpm --filter @moonwitness/ui-catalog test",
       "test:unit": "pnpm build && pnpm test:unit:built",
       "test:unit-runner-policy": "node --test scripts/unit-runner-policy.test.mjs",
-      "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-whatsapp test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/orm-ai test && pnpm --filter @moonwitness/ai-runtime test && pnpm --filter @moonwitness/ai-mcp test && pnpm --filter @moonwitness/ai-evaluation test && pnpm --filter @moonwitness/local-ai typecheck && pnpm --filter @moonwitness/local-ai test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
+      "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-project test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-whatsapp test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/orm-ai test && pnpm --filter @moonwitness/ai-runtime test && pnpm --filter @moonwitness/ai-mcp test && pnpm --filter @moonwitness/ai-evaluation test && pnpm --filter @moonwitness/local-ai typecheck && pnpm --filter @moonwitness/local-ai test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
       "test:unit:ci": "node scripts/run-unit-tests.mjs",
       "test:versioned-docs": "node --test scripts/docs/versioned-site.test.mjs",
       "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
@@ -8105,6 +8122,670 @@
       ]
     },
     {
+      "name": "project",
+      "version": "1.0.0",
+      "depends": ["base", "notification", "organization", "workflow"],
+      "models": [
+        {
+          "name": "project.milestone",
+          "table": "project_milestones",
+          "fields": [
+            {
+              "name": "code",
+              "kind": "string",
+              "column": "code",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "description",
+              "kind": "text",
+              "column": "description",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "due_date",
+              "kind": "string",
+              "column": "due_date",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "owner",
+              "kind": "belongsTo",
+              "column": "owner_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "project",
+              "kind": "belongsTo",
+              "column": "project_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "project.project"
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["missed", "open", "reached"]
+            }
+          ],
+          "uniqueConstraints": [["code", "project"]]
+        },
+        {
+          "name": "project.project",
+          "table": "project_projects",
+          "fields": [
+            {
+              "name": "code",
+              "kind": "string",
+              "column": "code",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "department",
+              "kind": "belongsTo",
+              "column": "department_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "organization.department"
+            },
+            {
+              "name": "description",
+              "kind": "text",
+              "column": "description",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "owner",
+              "kind": "belongsTo",
+              "column": "owner_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "partner",
+              "kind": "belongsTo",
+              "column": "partner_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.partner"
+            },
+            {
+              "name": "sequence",
+              "kind": "integer",
+              "column": "sequence",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "start_date",
+              "kind": "string",
+              "column": "start_date",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["active", "archived", "completed", "on_hold", "planned"]
+            },
+            {
+              "name": "target_date",
+              "kind": "string",
+              "column": "target_date",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "team",
+              "kind": "belongsTo",
+              "column": "team_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "organization.team"
+            }
+          ],
+          "uniqueConstraints": [["code", "company"]]
+        },
+        {
+          "name": "project.stage",
+          "table": "project_stages",
+          "fields": [
+            {
+              "name": "code",
+              "kind": "string",
+              "column": "code",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "fold",
+              "kind": "boolean",
+              "column": "fold",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "is_closed",
+              "kind": "boolean",
+              "column": "is_closed",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "project",
+              "kind": "belongsTo",
+              "column": "project_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "project.project"
+            },
+            {
+              "name": "sequence",
+              "kind": "integer",
+              "column": "sequence",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "wip_limit",
+              "kind": "integer",
+              "column": "wip_limit",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["code", "company", "project"]]
+        },
+        {
+          "name": "project.task",
+          "table": "project_tasks",
+          "fields": [
+            {
+              "name": "assignee",
+              "kind": "belongsTo",
+              "column": "assignee_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "blocked_reason",
+              "kind": "text",
+              "column": "blocked_reason",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "code",
+              "kind": "string",
+              "column": "code",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "description",
+              "kind": "text",
+              "column": "description",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "due_date",
+              "kind": "string",
+              "column": "due_date",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "estimate_minutes",
+              "kind": "integer",
+              "column": "estimate_minutes",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "external_ref",
+              "kind": "string",
+              "column": "external_ref",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "milestone",
+              "kind": "belongsTo",
+              "column": "milestone_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "project.milestone"
+            },
+            {
+              "name": "parent",
+              "kind": "belongsTo",
+              "column": "parent_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "project.task"
+            },
+            {
+              "name": "position",
+              "kind": "integer",
+              "column": "position",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "priority",
+              "kind": "enum",
+              "column": "priority",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["high", "low", "normal", "urgent"]
+            },
+            {
+              "name": "project",
+              "kind": "belongsTo",
+              "column": "project_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "project.project"
+            },
+            {
+              "name": "reviewer",
+              "kind": "belongsTo",
+              "column": "reviewer_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.user"
+            },
+            {
+              "name": "stage",
+              "kind": "belongsTo",
+              "column": "stage_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "project.stage"
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["backlog", "blocked", "cancelled", "done", "in_progress", "review"]
+            },
+            {
+              "name": "title",
+              "kind": "string",
+              "column": "title",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["code", "company"]]
+        },
+        {
+          "name": "project.task_dependency",
+          "table": "project_task_dependencies",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "depends_on",
+              "kind": "belongsTo",
+              "column": "depends_on_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "project.task"
+            },
+            {
+              "name": "kind",
+              "kind": "enum",
+              "column": "kind",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["blocks", "relates_to"]
+            },
+            {
+              "name": "task",
+              "kind": "belongsTo",
+              "column": "task_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "project.task"
+            }
+          ],
+          "uniqueConstraints": [["depends_on", "task"]]
+        }
+      ],
+      "menus": [
+        {
+          "model": "project.milestone",
+          "label": "Milestones",
+          "group": "Projects",
+          "sequence": 22,
+          "developmentOnly": false
+        },
+        {
+          "model": "project.project",
+          "label": "Projects",
+          "group": "Projects",
+          "sequence": 20,
+          "developmentOnly": false
+        },
+        {
+          "model": "project.stage",
+          "label": "Project Stages",
+          "group": "Projects",
+          "sequence": 23,
+          "developmentOnly": false
+        },
+        {
+          "model": "project.task",
+          "label": "Tasks",
+          "group": "Projects",
+          "sequence": 21,
+          "developmentOnly": false
+        },
+        {
+          "model": "project.task_dependency",
+          "label": "Task Dependencies",
+          "group": "Projects",
+          "sequence": 24,
+          "developmentOnly": true
+        }
+      ],
+      "views": [
+        "project.milestone",
+        "project.project",
+        "project.stage",
+        "project.task",
+        "project.task_dependency"
+      ],
+      "seeds": {
+        "base.sequence": 1,
+        "notification.template": 3,
+        "workflow.definition": 1,
+        "base.model_access": 5,
+        "project.stage": 4,
+        "project.project": 1,
+        "project.milestone": 1,
+        "project.task": 2,
+        "project.task_dependency": 1
+      },
+      "accessRules": [
+        {
+          "group": "base.group_user",
+          "model": "project.milestone",
+          "read": true,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "project.project",
+          "read": true,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "project.stage",
+          "read": true,
+          "create": false,
+          "write": false,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "project.task",
+          "read": true,
+          "create": true,
+          "write": true,
+          "unlink": false
+        },
+        {
+          "group": "base.group_user",
+          "model": "project.task_dependency",
+          "read": true,
+          "create": true,
+          "write": true,
+          "unlink": false
+        }
+      ]
+    },
+    {
       "name": "request",
       "version": "1.0.0",
       "depends": ["base", "jobs", "notification", "workflow"],
@@ -9316,5 +9997,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "280e86d893a126a2ec9c3fce0872261b2058beda0cc33b625cc1c10cf1a32762"
+  "generatedFromSha256": "18c7ce30f521289a6e2251eafd52424671ad2fbef84762e86f3e8f0443aaae13"
 }

@@ -57,7 +57,7 @@ jobs:
       - run: pnpm test:integration
       - uses: ./.github/actions/setup-pnpm
         with:
-          node-version: '22'
+          node-version: '24'
           pnpm-version: '11.17.0'
       - run: psql "$POSTGRES_TEST_URL" -Atc 'SHOW server_version'
 `;

@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS build
+FROM node:24-bookworm-slim AS build
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends python3 make g++ \
@@ -30,6 +30,7 @@ COPY packages/orm-integration/package.json ./packages/orm-integration/package.js
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json
 COPY packages/orm-notification/package.json ./packages/orm-notification/package.json
 COPY packages/orm-organization/package.json ./packages/orm-organization/package.json
+COPY packages/orm-project/package.json ./packages/orm-project/package.json
 COPY packages/orm/package.json ./packages/orm/package.json
 COPY packages/orm-request/package.json ./packages/orm-request/package.json
 COPY packages/orm-storage/package.json ./packages/orm-storage/package.json
@@ -47,7 +48,7 @@ FROM build AS api-deploy
 RUN pnpm --filter @moonwitness/api deploy --prod --legacy /deploy/api \
     && node scripts/prepare-api-runtime-assets.mjs /deploy/api
 
-FROM node:22-bookworm-slim AS runtime
+FROM node:24-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     API_HOST=0.0.0.0 \
     API_PORT=3000 \
@@ -75,7 +76,7 @@ ENV BOARD_API_TARGET=http://api:3000 \
 RUN pnpm --filter @moonwitness/board build \
     && pnpm board:budget
 
-FROM node:22-bookworm-slim AS board-runtime
+FROM node:24-bookworm-slim AS board-runtime
 ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=8080
 WORKDIR /app
 COPY --from=board-build --chown=node:node /workspace/apps/board/.next/standalone ./

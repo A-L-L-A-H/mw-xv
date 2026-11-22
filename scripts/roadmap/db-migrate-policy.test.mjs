@@ -6,19 +6,37 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
-test('db-migrate command supports --dry-run and PostgreSQL advisory locking', async () => {
+test('db-migrate command supports --dry-run and delegates to locked schema coordination', async () => {
   const source = await readFile(path.join(root, 'apps/api/src/commands/db-migrate.ts'), 'utf8');
+  const coordinator = await readFile(
+    path.join(root, 'apps/api/src/database/schema-state.ts'),
+    'utf8'
+  );
   assert.match(source, /--dry-run/u, 'db-migrate.ts must support --dry-run');
   assert.match(
     source,
-    /pg_advisory_lock|advisory/iu,
-    'db-migrate.ts must guard migrations with advisory lock'
+    /coordinateApiMigration/u,
+    'db-migrate.ts must use the shared schema coordinator'
+  );
+  assert.match(
+    coordinator,
+    /pg_try_advisory_lock/u,
+    'schema coordinator must guard migrations with an advisory lock'
   );
 });
 
-test('orm plugin honors SKIP_BOOT_MIGRATIONS=true while binding models', async () => {
-  const source = await readFile(path.join(root, 'apps/api/src/plugins/orm.plugin.ts'), 'utf8');
-  assert.match(source, /SKIP_BOOT_MIGRATIONS/u, 'orm.plugin.ts must check SKIP_BOOT_MIGRATIONS');
+test('worker bootstrap observes schema state without installing DDL', async () => {
+  const registry = await readFile(path.join(root, 'apps/api/src/addons/registry.ts'), 'utf8');
+  const workers = await Promise.all(
+    ['jobs-worker.ts', 'jobs-scheduler.ts', 'outbox-worker.ts'].map((file) =>
+      readFile(path.join(root, 'apps/api/src/commands', file), 'utf8')
+    )
+  );
+  assert.match(registry, /SKIP_BOOT_MIGRATIONS/u, 'addon registry must honor migration skip mode');
+  for (const source of workers) {
+    assert.match(source, /bootstrapApiWorker/u, 'workers must use the read-only schema observer');
+    assert.doesNotMatch(source, /installApiAddons/u, 'workers must not install database schema');
+  }
 });
 
 test('coverage thresholds policy enforces branch thresholds on critical runtime files', async () => {

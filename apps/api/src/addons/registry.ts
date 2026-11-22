@@ -1,12 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 import type { Knex } from 'knex';
 import { installAddons, registerAddons, type Addon } from '@moonwitness/orm';
+import { computeDesiredSchemaState } from '@moonwitness/orm';
 import { manifest as baseAddon, initializeSuperadminPassword } from '@moonwitness/orm-base';
 import { manifest as authAddon, createAuthService } from '@moonwitness/auth';
 import { jobsManifest } from '@moonwitness/jobs';
 import { manifest as notificationAddon } from '@moonwitness/orm-notification';
 import { manifest as workflowAddon } from '@moonwitness/orm-workflow';
 import { manifest as organizationAddon } from '@moonwitness/orm-organization';
+import { manifest as projectAddon } from '@moonwitness/orm-project';
 import { manifest as integrationAddon } from '@moonwitness/orm-integration';
 import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
@@ -17,6 +19,7 @@ import { createAttachmentScanner, type AttachmentScanner } from '../whatsapp/cla
 import type { createVideoPoster } from '../whatsapp/media-thumbnail.js';
 import { checkWhatsAppGatewayVersion } from '../whatsapp/version-guard.js';
 import { ensureResearchReviewWorkflow } from '../research-review-workflow.js';
+import { API_SCHEMA_VERSION, waitForSchemaReady } from '../database/schema-state.js';
 import { healthRoutes } from '../routes/health.routes.js';
 import { authRoutes } from '../routes/auth.routes.js';
 import { genericRoutes } from '../routes/generic.routes.js';
@@ -159,6 +162,10 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
     manifest: organizationAddon,
   },
   {
+    name: 'project',
+    manifest: projectAddon,
+  },
+  {
     name: 'workflow',
     manifest: workflowAddon,
     async registerRoutes(app) {
@@ -284,28 +291,31 @@ export function getApiAddonManifests(
     .filter((manifest): manifest is Addon => manifest !== undefined);
 }
 
-/** Canonical bootstrap: register in-memory metadata, optionally run DDL/seed install. */
-export async function bootstrapApiAddons(
+export async function registerApiAddons(
   db: Knex,
-  superadminPassword: string | undefined,
-  addons: readonly ApiAddonModule[] = API_ADDONS,
-  options: InstallApiAddonsOptions = {}
+  addons: readonly ApiAddonModule[] = API_ADDONS
 ): Promise<void> {
   const manifests = getApiAddonManifests(addons);
-  const skipBootMigrations =
-    options.skipBootMigrations ?? process.env.SKIP_BOOT_MIGRATIONS === 'true';
-
-  // Always register in-memory (models, views, menus, security)
+  syncAddonMenusToRegistry(manifests);
   await registerAddons(db, manifests);
+}
 
-  if (!skipBootMigrations) {
-    // Run DDL/seed install
-    await installAddons(db, manifests);
-    for (const addon of addons) {
-      await addon.postInstall?.(db);
-    }
-    await initializeSuperadminPassword(superadminPassword);
+export async function bootstrapApiWorker(
+  db: Knex,
+  options: {
+    addons?: readonly ApiAddonModule[];
+    waitForSchema?: (desired: ReturnType<typeof computeDesiredSchemaState>) => Promise<void>;
+  } = {}
+): Promise<void> {
+  const addons = options.addons ?? API_ADDONS;
+  const manifests = getApiAddonManifests(addons);
+  const desired = computeDesiredSchemaState(manifests, API_SCHEMA_VERSION);
+  if (options.waitForSchema) {
+    await options.waitForSchema(desired);
+  } else {
+    await waitForSchemaReady(db, { desired });
   }
+  await registerApiAddons(db, addons);
 }
 
 export async function registerApiAddonRoutes(
