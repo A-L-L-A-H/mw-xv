@@ -4,7 +4,7 @@
 
 Project merupakan pnpm monorepo dengan API Fastify, ORM Objection/Knex, PostgreSQL, dan React/Vite Board. Baca file sumber untuk memastikan versi dan kontrak aktual; jangan mengandalkan ringkasan ini untuk memilih API dependency.
 
-Scope aktif adalah menuntaskan jalur rilis pertama pada [active release plan](ACTIVE-PLAN.md). Seluruh roadmap (148 M-series + 65 K-series) tetap menjadi tujuan jangka panjang, tetapi kartu post-release tidak dikerjakan sebagai antrean prasyarat rilis. Ikuti [backlog tertunda](EXECUTION-BACKLOG.md) untuk item yang menunggu pemicu; jangan mengulang pekerjaan backlog tanpa pemicu tersebut.
+Scope utama tetap menuntaskan jalur rilis pertama pada [active release plan](ACTIVE-PLAN.md). Seluruh roadmap (163 M-series + 65 K-series) tetap menjadi tujuan jangka panjang, tetapi kartu post-release tidak dikerjakan sebagai antrean prasyarat rilis. Satu pengecualian yang telah diaktifkan maintainer adalah M13.01: audit Desktop/ROCKSOUL FLOW yang terpisah, read-only dan tidak menjadi release blocker. Ikuti [backlog tertunda](EXECUTION-BACKLOG.md) untuk item lain yang menunggu pemicu; jangan mengulang pekerjaan backlog tanpa pemicu tersebut.
 
 Jika pelaksanaan sudah diminta, kerjakan kartu dalam scope yang diotorisasi. Tidak perlu menanyakan kembali keputusan yang sudah eksplisit: dua branch main/dev, tidak ada deploy aplikasi, typed strict, programmatic schema/seed, dan identitas UI reusable. Keputusan stable release pertama tetap ditangani sesuai M7.03.
 
