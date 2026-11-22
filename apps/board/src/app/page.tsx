@@ -167,6 +167,7 @@ export default function HomePage() {
                 title={card.label}
                 number={card.number}
                 surface="ink"
+                frame="grunge"
                 accent={card.number === '02' ? 'cyan' : 'magenta'}
               />
               <div className="home-card-art" aria-hidden="true">
@@ -226,7 +227,13 @@ export default function HomePage() {
       </section>
 
       <section className="home-steps" aria-label="How the workspace connects">
-        <SectionRibbon title="Follow the signal" number="04" surface="ink" accent="yellow" />
+        <SectionRibbon
+          title="Follow the signal"
+          number="04"
+          surface="ink"
+          frame="grunge"
+          accent="yellow"
+        />
         <HorizontalFilmstrip
           className="home-step-strip"
           aria-label="How MoonWitness connects people, knowledge, and story work"

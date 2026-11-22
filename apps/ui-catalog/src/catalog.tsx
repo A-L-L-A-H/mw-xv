@@ -128,15 +128,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@moonwitness/ui/compon
 import { toast, ToastHost } from '@moonwitness/ui/components/toast';
 import { SoundProvider, SoundToggle, useSfx } from '@moonwitness/ui/components/audio';
 import {
+  AnimeImpactBurst,
   DecorativeMotif,
   Doodle,
+  GrungeCanvas,
+  GrungeDivider,
+  GrungeStamp,
   InkUnderline,
   LiveIndicator,
   LoadingProgress,
   LoadingSpinner,
+  MangaPanel,
   SignalOrbit,
   SpeechBubble,
   SpeedLines,
+  ZineSticker,
   type DecorativeMotifKind,
 } from '@moonwitness/ui/components/effects';
 import { Toolbar } from '@moonwitness/ui/components/toolbar';
@@ -503,6 +509,8 @@ function CatalogContent() {
                   <Avatar name="System Operator" />
                   <Badge>Draft</Badge>
                   <Badge variant="primary">Active</Badge>
+                  <Badge variant="magenta">Live</Badge>
+                  <Badge variant="cyan">Signal</Badge>
                   <Badge variant="destructive">Blocked</Badge>
                 </div>
               </Example>
@@ -860,6 +868,71 @@ function CatalogContent() {
                 </div>
               </Example>
               <Example
+                title="Raw-art grunge & anime kinetics"
+                description="Distressed chalk frames, manga panels, ripped tape dividers, torn manifesto stickers, and stepped cel-impact bursts."
+              >
+                <div className="catalog-raw-art-stack">
+                  <MangaPanel
+                    surface="ink"
+                    accent="magenta"
+                    actionLines
+                    badge={
+                      <div className="catalog-inline">
+                        <GrungeStamp tone="magenta" tilt="left">
+                          RAW EDITION
+                        </GrungeStamp>
+                        <GrungeStamp tone="yellow" tilt="right">
+                          VOL. 03
+                        </GrungeStamp>
+                      </div>
+                    }
+                  >
+                    <div className="catalog-raw-art-hero">
+                      <div>
+                        <p className="catalog-raw-art-headline">ENTER THE SHADOW</p>
+                        <p className="catalog-raw-art-copy">
+                          Heavy dry-brush silhouettes, speed-streak backdrops, and stepped cel
+                          energy built directly into shared UI primitives.
+                        </p>
+                      </div>
+                      <div className="catalog-inline">
+                        <AnimeImpactBurst variant="impact" />
+                        <AnimeImpactBurst variant="slash" />
+                      </div>
+                    </div>
+                  </MangaPanel>
+                  <GrungeDivider label="SIGNAL BREAK" tone="magenta" />
+                  <div className="catalog-raw-art-row">
+                    <GrungeCanvas intensity="heavy" surface="paper" scratches>
+                      <div className="catalog-raw-art-canvas">
+                        <SectionRibbon
+                          title="Field manifesto"
+                          number="03"
+                          frame="grunge"
+                          accent="cyan"
+                        />
+                        <div className="catalog-inline">
+                          <ZineSticker tone="yellow" tilt="left">
+                            WITNESS THE REAL.
+                          </ZineSticker>
+                          <ZineSticker tone="magenta" tilt="right">
+                            SAME SKY.
+                          </ZineSticker>
+                        </div>
+                      </div>
+                    </GrungeCanvas>
+                    <ArtworkFrame
+                      shape="portrait"
+                      frame="grunge"
+                      animeEffect="slash"
+                      caption="Grunge anime frame"
+                    >
+                      <img src={homeHeroMobile} alt="Distressed anime city artwork frame" />
+                    </ArtworkFrame>
+                  </div>
+                </div>
+              </Example>
+              <Example
                 title="Motion and reduced motion"
                 description="Decorative motion is brief; reduced motion keeps the mark and status visible without animation."
               >
@@ -1126,6 +1199,10 @@ function CatalogContent() {
                 <div className="catalog-button-grid">
                   <Button>Primary action</Button>
                   <Button treatment="brush">Brush action</Button>
+                  <Button variant="magenta">Magenta CTA</Button>
+                  <Button variant="magenta" treatment="brush">
+                    Magenta brush
+                  </Button>
                   <Button variant="secondary">Secondary</Button>
                   <Button variant="outline">Outline</Button>
                   <Button variant="destructive">Delete record</Button>

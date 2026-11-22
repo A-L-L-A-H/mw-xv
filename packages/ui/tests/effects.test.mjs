@@ -9,15 +9,20 @@ import {
   Doodle,
   EditorialTexture,
   GrungeCanvas,
+  GrungeDivider,
   GrungeStamp,
   InkFrame,
   InkUnderline,
   LiveIndicator,
   LoadingSpinner,
+  MangaPanel,
   SpeedLines,
   SpeechBubble,
+  ZineSticker,
 } from '../dist/components/effects.js';
 import { ArtworkFrame } from '../dist/components/artwork-frame.js';
+import { Badge } from '../dist/components/badge.js';
+import { Button } from '../dist/components/button.js';
 
 test('ink effects render as decorative shared primitives', () => {
   const html = renderToStaticMarkup(
@@ -131,4 +136,41 @@ test('anime effect animations and rough grunge artwork primitives render with de
   assert.match(html, /data-tone="magenta"/u);
   assert.match(html, /class="mw-ui-artwork-frame" data-anime-effect="slash" data-frame="grunge"/u);
   assert.match(html, /class="mw-ui-artwork-frame-grunge"/u);
+});
+
+test('phase 3 raw-art primitives and magenta/cyan variants render expected data attributes', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(GrungeDivider, { label: 'SIGNAL BREAK', tone: 'magenta' }),
+      React.createElement(
+        ZineSticker,
+        { tone: 'yellow', tilt: 'right', tape: true },
+        'WITNESS THE REAL.'
+      ),
+      React.createElement(
+        MangaPanel,
+        {
+          surface: 'ink',
+          accent: 'magenta',
+          actionLines: true,
+          badge: React.createElement(Badge, { variant: 'magenta' }, 'RAW'),
+        },
+        React.createElement(Button, { variant: 'magenta', treatment: 'brush' }, 'Enter the Shadow')
+      ),
+      React.createElement(Badge, { variant: 'cyan' }, 'SIGNAL')
+    )
+  );
+
+  assert.match(html, /class="mw-ui-grunge-divider" data-tone="magenta" role="separator"/u);
+  assert.match(html, /class="mw-ui-grunge-divider-label">SIGNAL BREAK</u);
+  assert.match(
+    html,
+    /class="mw-ui-zine-sticker" data-tape="true" data-tilt="right" data-tone="yellow"/u
+  );
+  assert.match(html, /class="mw-ui-manga-panel/u);
+  assert.match(html, /data-accent="magenta" data-surface="ink"/u);
+  assert.match(html, /data-treatment="brush" data-variant="magenta"/u);
+  assert.match(html, /data-variant="cyan"/u);
 });

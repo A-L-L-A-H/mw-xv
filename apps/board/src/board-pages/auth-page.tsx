@@ -18,7 +18,11 @@ import { Input } from '@moonwitness/ui/components/input';
 import { Label } from '@moonwitness/ui/components/label';
 import { Panel } from '@moonwitness/ui/components/panel';
 import { useSfx } from '@moonwitness/ui/components/audio';
-import { DecorativeMotif, LoadingSpinner } from '@moonwitness/ui/components/effects';
+import {
+  AnimeActionLines,
+  DecorativeMotif,
+  LoadingSpinner,
+} from '@moonwitness/ui/components/effects';
 
 type Mode = 'login' | 'register';
 
@@ -109,7 +113,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
 
       <main className="auth-shadow-main">
         <section className="auth-shadow-form-side" aria-labelledby="auth-title">
-          <Panel surface="ink" frame="line" density="comfortable" className="auth-shadow-card">
+          <Panel surface="ink" frame="grunge" density="comfortable" className="auth-shadow-card">
             <div className="auth-shadow-eyebrow">
               <span className="auth-shadow-eyebrow-mark" aria-hidden="true" />
               MoonWitness access // {isLogin ? 'Sign in' : 'Create account'}
@@ -209,6 +213,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
                 id="auth-submit"
                 type="submit"
                 size="lg"
+                variant="magenta"
                 treatment="brush"
                 className="auth-shadow-submit"
                 disabled={busy}
@@ -266,6 +271,11 @@ export function AuthPage({ mode }: { mode: Mode }) {
             />
           </picture>
           <div className="auth-shadow-art-shade" aria-hidden="true" />
+          <AnimeActionLines
+            direction="diagonal"
+            density="light"
+            className="auth-shadow-speedlines"
+          />
           <p className="auth-shadow-art-copy">
             Same moon.
             <br />

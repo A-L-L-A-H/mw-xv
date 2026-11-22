@@ -25,7 +25,13 @@ import { useAuth } from '@/hooks/use-auth-context';
 import { useModels } from '@/hooks/use-model';
 import { modelIcon, modelLabel } from '@/lib/models';
 import { DEVELOPMENT_MODE_EVENT, readDevelopmentMode } from '@/lib/navigation';
-import { AccentMarker, Doodle, LiveIndicator } from '@moonwitness/ui/components/effects';
+import {
+  AccentMarker,
+  AnimeActionLines,
+  Doodle,
+  GrungeDivider,
+  LiveIndicator,
+} from '@moonwitness/ui/components/effects';
 import { Button } from '@moonwitness/ui/components/button';
 import {
   Dialog,
@@ -261,6 +267,11 @@ export function DashboardPage() {
           className="dashboard-masthead-art"
         />
         <div className="dashboard-masthead-shade" aria-hidden="true" />
+        <AnimeActionLines
+          direction="diagonal"
+          density="light"
+          className="dashboard-masthead-speedlines"
+        />
         <div className="dashboard-masthead-ornaments" aria-hidden="true">
           <Doodle kind="sparkle" className="size-4 text-[var(--mw-signal-blue)]" />
           <Doodle kind="crown" className="size-5 text-[var(--mw-yellow)]" />
@@ -280,7 +291,7 @@ export function DashboardPage() {
 
           {/* Quick Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Button asChild size="sm" className="gap-1.5 shadow-ink">
+            <Button asChild variant="magenta" treatment="brush" size="sm" className="gap-1.5">
               <Link href="/board/m/base.partner?create=1">
                 <Plus className="size-4" /> New Partner
               </Link>
@@ -340,8 +351,10 @@ export function DashboardPage() {
           {/* KPI Counters Grid */}
           <DashboardKpiGrid accessibleModels={accessibleModels} />
 
+          <GrungeDivider label="Live Signal Feed" tone="magenta" />
+
           {/* Live System Activity / Audit Pulse Feed */}
-          <div className="min-w-0 border-4 border-ink bg-paper p-4 shadow-ink space-y-4 sm:p-6">
+          <div className="ink-panel min-w-0 border-4 border-ink bg-paper p-4 shadow-ink space-y-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-ink pb-3">
               <div className="flex items-center gap-2">
                 <LiveIndicator
@@ -394,7 +407,7 @@ export function DashboardPage() {
                       <Link
                         key={audit.id}
                         href={`/board/m/${audit.model}/${audit.record_id}`}
-                        className="group min-w-0 overflow-hidden border-2 border-ink bg-card p-3 font-mono text-xs transition-transform hover:-translate-y-0.5 hover:shadow-ink flex flex-col justify-between"
+                        className="dashboard-raw-card group min-w-0 overflow-hidden border-2 border-ink bg-card p-3 font-mono text-xs flex flex-col justify-between"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span
@@ -448,7 +461,7 @@ export function DashboardPage() {
                   <Link
                     key={act.id}
                     href={`/board/m/${act.resource_model}/${act.resource_id}`}
-                    className="group border-2 border-ink bg-card p-3 font-mono text-xs transition-transform hover:-translate-y-0.5 hover:shadow-ink"
+                    className="dashboard-raw-card group border-2 border-ink bg-card p-3 font-mono text-xs"
                   >
                     <div className="flex items-center justify-between">
                       <span className="border border-primary bg-primary/20 px-1.5 py-0.5 text-[10px] font-bold uppercase text-yellow-readable">
@@ -472,7 +485,7 @@ export function DashboardPage() {
 
           {/* Background Jobs & Outbox Telemetry Panel (Admins Only) */}
           {isAdmin && (
-            <div className="border-4 border-ink bg-paper p-6 shadow-ink space-y-5">
+            <div className="ink-panel border-4 border-ink bg-paper p-6 shadow-ink space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-ink pb-3">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5 border-2 border-ink bg-magenta/20 px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-magenta-readable">
@@ -682,6 +695,8 @@ export function DashboardPage() {
             </div>
           )}
 
+          <GrungeDivider label="Workspace Modules" tone="yellow" />
+
           {/* Available Models Grid */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -703,7 +718,7 @@ export function DashboardPage() {
                     <Link
                       key={m.model}
                       href={`/board/m/${m.model}`}
-                      className="ink-panel group relative block p-6 transition-transform hover:-translate-y-1 hover:shadow-ink-lg"
+                      className="ink-panel dashboard-raw-card group relative block p-6"
                     >
                       <div className="flex items-start justify-between">
                         <div className="size-12 border-2 border-ink bg-paper flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
