@@ -51,6 +51,18 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.equal(visualTasks.filter((task) => task.status === 'done').length, 96);
   assert.equal(visualTasks.filter((task) => task.tags.includes('status:skipped')).length, 3);
   assert.ok(visualTasks.every((task) => task.metadata?.id === task.code));
+  const taskByCode = new Map(result.tasks.map((task) => [task.code, task]));
+  assert.deepEqual(taskByCode.get('W1-001').metadata.legacyCardNotes, {
+    text: 'Human approval required only for canonical style lock. Continue other independent audit work while waiting.',
+    sourceFile: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/W1/W1-001.md',
+    sourceBlobSha: '74b510d170dd12c640f1ffb1e734ae5293187dcc',
+  });
+  assert.deepEqual(taskByCode.get('W5-012').metadata.legacyCardNotes, {
+    text: 'May be skipped with documented reason; do not block the baseline world runtime.',
+    sourceFile: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/W5/W5-012.md',
+    sourceBlobSha: 'fe2364614cf7ddfe550e26bbbcea2dcc8a5cf79f',
+  });
+  assert.equal(taskByCode.get('W1-002').metadata.legacyCardNotes, null);
 
 
 });
