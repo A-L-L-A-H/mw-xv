@@ -39,6 +39,7 @@ import { ArtworkFrame } from '@moonwitness/ui/components/artwork-frame';
 import homeHeroDesktop from '@moonwitness/assets/illustrations/home-hero-desktop.webp';
 import homeHeroMobile from '@moonwitness/assets/illustrations/home-hero-mobile.webp';
 import boardMasthead from '@moonwitness/assets/illustrations/board-masthead.webp';
+import authLoginDesktop from '@moonwitness/assets/illustrations/auth-login-desktop.webp';
 import lockupDark from '@moonwitness/assets/brand/moonwitness-lockup-dark.svg';
 import lockupLight from '@moonwitness/assets/brand/moonwitness-lockup-light.svg';
 import symbolDark from '@moonwitness/assets/brand/moonwitness-symbol-dark.svg';
@@ -167,6 +168,7 @@ const sections = [
   { id: 'forms', label: 'Forms' },
   { id: 'overlays', label: 'Overlays' },
   { id: 'data-display', label: 'Data display' },
+  { id: 'auth-coverage', label: 'Auth route coverage' },
   { id: 'assets', label: 'Asset inventory' },
   { id: 'charts', label: 'Charts' },
 ] as const;
@@ -1696,6 +1698,33 @@ function CatalogContent() {
                   />
                 </div>
               </Example>
+            </Section>
+            <Section
+              id="auth-coverage"
+              title="Auth route coverage"
+              description="A source-backed boundary specimen for the real sign-in and registration consumers."
+            >
+              <div className="auth-coverage-grid" data-testid="auth-route-specimen">
+                <Panel
+                  title="Registered access screens"
+                  description="These existing routes own credential entry and their API-returned status states."
+                >
+                  <img className="auth-coverage-art" src={authLoginDesktop} alt="" />
+                  <dl className="auth-coverage-facts">
+                    <div><dt>Sign in</dt><dd><code>/login</code></dd></div>
+                    <div><dt>Registration</dt><dd><code>/register</code></dd></div>
+                    <div><dt>States</dt><dd>Idle · submitting · returned error</dd></div>
+                  </dl>
+                </Panel>
+                <Panel
+                  title="Session list not exposed"
+                  description="The auth addon registers refresh-token internals, but the current Board has no session-management screen. Tokens stay inside the auth API and are not shown as records here."
+                >
+                  <p className="auth-coverage-boundary">
+                    Catalog boundary specimen · no session route or token fixture is represented.
+                  </p>
+                </Panel>
+              </div>
             </Section>
             <Section
               id="assets"

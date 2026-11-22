@@ -3448,7 +3448,7 @@
       "id": "W8-002",
       "phase": "W8",
       "title": "Implement visual coverage for auth addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3483,8 +3483,19 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Existing login/register states were retained; a labelled UI Catalog specimen documents the absent session-management consumer without exposing refresh-token data or inventing a route.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "evidence/W8-002-auth-visual-coverage.md; test-results/junit/ui-catalog.xml"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog build && pnpm ui:budget",
+          "exit_code": 0,
+          "artifact": "evidence/W8-002-auth-visual-coverage.md"
+        }
+      ],
       "commit": null
     },
     {

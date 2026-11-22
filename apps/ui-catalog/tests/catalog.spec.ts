@@ -44,6 +44,19 @@ test('asset browser filters canonical manifest entries and exposes rights status
   await expect(page.getByRole('link', { name: 'Asset inventory' })).toHaveAttribute('href', '#assets');
 });
 
+test('auth specimen documents only registered routes and keeps refresh tokens out of UI records', async ({ page }) => {
+  await page.goto('./#auth-coverage');
+  const specimen = page.getByTestId('auth-route-specimen');
+  await expect(specimen).toBeVisible();
+  await expect(specimen.getByText('/login', { exact: true })).toBeVisible();
+  await expect(specimen.getByText('/register', { exact: true })).toBeVisible();
+  await expect(specimen.getByRole('heading', { name: 'Session list not exposed' })).toBeVisible();
+  await expect(specimen.getByText(/no session route or token fixture is represented/u)).toBeVisible();
+  const art = specimen.locator('.auth-coverage-art');
+  await expect(art).toBeVisible();
+  expect(await art.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+});
+
 test('theme toggle changes the shared token map without hiding readable labels', async ({
   page,
 }) => {

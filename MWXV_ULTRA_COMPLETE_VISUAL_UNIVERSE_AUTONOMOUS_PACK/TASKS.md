@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 35 · skipped 3 · in_progress 1 · blocked 7 · todo 63.
+Status counts: done 36 · skipped 3 · in_progress 1 · blocked 7 · todo 62.
 
 ## W0
 
@@ -642,12 +642,13 @@ Status counts: done 35 · skipped 3 · in_progress 1 · blocked 7 · todo 63.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
   - Evidence: `pnpm --filter @moonwitness/board typecheck` (0) → `evidence/W8-001-base-visual-coverage.md`; `pnpm board:ui:check` (0) → `evidence/W8-001-base-visual-coverage.md`; `node --test scripts/board/model-icon-registry.test.mjs scripts/board/model-view-error-state.test.mjs` (0) → `evidence/W8-001-base-visual-coverage.md`
 
-- [ ] **W8-002 — Implement visual coverage for auth addon**
+- [x] **W8-002 — Implement visual coverage for auth addon**
   - Goal: Implement only the verified auth asset references, UI compositions and state treatments based on W8-D02. Domain: Identity, login, registration, security and session states.
   - Depends on: W8-D02, W2-005, W1-008
   - Deliverables: auth addon asset coverage and tested UI specimens/consumer integration where a real screen exists
   - Acceptance: Only real existing models/routes/permissions are represented.; Shared assets are reused by stable ID; no domain-specific duplicate asset copies.; Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.; Artwork remains decorative; labels, state and actions are real UI data.; New assets include provenance and are registered in canonical manifest.; If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui-catalog` (0) → `evidence/W8-002-auth-visual-coverage.md; test-results/junit/ui-catalog.xml`; `pnpm --filter @moonwitness/ui-catalog build && pnpm ui:budget` (0) → `evidence/W8-002-auth-visual-coverage.md`
 
 - [ ] **W8-003 — Implement visual coverage for jobs addon**
   - Goal: Implement only the verified jobs asset references, UI compositions and state treatments based on W8-D03. Domain: Queues, jobs, scheduled work, execution and failure states.
