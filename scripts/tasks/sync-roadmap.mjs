@@ -12,7 +12,7 @@ export function assertTaskRegistryValid(validation) {
       [
         'Refusing TaskOS sync: canonical registry has not passed validation.',
         ...details.map((detail) => `- ${detail}`),
-      ].join('\\n')
+      ].join('\n')
     );
   }
   if (!Number.isSafeInteger(validation.taskCount) || validation.taskCount < 1) {
