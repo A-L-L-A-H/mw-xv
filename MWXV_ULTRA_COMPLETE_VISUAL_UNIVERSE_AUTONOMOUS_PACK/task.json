@@ -2741,7 +2741,7 @@
           "artifact": "evidence/W6-W7-execution.md; 6/6 passed"
         }
       ],
-      "commit": null
+      "commit": "cac3e972f92715df8fddc6de8d68be8334760978"
     },
     {
       "id": "W6-004",
@@ -2786,7 +2786,7 @@
           "artifact": "evidence/W6-W7-execution.md; 6/6 passed"
         }
       ],
-      "commit": null
+      "commit": "cac3e972f92715df8fddc6de8d68be8334760978"
     },
     {
       "id": "W6-005",
@@ -2879,7 +2879,7 @@
           "artifact": "evidence/W6-W7-execution.md; existing controller contract 6/6 passed but is not scene ambience integration"
         }
       ],
-      "commit": null
+      "commit": "cac3e972f92715df8fddc6de8d68be8334760978"
     },
     {
       "id": "W6-007",
@@ -2919,7 +2919,7 @@
           "artifact": "evidence/W6-W7-execution.md; 3/3 passed including W6-007 catalog test"
         }
       ],
-      "commit": null
+      "commit": "cac3e972f92715df8fddc6de8d68be8334760978"
     },
     {
       "id": "W7-001",
@@ -3045,7 +3045,7 @@
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; Playwright webServer timed out"
         }
       ],
-      "commit": null
+      "commit": "cac3e972f92715df8fddc6de8d68be8334760978"
     },
     {
       "id": "W7-004",
@@ -3084,7 +3084,7 @@
           "artifact": "evidence/W6-W7-execution.md; 1/1 passed"
         }
       ],
-      "commit": null
+      "commit": "cac3e972f92715df8fddc6de8d68be8334760978"
     },
     {
       "id": "W7-005",
@@ -3124,7 +3124,7 @@
           "artifact": "evidence/W6-W7-execution.md; target crashed and run failed"
         }
       ],
-      "commit": null
+      "commit": "cac3e972f92715df8fddc6de8d68be8334760978"
     },
     {
       "id": "W7-006",
@@ -3168,7 +3168,7 @@
           "artifact": "evidence/W6-W7-execution.md"
         }
       ],
-      "commit": null
+      "commit": "cac3e972f92715df8fddc6de8d68be8334760978"
     },
     {
       "id": "W7-007",
@@ -3225,7 +3225,7 @@
           "artifact": "evidence/W6-W7-execution.md; webServer timed out before test"
         }
       ],
-      "commit": null
+      "commit": "cac3e972f92715df8fddc6de8d68be8334760978"
     },
     {
       "id": "W8-D01",
