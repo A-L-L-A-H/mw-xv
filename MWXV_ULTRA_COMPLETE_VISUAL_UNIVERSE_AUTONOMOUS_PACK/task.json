@@ -4505,7 +4505,7 @@
           "artifact": "evidence/W8-010-knowledge-visual-coverage.md; API webServer timeout; local E2E database/compose blocker"
         }
       ],
-      "commit": null
+      "commit": "758be5f"
     },
     {
       "id": "W8-011",
@@ -4881,7 +4881,7 @@
           "artifact": "evidence/W9-007-desktop-adoption.md; isolated retry 28/28 passed"
         }
       ],
-      "commit": null
+      "commit": "758be5f"
     },
     {
       "id": "W9-008",
@@ -4945,7 +4945,7 @@
           "artifact": "evidence/W9-008-addon-visual-handoff.md"
         }
       ],
-      "commit": null
+      "commit": "a58a433"
     },
     {
       "id": "W10-001",
