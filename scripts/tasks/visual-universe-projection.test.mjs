@@ -59,6 +59,7 @@ test('Visual Universe task projection is lossless for delegated metadata', () =>
   assert.deepEqual(projected.evidence, source.metadata.evidence);
   assert.equal(projected.commit, 'a'.repeat(40));
   assert.equal(projected.parallel_group, 'serial');
+  assert.equal(projected.notes, 'Original note');
 });
 
 test('Visual Universe skipped tasks remain distinguishable from completed tasks', () => {
@@ -114,6 +115,7 @@ test('Visual Universe projection uses canonical TaskOS evidence paths without in
 
 test('canonical empty fields do not resurrect stale source metadata', () => {
   const source = sampleTask({
+    status: 'blocked',
     owner: null,
     problem: '',
     proposedSolution: '',
