@@ -6,7 +6,7 @@ M13 extends the existing MoonWitness Desktop local-first harness. It does not cr
 
 ## M13.01 — ROCKSOUL FLOW capability audit and first vertical-slice selection
 
-- **Status:** todo
+- **Status:** complete (2026-11-22; audit deliverables and evidence verified on `dev` base `f3abe0937894b1fd309f675bd7bd86a15ee46e70`; no feature code implemented in M13.01)
 - **Prerequisites:** M12.05, M12.06, M12.07, M12.11, M12.13; Desktop architecture baseline ADR 0008 is accepted.
 - **Granular activation item:** DSK-0.12 in [the Desktop engineering ledger](../../todo-desktop.md).
 - **Source reference:** [bjo163/rocksouldx](https://github.com/bjo163/rocksouldx), catalogued as `ADAPT` in the [source migration matrix](../migration/SOURCE-MIGRATION-MATRIX.md). The matrix's `3157a62...` value is a README blob SHA, **not** a repository commit SHA; resolve and record the actual source commit before relying on any source file.
@@ -19,16 +19,16 @@ Establish an exact-source, evidence-backed map of ROCKSOUL FLOW ideas against th
 
 ### Capability areas to inspect
 
-| ROCKSOUL FLOW area | Existing target owners to inspect first | Audit question |
-|---|---|---|
-| Repo Radar | `apps/desktop`, `packages/ai-runtime` (including repository inspection), isolated worktree and file-inspector contracts | Which repository facts are already indexed/read safely, and what is still missing? |
-| Overlap Detector | `packages/ai-runtime`, `packages/ai-evaluation`, repository inspection and existing tests | Is there a deterministic duplicate/overlap signal, or only an unverified proposal? |
-| Plan Forge | `packages/ai-runtime` workforce planner, `packages/orm-ai`, `packages/orm-project`, `packages/orm-workflow` | Can a plan be represented by existing work contracts and project/workflow records? |
-| Prompt Forge | AI runtime prompt/skill contracts, evaluation fixtures and documentation | Is there a real versioning or review gap without creating another prompt registry? |
-| Task Deck | `packages/orm-project`, `packages/orm-workflow`, `packages/jobs`, existing Board/AI views and Desktop bridge | Can existing task/work-contract projections serve the experience? |
-| Proof Gate | PCW verifier, evidence artifact manifests, independent-review workflow and Desktop risk gate | Which proof checks are already authoritative, and what evidence remains absent? |
-| Memory Ledger | `packages/orm-ai` memory candidates/skill versions, memory evaluation and revocation rules | What is already canonical, and which memory states must remain candidate-only? |
-| Visual DNA Lab | `packages/assets`, `packages/ui`, UI Catalog and existing visual-review workflows | Can artwork-first assets and current UI contracts cover the idea without a new rendering stack? |
+| ROCKSOUL FLOW area | Existing target owners to inspect first                                                                                 | Audit question                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Repo Radar         | `apps/desktop`, `packages/ai-runtime` (including repository inspection), isolated worktree and file-inspector contracts | Which repository facts are already indexed/read safely, and what is still missing?              |
+| Overlap Detector   | `packages/ai-runtime`, `packages/ai-evaluation`, repository inspection and existing tests                               | Is there a deterministic duplicate/overlap signal, or only an unverified proposal?              |
+| Plan Forge         | `packages/ai-runtime` workforce planner, `packages/orm-ai`, `packages/orm-project`, `packages/orm-workflow`             | Can a plan be represented by existing work contracts and project/workflow records?              |
+| Prompt Forge       | AI runtime prompt/skill contracts, evaluation fixtures and documentation                                                | Is there a real versioning or review gap without creating another prompt registry?              |
+| Task Deck          | `packages/orm-project`, `packages/orm-workflow`, `packages/jobs`, existing Board/AI views and Desktop bridge            | Can existing task/work-contract projections serve the experience?                               |
+| Proof Gate         | PCW verifier, evidence artifact manifests, independent-review workflow and Desktop risk gate                            | Which proof checks are already authoritative, and what evidence remains absent?                 |
+| Memory Ledger      | `packages/orm-ai` memory candidates/skill versions, memory evaluation and revocation rules                              | What is already canonical, and which memory states must remain candidate-only?                  |
+| Visual DNA Lab     | `packages/assets`, `packages/ui`, UI Catalog and existing visual-review workflows                                       | Can artwork-first assets and current UI contracts cover the idea without a new rendering stack? |
 
 This table is an inspection guide, not a claim that any listed capability is complete. Verify exact implementation files, public exports, callers and tests on the candidate SHA.
 
