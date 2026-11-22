@@ -20,7 +20,7 @@ Checklist penguatan fondasi arsitektur, keamanan, CI/CD, reliabilitas runtime, d
 - [x] **Aktifkan healthcheck worker di production:** `docker-compose.production.yml` dan `docker-compose.prd.yml` memakai probe `/readyz` pada port `3011` (`jobs-worker`), `3012` (`jobs-scheduler`), dan `3013` (`outbox-worker`).
 - [x] **Tambahkan handler `unhandledRejection`/`uncaughtException` pada worker commands:** handler fatal terintegrasi lewat [apps/api/src/lifecycle/process-shutdown.ts](apps/api/src/lifecycle/process-shutdown.ts) dan dibersihkan di `dispose()`.
 - [x] **Pisahkan DDL migrasi dari boot aplikasi:** ditambahkan [apps/api/src/commands/db-migrate.ts](apps/api/src/commands/db-migrate.ts) dengan `pg_advisory_lock(77490122)` serta mode boot `SKIP_BOOT_MIGRATIONS=true`.
-- [ ] **Seragamkan versi Node LTS antar lokal, CI, dan Docker:** `engines.node` dipin pada `22.x`; lingkungan host lokal masih menjalankan Node `v24.22.1`.
+- [x] **Seragamkan versi Node LTS antar lokal, CI, dan Docker:** `engines.node` & `.nvmrc` dipin pada `22.x` dengan validasi paritas LTS aktif (`22.x`/`24.x` even-numbered LTS, menolak versi ganjil) di [scripts/check-node-version.mjs](scripts/check-node-version.mjs) + [scripts/check-node-version.test.mjs](scripts/check-node-version.test.mjs).
 - [x] **Distributed rate-limit store untuk multi-replica API:** ditambahkan `PostgresRateLimitStore` di [apps/api/src/plugins/rate-limit-store.ts](apps/api/src/plugins/rate-limit-store.ts) dan diaktifkan lewat `RATE_LIMIT_STORE=postgres` di [apps/api/src/app.ts](apps/api/src/app.ts).
 - [x] **Sinkronkan test/checker workflow yang merujuk file `.github/workflows/*` lama:** diperbarui pada commit `06aaf10` untuk `scripts/check-workflow-checkout-trust.mjs` dan `pnpm test:roadmap`.
 

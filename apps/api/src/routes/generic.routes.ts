@@ -26,8 +26,22 @@ import {
   type JsonValue,
 } from '@moonwitness/types';
 import type { Transaction } from 'objection';
-import { canAccess, canManageBaseUser, operationFor, rpcOperation } from '../auth/policy.js';
+import {
+  canAccess,
+  canManageBaseUser,
+  operationFor,
+  rpcOperation,
+  sanitizeClientContext,
+} from '../auth/policy.js';
 import { getRecordRuleDomain } from '../auth/rules.js';
+import { invalidateAuthCacheForModel } from '../plugins/auth.plugin.js';
+import {
+  ATTACHMENT_MIME_TYPES,
+  encodedAttachmentName,
+  safeAttachmentName,
+  validateAttachmentMagicBytes,
+} from '../storage/attachment-validation.js';
+import { genericExtendedRoutes } from './generic-extended.routes.js';
 import type {
   ActionRequestBody,
   DeleteQueryParams,
@@ -45,6 +59,7 @@ import {
   userGraphAllowed,
 } from './generic-query-graph.js';
 import { auditSnapshot } from './generic-audit.js';
+import { findReference } from './generic-references.js';
 
 type RpcEnvelope = {
   jsonrpc?: unknown;
@@ -132,76 +147,6 @@ function resolveFieldTarget(field: Field): typeof BaseModel | undefined {
 
 function hasPolymorphicResourceFields(fields: FieldMap): boolean {
   return 'resource_model' in fields && 'resource_id' in fields;
-}
-
-interface ReverseForeignKeyEntry {
-  modelName: string;
-  model: typeof BaseModel;
-  columns: string[];
-}
-
-interface ReverseReferenceCache {
-  generation: number;
-  byTarget: Map<string, ReverseForeignKeyEntry[]>;
-  polymorphic: { modelName: string; model: typeof BaseModel }[];
-}
-
-let reverseReferenceCache: ReverseReferenceCache | null = null;
-
-function getReverseReferenceIndex(): ReverseReferenceCache {
-  const generation = Registry.getGeneration();
-  if (reverseReferenceCache && reverseReferenceCache.generation === generation) {
-    return reverseReferenceCache;
-  }
-  const byTarget = new Map<string, ReverseForeignKeyEntry[]>();
-  const polymorphic: { modelName: string; model: typeof BaseModel }[] = [];
-  for (const [modelName, RegisteredModel] of Registry.getAll()) {
-    const fields = RegisteredModel.fields ?? {};
-    const columnsByTarget = new Map<string, string[]>();
-    for (const [fieldName, field] of Object.entries(fields)) {
-      if (field.kind !== 'belongsTo') continue;
-      const target = resolveFieldTarget(field);
-      if (!target?.modelName) continue;
-      const existing = columnsByTarget.get(target.modelName) ?? [];
-      existing.push(columnName(fieldName, field));
-      columnsByTarget.set(target.modelName, existing);
-    }
-    for (const [targetName, columns] of columnsByTarget) {
-      const entries = byTarget.get(targetName) ?? [];
-      entries.push({ modelName, model: RegisteredModel, columns });
-      byTarget.set(targetName, entries);
-    }
-    if (hasPolymorphicResourceFields(fields)) {
-      polymorphic.push({ modelName, model: RegisteredModel });
-    }
-  }
-  reverseReferenceCache = { generation, byTarget, polymorphic };
-  return reverseReferenceCache;
-}
-
-async function findReference(
-  targetModel: string,
-  targetId: number,
-  activeUsersOnly = false,
-  trx?: Transaction
-): Promise<string | null> {
-  const index = getReverseReferenceIndex();
-  for (const { modelName, model: RegisteredModel, columns } of index.byTarget.get(targetModel) ??
-    []) {
-    for (const column of columns) {
-      let query = RegisteredModel.query(trx).select('id').where(column, targetId);
-      if (activeUsersOnly && modelName === 'base.user') query = query.where('active', true);
-      if (await query.first()) return modelName;
-    }
-  }
-  for (const { modelName, model: RegisteredModel } of index.polymorphic) {
-    const reference = await RegisteredModel.query(trx)
-      .select('id')
-      .where({ resource_model: targetModel, resource_id: targetId })
-      .first();
-    if (reference) return modelName;
-  }
-  return null;
 }
 
 function readExpectedWriteDate(req: FastifyRequest): string | undefined {
@@ -648,6 +593,82 @@ async function executeRpc(
         );
       return unlinked;
     }
+    case 'read': {
+      const ids = Array.isArray(args[0])
+        ? (args[0] as unknown[]).filter(
+            (v): v is number => typeof v === 'number' && Number.isInteger(v)
+          )
+        : [];
+      const fields = Array.isArray(kwargs.fields)
+        ? (kwargs.fields as unknown[]).filter((f): f is string => typeof f === 'string')
+        : undefined;
+      if (ids.length === 0) return [];
+      const scope = await userReadScope(req, model.modelName);
+      return (await model.search_read([['id', 'in', ids], ...scope], {
+        fields,
+        activeTest: false,
+      })) as unknown as JsonValue;
+    }
+    case 'search_count': {
+      const rawDomain = (args[0] ?? []) as Domain;
+      validateDomain(rawDomain, new Set(Object.keys(model.fields ?? {})));
+      const scope = await userReadScope(req, model.modelName);
+      const query = applyDomain(model.query(trx), [...rawDomain, ...scope]);
+      const result = (await query.count('* as count').first()) as unknown as
+        { count?: number | string } | undefined;
+      return Number(result?.count ?? 0);
+    }
+    case 'fields_get': {
+      return describeFields(model) as unknown as JsonValue;
+    }
+    case 'views_get': {
+      return resolveViews(model) as unknown as JsonValue;
+    }
+    case 'default_get': {
+      const requestedFields = Array.isArray(args[0])
+        ? (args[0] as unknown[]).filter((f): f is string => typeof f === 'string')
+        : Object.keys(model.fields ?? {});
+      const safeCtx = sanitizeClientContext(kwargs.context, req.auth);
+      const defaults: Record<string, unknown> = {};
+      const fieldMap = model.fields ?? {};
+      for (const fieldName of requestedFields) {
+        const field = fieldMap[fieldName] as { default?: unknown } | undefined;
+        if (!field) continue;
+        const ctxKey = `default_${fieldName}`;
+        if (ctxKey in safeCtx) {
+          defaults[fieldName] = safeCtx[ctxKey];
+        } else if (field.default !== undefined) {
+          defaults[fieldName] =
+            typeof field.default === 'function'
+              ? (field.default as () => unknown)()
+              : field.default;
+        }
+      }
+      return defaults as unknown as JsonValue;
+    }
+    case 'onchange': {
+      return { values: {} };
+    }
+    case 'call_action': {
+      const ids = Array.isArray(args[0])
+        ? (args[0] as unknown[]).filter(
+            (v): v is number => typeof v === 'number' && Number.isInteger(v)
+          )
+        : [];
+      const actionName = typeof args[1] === 'string' ? args[1] : '';
+      const actionArgs = Array.isArray(args[2]) ? args[2] : [];
+      if (!actionName) throw new Error('Action name is required');
+      const scope = await userReadScope(req, model.modelName);
+      const records = await model.search([['id', 'in', ids], ...scope], { activeTest: false });
+      const results: unknown[] = [];
+      for (const rec of records) {
+        const fn = (rec as unknown as Record<string, unknown>)[actionName];
+        if (typeof fn !== 'function') throw new Error(`Action '${actionName}' not found`);
+        results.push(await (fn as (...a: unknown[]) => Promise<unknown>).apply(rec, actionArgs));
+      }
+      invalidateAuthCacheForModel(model.modelName);
+      return results as unknown as JsonValue;
+    }
     default:
       throw new Error(`Method '${method}' is not exposed`);
   }
@@ -657,50 +678,9 @@ interface GenericRoutesOptions {
   attachmentStorage: AttachmentStorage;
 }
 
-const ATTACHMENT_MIME_TYPES = new Set([
-  'application/octet-stream',
-  'application/pdf',
-  'application/json',
-  'application/zip',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  'application/msword',
-  'application/vnd.ms-excel',
-  'application/vnd.ms-powerpoint',
-  'text/plain',
-  'text/csv',
-  'image/gif',
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-]);
-
-function safeAttachmentName(value: string | undefined): string | null {
-  if (
-    !value ||
-    value.length > 255 ||
-    value.includes('/') ||
-    value.includes('\\') ||
-    [...value].some((character) => {
-      const code = character.charCodeAt(0);
-      return code < 32 || code === 127;
-    })
-  )
-    return null;
-  const name = value.normalize('NFC').trim();
-  if (!name || name === '.' || name === '..' || name.includes('..')) return null;
-  return name;
-}
-
-function encodedAttachmentName(name: string): string {
-  return encodeURIComponent(name).replace(
-    /[!'()*]/gu,
-    (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`
-  );
-}
-
 export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fastify, options) => {
+  await fastify.register(genericExtendedRoutes);
+
   fastify.addContentTypeParser(
     'application/octet-stream',
     { parseAs: 'buffer' },
@@ -771,6 +751,13 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
         return reply.code(400).send({ success: false, error: 'Attachment must not be empty' });
       if (req.body.length > MAX_ATTACHMENT_BYTES)
         return reply.code(413).send({ success: false, error: 'Attachment exceeds 10 MiB limit' });
+      if (!validateAttachmentMagicBytes(req.body, mimetype))
+        return reply.code(400).send({
+          success: false,
+          error: 'Attachment content does not match declared MIME type',
+          code: 'INVALID_MIME_SIGNATURE',
+          requestId: req.id,
+        });
 
       const key = randomUUID();
       const checksum = createHash('sha256').update(req.body).digest('hex');
@@ -908,6 +895,9 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
     unlink: canAccess(req.auth?.role, model, 'unlink', req.auth?.groupPermissions),
   });
 
+  const actionPermissionFor = (req: FastifyRequest, model: string) =>
+    canAccess(req.auth?.role, model, 'action', req.auth?.groupPermissions);
+
   /** Field metadata with readonly forced on when the caller cannot write. */
   const fieldsFor = (req: FastifyRequest, model: string) => {
     const writable = canAccess(req.auth?.role, model, 'write', req.auth?.groupPermissions);
@@ -931,9 +921,11 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
     if (!Registry.has(req.params.model))
       return reply.status(404).send(modelNotFound(req.params.model));
     const views = resolveViews(Registry.get(req.params.model));
+    const actions = actionPermissionFor(req, req.params.model) ? (views.actions ?? []) : [];
     return {
       success: true,
       ...views,
+      actions,
       permissions: permissionsFor(req, req.params.model),
       fields: fieldsFor(req, req.params.model),
     };

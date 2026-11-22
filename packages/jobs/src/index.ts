@@ -1,2 +1,5 @@
 export * from './models.js';
 export * from './runtime.js';
+export * from './lifecycle-events.js';
+export * from './dead-letter.js';
+export * from './addon-registration.js';

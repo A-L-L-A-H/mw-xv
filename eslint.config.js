@@ -20,6 +20,7 @@ export default [
       '**/.next*/**',
       '**/node_modules/**',
       '.qoder-tmp/**',
+      'apps/todo/**',
       'services/**',
       'pnpm-lock.yaml',
       '.env*',

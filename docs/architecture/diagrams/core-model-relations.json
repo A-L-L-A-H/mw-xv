@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "addons": ["auth", "base", "jobs", "notification"],
   "generatedFrom": "core addon manifests and model field metadata; no seed values included",
-  "sourceSha256": "a53f5198522e9245b80d4a8b7f29545a4e98b0d3b38425f99765e9be436df0ed",
+  "sourceSha256": "50a9fec79e7caf1138439c2ae34896cdcfd8409cd67fd9deda78d383d3be30b2",
   "models": [
     {
       "name": "auth.refresh_token",
@@ -35,6 +35,10 @@
     {
       "name": "base.company_membership",
       "table": "company_memberships"
+    },
+    {
+      "name": "base.config_parameter",
+      "table": "base_config_parameters"
     },
     {
       "name": "base.country",
@@ -95,6 +99,10 @@
     {
       "name": "base.partner_category_link",
       "table": "partner_category_links"
+    },
+    {
+      "name": "base.saved_filter",
+      "table": "base_saved_filters"
     },
     {
       "name": "base.sequence",
@@ -355,6 +363,13 @@
       "kind": "belongsTo"
     },
     {
+      "from": "base.config_parameter",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
       "from": "base.country_state",
       "field": "country",
       "to": "base.country",
@@ -526,6 +541,20 @@
       "from": "base.partner_category_link",
       "field": "partner",
       "to": "base.partner",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "base.saved_filter",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "base.saved_filter",
+      "field": "user",
+      "to": "base.user",
       "cardinality": "N:1",
       "kind": "belongsTo"
     },

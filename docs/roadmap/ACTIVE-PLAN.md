@@ -1,6 +1,6 @@
 # Jalur rilis aktif
 
-Diperbarui 2026-10-23. Goal penuh: 213 task (148 M-series + 65 K-series); tidak ada task atau acceptance yang dihapus. Gunakan `pnpm roadmap:progress -- --format json` untuk jumlah terkini, bukan snapshot angka dalam dokumen.
+Diperbarui 2026-11-22. Goal penuh: 227 task (162 M-series + 65 K-series); tidak ada task atau acceptance M0–M11/K0–K9 yang dihapus atau dibuka ulang. Gunakan `pnpm roadmap:progress -- --format json` untuk jumlah terkini, bukan snapshot angka dalam dokumen.
 
 ## Checkpoint kerja saat ini — 2026-10-23
 
@@ -92,3 +92,17 @@ Langkah 2–6 boleh dikerjakan paralel selama tidak mengubah file bersama. Dalam
 [EXECUTION-BACKLOG.md](EXECUTION-BACKLOG.md) menyimpan item tertunda, alasan, pemilik/dependency dan syarat pembukaan ulang. K0-004/K0-005 memiliki owner `bjo163` dan kebijakan umum yang disetujui. K0-006 selesai dengan keputusan owner 2026-10-15: rebuild fungsi terpilih dari requirement dan materi baru di XIV, tanpa runtime link/API/submodule/fetch ke repo lain dan tanpa impor kode/data legacy. Delapan ref publik dan notice hak tersimpan sebagai metadata historis saja; tidak ada rights clearance atau migrasi ID yang diklaim. Impor konten di masa depan harus membuka ulang K0-006 dan review rights/privacy per sumber.
 
 Goal lengkap hanya selesai bila seluruh acceptance master terbukti. Selesainya kode lokal berbeda dari acceptance hosted: M3.11, M8.09, release/Pages, security disposition dan promosi tetap terbuka selama bukti eksternalnya belum ada. Tidak membuat fixture atau simulasi kedua untuk menggantikan aksi hosted.
+
+## Workstream AI Corporation (`M12.01`–`M12.14`)
+
+Workstream tunggal untuk mengimplementasikan AI Corporation secara Addon-First di atas `dev` tanpa menduplikasi atau membuka ulang M0–M11 maupun K0–K9:
+
+- **Keputusan arsitektur:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (pointer kompatibilitas: [docs/architecture/adr/0007-ai-corporation-addon-first-architecture.md](../architecture/adr/0007-ai-corporation-addon-first-architecture.md)) dan [Baseline Audit & Reuse Matrix](../architecture/ai-corporation-baseline-audit.md).
+- **Kartu kerja kanonik (`M12.01`–`M12.14`):** [13-ai-corporation.md](13-ai-corporation.md) terdaftar dalam [tasks.json](tasks.json) dan [ROADMAP.md](../../ROADMAP.md).
+- **Ledger implementasi granular (`BASE.17`–`BASE.30`, `AI0`–`AI11`, `DOC`, `PR`, `GATE`, `SLICE`):** [`todo-ai-corporation.md`](../../moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
+
+### Kontrak sinkronisasi progress (`AI1.33`–`AI1.34`)
+
+1. **Otoritas status:** `ROADMAP.md` (bersama `docs/roadmap/evidence/M12.*.md`) tetap menjadi sumber status kanonik untuk task ID `M12.01`–`M12.14`, sementara `docs/roadmap/tasks.json` menyimpan metadata terstruktur dan dependensi DAG lintas-seri.
+2. **Ledger granular:** `todo-ai-corporation.md` berperan sebagai work ledger implementasi per checkbox (`BASE.*`, `AI*`, `DOC.*`, `PR.*`, `GATE.*`, `SLICE.*`), bukan master roadmap terpisah yang mengubah skema `task-ids.mjs`.
+3. **Aturan sinkronisasi:** Setiap batch implementasi yang terverifikasi menandai `[x]` checkbox granular terkait di `todo-ai-corporation.md` dan memperbarui Progress Ledger; kartu `M12.xx` di `ROADMAP.md` dan `tasks.json` (`status: "complete"`, `evidence: "docs/roadmap/evidence/M12.xx.md"`) ditandai selesai **hanya** setelah seluruh checkbox granular dalam batch tersebut lulus verifikasi dan berkas evidence `docs/roadmap/evidence/M12.xx.md` dibuat.

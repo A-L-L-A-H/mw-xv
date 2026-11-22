@@ -97,14 +97,19 @@ const promote = `
           gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --body-file "$report_file"
       - name: Classify risk from commits and changed paths
         if: steps.stale.outputs.stale != 'true'
+      - name: Verify evolution constitution and fitness ratchet
+        id: evolution_gate
+        if: steps.stale.outputs.stale != 'true'
+          node scripts/evolution/check-constitution.mjs --enforce-pause
+          node scripts/evolution/check-ratchet.mjs
       - name: Ensure approval-required label exists
-        if: steps.stale.outputs.stale != 'true' && steps.risk.outputs.approval_required == 'true'
+        if: steps.stale.outputs.stale != 'true' && (steps.evolution_gate.outcome != 'success' || (steps.risk.outputs.approval_required == 'true' && vars.AUTONOMOUS_PROMOTE != 'true'))
       - name: Disable auto-merge and mark sensitive promotion
-        if: steps.stale.outputs.stale != 'true' && steps.risk.outputs.approval_required == 'true'
+        if: steps.stale.outputs.stale != 'true' && (steps.evolution_gate.outcome != 'success' || (steps.risk.outputs.approval_required == 'true' && vars.AUTONOMOUS_PROMOTE != 'true'))
           gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label approval-required
           gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --disable-auto
       - name: Enable merge for compatible, low-risk promotion
-        if: steps.stale.outputs.stale != 'true' && steps.risk.outputs.approval_required != 'true'
+        if: steps.stale.outputs.stale != 'true' && steps.evolution_gate.outcome == 'success' && (steps.risk.outputs.approval_required != 'true' || vars.AUTONOMOUS_PROMOTE == 'true')
           gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json labels --jq '[.labels[].name]'
           if jq -e 'index("approval-required") != null' <<< "$labels" >/dev/null; then
           gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --remove-label approval-required
@@ -220,6 +225,7 @@ test('write workflows use separate resource locks while keeping conflicting writ
     ['promote.yml', 'promotion-pr-metadata'],
     ['refresh-promotion-report.yml', 'promotion-pr-metadata'],
     ['sync-main-to-dev.yml', 'dev-branch-updates'],
+    ['self-evolving.yml', 'dev-branch-updates'],
     ['release-prepare.yml', 'dev-branch-updates'],
     ['roadmap-issue-plan.yml', 'roadmap-issue-sync'],
     ['release.yml', 'release-asset-updates'],
@@ -578,6 +584,15 @@ test('low-risk promotion only removes the approval label when it is present', ()
   assert.ok(
     policies({ promote: unsafe }).some((finding) =>
       finding.includes('clear a stale approval-required label')
+    )
+  );
+});
+
+test('autonomous promotion rejects removing the evolution constitution and ratchet gate', () => {
+  const missingGateCondition = promote.replace("steps.evolution_gate.outcome == 'success' && ", '');
+  assert.ok(
+    policies({ promote: missingGateCondition }).some((finding) =>
+      finding.includes('evolution gate success')
     )
   );
 });

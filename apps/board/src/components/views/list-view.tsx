@@ -9,7 +9,7 @@ import {
 import { Checkbox } from '@moonwitness/ui/components/checkbox';
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { Button } from '@moonwitness/ui/components/button';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArchiveIcon,
@@ -46,6 +46,8 @@ import { FieldCell } from './fields';
 import { relationKey } from './field-utils';
 import { ImportWizardDialog } from './import-wizard-dialog';
 import { QueryBuilderDialog, type FilterRule } from './query-builder-dialog';
+import { ConfirmDialog } from './confirm-dialog';
+import { toast } from '@moonwitness/ui/components/toast';
 
 interface CustomFilter {
   id: string;
@@ -77,7 +79,15 @@ function toSingular(title: string): string {
 
 export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [activeFilterIndex, setActiveFilterIndex] = useState<number | null>(0); // Default to first filter if available
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [searchTerm]);
   const [viewMode, setViewMode] = useState<'table' | 'grid' | 'pipeline'>('table');
   const [page, setPage] = useState(1);
   const pageSize = 20;
@@ -190,7 +200,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
       }
     }
 
-    if (searchTerm.trim()) {
+    if (debouncedSearchTerm.trim()) {
       const searchFields = views.search?.fields?.length
         ? views.search.fields
         : views.fields
@@ -201,7 +211,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
       if (searchFields.length > 0) {
         // Build OR domain for matching searchFields: ['|', [f1, 'ilike', term], [f2, ...]]
         const orClauses = searchFields.map(
-          (f) => [f, 'ilike', `%${searchTerm.trim()}%`] as [string, string, unknown]
+          (f) => [f, 'ilike', `%${debouncedSearchTerm.trim()}%`] as [string, string, unknown]
         );
         if (orClauses.length === 1) {
           terms.push(orClauses[0]);
@@ -218,12 +228,40 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
   }, [
     activeFilterIndex,
     filters,
-    searchTerm,
+    debouncedSearchTerm,
     views,
     customFilters,
     advancedRules,
     advancedConjunction,
   ]);
+
+  const columns = useMemo(() => {
+    return views.list.columns
+      .map((colName) => views.fields.find((f) => f.name === colName))
+      .filter((f): f is NonNullable<typeof f> => Boolean(f))
+      .filter((field) => !field.writeOnly);
+  }, [views]);
+
+  // Pipeline Kanban Candidate Grouping Field
+  const groupingField = useMemo(() => {
+    return (
+      views.fields.find((f) => ['state', 'status', 'stage', 'activity_type'].includes(f.name)) ||
+      views.fields.find((f) => f.type === 'selection' || f.name.endsWith('_type')) ||
+      views.fields.find((f) => f.name === 'active') ||
+      null
+    );
+  }, [views.fields]);
+
+  const projectedFields = useMemo(() => {
+    const fieldSet = new Set<string>(['id', 'write_date']);
+    for (const column of columns) {
+      fieldSet.add(column.name);
+    }
+    if (groupingField) {
+      fieldSet.add(groupingField.name);
+    }
+    return Array.from(fieldSet);
+  }, [columns, groupingField]);
 
   // Eager load belongsTo relations present in columns
   const withRelations = useMemo(() => {
@@ -239,6 +277,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
   const offset = (page - 1) * pageSize;
   const { data, isLoading, isFetching, isPlaceholderData, isError, refetch } = useRecords(model, {
     domain,
+    fields: projectedFields,
     offset,
     limit: pageSize,
     order: currentOrder,
@@ -247,16 +286,11 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
 
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / pageSize) || 1;
-  const columns = useMemo(() => {
-    return views.list.columns
-      .map((colName) => views.fields.find((f) => f.name === colName))
-      .filter((f): f is NonNullable<typeof f> => Boolean(f))
-      .filter((field) => !field.writeOnly);
-  }, [views]);
 
   const mutations = useRecordMutations(model);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isBulkArchiving, setIsBulkArchiving] = useState(false);
+  const [confirmBulkArchive, setConfirmBulkArchive] = useState(false);
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
@@ -284,34 +318,25 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
 
   const handleBulkArchive = async () => {
     if (!selectedIds.length) return;
-    if (
-      !window.confirm(`Are you sure you want to archive ${selectedIds.length} selected record(s)?`)
-    ) {
-      return;
-    }
-
     setIsBulkArchiving(true);
     try {
       await Promise.all(
-        selectedIds.map((id) => mutations.archive.mutateAsync({ id, hard: false }))
+        selectedIds.map((id) => {
+          const targetRecord = data?.records.find((r) => r.id === id);
+          const writeDate =
+            typeof targetRecord?.write_date === 'string' ? targetRecord.write_date : undefined;
+          return mutations.archive.mutateAsync({ id, hard: false, writeDate });
+        })
       );
       setSelectedIds([]);
+      toast.success('Selected records archived.');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to archive selected records');
+      toast.error(err instanceof Error ? err.message : 'Failed to archive selected records');
     } finally {
       setIsBulkArchiving(false);
+      setConfirmBulkArchive(false);
     }
   };
-
-  // Pipeline Kanban Candidate Grouping Field
-  const groupingField = useMemo(() => {
-    return (
-      views.fields.find((f) => ['state', 'status', 'stage', 'activity_type'].includes(f.name)) ||
-      views.fields.find((f) => f.type === 'selection' || f.name.endsWith('_type')) ||
-      views.fields.find((f) => f.name === 'active') ||
-      null
-    );
-  }, [views.fields]);
 
   // Unique stages extracted from field selection metadata, defaults, or dataset
   const pipelineStages = useMemo(() => {
@@ -353,9 +378,13 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
     if (groupingField.type === 'boolean') {
       val = newStage === 'true';
     }
+    const targetRecord = data?.records.find((r) => r.id === recordId);
+    const writeDate =
+      typeof targetRecord?.write_date === 'string' ? targetRecord.write_date : undefined;
     await mutations.save.mutateAsync({
       id: recordId,
       values: { [groupingField.name]: val },
+      writeDate,
     });
   };
 
@@ -399,7 +428,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
       setSelectedIds([]);
       setTagPopoverOpen(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to tag selected records');
+      toast.error(err instanceof Error ? err.message : 'Failed to tag selected records');
     } finally {
       setIsMassTagging(false);
     }
@@ -1375,7 +1404,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
             <Button
               variant="outline"
               size="sm"
-              onClick={handleBulkArchive}
+              onClick={() => setConfirmBulkArchive(true)}
               disabled={isBulkArchiving}
               className="gap-1.5 hover:bg-destructive hover:text-destructive-foreground"
             >
@@ -1480,6 +1509,16 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
           }}
         />
       )}
+      <ConfirmDialog
+        open={confirmBulkArchive}
+        title="Bulk archive"
+        description={`Archive ${selectedIds.length} selected record${selectedIds.length === 1 ? '' : 's'}? Archived records remain recoverable.`}
+        confirmLabel="Archive"
+        destructive
+        busy={isBulkArchiving}
+        onConfirm={() => void handleBulkArchive()}
+        onCancel={() => setConfirmBulkArchive(false)}
+      />
     </div>
   );
 }

@@ -50,3 +50,29 @@ export function isJsonObject(value: unknown): value is JsonObject {
 export function asJsonObject(value: unknown): JsonObject | null {
   return isJsonObject(value) ? value : null;
 }
+
+/** Parses a finite safe integer from number, bigint, or decimal string; returns null otherwise. */
+export function parseInteger(value: unknown): number | null {
+  if (typeof value === 'number') {
+    return Number.isSafeInteger(value) ? value : null;
+  }
+  if (typeof value === 'bigint') {
+    const num = Number(value);
+    return Number.isSafeInteger(num) ? num : null;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!/^-?\d+$/u.test(trimmed)) return null;
+    const num = Number(trimmed);
+    return Number.isSafeInteger(num) ? num : null;
+  }
+  return null;
+}
+
+/** Extracts a non-negative integer count from a Knex/SQLite/PostgreSQL aggregate row. */
+export function countValue(row: unknown): number {
+  if (!isRecord(row)) return 0;
+  const raw = row.count ?? row['count(*)'] ?? row['COUNT(*)'] ?? Object.values(row)[0];
+  const parsed = parseInteger(raw);
+  return parsed !== null && parsed >= 0 ? parsed : 0;
+}

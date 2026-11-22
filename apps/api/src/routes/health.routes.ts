@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
+import type { Knex } from 'knex';
 import { timingSafeEqual } from 'node:crypto';
 import { Registry } from '@moonwitness/orm';
 import type { HealthResponse, RootInfoResponse } from '@moonwitness/types';
@@ -8,6 +9,14 @@ interface HealthRoutesOptions {
   metricsToken?: string;
   checkAttachmentStorage?: () => Promise<boolean>;
   checkWhatsAppGateway?: () => Promise<boolean>;
+}
+
+async function readInstalledAddons(db: Knex) {
+  const rows = (await db('_orm_addons').select('name', 'version').orderBy('name')) as Array<{
+    name: string;
+    version: string;
+  }>;
+  return rows;
 }
 
 export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (fastify, options) => {
@@ -20,6 +29,15 @@ export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (fast
     const storageOk = options.checkAttachmentStorage
       ? await options.checkAttachmentStorage().catch(() => false)
       : true;
+    const installedAddons = dbOk ? await readInstalledAddons(fastify.db).catch(() => []) : [];
+    const pool = fastify.db.client.pool ?? undefined;
+    const databasePool = pool
+      ? {
+          used: pool.numUsed() ?? 0,
+          free: pool.numFree() ?? 0,
+          capacity: pool.numPendingCreates() ?? 0,
+        }
+      : undefined;
 
     const status = dbOk && storageOk ? 200 : 503;
     const responseBody: HealthResponse = {
@@ -27,6 +45,8 @@ export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (fast
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       database: dbOk ? 'connected' : 'disconnected',
+      databasePool,
+      installedAddons,
       attachmentStorage: storageOk ? 'connected' : 'disconnected',
       registeredModels: Registry.getNames(),
     };

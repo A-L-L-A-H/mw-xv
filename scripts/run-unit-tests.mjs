@@ -156,6 +156,32 @@ const suites = [
     typecheck: true,
   },
   {
+    name: 'orm-ai',
+    packageName: '@moonwitness/orm-ai',
+    typecheck: true,
+  },
+  {
+    name: 'ai-runtime',
+    packageName: '@moonwitness/ai-runtime',
+    typecheck: true,
+  },
+  {
+    name: 'ai-mcp',
+    packageName: '@moonwitness/ai-mcp',
+    typecheck: true,
+  },
+  {
+    name: 'ai-evaluation',
+    packageName: '@moonwitness/ai-evaluation',
+    typecheck: true,
+  },
+  {
+    name: 'local-ai',
+    packageName: '@moonwitness/local-ai',
+    typecheck: true,
+    typecheckConfig: 'tsconfig.test.json',
+  },
+  {
     name: 'knowledge',
     packageName: '@moonwitness/knowledge',
     typecheck: true,

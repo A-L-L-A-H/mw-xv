@@ -5,6 +5,7 @@ on:
     branches: [dev, main]
   pull_request:
     branches: [dev, main]
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -37,6 +38,7 @@ jobs:
       - name: Verify shared UI, API addon boundary, assets, and documentation links
         run: |
           pnpm board:ui:check
+          pnpm desktop:ui:check
           pnpm api:addon:check
           pnpm test:assets
           pnpm exec playwright install chromium
@@ -46,10 +48,14 @@ jobs:
       - name: Build workspace and verify budgets
         run: |
           pnpm build
+          pnpm --filter @moonwitness/desktop build
+          pnpm --filter @moonwitness/desktop typecheck
+          pnpm --filter @moonwitness/desktop test
           pnpm docs:check:built
           pnpm --filter @moonwitness/board typecheck
           pnpm board:budget
           pnpm test:ui-budget
+          pnpm test:ui-catalog
 
   unit-tests:
     runs-on: ubuntu-24.04

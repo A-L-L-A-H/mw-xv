@@ -10,6 +10,13 @@ export type TableBodyProps = ComponentProps<'tbody'>;
 export type TableRowProps = ComponentProps<'tr'>;
 export type TableHeaderProps = ComponentProps<'th'>;
 export type TableCellProps = ComponentProps<'td'>;
+export type TableFooterProps = ComponentProps<'tfoot'>;
+export type TableSummaryCellProps = ComponentProps<'td'> & {
+  /** Aggregation type for the summary cell */
+  aggregate?: 'sum' | 'avg' | 'count' | 'min' | 'max' | 'custom';
+  /** Custom value for 'custom' aggregate */
+  customValue?: React.ReactNode;
+};
 
 export function Table({ className, scrollLabel, density = 'comfortable', ...props }: TableProps) {
   return (
@@ -76,4 +83,36 @@ export function TableHeader({ className, ...props }: TableHeaderProps) {
 
 export function TableCell({ className, ...props }: TableCellProps) {
   return <td className={['mw-ui-table-cell', className].filter(Boolean).join(' ')} {...props} />;
+}
+
+export function TableFooter({ className, ...props }: TableFooterProps) {
+  return (
+    <tfoot className={['mw-ui-table-footer', className].filter(Boolean).join(' ')} {...props} />
+  );
+}
+
+export function TableSummaryCell({
+  className,
+  aggregate,
+  customValue,
+  ...props
+}: TableSummaryCellProps) {
+  const cellClassName = ['mw-ui-table-summary-cell', className].filter(Boolean).join(' ');
+  if (aggregate === 'custom') {
+    return (
+      <td className={cellClassName} {...props}>
+        {customValue}
+      </td>
+    );
+  }
+  return (
+    <td className={cellClassName} data-aggregate={aggregate} {...props}>
+      {aggregate === 'sum' && <span className="mw-ui-table-aggregate-label">Sum:</span>}
+      {aggregate === 'avg' && <span className="mw-ui-table-aggregate-label">Avg:</span>}
+      {aggregate === 'count' && <span className="mw-ui-table-aggregate-label">Count:</span>}
+      {aggregate === 'min' && <span className="mw-ui-table-aggregate-label">Min:</span>}
+      {aggregate === 'max' && <span className="mw-ui-table-aggregate-label">Max:</span>}
+      <span className="mw-ui-table-aggregate-value">{props.children}</span>
+    </td>
+  );
 }

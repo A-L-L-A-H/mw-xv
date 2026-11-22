@@ -1,0 +1,55 @@
+{
+  "name": "@moonwitness/desktop",
+  "version": "1.0.0-rc.1",
+  "private": true,
+  "description": "Local-first MoonWitness desktop agent harness and Tauri v2 host bridge derived from apps/board",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "moonwitness-desktop": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
+    }
+  },
+  "files": [
+    "dist",
+    "tauri.conf.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json"
+  },
+  "dependencies": {
+    "@moonwitness/ai-mcp": "workspace:*",
+    "@moonwitness/ai-runtime": "workspace:*",
+    "@moonwitness/jobs": "workspace:*",
+    "@moonwitness/logger": "workspace:*",
+    "@moonwitness/orm": "workspace:*",
+    "@moonwitness/orm-ai": "workspace:*",
+    "@moonwitness/orm-base": "workspace:*",
+    "@moonwitness/orm-knowledge": "workspace:*",
+    "@moonwitness/orm-notification": "workspace:*",
+    "@moonwitness/orm-organization": "workspace:*",
+    "@moonwitness/orm-storage": "workspace:*",
+    "@moonwitness/orm-workflow": "workspace:*",
+    "@moonwitness/types": "workspace:*",
+    "better-sqlite3": "^13.0.3",
+    "knex": "^3.3.0",
+    "objection": "^3.1.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^26.6.4",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}

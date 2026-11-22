@@ -8,7 +8,7 @@ import { enqueueJob, jobsManifest, runOneJob } from '@moonwitness/jobs';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { installAddons } from '@moonwitness/orm';
 import { LocalFileAttachmentStorage, manifest as storageManifest } from '@moonwitness/orm-storage';
-import { whatsappManifest } from '../src/whatsapp/manifest.js';
+import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 import {
   ensureWhatsAppAttachmentCron,
   registerWhatsAppAttachmentJob,

@@ -1,11 +1,116 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { TextDecoder } from 'node:util';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+function sha256Hex(bytes) {
+  return createHash('sha256').update(bytes).digest('hex');
+}
+
+function selectSearchProbeToken(text) {
+  const tokens = text.normalize('NFKC').match(/[\p{L}\p{N}]+/gu) ?? [];
+  if (tokens.length === 0) {
+    throw new Error('Corpus fixture contains no searchable token');
+  }
+  return [...tokens].sort((left, right) => right.length - left.length)[0];
+}
+
+/**
+ * Discovers all permitted corpus source manifests and their verified reference artifacts
+ * under corpus/manifests so golden evaluation fixtures expand automatically as manifests grow.
+ */
+export async function loadCorpusGoldenFixtures(rootDir = repositoryRoot) {
+  const manifestsDir = path.join(rootDir, 'corpus/manifests');
+  if (!existsSync(manifestsDir)) return [];
+
+  const fileNames = (await readdir(manifestsDir))
+    .filter((name) => name.endsWith('.json'))
+    .sort((left, right) => left.localeCompare(right));
+
+  const parsedEntries = await Promise.all(
+    fileNames.map(async (fileName) => {
+      const manifestPath = `corpus/manifests/${fileName}`;
+      const manifestBytes = await readFile(path.join(manifestsDir, fileName));
+      return {
+        fileName,
+        manifestPath,
+        manifestBytes,
+        manifestSha256: sha256Hex(manifestBytes),
+        parsed: JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(manifestBytes)),
+      };
+    })
+  );
+
+  const indexByManifestPath = new Map();
+  for (const entry of parsedEntries) {
+    if (!Array.isArray(entry.parsed?.entries)) continue;
+    for (const item of entry.parsed.entries) {
+      if (typeof item?.source_manifest_path !== 'string') continue;
+      indexByManifestPath.set(item.source_manifest_path.replaceAll('\\', '/'), {
+        locator: typeof item.locator === 'string' ? item.locator : undefined,
+        artifactPath:
+          typeof item.artifact_path === 'string'
+            ? item.artifact_path.replaceAll('\\', '/')
+            : undefined,
+        sha256: typeof item.sha256 === 'string' ? item.sha256 : undefined,
+      });
+    }
+  }
+
+  const fixtures = [];
+  for (const entry of parsedEntries) {
+    const manifest = entry.parsed;
+    if (
+      manifest?.schema_version !== 1 ||
+      typeof manifest?.source_id !== 'string' ||
+      typeof manifest?.edition_id !== 'string' ||
+      typeof manifest?.artifact?.sha256 !== 'string' ||
+      manifest?.rights?.state !== 'permitted' ||
+      !Array.isArray(manifest?.rights?.allowed_uses) ||
+      !manifest.rights.allowed_uses.includes('read_analyze')
+    ) {
+      continue;
+    }
+
+    const indexMeta = indexByManifestPath.get(entry.manifestPath);
+    const sourceSha256 = manifest.artifact.sha256;
+    const artifactRelPath =
+      indexMeta?.artifactPath ??
+      `corpus/reference/sha256/${sourceSha256.slice(0, 2)}/${sourceSha256}`;
+    const artifactFullPath = path.join(rootDir, artifactRelPath);
+    if (!existsSync(artifactFullPath)) continue;
+
+    const artifactBytes = await readFile(artifactFullPath);
+    const decodedText = new TextDecoder('utf-8', { fatal: true })
+      .decode(artifactBytes)
+      .replace(/\r?\n$/u, '');
+    if (decodedText.length === 0) continue;
+
+    fixtures.push({
+      slug: entry.fileName.replace(/\.json$/u, ''),
+      manifestPath: entry.manifestPath,
+      manifestSha256: entry.manifestSha256,
+      sourceManifestBytes: entry.manifestBytes,
+      artifactBytes,
+      text: decodedText,
+      attributionText: manifest.attribution?.text ?? '',
+      reference: {
+        sourceId: manifest.source_id,
+        editionId: manifest.edition_id,
+        locator: indexMeta?.locator ?? manifest.source_id,
+        sourceSha256,
+      },
+    });
+  }
+
+  return fixtures;
+}
 
 function buildGoldenPassage(index, text) {
   return {
@@ -49,12 +154,14 @@ function validateStrictEnvelope(suppliedSourceIds) {
 }
 
 /**
- * Executes the deterministic 32-case offline evaluation suite against the compiled Local AI engine.
+ * Executes the deterministic offline evaluation suite against the compiled Local AI engine,
+ * including dynamic golden fixtures discovered from corpus/manifests.
  */
 export async function runLocalAiEval(options = {}) {
   const localAi = await import(
     pathToFileURL(path.join(repositoryRoot, 'packages/local-ai/dist/index.js')).href
   );
+  const evalRoot = options.repositoryRoot ? path.resolve(options.repositoryRoot) : repositoryRoot;
   const cases = [];
 
   async function recordCase(id, category, fn) {
@@ -480,6 +587,160 @@ export async function runLocalAiEval(options = {}) {
     assert.equal(hits.length, 1);
     assert.ok(hits[0].semanticScore > 0.9);
   });
+
+  // Category 6: Dynamic corpus manifest golden fixtures (auto-expands with corpus/manifests)
+  const corpusFixtures = await loadCorpusGoldenFixtures(evalRoot);
+  await recordCase('corpus-manifests-discovered', 'corpus_manifest_fidelity', async () => {
+    assert.ok(
+      corpusFixtures.length >= 2,
+      `Expected at least 2 corpus manifest fixtures, found ${corpusFixtures.length}`
+    );
+  });
+
+  const corpusCatalog = corpusFixtures.map((fixture) => ({
+    manifestPath: fixture.manifestPath,
+    manifestSha256: fixture.manifestSha256,
+    reference: fixture.reference,
+  }));
+  const resolveCorpusFixture = async (ref) => {
+    const matched = corpusFixtures.find(
+      (fixture) =>
+        fixture.reference.sourceId === ref.sourceId &&
+        fixture.reference.editionId === ref.editionId &&
+        fixture.reference.locator === ref.locator &&
+        fixture.reference.sourceSha256 === ref.sourceSha256
+    );
+    if (!matched) return null;
+    return {
+      reference: matched.reference,
+      text: matched.text,
+      visibility: 'PUBLIC_APPROVED',
+      sourceManifestPath: matched.manifestPath,
+      artifactBytes: matched.artifactBytes,
+      sourceManifestBytes: matched.sourceManifestBytes,
+    };
+  };
+
+  for (const fixture of corpusFixtures) {
+    await recordCase(`corpus-retrieve-${fixture.slug}`, 'corpus_manifest_fidelity', async () => {
+      const chunk = await localAi.retrieveDynamicLocalPassageChunk(
+        { reference: fixture.reference },
+        { resolve: resolveCorpusFixture, canRead: () => true },
+        corpusCatalog
+      );
+      assert.equal(chunk.text, fixture.text);
+      assert.equal(chunk.visibility, 'PUBLIC_APPROVED');
+      assert.equal(chunk.citation.sourceId, fixture.reference.sourceId);
+      assert.equal(chunk.citation.sourceManifestPath, fixture.manifestPath);
+      assert.equal(chunk.citation.attribution, fixture.attributionText);
+      assert.equal(chunk.sourceSpan.byteStart, 0);
+      assert.equal(chunk.sourceSpan.byteEnd, Buffer.byteLength(fixture.text, 'utf8'));
+    });
+
+    await recordCase(`corpus-prefix-span-${fixture.slug}`, 'corpus_manifest_fidelity', async () => {
+      const scalars = Array.from(fixture.text);
+      const prefixLen = Math.min(3, scalars.length);
+      const prefix = scalars.slice(0, prefixLen).join('');
+      const chunk = await localAi.retrieveDynamicLocalPassageChunk(
+        {
+          reference: fixture.reference,
+          byteStart: 0,
+          byteEnd: Buffer.byteLength(prefix, 'utf8'),
+        },
+        { resolve: resolveCorpusFixture, canRead: () => true },
+        corpusCatalog
+      );
+      assert.equal(chunk.text, prefix);
+      assert.equal(chunk.sourceSpan.scalarEnd, prefixLen);
+    });
+
+    await recordCase(
+      `corpus-hybrid-search-${fixture.slug}`,
+      'corpus_manifest_fidelity',
+      async () => {
+        const probeToken = selectSearchProbeToken(fixture.text);
+        const candidates = [
+          ...corpusFixtures.map((entry) => ({
+            reference: entry.reference,
+            text: entry.text,
+            visibility: 'PUBLIC_APPROVED',
+            sourceManifestPath: entry.manifestPath,
+          })),
+          {
+            reference: {
+              sourceId: `mw:source:restricted-${fixture.slug}`,
+              editionId: 'mw:edition:restricted-v1',
+              locator: 'restricted:1',
+              sourceSha256: 'f'.repeat(64),
+            },
+            text: `${probeToken} restricted internal witness`,
+            visibility: 'RESTRICTED',
+            sourceManifestPath: `corpus/manifests/restricted-${fixture.slug}.json`,
+          },
+        ];
+        const hits = localAi.searchLocalPassagesHybrid(
+          {
+            text: probeToken,
+            allowedVisibilities: new Set(['PUBLIC_APPROVED']),
+          },
+          candidates
+        );
+        assert.ok(
+          hits.some((hit) => hit.candidate.reference.sourceId === fixture.reference.sourceId),
+          `Expected ${fixture.reference.sourceId} in hybrid hits for token ${probeToken}`
+        );
+        assert.ok(hits.every((hit) => hit.candidate.visibility === 'PUBLIC_APPROVED'));
+      }
+    );
+
+    await recordCase(
+      `corpus-grounded-citation-${fixture.slug}`,
+      'corpus_manifest_fidelity',
+      async () => {
+        const passage = {
+          source_id: fixture.reference.sourceId,
+          edition_id: fixture.reference.editionId,
+          locator: fixture.reference.locator,
+          content_sha256: fixture.reference.sourceSha256,
+          evidence_id: `mw:evidence:${fixture.slug}`,
+          assertion_id: `mw:assertion:${fixture.slug}`,
+          text: fixture.text,
+        };
+        const validator = validateStrictEnvelope(new Set([fixture.reference.sourceId]));
+        const accepted = await localAi.generateLocalAiSuggestion({
+          runtime: {
+            generate: async () => ({
+              status: 'generated',
+              text: JSON.stringify({
+                format: 'mw-local-ai-suggestion-envelope/v1',
+                suggestions: [{ kind: 'summary', citations: [{ source_id: passage.source_id }] }],
+              }),
+            }),
+          },
+          request: { kind: 'summary', passages: [passage] },
+          validate: validator,
+        });
+        assert.equal(accepted.status, 'candidate');
+
+        const rejected = await localAi.generateLocalAiSuggestion({
+          runtime: {
+            generate: async () => ({
+              status: 'generated',
+              text: JSON.stringify({
+                format: 'mw-local-ai-suggestion-envelope/v1',
+                suggestions: [
+                  { kind: 'summary', citations: [{ source_id: 'mw:source:fabricated-corpus' }] },
+                ],
+              }),
+            }),
+          },
+          request: { kind: 'summary', passages: [passage] },
+          validate: validator,
+        });
+        assert.deepEqual(rejected, { status: 'rejected', reason: 'invalid_candidate' });
+      }
+    );
+  }
 
   const passedCount = cases.filter((entry) => entry.passed).length;
   const failedCount = cases.length - passedCount;

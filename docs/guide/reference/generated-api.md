@@ -1,6 +1,6 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `b39e32d2061a91615847efb6fed20ab5be9e541fc7cb82d28fe4b7519f35753e`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `eed58a4aaf1b9052883c89fee1473d9daf05148c3f6a5b690e77c3a4edb2c239`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                                     |
 | ------ | -------------------------------------------------------- |
@@ -16,6 +16,10 @@ Extracted from literal Fastify route declarations. Source fingerprint: `b39e32d2
 | GET    | `/admin/jobs/health`                                     |
 | GET    | `/admin/outbox`                                          |
 | POST   | `/admin/outbox/:id/retry`                                |
+| GET    | `/agents`                                                |
+| POST   | `/agents`                                                |
+| GET    | `/agents/:id`                                            |
+| PATCH  | `/agents/:id`                                            |
 | GET    | `/api/:model`                                            |
 | POST   | `/api/:model`                                            |
 | DELETE | `/api/:model/:id`                                        |
@@ -23,9 +27,15 @@ Extracted from literal Fastify route declarations. Source fingerprint: `b39e32d2
 | PATCH  | `/api/:model/:id`                                        |
 | PUT    | `/api/:model/:id`                                        |
 | POST   | `/api/:model/:id/action/:method`                         |
+| POST   | `/api/:model/action/:actionName`                         |
+| DELETE | `/api/:model/bulk`                                       |
+| PATCH  | `/api/:model/bulk`                                       |
+| POST   | `/api/:model/default-get`                                |
 | GET    | `/api/:model/fields`                                     |
 | GET    | `/api/:model/group-count`                                |
+| POST   | `/api/:model/onchange`                                   |
 | GET    | `/api/:model/views`                                      |
+| GET    | `/api/app/bootstrap`                                     |
 | GET    | `/api/base.attachment/:id/download`                      |
 | POST   | `/api/base.attachment/upload`                            |
 | GET    | `/api/corpus/passages/:editionId/:locator`               |
@@ -59,6 +69,8 @@ Extracted from literal Fastify route declarations. Source fingerprint: `b39e32d2
 | GET    | `/api/research/suggestions/:suggestionId`                |
 | POST   | `/api/research/suggestions/generate`                     |
 | GET    | `/api/research/witnesses/:witnessId`                     |
+| GET    | `/artifacts`                                             |
+| POST   | `/artifacts`                                             |
 | POST   | `/auth/login`                                            |
 | POST   | `/auth/logout`                                           |
 | GET    | `/auth/me`                                               |
@@ -67,15 +79,40 @@ Extracted from literal Fastify route declarations. Source fingerprint: `b39e32d2
 | PATCH  | `/auth/me/profile`                                       |
 | POST   | `/auth/refresh`                                          |
 | POST   | `/auth/register`                                         |
+| POST   | `/desktop/artifacts/upload`                              |
+| POST   | `/desktop/lease`                                         |
+| POST   | `/desktop/pcw-sync`                                      |
+| GET    | `/desktop/pull`                                          |
+| POST   | `/emergency-stop`                                        |
+| GET    | `/eval-summary`                                          |
+| GET    | `/governance/approvals`                                  |
+| POST   | `/governance/approvals`                                  |
+| POST   | `/governance/approvals/:id/decide`                       |
+| GET    | `/grants`                                                |
+| POST   | `/grants`                                                |
+| POST   | `/grants/:id/revoke`                                     |
 | GET    | `/health`                                                |
 | POST   | `/jsonrpc`                                               |
 | GET    | `/livez`                                                 |
+| GET    | `/memory`                                                |
+| POST   | `/memory`                                                |
+| POST   | `/memory/:id/revoke`                                     |
 | GET    | `/metrics`                                               |
 | PATCH  | `/notifications/:id/read`                                |
 | GET    | `/notifications/inbox`                                   |
 | GET    | `/notifications/preferences`                             |
 | PUT    | `/notifications/preferences/:channel`                    |
+| GET    | `/obligations`                                           |
+| POST   | `/obligations`                                           |
+| PATCH  | `/obligations/:id`                                       |
+| GET    | `/providers`                                             |
+| POST   | `/providers`                                             |
+| PATCH  | `/providers/:id`                                         |
 | GET    | `/readyz`                                                |
+| GET    | `/runs`                                                  |
+| POST   | `/runs`                                                  |
+| GET    | `/runs/:id`                                              |
+| POST   | `/runs/:id/cancel`                                       |
 | GET    | `/whatsapp/account`                                      |
 | GET    | `/whatsapp/agents`                                       |
 | POST   | `/whatsapp/connect`                                      |
@@ -120,6 +157,10 @@ Extracted from literal Fastify route declarations. Source fingerprint: `b39e32d2
 | GET    | `/whatsapp/readyz`                                       |
 | GET    | `/whatsapp/statuses`                                     |
 | POST   | `/whatsapp/statuses`                                     |
+| GET    | `/work-contracts`                                        |
+| POST   | `/work-contracts`                                        |
+| GET    | `/work-contracts/:id`                                    |
+| POST   | `/work-contracts/:id/verify`                             |
 | GET    | `/workflows/definitions`                                 |
 | GET    | `/workflows/instances`                                   |
 | POST   | `/workflows/instances`                                   |

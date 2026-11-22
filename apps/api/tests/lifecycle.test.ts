@@ -1,6 +1,8 @@
 import { spawn } from 'node:child_process';
 import { describe, expect, it, vi } from 'vitest';
+import { ServiceContainer, createServiceToken } from '@moonwitness/orm';
 import { gracefulShutdown } from '../src/lifecycle/graceful-shutdown.js';
+import { createProcessShutdownController } from '../src/lifecycle/process-shutdown.js';
 
 function target(close: () => Promise<void>) {
   return {
@@ -11,6 +13,29 @@ function target(close: () => Promise<void>) {
 }
 
 describe('graceful process shutdown', () => {
+  it('disposes registered services in reverse registration order on shutdown', async () => {
+    const services = new ServiceContainer();
+    const disposed: string[] = [];
+    services.register(
+      createServiceToken<{ close(): void }>('api.service.first'),
+      { close: () => undefined },
+      () => {
+        disposed.push('first');
+      }
+    );
+    services.register(
+      createServiceToken<{ close(): Promise<void> }>('api.service.second'),
+      { close: async () => undefined },
+      async () => {
+        disposed.push('second');
+      }
+    );
+    const shutdown = createProcessShutdownController(() => undefined, { services });
+    await services.disposeAll();
+    expect(disposed).toEqual(['second', 'first']);
+    shutdown.dispose();
+  });
+
   it('converts a real SIGTERM into an abort and waits for active work to drain', async () => {
     const helperUrl = new URL('../src/lifecycle/process-shutdown.ts', import.meta.url).href;
     const program = `

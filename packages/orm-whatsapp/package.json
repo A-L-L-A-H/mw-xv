@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-whatsapp",
-  "version": "1.14.0",
+  "version": "1.0.0-rc.1",
   "description": "WhatsApp domain ORM models, access seeds, views, and addon manifest for MoonWitness",
   "type": "module",
   "main": "./dist/index.js",

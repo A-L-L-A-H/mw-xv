@@ -281,7 +281,8 @@ describe('declarative addons', () => {
         'write_date',
       ]);
       for (const column of usedColumns) {
-        expect(columns.has(column), `${model.modelName} view column ${column}`).toBe(true);
+        const colName = typeof column === 'string' ? column : column.name;
+        expect(columns.has(colName), `${model.modelName} view column ${colName}`).toBe(true);
       }
     }
 

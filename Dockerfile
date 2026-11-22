@@ -8,9 +8,13 @@ RUN apt-get update \
 WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/package.json
-COPY apps/docs/package.json ./apps/docs/package.json
 COPY apps/board/package.json ./apps/board/package.json
+COPY apps/desktop/package.json ./apps/desktop/package.json
+COPY apps/docs/package.json ./apps/docs/package.json
 COPY apps/ui-catalog/package.json ./apps/ui-catalog/package.json
+COPY packages/ai-evaluation/package.json ./packages/ai-evaluation/package.json
+COPY packages/ai-mcp/package.json ./packages/ai-mcp/package.json
+COPY packages/ai-runtime/package.json ./packages/ai-runtime/package.json
 COPY packages/assets/package.json ./packages/assets/package.json
 COPY packages/auth/package.json ./packages/auth/package.json
 COPY packages/client/package.json ./packages/client/package.json
@@ -20,6 +24,7 @@ COPY packages/jobs/package.json ./packages/jobs/package.json
 COPY packages/knowledge/package.json ./packages/knowledge/package.json
 COPY packages/local-ai/package.json ./packages/local-ai/package.json
 COPY packages/logger/package.json ./packages/logger/package.json
+COPY packages/orm-ai/package.json ./packages/orm-ai/package.json
 COPY packages/orm-base/package.json ./packages/orm-base/package.json
 COPY packages/orm-integration/package.json ./packages/orm-integration/package.json
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json

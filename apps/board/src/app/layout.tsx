@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './global.css';
 import { SoundProvider } from '@moonwitness/ui/components/audio';
+import { SKIN_INIT_SCRIPT, SkinProvider } from '@/components/providers/skin-provider';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'http://localhost:5173';
 
@@ -36,9 +37,14 @@ export const viewport: Viewport = { themeColor: '#0d0d0d', colorScheme: 'light d
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SKIN_INIT_SCRIPT }} />
+      </head>
       <body>
-        <SoundProvider>{children}</SoundProvider>
+        <SkinProvider>
+          <SoundProvider>{children}</SoundProvider>
+        </SkinProvider>
       </body>
     </html>
   );

@@ -15,7 +15,7 @@ import {
   type AttachmentStorage,
 } from '@moonwitness/orm-storage';
 import { createLogger, type LogLevel } from '@moonwitness/logger';
-import { isRecord } from '@moonwitness/types';
+import { isRecord, PlatformError } from '@moonwitness/types';
 import ormPlugin from './plugins/orm.plugin.js';
 import authPlugin, { validateJwtSecret } from './plugins/auth.plugin.js';
 import observabilityPlugin from './plugins/observability.plugin.js';
@@ -227,6 +227,23 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   });
 
   app.setErrorHandler((error, request, reply) => {
+    if (error instanceof PlatformError) {
+      const isWhatsAppRoute = request.routeOptions.url?.startsWith('/whatsapp/') === true;
+      if (isWhatsAppRoute) {
+        request.log.error({ error: whatsappLogErrorContext(error) }, 'WhatsApp request failed');
+      } else {
+        request.log.error(error);
+      }
+      return reply.status(error.httpStatus).send({
+        success: false,
+        error: isWhatsAppRoute ? 'WhatsApp request failed' : error.message,
+        code: error.code ?? error.name,
+        requestId: request.id,
+        type: error.name,
+        ...(isWhatsAppRoute || error.details === undefined ? {} : { data: error.details }),
+      });
+    }
+
     const isWhatsAppRoute = request.routeOptions.url?.startsWith('/whatsapp/') === true;
     const code = databaseErrorCode(error);
     if (code) {
@@ -245,6 +262,8 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
             ? 'Database is busy; retry the request'
             : 'Unique constraint violation'
           : 'Database request failed',
+        code: conflict ? 'DB_CONFLICT' : 'DB_ERROR',
+        requestId: request.id,
       });
     }
     if (isWhatsAppRoute) {
@@ -258,6 +277,8 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
       return reply.status(400).send({
         success: false,
         error: isWhatsAppRoute ? 'Invalid WhatsApp request' : message,
+        code: 'VALIDATION_ERROR',
+        requestId: request.id,
         type: 'ValidationError',
         ...(isWhatsAppRoute ? {} : { data: errorProperty(error, 'data') }),
       });
@@ -266,6 +287,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     const statusCode = errorProperty(error, 'statusCode');
     const resolvedStatus = typeof statusCode === 'number' ? statusCode : 500;
     const hideInternalMessage = resolvedStatus >= 500 && config.env === 'production';
+    const rawCode = errorProperty(error, 'code');
     return reply.status(resolvedStatus).send({
       success: false,
       error: isWhatsAppRoute
@@ -275,6 +297,8 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
           : error instanceof Error
             ? error.message
             : 'Internal Server Error',
+      code: typeof rawCode === 'string' ? rawCode : `HTTP_${resolvedStatus}`,
+      requestId: request.id,
     });
   });
 

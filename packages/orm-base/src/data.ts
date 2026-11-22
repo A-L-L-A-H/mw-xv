@@ -16,6 +16,8 @@ import { Activity } from './models/activity.js';
 import { Sequence } from './models/sequence.js';
 import { CompanyMembership } from './models/company-membership.js';
 import { IrFeatureFlag } from './models/feature-flag.js';
+import { SavedFilter } from './models/saved-filter.js';
+import { ConfigParameter } from './models/config-parameter.js';
 
 const countryMeta: Record<
   string,
@@ -371,5 +373,24 @@ export const data = [
     rollout_pct: 0,
     proposal_id: 'EVO-000',
     description: 'Default-off runtime gate for experimental self-evolving addons.',
+  }),
+
+  // 16. Default Saved Filter & Config Parameter
+  seed(SavedFilter, 'base.saved_filter_active_partners', {
+    model_name: Partner.modelName,
+    name: 'Active Partners',
+    domain_json: '[["active","=",true]]',
+    is_default: true,
+    is_shared: true,
+    user: ref('base.user_superadmin'),
+    company: ref('base.company_default'),
+  }),
+  seed(ConfigParameter, 'base.config_default_page_size', {
+    key: 'ui.default_page_size',
+    value_type: 'integer',
+    value: '80',
+    is_secret: false,
+    company: ref('base.company_default'),
+    description: 'Default list view page size.',
   }),
 ];

@@ -9,10 +9,14 @@ export interface ProcessShutdownOptions {
   readonly onUnhandledError?: (reason: unknown) => void;
 }
 
+export interface ServiceContainerLike {
+  disposeAll(): Promise<void> | void;
+}
+
 /** Connect termination signals and fatal process errors to one graceful abort signal. */
 export function createProcessShutdownController(
   onStopping: () => void = () => undefined,
-  options: ProcessShutdownOptions = {}
+  options: ProcessShutdownOptions & { services?: ServiceContainerLike } = {}
 ): ProcessShutdownController {
   const controller = new AbortController();
   let stopping = false;
@@ -20,6 +24,7 @@ export function createProcessShutdownController(
     if (stopping) return;
     stopping = true;
     onStopping();
+    void options.services?.disposeAll();
     controller.abort();
   };
   const stopOnFatal = (error: unknown) => {

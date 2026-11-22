@@ -1,4 +1,10 @@
-import { useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
+import { useEffect, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
+import {
+  DEFAULT_SKIN_ID,
+  themeRegistry,
+  type SkinDensity,
+  type SkinId,
+} from '@moonwitness/ui/themes';
 import {
   ActivityIcon,
   AddIcon,
@@ -285,6 +291,13 @@ function Section({
 
 function CatalogContent() {
   const [dark, setDark] = useState(false);
+  const [skin, setSkin] = useState<SkinId>(DEFAULT_SKIN_ID);
+  const [density, setDensity] = useState<SkinDensity>('comfortable');
+
+  useEffect(() => {
+    document.documentElement.dataset.skin = skin;
+    document.documentElement.dataset.density = density;
+  }, [skin, density]);
   const [page, setPage] = useState(1);
   const [checked, setChecked] = useState(true);
   const [indeterminateChecked, setIndeterminateChecked] = useState<boolean | 'indeterminate'>(
@@ -373,6 +386,19 @@ function CatalogContent() {
     setDark((current) => {
       const next = !current;
       document.documentElement.classList.toggle('dark', next);
+      return next;
+    });
+  }
+
+  function selectSkin(nextSkin: SkinId) {
+    setSkin(nextSkin);
+    document.documentElement.dataset.skin = nextSkin;
+  }
+
+  function toggleDensity() {
+    setDensity((current) => {
+      const next: SkinDensity = current === 'comfortable' ? 'compact' : 'comfortable';
+      document.documentElement.dataset.density = next;
       return next;
     });
   }
@@ -503,6 +529,41 @@ function CatalogContent() {
                   <ArtworkFrame shape="portrait" caption="Example artwork">
                     <img src={homeHeroMobile} alt="Illustrative night city artwork" />
                   </ArtworkFrame>
+                </div>
+              </Example>
+              <Example
+                title="Skin & density switcher"
+                description="Preview built-in MoonWitness skins and comfortable vs compact density across live specimens."
+              >
+                <div className="catalog-inline">
+                  <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
+                    <SelectTrigger
+                      aria-label="Preview skin"
+                      style={{
+                        minHeight: '2rem',
+                        height: '2rem',
+                        width: '13rem',
+                        maxWidth: '100%',
+                      }}
+                    >
+                      <SelectValue placeholder="Skin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {themeRegistry.list().map((entry) => (
+                        <SelectItem key={entry.id} value={entry.id}>
+                          {entry.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleDensity}
+                    aria-pressed={density === 'compact'}
+                  >
+                    {density === 'compact' ? 'Use comfortable density' : 'Use compact density'}
+                  </Button>
                 </div>
               </Example>
             </Section>
@@ -1345,7 +1406,7 @@ function CatalogContent() {
                 title="Command palette"
                 description="Filterable command menu with keyboard selection."
               >
-                <Command className="catalog-command-frame">
+                <Command className="catalog-command-frame" defaultValue="__none__">
                   <CommandInput
                     aria-label="Search commands"
                     placeholder="Search workspace commands..."
@@ -1432,7 +1493,7 @@ function CatalogContent() {
               >
                 <div className="catalog-table-stack">
                   <Table
-                    className="min-w-[36rem]"
+                    style={{ minWidth: '36rem' }}
                     density="comfortable"
                     scrollLabel="Installed add-ons table horizontal scroll"
                     aria-label="Installed add-ons"
@@ -1441,7 +1502,7 @@ function CatalogContent() {
                     <TableHead>
                       <TableRow>
                         <TableHeader scope="col" aria-sort={addonSort ?? 'none'}>
-                          <div className="flex items-center gap-2">
+                          <div className="catalog-inline">
                             <Checkbox
                               aria-label="Select all add-ons on this page"
                               checked={allVisibleAddonsSelected}
@@ -1475,7 +1536,7 @@ function CatalogContent() {
                       {visibleAddons.map(([name, owner, status]) => (
                         <TableRow key={name}>
                           <TableCell>
-                            <div className="flex items-center gap-2">
+                            <div className="catalog-inline">
                               <Checkbox
                                 aria-label={`Select ${name}`}
                                 checked={selectedAddons.includes(name)}

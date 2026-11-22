@@ -1,94 +1,134 @@
 flowchart LR
-  pkg0["@moonwitness/api"]
-  pkg1["@moonwitness/assets"]
-  pkg2["@moonwitness/auth"]
-  pkg3["@moonwitness/board"]
-  pkg4["@moonwitness/client"]
-  pkg5["@moonwitness/corpus"]
-  pkg6["@moonwitness/docs"]
-  pkg7["@moonwitness/eslint-config"]
-  pkg8["@moonwitness/jobs"]
-  pkg9["@moonwitness/knowledge"]
-  pkg10["@moonwitness/local-ai"]
-  pkg11["@moonwitness/logger"]
-  pkg12["@moonwitness/orm"]
-  pkg13["@moonwitness/orm-base"]
-  pkg14["@moonwitness/orm-integration"]
-  pkg15["@moonwitness/orm-knowledge"]
-  pkg16["@moonwitness/orm-notification"]
-  pkg17["@moonwitness/orm-organization"]
-  pkg18["@moonwitness/orm-request"]
-  pkg19["@moonwitness/orm-storage"]
-  pkg20["@moonwitness/orm-whatsapp"]
-  pkg21["@moonwitness/orm-workflow"]
-  pkg22["@moonwitness/research"]
-  pkg23["@moonwitness/types"]
-  pkg24["@moonwitness/ui"]
-  pkg25["@moonwitness/ui-catalog"]
-  pkg0 -->|development| pkg4
+  pkg0["@moonwitness/ai-evaluation"]
+  pkg1["@moonwitness/ai-mcp"]
+  pkg2["@moonwitness/ai-runtime"]
+  pkg3["@moonwitness/api"]
+  pkg4["@moonwitness/assets"]
+  pkg5["@moonwitness/auth"]
+  pkg6["@moonwitness/board"]
+  pkg7["@moonwitness/client"]
+  pkg8["@moonwitness/corpus"]
+  pkg9["@moonwitness/desktop"]
+  pkg10["@moonwitness/docs"]
+  pkg11["@moonwitness/eslint-config"]
+  pkg12["@moonwitness/jobs"]
+  pkg13["@moonwitness/knowledge"]
+  pkg14["@moonwitness/local-ai"]
+  pkg15["@moonwitness/logger"]
+  pkg16["@moonwitness/orm"]
+  pkg17["@moonwitness/orm-ai"]
+  pkg18["@moonwitness/orm-base"]
+  pkg19["@moonwitness/orm-integration"]
+  pkg20["@moonwitness/orm-knowledge"]
+  pkg21["@moonwitness/orm-notification"]
+  pkg22["@moonwitness/orm-organization"]
+  pkg23["@moonwitness/orm-request"]
+  pkg24["@moonwitness/orm-storage"]
+  pkg25["@moonwitness/orm-whatsapp"]
+  pkg26["@moonwitness/orm-workflow"]
+  pkg27["@moonwitness/research"]
+  pkg28["@moonwitness/types"]
+  pkg29["@moonwitness/ui"]
+  pkg30["@moonwitness/ui-catalog"]
   pkg0 -->|runtime| pkg2
-  pkg0 -->|runtime| pkg5
-  pkg0 -->|runtime| pkg8
-  pkg0 -->|runtime| pkg9
-  pkg0 -->|runtime| pkg10
-  pkg0 -->|runtime| pkg11
-  pkg0 -->|runtime| pkg12
-  pkg0 -->|runtime| pkg13
-  pkg0 -->|runtime| pkg14
-  pkg0 -->|runtime| pkg15
-  pkg0 -->|runtime| pkg16
   pkg0 -->|runtime| pkg17
-  pkg0 -->|runtime| pkg18
-  pkg0 -->|runtime| pkg19
-  pkg0 -->|runtime| pkg20
-  pkg0 -->|runtime| pkg21
-  pkg0 -->|runtime| pkg22
-  pkg0 -->|runtime| pkg23
-  pkg2 -->|runtime| pkg12
-  pkg2 -->|runtime| pkg13
-  pkg3 -->|runtime| pkg1
-  pkg3 -->|runtime| pkg4
+  pkg0 -->|runtime| pkg28
+  pkg1 -->|runtime| pkg2
+  pkg1 -->|runtime| pkg16
+  pkg1 -->|runtime| pkg17
+  pkg1 -->|runtime| pkg18
+  pkg1 -->|runtime| pkg20
+  pkg1 -->|runtime| pkg28
+  pkg2 -->|runtime| pkg15
+  pkg2 -->|runtime| pkg19
+  pkg2 -->|runtime| pkg28
+  pkg3 -->|development| pkg7
+  pkg3 -->|runtime| pkg2
+  pkg3 -->|runtime| pkg5
+  pkg3 -->|runtime| pkg8
+  pkg3 -->|runtime| pkg12
+  pkg3 -->|runtime| pkg13
+  pkg3 -->|runtime| pkg14
+  pkg3 -->|runtime| pkg15
+  pkg3 -->|runtime| pkg16
+  pkg3 -->|runtime| pkg17
+  pkg3 -->|runtime| pkg18
+  pkg3 -->|runtime| pkg19
+  pkg3 -->|runtime| pkg20
+  pkg3 -->|runtime| pkg21
+  pkg3 -->|runtime| pkg22
   pkg3 -->|runtime| pkg23
   pkg3 -->|runtime| pkg24
-  pkg5 -->|runtime| pkg9
-  pkg6 -->|runtime| pkg1
-  pkg6 -->|runtime| pkg24
-  pkg8 -->|runtime| pkg12
+  pkg3 -->|runtime| pkg25
+  pkg3 -->|runtime| pkg26
+  pkg3 -->|runtime| pkg27
+  pkg3 -->|runtime| pkg28
+  pkg5 -->|runtime| pkg16
+  pkg5 -->|runtime| pkg18
+  pkg6 -->|runtime| pkg4
+  pkg6 -->|runtime| pkg7
+  pkg6 -->|runtime| pkg28
+  pkg6 -->|runtime| pkg29
+  pkg7 -->|runtime| pkg28
   pkg8 -->|runtime| pkg13
-  pkg12 -->|runtime| pkg23
-  pkg13 -->|runtime| pkg12
-  pkg14 -->|runtime| pkg8
-  pkg14 -->|runtime| pkg12
-  pkg14 -->|runtime| pkg13
-  pkg14 -->|runtime| pkg23
-  pkg15 -->|development| pkg8
-  pkg15 -->|development| pkg16
-  pkg15 -->|runtime| pkg5
-  pkg15 -->|runtime| pkg9
-  pkg15 -->|runtime| pkg12
-  pkg15 -->|runtime| pkg13
-  pkg15 -->|runtime| pkg21
-  pkg15 -->|runtime| pkg22
-  pkg16 -->|runtime| pkg8
-  pkg16 -->|runtime| pkg12
-  pkg16 -->|runtime| pkg13
-  pkg16 -->|runtime| pkg23
+  pkg9 -->|runtime| pkg1
+  pkg9 -->|runtime| pkg2
+  pkg9 -->|runtime| pkg12
+  pkg9 -->|runtime| pkg15
+  pkg9 -->|runtime| pkg16
+  pkg9 -->|runtime| pkg17
+  pkg9 -->|runtime| pkg18
+  pkg9 -->|runtime| pkg20
+  pkg9 -->|runtime| pkg21
+  pkg9 -->|runtime| pkg22
+  pkg9 -->|runtime| pkg24
+  pkg9 -->|runtime| pkg26
+  pkg9 -->|runtime| pkg28
+  pkg10 -->|runtime| pkg4
+  pkg10 -->|runtime| pkg29
+  pkg12 -->|runtime| pkg16
+  pkg12 -->|runtime| pkg18
+  pkg16 -->|runtime| pkg28
   pkg17 -->|runtime| pkg12
-  pkg17 -->|runtime| pkg13
-  pkg18 -->|runtime| pkg8
-  pkg18 -->|runtime| pkg12
-  pkg18 -->|runtime| pkg13
+  pkg17 -->|runtime| pkg16
+  pkg17 -->|runtime| pkg18
+  pkg17 -->|runtime| pkg22
+  pkg17 -->|runtime| pkg24
+  pkg17 -->|runtime| pkg26
   pkg18 -->|runtime| pkg16
-  pkg18 -->|runtime| pkg21
+  pkg18 -->|runtime| pkg28
   pkg19 -->|runtime| pkg12
-  pkg19 -->|runtime| pkg23
-  pkg20 -->|runtime| pkg12
+  pkg19 -->|runtime| pkg16
+  pkg19 -->|runtime| pkg18
+  pkg19 -->|runtime| pkg28
+  pkg20 -->|development| pkg12
+  pkg20 -->|development| pkg21
+  pkg20 -->|runtime| pkg8
   pkg20 -->|runtime| pkg13
-  pkg21 -->|runtime| pkg8
+  pkg20 -->|runtime| pkg16
+  pkg20 -->|runtime| pkg18
+  pkg20 -->|runtime| pkg26
+  pkg20 -->|runtime| pkg27
   pkg21 -->|runtime| pkg12
-  pkg21 -->|runtime| pkg13
   pkg21 -->|runtime| pkg16
-  pkg21 -->|runtime| pkg23
-  pkg22 -->|runtime| pkg9
-  pkg25 -->|runtime| pkg1
-  pkg25 -->|runtime| pkg24
+  pkg21 -->|runtime| pkg18
+  pkg21 -->|runtime| pkg28
+  pkg22 -->|runtime| pkg16
+  pkg22 -->|runtime| pkg18
+  pkg23 -->|runtime| pkg12
+  pkg23 -->|runtime| pkg16
+  pkg23 -->|runtime| pkg18
+  pkg23 -->|runtime| pkg21
+  pkg23 -->|runtime| pkg26
+  pkg24 -->|runtime| pkg16
+  pkg24 -->|runtime| pkg28
+  pkg25 -->|runtime| pkg16
+  pkg25 -->|runtime| pkg18
+  pkg26 -->|runtime| pkg12
+  pkg26 -->|runtime| pkg16
+  pkg26 -->|runtime| pkg18
+  pkg26 -->|runtime| pkg21
+  pkg26 -->|runtime| pkg28
+  pkg27 -->|runtime| pkg13
+  pkg30 -->|runtime| pkg4
+  pkg30 -->|runtime| pkg29

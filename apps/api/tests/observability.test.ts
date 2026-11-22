@@ -19,6 +19,13 @@ describe('health and metrics endpoints', () => {
       connection: { filename: ':memory:' },
       useNullAsDefault: true,
     });
+    await db.schema.createTable('_orm_addons', (table) => {
+      table.string('name').primary();
+      table.string('version').notNullable();
+      table.timestamp('installed_at').notNullable().defaultTo(db.fn.now());
+      table.timestamp('upgraded_at').notNullable().defaultTo(db.fn.now());
+    });
+    await db('_orm_addons').insert({ name: 'base', version: '1.0.0' });
     app = await buildApp({
       db,
       superadminPassword: 'observability-test-password',
@@ -67,6 +74,25 @@ describe('health and metrics endpoints', () => {
     } finally {
       app.testConnection = testConnection;
     }
+  });
+
+  it('reports installed addon versions and database pool diagnostics in readiness payload', async () => {
+    const readiness = await app.inject('/readyz');
+    const body = readiness.json() as {
+      installedAddons?: Array<{ name: string; version: string }>;
+      databasePool?: { used: number; free: number; capacity: number };
+    };
+    expect(readiness.statusCode).toBe(200);
+    expect(Array.isArray(body.installedAddons)).toBe(true);
+    expect(body.installedAddons?.some((addon) => addon.name === 'base')).toBe(true);
+    expect(body.installedAddons?.every((addon) => /^\d+\.\d+\.\d+$/u.test(addon.version))).toBe(
+      true
+    );
+    expect(body.databasePool).toEqual({
+      used: expect.any(Number),
+      free: expect.any(Number),
+      capacity: expect.any(Number),
+    });
   });
 
   it('reports GoWA reachability independently from API readiness', async () => {

@@ -608,12 +608,25 @@ export async function enqueueDueCrons(options: SchedulerOptions = {}): Promise<n
         });
       });
     } catch (error) {
-      if (!(error instanceof CronPayloadRejection)) throw error;
-      await Cron.query().findById(cron.id).patch({ enabled: false });
-      console.error(
-        `${error.message}. Disarmed so one broken row cannot stall the queue or exit the scheduler; ` +
-          'correct its payload and re-enable it to resume.'
-      );
+      if (error instanceof CronPayloadRejection) {
+        await Cron.query().findById(cron.id).patch({ enabled: false });
+        console.error(
+          `${error.message}. Disarmed so one broken row cannot stall the queue or exit the scheduler; ` +
+            'correct its payload and re-enable it to resume.'
+        );
+      } else {
+        const backoffMs = 60_000;
+        const retryAt = new Date(now.getTime() + backoffMs).toISOString();
+        try {
+          await Cron.query().findById(cron.id).patch({ next_run_at: retryAt });
+        } catch {
+          // Best-effort backoff so a single broken cron never blocks subsequent healthy crons (K7-005).
+        }
+        console.error(
+          `Cron "${cron.code}" (id=${cron.id}) failed during tick and was backed off to ${retryAt}:`,
+          error instanceof Error ? error.message : String(error)
+        );
+      }
     }
   }
   return enqueued;

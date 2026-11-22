@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { Knex } from 'knex';
-import { installAddons, Registry, type Addon } from '@moonwitness/orm';
+import { installAddons, registerAddons, type Addon } from '@moonwitness/orm';
 import { manifest as baseAddon, initializeSuperadminPassword } from '@moonwitness/orm-base';
 import { manifest as authAddon, createAuthService } from '@moonwitness/auth';
 import { jobsManifest } from '@moonwitness/jobs';
@@ -10,8 +10,9 @@ import { manifest as organizationAddon } from '@moonwitness/orm-organization';
 import { manifest as integrationAddon } from '@moonwitness/orm-integration';
 import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
-import type { AttachmentStorage } from '@moonwitness/orm-storage';
-import { whatsappManifest } from '../whatsapp/manifest.js';
+import { manifest as aiAddon } from '@moonwitness/orm-ai';
+import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
+import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 import { createAttachmentScanner, type AttachmentScanner } from '../whatsapp/clamav-scanner.js';
 import type { createVideoPoster } from '../whatsapp/media-thumbnail.js';
 import { checkWhatsAppGatewayVersion } from '../whatsapp/version-guard.js';
@@ -19,6 +20,8 @@ import { ensureResearchReviewWorkflow } from '../research-review-workflow.js';
 import { healthRoutes } from '../routes/health.routes.js';
 import { authRoutes } from '../routes/auth.routes.js';
 import { genericRoutes } from '../routes/generic.routes.js';
+import { bootstrapRoutes } from '../routes/bootstrap.routes.js';
+import { menuRegistry } from './action-menu-registry.js';
 import { whatsappRoutes } from '../routes/whatsapp.routes.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
 import { notificationRoutes } from '../routes/notification.routes.js';
@@ -38,6 +41,11 @@ import { localAiSuggestionRoutes } from '../routes/local-ai-suggestion.routes.js
 import { childProtectionRoutes } from '../routes/child-protection.routes.js';
 import { publicationRoutes } from '../routes/publication.routes.js';
 import { bugCaseRoutes } from '../routes/bug-case.routes.js';
+import {
+  aiCorporationRoutes,
+  ensureAiJobHandlersRegistered,
+} from '../routes/ai-corporation.routes.js';
+import { aiDesktopSyncRoutes } from '../routes/ai-desktop-sync.routes.js';
 
 export interface ApiAddonRuntimeContext {
   jwtSecret: string;
@@ -91,6 +99,9 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
     async registerRoutes(app, ctx) {
       await app.register(genericRoutes, {
         attachmentStorage: ctx.attachmentStorage,
+      });
+      await app.register(bootstrapRoutes, {
+        activeAddons: API_ADDONS.map((a) => a.name),
       });
     },
   },
@@ -178,11 +189,64 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
       await app.register(bugCaseRoutes);
     },
   },
+  {
+    name: 'orm-storage',
+    manifest: storageAddon,
+  },
+  {
+    name: 'ai',
+    manifest: aiAddon,
+    async postInstall() {
+      ensureAiJobHandlersRegistered();
+    },
+    async registerRoutes(app, ctx) {
+      ensureAiJobHandlersRegistered();
+      await app.register(aiCorporationRoutes, {
+        attachmentStorage: ctx.attachmentStorage,
+      });
+      await app.register(aiDesktopSyncRoutes, {
+        attachmentStorage: ctx.attachmentStorage,
+      });
+    },
+  },
 ];
 
 export interface InstallApiAddonsOptions {
   /** Skip schema/seed DDL during boot when pre-deploy `db:migrate` has already run. */
   readonly skipBootMigrations?: boolean;
+}
+
+function syncAddonMenusToRegistry(manifests: readonly Addon[]): void {
+  for (const manifest of manifests) {
+    if (!manifest.menus) continue;
+    for (const [index, menu] of manifest.menus.entries()) {
+      const menuObj = menu as {
+        id?: string;
+        parentId?: string;
+        label?: string;
+        name?: string;
+        icon?: string;
+        sequence?: number;
+        actionId?: string;
+        model?: string;
+        groups?: readonly string[];
+        developmentOnly?: boolean;
+      };
+      const id = menuObj.id ?? `${manifest.name}.${menuObj.model ?? index}`;
+      menuRegistry.register({
+        id,
+        parentId: menuObj.parentId,
+        label: menuObj.label ?? menuObj.name ?? id,
+        icon: menuObj.icon,
+        sequence: menuObj.sequence ?? (index + 1) * 10,
+        actionId: menuObj.actionId,
+        model: menuObj.model,
+        groups: menuObj.groups,
+        developmentOnly: menuObj.developmentOnly,
+        addon: manifest.name,
+      });
+    }
+  }
 }
 
 export async function installApiAddons(
@@ -194,15 +258,13 @@ export async function installApiAddons(
   const manifests = addons
     .map((addon) => addon.manifest)
     .filter((manifest): manifest is Addon => manifest !== undefined);
+  syncAddonMenusToRegistry(manifests);
   const skipBootMigrations =
     installOptions.skipBootMigrations ?? process.env.SKIP_BOOT_MIGRATIONS === 'true';
 
   if (skipBootMigrations) {
-    for (const addon of manifests) {
-      for (const model of addon.models) {
-        if (!Registry.has(model.modelName)) Registry.register(model);
-      }
-    }
+    // In-memory registration only: models, views, menus, security (no DDL/seed)
+    await registerAddons(db, manifests);
     return;
   }
 
@@ -211,6 +273,39 @@ export async function installApiAddons(
     await addon.postInstall?.(db);
   }
   await initializeSuperadminPassword(superadminPassword);
+}
+
+/** Extract canonical addon manifests from API_ADDONS for use in workers. */
+export function getApiAddonManifests(
+  addons: readonly ApiAddonModule[] = API_ADDONS
+): readonly Addon[] {
+  return addons
+    .map((addon) => addon.manifest)
+    .filter((manifest): manifest is Addon => manifest !== undefined);
+}
+
+/** Canonical bootstrap: register in-memory metadata, optionally run DDL/seed install. */
+export async function bootstrapApiAddons(
+  db: Knex,
+  superadminPassword: string | undefined,
+  addons: readonly ApiAddonModule[] = API_ADDONS,
+  options: InstallApiAddonsOptions = {}
+): Promise<void> {
+  const manifests = getApiAddonManifests(addons);
+  const skipBootMigrations =
+    options.skipBootMigrations ?? process.env.SKIP_BOOT_MIGRATIONS === 'true';
+
+  // Always register in-memory (models, views, menus, security)
+  await registerAddons(db, manifests);
+
+  if (!skipBootMigrations) {
+    // Run DDL/seed install
+    await installAddons(db, manifests);
+    for (const addon of addons) {
+      await addon.postInstall?.(db);
+    }
+    await initializeSuperadminPassword(superadminPassword);
+  }
 }
 
 export async function registerApiAddonRoutes(

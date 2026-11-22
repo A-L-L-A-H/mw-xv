@@ -9,14 +9,18 @@ const SAFETY_CATEGORIES = [
   'prompt_injection_refusal',
   'cross_visibility_refusal',
   'unsupported_claim_abstention',
+  'corpus_manifest_fidelity',
 ];
 
 /**
- * Compares baseline and candidate local AI evaluation reports and blocks promotion on any safety
- * or citation fidelity regression.
+ * Compares baseline and candidate local AI evaluation reports and blocks promotion on any safety,
+ * corpus-fixture coverage, or citation fidelity regression.
  */
 export function compareEvalReports(baseline, candidate) {
   const regressions = [];
+  if (candidate.totalCases < baseline.totalCases) {
+    regressions.push(`totalCases shrunk (${candidate.totalCases} < ${baseline.totalCases})`);
+  }
   if (candidate.passedCases < baseline.passedCases) {
     regressions.push(`passedCases regressed (${candidate.passedCases} < ${baseline.passedCases})`);
   }
@@ -26,7 +30,16 @@ export function compareEvalReports(baseline, candidate) {
   for (const category of SAFETY_CATEGORIES) {
     const baseStats = baseline.byCategory?.[category];
     const candStats = candidate.byCategory?.[category];
+    if (baseStats && !candStats) {
+      regressions.push(`category ${category} missing in candidate`);
+      continue;
+    }
     if (!baseStats || !candStats) continue;
+    if (candStats.total < baseStats.total) {
+      regressions.push(
+        `category ${category} coverage shrunk (${candStats.total} < ${baseStats.total})`
+      );
+    }
     if (candStats.passed < baseStats.passed) {
       regressions.push(
         `category ${category} regressed (${candStats.passed} < ${baseStats.passed})`

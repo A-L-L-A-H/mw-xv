@@ -4,8 +4,19 @@ import { useId, useMemo, type CSSProperties, type HTMLAttributes, type ReactNode
 import { cn } from '../lib/cn.js';
 import { useAnimationVisibility } from '../lib/use-animation-visibility.js';
 
-export function EditorialTexture({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div aria-hidden="true" className={cn('mw-ui-editorial-texture', className)} {...props} />;
+export function EditorialTexture({
+  className,
+  variant = 'halftone',
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { variant?: 'halftone' | 'grunge' | 'scratch' }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn('mw-ui-editorial-texture', className)}
+      data-variant={variant}
+      {...props}
+    />
+  );
 }
 
 export function AccentMarker({ children, className, ...props }: HTMLAttributes<HTMLSpanElement>) {
@@ -387,30 +398,257 @@ export function DecorativeMotif({
   );
 }
 
+const inkFrameScale: Record<'ink' | 'grunge' | 'brutal', { scale: number; stroke: number }> = {
+  ink: { scale: 3.2, stroke: 3 },
+  grunge: { scale: 5.5, stroke: 3.5 },
+  brutal: { scale: 8.2, stroke: 4 },
+};
+
 /**
  * Wraps content in a rough, hand-inked border using an SVG displacement filter, so panel
  * edges wobble like brush ink instead of being perfectly straight.
  */
-export function InkFrame({ children, className }: { children: ReactNode; className?: string }) {
+export function InkFrame({
+  children,
+  className,
+  roughness = 'ink',
+}: {
+  children: ReactNode;
+  className?: string;
+  roughness?: 'ink' | 'grunge' | 'brutal';
+}) {
   const id = useId().replaceAll(':', '');
+  const config = inkFrameScale[roughness];
   return (
-    <div className={cn('mw-ui-ink-frame', className)}>
-      <svg aria-hidden className="mw-ui-ink-frame-outline">
+    <div className={cn('mw-ui-ink-frame', className)} data-roughness={roughness}>
+      <svg aria-hidden="true" focusable="false" className="mw-ui-ink-frame-outline">
         <filter id={`rough-${id}`}>
-          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3" />
-          <feDisplacementMap in="SourceGraphic" scale="3.2" />
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency={roughness === 'brutal' ? '0.055' : '0.035'}
+            numOctaves={roughness === 'ink' ? 2 : 3}
+            seed="3"
+          />
+          <feDisplacementMap in="SourceGraphic" scale={config.scale} />
         </filter>
         <rect
           width="100%"
           height="100%"
           fill="none"
           stroke="var(--mw-ink)"
-          strokeWidth="3"
+          strokeWidth={config.stroke}
           filter={`url(#rough-${id})`}
         />
+        {roughness !== 'ink' ? (
+          <rect
+            x="2"
+            y="2"
+            width="calc(100% - 4px)"
+            height="calc(100% - 4px)"
+            fill="none"
+            stroke="var(--mw-magenta)"
+            strokeOpacity="0.45"
+            strokeWidth="1.5"
+            strokeDasharray="18 7 6 9"
+            filter={`url(#rough-${id})`}
+          />
+        ) : null}
       </svg>
       {children}
     </div>
+  );
+}
+
+/** Sharp anime manga impact burst, spark, or diagonal katana slash SVG accent. */
+export function AnimeImpactBurst({
+  variant = 'impact',
+  animate = true,
+  className,
+  style,
+}: {
+  variant?: 'impact' | 'spark' | 'slash';
+  animate?: boolean;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const motion = useAnimationVisibility<SVGSVGElement>();
+  const shapes: Record<typeof variant, ReactNode> = {
+    impact: (
+      <polygon
+        fill="var(--mw-yellow)"
+        stroke="var(--mw-ink)"
+        strokeWidth="3"
+        strokeLinejoin="miter"
+        points="50,2 60,30 89,11 72,38 98,49 71,61 88,88 59,70 49,98 39,70 11,88 29,60 2,50 29,39 12,12 40,30"
+      />
+    ),
+    spark: (
+      <path
+        fill="var(--mw-magenta)"
+        stroke="var(--mw-ink)"
+        strokeWidth="2.8"
+        strokeLinejoin="round"
+        d="M50 4 L58 38 L94 26 L64 50 L94 74 L58 62 L50 96 L42 62 L6 74 L36 50 L6 26 L42 38 Z"
+      />
+    ),
+    slash: (
+      <g>
+        <polygon fill="var(--mw-ink)" points="4,86 92,4 97,11 10,93" />
+        <polygon fill="var(--mw-magenta)" points="10,91 96,9 98,14 14,96" />
+        <polygon fill="var(--mw-yellow)" points="20,94 94,20 96,24 23,97" />
+      </g>
+    ),
+  };
+
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      ref={motion.ref}
+      viewBox="0 0 100 100"
+      className={cn(
+        'mw-ui-anime-burst',
+        animate ? 'mw-ui-anime-burst-active' : undefined,
+        motion.visibilityClass,
+        className
+      )}
+      data-variant={variant}
+      style={style}
+    >
+      {shapes[variant]}
+    </svg>
+  );
+}
+
+/** Rough distressed grunge artwork surface with fractal grain and optional dry-brush scratches. */
+export function GrungeCanvas({
+  children,
+  intensity = 'rough',
+  surface = 'paper',
+  scratches = true,
+  className,
+}: {
+  children: ReactNode;
+  intensity?: 'subtle' | 'rough' | 'heavy';
+  surface?: 'paper' | 'ink';
+  scratches?: boolean;
+  className?: string;
+}) {
+  const id = useId().replaceAll(':', '');
+  const motion = useAnimationVisibility<HTMLDivElement>();
+  const baseFreq = intensity === 'heavy' ? '0.85' : intensity === 'rough' ? '0.62' : '0.4';
+  const grainOpacity = intensity === 'heavy' ? 0.24 : intensity === 'rough' ? 0.16 : 0.09;
+
+  return (
+    <div
+      ref={motion.ref}
+      className={cn('mw-ui-grunge-canvas', motion.visibilityClass, className)}
+      data-intensity={intensity}
+      data-scratches={scratches ? 'true' : 'false'}
+      data-surface={surface}
+    >
+      <svg aria-hidden="true" focusable="false" className="mw-ui-grunge-canvas-grain">
+        <filter id={`grit-${id}`}>
+          <feTurbulence type="fractalNoise" baseFrequency={baseFreq} numOctaves="3" seed="11" />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter={`url(#grit-${id})`} opacity={grainOpacity} />
+      </svg>
+      {scratches ? <span aria-hidden="true" className="mw-ui-grunge-canvas-scratches" /> : null}
+      <div className="mw-ui-grunge-canvas-body">{children}</div>
+    </div>
+  );
+}
+
+/** Deterministic anime speed-streak lines for dynamic panels and focal cards. */
+export function AnimeActionLines({
+  direction = 'diagonal',
+  density = 'light',
+  seed = 19,
+  animate = true,
+  className,
+}: {
+  direction?: 'diagonal' | 'horizontal' | 'radial';
+  density?: 'light' | 'dense';
+  seed?: number;
+  animate?: boolean;
+  className?: string;
+}) {
+  const motion = useAnimationVisibility<SVGSVGElement>();
+  const count = density === 'dense' ? 42 : 20;
+
+  const streaks = useMemo(() => {
+    const rand = mulberry32(seed);
+    return Array.from({ length: count }, (_, idx) => {
+      if (direction === 'radial') {
+        const angle = (idx / count) * Math.PI * 2 + rand() * 0.05;
+        const inner = 260 + rand() * 140;
+        const outer = 680;
+        const w = 0.005 + rand() * 0.01;
+        const pt = (r: number, a: number) =>
+          `${(500 + Math.cos(a) * r).toFixed(1)},${(500 + Math.sin(a) * r).toFixed(1)}`;
+        return `M${pt(inner, angle)} L${pt(outer, angle - w)} L${pt(outer, angle + w)} Z`;
+      }
+      if (direction === 'horizontal') {
+        const y = (idx / count) * 960 + rand() * 30;
+        const start = rand() * 340;
+        const len = 380 + rand() * 520;
+        const h = 1.8 + rand() * 5;
+        return `M${start.toFixed(1)},${y.toFixed(1)} L${(start + len).toFixed(1)},${(y - h * 0.4).toFixed(1)} L${(start + len).toFixed(1)},${(y + h).toFixed(1)} Z`;
+      }
+      const offset = -200 + (idx / count) * 1400 + rand() * 28;
+      const w = 2 + rand() * 5.5;
+      return `M${offset.toFixed(1)},1000 L${(offset + 620).toFixed(1)},0 L${(offset + 620 + w).toFixed(1)},0 L${(offset + w * 0.4).toFixed(1)},1000 Z`;
+    });
+  }, [count, direction, seed]);
+
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      ref={motion.ref}
+      viewBox="0 0 1000 1000"
+      preserveAspectRatio="none"
+      className={cn(
+        'mw-ui-anime-action-lines',
+        animate ? 'mw-ui-anime-action-lines-sweep' : undefined,
+        motion.visibilityClass,
+        className
+      )}
+      data-density={density}
+      data-direction={direction}
+    >
+      <g fill="currentColor">
+        {streaks.map((d, idx) => (
+          <path key={idx} d={d} />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+/** Distressed grunge ink stamp with jagged contour and snappy anime stamp-in entrance. */
+export function GrungeStamp({
+  children,
+  tone = 'magenta',
+  tilt = 'left',
+  className,
+}: {
+  children: ReactNode;
+  tone?: 'magenta' | 'yellow' | 'cyan' | 'ink';
+  tilt?: 'left' | 'right' | 'flat';
+  className?: string;
+}) {
+  const motion = useAnimationVisibility<HTMLSpanElement>();
+  return (
+    <span
+      ref={motion.ref}
+      className={cn('mw-ui-grunge-stamp', motion.visibilityClass, className)}
+      data-tilt={tilt}
+      data-tone={tone}
+    >
+      {children}
+    </span>
   );
 }
 

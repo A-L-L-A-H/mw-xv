@@ -84,6 +84,7 @@ function trimTrailingSlashes(value: string): string {
 
 export class MoonWitnessClient implements HttpClient {
   readonly baseUrl: string;
+  metadataGeneration = 0;
   private readonly storage: TokenStorage;
   private readonly storageKey: string;
   private readonly fetchImpl: typeof fetch;
@@ -107,6 +108,7 @@ export class MoonWitnessClient implements HttpClient {
 
   setCompanyId(companyId?: number): void {
     this.currentCompanyId = companyId;
+    this.metadataGeneration += 1;
   }
 
   getCompanyId(): number | undefined {
@@ -147,6 +149,7 @@ export class MoonWitnessClient implements HttpClient {
     if (tokens) await this.storage.setItem(this.storageKey, JSON.stringify(tokens));
     else await this.storage.removeItem(this.storageKey);
     for (const listener of this.listeners) listener(tokens?.user ?? null);
+    this.metadataGeneration += 1;
   }
 
   get currentUser(): UserProfile | null {

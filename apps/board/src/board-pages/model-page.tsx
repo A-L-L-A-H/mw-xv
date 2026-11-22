@@ -1,13 +1,35 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useViews } from '@/hooks/use-model';
+import { Button } from '@moonwitness/ui/components/button';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { EmptyState } from '@moonwitness/ui/components/empty-state';
 import { Doodle } from '@moonwitness/ui/components/effects';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { ListView } from '@/components/views/list-view';
 import { FormView } from '@/components/views/form-view';
+import { availableViews, parseViewName, type BoardViewName } from '@/lib/action-result';
+
+const viewFallback = () => <Skeleton className="h-96 w-full bg-ink/10" />;
+
+const KanbanView = dynamic(
+  () => import('@/components/views/kanban-view').then((mod) => mod.KanbanView),
+  { ssr: false, loading: viewFallback }
+);
+const CalendarView = dynamic(
+  () => import('@/components/views/calendar-view').then((mod) => mod.CalendarView),
+  { ssr: false, loading: viewFallback }
+);
+const GraphView = dynamic(
+  () => import('@/components/views/graph-view').then((mod) => mod.GraphView),
+  { ssr: false, loading: viewFallback }
+);
+const PivotView = dynamic(
+  () => import('@/components/views/pivot-view').then((mod) => mod.PivotView),
+  { ssr: false, loading: viewFallback }
+);
 
 export function ModelPage() {
   const params = useParams<{ model: string; id?: string }>();
@@ -75,9 +97,47 @@ export function ModelPage() {
     );
   }
 
+  const supportedViews = availableViews(views);
+  const activeView = parseViewName(searchParams?.get('view') ?? null, views);
+  const switchView = (nextView: BoardViewName) => {
+    const nextParams = new URLSearchParams(searchParams?.toString() ?? '');
+    if (nextView === 'list') {
+      nextParams.delete('view');
+    } else {
+      nextParams.set('view', nextView);
+    }
+    const query = nextParams.toString();
+    router.replace(query ? `/board/m/${model}?${query}` : `/board/m/${model}`);
+  };
+  const openRecord = (recId: number) => router.push(`/board/m/${model}/${recId}`);
+
   return (
     <div className="space-y-6">
-      <Breadcrumbs items={breadcrumbs} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Breadcrumbs items={breadcrumbs} />
+        {!isCreate && !isEdit && supportedViews.length > 1 && (
+          <div
+            className="flex flex-wrap items-center gap-1"
+            role="tablist"
+            aria-label="View switcher"
+          >
+            {supportedViews.map((viewName) => (
+              <Button
+                key={viewName}
+                type="button"
+                role="tab"
+                aria-selected={activeView === viewName}
+                variant={activeView === viewName ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => switchView(viewName)}
+                className="uppercase"
+              >
+                {viewName}
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {isCreate ? (
         <FormView
@@ -106,11 +166,19 @@ export function ModelPage() {
           recordId={recordId}
           onBack={() => router.push(`/board/m/${model}`)}
         />
+      ) : activeView === 'kanban' ? (
+        <KanbanView model={model} views={views} onOpenRecord={openRecord} />
+      ) : activeView === 'calendar' ? (
+        <CalendarView model={model} views={views} onOpenRecord={openRecord} />
+      ) : activeView === 'graph' ? (
+        <GraphView model={model} views={views} />
+      ) : activeView === 'pivot' ? (
+        <PivotView model={model} views={views} />
       ) : (
         <ListView
           model={model}
           views={views}
-          onOpenRecord={(recId) => router.push(`/board/m/${model}/${recId}`)}
+          onOpenRecord={openRecord}
           onCreateRecord={() => router.push(`/board/m/${model}/new`)}
         />
       )}

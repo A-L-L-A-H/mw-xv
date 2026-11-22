@@ -1,13 +1,13 @@
 import { createDatabase } from '../database/knex.js';
-import { installAddons } from '@moonwitness/orm';
-import { manifest as baseManifest } from '@moonwitness/orm-base';
-import { jobsManifest, runSchedulerLoop } from '@moonwitness/jobs';
-import { readWorkerHealthPort, startWorkerHealthServer } from './worker-health.js';
-import { manifest as workflowAddon } from '@moonwitness/orm-workflow';
-import { manifest as notificationAddon } from '@moonwitness/orm-notification';
+import { bootstrapApiAddons } from '../addons/registry.js';
+import { runSchedulerLoop } from '@moonwitness/jobs';
+import {
+  readWorkerHealthPort,
+  startWorkerHealthServer,
+  type WorkerHealthServer,
+} from './worker-health.js';
 import { createProcessShutdownController } from '../lifecycle/process-shutdown.js';
-import { manifest as storageManifest } from '@moonwitness/orm-storage';
-import { whatsappManifest } from '../whatsapp/manifest.js';
+import { ServiceContainer, createServiceToken } from '@moonwitness/orm';
 import {
   ensureWhatsAppAttachmentCron,
   registerWhatsAppAttachmentJob,
@@ -15,19 +15,14 @@ import {
 
 const db = createDatabase();
 let workerHealth: Awaited<ReturnType<typeof startWorkerHealthServer>> = null;
-const shutdown = createProcessShutdownController(() => {
-  workerHealth?.setReady(false);
-});
+const services = new ServiceContainer();
+const workerHealthToken = createServiceToken<WorkerHealthServer>('api.workerHealth');
+const shutdown = createProcessShutdownController(() => workerHealth?.setReady(false), { services });
 
 try {
-  await installAddons(db, [
-    baseManifest,
-    jobsManifest,
-    notificationAddon,
-    workflowAddon,
-    storageManifest,
-    whatsappManifest,
-  ]);
+  await bootstrapApiAddons(db, process.env.SUPERADMIN_PASSWORD, undefined, {
+    skipBootMigrations: process.env.SKIP_BOOT_MIGRATIONS === 'true',
+  });
   await ensureWhatsAppAttachmentCron(db);
   const unregisterWhatsAppAttachmentJob = registerWhatsAppAttachmentJob(db);
   if (!shutdown.signal.aborted) {
@@ -40,6 +35,7 @@ try {
         'JOBS_SCHEDULER_HEALTH_PORT'
       ),
     });
+    services.register(workerHealthToken, workerHealth, () => workerHealth?.close());
   }
   try {
     await runSchedulerLoop(shutdown.signal);

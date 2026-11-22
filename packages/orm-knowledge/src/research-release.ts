@@ -2,33 +2,18 @@ import { createHash } from 'node:crypto';
 import type { Knex } from 'knex';
 import { validateResearchRelease } from './research-release-validation.js';
 
-export interface ResearchGraphRecordInput {
-  readonly key: string;
-  readonly kind: 'node' | 'source' | 'expression' | 'assertion' | 'evidence' | 'relation';
-  readonly visibility: 'PUBLIC' | 'INTERNAL' | 'RESTRICTED';
-  readonly content: unknown;
-}
-
-export interface CreateResearchGraphReleaseInput {
-  readonly corpusKey: string;
-  readonly schemaVersion: string;
-  readonly records: readonly ResearchGraphRecordInput[];
-  readonly previousReleaseDigest?: string | null;
-}
-
-export interface StoredResearchGraphRecord extends ResearchGraphRecordInput {
-  readonly contentDigest: string;
-}
-
-export interface StoredResearchGraphRelease {
-  readonly corpusKey: string;
-  readonly releaseDigest: string;
-  readonly manifestDigest: string;
-  readonly manifestJson: string;
-  readonly schemaVersion: string;
-  readonly previousReleaseDigest: string | null;
-  readonly records: readonly StoredResearchGraphRecord[];
-}
+export type {
+  CreateResearchGraphReleaseInput,
+  ResearchGraphRecordInput,
+  StoredResearchGraphRecord,
+  StoredResearchGraphRelease,
+} from './research-release.types.js';
+import type {
+  CreateResearchGraphReleaseInput,
+  ResearchGraphRecordInput,
+  StoredResearchGraphRecord,
+  StoredResearchGraphRelease,
+} from './research-release.types.js';
 
 /** Active graph readers fail closed before materializing an unbounded release snapshot. */
 export const MAX_RESEARCH_RELEASE_RECORDS = 5_000;

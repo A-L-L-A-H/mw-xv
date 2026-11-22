@@ -1,4 +1,4 @@
-import type { LocalAiRuntime } from './index.js';
+import type { LocalAiRuntime } from './runtime.types.js';
 
 export type LocalAiSuggestionKind = 'summary' | 'term' | 'duplicate';
 

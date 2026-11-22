@@ -39,6 +39,12 @@
       "scripts": ["build", "dev", "lint", "preview", "start", "start:built", "typecheck"]
     },
     {
+      "name": "@moonwitness/desktop",
+      "version": "1.0.0-rc.1",
+      "directory": "apps/desktop",
+      "scripts": ["build", "test", "typecheck"]
+    },
+    {
       "name": "@moonwitness/docs",
       "version": "1.0.0-rc.1",
       "directory": "apps/docs",
@@ -49,6 +55,24 @@
       "version": "1.0.0-rc.1",
       "directory": "apps/ui-catalog",
       "scripts": ["build", "build:built", "dev", "preview", "test"]
+    },
+    {
+      "name": "@moonwitness/ai-evaluation",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/ai-evaluation",
+      "scripts": ["build", "test", "typecheck"]
+    },
+    {
+      "name": "@moonwitness/ai-mcp",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/ai-mcp",
+      "scripts": ["build", "test", "typecheck"]
+    },
+    {
+      "name": "@moonwitness/ai-runtime",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/ai-runtime",
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/assets",
@@ -111,6 +135,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-ai",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/orm-ai",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-base",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-base",
@@ -154,7 +184,7 @@
     },
     {
       "name": "@moonwitness/orm-whatsapp",
-      "version": "1.14.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-whatsapp",
       "scripts": ["build", "test"]
     },
@@ -211,6 +241,11 @@
       "start:built": "node ../../scripts/prepare-board-standalone.mjs && node ../../scripts/start-board.mjs",
       "typecheck": "tsc --noEmit"
     },
+    "@moonwitness/desktop": {
+      "build": "tsc",
+      "test": "vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    },
     "@moonwitness/docs": {
       "dev": "vite",
       "portal:build": "pnpm --filter @moonwitness/ui-catalog build && node ../../scripts/docs/build-guide.mjs && tsc -p tsconfig.json && vite build && node scripts/copy-404.mjs && node scripts/copy-ui-catalog.mjs && node scripts/verify-build.mjs",
@@ -225,6 +260,21 @@
       "dev": "vite",
       "preview": "vite preview",
       "test": "playwright test"
+    },
+    "@moonwitness/ai-evaluation": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    },
+    "@moonwitness/ai-mcp": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    },
+    "@moonwitness/ai-runtime": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
     },
     "@moonwitness/assets": {
       "artwork:prepare": "node scripts/prepare-artwork.mjs",
@@ -265,6 +315,10 @@
     "@moonwitness/orm": {
       "build": "tsc",
       "test": "vitest run"
+    },
+    "@moonwitness/orm-ai": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/orm-base": {
       "build": "tsc",
@@ -316,7 +370,9 @@
       "test": "pnpm build && node --test tests/*.test.mjs"
     },
     "root": {
+      "addon:create": "node scripts/addon-create.mjs",
       "addon:scaffold": "node scripts/evolution/scaffold-exp-addon.mjs",
+      "ai:watchdog": "node scripts/ai-drift-watchdog.mjs",
       "api:addon:check": "node --test scripts/check-api-addon-boundary.test.mjs && node scripts/check-api-addon-boundary.mjs",
       "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs --check",
       "architecture:check:built": "node scripts/architecture/generate-diagrams.mjs --check",
@@ -344,6 +400,7 @@
       "db:migrate": "pnpm --filter @moonwitness/api db:migrate",
       "dependency:candidate": "node scripts/dependency-candidate.mjs",
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
+      "desktop:ui:check": "node --test scripts/check-desktop-non-overlap.test.mjs && node scripts/check-desktop-non-overlap.mjs",
       "dev": "pnpm --filter @moonwitness/ui build && node scripts/run-local-services.mjs dev",
       "dev:api": "pnpm --filter @moonwitness/api dev",
       "dev:board": "pnpm --filter @moonwitness/board dev",
@@ -374,7 +431,11 @@
       "local-ai:eval": "node scripts/local-ai/eval.mjs",
       "local-ai:register-model": "node scripts/local-ai/register-model.mjs",
       "local-ai:tournament": "node scripts/local-ai/tournament.mjs",
+      "node:parity": "node scripts/check-node-version.mjs",
+      "orm:codegen": "node scripts/orm-codegen.mjs",
+      "orm:inspect": "node scripts/orm-inspect.mjs",
       "platform:audit": "node scripts/platform-audit.mjs",
+      "preflight:fast": "node scripts/preflight-fast.mjs",
       "promotion:approval-check": "node scripts/check-promotion-approval.mjs",
       "promotion:risk": "node scripts/check-promotion-risk.mjs",
       "readme:check": "node scripts/docs/update-readme.mjs --check",
@@ -394,6 +455,8 @@
       "roadmap:progress": "node scripts/roadmap/progress-dashboard.mjs",
       "start": "node scripts/run-local-services.mjs start",
       "start:built": "node scripts/run-local-services.mjs start:built",
+      "tasks:sync": "node scripts/tasks/sync-roadmap.mjs",
+      "tasks:validate": "node scripts/tasks/validate-tasks.mjs",
       "test": "pnpm test:unit",
       "test:action-pins": "node --test scripts/check-action-pins.test.mjs",
       "test:action-tags": "node --test scripts/check-action-tag-pins.test.mjs",
@@ -449,7 +512,7 @@
       "test:ui-catalog": "pnpm --filter @moonwitness/ui-catalog build && pnpm --filter @moonwitness/ui-catalog test",
       "test:unit": "pnpm build && pnpm test:unit:built",
       "test:unit-runner-policy": "node --test scripts/unit-runner-policy.test.mjs",
-      "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-whatsapp test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
+      "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-whatsapp test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/orm-ai test && pnpm --filter @moonwitness/ai-runtime test && pnpm --filter @moonwitness/ai-mcp test && pnpm --filter @moonwitness/ai-evaluation test && pnpm --filter @moonwitness/local-ai typecheck && pnpm --filter @moonwitness/local-ai test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
       "test:unit:ci": "node scripts/run-unit-tests.mjs",
       "test:versioned-docs": "node --test scripts/docs/versioned-site.test.mjs",
       "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
@@ -531,6 +594,12 @@
     {
       "name": "ATTACHMENT_STORAGE_DRIVER",
       "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "AUTH_CACHE_TTL_MS",
+      "configuredInExample": false,
       "secret": false,
       "valueType": "string"
     },
@@ -749,6 +818,12 @@
       "configuredInExample": true,
       "secret": true,
       "valueType": "secret"
+    },
+    {
+      "name": "VITEST",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
     },
     {
       "name": "WHATSAPP_CLAMAV_URL",
@@ -1414,6 +1489,77 @@
             }
           ],
           "uniqueConstraints": [["company", "user"]]
+        },
+        {
+          "name": "base.config_parameter",
+          "table": "base_config_parameters",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "description",
+              "kind": "text",
+              "column": "description",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "is_secret",
+              "kind": "boolean",
+              "column": "is_secret",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "key",
+              "kind": "string",
+              "column": "key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "value",
+              "kind": "text",
+              "column": "value",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "value_type",
+              "kind": "enum",
+              "column": "value_type",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]",
+              "values": ["boolean", "integer", "json", "string"]
+            }
+          ],
+          "uniqueConstraints": [["company", "key"]]
         },
         {
           "name": "base.country",
@@ -2174,6 +2320,108 @@
           "uniqueConstraints": [["category", "partner"]]
         },
         {
+          "name": "base.saved_filter",
+          "table": "base_saved_filters",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "domain_json",
+              "kind": "text",
+              "column": "domain_json",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "group_by",
+              "kind": "string",
+              "column": "group_by",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "is_default",
+              "kind": "boolean",
+              "column": "is_default",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "is_shared",
+              "kind": "boolean",
+              "column": "is_shared",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "model_name",
+              "kind": "string",
+              "column": "model_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "order",
+              "kind": "string",
+              "column": "order",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "user",
+              "kind": "belongsTo",
+              "column": "user_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false,
+              "relation": "base.user"
+            }
+          ],
+          "uniqueConstraints": []
+        },
+        {
           "name": "base.sequence",
           "table": "sequences",
           "fields": [
@@ -2522,6 +2770,13 @@
           "developmentOnly": true
         },
         {
+          "model": "base.config_parameter",
+          "label": "base.config_parameter",
+          "group": "Technical",
+          "sequence": 490,
+          "developmentOnly": true
+        },
+        {
           "model": "base.country",
           "label": "base.country",
           "group": "Localization",
@@ -2599,6 +2854,13 @@
           "developmentOnly": true
         },
         {
+          "model": "base.saved_filter",
+          "label": "base.saved_filter",
+          "group": "Technical",
+          "sequence": 480,
+          "developmentOnly": true
+        },
+        {
           "model": "base.sequence",
           "label": "base.sequence",
           "group": "Technical",
@@ -2642,6 +2904,7 @@
         "base.bank",
         "base.company",
         "base.company_membership",
+        "base.config_parameter",
         "base.country",
         "base.country_state",
         "base.currency",
@@ -2653,6 +2916,7 @@
         "base.partner_bank",
         "base.partner_category",
         "base.partner_category_link",
+        "base.saved_filter",
         "base.sequence",
         "base.tag",
         "base.tag_link",
@@ -2681,7 +2945,9 @@
         "base.group_membership": 1,
         "base.company_membership": 2,
         "base.model_access": 1,
-        "ir.feature_flag": 1
+        "ir.feature_flag": 1,
+        "base.saved_filter": 1,
+        "base.config_parameter": 1
       },
       "accessRules": [
         {
@@ -8450,6 +8716,22 @@
     },
     {
       "method": "GET",
+      "path": "/agents"
+    },
+    {
+      "method": "POST",
+      "path": "/agents"
+    },
+    {
+      "method": "GET",
+      "path": "/agents/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/agents/:id"
+    },
+    {
+      "method": "GET",
       "path": "/api/:model"
     },
     {
@@ -8477,6 +8759,22 @@
       "path": "/api/:model/:id/action/:method"
     },
     {
+      "method": "POST",
+      "path": "/api/:model/action/:actionName"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/:model/bulk"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/:model/bulk"
+    },
+    {
+      "method": "POST",
+      "path": "/api/:model/default-get"
+    },
+    {
       "method": "GET",
       "path": "/api/:model/fields"
     },
@@ -8485,8 +8783,16 @@
       "path": "/api/:model/group-count"
     },
     {
+      "method": "POST",
+      "path": "/api/:model/onchange"
+    },
+    {
       "method": "GET",
       "path": "/api/:model/views"
+    },
+    {
+      "method": "GET",
+      "path": "/api/app/bootstrap"
     },
     {
       "method": "GET",
@@ -8621,6 +8927,14 @@
       "path": "/api/research/witnesses/:witnessId"
     },
     {
+      "method": "GET",
+      "path": "/artifacts"
+    },
+    {
+      "method": "POST",
+      "path": "/artifacts"
+    },
+    {
       "method": "POST",
       "path": "/auth/login"
     },
@@ -8653,6 +8967,54 @@
       "path": "/auth/register"
     },
     {
+      "method": "POST",
+      "path": "/desktop/artifacts/upload"
+    },
+    {
+      "method": "POST",
+      "path": "/desktop/lease"
+    },
+    {
+      "method": "POST",
+      "path": "/desktop/pcw-sync"
+    },
+    {
+      "method": "GET",
+      "path": "/desktop/pull"
+    },
+    {
+      "method": "POST",
+      "path": "/emergency-stop"
+    },
+    {
+      "method": "GET",
+      "path": "/eval-summary"
+    },
+    {
+      "method": "GET",
+      "path": "/governance/approvals"
+    },
+    {
+      "method": "POST",
+      "path": "/governance/approvals"
+    },
+    {
+      "method": "POST",
+      "path": "/governance/approvals/:id/decide"
+    },
+    {
+      "method": "GET",
+      "path": "/grants"
+    },
+    {
+      "method": "POST",
+      "path": "/grants"
+    },
+    {
+      "method": "POST",
+      "path": "/grants/:id/revoke"
+    },
+    {
       "method": "GET",
       "path": "/health"
     },
@@ -8663,6 +9025,18 @@
     {
       "method": "GET",
       "path": "/livez"
+    },
+    {
+      "method": "GET",
+      "path": "/memory"
+    },
+    {
+      "method": "POST",
+      "path": "/memory"
+    },
+    {
+      "method": "POST",
+      "path": "/memory/:id/revoke"
     },
     {
       "method": "GET",
@@ -8686,7 +9060,47 @@
     },
     {
       "method": "GET",
+      "path": "/obligations"
+    },
+    {
+      "method": "POST",
+      "path": "/obligations"
+    },
+    {
+      "method": "PATCH",
+      "path": "/obligations/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/providers"
+    },
+    {
+      "method": "POST",
+      "path": "/providers"
+    },
+    {
+      "method": "PATCH",
+      "path": "/providers/:id"
+    },
+    {
+      "method": "GET",
       "path": "/readyz"
+    },
+    {
+      "method": "GET",
+      "path": "/runs"
+    },
+    {
+      "method": "POST",
+      "path": "/runs"
+    },
+    {
+      "method": "GET",
+      "path": "/runs/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/runs/:id/cancel"
     },
     {
       "method": "GET",
@@ -8866,6 +9280,22 @@
     },
     {
       "method": "GET",
+      "path": "/work-contracts"
+    },
+    {
+      "method": "POST",
+      "path": "/work-contracts"
+    },
+    {
+      "method": "GET",
+      "path": "/work-contracts/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/work-contracts/:id/verify"
+    },
+    {
+      "method": "GET",
       "path": "/workflows/definitions"
     },
     {
@@ -8885,5 +9315,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "b39e32d2061a91615847efb6fed20ab5be9e541fc7cb82d28fe4b7519f35753e"
+  "generatedFromSha256": "eed58a4aaf1b9052883c89fee1473d9daf05148c3f6a5b690e77c3a4edb2c239"
 }

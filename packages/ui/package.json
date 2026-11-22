@@ -141,6 +141,22 @@
       "types": "./dist/components/table.d.ts",
       "import": "./dist/components/table.js"
     },
+    "./components/status-bar": {
+      "types": "./dist/components/status-bar.d.ts",
+      "import": "./dist/components/status-bar.js"
+    },
+    "./components/smart-button-box": {
+      "types": "./dist/components/smart-button-box.d.ts",
+      "import": "./dist/components/smart-button-box.js"
+    },
+    "./components/kanban-board": {
+      "types": "./dist/components/kanban-board.d.ts",
+      "import": "./dist/components/kanban-board.js"
+    },
+    "./components/filter-facet-bar": {
+      "types": "./dist/components/filter-facet-bar.d.ts",
+      "import": "./dist/components/filter-facet-bar.js"
+    },
     "./components/chart": {
       "types": "./dist/components/chart.d.ts",
       "import": "./dist/components/chart.js"
@@ -152,6 +168,22 @@
     "./components/audio": {
       "types": "./dist/components/audio.d.ts",
       "import": "./dist/components/audio.js"
+    },
+    "./components/date-picker": {
+      "types": "./dist/components/date-picker.d.ts",
+      "import": "./dist/components/date-picker.js"
+    },
+    "./components/number-input": {
+      "types": "./dist/components/number-input.d.ts",
+      "import": "./dist/components/number-input.js"
+    },
+    "./components/tag-input": {
+      "types": "./dist/components/tag-input.d.ts",
+      "import": "./dist/components/tag-input.js"
+    },
+    "./themes": {
+      "types": "./dist/themes/index.d.ts",
+      "import": "./dist/themes/index.js"
     },
     "./icons": {
       "types": "./dist/icons/index.d.ts",

@@ -1,13 +1,13 @@
 {
   "format": "moonwitness-fitness-snapshot/v1",
-  "generatedAt": "2026-11-21T18:14:39.657Z",
-  "addonPackageCount": 11,
-  "apiRouteCount": 34,
-  "apiRouteMaxLoc": 1586,
-  "apiRouteTotalLoc": 14124,
+  "generatedAt": "2026-11-22T02:49:21.025Z",
+  "addonPackageCount": 12,
+  "apiRouteCount": 39,
+  "apiRouteMaxLoc": 1578,
+  "apiRouteTotalLoc": 17131,
   "legacyAllowlistCount": 0,
-  "testFileCount": 251,
-  "workflowCount": 6,
+  "testFileCount": 283,
+  "workflowCount": 14,
   "docsPresent": true,
-  "compositeScore": 3715
+  "compositeScore": 4295
 }

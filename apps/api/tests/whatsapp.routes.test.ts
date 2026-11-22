@@ -11,7 +11,7 @@ import {
   type AttachmentStorage,
 } from '@moonwitness/orm-storage';
 import { whatsappRoutes } from '../src/routes/whatsapp.routes.js';
-import { whatsappManifest } from '../src/whatsapp/manifest.js';
+import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 import { createHmac, randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
 import sharp from 'sharp';
