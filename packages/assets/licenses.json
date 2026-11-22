@@ -226,5 +226,82 @@
       "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     }
+  ],
+  "sourceAssets": [
+    {
+      "path": "source/artwork/moon-city-environment-master.png",
+      "creator": "AI-assisted generation; model identity reported by local image tool",
+      "source": "Magpie image generation",
+      "model": "workbuddy-ai/hy-image-3.5",
+      "generatedOn": "2026-11-22",
+      "license": "unverified",
+      "termsUrl": null,
+      "modifications": "Unaltered generated master. Original Moon City composition, no text or existing franchise references.",
+      "status": "blocked",
+      "distribution": "blocked pending provider/model terms review"
+    },
+    {
+      "path": "source/artwork/moon-city-midground-layer-2.png",
+      "creator": "AI-assisted generation; model identity reported by local image tool",
+      "source": "Magpie image generation",
+      "model": "workbuddy-ai/hy-image-3.5",
+      "generatedOn": "2026-11-22",
+      "license": "unverified",
+      "termsUrl": null,
+      "modifications": "Unaltered generated skyline source; opaque white background retained for source review.",
+      "status": "blocked",
+      "distribution": "blocked pending provider/model terms review"
+    },
+    {
+      "path": "source/artwork/moon-city-moon-layer.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derived from generated Moon City source using Sharp alpha masking",
+      "model": "workbuddy-ai/hy-image-3.5",
+      "generatedOn": "2026-11-22",
+      "license": "unverified",
+      "termsUrl": null,
+      "modifications": "Radial alpha mask isolates the moon from the generated environment master.",
+      "status": "blocked",
+      "distribution": "blocked pending provider/model terms review"
+    },
+    {
+      "path": "source/artwork/moon-city-skyline-layer.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derived from generated Moon City source using Sharp alpha masking",
+      "model": "workbuddy-ai/hy-image-3.5",
+      "generatedOn": "2026-11-22",
+      "license": "unverified",
+      "termsUrl": null,
+      "modifications": "Near-white removal isolates the city silhouette from the generated skyline source.",
+      "status": "blocked",
+      "distribution": "blocked pending provider/model terms review"
+    },
+    {
+      "path": "source/artwork/moon-city-sky-layer.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original Moon City layer artwork authored for this project.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-cloud-layer.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original Moon City layer artwork authored for this project.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-foreground-layer.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original Moon City layer artwork authored for this project.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    }
   ]
 }

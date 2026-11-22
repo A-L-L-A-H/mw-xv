@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 28 · skipped 2 · in_progress 1 · blocked 0 · todo 78.
+Status counts: done 36 · skipped 3 · in_progress 1 · blocked 7 · todo 62.
 
 ## W0
 
@@ -96,13 +96,13 @@ Status counts: done 28 · skipped 2 · in_progress 1 · blocked 0 · todo 78.
   - Verify: pnpm assets:validate
   - Evidence: `approved-direction design specification against current UI tokens, fonts, assets and source` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/typography-lettering-policy.md`
 
-- [x] **W1-006 — Define art composition and responsive rules**
+- [ ] **W1-006 — Define art composition and responsive rules** — **BLOCKED:** Responsive composition rules have been drafted, but acceptance explicitly requires a responsive UI Catalog preview. The diagnosed Playwright/Vite preview gate failure is recorded in evidence/approval-followup-checks.md; retry exhausted.
   - Goal: Specify wide, tall, square, panel, hero and parallax-safe compositions.
   - Depends on: W1-001, W1-002
   - Deliverables: Composition recipes and focal-safe-area rules.
   - Acceptance: Desktop/mobile assets have deliberate art direction, not blind center crops.; Focal points and text-safe areas are explicit.; No important character feature is unintentionally cut at supported breakpoints.
   - Verify: responsive UI catalog preview
-  - Evidence: `approved-direction design specification against current UI tokens, fonts, assets and source` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/responsive-composition-rules.md`
+  - Evidence: `asset-tool availability audit and/or responsive catalog verification retry` (1) → `evidence/moon-city-asset-tool-blocker.md; evidence/approval-followup-checks.md`
 
 - [x] **W1-007 — Define accessibility and motion principles** — **SKIPPED:** Accessibility and motion policy is already implemented in packages/ui/README.md, TOKENS.md, tokens.css and components.css. Existing tests verify muted-by-default audio, explicit playback, reduced motion, focus and non-interactive decorative FX; no duplicate policy layer was added.
   - Goal: Set reduced-motion, alternative static scene, keyboard, captions and sound consent rules.
@@ -122,40 +122,45 @@ Status counts: done 28 · skipped 2 · in_progress 1 · blocked 0 · todo 78.
 
 ## W2
 
-- [ ] **W2-001 — Design backward-compatible asset manifest extension**
+- [x] **W2-001 — Design backward-compatible asset manifest extension**
   - Goal: Extend existing manifest only where needed for stable asset IDs, pack/domain tags, source and variants.
   - Depends on: W0-004, W1-008
   - Deliverables: Versioned schema proposal and fixtures.
   - Acceptance: Keep one canonical packages/assets/manifest.json.; Keep existing package license/provenance source of truth.; Do not create competing master inventories.; Old assets remain readable or have a deterministic converter.
   - Verify: node --test packages/assets/tests/*.test.mjs
+  - Evidence: `node --test packages/assets/tests/*.test.mjs` (0) → `23 asset tests passed against the legacy v1 manifest and path-based canonical inventory`
 
-- [ ] **W2-002 — Implement manifest schema validation**
+- [x] **W2-002 — Implement manifest schema validation**
   - Goal: Implement schema validation for the approved asset metadata extension.
   - Depends on: W2-001
   - Deliverables: Schema validator, valid/invalid fixtures and tests.
   - Acceptance: Reject duplicate IDs/paths, malformed variants and invalid references.; Support source/master/generated relationships.; Validation errors include file and field context.
   - Verify: pnpm test:assets
+  - Evidence: `pnpm test:assets` (0) → `evidence/W2-002-schema-validation.md`
 
-- [ ] **W2-003 — Extend license and provenance contract**
+- [x] **W2-003 — Extend license and provenance contract**
   - Goal: Add creator, source method, upstream source, license, generated date, modifications and approval status.
   - Depends on: W2-001
   - Deliverables: Provenance validator and docs.
   - Acceptance: No unknown or blank licensing metadata for distributable assets.; AI-generated content is labelled accurately with applicable terms verified.; Unverified source is marked blocked/non-distributable.
   - Verify: pnpm test:assets
+  - Evidence: `pnpm test:assets` (0) → `evidence/W2-003-provenance-validation.md`
 
-- [ ] **W2-004 — Define source, master and generated ownership rules**
+- [x] **W2-004 — Define source, master and generated ownership rules** — **SKIPPED:** Existing explicit generator ownership helper and focused tests satisfy all acceptance criteria; verified against current source.
   - Goal: Ensure each generator only replaces the paths it owns.
   - Depends on: W2-002
   - Deliverables: Generator ownership registry and tests.
   - Acceptance: Existing manifest ownership helper is reused.; Manual/master assets cannot be deleted by generators.; Generators are deterministic and idempotent.
   - Verify: pnpm test:assets
+  - Evidence: `pnpm test:assets` (0) → `evidence/W2-004-existing-ownership.md`
 
-- [ ] **W2-005 — Build asset inventory and query tooling**
+- [x] **W2-005 — Build asset inventory and query tooling**
   - Goal: Provide CLI/report output filtered by pack, category, subject, domain, format and status.
   - Depends on: W2-002
   - Deliverables: Asset inventory command and test fixtures.
   - Acceptance: Inventory uses canonical manifest.; Source files and distributable files are distinguishable.; Orphans and broken references are reported.
   - Verify: pnpm test:assets
+  - Evidence: `pnpm test:assets` (0) → `evidence/W2-005-asset-inventory.md`; `pnpm --filter @moonwitness/assets inventory --pack=moon-city` (0) → `evidence/W2-005-asset-inventory.md`
 
 - [ ] **W2-006 — Build responsive image derivative pipeline**
   - Goal: Extend Sharp generation for responsive artwork variants, AVIF/WebP where suitable and focal-safe crops.
@@ -171,19 +176,21 @@ Status counts: done 28 · skipped 2 · in_progress 1 · blocked 0 · todo 78.
   - Acceptance: Transparent layer dimensions and origins align exactly.; Layer ordering and pivot/focal metadata preserved.; No flattening of runtime layers into a single image.
   - Verify: pnpm test:assets
 
-- [ ] **W2-008 — Add sprite sheet and frame-sequence metadata**
+- [x] **W2-008 — Add sprite sheet and frame-sequence metadata**
   - Goal: Define frame dimensions, frame count, timing, loop, direction, pivot and atlas references.
   - Depends on: W2-002
   - Deliverables: Sprite sheet metadata validator and generated preview.
   - Acceptance: Frame bounds are valid.; Timing and playback metadata are deterministic.; Frames are not generated from an unreviewed single raster crop.
   - Verify: pnpm test:assets
+  - Evidence: `pnpm test:assets` (0) → `evidence/W2-008-sprite-metadata.md; evidence/sprite-sheet-metadata-guide.svg`
 
-- [ ] **W2-009 — Add scene and animation metadata contracts**
+- [x] **W2-009 — Add scene and animation metadata contracts**
   - Goal: Define scene descriptors and animation clips that reference canonical asset IDs.
   - Depends on: W2-002, W2-008
   - Deliverables: Scene schema and animation metadata schema.
   - Acceptance: References resolve through canonical asset manifest.; Scene files contain layout/animation data, not embedded secrets or domain business records.; No cyclic references.
   - Verify: schema fixture tests
+  - Evidence: `pnpm test:assets` (0) → `evidence/W2-009-scene-contracts.md`
 
 - [ ] **W2-010 — Update package exports, pack list and docs sync**
   - Goal: Ensure every public asset category is included in build/package and docs asset sync.
@@ -273,47 +280,53 @@ Status counts: done 28 · skipped 2 · in_progress 1 · blocked 0 · todo 78.
 
 ## W4
 
-- [ ] **W4-001 — Define Moon City environment kit**
+- [ ] **W4-001 — Define Moon City environment kit** — **BLOCKED:** Environment Bible and reviewed contact sheet exist, but final responsive scene preview is not accepted and W1-006 remains blocked; cannot complete required review/dependency gate. Image generation was available; see evidence/moon-city-asset-tool-blocker.md.
   - Goal: Specify canonical visual environment, lighting, perspective and prop vocabulary.
   - Depends on: W1-004, W1-006
   - Deliverables: Environment Bible and shot breakdown.
   - Acceptance: Moon City palette/lighting matches canonical world.; Environment modules can be reused across pages.; No embedded interface copy/statistics.
   - Verify: environment contact sheet review
+  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
 
-- [ ] **W4-002 — Produce Moon City sky and moon layers**
+- [ ] **W4-002 — Produce Moon City sky and moon layers** — **BLOCKED:** Partial source set exists and is inventoried. Complete transparent sky/moon layer set and responsive safe-zone review are missing; generated rasters are non-distributable pending terms review. See evidence/moon-city-asset-tool-blocker.md.
   - Goal: Create master sky/moon layers with alpha and responsive safe zones.
   - Depends on: W4-001, W2-007
   - Deliverables: Sky and moon source assets and variants.
   - Acceptance: Layer boundaries and transparent alpha are valid.; Moon is not flattened into unrelated foreground.; Focal point metadata exists.
   - Verify: pnpm test:assets; visual preview
+  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
 
-- [ ] **W4-003 — Produce cloud and atmosphere layers**
+- [ ] **W4-003 — Produce cloud and atmosphere layers** — **BLOCKED:** A hand-authored static cloud SVG exists, but no loop seam preview or reviewed atmospheric pack exists. See evidence/moon-city-asset-tool-blocker.md.
   - Goal: Create clouds, haze and atmospheric depth layers.
   - Depends on: W4-002
   - Deliverables: Cloud/haze pack with animation suitability notes.
   - Acceptance: Layers are loopable or static as declared.; No visible seams in looping movement.; Opacity does not obscure required text.
   - Verify: visual preview
+  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
 
-- [ ] **W4-004 — Produce distant and midground city layers**
+- [ ] **W4-004 — Produce distant and midground city layers** — **BLOCKED:** Generated opaque skyline source and derived cutout exist, but clean alpha/perspective/mobile preview and distribution rights remain unverified. See evidence/moon-city-asset-tool-blocker.md.
   - Goal: Create background skyline and city silhouettes.
   - Depends on: W4-001, W2-007
   - Deliverables: Distant/midground city pack.
   - Acceptance: Perspective and lighting match scene bible.; Layer depth order is documented.; Desktop and mobile composition is supported.
   - Verify: visual preview
+  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
 
-- [ ] **W4-005 — Produce foreground rooftop and props**
+- [ ] **W4-005 — Produce foreground rooftop and props** — **BLOCKED:** A hand-authored foreground SVG exists, but safe occlusion and clean responsive preview acceptance are outstanding. See evidence/moon-city-asset-tool-blocker.md.
   - Goal: Create railing, rooftop, wires, signs and safe foreground occluders.
   - Depends on: W4-001, W2-007
   - Deliverables: Foreground and prop pack.
   - Acceptance: Alpha edges are clean.; Foreground does not obscure text/controls.; Scene layers are separately addressable.
   - Verify: visual preview
+  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
 
-- [ ] **W4-006 — Create alternate MoonWitness environments**
+- [ ] **W4-006 — Create alternate MoonWitness environments** — **BLOCKED:** Alternate underground/archive/rooftop/street environment assets and contact sheet have not been produced. See evidence/moon-city-asset-tool-blocker.md.
   - Goal: Produce reusable underground, archive, rooftop and street environment briefs/assets.
   - Depends on: W4-001, W4-004, W4-005
   - Deliverables: Environment coverage pack and metadata.
   - Acceptance: Each environment has coherent visual identity.; Reusable shared props are canonical.; No per-addon duplicated copy of the same background.
   - Verify: contact sheet review
+  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
 
 - [ ] **W4-007 — Define environment animation channels**
   - Goal: Specify which layers move, speed ranges, loop duration and pause conditions.
@@ -480,12 +493,13 @@ Status counts: done 28 · skipped 2 · in_progress 1 · blocked 0 · todo 78.
   - Verify: pnpm test:ui-catalog
   - Evidence: `pnpm test:ui-catalog` (0) → `25 Playwright browser tests passed during W0 baseline; existing harness/source map in evidence/ui-catalog-audit.md`
 
-- [ ] **W7-002 — Add asset browser specimen**
+- [x] **W7-002 — Add asset browser specimen**
   - Goal: Browse canonical assets by category, pack, subject, domain, variant and status.
   - Depends on: W7-001, W2-005
   - Deliverables: Asset browser UI with deterministic fixture data.
   - Acceptance: Uses manifest data.; No fabricated production domain records.; Keyboard/filter/accessibility supported.
   - Verify: pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui-catalog` (0) → `evidence/W7-002-asset-browser.md; test-results/junit/ui-catalog.xml`
 
 - [ ] **W7-003 — Add character studio specimen**
   - Goal: Preview identity sheets, poses, expressions and animation states.
@@ -620,19 +634,21 @@ Status counts: done 28 · skipped 2 · in_progress 1 · blocked 0 · todo 78.
   - Verify: focused source review; pnpm --filter @moonwitness/board typecheck
   - Evidence: `focused source review of addon manifest/models/views/access/API registry and Board consumers` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/domains/ai.md`; `pnpm --filter @moonwitness/board typecheck` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W8-D-board-typecheck.md`
 
-- [ ] **W8-001 — Implement visual coverage for base addon**
+- [x] **W8-001 — Implement visual coverage for base addon**
   - Goal: Implement only the verified base asset references, UI compositions and state treatments based on W8-D01. Domain: People, partners, companies, users, activities, attachments, tags, records.
   - Depends on: W8-D01, W2-005, W1-008
   - Deliverables: base addon asset coverage and tested UI specimens/consumer integration where a real screen exists
   - Acceptance: Only real existing models/routes/permissions are represented.; Shared assets are reused by stable ID; no domain-specific duplicate asset copies.; Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.; Artwork remains decorative; labels, state and actions are real UI data.; New assets include provenance and are registered in canonical manifest.; If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
+  - Evidence: `pnpm --filter @moonwitness/board typecheck` (0) → `evidence/W8-001-base-visual-coverage.md`; `pnpm board:ui:check` (0) → `evidence/W8-001-base-visual-coverage.md`; `node --test scripts/board/model-icon-registry.test.mjs scripts/board/model-view-error-state.test.mjs` (0) → `evidence/W8-001-base-visual-coverage.md`
 
-- [ ] **W8-002 — Implement visual coverage for auth addon**
+- [x] **W8-002 — Implement visual coverage for auth addon**
   - Goal: Implement only the verified auth asset references, UI compositions and state treatments based on W8-D02. Domain: Identity, login, registration, security and session states.
   - Depends on: W8-D02, W2-005, W1-008
   - Deliverables: auth addon asset coverage and tested UI specimens/consumer integration where a real screen exists
   - Acceptance: Only real existing models/routes/permissions are represented.; Shared assets are reused by stable ID; no domain-specific duplicate asset copies.; Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.; Artwork remains decorative; labels, state and actions are real UI data.; New assets include provenance and are registered in canonical manifest.; If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui-catalog` (0) → `evidence/W8-002-auth-visual-coverage.md; test-results/junit/ui-catalog.xml`; `pnpm --filter @moonwitness/ui-catalog build && pnpm ui:budget` (0) → `evidence/W8-002-auth-visual-coverage.md`
 
 - [ ] **W8-003 — Implement visual coverage for jobs addon**
   - Goal: Implement only the verified jobs asset references, UI compositions and state treatments based on W8-D03. Domain: Queues, jobs, scheduled work, execution and failure states.

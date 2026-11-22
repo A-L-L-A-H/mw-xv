@@ -11,6 +11,7 @@ import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { ListView } from '@/components/views/list-view';
 import { FormView } from '@/components/views/form-view';
 import { availableViews, parseViewName, type BoardViewName } from '@/lib/action-result';
+import { modelViewErrorState } from '@/lib/model-view-error-state.mjs';
 
 const viewFallback = () => <Skeleton className="h-96 w-full bg-ink/10" />;
 
@@ -87,12 +88,13 @@ export function ModelPage() {
   }
 
   if (error || !views) {
+    const errorState = modelViewErrorState(error);
     return (
       <EmptyState
         className="ink-panel bg-card p-12 text-center"
         icon={<Doodle kind="star" className="mx-auto size-10 text-destructive" />}
-        title="Failed to load model views"
-        description={`Model '${model}' might not exist or you do not have permission to view it.`}
+        title={errorState.title}
+        description={errorState.description}
       />
     );
   }

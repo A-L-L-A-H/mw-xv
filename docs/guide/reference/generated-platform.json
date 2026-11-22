@@ -78,7 +78,7 @@
       "name": "@moonwitness/assets",
       "version": "1.0.0-rc.1",
       "directory": "packages/assets",
-      "scripts": ["artwork:prepare", "brand:prepare", "fonts:prepare"]
+      "scripts": ["artwork:prepare", "brand:prepare", "fonts:prepare", "inventory"]
     },
     {
       "name": "@moonwitness/auth",
@@ -279,7 +279,8 @@
     "@moonwitness/assets": {
       "artwork:prepare": "node scripts/prepare-artwork.mjs",
       "brand:prepare": "node scripts/prepare-brand-master.mjs",
-      "fonts:prepare": "node scripts/prepare-fonts.mjs"
+      "fonts:prepare": "node scripts/prepare-fonts.mjs",
+      "inventory": "node scripts/asset-inventory.mjs"
     },
     "@moonwitness/auth": {
       "build": "tsc",
@@ -9315,5 +9316,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "eed58a4aaf1b9052883c89fee1473d9daf05148c3f6a5b690e77c3a4edb2c239"
+  "generatedFromSha256": "280e86d893a126a2ec9c3fce0872261b2058beda0cc33b625cc1c10cf1a32762"
 }

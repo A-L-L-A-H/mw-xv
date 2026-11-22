@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 1152" width="2048" height="1152" role="img" aria-label="Deep navy Moon City night sky with sparse stars">
+  <title>Moon City night sky layer</title>
+  <defs>
+    <linearGradient id="mw-source-artwork-moon-city-sky-layer-night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#090d1c"/>
+      <stop offset="0.62" stop-color="#111a31"/>
+      <stop offset="1" stop-color="#20344d"/>
+    </linearGradient>
+  </defs>
+  <rect width="2048" height="1152" fill="url(#mw-source-artwork-moon-city-sky-layer-night)"/>
+  <g fill="#d8e6f1" opacity="0.62">
+    <circle cx="120" cy="132" r="2"/><circle cx="247" cy="288" r="1.7"/><circle cx="388" cy="94" r="2.2"/>
+    <circle cx="522" cy="217" r="1.5"/><circle cx="688" cy="126" r="1.8"/><circle cx="804" cy="342" r="1.4"/>
+    <circle cx="936" cy="173" r="2"/><circle cx="1080" cy="287" r="1.6"/><circle cx="1230" cy="112" r="1.7"/>
+    <circle cx="1780" cy="128" r="1.6"/><circle cx="1930" cy="314" r="2"/><circle cx="1500" cy="198" r="1.5"/>
+    <circle cx="140" cy="472" r="1.6"/><circle cx="680" cy="474" r="1.4"/><circle cx="1094" cy="424" r="1.5"/>
+  </g>
+</svg>

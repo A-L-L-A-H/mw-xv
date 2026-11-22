@@ -573,7 +573,7 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "Character Bible template and continuity rules are ready at evidence/character-bible-template.md. Pilot identity selection/sheet remains subject to explicit human approval.",
+      "notes": "Character policy/template is ready, but task requires pilot identity rules and approval. Pilot visual identity remains a distinct user approval gate; see evidence/character-bible-template.md.",
       "evidence": [
         {
           "exit_code": 0,
@@ -665,7 +665,7 @@
       "id": "W1-006",
       "phase": "W1",
       "title": "Define art composition and responsive rules",
-      "status": "done",
+      "status": "blocked",
       "priority": "P0",
       "role": "designer",
       "parallel_group": "serial",
@@ -691,12 +691,12 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Design contract completed from the approved art direction; no new visual asset is claimed.",
+      "notes": "Responsive composition rules have been drafted, but acceptance explicitly requires a responsive UI Catalog preview. The diagnosed Playwright/Vite preview gate failure is recorded in evidence/approval-followup-checks.md; retry exhausted.",
       "evidence": [
         {
-          "exit_code": 0,
-          "command": "approved-direction design specification against current UI tokens, fonts, assets and source",
-          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/responsive-composition-rules.md"
+          "exit_code": 1,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/approval-followup-checks.md",
+          "command": "asset-tool availability audit and/or responsive catalog verification retry"
         }
       ],
       "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
@@ -810,7 +810,7 @@
       "id": "W2-001",
       "phase": "W2",
       "title": "Design backward-compatible asset manifest extension",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
@@ -838,15 +838,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Backward-compatible extension proposal only. Existing manifest schema v1 and licenses.json remain unchanged. Future stable IDs derive from canonical paths; no competing inventory created.",
+      "evidence": [
+        {
+          "command": "node --test packages/assets/tests/*.test.mjs",
+          "artifact": "23 asset tests passed against the legacy v1 manifest and path-based canonical inventory",
+          "exit_code": 0
+        }
+      ],
+      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
     },
     {
       "id": "W2-002",
       "phase": "W2",
       "title": "Implement manifest schema validation",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -871,15 +877,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Validated optional schema-v1 metadata and references while retaining legacy entries. Generated source provenance is recorded as blocked from distribution pending terms review.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-002-schema-validation.md"
+        }
+      ],
+      "commit": "e6644108cd62833361fe1ce6980c32676bd4fd69"
     },
     {
       "id": "W2-003",
       "phase": "W2",
       "title": "Extend license and provenance contract",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -904,15 +916,21 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Source provenance is validated for tagged sources; AI-generated rights remain explicitly blocked until terms are verified.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-003-provenance-validation.md"
+        }
+      ],
+      "commit": "e6644108cd62833361fe1ce6980c32676bd4fd69"
     },
     {
       "id": "W2-004",
       "phase": "W2",
       "title": "Define source, master and generated ownership rules",
-      "status": "todo",
+      "status": "skipped",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -937,15 +955,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Existing explicit generator ownership helper and focused tests satisfy all acceptance criteria; verified against current source.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-004-existing-ownership.md"
+        }
+      ],
+      "commit": "e6644108cd62833361fe1ce6980c32676bd4fd69"
     },
     {
       "id": "W2-005",
       "phase": "W2",
       "title": "Build asset inventory and query tooling",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -969,9 +993,20 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Canonical manifest query CLI supports pack/category/subject/domain/format/status filters, source/distribution classification, and orphan/missing/broken-reference audits.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-005-asset-inventory.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/assets inventory --pack=moon-city",
+          "exit_code": 0,
+          "artifact": "evidence/W2-005-asset-inventory.md"
+        }
+      ],
+      "commit": "e6644108cd62833361fe1ce6980c32676bd4fd69"
     },
     {
       "id": "W2-006",
@@ -1046,7 +1081,7 @@
       "id": "W2-008",
       "phase": "W2",
       "title": "Add sprite sheet and frame-sequence metadata",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -1071,15 +1106,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Sprite metadata and atlas bounds are validated; the generated SVG preview is explicitly metadata-only, with no unreviewed frame art. No production character atlas exists yet.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-008-sprite-metadata.md; evidence/sprite-sheet-metadata-guide.svg"
+        }
+      ],
+      "commit": "b3b4554971884fd45d13b5d0d25ed2cdd9b0d4f4"
     },
     {
       "id": "W2-009",
       "phase": "W2",
       "title": "Add scene and animation metadata contracts",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
@@ -1105,9 +1146,15 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Presentation-only scene and clip descriptors are validated against canonical manifest paths, with explicit schema keys and acyclic composition. No production scene IDs/assets are claimed.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-009-scene-contracts.md"
+        }
+      ],
+      "commit": "4a1e4c7eb3c7c2d840ea57b5099661628dcdbde2"
     },
     {
       "id": "W2-010",
@@ -1521,7 +1568,7 @@
       "id": "W4-001",
       "phase": "W4",
       "title": "Define Moon City environment kit",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -1546,15 +1593,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Environment Bible and reviewed contact sheet exist, but final responsive scene preview is not accepted and W1-006 remains blocked; cannot complete required review/dependency gate. Image generation was available; see evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-002",
       "phase": "W4",
       "title": "Produce Moon City sky and moon layers",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1580,15 +1633,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Partial source set exists and is inventoried. Complete transparent sky/moon layer set and responsive safe-zone review are missing; generated rasters are non-distributable pending terms review. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-003",
       "phase": "W4",
       "title": "Produce cloud and atmosphere layers",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1612,15 +1671,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "A hand-authored static cloud SVG exists, but no loop seam preview or reviewed atmospheric pack exists. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-004",
       "phase": "W4",
       "title": "Produce distant and midground city layers",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1645,15 +1710,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Generated opaque skyline source and derived cutout exist, but clean alpha/perspective/mobile preview and distribution rights remain unverified. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-005",
       "phase": "W4",
       "title": "Produce foreground rooftop and props",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1679,15 +1750,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "A hand-authored foreground SVG exists, but safe occlusion and clean responsive preview acceptance are outstanding. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
       "id": "W4-006",
       "phase": "W4",
       "title": "Create alternate MoonWitness environments",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1713,8 +1790,14 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Alternate underground/archive/rooftop/street environment assets and contact sheet have not been produced. See evidence/moon-city-asset-tool-blocker.md.",
+      "evidence": [
+        {
+          "command": "Moon City source and contact-review acceptance audit",
+          "exit_code": 0,
+          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+        }
+      ],
       "commit": null
     },
     {
@@ -2533,7 +2616,7 @@
       "id": "W7-002",
       "phase": "W7",
       "title": "Add asset browser specimen",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2558,9 +2641,15 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Asset browser uses canonical manifest and provenance with accessible filters, loading/error states, responsive layout, and no fabricated domain data. Its bundle stays inside configured budgets.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "evidence/W7-002-asset-browser.md; test-results/junit/ui-catalog.xml"
+        }
+      ],
+      "commit": "568d3a47bce0e68c4d5c79a34ee645baf0bcee96"
     },
     {
       "id": "W7-003",
@@ -3300,7 +3389,7 @@
       "id": "W8-001",
       "phase": "W8",
       "title": "Implement visual coverage for base addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3335,15 +3424,31 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "The real generic base-model consumer reuses canonical domain icons and separates loading, empty, API error, 403 permission denial, and 404 model-unavailable states without inventing records/routes.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "evidence/W8-001-base-visual-coverage.md"
+        },
+        {
+          "command": "pnpm board:ui:check",
+          "exit_code": 0,
+          "artifact": "evidence/W8-001-base-visual-coverage.md"
+        },
+        {
+          "command": "node --test scripts/board/model-icon-registry.test.mjs scripts/board/model-view-error-state.test.mjs",
+          "exit_code": 0,
+          "artifact": "evidence/W8-001-base-visual-coverage.md"
+        }
+      ],
+      "commit": "7dc7d774782e5b836837feb7957e22562b167e19"
     },
     {
       "id": "W8-002",
       "phase": "W8",
       "title": "Implement visual coverage for auth addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3378,9 +3483,20 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Existing login/register states were retained; a labelled UI Catalog specimen documents the absent session-management consumer without exposing refresh-token data or inventing a route.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "evidence/W8-002-auth-visual-coverage.md; test-results/junit/ui-catalog.xml"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog build && pnpm ui:budget",
+          "exit_code": 0,
+          "artifact": "evidence/W8-002-auth-visual-coverage.md"
+        }
+      ],
+      "commit": "da55ae04e133d0868ce19026382f80957adff09c"
     },
     {
       "id": "W8-003",

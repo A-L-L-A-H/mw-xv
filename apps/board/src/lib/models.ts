@@ -1,9 +1,13 @@
 import {
   BankIcon,
+  BookmarkIcon,
+  CheckSquareIcon,
+  ColumnsIcon,
   CompanyIcon,
   CreditCardIcon,
   CurrencyIcon,
   GlobeIcon,
+  GridIcon,
   HashIcon,
   HomeIcon,
   KeyIcon,
@@ -11,6 +15,7 @@ import {
   MapPinIcon,
   ModelIcon,
   PartnerIcon,
+  RelationIcon,
   SecurityIcon,
   TeamIcon,
   UsersIcon,
@@ -28,6 +33,11 @@ const ICONS = {
   'base.currency': CurrencyIcon,
   'base.language': LanguageIcon,
   'organization.team': TeamIcon,
+  'project.project': GridIcon,
+  'project.task': CheckSquareIcon,
+  'project.milestone': BookmarkIcon,
+  'project.stage': ColumnsIcon,
+  'project.task_dependency': RelationIcon,
   'auth.refresh_token': KeyIcon,
 };
 

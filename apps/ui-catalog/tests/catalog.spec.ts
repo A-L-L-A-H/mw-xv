@@ -28,6 +28,35 @@ test('static catalog loads under the repository Pages subpath with its shared UI
   await page.screenshot({ path: testInfo.outputPath('desktop.png'), fullPage: false });
 });
 
+test('asset browser filters canonical manifest entries and exposes rights status', async ({ page }) => {
+  await page.goto('./#assets');
+  const browser = page.getByTestId('asset-browser');
+  await expect(browser).toBeVisible();
+  await expect(browser.getByRole('status')).toContainText(/\d+ of \d+ canonical assets/u);
+  await browser.getByLabel('Pack').selectOption('moon-city');
+  await expect(browser.getByRole('status')).toHaveText(/^7 of \d+ canonical assets$/u);
+  await browser.getByLabel('Category').selectOption('source');
+  await expect(browser.locator('.asset-browser-card')).toHaveCount(7);
+  await expect(browser.getByText('Blocked · rights review').first()).toBeVisible();
+  await browser.getByRole('searchbox', { name: 'Find an asset' }).fill('moon-layer.png');
+  await expect(browser.locator('.asset-browser-card')).toHaveCount(1);
+  await expect(browser.getByText('source/artwork/moon-city-moon-layer.png')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Asset inventory' })).toHaveAttribute('href', '#assets');
+});
+
+test('auth specimen documents only registered routes and keeps refresh tokens out of UI records', async ({ page }) => {
+  await page.goto('./#auth-coverage');
+  const specimen = page.getByTestId('auth-route-specimen');
+  await expect(specimen).toBeVisible();
+  await expect(specimen.getByText('/login', { exact: true })).toBeVisible();
+  await expect(specimen.getByText('/register', { exact: true })).toBeVisible();
+  await expect(specimen.getByRole('heading', { name: 'Session list not exposed' })).toBeVisible();
+  await expect(specimen.getByText(/no session route or token fixture is represented/u)).toBeVisible();
+  const art = specimen.locator('.auth-coverage-art');
+  await expect(art).toBeVisible();
+  expect(await art.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+});
+
 test('theme toggle changes the shared token map without hiding readable labels', async ({
   page,
 }) => {
