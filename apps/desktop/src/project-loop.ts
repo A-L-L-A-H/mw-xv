@@ -66,7 +66,8 @@ export async function executeProjectTaskInSandbox(
 
     if (exitCode === 0 && !timedOut) {
       const commitMsg =
-        options.commitMessage ?? `feat(task): complete autonomous task #${taskId} (${contractInfo.code})`;
+        options.commitMessage ??
+        `feat(task): complete autonomous task #${taskId} (${contractInfo.code})`;
       try {
         await bridge.worktree.commit(runId, commitMsg, auth);
         committed = true;

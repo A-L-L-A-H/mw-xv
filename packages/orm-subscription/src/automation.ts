@@ -1,9 +1,5 @@
 import { SaleOrder, SaleOrderLine } from '@moonwitness/orm-sales';
-import {
-  Subscription,
-  SubscriptionInvoiceLine,
-  SubscriptionPlan,
-} from './models/index.js';
+import { Subscription, SubscriptionInvoiceLine, SubscriptionPlan } from './models/index.js';
 
 export type SubscriptionInstance = InstanceType<typeof Subscription>;
 
@@ -47,7 +43,9 @@ export async function createSubscriptionFromSaleOrder(
     plan = await SubscriptionPlan.query().findById(options.planId);
   }
   if (!plan) {
-    const plans = await SubscriptionPlan.query().where({ is_active: true }).orderBy('amount_minor', 'desc');
+    const plans = await SubscriptionPlan.query()
+      .where({ is_active: true })
+      .orderBy('amount_minor', 'desc');
     plan = plans[0];
   }
 
@@ -78,7 +76,9 @@ export async function createSubscriptionFromSaleOrder(
     description: `Subscription automatically created from Sale Order ${saleOrder.name}`,
   });
 
-  const lines = await SaleOrderLine.query().where({ order_id: saleOrder.id }).orderBy('sequence', 'asc');
+  const lines = await SaleOrderLine.query()
+    .where({ order_id: saleOrder.id })
+    .orderBy('sequence', 'asc');
   if (lines.length > 0) {
     for (const line of lines) {
       await SubscriptionInvoiceLine.query().insert({

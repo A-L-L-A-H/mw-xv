@@ -54,7 +54,9 @@ export function CommercialPage() {
   const opportunitiesQuery = useQuery({
     queryKey: scopedQueryKey(['crm', 'opportunities']),
     queryFn: async () => {
-      const res = await client.model<CrmOpportunityRecord>('crm.opportunity').searchRead({ limit: 25 });
+      const res = await client
+        .model<CrmOpportunityRecord>('crm.opportunity')
+        .searchRead({ limit: 25 });
       return res.records;
     },
   });
@@ -124,7 +126,9 @@ export function CommercialPage() {
     },
     onSuccess: (res) => {
       toast.success(`Subscription ${res.data.name} created`);
-      queryClient.invalidateQueries({ queryKey: scopedQueryKey(['subscription', 'subscriptions']) });
+      queryClient.invalidateQueries({
+        queryKey: scopedQueryKey(['subscription', 'subscriptions']),
+      });
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Subscription creation failed');
@@ -142,7 +146,9 @@ export function CommercialPage() {
     },
     onSuccess: (res) => {
       toast.success(`Subscription ${res.data.name} activated`);
-      queryClient.invalidateQueries({ queryKey: scopedQueryKey(['subscription', 'subscriptions']) });
+      queryClient.invalidateQueries({
+        queryKey: scopedQueryKey(['subscription', 'subscriptions']),
+      });
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Activation failed');
@@ -160,7 +166,9 @@ export function CommercialPage() {
     },
     onSuccess: (res) => {
       toast.warning(`Subscription ${res.data.name} paused/suspended`);
-      queryClient.invalidateQueries({ queryKey: scopedQueryKey(['subscription', 'subscriptions']) });
+      queryClient.invalidateQueries({
+        queryKey: scopedQueryKey(['subscription', 'subscriptions']),
+      });
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Suspension failed');
@@ -188,7 +196,9 @@ export function CommercialPage() {
             onClick={() => {
               queryClient.invalidateQueries({ queryKey: scopedQueryKey(['crm', 'opportunities']) });
               queryClient.invalidateQueries({ queryKey: scopedQueryKey(['sales', 'orders']) });
-              queryClient.invalidateQueries({ queryKey: scopedQueryKey(['subscription', 'subscriptions']) });
+              queryClient.invalidateQueries({
+                queryKey: scopedQueryKey(['subscription', 'subscriptions']),
+              });
             }}
           >
             <RefreshIcon className="mr-1.5 size-4" />
@@ -213,11 +223,7 @@ export function CommercialPage() {
           value={String(subscriptions.length)}
           detail={`${activeSubsCount} active billing`}
         />
-        <MetricTile
-          label="Infrastructure"
-          value="Cloud & ISP"
-          detail="Provisioning targets"
-        />
+        <MetricTile label="Infrastructure" value="Cloud & ISP" detail="Provisioning targets" />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -236,7 +242,8 @@ export function CommercialPage() {
                   <div>
                     <p className="font-display text-sm font-semibold text-ink">{opp.name}</p>
                     <p className="font-mono text-xs text-ink-muted">
-                      {opp.currency ?? 'USD'} {((opp.expected_revenue_minor ?? 0) / 100).toLocaleString()} ·{' '}
+                      {opp.currency ?? 'USD'}{' '}
+                      {((opp.expected_revenue_minor ?? 0) / 100).toLocaleString()} ·{' '}
                       {opp.probability ?? 0}% win rate
                     </p>
                   </div>

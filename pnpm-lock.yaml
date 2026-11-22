@@ -1171,6 +1171,9 @@ importers:
       '@moonwitness/orm-crm':
         specifier: workspace:*
         version: link:../orm-crm
+      '@moonwitness/types':
+        specifier: workspace:*
+        version: link:../types
       knex:
         specifier: ^3.3.0
         version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)
@@ -1184,6 +1187,9 @@ importers:
       better-sqlite3:
         specifier: ^13.0.3
         version: 13.0.3
+      fastify:
+        specifier: ^5.12.6
+        version: 5.12.7
       typescript:
         specifier: ~5.7.3
         version: 5.7.3
@@ -1239,6 +1245,9 @@ importers:
       '@moonwitness/orm-sales':
         specifier: workspace:*
         version: link:../orm-sales
+      '@moonwitness/types':
+        specifier: workspace:*
+        version: link:../types
       knex:
         specifier: ^3.3.0
         version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)
@@ -1252,6 +1261,9 @@ importers:
       better-sqlite3:
         specifier: ^13.0.3
         version: 13.0.3
+      fastify:
+        specifier: ^5.12.6
+        version: 5.12.7
       typescript:
         specifier: ~5.7.3
         version: 5.7.3

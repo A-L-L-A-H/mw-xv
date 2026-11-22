@@ -251,7 +251,7 @@
     transform: translateX(2px);
   }
   .board-nav-item-active {
-    border-left-color: var(--mw-magenta);
+    border-left-color: transparent;
     padding-inline: 0.75rem;
     clip-path: var(--mw-grunge-clip-brush-btn);
     filter: drop-shadow(3px 3px 0 #000000);

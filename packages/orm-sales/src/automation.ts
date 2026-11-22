@@ -50,8 +50,7 @@ export async function convertOpportunityToSaleOrder(
 
   const year = new Date().getFullYear();
   const count = await SaleOrder.query().resultSize();
-  const orderName =
-    options.name?.trim() || `SO-${year}-${String(count + 1).padStart(4, '0')}`;
+  const orderName = options.name?.trim() || `SO-${year}-${String(count + 1).padStart(4, '0')}`;
 
   const amountMinor = opportunity.expected_revenue_minor ?? 0;
 
