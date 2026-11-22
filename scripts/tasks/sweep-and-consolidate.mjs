@@ -381,8 +381,39 @@ export async function sweepAndConsolidate({
   try {
     const visualPack = JSON.parse(await fs.readFile(visualPackPath, 'utf8'));
     if (!Array.isArray(visualPack.tasks) || visualPack.tasks.length === 0) {
-      throw new Error('Visual Universe task.json has no task records.');
+      throw new Error('Visual Universe immutable task snapshot has no task records.');
     }
+
+    const visualCardNotesPath = path.join(
+      rootDir,
+      'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/notes-addendum.json'
+    );
+    const visualCardNotes = JSON.parse(await fs.readFile(visualCardNotesPath, 'utf8'));
+    if (visualCardNotes.snapshot !== 'visual-universe-task-card-notes-addendum/2026-11-23'
+      || !Array.isArray(visualCardNotes.entries)) {
+      throw new Error('Visual Universe task-card notes addendum has an unsupported format.');
+    }
+    const visualTaskIds = new Set(visualPack.tasks.map((task) => task.id));
+    const visualCardNotesByTask = new Map();
+    for (const note of visualCardNotes.entries) {
+      if (!visualTaskIds.has(note.taskId)) {
+        throw new Error(`Task-card notes addendum references unknown Visual Universe task "${note.taskId}".`);
+      }
+      if (visualCardNotesByTask.has(note.taskId)) {
+        throw new Error(`Duplicate task-card notes addendum entry for "${note.taskId}".`);
+      }
+      if (
+        typeof note.text !== 'string' ||
+        !note.text.trim() ||
+        typeof note.sourcePath !== 'string' ||
+        typeof note.sourceBlobSha !== 'string' ||
+        !/^[a-f0-9]{40}$/u.test(note.sourceBlobSha)
+      ) {
+        throw new Error(`Task-card notes addendum entry for "${note.taskId}" has invalid provenance or text.`);
+      }
+      visualCardNotesByTask.set(note.taskId, note);
+    }
+
     for (const sourceTask of visualPack.tasks) {
       const statusMap = {
         todo: 'todo',
@@ -445,7 +476,16 @@ export async function sweepAndConsolidate({
         },
         url: '',
         comments: [],
-        metadata: sourceTask
+        metadata: {
+          ...sourceTask,
+          legacyCardNotes: visualCardNotesByTask.has(sourceTask.id)
+            ? {
+                text: visualCardNotesByTask.get(sourceTask.id).text,
+                sourceFile: visualCardNotesByTask.get(sourceTask.id).sourcePath,
+                sourceBlobSha: visualCardNotesByTask.get(sourceTask.id).sourceBlobSha,
+              }
+            : null,
+        }
       });
     }
   } catch (error) {
