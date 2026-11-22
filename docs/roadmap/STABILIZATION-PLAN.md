@@ -1,3 +1,10 @@
+## Promotion candidate freshness correction
+
+- PR #37 head SHA was observed as `b16f6f4ef57942f710f605c6f5814af563ec017b`, 22 commits ahead of main.
+- The PR's managed promotion report still references earlier source `b2951b4`; associated CI runs `45055213276` and `45055208613` are both **cancelled**. The commit status API has no statuses for observed head `b16f6f4`.
+- This is a source/report mismatch. Do not merge PR #37 until promotion automation refreshes the report and required CI runs complete on the exact current head. Any subsequent docs commit will move the head again, so use the latest PR head SHA and checks at review time.
+- Issues #40–#43 are open; work status is complete, delivery stage remains planned, and the blocker is CI/approval.
+
 ## Progress reconciliation — 2026-11-23
 
 - **S0:** Fast-forward sync from main to dev completed earlier. Current development is now 19 commits ahead of main and has an open promotion PR #37; keep it unmerged until approval and exact-source CI finish.
