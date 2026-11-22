@@ -7,7 +7,7 @@ export type MetricTileProps = Omit<ComponentProps<'article'>, 'children' | 'titl
   icon?: ReactNode;
   accent?: 'magenta' | 'cyan' | 'yellow' | 'green' | 'violet';
   surface?: 'default' | 'paper' | 'ink';
-  frame?: 'line' | 'torn' | 'scuffed';
+  frame?: 'line' | 'torn' | 'scuffed' | 'grunge';
 };
 
 /** Presentation only: callers own metric meaning, loading, and error states. */

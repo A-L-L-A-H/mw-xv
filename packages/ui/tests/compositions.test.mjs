@@ -165,3 +165,29 @@ test('new compositions expose state, count, and keyboard-accessible semantics', 
   assert.match(markup, /<button[^>]*data-slot="kanban-card"/u);
   assert.match(markup, /aria-label="Remove Status: Open"/u);
 });
+
+test('Panel, MetricTile, and SectionRibbon support raw-art grunge frames', () => {
+  const markup = renderToStaticMarkup(
+    createElement(
+      'div',
+      null,
+      createElement(Panel, { title: 'Mission Control', frame: 'grunge' }, 'Payload'),
+      createElement(MetricTile, {
+        label: 'Active Stories',
+        value: '12',
+        frame: 'grunge',
+        accent: 'magenta',
+      }),
+      createElement(SectionRibbon, {
+        title: 'Editorial Pipeline',
+        number: '02',
+        frame: 'grunge',
+        accent: 'yellow',
+      })
+    )
+  );
+
+  assert.match(markup, /class="mw-ui-panel"[^>]*data-frame="grunge"/u);
+  assert.match(markup, /class="mw-ui-metric-tile"[^>]*data-frame="grunge"/u);
+  assert.match(markup, /class="mw-ui-section-ribbon"[^>]*data-frame="grunge"/u);
+});
