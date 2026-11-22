@@ -1607,6 +1607,56 @@
       "status": "review",
       "license": "ISC",
       "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/world/characters/crew-01-layer-hood.svg",
+      "kind": "source",
+      "variant": "canonical-character-layer",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/world/characters/crew-01-layer-torso.svg",
+      "kind": "source",
+      "variant": "canonical-character-layer",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/world/characters/crew-01-layer-outline.svg",
+      "kind": "source",
+      "variant": "canonical-character-layer",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/world/characters/crew-01-pivots.json",
+      "kind": "source",
+      "variant": "canonical-character-pivots",
+      "format": "json",
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
     }
   ]
 }

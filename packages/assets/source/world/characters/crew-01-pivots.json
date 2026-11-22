@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "characterId": "crew-01",
+  "pack": "moon-city",
+  "domain": "visual-universe",
+  "description": "Layered pivot metadata for crew-01: hood, torso, head outline. Pivots are normalized (0..1) relative to each layer viewBox.",
+  "layers": [
+    {
+      "layerId": "hood",
+      "asset": "source/world/characters/crew-01-layer-hood.svg",
+      "pivot": { "x": 0.5, "y": 0.293 },
+      "order": 0
+    },
+    {
+      "layerId": "torso",
+      "asset": "source/world/characters/crew-01-layer-torso.svg",
+      "pivot": { "x": 0.5, "y": 0.645 },
+      "order": 1
+    },
+    {
+      "layerId": "outline",
+      "asset": "source/world/characters/crew-01-layer-outline.svg",
+      "pivot": { "x": 0.5, "y": 0.312 },
+      "order": 2
+    }
+  ],
+  "license": "ISC",
+  "status": "review"
+}
