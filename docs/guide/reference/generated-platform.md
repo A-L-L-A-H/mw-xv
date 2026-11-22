@@ -214,8 +214,10 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm roadmap:progress`
 - `pnpm start`
 - `pnpm start:built`
-- `pnpm tasks:sync`
+- `pnpm tasks:sweep` (read-only source projection; `--write` is restricted to one-time reviewed recovery)
+- `pnpm tasks:sync` (fail-closed until TaskOS validates)
 - `pnpm tasks:validate`
+- `pnpm test:taskos`
 - `pnpm test`
 - `pnpm test:action-pins`
 - `pnpm test:action-tags`
