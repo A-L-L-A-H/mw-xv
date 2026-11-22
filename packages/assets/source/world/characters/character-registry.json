@@ -33,7 +33,10 @@
       "masterAssetIds": [
         "source/world/characters/crew-01-sheet.svg"
       ],
-      "variantAssetIds": [],
+      "variantAssetIds": [
+        "source/world/characters/crew-01-pose-idle-standing.svg",
+        "source/world/characters/crew-01-pose-waving.svg"
+      ],
       "license": "ISC",
       "status": "review"
     }

@@ -320,6 +320,24 @@
       "modifications": "Original canonical character sheet for crew-01: anonymous back-facing hooded crew figure, industrial workwear, tool satchel, crew badge. No face depicted.",
       "status": "review",
       "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/characters/crew-01-pose-idle-standing.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical character pose for crew-01: anonymous back-facing hooded crew figure. No face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/characters/crew-01-pose-waving.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical character pose for crew-01: anonymous back-facing hooded crew figure. No face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
     }
   ],
   "originalFonts": [

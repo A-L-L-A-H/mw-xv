@@ -1581,6 +1581,32 @@
       "status": "review",
       "license": "ISC",
       "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/world/characters/crew-01-pose-idle-standing.svg",
+      "kind": "source",
+      "variant": "canonical-character-pose",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "source/world/characters/crew-01-pose-waving.svg",
+      "kind": "source",
+      "variant": "canonical-character-pose",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
     }
   ]
 }
