@@ -87,10 +87,7 @@ function run(args, label) {
 }
 
 run(['run', 'test:unit-runner-policy'], 'Unit runner CI ownership policy');
-run(
-  ['exec', 'node', '--test', 'scripts/tasks/validate-tasks.test.mjs', 'scripts/tasks/sync-roadmap.test.mjs'],
-  'TaskOS registry safety'
-);
+run(['run', 'test:taskos'], 'TaskOS registry safety');
 run(['build'], 'Build');
 run(['--filter', '@moonwitness/whatsapp', 'test'], 'WhatsApp worker');
 run(['exec', 'node', '--test', 'scripts/roadmap/addon-conformance.test.mjs'], 'Addon conformance');
