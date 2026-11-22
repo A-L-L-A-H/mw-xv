@@ -9,7 +9,8 @@ import {
   type ReactElement,
 } from 'react';
 
-export type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+export type ButtonVariant =
+  'default' | 'magenta' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 export type ButtonSize =
   'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
 export type ButtonTreatment = 'solid' | 'brush';

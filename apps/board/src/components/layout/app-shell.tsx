@@ -83,9 +83,9 @@ function NavItem({
       onClick={onNavigate}
       title={label}
       className={cn(
-        'group relative flex min-h-10 min-w-0 items-center gap-3 border-l-4 border-transparent px-2 py-2 font-display text-base uppercase tracking-wide text-ink/70 transition-[background-color,color,border-color] duration-[var(--mw-motion-fast)] ease-[var(--mw-motion-ease)] hover:bg-ink/10 hover:text-ink',
+        'board-nav-item group relative flex min-h-10 min-w-0 items-center gap-3 border-l-4 border-transparent px-2 py-2 font-display text-base uppercase tracking-wide text-ink/75 hover:bg-ink/10 hover:text-ink',
         active &&
-          'border-l-magenta bg-magenta text-on-magenta hover:bg-magenta hover:text-on-magenta'
+          'board-nav-item-active bg-magenta text-on-magenta hover:bg-magenta hover:text-on-magenta'
       )}
       aria-current={active ? 'page' : undefined}
     >
@@ -332,7 +332,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="grid min-h-dvh grid-cols-1 lg:grid-cols-[13rem_minmax(0,1fr)]">
       <ToastHost theme={theme} />
       {/* Sidebar: scoped .dark tokens keep it ink-black with light ink in BOTH themes. */}
-      <aside className="dark sticky top-0 hidden h-dvh flex-col border-r-4 border-ink bg-night text-ink lg:flex">
+      <aside className="board-sidebar dark sticky top-0 hidden h-dvh flex-col border-r-4 border-ink bg-night text-ink lg:flex">
         <div className="relative flex items-center gap-3 border-b-2 border-dashed border-ink/20 px-4 py-4">
           <Logo compact decorative surface="dark" className="size-9 shrink-0" />
           <span className="font-display text-sm uppercase tracking-[0.16em] text-ink">
@@ -371,7 +371,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-col">
-        <header className="sticky top-0 z-20 flex min-w-0 items-center gap-1 border-b-2 border-ink bg-paper/90 px-3 py-3 backdrop-blur sm:gap-3 sm:px-6">
+        <header className="board-topbar sticky top-0 z-20 flex min-w-0 items-center gap-1 border-b-2 border-ink bg-paper/90 px-3 py-3 backdrop-blur sm:gap-3 sm:px-6">
           <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
             <SheetTrigger asChild>
               <Button
@@ -385,7 +385,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="dark w-[min(18rem,85vw)] gap-0 border-r-4 border-ink bg-night p-0 text-ink"
+              className="board-sidebar dark w-[min(18rem,85vw)] gap-0 border-r-4 border-ink bg-night p-0 text-ink"
               aria-label="Model navigation"
             >
               <div className="flex items-center gap-3 border-b-2 border-dashed border-ink/20 px-4 py-4">

@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 
 export type BadgeProps = ComponentProps<'span'> & {
-  variant?: 'default' | 'primary' | 'destructive';
+  variant?: 'default' | 'primary' | 'magenta' | 'cyan' | 'destructive';
 };
 
 export function Badge({ className, variant = 'default', ...props }: BadgeProps) {

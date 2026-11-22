@@ -652,6 +652,117 @@ export function GrungeStamp({
   );
 }
 
+/** Scratched dry-brush chalk horizontal divider with optional ripped-tape zine label. */
+export function GrungeDivider({
+  label,
+  tone = 'ink',
+  className,
+}: {
+  label?: string;
+  tone?: 'ink' | 'magenta' | 'yellow' | 'cyan';
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn('mw-ui-grunge-divider', className)}
+      data-tone={tone}
+      role="separator"
+      aria-label={label}
+    >
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        viewBox="0 0 600 18"
+        preserveAspectRatio="none"
+        className="mw-ui-grunge-divider-line"
+      >
+        <path
+          d="M0 9 L48 6 L104 11 L168 5 L234 10 L306 6 L378 12 L452 5 L524 10 L600 7"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3.2"
+          strokeLinecap="square"
+          strokeDasharray="28 5 11 4 46 6"
+        />
+        <path
+          d="M12 13 L126 11 M196 14 L334 12 M392 14 L568 12"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeOpacity="0.65"
+          strokeDasharray="16 8 6 7"
+        />
+      </svg>
+      {label ? <span className="mw-ui-grunge-divider-label">{label}</span> : null}
+    </div>
+  );
+}
+
+/** Tilted torn-paper manifesto sticker with top masking tape and stepped anime hover jitter. */
+export function ZineSticker({
+  children,
+  tone = 'paper',
+  tilt = 'left',
+  tape = true,
+  className,
+}: {
+  children: ReactNode;
+  tone?: 'paper' | 'yellow' | 'magenta' | 'cyan' | 'ink';
+  tilt?: 'left' | 'right' | 'flat';
+  tape?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn('mw-ui-zine-sticker', className)}
+      data-tape={tape ? 'true' : 'false'}
+      data-tilt={tilt}
+      data-tone={tone}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** High-contrast manga/zine panel with distressed chalk frame, halftone grit, and anime action lines. */
+export function MangaPanel({
+  children,
+  surface = 'ink',
+  accent = 'magenta',
+  actionLines = true,
+  speedDirection = 'diagonal',
+  badge,
+  className,
+}: {
+  children: ReactNode;
+  surface?: 'ink' | 'paper';
+  accent?: 'magenta' | 'yellow' | 'cyan';
+  actionLines?: boolean;
+  speedDirection?: 'diagonal' | 'horizontal' | 'radial';
+  badge?: ReactNode;
+  className?: string;
+}) {
+  const motion = useAnimationVisibility<HTMLDivElement>();
+  return (
+    <div
+      ref={motion.ref}
+      className={cn('mw-ui-manga-panel', motion.visibilityClass, className)}
+      data-accent={accent}
+      data-surface={surface}
+    >
+      {actionLines ? (
+        <AnimeActionLines
+          direction={speedDirection}
+          density="light"
+          className="mw-ui-manga-panel-lines"
+        />
+      ) : null}
+      {badge ? <div className="mw-ui-manga-panel-badge">{badge}</div> : null}
+      <div className="mw-ui-manga-panel-body">{children}</div>
+    </div>
+  );
+}
+
 /** Comic speech bubble for playful hints like record counts. */
 export function SpeechBubble({ children, className }: { children: ReactNode; className?: string }) {
   const motion = useAnimationVisibility<HTMLDivElement>();
