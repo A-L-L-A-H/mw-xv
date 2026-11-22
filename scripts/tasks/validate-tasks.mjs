@@ -158,7 +158,21 @@ export async function validateTaskRegistryData(tasksData) {
     for (const line of roadmapText.split(/\r?\n/)) {
       const match = /^\s*-\s*\[([ xX])\]\s+([A-Za-z0-9_.-]+)\b/.exec(line);
       if (match) {
+        if (roadmapCheckState.has(match[2])) {
+          errors.push(`Duplicate ROADMAP.md checkbox ID "${match[2]}".`);
+        }
         roadmapCheckState.set(match[2], match[1].toLowerCase() === 'x');
+      }
+    }
+
+    for (const roadmapId of roadmapById.keys()) {
+      if (!roadmapCheckState.has(roadmapId)) {
+        errors.push(`Roadmap task "${roadmapId}" is missing its ROADMAP.md checkbox entry.`);
+      }
+    }
+    for (const checkboxId of roadmapCheckState.keys()) {
+      if (!roadmapById.has(checkboxId)) {
+        errors.push(`ROADMAP.md contains task "${checkboxId}" that is missing from docs/roadmap/tasks.json.`);
       }
     }
 
