@@ -32,10 +32,13 @@ export function projectVisualUniverseTask(task) {
   }
 
   const originalDeliverables = Array.isArray(source.deliverables) ? source.deliverables : [];
-  const deliverables = task.proposedSolution
-    && task.proposedSolution !== originalDeliverables.join('; ')
-    ? [task.proposedSolution]
-    : originalDeliverables;
+  const deliverables = !Object.hasOwn(task, 'proposedSolution')
+    ? originalDeliverables
+    : task.proposedSolution === originalDeliverables.join('; ')
+      ? originalDeliverables
+      : typeof task.proposedSolution === 'string' && task.proposedSolution.trim()
+        ? [task.proposedSolution]
+        : [];
   const originalEvidence = Array.isArray(source.evidence) ? source.evidence : [];
   const originalEvidenceByPath = new Map(
     originalEvidence
@@ -59,17 +62,17 @@ export function projectVisualUniverseTask(task) {
     title: task.title,
     status,
     priority: task.priority.toUpperCase(),
-    role: task.owner ?? source.role ?? null,
+    role: task.owner ?? null,
     depends_on: [...(task.dependsOn ?? [])],
-    objective: task.problem || task.summary || source.objective,
-    scope_hints: [...(task.scope?.files ?? source.scope_hints ?? [])],
+    objective: task.problem ?? task.summary ?? '',
+    scope_hints: [...(task.scope?.files ?? [])],
     deliverables,
     acceptance_criteria: (task.acceptanceCriteria ?? []).map((criterion) => criterion.text),
     verification: [...(task.validation?.commands ?? [])],
     evidence,
-    risk: task.risk ?? source.risk ?? 'medium',
+    risk: task.risk ?? null,
     human_approval_required: task.human === true,
-    notes: task.blockedReason ?? source.notes ?? '',
-    commit: task.evidence?.commitSha ?? source.commit ?? null,
+    notes: task.blockedReason ?? '',
+    commit: task.evidence?.commitSha ?? null,
   };
 }
