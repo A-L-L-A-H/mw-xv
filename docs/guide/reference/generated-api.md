@@ -1,6 +1,6 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `16d4ff5879108451c1126494efb028b629aa713f1d5380761ad34d8d33f045b9`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `538475e1821be3aa466c04eaa12d5e4cc6669256a0368802b292e65bc51bf586`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                                     |
 | ------ | -------------------------------------------------------- |
@@ -101,10 +101,6 @@ Extracted from literal Fastify route declarations. Source fingerprint: `16d4ff58
 | GET    | `/obligations`                                           |
 | POST   | `/obligations`                                           |
 | PATCH  | `/obligations/:id`                                       |
-| GET    | `/projects/:id/board`                                    |
-| POST   | `/projects/:id/todo-sync`                                |
-| POST   | `/projects/tasks/:id/work-contract`                      |
-| POST   | `/projects/tasks/:id/work-contract/sync-stage`           |
 | GET    | `/providers`                                             |
 | POST   | `/providers`                                             |
 | PATCH  | `/providers/:id`                                         |
@@ -161,8 +157,3 @@ Extracted from literal Fastify route declarations. Source fingerprint: `16d4ff58
 | POST   | `/work-contracts`                                        |
 | GET    | `/work-contracts/:id`                                    |
 | POST   | `/work-contracts/:id/verify`                             |
-| GET    | `/workflows/definitions`                                 |
-| GET    | `/workflows/instances`                                   |
-| POST   | `/workflows/instances`                                   |
-| GET    | `/workflows/instances/:id`                               |
-| POST   | `/workflows/instances/:id/actions`                       |

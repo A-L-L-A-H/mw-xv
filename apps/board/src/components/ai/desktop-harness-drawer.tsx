@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@moonwitness/ui/components/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@moonwitness/ui/components/tabs';
+import { Textarea } from '@moonwitness/ui/components/textarea';
 import {
   CodeIcon,
   DocumentIcon,
@@ -34,7 +35,11 @@ import {
 } from '@moonwitness/ui/icons';
 import {
   useDesktopBridge,
+  type DesktopCompiledExecutionPacket,
+  type DesktopOverlapReport,
+  type DesktopOverlapStatus,
   type DesktopPcwArtifactDigest,
+  type DesktopRepoSnapshot,
   type DesktopWorktreeDiffSummary,
 } from '@/lib/desktop-bridge';
 
@@ -83,6 +88,14 @@ function parsePatchHunks(patch: string): readonly ParsedDiffHunk[] {
   return hunks;
 }
 
+function getOverlapBadgeVariant(
+  status: DesktopOverlapStatus
+): 'default' | 'primary' | 'destructive' {
+  if (status === 'implemented') return 'primary';
+  if (status === 'conflicting' || status === 'overlapping') return 'destructive';
+  return 'default';
+}
+
 export function DesktopHarnessDrawer() {
   const { isDesktop, bridge, snapshot, auditLog, envelopes, refreshSnapshot } = useDesktopBridge();
   const [open, setOpen] = useState(false);
@@ -96,6 +109,14 @@ export function DesktopHarnessDrawer() {
   const [inspectedFilePath, setInspectedFilePath] = useState<string | null>(null);
   const [citationStartLine, setCitationStartLine] = useState<number>(1);
   const [citationEndLine, setCitationEndLine] = useState<number>(20);
+  const [repoSnapshot, setRepoSnapshot] = useState<DesktopRepoSnapshot | null>(null);
+  const [requirementsInput, setRequirementsInput] = useState<string>('');
+  const [overlapReport, setOverlapReport] = useState<DesktopOverlapReport | null>(null);
+  const [packetContractCode, setPacketContractCode] = useState<string>('WC-M13');
+  const [packetScopePathsInput, setPacketScopePathsInput] = useState<string>('');
+  const [packetCriteriaInput, setPacketCriteriaInput] = useState<string>('');
+  const [packetVerifyCommandsInput, setPacketVerifyCommandsInput] = useState<string>('');
+  const [compiledPacket, setCompiledPacket] = useState<DesktopCompiledExecutionPacket | null>(null);
 
   const activeLeases = snapshot?.activeLeases ?? [];
   const mcpServers = snapshot?.mcpServers ?? [];
@@ -253,6 +274,125 @@ export function DesktopHarnessDrawer() {
     }
   };
 
+  const handleRunRepoSnapshot = async () => {
+    if (!effectiveRunId) {
+      setStatusMessage('Select an active worktree run before capturing a repository snapshot');
+      return;
+    }
+    if (!bridge.worktree.repoSnapshot) {
+      setStatusMessage('Desktop bridge does not expose worktree.repoSnapshot in this build');
+      return;
+    }
+    try {
+      const captured = await bridge.worktree.repoSnapshot(effectiveRunId);
+      setRepoSnapshot(captured);
+      setStatusMessage(
+        `Captured repo snapshot for ${effectiveRunId} (SHA-256 ${captured.snapshotSha256.slice(0, 16)}…)`
+      );
+    } catch (err) {
+      setStatusMessage(err instanceof Error ? err.message : 'Unable to capture repo snapshot');
+    }
+  };
+
+  const handleDetectOverlap = async () => {
+    if (!effectiveRunId) {
+      setStatusMessage('Select an active worktree run before running overlap detection');
+      return;
+    }
+    if (!bridge.worktree.detectOverlap) {
+      setStatusMessage('Desktop bridge does not expose worktree.detectOverlap in this build');
+      return;
+    }
+    const lines = requirementsInput
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    if (lines.length === 0) {
+      setStatusMessage('Enter at least one requirement line to run overlap detection');
+      return;
+    }
+    try {
+      const requirements = lines.map((line, index) => ({
+        id: `req-${index + 1}`,
+        title: line,
+        description: line,
+      }));
+      const report = await bridge.worktree.detectOverlap(effectiveRunId, requirements);
+      setOverlapReport(report);
+      setStatusMessage(
+        `Overlap detection complete: ${report.findings.length} finding(s) (SHA-256 ${report.contentSha256.slice(0, 16)}…)`
+      );
+    } catch (err) {
+      setStatusMessage(err instanceof Error ? err.message : 'Unable to detect requirement overlap');
+    }
+  };
+
+  const handleCompilePacket = async () => {
+    if (!effectiveRunId) {
+      setStatusMessage('Select an active worktree run before compiling an execution packet');
+      return;
+    }
+    if (!bridge.worktree.compileExecutionPacket) {
+      setStatusMessage(
+        'Desktop bridge does not expose worktree.compileExecutionPacket in this build'
+      );
+      return;
+    }
+    const scopePaths = packetScopePathsInput
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    const criteriaLines = packetCriteriaInput
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    const verificationCommands = packetVerifyCommandsInput
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    const code = packetContractCode.trim() || 'WC-LOCAL';
+    try {
+      const packet = await bridge.worktree.compileExecutionPacket(effectiveRunId, {
+        contract: {
+          id: effectiveRunId,
+          code,
+          companyId: 1,
+          title: code,
+          objective: 'Desktop harness compiled execution packet',
+          scopePaths,
+          riskTier: 'R2',
+          dataClassification: 'local_only',
+          criteria: criteriaLines.map((line, index) => ({
+            code: `AC-${index + 1}`,
+            title: line,
+            verificationMethod: 'automated_test',
+            requiredEvidenceType: 'command_output',
+            mandatory: true,
+          })),
+        },
+        allowedCapabilities: ['worktree.read', 'worktree.diff'],
+        verificationCommands,
+        targetBranch: activeLease?.branchName,
+      });
+      setCompiledPacket(packet);
+      setStatusMessage(
+        `Compiled execution packet ${packet.contractCode} (SHA-256 ${packet.contentSha256.slice(0, 16)}…)`
+      );
+    } catch (err) {
+      setStatusMessage(err instanceof Error ? err.message : 'Unable to compile execution packet');
+    }
+  };
+
+  const handleCopyPacketMarkdown = async () => {
+    if (!compiledPacket) return;
+    try {
+      await navigator.clipboard.writeText(compiledPacket.markdown);
+      setStatusMessage(`Copied execution packet ${compiledPacket.contractCode} markdown`);
+    } catch (err) {
+      setStatusMessage(err instanceof Error ? err.message : 'Unable to copy packet markdown');
+    }
+  };
+
   const activeLease =
     activeLeases.find((lease) => lease.runId === effectiveRunId) ?? activeLeases[0];
   const inspectedLines = inspectedFileContent ? inspectedFileContent.split(/\r?\n/u) : [];
@@ -332,6 +472,14 @@ export function DesktopHarnessDrawer() {
               <WorkflowIcon className="size-3.5" />
               PCW Outbox ({envelopes.length})
             </TabsTrigger>
+            <TabsTrigger value="radar">
+              <SignalIcon className="size-3.5" />
+              Radar &amp; Overlap
+            </TabsTrigger>
+            <TabsTrigger value="packet">
+              <DocumentIcon className="size-3.5" />
+              Prompt Packet
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="worktrees" className="space-y-4">
@@ -394,6 +542,11 @@ export function DesktopHarnessDrawer() {
                 density="compact"
                 actions={
                   <div className="flex flex-wrap items-center gap-1.5">
+                    {selectedDiff.outOfScopeFiles && selectedDiff.outOfScopeFiles.length > 0 ? (
+                      <Badge variant="destructive">
+                        Out-of-Scope Drift ({selectedDiff.outOfScopeFiles.length})
+                      </Badge>
+                    ) : null}
                     <Badge variant={hasDiffConflict ? 'destructive' : 'primary'}>
                       {hasDiffConflict ? 'CONFLICT' : 'NO CONFLICTS'}
                     </Badge>
@@ -426,6 +579,18 @@ export function DesktopHarnessDrawer() {
                     {selectedDiff.files.length} · Hunks: {parsedHunks.length} (Use ArrowUp/ArrowDown
                     or j/k)
                   </p>
+                  {selectedDiff.outOfScopeFiles && selectedDiff.outOfScopeFiles.length > 0 ? (
+                    <div className="space-y-1 border-2 border-ink bg-paper-raised p-2 font-mono text-xs">
+                      <p className="font-bold">
+                        Out-of-Scope Drift ({selectedDiff.outOfScopeFiles.length})
+                      </p>
+                      <ul className="list-disc space-y-0.5 pl-4">
+                        {selectedDiff.outOfScopeFiles.map((driftedPath) => (
+                          <li key={driftedPath}>{driftedPath}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                   {selectedDiff.files.length > 0 ? (
                     <Table scrollLabel="Worktree changed files" density="compact">
                       <TableHead>
@@ -820,6 +985,232 @@ export function DesktopHarnessDrawer() {
                   <dd className="text-base font-bold">{sidecar?.conflictOutboxCount ?? 0}</dd>
                 </div>
               </dl>
+            </Panel>
+          </TabsContent>
+
+          <TabsContent value="radar" className="space-y-4">
+            <Panel
+              title="Repository Snapshot Radar"
+              description="Capture deterministic repository manifest, script, and doc inventory for the active worktree run."
+              density="compact"
+              actions={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!effectiveRunId}
+                  onClick={() => void handleRunRepoSnapshot()}
+                >
+                  Capture Snapshot
+                </Button>
+              }
+            >
+              {!bridge.worktree.repoSnapshot ? (
+                <p className="font-mono text-xs text-ink-soft">
+                  Notice: Desktop preload does not expose worktree.repoSnapshot in this build.
+                </p>
+              ) : repoSnapshot ? (
+                <div className="space-y-3 font-mono text-xs">
+                  <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <div>
+                      <dt className="text-ink-faint">Branch</dt>
+                      <dd className="font-bold">
+                        {repoSnapshot.gitRevision?.branch ?? 'detached'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-ink-faint">HEAD Commit</dt>
+                      <dd className="font-bold">
+                        {repoSnapshot.gitRevision?.headCommit
+                          ? repoSnapshot.gitRevision.headCommit.slice(0, 12)
+                          : 'none'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-ink-faint">Dirty</dt>
+                      <dd className="font-bold">
+                        {repoSnapshot.gitRevision?.dirty ? 'Yes' : 'No'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-ink-faint">Scanned Files</dt>
+                      <dd className="font-bold">{repoSnapshot.scannedFileCount}</dd>
+                    </div>
+                  </dl>
+                  <p>
+                    Manifests: {repoSnapshot.manifests.length} · Scripts:{' '}
+                    {repoSnapshot.scripts.length} · Docs: {repoSnapshot.docs.length} · Incomplete:{' '}
+                    {repoSnapshot.incomplete ? 'Yes' : 'No'}
+                  </p>
+                  <p className="break-all">Snapshot SHA-256: {repoSnapshot.snapshotSha256}</p>
+                  {repoSnapshot.incomplete && repoSnapshot.omittedReasons.length > 0 ? (
+                    <div className="border-2 border-ink bg-paper-raised p-2">
+                      <p className="font-bold">Omitted Reasons</p>
+                      <ul className="list-disc pl-4">
+                        {repoSnapshot.omittedReasons.map((reason) => (
+                          <li key={reason}>{reason}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="font-mono text-xs text-ink-soft">
+                  Click Capture Snapshot to inspect repository revision and inventory.
+                </p>
+              )}
+            </Panel>
+
+            <Panel
+              title="Advisory Overlap Detection"
+              description="Evaluate proposed requirements against the captured repository snapshot (advisory only; no automated mutations)."
+              density="compact"
+              actions={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!effectiveRunId}
+                  onClick={() => void handleDetectOverlap()}
+                >
+                  Detect Overlap
+                </Button>
+              }
+            >
+              <div className="space-y-3">
+                {!bridge.worktree.detectOverlap ? (
+                  <p className="font-mono text-xs text-ink-soft">
+                    Notice: Desktop preload does not expose worktree.detectOverlap in this build.
+                  </p>
+                ) : null}
+                <Textarea
+                  value={requirementsInput}
+                  onChange={(event) => setRequirementsInput(event.target.value)}
+                  placeholder="Enter one requirement per line..."
+                  aria-label="Overlap requirement lines"
+                  rows={4}
+                  className="font-mono text-xs"
+                />
+                {overlapReport ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+                      <Badge variant="default">Advisory Only</Badge>
+                      <span className="break-all">
+                        Content SHA-256: {overlapReport.contentSha256}
+                      </span>
+                    </div>
+                    <Table scrollLabel="Advisory overlap findings" density="compact">
+                      <TableHead>
+                        <TableRow>
+                          <TableHeader>Requirement</TableHeader>
+                          <TableHeader>Status</TableHeader>
+                          <TableHeader>Rationale</TableHeader>
+                          <TableHeader>Evidence</TableHeader>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {overlapReport.findings.map((finding) => (
+                          <TableRow key={finding.requirementId}>
+                            <TableCell className="font-mono text-xs">
+                              {finding.requirementTitle}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={getOverlapBadgeVariant(finding.status)}>
+                                {finding.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">{finding.rationale}</TableCell>
+                            <TableCell className="font-mono text-xs">
+                              {finding.evidence.length}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : null}
+              </div>
+            </Panel>
+          </TabsContent>
+
+          <TabsContent value="packet" className="space-y-4">
+            <Panel
+              title="Execution Prompt Packet Compiler"
+              description="Compile a deterministic, redacted Markdown execution packet bound to the active worktree snapshot."
+              density="compact"
+              actions={
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={!effectiveRunId}
+                    onClick={() => void handleCompilePacket()}
+                  >
+                    Compile Packet
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={!compiledPacket}
+                    onClick={() => void handleCopyPacketMarkdown()}
+                  >
+                    Copy Markdown
+                  </Button>
+                </div>
+              }
+            >
+              <div className="space-y-3">
+                {!bridge.worktree.compileExecutionPacket ? (
+                  <p className="font-mono text-xs text-ink-soft">
+                    Notice: Desktop preload does not expose worktree.compileExecutionPacket in this
+                    build.
+                  </p>
+                ) : null}
+                <Input
+                  value={packetContractCode}
+                  onChange={(event) => setPacketContractCode(event.target.value)}
+                  placeholder="Contract code (e.g. WC-M13)"
+                  aria-label="Execution packet contract code"
+                  className="font-mono text-xs"
+                />
+                <Textarea
+                  value={packetScopePathsInput}
+                  onChange={(event) => setPacketScopePathsInput(event.target.value)}
+                  placeholder="Scope paths (one per line)"
+                  aria-label="Execution packet scope paths"
+                  rows={3}
+                  className="font-mono text-xs"
+                />
+                <Textarea
+                  value={packetCriteriaInput}
+                  onChange={(event) => setPacketCriteriaInput(event.target.value)}
+                  placeholder="Acceptance criteria (one per line)"
+                  aria-label="Execution packet acceptance criteria"
+                  rows={3}
+                  className="font-mono text-xs"
+                />
+                <Textarea
+                  value={packetVerifyCommandsInput}
+                  onChange={(event) => setPacketVerifyCommandsInput(event.target.value)}
+                  placeholder="Verification commands (one per line)"
+                  aria-label="Execution packet verification commands"
+                  rows={3}
+                  className="font-mono text-xs"
+                />
+                {compiledPacket ? (
+                  <div className="space-y-2 border-2 border-ink bg-paper-raised p-2 font-mono text-xs">
+                    <p className="break-all">Content SHA-256: {compiledPacket.contentSha256}</p>
+                    <p className="break-all">
+                      Repo Snapshot SHA-256: {compiledPacket.repoSnapshotSha256}
+                    </p>
+                    <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-relaxed">
+                      {compiledPacket.markdown}
+                    </pre>
+                  </div>
+                ) : null}
+              </div>
             </Panel>
           </TabsContent>
         </Tabs>

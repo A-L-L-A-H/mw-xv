@@ -148,13 +148,12 @@ Compile a deterministic, redacted, scope-validated Markdown/JSON Execution Packe
 - `pnpm --filter @moonwitness/desktop exec vitest run tests/desktop-harness.test.ts tests/desktop-adversarial.test.ts tests/desktop-dual-dialect.test.ts`
 - `pnpm desktop:ui:check`, `pnpm api:addon:check`, `pnpm automation:check:roadmap`, `pnpm tasks:validate`, and `node scripts/check-docs.mjs`
 
-
 ## M13.05 — Gate WorkContract creation on project-task dependency readiness
 
-- **Status:** todo (next bounded implementation task; no code change is included in this consolidation commit).
+- **Status:** complete (2026-11-23; verified over `origin/dev` base `f92978b` with sibling INV-014 `workflow`/`project` `manifest.httpPlugins` migration tracked in `M13.07`)
 - **Prerequisite:** M13.04.
-- **Observed gap:** `apps/api/src/routes/project.routes.ts` creates a new `WorkContract` at `POST /projects/tasks/:id/work-contract` after loading the company-scoped task, but does not check the canonical project dependency DAG before insertion. `apps/api/tests/project.routes.test.ts` already demonstrates that `task2` is in `dag.blocked_task_ids`, yet later uses that task to create a WorkContract. This is a concrete mismatch between Board readiness and the server-side creation path.
-- **Canonical graph:** `buildProjectDependencyGraph` in `packages/orm-project/src/sync.ts` treats only active `blocks` edges as blockers, and considers blocker tasks with status `done` or `cancelled` resolved. Inactive edges and `relates_to` links are not blockers. Explicit task status `blocked` is not ready either.
+- **Implemented owner:** [`packages/orm-project/src/http-plugin.ts`](../../packages/orm-project/src/http-plugin.ts) (preserving all `/projects/*` and `/api/projects/*` paths previously served by deleted `apps/api/src/routes/project.routes.ts`) reusing canonical [`buildProjectDependencyGraph`](../../packages/orm-project/src/sync.ts).
+- **Canonical graph:** `buildProjectDependencyGraph` in `packages/orm-project/src/sync.ts` treats only active `blocks` edges as blockers, considers blocker tasks with status `done` or `cancelled` resolved, ignores inactive edges and `relates_to` links, and marks explicit `blocked`, `done`, and `cancelled` task statuses as not ready.
 - **Codex handoff:** [M13.05 focused implementation brief](rock-soul-flow-m13-05-handoff.md).
 
 ### Goal
@@ -163,9 +162,8 @@ Fail closed when a caller attempts to create a **new** WorkContract for a Projec
 
 ### Bounded file scope
 
-- `apps/api/src/routes/project.routes.ts`
+- `packages/orm-project/src/http-plugin.ts` (replacing legacy `apps/api/src/routes/project.routes.ts`)
 - `apps/api/tests/project.routes.test.ts`
-- Existing project dependency helper only if a minimal, justified change is needed: `packages/orm-project/src/sync.ts`
 - `docs/roadmap/evidence/M13.05.md` and this roadmap card.
 
 Do not add another dependency graph, task database, route, model, ORM addon or workflow engine. Any new route, durable model or ownership move requires a separate architecture review under ADR 0006/0007.
@@ -197,3 +195,98 @@ Do not add another dependency graph, task database, route, model, ORM addon or w
 ### Non-goals
 
 No Board redesign, no local-agent UI binding, no auto-dispatch, no auto-commit/push, no approval bypass, no new package/model/route, and no changes to `@moonwitness/local-ai`. Those are separate decisions after this server-side invariant is proven.
+
+## M13.06 — Proof Gate v2 — 5-State Check Matrix & Diff-Scope Drift Guard
+
+- **Status:** complete (2026-11-23; verified over `origin/dev` base `f92978b`)
+- **Prerequisites:** M13.02 (`packages/ai-runtime/src/repo-snapshot.ts`), M13.04 (`packages/ai-runtime/src/prompt-forge.ts`), M13.05.
+- **Deliverables:** `packages/ai-runtime/src/pcw-verifier.ts`, `apps/desktop/src/worktree-sandbox.ts`, and `docs/roadmap/evidence/M13.06.md`.
+
+### Goal
+
+Upgrade the PCW Proof Gate to a deterministic 5-state check matrix (`pass`, `fail`, `skipped`, `not_applicable`, `not_run`) with a strict diff-scope drift guard (`validateDiffScope`) that blocks out-of-scope edits, unsafe paths, and unjustified skips across `@moonwitness/ai-runtime` and `apps/desktop`.
+
+### Bounded file scope
+
+- `packages/ai-runtime/src/pcw-verifier.ts` and `packages/ai-runtime/src/index.ts`
+- `packages/ai-runtime/tests/pcw-proof-gate.test.ts`
+- `apps/desktop/src/worktree-sandbox.ts` and `apps/desktop/src/types.ts`
+- `apps/desktop/tests/desktop-harness.test.ts`
+- `docs/roadmap/evidence/M13.06.md`
+
+### Acceptance criteria
+
+- Evaluates every check into one of the 5 canonical `PcwCheckStatus` states (`pass`, `fail`, `skipped`, `not_applicable`, `not_run`) with fail-closed rejection (`MISSING_SKIP_REASON`, `MANDATORY_CHECK_NOT_PASSED`).
+- Diff-scope drift guard (`validateDiffScope` and `WorktreeSandbox.inspectDiff`) detects modified or untracked files outside lease `allowedPaths` and unsafe paths, blocking acceptance (`OUT_OF_SCOPE_DIFF_DETECTED`, `scopeClean: false`).
+- Preserves deterministic `reportSha256` digesting and full backwards compatibility when optional check-matrix/diff-scope inputs are omitted.
+
+### Verification
+
+- `pnpm --filter @moonwitness/ai-runtime build` and `pnpm --filter @moonwitness/ai-runtime exec vitest run`
+- `pnpm --filter @moonwitness/desktop build` and `pnpm --filter @moonwitness/desktop exec vitest run --no-file-parallelism`
+- `pnpm desktop:ui:check`, `pnpm automation:check:roadmap`, `pnpm tasks:validate`, and `node scripts/check-docs.mjs`
+
+## M13.07 — Desktop `R0` Overlap Bridge, Board Cockpit Parity & INV-014 `workflow`/`project` HTTP Plugin Migration
+
+- **Status:** complete (2026-11-23; verified over `origin/dev` base `f92978b`)
+- **Prerequisites:** M13.03 (`packages/ai-runtime/src/overlap-detector.ts`), M13.05, M13.06.
+- **Deliverables:** `packages/orm-workflow/src/http-plugin.ts`, `packages/orm-project/src/http-plugin.ts`, `apps/desktop/src/{types.ts,worktree-sandbox.ts,bridge.ts,index.ts}`, `apps/board/src/{lib/desktop-bridge.ts,components/ai/desktop-harness-drawer.tsx}`, and `docs/roadmap/evidence/M13.07.md`.
+
+### Goal
+
+Expose the `R0` Overlap Detector bridge in `apps/desktop` (`bridge.worktree.detectOverlap`), surface Board Cockpit Drawer parity (Radar & Overlap, Prompt Packet, and Out-of-Scope Drift badges) in `apps/board`, and migrate `workflow` and `project` HTTP routes into INV-014 ORM addon `manifest.httpPlugins`.
+
+### Bounded file scope
+
+- `packages/orm/src/addon.ts`
+- `packages/orm-workflow/src/{http-plugin.ts,manifest.ts,index.ts}`
+- `packages/orm-project/src/{http-plugin.ts,manifest.ts,index.ts}`
+- `apps/api/src/addons/registry.ts` and `apps/api/tests/{project.routes.test.ts,research-review.routes.test.ts}`
+- Deletion of legacy `apps/api/src/routes/workflow.routes.ts` and `apps/api/src/routes/project.routes.ts`
+- `scripts/check-api-addon-boundary.mjs` and `scripts/check-api-addon-boundary.test.mjs`
+- `apps/desktop/src/{types.ts,worktree-sandbox.ts,bridge.ts,index.ts}` and `apps/desktop/tests/desktop-harness.test.ts`
+- `apps/board/src/{lib/desktop-bridge.ts,components/ai/desktop-harness-drawer.tsx}`
+- `docs/roadmap/evidence/M13.07.md`
+
+### Acceptance criteria
+
+- `workflow` and `project` routes are registered via INV-014 ORM addon `manifest.httpPlugins`, with both legacy route files removed from `LEGACY_DOMAIN_ROUTE_ALLOWLIST` and passing `pnpm api:addon:check`.
+- Desktop bridge exposes `bridge.worktree.detectOverlap` at tier `R0` with tenant `companyId`, realpath containment, and capability grant enforcement.
+- Board desktop harness drawer renders `Radar & Overlap`, `Prompt Packet`, and `Out-of-Scope Drift` UI using `@moonwitness/ui` primitives while keeping `pnpm board:ui:check` and `pnpm desktop:ui:check` clean.
+
+### Verification
+
+- `pnpm --filter @moonwitness/orm build`, `pnpm --filter @moonwitness/orm-workflow build`, `pnpm --filter @moonwitness/orm-project build`
+- `pnpm --filter @moonwitness/orm-workflow test` and `pnpm --filter @moonwitness/orm-project test`
+- `pnpm --filter @moonwitness/api exec vitest run tests/project.routes.test.ts tests/research-review.routes.test.ts tests/workflow.test.ts` and `pnpm --filter @moonwitness/api build`
+- `pnpm --filter @moonwitness/board typecheck` and `pnpm --filter @moonwitness/board lint`
+- `pnpm api:addon:check`, `pnpm board:ui:check`, and `pnpm desktop:ui:check`
+
+## M13.08 — Plan Forge Markdown Projection/Reconciler & Memory Ledger Doc-Proposal Export
+
+- **Status:** complete (2026-11-23; verified over `origin/dev` base `f92978b`)
+- **Prerequisites:** M13.04, M13.06, M13.07.
+- **Deliverables:** `packages/ai-runtime/src/plan-markdown.ts`, `packages/ai-runtime/src/memory-doc-proposal.ts`, and `docs/roadmap/evidence/M13.08.md`.
+
+### Goal
+
+Provide a deterministic Plan Forge Markdown projection/reconciler (`plan-markdown.ts`) and an advisory, human-approved Memory Ledger doc-proposal exporter (`memory-doc-proposal.ts`) in `@moonwitness/ai-runtime`.
+
+### Bounded file scope
+
+- `packages/ai-runtime/src/plan-markdown.ts`
+- `packages/ai-runtime/src/memory-doc-proposal.ts`
+- `packages/ai-runtime/src/index.ts`
+- `packages/ai-runtime/tests/plan-markdown.test.ts`
+- `packages/ai-runtime/tests/memory-doc-proposal.test.ts`
+- `docs/roadmap/evidence/M13.08.md`
+
+### Acceptance criteria
+
+- Plan Forge Markdown projection and reconciler round-trip deterministically without mutating canonical task/work-contract authority directly or deleting/reopening completed tasks.
+- Memory Ledger doc-proposal export filters strictly to approved company-scoped records (`advisoryOnly: true`, `requiresHumanApproval: true`, `automatedWritesAllowed: false`), deduplicates against existing docs, redacts secrets via `createRedactor()`, and computes deterministic `contentSha256` hashes.
+
+### Verification
+
+- `pnpm --filter @moonwitness/ai-runtime build` and `pnpm --filter @moonwitness/ai-runtime exec vitest run`
+- `pnpm automation:check:roadmap`, `pnpm tasks:validate`, and `node scripts/check-docs.mjs`

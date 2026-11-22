@@ -28,7 +28,7 @@ import {
   type ViewDefinition,
   type ViewExtension,
 } from './view.js';
-import { ConcurrencyConflictError, ValidationError } from './types.js';
+import { ConcurrencyConflictError, ValidationError, type Domain } from './types.js';
 
 type AddonModel = typeof BaseModel & { readonly fields: FieldMap };
 export interface SeedReference {
@@ -80,6 +80,21 @@ export interface AddonHttpAuthContext {
   readonly groupPermissions?: unknown;
 }
 
+export interface AddonHttpRequestEnv {
+  get(modelName: string): {
+    readonly fields?: Readonly<Record<string, unknown>>;
+    query(): unknown;
+  };
+}
+
+export interface AddonHttpRequestBase {
+  readonly auth?: AddonHttpAuthContext;
+  readonly env?: AddonHttpRequestEnv;
+  readonly params?: unknown;
+  readonly query?: unknown;
+  readonly body?: unknown;
+}
+
 export interface AddonHttpRequest<
   TGeneric extends {
     Params?: Record<string, string>;
@@ -90,7 +105,7 @@ export interface AddonHttpRequest<
     Querystring: Record<string, string | undefined>;
     Body: unknown;
   },
-> {
+> extends AddonHttpRequestBase {
   readonly params: TGeneric['Params'] extends undefined
     ? Record<string, string>
     : NonNullable<TGeneric['Params']>;
@@ -99,10 +114,12 @@ export interface AddonHttpRequest<
     : NonNullable<TGeneric['Querystring']>;
   readonly body: TGeneric['Body'];
   readonly auth?: AddonHttpAuthContext;
+  readonly env?: AddonHttpRequestEnv;
 }
 
 export interface AddonHttpReply {
   code(statusCode: number): AddonHttpReply;
+  header?(name: string, value: string): AddonHttpReply;
   send(payload?: unknown): unknown;
 }
 
@@ -119,6 +136,7 @@ export type AddonHttpRouteHandler<
 > = (req: AddonHttpRequest<TGeneric>, reply: AddonHttpReply) => unknown | Promise<unknown>;
 
 export interface AddonHttpApp {
+  readonly db?: Knex;
   get<
     TGeneric extends {
       Params?: Record<string, string>;
@@ -129,7 +147,10 @@ export interface AddonHttpApp {
       Querystring: Record<string, string | undefined>;
       Body: unknown;
     },
-  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+  >(
+    path: string,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
   post<
     TGeneric extends {
       Params?: Record<string, string>;
@@ -140,7 +161,10 @@ export interface AddonHttpApp {
       Querystring: Record<string, string | undefined>;
       Body: unknown;
     },
-  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+  >(
+    path: string,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
   put<
     TGeneric extends {
       Params?: Record<string, string>;
@@ -151,7 +175,10 @@ export interface AddonHttpApp {
       Querystring: Record<string, string | undefined>;
       Body: unknown;
     },
-  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+  >(
+    path: string,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
   patch<
     TGeneric extends {
       Params?: Record<string, string>;
@@ -162,7 +189,10 @@ export interface AddonHttpApp {
       Querystring: Record<string, string | undefined>;
       Body: unknown;
     },
-  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+  >(
+    path: string,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
   delete<
     TGeneric extends {
       Params?: Record<string, string>;
@@ -173,10 +203,43 @@ export interface AddonHttpApp {
       Querystring: Record<string, string | undefined>;
       Body: unknown;
     },
-  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+  >(
+    path: string,
+    handler: AddonHttpRouteHandler<TGeneric>
+  ): unknown;
 }
 
-export type AddonHttpPlugin<TApp = AddonHttpApp, TOptions = Record<string, unknown>> = (
+export type AddonHttpAccessOperation = 'read' | 'create' | 'write' | 'unlink' | 'action';
+
+export interface AddonHttpHostContext {
+  readonly canAccess?: (
+    role: string | undefined,
+    modelName: string,
+    op: AddonHttpAccessOperation,
+    groupGrants?: unknown
+  ) => boolean;
+  getRecordRuleDomain?(req: AddonHttpRequestBase, modelName: string): Domain | Promise<Domain>;
+  readonly hasCompanyAccess?: (
+    userId: number,
+    companyId: number,
+    role: string
+  ) => boolean | Promise<boolean>;
+  readonly recordAudit?: (
+    userId: number,
+    model: string,
+    recordId: number,
+    operation: string,
+    changes: Record<string, unknown>
+  ) => void | Promise<void>;
+  readonly validateModelMutation?: (
+    modelName: string,
+    payload: Record<string, unknown>,
+    trx?: unknown
+  ) => boolean | Promise<boolean>;
+  readonly [key: string]: unknown;
+}
+
+export type AddonHttpPlugin<TApp = AddonHttpApp, TOptions = AddonHttpHostContext> = (
   app: TApp,
   options: TOptions
 ) => unknown | Promise<unknown>;

@@ -2,9 +2,9 @@
 
 Dokumen ini adalah sumber utama rencana lintas milestone. Dibuat 2026-10-04 berdasarkan seluruh rencana yang disepakati. Checkbox kosong berarti belum diverifikasi selesai, termasuk fitur yang implementasi awalnya sudah ada.
 
-**Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 167 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
+**Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 170 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
 
-**Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-11-22):** checklist dokumen ini berisi 83 kartu terbuka (50 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
+**Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-11-23):** checklist dokumen ini berisi 82 kartu terbuka (49 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
 
 Urutan nomor bukan urutan aktivasi mutlak: misalnya required checks M1.06 baru diaktifkan setelah ci-gate M2.05 tersedia. Kontrak automation, spesifikasi UI/asset, skenario test minimum, dan template bukti ada pada panduan detail.
 
@@ -248,7 +248,10 @@ Workstream Desktop yang diaktifkan secara terpisah untuk mengembangkan pengalama
 - [x] M13.02 Read-only revision-pinned Repo Radar Snapshot (`buildRepoSnapshot` di `@moonwitness/ai-runtime` dan `R0` `WorktreeSandbox.inspectRepoSnapshot` di `apps/desktop`). Evidence: [M13.02](docs/roadmap/evidence/M13.02.md).
 - [x] M13.03 Read-only Overlap Detector (`detectCapabilityOverlap` dan `runOverlapDetectorBenchmark` di `@moonwitness/ai-runtime` / `@moonwitness/ai-evaluation`). Evidence: [M13.03](docs/roadmap/evidence/M13.03.md).
 - [x] M13.04 Read-only Prompt Forge Execution Packet compiler (`compileExecutionPacket` di `@moonwitness/ai-runtime` dan `R0` `WorktreeSandbox.compileExecutionPacket` di `apps/desktop`). Evidence: [M13.04](docs/roadmap/evidence/M13.04.md).
-- [ ] M13.05 Gate pembuatan WorkContract pada kesiapan dependency task Project; gunakan DAG kanonik dan isolasi company. Handoff: [M13.05 Codex handoff](docs/roadmap/rock-soul-flow-m13-05-handoff.md). Evidence akan dicatat setelah acceptance terverifikasi.
+- [x] M13.05 Gate pembuatan WorkContract pada kesiapan dependency task Project; gunakan DAG kanonik (`buildProjectDependencyGraph`), isolasi company, transaksi creation-boundary, dan bukti route test. Evidence: [M13.05](docs/roadmap/evidence/M13.05.md).
+- [x] M13.06 Proof Gate v2 (`@moonwitness/ai-runtime` `pcw-verifier.ts` 5-state check matrix & `validateDiffScope` + `apps/desktop` `inspectDiff` `scopeClean`/`outOfScopeFiles` drift guard). Evidence: [M13.06](docs/roadmap/evidence/M13.06.md).
+- [x] M13.07 Desktop `R0` Overlap Detector bridge (`bridge.worktree.detectOverlap`), Board Cockpit Drawer tabs (`Radar & Overlap`, `Prompt Packet`, `Out-of-Scope Drift`), serta migrasi route `workflow` & `project` ke ORM addon `manifest.httpPlugins` (`INV-014`). Evidence: [M13.07](docs/roadmap/evidence/M13.07.md).
+- [x] M13.08 Plan Forge Markdown projection/reconciler (`plan-markdown.ts`) & Memory Ledger advisory doc-proposal export (`memory-doc-proposal.ts`) di `@moonwitness/ai-runtime`. Evidence: [M13.08](docs/roadmap/evidence/M13.08.md).
 
 ## K — Local AI knowledge rebuild (K0–K9)
 

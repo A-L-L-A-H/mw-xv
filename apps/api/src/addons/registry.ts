@@ -15,7 +15,7 @@ import { manifest as subscriptionAddon } from '@moonwitness/orm-subscription';
 import { manifest as integrationAddon } from '@moonwitness/orm-integration';
 import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
-import { manifest as aiAddon } from '@moonwitness/orm-ai';
+import { manifest as aiAddon, isValidAiMutation } from '@moonwitness/orm-ai';
 import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
 import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 import { manifest as ispAddon } from '@moonwitness/orm-isp';
@@ -32,8 +32,9 @@ import { bootstrapRoutes } from '../routes/bootstrap.routes.js';
 import { menuRegistry } from './action-menu-registry.js';
 import { whatsappRoutes } from '../routes/whatsapp.routes.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
-import { workflowRoutes } from '../routes/workflow.routes.js';
-import { projectRoutes } from '../routes/project.routes.js';
+import { canAccess } from '../auth/policy.js';
+import { getRecordRuleDomain } from '../auth/rules.js';
+import { hasCompanyAccess, recordAiAudit } from '../ai-corporation/route-helpers.js';
 import { corpusRoutes } from '../routes/corpus.routes.js';
 import { evidenceRoutes } from '../routes/evidence.routes.js';
 import { researchExplanationRoutes } from '../routes/research-explanation.routes.js';
@@ -166,9 +167,6 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'project',
     manifest: projectAddon,
-    async registerRoutes(app) {
-      await app.register(projectRoutes);
-    },
   },
   {
     name: 'crm',
@@ -185,9 +183,6 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'workflow',
     manifest: workflowAddon,
-    async registerRoutes(app) {
-      await app.register(workflowRoutes);
-    },
   },
   {
     name: 'knowledge',
@@ -348,10 +343,19 @@ export async function registerApiAddonRoutes(
   ctx: ApiAddonRuntimeContext,
   addons: readonly ApiAddonModule[] = API_ADDONS
 ): Promise<void> {
+  const hostContext = {
+    ...ctx,
+    canAccess,
+    getRecordRuleDomain,
+    hasCompanyAccess,
+    recordAudit: recordAiAudit,
+    validateModelMutation: (model: string, payload: Record<string, unknown>, trx?: unknown) =>
+      isValidAiMutation(model, payload, undefined, trx as Parameters<typeof isValidAiMutation>[3]),
+  };
   for (const addon of addons) {
     if (addon.manifest?.httpPlugins) {
       for (const httpPlugin of addon.manifest.httpPlugins) {
-        await app.register(httpPlugin as Parameters<FastifyInstance['register']>[0], ctx);
+        await app.register(httpPlugin as Parameters<FastifyInstance['register']>[0], hostContext);
       }
     }
     await addon.registerRoutes?.(app, ctx);
