@@ -3,6 +3,16 @@ import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { resolve as resolvePath } from 'node:path';
+
+const assetManifest = JSON.parse(
+  readFileSync(resolvePath(import.meta.dirname, '../../../packages/assets/manifest.json'), 'utf8')
+) as { assets: Array<{ pack?: string; kind?: string }> };
+const moonCityTotal = assetManifest.assets.filter((asset) => asset.pack === 'moon-city').length;
+const moonCitySourceTotal = assetManifest.assets.filter(
+  (asset) => asset.pack === 'moon-city' && asset.kind === 'source'
+).length;
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -36,9 +46,11 @@ test('asset browser filters canonical manifest entries and exposes rights status
   await expect(browser).toBeVisible();
   await expect(browser.getByRole('status')).toContainText(/\d+ of \d+ canonical assets/u);
   await browser.getByLabel('Pack').selectOption('moon-city');
-        await expect(browser.getByRole('status')).toHaveText(/^27 of \d+ canonical assets$/u);
+  await expect(browser.getByRole('status')).toHaveText(
+    new RegExp(`^${moonCityTotal} of \\d+ canonical assets$`, 'u')
+  );
   await browser.getByLabel('Category').selectOption('source');
-        await expect(browser.locator('.asset-browser-card')).toHaveCount(27);
+  await expect(browser.locator('.asset-browser-card')).toHaveCount(moonCitySourceTotal);
   await expect(browser.getByText('Blocked · rights review').first()).toBeVisible();
   await browser.getByRole('searchbox', { name: 'Find an asset' }).fill('moon-layer.png');
   await expect(browser.locator('.asset-browser-card')).toHaveCount(1);

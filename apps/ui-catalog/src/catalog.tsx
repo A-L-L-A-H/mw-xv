@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
+import { Suspense, lazy, useEffect, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
 import {
   DEFAULT_SKIN_ID,
   themeRegistry,
@@ -55,6 +55,7 @@ import tileHalftoneUrl from '@moonwitness/assets/materials/tile-halftone.svg';
 import scuffedBorderUrl from '@moonwitness/assets/materials/scuffed-border.svg';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { CharacterPreview } from '@moonwitness/ui/components/character-preview';
+const SceneLab = lazy(() => import('./SceneLab.js').then((mod) => ({ default: mod.SceneLab })));
 import { PaperNote } from '@moonwitness/ui/components/paper-note';
 import { SectionRibbon } from '@moonwitness/ui/components/section-ribbon';
 import {
@@ -2052,6 +2053,15 @@ function CatalogContent() {
                   />
                 </Panel>
               </div>
+            </Section>
+            <Section
+              id="scene-environment-inspector"
+              title="Environment depth inspector &amp; scene runtime"
+              description="Interactive Moon City multi-plane preview, responsive focal/safe-area composition rules, bounded camera/parallax, timeline orchestration, and sprite sequence playback."
+            >
+              <Suspense fallback={<p>Loading scene inspector…</p>}>
+                <SceneLab />
+              </Suspense>
             </Section>
             <Section
               id="charts"

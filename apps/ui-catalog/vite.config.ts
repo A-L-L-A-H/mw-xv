@@ -13,5 +13,5 @@ export default defineConfig({
   base: process.env.MW_UI_CATALOG_BASE_PATH ?? `${docsBasePath}components/`,
   plugins: [react(), tailwindcss()],
   root: appDirectory,
-  build: { outDir: 'dist', emptyOutDir: true },
+  build: { outDir: 'dist', emptyOutDir: true, assetsInlineLimit: 0 },
 });
