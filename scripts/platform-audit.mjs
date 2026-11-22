@@ -353,8 +353,16 @@ export function buildPlatformAudit(input) {
     const conclusion = run.conclusion ?? run.status ?? 'unknown';
     conclusions[conclusion] = (conclusions[conclusion] ?? 0) + 1;
   }
-  const nodeMajor = 'v22';
-  const nodeSupport = nodeSchedule?.[nodeMajor];
+  const configuredNodeVersion = supportReviewPolicy?.items?.find(
+    (item) => item?.id === 'node'
+  )?.configured;
+  const configuredNodeMajor =
+    typeof configuredNodeVersion === 'string' && /^\\d+$/u.test(configuredNodeVersion)
+      ? Number(configuredNodeVersion)
+      : null;
+  const nodeScheduleKey =
+    configuredNodeMajor === null ? null : `v${configuredNodeMajor}`;
+  const nodeSupport = nodeScheduleKey ? nodeSchedule?.[nodeScheduleKey] : undefined;
   const workflowPermissionStatus =
     workflowPermissions?.status ?? (workflowPermissions ? 'available' : 'unknown');
   const actionPermissionStatus =
@@ -485,7 +493,7 @@ export function buildPlatformAudit(input) {
     },
     runtimeSupport: {
       node: {
-        major: 22,
+        major: configuredNodeMajor,
         scheduleSource: 'https://github.com/nodejs/Release/blob/main/schedule.json',
         endOfLife: nodeSupport?.end ?? null,
         status:
@@ -553,6 +561,15 @@ export function buildPlatformAudit(input) {
         : retentionPolicy.status === 'unknown'
           ? [
               'Workflow artifact retention policy is unknown because workflow source was unavailable.',
+            ]
+          : []),
+      ...(configuredNodeMajor === null
+        ? [
+            'Configured Node.js major is unknown because the runtime support ledger has no valid node entry.',
+          ]
+        : !nodeSupport?.end
+          ? [
+              `Official Node.js schedule has no end-of-life date for configured v${configuredNodeMajor}.`,
             ]
           : []),
       ...(!repository
