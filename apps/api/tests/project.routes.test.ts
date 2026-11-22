@@ -7,13 +7,18 @@ import { buildApp } from '../src/app.js';
 
 const ADMIN_PASSWORD = 'project-test-password';
 
+let lastAuthHeader = '';
+
 function injectFetch(app: FastifyInstance): typeof fetch {
   return (async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input));
+    const headers = init?.headers as Record<string, string> | undefined;
+    if (headers?.authorization) lastAuthHeader = headers.authorization;
+    else if (headers?.Authorization) lastAuthHeader = headers.Authorization;
     const res = await app.inject({
       method: (init?.method ?? 'GET') as 'GET',
       url: url.pathname + url.search,
-      headers: init?.headers as Record<string, string>,
+      headers,
       payload: init?.body as string | undefined,
     });
     return new Response(res.statusCode === 204 ? null : res.body, {
@@ -168,6 +173,25 @@ describe('project addon REST, SDK & workflow integration', () => {
     });
     expect(wcRepeat.created).toBe(false);
     expect(wcRepeat.data.id).toBe(wcFirst.data.id);
+
+    // M13.06 Task Deck Blocker Gate: task2 is blocked by TASK-0001 (not yet done) -> HTTP 409.
+    const blockedRes = await app.inject({
+      method: 'POST',
+      url: `/projects/tasks/${task2!.id}/work-contract`,
+      headers: {
+        authorization: lastAuthHeader,
+        'content-type': 'application/json',
+      },
+      payload: JSON.stringify({}),
+    });
+    expect(blockedRes.statusCode).toBe(409);
+    const blockedBody = blockedRes.json() as {
+      success: boolean;
+      error: string;
+      blockers: Array<{ id: number; code: string; title: string; status: string }>;
+    };
+    expect(blockedBody.success).toBe(false);
+    expect(blockedBody.blockers.some((b) => b.code === 'TASK-0001')).toBe(true);
 
     // Advance linked WorkContract to in_review -> task syncs to review stage/status.
     await db('ai_work_contracts').where({ id: wcFirst.data.id }).update({ status: 'in_review' });

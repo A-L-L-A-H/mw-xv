@@ -3,6 +3,9 @@ import type {
   ExecutionPacketContractInput,
   ExecutionPacketPolicyLimits,
   ExecutionPacketSkillRef,
+  ExistingPlanTaskRef,
+  OverlapReport,
+  OverlapRequirementInput,
   RepoSnapshot,
 } from '@moonwitness/ai-runtime';
 import type { Domain, JsonObject, JsonValue } from '@moonwitness/types';
@@ -178,6 +181,12 @@ export interface DesktopExecutionPacketRequest {
   readonly snapshotOptions?: DesktopRepoSnapshotOptions;
 }
 
+export interface DesktopOverlapDetectionRequest {
+  readonly requirements: readonly OverlapRequirementInput[];
+  readonly existingTasks?: readonly ExistingPlanTaskRef[];
+  readonly snapshotOptions?: DesktopRepoSnapshotOptions;
+}
+
 export interface WorktreeFileContent {
   readonly runId: string;
   readonly relativePath: string;
@@ -226,6 +235,8 @@ export interface WorktreeDiffSummary {
   readonly headCommit: string;
   readonly clean: boolean;
   readonly files: readonly WorktreeDiffFile[];
+  readonly outOfScopeFiles: readonly string[];
+  readonly scopeClean: boolean;
   readonly patch: string;
   readonly patchSha256: string;
   readonly patchStorageKey?: string;
@@ -563,6 +574,11 @@ export interface DesktopCapabilityBridge {
       auth: DesktopActionAuthContext,
       request: DesktopExecutionPacketRequest
     ): Promise<CompiledExecutionPacket>;
+    detectOverlap(
+      runId: string,
+      auth: DesktopActionAuthContext,
+      request: DesktopOverlapDetectionRequest
+    ): Promise<OverlapReport>;
     commit(
       runId: string,
       message: string,

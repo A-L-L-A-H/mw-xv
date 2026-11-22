@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { readQuranPassage, readTextualWitnessPassage } from '@moonwitness/corpus';
-import { workflowRoutes } from '../src/routes/workflow.routes.js';
+import { canAccess } from '../src/auth/policy.js';
+import { getRecordRuleDomain } from '../src/auth/rules.js';
 import { resolveCorpusDataRoot } from '../src/routes/corpus.routes.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import knex, { type Knex } from 'knex';
@@ -8,7 +9,7 @@ import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { jobsManifest } from '@moonwitness/jobs';
 import { manifest as notificationManifest } from '@moonwitness/orm-notification';
-import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
+import { manifest as workflowManifest, workflowHttpPlugin } from '@moonwitness/orm-workflow';
 import {
   activateResearchGraphRelease,
   createResearchGraphRelease,
@@ -275,7 +276,10 @@ describe('research review API', () => {
       }
     });
     await app.register(researchReviewRoutes);
-    await app.register(workflowRoutes);
+    await app.register(workflowHttpPlugin as Parameters<typeof app.register>[0], {
+      canAccess,
+      getRecordRuleDomain,
+    });
   });
 
   afterEach(async () => {

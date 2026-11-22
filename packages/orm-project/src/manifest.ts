@@ -9,6 +9,7 @@ import {
   ProjectTask,
   ProjectTaskDependency,
 } from './models.js';
+import { projectHttpPlugin } from './http-plugin.js';
 import { views } from './views.js';
 
 const taskReviewWorkflow = {
@@ -341,6 +342,7 @@ export const manifest = defineAddon({
     }),
   ],
   views,
+  httpPlugins: [projectHttpPlugin],
   menus: [
     {
       model: Project.modelName,

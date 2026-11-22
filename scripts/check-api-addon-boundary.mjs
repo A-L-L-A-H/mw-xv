@@ -44,7 +44,6 @@ const LEGACY_DOMAIN_ROUTE_ALLOWLIST = new Set([
   'apps/api/src/routes/evidence.routes.ts',
   'apps/api/src/routes/local-ai-suggestion.routes.ts',
   'apps/api/src/routes/local-retrieval.routes.ts',
-  'apps/api/src/routes/project.routes.ts',
   'apps/api/src/routes/publication.routes.ts',
   'apps/api/src/routes/research-actor-identity.routes.ts',
   'apps/api/src/routes/research-duplicate-candidates.routes.ts',
@@ -64,7 +63,6 @@ const LEGACY_DOMAIN_ROUTE_ALLOWLIST = new Set([
   'apps/api/src/routes/whatsapp/statuses.routes.ts',
   'apps/api/src/routes/whatsapp/triage.routes.ts',
   'apps/api/src/routes/whatsapp/webhooks.routes.ts',
-  'apps/api/src/routes/workflow.routes.ts',
 ]);
 
 function isAllowedApiRouteFile(normalizedPath) {

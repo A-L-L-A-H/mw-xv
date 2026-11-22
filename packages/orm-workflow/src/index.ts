@@ -1,4 +1,5 @@
 export { manifest } from './manifest.js';
+export { workflowHttpPlugin } from './http-plugin.js';
 export { WorkflowApproval, WorkflowDefinition, WorkflowEvent, WorkflowInstance } from './models.js';
 export {
   createWorkflowIdempotencyKey,
