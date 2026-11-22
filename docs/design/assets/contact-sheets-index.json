@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "totalGroups": 7,
-  "totalVisualAssets": 189,
+  "totalVisualAssets": 201,
   "renderedSheets": [
     {
       "group": "moon-city",
       "file": "docs/design/assets/pack-moon-city-contact-sheet.png",
       "width": 1280,
-      "height": 1746,
-      "itemCount": 21
+      "height": 2682,
+      "itemCount": 33
     }
   ],
   "groups": [
@@ -2006,7 +2006,7 @@
     {
       "name": "moon-city",
       "slug": "moon-city",
-      "count": 21,
+      "count": 33,
       "items": [
         {
           "id": "animation/crew-01-hair/crew-01-hair-move-frame-01.svg",
@@ -2117,6 +2117,30 @@
           "status": "review"
         },
         {
+          "id": "source/artwork/moon-city-clouds-loop-a.svg",
+          "path": "source/artwork/moon-city-clouds-loop-a.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "cloud-loop-primary",
+          "format": "svg",
+          "width": 2048,
+          "height": 512,
+          "status": "approved"
+        },
+        {
+          "id": "source/artwork/moon-city-clouds-loop-b.svg",
+          "path": "source/artwork/moon-city-clouds-loop-b.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "cloud-loop-secondary",
+          "format": "svg",
+          "width": 2048,
+          "height": 512,
+          "status": "approved"
+        },
+        {
           "id": "source/artwork/moon-city-environment-master.png",
           "path": "source/artwork/moon-city-environment-master.png",
           "kind": "source",
@@ -2151,6 +2175,18 @@
           "width": 2048,
           "height": 1152,
           "status": "review"
+        },
+        {
+          "id": "source/artwork/moon-city-moon-disc-layer.svg",
+          "path": "source/artwork/moon-city-moon-disc-layer.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "moon-disc-layer",
+          "format": "svg",
+          "width": 1024,
+          "height": 1024,
+          "status": "approved"
         },
         {
           "id": "source/artwork/moon-city-moon-layer.png",
@@ -2259,6 +2295,114 @@
           "width": 1024,
           "height": 1024,
           "status": "review"
+        },
+        {
+          "id": "source/world/environments/env-archive.svg",
+          "path": "source/world/environments/env-archive.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "alternate-environment",
+          "format": "svg",
+          "width": 1600,
+          "height": 900,
+          "status": "approved"
+        },
+        {
+          "id": "source/world/environments/env-rooftop.svg",
+          "path": "source/world/environments/env-rooftop.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "alternate-environment",
+          "format": "svg",
+          "width": 1600,
+          "height": 900,
+          "status": "approved"
+        },
+        {
+          "id": "source/world/environments/env-street.svg",
+          "path": "source/world/environments/env-street.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "alternate-environment",
+          "format": "svg",
+          "width": 1600,
+          "height": 900,
+          "status": "approved"
+        },
+        {
+          "id": "source/world/environments/env-underground.svg",
+          "path": "source/world/environments/env-underground.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "alternate-environment",
+          "format": "svg",
+          "width": 1600,
+          "height": 900,
+          "status": "approved"
+        },
+        {
+          "id": "source/world/environments/moon-city-prop-railing.svg",
+          "path": "source/world/environments/moon-city-prop-railing.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "foreground-prop",
+          "format": "svg",
+          "width": 2048,
+          "height": 420,
+          "status": "approved"
+        },
+        {
+          "id": "source/world/environments/moon-city-prop-sign.svg",
+          "path": "source/world/environments/moon-city-prop-sign.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "foreground-prop",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "status": "approved"
+        },
+        {
+          "id": "source/world/environments/moon-city-prop-wires.svg",
+          "path": "source/world/environments/moon-city-prop-wires.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "foreground-prop",
+          "format": "svg",
+          "width": 2048,
+          "height": 360,
+          "status": "approved"
+        },
+        {
+          "id": "source/world/environments/moon-city-skyline-far.svg",
+          "path": "source/world/environments/moon-city-skyline-far.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "skyline-far",
+          "format": "svg",
+          "width": 2048,
+          "height": 1152,
+          "status": "approved"
+        },
+        {
+          "id": "source/world/environments/moon-city-skyline-mid.svg",
+          "path": "source/world/environments/moon-city-skyline-mid.svg",
+          "kind": "source",
+          "category": "source",
+          "pack": "moon-city",
+          "variant": "skyline-mid",
+          "format": "svg",
+          "width": 2048,
+          "height": 1152,
+          "status": "approved"
         }
       ]
     },

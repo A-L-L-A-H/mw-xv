@@ -29,6 +29,7 @@
     "materials",
     "sounds",
     "animation",
+    "scenes",
     "manifest.json",
     "licenses.json",
     "README.md"
@@ -43,7 +44,8 @@
     "./sounds/*": "./sounds/*",
     "./manifest.json": "./manifest.json",
     "./licenses.json": "./licenses.json",
-    "./animation/*": "./animation/*"
+    "./animation/*": "./animation/*",
+    "./scenes/*": "./scenes/*"
   },
   "devDependencies": {
     "opentype.js": "^2.0.0",

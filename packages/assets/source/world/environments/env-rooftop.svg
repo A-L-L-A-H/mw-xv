@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="MoonWitness elevated rooftop observatory environment">
+  <title>MoonWitness rooftop environment</title>
+  <defs>
+    <linearGradient id="mw-source-world-environments-env-rooftop-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#090d1c"/>
+      <stop offset="0.65" stop-color="#172742"/>
+      <stop offset="1" stop-color="#0d111a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#mw-source-world-environments-env-rooftop-bg)"/>
+  <circle cx="1220" cy="210" r="96" fill="#f3efe4" opacity="0.88"/>
+  <path d="M0 640H1600V900H0Z" fill="#0d0f17"/>
+  <g stroke="#2c3e5e" stroke-width="6">
+    <line x1="0" y1="590" x2="1600" y2="590"/>
+    <line x1="220" y1="590" x2="220" y2="660"/>
+    <line x1="620" y1="590" x2="620" y2="660"/>
+    <line x1="1020" y1="590" x2="1020" y2="660"/>
+    <line x1="1420" y1="590" x2="1420" y2="660"/>
+  </g>
+</svg>

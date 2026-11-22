@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="MoonWitness underground transit tunnel environment">
+  <title>MoonWitness underground environment</title>
+  <defs>
+    <linearGradient id="mw-source-world-environments-env-underground-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b0e15"/>
+      <stop offset="1" stop-color="#171d29"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#mw-source-world-environments-env-underground-bg)"/>
+  <path d="M180 900V360C180 180 420 96 800 96C1180 96 1420 180 1420 360V900" fill="none" stroke="#28344a" stroke-width="14"/>
+  <path d="M360 900V430C360 296 540 226 800 226C1060 226 1240 296 1240 430V900" fill="none" stroke="#1f293b" stroke-width="10"/>
+  <g fill="#ffe031" opacity="0.85">
+    <rect x="740" y="138" width="120" height="14" rx="4"/>
+    <rect x="762" y="256" width="76" height="10" rx="3"/>
+  </g>
+  <g stroke="#39e6ff" stroke-width="4" opacity="0.55">
+    <line x1="0" y1="744" x2="1600" y2="744"/>
+    <line x1="0" y1="762" x2="1600" y2="762"/>
+  </g>
+</svg>
