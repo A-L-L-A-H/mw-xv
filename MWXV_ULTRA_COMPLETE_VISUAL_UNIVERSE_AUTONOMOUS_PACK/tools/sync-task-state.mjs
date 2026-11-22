@@ -9,6 +9,10 @@ const boardPath = path.join(packRoot, 'TASKS.md');
 const plan = JSON.parse(await readFile(planPath, 'utf8'));
 const taskFiles = new Map();
 
+async function readText(filePath) {
+  return (await readFile(filePath, 'utf8')).replace(/\r\n/g, '\n');
+}
+
 function validateGraph(tasks) {
   const byId = new Map(tasks.map((task) => [task.id, task]));
   assert.equal(byId.size, tasks.length, 'Task IDs must be unique');
@@ -145,7 +149,7 @@ for (const task of plan.tasks) {
   assert.ok(Array.isArray(task.deliverables), `${task.id} deliverables must be an array`);
   const phaseDirectory = path.join(packRoot, 'tasks', task.phase);
   const taskPath = path.join(phaseDirectory, `${task.id}.md`);
-  const original = await readFile(taskPath, 'utf8');
+  const original = await readText(taskPath);
   taskFiles.set(taskPath, renderTask(task, original));
 }
 validateGraph(plan.tasks);
@@ -153,9 +157,9 @@ const normalizedPlan = `${JSON.stringify(plan, null, 2)}\n`;
 const normalizedBoard = renderBoard(plan.tasks);
 
 if (checkOnly) {
-  assert.equal(await readFile(planPath, 'utf8'), normalizedPlan, 'task.json is not normalized');
-  assert.equal(await readFile(boardPath, 'utf8'), normalizedBoard, 'TASKS.md is stale');
-  for (const [taskPath, content] of taskFiles) assert.equal(await readFile(taskPath, 'utf8'), content, `${path.basename(taskPath)} is stale`);
+  assert.equal(await readText(planPath), normalizedPlan, 'task.json is not normalized');
+  assert.equal(await readText(boardPath), normalizedBoard, 'TASKS.md is stale');
+  for (const [taskPath, content] of taskFiles) assert.equal(await readText(taskPath), content, `${path.basename(taskPath)} is stale`);
   console.log(`Validated ${plan.tasks.length} task records, dependencies, task documents, and TASKS.md.`);
 } else {
   await writeFile(planPath, normalizedPlan);
