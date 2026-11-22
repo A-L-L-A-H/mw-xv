@@ -89,3 +89,61 @@ Deliver a deterministic, read-only, revision-pinned `RepoSnapshot` builder in `@
 - `pnpm --filter @moonwitness/ai-runtime build` and `pnpm --filter @moonwitness/ai-runtime exec vitest run tests/repo-snapshot.test.ts`
 - `pnpm --filter @moonwitness/desktop build` and `pnpm --filter @moonwitness/desktop exec vitest run tests/desktop-harness.test.ts`
 - `pnpm desktop:ui:check`, `pnpm automation:check:roadmap`, `pnpm tasks:validate`, and `node scripts/check-docs.mjs`
+
+## M13.03 — Read-only Overlap Detector & offline benchmark
+
+- **Status:** complete (2026-11-22; verified on detached worktree over `origin/dev` base `327c32b`)
+- **Prerequisites:** M13.02 (`packages/ai-runtime/src/repo-snapshot.ts`).
+- **Deliverables:** `packages/ai-runtime/src/overlap-detector.ts`, `packages/ai-evaluation/src/index.ts`, and `docs/roadmap/evidence/M13.03.md`.
+
+### Goal
+
+Deliver a stateless `R0` requirement-to-repository Overlap Detector (`detectCapabilityOverlap` and `toOverlapArtifactPayload`) in `@moonwitness/ai-runtime` and an offline 6-state benchmark (`runOverlapDetectorBenchmark`) in `@moonwitness/ai-evaluation`.
+
+### Bounded file scope
+
+- `packages/ai-runtime/src/overlap-detector.ts` and `packages/ai-runtime/src/index.ts`
+- `packages/ai-runtime/tests/overlap-detector.test.ts`
+- `packages/ai-evaluation/src/index.ts` and `packages/ai-evaluation/tests/ai-evaluation.test.ts`
+- `docs/roadmap/evidence/M13.03.md`
+
+### Acceptance criteria
+
+- Deterministically classifies requirements into `implemented`, `partial`, `missing`, `overlapping`, `conflicting`, and `deprecated` without direct `fs` or shell access inside `@moonwitness/ai-runtime`.
+- All findings carry `advisoryOnly: true`, `automatedMutationsAllowed: false`, and redacted evidence citations with reproducible `contentSha256`.
+- `runOverlapDetectorBenchmark` verifies all 6 states offline with exit code 0.
+
+### Verification
+
+- `pnpm --filter @moonwitness/ai-runtime exec vitest run tests/overlap-detector.test.ts tests/prompt-forge.test.ts tests/repo-snapshot.test.ts tests/ai-runtime.test.ts`
+- `pnpm --filter @moonwitness/ai-evaluation exec vitest run tests/ai-evaluation.test.ts`
+
+## M13.04 — Read-only Prompt Forge Execution Packet compiler
+
+- **Status:** complete (2026-11-22; verified on detached worktree over `origin/dev` base `327c32b`)
+- **Prerequisites:** M13.02 (`packages/ai-runtime/src/repo-snapshot.ts`), M13.03.
+- **Deliverables:** `packages/ai-runtime/src/prompt-forge.ts`, `apps/desktop/src/worktree-sandbox.ts`, and `docs/roadmap/evidence/M13.04.md`.
+
+### Goal
+
+Compile a deterministic, redacted, scope-validated Markdown/JSON Execution Packet from a locked `WorkContract` and revision-pinned `RepoSnapshot` at tier `R0` inside `@moonwitness/ai-runtime` and `apps/desktop`.
+
+### Bounded file scope
+
+- `packages/ai-runtime/src/prompt-forge.ts` and `packages/ai-runtime/src/index.ts`
+- `packages/ai-runtime/tests/prompt-forge.test.ts`
+- `apps/desktop/src/{types.ts,worktree-sandbox.ts,bridge.ts,index.ts}`
+- `apps/desktop/tests/desktop-harness.test.ts`
+- `docs/roadmap/evidence/M13.04.md`
+
+### Acceptance criteria
+
+- `compileExecutionPacket` fails closed on empty/unlocked acceptance criteria, `..`/absolute/`.env` scope paths, protected boundary conflicts, missing verification commands, and `R4` destructive commands.
+- `WorktreeSandbox.compileExecutionPacket` and `bridge.worktree.compileExecutionPacket` enforce company match, lease `allowedPaths` containment, and `R0` `inspectRepoSnapshot` gating.
+- All values pass through `createRedactor()`, and `contentSha256` is deterministic across timestamps.
+
+### Verification
+
+- `pnpm --filter @moonwitness/ai-runtime exec vitest run tests/prompt-forge.test.ts`
+- `pnpm --filter @moonwitness/desktop exec vitest run tests/desktop-harness.test.ts tests/desktop-adversarial.test.ts tests/desktop-dual-dialect.test.ts`
+- `pnpm desktop:ui:check`, `pnpm api:addon:check`, `pnpm automation:check:roadmap`, `pnpm tasks:validate`, and `node scripts/check-docs.mjs`

@@ -2,7 +2,7 @@
 
 Dokumen ini adalah sumber utama rencana lintas milestone. Dibuat 2026-10-04 berdasarkan seluruh rencana yang disepakati. Checkbox kosong berarti belum diverifikasi selesai, termasuk fitur yang implementasi awalnya sudah ada.
 
-**Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 164 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
+**Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 166 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
 
 **Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-11-22):** checklist dokumen ini berisi 82 kartu terbuka (49 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
 
@@ -246,6 +246,8 @@ Workstream Desktop yang diaktifkan secara terpisah untuk mengembangkan pengalama
 
 - [x] M13.01 Audit delapan kapabilitas ROCKSOUL FLOW terhadap target, susun reuse/overlap map berbasis source dan tes, lalu pilih tepat satu vertical slice berikutnya. Evidence: [M13.01](docs/roadmap/evidence/M13.01.md).
 - [x] M13.02 Read-only revision-pinned Repo Radar Snapshot (`buildRepoSnapshot` di `@moonwitness/ai-runtime` dan `R0` `WorktreeSandbox.inspectRepoSnapshot` di `apps/desktop`). Evidence: [M13.02](docs/roadmap/evidence/M13.02.md).
+- [x] M13.03 Read-only Overlap Detector (`detectCapabilityOverlap` dan `runOverlapDetectorBenchmark` di `@moonwitness/ai-runtime` / `@moonwitness/ai-evaluation`). Evidence: [M13.03](docs/roadmap/evidence/M13.03.md).
+- [x] M13.04 Read-only Prompt Forge Execution Packet compiler (`compileExecutionPacket` di `@moonwitness/ai-runtime` dan `R0` `WorktreeSandbox.compileExecutionPacket` di `apps/desktop`). Evidence: [M13.04](docs/roadmap/evidence/M13.04.md).
 
 ## K — Local AI knowledge rebuild (K0–K9)
 

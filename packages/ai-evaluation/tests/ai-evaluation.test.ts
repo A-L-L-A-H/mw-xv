@@ -8,6 +8,7 @@ import {
   runBaselineComparison,
   runEvaluationCorpus,
   runMemoryAblationSuite,
+  runOverlapDetectorBenchmark,
   summarizeRunDataset,
   validateEvaluationReport,
 } from '../src/index.js';
@@ -114,5 +115,15 @@ describe('@moonwitness/ai-evaluation suite, memory ablation, and G0-G6 capabilit
     expect(release.passed).toBe(true);
     expect(release.agiClaimed).toBe(false);
     expect(release.results.G14?.passed).toBe(true);
+  });
+
+  it('runs 6-state M13.03 Overlap Detector offline benchmark with advisoryOnly invariant', async () => {
+    const benchmark = await runOverlapDetectorBenchmark({ companyId: 1 });
+    expect(benchmark.actualStatuses).toEqual(benchmark.expectedStatuses);
+    expect(benchmark.passed).toBe(true);
+    expect(benchmark.totalCases).toBe(6);
+    expect(benchmark.matchedCases).toBe(6);
+    expect(benchmark.advisoryOnlyEnforced).toBe(true);
+    expect(benchmark.benchmarkSha256).toMatch(/^[a-f0-9]{64}$/u);
   });
 });

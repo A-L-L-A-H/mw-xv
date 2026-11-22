@@ -1,4 +1,10 @@
-import type { RepoSnapshot } from '@moonwitness/ai-runtime';
+import type {
+  CompiledExecutionPacket,
+  ExecutionPacketContractInput,
+  ExecutionPacketPolicyLimits,
+  ExecutionPacketSkillRef,
+  RepoSnapshot,
+} from '@moonwitness/ai-runtime';
 import type { Domain, JsonObject, JsonValue } from '@moonwitness/types';
 
 export type RiskTier = 'R0' | 'R1' | 'R2' | 'R3' | 'R4';
@@ -160,6 +166,16 @@ export interface DesktopRepoSnapshotOptions {
   readonly maxFiles?: number;
   readonly maxManifestBytes?: number;
   readonly maxDocHeadings?: number;
+}
+
+export interface DesktopExecutionPacketRequest {
+  readonly contract: ExecutionPacketContractInput;
+  readonly allowedCapabilities: readonly string[];
+  readonly verificationCommands: readonly string[];
+  readonly approvedSkills?: readonly ExecutionPacketSkillRef[];
+  readonly policyLimits?: ExecutionPacketPolicyLimits;
+  readonly targetBranch?: string;
+  readonly snapshotOptions?: DesktopRepoSnapshotOptions;
 }
 
 export interface WorktreeFileContent {
@@ -542,6 +558,11 @@ export interface DesktopCapabilityBridge {
       auth: DesktopActionAuthContext,
       options?: DesktopRepoSnapshotOptions
     ): Promise<RepoSnapshot>;
+    compileExecutionPacket(
+      runId: string,
+      auth: DesktopActionAuthContext,
+      request: DesktopExecutionPacketRequest
+    ): Promise<CompiledExecutionPacket>;
     commit(
       runId: string,
       message: string,

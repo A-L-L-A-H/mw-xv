@@ -60,3 +60,37 @@ test('FX catalog documents purpose and anti-patterns for every effect family (W6
   await lab.getByRole('button', { name: 'Intense' }).click();
   await expect(lab.getByTestId('fx-particles').locator('[data-particle-intensity="intense"]')).toBeVisible();
 });
+
+test('active particle scene stays within the Chromium frame-time budget (W6-003)', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('./#fx-lab');
+  const lab = page.getByTestId('fx-lab');
+  const particles = lab.getByTestId('fx-particles').locator('[data-particle-preset]');
+  await expect(particles).toHaveAttribute('data-particle-state', 'active');
+  await lab.getByRole('button', { name: 'Intense' }).click();
+  await expect(particles).toHaveAttribute('data-particle-count', '30');
+
+  const frameReport = await page.evaluate(async () => {
+    const samples: number[] = [];
+    let previous = 0;
+    await new Promise<void>((resolve) => {
+      const sample = (timestamp: number) => {
+        if (previous > 0) samples.push(timestamp - previous);
+        previous = timestamp;
+        if (samples.length < 119) requestAnimationFrame(sample);
+        else resolve();
+      };
+      requestAnimationFrame(sample);
+    });
+    const sorted = [...samples].sort((left, right) => left - right);
+    return {
+      sampleCount: samples.length,
+      p95FrameMs: sorted[Math.floor(sorted.length * 0.95)],
+      maxFrameMs: Math.max(...samples),
+    };
+  });
+  console.info(`W6-003 Chromium frame report: ${JSON.stringify(frameReport)}`);
+  expect(frameReport.sampleCount).toBeGreaterThanOrEqual(100);
+  expect(frameReport.p95FrameMs).toBeLessThanOrEqual(50);
+  expect(frameReport.maxFrameMs).toBeLessThanOrEqual(150);
+});

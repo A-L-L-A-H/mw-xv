@@ -13,6 +13,8 @@ export * from './providers/anthropic-adapter.js';
 export * from './classification-router.js';
 export * from './repo-inspector.js';
 export * from './repo-snapshot.js';
+export * from './overlap-detector.js';
+export * from './prompt-forge.js';
 export * from './agent-runner.js';
 export * from './risk-policy.js';
 export * from './capability-gateway.js';

@@ -1,6 +1,6 @@
 # Jalur rilis aktif
 
-Diperbarui 2026-11-22. Goal penuh: 229 task (164 M-series + 65 K-series); seluruh task dan acceptance M0–M12/K0–K9 dipertahankan. M13 adalah workstream Desktop Engineering terpisah, bukan release blocker. Gunakan `pnpm roadmap:progress -- --format json` untuk jumlah terkini, bukan snapshot angka dalam dokumen.
+Diperbarui 2026-11-22. Goal penuh: 231 task (166 M-series + 65 K-series); seluruh task dan acceptance M0–M12/K0–K9 dipertahankan. M13 adalah workstream Desktop Engineering terpisah, bukan release blocker. Gunakan `pnpm roadmap:progress -- --format json` untuk jumlah terkini, bukan snapshot angka dalam dokumen.
 
 ## Checkpoint kerja saat ini — 2026-10-23
 

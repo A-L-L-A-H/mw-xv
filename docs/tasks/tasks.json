@@ -8612,6 +8612,140 @@
       "comments": []
     },
     {
+      "code": "M13.03",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Read-only Overlap Detector & offline benchmark.",
+      "summary": "Read-only Overlap Detector & offline benchmark.",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "packages/ai-runtime/src/overlap-detector.ts, packages/ai-evaluation/src/index.ts, and docs/roadmap/evidence/M13.03.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "low",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.02"],
+      "blocks": ["M13.04"],
+      "tags": ["m", "desktop", "rock-soul-flow"],
+      "scope": {
+        "packages": ["@moonwitness/ai-runtime", "@moonwitness/ai-evaluation"],
+        "files": [
+          "packages/ai-runtime/src/overlap-detector.ts",
+          "packages/ai-runtime/src/index.ts",
+          "packages/ai-runtime/tests/overlap-detector.test.ts",
+          "packages/ai-evaluation/src/index.ts",
+          "packages/ai-evaluation/tests/ai-evaluation.test.ts",
+          "docs/roadmap/evidence/M13.03.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.03-ac-1",
+          "text": "Deterministic 6-state R0 Overlap Detector and offline benchmark with advisoryOnly invariant",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ai-runtime build",
+          "pnpm --filter @moonwitness/ai-runtime exec vitest run tests/overlap-detector.test.ts",
+          "pnpm --filter @moonwitness/ai-evaluation exec vitest run tests/ai-evaluation.test.ts"
+        ],
+        "expected": "All 6 overlap states, redaction, and benchmark invariants pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.03.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": null
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/rock-soul-flow-reuse-map.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.03"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "M13.04",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Read-only Prompt Forge Execution Packet compiler.",
+      "summary": "Read-only Prompt Forge Execution Packet compiler.",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "packages/ai-runtime/src/prompt-forge.ts, apps/desktop/src/worktree-sandbox.ts, and docs/roadmap/evidence/M13.04.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "low",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.02", "M13.03"],
+      "blocks": [],
+      "tags": ["m", "desktop", "rock-soul-flow"],
+      "scope": {
+        "packages": ["@moonwitness/ai-runtime", "@moonwitness/desktop"],
+        "files": [
+          "packages/ai-runtime/src/prompt-forge.ts",
+          "packages/ai-runtime/src/index.ts",
+          "packages/ai-runtime/tests/prompt-forge.test.ts",
+          "apps/desktop/src/types.ts",
+          "apps/desktop/src/worktree-sandbox.ts",
+          "apps/desktop/src/bridge.ts",
+          "apps/desktop/src/index.ts",
+          "apps/desktop/tests/desktop-harness.test.ts",
+          "docs/roadmap/evidence/M13.04.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.04-ac-1",
+          "text": "Deterministic R0 ExecutionPacket compiler and Desktop bridge integration with fail-closed scope and secret guards",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ai-runtime exec vitest run tests/prompt-forge.test.ts",
+          "pnpm --filter @moonwitness/desktop exec vitest run tests/desktop-harness.test.ts"
+        ],
+        "expected": "Prompt Forge unit tests and Desktop harness integration pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.04.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": null
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/rock-soul-flow-reuse-map.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.04"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
       "code": "K0-001",
       "project": "moonwitness",
       "series": "K",

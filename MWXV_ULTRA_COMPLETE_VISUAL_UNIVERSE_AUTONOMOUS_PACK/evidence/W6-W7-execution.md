@@ -27,3 +27,12 @@
 ## Generated diagnostic contents
 
 This is a build-time report from the existing `runAssetQa` and `validateSceneBundle` validators. It is not a live filesystem scan from the browser. It records validator errors and warnings, and export is disabled until the report is explicitly loaded into the panel.
+
+## Follow-up verification on refreshed dev
+
+- Source revalidation: `git pull --ff-only origin dev` — exit 0; latest dev was `327c32b`, which fixed the UI catalog gzip budget and SpritePlayer mobile overflow. Existing dirty ISP/Cloud/Control Plane files were preserved.
+- `pnpm --filter @moonwitness/ui-catalog build` — exit 0; 297 modules built, UI package compiled, asset diagnostics validated 231 assets and one scene. Main chunk was 529.34 KB raw / 155.50 KB gzip; no configured gzip budget failure. Vite still reports the non-fatal 500 KB raw chunk advisory.
+- `pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1` — exit 0; 11/11 passed. Character Studio play/pause/reset passes with reduced motion off; reduced motion defaults to a static frame and playback is opt-in; diagnostics loads/export JSON; timeline scrub reaches 1200ms; Moon City desktop/mobile scene crops use the expected 72%/24% and 52%/20% moon pivots and static fallback is visible.
+- Chromium frame measurement for W6-003: 30 active intense particles, 119 requestAnimationFrame intervals, p95 16.7ms, maximum 16.8ms. The test enforces p95 ≤50ms and max ≤150ms. Test output was emitted by the successful Playwright run above.
+- Responsive visual artifacts (reviewed and copied into tracked evidence): `W7-006-scene-preview-desktop.png` and `W7-006-scene-preview-mobile.png` in this directory.
+- The initial follow-up responsive assertion expected percentages from computed CSS; the browser exposes computed pixel origins. The assertion was corrected to compare pivot ratios to the real layer bounds, then the responsive test passed. No production code change was needed for this adjustment.
