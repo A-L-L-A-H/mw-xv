@@ -3389,7 +3389,7 @@
       "id": "W8-001",
       "phase": "W8",
       "title": "Implement visual coverage for base addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3424,8 +3424,24 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "The real generic base-model consumer reuses canonical domain icons and separates loading, empty, API error, 403 permission denial, and 404 model-unavailable states without inventing records/routes.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "evidence/W8-001-base-visual-coverage.md"
+        },
+        {
+          "command": "pnpm board:ui:check",
+          "exit_code": 0,
+          "artifact": "evidence/W8-001-base-visual-coverage.md"
+        },
+        {
+          "command": "node --test scripts/board/model-icon-registry.test.mjs scripts/board/model-view-error-state.test.mjs",
+          "exit_code": 0,
+          "artifact": "evidence/W8-001-base-visual-coverage.md"
+        }
+      ],
       "commit": null
     },
     {
