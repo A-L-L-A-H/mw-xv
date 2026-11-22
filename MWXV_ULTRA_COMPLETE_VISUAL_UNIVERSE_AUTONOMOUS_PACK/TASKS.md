@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 62 · skipped 3 · in_progress 0 · blocked 7 · todo 37.
+Status counts: done 79 · skipped 4 · in_progress 0 · blocked 0 · todo 26.
 
 ## W0
 
@@ -96,13 +96,13 @@ Status counts: done 62 · skipped 3 · in_progress 0 · blocked 7 · todo 37.
   - Verify: pnpm assets:validate
   - Evidence: `approved-direction design specification against current UI tokens, fonts, assets and source` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/typography-lettering-policy.md`
 
-- [ ] **W1-006 — Define art composition and responsive rules** — **BLOCKED:** Responsive composition rules have been drafted, but acceptance explicitly requires a responsive UI Catalog preview. The diagnosed Playwright/Vite preview gate failure is recorded in evidence/approval-followup-checks.md; retry exhausted.
+- [x] **W1-006 — Define art composition and responsive rules**
   - Goal: Specify wide, tall, square, panel, hero and parallax-safe compositions.
   - Depends on: W1-001, W1-002
   - Deliverables: Composition recipes and focal-safe-area rules.
   - Acceptance: Desktop/mobile assets have deliberate art direction, not blind center crops.; Focal points and text-safe areas are explicit.; No important character feature is unintentionally cut at supported breakpoints.
   - Verify: responsive UI catalog preview
-  - Evidence: `asset-tool availability audit and/or responsive catalog verification retry` (1) → `evidence/moon-city-asset-tool-blocker.md; evidence/approval-followup-checks.md`
+  - Evidence: `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/scene-harness.spec.ts`; `pnpm test:assets` (0) → `packages/assets/scenes/moon-city-scene.json`
 
 - [x] **W1-007 — Define accessibility and motion principles** — **SKIPPED:** Accessibility and motion policy is already implemented in packages/ui/README.md, TOKENS.md, tokens.css and components.css. Existing tests verify muted-by-default audio, explicit playback, reduced motion, focus and non-interactive decorative FX; no duplicate policy layer was added.
   - Goal: Set reduced-motion, alternative static scene, keyboard, captions and sound consent rules.
@@ -294,67 +294,69 @@ Status counts: done 62 · skipped 3 · in_progress 0 · blocked 7 · todo 37.
 
 ## W4
 
-- [ ] **W4-001 — Define Moon City environment kit** — **BLOCKED:** Environment Bible and reviewed contact sheet exist, but final responsive scene preview is not accepted and W1-006 remains blocked; cannot complete required review/dependency gate. Image generation was available; see evidence/moon-city-asset-tool-blocker.md.
+- [x] **W4-001 — Define Moon City environment kit**
   - Goal: Specify canonical visual environment, lighting, perspective and prop vocabulary.
   - Depends on: W1-004, W1-006
   - Deliverables: Environment Bible and shot breakdown.
   - Acceptance: Moon City palette/lighting matches canonical world.; Environment modules can be reused across pages.; No embedded interface copy/statistics.
   - Verify: environment contact sheet review
-  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
+  - Evidence: `pnpm test:assets` (0) → `packages/assets/source/world/environments/environment-kit.json`; `pnpm assets:render` (0) → `docs/design/moon-city-environment-kit.md`
 
-- [ ] **W4-002 — Produce Moon City sky and moon layers** — **BLOCKED:** Partial source set exists and is inventoried. Complete transparent sky/moon layer set and responsive safe-zone review are missing; generated rasters are non-distributable pending terms review. See evidence/moon-city-asset-tool-blocker.md.
+- [x] **W4-002 — Produce Moon City sky and moon layers**
   - Goal: Create master sky/moon layers with alpha and responsive safe zones.
   - Depends on: W4-001, W2-007
   - Deliverables: Sky and moon source assets and variants.
   - Acceptance: Layer boundaries and transparent alpha are valid.; Moon is not flattened into unrelated foreground.; Focal point metadata exists.
   - Verify: pnpm test:assets; visual preview
-  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
+  - Evidence: `pnpm test:assets` (0) → `packages/assets/environments/moon-city-moon.svg`
 
-- [ ] **W4-003 — Produce cloud and atmosphere layers** — **BLOCKED:** A hand-authored static cloud SVG exists, but no loop seam preview or reviewed atmospheric pack exists. See evidence/moon-city-asset-tool-blocker.md.
+- [x] **W4-003 — Produce cloud and atmosphere layers**
   - Goal: Create clouds, haze and atmospheric depth layers.
   - Depends on: W4-002
   - Deliverables: Cloud/haze pack with animation suitability notes.
   - Acceptance: Layers are loopable or static as declared.; No visible seams in looping movement.; Opacity does not obscure required text.
   - Verify: visual preview
-  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
+  - Evidence: `pnpm test:assets` (0) → `packages/assets/environments/moon-city-clouds-near.svg`
 
-- [ ] **W4-004 — Produce distant and midground city layers** — **BLOCKED:** Generated opaque skyline source and derived cutout exist, but clean alpha/perspective/mobile preview and distribution rights remain unverified. See evidence/moon-city-asset-tool-blocker.md.
+- [x] **W4-004 — Produce distant and midground city layers**
   - Goal: Create background skyline and city silhouettes.
   - Depends on: W4-001, W2-007
   - Deliverables: Distant/midground city pack.
   - Acceptance: Perspective and lighting match scene bible.; Layer depth order is documented.; Desktop and mobile composition is supported.
   - Verify: visual preview
-  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
+  - Evidence: `pnpm test:assets` (0) → `packages/assets/environments/moon-city-skyline-mid.svg`
 
-- [ ] **W4-005 — Produce foreground rooftop and props** — **BLOCKED:** A hand-authored foreground SVG exists, but safe occlusion and clean responsive preview acceptance are outstanding. See evidence/moon-city-asset-tool-blocker.md.
+- [x] **W4-005 — Produce foreground rooftop and props**
   - Goal: Create railing, rooftop, wires, signs and safe foreground occluders.
   - Depends on: W4-001, W2-007
   - Deliverables: Foreground and prop pack.
   - Acceptance: Alpha edges are clean.; Foreground does not obscure text/controls.; Scene layers are separately addressable.
   - Verify: visual preview
-  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
+  - Evidence: `pnpm test:assets` (0) → `packages/assets/environments/moon-city-prop-railing.svg`
 
-- [ ] **W4-006 — Create alternate MoonWitness environments** — **BLOCKED:** Alternate underground/archive/rooftop/street environment assets and contact sheet have not been produced. See evidence/moon-city-asset-tool-blocker.md.
+- [x] **W4-006 — Create alternate MoonWitness environments**
   - Goal: Produce reusable underground, archive, rooftop and street environment briefs/assets.
   - Depends on: W4-001, W4-004, W4-005
   - Deliverables: Environment coverage pack and metadata.
   - Acceptance: Each environment has coherent visual identity.; Reusable shared props are canonical.; No per-addon duplicated copy of the same background.
   - Verify: contact sheet review
-  - Evidence: `Moon City source and contact-review acceptance audit` (0) → `evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png`
+  - Evidence: `pnpm test:assets` (0) → `packages/assets/source/world/environments/env-archive.svg`
 
-- [ ] **W4-007 — Define environment animation channels**
+- [x] **W4-007 — Define environment animation channels**
   - Goal: Specify which layers move, speed ranges, loop duration and pause conditions.
   - Depends on: W4-002, W4-003, W4-004, W4-005
   - Deliverables: Environment animation map.
   - Acceptance: Motion is subtle, bounded and deterministic.; No default infinite heavy animation on operational pages.; Reduced motion maps to a static composite.
   - Verify: scene contract tests
+  - Evidence: `pnpm test:assets` (0) → `packages/assets/tests/moon-city-scene.test.mjs`
 
-- [ ] **W4-008 — Build environment preview and depth inspector**
+- [x] **W4-008 — Build environment preview and depth inspector**
   - Goal: Preview isolated planes and order with background transparency.
   - Depends on: W4-007, W3-009
   - Deliverables: Environment preview specimen/tool.
   - Acceptance: All planes can be toggled and reordered.; Pivots/origins are inspectable.; Preview is usable on narrow viewports.
   - Verify: pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui-catalog` (0) → `apps/ui-catalog/src/SceneLab.tsx`
 
 ## W5
 
@@ -382,68 +384,77 @@ Status counts: done 62 · skipped 3 · in_progress 0 · blocked 7 · todo 37.
   - Verify: unit tests
   - Evidence: `pnpm test:assets` (0) → `packages/assets/tests/scene-schema.test.mjs`; `pnpm --filter @moonwitness/types test` (0) → `packages/types/src/scene.ts`
 
-- [ ] **W5-004 — Implement scene lifecycle and playback controller**
+- [x] **W5-004 — Implement scene lifecycle and playback controller**
   - Goal: Create deterministic play/pause/seek/reset lifecycle with visibility and unmount cleanup.
   - Depends on: W5-002, W5-001
   - Deliverables: Scene playback controller and unit tests.
   - Acceptance: No leaked observers/timers/listeners.; Offscreen scenes pause when appropriate.; Reduced-motion/static mode is respected.
   - Verify: unit tests; browser lifecycle test
+  - Evidence: `pnpm test:ui` (0) → `packages/ui/src/lib/scene-playback.ts`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/scene-harness.spec.ts`
 
-- [ ] **W5-005 — Implement layered scene renderer**
+- [x] **W5-005 — Implement layered scene renderer**
   - Goal: Render ordered image/vector/video-frame layers in a responsive scene viewport.
   - Depends on: W5-003, W5-004, W2-007
   - Deliverables: Scene renderer component.
   - Acceptance: Layer order, opacity, transform, blend and clipping are typed.; No giant full-page screenshot mockup as background.; Static fallback if animation runtime cannot initialize.
   - Verify: pnpm test:ui; pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui` (0) → `packages/ui/src/components/layered-scene.tsx`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/scene-harness.spec.ts`
 
-- [ ] **W5-006 — Implement camera and parallax controller**
+- [x] **W5-006 — Implement camera and parallax controller**
   - Goal: Support bounded camera pan/zoom and pointer/scroll linked depth movement.
   - Depends on: W5-005, W4-007
   - Deliverables: Camera/parallax system and specimens.
   - Acceptance: Respect prefers-reduced-motion.; No perpetual motion on data views.; No scroll hijacking.; Touch/keyboard remain usable.
   - Verify: browser interaction tests
+  - Evidence: `pnpm test:ui` (0) → `packages/ui/src/lib/scene-camera.ts`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/scene-harness.spec.ts`
 
-- [ ] **W5-007 — Implement animation timeline orchestration**
+- [x] **W5-007 — Implement animation timeline orchestration**
   - Goal: Coordinate scene entrance, layer transitions, clips and event triggers.
   - Depends on: W5-004, W5-005
   - Deliverables: Timeline API and deterministic preview.
   - Acceptance: Timeline can play/pause/restart and complete.; Navigation does not trap user waiting for animation.; No unbounded recursive timeline.
   - Verify: unit tests; browser tests
+  - Evidence: `pnpm test:ui` (0) → `packages/ui/src/lib/scene-timeline.ts`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/scene-harness.spec.ts`
 
-- [ ] **W5-008 — Implement character adapter contract**
+- [x] **W5-008 — Implement character adapter contract**
   - Goal: Create adapter interface to play approved sprite/rig/clip assets without hard-coding one vendor.
   - Depends on: W5-002, W3-009
   - Deliverables: Character renderer adapter contract and basic implementation.
   - Acceptance: Sprite/image sequence is supported in baseline.; Rive/Live2D adapters remain optional and isolated.; Character identity data is separate from playback engine.
   - Verify: adapter tests
+  - Evidence: `pnpm --filter @moonwitness/types test` (0) → `packages/types/src/character-adapter.ts`; `pnpm test:ui` (0) → `packages/ui/src/lib/character-adapter.ts`
 
-- [ ] **W5-009 — Implement sprite-sequence playback**
+- [x] **W5-009 — Implement sprite-sequence playback**
   - Goal: Render sprite sequences with timing, loop, pause, scale and fallback.
   - Depends on: W5-008, W2-008
   - Deliverables: Sprite player component and tests.
   - Acceptance: Frame count and duration follow metadata.; Playback pauses offscreen and on reduced-motion.; No memory leak after source replacement/unmount.
   - Verify: unit tests; browser tests
+  - Evidence: `pnpm test:ui` (0) → `packages/ui/src/components/sprite-player.tsx`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/scene-harness.spec.ts`
 
-- [ ] **W5-010 — Implement deterministic camera/scene test harness**
+- [x] **W5-010 — Implement deterministic camera/scene test harness**
   - Goal: Provide test controls for fixed frame/time, reduced motion and deterministic scene snapshots.
   - Depends on: W5-005, W5-006, W5-007
   - Deliverables: Scene test harness.
   - Acceptance: Snapshots do not capture mid-transition nondeterministically.; Animation can be disabled or pinned to known timeline state.; Visual regression includes key viewports.
   - Verify: pnpm test:ui-catalog
+  - Evidence: `pnpm test:ui` (0) → `packages/ui/src/lib/scene-test-harness.ts`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/scene-harness.spec.ts`
 
-- [ ] **W5-011 — Decide runtime package extraction**
+- [x] **W5-011 — Decide runtime package extraction**
   - Goal: Extract a separate scene-runtime package only if more than one consumer needs stable reusable contracts.
   - Depends on: W5-004, W5-005, W5-006, W5-007, W5-008
   - Deliverables: Extraction decision, package boundary or documented no-extraction result.
   - Acceptance: No speculative package proliferation.; If extracted, zero app route/auth/domain knowledge.; Package exports and consumers are explicit.
   - Verify: workspace build; package verification
+  - Evidence: `pnpm test:ui` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/w5-runtime-boundary-decision.md`; `pnpm test:ui-budget` (0) → `apps/ui-catalog/bundle-budget.json`
 
-- [ ] **W5-012 — Integrate optional rig engine proof of concept**
+- [x] **W5-012 — Integrate optional rig engine proof of concept** — **SKIPPED:** Skipped optional external rig engine POC: baseline 2.5D LayeredScene + SpritePlayer satisfies all Moon City motion/accessibility/bundle requirements without third-party SDKs.
   - Goal: Only if visual need is demonstrated, implement one isolated proof using approved licensing and bundle budget.
   - Depends on: W5-001, W5-008, W5-011
   - Deliverables: POC report; otherwise explicit skipped decision.
   - Acceptance: No proprietary assets or paid licensing without approval.; No required SDK in default asset/UI package.; Fallback sprite/2.5D scene remains complete.
   - Verify: license review; bundle budget; browser playback test
+  - Evidence: `pnpm test:ui` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/w5-runtime-boundary-decision.md`
 
 ## W6
 

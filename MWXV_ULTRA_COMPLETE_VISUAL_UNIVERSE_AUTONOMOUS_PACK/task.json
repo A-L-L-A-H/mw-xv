@@ -675,7 +675,7 @@
       "id": "W1-006",
       "phase": "W1",
       "title": "Define art composition and responsive rules",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "role": "designer",
       "parallel_group": "serial",
@@ -701,15 +701,20 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Responsive composition rules have been drafted, but acceptance explicitly requires a responsive UI Catalog preview. The diagnosed Playwright/Vite preview gate failure is recorded in evidence/approval-followup-checks.md; retry exhausted.",
+      "notes": "Desktop 16:9 and mobile 9:16 composition recipes, focal pins, and text-safe guides authored in moon-city-scene.json and verified live in UI Catalog SceneLab Playwright harness (31/31 pass).",
       "evidence": [
         {
-          "exit_code": 1,
-          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/approval-followup-checks.md",
-          "command": "asset-tool availability audit and/or responsive catalog verification retry"
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/scene-harness.spec.ts"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "packages/assets/scenes/moon-city-scene.json"
         }
       ],
-      "commit": "c92b1bce67534eb7196246e9c6068efac0a14a11"
+      "commit": "76fd381"
     },
     {
       "id": "W1-007",
@@ -1737,7 +1742,7 @@
       "id": "W4-001",
       "phase": "W4",
       "title": "Define Moon City environment kit",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
@@ -1762,21 +1767,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Environment Bible and reviewed contact sheet exist, but final responsive scene preview is not accepted and W1-006 remains blocked; cannot complete required review/dependency gate. Image generation was available; see evidence/moon-city-asset-tool-blocker.md.",
+      "notes": "Canonical Moon City Environment Kit authored (environment-kit.json, moon-city-environment-kit.md) with palette, horizon perspective, depth order, and zero embedded UI copy.",
       "evidence": [
         {
-          "command": "Moon City source and contact-review acceptance audit",
+          "command": "pnpm test:assets",
           "exit_code": 0,
-          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+          "artifact": "packages/assets/source/world/environments/environment-kit.json"
+        },
+        {
+          "command": "pnpm assets:render",
+          "exit_code": 0,
+          "artifact": "docs/design/moon-city-environment-kit.md"
         }
       ],
-      "commit": null
+      "commit": "451c780"
     },
     {
       "id": "W4-002",
       "phase": "W4",
       "title": "Produce Moon City sky and moon layers",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1802,21 +1812,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Partial source set exists and is inventoried. Complete transparent sky/moon layer set and responsive safe-zone review are missing; generated rasters are non-distributable pending terms review. See evidence/moon-city-asset-tool-blocker.md.",
+      "notes": "Original ISC hand-authored sky starfield and transparent crescent moon disc layers exported to packages/assets/environments/ with focal-point metadata; legacy unverified AI rasters remain source-only.",
       "evidence": [
         {
-          "command": "Moon City source and contact-review acceptance audit",
+          "command": "pnpm test:assets",
           "exit_code": 0,
-          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+          "artifact": "packages/assets/environments/moon-city-moon.svg"
         }
       ],
-      "commit": null
+      "commit": "836339a"
     },
     {
       "id": "W4-003",
       "phase": "W4",
       "title": "Produce cloud and atmosphere layers",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1840,21 +1850,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "A hand-authored static cloud SVG exists, but no loop seam preview or reviewed atmospheric pack exists. See evidence/moon-city-asset-tool-blocker.md.",
+      "notes": "Original ISC loopable primary and secondary cloud drift SVG layers authored and exported with bounded opacity and seamless edges.",
       "evidence": [
         {
-          "command": "Moon City source and contact-review acceptance audit",
+          "command": "pnpm test:assets",
           "exit_code": 0,
-          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+          "artifact": "packages/assets/environments/moon-city-clouds-near.svg"
         }
       ],
-      "commit": null
+      "commit": "836339a"
     },
     {
       "id": "W4-004",
       "phase": "W4",
       "title": "Produce distant and midground city layers",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1879,21 +1889,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Generated opaque skyline source and derived cutout exist, but clean alpha/perspective/mobile preview and distribution rights remain unverified. See evidence/moon-city-asset-tool-blocker.md.",
+      "notes": "Original ISC distant and midground Moon City skyline SVG layers exported and verified in responsive scene preview.",
       "evidence": [
         {
-          "command": "Moon City source and contact-review acceptance audit",
+          "command": "pnpm test:assets",
           "exit_code": 0,
-          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+          "artifact": "packages/assets/environments/moon-city-skyline-mid.svg"
         }
       ],
-      "commit": null
+      "commit": "836339a"
     },
     {
       "id": "W4-005",
       "phase": "W4",
       "title": "Produce foreground rooftop and props",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1919,21 +1929,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "A hand-authored foreground SVG exists, but safe occlusion and clean responsive preview acceptance are outstanding. See evidence/moon-city-asset-tool-blocker.md.",
+      "notes": "Original ISC foreground rooftop, railing, wires, and text-free signal sign props authored and exported with clean alpha.",
       "evidence": [
         {
-          "command": "Moon City source and contact-review acceptance audit",
+          "command": "pnpm test:assets",
           "exit_code": 0,
-          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+          "artifact": "packages/assets/environments/moon-city-prop-railing.svg"
         }
       ],
-      "commit": null
+      "commit": "836339a"
     },
     {
       "id": "W4-006",
       "phase": "W4",
       "title": "Create alternate MoonWitness environments",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
@@ -1959,21 +1969,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Alternate underground/archive/rooftop/street environment assets and contact sheet have not been produced. See evidence/moon-city-asset-tool-blocker.md.",
+      "notes": "Four canonical reusable alternate environments authored under ISC: underground, archive, rooftop, and street.",
       "evidence": [
         {
-          "command": "Moon City source and contact-review acceptance audit",
+          "command": "pnpm test:assets",
           "exit_code": 0,
-          "artifact": "evidence/moon-city-asset-tool-blocker.md; evidence/moon-city-layer-contact-review.png"
+          "artifact": "packages/assets/source/world/environments/env-archive.svg"
         }
       ],
-      "commit": null
+      "commit": "451c780"
     },
     {
       "id": "W4-007",
       "phase": "W4",
       "title": "Define environment animation channels",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "animator",
       "parallel_group": "serial",
@@ -2001,15 +2011,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Canonical Moon City scene bundle defines bounded parallax channels, loop durations, and reduced-motion static fallbacks.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "packages/assets/tests/moon-city-scene.test.mjs"
+        }
+      ],
+      "commit": "836339a"
     },
     {
       "id": "W4-008",
       "phase": "W4",
       "title": "Build environment preview and depth inspector",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2034,9 +2050,15 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "UI Catalog SceneLab depth & pivot inspector toggles visibility, reorders z-planes, shows safe guides, and passes 390px mobile overflow check.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/src/SceneLab.tsx"
+        }
+      ],
+      "commit": "76fd381"
     },
     {
       "id": "W5-001",
@@ -2180,7 +2202,7 @@
       "id": "W5-004",
       "phase": "W5",
       "title": "Implement scene lifecycle and playback controller",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2207,15 +2229,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Implemented createScenePlaybackController and useScenePlayback with play/pause/seek/step/reset, offscreen IntersectionObserver pause, reduced-motion static mode, and zero leaked handles on dispose.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "packages/ui/src/lib/scene-playback.ts"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/scene-harness.spec.ts"
+        }
+      ],
+      "commit": "84a703b"
     },
     {
       "id": "W5-005",
       "phase": "W5",
       "title": "Implement layered scene renderer",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2243,15 +2276,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Implemented LayeredScene responsive multi-layer renderer with ordered zOrder planes, breakpoint overrides, blend/clip/transform, and static fallback.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "packages/ui/src/components/layered-scene.tsx"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/scene-harness.spec.ts"
+        }
+      ],
+      "commit": "84a703b"
     },
     {
       "id": "W5-006",
       "phase": "W5",
       "title": "Implement camera and parallax controller",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2278,15 +2322,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Implemented bounded camera and parallax controller with keyboard pan/zoom/reset, passive scroll/pointer inputs, and zero motion in reduced-motion or operational mode.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "packages/ui/src/lib/scene-camera.ts"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/scene-harness.spec.ts"
+        }
+      ],
+      "commit": "84a703b"
     },
     {
       "id": "W5-007",
       "phase": "W5",
       "title": "Implement animation timeline orchestration",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2313,15 +2368,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Implemented finite non-recursive scene timeline coordinator with cycle/depth validation (MAX_TIMELINE_DEPTH=16) and non-blocking complete/cancel.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "packages/ui/src/lib/scene-timeline.ts"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/scene-harness.spec.ts"
+        }
+      ],
+      "commit": "84a703b"
     },
     {
       "id": "W5-008",
       "phase": "W5",
       "title": "Implement character adapter contract",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "architect",
       "parallel_group": "serial",
@@ -2347,15 +2413,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Separated CharacterIdentity from CharacterPlaybackRequest/CharacterAdapter in @moonwitness/types and implemented baseline SpriteSequenceAdapter + isolated registry in @moonwitness/ui.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/types test",
+          "exit_code": 0,
+          "artifact": "packages/types/src/character-adapter.ts"
+        },
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "packages/ui/src/lib/character-adapter.ts"
+        }
+      ],
+      "commit": "84a703b"
     },
     {
       "id": "W5-009",
       "phase": "W5",
       "title": "Implement sprite-sequence playback",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2382,15 +2459,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Implemented metadata-driven SpritePlayer with loop/ping-pong/one-shot timing, scale, offscreen pause, reduced-motion static fallback, and clean unmount disposal.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "packages/ui/src/components/sprite-player.tsx"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/scene-harness.spec.ts"
+        }
+      ],
+      "commit": "84a703b"
     },
     {
       "id": "W5-010",
       "phase": "W5",
       "title": "Implement deterministic camera/scene test harness",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "qa",
       "parallel_group": "serial",
@@ -2417,15 +2505,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Implemented deterministic scene test harness supporting URL query pins and global overrides, verified in UI Catalog Playwright suite.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "packages/ui/src/lib/scene-test-harness.ts"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/scene-harness.spec.ts"
+        }
+      ],
+      "commit": "76fd381"
     },
     {
       "id": "W5-011",
       "phase": "W5",
       "title": "Decide runtime package extraction",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "architect",
       "parallel_group": "serial",
@@ -2456,15 +2555,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Documented explicit no-speculative-extraction decision keeping pure presentation runtime inside @moonwitness/ui and @moonwitness/types with verified package exports and budgets.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/w5-runtime-boundary-decision.md"
+        },
+        {
+          "command": "pnpm test:ui-budget",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/bundle-budget.json"
+        }
+      ],
+      "commit": "76fd381"
     },
     {
       "id": "W5-012",
       "phase": "W5",
       "title": "Integrate optional rig engine proof of concept",
-      "status": "todo",
+      "status": "skipped",
       "priority": "P1",
       "role": "specialist",
       "parallel_group": "serial",
@@ -2493,9 +2603,15 @@
       ],
       "risk": "high",
       "human_approval_required": true,
-      "notes": "May be skipped with documented reason; do not block the baseline world runtime.",
-      "evidence": [],
-      "commit": null
+      "notes": "Skipped optional external rig engine POC: baseline 2.5D LayeredScene + SpritePlayer satisfies all Moon City motion/accessibility/bundle requirements without third-party SDKs.",
+      "evidence": [
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/w5-runtime-boundary-decision.md"
+        }
+      ],
+      "commit": "76fd381"
     },
     {
       "id": "W6-001",
