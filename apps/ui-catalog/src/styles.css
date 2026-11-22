@@ -17,6 +17,8 @@
 
 @theme inline {
   --font-display: var(--mw-font-display);
+  --font-brush: var(--mw-font-brush);
+  --font-grunge: var(--mw-font-grunge);
   --font-sans: var(--mw-font-sans);
   --font-mono: var(--mw-font-mono);
   --color-paper: var(--mw-paper);
@@ -51,7 +53,7 @@
 }
 
 :root {
-  --mw-font-display: 'Anton', a-fb, Impact, sans-serif;
+  --mw-font-display: 'MoonWitness Grunge', a-fb, 'Anton', Impact, sans-serif;
   --mw-font-sans: 'Space Grotesk', s-fb, system-ui, sans-serif;
   font-family: var(--mw-font-sans);
   color: var(--mw-foreground);
@@ -213,7 +215,7 @@ a:focus-visible {
   margin-bottom: 2rem;
 }
 .catalog-content > .mw-ui-page-header .mw-ui-page-header-title {
-  font-family: var(--mw-font-display);
+  font-family: 'Anton', a-fb, Impact, sans-serif;
   font-size: clamp(3.2rem, 8vw, 6rem);
   letter-spacing: -0.04em;
   line-height: 1.05;
