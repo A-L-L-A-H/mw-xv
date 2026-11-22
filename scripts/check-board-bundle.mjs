@@ -1,5 +1,5 @@
 import { gzipSync } from 'node:zlib';
-import { appendFile, readFile, readdir, stat } from 'node:fs/promises';
+import { appendFile, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -77,6 +77,12 @@ export function renderNextBudgetReport(results, audioBytes) {
   return `${lines.join('\n')}\n`;
 }
 
+export function listInterfaceAudioPaths(assets) {
+  return assets
+    .filter((asset) => asset.kind === 'sound' && asset.variant === 'ui')
+    .map((asset) => asset.path);
+}
+
 async function readStaticAsset(name) {
   const relative = name.replace(/^\/?_next\//u, '').replace(/^\/?static\//u, '');
   if (relative.split('/').includes('..') || path.isAbsolute(relative))
@@ -116,12 +122,13 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     ),
   };
   const results = await measureNextRouteAssets(manifest, readStaticAsset, budget);
-  const soundFiles = (await readdir(path.join(root, 'packages/assets/sounds'))).filter((file) =>
-    /\.(?:wav|mp3|ogg)$/u.test(file)
+  const assetManifest = JSON.parse(
+    await readFile(path.join(root, 'packages/assets/manifest.json'), 'utf8')
   );
+  const soundFiles = listInterfaceAudioPaths(assetManifest.assets);
   let audioBytes = 0;
   for (const file of soundFiles)
-    audioBytes += (await stat(path.join(root, 'packages/assets/sounds', file))).size;
+    audioBytes += (await stat(path.join(root, 'packages/assets', file))).size;
   const report = renderNextBudgetReport(results, audioBytes);
   process.stdout.write(report);
   if (process.env.GITHUB_STEP_SUMMARY)
