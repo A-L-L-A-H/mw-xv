@@ -73,6 +73,8 @@ jobs:
           pnpm-version: '11.17.0'
       - name: Install frozen workspace dependencies
         run: pnpm install --frozen-lockfile --no-runtime
+      - name: Run TaskOS registry safety tests
+        run: pnpm test:taskos
       - name: Build and run unit tests
         run: |
           pnpm build
