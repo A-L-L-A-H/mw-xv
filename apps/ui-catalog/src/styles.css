@@ -704,9 +704,6 @@ a:focus-visible {
   min-width: 0;
   gap: 1.25rem;
 }
-.catalog-addons-table {
-  min-width: 36rem;
-}
 .catalog-switch-row {
   display: flex;
   align-items: center;

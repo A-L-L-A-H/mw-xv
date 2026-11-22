@@ -435,7 +435,9 @@ function CatalogContent() {
           <header className="catalog-topbar" id="top">
             <div>
               <span className="catalog-breadcrumb">Design system / UI package</span>
-              <span className="catalog-version">v1.0.0-rc.1</span>
+              <span className="catalog-version" style={{ whiteSpace: 'nowrap' }}>
+                v1.0.0-rc.1
+              </span>
             </div>
             <div
               style={{
@@ -449,7 +451,13 @@ function CatalogContent() {
               <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
                 <SelectTrigger
                   aria-label="Preview skin"
-                  style={{ minHeight: '2rem', height: '2rem', width: 'auto', maxWidth: '100%' }}
+                  style={{
+                    minHeight: '2rem',
+                    height: '2rem',
+                    width: '14rem',
+                    maxWidth: '100%',
+                    whiteSpace: 'nowrap',
+                  }}
                 >
                   <SelectValue placeholder="Skin" />
                 </SelectTrigger>
@@ -466,10 +474,17 @@ function CatalogContent() {
                 size="sm"
                 onClick={toggleDensity}
                 aria-pressed={density === 'compact'}
+                style={{ whiteSpace: 'nowrap', height: '2rem', minWidth: '9.5rem' }}
               >
                 {density === 'compact' ? 'Use comfortable density' : 'Use compact density'}
               </Button>
-              <Button variant="outline" size="sm" onClick={toggleTheme} aria-pressed={dark}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleTheme}
+                aria-pressed={dark}
+                style={{ whiteSpace: 'nowrap', height: '2rem', minWidth: '7rem' }}
+              >
                 {dark ? 'Use light theme' : 'Use dark theme'}
               </Button>
             </div>
@@ -478,11 +493,16 @@ function CatalogContent() {
           <div className="catalog-content">
             <PageHeader
               title={
-                <>
+                <span style={{ display: 'block', minHeight: '6.72rem', lineHeight: '3.36rem' }}>
                   One system. <span className="catalog-highlight">Every screen.</span>
-                </>
+                </span>
               }
-              description="A practical catalog of the shared MoonWitness UI package. Explore real components, keyboard behavior, themes, and responsive states."
+              description={
+                <span style={{ display: 'block', minHeight: '6.9rem' }}>
+                  A practical catalog of the shared MoonWitness UI package. Explore real components,
+                  keyboard behavior, themes, and responsive states.
+                </span>
+              }
               actions={<Badge variant="primary">88 typed icons</Badge>}
             />
             <Panel
@@ -490,14 +510,17 @@ function CatalogContent() {
               title="MoonWitness visual system"
               description="Shared assets, readable controls, and expressive editorial details are built from the public @moonwitness/ui package."
             >
-              <div className="catalog-intro-meta">
-                <span>
+              <div
+                className="catalog-intro-meta"
+                style={{ minHeight: '2rem', alignItems: 'center' }}
+              >
+                <span style={{ whiteSpace: 'nowrap' }}>
                   <strong>88</strong> typed icons
                 </span>
-                <span>
+                <span style={{ whiteSpace: 'nowrap' }}>
                   <strong>4</strong> new compositions
                 </span>
-                <span>
+                <span style={{ whiteSpace: 'nowrap' }}>
                   <strong>AA</strong> contrast checked
                 </span>
               </div>
@@ -1491,7 +1514,7 @@ function CatalogContent() {
               >
                 <div className="catalog-table-stack">
                   <Table
-                    className="catalog-addons-table"
+                    style={{ minWidth: '36rem' }}
                     density="comfortable"
                     scrollLabel="Installed add-ons table horizontal scroll"
                     aria-label="Installed add-ons"
