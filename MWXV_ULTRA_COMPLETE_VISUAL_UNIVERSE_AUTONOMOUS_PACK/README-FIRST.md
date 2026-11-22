@@ -6,8 +6,9 @@
 - Target branch: `dev`
 - Pack baseline: `0b89060602c659efdd5e9e1a12c166fee237418e`
 - Task count: **109 atomic tasks**
-- Machine-readable plan: `task.json`
-- Human-readable checklist: `TASKS.md`
+- Canonical lifecycle registry: `docs/tasks/tasks.json` (project `visual-universe`)
+- Generated local machine projection: `task.json`
+- Generated human-readable projection: `TASKS.md`
 
 ## Start here
 
@@ -15,7 +16,7 @@
 2. Read `PROJECT_CHARTER.md`, `AUDIT_BASELINE.md`, `ARCHITECTURE.md`, `VISUAL_BIBLE.md`, and `ASSET_PACK_SPEC.md`.
 3. Read `ADDON_ASSET_MATRIX.md`, `ANIMATION_RUNTIME.md`, `CREATIVE_LAB.md`, and `QA_ACCEPTANCE.md`.
 4. Revalidate current `dev` HEAD and workspace. The repository may have moved since pack creation.
-5. Load `task.json`; execute tasks in dependency order. `TASKS.md` is the human-facing mirror.
+5. After TaskOS recovery, load the `visual-universe` project records from `docs/tasks/tasks.json`; execute tasks in dependency order. Do not edit `task.json` or `TASKS.md` as independent status sources. Regenerate these local views with `node tools/sync-task-state.mjs`.
 6. Work autonomously on non-blocked tasks; do not ask broad questions. Only request human approval at the explicit approval gates.
 
 ## What this is
