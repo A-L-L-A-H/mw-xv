@@ -27,7 +27,7 @@
 
 | Phase     | Subsystem                                                                        | ID Range               | Completed `[x]` | Pending `[ ]` |   Total |
 | --------- | -------------------------------------------------------------------------------- | ---------------------- | --------------: | ------------: | ------: |
-| `DSK-0`   | Audit, ADR `0008`, Blueprint & Non-Overlap Freeze                                | `DSK-0.1`–`DSK-0.12`   |              11 |             1 |      12 |
+| `DSK-0`   | Audit, ADR `0008`, Blueprint & Non-Overlap Freeze                                | `DSK-0.1`–`DSK-0.12`   |              12 |             0 |      12 |
 | `DSK-1`   | `apps/desktop` Scaffold, Tauri v2 Window & Zero-Overlap `apps/board` Shell       | `DSK-1.1`–`DSK-1.12`   |              12 |             0 |      12 |
 | `DSK-2`   | Dual-Dialect `@moonwitness/orm` Local SQLite Sidecar (`~/.moonwitness/local.db`) | `DSK-2.1`–`DSK-2.12`   |              12 |             0 |      12 |
 | `DSK-3`   | Offline-First Sync Engine & Proof-Carrying Work (PCW) Reconciliation             | `DSK-3.1`–`DSK-3.12`   |              12 |             0 |      12 |
@@ -38,7 +38,7 @@
 | `DSK-8`   | Local Stdio / Loopback MCP Host & `@moonwitness/ai-mcp` Integration              | `DSK-8.1`–`DSK-8.10`   |              10 |             0 |      10 |
 | `DSK-9`   | Plan–Execute–Verify Loop & Local/Cloud Classification Routing                    | `DSK-9.1`–`DSK-9.14`   |              14 |             0 |      14 |
 | `DSK-10`  | Threat-Model Security Suite, Offline/Sync Chaos Drills, Packaging & CI           | `DSK-10.1`–`DSK-10.14` |              14 |             0 |      14 |
-| **Total** | **All Desktop Harness Phases**                                                   | **`DSK-0`–`DSK-10`**   |         **127** |         **1** | **128** |
+| **Total** | **All Desktop Harness Phases**                                                   | **`DSK-0`–`DSK-10`**   |         **128** |         **0** | **128** |
 
 ---
 
@@ -57,7 +57,7 @@
 - [x] **DSK-0.9** AI Corporation Blueprint extension created at [`moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md`](moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md).
 - [x] **DSK-0.10** Granular `DSK-0`–`DSK-10` checklist created at [`todo-desktop.md`](todo-desktop.md) and verified with [`scripts/check-docs.mjs`](scripts/check-docs.mjs) (zero broken Markdown links).
 - [x] **DSK-0.11** Reconcile ADR numbering in `docs/decisions/` between Desktop Harness ADR (`0008`) and `M12.06` A2A ADR slot referenced in [`docs/roadmap/13-ai-corporation.md`](docs/roadmap/13-ai-corporation.md) before opening desktop code PRs.
-- [ ] **DSK-0.12** Register desktop engineering track tasks in `docs/roadmap/tasks.json` and `ROADMAP.md` (only when maintainer activates desktop implementation batch under [`docs/decisions/0001-platform-contracts.md`](docs/decisions/0001-platform-contracts.md)).
+- [x] **DSK-0.12** Register the maintainer-authorized Desktop Engineering track in `docs/roadmap/tasks.json` and `ROADMAP.md` as `M13.01`, with its detail card and local Codex handoff. This activates only a read-only ROCKSOUL FLOW gap audit; feature implementation remains separately gated under [`docs/decisions/0001-platform-contracts.md`](docs/decisions/0001-platform-contracts.md).
 
 ---
 
