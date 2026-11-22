@@ -2,6 +2,7 @@ import {
   BankIcon,
   BookmarkIcon,
   CheckSquareIcon,
+  CheckCircleIcon,
   ColumnsIcon,
   CompanyIcon,
   CreditCardIcon,
@@ -9,6 +10,7 @@ import {
   GlobeIcon,
   GridIcon,
   HashIcon,
+  HistoryIcon,
   HomeIcon,
   KeyIcon,
   LanguageIcon,
@@ -20,6 +22,7 @@ import {
   TeamIcon,
   UserIcon,
   UsersIcon,
+  WorkflowIcon,
 } from '@moonwitness/ui/icons';
 
 const ICONS = {
@@ -37,6 +40,10 @@ const ICONS = {
   'organization.team': TeamIcon,
   'organization.position': UserIcon,
   'organization.membership': UsersIcon,
+  'workflow.definition': WorkflowIcon,
+  'workflow.instance': WorkflowIcon,
+  'workflow.event': HistoryIcon,
+  'workflow.approval': CheckCircleIcon,
   'project.project': GridIcon,
   'project.task': CheckSquareIcon,
   'project.milestone': BookmarkIcon,

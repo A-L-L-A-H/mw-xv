@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@moonwitness/ui/components/button';
 import { useAuth } from '@/hooks/use-auth-context';
 import { client } from '@/lib/client';
+import { workflowActionState } from '@/lib/workflow-action-state.mjs';
 
 interface WorkflowTransition {
   action: string;
@@ -99,6 +100,15 @@ export function WorkflowPanel({ model, recordId }: { model: string; recordId: nu
         : [],
     [definition, instance, user]
   );
+  const currentStateTransitions =
+    instance && definition
+      ? definition.transitions.filter((transition) => transition.from === instance.current_state)
+      : [];
+  const actionState = workflowActionState({
+    isActive: instance?.status === 'active',
+    configuredTransitionCount: currentStateTransitions.length,
+    allowedTransitionCount: allowedTransitions.length,
+  });
   const refresh = async () => {
     setActionError(null);
     await Promise.all([
@@ -189,14 +199,20 @@ export function WorkflowPanel({ model, recordId }: { model: string; recordId: nu
               Loading approval history…
             </p>
           ) : detailQuery.data ? (
-            <ol aria-label="Approval history" className="space-y-2 border-l-2 border-ink/20 pl-4">
-              {detailQuery.data.data.events.map((event) => (
-                <li key={event.sequence} className="text-sm">
-                  <strong>{event.action}</strong> · {event.from_state} → {event.to_state}
-                  {event.comment && <p className="text-ink-soft">{event.comment}</p>}
-                </li>
-              ))}
-            </ol>
+            detailQuery.data.data.events.length > 0 ? (
+              <ol aria-label="Approval history" className="space-y-2 border-l-2 border-ink/20 pl-4">
+                {detailQuery.data.data.events.map((event) => (
+                  <li key={event.sequence} className="text-sm">
+                    <strong>{event.action}</strong> · {event.from_state} → {event.to_state}
+                    {event.comment && <p className="text-ink-soft">{event.comment}</p>}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p role="status" className="text-sm text-ink-soft">
+                No workflow events are recorded.
+              </p>
+            )
           ) : detailQuery.isError ? (
             <p role="alert" className="text-sm text-destructive">
               {errorMessage(detailQuery.error)}
@@ -227,6 +243,16 @@ export function WorkflowPanel({ model, recordId }: { model: string; recordId: nu
                 ))}
               </div>
             </div>
+          )}
+          {actionState === 'permission_denied' && (
+            <p role="status" className="text-sm text-ink-soft">
+              No workflow action is available to your current role or actor.
+            </p>
+          )}
+          {actionState === 'unconfigured' && (
+            <p role="alert" className="text-sm text-destructive">
+              No transition is configured for this workflow state.
+            </p>
           )}
         </>
       ) : null}
