@@ -13,6 +13,13 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import {
+  ReadOnlyRepoInspector,
+  buildRepoSnapshot,
+  createRedactor,
+  type RepoGitRevision,
+  type RepoSnapshot,
+} from '@moonwitness/ai-runtime';
 import type { LocalFileAttachmentStorage } from '@moonwitness/orm-storage';
 import {
   AccessDeniedError,
@@ -26,6 +33,7 @@ import type {
   BoundedPtyCommandRequest,
   BoundedPtyCommandResult,
   DesktopActionAuthContext,
+  DesktopRepoSnapshotOptions,
   GitWorktreeLease,
   RiskAuditRecord,
   WorktreeCommitResult,
@@ -532,6 +540,185 @@ export class WorktreeSandbox {
       patchSha256,
       ...(patchStorageKey ? { patchStorageKey } : {}),
     };
+  }
+
+  /**
+   * M13.02: R0 read-only revision-pinned repository snapshot inside the leased worktree.
+   * Gates strictly through `DesktopRiskGate` (`repo.read` + `git.status`), collects Git
+   * metadata with `shell: false`, and delegates manifest/script/doc scanning to
+   * `@moonwitness/ai-runtime`'s `buildRepoSnapshot` over `ReadOnlyRepoInspector`.
+   */
+  async inspectRepoSnapshot(
+    runId: string,
+    auth: DesktopActionAuthContext,
+    options?: DesktopRepoSnapshotOptions
+  ): Promise<RepoSnapshot> {
+    const lease = this.getLease(runId);
+    const realWorktreeRoot = realpathSync(this.worktreeRootDir);
+    const realLeasePath = realpathSync(lease.worktreePath);
+    if (!isWithinRealRoot(realWorktreeRoot, realLeasePath)) {
+      throw new AccessDeniedError('Leased worktree path escapes worktree root');
+    }
+
+    const readDecision = this.riskGate.assertAllowed({
+      runId,
+      action: 'repo.read',
+      companyId: auth.companyId,
+      agentId: auth.agentId,
+      workContractId: auth.workContractId,
+      expectedPolicyVersion: auth.expectedPolicyVersion,
+      dataClassification: auth.dataClassification,
+      grant: auth.grant,
+      humanApproval: auth.humanApproval,
+      ...(options?.targetPath !== undefined ? { targetPath: options.targetPath } : {}),
+    });
+    this.onAuditRecord?.(readDecision.auditEntry);
+
+    const gitDecision = this.riskGate.assertAllowed({
+      runId,
+      action: 'git.status',
+      companyId: auth.companyId,
+      agentId: auth.agentId,
+      workContractId: auth.workContractId,
+      expectedPolicyVersion: auth.expectedPolicyVersion,
+      dataClassification: auth.dataClassification,
+      grant: auth.grant,
+      humanApproval: auth.humanApproval,
+    });
+    this.onAuditRecord?.(gitDecision.auditEntry);
+
+    const allowlistedPaths = this.resolveSnapshotAllowlist(lease, auth, options?.targetPath);
+
+    const gitExecOptions = {
+      cwd: realLeasePath,
+      encoding: 'utf8' as const,
+      shell: false,
+      windowsHide: true,
+      maxBuffer: 10 * 1024 * 1024,
+    };
+    const [headResult, branchResult, statusResult] = await Promise.all([
+      execFileAsync('git', ['rev-parse', 'HEAD'], gitExecOptions),
+      execFileAsync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], gitExecOptions),
+      execFileAsync('git', ['status', '--porcelain'], gitExecOptions),
+    ]);
+
+    const headCommit = headResult.stdout.trim() || null;
+    const branch = branchResult.stdout.trim() || null;
+    const dirty = statusResult.stdout.trim().length > 0;
+    const gitRevision: RepoGitRevision = {
+      headCommit,
+      branch,
+      dirty,
+      capturedAt: new Date().toISOString(),
+    };
+
+    const redactor = createRedactor(this.knownSecrets);
+    const inspector = new ReadOnlyRepoInspector({
+      rootDir: realLeasePath,
+      allowlistedPaths,
+      ...(options?.maxFiles !== undefined
+        ? { maxFilesPerList: Math.max(1, Math.floor(options.maxFiles)) + 1 }
+        : {}),
+      redactor,
+    });
+
+    return buildRepoSnapshot(inspector, {
+      gitRevision,
+      rootLabel: options?.rootLabel ?? `worktree:${runId}`,
+      ...(options?.maxFiles !== undefined ? { maxFiles: options.maxFiles } : {}),
+      ...(options?.maxManifestBytes !== undefined
+        ? { maxManifestBytes: options.maxManifestBytes }
+        : {}),
+      ...(options?.maxDocHeadings !== undefined ? { maxDocHeadings: options.maxDocHeadings } : {}),
+      redactor,
+    });
+  }
+
+  private resolveSnapshotAllowlist(
+    lease: GitWorktreeLease,
+    auth: DesktopActionAuthContext,
+    rawTargetPath?: string
+  ): readonly string[] {
+    const sanitizePrefixes = (rawList: readonly string[]): readonly string[] => {
+      const cleaned: string[] = [];
+      for (const raw of rawList) {
+        const trimmed = raw.trim();
+        if (!trimmed) continue;
+        if (
+          trimmed.includes('\0') ||
+          path.isAbsolute(trimmed) ||
+          /^[A-Za-z]:/u.test(trimmed) ||
+          trimmed.startsWith('\\\\') ||
+          trimmed.startsWith('//') ||
+          trimmed.startsWith('/') ||
+          trimmed.startsWith('\\')
+        ) {
+          throw new AccessDeniedError(`Absolute or external snapshot path rejected: '${raw}'`);
+        }
+        const normalized = normalizePathPrefix(trimmed);
+        if (normalized.split('/').includes('..')) {
+          throw new AccessDeniedError(`Path traversal ('..') rejected in snapshot path: '${raw}'`);
+        }
+        if (normalized && isSecretOrSensitivePath(normalized)) {
+          throw new AccessDeniedError(`Sensitive or secret snapshot path rejected: '${raw}'`);
+        }
+        cleaned.push(normalized || '.');
+      }
+      return cleaned;
+    };
+
+    const leaseAllowlist = sanitizePrefixes(
+      lease.allowedPaths.length > 0 ? lease.allowedPaths : this.defaultAllowedPaths
+    );
+    const grantAllowlist = sanitizePrefixes(auth.grant.allowedPaths ?? []);
+
+    if (rawTargetPath !== undefined) {
+      const resolved = this.resolveWorktreePath(lease, rawTargetPath, {
+        requireExists: true,
+        allowDirectory: true,
+      });
+      if (
+        grantAllowlist.length > 0 &&
+        !grantAllowlist.some(
+          (prefix) =>
+            prefix === '.' ||
+            resolved.relativePath === prefix ||
+            resolved.relativePath.startsWith(`${prefix}/`)
+        )
+      ) {
+        throw new AccessDeniedError(
+          `Snapshot targetPath '${resolved.relativePath}' is outside capability grant allowedPaths`
+        );
+      }
+      return [resolved.relativePath];
+    }
+
+    if (leaseAllowlist.length > 0 && grantAllowlist.length > 0) {
+      const intersected = new Set<string>();
+      for (const leasePrefix of leaseAllowlist) {
+        for (const grantPrefix of grantAllowlist) {
+          if (leasePrefix === '.') {
+            intersected.add(grantPrefix);
+          } else if (grantPrefix === '.') {
+            intersected.add(leasePrefix);
+          } else if (leasePrefix === grantPrefix || leasePrefix.startsWith(`${grantPrefix}/`)) {
+            intersected.add(leasePrefix);
+          } else if (grantPrefix.startsWith(`${leasePrefix}/`)) {
+            intersected.add(grantPrefix);
+          }
+        }
+      }
+      if (intersected.size === 0) {
+        throw new AccessDeniedError(
+          'No overlapping allowed paths between worktree lease and capability grant'
+        );
+      }
+      return [...intersected];
+    }
+
+    if (grantAllowlist.length > 0) return grantAllowlist;
+    if (leaseAllowlist.length > 0) return leaseAllowlist;
+    return ['.'];
   }
 
   /**

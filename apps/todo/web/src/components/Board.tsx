@@ -30,6 +30,8 @@ interface ColumnProps {
   onDrop: (e: React.DragEvent, targetTask: Task) => void;
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
+  onMoveTask: (taskId: number, status: string, position: number) => void;
+  onDeleteTask: (taskId: number) => void;
 }
 
 function Column({
@@ -50,6 +52,8 @@ function Column({
   onDrop,
   onDragOver,
   onDragLeave,
+  onMoveTask,
+  onDeleteTask,
 }: ColumnProps) {
   const statusColorVar = statusColor(status);
   const statusIconHtml = statusIcon(status);
@@ -102,6 +106,8 @@ function Column({
               onDragEnd={onDragEnd}
               onDrop={onDrop}
               onDragOver={onDragOver}
+              onMoveTask={onMoveTask}
+              onDeleteTask={onDeleteTask}
             />
           ))}
           {tasks.length === 0 && (
@@ -133,6 +139,8 @@ interface BoardProps {
   collapsedColumns: Set<string>;
   onToggleCollapse: (status: string) => void;
   searchQuery: string;
+  onMoveTask: (taskId: number, status: string, position: number) => void;
+  onDeleteTask: (taskId: number) => void;
 }
 
 export function Board({
@@ -149,6 +157,8 @@ export function Board({
   collapsedColumns,
   onToggleCollapse,
   searchQuery,
+  onMoveTask,
+  onDeleteTask,
 }: BoardProps) {
   const columnRefs = useRef<Record<Status, React.RefObject<HTMLDivElement | null>>>({
     backlog: { current: null },
@@ -270,6 +280,10 @@ export function Board({
             setDragOverColumn(status);
           }}
           onDragLeave={handleDragLeave}
+          onMoveTask={(taskId, _direction, position) => onMoveTask(taskId, status, position)}
+          onDeleteTask={(taskId) => {
+            onDeleteTask(taskId);
+          }}
         />
       ))}
     </div>

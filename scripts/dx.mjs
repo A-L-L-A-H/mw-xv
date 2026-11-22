@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { argv, env, execPath, exit, platform } from 'node:process';
@@ -32,9 +33,34 @@ function runPnpm(args) {
   runSync(pm.command, [...pm.prefixArgs, ...args]);
 }
 
+function ensureWebDeps() {
+  const viteBin = path.join(WEB_DIR, 'node_modules', 'vite', 'bin', 'vite.js');
+  const pluginReact = path.join(WEB_DIR, 'node_modules', '@vitejs', 'plugin-react', 'package.json');
+  const webPkg = JSON.parse(fs.readFileSync(path.join(WEB_DIR, 'package.json'), 'utf8'));
+  const expectedPw = webPkg.devDependencies?.['@playwright/test'];
+  const pwPkgPath = path.join(WEB_DIR, 'node_modules', '@playwright', 'test', 'package.json');
+  const installedPw = fs.existsSync(pwPkgPath)
+    ? JSON.parse(fs.readFileSync(pwPkgPath, 'utf8')).version
+    : null;
+  const pwVersionMismatch =
+    typeof expectedPw === 'string' &&
+    /^\d+\.\d+\.\d+$/u.test(expectedPw) &&
+    installedPw !== expectedPw;
+  if (!fs.existsSync(viteBin) || !fs.existsSync(pluginReact) || pwVersionMismatch) {
+    console.log('==> Installing apps/todo/web dependencies');
+    const npmCmd = platform === 'win32' ? 'npm.cmd' : 'npm';
+    runSync(npmCmd, ['install', '--no-audit', '--no-fund'], {
+      cwd: WEB_DIR,
+      shell: platform === 'win32',
+    });
+  }
+}
+
 function buildUiAndWeb() {
   console.log('==> Building @moonwitness/ui');
   runPnpm(['--filter', '@moonwitness/ui', 'build']);
+
+  ensureWebDeps();
 
   console.log('==> Typechecking apps/todo/web');
   const tscBin = path.join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc');
@@ -52,6 +78,16 @@ function buildRust({ release = true } = {}) {
   runSync('cargo', args);
 }
 
+function ensurePlaywrightChromium(pwCli) {
+  const webRequire = createRequire(path.join(WEB_DIR, 'package.json'));
+  const { chromium } = webRequire('playwright');
+  const executablePath = chromium.executablePath();
+  if (!executablePath || !fs.existsSync(executablePath)) {
+    console.log('==> Installing Playwright Chromium for apps/todo/web');
+    runSync(execPath, [pwCli, 'install', 'chromium']);
+  }
+}
+
 function runE2e() {
   const apiPort = env.MW_E2E_API_PORT ?? '4249';
   const e2eHome = path.join(os.tmpdir(), `mw-dx-e2e-${apiPort}`);
@@ -59,7 +95,8 @@ function runE2e() {
   fs.mkdirSync(e2eHome, { recursive: true });
 
   console.log(`==> Running Playwright E2E against ${RELEASE_BIN}`);
-  const pwCli = path.join(ROOT, 'node_modules', '@playwright', 'test', 'cli.js');
+  const pwCli = path.join(WEB_DIR, 'node_modules', '@playwright', 'test', 'cli.js');
+  ensurePlaywrightChromium(pwCli);
   runSync(execPath, [pwCli, 'test', '--config=apps/todo/web/playwright.config.ts'], {
     env: { MW_E2E_API_PORT: apiPort, MOONWITNESS_DX_HOME: e2eHome },
   });
@@ -142,7 +179,11 @@ async function runMcpIntegrationTest() {
     assert(!r.isError && r.text.includes('status: doing'), r.text);
     r = await callTool('task_checklist_toggle', { id: 'demo#1', ac_id: 'AC-1', done: true });
     assert(!r.isError && r.text.includes('Toggled AC-1'), r.text);
-    r = await callTool('task_submit_review', { id: 'demo#1', commit_sha: 'deadbeef', evidence_path: 'e2e.log' });
+    r = await callTool('task_submit_review', {
+      id: 'demo#1',
+      commit_sha: 'deadbeef',
+      evidence_path: 'e2e.log',
+    });
     assert(!r.isError && r.text.includes('status: review'), r.text);
     r = await callTool('brain_quick_capture', {
       slug: 'wiki/live-mcp',
@@ -169,13 +210,23 @@ async function runMcpIntegrationTest() {
 
 function runDev(extraArgs) {
   runPnpm(['--filter', '@moonwitness/ui', 'build']);
+  ensureWebDeps();
   const apiPort = env.MW_API_PORT ?? '4242';
   const webPort = env.MW_WEB_PORT ?? '5173';
 
   console.log(`==> Starting moonwitness-dx dev (API :${apiPort}, Web :${webPort})`);
   const apiProc = spawn(
     'cargo',
-    ['run', '--manifest-path', path.join(TODO_DIR, 'Cargo.toml'), '--', '--port', apiPort, '--no-open', ...extraArgs],
+    [
+      'run',
+      '--manifest-path',
+      path.join(TODO_DIR, 'Cargo.toml'),
+      '--',
+      '--port',
+      apiPort,
+      '--no-open',
+      ...extraArgs,
+    ],
     { cwd: TODO_DIR, stdio: 'inherit', env: { ...env } }
   );
 

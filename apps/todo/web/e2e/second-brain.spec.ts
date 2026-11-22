@@ -1,9 +1,9 @@
 // E2E: CLI → API → MCP → Second Brain integration flow
 import { test, expect } from '@playwright/test';
 
-test.use({ storageState: { cookies: [], origins: [] } });
-
 test.describe('Second Brain + Global Search integration', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });

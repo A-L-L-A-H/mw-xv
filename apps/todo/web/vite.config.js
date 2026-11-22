@@ -28,6 +28,13 @@ function normalizeDistLineEndings() {
 // The Rust binary embeds dist/index.html, dist/assets/app.js, and dist/assets/style.css.
 export default defineConfig({
   plugins: [react(), normalizeDistLineEndings()],
+  resolve: {
+    dedupe: ["react", "react-dom", "radix-ui", "sonner"],
+    alias: {
+      react: path.resolve(import.meta.dirname, "node_modules/react"),
+      "react-dom": path.resolve(import.meta.dirname, "node_modules/react-dom"),
+    },
+  },
   build: {
     outDir: "dist",
     assetsInlineLimit: 100_000_000,

@@ -110,30 +110,44 @@ const MIGRATIONS: &[&str] = &[
          title,
          body,
          tags,
+         code,
+         summary,
+         owner,
          tokenize = 'porter unicode61'
      );
      CREATE TRIGGER documents_fts_insert AFTER INSERT ON documents BEGIN
-         INSERT INTO global_search_fts (entity_type, entity_id, title, body, tags)
-         VALUES ('document', NEW.id, NEW.title, NEW.body, NEW.tags);
+         INSERT INTO global_search_fts (entity_type, entity_id, title, body, tags, code, summary, owner)
+         VALUES ('document', NEW.id, NEW.title, NEW.body, NEW.tags, NULL, NULL, NULL);
      END;
      CREATE TRIGGER documents_fts_update AFTER UPDATE ON documents BEGIN
-         UPDATE global_search_fts SET title = NEW.title, body = NEW.body, tags = NEW.tags
+         UPDATE global_search_fts SET title = NEW.title, body = NEW.body, tags = NEW.tags, code = NULL, summary = NULL, owner = NULL
          WHERE entity_type = 'document' AND entity_id = NEW.id;
      END;
      CREATE TRIGGER documents_fts_delete AFTER DELETE ON documents BEGIN
          DELETE FROM global_search_fts WHERE entity_type = 'document' AND entity_id = OLD.id;
      END;
      CREATE TRIGGER tasks_fts_insert AFTER INSERT ON tasks BEGIN
-         INSERT INTO global_search_fts (entity_type, entity_id, title, body, tags)
-         VALUES ('task', NEW.id, NEW.title, NEW.description, NEW.tags);
+         INSERT INTO global_search_fts (entity_type, entity_id, title, body, tags, code, summary, owner)
+         VALUES ('task', NEW.id, NEW.title, NEW.description, NEW.tags, NEW.code, NEW.summary, NEW.owner);
      END;
      CREATE TRIGGER tasks_fts_update AFTER UPDATE ON tasks BEGIN
-         UPDATE global_search_fts SET title = NEW.title, body = NEW.description, tags = NEW.tags
+         UPDATE global_search_fts SET title = NEW.title, body = NEW.description, tags = NEW.tags, code = NEW.code, summary = NEW.summary, owner = NEW.owner
          WHERE entity_type = 'task' AND entity_id = NEW.id;
      END;
      CREATE TRIGGER tasks_fts_delete AFTER DELETE ON tasks BEGIN
          DELETE FROM global_search_fts WHERE entity_type = 'task' AND entity_id = OLD.id;
      END;",
+    // Migration 10c: Backfill FTS5 global search table with existing tasks and documents
+    "INSERT INTO global_search_fts (entity_type, entity_id, title, body, tags, code, summary, owner)
+     SELECT 'task', id, title, description, tags, code, summary, owner FROM tasks
+     WHERE NOT EXISTS (
+         SELECT 1 FROM global_search_fts fts WHERE fts.entity_type = 'task' AND fts.entity_id = tasks.id
+     );
+     INSERT INTO global_search_fts (entity_type, entity_id, title, body, tags, code, summary, owner)
+     SELECT 'document', id, title, body, tags, NULL, NULL, NULL FROM documents
+     WHERE NOT EXISTS (
+         SELECT 1 FROM global_search_fts fts WHERE fts.entity_type = 'document' AND fts.entity_id = documents.id
+     );",
 ];
 
 const PROJECT_COLORS: &[&str] = &["gray", "red", "orange", "yellow", "green", "teal", "blue", "purple", "pink"];

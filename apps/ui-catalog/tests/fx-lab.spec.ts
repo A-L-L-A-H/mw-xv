@@ -35,7 +35,7 @@ test('FX Lab particles bounded, transitions interruptible, soundscape muted by d
 
   // Mobile reflow
   await page.setViewportSize({ width: 390, height: 844 });
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = await lab.evaluate((element) => element.scrollWidth - element.clientWidth);
   expect(overflow).toBeLessThanOrEqual(2);
 });
 
@@ -48,4 +48,15 @@ test('Comic transitions respect reduced-motion and never hide content (W6-004)',
   await expect(transitions.locator('[data-reduced-motion="true"]')).toBeVisible();
   const content = transitions.locator('.fx-lab-transition-content');
   await expect(content).toHaveText('Scene Content');
+});
+
+test('FX catalog documents purpose and anti-patterns for every effect family (W6-007)', async ({ page }) => {
+  await page.goto('./?skin=moonwitness-ink&mode=dark#fx-lab');
+  const lab = page.getByTestId('fx-lab');
+  await expect(lab.getByText(/Intended for restrained atmospheric depth/)).toBeVisible();
+  await expect(lab.getByText(/Avoid stacking transitions or delaying navigation/)).toBeVisible();
+  await expect(lab.getByText(/Avoid autoplay, overlapping loops/)).toBeVisible();
+  await expect(lab.getByRole('button', { name: 'Intense' })).toBeVisible();
+  await lab.getByRole('button', { name: 'Intense' }).click();
+  await expect(lab.getByTestId('fx-particles').locator('[data-particle-intensity="intense"]')).toBeVisible();
 });

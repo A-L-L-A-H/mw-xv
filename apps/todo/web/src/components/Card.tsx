@@ -45,6 +45,8 @@ interface CardProps {
   onDragEnd: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, targetTask: Task) => void;
   onDragOver: (e: React.DragEvent) => void;
+  onMoveTask: (taskId: number, status: string, position: number) => void;
+  onDeleteTask: (taskId: number) => void;
 }
 
 export function Card({
@@ -61,6 +63,8 @@ export function Card({
   onDragEnd,
   onDrop,
   onDragOver,
+  onMoveTask,
+  onDeleteTask,
 }: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -339,16 +343,27 @@ export function Card({
             <DownloadIcon className="h-4 w-4 mr-2" />
             {tr("Copy link")}
           </button>
-          <button className="popover-item" onClick={() => { /* move up */ }}>
+          <button className="popover-item" onClick={() => {
+            const position = Math.max(index - 1, 0);
+            if (position === index) return;
+            onMoveTask(task.id, columnId, position);
+          }}>
             <ArrowRightIcon className="h-4 w-4 mr-2" />
             {tr("Move up")}
           </button>
-          <button className="popover-item" onClick={() => { /* move down */ }}>
+          <button className="popover-item" onClick={() => {
+            const position = index + 1;
+            onMoveTask(task.id, columnId, position);
+          }}>
             <ArrowLeftIcon className="h-4 w-4 mr-2" />
             {tr("Move down")}
           </button>
           <hr className="popover-separator" />
-          <button className="popover-item destructive" onClick={() => { /* delete */ }}>
+          <button className="popover-item destructive" onClick={() => {
+            if (window.confirm(tr("Are you sure you want to delete this task?"))) {
+              onDeleteTask(task.id);
+            }
+          }}>
             <DeleteIcon className="h-4 w-4 mr-2" />
             {tr("Delete")}
           </button>

@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createSpriteSequenceAdapter } from '../lib/character-adapter.js';
 import { cn } from '../lib/cn.js';
 import {
@@ -44,7 +37,9 @@ export interface SpritePlayerProps {
 const DEFAULT_SPRITE_FPS = 12;
 const spriteAdapter = createSpriteSequenceAdapter();
 
-function resolveClipCycleDurationMs(clip: Pick<SpriteClipMetadata, 'frames' | 'fps' | 'durationMs' | 'pingPong'>): number {
+function resolveClipCycleDurationMs(
+  clip: Pick<SpriteClipMetadata, 'frames' | 'fps' | 'durationMs' | 'pingPong'>
+): number {
   const count = clip.frames.length;
   if (count === 0) return 0;
   const fps =
@@ -138,11 +133,7 @@ export function SpritePlayer({
     durationMs: cycleDurationMs > 0 ? cycleDurationMs : null,
     progress: 0,
     requestedPlaying: shouldPlay,
-    effectiveState: effectiveReducedMotion
-      ? 'static'
-      : shouldPlay
-        ? 'playing'
-        : 'paused',
+    effectiveState: effectiveReducedMotion ? 'static' : shouldPlay ? 'playing' : 'paused',
     reducedMotion: effectiveReducedMotion,
     visible: true,
     documentHidden: false,
@@ -221,15 +212,16 @@ export function SpritePlayer({
     }
   }, [resolved.frameIndex, onFrameChange]);
 
-  const spriteState = isReduced || clip.frames.length === 0
-    ? 'static'
-    : effectivePinnedFrame !== undefined
-      ? 'pinned'
-      : resolved.completed
-        ? 'completed'
-        : shouldPlay && snapshot.effectiveState === 'playing'
-          ? 'playing'
-          : 'paused';
+  const spriteState =
+    isReduced || clip.frames.length === 0
+      ? 'static'
+      : effectivePinnedFrame !== undefined
+        ? 'pinned'
+        : resolved.completed
+          ? 'completed'
+          : shouldPlay && snapshot.effectiveState === 'playing'
+            ? 'playing'
+            : 'paused';
 
   const effectiveScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
   const scaledWidth = Math.max(1, Math.round(clip.width * effectiveScale));
@@ -244,8 +236,9 @@ export function SpritePlayer({
       data-sprite-state={spriteState}
       style={{
         display: 'inline-block',
-        width: `${scaledWidth}px`,
-        height: `${scaledHeight}px`,
+        width: `min(100%, ${scaledWidth}px)`,
+        maxWidth: '100%',
+        aspectRatio: `${scaledWidth} / ${scaledHeight}`,
         ...style,
       }}
     >

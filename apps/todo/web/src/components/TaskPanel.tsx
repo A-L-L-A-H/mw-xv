@@ -53,6 +53,8 @@ export function TaskPanel({
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [newAc, setNewAc] = useState("");
+  const [linkedDocInput, setLinkedDocInput] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Focus trap and escape handling
@@ -105,6 +107,12 @@ export function TaskPanel({
         case "human":
           patch.human = value === "true";
           break;
+        case "priority":
+          patch.priority = value || undefined;
+          break;
+        case "owner":
+          patch.owner = value || undefined;
+          break;
       }
       if (Object.keys(patch).length > 0) {
         onUpdate(t.id, patch);
@@ -120,6 +128,54 @@ export function TaskPanel({
 
   const handleTagChange = (tags: string[]) => {
     onUpdate(t.id, { tags });
+  };
+
+  const getAcList = (): Array<{ id?: string; text?: string; done?: boolean }> => {
+    if (!t.acceptance_criteria_json) return [];
+    try {
+      const parsed = JSON.parse(t.acceptance_criteria_json);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const handleAddAc = async () => {
+    const text = newAc.trim();
+    if (!text) return;
+    const list = getAcList();
+    const next = [...list, { id: `new-${Date.now()}`, text, done: false }];
+    await api("PATCH", `/tasks/${t.id}`, { acceptance_criteria: next });
+    await onRefresh?.(t.id);
+    setNewAc("");
+  };
+
+  const handleRemoveAc = async (id: string | undefined) => {
+    if (!id) return;
+    const list = getAcList().filter((ac) => (ac.id || ac.text) !== id);
+    await api("PATCH", `/tasks/${t.id}`, { acceptance_criteria: list });
+    await onRefresh?.(t.id);
+  };
+
+  const handleAttachDoc = async () => {
+    const ref = linkedDocInput.trim();
+    if (!ref) return;
+    const current = t.refs_json ? (() => {
+      try { return JSON.parse(t.refs_json); } catch { return []; }
+    })() : [];
+    const next = [...current, ref];
+    await api("PATCH", `/tasks/${t.id}`, { references: next });
+    await onRefresh?.(t.id);
+    setLinkedDocInput("");
+  };
+
+  const handleDetachDoc = async (idx: number) => {
+    const current = t.refs_json ? (() => {
+      try { return JSON.parse(t.refs_json); } catch { return []; }
+    })() : [];
+    const next = current.filter((_el: unknown, i: number) => i !== idx);
+    await api("PATCH", `/tasks/${t.id}`, { references: next });
+    await onRefresh?.(t.id);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,10 +211,26 @@ export function TaskPanel({
           <div className="panel-v2-bar">
             <div className="panel-v2-badges">
               {t.code && <span className="card-badge code-badge">{t.code}</span>}
-              {t.priority && <span className="card-badge priority-badge">{t.priority.toUpperCase()}</span>}
+              {t.priority && (
+                <span
+                  className="card-badge priority-badge"
+                  onClick={() => startEdit("priority", t.priority || "")}
+                  title={tr("Edit priority")}
+                >
+                  {t.priority.toUpperCase()}
+                </span>
+              )}
               {t.series && <span className="card-badge series-badge">{t.series}</span>}
               {t.horizon && <span className="card-badge horizon-badge">{t.horizon}</span>}
-              {t.owner && <span className="card-badge">{t.owner}</span>}
+              {t.owner && (
+                <span
+                  className="card-badge"
+                  onClick={() => startEdit("owner", t.owner || "")}
+                  title={tr("Edit owner")}
+                >
+                  {t.owner}
+                </span>
+              )}
               <span className="card-badge">{t.status.toUpperCase()}</span>
             </div>
             <div className="panel-workflow-actions">
@@ -283,14 +355,7 @@ export function TaskPanel({
 
           {/* Acceptance Criteria (v2) */}
           {(() => {
-            if (!t.acceptance_criteria_json) return null;
-            let acList: Array<{ id?: string; text?: string; done?: boolean }> = [];
-            try {
-              const parsed = JSON.parse(t.acceptance_criteria_json);
-              acList = Array.isArray(parsed) ? parsed : [];
-            } catch {
-              acList = [];
-            }
+            const acList = getAcList();
             if (acList.length === 0) return null;
             return (
               <div className="panel-section">
@@ -318,24 +383,52 @@ export function TaskPanel({
                         <span className={ac.done ? "line-through text-muted" : ""}>{ac.text}</span>
                         {ac.id && <span className="ac-id text-xs text-muted">#{ac.id}</span>}
                       </label>
+                      <button
+                        className="ac-remove"
+                        type="button"
+                        onClick={() => handleRemoveAc(ac.id || ac.text)}
+                        aria-label={tr("Remove criterion")}
+                      >
+                        <XIcon className="h-3 w-3" />
+                      </button>
                     </li>
                   ))}
                 </ul>
+                <div className="ac-add-row">
+                  <Input
+                    type="text"
+                    placeholder={tr("Add acceptance criterion...")}
+                    value={newAc}
+                    onChange={(e) => setNewAc(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddAc();
+                      }
+                    }}
+                    className="ac-add-input"
+                  />
+                  <Button size="sm" onClick={handleAddAc} disabled={!newAc.trim()}>
+                    {tr("Add")}
+                  </Button>
+                </div>
               </div>
             );
           })()}
 
           {/* Linked Second Brain Documents (v2) */}
           {(() => {
-            if (!t.refs_json) return null;
-            let refs: Array<string | { id?: number; slug?: string; path?: string; title?: string }> = [];
-            try {
-              const parsed = JSON.parse(t.refs_json);
-              refs = Array.isArray(parsed) ? parsed : [];
-            } catch {
-              refs = [];
-            }
-            if (refs.length === 0) return null;
+            const refs: Array<string | { id?: number; slug?: string; path?: string; title?: string }> = t.refs_json
+              ? (() => {
+                  try {
+                    const parsed = JSON.parse(t.refs_json!);
+                    return Array.isArray(parsed) ? parsed : [];
+                  } catch {
+                    return [];
+                  }
+                })()
+              : [];
+            if (refs.length === 0 && !linkedDocInput) return null;
             return (
               <div className="panel-section">
                 <div className="section-header">
@@ -348,20 +441,50 @@ export function TaskPanel({
                         ? ref
                         : ref.title || ref.path || ref.slug || (ref.id ? `Doc #${ref.id}` : "Doc");
                     return (
-                      <button
-                        key={idx}
-                        type="button"
-                        className="card-doc-link-btn"
-                        onClick={() => {
-                          onOpenDoc?.(ref);
-                          onClose();
-                        }}
-                      >
-                        <BookOpenIcon className="h-3.5 w-3.5 mr-1" />
-                        <span>{label}</span>
-                      </button>
+                      <div key={idx} className="doc-link-row">
+                        <button
+                          type="button"
+                          className="card-doc-link-btn"
+                          onClick={() => {
+                            onOpenDoc?.(ref);
+                            onClose();
+                          }}
+                        >
+                          <BookOpenIcon className="h-3.5 w-3.5 mr-1" />
+                          <span>{label}</span>
+                        </button>
+                        <button
+                          className="doc-detach"
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDetachDoc(idx);
+                          }}
+                          aria-label={tr("Detach document")}
+                        >
+                          <XIcon className="h-3 w-3" />
+                        </button>
+                      </div>
                     );
                   })}
+                  <div className="doc-attach-row">
+                    <Input
+                      type="text"
+                      placeholder={tr("Attach document slug or title...")}
+                      value={linkedDocInput}
+                      onChange={(e) => setLinkedDocInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAttachDoc();
+                        }
+                      }}
+                      className="doc-attach-input"
+                    />
+                    <Button size="sm" onClick={handleAttachDoc} disabled={!linkedDocInput.trim()}>
+                      {tr("Attach")}
+                    </Button>
+                  </div>
                 </div>
               </div>
             );

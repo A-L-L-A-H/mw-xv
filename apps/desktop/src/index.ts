@@ -1,4 +1,5 @@
 export * from './types.js';
+export type { RepoGitRevision, RepoSnapshot } from '@moonwitness/ai-runtime';
 export {
   DesktopRiskGate,
   NativeHumanApprovalIssuer,

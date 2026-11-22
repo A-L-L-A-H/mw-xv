@@ -6,7 +6,7 @@ M13 extends the existing MoonWitness Desktop local-first harness. It does not cr
 
 ## M13.01 — ROCKSOUL FLOW capability audit and first vertical-slice selection
 
-- **Status:** todo
+- **Status:** complete (2026-11-22; audit deliverables and evidence verified on `dev` base `f3abe0937894b1fd309f675bd7bd86a15ee46e70`; no feature code implemented in M13.01)
 - **Prerequisites:** M12.05, M12.06, M12.07, M12.11, M12.13; Desktop architecture baseline ADR 0008 is accepted.
 - **Granular activation item:** DSK-0.12 in [the Desktop engineering ledger](../../todo-desktop.md).
 - **Source reference:** [bjo163/rocksouldx](https://github.com/bjo163/rocksouldx), catalogued as `ADAPT` in the [source migration matrix](../migration/SOURCE-MIGRATION-MATRIX.md). The matrix's `3157a62...` value is a README blob SHA, **not** a repository commit SHA; resolve and record the actual source commit before relying on any source file.
@@ -19,16 +19,16 @@ Establish an exact-source, evidence-backed map of ROCKSOUL FLOW ideas against th
 
 ### Capability areas to inspect
 
-| ROCKSOUL FLOW area | Existing target owners to inspect first | Audit question |
-|---|---|---|
-| Repo Radar | `apps/desktop`, `packages/ai-runtime` (including repository inspection), isolated worktree and file-inspector contracts | Which repository facts are already indexed/read safely, and what is still missing? |
-| Overlap Detector | `packages/ai-runtime`, `packages/ai-evaluation`, repository inspection and existing tests | Is there a deterministic duplicate/overlap signal, or only an unverified proposal? |
-| Plan Forge | `packages/ai-runtime` workforce planner, `packages/orm-ai`, `packages/orm-project`, `packages/orm-workflow` | Can a plan be represented by existing work contracts and project/workflow records? |
-| Prompt Forge | AI runtime prompt/skill contracts, evaluation fixtures and documentation | Is there a real versioning or review gap without creating another prompt registry? |
-| Task Deck | `packages/orm-project`, `packages/orm-workflow`, `packages/jobs`, existing Board/AI views and Desktop bridge | Can existing task/work-contract projections serve the experience? |
-| Proof Gate | PCW verifier, evidence artifact manifests, independent-review workflow and Desktop risk gate | Which proof checks are already authoritative, and what evidence remains absent? |
-| Memory Ledger | `packages/orm-ai` memory candidates/skill versions, memory evaluation and revocation rules | What is already canonical, and which memory states must remain candidate-only? |
-| Visual DNA Lab | `packages/assets`, `packages/ui`, UI Catalog and existing visual-review workflows | Can artwork-first assets and current UI contracts cover the idea without a new rendering stack? |
+| ROCKSOUL FLOW area | Existing target owners to inspect first                                                                                 | Audit question                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Repo Radar         | `apps/desktop`, `packages/ai-runtime` (including repository inspection), isolated worktree and file-inspector contracts | Which repository facts are already indexed/read safely, and what is still missing?              |
+| Overlap Detector   | `packages/ai-runtime`, `packages/ai-evaluation`, repository inspection and existing tests                               | Is there a deterministic duplicate/overlap signal, or only an unverified proposal?              |
+| Plan Forge         | `packages/ai-runtime` workforce planner, `packages/orm-ai`, `packages/orm-project`, `packages/orm-workflow`             | Can a plan be represented by existing work contracts and project/workflow records?              |
+| Prompt Forge       | AI runtime prompt/skill contracts, evaluation fixtures and documentation                                                | Is there a real versioning or review gap without creating another prompt registry?              |
+| Task Deck          | `packages/orm-project`, `packages/orm-workflow`, `packages/jobs`, existing Board/AI views and Desktop bridge            | Can existing task/work-contract projections serve the experience?                               |
+| Proof Gate         | PCW verifier, evidence artifact manifests, independent-review workflow and Desktop risk gate                            | Which proof checks are already authoritative, and what evidence remains absent?                 |
+| Memory Ledger      | `packages/orm-ai` memory candidates/skill versions, memory evaluation and revocation rules                              | What is already canonical, and which memory states must remain candidate-only?                  |
+| Visual DNA Lab     | `packages/assets`, `packages/ui`, UI Catalog and existing visual-review workflows                                       | Can artwork-first assets and current UI contracts cover the idea without a new rendering stack? |
 
 This table is an inspection guide, not a claim that any listed capability is complete. Verify exact implementation files, public exports, callers and tests on the candidate SHA.
 
@@ -56,3 +56,36 @@ This table is an inspection guide, not a claim that any listed capability is com
 For this documentation/audit-only task, run the narrow repository checks that are available in the checkout: roadmap task validation, roadmap/automation consistency, documentation links, formatting for changed files and `git diff --check`. Run package or application tests only if the audit uncovers an actual code change (which is outside M13.01).
 
 M13.01 remains open until the reuse map and evidence file exist and all acceptance criteria are verified.
+
+## M13.02 — Read-only revision-pinned Repo Radar Snapshot
+
+- **Status:** complete (2026-11-22; verified on detached worktree over `origin/dev` base `ac1198e`)
+- **Prerequisites:** M13.01 (`docs/architecture/rock-soul-flow-reuse-map.md` §3).
+- **Deliverables:** `packages/ai-runtime/src/repo-snapshot.ts`, `apps/desktop/src/worktree-sandbox.ts`, and `docs/roadmap/evidence/M13.02.md`.
+
+### Goal
+
+Deliver a deterministic, read-only, revision-pinned `RepoSnapshot` builder in `@moonwitness/ai-runtime` (strictly over `ReadOnlyRepoInspector` and `createRedactor()`) and an `R0` `WorktreeSandbox.inspectRepoSnapshot` surface in `apps/desktop` gated by `DesktopRiskGate` (`repo.read` / `git.status`).
+
+### Bounded file scope
+
+- `packages/ai-runtime/src/repo-snapshot.ts` and `packages/ai-runtime/src/index.ts`
+- `packages/ai-runtime/tests/repo-snapshot.test.ts`
+- `apps/desktop/src/worktree-sandbox.ts` and `apps/desktop/src/types.ts`
+- `apps/desktop/tests/desktop-harness.test.ts`
+- `docs/roadmap/evidence/M13.02.md`
+
+### Acceptance criteria
+
+- `buildRepoSnapshot` operates strictly through `ReadOnlyRepoInspector` (no direct `fs` calls outside allowlist/containment guards, no shell execution inside `@moonwitness/ai-runtime`).
+- Every manifest, script, and doc claim in `RepoSnapshot` cites an exact relative path and SHA-256 digest; direct observations are separated from inferred metadata.
+- Sensitive paths (`.env*`, `.git/*`, keys, credentials) are excluded unconditionally and values pass through `createRedactor()`.
+- File count or byte caps set `incomplete: true` with explicit `omittedReasons`.
+- `apps/desktop` `inspectRepoSnapshot` enforces `DesktopRiskGate` at `R0` (`repo.read` / `git.status`), pins `headCommit` + `branch` + `dirty` via `execFile('git', ..., { shell: false })`, and preserves tenant `companyId` + `CapabilityGrant` validation.
+- Output is deterministic for identical inputs (stable sorted arrays and reproducible `snapshotSha256`).
+
+### Verification
+
+- `pnpm --filter @moonwitness/ai-runtime build` and `pnpm --filter @moonwitness/ai-runtime exec vitest run tests/repo-snapshot.test.ts`
+- `pnpm --filter @moonwitness/desktop build` and `pnpm --filter @moonwitness/desktop exec vitest run tests/desktop-harness.test.ts`
+- `pnpm desktop:ui:check`, `pnpm automation:check:roadmap`, `pnpm tasks:validate`, and `node scripts/check-docs.mjs`

@@ -55,6 +55,12 @@ import tileHalftoneUrl from '@moonwitness/assets/materials/tile-halftone.svg';
 import scuffedBorderUrl from '@moonwitness/assets/materials/scuffed-border.svg';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { CharacterPreview } from '@moonwitness/ui/components/character-preview';
+import idleFrameOne from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-01.svg';
+import idleFrameTwo from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
+import hairFrameOne from '@moonwitness/assets/animation/crew-01-hair/crew-01-hair-move-frame-01.svg';
+import hairFrameTwo from '@moonwitness/assets/animation/crew-01-hair/crew-01-hair-move-frame-02.svg';
+import walkFrameOne from '@moonwitness/assets/animation/crew-01-walk/crew-01-walk-frame-01.svg';
+import walkFrameTwo from '@moonwitness/assets/animation/crew-01-walk/crew-01-walk-frame-02.svg';
 const SceneLab = lazy(() => import('./SceneLab.js').then((mod) => ({ default: mod.SceneLab })));
 const FXLab = lazy(() => import('./FXLab.js').then((mod) => ({ default: mod.FXLab })));
 import { PaperNote } from '@moonwitness/ui/components/paper-note';
@@ -157,6 +163,7 @@ import {
   TooltipTrigger,
 } from '@moonwitness/ui/components/tooltip';
 import { AssetBrowser } from './AssetBrowser.js';
+import { AssetDiagnostics } from './AssetDiagnostics.js';
 
 const sections = [
   { id: 'foundations', label: 'Foundations' },
@@ -175,6 +182,7 @@ const sections = [
   { id: 'integration-coverage', label: 'Integration boundary' },
   { id: 'request-coverage', label: 'Purchase request workflow' },
   { id: 'assets', label: 'Asset inventory' },
+  { id: 'asset-diagnostics', label: 'Asset diagnostics' },
   { id: 'charts', label: 'Charts' },
 ] as const;
 
@@ -1880,6 +1888,13 @@ function CatalogContent() {
               <AssetBrowser />
             </Section>
             <Section
+              id="asset-diagnostics"
+              title="Asset & scene diagnostics"
+              description="Build-time asset QA and scene schema validation from canonical package validators."
+            >
+              <AssetDiagnostics />
+            </Section>
+            <Section
               id="orm-storage-coverage"
               title="Attachment storage (orm-storage)"
               description="Contract-only design specimen for orm-storage attachment storage providers; no production Board storage screen or attachment management route is registered."
@@ -2033,6 +2048,7 @@ function CatalogContent() {
                   <CharacterPreview
                     clipId="animation/crew-01-idle/crew-01-idle-clip.json"
                     fallbackAsset="animation/crew-01-idle/crew-01-idle-frame-01.svg"
+                    frames={[idleFrameOne, idleFrameTwo]}
                   />
                 </Panel>
                 <Panel
@@ -2042,6 +2058,7 @@ function CatalogContent() {
                   <CharacterPreview
                     clipId="animation/crew-01-hair/crew-01-hair-move-clip.json"
                     fallbackAsset="animation/crew-01-hair/crew-01-hair-move-frame-01.svg"
+                    frames={[hairFrameOne, hairFrameTwo]}
                   />
                 </Panel>
                 <Panel
@@ -2051,6 +2068,7 @@ function CatalogContent() {
                   <CharacterPreview
                     clipId="animation/crew-01-walk/crew-01-walk-clip.json"
                     fallbackAsset="animation/crew-01-walk/crew-01-walk-frame-01.svg"
+                    frames={[walkFrameOne, walkFrameTwo]}
                   />
                 </Panel>
               </div>

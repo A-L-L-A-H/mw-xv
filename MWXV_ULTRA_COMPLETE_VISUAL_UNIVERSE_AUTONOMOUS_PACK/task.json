@@ -2702,7 +2702,7 @@
       "id": "W6-003",
       "phase": "W6",
       "title": "Implement bounded scene particle effects",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2728,15 +2728,26 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Browser fixture confirms the particle cap and static/reduced-motion behavior, but the explicit frame-time/performance measurement in acceptance criteria was not captured in this resource-constrained browser session. Reopen for a named-browser performance measurement before completion.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md; 3/3 passed"
+        },
+        {
+          "command": "node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md; 6/6 passed"
+        }
+      ],
+      "commit": "578d39c"
     },
     {
       "id": "W6-004",
       "phase": "W6",
       "title": "Implement comic scene transition pack",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2763,8 +2774,19 @@
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
-      "evidence": [],
-      "commit": null
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md; reduced-motion transition content test passed"
+        },
+        {
+          "command": "node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md; 6/6 passed"
+        }
+      ],
+      "commit": "578d39c"
     },
     {
       "id": "W6-005",
@@ -2816,7 +2838,7 @@
       "id": "W6-006",
       "phase": "W6",
       "title": "Implement scene soundscape controller",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2844,15 +2866,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Blocked by prerequisite W6-005, which is skipped because no provenance-complete, authorized scene ambience assets exist. Existing localized UI sound consent does not fulfill the distinct ambience pack. Reopen after the scene audio provenance contract and source/license are approved.",
+      "evidence": [
+        {
+          "command": "dependency audit: W6-005 status and notes",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md"
+        },
+        {
+          "command": "node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md; existing controller contract 6/6 passed but is not scene ambience integration"
+        }
+      ],
+      "commit": "578d39c"
     },
     {
       "id": "W6-007",
       "phase": "W6",
       "title": "Create FX contact sheet and preview catalogue",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2878,9 +2911,15 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "The FX catalog specimen and purpose/anti-pattern test pass, but W6-003 is blocked on its required frame-time evidence. Keep this dependent task blocked until W6-003 is accepted; no separate binary contact sheet is claimed.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md; 3/3 passed including W6-007 catalog test"
+        }
+      ],
+      "commit": "578d39c"
     },
     {
       "id": "W7-001",
@@ -2962,7 +3001,7 @@
       "id": "W7-003",
       "phase": "W7",
       "title": "Add character studio specimen",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2988,15 +3027,31 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Browser acceptance is blocked: focused test timed out waiting for Play while the DOM showed Pause under the default reduced-motion test context; subsequent Chromium runs crashed and the final test launch timed out waiting for preview webServer startup. UI package build passes. Diagnose/stabilize the control and rerun in a stable browser environment before marking done.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep \"character studio previews\"",
+          "exit_code": 1,
+          "artifact": "test-results/ui-catalog/scene-harness-character-st-b5862--and-reset-controls-W7-003-/error-context.md; timeout waiting for Play button; DOM showed Pause"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep \"character studio|environment inspector resets|scene runtime supports\"",
+          "exit_code": 1,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; Chromium target/protocol crash"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep \"asset diagnostics|environment inspector resets\"",
+          "exit_code": 1,
+          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W6-W7-execution.md; Playwright webServer timed out"
+        }
+      ],
+      "commit": "578d39c"
     },
     {
       "id": "W7-004",
       "phase": "W7",
       "title": "Add environment and layer inspector",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -3021,15 +3076,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "SceneLab Moon City inspector already provides breakpoint-specific Desktop/Mobile compositions, guides, layer controls and a canonical reset; verified the reset and layer baseline on mobile-width harness.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep \"environment inspector resets\"",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md; 1/1 passed"
+        }
+      ],
+      "commit": "578d39c"
     },
     {
       "id": "W7-005",
       "phase": "W7",
       "title": "Add timeline and FX preview",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -3055,15 +3116,21 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Blocked by W7-003, which has not passed browser acceptance. SceneLab deterministic timeline harness and scrubber source exist, but its focused browser test did not reach a passing result in the resource-constrained Chromium session. Reopen after W7-003 passes.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep \"character studio|environment inspector resets|scene runtime supports\"",
+          "exit_code": 1,
+          "artifact": "evidence/W6-W7-execution.md; target crashed and run failed"
+        }
+      ],
+      "commit": "578d39c"
     },
     {
       "id": "W7-006",
       "phase": "W7",
       "title": "Add responsive scene preview",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "qa",
       "parallel_group": "serial",
@@ -3088,15 +3155,26 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Blocked by W7-005. Responsive Desktop/Mobile inspector controls and reduced-motion fallback are already present, and the 390px inspector test has passing prior evidence, but the required responsive visual matrix/focal review is incomplete.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep \"environment inspector resets\"",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md; 1/1 reset test passed; full responsive visual matrix not verified"
+        },
+        {
+          "command": "dependency audit: W7-005 status",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md"
+        }
+      ],
+      "commit": "578d39c"
     },
     {
       "id": "W7-007",
       "phase": "W7",
       "title": "Add asset and scene diagnostics panel",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -3124,9 +3202,30 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "The validator-backed build-time report and export UI are implemented. The acceptance browser test could not run because Playwright failed to start its preview webServer within 30 seconds after earlier Chromium crashes; keep blocked until load/export is verified in browser.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog diagnostics:generate",
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/generated/asset-diagnostics.json; 231 assets and 1 scene validated"
+        },
+        {
+          "command": "pnpm assets:validate",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md; 189 SVGs validated"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec tsc -p tsconfig.json --noEmit",
+          "exit_code": 0,
+          "artifact": "evidence/W6-W7-execution.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/scene-harness.spec.ts --workers=1 --grep \"asset diagnostics|environment inspector resets\"",
+          "exit_code": 1,
+          "artifact": "evidence/W6-W7-execution.md; webServer timed out before test"
+        }
+      ],
+      "commit": "578d39c"
     },
     {
       "id": "W8-D01",

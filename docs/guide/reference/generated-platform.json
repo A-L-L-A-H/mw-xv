@@ -66,7 +66,7 @@
       "name": "@moonwitness/ui-catalog",
       "version": "1.0.0-rc.1",
       "directory": "apps/ui-catalog",
-      "scripts": ["build", "build:built", "dev", "preview", "test"]
+      "scripts": ["build", "build:built", "dev", "diagnostics:generate", "preview", "test"]
     },
     {
       "name": "@moonwitness/ai-evaluation",
@@ -327,9 +327,10 @@
       "test": "cargo test"
     },
     "@moonwitness/ui-catalog": {
-      "build": "pnpm --filter @moonwitness/ui build && tsc -p tsconfig.json && vite build",
-      "build:built": "tsc -p tsconfig.json && vite build",
+      "build": "pnpm --filter @moonwitness/ui build && pnpm diagnostics:generate && tsc -p tsconfig.json && vite build",
+      "build:built": "pnpm diagnostics:generate && tsc -p tsconfig.json && vite build",
       "dev": "vite",
+      "diagnostics:generate": "node scripts/generate-asset-diagnostics.mjs",
       "preview": "vite preview",
       "test": "playwright test"
     },
@@ -10093,5 +10094,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "41741360054a386ac06e5fcb82f51bc5796738e12b4cb98830e700021b021725"
+  "generatedFromSha256": "4e213ec2020c8ef0bff1bed0a4bcd38784ed101096ef36ceec365b4184f13556"
 }

@@ -1,6 +1,6 @@
 # Jalur rilis aktif
 
-Diperbarui 2026-11-22. Goal penuh: 228 task (163 M-series + 65 K-series); seluruh task dan acceptance M0–M12/K0–K9 dipertahankan. M13 adalah workstream Desktop Engineering terpisah, bukan release blocker. Gunakan `pnpm roadmap:progress -- --format json` untuk jumlah terkini, bukan snapshot angka dalam dokumen.
+Diperbarui 2026-11-22. Goal penuh: 229 task (164 M-series + 65 K-series); seluruh task dan acceptance M0–M12/K0–K9 dipertahankan. M13 adalah workstream Desktop Engineering terpisah, bukan release blocker. Gunakan `pnpm roadmap:progress -- --format json` untuk jumlah terkini, bukan snapshot angka dalam dokumen.
 
 ## Checkpoint kerja saat ini — 2026-10-23
 
@@ -106,7 +106,6 @@ Workstream tunggal untuk mengimplementasikan AI Corporation secara Addon-First d
 1. **Otoritas status:** `ROADMAP.md` (bersama `docs/roadmap/evidence/M12.*.md`) tetap menjadi sumber status kanonik untuk task ID `M12.01`–`M12.14`, sementara `docs/roadmap/tasks.json` menyimpan metadata terstruktur dan dependensi DAG lintas-seri.
 2. **Ledger granular:** `todo-ai-corporation.md` berperan sebagai work ledger implementasi per checkbox (`BASE.*`, `AI*`, `DOC.*`, `PR.*`, `GATE.*`, `SLICE.*`), bukan master roadmap terpisah yang mengubah skema `task-ids.mjs`.
 3. **Aturan sinkronisasi:** Setiap batch implementasi yang terverifikasi menandai `[x]` checkbox granular terkait di `todo-ai-corporation.md` dan memperbarui Progress Ledger; kartu `M12.xx` di `ROADMAP.md` dan `tasks.json` (`status: "complete"`, `evidence: "docs/roadmap/evidence/M12.xx.md"`) ditandai selesai **hanya** setelah seluruh checkbox granular dalam batch tersebut lulus verifikasi dan berkas evidence `docs/roadmap/evidence/M12.xx.md` dibuat.
-
 
 ## Workstream terpisah yang diaktifkan maintainer — M13 Desktop Engineering
 

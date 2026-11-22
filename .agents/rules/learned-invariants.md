@@ -91,3 +91,15 @@ Structured post-mortem rules persisted by autonomous and operator loops so resol
 - **Symptom**: CI unit-tests and postgres-integration fail with Vitest timeout (5000ms/30000ms) in platform-error-mapping.test.ts and postgres.integration.test.ts after adding ISP and Cloud addons
 - **Root Cause**: Installing all registered API addons (base through ai/isp/cloud) inside each test exceeds Vitest default 5000ms unit timeout and tight 30000ms dual-boot PostgreSQL integration timeouts
 - **Invariant**: Always specify explicit { timeout: 30_000 } on unit test suites calling buildApp() and 60000-90000ms timeouts on multi-boot PostgreSQL integration tests; never leave full-addon buildApp() tests on Vitest default 5000ms timeout
+
+## INV-016: Standalone Web Subpackage Playwright Alignment and React Deduplication
+
+- **Symptom**: CI dx-test fails with missing Playwright chromium executable and runtime Cannot read properties of null (reading useState) in apps/todo/web
+- **Root Cause**: apps/todo/web installs its own node_modules outside pnpm workspace, drifting Playwright version from root and bundling duplicate React instances across file:../../../packages/ui
+- **Invariant**: Pin apps/todo/web @playwright/test to match root lockfile, ensure Chromium binary in scripts/dx.mjs before E2E, and deduplicate/alias react and react-dom in apps/todo/web/vite.config.js
+
+## INV-017: UI Catalog Bundle Budget and Responsive SpritePlayer Bounds
+
+- **Symptom**: CI quality-and-build failed test:ui-budget (JS gzip 165151 B > 165000 B) and ui-catalog mobile tests failed with 310px horizontal overflow
+- **Root Cause**: FXLab double-lazy-loaded SceneParticles (already static-imported and inside lazy FXLab) adding extra chunk overhead, while SpritePlayer used fixed px width/height instead of responsive min(100%, width) + aspectRatio
+- **Invariant**: Import static components directly inside already-lazy catalog panels instead of redundant nested lazy() chunks, keep SpritePlayer responsive with width: min(100%, scaledWidth) and aspectRatio, and run pnpm test:ui-budget and pnpm test:ui-catalog before pushing UI changes

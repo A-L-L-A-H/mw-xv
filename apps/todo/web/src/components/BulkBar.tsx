@@ -1,8 +1,10 @@
 // Bulk Action Bar component - appears when multiple tasks are selected
 
+import { useState } from "react";
 import { Button } from "@moonwitness/ui/components/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@moonwitness/ui/components/dropdown-menu";
 import { CloseIcon as XIcon, TagIcon, UserIcon, ArchiveIcon, DeleteIcon as Trash2Icon, ArrowRightIcon, ArrowRightIcon as MoveIcon, ArrowLeftIcon, DocumentIcon as CopyIcon, ColumnsIcon, ModelIcon } from "@moonwitness/ui/icons";
+import { Input } from "@moonwitness/ui/components/input";
 import { statusColor } from "../lib/colors";
 import { tr } from "../lib/i18n";
 
@@ -25,6 +27,19 @@ export function BulkBar({
   onCopy,
   onDelete,
 }: BulkBarProps) {
+  const [customTags, setCustomTags] = useState("");
+
+  const handleCustomTagsSubmit = () => {
+    const tags = customTags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (tags.length > 0) {
+      onTag(tags);
+      setCustomTags("");
+    }
+  };
+
   return (
     <div className="bulk-bar" role="toolbar" aria-label={tr("Bulk actions")}>
       <div className="bulk-info">
@@ -48,8 +63,18 @@ export function BulkBar({
             <DropdownMenuItem onClick={() => onTag(["docs"])}>docs</DropdownMenuItem>
             <DropdownMenuItem onClick={() => onTag(["refactor"])}>refactor</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { /* custom tag input */ }}>
-              {tr("Custom tags...")}
+            <DropdownMenuItem className="custom-tag-item">
+              <Input
+                value={customTags}
+                onChange={(e) => setCustomTags(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                  if (e.key === "Enter") handleCustomTagsSubmit();
+                }}
+                placeholder={tr("Custom tags...")}
+                className="custom-tag-input"
+              />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

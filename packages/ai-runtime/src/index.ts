@@ -12,6 +12,7 @@ export * from './providers/local-openai-adapter.js';
 export * from './providers/anthropic-adapter.js';
 export * from './classification-router.js';
 export * from './repo-inspector.js';
+export * from './repo-snapshot.js';
 export * from './agent-runner.js';
 export * from './risk-policy.js';
 export * from './capability-gateway.js';

@@ -16,9 +16,7 @@
       "id": "M0.02",
       "title": "Buat matriks fitur → role/company → skenario sukses/gagal → unit/integration/E2E → bukti → gap.",
       "milestone": "M0",
-      "dependsOn": [
-        "M0.01"
-      ],
+      "dependsOn": ["M0.01"],
       "output": "docs/engineering/feature-matrix.md",
       "detailFile": "docs/roadmap/00-baseline.md",
       "evidence": "docs/roadmap/evidence/M0.02.md"
@@ -45,9 +43,7 @@
       "id": "M0.05",
       "title": "Inventarisasi duplikasi, komponen besar, dependency tidak terpakai, siklus import, dan tanggung jawab yang masih membebani apps/api atau Board.",
       "milestone": "M0",
-      "dependsOn": [
-        "M0.01"
-      ],
+      "dependsOn": ["M0.01"],
       "output": "docs/engineering/refactor-map.md",
       "detailFile": "docs/roadmap/00-baseline.md",
       "evidence": "docs/roadmap/evidence/M0.05.md"
@@ -56,9 +52,7 @@
       "id": "M0.06",
       "title": "Tetapkan versi runtime/database/browser yang didukung, anggaran durasi CI, retensi artefak, serta baseline performa yang terukur.",
       "milestone": "M0",
-      "dependsOn": [
-        "M0.03"
-      ],
+      "dependsOn": ["M0.03"],
       "output": "docs/engineering/support-policy.md",
       "detailFile": "docs/roadmap/00-baseline.md",
       "evidence": "docs/roadmap/evidence/M0.06.md"
@@ -67,10 +61,7 @@
       "id": "M0.07",
       "title": "Dokumentasikan keputusan arsitektur: versi monorepo bersama, dua branch, model promosi, sumber metadata, dan batas package.",
       "milestone": "M0",
-      "dependsOn": [
-        "M0.01",
-        "M0.04"
-      ],
+      "dependsOn": ["M0.01", "M0.04"],
       "output": "docs/decisions/0001-platform-contracts.md",
       "detailFile": "docs/roadmap/00-baseline.md",
       "evidence": "docs/roadmap/evidence/M0.07.md"
@@ -79,9 +70,7 @@
       "id": "M0.08",
       "title": "Fresh install seed tepat 2 user + 10 partner (12 record utama); pertahankan partner existing pada upgrade, dan buktikan reinstall tidak menggandakan/menimpa edit.",
       "milestone": "M0",
-      "dependsOn": [
-        "M0.01"
-      ],
+      "dependsOn": ["M0.01"],
       "output": "Seed contract dan test regresi pada packages/orm-base/tests",
       "detailFile": "docs/roadmap/00-baseline.md",
       "evidence": "docs/roadmap/evidence/M0.08.md"
@@ -90,9 +79,7 @@
       "id": "M1.01",
       "title": "Buat `dev` dari commit `main` yang tervalidasi, setelah memeriksa branch remote aktual.",
       "milestone": "M1",
-      "dependsOn": [
-        "M0.04"
-      ],
+      "dependsOn": ["M0.04"],
       "output": "dev terinisialisasi dan catatan bootstrap",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.01.md"
@@ -101,9 +88,7 @@
       "id": "M1.02",
       "title": "Batasi pembuatan branch selain `main`/`dev` melalui ruleset yang didukung repository.",
       "milestone": "M1",
-      "dependsOn": [
-        "M1.01"
-      ],
+      "dependsOn": ["M1.01"],
       "output": "docs/engineering/repository-policy.json dan applied ruleset evidence",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.02-06.md"
@@ -112,10 +97,7 @@
       "id": "M1.03",
       "title": "Lindungi kedua branch dari deletion dan force-push; dokumentasikan akses darurat yang sempit dan dapat diaudit.",
       "milestone": "M1",
-      "dependsOn": [
-        "M1.01",
-        "M0.04"
-      ],
+      "dependsOn": ["M1.01", "M0.04"],
       "output": "Branch protection configuration dan emergency runbook",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.02-06.md"
@@ -124,10 +106,7 @@
       "id": "M1.04",
       "title": "Batasi promosi `main` melalui PR `dev → main`; validasi sumber PR dengan check wajib.",
       "milestone": "M1",
-      "dependsOn": [
-        "M1.01",
-        "M2.05"
-      ],
+      "dependsOn": ["M1.01", "M2.05"],
       "output": "Promotion source check dan fixture tests",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.02-06.md"
@@ -136,10 +115,7 @@
       "id": "M1.05",
       "title": "Buat satu PR promosi otomatis; gunakan merge commit dan jangan auto-delete `dev`.",
       "milestone": "M1",
-      "dependsOn": [
-        "M1.04",
-        "M8.04"
-      ],
+      "dependsOn": ["M1.04", "M8.04"],
       "output": "Workflow promotion.yml idempotent",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.02-06.md"
@@ -148,10 +124,7 @@
       "id": "M1.06",
       "title": "Tetapkan required checks yang stabil dan tidak deadlock akibat filter path atau job skipped.",
       "milestone": "M1",
-      "dependsOn": [
-        "M2.05",
-        "M1.04"
-      ],
+      "dependsOn": ["M2.05", "M1.04"],
       "output": "Required checks policy",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.02-06.md"
@@ -160,9 +133,7 @@
       "id": "M1.07",
       "title": "Atur CODEOWNERS untuk workflow, auth, akses, schema, dan release; tetapkan reviewer realistis sesuai jumlah maintainer.",
       "milestone": "M1",
-      "dependsOn": [
-        "M0.04"
-      ],
+      "dependsOn": ["M0.04"],
       "output": " .github/CODEOWNERS dan review policy",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.07.md"
@@ -171,10 +142,7 @@
       "id": "M1.08",
       "title": "Tentukan kebijakan promosi: patch/minor kompatibel bisa otomatis; breaking change, perubahan destruktif, dan perubahan kebijakan keamanan memerlukan persetujuan eksplisit.",
       "milestone": "M1",
-      "dependsOn": [
-        "M7.01",
-        "M1.07"
-      ],
+      "dependsOn": ["M7.01", "M1.07"],
       "output": "Promotion risk classifier dan tests",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.08.md"
@@ -183,9 +151,7 @@
       "id": "M1.09",
       "title": "Sinkronkan `main → dev` tanpa force-push; perubahan bersamaan atau konflik menghasilkan laporan, bukan overwrite.",
       "milestone": "M1",
-      "dependsOn": [
-        "M1.05"
-      ],
+      "dependsOn": ["M1.05"],
       "output": "Sync workflow/function dan conflict report",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.09.md"
@@ -194,9 +160,7 @@
       "id": "M1.10",
       "title": "Lindungi tag release dari pemindahan/penghapusan rutin; periksa drift ruleset dan settings.",
       "milestone": "M1",
-      "dependsOn": [
-        "M0.04"
-      ],
+      "dependsOn": ["M0.04"],
       "output": "Tag policy dan settings audit",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.10.md"
@@ -206,9 +170,7 @@
       "status": "complete",
       "title": "Hapus alur staging/production deployment yang tidak digunakan; pertahankan smoke test lokal runner.",
       "milestone": "M1",
-      "dependsOn": [
-        "M0.04"
-      ],
+      "dependsOn": ["M0.04"],
       "output": "Removal diff dan dokumentasi scope",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.11.md"
@@ -217,9 +179,7 @@
       "id": "M1.12",
       "title": "Pastikan updater dependency, generator docs, dan release bot tidak membuat branch ketiga; dokumentasikan keterbatasan strict two-branch untuk kolaborasi.",
       "milestone": "M1",
-      "dependsOn": [
-        "M0.07"
-      ],
+      "dependsOn": ["M0.07"],
       "output": "Branch creation audit",
       "detailFile": "docs/roadmap/01-governance.md",
       "evidence": "docs/roadmap/evidence/M1.12.md"
@@ -228,10 +188,7 @@
       "id": "M2.01",
       "title": "Sediakan reusable setup/workflow agar CI, release, dan scheduled checks memakai konfigurasi yang sama.",
       "milestone": "M2",
-      "dependsOn": [
-        "M0.03",
-        "M0.06"
-      ],
+      "dependsOn": ["M0.03", "M0.06"],
       "output": "Reusable setup dan verification workflow",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.01.md"
@@ -240,10 +197,7 @@
       "id": "M2.02",
       "title": "Standarkan root scripts: typecheck, lint, format:check, test:unit, test:integration, test:e2e, docs:check, verify.",
       "milestone": "M2",
-      "dependsOn": [
-        "M0.01",
-        "M0.03"
-      ],
+      "dependsOn": ["M0.01", "M0.03"],
       "output": "Root command contract dan scripts",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.02.md"
@@ -252,9 +206,7 @@
       "id": "M2.03",
       "title": "Sertakan typecheck dan lint Board secara eksplisit; selaraskan ESLint/Oxlint agar aturan tidak saling bertentangan.",
       "milestone": "M2",
-      "dependsOn": [
-        "M0.03"
-      ],
+      "dependsOn": ["M0.03"],
       "output": "Lint config dan cleanup terukur",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.03.md"
@@ -263,10 +215,7 @@
       "id": "M2.04",
       "title": "Pisahkan job quality, unit, PostgreSQL integration, browser, security, docs, container, dan release integrity.",
       "milestone": "M2",
-      "dependsOn": [
-        "M2.01",
-        "M2.02"
-      ],
+      "dependsOn": ["M2.01", "M2.02"],
       "output": "CI job graph",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.04.md"
@@ -275,9 +224,7 @@
       "id": "M2.05",
       "title": "Tambahkan `ci-gate` yang memahami success/failure/cancelled/skipped dan menjadi keputusan akhir.",
       "milestone": "M2",
-      "dependsOn": [
-        "M2.04"
-      ],
+      "dependsOn": ["M2.04"],
       "output": "ci-gate dan decision tests",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.05.md"
@@ -286,9 +233,7 @@
       "id": "M2.06",
       "title": "Required PostgreSQL tests harus gagal jika konfigurasi test hilang; tidak boleh diam-diam skipped pada CI wajib.",
       "milestone": "M2",
-      "dependsOn": [
-        "M0.03"
-      ],
+      "dependsOn": ["M0.03"],
       "output": "Strict integration preflight",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.06.md"
@@ -297,9 +242,7 @@
       "id": "M2.07",
       "title": "Pakai database dan akun fixture terisolasi per run; seed deterministik, cleanup, dan jangan menyentuh database pengguna.",
       "milestone": "M2",
-      "dependsOn": [
-        "M0.01"
-      ],
+      "dependsOn": ["M0.01"],
       "output": "Shared test environment helpers",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.07.md"
@@ -308,10 +251,7 @@
       "id": "M2.08",
       "title": "Cache dependency/build; affected testing memperhitungkan transitive dependents dan shared config. Promosi menjalankan suite penuh.",
       "milestone": "M2",
-      "dependsOn": [
-        "M2.04",
-        "M0.01"
-      ],
+      "dependsOn": ["M2.04", "M0.01"],
       "output": "Affected selection dan cache config",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.08.md"
@@ -320,9 +260,7 @@
       "id": "M2.09",
       "title": "Atur timeout, concurrency, pembatalan run usang, dan serialisasi penulisan branch/release.",
       "milestone": "M2",
-      "dependsOn": [
-        "M2.04"
-      ],
+      "dependsOn": ["M2.04"],
       "output": "Concurrency policy dan race test",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.09.md"
@@ -331,9 +269,7 @@
       "id": "M2.10",
       "title": "Hasilkan test report, coverage, job summary, serta log/trace yang disanitasi dengan retensi terbatas.",
       "milestone": "M2",
-      "dependsOn": [
-        "M2.04"
-      ],
+      "dependsOn": ["M2.04"],
       "output": "Test artifact layout dan summary generator",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.10.md"
@@ -342,9 +278,7 @@
       "id": "M2.11",
       "title": "Validasi YAML/workflow dan shell scripts; periksa lockfile frozen dan reproducibility generator.",
       "milestone": "M2",
-      "dependsOn": [
-        "M2.01"
-      ],
+      "dependsOn": ["M2.01"],
       "output": "Automation lint job",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.11.md"
@@ -353,9 +287,7 @@
       "id": "M2.12",
       "title": "Terapkan kebijakan flaky tests: diagnosis, pemilik, tenggat; retry terbatas tidak boleh menyembunyikan regresi.",
       "milestone": "M2",
-      "dependsOn": [
-        "M2.10"
-      ],
+      "dependsOn": ["M2.10"],
       "output": "Flake policy dan tracking",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.12.md"
@@ -364,9 +296,7 @@
       "id": "M2.13",
       "title": "Ukur baseline coverage bagian kritis dan tetapkan threshold bertahap yang bermakna, bukan angka global arbitrer.",
       "milestone": "M2",
-      "dependsOn": [
-        "M0.03"
-      ],
+      "dependsOn": ["M0.03"],
       "output": "Coverage policy dan CI threshold",
       "detailFile": "docs/roadmap/02-ci.md",
       "evidence": "docs/roadmap/evidence/M2.13.md"
@@ -375,9 +305,7 @@
       "id": "M3.01",
       "title": "Siapkan browser automation yang dapat dijalankan lokal dan GitHub runner; gunakan API dan PostgreSQL sungguhan untuk alur kritis.",
       "milestone": "M3",
-      "dependsOn": [
-        "M2.07"
-      ],
+      "dependsOn": ["M2.07"],
       "output": "E2E config, fixtures dan smoke test",
       "detailFile": "docs/roadmap/03-board.md",
       "evidence": "docs/roadmap/evidence/M3.01.md"
@@ -386,9 +314,7 @@
       "id": "M3.02",
       "title": "Audit desktop/mobile, light/dark, overflow, fokus keyboard, kontras, label, dan navigasi screen reader dasar.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.01"
-      ],
+      "dependsOn": ["M3.01"],
       "output": "Visual audit report dan fixes",
       "detailFile": "docs/roadmap/03-board.md",
       "evidence": "docs/roadmap/evidence/M3.02.md"
@@ -397,9 +323,7 @@
       "id": "M3.03",
       "title": "Test login sukses/gagal, logout, reload, expiry, refresh bersamaan, sesi dicabut, dan user nonaktif.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.01"
-      ],
+      "dependsOn": ["M3.01"],
       "output": "auth-session E2E spec",
       "detailFile": "docs/roadmap/03-board.md",
       "evidence": "docs/roadmap/evidence/M3.03.md"
@@ -408,9 +332,7 @@
       "id": "M3.04",
       "title": "Test sidebar, command palette, dashboard, direct URL, Development Mode dan persistensinya; semua mengikuti metadata/akses yang sama.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.01"
-      ],
+      "dependsOn": ["M3.01"],
       "output": "navigation-access E2E spec",
       "detailFile": "docs/roadmap/03-board.md",
       "evidence": "docs/roadmap/evidence/M3.04.md"
@@ -419,9 +341,7 @@
       "id": "M3.05",
       "title": "Test profil sendiri, language/timezone, ganti password, login ulang, dan error validasi.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.01"
-      ],
+      "dependsOn": ["M3.01"],
       "output": "account-settings E2E spec",
       "detailFile": "docs/roadmap/03-board.md",
       "evidence": "docs/roadmap/evidence/M3.05.md"
@@ -430,10 +350,7 @@
       "id": "M3.06",
       "title": "Test list/search/filter/sort/pagination/count, termasuk regresi `partner,language` dan count PostgreSQL.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.01",
-        "M2.06"
-      ],
+      "dependsOn": ["M3.01", "M2.06"],
       "output": "data-list E2E regression",
       "detailFile": "docs/roadmap/03-board.md",
       "evidence": "docs/roadmap/evidence/M3.06.md"
@@ -442,9 +359,7 @@
       "id": "M3.07",
       "title": "Test create/edit/archive/delete sesuai kebijakan model, field relasi, serta filter country/state.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.01"
-      ],
+      "dependsOn": ["M3.01"],
       "output": "record-edit E2E spec",
       "detailFile": "docs/roadmap/03-board.md",
       "evidence": "docs/roadmap/evidence/M3.07.md"
@@ -453,10 +368,7 @@
       "id": "M3.08",
       "title": "Test import/export, attachment, activities, dan fitur Board lain jika ditemukan dalam inventarisasi.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.01",
-        "M0.01"
-      ],
+      "dependsOn": ["M3.01", "M0.01"],
       "output": "extended-board E2E specs",
       "detailFile": "docs/roadmap/03-board.md",
       "evidence": "docs/roadmap/evidence/M3.08.md"
@@ -465,9 +377,7 @@
       "id": "M3.09",
       "title": "Uji error/empty/loading states, jaringan terputus, stale data, double submit, dan pencegahan kebocoran cache antar-user/company.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.01"
-      ],
+      "dependsOn": ["M3.01"],
       "output": "resilience E2E dan cache fixes",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M3.09.md",
@@ -477,9 +387,7 @@
       "id": "M3.10",
       "title": "Simpan screenshot/trace saat gagal; buat visual baseline setelah audit manusia dan jangan auto-accept perubahan baseline.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.02"
-      ],
+      "dependsOn": ["M3.02"],
       "output": "Visual regression suite",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M3.10.md",
@@ -489,11 +397,7 @@
       "id": "M3.11",
       "title": "Jalankan browser utama pada perubahan rutin dan browser tambahan pada regresi terjadwal; dokumentasikan coverage browser.",
       "milestone": "M3",
-      "dependsOn": [
-        "M3.03",
-        "M3.06",
-        "M0.06"
-      ],
+      "dependsOn": ["M3.03", "M3.06", "M0.06"],
       "output": "Browser matrix workflow",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/M3.11.md",
@@ -505,9 +409,7 @@
       "evidence": "docs/roadmap/evidence/M4.01.md",
       "title": "Validasi semua model/field/relasi/view/menu/access dan kebijakan seed melalui matriks metadata.",
       "milestone": "M4",
-      "dependsOn": [
-        "M0.01"
-      ],
+      "dependsOn": ["M0.01"],
       "output": "Metadata integrity tests",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -517,9 +419,7 @@
       "evidence": "docs/roadmap/evidence/M4.02.md",
       "title": "Test instalasi bersih, restart idempotent, upgrade legacy, seed reference, pelestarian edit pengguna, dan startup multi-replica.",
       "milestone": "M4",
-      "dependsOn": [
-        "M2.07"
-      ],
+      "dependsOn": ["M2.07"],
       "output": "Addon install/upgrade regression suite",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -529,9 +429,7 @@
       "evidence": "docs/roadmap/evidence/M4.03.md",
       "title": "Verifikasi default system/superadmin, password awal dari konfigurasi, reset CLI/root script, dan tidak menimpa password yang sudah diubah.",
       "milestone": "M4",
-      "dependsOn": [
-        "M2.07"
-      ],
+      "dependsOn": ["M2.07"],
       "output": "Password initialization/reset tests",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -541,9 +439,7 @@
       "evidence": "docs/roadmap/evidence/M4.04.md",
       "title": "Verifikasi company default, reference countries, states, banks, partner bank, serta provenance/update policy data referensi; jangan mengklaim states lengkap bila hanya subset.",
       "milestone": "M4",
-      "dependsOn": [
-        "M0.08"
-      ],
+      "dependsOn": ["M0.08"],
       "output": "Reference-data policy dan tests",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -553,9 +449,7 @@
       "evidence": "docs/roadmap/evidence/M4.05.md",
       "title": "Audit autentikasi: hashing, enumeration, throttling, refresh replay/concurrency, perubahan role/password, dan batas waktu revocation access token.",
       "milestone": "M4",
-      "dependsOn": [
-        "M0.02"
-      ],
+      "dependsOn": ["M0.02"],
       "output": "Auth threat cases dan regression tests",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -565,10 +459,7 @@
       "evidence": "docs/roadmap/evidence/M4.06.md",
       "title": "Test izin negatif CRUD/count/export/direct API dan isolasi company, termasuk relasi lintas-company.",
       "milestone": "M4",
-      "dependsOn": [
-        "M2.07",
-        "M0.02"
-      ],
+      "dependsOn": ["M2.07", "M0.02"],
       "output": "Authorization matrix tests",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -578,9 +469,7 @@
       "evidence": "docs/roadmap/evidence/M4.07.md",
       "title": "Batasi pagination, query cost, kedalaman eager relations, payload, sorting, dan filter; cegah mass assignment.",
       "milestone": "M4",
-      "dependsOn": [
-        "M0.01"
-      ],
+      "dependsOn": ["M0.01"],
       "output": "Query/input guardrails dan tests",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -590,9 +479,7 @@
       "evidence": "docs/roadmap/evidence/M4.08.md",
       "title": "Pastikan field sensitif tidak muncul dalam JSON, export, audit, error, atau log.",
       "milestone": "M4",
-      "dependsOn": [
-        "M0.01"
-      ],
+      "dependsOn": ["M0.01"],
       "output": "Redaction/serialization regression",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -602,9 +489,7 @@
       "evidence": "docs/roadmap/evidence/M4.09.md",
       "title": "Audit transaksi, constraint, indexes, concurrency edits, timezone, error mapping, dan rollback kegagalan upgrade programatis.",
       "milestone": "M4",
-      "dependsOn": [
-        "M4.02"
-      ],
+      "dependsOn": ["M4.02"],
       "output": "Data integrity tests dan policy",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -614,10 +499,7 @@
       "evidence": "docs/roadmap/evidence/M4.10.md",
       "title": "Scheduler/worker: claim atomik, lease, heartbeat, retry/backoff, recovery setelah crash, cancellation, dead-letter, dan job history.",
       "milestone": "M4",
-      "dependsOn": [
-        "M0.01",
-        "M2.07"
-      ],
+      "dependsOn": ["M0.01", "M2.07"],
       "output": "Jobs failure-mode suite",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -627,9 +509,7 @@
       "evidence": "docs/roadmap/evidence/M4.11.md",
       "title": "Outbox: transactional enqueue, delivery retries, deduplication/idempotency, dan pengujian efek eksternal ganda; jangan mengklaim exactly-once tanpa bukti.",
       "milestone": "M4",
-      "dependsOn": [
-        "M4.10"
-      ],
+      "dependsOn": ["M4.10"],
       "output": "Outbox integration suite",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -639,9 +519,7 @@
       "evidence": "docs/roadmap/evidence/M4.12.md",
       "title": "Attachment: izin upload/download, size/MIME, filename/path traversal, storage ownership, dan retensi.",
       "milestone": "M4",
-      "dependsOn": [
-        "M4.06"
-      ],
+      "dependsOn": ["M4.06"],
       "output": "Authenticated local-filesystem attachment storage and hardening tests",
       "detailFile": "docs/roadmap/04-backend.md"
     },
@@ -650,9 +528,7 @@
       "title": "Operasional: graceful shutdown, DB pools/timeouts, request ID, redaksi log, readiness/liveness API dan worker.",
       "status": "complete",
       "milestone": "M4",
-      "dependsOn": [
-        "M0.01"
-      ],
+      "dependsOn": ["M0.01"],
       "output": "Bounded PostgreSQL runtime, drained API/worker lifecycle, internal probes, and operational runbook",
       "evidence": "docs/roadmap/evidence/M4.13.md",
       "detailFile": "docs/roadmap/04-backend.md"
@@ -662,10 +538,7 @@
       "title": "Restore drill dengan data aplikasi, relasi, akun test dan integrity checks; tetapkan target pemulihan berbasis hasil pengukuran.",
       "status": "complete",
       "milestone": "M4",
-      "dependsOn": [
-        "M4.02",
-        "M4.03"
-      ],
+      "dependsOn": ["M4.02", "M4.03"],
       "output": "Isolated PostgreSQL application backup/restore drill, integrity report, and measured recovery scope",
       "evidence": "docs/roadmap/evidence/M4.14.md",
       "detailFile": "docs/roadmap/04-backend.md"
@@ -675,10 +548,7 @@
       "title": "Tambahkan baseline load/query tests dan budget regresi realistis; ukur N+1 serta operasi yang memperbesar penggunaan memori.",
       "status": "complete",
       "milestone": "M4",
-      "dependsOn": [
-        "M0.03",
-        "M0.06"
-      ],
+      "dependsOn": ["M0.03", "M0.06"],
       "output": "PostgreSQL query/job baseline fixtures, structural budgets, EXPLAIN output, and CI report artifact",
       "evidence": "docs/roadmap/evidence/M4.15.md",
       "detailFile": "docs/roadmap/04-backend.md"
@@ -688,9 +558,7 @@
       "title": "Dokumentasikan compatibility policy API/addon, deprecation, dan upgrade guidance.",
       "status": "complete",
       "milestone": "M4",
-      "dependsOn": [
-        "M0.07"
-      ],
+      "dependsOn": ["M0.07"],
       "output": "docs/engineering/compatibility.md dan client→API/addon→ORM contract tests",
       "evidence": "docs/roadmap/evidence/M4.16.md",
       "detailFile": "docs/roadmap/04-backend.md"
@@ -700,9 +568,7 @@
       "title": "Inventarisasi UI Board; tentukan arah visual MoonWitness dan audit contoh halaman representatif sebelum migrasi massal.",
       "status": "complete",
       "milestone": "M5",
-      "dependsOn": [
-        "M0.05"
-      ],
+      "dependsOn": ["M0.05"],
       "output": "docs/design/visual-direction.md",
       "evidence": "docs/roadmap/evidence/M5.01.md",
       "detailFile": "docs/roadmap/05-design-system.md"
@@ -712,9 +578,7 @@
       "title": "Buat `@moonwitness/assets`: logo simbol/wordmark/lockup, versi terang/gelap/monokrom, favicon dan social image.",
       "status": "complete",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.01"
-      ],
+      "dependsOn": ["M5.01"],
       "output": "packages/assets, deterministic SVG source, export manifest, README banner, and social image",
       "evidence": "docs/roadmap/evidence/M5.02.md",
       "detailFile": "docs/roadmap/05-design-system.md"
@@ -724,9 +588,7 @@
       "title": "Buat tokens warna/semantik, tipografi, spacing, radius, shadow, motion, dan reduced-motion; dokumentasikan aturan penggunaan.",
       "status": "complete",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.01"
-      ],
+      "dependsOn": ["M5.01"],
       "output": "packages/ui/src/styles/tokens.css dan token guide",
       "evidence": "docs/roadmap/evidence/M5.03.md",
       "detailFile": "docs/roadmap/05-design-system.md"
@@ -736,9 +598,7 @@
       "title": "Buat ikon SVG konsisten untuk domain inti dan aksi umum; audit keterbacaan ukuran kecil serta identitas yang berbeda dari brand lain.",
       "status": "complete",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.01"
-      ],
+      "dependsOn": ["M5.01"],
       "output": "packages/assets/icons/*.svg dan icon inventory",
       "evidence": "docs/roadmap/evidence/M5.04.md",
       "detailFile": "docs/roadmap/05-design-system.md"
@@ -748,10 +608,7 @@
       "title": "Sediakan ikon React typed dengan currentColor, ukuran, title, dan aksesibilitas; gunakan static SVG untuk README.",
       "milestone": "M5",
       "status": "complete",
-      "dependsOn": [
-        "M5.04",
-        "M5.08"
-      ],
+      "dependsOn": ["M5.04", "M5.08"],
       "output": "packages/ui/src/icons",
       "evidence": "docs/roadmap/evidence/M5.05.md",
       "detailFile": "docs/roadmap/05-design-system.md"
@@ -761,10 +618,7 @@
       "title": "Buat ilustrasi original empty/search/error/access denied/offline/onboarding serta pola latar ringan.",
       "milestone": "M5",
       "status": "complete",
-      "dependsOn": [
-        "M5.02",
-        "M5.03"
-      ],
+      "dependsOn": ["M5.02", "M5.03"],
       "output": "packages/assets/illustrations dan usage guide",
       "evidence": "docs/roadmap/evidence/M5.06.md",
       "detailFile": "docs/roadmap/05-design-system.md"
@@ -774,9 +628,7 @@
       "title": "Catat sumber/lisensi font dan asset; optimasi SVG, validasi script/external refs, dan cegah ID collision.",
       "status": "complete",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.02"
-      ],
+      "dependsOn": ["M5.02"],
       "output": "Asset validation script dan licenses manifest",
       "evidence": "docs/roadmap/evidence/M5.07.md",
       "detailFile": "docs/roadmap/05-design-system.md"
@@ -786,9 +638,7 @@
       "title": "Buat `@moonwitness/ui` dengan exports jelas, tanpa dependency API/router/auth aplikasi dan tanpa side effect yang tidak terdokumentasi.",
       "status": "complete",
       "milestone": "M5",
-      "dependsOn": [
-        "M0.07"
-      ],
+      "dependsOn": ["M0.07"],
       "output": "packages/ui scaffold dan consumer smoke test",
       "evidence": "docs/roadmap/evidence/M5.08.md",
       "detailFile": "docs/roadmap/05-design-system.md"
@@ -798,10 +648,7 @@
       "title": "Komponen dasar: button/input/select/checkbox/badge/avatar; interaksi: dialog/dropdown/tabs/tooltip/toast.",
       "milestone": "M5",
       "status": "complete",
-      "dependsOn": [
-        "M5.08",
-        "M5.03"
-      ],
+      "dependsOn": ["M5.08", "M5.03"],
       "output": "UI primitives dan interaction stories",
       "evidence": "docs/roadmap/evidence/M5.09.md",
       "detailFile": "docs/roadmap/05-design-system.md"
@@ -810,9 +657,7 @@
       "id": "M5.10",
       "title": "Komponen komposisi: field/help/error, card/skeleton/empty/error state, page header/toolbar/panel, pagination/table primitives.",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.09"
-      ],
+      "dependsOn": ["M5.09"],
       "status": "complete",
       "output": "Typed, directly exported UI composition primitives with accessible contracts and Board adoption",
       "evidence": "docs/roadmap/evidence/M5.10.md",
@@ -822,9 +667,7 @@
       "id": "M5.11",
       "title": "Tetapkan theming dan compatibility policy komponen; hindari boolean props berlebihan dan barrel export yang membesarkan bundle.",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.08"
-      ],
+      "dependsOn": ["M5.08"],
       "output": "UI API compatibility policy, package export contract tests, CSS isolation checks, and packed-consumer smoke",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M5.11.md",
@@ -834,10 +677,7 @@
       "id": "M5.12",
       "title": "Grafik data: tema, tooltip/legend, locale/timezone, loading/empty/error, tabel alternatif, dan responsivitas. Bentuk `@moonwitness/charts` hanya ketika reuse membenarkannya.",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.03",
-        "M5.08"
-      ],
+      "dependsOn": ["M5.03", "M5.08"],
       "status": "complete",
       "output": "Typed SVG chart primitives with accessible data table, locale formatter, loading/empty/error states, and reuse decision",
       "evidence": "docs/roadmap/evidence/M5.12.md",
@@ -847,10 +687,7 @@
       "id": "M5.13",
       "title": "Diagram arsitektur/relasi/alur: generate dari metadata bila tepat; kurasi diagram penjelasan agar terbaca.",
       "milestone": "M5",
-      "dependsOn": [
-        "M0.07",
-        "M4.01"
-      ],
+      "dependsOn": ["M0.07", "M4.01"],
       "output": "docs/architecture/diagrams dan static exports",
       "detailFile": "docs/roadmap/05-design-system.md",
       "evidence": "docs/roadmap/evidence/M5.13.md"
@@ -859,11 +696,7 @@
       "id": "M5.14",
       "title": "Migrasikan shell/login/profile/settings/list/form Board bertahap; hapus duplikasi dan dependency yang benar-benar tidak terpakai.",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.09",
-        "M5.10",
-        "M3.01"
-      ],
+      "dependsOn": ["M5.09", "M5.10", "M3.01"],
       "output": "Board UI migration dan removal inventory",
       "detailFile": "docs/roadmap/05-design-system.md",
       "evidence": "docs/roadmap/evidence/M5.14.md"
@@ -872,10 +705,7 @@
       "id": "M5.15",
       "title": "Gunakan sumber asset/tokens yang sama pada README dan Pages; ekspor statis sesuai kemampuan platform.",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.02",
-        "M5.07"
-      ],
+      "dependsOn": ["M5.02", "M5.07"],
       "output": "Branded README dan Pages assets",
       "detailFile": "docs/roadmap/05-design-system.md",
       "evidence": "docs/roadmap/evidence/M5.15.md"
@@ -884,9 +714,7 @@
       "id": "M5.16",
       "title": "Buat katalog komponen dengan variasi panjang teks, states, themes, keyboard dan ukuran layar; publikasikan bersama dokumentasi.",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.09"
-      ],
+      "dependsOn": ["M5.09"],
       "output": "Storybook atau katalog setara yang dipilih dalam ADR",
       "detailFile": "docs/roadmap/05-design-system.md",
       "evidence": "docs/roadmap/evidence/M5.16.md"
@@ -895,10 +723,7 @@
       "id": "M5.17",
       "title": "CI UI: typecheck, interaction/a11y, visual regression, SVG validation, export checks, dan bundle budget.",
       "milestone": "M5",
-      "dependsOn": [
-        "M5.16",
-        "M2.04"
-      ],
+      "dependsOn": ["M5.16", "M2.04"],
       "output": "UI CI job dan report",
       "detailFile": "docs/roadmap/05-design-system.md",
       "evidence": "docs/roadmap/evidence/M5.17.md"
@@ -907,9 +732,7 @@
       "id": "M6.01",
       "title": "Buat struktur docs: quickstart, architecture, addon development, API, models, Board, jobs/outbox, security, troubleshooting, recovery, release/upgrade.",
       "milestone": "M6",
-      "dependsOn": [
-        "M0.07"
-      ],
+      "dependsOn": ["M0.07"],
       "output": "docs content tree dan navigation config",
       "detailFile": "docs/roadmap/06-documentation.md",
       "evidence": "docs/roadmap/evidence/M6.01.md"
@@ -918,10 +741,7 @@
       "id": "M6.02",
       "title": "Buat generator deterministik package/scripts/env schema/model/field/relasi/menu/access/seed dan referensi endpoint yang benar-benar valid.",
       "milestone": "M6",
-      "dependsOn": [
-        "M0.01",
-        "M4.01"
-      ],
+      "dependsOn": ["M0.01", "M4.01"],
       "output": "scripts/docs generation modules dan generated references",
       "detailFile": "docs/roadmap/06-documentation.md",
       "evidence": "docs/roadmap/evidence/M6.02.md"
@@ -930,9 +750,7 @@
       "id": "M6.03",
       "title": "Pisahkan blok generated README dari penjelasan manual; jangan overwrite seluruh dokumen.",
       "milestone": "M6",
-      "dependsOn": [
-        "M6.02"
-      ],
+      "dependsOn": ["M6.02"],
       "output": "README partial generator",
       "detailFile": "docs/roadmap/06-documentation.md",
       "evidence": "docs/roadmap/evidence/M6.03.md"
@@ -941,10 +759,7 @@
       "id": "M6.04",
       "title": "Standardisasi docs:generate, docs:check, docs:build, docs:links; gagal saat hasil generator stale.",
       "milestone": "M6",
-      "dependsOn": [
-        "M6.02",
-        "M6.03"
-      ],
+      "dependsOn": ["M6.02", "M6.03"],
       "output": "Root docs command contract",
       "detailFile": "docs/roadmap/06-documentation.md",
       "evidence": "docs/roadmap/evidence/M6.04.md"
@@ -953,9 +768,7 @@
       "id": "M6.05",
       "title": "Uji contoh executable dan tautan internal; link eksternal memakai kebijakan retry agar gangguan pihak lain tidak membuat flakiness berlebihan.",
       "milestone": "M6",
-      "dependsOn": [
-        "M6.01"
-      ],
+      "dependsOn": ["M6.01"],
       "output": "Docs examples tests dan link checker",
       "detailFile": "docs/roadmap/06-documentation.md",
       "evidence": "docs/roadmap/evidence/M6.05.md"
@@ -964,11 +777,7 @@
       "id": "M6.06",
       "title": "Buat portal responsif dengan search, base path repository, 404, branding, dan katalog UI.",
       "milestone": "M6",
-      "dependsOn": [
-        "M6.01",
-        "M5.02",
-        "M5.03"
-      ],
+      "dependsOn": ["M6.01", "M5.02", "M5.03"],
       "output": "Documentation portal",
       "detailFile": "docs/roadmap/06-documentation.md",
       "evidence": "docs/roadmap/evidence/M6.06.md"
@@ -977,10 +786,7 @@
       "id": "M6.07",
       "title": "Gunakan Actions artifact untuk Pages tanpa branch tambahan; dev hanya menghasilkan preview artifact.",
       "milestone": "M6",
-      "dependsOn": [
-        "M6.06",
-        "M0.04"
-      ],
+      "dependsOn": ["M6.06", "M0.04"],
       "output": "pages.yml, verified GitHub Pages configuration, preview/publish trust separation and source provenance",
       "detailFile": "docs/roadmap/06-documentation.md",
       "evidence": "docs/roadmap/evidence/M6.07.md"
@@ -989,10 +795,7 @@
       "id": "M6.08",
       "title": "Publikasikan dokumentasi stable yang sesuai release; tentukan retensi versi dokumentasi dan URL latest.",
       "milestone": "M6",
-      "dependsOn": [
-        "M7.02",
-        "M6.06"
-      ],
+      "dependsOn": ["M7.02", "M6.06"],
       "output": "Docs version manifest",
       "detailFile": "docs/roadmap/06-documentation.md",
       "status": "in_progress",
@@ -1002,10 +805,7 @@
       "id": "M6.09",
       "title": "Scan konten publik agar tidak berisi secret, data pribadi, real environment values, atau internal artifacts.",
       "milestone": "M6",
-      "dependsOn": [
-        "M6.04",
-        "M6.06"
-      ],
+      "dependsOn": ["M6.04", "M6.06"],
       "output": "Public documentation output scanner and adversarial tests",
       "detailFile": "docs/roadmap/06-documentation.md",
       "status": "complete",
@@ -1015,10 +815,7 @@
       "id": "M6.10",
       "title": "Docs-only changes dapat dipublikasikan setelah verifikasi tanpa memaksa release aplikasi; source SHA harus terlacak.",
       "milestone": "M6",
-      "dependsOn": [
-        "M6.07",
-        "M7.01"
-      ],
+      "dependsOn": ["M6.07", "M7.01"],
       "output": "Verified main SHA gate, strict docs-only content classifier, app-version versus source-SHA provenance metadata, and no-release-bump checks",
       "detailFile": "docs/roadmap/06-documentation.md",
       "evidence": "docs/roadmap/evidence/M6.10.md"
@@ -1027,10 +824,7 @@
       "id": "M6.11",
       "title": "Pisahkan retry Pages dari release aplikasi; kegagalan docs tercatat dan tidak menghasilkan tag/version baru.",
       "milestone": "M6",
-      "dependsOn": [
-        "M6.07",
-        "M7.13"
-      ],
+      "dependsOn": ["M6.07", "M7.13"],
       "output": "Pages retry runbook dan test fixtures",
       "detailFile": "docs/roadmap/06-documentation.md",
       "evidence": "docs/roadmap/evidence/M6.11.md"
@@ -1039,9 +833,7 @@
       "id": "M7.01",
       "title": "Terapkan Conventional Commits dan definisi patch/minor/major/non-release secara konsisten.",
       "milestone": "M7",
-      "dependsOn": [
-        "M0.07"
-      ],
+      "dependsOn": ["M0.07"],
       "output": "Release classification module/tests",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.01.md"
@@ -1050,9 +842,7 @@
       "id": "M7.02",
       "title": "Tetapkan satu versi monorepo bersama; sinkronkan root/workspaces/lockfile/metadata yang relevan.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.01"
-      ],
+      "dependsOn": ["M7.01"],
       "output": "Version updater dan consistency tests",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.02.md"
@@ -1061,10 +851,7 @@
       "id": "M7.03",
       "title": "Putuskan transisi `1.0.0-rc.1` ke stable secara eksplisit; jangan auto-publish stable hanya karena automation baru aktif.",
       "milestone": "M7",
-      "dependsOn": [
-        "M0.04",
-        "M7.01"
-      ],
+      "dependsOn": ["M0.04", "M7.01"],
       "output": "First stable release decision record",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.03.md"
@@ -1073,10 +860,7 @@
       "id": "M7.04",
       "title": "Hitung versi dari release terakhir dan perubahan fungsional; abaikan commit generator/sync untuk mencegah release loop.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.01",
-        "M7.03"
-      ],
+      "dependsOn": ["M7.01", "M7.03"],
       "output": "Deterministic release planner",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.04.md"
@@ -1085,12 +869,7 @@
       "id": "M7.05",
       "title": "Siapkan version/changelog/docs pada dev tanpa release branch; persiapan berulang harus idempotent.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.02",
-        "M7.04",
-        "M6.04",
-        "M7.08"
-      ],
+      "dependsOn": ["M7.02", "M7.04", "M6.04", "M7.08"],
       "output": "Prepare-release automation",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.05.md"
@@ -1099,9 +878,7 @@
       "id": "M7.06",
       "title": "Changelog berisi fitur/fix/security/breaking/upgrade dan tautan commit/PR; breaking notes divalidasi.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.04"
-      ],
+      "dependsOn": ["M7.04"],
       "output": "Changelog generator/templates/tests",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.06.md"
@@ -1110,9 +887,7 @@
       "id": "M7.07",
       "title": "Jalankan CI lengkap pada commit hasil persiapan; verifikasi lagi main merge SHA sebelum publikasi.",
       "milestone": "M7",
-      "dependsOn": [
-        "M2.05"
-      ],
+      "dependsOn": ["M2.05"],
       "output": "Verified source gate",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.07.md"
@@ -1121,10 +896,7 @@
       "id": "M7.08",
       "title": "Gunakan concurrency lock dan pengecekan expected SHA sebelum bot menulis; perubahan dev baru membatalkan rencana lama.",
       "milestone": "M7",
-      "dependsOn": [
-        "M2.09",
-        "M8.04"
-      ],
+      "dependsOn": ["M2.09", "M8.04"],
       "output": "Write coordination dan race fixture",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.08.md"
@@ -1133,10 +905,7 @@
       "id": "M7.09",
       "title": "Bangun sekali artefak release dari SHA tervalidasi lalu promosikan artefak yang sama; jangan rebuild tanpa verifikasi identitas.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.07",
-        "M4.13"
-      ],
+      "dependsOn": ["M7.07", "M4.13"],
       "output": "Build-once artifact flow",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.09.md"
@@ -1145,11 +914,7 @@
       "id": "M7.10",
       "title": "Buat tag immutable, draft/release completion flow, changelog, checksums, GHCR API/Board, SBOM dan provenance attestations.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.09",
-        "M7.06",
-        "M8.01"
-      ],
+      "dependsOn": ["M7.09", "M7.06", "M8.01"],
       "output": "Release manifest, draft flow dan publishing jobs",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.10.md"
@@ -1158,9 +923,7 @@
       "id": "M7.11",
       "title": "Tag image memakai versi/SHA; update latest hanya setelah seluruh artefak wajib berhasil. Tidak deploy aplikasi.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.10"
-      ],
+      "dependsOn": ["M7.10"],
       "output": "Registry promotion policy dan tests",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.11.md"
@@ -1169,9 +932,7 @@
       "id": "M7.12",
       "title": "Verifikasi provenance/digest dan dokumentasikan cara konsumen memeriksanya.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.10"
-      ],
+      "dependsOn": ["M7.10"],
       "output": "Provenance verification instructions",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.12.md"
@@ -1180,9 +941,7 @@
       "id": "M7.13",
       "title": "Retry release yang sama melanjutkan aset kurang tanpa bump/tag/release duplikat atau overwrite aset berbeda.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.10"
-      ],
+      "dependsOn": ["M7.10"],
       "output": "Idempotent publication reconciler",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.13.md"
@@ -1191,10 +950,7 @@
       "id": "M7.14",
       "title": "Uji race, partial publish, upload gagal, token expired, tidak ada perubahan releasable, dan kegagalan sinkronisasi branch.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.13",
-        "M7.08"
-      ],
+      "dependsOn": ["M7.13", "M7.08"],
       "status": "in_progress",
       "output": "Release fault-injection suite",
       "detailFile": "docs/roadmap/07-release.md",
@@ -1204,10 +960,7 @@
       "id": "M7.15",
       "title": "Rancang trigger eksplisit melalui reusable workflow/dispatch; jangan mengandalkan event GITHUB_TOKEN yang tidak memicu workflow berikutnya.",
       "milestone": "M7",
-      "dependsOn": [
-        "M8.04",
-        "M2.01"
-      ],
+      "dependsOn": ["M8.04", "M2.01"],
       "output": "Trigger graph dan trust validation",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.15.md"
@@ -1216,13 +969,7 @@
       "id": "M7.16",
       "title": "Sediakan dry-run/release-plan artifact sebelum publikasi pertama dan tautkan seluruh bukti ke release.",
       "milestone": "M7",
-      "dependsOn": [
-        "M7.05",
-        "M7.06",
-        "M7.14",
-        "M7.15",
-        "M1.08"
-      ],
+      "dependsOn": ["M7.05", "M7.06", "M7.14", "M7.15", "M1.08"],
       "output": "Dry-run report dan activation checklist",
       "detailFile": "docs/roadmap/07-release.md",
       "evidence": "docs/roadmap/evidence/M7.16.md"
@@ -1231,9 +978,7 @@
       "id": "M8.01",
       "title": "Default workflow read-only; scoped writes untuk bot/promosi/release/Pages dan gunakan GitHub App bila dibutuhkan.",
       "milestone": "M8",
-      "dependsOn": [
-        "M0.04"
-      ],
+      "dependsOn": ["M0.04"],
       "output": "Workflow permission matrix",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "evidence": "docs/roadmap/evidence/M8.01.md"
@@ -1242,9 +987,7 @@
       "id": "M8.02",
       "title": "Pin external Actions ke SHA tervalidasi, perbarui berkala; pisahkan eksekusi kode tak tepercaya dari job berkredensial.",
       "milestone": "M8",
-      "dependsOn": [
-        "M8.01"
-      ],
+      "dependsOn": ["M8.01"],
       "output": "Pinned workflows dan trust tests",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "evidence": "docs/roadmap/evidence/M8.02.md"
@@ -1253,10 +996,7 @@
       "id": "M8.03",
       "title": "Aktifkan code/dependency/secret scanning yang tersedia; scan container dan tetapkan severity policy serta exception beralasan dengan expiry.",
       "milestone": "M8",
-      "dependsOn": [
-        "M0.04",
-        "M2.04"
-      ],
+      "dependsOn": ["M0.04", "M2.04"],
       "output": "Security workflow dan policy",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "status": "in_progress",
@@ -1266,10 +1006,7 @@
       "id": "M8.04",
       "title": "Simpan dokumentasi satu kali konfigurasi App/settings; jangan menyimpan credential bot dalam repo.",
       "milestone": "M8",
-      "dependsOn": [
-        "M0.04",
-        "M8.01"
-      ],
+      "dependsOn": ["M0.04", "M8.01"],
       "output": "docs/operations/github-bootstrap.md",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "evidence": "docs/roadmap/evidence/M8.04.md"
@@ -1278,10 +1015,7 @@
       "id": "M8.05",
       "title": "Updater mingguan menyiapkan dependency runtime/dev/actions dalam kelompok; tidak membuat branch ketiga.",
       "milestone": "M8",
-      "dependsOn": [
-        "M0.01",
-        "M1.12"
-      ],
+      "dependsOn": ["M0.01", "M1.12"],
       "output": "Dependency update planner",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "evidence": "docs/roadmap/evidence/M8.05.md"
@@ -1290,11 +1024,7 @@
       "id": "M8.06",
       "title": "Uji kandidat update sebelum menulis ke dev; periksa SHA asal, serialisasi bot writes, dan jangan mencampur beberapa major upgrade.",
       "milestone": "M8",
-      "dependsOn": [
-        "M8.05",
-        "M7.08",
-        "M2.05"
-      ],
+      "dependsOn": ["M8.05", "M7.08", "M2.05"],
       "output": "Dependency candidate executor",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "evidence": "docs/roadmap/evidence/M8.06.md"
@@ -1303,10 +1033,7 @@
       "id": "M8.07",
       "title": "Patch/minor tetap melewati suite penuh dan promosi; major update menghasilkan laporan kompatibilitas sebelum diterapkan.",
       "milestone": "M8",
-      "dependsOn": [
-        "M8.06",
-        "M1.08"
-      ],
+      "dependsOn": ["M8.06", "M1.08"],
       "output": "Dependency promotion policy",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "evidence": "docs/roadmap/evidence/M8.07.md"
@@ -1315,11 +1042,7 @@
       "id": "M8.08",
       "title": "Scheduled regression: browser tambahan, schema upgrade, jobs recovery, application restore drill, dan security rescan.",
       "milestone": "M8",
-      "dependsOn": [
-        "M3.11",
-        "M4.10",
-        "M4.14"
-      ],
+      "dependsOn": ["M3.11", "M4.10", "M4.14"],
       "output": "Scheduled regression workflow",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "evidence": "docs/roadmap/evidence/M8.08.md"
@@ -1329,10 +1052,7 @@
       "title": "Jadwalkan issue pemeliharaan tanpa spam; deduplikasi failure issue, perbarui recovery, dan jangan auto-close laporan keamanan hanya karena sudah lama.",
       "milestone": "M8",
       "status": "in_progress",
-      "dependsOn": [
-        "M2.10",
-        "M8.01"
-      ],
+      "dependsOn": ["M2.10", "M8.01"],
       "output": "Maintenance issue reconciler",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "evidence": "docs/roadmap/evidence/M8.09.md"
@@ -1341,10 +1061,7 @@
       "id": "M8.10",
       "title": "Audit retensi artifacts/logs, registry growth, biaya Actions, permission drift, dan toolchain end-of-support.",
       "milestone": "M8",
-      "dependsOn": [
-        "M0.06",
-        "M8.01"
-      ],
+      "dependsOn": ["M0.06", "M8.01"],
       "output": "Monthly platform audit",
       "detailFile": "docs/roadmap/08-security-maintenance.md",
       "evidence": "docs/roadmap/evidence/M8.10.md"
@@ -1354,10 +1071,7 @@
       "title": "Definisikan security reporting, incident response, credential rotation, dan release correction procedure.",
       "status": "in_progress",
       "milestone": "M8",
-      "dependsOn": [
-        "M4.05",
-        "M8.04"
-      ],
+      "dependsOn": ["M4.05", "M8.04"],
       "output": "SECURITY.md dan incident runbooks",
       "evidence": "docs/roadmap/evidence/M8.11.md",
       "detailFile": "docs/roadmap/08-security-maintenance.md"
@@ -1366,10 +1080,7 @@
       "id": "M9.01",
       "title": "Evaluasi `orm-notification`: preferences, templates, inbox, delivery status; reuse jobs/outbox dan cegah pengiriman contoh ke penerima nyata.",
       "milestone": "M9",
-      "dependsOn": [
-        "M4.11",
-        "M4.06"
-      ],
+      "dependsOn": ["M4.11", "M4.06"],
       "output": "orm-notification minimal addon atau ADR reuse existing",
       "detailFile": "docs/roadmap/09-addons.md",
       "evidence": "docs/roadmap/evidence/M9.01.md"
@@ -1378,10 +1089,7 @@
       "id": "M9.02",
       "title": "Evaluasi `orm-storage`: storage adapters, attachment ownership/download/retention; migrasikan dengan kompatibilitas data existing.",
       "milestone": "M9",
-      "dependsOn": [
-        "M4.12",
-        "M4.16"
-      ],
+      "dependsOn": ["M4.12", "M4.16"],
       "output": "orm-storage adapter contract dan migration guide",
       "detailFile": "docs/roadmap/09-addons.md",
       "evidence": "docs/roadmap/evidence/M9.02.md"
@@ -1390,10 +1098,7 @@
       "id": "M9.03",
       "title": "Implementasikan `orm-workflow`: typed state/approval engine, authenticated company-scoped API, jobs expiry, audit history, dan generated docs.",
       "milestone": "M9",
-      "dependsOn": [
-        "M4.06",
-        "M4.10"
-      ],
+      "dependsOn": ["M4.06", "M4.10"],
       "status": "in_progress",
       "output": "Typed workflow addon, sample definition, authenticated API, expiry jobs, tests, and generated references",
       "detailFile": "docs/roadmap/09-addons.md",
@@ -1403,10 +1108,7 @@
       "id": "M9.04",
       "title": "Evaluasi `orm-integration`: webhook subscriptions, scoped credential references, signing, idempotency, delivery/retry; validasi tujuan request untuk menghindari SSRF.",
       "milestone": "M9",
-      "dependsOn": [
-        "M4.11",
-        "M8.11"
-      ],
+      "dependsOn": ["M4.11", "M8.11"],
       "output": "orm-integration minimal webhook addon",
       "detailFile": "docs/roadmap/09-addons.md",
       "evidence": "docs/roadmap/evidence/M9.04.md"
@@ -1415,9 +1117,7 @@
       "id": "M9.05",
       "title": "Evaluasi `orm-organization`: departments, teams, positions, memberships dan manager berdasarkan kebutuhan produk.",
       "milestone": "M9",
-      "dependsOn": [
-        "M4.06"
-      ],
+      "dependsOn": ["M4.06"],
       "output": "orm-organization minimal addon",
       "detailFile": "docs/roadmap/09-addons.md",
       "evidence": "docs/roadmap/evidence/M9.05.md"
@@ -1426,11 +1126,7 @@
       "id": "M9.06",
       "title": "Bangun satu addon bisnis contoh (request/approval atau CRM sederhana) untuk membuktikan extensibility tanpa perubahan core berulang.",
       "milestone": "M9",
-      "dependsOn": [
-        "M9.01",
-        "M9.03",
-        "M9.07"
-      ],
+      "dependsOn": ["M9.01", "M9.03", "M9.07"],
       "output": "Sample request addon dengan demo dataset",
       "detailFile": "docs/roadmap/09-addons.md",
       "status": "in_progress",
@@ -1440,11 +1136,7 @@
       "id": "M9.07",
       "title": "Untuk tiap addon: manifest/dependencies, minimal public API, access isolation, views/menu, required/demo seeds, docs, upgrade path, tests, dan compatibility policy.",
       "milestone": "M9",
-      "dependsOn": [
-        "M4.01",
-        "M4.02",
-        "M4.16"
-      ],
+      "dependsOn": ["M4.01", "M4.02", "M4.16"],
       "output": "Reusable addon conformance suite",
       "detailFile": "docs/roadmap/09-addons.md",
       "evidence": "docs/roadmap/evidence/M9.07.md"
@@ -1453,10 +1145,7 @@
       "id": "M9.08",
       "title": "Audit ukuran base/API/Board setelah ekstraksi; package baru harus mengurangi coupling atau menghasilkan reuse yang terbukti.",
       "milestone": "M9",
-      "dependsOn": [
-        "M0.05",
-        "M9.06"
-      ],
+      "dependsOn": ["M0.05", "M9.06"],
       "output": "Post-extraction architecture review",
       "detailFile": "docs/roadmap/09-addons.md",
       "status": "in_progress",
@@ -1466,11 +1155,7 @@
       "id": "M10.01",
       "title": "Semua fitur inventarisasi punya status coverage; gap eksplisit mempunyai pemilik dan prioritas.",
       "milestone": "M10",
-      "dependsOn": [
-        "M0.02",
-        "M3.08",
-        "M4.16"
-      ],
+      "dependsOn": ["M0.02", "M3.08", "M4.16"],
       "status": "in_progress",
       "output": "Final feature coverage report",
       "detailFile": "docs/roadmap/10-acceptance.md",
@@ -1482,11 +1167,7 @@
       "evidence": "docs/roadmap/evidence/M10.02.md",
       "title": "Audit visual Board selesai dan bukti screenshot tersimpan; browser E2E tidak sekadar mengecek halaman terbuka.",
       "milestone": "M10",
-      "dependsOn": [
-        "M3.10",
-        "M5.14",
-        "M5.17"
-      ],
+      "dependsOn": ["M3.10", "M5.14", "M5.17"],
       "output": "Final Board acceptance report",
       "detailFile": "docs/roadmap/10-acceptance.md"
     },
@@ -1496,10 +1177,7 @@
       "evidence": "docs/roadmap/evidence/M10.03.md",
       "title": "Lint/types/build/tests dan seluruh required checks lolos pada commit yang dipromosikan.",
       "milestone": "M10",
-      "dependsOn": [
-        "M2.05",
-        "M7.07"
-      ],
+      "dependsOn": ["M2.05", "M7.07"],
       "output": "Final CI evidence manifest",
       "detailFile": "docs/roadmap/10-acceptance.md"
     },
@@ -1509,11 +1187,7 @@
       "evidence": "docs/roadmap/evidence/M10.04.md",
       "title": "PostgreSQL integration benar-benar berjalan; upgrade, relasi/count, seed, dan izin negatif teruji.",
       "milestone": "M10",
-      "dependsOn": [
-        "M2.06",
-        "M4.02",
-        "M4.06"
-      ],
+      "dependsOn": ["M2.06", "M4.02", "M4.06"],
       "output": "PostgreSQL acceptance evidence",
       "detailFile": "docs/roadmap/10-acceptance.md"
     },
@@ -1523,9 +1197,7 @@
       "evidence": "docs/roadmap/evidence/M10.05.md",
       "title": "Image API/Board berjalan pada runner; health/readiness/shutdown dan konfigurasi container terverifikasi.",
       "milestone": "M10",
-      "dependsOn": [
-        "M7.09"
-      ],
+      "dependsOn": ["M7.09"],
       "output": "Container smoke evidence",
       "detailFile": "docs/roadmap/10-acceptance.md"
     },
@@ -1533,9 +1205,7 @@
       "id": "M10.06",
       "title": "Simulasi gagal membuktikan promosi/release diblokir; rerun tidak membuat duplikasi atau workflow loop.",
       "milestone": "M10",
-      "dependsOn": [
-        "M7.14"
-      ],
+      "dependsOn": ["M7.14"],
       "status": "in_progress",
       "output": "Automation failure acceptance report",
       "detailFile": "docs/roadmap/10-acceptance.md",
@@ -1545,15 +1215,7 @@
       "id": "M10.07",
       "title": "Satu siklus dev → main → version/tag/release/artifacts/Pages → sync dev terbukti dengan bukti SHA dan run URL.",
       "milestone": "M10",
-      "dependsOn": [
-        "M7.16",
-        "M6.07",
-        "M1.09",
-        "M10.03",
-        "M10.04",
-        "M10.05",
-        "M10.06"
-      ],
+      "dependsOn": ["M7.16", "M6.07", "M1.09", "M10.03", "M10.04", "M10.05", "M10.06"],
       "output": "End-to-end release trace",
       "detailFile": "docs/roadmap/10-acceptance.md"
     },
@@ -1563,11 +1225,7 @@
       "evidence": "docs/roadmap/evidence/M10.08.md",
       "title": "Hanya main/dev ada pada repository asal; tidak ada workflow deployment aplikasi yang aktif.",
       "milestone": "M10",
-      "dependsOn": [
-        "M1.02",
-        "M1.11",
-        "M1.12"
-      ],
+      "dependsOn": ["M1.02", "M1.11", "M1.12"],
       "output": "Governance acceptance snapshot",
       "detailFile": "docs/roadmap/10-acceptance.md"
     },
@@ -1576,11 +1234,7 @@
       "evidence": "docs/roadmap/evidence/M10.09.md",
       "title": "README/Pages/asset catalog sesuai source dan release; tidak ada secret atau data pengguna dalam output publik.",
       "milestone": "M10",
-      "dependsOn": [
-        "M6.09",
-        "M5.15",
-        "M10.07"
-      ],
+      "dependsOn": ["M6.09", "M5.15", "M10.07"],
       "output": "Documentation publication acceptance",
       "detailFile": "docs/roadmap/10-acceptance.md"
     },
@@ -1589,15 +1243,7 @@
       "evidence": "docs/roadmap/evidence/M10.10.md",
       "title": "Tetapkan recurring maintenance di bawah dan catat keterbatasan tersisa sebelum milestone dinyatakan selesai.",
       "milestone": "M10",
-      "dependsOn": [
-        "M8.08",
-        "M8.09",
-        "M8.10",
-        "M10.01",
-        "M10.02",
-        "M10.08",
-        "M10.09"
-      ],
+      "dependsOn": ["M8.08", "M8.09", "M8.10", "M10.01", "M10.02", "M10.08", "M10.09"],
       "output": "Handoff report dan maintained roadmap",
       "detailFile": "docs/roadmap/10-acceptance.md"
     },
@@ -1605,10 +1251,7 @@
       "id": "M11.01",
       "title": "Tetapkan kontrak sinkronisasi roadmap ↔ GitHub Issues dan otoritas setiap field.",
       "milestone": "M11",
-      "dependsOn": [
-        "M0.02",
-        "M0.04"
-      ],
+      "dependsOn": ["M0.02", "M0.04"],
       "output": "docs/engineering/issue-sync-policy.md",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.01.md"
@@ -1617,9 +1260,7 @@
       "id": "M11.02",
       "title": "Buat schema task tracking, identitas issue stabil, dan validator silang dokumen.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.01"
-      ],
+      "dependsOn": ["M11.01"],
       "output": "Task schema, validator dan fixture tests",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.02.md"
@@ -1628,10 +1269,7 @@
       "id": "M11.03",
       "title": "Buat planner dry-run dan apply mode untuk create/update issue tanpa duplikasi.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.02",
-        "M8.01"
-      ],
+      "dependsOn": ["M11.02", "M8.01"],
       "output": "scripts/roadmap sync planner/executor dan tests",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.03.md"
@@ -1640,9 +1278,7 @@
       "id": "M11.04",
       "title": "Sinkronkan isi issue lengkap, milestone, labels dan dependencies yang dapat ditelusuri.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.03"
-      ],
+      "dependsOn": ["M11.03"],
       "output": "Issue templates dan metadata renderer",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.04.md"
@@ -1651,10 +1287,7 @@
       "id": "M11.05",
       "title": "Pelihara catatan manusia saat bot memperbarui issue.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.03",
-        "M11.04"
-      ],
+      "dependsOn": ["M11.03", "M11.04"],
       "output": "Safe body reconciliation tests",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.05.md"
@@ -1663,11 +1296,7 @@
       "id": "M11.06",
       "title": "Buat workflow sync terjadwal, push-triggered dan manual dengan batching/rate-limit handling.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.03",
-        "M11.05",
-        "M8.04"
-      ],
+      "dependsOn": ["M11.03", "M11.05", "M8.04"],
       "output": "roadmap-sync workflow dan recovery report",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.06.md"
@@ -1676,11 +1305,7 @@
       "id": "M11.07",
       "title": "Implementasikan lifecycle issue berdasarkan evidence, commit, CI, promosi dan release.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.01",
-        "M11.06",
-        "M2.10"
-      ],
+      "dependsOn": ["M11.01", "M11.06", "M2.10"],
       "output": "Issue lifecycle reconciler dan transition tests",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.07.md"
@@ -1689,11 +1314,7 @@
       "id": "M11.08",
       "title": "Terima perubahan status dari maintainer tanpa memberikan eksekusi kode melalui issue.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.01",
-        "M11.05",
-        "M8.04"
-      ],
+      "dependsOn": ["M11.01", "M11.05", "M8.04"],
       "output": "Trusted issue intake dan anti-loop tests",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.08.md"
@@ -1702,11 +1323,7 @@
       "id": "M11.09",
       "title": "Buat dashboard kemajuan dan GitHub Projects projection bila tersedia.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.04",
-        "M11.07",
-        "M0.04"
-      ],
+      "dependsOn": ["M11.04", "M11.07", "M0.04"],
       "output": "Progress summary dan optional Projects sync",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.09.md"
@@ -1715,11 +1332,7 @@
       "id": "M11.10",
       "title": "Buat/perbarui PR dev → main otomatis dengan daftar task, hasil test, release plan dan risiko.",
       "milestone": "M11",
-      "dependsOn": [
-        "M1.05",
-        "M11.04",
-        "M7.06"
-      ],
+      "dependsOn": ["M1.05", "M11.04", "M7.06"],
       "output": "Promotion PR report renderer",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.10.md"
@@ -1728,12 +1341,7 @@
       "id": "M11.11",
       "title": "Aktifkan auto-merge profesional dengan expected SHA, required checks dan review policy.",
       "milestone": "M11",
-      "dependsOn": [
-        "M1.06",
-        "M1.08",
-        "M11.10",
-        "M7.07"
-      ],
+      "dependsOn": ["M1.06", "M1.08", "M11.10", "M7.07"],
       "output": "Auto-merge coordinator dan negative tests",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.11.md"
@@ -1742,10 +1350,7 @@
       "id": "M11.12",
       "title": "Terapkan aturan commit dan push per unit pekerjaan yang selesai.",
       "milestone": "M11",
-      "dependsOn": [
-        "M1.01",
-        "M2.02"
-      ],
+      "dependsOn": ["M1.01", "M2.02"],
       "output": "Delivery protocol dan handoff fields",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.12.md"
@@ -1754,12 +1359,7 @@
       "id": "M11.13",
       "title": "Gabungkan commit/push, version bump, docs dan issue sync tanpa release loop.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.06",
-        "M11.12",
-        "M7.04",
-        "M7.15"
-      ],
+      "dependsOn": ["M11.06", "M11.12", "M7.04", "M7.15"],
       "output": "Unified event graph dan loop regression tests",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.13.md"
@@ -1768,13 +1368,7 @@
       "id": "M11.14",
       "title": "Uji seluruh siklus roadmap → issue → commit → CI → PR → merge → release → status.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.07",
-        "M11.08",
-        "M11.11",
-        "M11.13",
-        "M7.14"
-      ],
+      "dependsOn": ["M11.07", "M11.08", "M11.11", "M11.13", "M7.14"],
       "output": "Issue/PR lifecycle fault-injection report",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.14.md"
@@ -1783,10 +1377,7 @@
       "id": "M11.15",
       "title": "Sediakan runbook audit/recovery dan pemeriksaan drift issue/roadmap.",
       "milestone": "M11",
-      "dependsOn": [
-        "M11.14",
-        "M8.09"
-      ],
+      "dependsOn": ["M11.14", "M8.09"],
       "output": "docs/operations/roadmap-sync.md dan recurring audit",
       "detailFile": "docs/roadmap/11-issues-delivery.md",
       "evidence": "docs/roadmap/evidence/M11.15.md"
@@ -1808,9 +1399,7 @@
       ],
       "output": "docs/architecture/ai-corporation-baseline-audit.md",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.01.md"
@@ -1819,16 +1408,10 @@
       "id": "M12.02",
       "title": "Official ADR 0007 dan rekonsiliasi roadmap/workstream (AI1.1–AI1.34).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.01",
-        "M0.07",
-        "M11.02"
-      ],
+      "dependsOn": ["M12.01", "M0.07", "M11.02"],
       "output": "docs/decisions/0007-ai-corporation-addon-first-architecture.md, docs/roadmap/13-ai-corporation.md, dan sinkronisasi tasks.json/ROADMAP.md/ACTIVE-PLAN.md",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.02.md"
@@ -1837,21 +1420,10 @@
       "id": "M12.03",
       "title": "Addon-First domain foundation @moonwitness/orm-ai (AI2.1–AI2.43).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.02",
-        "M4.10",
-        "M4.11",
-        "M4.12",
-        "M9.03",
-        "M9.04",
-        "M9.05",
-        "M9.07"
-      ],
+      "dependsOn": ["M12.02", "M4.10", "M4.11", "M4.12", "M9.03", "M9.04", "M9.05", "M9.07"],
       "output": "packages/orm-ai, registrasi API_ADDONS, INTERNAL_PREFIXES 'ai.', dan addon conformance tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.03.md"
@@ -1860,17 +1432,10 @@
       "id": "M12.04",
       "title": "Provider & model abstraction dengan data-classification routing (AI3.1–AI3.28).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.02",
-        "M9.04",
-        "K7-001",
-        "K7-005"
-      ],
+      "dependsOn": ["M12.02", "M9.04", "K7-001", "K7-005"],
       "output": "packages/ai-runtime provider contracts, Mock/Ollama/Cloud adapters, DataClassificationRouter, dan contract suite",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.04.md"
@@ -1879,19 +1444,10 @@
       "id": "M12.05",
       "title": "First durable, bounded read-only agent via @moonwitness/jobs (AI4.1–AI4.37).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.03",
-        "M12.04",
-        "M4.10",
-        "M4.11",
-        "M4.12",
-        "K7-005"
-      ],
+      "dependsOn": ["M12.03", "M12.04", "M4.10", "M4.11", "M4.12", "K7-005"],
       "output": "Bounded read-only agent harness, ai.agent_run.* job handlers, dan crash/fencing/cancellation tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.05.md"
@@ -1900,17 +1456,10 @@
       "id": "M12.06",
       "title": "Capability/tool gateway, MCP server & A2A ADR (AI5.1–AI5.33).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.03",
-        "M12.05",
-        "M9.03",
-        "K0-003"
-      ],
+      "dependsOn": ["M12.03", "M12.05", "M9.03", "K0-003"],
       "output": "Capability gateway, packages/ai-mcp (read-only + 1 scoped idempotent write tool), dan ADR 0008 A2A",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.06.md"
@@ -1919,19 +1468,10 @@
       "id": "M12.07",
       "title": "Proof-Carrying Work (PCW), independent verification & obligation continuity (AI6.1–AI6.31).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.03",
-        "M12.05",
-        "M9.03",
-        "K3-005",
-        "K6-003",
-        "K6-005"
-      ],
+      "dependsOn": ["M12.03", "M12.05", "M9.03", "K3-005", "K6-003", "K6-005"],
       "output": "PCW verifier pipeline, independent reviewer workflow, dan ai.obligation continuity ledger",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.07.md"
@@ -1940,17 +1480,10 @@
       "id": "M12.08",
       "title": "AI Company workforce organization & bounded multi-agent orchestration (AI7.1–AI7.32).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.06",
-        "M12.07",
-        "M9.05",
-        "M9.06"
-      ],
+      "dependsOn": ["M12.06", "M12.07", "M9.05", "M9.06"],
       "output": "Workforce planner/delegation controller, cycle/duplicate guards, dan parallel conflict control tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p1",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.08.md"
@@ -1959,16 +1492,10 @@
       "id": "M12.09",
       "title": "Episodic/semantic/procedural memory & controlled learning (AI8.1–AI8.24).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.07",
-        "K0-003",
-        "K5-002"
-      ],
+      "dependsOn": ["M12.07", "K0-003", "K5-002"],
       "output": "Memory/skill candidate lifecycle terpisah dari K0–K9, ablation benchmarks, dan revocation tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p1",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.09.md"
@@ -1977,17 +1504,10 @@
       "id": "M12.10",
       "title": "Mission Control UI & operator experience di apps/board (AI9.1–AI9.25).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.06",
-        "M12.07",
-        "M12.08",
-        "M9.06"
-      ],
+      "dependsOn": ["M12.06", "M12.07", "M12.08", "M9.06"],
       "output": "apps/board/src/app/board/ai/* pages dengan @moonwitness/ui, badge persisted/derived/ephemeral, dan isolation tests",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p1",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.10.md"
@@ -1996,19 +1516,10 @@
       "id": "M12.11",
       "title": "Security risk tiers R0–R4, sandboxing, observability & restore drill (AI10.1–AI10.38).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.06",
-        "M12.07",
-        "M12.10",
-        "M4.12",
-        "K5-002",
-        "K7-005"
-      ],
+      "dependsOn": ["M12.06", "M12.07", "M12.10", "M4.12", "K5-002", "K7-005"],
       "output": "R0–R4 policy engine, adversarial/injection tests, OTel GenAI telemetry, dan restore-drill-fixture coverage",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.11.md"
@@ -2017,16 +1528,10 @@
       "id": "M12.12",
       "title": "Evaluation lab, baselines & G0–G6 capability gates (AI11.1–AI11.24).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.08",
-        "M12.09",
-        "M12.11"
-      ],
+      "dependsOn": ["M12.08", "M12.09", "M12.11"],
       "output": "packages/ai-evaluation corpus, single vs multi-agent baselines, dan G0–G6 gate runners",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p1",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.12.md"
@@ -2035,16 +1540,10 @@
       "id": "M12.13",
       "title": "Documentation, operator runbooks, threat model & doc gates (DOC.1–DOC.16).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.02",
-        "M12.11",
-        "M12.12"
-      ],
+      "dependsOn": ["M12.02", "M12.11", "M12.12"],
       "output": "docs/ai-corporation/*, runbooks, threat model, eval methodology, dan docs:check:built green",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p1",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/M12.13.md"
@@ -2053,17 +1552,10 @@
       "id": "M12.14",
       "title": "Vertical slice, release gates G1–G14, E2E Tiers 1–5 & CI verification (SLICE/GATE/PR).",
       "milestone": "M12",
-      "dependsOn": [
-        "M12.10",
-        "M12.11",
-        "M12.12",
-        "M12.13"
-      ],
+      "dependsOn": ["M12.10", "M12.11", "M12.12", "M12.13"],
       "output": "End-to-end vertical slice, G1–G14 gates, sinkronisasi ledger todo-ai-corporation.md, dan hosted CI green",
       "detailFile": "docs/roadmap/13-ai-corporation.md",
-      "labels": [
-        "ai-corporation"
-      ],
+      "labels": ["ai-corporation"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/M12.14.md"
@@ -2072,21 +1564,25 @@
       "id": "M13.01",
       "title": "ROCKSOUL FLOW capability audit and first vertical-slice selection.",
       "milestone": "M13",
-      "dependsOn": [
-        "M12.05",
-        "M12.06",
-        "M12.07",
-        "M12.11",
-        "M12.13"
-      ],
+      "dependsOn": ["M12.05", "M12.06", "M12.07", "M12.11", "M12.13"],
       "output": "docs/architecture/rock-soul-flow-reuse-map.md and docs/roadmap/evidence/M13.01.md",
       "detailFile": "docs/roadmap/14-desktop-engineering.md",
-      "labels": [
-        "desktop",
-        "rock-soul-flow"
-      ],
+      "labels": ["desktop", "rock-soul-flow"],
       "priority": "p1",
-      "status": "todo"
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M13.01.md"
+    },
+    {
+      "id": "M13.02",
+      "title": "Read-only revision-pinned Repo Radar Snapshot.",
+      "milestone": "M13",
+      "dependsOn": ["M13.01"],
+      "output": "packages/ai-runtime/src/repo-snapshot.ts, apps/desktop/src/worktree-sandbox.ts, and docs/roadmap/evidence/M13.02.md",
+      "detailFile": "docs/roadmap/14-desktop-engineering.md",
+      "labels": ["desktop", "rock-soul-flow"],
+      "priority": "p1",
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M13.02.md"
     },
     {
       "id": "K0-001",
@@ -2095,9 +1591,7 @@
       "dependsOn": [],
       "output": "Accepted ADR centralizing XIV knowledge ownership and recording the existing deployment boundary and acceptance responsibilities; deployment changes require a separate reviewed ADR 0001 amendment",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K0-001-002.md"
@@ -2109,9 +1603,7 @@
       "dependsOn": [],
       "output": "Read-only baseline of build/test state, branches, Postgres, RAM/CPU/GPU/storage/network, and known failures",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K0-001-002.md"
@@ -2120,14 +1612,10 @@
       "id": "K0-003",
       "title": "Canonical boundaries and domain ownership matrix",
       "milestone": "K0",
-      "dependsOn": [
-        "K0-001"
-      ],
+      "dependsOn": ["K0-001"],
       "output": "One owner per domain and module-to-storage dataflow diagram",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K0-003.md"
@@ -2136,14 +1624,10 @@
       "id": "K0-004",
       "title": "Legal rights and source ingestion policy",
       "milestone": "K0",
-      "dependsOn": [
-        "K0-001"
-      ],
+      "dependsOn": ["K0-001"],
       "output": "Source-rights policy and metadata-only fallback",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K0-004.md"
@@ -2152,14 +1636,10 @@
       "id": "K0-005",
       "title": "Witness privacy consent and minor-safety policy",
       "milestone": "K0",
-      "dependsOn": [
-        "K0-001"
-      ],
+      "dependsOn": ["K0-001"],
       "output": "Classification, consent, minimization, deletion/redaction and child-protection policy",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K0-005.md"
@@ -2168,15 +1648,10 @@
       "id": "K0-006",
       "title": "Legacy knowledge inventory and migration ledger",
       "milestone": "K0",
-      "dependsOn": [
-        "K0-003",
-        "K0-004"
-      ],
+      "dependsOn": ["K0-003", "K0-004"],
       "output": "Per-source repo/file/hash/license/old-id/target-decision inventory",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K0-006.md"
@@ -2185,15 +1660,10 @@
       "id": "K0-007",
       "title": "Task lifecycle and local-agent trust contract",
       "milestone": "K0",
-      "dependsOn": [
-        "K0-001",
-        "K0-002"
-      ],
+      "dependsOn": ["K0-001", "K0-002"],
       "output": "Agent protocol, evidence file template, K task index integration",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K0-007.md"
@@ -2202,15 +1672,10 @@
       "id": "K1-001",
       "title": "Knowledge record types and JSON schemas",
       "milestone": "K1",
-      "dependsOn": [
-        "K0-001",
-        "K0-003"
-      ],
+      "dependsOn": ["K0-001", "K0-003"],
       "output": "Typed core record contracts and JSON Schema 2020-12",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K1-001.md"
@@ -2219,14 +1684,10 @@
       "id": "K1-002",
       "title": "Canonical ID/alias grammar and resolver",
       "milestone": "K1",
-      "dependsOn": [
-        "K1-001"
-      ],
+      "dependsOn": ["K1-001"],
       "output": "Stable `mw:*` ID grammar, alias registry, conflict state",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K1-002.md"
@@ -2235,15 +1696,10 @@
       "id": "K1-003",
       "title": "Source artifact and rights schemas",
       "milestone": "K1",
-      "dependsOn": [
-        "K1-001",
-        "K0-004"
-      ],
+      "dependsOn": ["K1-001", "K0-004"],
       "output": "Artifact, edition, rights/attribution/locale/ref manifest type",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K1-003.md"
@@ -2252,14 +1708,10 @@
       "id": "K1-004",
       "title": "PROV-based activity and evidence contracts",
       "milestone": "K1",
-      "dependsOn": [
-        "K1-001"
-      ],
+      "dependsOn": ["K1-001"],
       "output": "Actor/source/activity/time/derivation provenance envelope",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K1-004.md"
@@ -2268,17 +1720,10 @@
       "id": "K1-005",
       "title": "Standalone offline knowledge validator CLI",
       "milestone": "K1",
-      "dependsOn": [
-        "K1-001",
-        "K1-002",
-        "K1-003",
-        "K1-004"
-      ],
+      "dependsOn": ["K1-001", "K1-002", "K1-003", "K1-004"],
       "output": "CLI for local source records, IDs, rights, referential integrity",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K1-005.md"
@@ -2287,14 +1732,10 @@
       "id": "K1-006",
       "title": "Deterministic canonical JSON and snapshot hashing",
       "milestone": "K1",
-      "dependsOn": [
-        "K1-005"
-      ],
+      "dependsOn": ["K1-005"],
       "output": "JCS-compatible hashing and stable manifest order; dataset digest",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K1-006.md"
@@ -2303,15 +1744,10 @@
       "id": "K1-007",
       "title": "Independent ontology/corpus schema versioning",
       "milestone": "K1",
-      "dependsOn": [
-        "K1-005",
-        "K0-006"
-      ],
+      "dependsOn": ["K1-005", "K0-006"],
       "output": "Version contract, semantic diff and compatibility matrix",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K1-007.md"
@@ -2320,15 +1756,10 @@
       "id": "K2-001",
       "title": "Deterministic offline ingestion adapter",
       "milestone": "K2",
-      "dependsOn": [
-        "K1-005",
-        "K1-006"
-      ],
+      "dependsOn": ["K1-005", "K1-006"],
       "output": "Pin/parse/import recipe engine with dry-run and import report",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K2-001.md"
@@ -2337,14 +1768,10 @@
       "id": "K2-002",
       "title": "Content-addressed raw artifact store",
       "milestone": "K2",
-      "dependsOn": [
-        "K2-001"
-      ],
+      "dependsOn": ["K2-001"],
       "output": "Raw-byte immutable blob storage contract and SHA integrity",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K2-002.md"
@@ -2353,15 +1780,10 @@
       "id": "K2-003",
       "title": "Dataset release manifest and rollback pointers",
       "milestone": "K2",
-      "dependsOn": [
-        "K2-001",
-        "K1-007"
-      ],
+      "dependsOn": ["K2-001", "K1-007"],
       "output": "Versioned dataset source snapshot and active projection switch",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K2-003.md"
@@ -2370,15 +1792,10 @@
       "id": "K2-004",
       "title": "Revelation identity versus canon/edition ontology",
       "milestone": "K2",
-      "dependsOn": [
-        "K1-002",
-        "K1-003"
-      ],
+      "dependsOn": ["K1-002", "K1-003"],
       "output": "Explicit identity/relation classes for Qur’an/Taurat/Zabur/Injil and available textual witnesses",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K2-004.md"
@@ -2387,16 +1804,10 @@
       "id": "K2-005",
       "title": "First rights-cleared Qur’an passage slice",
       "milestone": "K2",
-      "dependsOn": [
-        "K2-002",
-        "K2-003",
-        "K2-004"
-      ],
+      "dependsOn": ["K2-002", "K2-003", "K2-004"],
       "output": "Pinned, lawful, integrity-checked passage sample including Q7:46",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K2-005.md"
@@ -2405,15 +1816,10 @@
       "id": "K2-006",
       "title": "Second-source textual witness sample with edition guard",
       "milestone": "K2",
-      "dependsOn": [
-        "K2-005",
-        "K0-004"
-      ],
+      "dependsOn": ["K2-005", "K0-004"],
       "output": "Licensed metadata/full-text small source outside Quran, separately identified by expression",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K2-006.md"
@@ -2422,15 +1828,10 @@
       "id": "K2-007",
       "title": "Source/citation lookup API and SDK",
       "milestone": "K2",
-      "dependsOn": [
-        "K2-005",
-        "K1-002"
-      ],
+      "dependsOn": ["K2-005", "K1-002"],
       "output": "Authenticated/public-filtered exact source and passage retrieval endpoints",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K2-007.md"
@@ -2439,16 +1840,10 @@
       "id": "K2-008",
       "title": "Corpus offline rebuild and snapshot certification",
       "milestone": "K2",
-      "dependsOn": [
-        "K2-003",
-        "K2-005",
-        "K2-007"
-      ],
+      "dependsOn": ["K2-003", "K2-005", "K2-007"],
       "output": "Offline CLI proof and source-reconstruction report",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K2-008.md"
@@ -2457,15 +1852,10 @@
       "id": "K3-001",
       "title": "Assertion with scope, polarity and epistemic status",
       "milestone": "K3",
-      "dependsOn": [
-        "K1-004",
-        "K2-007"
-      ],
+      "dependsOn": ["K1-004", "K2-007"],
       "output": "Typed assertion records with explicit review/uncertainty",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K3-001.md"
@@ -2474,14 +1864,10 @@
       "id": "K3-002",
       "title": "Evidence links and exact source selectors",
       "milestone": "K3",
-      "dependsOn": [
-        "K3-001"
-      ],
+      "dependsOn": ["K3-001"],
       "output": "Evidence references to canonical passage/range/content hash",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K3-002.md"
@@ -2490,15 +1876,10 @@
       "id": "K3-003",
       "title": "Alias/identity reconciliation with human decision",
       "milestone": "K3",
-      "dependsOn": [
-        "K3-001",
-        "K1-002"
-      ],
+      "dependsOn": ["K3-001", "K1-002"],
       "output": "Match candidates, explicit accepted/rejected identity decisions",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K3-003.md"
@@ -2507,85 +1888,60 @@
       "id": "K3-004",
       "title": "Typed reviewed relation graph projection",
       "milestone": "K3",
-      "dependsOn": [
-        "K3-002",
-        "K3-003"
-      ],
+      "dependsOn": ["K3-002", "K3-003"],
       "output": "Allowed relation vocabulary and adjacency queries",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K3-004.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0"
     },
     {
       "id": "K3-005",
       "title": "Research review and immutable decision event flow",
       "milestone": "K3",
-      "dependsOn": [
-        "K3-001",
-        "K3-004"
-      ],
+      "dependsOn": ["K3-001", "K3-004"],
       "output": "Human review workflow tied to source revision and event history",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K3-005.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0"
     },
     {
       "id": "K3-006",
       "title": "Cross-domain explanation and alternative hypothesis API",
       "milestone": "K3",
-      "dependsOn": [
-        "K3-002",
-        "K3-004"
-      ],
+      "dependsOn": ["K3-002", "K3-004"],
       "output": "Explain edges, supporting/opposing refs, alternatives/uncertainty",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K3-006.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0"
     },
     {
       "id": "K3-007",
       "title": "Evidence-aware duplicate scoring candidates",
       "milestone": "K3",
-      "dependsOn": [
-        "K3-003",
-        "K3-006"
-      ],
+      "dependsOn": ["K3-003", "K3-006"],
       "output": "Non-destructive duplicate suggestions with rationale and review state",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K3-007.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0"
     },
     {
       "id": "K4-001",
       "title": "Text segmentation and lexical metadata with offsets",
       "milestone": "K4",
-      "dependsOn": [
-        "K2-005",
-        "K3-002"
-      ],
+      "dependsOn": ["K2-005", "K3-002"],
       "output": "Language/script-aware tokens, original byte/text offset mapping",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K4-001.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0"
     },
     {
@@ -2594,15 +1950,10 @@
       "milestone": "K4",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K4-002.md",
-      "dependsOn": [
-        "K4-001",
-        "K3-001"
-      ],
+      "dependsOn": ["K4-001", "K3-001"],
       "output": "Structured direction, negation, quoted speaker/context schema",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0"
     },
     {
@@ -2611,15 +1962,10 @@
       "milestone": "K4",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K4-003.md",
-      "dependsOn": [
-        "K4-002",
-        "K3-002"
-      ],
+      "dependsOn": ["K4-002", "K3-002"],
       "output": "Explicit Quran-primary profile, candidate divine-attribute relation extraction",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0"
     },
     {
@@ -2628,15 +1974,10 @@
       "milestone": "K4",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K4-004.md",
-      "dependsOn": [
-        "K4-002",
-        "K2-004"
-      ],
+      "dependsOn": ["K4-002", "K2-004"],
       "output": "Typed theology/semantic concept profiles with uncertainty and scope",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0"
     },
     {
@@ -2645,32 +1986,20 @@
       "milestone": "K4",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K4-005.md",
-      "dependsOn": [
-        "K4-002",
-        "K3-004",
-        "K2-006"
-      ],
+      "dependsOn": ["K4-002", "K3-004", "K2-006"],
       "output": "Reviewed textual parallel candidates across available witnesses",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0"
     },
     {
       "id": "K4-006",
       "title": "Semantics benchmark and drift ledger",
       "milestone": "K4",
-      "dependsOn": [
-        "K4-003",
-        "K4-004",
-        "K4-005"
-      ],
+      "dependsOn": ["K4-003", "K4-004", "K4-005"],
       "output": "Precision/error reports, historical count reconciliation record",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K4-006.md"
@@ -2679,15 +2008,10 @@
       "id": "K5-001",
       "title": "Local-only memory/archive ingestion manifest",
       "milestone": "K5",
-      "dependsOn": [
-        "K1-004",
-        "K0-005"
-      ],
+      "dependsOn": ["K1-004", "K0-005"],
       "output": "Opt-in import from user-supplied exports with source kind/time/consent and checksum",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K5-001.md"
@@ -2696,14 +2020,10 @@
       "id": "K5-002",
       "title": "Privacy redaction, revocation and retention controls",
       "milestone": "K5",
-      "dependsOn": [
-        "K5-001"
-      ],
+      "dependsOn": ["K5-001"],
       "output": "Sensitive record access and delete/redact policy, audit semantics",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K5-002.md"
@@ -2712,15 +2032,10 @@
       "id": "K5-003",
       "title": "Witness original/correction/provenance domain",
       "milestone": "K5",
-      "dependsOn": [
-        "K5-001",
-        "K3-001"
-      ],
+      "dependsOn": ["K5-001", "K3-001"],
       "output": "First-person testimony plus correction chain, separate interpretation and evidence links",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K5-003.md"
@@ -2729,15 +2044,10 @@
       "id": "K5-004",
       "title": "Story, episode, page/media manifest contracts",
       "milestone": "K5",
-      "dependsOn": [
-        "K5-003",
-        "K2-003"
-      ],
+      "dependsOn": ["K5-003", "K2-003"],
       "output": "Versioned content story/page and 1 image/file per page optional render",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K5-004.md"
@@ -2746,15 +2056,10 @@
       "id": "K5-005",
       "title": "Character canon and personal terminology reconciliation",
       "milestone": "K5",
-      "dependsOn": [
-        "K5-003",
-        "K3-003"
-      ],
+      "dependsOn": ["K5-003", "K3-003"],
       "output": "Typed persona aliases and source-backed narrative roles",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K5-005.md"
@@ -2763,15 +2068,10 @@
       "id": "K5-006",
       "title": "33-BUG registry recovery and alias conflict review",
       "milestone": "K5",
-      "dependsOn": [
-        "K5-003",
-        "K3-007"
-      ],
+      "dependsOn": ["K5-003", "K3-007"],
       "output": "33 planned slots; reviewed partial title/code mapping; missing/conflicts shown",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K5-006.md"
@@ -2780,15 +2080,10 @@
       "id": "K6-001",
       "title": "Mizan blueprint evaluation and policy boundary ADR",
       "milestone": "K6",
-      "dependsOn": [
-        "K3-005",
-        "K0-001"
-      ],
+      "dependsOn": ["K3-005", "K0-001"],
       "output": "Proof/rejection of legacy TH/ARI factor semantics and legal/divine boundary",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K6-001.md"
@@ -2797,15 +2092,10 @@
       "id": "K6-002",
       "title": "Scoped analytic responsibility engine (optional)",
       "milestone": "K6",
-      "dependsOn": [
-        "K6-001",
-        "K3-002"
-      ],
+      "dependsOn": ["K6-001", "K3-002"],
       "output": "Deterministic policy-versioned nonnormative analytic factor calculation",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K6-002.md"
@@ -2814,15 +2104,10 @@
       "id": "K6-003",
       "title": "BUG case workflow reuse and action/outcome models",
       "milestone": "K6",
-      "dependsOn": [
-        "K5-006",
-        "K3-005"
-      ],
+      "dependsOn": ["K5-006", "K3-005"],
       "output": "Case intake, triage, plan, action, verification, reopen linked to events",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K6-003.md"
@@ -2831,15 +2116,10 @@
       "id": "K6-004",
       "title": "Child protection and publication risk gates",
       "milestone": "K6",
-      "dependsOn": [
-        "K6-003",
-        "K5-002"
-      ],
+      "dependsOn": ["K6-003", "K5-002"],
       "output": "Sensitive-case disclosure protection and human-reviewed escalation procedure",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K6-004.md"
@@ -2848,15 +2128,10 @@
       "id": "K6-005",
       "title": "Evidence-backed outcome verification",
       "milestone": "K6",
-      "dependsOn": [
-        "K6-003",
-        "K3-002"
-      ],
+      "dependsOn": ["K6-003", "K3-002"],
       "output": "Verified fix outcome proof, independent reviewer, reopen behavior",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K6-005.md"
@@ -2865,15 +2140,10 @@
       "id": "K7-001",
       "title": "Local AI runtime adapter contract with disabled default",
       "milestone": "K7",
-      "dependsOn": [
-        "K1-001",
-        "K0-005"
-      ],
+      "dependsOn": ["K1-001", "K0-005"],
       "output": "Typed AI_MODE disabled|local provider with explicit loopback allowlist",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K7-001.md"
@@ -2882,14 +2152,10 @@
       "id": "K7-002",
       "title": "Hardware survey and model artifact registry",
       "milestone": "K7",
-      "dependsOn": [
-        "K7-001"
-      ],
+      "dependsOn": ["K7-001"],
       "output": "CPU/GPU/RAM/VRAM/disk and licensed model SHA/profile report",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K7-002.md"
@@ -2898,15 +2164,10 @@
       "id": "K7-003",
       "title": "Permission-scoped local retrieval and chunks",
       "milestone": "K7",
-      "dependsOn": [
-        "K7-001",
-        "K3-002"
-      ],
+      "dependsOn": ["K7-001", "K3-002"],
       "output": "Retriever with canonical source spans, citation identity and visibility constraints",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "complete",
       "evidence": "docs/roadmap/evidence/K7-003.md"
@@ -2915,15 +2176,10 @@
       "id": "K7-004",
       "title": "Staging-only structured suggestion workflow",
       "milestone": "K7",
-      "dependsOn": [
-        "K7-003",
-        "K3-005"
-      ],
+      "dependsOn": ["K7-003", "K3-005"],
       "output": "Summaries/term/duplicate suggestions stored as unreviewed candidate",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K7-004.md"
@@ -2932,14 +2188,10 @@
       "id": "K7-005",
       "title": "Prompt injection and high-risk action isolation",
       "milestone": "K7",
-      "dependsOn": [
-        "K7-004"
-      ],
+      "dependsOn": ["K7-004"],
       "output": "Untrusted content handling and human-approved action boundary",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K7-005.md"
@@ -2948,16 +2200,11 @@
       "id": "K7-006",
       "title": "Local AI evaluation and model-outage certification",
       "milestone": "K7",
-      "dependsOn": [
-        "K7-002",
-        "K7-005"
-      ],
+      "dependsOn": ["K7-002", "K7-005"],
       "output": "Measured latency/memory/source coverage; local model-off resilience report",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "evidence": "docs/roadmap/evidence/K7-006.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress"
     },
@@ -2965,16 +2212,11 @@
       "id": "K8-001",
       "title": "Knowledge explorer in existing Board",
       "milestone": "K8",
-      "dependsOn": [
-        "K3-006",
-        "K2-007"
-      ],
+      "dependsOn": ["K3-006", "K2-007"],
       "output": "Source/edition/assertion/evidence/graph navigation with roles",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "evidence": "docs/roadmap/evidence/K8-001.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress"
     },
@@ -2982,16 +2224,11 @@
       "id": "K8-002",
       "title": "Witness/editorial workbench and poster pages",
       "milestone": "K8",
-      "dependsOn": [
-        "K5-004",
-        "K8-001"
-      ],
+      "dependsOn": ["K5-004", "K8-001"],
       "output": "Original vs derived story revision, page text and media management",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "evidence": "docs/roadmap/evidence/K8-002.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress"
     },
@@ -2999,15 +2236,10 @@
       "id": "K8-003",
       "title": "Approved publication read API",
       "milestone": "K8",
-      "dependsOn": [
-        "K6-004",
-        "K3-005"
-      ],
+      "dependsOn": ["K6-004", "K3-005"],
       "output": "Read-only published snapshot endpoints",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K8-003.md"
@@ -3016,15 +2248,10 @@
       "id": "K8-004",
       "title": "Public website minimal knowledge shell",
       "milestone": "K8",
-      "dependsOn": [
-        "K8-003",
-        "K0-001"
-      ],
+      "dependsOn": ["K8-003", "K0-001"],
       "output": "Public sources, cases/stories and provenance previews",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K8-004.md"
@@ -3033,15 +2260,10 @@
       "id": "K8-005",
       "title": "Role-safe case/status and submission prototype",
       "milestone": "K8",
-      "dependsOn": [
-        "K6-005",
-        "K8-001"
-      ],
+      "dependsOn": ["K6-005", "K8-001"],
       "output": "Safe case progress UI and limited public proposal form, if policy permits",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K8-005.md"
@@ -3050,15 +2272,10 @@
       "id": "K8-006",
       "title": "Editorial/publication revision and takedown support",
       "milestone": "K8",
-      "dependsOn": [
-        "K8-003",
-        "K8-004"
-      ],
+      "dependsOn": ["K8-003", "K8-004"],
       "output": "Publish/retract/supersede snapshots and auditable permissions",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K8-006.md"
@@ -3067,16 +2284,11 @@
       "id": "K9-001",
       "title": "Exact-SHA full knowledge and app CI gate",
       "milestone": "K9",
-      "dependsOn": [
-        "K8-006",
-        "K7-006"
-      ],
+      "dependsOn": ["K8-006", "K7-006"],
       "output": "Required deterministic/unit/PostgreSQL/browser/security/offline checks",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "evidence": "docs/roadmap/evidence/K9-001.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress"
     },
@@ -3084,14 +2296,10 @@
       "id": "K9-002",
       "title": "Source license, PII, secrets and dependency scan",
       "milestone": "K9",
-      "dependsOn": [
-        "K9-001"
-      ],
+      "dependsOn": ["K9-001"],
       "output": "Candidate scope audit of corpus artifacts, prompts and releases",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K9-002.md"
@@ -3100,15 +2308,11 @@
       "id": "K9-003",
       "title": "Migration, interrupted-write and backup/restore drill",
       "milestone": "K9",
-      "dependsOn": [
-        "K9-001"
-      ],
+      "dependsOn": ["K9-001"],
       "output": "Validated upgrade, point-in-time restore practice and knowledge snapshot recovery",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "evidence": "docs/roadmap/evidence/K9-003.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress"
     },
@@ -3116,15 +2320,10 @@
       "id": "K9-004",
       "title": "Offline egress-denial certification",
       "milestone": "K9",
-      "dependsOn": [
-        "K9-001",
-        "K9-003"
-      ],
+      "dependsOn": ["K9-001", "K9-003"],
       "output": "Actual no-network boot/reimport/search/API/Board/model-off evidence",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress",
       "evidence": "docs/roadmap/evidence/K9-004.md"
@@ -3133,15 +2332,11 @@
       "id": "K9-005",
       "title": "Measured performance and capacity decision",
       "milestone": "K9",
-      "dependsOn": [
-        "K9-001"
-      ],
+      "dependsOn": ["K9-001"],
       "output": "Same-machine corpus size/latency/memory/IO and index build metrics",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "evidence": "docs/roadmap/evidence/K9-005.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress"
     },
@@ -3149,18 +2344,11 @@
       "id": "K9-006",
       "title": "Protected promotion and rollback-ready release",
       "milestone": "K9",
-      "dependsOn": [
-        "K9-002",
-        "K9-003",
-        "K9-004",
-        "K9-005"
-      ],
+      "dependsOn": ["K9-002", "K9-003", "K9-004", "K9-005"],
       "output": "Reviewed release report, manifest, SBOM/provenance where pipeline supports",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "evidence": "docs/roadmap/evidence/K9-006.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress"
     },
@@ -3168,16 +2356,11 @@
       "id": "K9-007",
       "title": "Publication-production go/no-go assessment",
       "milestone": "K9",
-      "dependsOn": [
-        "K9-006",
-        "K0-005"
-      ],
+      "dependsOn": ["K9-006", "K0-005"],
       "output": "Written decision on deployment authorization, privacy, rights, operations owner, incident policy",
       "detailFile": "docs/roadmap/12-local-ai-rebuild.md",
       "evidence": "docs/roadmap/evidence/K9-007.md",
-      "labels": [
-        "local-ai-rebuild"
-      ],
+      "labels": ["local-ai-rebuild"],
       "priority": "p0",
       "status": "in_progress"
     }

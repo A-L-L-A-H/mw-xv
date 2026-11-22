@@ -1468,4 +1468,172 @@ describe('MoonWitness Desktop Harness', () => {
       await new Promise<void>((resolve) => apiServer.close(() => resolve()));
     }
   });
+
+  it('produces an R0 revision-pinned RepoSnapshot with manifests, scripts, docs, dirty tracking, and .env omission (M13.02)', async () => {
+    const repoRoot = initTempGitRepo();
+    writeFileSync(
+      path.join(repoRoot, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'fixture-radar-app',
+          version: '1.2.3',
+          scripts: {
+            build: 'tsc',
+            test: 'vitest run',
+          },
+        },
+        null,
+        2
+      ),
+      'utf8'
+    );
+    execFileSync('git', ['add', 'package.json'], { cwd: repoRoot, stdio: 'pipe' });
+    execFileSync('git', ['commit', '-m', 'add package.json'], { cwd: repoRoot, stdio: 'pipe' });
+
+    const bridge = createDesktopHarnessBridge(
+      {
+        repoRoot,
+        sqlitePath: ':memory:',
+        boardOrigin: 'http://127.0.0.1:5173',
+        apiBaseUrl: 'http://127.0.0.1:3000',
+        knownSecrets: ['super-secret-value-12345'],
+      },
+      { autoAttach: false }
+    );
+    activeBridges.push(bridge);
+
+    const lease = await bridge.worktree.acquire({ runId: 'radar-1' });
+    const r0Auth = makeAuth({
+      grant: makeGrant({
+        allowedRiskTier: 'R0',
+        maxCallsPerRun: 10,
+      }),
+    });
+
+    const cleanSnapshot = await bridge.worktree.repoSnapshot('radar-1', r0Auth, {
+      rootLabel: 'fixture-radar',
+    });
+
+    expect(cleanSnapshot.schemaVersion).toBe(1);
+    expect(cleanSnapshot.rootLabel).toBe('fixture-radar');
+    expect(cleanSnapshot.gitRevision?.headCommit).toBe(lease.headCommit);
+    expect(cleanSnapshot.gitRevision?.branch).toBe(lease.branchName);
+    expect(cleanSnapshot.gitRevision?.dirty).toBe(false);
+    expect(cleanSnapshot.incomplete).toBe(false);
+    expect(cleanSnapshot.snapshotSha256).toMatch(/^[a-f0-9]{64}$/u);
+    expect(cleanSnapshot.contentSha256).toMatch(/^[a-f0-9]{64}$/u);
+
+    expect(cleanSnapshot.manifests).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: 'package.json',
+          kind: 'package.json',
+          name: 'fixture-radar-app',
+          version: '1.2.3',
+          sha256: expect.stringMatching(/^[a-f0-9]{64}$/u),
+        }),
+      ])
+    );
+    expect(cleanSnapshot.scripts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ manifestPath: 'package.json', name: 'build', command: 'tsc' }),
+        expect.objectContaining({
+          manifestPath: 'package.json',
+          name: 'test',
+          command: 'vitest run',
+        }),
+      ])
+    );
+    expect(cleanSnapshot.docs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: 'docs/readme.md',
+          title: 'Notes',
+          sha256: expect.stringMatching(/^[a-f0-9]{64}$/u),
+        }),
+      ])
+    );
+
+    const serialized = JSON.stringify(cleanSnapshot);
+    expect(serialized).not.toContain('.env');
+    expect(serialized).not.toContain('super-secret-value-12345');
+    expect(serialized).not.toContain('PRIVATE-KEY-DO-NOT-READ');
+
+    // Mutate worktree and confirm dirty flag flips to true.
+    const r1Auth = makeAuth({ grant: makeGrant({ allowedRiskTier: 'R1', maxCallsPerRun: 10 }) });
+    await bridge.worktree.writeFile(
+      'radar-1',
+      'src/app.ts',
+      'export const appVersion = 9;\n',
+      r1Auth
+    );
+    const dirtySnapshot = await bridge.worktree.repoSnapshot('radar-1', r0Auth);
+    expect(dirtySnapshot.gitRevision?.dirty).toBe(true);
+
+    // maxFiles cap marks snapshot incomplete with explicit omittedReasons.
+    const cappedSnapshot = await bridge.worktree.repoSnapshot('radar-1', r0Auth, { maxFiles: 1 });
+    expect(cappedSnapshot.incomplete).toBe(true);
+    expect(cappedSnapshot.omittedReasons.length).toBeGreaterThan(0);
+
+    await bridge.worktree.release('radar-1');
+  });
+
+  it('fails closed on revoked grant, disallowed path, or R4 secret root in repoSnapshot (M13.02)', async () => {
+    const repoRoot = initTempGitRepo();
+    const bridge = createDesktopHarnessBridge(
+      {
+        repoRoot,
+        sqlitePath: ':memory:',
+        boardOrigin: 'http://127.0.0.1:5173',
+        apiBaseUrl: 'http://127.0.0.1:3000',
+        allowedPathPrefixes: ['src'],
+      },
+      { autoAttach: false }
+    );
+    activeBridges.push(bridge);
+
+    await bridge.worktree.acquire({ runId: 'radar-sec-1' });
+
+    const revokedAuth = makeAuth({
+      grant: makeGrant({
+        allowedRiskTier: 'R0',
+        status: 'revoked',
+        revokedAt: new Date().toISOString(),
+      }),
+    });
+    await expect(bridge.worktree.repoSnapshot('radar-sec-1', revokedAuth)).rejects.toThrow(
+      /revoked|denied|grant/iu
+    );
+
+    const r0Auth = makeAuth({
+      grant: makeGrant({
+        allowedRiskTier: 'R0',
+        maxCallsPerRun: 10,
+      }),
+    });
+    await expect(
+      bridge.worktree.repoSnapshot('radar-sec-1', r0Auth, { targetPath: 'docs' })
+    ).rejects.toThrow(/allowlist|outside/iu);
+
+    await expect(
+      bridge.worktree.repoSnapshot('radar-sec-1', r0Auth, { targetPath: '.env' })
+    ).rejects.toThrow(/prohibited|secret|sensitive|R4/iu);
+
+    await expect(
+      bridge.worktree.repoSnapshot('radar-sec-1', r0Auth, { targetPath: 'secrets/token.key' })
+    ).rejects.toThrow(/prohibited|secret|sensitive|R4/iu);
+
+    const disjointGrantAuth = makeAuth({
+      grant: makeGrant({
+        allowedRiskTier: 'R0',
+        allowedPaths: ['docs'],
+        maxCallsPerRun: 10,
+      }),
+    });
+    await expect(bridge.worktree.repoSnapshot('radar-sec-1', disjointGrantAuth)).rejects.toThrow(
+      /overlapping|allowed/iu
+    );
+
+    await bridge.worktree.release('radar-sec-1');
+  });
 });
