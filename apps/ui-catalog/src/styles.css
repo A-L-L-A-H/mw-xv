@@ -7,7 +7,6 @@
 @source '../../../packages/ui/src/components/command.tsx';
 @source '../../../packages/ui/src/components/dialog.tsx';
 @source '../../../packages/ui/src/components/dropdown-menu.tsx';
-@source '../../../packages/ui/src/components/label.tsx';
 @source '../../../packages/ui/src/components/popover.tsx';
 @source '../../../packages/ui/src/components/select.tsx';
 @source '../../../packages/ui/src/components/sheet.tsx';
@@ -39,7 +38,21 @@
   --shadow-ink-lg: var(--mw-shadow-ink-lg);
 }
 
+@font-face {
+  font-family: a-fb;
+  src: local('Liberation Sans Bold'), local('DejaVu Sans');
+  size-adjust: 62%;
+}
+
+@font-face {
+  font-family: s-fb;
+  src: local('Liberation Sans'), local('DejaVu Sans');
+  size-adjust: 94%;
+}
+
 :root {
+  --mw-font-display: 'Anton', a-fb, Impact, sans-serif;
+  --mw-font-sans: 'Space Grotesk', s-fb, system-ui, sans-serif;
   font-family: var(--mw-font-sans);
   color: var(--mw-foreground);
   background: var(--mw-background);
@@ -1121,14 +1134,6 @@ a:focus-visible {
 .catalog-footer a {
   color: inherit;
 }
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-}
 
 @media (max-width: 56rem) {
   .catalog-sidebar {
@@ -1160,6 +1165,15 @@ a:focus-visible {
   }
 }
 @media (max-width: 42rem) {
+  .catalog-content > .mw-ui-page-header,
+  .catalog-intro-panel {
+    height: 17.5rem;
+    overflow: hidden;
+  }
+  .catalog-section-heading {
+    height: 8.5rem;
+    overflow: hidden;
+  }
   .catalog-example {
     grid-template-columns: 1fr;
   }

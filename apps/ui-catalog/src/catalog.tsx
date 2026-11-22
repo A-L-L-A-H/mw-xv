@@ -475,41 +475,6 @@ function CatalogContent() {
               description="Semantic color, type, identity, and surface primitives. Switch themes to inspect both token maps."
             >
               <Example
-                title="Skin & density switcher"
-                description="Preview built-in MoonWitness skins and comfortable vs compact density across live specimens."
-              >
-                <div className="catalog-inline">
-                  <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
-                    <SelectTrigger
-                      aria-label="Preview skin"
-                      style={{
-                        minHeight: '2rem',
-                        height: '2rem',
-                        width: '13rem',
-                        maxWidth: '100%',
-                      }}
-                    >
-                      <SelectValue placeholder="Skin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {themeRegistry.list().map((entry) => (
-                        <SelectItem key={entry.id} value={entry.id}>
-                          {entry.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={toggleDensity}
-                    aria-pressed={density === 'compact'}
-                  >
-                    {density === 'compact' ? 'Use comfortable density' : 'Use compact density'}
-                  </Button>
-                </div>
-              </Example>
-              <Example
                 title="Semantic colors"
                 description="Theme-aware surfaces and status colors keep meaning stable."
               >
@@ -564,6 +529,41 @@ function CatalogContent() {
                   <ArtworkFrame shape="portrait" caption="Example artwork">
                     <img src={homeHeroMobile} alt="Illustrative night city artwork" />
                   </ArtworkFrame>
+                </div>
+              </Example>
+              <Example
+                title="Skin & density switcher"
+                description="Preview built-in MoonWitness skins and comfortable vs compact density across live specimens."
+              >
+                <div className="catalog-inline">
+                  <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
+                    <SelectTrigger
+                      aria-label="Preview skin"
+                      style={{
+                        minHeight: '2rem',
+                        height: '2rem',
+                        width: '13rem',
+                        maxWidth: '100%',
+                      }}
+                    >
+                      <SelectValue placeholder="Skin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {themeRegistry.list().map((entry) => (
+                        <SelectItem key={entry.id} value={entry.id}>
+                          {entry.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleDensity}
+                    aria-pressed={density === 'compact'}
+                  >
+                    {density === 'compact' ? 'Use comfortable density' : 'Use compact density'}
+                  </Button>
                 </div>
               </Example>
             </Section>
