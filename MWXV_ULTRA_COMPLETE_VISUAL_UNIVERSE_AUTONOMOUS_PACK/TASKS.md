@@ -1,6 +1,6 @@
 # Atomic Task Board
 
-<escape>**Status: unavailable — the canonical TaskOS registry is still empty.**</escape>
+**Status: unavailable — the canonical TaskOS registry is still empty.**
 
 No Visual Universe execution tasks are loaded in this projection.
 
