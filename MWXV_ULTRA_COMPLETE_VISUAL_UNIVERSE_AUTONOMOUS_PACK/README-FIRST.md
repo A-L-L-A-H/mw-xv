@@ -6,11 +6,11 @@
 - Target branch: `dev`
 - Pack baseline: `0b89060602c659efdd5e9e1a12c166fee237418e`
 - Task count: **109 atomic tasks**
-- Canonical lifecycle registry: `docs/tasks/tasks.json` (project `visual-universe`; currently unavailable/zero-byte during recovery)
+- Canonical lifecycle registry: `docs/tasks/tasks.json` (project `visual-universe`; the tracked file contains 1,358 legacy records. Migration to the reviewed 627-record source-backed projection is pending, so the legacy snapshot is not the approved execution queue)
 - Pack configuration: `pack-manifest.json`
 - Immutable migration source snapshot: `legacy/task-source-2026-11-23.json`
-- Generated local machine projection: `task.json` (currently empty until TaskOS recovery)
-- Generated human-readable projection: `TASKS.md` (currently a recovery placeholder)
+- Generated local machine projection: `task.json` (not yet regenerated from an approved, migrated TaskOS source)
+- Generated human-readable projection: `TASKS.md` (migration-status placeholder; not a live task queue)
 
 ## Start here
 

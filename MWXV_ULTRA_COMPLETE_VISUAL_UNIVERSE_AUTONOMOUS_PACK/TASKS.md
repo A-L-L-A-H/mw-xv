@@ -1,6 +1,6 @@
 # Atomic Task Board
 
-**Status: unavailable — the canonical TaskOS registry is still empty.**
+**Status: migration-gated — the global TaskOS registry contains 1,358 legacy records; the 109-task Visual Universe projection is not yet loaded as an approved canonical execution queue.**
 
 No Visual Universe execution tasks are loaded in this projection.
 
