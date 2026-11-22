@@ -1,0 +1,27 @@
+{
+  "name": "@moonwitness/orm-subscription",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Subscription & Recurring Billing addon for MoonWitness ORM",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@moonwitness/orm": "workspace:*",
+    "@moonwitness/orm-base": "workspace:*",
+    "@moonwitness/orm-sales": "workspace:*",
+    "@moonwitness/orm-crm": "workspace:*",
+    "knex": "^3.3.0",
+    "objection": "^3.1.5"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.0.3",
+    "better-sqlite3": "^13.0.3",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}
