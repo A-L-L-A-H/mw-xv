@@ -1,0 +1,81 @@
+# MW-XV Stabilization & Source-of-Truth Recovery Plan
+
+**Scope:** Clean, stabilize, and reconcile `A-L-L-A-H/mw-xv` without architectural rewrites or feature expansion.
+**Baseline:** 2026-11-23 remote GitHub audit. This is a plan, not local build/test evidence.
+
+## Principles
+
+- Keep only `main` and `dev`; development and reconciliation work belongs on `dev`.
+- `main` remains the promotion/release branch; never infer release readiness from branch equality.
+- Do not force-push, rewrite history, or merge blindly.
+- Do not fabricate task records, completion, CI status, evidence, approvals, or release state.
+- Preserve existing architecture and completed work; fix drift, validation and integration first.
+- Canonical completion requires roadmap checkbox plus evidence; task identity/dependency index must pass its validator. GitHub Issues are projections and human triage records.
+- The expanded TaskOS registry is currently zero-byte. It is unavailable as a SOT until restored and validated.
+
+## Work status
+
+### S0 — Branch synchronization (DONE)
+- [x] Verified `dev` was the exact source SHA for PR #31 promotion.
+- [x] Fast-forwarded `dev` to the promotion merge commit `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`, using expected-head protection.
+- [x] No force push or history rewrite.
+- [ ] Reconfirm `main` and `dev` equality after future pushes.
+
+### S1 — TaskOS recovery (P0, BLOCKED until source inventory)
+- [ ] Confirm zero-byte `docs/tasks/tasks.json` is the remote file and identify when/why it became empty.
+- [ ] Inventory all legitimate task sources: ROADMAP checklist/index, detailed cards, DSK ledger, autonomous packs, governance/audit registers, evolution tasks and any migration ledgers.
+- [ ] Map task sources and owners; identify which records are canonical vs historical/archive/generated.
+- [ ] Rebuild registry from authoritative sources only; preserve stable task codes, status, dependencies, project/series, acceptance and provenance. Never synthesize 1,346 records from a count claim.
+- [ ] Update schema/validator only as required; add an explicit empty-file guard and useful diagnostics before JSON parsing.
+- [ ] Make generator/rebuild procedure deterministic, idempotent, lossless for human-owned fields, and previewable.
+- [ ] Validate duplicate codes, unknown dependencies, DAG cycles, orphan references, status parity, source provenance and record counts.
+- [ ] Run `pnpm tasks:validate`, `pnpm tasks:sync --dry-run` (if supported) and relevant tests; do not apply sync until the source map is approved.
+- [ ] Record restoration evidence and exact SHA. Until then, TaskOS is **unavailable**, not authoritative.
+
+### S2 — Roadmap and Issue lifecycle reconciliation (P1)
+- [ ] Recompute task counts from `ROADMAP.md` and `docs/roadmap/tasks.json`; remove stale static totals.
+- [ ] Cross-check M13.01–M13.08 source status and evidence.
+- [ ] Reconcile issues #32–#36 against exact source/evidence/merged SHA and delivery lifecycle; update managed fields only, preserve human fields/comments, then close only when contract permits.
+- [ ] Audit stale open/closed issues and duplicate task markers; no mass-close.
+- [ ] Ensure roadmap index, evidence links, managed Issue blocks and generated progress artifacts agree.
+
+### S3 — Runtime/toolchain documentation (P1)
+- [ ] Reconcile all Node references to Node 24 where root engines, Docker, CI setup and Desktop package agree.
+- [ ] Refresh runtime support review ledger (Node reviewed; other overdue entries remain separately due).
+- [ ] Validate README Quickstart, support policy, Desktop architecture, Desktop TODO and Docker/CI statements.
+- [ ] Keep exact pnpm version/config consistent with Corepack, CI and package-manager policy.
+
+### S4 — Release/CI truth audit (P1)
+- [ ] Inspect required checks and rulesets on `main` and `dev`; record access/API limitations.
+- [ ] Fetch PR #31 CI runs and verify all required jobs on exact source SHA; resolve pending/ambiguous checks.
+- [ ] Verify M12.14 approval, CODEOWNER and release blockers from source/evidence; don't infer from merge.
+- [ ] Confirm promotion workflow cannot promote stale heads and promotion report correctly distinguishes pending, failed, skipped and success.
+- [ ] Confirm release tagging/publication remains gated and deployment is not implicitly authorized.
+
+### S5 — ROCKSOUL FLOW current-state matrix (P1)
+- [ ] Preserve M13.01 as historical audit baseline.
+- [ ] Update current statuses for M13.02–M13.08 from implementation/evidence, not directory existence.
+- [ ] Record current gaps: Visual DNA profile exporter and any integration gaps discovered by source/runtime tests.
+- [ ] Check the full user journey in Board/Desktop: Repo Radar → Overlap → Plan → Packet → Dispatch → Worktree → Proof → Review → Sync.
+- [ ] Keep capability boundaries, redaction, scope, human approval and canonical ORM/task authority intact.
+
+### S6 — Clean/stable verification (P1)
+- [ ] Run roadmap/task/docs validators.
+- [ ] Run package-level tests for changed areas first.
+- [ ] Run workspace build, unit tests, PostgreSQL integration, Board/desktop checks and E2E according to affected risk and required CI.
+- [ ] Fix all reproducible failures; no skipped tests counted as pass.
+- [ ] Recheck exact branch HEAD after CI and produce source-SHA-bound audit report.
+- [ ] Promotion only after reviewed diff, required checks, approvals and release gates.
+
+## Exit criteria
+
+- [ ] No empty or invalid canonical task registry.
+- [ ] One clear authority per field/task status and no stale static progress claims.
+- [ ] Branch refs and promotion source are reconciled and documented.
+- [ ] Toolchain policy agrees across package, CI, Docker and documentation.
+- [ ] Issue lifecycle agrees with evidence/source/promotion without losing human-owned metadata.
+- [ ] Required checks are verified against exact current SHA.
+- [ ] All current capability gaps are explicit; no false completion claims.
+- [ ] Build/test verification evidence exists for the exact candidate SHA.
+
+**No feature expansion until S1–S4 are completed or explicitly accepted as blocked with a maintainer decision.**
