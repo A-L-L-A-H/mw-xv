@@ -3640,7 +3640,7 @@
       "id": "W8-005",
       "phase": "W8",
       "title": "Implement visual coverage for whatsapp addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3675,8 +3675,29 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "The existing real WhatsApp inbox and status routes already cover source-backed states and API permissions; canonical shared icons are reused. No generated contact, message or profile artwork was introduced.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "command": "pnpm board:ui:check"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "apps/board/src",
+          "command": "pnpm --filter @moonwitness/board typecheck"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "packages/assets/tests",
+          "command": "pnpm test:assets"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "command": "pnpm test:ui-catalog"
+        }
+      ],
       "commit": null
     },
     {
