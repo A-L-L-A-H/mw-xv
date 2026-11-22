@@ -1,0 +1,12 @@
+# Second Brain — Raw Layer (`docs/raw/`)
+
+Lapisan **Raw** adalah gerbang tangkapan cepat (*quick capture / inbox*) untuk ide mentah, cuplikan diskusi, dump error log, transkrip meeting, dan catatan sementara (*fleeting notes*).
+
+## Prinsip Penggunaan
+1. **Zero Friction:** Jangan buang waktu memikirkan kategori atau format yang rumit saat menulis di sini. Tangkap informasinya terlebih dahulu.
+2. **Penamaan Berkas:** Gunakan format tanggal: `YYYY-MM-DD-<slug-ringkas>.md`.
+3. **Penyaringan (*Triage*):** Catatan di `raw/` disaring secara berkala:
+   - Diformulasikan menjadi rencana kerja di `docs/brain/`.
+   - Diangkat menjadi standar resmi di `docs/wiki/`.
+   - Diubah menjadi tugas terstruktur di `docs/tasks/tasks.json`.
+   - Diarsipkan jika sudah tidak relevan.
