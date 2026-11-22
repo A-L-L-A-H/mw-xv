@@ -1120,7 +1120,7 @@
       "id": "W2-009",
       "phase": "W2",
       "title": "Add scene and animation metadata contracts",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
@@ -1146,8 +1146,14 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Presentation-only scene and clip descriptors are validated against canonical manifest paths, with explicit schema keys and acyclic composition. No production scene IDs/assets are claimed.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W2-009-scene-contracts.md"
+        }
+      ],
       "commit": null
     },
     {

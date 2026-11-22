@@ -19,6 +19,12 @@ Consumers can import a static asset through a package export, for example:
 @moonwitness/assets/fonts.css
 ```
 
+## Source inventory and scene contracts
+
+Use `pnpm --filter @moonwitness/assets inventory --pack=moon-city` to query the canonical manifest by `pack`, `category`, `subject`, `domain`, `format`, or `status`. The report marks source-only and rights-blocked entries and audits missing files, unlisted files, and unresolved source/variant references. High-resolution `source/` material remains outside the published package file list.
+
+Internal scene descriptors are presentation-only JSON. `scripts/scene-schema.mjs` validates ordered layers, canonical asset references, normalized placement/pivots, bounded parallax, static fallbacks, animation clip references, and acyclic scene composition. Clip frames carry explicit durations and playback direction. Unknown fields are rejected so routes, permissions, user/business records, and secrets cannot enter these descriptors. The validator is an internal authoring contract, not a runtime dependency or ORM/API surface.
+
 The crown and brush wordmark master is `brand/source/moonwitness-master.svg`. Brand variants and favicon are generated from its editable vector paths; they do not rely on live font rendering. Review the variants in `docs/design/assets/brand-contact-sheet-current.png`.
 
 The icon inventory uses 24×24 SVG viewBoxes, a 1.8-unit rounded stroke, and `currentColor` for inline/themeable consumers. For standalone `<img>` usage the SVG uses the browser's default current color; use the React wrappers in `@moonwitness/ui` when it is necessary to inherit an element color. The scale/theme contact sheet is at `docs/design/assets/icon-contact-sheet-current.png` in the repository.

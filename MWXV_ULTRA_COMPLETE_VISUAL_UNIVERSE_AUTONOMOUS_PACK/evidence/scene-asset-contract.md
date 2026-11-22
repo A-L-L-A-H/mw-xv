@@ -6,9 +6,9 @@ The existing `packages/assets/manifest.json` remains the canonical inventory at 
 - **Pack/domain:** optional descriptive tags for future visual asset grouping. Domain tags do not assert that an API route or permission exists.
 - **Source/master/generated:** retain source paths in manifest; generated outputs must list their source and be owned by one deterministic writer via the shared ownership helper.
 - **Variants:** list only references to other canonical manifest paths; references must resolve. Variants are files/crops, not model-specific behavior.
-- **Animation clip (future):** a scene-side JSON description may reference canonical asset paths, frame durations, loop flag and normalized pivot. It may not embed business data, routes, secrets, or source media.
-- **Scene (future):** ordered layer IDs, normalized position/scale, parallax bounds, safe areas, and a static fallback. Must be acyclic and refer only to declared asset IDs/paths.
+- **Animation clip:** `packages/assets/scripts/scene-schema.mjs` validates clip IDs, canonical frame references, positive frame durations, playback direction, loop state, and normalized pivot.
+- **Scene:** ordered layers use canonical asset paths, normalized position/pivot, bounded parallax, opacity, clip references, and a static fallback. Nested scene composition is acyclic. Unknown fields are rejected so route, permission, secret, or business records cannot be embedded.
 - **Approval and license:** source, creator, method, terms, date, modifications and distribution status live in the canonical license/provenance file. Unknown/unreviewed items remain non-distributable.
 - **Backward compatibility:** current v1 entries with no extension fields remain valid. New optional properties require validator support before any manifest entry uses them.
 
-No character, scene, or clip IDs are registered by this contract; their assets/identity approval and schema implementation remain separate tasks.
+No production character, scene, or clip IDs are registered by this contract; pilot identity and reviewed assets remain separate approval/production tasks.

@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 32 · skipped 3 · in_progress 1 · blocked 7 · todo 66.
+Status counts: done 33 · skipped 3 · in_progress 1 · blocked 7 · todo 65.
 
 ## W0
 
@@ -184,12 +184,13 @@ Status counts: done 32 · skipped 3 · in_progress 1 · blocked 7 · todo 66.
   - Verify: pnpm test:assets
   - Evidence: `pnpm test:assets` (0) → `evidence/W2-008-sprite-metadata.md; evidence/sprite-sheet-metadata-guide.svg`
 
-- [ ] **W2-009 — Add scene and animation metadata contracts**
+- [x] **W2-009 — Add scene and animation metadata contracts**
   - Goal: Define scene descriptors and animation clips that reference canonical asset IDs.
   - Depends on: W2-002, W2-008
   - Deliverables: Scene schema and animation metadata schema.
   - Acceptance: References resolve through canonical asset manifest.; Scene files contain layout/animation data, not embedded secrets or domain business records.; No cyclic references.
   - Verify: schema fixture tests
+  - Evidence: `pnpm test:assets` (0) → `evidence/W2-009-scene-contracts.md`
 
 - [ ] **W2-010 — Update package exports, pack list and docs sync**
   - Goal: Ensure every public asset category is included in build/package and docs asset sync.
