@@ -169,6 +169,7 @@ const sections = [
   { id: 'overlays', label: 'Overlays' },
   { id: 'data-display', label: 'Data display' },
   { id: 'auth-coverage', label: 'Auth route coverage' },
+  { id: 'integration-coverage', label: 'Integration boundary' },
   { id: 'assets', label: 'Asset inventory' },
   { id: 'charts', label: 'Charts' },
 ] as const;
@@ -1711,9 +1712,22 @@ function CatalogContent() {
                 >
                   <img className="auth-coverage-art" src={authLoginDesktop} alt="" />
                   <dl className="auth-coverage-facts">
-                    <div><dt>Sign in</dt><dd><code>/login</code></dd></div>
-                    <div><dt>Registration</dt><dd><code>/register</code></dd></div>
-                    <div><dt>States</dt><dd>Idle · submitting · returned error</dd></div>
+                    <div>
+                      <dt>Sign in</dt>
+                      <dd>
+                        <code>/login</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Registration</dt>
+                      <dd>
+                        <code>/register</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>States</dt>
+                      <dd>Idle · submitting · returned error</dd>
+                    </div>
                   </dl>
                 </Panel>
                 <Panel
@@ -1722,6 +1736,67 @@ function CatalogContent() {
                 >
                   <p className="auth-coverage-boundary">
                     Catalog boundary specimen · no session route or token fixture is represented.
+                  </p>
+                </Panel>
+              </div>
+            </Section>
+            <Section
+              id="integration-coverage"
+              title="Integration boundary"
+              description="A contract-only specimen for the superadmin-only webhook models; it does not imply that a production Board route exists."
+            >
+              <div className="auth-coverage-grid" data-testid="integration-boundary-specimen">
+                <Panel
+                  title="Webhook endpoint contract"
+                  description="Model: integration.webhook_endpoint · create, read, update and delete are granted only to base.group_superadmin."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>Fields</dt>
+                      <dd>name · company · url · event_types · enabled</dd>
+                    </div>
+                    <div>
+                      <dt>Secret reference</dt>
+                      <dd>Reference only; secret material stays outside the UI.</dd>
+                    </div>
+                    <div>
+                      <dt>Empty</dt>
+                      <dd>No endpoints returned by the authorized consumer.</dd>
+                    </div>
+                    <div>
+                      <dt>Unavailable</dt>
+                      <dd>Endpoint records could not be loaded.</dd>
+                    </div>
+                  </dl>
+                </Panel>
+                <Panel
+                  title="Webhook delivery contract"
+                  description="Model: integration.webhook_delivery · no custom integration route or production Board screen is registered."
+                >
+                  <dl className="auth-coverage-facts">
+                    <div>
+                      <dt>Fields</dt>
+                      <dd>
+                        endpoint · company · event_type · status · attempts · response_status ·
+                        delivered_at
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Delivery states</dt>
+                      <dd>delivered · retrying · dead</dd>
+                    </div>
+                    <div>
+                      <dt>Error state</dt>
+                      <dd>Delivery details unavailable; private error fields stay hidden.</dd>
+                    </div>
+                    <div>
+                      <dt>Permission denied</dt>
+                      <dd>Requires the existing superadmin model access grant.</dd>
+                    </div>
+                  </dl>
+                  <p className="auth-coverage-boundary">
+                    Catalog boundary specimen · schema and permission states only; no endpoint,
+                    delivery, count, or route fixture is represented.
                   </p>
                 </Panel>
               </div>

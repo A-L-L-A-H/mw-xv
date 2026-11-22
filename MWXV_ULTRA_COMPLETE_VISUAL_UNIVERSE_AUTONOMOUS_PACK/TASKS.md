@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 37 · skipped 3 · in_progress 1 · blocked 7 · todo 61.
+Status counts: done 38 · skipped 3 · in_progress 1 · blocked 7 · todo 60.
 
 ## W0
 
@@ -658,12 +658,13 @@ Status counts: done 37 · skipped 3 · in_progress 1 · blocked 7 · todo 61.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
   - Evidence: `node --test scripts/board/jobs-resource-state.test.mjs` (0) → `scripts/board/jobs-resource-state.test.mjs`; `pnpm --filter @moonwitness/board typecheck` (0) → `apps/board/src/board-pages/dashboard-page.tsx`; `pnpm board:ui:check` (0) → `scripts/check-board-shared-ui.mjs`; `pnpm test:assets` (0) → `packages/assets/tests`; `pnpm test:ui-catalog` (0) → `apps/ui-catalog/tests/catalog.spec.ts`
 
-- [ ] **W8-004 — Implement visual coverage for integration addon**
+- [x] **W8-004 — Implement visual coverage for integration addon**
   - Goal: Implement only the verified integration asset references, UI compositions and state treatments based on W8-D04. Domain: Webhook endpoints, delivery and connector states.
   - Depends on: W8-D04, W2-005, W1-008
   - Deliverables: integration addon asset coverage and tested UI specimens/consumer integration where a real screen exists
   - Acceptance: Only real existing models/routes/permissions are represented.; Shared assets are reused by stable ID; no domain-specific duplicate asset copies.; Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.; Artwork remains decorative; labels, state and actions are real UI data.; New assets include provenance and are registered in canonical manifest.; If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route.
   - Verify: pnpm board:ui:check; pnpm --filter @moonwitness/board typecheck; pnpm test:assets; pnpm test:ui-catalog
+  - Evidence: `pnpm --filter @moonwitness/ui-catalog build` (0) → `apps/ui-catalog/dist`; `pnpm --filter @moonwitness/ui-catalog test` (0) → `apps/ui-catalog/tests/catalog.spec.ts`; `pnpm board:ui:check` (0) → `scripts/check-board-shared-ui.mjs`; `pnpm --filter @moonwitness/board typecheck` (0) → `apps/board`; `pnpm test:assets` (0) → `packages/assets/tests`
 
 - [ ] **W8-005 — Implement visual coverage for whatsapp addon**
   - Goal: Implement only the verified whatsapp asset references, UI compositions and state treatments based on W8-D05. Domain: Accounts, conversations, messages, media and contact states.

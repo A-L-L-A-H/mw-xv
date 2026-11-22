@@ -3571,7 +3571,7 @@
       "id": "W8-004",
       "phase": "W8",
       "title": "Implement visual coverage for integration addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3606,8 +3606,34 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "The verified models have development-only menus and no production Board route. Added a labelled contract-only UI Catalog specimen using real fields, states and superadmin permissions; it contains no record fixtures, counts, secrets or invented route.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/ui-catalog build",
+          "artifact": "apps/ui-catalog/dist"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/ui-catalog test",
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm board:ui:check",
+          "artifact": "scripts/check-board-shared-ui.mjs"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "artifact": "apps/board"
+        },
+        {
+          "exit_code": 0,
+          "command": "pnpm test:assets",
+          "artifact": "packages/assets/tests"
+        }
+      ],
       "commit": null
     },
     {
