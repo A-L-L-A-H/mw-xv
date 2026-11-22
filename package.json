@@ -19,6 +19,8 @@
     "radius:build": "pnpm --filter @moonwitness/isp build",
     "radius:dev": "pnpm --filter @moonwitness/isp dev",
     "radius:migrate": "pnpm --filter @moonwitness/isp migrate",
+    "control-plane:build": "pnpm --filter @moonwitness/control-plane build",
+    "control-plane:dev": "pnpm --filter @moonwitness/control-plane dev",
     "build": "node scripts/ci/build-workspace.mjs",
     "test": "pnpm test:unit",
     "test:unit": "pnpm build && pnpm test:unit:built",
