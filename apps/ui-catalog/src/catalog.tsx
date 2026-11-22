@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
+import { Suspense, lazy, useEffect, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
 import {
   DEFAULT_SKIN_ID,
   themeRegistry,
@@ -55,6 +55,8 @@ import tileHalftoneUrl from '@moonwitness/assets/materials/tile-halftone.svg';
 import scuffedBorderUrl from '@moonwitness/assets/materials/scuffed-border.svg';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { CharacterPreview } from '@moonwitness/ui/components/character-preview';
+const SceneLab = lazy(() => import('./SceneLab.js').then((mod) => ({ default: mod.SceneLab })));
+const FXLab = lazy(() => import('./FXLab.js').then((mod) => ({ default: mod.FXLab })));
 import { PaperNote } from '@moonwitness/ui/components/paper-note';
 import { SectionRibbon } from '@moonwitness/ui/components/section-ribbon';
 import {
@@ -2052,6 +2054,24 @@ function CatalogContent() {
                   />
                 </Panel>
               </div>
+            </Section>
+            <Section
+              id="scene-environment-inspector"
+              title="Environment depth inspector &amp; scene runtime"
+              description="Interactive Moon City multi-plane preview, responsive focal/safe-area composition rules, bounded camera/parallax, timeline orchestration, and sprite sequence playback."
+            >
+              <Suspense fallback={<p>Loading scene inspector…</p>}>
+                <SceneLab />
+              </Suspense>
+            </Section>
+            <Section
+              id="fx-lab"
+              title="FX Lab — Particles, Transitions & Soundscape"
+              description="Bounded scene particle presets (rain, dust, stars, sparks), interruptible comic transitions (ink-wipe, panel-reveal, cut-impact, soft), and policy-limited scene ambience controller (muted by default, gesture-gated, single-source)."
+            >
+              <Suspense fallback={<p>Loading FX lab…</p>}>
+                <FXLab />
+              </Suspense>
             </Section>
             <Section
               id="charts"

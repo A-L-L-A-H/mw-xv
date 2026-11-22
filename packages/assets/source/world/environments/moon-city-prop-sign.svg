@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Rooftop directional signal pylon frame without embedded text">
+  <title>Moon City rooftop sign prop</title>
+  <g fill="#0d0f17" stroke="#2c3e5e" stroke-width="5">
+    <rect x="236" y="92" width="32" height="420"/>
+    <rect x="108" y="132" width="296" height="128" rx="10"/>
+  </g>
+  <rect x="128" y="152" width="256" height="88" rx="6" fill="#17233a" stroke="#ffe031" stroke-width="4"/>
+  <circle cx="252" cy="74" r="18" fill="#ffe031"/>
+  <path d="M164 196H340" stroke="#39e6ff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M164 218H286" stroke="#ff3b9a" stroke-width="6" stroke-linecap="round"/>
+</svg>

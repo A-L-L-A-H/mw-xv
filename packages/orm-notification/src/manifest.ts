@@ -1,6 +1,7 @@
 import { defineAddon, ref, seed } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
 import { Notification, NotificationPreference, NotificationTemplate } from './models.js';
+import { notificationHttpPlugin } from './http-plugin.js';
 import { views } from './views.js';
 
 export const manifest = defineAddon({
@@ -61,6 +62,7 @@ export const manifest = defineAddon({
     }),
   ],
   views,
+  httpPlugins: [notificationHttpPlugin],
   menus: [
     { model: Notification.modelName, label: 'Notifications', group: 'Workspace', sequence: 15 },
     {

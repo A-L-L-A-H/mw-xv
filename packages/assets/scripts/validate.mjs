@@ -202,6 +202,8 @@ if (argv[1] && resolve(argv[1]) === fileURLToPath(import.meta.url)) {
     'sounds',
     'source',
     'animation',
+    'environments',
+    'scenes',
   ];
   const packageFiles = await listInventoryMedia(packageRoot, inventoryDirectories);
   const inventoryDiff = compareAssetInventory(

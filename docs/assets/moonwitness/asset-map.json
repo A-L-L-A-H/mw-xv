@@ -4,7 +4,7 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "34f3f2b2149e090ed0145b866559d98e5756cb6fa0ae363cc4347980b71c519f",
+    "assetManifestSha256": "06a8aa72677e41b8812cb4f4334654f7e22f261bc756521093c45d8f615fcc47",
     "tokens": "packages/ui/src/styles/tokens.css",
     "tokensSha256": "d5f681a9afbe08b0d531cfb0f55633e0b0b4f94abc205b972863e29f8409eac7"
   },
@@ -1543,6 +1543,94 @@
       "kind": "sound",
       "format": "wav",
       "sha256": "6edb5208a434097e659daa2ffc76b269853aa3a655609e48ea8545d0df4aaea6"
+    },
+    {
+      "source": "packages/assets/scenes/moon-city-scene.json",
+      "output": "docs/assets/moonwitness/scenes/moon-city-scene.json",
+      "kind": "scene",
+      "format": "json",
+      "sha256": "dee17b91aa3d332094153ebec27a13d7b7006e5ff53d9f363a94f482bda73c28"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-sky.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-sky.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "9eb4ce7d7040ff9d9bd582b3c010abd3e5d0d13419534ed72ff11ac79805eb17"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-moon.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-moon.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "14efb9b61584bcf941c34e6afb073eb9eb139b06a7a05f73a945f818a58e4751"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-clouds-far.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-clouds-far.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 512,
+      "sha256": "c58aa398233918cef28dc197f06169dcf2f503259ef45985fb6a6935af47fb4a"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-skyline-far.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-skyline-far.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "173af9939c7999ddc15c16995fb9885846ae105e456c26134c78600cfcb489a1"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-clouds-near.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-clouds-near.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 512,
+      "sha256": "10ac4be7adc9ef6fca6c1d24c20531e04d4731ccb4dc4bb554fe20331ff7746a"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-skyline-mid.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-skyline-mid.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "a8f0a0d34b100c3c75af917b3a9fd17f8f963524804fd5c171378ac923cae500"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-foreground.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-foreground.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "381c55fb7d2e7e58f57c5054e0b01c2769e74957849f0d93fe63995be42fbc1a"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-prop-railing.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-prop-railing.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 420,
+      "sha256": "652a6cc7edbe6512b53472c7faeb851c8cf6a58c8936ae90f8d3225904377d8e"
+    },
+    {
+      "source": "packages/assets/environments/moon-city-prop-wires.svg",
+      "output": "docs/assets/moonwitness/environments/moon-city-prop-wires.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 360,
+      "sha256": "f7d5b1501709fe12d05fd9bf992ae5e8f177be76c6dbc1e91f811162e91eedf4"
     }
   ],
   "stylesheets": [

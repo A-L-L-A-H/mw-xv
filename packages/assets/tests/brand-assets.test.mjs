@@ -363,6 +363,8 @@ test('package exports only framework-independent static assets', async () => {
   assert.equal(packageJson.exports['./icons/*'], './icons/*');
   assert.equal(packageJson.exports['./illustrations/*'], './illustrations/*');
   assert.equal(packageJson.exports['./materials/*'], './materials/*');
+  assert.equal(packageJson.exports['./sounds/*'], './sounds/*');
+  assert.equal(packageJson.exports['./animation/*'], './animation/*');
   assert.equal(packageJson.exports['./manifest.json'], './manifest.json');
   assert.equal(packageJson.exports['./licenses.json'], './licenses.json');
   assert.ok(packageJson.files.includes('brand'));
@@ -371,6 +373,8 @@ test('package exports only framework-independent static assets', async () => {
   assert.ok(packageJson.files.includes('icons'));
   assert.ok(packageJson.files.includes('illustrations'));
   assert.ok(packageJson.files.includes('materials'));
+  assert.ok(packageJson.files.includes('sounds'));
+  assert.ok(packageJson.files.includes('animation'));
   assert.ok(packageJson.files.includes('manifest.json'));
   for (const asset of manifest.assets.filter(({ kind }) => kind !== 'source')) {
     assert.ok(
@@ -388,6 +392,13 @@ test('pnpm package tarball contains every public manifest asset and export targe
   const packageJson = JSON.parse(await readFile(resolve(packageRoot, 'package.json'), 'utf8'));
   for (const asset of manifest.assets.filter(({ kind }) => kind !== 'source')) {
     assert.ok(packedPaths.has(asset.path), `${asset.path} is present in the package tarball`);
+  }
+  for (const packedPath of packedPaths) {
+    assert.doesNotMatch(
+      packedPath,
+      /(?:^|\/)source\//u,
+      `${packedPath} must not ship high-resolution source masters in consumer package tarballs`
+    );
   }
   for (const target of Object.values(packageJson.exports).filter((path) => !path.includes('*'))) {
     assert.ok(packedPaths.has(target.slice(2)), `${target} is present in the package tarball`);

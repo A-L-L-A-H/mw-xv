@@ -1,0 +1,57 @@
+import { expect, test } from '@playwright/test';
+
+test('environment depth inspector toggles and reorders planes and reflows on mobile (W4-008, W1-006)', async ({
+  page,
+}) => {
+  await page.goto('./#scene-environment-inspector');
+  const lab = page.getByTestId('scene-lab');
+  await expect(lab).toBeVisible();
+  await expect(lab.locator('[data-scene-id="moon-city-hero"]')).toBeVisible();
+  await expect(lab.locator('[data-layer-id]')).toHaveCount(9);
+
+  // Toggle off one plane
+  await lab.locator('li[data-plane-id="prop-wires"] input[type="checkbox"]').uncheck();
+  await expect(lab.locator('[data-layer-id]')).toHaveCount(8);
+
+  // Reorder planes (move moon backward behind sky)
+  await lab.locator('li[data-plane-id="moon"] button', { hasText: 'Back' }).click();
+  await expect(lab.locator('li[data-plane-id="moon"]')).toHaveAttribute('data-plane-order', '0');
+
+  // Switch responsive composition to Mobile 9:16 and verify safe guides + breakpoint overrides
+  await lab.getByRole('button', { name: 'Mobile 9:16' }).click();
+  await expect(lab.locator('.scene-lab-stage')).toHaveAttribute('data-composition', 'mobile');
+  await expect(lab.getByTestId('scene-safe-guides')).toBeVisible();
+
+  // Narrow viewport usability check (390px)
+  await page.setViewportSize({ width: 390, height: 844 });
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(2);
+});
+
+test('scene runtime supports static fallback, timeline controls, keyboard camera, and deterministic URL harness (W5-004..W5-010)', async ({
+  page,
+}) => {
+  await page.goto('./?sceneTime=900&sceneFrame=1&scenePaused=1#scene-environment-inspector');
+  const lab = page.getByTestId('scene-lab');
+  await expect(lab).toBeVisible();
+
+  // Deterministic harness pins sprite frame 1 and timeline time 900ms
+  const sprite = lab.locator('[data-sprite-clip="crew-01-idle"]');
+  await expect(sprite).toHaveAttribute('data-sprite-frame', '1');
+  await expect(lab.getByTestId('scene-timeline-status')).toContainText('900ms');
+
+  // Timeline controls step & complete without trapping navigation
+  await lab.getByRole('button', { name: 'Complete timeline' }).click();
+  await expect(lab.getByTestId('scene-timeline-status')).toContainText('completed');
+
+  // Keyboard camera navigation does not hijack page scroll
+  const scene = lab.locator('[data-scene-id="moon-city-hero"]');
+  await scene.focus();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('0');
+
+  // Static fallback / reduced-motion toggle switches scene and sprite to static state
+  await lab.getByRole('button', { name: 'Static fallback' }).click();
+  await expect(scene).toHaveAttribute('data-scene-state', 'static');
+  await expect(sprite).toHaveAttribute('data-sprite-state', 'static');
+});

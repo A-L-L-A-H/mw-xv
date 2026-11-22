@@ -68,3 +68,35 @@ test('rejects business records, duplicate layer orders, and unbounded parallax',
   secretLikePayload.scenes[0].title = 'Bearer production-secret-value';
   assert.throws(() => validateSceneBundle(secretLikePayload, manifest), /title: is not supported by the presentation-only schema/u);
 });
+
+test('accepts breakpoints and accessibility fallback when well-formed', () => {
+  const bundle = validBundle();
+  bundle.scenes[0].breakpoints = [
+    { name: 'mobile', minWidth: 0, maxWidth: 767, overlay: 'source/static.png' },
+    { name: 'desktop', minWidth: 768, overlay: 'source/static.png' },
+  ];
+  bundle.scenes[0].accessibilityFallback = 'source/static.png';
+  assert.deepEqual(validateSceneBundle(bundle, manifest), { sceneCount: 2, clipCount: 1 });
+});
+
+test('rejects invalid breakpoints and accessibility fallback', () => {
+  const badBp = validBundle();
+  badBp.scenes[0].breakpoints = [{ name: 'mobile', minWidth: 800, maxWidth: 767 }];
+  assert.throws(() => validateSceneBundle(badBp, manifest), /maxWidth: must be an integer greater than or equal to minWidth/u);
+
+  const dupBp = validBundle();
+  dupBp.scenes[0].breakpoints = [{ name: 'mobile', minWidth: 0 }, { name: 'mobile', minWidth: 768 }];
+  assert.throws(() => validateSceneBundle(dupBp, manifest), /name: must be a unique non-empty breakpoint name/u);
+
+  const badOverlay = validBundle();
+  badOverlay.scenes[0].breakpoints = [{ name: 'mobile', minWidth: 0, overlay: 'missing.svg' }];
+  assert.throws(() => validateSceneBundle(badOverlay, manifest), /must reference a canonical manifest asset/u);
+
+  const badA11y = validBundle();
+  badA11y.scenes[0].accessibilityFallback = 'missing.png';
+  assert.throws(() => validateSceneBundle(badA11y, manifest), /must reference a canonical manifest asset/u);
+
+  const badOverride = validBundle();
+  badOverride.scenes[0].breakpoints = [{ name: 'mobile', minWidth: 0, layerOverrides: [{ layerId: 'missing', opacity: 0.5 }] }];
+  assert.throws(() => validateSceneBundle(badOverride, manifest), /references unknown layer missing/u);
+});

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="MoonWitness rain-lit night street corridor environment">
+  <title>MoonWitness street environment</title>
+  <defs>
+    <linearGradient id="mw-source-world-environments-env-street-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="0.68" stop-color="#18243b"/>
+      <stop offset="1" stop-color="#0a0d14"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#mw-source-world-environments-env-street-bg)"/>
+  <polygon points="0,900 580,540 1020,540 1600,900" fill="#101726"/>
+  <g fill="#0c1018" stroke="#243550" stroke-width="4">
+    <rect x="0" y="120" width="440" height="620"/>
+    <rect x="1160" y="120" width="440" height="620"/>
+  </g>
+  <g fill="#ff3b9a" opacity="0.65">
+    <rect x="380" y="280" width="84" height="28" rx="4"/>
+    <rect x="400" y="760" width="120" height="12" opacity="0.4"/>
+  </g>
+  <g fill="#39e6ff" opacity="0.65">
+    <rect x="1136" y="320" width="84" height="28" rx="4"/>
+    <rect x="1080" y="784" width="132" height="12" opacity="0.4"/>
+  </g>
+</svg>

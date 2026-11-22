@@ -101,3 +101,8 @@ try {
 
 stdout.write(`Rendered ${socialPath} and ${proofPath}.\n`);
 await import('./render-icons.mjs');
+const { generateContactSheets } = await import('./generate-contact-sheets.mjs');
+const { index, sheetOutputs } = await generateContactSheets({ renderPng: true });
+stdout.write(
+  `Generated ${sheetOutputs.length} pack contact sheet(s) across ${index.totalGroups} groups.\n`
+);

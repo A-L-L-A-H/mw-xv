@@ -1,17 +1,20 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { isRecord } from '@moonwitness/types';
-import { Notification, NotificationPreference } from '@moonwitness/orm-notification';
+import { Notification, NotificationPreference } from './models.js';
 
 interface InboxQuery {
+  [key: string]: string | undefined;
   state?: string;
   limit?: string;
 }
 
 interface IdParams {
+  [key: string]: string;
   id: string;
 }
 
 interface ChannelParams {
+  [key: string]: string;
   channel: string;
 }
 
@@ -22,12 +25,12 @@ function parseId(value: string): number | null {
 
 function countValue(value: unknown): number {
   if (typeof value !== 'object' || value === null || !('count' in value)) return 0;
-  const count = value.count;
+  const count = (value as { count?: unknown }).count;
   return typeof count === 'number' || typeof count === 'string' ? Number(count) : 0;
 }
 
-export const notificationRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.get<{ Querystring: InboxQuery }>('/notifications/inbox', async (req, reply) => {
+export const notificationHttpPlugin: AddonHttpPlugin = async (app) => {
+  app.get<{ Querystring: InboxQuery }>('/notifications/inbox', async (req, reply) => {
     if (!req.auth)
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     if (!req.auth.companyId)
@@ -77,7 +80,7 @@ export const notificationRoutes: FastifyPluginAsync = async (fastify) => {
     return { success: true, data: { notifications, unreadCount } };
   });
 
-  fastify.patch<{ Params: IdParams }>('/notifications/:id/read', async (req, reply) => {
+  app.patch<{ Params: IdParams }>('/notifications/:id/read', async (req, reply) => {
     if (!req.auth)
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     if (!req.auth.companyId)
@@ -106,7 +109,7 @@ export const notificationRoutes: FastifyPluginAsync = async (fastify) => {
     return { success: true, data: { id, state: 'read' } };
   });
 
-  fastify.get('/notifications/preferences', async (req, reply) => {
+  app.get('/notifications/preferences', async (req, reply) => {
     if (!req.auth)
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     if (!req.auth.companyId)
@@ -118,7 +121,7 @@ export const notificationRoutes: FastifyPluginAsync = async (fastify) => {
     return { success: true, data: preferences };
   });
 
-  fastify.put<{ Params: ChannelParams; Body: unknown }>(
+  app.put<{ Params: ChannelParams; Body: unknown }>(
     '/notifications/preferences/:channel',
     async (req, reply) => {
       if (!req.auth)

@@ -197,7 +197,47 @@
       "types": "./dist/icons/*.d.ts",
       "import": "./dist/icons/*.js"
     },
-    "./styles/tokens.css": "./src/styles/tokens.css"
+    "./styles/tokens.css": "./src/styles/tokens.css",
+    "./components/layered-scene": {
+      "types": "./dist/components/layered-scene.d.ts",
+      "import": "./dist/components/layered-scene.js"
+    },
+    "./components/sprite-player": {
+      "types": "./dist/components/sprite-player.d.ts",
+      "import": "./dist/components/sprite-player.js"
+    },
+    "./lib/scene-playback": {
+      "types": "./dist/lib/scene-playback.d.ts",
+      "import": "./dist/lib/scene-playback.js"
+    },
+    "./lib/scene-camera": {
+      "types": "./dist/lib/scene-camera.d.ts",
+      "import": "./dist/lib/scene-camera.js"
+    },
+    "./lib/scene-timeline": {
+      "types": "./dist/lib/scene-timeline.d.ts",
+      "import": "./dist/lib/scene-timeline.js"
+    },
+    "./lib/scene-test-harness": {
+      "types": "./dist/lib/scene-test-harness.d.ts",
+      "import": "./dist/lib/scene-test-harness.js"
+    },
+    "./lib/character-adapter": {
+      "types": "./dist/lib/character-adapter.d.ts",
+      "import": "./dist/lib/character-adapter.js"
+    },
+    "./components/scene-particles": {
+      "types": "./dist/components/scene-particles.d.ts",
+      "import": "./dist/components/scene-particles.js"
+    },
+    "./components/scene-transitions": {
+      "types": "./dist/components/scene-transitions.d.ts",
+      "import": "./dist/components/scene-transitions.js"
+    },
+    "./lib/scene-soundscape": {
+      "types": "./dist/lib/scene-soundscape.d.ts",
+      "import": "./dist/lib/scene-soundscape.js"
+    }
   },
   "scripts": {
     "build": "node scripts/generate-icons.mjs && tsc",

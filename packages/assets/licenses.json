@@ -482,6 +482,123 @@
       "modifications": "Original canonical crew-01 turn prototype clip; no face depicted.",
       "status": "review",
       "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-moon-disc-layer.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original hand-authored Moon City moon disc layer for responsive scene composition.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/artwork/moon-city-clouds-loop-a.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original hand-authored primary looping Moon City cloud layer for responsive scene composition.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/artwork/moon-city-clouds-loop-b.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original hand-authored secondary looping Moon City cloud layer for responsive scene composition.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/environment-kit.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-skyline-far.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-skyline-mid.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-prop-railing.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-prop-wires.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-prop-sign.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/env-underground.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/env-archive.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/env-rooftop.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/env-street.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
     }
   ],
   "originalFonts": [

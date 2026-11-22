@@ -14,10 +14,14 @@
     "font:brand:generate": "node scripts/generate-brand-font.mjs",
     "artwork:prepare": "node scripts/prepare-artwork.mjs",
     "artwork:derivatives": "node scripts/responsive-derivatives.mjs",
-    "artwork:layers": "node scripts/layered-art-pipeline.mjs"
+    "artwork:layers": "node scripts/layered-art-pipeline.mjs",
+    "contact-sheets": "node scripts/generate-contact-sheets.mjs",
+    "qa": "node scripts/asset-qa.mjs"
   },
   "files": [
     "brand",
+    "!brand/source/**",
+    "!source/**",
     "fonts",
     "fonts.css",
     "icons",
@@ -25,6 +29,8 @@
     "materials",
     "sounds",
     "animation",
+    "environments",
+    "scenes",
     "manifest.json",
     "licenses.json",
     "README.md"
@@ -39,7 +45,9 @@
     "./sounds/*": "./sounds/*",
     "./manifest.json": "./manifest.json",
     "./licenses.json": "./licenses.json",
-    "./animation/*": "./animation/*"
+    "./animation/*": "./animation/*",
+    "./environments/*": "./environments/*",
+    "./scenes/*": "./scenes/*"
   },
   "devDependencies": {
     "opentype.js": "^2.0.0",

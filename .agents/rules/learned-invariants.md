@@ -79,3 +79,9 @@ Structured post-mortem rules persisted by autonomous and operator loops so resol
 - **Symptom**: CI quality-and-build, unit-tests, and postgres-integration fail in pnpm -r build with lstat apps: no such file or directory on apps/control-plane
 - **Root Cause**: apps/control-plane/package.json build script invoked docker build -f apps/control-plane/Dockerfile . assuming repo root cwd, while pnpm recursive build executes inside the package directory
 - **Invariant**: Workspace package build scripts must execute natively inside their own package directory (e.g., go build -o dist/control-plane .) without assuming repo-root cwd, and docker builds belong in package-relative docker:build scripts followed by pnpm docs:generate
+
+## INV-014: Addon Custom Routes Must Use manifest.httpPlugins
+
+- **Symptom**: Domain-specific Fastify routes accumulate inside `apps/api/src/routes/`, coupling domain HTTP handlers to the API host instead of their owning `packages/orm-*` addon.
+- **Root Cause**: Adding new route files under `apps/api/src/routes/` and wiring them via `registerRoutes` in `apps/api/src/addons/registry.ts` instead of declaring `httpPlugins` on the addon manifest.
+- **Invariant**: Never add new custom route files under `apps/api/src/routes/` or new `../routes/*` imports in `apps/api/src/addons/registry.ts`; define custom domain HTTP plugins inside the owning `packages/orm-*` addon package and export them via `manifest.httpPlugins`, enforced by `pnpm api:addon:check` (`scripts/check-api-addon-boundary.mjs`).

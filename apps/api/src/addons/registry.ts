@@ -9,12 +9,17 @@ import { manifest as notificationAddon } from '@moonwitness/orm-notification';
 import { manifest as workflowAddon } from '@moonwitness/orm-workflow';
 import { manifest as organizationAddon } from '@moonwitness/orm-organization';
 import { manifest as projectAddon } from '@moonwitness/orm-project';
+import { manifest as crmAddon } from '@moonwitness/orm-crm';
+import { manifest as salesAddon } from '@moonwitness/orm-sales';
+import { manifest as subscriptionAddon } from '@moonwitness/orm-subscription';
 import { manifest as integrationAddon } from '@moonwitness/orm-integration';
 import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
 import { manifest as aiAddon } from '@moonwitness/orm-ai';
 import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
 import { whatsappManifest } from '@moonwitness/orm-whatsapp';
+import { manifest as ispAddon } from '@moonwitness/orm-isp';
+import { manifest as cloudAddon } from '@moonwitness/orm-cloud';
 import { createAttachmentScanner, type AttachmentScanner } from '../whatsapp/clamav-scanner.js';
 import type { createVideoPoster } from '../whatsapp/media-thumbnail.js';
 import { checkWhatsAppGatewayVersion } from '../whatsapp/version-guard.js';
@@ -27,7 +32,6 @@ import { bootstrapRoutes } from '../routes/bootstrap.routes.js';
 import { menuRegistry } from './action-menu-registry.js';
 import { whatsappRoutes } from '../routes/whatsapp.routes.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
-import { notificationRoutes } from '../routes/notification.routes.js';
 import { workflowRoutes } from '../routes/workflow.routes.js';
 import { projectRoutes } from '../routes/project.routes.js';
 import { corpusRoutes } from '../routes/corpus.routes.js';
@@ -154,9 +158,6 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'notification',
     manifest: notificationAddon,
-    async registerRoutes(app) {
-      await app.register(notificationRoutes);
-    },
   },
   {
     name: 'organization',
@@ -168,6 +169,18 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
     async registerRoutes(app) {
       await app.register(projectRoutes);
     },
+  },
+  {
+    name: 'crm',
+    manifest: crmAddon,
+  },
+  {
+    name: 'sales',
+    manifest: salesAddon,
+  },
+  {
+    name: 'subscription',
+    manifest: subscriptionAddon,
   },
   {
     name: 'workflow',
@@ -203,6 +216,14 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'orm-storage',
     manifest: storageAddon,
+  },
+  {
+    name: 'isp',
+    manifest: ispAddon,
+  },
+  {
+    name: 'cloud',
+    manifest: cloudAddon,
   },
   {
     name: 'ai',

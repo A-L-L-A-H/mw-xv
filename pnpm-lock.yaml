@@ -91,9 +91,18 @@ importers:
       '@moonwitness/orm-base':
         specifier: workspace:*
         version: link:../../packages/orm-base
+      '@moonwitness/orm-cloud':
+        specifier: workspace:*
+        version: link:../../packages/orm-cloud
+      '@moonwitness/orm-crm':
+        specifier: workspace:*
+        version: link:../../packages/orm-crm
       '@moonwitness/orm-integration':
         specifier: workspace:*
         version: link:../../packages/orm-integration
+      '@moonwitness/orm-isp':
+        specifier: workspace:*
+        version: link:../../packages/orm-isp
       '@moonwitness/orm-knowledge':
         specifier: workspace:*
         version: link:../../packages/orm-knowledge
@@ -109,9 +118,15 @@ importers:
       '@moonwitness/orm-request':
         specifier: workspace:*
         version: link:../../packages/orm-request
+      '@moonwitness/orm-sales':
+        specifier: workspace:*
+        version: link:../../packages/orm-sales
       '@moonwitness/orm-storage':
         specifier: workspace:*
         version: link:../../packages/orm-storage
+      '@moonwitness/orm-subscription':
+        specifier: workspace:*
+        version: link:../../packages/orm-subscription
       '@moonwitness/orm-whatsapp':
         specifier: workspace:*
         version: link:../../packages/orm-whatsapp
@@ -776,6 +791,64 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
+  packages/orm-cloud:
+    dependencies:
+      '@moonwitness/orm':
+        specifier: workspace:*
+        version: link:../orm
+      '@moonwitness/orm-base':
+        specifier: workspace:*
+        version: link:../orm-base
+      '@moonwitness/orm-project':
+        specifier: workspace:*
+        version: link:../orm-project
+      '@moonwitness/orm-subscription':
+        specifier: workspace:*
+        version: link:../orm-subscription
+      '@moonwitness/types':
+        specifier: workspace:*
+        version: link:../types
+      objection:
+        specifier: ^3.1.5
+        version: 3.1.5(knex@3.3.0(better-sqlite3@13.0.3)(pg@8.23.1))
+    devDependencies:
+      '@moonwitness/jobs':
+        specifier: workspace:*
+        version: link:../jobs
+      '@moonwitness/orm-crm':
+        specifier: workspace:*
+        version: link:../orm-crm
+      '@moonwitness/orm-notification':
+        specifier: workspace:*
+        version: link:../orm-notification
+      '@moonwitness/orm-organization':
+        specifier: workspace:*
+        version: link:../orm-organization
+      '@moonwitness/orm-sales':
+        specifier: workspace:*
+        version: link:../orm-sales
+      '@moonwitness/orm-workflow':
+        specifier: workspace:*
+        version: link:../orm-workflow
+      '@vitest/coverage-v8':
+        specifier: 5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      fastify:
+        specifier: ^5.12.6
+        version: 5.12.7
+      knex:
+        specifier: ^3.3.0
+        version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)
+      typescript:
+        specifier: ~5.7.3
+        version: 5.7.3
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
   packages/orm-crm:
     dependencies:
       '@moonwitness/orm':
@@ -839,6 +912,64 @@ importers:
         version: 5.7.3
       vitest:
         specifier: 5.0.3
+        version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/orm-isp:
+    dependencies:
+      '@moonwitness/orm':
+        specifier: workspace:*
+        version: link:../orm
+      '@moonwitness/orm-base':
+        specifier: workspace:*
+        version: link:../orm-base
+      '@moonwitness/orm-project':
+        specifier: workspace:*
+        version: link:../orm-project
+      '@moonwitness/orm-subscription':
+        specifier: workspace:*
+        version: link:../orm-subscription
+      '@moonwitness/types':
+        specifier: workspace:*
+        version: link:../types
+      objection:
+        specifier: ^3.1.5
+        version: 3.1.5(knex@3.3.0(better-sqlite3@13.0.3)(pg@8.23.1))
+    devDependencies:
+      '@moonwitness/jobs':
+        specifier: workspace:*
+        version: link:../jobs
+      '@moonwitness/orm-crm':
+        specifier: workspace:*
+        version: link:../orm-crm
+      '@moonwitness/orm-notification':
+        specifier: workspace:*
+        version: link:../orm-notification
+      '@moonwitness/orm-organization':
+        specifier: workspace:*
+        version: link:../orm-organization
+      '@moonwitness/orm-sales':
+        specifier: workspace:*
+        version: link:../orm-sales
+      '@moonwitness/orm-workflow':
+        specifier: workspace:*
+        version: link:../orm-workflow
+      '@vitest/coverage-v8':
+        specifier: 5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      fastify:
+        specifier: ^5.12.6
+        version: 5.12.7
+      knex:
+        specifier: ^3.3.0
+        version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)
+      typescript:
+        specifier: ~5.7.3
+        version: 5.7.3
+      vitest:
+        specifier: ^5.0.3
         version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
   packages/orm-knowledge:

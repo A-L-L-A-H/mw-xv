@@ -180,6 +180,34 @@ export function ProjectsPage() {
     },
   });
 
+  const syncStageMutation = useMutation({
+    mutationFn: async (task: TaskSummary) => {
+      const res = await client.request<{
+        success: boolean;
+        data: {
+          advanced: boolean;
+          contract: { status: string };
+          task: TaskSummary;
+        };
+      }>(`/api/projects/tasks/${task.id}/work-contract/sync-stage`, {
+        method: 'POST',
+        body: {},
+      });
+      return { taskCode: task.code, ...res.data };
+    },
+    onSuccess: async (result) => {
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success(
+        result.advanced
+          ? `Synced ${result.taskCode} -> ${result.task.status} (contract: ${result.contract.status}).`
+          : `${result.taskCode} already aligned (contract: ${result.contract.status}).`
+      );
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to sync AI WorkContract stage.');
+    },
+  });
+
   const todoSyncMutation = useMutation({
     mutationFn: async () => {
       if (!activeProjectId) throw new Error('Select a project first.');
@@ -365,6 +393,15 @@ export function ProjectsPage() {
                           >
                             <SparkleIcon className="mr-1 size-3.5" />
                             Dispatch AI
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={syncStageMutation.isPending}
+                            onClick={() => syncStageMutation.mutate(task)}
+                          >
+                            <RefreshIcon className="mr-1 size-3.5" />
+                            Sync AI Stage
                           </Button>
                         </div>
                       </article>

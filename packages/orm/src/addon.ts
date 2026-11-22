@@ -73,7 +73,110 @@ export function seed<const F extends FieldMap>(
   return { id, model, values };
 }
 
-export type AddonHttpPlugin<TApp = unknown, TOptions = unknown> = (
+export interface AddonHttpAuthContext {
+  readonly userId: number;
+  readonly companyId?: number | null;
+  readonly role?: string;
+  readonly groupPermissions?: unknown;
+}
+
+export interface AddonHttpRequest<
+  TGeneric extends {
+    Params?: Record<string, string>;
+    Querystring?: Record<string, string | undefined>;
+    Body?: unknown;
+  } = {
+    Params: Record<string, string>;
+    Querystring: Record<string, string | undefined>;
+    Body: unknown;
+  },
+> {
+  readonly params: TGeneric['Params'] extends undefined
+    ? Record<string, string>
+    : NonNullable<TGeneric['Params']>;
+  readonly query: TGeneric['Querystring'] extends undefined
+    ? Record<string, string | undefined>
+    : NonNullable<TGeneric['Querystring']>;
+  readonly body: TGeneric['Body'];
+  readonly auth?: AddonHttpAuthContext;
+}
+
+export interface AddonHttpReply {
+  code(statusCode: number): AddonHttpReply;
+  send(payload?: unknown): unknown;
+}
+
+export type AddonHttpRouteHandler<
+  TGeneric extends {
+    Params?: Record<string, string>;
+    Querystring?: Record<string, string | undefined>;
+    Body?: unknown;
+  } = {
+    Params: Record<string, string>;
+    Querystring: Record<string, string | undefined>;
+    Body: unknown;
+  },
+> = (req: AddonHttpRequest<TGeneric>, reply: AddonHttpReply) => unknown | Promise<unknown>;
+
+export interface AddonHttpApp {
+  get<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+  post<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+  put<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+  patch<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+  delete<
+    TGeneric extends {
+      Params?: Record<string, string>;
+      Querystring?: Record<string, string | undefined>;
+      Body?: unknown;
+    } = {
+      Params: Record<string, string>;
+      Querystring: Record<string, string | undefined>;
+      Body: unknown;
+    },
+  >(path: string, handler: AddonHttpRouteHandler<TGeneric>): unknown;
+}
+
+export type AddonHttpPlugin<TApp = AddonHttpApp, TOptions = Record<string, unknown>> = (
   app: TApp,
   options: TOptions
 ) => unknown | Promise<unknown>;

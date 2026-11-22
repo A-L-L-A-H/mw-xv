@@ -1,13 +1,17 @@
 import { cp, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = path.join(root, 'packages/assets');
 const target = path.join(root, 'apps/board/public');
-for (const directory of ['brand', 'illustrations', 'materials', 'sounds']) {
+const publicAssetDirectories = ['brand', 'illustrations', 'materials', 'sounds', 'animation', 'environments', 'scenes'];
+for (const directory of publicAssetDirectories) {
+  const sourceDirectory = path.join(source, directory);
+  if (!existsSync(sourceDirectory)) continue;
   await mkdir(path.join(target, directory), { recursive: true });
-  await cp(path.join(source, directory), path.join(target, directory), {
+  await cp(sourceDirectory, path.join(target, directory), {
     recursive: true,
     force: true,
     filter: (sourcePath) => !sourcePath.includes(`${path.sep}source${path.sep}`),
