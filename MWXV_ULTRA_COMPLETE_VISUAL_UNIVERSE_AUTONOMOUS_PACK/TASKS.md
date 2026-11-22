@@ -1,6 +1,6 @@
 # Atomic Task Board
 
-**Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
+**Total: 109 tasks.** Canonical lifecycle state is `docs/tasks/tasks.json` (project `visual-universe`); this file is a generated projection.
 
 Status counts: done 93 · skipped 3 · in_progress 0 · blocked 13 · todo 0.
 
