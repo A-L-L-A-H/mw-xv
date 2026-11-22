@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 83 · skipped 4 · in_progress 0 · blocked 5 · todo 17.
+Status counts: done 81 · skipped 4 · in_progress 0 · blocked 7 · todo 17.
 
 ## W0
 
@@ -474,7 +474,7 @@ Status counts: done 83 · skipped 4 · in_progress 0 · blocked 5 · todo 17.
   - Verify: FX preview review
   - Evidence: `reviewed packages/ui/src/components/effects.tsx, component styles/tokens, reduced-motion tests and fx-reuse-map` (0) → `evidence/cinematic-fx-contract.md`
 
-- [x] **W6-003 — Implement bounded scene particle effects**
+- [ ] **W6-003 — Implement bounded scene particle effects** — **BLOCKED:** Browser fixture confirms the particle cap and static/reduced-motion behavior, but the explicit frame-time/performance measurement in acceptance criteria was not captured in this resource-constrained browser session. Reopen for a named-browser performance measurement before completion.
   - Goal: Build measured lightweight particle presets for rain, dust, stars and sparks.
   - Depends on: W6-002, W5-004
   - Deliverables: Particle presets and performance tests.
@@ -506,7 +506,7 @@ Status counts: done 83 · skipped 4 · in_progress 0 · blocked 5 · todo 17.
   - Verify: pnpm test:ui; browser audio tests
   - Evidence: `dependency audit: W6-005 status and notes` (0) → `evidence/W6-W7-execution.md`; `node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs` (0) → `evidence/W6-W7-execution.md; existing controller contract 6/6 passed but is not scene ambience integration`
 
-- [x] **W6-007 — Create FX contact sheet and preview catalogue**
+- [ ] **W6-007 — Create FX contact sheet and preview catalogue** — **BLOCKED:** The FX catalog specimen and purpose/anti-pattern test pass, but W6-003 is blocked on its required frame-time evidence. Keep this dependent task blocked until W6-003 is accepted; no separate binary contact sheet is claimed.
   - Goal: Expose each effect in UI Catalog with light/dark, reduced-motion and intensity variants.
   - Depends on: W6-002, W6-003, W6-004
   - Deliverables: FX catalogue specimen and snapshots.

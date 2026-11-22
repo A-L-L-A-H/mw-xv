@@ -2702,7 +2702,7 @@
       "id": "W6-003",
       "phase": "W6",
       "title": "Implement bounded scene particle effects",
-      "status": "done",
+      "status": "blocked",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2728,7 +2728,7 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
+      "notes": "Browser fixture confirms the particle cap and static/reduced-motion behavior, but the explicit frame-time/performance measurement in acceptance criteria was not captured in this resource-constrained browser session. Reopen for a named-browser performance measurement before completion.",
       "evidence": [
         {
           "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1",
@@ -2885,7 +2885,7 @@
       "id": "W6-007",
       "phase": "W6",
       "title": "Create FX contact sheet and preview catalogue",
-      "status": "done",
+      "status": "blocked",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2911,7 +2911,7 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "UI Catalog FX Lab documents intended use and anti-patterns, exposes intensity and variants in light/dark-capable catalog, and respects reduced motion. Contact sheet PNG generation is not part of the acceptance criteria and no unsupported binary generator was fabricated.",
+      "notes": "The FX catalog specimen and purpose/anti-pattern test pass, but W6-003 is blocked on its required frame-time evidence. Keep this dependent task blocked until W6-003 is accepted; no separate binary contact sheet is claimed.",
       "evidence": [
         {
           "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts --workers=1",
