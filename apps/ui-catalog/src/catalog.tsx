@@ -411,16 +411,24 @@ function CatalogContent() {
         </a>
         <aside className="catalog-sidebar" aria-label="Catalog navigation">
           <a className="catalog-brand" href="#top" aria-label="MoonWitness UI catalog home">
-            <img className="catalog-brand-symbol" src={symbolDark} alt="" />
+            <img className="catalog-brand-symbol" src={symbolDark} alt="" width={43} height={43} />
             <span>
               <strong>MOONWITNESS</strong>
               <small>UI CATALOG</small>
             </span>
           </a>
-          <nav className="catalog-nav" aria-label="Component sections">
+          <nav
+            className="catalog-nav"
+            aria-label="Component sections"
+            style={{ minHeight: '2.625rem' }}
+          >
             <span className="catalog-nav-label">LIBRARY</span>
             {sections.map((section) => (
-              <a key={section.id} href={`#${section.id}`}>
+              <a
+                key={section.id}
+                href={`#${section.id}`}
+                style={{ lineHeight: '1.35rem', minHeight: '2.25rem' }}
+              >
                 {section.label}
               </a>
             ))}
@@ -443,9 +451,10 @@ function CatalogContent() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                flexWrap: 'wrap',
+                gap: '0.35rem',
+                flexWrap: 'nowrap',
                 maxWidth: '100%',
+                overflowX: 'auto',
               }}
             >
               <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
@@ -454,7 +463,7 @@ function CatalogContent() {
                   style={{
                     minHeight: '2rem',
                     height: '2rem',
-                    width: '14rem',
+                    width: 'auto',
                     maxWidth: '100%',
                     whiteSpace: 'nowrap',
                   }}
@@ -474,7 +483,7 @@ function CatalogContent() {
                 size="sm"
                 onClick={toggleDensity}
                 aria-pressed={density === 'compact'}
-                style={{ whiteSpace: 'nowrap', height: '2rem', minWidth: '9.5rem' }}
+                style={{ whiteSpace: 'nowrap', height: '2rem', flexShrink: 0 }}
               >
                 {density === 'compact' ? 'Use comfortable density' : 'Use compact density'}
               </Button>
@@ -483,7 +492,7 @@ function CatalogContent() {
                 size="sm"
                 onClick={toggleTheme}
                 aria-pressed={dark}
-                style={{ whiteSpace: 'nowrap', height: '2rem', minWidth: '7rem' }}
+                style={{ whiteSpace: 'nowrap', height: '2rem', flexShrink: 0 }}
               >
                 {dark ? 'Use light theme' : 'Use dark theme'}
               </Button>
@@ -498,7 +507,7 @@ function CatalogContent() {
                 </span>
               }
               description={
-                <span style={{ display: 'block', minHeight: '6.9rem' }}>
+                <span style={{ display: 'block', minHeight: '8.75rem', lineHeight: '1.75rem' }}>
                   A practical catalog of the shared MoonWitness UI package. Explore real components,
                   keyboard behavior, themes, and responsive states.
                 </span>
@@ -508,7 +517,13 @@ function CatalogContent() {
             <Panel
               className="catalog-intro-panel"
               title="MoonWitness visual system"
-              description="Shared assets, readable controls, and expressive editorial details are built from the public @moonwitness/ui package."
+              description={
+                <span style={{ display: 'block', minHeight: '4.5rem', lineHeight: '1.5rem' }}>
+                  Shared assets, readable controls, and expressive editorial details are built from
+                  the public @moonwitness/ui package.
+                </span>
+              }
+              style={{ minHeight: '16.5rem' }}
             >
               <div
                 className="catalog-intro-meta"
