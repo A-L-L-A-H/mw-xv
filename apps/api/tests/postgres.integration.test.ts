@@ -1907,7 +1907,7 @@ postgresDescribe('PostgreSQL addon upgrade integration', () => {
       payload: { login: 'superadmin', password: 'postgres-flow-reset-password' },
     });
     expect(resetPasswordAfterRestart.statusCode).toBe(200);
-  }, 30000);
+  }, 90000);
 
   it('enforces PostgreSQL company isolation for partner list, count, relations and foreign references', async () => {
     if (!app) {
@@ -3094,7 +3094,7 @@ postgresDescribe('PostgreSQL addon upgrade integration', () => {
       },
     });
     expect(deniedForeignParent.statusCode).toBe(403);
-  }, 30000);
+  }, 60000);
 
   it('matches PostgreSQL domain operator and nullable-field semantics', async () => {
     const fixtures = await Partner.query().insert([

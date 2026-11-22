@@ -1,6 +1,6 @@
 # Panduan Roadmap MoonWitness
 
-Roadmap ini terdiri dari 162 kartu M-series dan 65 kartu K-series (227 task). Checklist `ROADMAP.md` tetap sumber status. K-series melacak rebuild knowledge XIV dan berada di [kartu AI lokal](12-local-ai-rebuild.md); workstream AI Corporation (`M12.01`–`M12.14`) berada di [kartu AI Corporation](13-ai-corporation.md). Mulai dari [jalur rilis aktif](ACTIVE-PLAN.md) untuk melihat gate yang benar-benar menahan rilis dan [backlog tertunda](EXECUTION-BACKLOG.md) untuk item yang tetap dilacak tetapi tidak perlu menghambat rilis pertama. Riwayat batch lama ada di [arsip eksekusi](EXECUTION-HISTORY-2026-10-15.md).
+Roadmap ini terdiri dari 163 kartu M-series dan 65 kartu K-series (228 task). Checklist `ROADMAP.md` tetap sumber status. K-series melacak rebuild knowledge XIV dan berada di [kartu AI lokal](12-local-ai-rebuild.md); workstream AI Corporation (`M12.01`–`M12.14`) berada di [kartu AI Corporation](13-ai-corporation.md). Mulai dari [jalur rilis aktif](ACTIVE-PLAN.md) untuk melihat gate yang benar-benar menahan rilis dan [backlog tertunda](EXECUTION-BACKLOG.md) untuk item yang tetap dilacak tetapi tidak perlu menghambat rilis pertama. Riwayat batch lama ada di [arsip eksekusi](EXECUTION-HISTORY-2026-10-15.md).
 
 ## Urutan membaca untuk agen baru
 
@@ -34,6 +34,7 @@ Roadmap ini terdiri dari 162 kartu M-series dan 65 kartu K-series (227 task). Ch
 | [Acceptance](10-acceptance.md)                       | M10.01–M10.10 | Bukti satu siklus nyata dan handoff                                              |
 | [Local AI knowledge rebuild](12-local-ai-rebuild.md) | K0-001–K9-007 | Domain ownership, rights, privacy, local AI, migration and acceptance            |
 | [AI Corporation](13-ai-corporation.md)               | M12.01–M12.14 | Audit baseline, ADR 0007, ORM-AI, runtime, MCP, PCW, workforce, memory, UI, eval |
+| [Desktop Engineering](14-desktop-engineering.md)     | M13.01        | ROCKSOUL FLOW reuse audit, overlap map and first vertical slice                 |
 
 Lihat juga [Issues dan delivery — M11.01–M11.15](11-issues-delivery.md): issue sync, lifecycle, commit/push, auto-PR/merge dan recovery.
 

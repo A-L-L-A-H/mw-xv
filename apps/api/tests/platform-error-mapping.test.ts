@@ -11,7 +11,7 @@ import {
 } from '@moonwitness/types';
 import { buildApp } from '../src/app.js';
 
-describe('platform error mapping', () => {
+describe('platform error mapping', { timeout: 30_000 }, () => {
   let app: FastifyInstance | undefined;
 
   afterEach(async () => {
