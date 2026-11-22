@@ -168,7 +168,7 @@
     "test:knowledge-cli:built": "node --test scripts/knowledge/validate.test.mjs scripts/knowledge/snapshot.test.mjs scripts/knowledge/legacy-inventory.test.mjs scripts/knowledge/ingest.test.mjs scripts/knowledge/revelation-identity.test.mjs scripts/knowledge/rebuild.test.mjs",
     "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
     "tasks:sweep": "node scripts/tasks/sweep-and-consolidate.mjs",
-    "test:taskos": "node --test scripts/tasks/validate-tasks.test.mjs scripts/tasks/sync-roadmap.test.mjs scripts/tasks/sweep-and-consolidate.test.mjs scripts/tasks/visual-universe-projection.test.mjs"
+    "test:taskos": "node --test scripts/tasks/validate-tasks.test.mjs scripts/tasks/sync-roadmap.test.mjs scripts/tasks/sweep-and-consolidate.test.mjs scripts/tasks/visual-universe-projection.test.mjs scripts/tasks/visual-universe-renderers.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
