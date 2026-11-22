@@ -9,15 +9,19 @@ const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
 
 test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks.json', async () => {
-  const result = await sweepAndConsolidate();
+  const generatedAt = '2026-11-23T00:00:00.000Z';
+  const result = await sweepAndConsolidate({ generatedAt });
+  const secondProjection = await sweepAndConsolidate({ generatedAt });
+  assert.deepEqual(secondProjection, result, 'Same source snapshot and timestamp must produce identical output.');
   assert.ok(result);
   assert.equal(result.schemaVersion, '2.0.0');
   assert.equal(result.format, 'moonwitness-tasks/v2');
   assert.ok(Array.isArray(result.projects));
   assert.ok(Array.isArray(result.tasks));
 
-  // Should have at least 227 roadmap tasks + WhatsApp + Audit + Evolution tasks
-  assert.ok(result.tasks.length >= 300, `Expected >= 300 tasks, got ${result.tasks.length}`);
+  // Source inventory: 239 roadmap + 14 audit + 112 WhatsApp + 7 legacy MW
+  // + 14 promotion lifecycle + 128 desktop + 4 evolution records.
+  assert.equal(result.tasks.length, 518, `Expected 518 source-backed tasks, got ${result.tasks.length}`);
 
   // Check specific task codes
   const taskByCode = new Map(result.tasks.map((t) => [t.code, t]));
@@ -27,10 +31,16 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.ok(taskByCode.has('WA-P0-01'), 'Must include WA-P0-01');
   assert.ok(taskByCode.has('EVO-002'), 'Must include EVO-002');
   assert.ok(taskByCode.has('DSK-0.12'), 'Must include DSK-0.12');
-  assert.ok(taskByCode.has('MW-CFG-003.3'), 'Must include MW-CFG-003.3');
+  assert.ok(taskByCode.has('MW-CFG-003.3'), 'Must include MW-CFG-003.3 from the archived legacy checklist.');
+  assert.ok(taskByCode.has('PR.14'), 'Must include the explicit human promotion approval gate.');
 
   // Verify status mapping: M0.01 is complete in ROADMAP.md, so it must be 'done'
   assert.equal(taskByCode.get('M0.01').status, 'done');
+  assert.equal(taskByCode.get('MW-CFG-003.3').status, 'blocked');
+  assert.equal(taskByCode.get('PR.14').status, 'blocked');
+  assert.equal(taskByCode.get('PR.14').human, true);
+  assert.equal(taskByCode.get('DSK-0.12').status, 'done');
+  assert.equal(taskByCode.get('EVO-002').status, 'doing');
 
   // Validate against docs/tasks/tasks.schema.json
   const schemaRaw = await fs.readFile('docs/tasks/tasks.schema.json', 'utf8');
