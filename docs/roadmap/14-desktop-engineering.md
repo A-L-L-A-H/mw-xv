@@ -59,7 +59,7 @@ M13.01 remains open until the reuse map and evidence file exist and all acceptan
 
 ## M13.02 — Read-only revision-pinned Repo Radar Snapshot
 
-- **Status:** in_progress
+- **Status:** complete (2026-11-22; verified on detached worktree over `origin/dev` base `ac1198e`)
 - **Prerequisites:** M13.01 (`docs/architecture/rock-soul-flow-reuse-map.md` §3).
 - **Deliverables:** `packages/ai-runtime/src/repo-snapshot.ts`, `apps/desktop/src/worktree-sandbox.ts`, and `docs/roadmap/evidence/M13.02.md`.
 

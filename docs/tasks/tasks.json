@@ -8556,7 +8556,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "doing",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -8582,7 +8582,7 @@
         {
           "id": "M13.02-ac-1",
           "text": "Deterministic read-only RepoSnapshot builder in @moonwitness/ai-runtime and R0 WorktreeSandbox.inspectRepoSnapshot in apps/desktop with tests and evidence",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
