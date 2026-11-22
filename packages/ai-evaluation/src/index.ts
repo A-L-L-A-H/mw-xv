@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto';
 import {
+  detectCapabilityOverlap,
   evaluateCapabilityGates as evaluateRuntimeCapabilityGates,
   runEvaluationCorpus as runRuntimeEvaluationCorpus,
   runMemoryAblation as runRuntimeMemoryAblation,
   type CapabilityGateEvaluation,
   type CapabilityGateId,
+  type CapabilityOverlapStatus,
   type EvalCorpusFixture,
   type EvalRunRecord,
   type EvalTaskFamily,
@@ -13,6 +15,7 @@ import {
   type MemoryAblationModeSummary,
   type MemoryAblationReport,
   type MemoryCandidateRecord,
+  type RepoSnapshot,
   type SkillVersionRecord,
 } from '@moonwitness/ai-runtime';
 
@@ -546,5 +549,197 @@ export async function evaluateReleaseGates(_options?: { readonly mode?: 'offline
     passed: true,
     agiClaimed: false,
     results,
+  };
+}
+
+export interface OverlapDetectorBenchmarkResult {
+  readonly passed: boolean;
+  readonly totalCases: number;
+  readonly matchedCases: number;
+  readonly expectedStatuses: Readonly<Record<string, CapabilityOverlapStatus>>;
+  readonly actualStatuses: Readonly<Record<string, CapabilityOverlapStatus>>;
+  readonly advisoryOnlyEnforced: boolean;
+  readonly benchmarkSha256: string;
+}
+
+export async function runOverlapDetectorBenchmark(options?: {
+  readonly companyId?: number;
+}): Promise<OverlapDetectorBenchmarkResult> {
+  const companyId = options?.companyId ?? 1;
+  const fixtureSnapshot: RepoSnapshot = {
+    schemaVersion: 1,
+    rootLabel: 'eval-overlap-fixture',
+    capturedAt: '2026-11-22T00:00:00.000Z',
+    gitRevision: { headCommit: 'eval-sha-001', branch: 'dev', dirty: false },
+    scannedFileCount: 5,
+    manifests: [
+      {
+        path: 'packages/eval-impl/package.json',
+        kind: 'package.json',
+        sha256: '1'.repeat(64),
+        sizeBytes: 120,
+        truncated: false,
+        name: '@moonwitness/eval-impl',
+        version: '1.0.0',
+      },
+      {
+        path: 'packages/eval-dep/package.json',
+        kind: 'package.json',
+        sha256: '2'.repeat(64),
+        sizeBytes: 120,
+        truncated: false,
+        name: '@moonwitness/eval-dep',
+        version: '0.1.0',
+      },
+    ],
+    scripts: [
+      {
+        manifestPath: 'packages/eval-impl/package.json',
+        manifestSha256: '1'.repeat(64),
+        name: 'test',
+        command: 'vitest run',
+      },
+    ],
+    docs: [
+      {
+        path: 'docs/eval-impl.md',
+        sha256: '3'.repeat(64),
+        sizeBytes: 120,
+        title: 'Implemented Fixture Capability',
+        headings: ['Implemented Fixture Capability'],
+        truncated: false,
+      },
+      {
+        path: 'docs/eval-dep.md',
+        sha256: '4'.repeat(64),
+        sizeBytes: 120,
+        title: 'Deprecated Legacy Fixture Capability',
+        headings: ['Deprecated Legacy Fixture Capability'],
+        truncated: false,
+      },
+    ],
+    entryPoints: [
+      {
+        path: 'packages/eval-impl/src/index.ts',
+        sha256: '5'.repeat(64),
+        sizeBytes: 80,
+      },
+      {
+        path: 'packages/eval-partial/src/index.ts',
+        sha256: '6'.repeat(64),
+        sizeBytes: 80,
+      },
+    ],
+    observations: [],
+    inferences: [],
+    incomplete: false,
+    omittedReasons: [],
+    contentSha256: '7'.repeat(64),
+    snapshotSha256: '8'.repeat(64),
+  };
+
+  const report = await detectCapabilityOverlap({
+    companyId,
+    repoSnapshot: fixtureSnapshot,
+    capturedAt: '2026-11-22T00:00:00.000Z',
+    existingTasks: [
+      {
+        id: 't-ov-1',
+        code: 'TASK-OV-1',
+        title: 'Build webhook bridge',
+        status: 'in_progress',
+        scopePaths: ['packages/webhook-bridge'],
+      },
+      {
+        id: 't-conf-1',
+        code: 'TASK-CONF-1',
+        title: 'Conflicting ownership handler',
+        description: 'Conflicting duplicate_authority module rewrite',
+        status: 'todo',
+        scopePaths: ['packages/conflict-zone'],
+      },
+    ],
+    requirements: [
+      {
+        id: 'c-impl',
+        title: 'Implemented fixture capability',
+        description: 'Implemented capability in eval-impl',
+        keywords: ['eval-impl'],
+        targetPaths: ['packages/eval-impl', 'docs/eval-impl.md'],
+      },
+      {
+        id: 'c-partial',
+        title: 'Partial fixture entry',
+        description: 'Only entry point exists in eval-partial',
+        keywords: ['eval-partial'],
+        targetPaths: ['packages/eval-partial/src/index.ts'],
+      },
+      {
+        id: 'c-missing',
+        title: 'Orbital satellite downlink',
+        description: 'No files or tasks exist for xyz_missing_99 telemetry relay',
+        keywords: ['xyz_missing_99', 'orbital'],
+        targetPaths: ['packages/xyz-missing'],
+      },
+      {
+        id: 'c-overlap',
+        title: 'Webhook bridge service',
+        description: 'Overlaps active webhook bridge task',
+        keywords: ['webhook', 'bridge'],
+        targetPaths: ['packages/webhook-bridge'],
+      },
+      {
+        id: 'c-conflict',
+        title: 'Conflict zone module',
+        description: 'Touches conflict-zone module',
+        keywords: ['conflict'],
+        targetPaths: ['packages/conflict-zone'],
+      },
+      {
+        id: 'c-deprecated',
+        title: 'Deprecated legacy module',
+        description: 'Marked deprecated in docs/eval-dep.md',
+        keywords: ['deprecated', 'eval-dep'],
+        targetPaths: ['packages/eval-dep', 'docs/eval-dep.md'],
+      },
+    ],
+  });
+
+  const expectedStatuses: Record<string, CapabilityOverlapStatus> = {
+    'c-impl': 'implemented',
+    'c-partial': 'partial',
+    'c-missing': 'missing',
+    'c-overlap': 'overlapping',
+    'c-conflict': 'conflicting',
+    'c-deprecated': 'deprecated',
+  };
+
+  const actualStatuses: Record<string, CapabilityOverlapStatus> = {};
+  let matchedCases = 0;
+  for (const finding of report.findings) {
+    actualStatuses[finding.requirementId] = finding.status;
+    if (expectedStatuses[finding.requirementId] === finding.status) {
+      matchedCases += 1;
+    }
+  }
+
+  const totalCases = Object.keys(expectedStatuses).length;
+  const advisoryOnlyEnforced =
+    report.advisoryOnly === true &&
+    report.automatedMutationsAllowed === false &&
+    report.findings.every((f) => f.advisoryOnly === true);
+
+  const summaryBase = {
+    passed: matchedCases === totalCases && advisoryOnlyEnforced,
+    totalCases,
+    matchedCases,
+    expectedStatuses,
+    actualStatuses,
+    advisoryOnlyEnforced,
+  };
+
+  return {
+    ...summaryBase,
+    benchmarkSha256: createHash('sha256').update(JSON.stringify(summaryBase)).digest('hex'),
   };
 }
