@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 21 · skipped 2 · in_progress 2 · blocked 0 · todo 84.
+Status counts: done 28 · skipped 2 · in_progress 1 · blocked 0 · todo 78.
 
 ## W0
 
@@ -56,47 +56,53 @@ Status counts: done 21 · skipped 2 · in_progress 2 · blocked 0 · todo 84.
 
 ## W1
 
-- [ ] **W1-001 — Approve canonical MoonWitness art direction** — **IN PROGRESS**
+- [x] **W1-001 — Approve canonical MoonWitness art direction**
   - Goal: Formalize the user's zine/punk/manga reference into a production-grade visual bible while preserving current brand identity.
   - Depends on: W0-006
   - Deliverables: Visual Bible section: art direction, palette roles, linework, cel shading, grunge, composition and exclusions.
   - Acceptance: Primary identity remains MoonWitness XV, not a generic anime template.; Reference DNA is interpreted, not copied from copyrighted franchises.; Black/ink, paper/white, hot magenta, electric blue/cyan and signal yellow are token-mapped.; Grunge, manga ink, photocopy, ripped paper and urban anime environment have controlled intensity tiers.
   - Verify: visual review via UI Catalog
+  - Evidence: `user approval in chat; checked existing UI token palette and WCAG AA tests` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/art-direction-proposal.md`
 
-- [ ] **W1-002 — Define visual grammar by experience tier**
+- [x] **W1-002 — Define visual grammar by experience tier**
   - Goal: Separate immersive story surfaces from operational UI and functional admin surfaces.
   - Depends on: W1-001
   - Deliverables: Experience-tier rules and examples.
   - Acceptance: Living World pages may use cinematic scenes and sustained movement within budgets.; Board tables/forms/data remain readable and interaction-first.; Micro-interaction, editorial, cinematic and ambient animation have separate use policies.
   - Verify: documentation review
+  - Evidence: `approved-direction design specification against current UI tokens, fonts, assets and source` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/experience-tier-grammar.md`
 
-- [ ] **W1-003 — Define character identity rules**
+- [ ] **W1-003 — Define character identity rules** — **IN PROGRESS**
   - Goal: Specify repeatable identity sheets and safe depiction rules for recurring cast.
   - Depends on: W1-001
   - Deliverables: Character Bible template and continuity contract.
   - Acceptance: Stable character IDs, silhouette, proportions, outfit, palette and signature props.; Default crew art can use anonymous/back-facing hooded silhouettes; identifiable faces require approved identity design.; No random changes to face, hair, clothing or body proportions across scenes.; Do not depict Allah or represent sacred figures visually; use text/name only where product content explicitly requires it.
   - Verify: character bible schema validation
+  - Evidence: `character policy/template review` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/character-bible-template.md`
 
-- [ ] **W1-004 — Define anime rendering and color pipeline**
+- [x] **W1-004 — Define anime rendering and color pipeline**
   - Goal: Specify line weight, cel-shading, shadows, highlight, grain and color grading.
   - Depends on: W1-001
   - Deliverables: Rendering style guide and reference sheet specification.
   - Acceptance: Every production asset declares a style/renderer profile.; Lighting and color grading remain consistent across scene packs.; Do not bake interface labels or dynamic data into artwork.
   - Verify: visual contact sheet review
+  - Evidence: `approved-direction design specification against current UI tokens, fonts, assets and source` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/rendering-color-profile.md`
 
-- [ ] **W1-005 — Define typography and lettering layers**
+- [x] **W1-005 — Define typography and lettering layers**
   - Goal: Keep graphic lettering separate from product copy and provide approved fonts/license handling.
   - Depends on: W1-001
   - Deliverables: Typography/lettering policy and asset brief.
   - Acceptance: UI copy remains live text.; Artwork lettering is decorative only and separately authored/licensed.; Font files and subsets retain source/hash/license provenance.
   - Verify: pnpm assets:validate
+  - Evidence: `approved-direction design specification against current UI tokens, fonts, assets and source` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/typography-lettering-policy.md`
 
-- [ ] **W1-006 — Define art composition and responsive rules**
+- [x] **W1-006 — Define art composition and responsive rules**
   - Goal: Specify wide, tall, square, panel, hero and parallax-safe compositions.
   - Depends on: W1-001, W1-002
   - Deliverables: Composition recipes and focal-safe-area rules.
   - Acceptance: Desktop/mobile assets have deliberate art direction, not blind center crops.; Focal points and text-safe areas are explicit.; No important character feature is unintentionally cut at supported breakpoints.
   - Verify: responsive UI catalog preview
+  - Evidence: `approved-direction design specification against current UI tokens, fonts, assets and source` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/responsive-composition-rules.md`
 
 - [x] **W1-007 — Define accessibility and motion principles** — **SKIPPED:** Accessibility and motion policy is already implemented in packages/ui/README.md, TOKENS.md, tokens.css and components.css. Existing tests verify muted-by-default audio, explicit playback, reduced motion, focus and non-interactive decorative FX; no duplicate policy layer was added.
   - Goal: Set reduced-motion, alternative static scene, keyboard, captions and sound consent rules.
@@ -106,12 +112,13 @@ Status counts: done 21 · skipped 2 · in_progress 2 · blocked 0 · todo 84.
   - Verify: pnpm test:ui; pnpm test:ui-catalog
   - Evidence: `node --test packages/ui/tests/audio.test.mjs packages/ui/tests/effects.test.mjs` (0) → `evidence/W0-006-implementation-delta.md`; `node --test --test-name-pattern "reduced motion|interactive surfaces expose opt-in feedback" packages/ui/tests/tokens.test.mjs` (0) → `evidence/W0-006-implementation-delta.md`; `pnpm test:ui` (0) → `evidence/W0-004-assets-ui-baseline.md`; `pnpm test:ui-catalog` (0) → `evidence/W0-006-implementation-delta.md`
 
-- [ ] **W1-008 — Publish Visual Universe Bible**
+- [x] **W1-008 — Publish Visual Universe Bible**
   - Goal: Consolidate approved decisions into canonical docs without duplicating existing UI Bible.
   - Depends on: W1-001, W1-002, W1-003, W1-004, W1-005, W1-006, W1-007
   - Deliverables: Canonical visual universe guide and links from existing design docs.
   - Acceptance: Single source of truth is identified.; Existing docs are updated by linking/targeted additions, not copied into competing versions.; Open decisions are clearly listed.
   - Verify: pnpm docs:check; pnpm docs:links
+  - Evidence: `pnpm docs:check:built` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/approval-followup-checks.md`; `pnpm docs:links` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/approval-followup-checks.md`
 
 ## W2
 
@@ -324,13 +331,13 @@ Status counts: done 21 · skipped 2 · in_progress 2 · blocked 0 · todo 84.
 
 ## W5
 
-- [ ] **W5-001 — Choose animation engine boundary** — **IN PROGRESS**
+- [x] **W5-001 — Choose animation engine boundary**
   - Goal: Audit existing Motion dependency in Board and choose CSS/SVG/Motion first; adapter seams for specialist character SDKs.
   - Depends on: W0-006, W1-007
   - Deliverables: Decision record and dependency/licensing matrix.
   - Acceptance: Use existing motion package where capable.; Do not add GSAP/Rive/Live2D/Three/Pixi by default.; Paid/proprietary SDK requires explicit human approval.; No runtime dependency is added to assets package.
   - Verify: dependency graph review; bundle baseline
-  - Evidence: `pnpm --filter @moonwitness/board list motion --depth 0; source search for Motion runtime imports` (0) → `evidence/motion-boundary-proposal.md`; `pnpm ui:budget` (0) → `JavaScript 499004 B raw/145835 B gzip and stylesheet 128222 B raw/23100 B gzip; both within budgets`
+  - Evidence: `user approval in chat; dependency source search` (0) → `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/motion-boundary-proposal.md`; `pnpm ui:budget` (0) → `catalog JavaScript and stylesheet remain within declared raw/gzip budgets`
 
 - [ ] **W5-002 — Define scene runtime contracts**
   - Goal: Specify SceneDefinition, LayerDefinition, CameraDefinition, Clip, Event, State and fallback contracts.
