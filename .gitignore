@@ -19,5 +19,8 @@ coverage/
 apps/board/next-env.d.ts
 playwright-report/
 .qoder-tmp/
-apps/todo/
+apps/todo/target/
+apps/todo/web/node_modules/
+apps/todo/web/dist/
+apps/todo/web/package-lock.json
 .DS_Store

@@ -280,6 +280,9 @@ export default function App() {
       } else if (e.key === "," && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setSettingsOpen(true);
+      } else if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setGlobalSearchOpen(true);
       } else if (e.key === "ArrowLeft" && e.altKey) {
         // Previous project
       } else if (e.key === "ArrowRight" && e.altKey) {
@@ -401,6 +404,14 @@ export default function App() {
                 collapsedColumns={new Set()}
                 onToggleCollapse={() => {}}
                 searchQuery={searchQuery}
+                onMoveTask={(taskId, status, position) => {
+                  const colTasks = board?.tasks.filter((t) => t.status === status) || [];
+                  const idx = colTasks.findIndex((t) => t.id === taskId);
+                  if (idx === -1) return;
+                  if (position === idx) return;
+                  moveTask(taskId, status, position);
+                }}
+                onDeleteTask={deleteTask}
               />
             ) : loading ? (
               <div className="board-loading">{tr("Loading board...")}</div>
@@ -475,6 +486,12 @@ export default function App() {
           currentProject={project}
           onProjectUpdate={handleProjectUpdate}
           onProjectDelete={handleProjectDelete}
+          onRefresh={() => {
+            loadBoard(project || "all", showDone, searchQuery);
+            loadProjects("local").then((res) => {
+              if (res) setProjects(res.projects);
+            });
+          }}
         />
 
         <NewProjectDialog

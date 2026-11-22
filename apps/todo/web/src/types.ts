@@ -128,4 +128,5 @@ export type Document = {
   created_at: string;
   updated_at: string;
   meta_json?: string;
+  linked_tasks?: string[];
 };

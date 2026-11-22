@@ -1,6 +1,6 @@
 // Settings Dialog component
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@moonwitness/ui/components/dialog";
 import { Button } from "@moonwitness/ui/components/button";
 import { Switch } from "@moonwitness/ui/components/switch";
@@ -8,6 +8,7 @@ import { Label } from "@moonwitness/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@moonwitness/ui/components/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@moonwitness/ui/components/tabs";
 import { Input } from "@moonwitness/ui/components/input";
+import { toast } from "@moonwitness/ui/components/toast";
 import { CloseIcon as XIcon, CheckIcon, MoonIcon, SunIcon, GridIcon as MonitorIcon, GlobeIcon, NotificationIcon as BellIcon, ModelIcon as DatabaseIcon, SettingsIcon as WrenchIcon, InfoIcon, SortIcon as ArrowUpDownIcon, DownloadIcon, UploadIcon, DeleteIcon as Trash2Icon, DocumentIcon as FileTextIcon, WarningIcon as AlertCircleIcon } from "@moonwitness/ui/icons";
 import { useTheme } from "../hooks/useTheme";
 import { api } from "../api";
@@ -19,6 +20,7 @@ interface SettingsDialogProps {
   currentProject: string | null;
   onProjectUpdate: (patch: { name?: string; color?: string; repos?: string[] }) => void;
   onProjectDelete: () => void;
+  onRefresh?: () => void;
 }
 
 export function SettingsDialog({
@@ -27,6 +29,7 @@ export function SettingsDialog({
   currentProject,
   onProjectUpdate,
   onProjectDelete,
+  onRefresh,
 }: SettingsDialogProps) {
   const { themePreference, dark, setTheme } = useTheme();
   const [lang, setLangState] = useState(getLang());
@@ -38,6 +41,9 @@ export function SettingsDialog({
   const [syncBranch, setSyncBranch] = useState("");
   const [syncInterval, setSyncInterval] = useState(300);
   const [autoSync, setAutoSync] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -74,6 +80,46 @@ export function SettingsDialog({
     setLangState(newLang);
     setLang(newLang);
     await loadDictionary();
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const project = currentProject ?? "all";
+      const res = await fetch(`/api/export?project=${encodeURIComponent(project)}`, {
+        method: "GET",
+      });
+      if (!res.ok) throw new Error(res.statusText);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `moonwitness-dx-${project}-export.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Export failed:", e);
+      toast.error(tr("Failed to export data"));
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleImport = async (file: File) => {
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const payload = JSON.parse(text);
+      await api("POST", "/import", { payload });
+      await onRefresh?.();
+    } catch (e) {
+      console.error("Import failed:", e);
+      toast.error(tr("Failed to import data"));
+    } finally {
+      setImporting(false);
+    }
   };
 
   if (!open) return null;
@@ -325,14 +371,26 @@ export function SettingsDialog({
             <div className="setting-group">
               <h3>{tr("Data")}</h3>
               <div className="setting-actions">
-                <Button variant="outline" onClick={() => { /* export */ }}>
+                <Button variant="outline" onClick={handleExport} disabled={exporting}>
                   <DownloadIcon className="h-4 w-4 mr-2" />
-                  {tr("Export data")}
+                  {exporting ? tr("Exporting...") : tr("Export data")}
                 </Button>
-                <Button variant="outline" onClick={() => { /* import */ }}>
-                  <UploadIcon className="h-4 w-4 mr-2" />
-                  {tr("Import data")}
-                </Button>
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing}>
+                    <UploadIcon className="h-4 w-4 mr-2" />
+                    {importing ? tr("Importing...") : tr("Import data")}
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImport(file);
+                    }}
+                  />
+                </div>
               </div>
             </div>
 

@@ -136,3 +136,23 @@ jobs:
           pnpm build
           pnpm test:integration:built
           node scripts/knowledge/run-k-gate.mjs --json
+
+  dx-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: '24'
+          pnpm-version: '11.17.0'
+      - name: Install frozen workspace dependencies
+        run: pnpm install --frozen-lockfile --no-runtime
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium
+      - name: Run moonwitness-dx full test suite (dx:test)
+        run: pnpm dx:test

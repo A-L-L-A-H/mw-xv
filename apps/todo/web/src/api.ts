@@ -73,6 +73,7 @@ function normalizeDocument(raw: any): Document {
     created_at: raw.created_at ?? "",
     updated_at: raw.updated_at ?? "",
     meta_json: raw.meta_json ?? null,
+    linked_tasks: Array.isArray(raw.linked_tasks) ? raw.linked_tasks : [],
   };
 }
 

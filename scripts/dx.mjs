@@ -32,9 +32,24 @@ function runPnpm(args) {
   runSync(pm.command, [...pm.prefixArgs, ...args]);
 }
 
+function ensureWebDeps() {
+  const viteBin = path.join(WEB_DIR, 'node_modules', 'vite', 'bin', 'vite.js');
+  const pluginReact = path.join(WEB_DIR, 'node_modules', '@vitejs', 'plugin-react', 'package.json');
+  if (!fs.existsSync(viteBin) || !fs.existsSync(pluginReact)) {
+    console.log('==> Installing apps/todo/web dependencies');
+    const npmCmd = platform === 'win32' ? 'npm.cmd' : 'npm';
+    runSync(npmCmd, ['install', '--no-audit', '--no-fund'], {
+      cwd: WEB_DIR,
+      shell: platform === 'win32',
+    });
+  }
+}
+
 function buildUiAndWeb() {
   console.log('==> Building @moonwitness/ui');
   runPnpm(['--filter', '@moonwitness/ui', 'build']);
+
+  ensureWebDeps();
 
   console.log('==> Typechecking apps/todo/web');
   const tscBin = path.join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc');
@@ -59,7 +74,7 @@ function runE2e() {
   fs.mkdirSync(e2eHome, { recursive: true });
 
   console.log(`==> Running Playwright E2E against ${RELEASE_BIN}`);
-  const pwCli = path.join(ROOT, 'node_modules', '@playwright', 'test', 'cli.js');
+  const pwCli = path.join(WEB_DIR, 'node_modules', '@playwright', 'test', 'cli.js');
   runSync(execPath, [pwCli, 'test', '--config=apps/todo/web/playwright.config.ts'], {
     env: { MW_E2E_API_PORT: apiPort, MOONWITNESS_DX_HOME: e2eHome },
   });
@@ -169,6 +184,7 @@ async function runMcpIntegrationTest() {
 
 function runDev(extraArgs) {
   runPnpm(['--filter', '@moonwitness/ui', 'build']);
+  ensureWebDeps();
   const apiPort = env.MW_API_PORT ?? '4242';
   const webPort = env.MW_WEB_PORT ?? '5173';
 

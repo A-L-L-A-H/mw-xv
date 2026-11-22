@@ -19,6 +19,7 @@ import {
   CloseIcon,
   RefreshIcon,
 } from "@moonwitness/ui/icons";
+import { ExternalLinkIcon as LinkIcon, ColumnsIcon, VisibilityIcon } from "@moonwitness/ui/icons";
 import {
   getDocuments,
   getDocument,
@@ -26,8 +27,9 @@ import {
   updateDocument,
   deleteDocument,
   globalSearch,
+  getBoard,
 } from "../api";
-import type { Document } from "../types";
+import type { Document, Task } from "../types";
 import { markdown } from "../lib/markdown";
 import { ago } from "../lib/time";
 import { tr } from "../lib/i18n";
@@ -62,11 +64,34 @@ export function SecondBrainTab({ project, initialDoc, onOpenTask }: SecondBrainT
   const [editing, setEditing] = useState(false);
   const [creating, setCreating] = useState(false);
 
+  // Board tasks for resolving linked task codes to IDs
+  const [boardTasks, setBoardTasks] = useState<Task[]>([]);
+  const [tasksLoaded, setTasksLoaded] = useState(false);
+
+  const loadBoardTasks = useCallback(async () => {
+    if (tasksLoaded) return;
+    try {
+      const res = await getBoard(project, false, "");
+      setBoardTasks(res.tasks || []);
+    } catch (err) {
+      console.error("Failed to load board tasks:", err);
+    } finally {
+      setTasksLoaded(true);
+    }
+  }, [project, tasksLoaded]);
+
+  const taskByCode = useCallback((code: string): Task | undefined => {
+    return boardTasks.find((t) => t.code === code || `TASK-${t.id}` === code || String(t.id) === code);
+  }, [boardTasks]);
+
   // Editor state
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editPath, setEditPath] = useState("");
   const [editLayer, setEditLayer] = useState<LayerId>("brain");
+
+  // Editor mode: "edit" | "preview" | "split"
+  const [editorMode, setEditorMode] = useState<"edit" | "preview" | "split">("edit");
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,7 +121,8 @@ export function SecondBrainTab({ project, initialDoc, onOpenTask }: SecondBrainT
 
   useEffect(() => {
     loadDocuments();
-  }, [loadDocuments]);
+    loadBoardTasks();
+  }, [loadDocuments, loadBoardTasks]);
 
   const handleSelectDoc = useCallback(async (doc: Document) => {
     try {
@@ -474,7 +500,7 @@ export function SecondBrainTab({ project, initialDoc, onOpenTask }: SecondBrainT
       {/* Main pane: document viewer / editor */}
       <section className="brain-editor-pane">
         {creating || editing ? (
-          <div className="brain-editor" data-testid="brain-doc-editor">
+          <div className={`brain-editor ${editorMode !== "edit" ? "brain-editor-split" : ""}`} data-testid="brain-doc-editor">
             <div className="brain-editor-toolbar">
               <div className="brain-editor-meta-inputs">
                 <select
@@ -508,6 +534,38 @@ export function SecondBrainTab({ project, initialDoc, onOpenTask }: SecondBrainT
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => setEditorMode((m) => (m === "edit" ? "preview" : "edit"))}
+                  title={editorMode === "edit" ? tr("Preview") : tr("Edit")}
+                >
+                  {editorMode === "edit" ? (
+                    <VisibilityIcon className="h-4 w-4 mr-1" />
+                  ) : (
+                    <EditIcon className="h-4 w-4 mr-1" />
+                  )}
+                  {editorMode === "edit" ? tr("Preview") : tr("Edit")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditorMode("split")}
+                  title={tr("Split view")}
+                >
+                  <ColumnsIcon className="h-4 w-4 mr-1" />
+                  {tr("Split")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditorMode("edit")}
+                  title={tr("Edit only")}
+                  disabled={editorMode === "edit"}
+                >
+                  <BookOpenIcon className="h-4 w-4 mr-1" />
+                  {tr("Edit")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setEditing(false);
                     setCreating(false);
@@ -526,14 +584,24 @@ export function SecondBrainTab({ project, initialDoc, onOpenTask }: SecondBrainT
                 </Button>
               </div>
             </div>
-            <Textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              placeholder={tr("Write markdown content...")}
-              rows={22}
-              className="brain-markdown-textarea"
-              data-testid="brain-doc-content-input"
-            />
+            {editorMode === "edit" || editorMode === "split" ? (
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                placeholder={tr("Write markdown content...")}
+                rows={22}
+                className={`brain-markdown-textarea ${editorMode === "split" ? "brain-split-editor" : ""}`}
+                data-testid="brain-doc-content-input"
+              />
+            ) : null}
+            {(editorMode === "preview" || editorMode === "split") && (
+              <div
+                className={`brain-split-preview ${editorMode === "split" ? "brain-split-preview" : "brain-full-preview"}`}
+                dangerouslySetInnerHTML={{
+                  __html: markdown(editContent),
+                }}
+              />
+            )}
           </div>
         ) : selectedDoc ? (
           <article className="brain-viewer" data-testid="brain-doc-viewer">
@@ -577,6 +645,35 @@ export function SecondBrainTab({ project, initialDoc, onOpenTask }: SecondBrainT
                 __html: markdown(selectedDoc.content_md || selectedDoc.content || ""),
               }}
             />
+            {selectedDoc.linked_tasks && selectedDoc.linked_tasks.length > 0 && (
+              <div className="brain-backlinks">
+                <div className="brain-backlinks-header">
+                  <LinkIcon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="brain-backlinks-title">{tr("Linked tasks")}</span>
+                </div>
+                <ul className="brain-backlinks-list">
+                  {selectedDoc.linked_tasks.map((code) => {
+                    const task = taskByCode(code);
+                    return (
+                      <li key={code} className="brain-backlinks-item">
+                        <button
+                          className="brain-backlinks-link"
+                          onClick={() => {
+                            const id = task?.id ?? Number(code.replace(/\D/g, "") || 0);
+                            if (id) onOpenTask?.(id);
+                          }}
+                          title={tr("Open task")}
+                        >
+                          <BookOpenIcon className="h-3 w-3 shrink-0 mr-1" />
+                          <span>{code}</span>
+                          {task?.title && <span className="brain-backlinks-title-badge">{task.title}</span>}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </article>
         ) : (
           <div className="brain-empty-state">
