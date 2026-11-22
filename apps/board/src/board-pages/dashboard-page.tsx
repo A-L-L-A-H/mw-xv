@@ -45,6 +45,7 @@ import { DashboardKpiGrid } from '@/components/dashboard/kpi-grid';
 import { cn } from '@/lib/utils';
 import { BarChart } from '@moonwitness/ui/components/chart';
 import { toast } from '@moonwitness/ui/components/toast';
+import { jobsResourceState } from '@/lib/jobs-resource-state.mjs';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -90,6 +91,7 @@ export function DashboardPage() {
   const {
     data: jobsHealth,
     isLoading: jobsHealthLoading,
+    isError: jobsHealthError,
     refetch: refetchJobsHealth,
   } = useQuery({
     queryKey: scopedQueryKey(['admin', 'jobs', 'health']),
@@ -109,7 +111,12 @@ export function DashboardPage() {
     refetchInterval: 10000,
   });
 
-  const { data: adminCrons, isLoading: cronsLoading } = useQuery({
+  const {
+    data: adminCrons,
+    isLoading: cronsLoading,
+    isError: cronsError,
+    refetch: refetchCrons,
+  } = useQuery({
     queryKey: scopedQueryKey(['admin', 'crons']),
     queryFn: () =>
       client.request<{
@@ -147,7 +154,12 @@ export function DashboardPage() {
   };
 
   // Dead Letter Jobs & Outbox Event Queries (Admins)
-  const { data: deadJobs, isLoading: deadJobsLoading } = useQuery({
+  const {
+    data: deadJobs,
+    isLoading: deadJobsLoading,
+    isError: deadJobsError,
+    refetch: refetchDeadJobs,
+  } = useQuery({
     queryKey: scopedQueryKey(['admin', 'jobs', 'dead']),
     queryFn: () =>
       client.request<{
@@ -165,7 +177,12 @@ export function DashboardPage() {
     enabled: isAdmin,
   });
 
-  const { data: deadOutbox, isLoading: deadOutboxLoading } = useQuery({
+  const {
+    data: deadOutbox,
+    isLoading: deadOutboxLoading,
+    isError: deadOutboxError,
+    refetch: refetchDeadOutbox,
+  } = useQuery({
     queryKey: scopedQueryKey(['admin', 'outbox', 'dead']),
     queryFn: () =>
       client.request<{
@@ -187,6 +204,29 @@ export function DashboardPage() {
   const [failuresModalOpen, setFailuresModalOpen] = useState(false);
   const [failureTab, setFailureTab] = useState<'jobs' | 'outbox'>('jobs');
   const [actionInProgressId, setActionInProgressId] = useState<string | null>(null);
+  const jobsHealthState = jobsResourceState({
+    isLoading: jobsHealthLoading,
+    isError: jobsHealthError,
+    hasData: jobsHealth?.data !== undefined,
+  });
+  const cronsState = jobsResourceState({
+    isLoading: cronsLoading,
+    isError: cronsError,
+    hasData: adminCrons?.data !== undefined,
+    isEmpty: adminCrons?.data?.length === 0,
+  });
+  const deadJobsState = jobsResourceState({
+    isLoading: deadJobsLoading,
+    isError: deadJobsError,
+    hasData: deadJobs?.data !== undefined,
+    isEmpty: deadJobs?.data?.length === 0,
+  });
+  const deadOutboxState = jobsResourceState({
+    isLoading: deadOutboxLoading,
+    isError: deadOutboxError,
+    hasData: deadOutbox?.data !== undefined,
+    isEmpty: deadOutbox?.data?.length === 0,
+  });
 
   const handleRetryJob = async (jobId: number) => {
     try {
@@ -373,6 +413,7 @@ export function DashboardPage() {
                   {isAdmin ? 'System Audit Ledger Events' : 'Upcoming Planned Activities'}
                 </h2>
               </div>
+
               <span className="font-mono text-xs text-ink-faint">
                 {isAdmin ? 'Showing latest mutation diffs' : 'Your scheduled milestones'}
               </span>
@@ -520,12 +561,18 @@ export function DashboardPage() {
                 </div>
               </div>
 
+              {(jobsHealthState === 'error' || jobsHealthState === 'unavailable') && (
+                <p role="alert" className="font-mono text-xs text-destructive">
+                  Live worker telemetry is unavailable. Refresh Worker to retry.
+                </p>
+              )}
+
               {/* Quick Metrics Cards */}
               <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
                 <div className="border-2 border-ink bg-card p-3 font-mono">
                   <div className="text-[10px] uppercase text-ink-faint">Queued Jobs</div>
                   <div className="text-2xl font-display font-bold mt-1">
-                    {jobsHealthLoading ? '—' : (jobsHealth?.data?.queued ?? 0)}
+                    {jobsHealthState === 'ready' ? jobsHealth?.data?.queued : '—'}
                   </div>
                 </div>
 
@@ -537,7 +584,7 @@ export function DashboardPage() {
                     )}
                   </div>
                   <div className="text-2xl font-display font-bold mt-1 text-yellow-readable">
-                    {jobsHealthLoading ? '—' : (jobsHealth?.data?.running ?? 0)}
+                    {jobsHealthState === 'ready' ? jobsHealth?.data?.running : '—'}
                   </div>
                 </div>
 
@@ -564,14 +611,14 @@ export function DashboardPage() {
                       (jobsHealth?.data?.dead ?? 0) > 0 ? 'text-destructive' : 'text-ink'
                     )}
                   >
-                    {jobsHealthLoading ? '—' : (jobsHealth?.data?.dead ?? 0)}
+                    {jobsHealthState === 'ready' ? jobsHealth?.data?.dead : '—'}
                   </span>
                 </Button>
 
                 <div className="border-2 border-ink bg-card p-3 font-mono">
                   <div className="text-[10px] uppercase text-ink-faint">Outbox Pending</div>
                   <div className="text-2xl font-display font-bold mt-1">
-                    {jobsHealthLoading ? '—' : (jobsHealth?.data?.outboxPending ?? 0)}
+                    {jobsHealthState === 'ready' ? jobsHealth?.data?.outboxPending : '—'}
                   </div>
                 </div>
 
@@ -599,25 +646,31 @@ export function DashboardPage() {
                       (jobsHealth?.data?.outboxDead ?? 0) > 0 ? 'text-destructive' : 'text-ink'
                     )}
                   >
-                    {jobsHealthLoading ? '—' : (jobsHealth?.data?.outboxDead ?? 0)}
+                    {jobsHealthState === 'ready' ? jobsHealth?.data?.outboxDead : '—'}
                   </span>
                 </Button>
               </div>
 
-              <BarChart
-                title="Background job status distribution"
-                locale={readPreferences().language}
-                valueLabel="Jobs"
-                loading={jobsHealthLoading}
-                data={[
-                  { label: 'Queued', value: jobsHealth?.data?.queued ?? 0 },
-                  { label: 'Running', value: jobsHealth?.data?.running ?? 0 },
-                  { label: 'Dead', value: jobsHealth?.data?.dead ?? 0 },
-                  { label: 'Outbox pending', value: jobsHealth?.data?.outboxPending ?? 0 },
-                  { label: 'Outbox dead', value: jobsHealth?.data?.outboxDead ?? 0 },
-                ]}
-                className="border-2 border-ink bg-card p-4 font-mono"
-              />
+              {jobsHealthState === 'ready' ? (
+                <BarChart
+                  title="Background job status distribution"
+                  locale={readPreferences().language}
+                  valueLabel="Jobs"
+                  data={[
+                    { label: 'Queued', value: jobsHealth?.data?.queued ?? 0 },
+                    { label: 'Running', value: jobsHealth?.data?.running ?? 0 },
+                    { label: 'Dead', value: jobsHealth?.data?.dead ?? 0 },
+                    { label: 'Outbox pending', value: jobsHealth?.data?.outboxPending ?? 0 },
+                    { label: 'Outbox dead', value: jobsHealth?.data?.outboxDead ?? 0 },
+                  ]}
+                  className="border-2 border-ink bg-card p-4 font-mono"
+                />
+              ) : jobsHealthState === 'loading' ? (
+                <div
+                  aria-label="Loading job telemetry"
+                  className="h-36 border-2 border-ink/20 bg-card animate-pulse"
+                />
+              ) : null}
 
               {/* Scheduled Cron Tasks Section */}
               <div className="space-y-3 pt-2">
@@ -626,19 +679,33 @@ export function DashboardPage() {
                     <Layers className="size-3.5" /> Scheduled Crons & Automations
                   </span>
                   <span className="font-mono text-[10px] text-ink-faint">
-                    {adminCrons?.data?.length ?? 0} registered jobs
+                    {cronsState === 'ready' || cronsState === 'empty'
+                      ? `${adminCrons?.data?.length ?? 0} registered jobs`
+                      : cronsState === 'loading'
+                        ? 'Loading'
+                        : 'Unavailable'}
                   </span>
                 </div>
 
-                {cronsLoading ? (
+                {cronsState === 'loading' ? (
                   <div className="h-14 border-2 border-ink/20 bg-card animate-pulse" />
-                ) : !adminCrons?.data || adminCrons.data.length === 0 ? (
+                ) : cronsState === 'error' || cronsState === 'unavailable' ? (
+                  <div
+                    role="alert"
+                    className="flex items-center justify-between border-2 border-destructive/40 p-3 font-mono text-xs"
+                  >
+                    <span>Scheduled cron data is unavailable.</span>
+                    <Button size="sm" variant="outline" onClick={() => void refetchCrons()}>
+                      Retry
+                    </Button>
+                  </div>
+                ) : cronsState === 'empty' ? (
                   <p className="font-mono text-xs text-ink-faint py-3 text-center border-2 border-dashed border-ink/20">
                     No cron jobs registered.
                   </p>
                 ) : (
                   <div className="divide-y-2 divide-ink border-2 border-ink bg-card">
-                    {adminCrons.data.map((cron) => (
+                    {adminCrons?.data?.map((cron) => (
                       <div
                         key={cron.id}
                         className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-3 font-mono text-xs hover:bg-paper/40 transition-colors"
@@ -772,7 +839,11 @@ export function DashboardPage() {
                 failureTab === 'jobs' ? 'bg-ink text-paper' : 'text-ink-soft hover:bg-paper-raised'
               )}
             >
-              Dead Jobs ({deadJobs?.data?.length ?? 0})
+              Dead Jobs (
+              {deadJobsState === 'ready' || deadJobsState === 'empty'
+                ? (deadJobs?.data?.length ?? 0)
+                : '—'}
+              )
             </Button>
             <Button
               type="button"
@@ -784,21 +855,35 @@ export function DashboardPage() {
                   : 'text-ink-soft hover:bg-paper-raised'
               )}
             >
-              Dead Outbox Events ({deadOutbox?.data?.length ?? 0})
+              Dead Outbox Events (
+              {deadOutboxState === 'ready' || deadOutboxState === 'empty'
+                ? (deadOutbox?.data?.length ?? 0)
+                : '—'}
+              )
             </Button>
           </div>
 
           {/* Tab Content */}
           <div className="max-h-80 overflow-y-auto space-y-2.5 font-mono text-xs pr-1">
             {failureTab === 'jobs' ? (
-              deadJobsLoading ? (
+              deadJobsState === 'loading' ? (
                 <div className="p-8 text-center text-ink-faint">Loading dead jobs...</div>
-              ) : !deadJobs?.data || deadJobs.data.length === 0 ? (
+              ) : deadJobsState === 'error' || deadJobsState === 'unavailable' ? (
+                <div
+                  role="alert"
+                  className="flex items-center justify-between border-2 border-destructive/40 p-3"
+                >
+                  <span>Dead job data is unavailable.</span>
+                  <Button size="sm" variant="outline" onClick={() => void refetchDeadJobs()}>
+                    Retry
+                  </Button>
+                </div>
+              ) : deadJobsState === 'empty' ? (
                 <div className="p-8 text-center border-2 border-dashed border-ink/20 text-ink-faint">
                   ✓ No dead jobs in the dead-letter queue. Engine healthy.
                 </div>
               ) : (
-                deadJobs.data.map((job) => (
+                deadJobs?.data?.map((job) => (
                   <div
                     key={job.id}
                     className="border-2 border-ink bg-card p-3 shadow-ink-sm space-y-2"
@@ -852,14 +937,24 @@ export function DashboardPage() {
                   </div>
                 ))
               )
-            ) : deadOutboxLoading ? (
+            ) : deadOutboxState === 'loading' ? (
               <div className="p-8 text-center text-ink-faint">Loading outbox events...</div>
-            ) : !deadOutbox?.data || deadOutbox.data.length === 0 ? (
+            ) : deadOutboxState === 'error' || deadOutboxState === 'unavailable' ? (
+              <div
+                role="alert"
+                className="flex items-center justify-between border-2 border-destructive/40 p-3"
+              >
+                <span>Dead outbox data is unavailable.</span>
+                <Button size="sm" variant="outline" onClick={() => void refetchDeadOutbox()}>
+                  Retry
+                </Button>
+              </div>
+            ) : deadOutboxState === 'empty' ? (
               <div className="p-8 text-center border-2 border-dashed border-ink/20 text-ink-faint">
                 ✓ No dead outbox events detected. All transactions published.
               </div>
             ) : (
-              deadOutbox.data.map((event) => (
+              deadOutbox?.data?.map((event) => (
                 <div
                   key={event.id}
                   className="border-2 border-ink bg-card p-3 shadow-ink-sm space-y-2"

@@ -3502,7 +3502,7 @@
       "id": "W8-003",
       "phase": "W8",
       "title": "Implement visual coverage for jobs addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -3527,7 +3527,7 @@
         "Empty/loading/error/permission-denied/zero/unavailable states are distinct where applicable.",
         "Artwork remains decorative; labels, state and actions are real UI data.",
         "New assets include provenance and are registered in canonical manifest.",
-        "If a route does not exist, provide a labelled UI Catalog specimen and document the missing production consumer rather than inventing the route."
+        "If no production consumer exists, provide a labelled UI Catalog specimen and document that gap; when a verified consumer exists, document and reuse it without inventing routes."
       ],
       "verification": [
         "pnpm board:ui:check",
@@ -3537,8 +3537,34 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Revalidated the existing admin-only dashboard and its role-checked API routes; distinct loading, error, unavailable, empty and populated states are now implemented. Catalog specimen was unnecessary because a real dashboard consumer exists. No new artwork was needed; canonical shared assets remain reused.",
+      "evidence": [
+        {
+          "exit_code": 0,
+          "artifact": "scripts/board/jobs-resource-state.test.mjs",
+          "command": "node --test scripts/board/jobs-resource-state.test.mjs"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "apps/board/src/board-pages/dashboard-page.tsx",
+          "command": "pnpm --filter @moonwitness/board typecheck"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "scripts/check-board-shared-ui.mjs",
+          "command": "pnpm board:ui:check"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "packages/assets/tests",
+          "command": "pnpm test:assets"
+        },
+        {
+          "exit_code": 0,
+          "artifact": "apps/ui-catalog/tests/catalog.spec.ts",
+          "command": "pnpm test:ui-catalog"
+        }
+      ],
       "commit": null
     },
     {
