@@ -7,6 +7,12 @@ import { AUDIT_TASKS } from './sources/audit-tasks.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
+export function mapEvolutionStatus(sourceStatus) {
+  if (sourceStatus === 'completed') return 'done';
+  if (sourceStatus === 'active') return 'doing';
+  throw new Error(`Unsupported evolution backlog status "${sourceStatus}". Add an explicit mapping before importing.`);
+}
+
 
 
 export async function sweepAndConsolidate({
@@ -331,9 +337,21 @@ export async function sweepAndConsolidate({
   try {
     const evoText = await fs.readFile(path.join(rootDir, 'evolution/backlog.json'), 'utf8');
     const evo = JSON.parse(evoText);
-    for (const candidate of evo.candidates ?? []) {
-      const isDone = candidate.status === 'completed';
-      const status = isDone ? 'done' : candidate.status === 'active' ? 'doing' : 'todo';
+    if (!Array.isArray(evo.candidates) || evo.candidates.length !== 4) {
+      throw new Error('Evolution backlog must contain exactly four reviewed candidate records.');
+    }
+    for (const candidate of evo.candidates) {
+      if (
+        !candidate ||
+        typeof candidate.id !== 'string' ||
+        !candidate.id.trim() ||
+        typeof candidate.title !== 'string' ||
+        !candidate.title.trim()
+      ) {
+        throw new Error('Evolution backlog contains a record without a stable ID and title.');
+      }
+      const status = mapEvolutionStatus(candidate.status);
+      const isDone = status === 'done';
       addTask({
         code: candidate.id,
         project: 'moonwitness',
