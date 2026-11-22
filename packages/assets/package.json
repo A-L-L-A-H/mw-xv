@@ -18,6 +18,8 @@
   },
   "files": [
     "brand",
+    "!brand/source/**",
+    "!source/**",
     "fonts",
     "fonts.css",
     "icons",
