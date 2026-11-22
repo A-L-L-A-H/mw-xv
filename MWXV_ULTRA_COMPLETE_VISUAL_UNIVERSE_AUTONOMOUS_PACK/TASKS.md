@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 19 · skipped 1 · in_progress 1 · blocked 0 · todo 88.
+Status counts: done 19 · skipped 2 · in_progress 1 · blocked 0 · todo 87.
 
 ## W0
 
@@ -439,12 +439,13 @@ Status counts: done 19 · skipped 1 · in_progress 1 · blocked 0 · todo 88.
   - Acceptance: Transitions are interruptible and do not block navigation.; Keyboard and reduced-motion work.; No content remains hidden on animation failure.
   - Verify: pnpm test:ui-catalog
 
-- [ ] **W6-005 — Create environment ambience pack**
+- [x] **W6-005 — Create environment ambience pack** — **SKIPPED:** Existing localized UI sound consent and provenance are verified in evidence/audio-consent-audit.md. The distinct scene ambience deliverable is not authorized/generated: W1-001 canonical art direction and W2-003 soundscape provenance contract are still gated/uncompleted, and no additional ambience asset is claimed. Reopen when the dependent scene audio contract is approved.
   - Goal: Create/procure approved short ambient loops and document provenance.
   - Depends on: W1-007, W2-003
   - Deliverables: Optional ambience masters and optimized variants.
   - Acceptance: No copyrighted music or unlicensed sound effects.; User must explicitly enable ambience.; Audio is lazy-loaded and has mute/stop lifecycle.
   - Verify: audio tests; provenance validation
+  - Evidence: `pnpm test:assets` (0) → `27 asset tests, canonical audio provenance and short PCM budget passed`; `pnpm test:ui` (0) → `audio interaction-consent tests passed within 59 UI tests`
 
 - [ ] **W6-006 — Implement scene soundscape controller**
   - Goal: Integrate optional scene ambience without coupling playback to hover/scroll.

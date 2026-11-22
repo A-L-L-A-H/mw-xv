@@ -2316,7 +2316,7 @@
       "id": "W6-005",
       "phase": "W6",
       "title": "Create environment ambience pack",
-      "status": "todo",
+      "status": "skipped",
       "priority": "P1",
       "role": "sound-designer",
       "parallel_group": "serial",
@@ -2343,8 +2343,19 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "",
-      "evidence": [],
+      "notes": "Existing localized UI sound consent and provenance are verified in evidence/audio-consent-audit.md. The distinct scene ambience deliverable is not authorized/generated: W1-001 canonical art direction and W2-003 soundscape provenance contract are still gated/uncompleted, and no additional ambience asset is claimed. Reopen when the dependent scene audio contract is approved.",
+      "evidence": [
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "27 asset tests, canonical audio provenance and short PCM budget passed"
+        },
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "audio interaction-consent tests passed within 59 UI tests"
+        }
+      ],
       "commit": null
     },
     {
