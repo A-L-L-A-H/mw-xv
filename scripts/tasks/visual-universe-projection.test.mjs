@@ -134,3 +134,21 @@ test('canonical empty fields do not resurrect stale source metadata', () => {
   assert.equal(projected.commit, null);
   assert.deepEqual(projected.evidence, []);
 });
+
+test('Visual Universe projection preserves per-criterion TaskOS completion state', () => {
+  const source = sampleTask({
+    acceptanceCriteria: [
+      { id: 'W0-001-ac-1', text: 'Inspect current branch', done: true },
+      { id: 'W0-001-ac-2', text: 'Run focused tests', done: false },
+    ],
+  });
+  const projected = projectVisualUniverseTask(source);
+  assert.deepEqual(projected.acceptance_criteria, [
+    'Inspect current branch',
+    'Run focused tests',
+  ]);
+  assert.deepEqual(projected.acceptance_criteria_state, [
+    { id: 'W0-001-ac-1', text: 'Inspect current branch', done: true },
+    { id: 'W0-001-ac-2', text: 'Run focused tests', done: false },
+  ]);
+});
