@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { AccessDeniedError, ValidationError } from '@moonwitness/types';
+import type { LocalTodoTaskSnapshot } from '@moonwitness/orm-project';
 import { redactSensitiveText } from './risk-gate.js';
 import type {
   DesktopArtifactUploadRequest,
@@ -230,6 +231,84 @@ export class DesktopUpstreamSyncClient implements UpstreamPcwSyncTransport {
         message: redactSensitiveText(rawMessage, this.knownSecrets).text,
       };
     }
+  }
+
+  async syncTodoTasksToProject(
+    projectId: number,
+    tasks: readonly LocalTodoTaskSnapshot[],
+    defaultStageId?: number
+  ): Promise<{ imported: number; updated: number; snapshots: readonly LocalTodoTaskSnapshot[] }> {
+    if (!Number.isSafeInteger(projectId) || projectId <= 0) {
+      throw new ValidationError('projectId must be a positive integer');
+    }
+    const response = await this.requestWithRetry(`/api/projects/${projectId}/todo-sync`, {
+      method: 'POST',
+      body: JSON.stringify({ default_stage_id: defaultStageId, tasks }),
+    });
+    if (!response.ok) {
+      const detail = await this.readSafeErrorText(response);
+      throw new ValidationError(`Todo sync failed (${response.status}): ${detail}`);
+    }
+    const result = (await response.json()) as {
+      success: boolean;
+      data: { imported: number; updated: number; snapshots: readonly LocalTodoTaskSnapshot[] };
+    };
+    return result.data;
+  }
+
+  async dispatchTaskWorkContract(
+    taskId: number,
+    options?: { riskTier?: string; assignedAgentId?: number }
+  ): Promise<{ workContractId: number; code: string; status: string; created: boolean }> {
+    if (!Number.isSafeInteger(taskId) || taskId <= 0) {
+      throw new ValidationError('taskId must be a positive integer');
+    }
+    const response = await this.requestWithRetry(`/api/projects/tasks/${taskId}/work-contract`, {
+      method: 'POST',
+      body: JSON.stringify(options ?? {}),
+    });
+    if (!response.ok) {
+      const detail = await this.readSafeErrorText(response);
+      throw new ValidationError(`WorkContract dispatch failed (${response.status}): ${detail}`);
+    }
+    const result = (await response.json()) as {
+      success: boolean;
+      created: boolean;
+      data: { id: number; code: string; status: string };
+    };
+    return {
+      workContractId: result.data.id,
+      code: result.data.code,
+      status: result.data.status,
+      created: result.created,
+    };
+  }
+
+  async syncTaskWorkContractStage(
+    taskId: number
+  ): Promise<{ advanced: boolean; taskStatus: string; workContractStatus: string }> {
+    if (!Number.isSafeInteger(taskId) || taskId <= 0) {
+      throw new ValidationError('taskId must be a positive integer');
+    }
+    const response = await this.requestWithRetry(
+      `/api/projects/tasks/${taskId}/work-contract/sync-stage`,
+      {
+        method: 'POST',
+      }
+    );
+    if (!response.ok) {
+      const detail = await this.readSafeErrorText(response);
+      throw new ValidationError(`Stage sync failed (${response.status}): ${detail}`);
+    }
+    const result = (await response.json()) as {
+      success: boolean;
+      data: { advanced: boolean; task: { status: string }; work_contract: { status: string } };
+    };
+    return {
+      advanced: result.data.advanced,
+      taskStatus: result.data.task.status,
+      workContractStatus: result.data.work_contract.status,
+    };
   }
 
   getQuarantinedEnvelopes(): readonly QuarantinedEnvelopeRecord[] {

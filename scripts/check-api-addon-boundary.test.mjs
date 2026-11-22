@@ -86,7 +86,7 @@ test('forbids new custom route files in apps/api/src/routes and requires manifes
   assert.deepEqual(allowedCoreRoute, []);
 
   const allowedLegacyImport = findApiAddonBoundaryViolations(
-    `import { projectRoutes } from '../routes/project.routes.js';`,
+    `import { corpusRoutes } from '../routes/corpus.routes.js';`,
     'apps/api/src/addons/registry.ts'
   );
   assert.deepEqual(allowedLegacyImport, []);

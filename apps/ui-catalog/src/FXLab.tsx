@@ -14,6 +14,10 @@ import {
   type SceneAmbienceId,
 } from '@moonwitness/ui/lib/scene-soundscape';
 import { getActiveSceneHarness } from '@moonwitness/ui/lib/scene-test-harness';
+import moonCityNightAmbience from '@moonwitness/assets/sounds/ambience-moon-city-night.wav';
+import undergroundHumAmbience from '@moonwitness/assets/sounds/ambience-underground-hum.wav';
+import archiveQuietAmbience from '@moonwitness/assets/sounds/ambience-archive-quiet.wav';
+import streetRainAmbience from '@moonwitness/assets/sounds/ambience-street-rain.wav';
 
 export function FXLab() {
   const harness = getActiveSceneHarness() ?? {};
@@ -42,14 +46,25 @@ export function FXLab() {
     prefersReducedMotion ||
     (typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const soundscapeRef = useMemo(() => createSceneSoundscapeController({ maxVolume: 0.18 }), []);
+  const soundscapeRef = useMemo(
+    () => createSceneSoundscapeController({
+      maxVolume: 0.18,
+      sources: {
+        'moon-city-night': moonCityNightAmbience,
+        'underground-hum': undergroundHumAmbience,
+        'archive-quiet': archiveQuietAmbience,
+        'street-rain': streetRainAmbience,
+      },
+    }),
+    []
+  );
 
   useEffect(() => {
-    if (harness.reducedMotion) {
+    if (reducedMotion) {
       soundscapeRef.setMuted(true);
     }
     return () => soundscapeRef.dispose();
-  }, [harness.reducedMotion, soundscapeRef]);
+  }, [reducedMotion, soundscapeRef]);
 
   const handleActivateAudio = () => {
     soundscapeRef.activateUserGesture();
@@ -60,9 +75,11 @@ export function FXLab() {
   const handleTransitionCancel = () => setTransitionState('cancelled');
 
   useEffect(() => {
-    if (!userActivated || muted) return;
+    if (!userActivated) return;
     soundscapeRef.setMuted(muted);
+    if (muted) return;
     if (ambience) soundscapeRef.enterScene(ambience);
+    else soundscapeRef.stop();
   }, [ambience, muted, userActivated, soundscapeRef]);
 
   const triggerTransition = () => {

@@ -37,6 +37,143 @@ export interface DesktopWorktreeDiffSummary {
   readonly files: readonly DesktopWorktreeDiffFile[];
   readonly patch: string;
   readonly patchSha256: string;
+  readonly outOfScopeFiles?: readonly string[];
+  readonly scopeClean?: boolean;
+}
+
+export interface DesktopRepoGitRevision {
+  readonly headCommit: string | null;
+  readonly branch: string | null;
+  readonly dirty: boolean;
+  readonly capturedAt?: string;
+}
+
+export interface DesktopRepoSnapshotRequest {
+  readonly targetPath?: string;
+  readonly maxFiles?: number;
+  readonly maxManifestBytes?: number;
+  readonly maxDocHeadings?: number;
+}
+
+export interface DesktopRepoSnapshot {
+  readonly schemaVersion: 1;
+  readonly rootLabel: string;
+  readonly capturedAt: string;
+  readonly gitRevision: DesktopRepoGitRevision | null;
+  readonly scannedFileCount: number;
+  readonly manifests: readonly {
+    readonly path: string;
+    readonly kind: string;
+    readonly sha256: string;
+    readonly name?: string;
+    readonly version?: string;
+  }[];
+  readonly scripts: readonly {
+    readonly manifestPath: string;
+    readonly name: string;
+    readonly command: string;
+  }[];
+  readonly docs: readonly {
+    readonly path: string;
+    readonly title: string | null;
+    readonly headings: readonly string[];
+  }[];
+  readonly entryPoints: readonly {
+    readonly path: string;
+    readonly sha256: string;
+  }[];
+  readonly incomplete: boolean;
+  readonly omittedReasons: readonly string[];
+  readonly contentSha256: string;
+  readonly snapshotSha256: string;
+}
+
+export type DesktopOverlapStatus =
+  'implemented' | 'partial' | 'missing' | 'overlapping' | 'conflicting' | 'deprecated';
+
+export interface DesktopOverlapRequirementInput {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly targetPaths?: readonly string[];
+  readonly keywords?: readonly string[];
+}
+
+export interface DesktopOverlapFinding {
+  readonly requirementId: string;
+  readonly requirementTitle: string;
+  readonly status: DesktopOverlapStatus;
+  readonly confidenceBps: number;
+  readonly likelyOwners: readonly string[];
+  readonly evidence: readonly {
+    readonly source: string;
+    readonly path: string;
+    readonly sha256?: string;
+    readonly lineNumber?: number;
+    readonly excerpt: string;
+  }[];
+  readonly requiresHumanReview: boolean;
+  readonly rationale: string;
+  readonly advisoryOnly: true;
+}
+
+export interface DesktopOverlapReport {
+  readonly schemaVersion: 1;
+  readonly companyId: number;
+  readonly capturedAt: string;
+  readonly repoSnapshotSha256: string;
+  readonly findings: readonly DesktopOverlapFinding[];
+  readonly summary: Readonly<Record<DesktopOverlapStatus, number>>;
+  readonly requiresHumanReviewCount: number;
+  readonly advisoryOnly: true;
+  readonly automatedMutationsAllowed: false;
+  readonly contentSha256: string;
+  readonly reportSha256: string;
+}
+
+export interface DesktopExecutionPacketRequest {
+  readonly contract: {
+    readonly id: string | number;
+    readonly code: string;
+    readonly companyId: number;
+    readonly title: string;
+    readonly objective: string;
+    readonly scopePaths: readonly string[];
+    readonly riskTier: DesktopRiskTier;
+    readonly dataClassification: DesktopDataClassification;
+    readonly criteriaLockedAt?: string | null;
+    readonly criteria: readonly {
+      readonly code: string;
+      readonly title: string;
+      readonly verificationMethod:
+        | 'automated_test'
+        | 'schema_check'
+        | 'source_inspection'
+        | 'independent_reviewer'
+        | 'human_decision';
+      readonly requiredEvidenceType: string;
+      readonly mandatory: boolean;
+      readonly command?: string;
+    }[];
+  };
+  readonly allowedCapabilities: readonly string[];
+  readonly verificationCommands: readonly string[];
+  readonly targetBranch?: string;
+  readonly snapshotOptions?: DesktopRepoSnapshotRequest;
+}
+
+export interface DesktopCompiledExecutionPacket {
+  readonly schemaVersion: 1;
+  readonly contractId: string;
+  readonly contractCode: string;
+  readonly riskTier: DesktopRiskTier;
+  readonly targetBranch: string | null;
+  readonly repoRevision: DesktopRepoGitRevision | null;
+  readonly repoSnapshotSha256: string;
+  readonly markdown: string;
+  readonly contentSha256: string;
+  readonly packetSha256: string;
+  readonly compiledAt: string;
 }
 
 export interface DesktopRiskAuditRecord {
@@ -135,6 +272,19 @@ export interface DesktopCapabilityBridge {
     diff(runId: string): Promise<DesktopWorktreeDiffSummary>;
     readFile?(runId: string, relativePath: string): Promise<string>;
     release(runId: string): Promise<DesktopGitWorktreeLease>;
+    repoSnapshot?(
+      runId: string,
+      options?: DesktopRepoSnapshotRequest
+    ): Promise<DesktopRepoSnapshot>;
+    detectOverlap?(
+      runId: string,
+      requirements: readonly DesktopOverlapRequirementInput[],
+      options?: DesktopRepoSnapshotRequest
+    ): Promise<DesktopOverlapReport>;
+    compileExecutionPacket?(
+      runId: string,
+      request: DesktopExecutionPacketRequest
+    ): Promise<DesktopCompiledExecutionPacket>;
   };
   readonly pty?: {
     stop?(runId: string): Promise<void> | void;

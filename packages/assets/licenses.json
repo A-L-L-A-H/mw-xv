@@ -96,6 +96,34 @@
   "notes": "Upstream SIL Open Font License 1.1 texts are included in fonts/OFL-Anton.txt, fonts/OFL-SpaceGrotesk.txt, fonts/OFL-JetBrainsMono.txt, and fonts/OFL-RoadRage.txt. Road Rage's upstream TTF is retained under source/fonts and subsetted to WOFF2 for display use; hashes are recorded above.",
   "soundEffects": [
     {
+      "path": "sounds/ambience-archive-quiet.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-scene-ambience.mjs",
+      "license": "ISC",
+      "modifications": "Original synthesized near-silent room tone; no clocks, voices, field recordings, or music."
+    },
+    {
+      "path": "sounds/ambience-moon-city-night.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-scene-ambience.mjs",
+      "license": "ISC",
+      "modifications": "Original synthesized night-air and distant electrical hum; no field recordings or music."
+    },
+    {
+      "path": "sounds/ambience-street-rain.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-scene-ambience.mjs",
+      "license": "ISC",
+      "modifications": "Original synthesized soft rain texture with no thunder, voices, field recordings, or music."
+    },
+    {
+      "path": "sounds/ambience-underground-hum.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-scene-ambience.mjs",
+      "license": "ISC",
+      "modifications": "Original synthesized low ventilation resonance and soft room noise; no field recordings or music."
+    },
+    {
       "path": "sounds/ui-alert.wav",
       "creator": "MoonWitness contributors",
       "source": "packages/assets/scripts/generate-sounds.mjs",

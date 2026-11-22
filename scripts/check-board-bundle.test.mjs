@@ -1,10 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  listInterfaceAudioPaths,
   measureNextRouteAssets,
   parseNextClientManifest,
   renderNextBudgetReport,
 } from './check-board-bundle.mjs';
+
+test('interface audio budget excludes scene ambience from the asset manifest', () => {
+  assert.deepEqual(
+    listInterfaceAudioPaths([
+      { kind: 'sound', variant: 'ui', path: 'sounds/ui-alert.wav' },
+      { kind: 'sound', variant: 'scene-ambience', path: 'sounds/ambience-moon-city-night.wav' },
+      { kind: 'illustration', variant: 'ui', path: 'illustrations/panel.webp' },
+    ]),
+    ['sounds/ui-alert.wav']
+  );
+});
 
 const limit = { maxRawBytes: 100, maxGzipBytes: 100 };
 const budget = {

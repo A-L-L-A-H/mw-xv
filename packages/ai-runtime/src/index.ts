@@ -20,6 +20,8 @@ export * from './risk-policy.js';
 export * from './capability-gateway.js';
 export * from './mcp-server.js';
 export * from './pcw-verifier.js';
+export * from './plan-markdown.js';
+export * from './memory-doc-proposal.js';
 export * from './workforce-planner.js';
 export * from './memory-evaluator.js';
 export * from './capability-gates.js';

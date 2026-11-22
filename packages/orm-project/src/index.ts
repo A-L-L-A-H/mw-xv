@@ -1,4 +1,5 @@
 export { manifest } from './manifest.js';
+export { projectHttpPlugin } from './http-plugin.js';
 export {
   MILESTONE_STATUSES,
   PROJECT_STATUSES,

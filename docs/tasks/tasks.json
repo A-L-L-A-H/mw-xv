@@ -1,7 +1,7 @@
 {
   "schemaVersion": "2.0.0",
   "format": "moonwitness-tasks/v2",
-  "generatedAt": "2026-11-22T01:27:17.025Z",
+  "generatedAt": "2026-11-23T00:05:00+07:00",
   "projects": [
     {
       "slug": "moonwitness",
@@ -8741,6 +8741,292 @@
       "sourceRef": {
         "file": "docs/roadmap/tasks.json",
         "legacyId": "M13.04"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "M13.05",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Gate WorkContract creation on project-task dependency readiness.",
+      "summary": "Prevent creating a new AI WorkContract for a project task with active unresolved blocking dependencies.",
+      "problem": "The Projects board computes a dependency DAG and marks tasks blocked, but POST /projects/tasks/:id/work-contract does not check readiness before creating a WorkContract.",
+      "proposedSolution": "Add a tenant-scoped server-side readiness check to the existing route using buildProjectDependencyGraph and active project task/dependency records. Preserve idempotency and use existing transaction/locking conventions.",
+      "category": "bug",
+      "type": "fix",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "medium",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.04"],
+      "blocks": [],
+      "tags": ["m", "desktop", "rock-soul-flow", "task-deck"],
+      "scope": {
+        "packages": ["@moonwitness/api", "@moonwitness/orm-project"],
+        "files": [
+          "packages/orm-project/src/http-plugin.ts",
+          "apps/api/tests/project.routes.test.ts",
+          "docs/roadmap/14-desktop-engineering.md",
+          "docs/roadmap/evidence/M13.05.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.05-ac-1",
+          "text": "A new WorkContract cannot be created for a task that is not ready in the canonical project dependency DAG; an existing linked contract remains idempotently readable and is not silently cancelled by this creation endpoint.",
+          "done": true
+        },
+        {
+          "id": "M13.05-ac-2",
+          "text": "Only active blocks edges whose blocker is not done or cancelled block readiness; inactive edges and relates_to links do not.",
+          "done": true
+        },
+        {
+          "id": "M13.05-ac-3",
+          "text": "The check is tenant/company scoped, returns a stable blocked reason, and does not disclose another company's task or dependency details.",
+          "done": true
+        },
+        {
+          "id": "M13.05-ac-4",
+          "text": "Tests cover blocked creation denial, ready creation, existing-contract idempotency, dependency-edge semantics, and company isolation; the existing fixture that creates a WorkContract for blocked task2 is updated to use a ready task.",
+          "done": true
+        },
+        {
+          "id": "M13.05-ac-5",
+          "text": "Dependency readiness is revalidated within the safe creation transaction/locking boundary where supported; any remaining race window is explicitly documented.",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/api exec vitest run tests/project.routes.test.ts",
+          "pnpm --filter @moonwitness/api build"
+        ],
+        "expected": "Focused Project route tests and API build pass on the exact task SHA. Add PostgreSQL/concurrency tests if transaction or locking semantics change."
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.05.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": "a6f685d"
+      },
+      "references": [
+        "docs/architecture/rock-soul-flow-reuse-map.md",
+        "packages/orm-project/src/sync.ts",
+        "packages/orm-project/src/http-plugin.ts",
+        "apps/api/tests/project.routes.test.ts"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.05"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "M13.06",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Proof Gate v2 — 5-state check matrix & worktree diff-scope drift guard.",
+      "summary": "Proof Gate v2 — 5-state check matrix & worktree diff-scope drift guard.",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "packages/ai-runtime/src/pcw-verifier.ts, apps/desktop/src/worktree-sandbox.ts, and docs/roadmap/evidence/M13.06.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "low",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.02", "M13.04", "M13.05"],
+      "blocks": [],
+      "tags": ["m", "desktop", "rock-soul-flow", "proof-gate"],
+      "scope": {
+        "packages": ["@moonwitness/ai-runtime", "@moonwitness/desktop"],
+        "files": [
+          "packages/ai-runtime/src/pcw-verifier.ts",
+          "packages/ai-runtime/tests/pcw-proof-gate.test.ts",
+          "apps/desktop/src/types.ts",
+          "apps/desktop/src/worktree-sandbox.ts",
+          "apps/desktop/tests/desktop-harness.test.ts",
+          "docs/roadmap/evidence/M13.06.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.06-ac-1",
+          "text": "PCW Proof Gate enforces a 5-state check matrix (pass, fail, skipped, not_applicable, not_run) and validateDiffScope drift guard with Desktop inspectDiff scopeClean/outOfScopeFiles reporting",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ai-runtime exec vitest run tests/pcw-proof-gate.test.ts",
+          "pnpm --filter @moonwitness/desktop exec vitest run --no-file-parallelism"
+        ],
+        "expected": "Proof Gate v2 unit tests and Desktop diff-scope tests pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.06.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": "0ef6e9b"
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/rock-soul-flow-reuse-map.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.06"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "M13.07",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Desktop R0 Overlap Detector bridge, Board Cockpit parity, and INV-014 workflow/project HTTP plugin migration.",
+      "summary": "Desktop R0 Overlap Detector bridge, Board Cockpit parity, and INV-014 workflow/project HTTP plugin migration.",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "packages/orm-workflow/src/http-plugin.ts, packages/orm-project/src/http-plugin.ts, apps/desktop/src/bridge.ts, apps/board/src/components/ai/desktop-harness-drawer.tsx, and docs/roadmap/evidence/M13.07.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "low",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.03", "M13.05", "M13.06"],
+      "blocks": [],
+      "tags": ["m", "desktop", "rock-soul-flow", "cockpit"],
+      "scope": {
+        "packages": [
+          "@moonwitness/orm",
+          "@moonwitness/orm-workflow",
+          "@moonwitness/orm-project",
+          "@moonwitness/api",
+          "@moonwitness/desktop",
+          "@moonwitness/board"
+        ],
+        "files": [
+          "packages/orm/src/addon.ts",
+          "packages/orm-workflow/src/http-plugin.ts",
+          "packages/orm-project/src/http-plugin.ts",
+          "apps/api/src/addons/registry.ts",
+          "apps/desktop/src/bridge.ts",
+          "apps/board/src/lib/desktop-bridge.ts",
+          "apps/board/src/components/ai/desktop-harness-drawer.tsx",
+          "scripts/check-api-addon-boundary.mjs",
+          "docs/roadmap/evidence/M13.07.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.07-ac-1",
+          "text": "Desktop bridge exposes R0 detectOverlap, Board cockpit drawer renders Radar/Packet/Drift UI cleanly, and workflow/project routes run through ORM manifest.httpPlugins passing api:addon:check, board:ui:check, and desktop:ui:check",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": ["pnpm api:addon:check", "pnpm board:ui:check", "pnpm desktop:ui:check"],
+        "expected": "Addon HTTP plugin boundary checks, UI checks, and Desktop/API suites pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.07.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": "8bd9755"
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/rock-soul-flow-reuse-map.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.07"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "M13.08",
+      "project": "moonwitness",
+      "series": "M",
+      "milestone": "M13",
+      "horizon": "now",
+      "title": "Plan Forge Markdown projection/reconciler & Memory Ledger doc-proposal export.",
+      "summary": "Plan Forge Markdown projection/reconciler & Memory Ledger doc-proposal export.",
+      "problem": "Roadmap requirement defined in docs/roadmap/14-desktop-engineering.md",
+      "proposedSolution": "packages/ai-runtime/src/plan-markdown.ts, packages/ai-runtime/src/memory-doc-proposal.ts, and docs/roadmap/evidence/M13.08.md",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "done",
+      "human": false,
+      "owner": null,
+      "assignee": null,
+      "risk": "low",
+      "effort": "m",
+      "scores": null,
+      "dependsOn": ["M13.04", "M13.06", "M13.07"],
+      "blocks": [],
+      "tags": ["m", "desktop", "rock-soul-flow"],
+      "scope": {
+        "packages": ["@moonwitness/ai-runtime"],
+        "files": [
+          "packages/ai-runtime/src/plan-markdown.ts",
+          "packages/ai-runtime/src/memory-doc-proposal.ts",
+          "packages/ai-runtime/src/index.ts",
+          "packages/ai-runtime/tests/plan-markdown.test.ts",
+          "packages/ai-runtime/tests/memory-doc-proposal.test.ts",
+          "docs/roadmap/evidence/M13.08.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "M13.08-ac-1",
+          "text": "Deterministic Plan Forge Markdown projection/reconciler protects completed tasks without a second DB, and Memory Ledger doc-proposal export emits redacted human-approved unified diffs",
+          "done": true
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ai-runtime exec vitest run tests/plan-markdown.test.ts tests/memory-doc-proposal.test.ts"
+        ],
+        "expected": "Plan Forge and Memory Ledger unit tests pass"
+      },
+      "evidence": {
+        "paths": ["docs/roadmap/evidence/M13.08.md"],
+        "detailFile": "docs/roadmap/14-desktop-engineering.md",
+        "commitSha": "0ef6e9b"
+      },
+      "references": [
+        "docs/roadmap/14-desktop-engineering.md",
+        "docs/architecture/rock-soul-flow-reuse-map.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "docs/roadmap/tasks.json",
+        "legacyId": "M13.08"
       },
       "url": "",
       "comments": []

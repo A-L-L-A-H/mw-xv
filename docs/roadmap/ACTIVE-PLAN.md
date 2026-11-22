@@ -1,8 +1,16 @@
 # Jalur rilis aktif
 
-Diperbarui 2026-11-22. Goal penuh: 231 task (166 M-series + 65 K-series); seluruh task dan acceptance M0–M12/K0–K9 dipertahankan. M13 adalah workstream Desktop Engineering terpisah, bukan release blocker. Gunakan `pnpm roadmap:progress -- --format json` untuk jumlah terkini, bukan snapshot angka dalam dokumen.
+## Checkpoint aktual — 2026-11-23 (source of truth: remote branch heads)
 
-## Checkpoint kerja saat ini — 2026-10-23
+- **`dev` first observed:** `7871a592db5488eafbaeeb0bfbbdc079a4231cfe`; intervening non-overlapping commits, including `a58a43327fbc9267a9840bb65b0ad2735b069907` (`docs(ui): document addon visual handoff`), were preserved. **`main`:** `c9df672332540639981180b38ab8c675d8964a80`. Common merge base: `a6cd74a6f189e7ea053b046e94a06ea2d36530fc`. The branch refs are diverged: the initial compare showed `main` 17 commits and `dev` 2 commits beyond the common base; fetch the latest refs before any promotion. Do not merge/rebase or force-push as part of M13.05; use M1.09 for a separate main→dev synchronization and full diff review. Tidak ada merge/rebase/force-push dalam batch ini. Sinkronisasi main→dev harus mengikuti M1.09 dan review diff khusus sebelum promosi berikutnya.
+- **Master roadmap:** 235 task (170 M-series + 65 K-series); 153 checkbox selesai dan 82 terbuka (49 M-series + 33 K-series). Canonical TaskOS `docs/tasks/tasks.json` adalah sumber status; metadata `docs/roadmap/tasks.json` diselaraskan terhadap status kanonik saat konsolidasi.
+- **Release gate:** M12.14 masih `in_progress` pada task index dan status `doing` di TaskOS; evidence M12.14 masih menyebut PR.14 menunggu persetujuan maintainer/CODEOWNER. PR #30 menggabungkan `dev` head lama `a6cd74a`, bukan head `dev` saat checkpoint ini. Jangan simpulkan status rilis dari merge PR #30 saja; rekonsiliasi current SHA, approval dan required checks sebelum promosi.
+- **Desktop / ROCKSOUL FLOW:** M13.01–M13.04 complete dengan evidence. M13.05 baru terdaftar sebagai `todo`: gate server-side WorkContract creation terhadap project dependency readiness. M13 tidak menjadi release blocker dan tidak memberi izin deployment.
+- **Sumber legacy:** keputusan K0-006 tetap mengikat: clean-room rebuild dari requirement, tanpa impor kode/data/aset legacy, dan tanpa runtime dependency ke `bjo163/*`. Inventaris 148 repository tetap sebatas metadata publik; bukan audit source, rights, privacy dan private-resource lengkap.
+
+Diperbarui 2026-11-23. Goal penuh: 232 task (167 M-series + 65 K-series); seluruh task dan acceptance M0–M12/K0–K9 dipertahankan. M13 adalah workstream Desktop Engineering terpisah, bukan release blocker. Gunakan `pnpm roadmap:progress -- --format json` untuk jumlah terkini, bukan snapshot angka dalam dokumen.
+
+## Checkpoint historis — 2026-10-23
 
 - Cross-check 44 issue terbuka terhadap `dev` tercatat pada [evidence/issue-audit-2026-10-23.md](evidence/issue-audit-2026-10-23.md): tidak ada issue yang bisa ditutup hari ini, 20 punya delta yang dapat dikerjakan lokal, dan 24 menunggu aksi pemilik.
 - Lane merah yang dapat direproduksi lokal sudah ditutup: LF checkout dan cakupan lint pada `c758ba0`, drift Prettier pada `8c5c1fe`, referensi generated pada `296bd8b`.
@@ -110,7 +118,7 @@ Workstream tunggal untuk mengimplementasikan AI Corporation secara Addon-First d
 ## Workstream terpisah yang diaktifkan maintainer — M13 Desktop Engineering
 
 - **Aktivasi:** 2026-11-22, melalui M13.01. Workstream ini tidak mengubah jalur rilis pertama, tidak menambah release blocker, dan tidak mengizinkan deployment aplikasi.
-- **Scope aktif:** hanya audit read-only ROCKSOUL FLOW dan pemilihan satu vertical slice berbasis gap nyata. Detail: [14-desktop-engineering.md](14-desktop-engineering.md); handoff: [rock-soul-flow-codex-handoff.md](rock-soul-flow-codex-handoff.md).
+- **Scope aktif:** M13.01–M13.04 complete; task berikutnya M13.05 adalah gate dependency untuk WorkContract baru. M13.06+ tetap kandidat bersyarat setelah hasil dan gap aktual direview. Detail: [14-desktop-engineering.md](14-desktop-engineering.md); handoff M13.05: [rock-soul-flow-m13-05-handoff.md](rock-soul-flow-m13-05-handoff.md).
 - **Prasyarat:** M12.05, M12.06, M12.07, M12.11, dan M12.13 telah tercatat complete. Verifikasi ulang source/test pada checkout sebelum menyimpulkan fitur tertentu sudah lengkap.
 - **Batas:** jangan menduplikasi Desktop Harness, ORM, AI Runtime, task/project authority, memory store, atau UI. Jangan menyalin code/data legacy sebelum provenance, lisensi/notices dan hak penggunaan ditinjau.
 - **Eksekusi:** Codex lokal mengerjakan audit pada checkout pemilik dan menulis reuse map serta evidence M13.01. Implementasi fitur baru membutuhkan task berikutnya yang dibatasi setelah hasil audit direview.

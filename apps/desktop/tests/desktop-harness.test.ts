@@ -21,6 +21,7 @@ import {
   LocalSidecarController,
   buildArtifactDigest,
   createDesktopHarnessBridge,
+  executeProjectTaskInSandbox,
   parseDesktopCliArgs,
   startDesktopSidecarDaemon,
   type DesktopActionAuthContext,
@@ -1778,5 +1779,295 @@ describe('MoonWitness Desktop Harness', () => {
     ).rejects.toThrow(/Cross-company/iu);
 
     await bridge.worktree.release('forge-1');
+  });
+
+  it('reports scopeClean and outOfScopeFiles on inspectDiff for in-scope vs drifted edits (M13.05)', async () => {
+    const repoRoot = initTempGitRepo();
+    const bridge = createDesktopHarnessBridge(
+      {
+        repoRoot,
+        sqlitePath: ':memory:',
+        boardOrigin: 'http://127.0.0.1:5173',
+        apiBaseUrl: 'http://127.0.0.1:3000',
+        allowedPathPrefixes: ['src'],
+      },
+      { autoAttach: false }
+    );
+    activeBridges.push(bridge);
+
+    const lease = await bridge.worktree.acquire({ runId: 'scope-1', allowedPaths: ['src'] });
+    const r1Auth = makeAuth({
+      grant: makeGrant({
+        allowedRiskTier: 'R1',
+        allowedPaths: ['src'],
+        maxCallsPerRun: 10,
+      }),
+    });
+
+    await bridge.worktree.writeFile(
+      'scope-1',
+      'src/app.ts',
+      'export const appVersion = 42;\n',
+      r1Auth
+    );
+
+    const inScopeDiff = await bridge.worktree.diff('scope-1');
+    expect(inScopeDiff.clean).toBe(false);
+    expect(inScopeDiff.scopeClean).toBe(true);
+    expect(inScopeDiff.outOfScopeFiles).toEqual([]);
+
+    // Simulate out-of-scope drift directly in the worktree outside allowedPaths.
+    writeFileSync(path.join(lease.worktreePath, 'docs', 'drift.md'), '# Drift\n', 'utf8');
+
+    const driftedDiff = await bridge.worktree.diff('scope-1');
+    expect(driftedDiff.clean).toBe(false);
+    expect(driftedDiff.scopeClean).toBe(false);
+    expect(driftedDiff.outOfScopeFiles).toContain('docs/drift.md');
+
+    await bridge.worktree.release('scope-1');
+  });
+
+  it('detects advisory-only capability overlap via R0 bridge and rejects unauthorized/cross-company requests (M13.06)', async () => {
+    const repoRoot = initTempGitRepo();
+    writeFileSync(
+      path.join(repoRoot, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'fixture-overlap-app',
+          version: '1.0.0',
+          scripts: { test: 'vitest run' },
+        },
+        null,
+        2
+      ),
+      'utf8'
+    );
+    execFileSync('git', ['add', 'package.json'], { cwd: repoRoot, stdio: 'pipe' });
+    execFileSync('git', ['commit', '-m', 'add package.json for overlap'], {
+      cwd: repoRoot,
+      stdio: 'pipe',
+    });
+
+    const bridge = createDesktopHarnessBridge(
+      {
+        repoRoot,
+        sqlitePath: ':memory:',
+        boardOrigin: 'http://127.0.0.1:5173',
+        apiBaseUrl: 'http://127.0.0.1:3000',
+      },
+      { autoAttach: false }
+    );
+    activeBridges.push(bridge);
+
+    const lease = await bridge.worktree.acquire({ runId: 'overlap-1' });
+    const r0Auth = makeAuth({
+      companyId: 1,
+      grant: makeGrant({
+        companyId: 1,
+        allowedRiskTier: 'R0',
+        maxCallsPerRun: 20,
+      }),
+    });
+
+    const report = await bridge.worktree.detectOverlap('overlap-1', r0Auth, {
+      requirements: [
+        {
+          id: 'req-existing-app',
+          title: 'Application entry point',
+          description: 'Provide src/app.ts application version export',
+          keywords: ['appVersion'],
+          targetPaths: ['src/app.ts'],
+        },
+        {
+          id: 'req-missing-billing',
+          title: 'Quantum ledger billing engine',
+          description: 'Unimplemented billing ledger module',
+          keywords: ['quantumLedgerBilling'],
+          targetPaths: ['packages/quantum-billing'],
+        },
+      ],
+      existingTasks: [
+        {
+          id: 'task-101',
+          code: 'TSK-101',
+          title: 'Update src/app.ts application entry point',
+          status: 'in_progress',
+          scopePaths: ['src/app.ts'],
+        },
+      ],
+    });
+
+    expect(report.advisoryOnly).toBe(true);
+    expect(report.automatedMutationsAllowed).toBe(false);
+    expect(report.companyId).toBe(1);
+    expect(report.gitRevision?.headCommit).toBe(lease.headCommit);
+    expect(report.findings).toHaveLength(2);
+
+    const existingFinding = report.findings.find((f) => f.requirementId === 'req-existing-app');
+    expect(existingFinding?.status).toBe('overlapping');
+    expect(existingFinding?.duplicateTaskIds).toContain('task-101');
+    expect(existingFinding?.advisoryOnly).toBe(true);
+
+    const missingFinding = report.findings.find((f) => f.requirementId === 'req-missing-billing');
+    expect(missingFinding?.status).toBe('missing');
+
+    // Cross-company auth/grant mismatch is rejected.
+    const crossCompanyAuth = makeAuth({
+      companyId: 2,
+      grant: makeGrant({ companyId: 1, allowedRiskTier: 'R0', maxCallsPerRun: 10 }),
+    });
+    await expect(
+      bridge.worktree.detectOverlap('overlap-1', crossCompanyAuth, { requirements: [] })
+    ).rejects.toThrow(/company|cross-company|denied/iu);
+
+    // Revoked grant is rejected.
+    const revokedAuth = makeAuth({
+      grant: makeGrant({
+        allowedRiskTier: 'R0',
+        status: 'revoked',
+        revokedAt: new Date().toISOString(),
+      }),
+    });
+    await expect(
+      bridge.worktree.detectOverlap('overlap-1', revokedAuth, { requirements: [] })
+    ).rejects.toThrow(/revoked|denied|grant/iu);
+
+    // R4 secret targetPath is rejected.
+    await expect(
+      bridge.worktree.detectOverlap('overlap-1', r0Auth, {
+        requirements: [],
+        snapshotOptions: { targetPath: '.env' },
+      })
+    ).rejects.toThrow(/prohibited|secret|sensitive|R4/iu);
+
+    await bridge.worktree.release('overlap-1');
+  });
+
+  it('unifies the autonomous engineering execution loop (todo-sync, work-contract dispatch, and sandbox verification)', async () => {
+    const repoRoot = initTempGitRepo();
+    const bridge = createDesktopHarnessBridge(
+      {
+        repoRoot,
+        sqlitePath: ':memory:',
+        boardOrigin: 'http://127.0.0.1:5173',
+        apiBaseUrl: 'http://127.0.0.1:3000',
+      },
+      { autoAttach: false }
+    );
+    activeBridges.push(bridge);
+
+    let syncedTasksCount = 0;
+    let contractDispatched = false;
+    let stageSynced = false;
+
+    const mockApiServer = createServer((req, res) => {
+      const chunks: Buffer[] = [];
+      req.on('data', (c: Buffer) => chunks.push(c));
+      req.on('end', () => {
+        const url = req.url ?? '/';
+        const bodyText = Buffer.concat(chunks).toString('utf8');
+        res.setHeader('content-type', 'application/json');
+
+        if (req.method === 'POST' && url.includes('/todo-sync')) {
+          const body = JSON.parse(bodyText) as { tasks: unknown[] };
+          syncedTasksCount = body.tasks?.length ?? 0;
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({
+              success: true,
+              data: { imported: 1, updated: 0, snapshots: body.tasks },
+            })
+          );
+          return;
+        }
+
+        if (
+          req.method === 'POST' &&
+          url.includes('/work-contract') &&
+          !url.includes('/sync-stage')
+        ) {
+          contractDispatched = true;
+          res.writeHead(201);
+          res.end(
+            JSON.stringify({
+              success: true,
+              created: true,
+              data: {
+                id: 55,
+                code: 'wc_task_123',
+                status: 'running',
+              },
+            })
+          );
+          return;
+        }
+
+        if (req.method === 'POST' && url.includes('/work-contract/sync-stage')) {
+          stageSynced = true;
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({
+              success: true,
+              data: {
+                advanced: true,
+                task: { status: 'done' },
+                work_contract: { status: 'accepted' },
+              },
+            })
+          );
+          return;
+        }
+
+        res.writeHead(404);
+        res.end(JSON.stringify({ error: 'Not Found' }));
+      });
+    });
+
+    await new Promise<void>((resolve) => mockApiServer.listen(0, '127.0.0.1', () => resolve()));
+
+    try {
+      const addr = mockApiServer.address();
+      if (!addr || typeof addr === 'string') throw new Error('Cannot bind mock API');
+
+      const syncClient = new DesktopUpstreamSyncClient({
+        apiBaseUrl: `http://127.0.0.1:${addr.port}`,
+        authToken: 'test-token',
+      });
+
+      const syncResult = await syncClient.syncTodoTasksToProject(1, [
+        {
+          code: 'TASK-001',
+          title: 'Implement autonomous loop',
+          priority: 'high',
+          status: 'in_progress',
+        },
+      ]);
+      expect(syncResult.imported).toBe(1);
+      expect(syncedTasksCount).toBe(1);
+
+      const auth = makeAuth({
+        grant: makeGrant({
+          capability: 'desktop.worktree@v1',
+          allowedRiskTier: 'R2',
+          allowedPaths: ['src'],
+        }),
+      });
+
+      const outcome = await executeProjectTaskInSandbox(bridge, syncClient, 123, auth, {
+        command: 'git',
+        commandArgs: ['status', '--short'],
+        commitMessage: 'feat(loop): verified autonomous task execution',
+      });
+
+      expect(contractDispatched).toBe(true);
+      expect(stageSynced).toBe(true);
+      expect(outcome.workContractId).toBe(55);
+      expect(outcome.workContractCode).toBe('wc_task_123');
+      expect(outcome.exitCode).toBe(0);
+      expect(outcome.advanced).toBe(true);
+      expect(outcome.taskStatus).toBe('done');
+    } finally {
+      await new Promise<void>((resolve) => mockApiServer.close(() => resolve()));
+    }
   });
 });

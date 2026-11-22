@@ -1,15 +1,17 @@
-import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
-import { isRecord } from '@moonwitness/types';
-import { Registry, applyDomain } from '@moonwitness/orm';
+import {
+  Registry,
+  applyDomain,
+  type AddonHttpHostContext,
+  type AddonHttpPlugin,
+  type AddonHttpRequestBase,
+} from '@moonwitness/orm';
 import {
   listAvailableWorkflowDefinitions,
   startWorkflow,
   transitionWorkflow,
   WorkflowError,
   type WorkflowRole,
-} from '@moonwitness/orm-workflow';
-import { canAccess } from '../auth/policy.js';
-import { getRecordRuleDomain } from '../auth/rules.js';
+} from './runtime.js';
 
 interface StartBody {
   code: string;
@@ -26,7 +28,19 @@ interface TransitionBody {
 }
 
 interface IdParams {
+  [key: string]: string;
   id: string;
+}
+
+interface WorkflowListQuery {
+  [key: string]: string | undefined;
+  limit?: string;
+  resource_model?: string;
+  resource_id?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function parseStart(value: unknown): StartBody | null {
@@ -74,7 +88,7 @@ function parseTransition(value: unknown): TransitionBody | null {
   };
 }
 
-function isWorkflowRole(role: string): role is WorkflowRole {
+function isWorkflowRole(role: string | undefined): role is WorkflowRole {
   return role === 'system' || role === 'superadmin' || role === 'user';
 }
 
@@ -93,58 +107,69 @@ function workflowFailure(error: unknown): { status: number; message: string } | 
   return { status, message: error.message };
 }
 
+interface EnvQueryLike {
+  where(clause: Record<string, unknown>): EnvQueryLike;
+  first(): Promise<unknown>;
+}
+
 async function canReadResource(
-  req: FastifyRequest,
+  req: AddonHttpRequestBase,
+  options: AddonHttpHostContext,
   resourceModel: string,
   resourceId: number
 ): Promise<boolean> {
   const auth = req.auth;
   if (!auth?.companyId) return false;
+  if (!options.canAccess || !options.getRecordRuleDomain || !req.env) return false;
   if (
     !Registry.has(resourceModel) ||
-    !canAccess(auth.role, resourceModel, 'read', auth.groupPermissions)
+    !options.canAccess(auth.role, resourceModel, 'read', auth.groupPermissions)
   )
     return false;
   const Model = req.env.get(resourceModel);
   const fields = Model.fields;
-  const hasCompany = fields && ('company' in fields || 'company_id' in fields);
-  const query = req.env.get(resourceModel).query().where({ id: resourceId, active: true });
+  const hasCompany = Boolean(fields && ('company' in fields || 'company_id' in fields));
+  const query = (req.env.get(resourceModel).query() as EnvQueryLike).where({
+    id: resourceId,
+    active: true,
+  });
   if (hasCompany) query.where({ company_id: auth.companyId });
-  const resource = await applyDomain(query, await getRecordRuleDomain(req, resourceModel)).first();
+  const domain = await options.getRecordRuleDomain(req, resourceModel);
+  const resource = await (applyDomain(query as never, domain) as unknown as EnvQueryLike).first();
   return resource !== undefined;
 }
 
-export const workflowRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.get<{
-    Querystring: { limit?: string; resource_model?: string; resource_id?: string };
-  }>('/workflows/definitions', async (req, reply) => {
+export const workflowHttpPlugin: AddonHttpPlugin = async (app, options) => {
+  app.get<{ Querystring: WorkflowListQuery }>('/workflows/definitions', async (req, reply) => {
     if (!req.auth)
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     if (!req.auth.companyId)
       return reply.code(403).send({ success: false, error: 'Active company is required' });
+    if (!app.db || !options.canAccess)
+      return reply.code(403).send({ success: false, error: 'Workflow access unavailable' });
     const resourceModel = req.query.resource_model;
     if (
       !resourceModel ||
       !Registry.has(resourceModel) ||
-      !canAccess(req.auth.role, resourceModel, 'read', req.auth.groupPermissions)
+      !options.canAccess(req.auth.role, resourceModel, 'read', req.auth.groupPermissions)
     )
       return reply.code(404).send({ success: false, error: 'Resource not found' });
     const role = req.auth.role;
     if (!isWorkflowRole(role))
       return reply.code(403).send({ success: false, error: 'Unsupported workflow role' });
-    const data = (await listAvailableWorkflowDefinitions(fastify.db, resourceModel, role)).filter(
+    const data = (await listAvailableWorkflowDefinitions(app.db, resourceModel, role)).filter(
       (definition) => definition.code !== 'research.review'
     );
     return { success: true, data };
   });
 
-  fastify.get<{
-    Querystring: { limit?: string; resource_model?: string; resource_id?: string };
-  }>('/workflows/instances', async (req, reply) => {
+  app.get<{ Querystring: WorkflowListQuery }>('/workflows/instances', async (req, reply) => {
     if (!req.auth)
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     if (!req.auth.companyId)
       return reply.code(403).send({ success: false, error: 'Active company is required' });
+    if (!app.db)
+      return reply.code(403).send({ success: false, error: 'Workflow database unavailable' });
     const limit = Number(req.query.limit ?? 50);
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100)
       return reply.code(400).send({ success: false, error: 'limit must be between 1 and 100' });
@@ -161,10 +186,10 @@ export const workflowRoutes: FastifyPluginAsync = async (fastify) => {
     if (
       !Number.isSafeInteger(resourceId) ||
       resourceId < 1 ||
-      !(await canReadResource(req, resourceModel, resourceId))
+      !(await canReadResource(req, options, resourceModel, resourceId))
     )
       return reply.code(404).send({ success: false, error: 'Resource not found' });
-    const data = await fastify
+    const data = await app
       .db('workflow_instances')
       .leftJoin(
         'workflow_definitions',
@@ -197,24 +222,29 @@ export const workflowRoutes: FastifyPluginAsync = async (fastify) => {
     return { success: true, data };
   });
 
-  fastify.post<{ Body: unknown }>('/workflows/instances', async (req, reply) => {
+  app.post<{ Body: unknown }>('/workflows/instances', async (req, reply) => {
     if (!req.auth)
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     if (!req.auth.companyId)
       return reply.code(403).send({ success: false, error: 'Active company is required' });
+    if (!app.db)
+      return reply.code(403).send({ success: false, error: 'Workflow database unavailable' });
     const body = parseStart(req.body);
     if (!body)
       return reply.code(400).send({ success: false, error: 'Invalid workflow start request' });
     if (body.code === 'research.review')
       return reply.code(404).send({ success: false, error: 'Workflow not found' });
-    if (!(await canReadResource(req, body.resource_model, body.resource_id)))
+    if (!(await canReadResource(req, options, body.resource_model, body.resource_id)))
       return reply.code(404).send({ success: false, error: 'Resource not found' });
+    const role = req.auth.role;
+    if (!isWorkflowRole(role))
+      return reply.code(403).send({ success: false, error: 'Unsupported workflow role' });
     try {
-      const data = await startWorkflow(fastify.db, {
+      const data = await startWorkflow(app.db, {
         code: body.code,
         companyId: req.auth.companyId,
         actorId: req.auth.userId,
-        role: req.auth.role,
+        role,
         resourceModel: body.resource_model,
         resourceId: body.resource_id,
         idempotencyKey: body.idempotency_key,
@@ -228,15 +258,17 @@ export const workflowRoutes: FastifyPluginAsync = async (fastify) => {
     }
   });
 
-  fastify.get<{ Params: IdParams }>('/workflows/instances/:id', async (req, reply) => {
+  app.get<{ Params: IdParams }>('/workflows/instances/:id', async (req, reply) => {
     if (!req.auth)
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     if (!req.auth.companyId)
       return reply.code(403).send({ success: false, error: 'Active company is required' });
+    if (!app.db)
+      return reply.code(403).send({ success: false, error: 'Workflow database unavailable' });
     const id = Number(req.params.id);
     if (!Number.isSafeInteger(id) || id < 1)
       return reply.code(400).send({ success: false, error: 'Invalid workflow ID' });
-    const data = await fastify
+    const data = await app
       .db('workflow_instances as instance')
       .leftJoin('workflow_definitions as definition', 'definition.id', 'instance.definition_id')
       .where({ 'instance.id': id, 'instance.company_id': req.auth.companyId })
@@ -259,10 +291,10 @@ export const workflowRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(404).send({ success: false, error: 'Workflow not found' });
     const publicData = { ...data };
     delete publicData.definition_code;
-    if (!(await canReadResource(req, data.resource_model, data.resource_id)))
+    if (!(await canReadResource(req, options, data.resource_model, data.resource_id)))
       return reply.code(404).send({ success: false, error: 'Workflow not found' });
     const [events, approvals] = await Promise.all([
-      fastify
+      app
         .db('workflow_events')
         .where({ instance_id: id })
         .orderBy('sequence', 'asc')
@@ -276,7 +308,7 @@ export const workflowRoutes: FastifyPluginAsync = async (fastify) => {
           'comment',
           'created_at'
         ),
-      fastify
+      app
         .db('workflow_approvals')
         .where({ instance_id: id })
         .orderBy('decided_at', 'asc')
@@ -285,18 +317,20 @@ export const workflowRoutes: FastifyPluginAsync = async (fastify) => {
     return { success: true, data: { ...publicData, events, approvals } };
   });
 
-  fastify.post<{ Params: IdParams; Body: unknown }>(
+  app.post<{ Params: IdParams; Body: unknown }>(
     '/workflows/instances/:id/actions',
     async (req, reply) => {
       if (!req.auth)
         return reply.code(401).send({ success: false, error: 'Authentication required' });
       if (!req.auth.companyId)
         return reply.code(403).send({ success: false, error: 'Active company is required' });
+      if (!app.db)
+        return reply.code(403).send({ success: false, error: 'Workflow database unavailable' });
       const id = Number(req.params.id);
       const body = parseTransition(req.body);
       if (!Number.isSafeInteger(id) || id < 1 || !body)
         return reply.code(400).send({ success: false, error: 'Invalid workflow action request' });
-      const instance = await fastify
+      const instance = await app
         .db('workflow_instances as instance')
         .leftJoin('workflow_definitions as definition', 'definition.id', 'instance.definition_id')
         .where({ 'instance.id': id, 'instance.company_id': req.auth.companyId })
@@ -308,15 +342,18 @@ export const workflowRoutes: FastifyPluginAsync = async (fastify) => {
       if (
         !instance ||
         instance.definition_code === 'research.review' ||
-        !(await canReadResource(req, instance.resource_model, instance.resource_id))
+        !(await canReadResource(req, options, instance.resource_model, instance.resource_id))
       )
         return reply.code(404).send({ success: false, error: 'Workflow not found' });
+      const role = req.auth.role;
+      if (!isWorkflowRole(role))
+        return reply.code(403).send({ success: false, error: 'Unsupported workflow role' });
       try {
-        const data = await transitionWorkflow(fastify.db, {
+        const data = await transitionWorkflow(app.db, {
           instanceId: id,
           companyId: req.auth.companyId,
           actorId: req.auth.userId,
-          role: req.auth.role,
+          role,
           action: body.action,
           expectedRevision: body.expected_revision,
           idempotencyKey: body.idempotency_key,

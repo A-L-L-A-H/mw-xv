@@ -25,6 +25,9 @@ import {
   createCloudHttpPlugin,
   exportCloudTerraformHcl,
   manifest,
+  probeCloudTargetsHealth,
+  registerCloudJobHandlers,
+  resolveControlPlaneToken,
   selectHealthyDeploymentTarget,
 } from '../src/index.js';
 
@@ -324,6 +327,183 @@ describe('@moonwitness/orm-cloud addon', () => {
       expect(unauthRes.statusCode).toBe(401);
     } finally {
       await app.close();
+    }
+  });
+
+  it('derives the control-plane token from the shared secret and forwards bearer auth', async () => {
+    const derived = resolveControlPlaneToken({ jwtSecret: 'shared-secret-value' });
+    expect(derived).toMatch(/^[0-9a-f]{64}$/u);
+    expect(resolveControlPlaneToken({ adminToken: ' explicit-token ' })).toBe('explicit-token');
+
+    await installAddons(db, [
+      baseManifest,
+      jobsManifest,
+      notificationManifest,
+      organizationManifest,
+      workflowManifest,
+      projectManifest,
+      crmManifest,
+      salesManifest,
+      subscriptionManifest,
+      manifest,
+    ]);
+
+    const calls: Array<{ url: string; authorization?: string; body?: string }> = [];
+    const app = Fastify({ logger: false });
+    app.addHook('onRequest', async (req) => {
+      (req as { auth?: unknown }).auth = {
+        userId: 2,
+        role: 'superadmin',
+        companyId: 1,
+      };
+    });
+
+    await app.register(
+      createCloudHttpPlugin({
+        controlPlaneUrl: 'http://control-plane.local:3003',
+        adminToken: 'internal-token-123',
+        fetchImpl: async (input, init) => {
+          const headers = new Headers(init?.headers);
+          calls.push({
+            url: String(input),
+            authorization: headers.get('authorization') ?? undefined,
+            body: init?.body ? String(init.body) : undefined,
+          });
+          if (String(input).endsWith('/health')) {
+            return new Response(JSON.stringify({ status: 'ok', docker: 'ok' }), { status: 200 });
+          }
+          if (String(input).endsWith('/services')) {
+            return new Response(JSON.stringify([]), { status: 200 });
+          }
+          if (String(input).endsWith('/api/deploy')) {
+            return new Response(JSON.stringify({ id: 'ctr123', name: 'mw-app' }), { status: 201 });
+          }
+          if (String(input).includes('/api/containers/')) {
+            return new Response(JSON.stringify({ id: 'ctr123', logs: 'live log line' }), {
+              status: 200,
+            });
+          }
+          return new Response('{}', { status: 404 });
+        },
+      })
+    );
+    await app.ready();
+
+    try {
+      const cloudApp = await CloudApp.query().first();
+      expect(cloudApp).toBeDefined();
+
+      await app.inject({ method: 'GET', url: '/api/cloud/services' });
+      expect(calls.at(-1)?.authorization).toBe('Bearer internal-token-123');
+
+      const deployRes = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${cloudApp!.id}/deploy`,
+      });
+      expect(deployRes.statusCode).toBe(201);
+      const deployCall = calls.find((c) => c.url.endsWith('/api/deploy'));
+      expect(deployCall?.authorization).toBe('Bearer internal-token-123');
+      expect(JSON.parse(deployCall?.body ?? '{}')).toMatchObject({ name: cloudApp!.name });
+
+      const deployId = deployRes.json().data.deploymentId as number;
+      const logsRes = await app.inject({
+        method: 'GET',
+        url: `/api/cloud/deployments/${deployId}/logs`,
+      });
+      expect(logsRes.statusCode).toBe(200);
+      expect(logsRes.json()).toMatchObject({
+        success: true,
+        data: { log: 'live log line', live: true },
+      });
+      expect(calls.at(-1)?.authorization).toBe('Bearer internal-token-123');
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('probes cloud deployment target health so HA failover selects a healthy peer', async () => {
+    await installAddons(db, [
+      baseManifest,
+      jobsManifest,
+      notificationManifest,
+      organizationManifest,
+      workflowManifest,
+      projectManifest,
+      crmManifest,
+      salesManifest,
+      subscriptionManifest,
+      manifest,
+    ]);
+
+    const offlineTarget = await CloudDeploymentTarget.query().insertAndFetch({
+      company_id: 1,
+      name: 'probe-offline',
+      environment: 'production',
+      api_url: 'http://127.0.0.1:39999',
+      health_status: 'healthy',
+      is_active: true,
+    });
+    const healthyTarget = await CloudDeploymentTarget.query().insertAndFetch({
+      company_id: 1,
+      name: 'probe-healthy',
+      environment: 'production',
+      api_url: 'http://control-plane.local:3003',
+      health_status: 'offline',
+      is_active: true,
+    });
+
+    const result = await probeCloudTargetsHealth({
+      companyId: 1,
+      adminToken: 'internal-token-123',
+      fetchImpl: async (input) => {
+        if (String(input).includes('control-plane.local')) {
+          return new Response(JSON.stringify({ status: 'ok', docker: 'ok' }), { status: 200 });
+        }
+        throw new Error('unreachable');
+      },
+    });
+
+    expect(result.probed).toBe(3);
+    expect(result.healthy).toBe(1);
+    expect(result.offline).toBe(2);
+    expect((await CloudDeploymentTarget.query().findById(offlineTarget.id)).health_status).toBe(
+      'offline'
+    );
+    expect((await CloudDeploymentTarget.query().findById(healthyTarget.id)).health_status).toBe(
+      'healthy'
+    );
+
+    const selected = selectHealthyDeploymentTarget([
+      {
+        id: offlineTarget.id,
+        name: 'probe-offline',
+        priority: 10,
+        health_status: 'offline',
+        is_active: true,
+      },
+      {
+        id: healthyTarget.id,
+        name: 'probe-healthy',
+        priority: 20,
+        health_status: 'healthy',
+        is_active: true,
+      },
+    ]);
+    expect(selected?.name).toBe('probe-healthy');
+
+    const dispose = registerCloudJobHandlers({
+      adminToken: 'internal-token-123',
+      fetchImpl: async () =>
+        new Response(JSON.stringify({ status: 'ok', docker: 'ok' }), { status: 200 }),
+    });
+    try {
+      const { enqueueJob, Job } = await import('@moonwitness/jobs');
+      const jobId = await enqueueJob('cloud.targets.probe', { companyId: 1 });
+      expect(typeof jobId).toBe('number');
+      const record = await Job.query().findById(jobId);
+      expect(record?.handler).toBe('cloud.targets.probe');
+    } finally {
+      dispose();
     }
   });
 });

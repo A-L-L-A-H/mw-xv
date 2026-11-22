@@ -13,6 +13,7 @@ import type {
   DesktopExecutionPacketRequest,
   DesktopHarnessConfig,
   DesktopKeychainSecretStore,
+  DesktopOverlapDetectionRequest,
   DesktopRepoSnapshotOptions,
   DesktopStreamEvent,
   DesktopStreamEventKind,
@@ -409,6 +410,11 @@ export function createDesktopHarnessBridge(
         auth: DesktopActionAuthContext,
         request: DesktopExecutionPacketRequest
       ) => sandbox.compileExecutionPacket(runId, auth, request),
+      detectOverlap: (
+        runId: string,
+        auth: DesktopActionAuthContext,
+        request: DesktopOverlapDetectionRequest
+      ) => sandbox.detectCapabilityOverlap(runId, auth, request),
       commit: (runId: string, message: string, auth: DesktopActionAuthContext) =>
         sandbox.commit(runId, message, auth),
       release: (runId: string) => sandbox.release(runId),

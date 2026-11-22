@@ -609,11 +609,28 @@ export function TaskPanel({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => { /* copy link */ }}>
+              <DropdownMenuItem onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/#task-${task.task.id}`).catch(() => {});
+                toast(tr("Link copied to clipboard"));
+              }}>
                 <CopyIcon className="h-4 w-4 mr-2" />
                 {tr("Copy link")}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { /* duplicate */ }}>
+              <DropdownMenuItem onClick={async () => {
+                try {
+                  await api("POST", "/tasks", {
+                    project: task.task.project,
+                    title: `${task.task.title} (copy)`,
+                    status: task.task.status,
+                    description: task.task.description,
+                    tags: task.task.tags,
+                  });
+                  onRefresh?.(task.task.id);
+                  toast(tr("Task duplicated"));
+                } catch {
+                  toast(tr("Failed to duplicate task"));
+                }
+              }}>
                 <CopyIcon className="h-4 w-4 mr-2" />
                 {tr("Duplicate")}
               </DropdownMenuItem>

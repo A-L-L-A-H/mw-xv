@@ -31,13 +31,6 @@ export interface SceneSoundscapeController {
   dispose(): void;
 }
 
-const DEFAULT_SOURCES: Record<SceneAmbienceId, string> = {
-  'moon-city-night': '/sounds/ui-signal.wav',
-  'underground-hum': '/sounds/ui-signal.wav',
-  'archive-quiet': '/sounds/ui-success.wav',
-  'street-rain': '/sounds/ui-signal.wav',
-};
-
 /**
  * Policy-limited scene ambience controller:
  * - Muted by default until explicit user consent (`setMuted(false)` + user gesture).
@@ -47,7 +40,7 @@ const DEFAULT_SOURCES: Record<SceneAmbienceId, string> = {
 export function createSceneSoundscapeController(
   options: SceneSoundscapeOptions = {}
 ): SceneSoundscapeController {
-  const sources = { ...DEFAULT_SOURCES, ...options.sources };
+  const sources = { ...options.sources };
   const maxVolume = Math.max(0, Math.min(0.4, options.maxVolume ?? 0.18));
   const createAudio =
     options.createAudio ??
@@ -109,15 +102,20 @@ export function createSceneSoundscapeController(
   return {
     setMuted(nextMuted: boolean) {
       if (disposed) return getSnapshot();
-      muted = Boolean(nextMuted);
-      syncPlayback();
+      const nextValue = Boolean(nextMuted);
+      if (muted !== nextValue) {
+        muted = nextValue;
+        syncPlayback();
+      }
       notify();
       return getSnapshot();
     },
     activateUserGesture() {
       if (disposed) return getSnapshot();
-      userActivated = true;
-      syncPlayback();
+      if (!userActivated) {
+        userActivated = true;
+        syncPlayback();
+      }
       notify();
       return getSnapshot();
     },

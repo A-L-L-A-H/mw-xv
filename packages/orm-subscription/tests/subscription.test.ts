@@ -1,15 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import knex, { type Knex } from 'knex';
+import Fastify from 'fastify';
 import { installAddons, resolveViews, validateViews } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { manifest as crmManifest } from '@moonwitness/orm-crm';
-import { manifest as salesManifest } from '@moonwitness/orm-sales';
+import { manifest as salesManifest, SaleOrder } from '@moonwitness/orm-sales';
 import {
   Subscription,
   SubscriptionInvoiceLine,
   SubscriptionPlan,
   SubscriptionTagLink,
+  activateSubscription,
+  createSubscriptionFromSaleOrder,
+  createSubscriptionHttpPlugin,
   manifest,
+  suspendSubscription,
 } from '../src/index.js';
 
 describe('@moonwitness/orm-subscription addon', () => {
@@ -55,6 +60,91 @@ describe('@moonwitness/orm-subscription addon', () => {
     for (const model of manifest.models) {
       const resolved = resolveViews(model);
       expect(() => validateViews(model, resolved)).not.toThrow();
+    }
+  });
+
+  it('creates subscriptions from sale orders, manages lifecycle, and exposes http routes', async () => {
+    await installAddons(db, [baseManifest, crmManifest, salesManifest, manifest]);
+
+    const order = await SaleOrder.query().findById(1);
+    expect(order).toBeDefined();
+
+    const sub = await createSubscriptionFromSaleOrder(order!.id, { companyId: 1 });
+    expect(sub).toBeDefined();
+    expect(sub.sale_order_id).toBe(order!.id);
+    expect(sub.partner_id).toBe(order!.partner_id);
+
+    // Idempotent
+    const sub2 = await createSubscriptionFromSaleOrder(order!.id, { companyId: 1 });
+    expect(sub2.id).toBe(sub.id);
+
+    const invoiceLines = await SubscriptionInvoiceLine.query().where({ subscription_id: sub.id });
+    expect(invoiceLines.length).toBeGreaterThan(0);
+
+    const suspended = await suspendSubscription(sub.id, { companyId: 1 });
+    expect(suspended.state).toBe('paused');
+
+    const activated = await activateSubscription(sub.id, { companyId: 1 });
+    expect(activated.state).toBe('active');
+
+    const app = Fastify({ logger: false });
+    let currentAuth: {
+      userId: number;
+      role: string;
+      companyId?: number;
+      groupPermissions?: Array<{
+        model_name: string;
+        read: boolean;
+        create: boolean;
+        write: boolean;
+        unlink: boolean;
+      }>;
+    } | null = {
+      userId: 1,
+      role: 'superadmin',
+      companyId: 1,
+    };
+    app.addHook('onRequest', async (req) => {
+      (req as { auth?: typeof currentAuth }).auth = currentAuth;
+    });
+
+    await app.register(createSubscriptionHttpPlugin());
+    await app.ready();
+
+    try {
+      const order2 = await SaleOrder.query().findById(2);
+      expect(order2).toBeDefined();
+
+      const createRes = await app.inject({
+        method: 'POST',
+        url: `/api/subscriptions/from-order/${order2!.id}`,
+      });
+      expect(createRes.statusCode).toBe(201);
+      const createdSub = createRes.json().data;
+      expect(createdSub.sale_order_id).toBe(order2!.id);
+
+      const suspendRes = await app.inject({
+        method: 'POST',
+        url: `/api/subscriptions/${createdSub.id}/suspend`,
+      });
+      expect(suspendRes.statusCode).toBe(200);
+      expect(suspendRes.json().data.state).toBe('paused');
+
+      const activateRes = await app.inject({
+        method: 'POST',
+        url: `/api/subscriptions/${createdSub.id}/activate`,
+      });
+      expect(activateRes.statusCode).toBe(200);
+      expect(activateRes.json().data.state).toBe('active');
+
+      currentAuth = { userId: 99, role: 'user', companyId: 1, groupPermissions: [] };
+      const deniedRes = await app.inject({
+        method: 'POST',
+        url: `/api/subscriptions/${createdSub.id}/activate`,
+      });
+      expect(deniedRes.statusCode).toBe(403);
+    } finally {
+      await app.close();
     }
   });
 });

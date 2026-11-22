@@ -82,6 +82,36 @@ export interface PcwHumanSignoff {
   readonly signedAt: string;
 }
 
+export type PcwCheckStatus = 'pass' | 'fail' | 'skipped' | 'not_applicable' | 'not_run';
+
+export interface PcwCheckRecord {
+  readonly code: string;
+  readonly command?: string;
+  readonly status: PcwCheckStatus;
+  readonly mandatory?: boolean;
+  readonly exitCode?: number;
+  readonly reason?: string;
+  readonly artifactId?: string;
+  readonly durationMs?: number;
+}
+
+export interface PcwCheckMatrixSummary {
+  readonly total: number;
+  readonly passed: number;
+  readonly failed: number;
+  readonly skipped: number;
+  readonly notApplicable: number;
+  readonly notRun: number;
+  readonly records: readonly PcwCheckRecord[];
+}
+
+export interface PcwDiffScopeResult {
+  readonly scopeClean: boolean;
+  readonly checkedFiles: readonly string[];
+  readonly outOfScopeFiles: readonly string[];
+  readonly unsafePaths: readonly string[];
+}
+
 export interface PcwVerificationInput {
   readonly contract: PcwWorkContractSpec;
   readonly artifacts: readonly PcwEvidenceArtifactInput[];
@@ -92,6 +122,10 @@ export interface PcwVerificationInput {
   readonly requireHumanSignoff?: boolean;
   readonly expectedSourceSha?: string;
   readonly nowMs?: number;
+  readonly checks?: readonly PcwCheckRecord[];
+  readonly changedFiles?: readonly string[];
+  readonly allowedScopePaths?: readonly string[];
+  readonly forbiddenScopePaths?: readonly string[];
 }
 
 export interface PcwRejectionReason {
@@ -114,7 +148,10 @@ export interface PcwRejectionReason {
     | 'REVIEWER_REJECTED'
     | 'MISSING_REVIEW_RATIONALE'
     | 'HUMAN_SIGNOFF_REQUIRED'
-    | 'HUMAN_SIGNOFF_REJECTED';
+    | 'HUMAN_SIGNOFF_REJECTED'
+    | 'MISSING_SKIP_REASON'
+    | 'MANDATORY_CHECK_NOT_PASSED'
+    | 'OUT_OF_SCOPE_DIFF_DETECTED';
   readonly criterionId?: string;
   readonly artifactId?: string;
   readonly message: string;
@@ -144,11 +181,128 @@ export interface PcwVerificationReport {
     readonly independentVerified: boolean;
     readonly humanSignoffVerified: boolean;
   };
+  readonly checkMatrix?: PcwCheckMatrixSummary;
+  readonly diffScope?: PcwDiffScopeResult;
   readonly reportSha256: string;
 }
 
 export function computeSha256Hex(content: string | Uint8Array): string {
   return createHash('sha256').update(content).digest('hex');
+}
+
+const WINDOWS_DRIVE_PREFIX_REGEX = /^[A-Za-z]:(?:\/|$)/u;
+const UNSAFE_EXTENSION_REGEX = /\.(?:pem|key|p12|pfx)$/iu;
+const UNSAFE_SEGMENT_REGEX = /^(?:\.git$|\.env|id_rsa|credentials|secrets)/iu;
+
+function normalizeScopePrefix(rawPath: string): string {
+  const trimmed = rawPath.trim().replace(/\\/gu, '/');
+  if (trimmed === '.' || trimmed === './') {
+    return '.';
+  }
+  let normalized = trimmed;
+  while (normalized.startsWith('./')) {
+    normalized = normalized.slice(2);
+  }
+  while (normalized.length > 1 && normalized.endsWith('/')) {
+    normalized = normalized.slice(0, -1);
+  }
+  return normalized;
+}
+
+function normalizeChangedFilePath(rawPath: string): {
+  readonly normalized: string;
+  readonly isUnsafe: boolean;
+} {
+  const trimmed = rawPath.trim();
+  if (trimmed.length === 0) {
+    return { normalized: '', isUnsafe: true };
+  }
+  const slashed = trimmed.replace(/\\/gu, '/');
+  const isAbsolute =
+    trimmed.startsWith('/') ||
+    trimmed.startsWith('\\') ||
+    slashed.startsWith('/') ||
+    WINDOWS_DRIVE_PREFIX_REGEX.test(slashed);
+
+  let normalized = slashed;
+  while (normalized.startsWith('./')) {
+    normalized = normalized.slice(2);
+  }
+  while (normalized.length > 1 && normalized.endsWith('/')) {
+    normalized = normalized.slice(0, -1);
+  }
+
+  if (normalized.length === 0 || isAbsolute) {
+    return { normalized: normalized || slashed, isUnsafe: true };
+  }
+
+  const segments = normalized.split('/');
+  const hasUnsafeSegment = segments.some(
+    (segment) =>
+      segment === '..' || UNSAFE_SEGMENT_REGEX.test(segment) || UNSAFE_EXTENSION_REGEX.test(segment)
+  );
+
+  return {
+    normalized,
+    isUnsafe: hasUnsafeSegment,
+  };
+}
+
+function matchesScopePrefix(pathValue: string, prefix: string): boolean {
+  if (prefix === '.') {
+    return true;
+  }
+  return pathValue === prefix || pathValue.startsWith(`${prefix}/`);
+}
+
+export function validateDiffScope(
+  changedFiles: readonly string[],
+  allowedScopePaths: readonly string[],
+  forbiddenPaths: readonly string[] = []
+): PcwDiffScopeResult {
+  const normalizedAllowed = allowedScopePaths
+    .map(normalizeScopePrefix)
+    .filter((entry) => entry.length > 0);
+  const normalizedForbidden = forbiddenPaths
+    .map(normalizeScopePrefix)
+    .filter((entry) => entry.length > 0);
+
+  const checkedSet = new Set<string>();
+  const outOfScopeSet = new Set<string>();
+  const unsafeSet = new Set<string>();
+
+  for (const rawFile of changedFiles) {
+    const { normalized, isUnsafe } = normalizeChangedFilePath(rawFile);
+    checkedSet.add(normalized);
+
+    if (isUnsafe) {
+      unsafeSet.add(normalized);
+      outOfScopeSet.add(normalized);
+      continue;
+    }
+
+    const inAllowed =
+      normalizedAllowed.length > 0 &&
+      normalizedAllowed.some((prefix) => matchesScopePrefix(normalized, prefix));
+    const inForbidden = normalizedForbidden.some((prefix) =>
+      matchesScopePrefix(normalized, prefix)
+    );
+
+    if (!inAllowed || inForbidden) {
+      outOfScopeSet.add(normalized);
+    }
+  }
+
+  const checkedFiles = [...checkedSet].sort();
+  const outOfScopeFiles = [...outOfScopeSet].sort();
+  const unsafePaths = [...unsafeSet].sort();
+
+  return {
+    scopeClean: outOfScopeFiles.length === 0 && unsafePaths.length === 0,
+    checkedFiles,
+    outOfScopeFiles,
+    unsafePaths,
+  };
 }
 
 export function verifyProofCarryingWork(input: PcwVerificationInput): PcwVerificationReport {
@@ -444,6 +598,85 @@ export function verifyProofCarryingWork(input: PcwVerificationInput): PcwVerific
     }
   }
 
+  let checkMatrix: PcwCheckMatrixSummary | undefined;
+  if (input.checks !== undefined) {
+    let passed = 0;
+    let failed = 0;
+    let skipped = 0;
+    let notApplicable = 0;
+    let notRun = 0;
+    const hasHumanWaiver =
+      input.humanSignoff?.approved === true && input.humanSignoff.rationale.trim().length > 0;
+
+    for (const check of input.checks) {
+      if (check.status === 'pass') passed += 1;
+      else if (check.status === 'fail') failed += 1;
+      else if (check.status === 'skipped') skipped += 1;
+      else if (check.status === 'not_applicable') notApplicable += 1;
+      else if (check.status === 'not_run') notRun += 1;
+
+      if (
+        (check.status === 'skipped' || check.status === 'not_applicable') &&
+        (!check.reason || check.reason.trim().length === 0)
+      ) {
+        rejectionReasons.push({
+          code: 'MISSING_SKIP_REASON',
+          artifactId: check.artifactId,
+          message: `Check "${check.code}" with status "${check.status}" requires a non-empty reason`,
+        });
+      }
+
+      const mandatory = check.mandatory ?? true;
+      if (
+        mandatory &&
+        (check.status === 'fail' || check.status === 'skipped' || check.status === 'not_run')
+      ) {
+        rejectionReasons.push({
+          code: 'MANDATORY_CHECK_NOT_PASSED',
+          artifactId: check.artifactId,
+          message: `Mandatory check "${check.code}" did not pass (status: ${check.status})`,
+        });
+      } else if (mandatory && check.status === 'not_applicable' && !hasHumanWaiver) {
+        rejectionReasons.push({
+          code: 'MANDATORY_CHECK_NOT_PASSED',
+          artifactId: check.artifactId,
+          message: `Mandatory check "${check.code}" marked not_applicable requires approved human sign-off with rationale`,
+        });
+      } else if (!mandatory && check.status === 'fail') {
+        rejectionReasons.push({
+          code: 'MANDATORY_CHECK_NOT_PASSED',
+          artifactId: check.artifactId,
+          message: `Non-mandatory check "${check.code}" failed`,
+        });
+      }
+    }
+
+    checkMatrix = {
+      total: input.checks.length,
+      passed,
+      failed,
+      skipped,
+      notApplicable,
+      notRun,
+      records: [...input.checks],
+    };
+  }
+
+  let diffScope: PcwDiffScopeResult | undefined;
+  if (input.changedFiles !== undefined && input.allowedScopePaths !== undefined) {
+    diffScope = validateDiffScope(
+      input.changedFiles,
+      input.allowedScopePaths,
+      input.forbiddenScopePaths
+    );
+    if (!diffScope.scopeClean) {
+      rejectionReasons.push({
+        code: 'OUT_OF_SCOPE_DIFF_DETECTED',
+        message: `Out-of-scope or unsafe diff paths detected: ${diffScope.outOfScopeFiles.join(', ')}`,
+      });
+    }
+  }
+
   const allMandatorySatisfied = criterionResults.every((item) => !item.mandatory || item.satisfied);
   const accepted =
     contract.criteria.length > 0 &&
@@ -467,6 +700,8 @@ export function verifyProofCarryingWork(input: PcwVerificationInput): PcwVerific
       independentVerified,
       humanSignoffVerified,
     },
+    ...(checkMatrix !== undefined ? { checkMatrix } : {}),
+    ...(diffScope !== undefined ? { diffScope } : {}),
   };
 
   return {

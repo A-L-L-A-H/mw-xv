@@ -2038,7 +2038,7 @@ function CatalogContent() {
             <Section
               id="character-preview"
               title="Character preview (crew-01)"
-              description="Deterministic preview of crew-01 layers, poses and animation clips loaded by canonical asset ID; no backend route or business data is embedded."
+              description="Catalog-only fictional example. crew-01 is not a real crew member and has no backend record; this preview uses canonical asset IDs without production user data."
             >
               <div className="auth-coverage-grid" data-testid="character-preview-specimen">
                 <Panel

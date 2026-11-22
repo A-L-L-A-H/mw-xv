@@ -2,6 +2,7 @@ import { defineAddon, ref, seed } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
 import { Cron } from '@moonwitness/jobs';
 import { WorkflowApproval, WorkflowDefinition, WorkflowEvent, WorkflowInstance } from './models.js';
+import { workflowHttpPlugin } from './http-plugin.js';
 import { views } from './views.js';
 
 const requestApprovalExample = {
@@ -108,6 +109,7 @@ export const manifest = defineAddon({
     }),
   ],
   views,
+  httpPlugins: [workflowHttpPlugin],
   menus: [
     { model: WorkflowInstance.modelName, label: 'Workflows', group: 'Workspace', sequence: 18 },
     { model: WorkflowEvent.modelName, label: 'Workflow History', group: 'Workspace', sequence: 19 },

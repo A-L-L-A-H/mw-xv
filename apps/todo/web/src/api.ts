@@ -82,7 +82,7 @@ export const getDocuments = async (layer?: string, project?: string) => {
   if (layer && layer !== "all") params.set("layer", layer);
   if (project && project !== "all") params.set("project", project);
   const qs = params.toString();
-  const res = await api<any>("GET", `/documents${qs ? "?" + qs : ""}`);
+  const res = await api<Document[] | { documents: Document[] }>("GET", `/documents${qs ? "?" + qs : ""}`);
   const arr = Array.isArray(res) ? res : res.documents || [];
   return { documents: arr.map(normalizeDocument) };
 };
@@ -130,9 +130,9 @@ export const updateDocument = async (id: number, patch: any) => {
   return { document: normalizeDocument(raw) };
 };
 
-export const deleteDocument = (id: number) => api<any>("DELETE", `/documents/${id}`);
+export const deleteDocument = (id: number) => api<void>("DELETE", `/documents/${id}`);
 
-export const claimTask = (id: number) => api<any>("POST", `/tasks/${id}/claim`);
+export const claimTask = (id: number) => api<TaskReply>("POST", `/tasks/${id}/claim`);
 
 export const toggleChecklist = (id: number, ac_id: string, done?: boolean) => api<any>("POST", `/tasks/${id}/checklist`, { ac_id, done });
 
@@ -179,4 +179,40 @@ export function localStorageSet(key: string, value: string): void {
   } catch {
     // ignore storage errors
   }
+}
+
+export interface MoonWitnessTodoTaskSnapshot {
+  code: string;
+  title: string;
+  summary?: string;
+  priority?: string;
+  status?: string;
+  due_date?: string;
+  blocked_reason?: string;
+}
+
+export async function syncWithMoonWitnessProject(
+  projectId: number,
+  tasks: readonly MoonWitnessTodoTaskSnapshot[],
+  defaultStageId?: number,
+  apiUrl = 'http://127.0.0.1:3000',
+  token?: string
+): Promise<{ imported: number; updated: number; snapshots: readonly MoonWitnessTodoTaskSnapshot[] }> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`${apiUrl.replace(/\/+$/u, '')}/api/projects/${projectId}/todo-sync`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ default_stage_id: defaultStageId, tasks }),
+  });
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => '');
+    throw new Error(`MoonWitness project sync failed (${res.status}): ${errorText}`);
+  }
+  const result = (await res.json()) as {
+    success: boolean;
+    data: { imported: number; updated: number; snapshots: readonly MoonWitnessTodoTaskSnapshot[] };
+  };
+  return result.data;
 }

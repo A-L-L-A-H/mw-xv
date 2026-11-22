@@ -2,18 +2,24 @@ mod radius_protocol;
 
 use anyhow::Result;
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Request, State},
     http::StatusCode,
+    middleware::{self, Next},
+    response::Response,
     routing::{get, post},
     Json, Router,
 };
 use clap::Parser;
+use hmac::{Hmac, Mac};
 use radius_protocol::{
     acct_status, attr_type, codes, constant_time_eq, decode_packet, decrypt_pap_password,
-    encode_response, verify_accounting_authenticator, verify_chap_password, RadiusAttribute,
+    encode_disconnect_request, encode_response, verify_accounting_authenticator,
+    verify_chap_password, verify_response_authenticator, RadiusAttribute,
 };
+use sha2::Sha256;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::str::FromStr;
+use std::time::Duration;
 use tokio::net::UdpSocket;
 use tokio::signal;
 use tracing::{info, warn};
@@ -25,7 +31,7 @@ struct Cli {
     radius_addr: String,
     #[arg(long, default_value = "0.0.0.0:1813")]
     acct_addr: String,
-    #[arg(long, default_value = "0.0.0.0:3000")]
+    #[arg(long, default_value = "127.0.0.1:3000")]
     http_addr: String,
     #[arg(long, default_value = "isp.db")]
     db_path: String,
@@ -60,7 +66,9 @@ async fn main() -> Result<()> {
     let acct_handle = tokio::spawn(async move { run_acct_server(acct_addr, acct_db).await });
 
     let http_db = db.clone();
-    let http_handle = tokio::spawn(async move { run_http_server(http_addr, http_db).await });
+    let admin_token = resolve_admin_token(cfg.admin_token.as_deref(), &cli.db_path)?;
+    info!("Admin API bearer token resolved (source-verified, not logged)");
+    let http_handle = tokio::spawn(async move { run_http_server(http_addr, http_db, admin_token).await });
 
     info!(
         "MoonWitness ISP server started (auth={}, acct={}, http={})",
@@ -77,9 +85,7 @@ async fn main() -> Result<()> {
 }
 
 fn load_config(cli_db_path: &str) -> Result<Config> {
-    let mut builder = config::Config::builder()
-        .set_default("db_path", cli_db_path)?
-        .set_default("admin_token", "moonwitness-isp-admin")?;
+    let mut builder = config::Config::builder().set_default("db_path", cli_db_path)?;
     builder = builder.add_source(config::File::with_name("config").required(false));
     builder = builder.add_source(config::Environment::with_prefix("MW_ISP").separator("_"));
     Ok(builder.build()?.try_deserialize()?)
@@ -88,7 +94,82 @@ fn load_config(cli_db_path: &str) -> Result<Config> {
 #[derive(Debug, Clone, serde::Deserialize)]
 struct Config {
     db_path: String,
-    #[allow(dead_code)]
+    admin_token: Option<String>,
+}
+
+const ADMIN_TOKEN_MESSAGE: &[u8] = b"moonwitness-isp-admin-v1";
+
+/// Resolve the runtime admin bearer token:
+/// 1. explicit `MW_ISP_ADMIN_TOKEN` (config/env) when non-empty after trim;
+/// 2. HMAC-SHA256(key = secret, msg = "moonwitness-isp-admin-v1") over
+///    `MW_INTERNAL_SECRET` (falling back to `JWT_SECRET`) when set and non-empty;
+/// 3. `<parent_dir(db_path)>/.admin-token` file: reuse if present, otherwise
+///    generate 32 random hex-encoded bytes and persist (mode 0o600 on unix).
+fn resolve_admin_token(configured: Option<&str>, db_path: &str) -> Result<String> {
+    if let Some(token) = configured.map(str::trim).filter(|t| !t.is_empty()) {
+        return Ok(token.to_string());
+    }
+
+    let internal_secret = std::env::var("MW_INTERNAL_SECRET")
+        .ok()
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+        .or_else(|| {
+            std::env::var("JWT_SECRET")
+                .ok()
+                .map(|v| v.trim().to_string())
+                .filter(|v| !v.is_empty())
+        });
+    if let Some(secret) = internal_secret {
+        let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes())
+            .expect("HMAC accepts any key length");
+        mac.update(ADMIN_TOKEN_MESSAGE);
+        return Ok(hex::encode(mac.finalize().into_bytes()));
+    }
+
+    let token_path = std::path::Path::new(db_path)
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .map(|p| p.join(".admin-token"))
+        .unwrap_or_else(|| std::path::PathBuf::from(".admin-token"));
+    if let Ok(existing) = std::fs::read_to_string(&token_path) {
+        let trimmed = existing.trim();
+        if !trimmed.is_empty() {
+            return Ok(trimmed.to_string());
+        }
+    }
+
+    use rand::RngCore;
+    let mut bytes = [0u8; 32];
+    rand::rngs::OsRng.fill_bytes(&mut bytes);
+    let token = hex::encode(bytes);
+    write_admin_token_file(&token_path, &token)?;
+    Ok(token)
+}
+
+fn write_admin_token_file(path: &std::path::Path, token: &str) -> Result<()> {
+    #[cfg(unix)]
+    {
+        use std::io::Write;
+        use std::os::unix::fs::OpenOptionsExt;
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .mode(0o600)
+            .open(path)?;
+        file.write_all(token.as_bytes())?;
+    }
+    #[cfg(not(unix))]
+    {
+        std::fs::write(path, token)?;
+    }
+    Ok(())
+}
+
+#[derive(Clone)]
+struct AppState {
+    db: Database,
     admin_token: String,
 }
 
@@ -358,6 +439,51 @@ impl Database {
         .fetch_all(&self.pool)
         .await?;
         Ok(rows)
+    }
+
+    fn pool(&self) -> &sqlx::SqlitePool {
+        &self.pool
+    }
+
+    /// Find the most recent active session for a username, optionally narrowed
+    /// by NAS IP or framed IP. Used to resolve nas_ip / session_id for CoA.
+    async fn find_active_session(
+        &self,
+        username: &str,
+        nas_ip: Option<&str>,
+        framed_ip: Option<&str>,
+    ) -> Result<Option<RadiusSessionRow>> {
+        let row = sqlx::query_as(
+            "SELECT id, session_id, username, nas_ip, nas_port, framed_ip, calling_station_id,
+                    acct_input_octets, acct_output_octets, acct_session_time, status, terminate_cause,
+                    started_at, updated_at, stopped_at
+             FROM radius_sessions
+             WHERE username = ?1 AND status = 'active'
+               AND (?2 IS NULL OR nas_ip = ?2)
+               AND (?3 IS NULL OR framed_ip = ?3)
+             ORDER BY id DESC LIMIT 1",
+        )
+        .bind(username)
+        .bind(nas_ip)
+        .bind(framed_ip)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(row)
+    }
+
+    /// Mark matching active sessions as terminated after a successful RFC 5176
+    /// Disconnect-ACK (terminate cause 6 = Admin-Reset per RFC 2866 §5.4.6).
+    async fn mark_sessions_terminated(&self, username: &str, session_id: Option<&str>) -> Result<()> {
+        sqlx::query(
+            "UPDATE radius_sessions
+             SET status = 'terminated', terminate_cause = 6, stopped_at = datetime('now'), updated_at = datetime('now')
+             WHERE username = ?1 AND status = 'active' AND (?2 IS NULL OR session_id = ?2)",
+        )
+        .bind(username)
+        .bind(session_id)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
     }
 }
 
@@ -742,16 +868,25 @@ async fn run_acct_server(addr: SocketAddr, db: Database) -> Result<()> {
     }
 }
 
-async fn run_http_server(addr: SocketAddr, db: Database) -> Result<()> {
-    let app = Router::new()
-        .route("/health", get(health))
+fn build_http_router(db: Database, admin_token: String) -> Router {
+    let state = AppState { db, admin_token };
+    let protected = Router::new()
         .route("/api/clients", get(list_clients).post(create_client))
         .route("/api/clients/{ip}/rotate-secret", post(rotate_secret))
         .route("/api/subscribers", get(list_subscribers).post(upsert_subscriber))
         .route("/api/subscribers/{username}/suspend", post(suspend_subscriber))
         .route("/api/sessions", get(list_sessions))
+        .route("/api/sessions/disconnect", post(disconnect_session))
         .route("/api/stats", get(get_stats))
-        .with_state(db);
+        .route_layer(middleware::from_fn_with_state(state.clone(), require_bearer_auth));
+    Router::new()
+        .route("/health", get(health))
+        .merge(protected)
+        .with_state(state)
+}
+
+async fn run_http_server(addr: SocketAddr, db: Database, admin_token: String) -> Result<()> {
+    let app = build_http_router(db, admin_token);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
     info!("HTTP admin API listening on {}", addr);
@@ -759,12 +894,32 @@ async fn run_http_server(addr: SocketAddr, db: Database) -> Result<()> {
     Ok(())
 }
 
+async fn require_bearer_auth(
+    State(state): State<AppState>,
+    req: Request,
+    next: Next,
+) -> Result<Response, StatusCode> {
+    let authorized = req
+        .headers()
+        .get(axum::http::header::AUTHORIZATION)
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.strip_prefix("Bearer "))
+        .map(|token| constant_time_eq(token.as_bytes(), state.admin_token.as_bytes()))
+        .unwrap_or(false);
+    if authorized {
+        Ok(next.run(req).await)
+    } else {
+        Err(StatusCode::UNAUTHORIZED)
+    }
+}
+
 async fn health() -> Json<serde_json::Value> {
     Json(serde_json::json!({"status": "ok"}))
 }
 
-async fn list_clients(State(db): State<Database>) -> Result<Json<Vec<NasClient>>, StatusCode> {
-    let clients = db
+async fn list_clients(State(state): State<AppState>) -> Result<Json<Vec<NasClient>>, StatusCode> {
+    let clients = state
+        .db
         .get_clients()
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -772,10 +927,11 @@ async fn list_clients(State(db): State<Database>) -> Result<Json<Vec<NasClient>>
 }
 
 async fn create_client(
-    State(db): State<Database>,
+    State(state): State<AppState>,
     Json(payload): Json<CreateClientRequest>,
 ) -> Result<Json<NasClient>, StatusCode> {
-    let client = db
+    let client = state
+        .db
         .upsert_client(&payload.name, &payload.ip_address, &payload.secret)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -783,14 +939,15 @@ async fn create_client(
 }
 
 async fn rotate_secret(
-    State(db): State<Database>,
+    State(state): State<AppState>,
     Path(ip): Path<String>,
     Json(payload): Json<RotateSecretRequest>,
 ) -> Result<Json<NasClient>, StatusCode> {
     if payload.secret.len() < 12 {
         return Err(StatusCode::BAD_REQUEST);
     }
-    let client = db
+    let client = state
+        .db
         .rotate_client_secret(
             &ip,
             &payload.secret,
@@ -803,9 +960,10 @@ async fn rotate_secret(
 }
 
 async fn list_subscribers(
-    State(db): State<Database>,
+    State(state): State<AppState>,
 ) -> Result<Json<Vec<SubscriberSummary>>, StatusCode> {
-    let rows = db
+    let rows = state
+        .db
         .list_subscribers()
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -813,10 +971,11 @@ async fn list_subscribers(
 }
 
 async fn upsert_subscriber(
-    State(db): State<Database>,
+    State(state): State<AppState>,
     Json(payload): Json<UpsertSubscriberRequest>,
 ) -> Result<Json<SubscriberSummary>, StatusCode> {
-    let sub = db
+    let sub = state
+        .db
         .upsert_subscriber(&payload)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -824,10 +983,11 @@ async fn upsert_subscriber(
 }
 
 async fn suspend_subscriber(
-    State(db): State<Database>,
+    State(state): State<AppState>,
     Path(username): Path<String>,
 ) -> Result<Json<SubscriberSummary>, StatusCode> {
-    let sub = db
+    let sub = state
+        .db
         .update_subscriber_status(&username, "suspended")
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
@@ -836,32 +996,179 @@ async fn suspend_subscriber(
 }
 
 async fn list_sessions(
-    State(db): State<Database>,
+    State(state): State<AppState>,
 ) -> Result<Json<Vec<RadiusSessionRow>>, StatusCode> {
-    let rows = db
+    let rows = state
+        .db
         .list_sessions()
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     Ok(Json(rows))
 }
 
-async fn get_stats(State(db): State<Database>) -> Result<Json<AuthStats>, StatusCode> {
+#[derive(serde::Deserialize)]
+struct DisconnectRequest {
+    username: String,
+    nas_ip: Option<String>,
+    acct_session_id: Option<String>,
+    framed_ip: Option<String>,
+    coa_port: Option<u16>,
+}
+
+#[derive(serde::Serialize)]
+struct DisconnectResponse {
+    sent: bool,
+    ack: bool,
+    nas_ip: Option<String>,
+    error: Option<String>,
+}
+
+async fn disconnect_session(
+    State(state): State<AppState>,
+    Json(payload): Json<DisconnectRequest>,
+) -> Result<Json<DisconnectResponse>, StatusCode> {
+    let (db, admin_token_unused) = (state.db, state.admin_token.clone());
+    let _ = admin_token_unused;
+
+    // Resolve nas_ip / session id from matching active sessions when omitted.
+    let (nas_ip, session_id) = match (&payload.nas_ip, &payload.acct_session_id) {
+        (Some(ip), Some(sid)) => (Some(ip.clone()), Some(sid.clone())),
+        _ => {
+            let session = db
+                .find_active_session(&payload.username, payload.nas_ip.as_deref(), payload.framed_ip.as_deref())
+                .await
+                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            match session {
+                Some(row) => (
+                    payload.nas_ip.clone().or(row.nas_ip.clone()),
+                    payload.acct_session_id.clone().or(Some(row.session_id.clone())),
+                ),
+                None => (payload.nas_ip.clone(), payload.acct_session_id.clone()),
+            }
+        }
+    };
+
+    let Some(nas_ip) = nas_ip else {
+        return Ok(Json(DisconnectResponse {
+            sent: false,
+            ack: false,
+            nas_ip: None,
+            error: Some("no active session or nas_ip provided".to_string()),
+        }));
+    };
+
+    let nas = match db.find_client_with_secret(&nas_ip).await {
+        Ok(Some(c)) => c,
+        Ok(None) => return Err(StatusCode::NOT_FOUND),
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+
+    let coa_port = payload.coa_port.unwrap_or(3799);
+    let target: SocketAddr = match format!("{}:{}", nas_ip, coa_port).parse() {
+        Ok(addr) => addr,
+        Err(err) => {
+            return Ok(Json(DisconnectResponse {
+                sent: false,
+                ack: false,
+                nas_ip: Some(nas_ip),
+                error: Some(format!("invalid target address: {}", err)),
+            }));
+        }
+    };
+
+    match send_disconnect_request(target, &nas_ip, &nas.secret, session_id.as_deref(), &payload).await {
+        Ok(ack) => {
+            if ack {
+                if let Err(err) = db
+                    .mark_sessions_terminated(&payload.username, session_id.as_deref())
+                    .await
+                {
+                    warn!(
+                        "Disconnect acknowledged but failed to mark sessions terminated for {}: {}",
+                        payload.username, err
+                    );
+                }
+            }
+            Ok(Json(DisconnectResponse {
+                sent: true,
+                ack,
+                nas_ip: Some(nas_ip),
+                error: None,
+            }))
+        }
+        Err(err) => Ok(Json(DisconnectResponse {
+            sent: false,
+            ack: false,
+            nas_ip: Some(nas_ip),
+            error: Some(err.to_string()),
+        })),
+    }
+}
+
+async fn send_disconnect_request(
+    target: SocketAddr,
+    nas_ip: &str,
+    secret: &str,
+    session_id: Option<&str>,
+    payload: &DisconnectRequest,
+) -> anyhow::Result<bool> {
+    let bind_addr = if target.ip().is_loopback() {
+        "127.0.0.1:0"
+    } else {
+        "0.0.0.0:0"
+    };
+    let socket = UdpSocket::bind(bind_addr).await?;
+    socket.connect(target).await?;
+
+    let mut attributes = vec![RadiusAttribute::string(attr_type::USER_NAME, &payload.username)];
+    if let Some(session_id) = session_id {
+        attributes.push(RadiusAttribute::string(attr_type::ACCT_SESSION_ID, session_id));
+    }
+    if let Some(framed_ip) = payload.framed_ip.as_deref() {
+        if let Ok(ip) = framed_ip.parse::<Ipv4Addr>() {
+            attributes.push(RadiusAttribute::ipv4(attr_type::FRAMED_IP_ADDRESS, ip));
+        }
+    }
+
+    let packet = encode_disconnect_request(1, &attributes, secret.as_bytes());
+    socket.send(&packet).await?;
+
+    let request_authenticator: [u8; 16] = packet[4..20].try_into().expect("authenticator is 16 bytes");
+    let mut buf = [0u8; 4096];
+    let (len, _src) = tokio::time::timeout(Duration::from_millis(1500), socket.recv_from(&mut buf))
+        .await
+        .map_err(|_| anyhow::anyhow!("timed out waiting for Disconnect-ACK/NAK from {}", nas_ip))??;
+
+    let reply = &buf[..len];
+    let decoded = decode_packet(reply)
+        .map_err(|e| anyhow::anyhow!("malformed RADIUS reply from {}: {}", nas_ip, e))?;
+    if !verify_response_authenticator(reply, &request_authenticator, secret.as_bytes()) {
+        return Err(anyhow::anyhow!(
+            "invalid Response-Authenticator from NAS {}",
+            nas_ip
+        ));
+    }
+    Ok(decoded.code == codes::DISCONNECT_ACK)
+}
+
+async fn get_stats(State(state): State<AppState>) -> Result<Json<AuthStats>, StatusCode> {
+    let db = &state.db;
     let total_clients: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM nas_clients")
-        .fetch_one(&db.pool)
+        .fetch_one(db.pool())
         .await
         .unwrap_or(0);
     let enabled_clients: i64 =
         sqlx::query_scalar("SELECT COUNT(*) FROM nas_clients WHERE enabled = 1")
-            .fetch_one(&db.pool)
+            .fetch_one(db.pool())
             .await
             .unwrap_or(0);
     let total_subscribers: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM subscribers")
-        .fetch_one(&db.pool)
+        .fetch_one(db.pool())
         .await
         .unwrap_or(0);
     let active_sessions: i64 =
         sqlx::query_scalar("SELECT COUNT(*) FROM radius_sessions WHERE status = 'active'")
-            .fetch_one(&db.pool)
+            .fetch_one(db.pool())
             .await
             .unwrap_or(0);
 
@@ -1119,5 +1426,223 @@ mod tests {
         assert_eq!(sessions[0].acct_input_octets, 102400);
         assert_eq!(sessions[0].acct_output_octets, 204800);
         assert_eq!(sessions[0].acct_session_time, 3600);
+    }
+
+    static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    #[test]
+    fn resolves_admin_token_with_precedence() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let dir = tempfile::tempdir().unwrap();
+        let db_path = dir.path().join("isp.db");
+        let db_str = db_path.to_str().unwrap();
+
+        let prev_internal = std::env::var("MW_INTERNAL_SECRET").ok();
+        let prev_jwt = std::env::var("JWT_SECRET").ok();
+
+        // SAFETY: serialized across tests via ENV_LOCK.
+        unsafe {
+            std::env::set_var("MW_INTERNAL_SECRET", "internal-secret-abc");
+            std::env::set_var("JWT_SECRET", "jwt-secret-xyz");
+        }
+
+        // 1. Explicit configured token wins over secrets and token file.
+        let explicit = resolve_admin_token(Some("  explicit-token-123  "), db_str).unwrap();
+        assert_eq!(explicit, "explicit-token-123");
+
+        // 2. MW_INTERNAL_SECRET wins over JWT_SECRET when configured is None/empty.
+        let from_internal = resolve_admin_token(Some("   "), db_str).unwrap();
+        assert_eq!(from_internal.len(), 64);
+
+        // 3. JWT_SECRET fallback derives deterministic HMAC-SHA256 hex digest.
+        // SAFETY: serialized across tests via ENV_LOCK.
+        unsafe {
+            std::env::remove_var("MW_INTERNAL_SECRET");
+        }
+        let from_jwt = resolve_admin_token(None, db_str).unwrap();
+        let mut expected_mac = Hmac::<Sha256>::new_from_slice(b"jwt-secret-xyz").unwrap();
+        expected_mac.update(ADMIN_TOKEN_MESSAGE);
+        let expected_hex = hex::encode(expected_mac.finalize().into_bytes());
+        assert_eq!(from_jwt, expected_hex);
+        assert_ne!(from_jwt, from_internal);
+
+        // 4. Standalone fallback generates and persists .admin-token file.
+        // SAFETY: serialized across tests via ENV_LOCK.
+        unsafe {
+            std::env::remove_var("JWT_SECRET");
+        }
+        let token_file = dir.path().join(".admin-token");
+        assert!(!token_file.exists());
+        let generated = resolve_admin_token(None, db_str).unwrap();
+        assert_eq!(generated.len(), 64);
+        assert!(token_file.exists());
+        let reused = resolve_admin_token(None, db_str).unwrap();
+        assert_eq!(reused, generated);
+
+        // Restore prior env state.
+        // SAFETY: serialized across tests via ENV_LOCK.
+        unsafe {
+            match prev_internal {
+                Some(v) => std::env::set_var("MW_INTERNAL_SECRET", v),
+                None => std::env::remove_var("MW_INTERNAL_SECRET"),
+            }
+            match prev_jwt {
+                Some(v) => std::env::set_var("JWT_SECRET", v),
+                None => std::env::remove_var("JWT_SECRET"),
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn http_router_enforces_bearer_auth_and_allows_health() {
+        use axum::body::Body;
+        use axum::http::{header, Request};
+        use tower::ServiceExt;
+
+        let (_dir, db) = test_db().await;
+        let token = "test-admin-token-64chars-0000000000000000000000000000000000000";
+        let app = build_http_router(db, token.to_string());
+
+        // /health is unauthenticated.
+        let health_res = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/health")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(health_res.status(), StatusCode::OK);
+
+        // /api/clients without Authorization returns 401.
+        let unauth_res = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/clients")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(unauth_res.status(), StatusCode::UNAUTHORIZED);
+
+        // /api/clients with wrong Bearer token returns 401.
+        let bad_auth_res = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/clients")
+                    .header(header::AUTHORIZATION, "Bearer wrong-token")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(bad_auth_res.status(), StatusCode::UNAUTHORIZED);
+
+        // /api/clients with valid Bearer token returns 200.
+        let ok_res = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/clients")
+                    .header(header::AUTHORIZATION, format!("Bearer {}", token))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(ok_res.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn disconnect_session_sends_rfc5176_packet_and_marks_session_terminated() {
+        use axum::body::{to_bytes, Body};
+        use axum::http::{header, Method, Request};
+        use tower::ServiceExt;
+
+        let (_dir, db) = test_db().await;
+        let nas_secret = "coa-shared-secret-123";
+        db.upsert_client("Loopback CoA NAS", "127.0.0.1", nas_secret)
+            .await
+            .unwrap();
+        db.record_accounting(
+            "sess-coa-900",
+            "fiber-cust-9",
+            "127.0.0.1",
+            Some("1".to_string()),
+            Some("100.64.9.9".to_string()),
+            None,
+            acct_status::START,
+            0,
+            0,
+            0,
+            None,
+        )
+        .await
+        .unwrap();
+
+        let nas_sock = UdpSocket::bind("127.0.0.1:0").await.unwrap();
+        let coa_port = nas_sock.local_addr().unwrap().port();
+        let nas_task = tokio::spawn(async move {
+            let mut buf = [0u8; 4096];
+            let (len, src) = nas_sock.recv_from(&mut buf).await.unwrap();
+            let req = decode_packet(&buf[..len]).unwrap();
+            assert_eq!(req.code, codes::DISCONNECT_REQUEST);
+            assert_eq!(
+                req.attribute(attr_type::USER_NAME).map(RadiusAttribute::as_str),
+                Some("fiber-cust-9".to_string())
+            );
+            assert_eq!(
+                req.attribute(attr_type::ACCT_SESSION_ID).map(RadiusAttribute::as_str),
+                Some("sess-coa-900".to_string())
+            );
+            let ack = encode_response(
+                codes::DISCONNECT_ACK,
+                req.identifier,
+                &req.authenticator,
+                &[],
+                nas_secret.as_bytes(),
+            );
+            nas_sock.send_to(&ack, src).await.unwrap();
+        });
+
+        let token = "disconnect-test-token";
+        let app = build_http_router(db.clone(), token.to_string());
+        let body = serde_json::json!({
+            "username": "fiber-cust-9",
+            "coa_port": coa_port
+        });
+        let res = app
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/api/sessions/disconnect")
+                    .header(header::AUTHORIZATION, format!("Bearer {}", token))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(body.to_string()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+
+        let bytes = to_bytes(res.into_body(), 16 * 1024).await.unwrap();
+        let payload: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(payload["sent"], true);
+        assert_eq!(payload["ack"], true);
+        assert_eq!(payload["nas_ip"], "127.0.0.1");
+        assert!(payload["error"].is_null());
+
+        nas_task.await.unwrap();
+
+        let sessions = db.list_sessions().await.unwrap();
+        assert_eq!(sessions.len(), 1);
+        assert_eq!(sessions[0].session_id, "sess-coa-900");
+        assert_eq!(sessions[0].status, "terminated");
+        assert_eq!(sessions[0].terminate_cause, Some(6));
+        assert!(sessions[0].stopped_at.is_some());
     }
 }

@@ -18,7 +18,10 @@ import {
   buildRepoSnapshot,
   compileExecutionPacket,
   createRedactor,
+  detectCapabilityOverlap,
+  validateDiffScope,
   type CompiledExecutionPacket,
+  type OverlapReport,
   type RepoGitRevision,
   type RepoSnapshot,
 } from '@moonwitness/ai-runtime';
@@ -36,6 +39,7 @@ import type {
   BoundedPtyCommandResult,
   DesktopActionAuthContext,
   DesktopExecutionPacketRequest,
+  DesktopOverlapDetectionRequest,
   DesktopRepoSnapshotOptions,
   GitWorktreeLease,
   RiskAuditRecord,
@@ -524,6 +528,17 @@ export class WorktreeSandbox {
     const patch = redactSensitiveText(rawPatch, this.knownSecrets).text;
     const patchSha256 = sha256Hex(patch);
 
+    const effectiveAllowed =
+      lease.allowedPaths.length > 0
+        ? lease.allowedPaths
+        : this.defaultAllowedPaths.length > 0
+          ? this.defaultAllowedPaths
+          : ['.'];
+    const diffScope = validateDiffScope(
+      files.map((file) => file.path),
+      effectiveAllowed
+    );
+
     let patchStorageKey: string | undefined;
     const storage = options?.attachmentStorage ?? this.attachmentStorage;
     if (storage && patch.length > 0) {
@@ -539,6 +554,8 @@ export class WorktreeSandbox {
       headCommit: lease.headCommit,
       clean: statusEntries.length === 0,
       files,
+      outOfScopeFiles: diffScope.outOfScopeFiles,
+      scopeClean: diffScope.scopeClean,
       patch,
       patchSha256,
       ...(patchStorageKey ? { patchStorageKey } : {}),
@@ -689,6 +706,44 @@ export class WorktreeSandbox {
       ...(request.approvedSkills !== undefined ? { approvedSkills: request.approvedSkills } : {}),
       ...(request.policyLimits !== undefined ? { policyLimits: request.policyLimits } : {}),
       ...(request.targetBranch !== undefined ? { targetBranch: request.targetBranch } : {}),
+      redactor,
+    });
+  }
+
+  /**
+   * M13.06: R0 read-only capability overlap detector bound to an active worktree lease.
+   * Reuses `inspectRepoSnapshot` R0 gates (`repo.read` + `git.status`, tenant & allowlist checks)
+   * and returns an advisory-only `OverlapReport` (`automatedMutationsAllowed: false`).
+   */
+  async detectCapabilityOverlap(
+    runId: string,
+    auth: DesktopActionAuthContext,
+    request: DesktopOverlapDetectionRequest
+  ): Promise<OverlapReport> {
+    const snapshot = await this.inspectRepoSnapshot(runId, auth, request.snapshotOptions);
+    const lease = this.getLease(runId);
+    const realLeasePath = realpathSync(lease.worktreePath);
+    const allowlistedPaths = this.resolveSnapshotAllowlist(
+      lease,
+      auth,
+      request.snapshotOptions?.targetPath
+    );
+    const redactor = createRedactor(this.knownSecrets);
+    const inspector = new ReadOnlyRepoInspector({
+      rootDir: realLeasePath,
+      allowlistedPaths,
+      ...(request.snapshotOptions?.maxFiles !== undefined
+        ? { maxFilesPerList: Math.max(1, Math.floor(request.snapshotOptions.maxFiles)) + 1 }
+        : {}),
+      redactor,
+    });
+
+    return detectCapabilityOverlap({
+      companyId: auth.companyId,
+      repoSnapshot: snapshot,
+      requirements: request.requirements,
+      ...(request.existingTasks !== undefined ? { existingTasks: request.existingTasks } : {}),
+      inspector,
       redactor,
     });
   }

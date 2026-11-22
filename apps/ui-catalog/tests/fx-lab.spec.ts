@@ -94,3 +94,55 @@ test('active particle scene stays within the Chromium frame-time budget (W6-003)
   expect(frameReport.p95FrameMs).toBeLessThanOrEqual(50);
   expect(frameReport.maxFrameMs).toBeLessThanOrEqual(150);
 });
+
+test('scene ambience loads only after consent and pauses the previous source on switch (W6-006)', async ({ page }) => {
+  await page.addInitScript(() => {
+    type AudioEvent = { type: 'play' | 'pause'; src: string; volume: number; loop: boolean };
+    const audioEvents: AudioEvent[] = [];
+    Object.defineProperty(window, '__sceneAudioEvents', { value: audioEvents });
+    const NativeAudio = window.Audio;
+    window.Audio = new Proxy(NativeAudio, {
+      construct(target, args) {
+        const audio = Reflect.construct(target, args) as HTMLAudioElement;
+        audio.play = () => {
+          audioEvents.push({ type: 'play', src: audio.src, volume: audio.volume, loop: audio.loop });
+          return Promise.resolve();
+        };
+        audio.pause = () => {
+          audioEvents.push({ type: 'pause', src: audio.src, volume: audio.volume, loop: audio.loop });
+        };
+        return audio;
+      },
+    });
+  });
+  await page.goto('./#fx-lab');
+  const audioPanel = page.getByTestId('fx-audio');
+  const readEvents = () => page.evaluate(() =>
+    (window as unknown as { __sceneAudioEvents: Array<{ type: string; src: string; volume: number; loop: boolean }> }).__sceneAudioEvents
+  );
+  expect(await readEvents()).toEqual([]);
+
+  await audioPanel.getByRole('button', { name: 'Enable gesture' }).click();
+  expect(await readEvents()).toEqual([]);
+  await audioPanel.getByRole('button', { name: 'Unmute' }).click();
+  await expect.poll(readEvents).toHaveLength(1);
+  const firstPlay = (await readEvents())[0];
+  expect(firstPlay.type).toBe('play');
+  expect(firstPlay.src).toMatch(/ambience-moon-city-night-.*\.wav/u);
+  expect(firstPlay.volume).toBeLessThanOrEqual(0.18);
+  expect(firstPlay.loop).toBe(true);
+
+  await audioPanel.getByRole('button', { name: 'Archive' }).click();
+  await expect.poll(async () => (await readEvents()).filter((entry) => entry.type === 'play')).toHaveLength(2);
+  const switchedEvents = await readEvents();
+  expect(switchedEvents[1].type).toBe('pause');
+  expect(switchedEvents[1].src).toMatch(/ambience-moon-city-night-.*\.wav/u);
+  expect(switchedEvents[2].type).toBe('play');
+  expect(switchedEvents[2].src).toMatch(/ambience-archive-quiet-.*\.wav/u);
+
+  await audioPanel.getByRole('button', { name: 'Mute' }).click();
+  const mutedEvents = await readEvents();
+  expect(mutedEvents.at(-1)?.type).toBe('pause');
+  expect(mutedEvents.at(-1)?.src).toMatch(/ambience-archive-quiet-.*\.wav/u);
+  await expect(audioPanel.locator('.fx-lab-audio-status')).toContainText('Muted: yes');
+});

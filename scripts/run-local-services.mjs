@@ -1,8 +1,13 @@
 import { spawn, spawnSync } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { createInterface } from 'node:readline';
 import { localServiceScripts } from './local-service-scripts.mjs';
 import { resolvePackageManager } from './package-manager.mjs';
 import { isApiFatalLine, waitForApiReady } from './local-service-orchestrator.mjs';
+
+if (!process.env.MW_INTERNAL_SECRET && !process.env.JWT_SECRET) {
+  process.env.MW_INTERNAL_SECRET = randomBytes(32).toString('hex');
+}
 
 const mode = process.argv[2];
 const selected = localServiceScripts[mode];

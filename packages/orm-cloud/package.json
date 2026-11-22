@@ -20,6 +20,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@moonwitness/jobs": "workspace:*",
     "@moonwitness/orm": "workspace:*",
     "@moonwitness/orm-base": "workspace:*",
     "@moonwitness/orm-project": "workspace:*",
@@ -28,7 +29,6 @@
     "objection": "^3.1.5"
   },
   "devDependencies": {
-    "@moonwitness/jobs": "workspace:*",
     "@moonwitness/orm-crm": "workspace:*",
     "@moonwitness/orm-notification": "workspace:*",
     "@moonwitness/orm-organization": "workspace:*",

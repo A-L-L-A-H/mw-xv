@@ -7,12 +7,14 @@ import {
   SubscriptionTagLink,
 } from './models/index.js';
 import { views } from './views.js';
+import { subscriptionHttpPlugin } from './http.js';
 
 export const manifest = defineAddon({
   name: 'subscription',
   version: '1.0.0',
   depends: ['base', 'sales'],
   models: [SubscriptionPlan, Subscription, SubscriptionInvoiceLine, SubscriptionTagLink],
+  httpPlugins: [subscriptionHttpPlugin],
   data: [
     seed(SubscriptionPlan, 'subscription.plan_monthly_basic', {
       company_id: 1,

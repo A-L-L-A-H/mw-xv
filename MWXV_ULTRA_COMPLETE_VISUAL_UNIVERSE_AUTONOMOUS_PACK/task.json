@@ -2797,7 +2797,7 @@
       "id": "W6-005",
       "phase": "W6",
       "title": "Create environment ambience pack",
-      "status": "skipped",
+      "status": "done",
       "priority": "P1",
       "role": "sound-designer",
       "parallel_group": "serial",
@@ -2824,7 +2824,7 @@
       ],
       "risk": "low",
       "human_approval_required": true,
-      "notes": "Existing localized UI sound consent and provenance are verified in evidence/audio-consent-audit.md. The distinct scene ambience deliverable is not authorized/generated: W1-001 canonical art direction and W2-003 soundscape provenance contract are still gated/uncompleted, and no additional ambience asset is claimed. Reopen when the dependent scene audio contract is approved.",
+      "notes": "Completed after explicit user request to resolve the blocker. Four original deterministic ambience loops are generated, registered in manifest and provenance license, exported to static docs assets, and verified for duration, loop continuity, level and size. Existing W1-007 consent policy and W2-003 provenance contract satisfy dependencies; no third-party license or canonical art direction decision is involved.",
       "evidence": [
         {
           "command": "pnpm test:assets",
@@ -2835,15 +2835,30 @@
           "command": "pnpm test:ui",
           "exit_code": 0,
           "artifact": "audio interaction-consent tests passed within 59 UI tests"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W6-ambience-pack.md; 56 asset tests and static docs export verification passed"
+        },
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "evidence/W6-ambience-pack.md; 71 UI tests passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1",
+          "exit_code": 0,
+          "artifact": "evidence/W6-ambience-pack.md; 12 browser tests passed, including consent, source switching, mute, responsive scene diagnostics"
         }
       ],
-      "commit": null
+      "commit": "5f91fc232062200e83643e0358677335936ee0ff"
     },
     {
       "id": "W6-006",
       "phase": "W6",
       "title": "Implement scene soundscape controller",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -2871,7 +2886,7 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Blocked by prerequisite W6-005, which is skipped because no provenance-complete, authorized scene ambience assets exist. Existing localized UI sound consent does not fulfill the distinct ambience pack. Reopen after the scene audio provenance contract and source/license are approved.",
+      "notes": "Integrated the scene ambience controller with canonical ambience assets. Playback remains muted until gesture and opt-in, only one source plays, source changes and mute pause prior audio, missing sources stay silent, volume is capped in FX Lab, and playback errors are contained.",
       "evidence": [
         {
           "command": "dependency audit: W6-005 status and notes",
@@ -2882,9 +2897,24 @@
           "command": "node --test packages/ui/tests/scene-components.test.mjs packages/ui/tests/scene-fx-audio.test.mjs",
           "exit_code": 0,
           "artifact": "evidence/W6-W7-execution.md; existing controller contract 6/6 passed but is not scene ambience integration"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W6-ambience-pack.md; 56 asset tests and static docs export verification passed"
+        },
+        {
+          "command": "pnpm test:ui",
+          "exit_code": 0,
+          "artifact": "evidence/W6-ambience-pack.md; 71 UI tests passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/ui-catalog exec playwright test tests/fx-lab.spec.ts tests/scene-harness.spec.ts --workers=1",
+          "exit_code": 0,
+          "artifact": "evidence/W6-ambience-pack.md; 12 browser tests passed, including consent, source switching, mute, responsive scene diagnostics"
         }
       ],
-      "commit": "578d39c"
+      "commit": "5f91fc232062200e83643e0358677335936ee0ff"
     },
     {
       "id": "W6-007",
@@ -4411,7 +4441,7 @@
       "id": "W8-010",
       "phase": "W8",
       "title": "Implement visual coverage for knowledge addon",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
@@ -4447,9 +4477,35 @@
       ],
       "risk": "medium",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Existing Knowledge consumer and source-backed state treatments were audited and verified; no duplicate route, artwork, or synthetic production record was added. Authenticated browser E2E was attempted but the local E2E API did not become ready because PostgreSQL is unavailable and the uncommitted compose file references undefined moonwitness-postgres. See evidence for exact boundary.",
+      "evidence": [
+        {
+          "command": "pnpm board:ui:check",
+          "exit_code": 0,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md; 6 boundary checks passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board typecheck",
+          "exit_code": 0,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md"
+        },
+        {
+          "command": "pnpm test:assets",
+          "exit_code": 0,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md; 56 tests passed and docs exports verified"
+        },
+        {
+          "command": "pnpm test:ui-catalog",
+          "exit_code": 0,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md; 41 browser tests passed"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/board exec playwright test e2e/knowledge-explorer.spec.ts --workers=1",
+          "exit_code": 1,
+          "artifact": "evidence/W8-010-knowledge-visual-coverage.md; API webServer timeout; local E2E database/compose blocker"
+        }
+      ],
+      "commit": "758be5f"
     },
     {
       "id": "W8-011",
@@ -4781,7 +4837,7 @@
       "id": "W9-007",
       "phase": "W9",
       "title": "Decide desktop app scene adoption",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
@@ -4807,15 +4863,31 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Desktop is a Node/Tauri host with no scene-rendering consumer. No @moonwitness/ui or @moonwitness/assets dependency was introduced; portable scene contracts remain in their existing packages. Desktop typecheck and isolated suite passed after building stale ignored ai-runtime declarations from current source.",
+      "evidence": [
+        {
+          "command": "pnpm --filter @moonwitness/ai-runtime build",
+          "exit_code": 0,
+          "artifact": "evidence/W9-007-desktop-adoption.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/desktop typecheck",
+          "exit_code": 0,
+          "artifact": "evidence/W9-007-desktop-adoption.md"
+        },
+        {
+          "command": "pnpm --filter @moonwitness/desktop test",
+          "exit_code": 0,
+          "artifact": "evidence/W9-007-desktop-adoption.md; isolated retry 28/28 passed"
+        }
+      ],
+      "commit": "758be5f"
     },
     {
       "id": "W9-008",
       "phase": "W9",
       "title": "Document complete addon asset handoff",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "technical-writer",
       "parallel_group": "serial",
@@ -4845,9 +4917,35 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
-      "commit": null
+      "notes": "Created docs/design/addon-visual-handoff.md with the backend/API/Board boundary and explicit canonical asset-to-presentation mapping for all 12 active add-ons. Regenerated stale API/model/platform/workspace references from current dev source; unrelated local work remains outside this commit.",
+      "evidence": [
+        {
+          "command": "pnpm docs:generate",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md"
+        },
+        {
+          "command": "pnpm docs:check",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md; generated reference/docs/build/example gates passed"
+        },
+        {
+          "command": "pnpm docs:links",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md; 602 Markdown files and navigation targets passed"
+        },
+        {
+          "command": "node scripts/docs/generate-reference.mjs --check",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md"
+        },
+        {
+          "command": "git diff --check",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md"
+        }
+      ],
+      "commit": "a58a433"
     },
     {
       "id": "W10-001",

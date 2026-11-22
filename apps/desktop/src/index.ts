@@ -2,8 +2,10 @@ export * from './types.js';
 export type {
   CompiledExecutionPacket,
   ExecutionPacketInput,
+  ExistingPlanTaskRef,
   OverlapFinding,
   OverlapReport,
+  OverlapRequirementInput,
   RepoGitRevision,
   RepoSnapshot,
 } from '@moonwitness/ai-runtime';
@@ -87,3 +89,8 @@ export {
   type DesktopCliOptions,
   type DesktopSidecarDaemonHandle,
 } from './cli.js';
+export {
+  executeProjectTaskInSandbox,
+  type AutonomousTaskExecutionOptions,
+  type AutonomousTaskExecutionResult,
+} from './project-loop.js';
