@@ -9837,22 +9837,6 @@
     },
     {
       "method": "GET",
-      "path": "/projects/:id/board"
-    },
-    {
-      "method": "POST",
-      "path": "/projects/:id/todo-sync"
-    },
-    {
-      "method": "POST",
-      "path": "/projects/tasks/:id/work-contract"
-    },
-    {
-      "method": "POST",
-      "path": "/projects/tasks/:id/work-contract/sync-stage"
-    },
-    {
-      "method": "GET",
       "path": "/providers"
     },
     {
@@ -10074,27 +10058,7 @@
     {
       "method": "POST",
       "path": "/work-contracts/:id/verify"
-    },
-    {
-      "method": "GET",
-      "path": "/workflows/definitions"
-    },
-    {
-      "method": "GET",
-      "path": "/workflows/instances"
-    },
-    {
-      "method": "POST",
-      "path": "/workflows/instances"
-    },
-    {
-      "method": "GET",
-      "path": "/workflows/instances/:id"
-    },
-    {
-      "method": "POST",
-      "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "16d4ff5879108451c1126494efb028b629aa713f1d5380761ad34d8d33f045b9"
+  "generatedFromSha256": "538475e1821be3aa466c04eaa12d5e4cc6669256a0368802b292e65bc51bf586"
 }
