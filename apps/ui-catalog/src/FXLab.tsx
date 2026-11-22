@@ -1,13 +1,19 @@
-import { Suspense, lazy, useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@moonwitness/ui/components/button';
-import { SceneParticles, type SceneParticlePreset, type SceneParticleIntensity } from '@moonwitness/ui/components/scene-particles';
-import { ComicSceneTransition, type ComicTransitionVariant } from '@moonwitness/ui/components/scene-transitions';
-import { createSceneSoundscapeController, type SceneAmbienceId } from '@moonwitness/ui/lib/scene-soundscape';
+import {
+  SceneParticles,
+  type SceneParticlePreset,
+  type SceneParticleIntensity,
+} from '@moonwitness/ui/components/scene-particles';
+import {
+  ComicSceneTransition,
+  type ComicTransitionVariant,
+} from '@moonwitness/ui/components/scene-transitions';
+import {
+  createSceneSoundscapeController,
+  type SceneAmbienceId,
+} from '@moonwitness/ui/lib/scene-soundscape';
 import { getActiveSceneHarness } from '@moonwitness/ui/lib/scene-test-harness';
-
-const SceneParticlesSuspense = lazy(() =>
-  import('@moonwitness/ui/components/scene-particles').then((mod) => ({ default: mod.SceneParticles }))
-);
 
 export function FXLab() {
   const harness = getActiveSceneHarness() ?? {};
@@ -18,9 +24,12 @@ export function FXLab() {
   const [muted, setMuted] = useState(true);
   const [userActivated, setUserActivated] = useState(false);
   const [activePreset, setActivePreset] = useState<SceneParticlePreset>('stars');
-  const [transitionState, setTransitionState] = useState<'idle' | 'entering' | 'entered' | 'cancelled'>('entered');
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const [transitionState, setTransitionState] = useState<
+    'idle' | 'entering' | 'entered' | 'cancelled'
+  >('entered');
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () =>
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -28,13 +37,12 @@ export function FXLab() {
     preference.addEventListener('change', updatePreference);
     return () => preference.removeEventListener('change', updatePreference);
   }, []);
-  const reducedMotion = Boolean(harness.reducedMotion) ||
+  const reducedMotion =
+    Boolean(harness.reducedMotion) ||
     prefersReducedMotion ||
-    (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const soundscapeRef = useMemo(
-    () => createSceneSoundscapeController({ maxVolume: 0.18 }),
-    []
-  );
+    (typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const soundscapeRef = useMemo(() => createSceneSoundscapeController({ maxVolume: 0.18 }), []);
 
   useEffect(() => {
     if (harness.reducedMotion) {
@@ -64,49 +72,130 @@ export function FXLab() {
 
   const presetOptions: SceneParticlePreset[] = ['rain', 'dust', 'stars', 'sparks'];
   const intensityOptions: SceneParticleIntensity[] = ['subtle', 'medium', 'intense'];
-  const transitionOptions: ComicTransitionVariant[] = ['ink-wipe', 'panel-reveal', 'cut-impact', 'soft'];
-  const ambienceOptions: (SceneAmbienceId | null)[] = ['moon-city-night', 'underground-hum', 'archive-quiet', 'street-rain', null];
+  const transitionOptions: ComicTransitionVariant[] = [
+    'ink-wipe',
+    'panel-reveal',
+    'cut-impact',
+    'soft',
+  ];
+  const ambienceOptions: (SceneAmbienceId | null)[] = [
+    'moon-city-night',
+    'underground-hum',
+    'archive-quiet',
+    'street-rain',
+    null,
+  ];
 
   return (
     <div className="fx-lab" data-testid="fx-lab">
       <div className="fx-lab-toolbar">
-        <Button variant={preset === 'rain' ? 'magenta' : 'default'} size="sm" onClick={() => { setPreset('rain'); setActivePreset('rain'); }}>Rain</Button>
-        <Button variant={preset === 'dust' ? 'magenta' : 'default'} size="sm" onClick={() => { setPreset('dust'); setActivePreset('dust'); }}>Dust</Button>
-        <Button variant={preset === 'stars' ? 'magenta' : 'default'} size="sm" onClick={() => { setPreset('stars'); setActivePreset('stars'); }}>Stars</Button>
-        <Button variant={preset === 'sparks' ? 'magenta' : 'default'} size="sm" onClick={() => { setPreset('sparks'); setActivePreset('sparks'); }}>Sparks</Button>
+        <Button
+          variant={preset === 'rain' ? 'magenta' : 'default'}
+          size="sm"
+          onClick={() => {
+            setPreset('rain');
+            setActivePreset('rain');
+          }}
+        >
+          Rain
+        </Button>
+        <Button
+          variant={preset === 'dust' ? 'magenta' : 'default'}
+          size="sm"
+          onClick={() => {
+            setPreset('dust');
+            setActivePreset('dust');
+          }}
+        >
+          Dust
+        </Button>
+        <Button
+          variant={preset === 'stars' ? 'magenta' : 'default'}
+          size="sm"
+          onClick={() => {
+            setPreset('stars');
+            setActivePreset('stars');
+          }}
+        >
+          Stars
+        </Button>
+        <Button
+          variant={preset === 'sparks' ? 'magenta' : 'default'}
+          size="sm"
+          onClick={() => {
+            setPreset('sparks');
+            setActivePreset('sparks');
+          }}
+        >
+          Sparks
+        </Button>
 
-        <Button variant={intensity === 'subtle' ? 'magenta' : 'default'} size="sm" onClick={() => setIntensity('subtle')}>Subtle</Button>
-        <Button variant={intensity === 'medium' ? 'magenta' : 'default'} size="sm" onClick={() => setIntensity('medium')}>Medium</Button>
-        <Button variant={intensity === 'intense' ? 'magenta' : 'default'} size="sm" onClick={() => setIntensity('intense')}>Intense</Button>
+        <Button
+          variant={intensity === 'subtle' ? 'magenta' : 'default'}
+          size="sm"
+          onClick={() => setIntensity('subtle')}
+        >
+          Subtle
+        </Button>
+        <Button
+          variant={intensity === 'medium' ? 'magenta' : 'default'}
+          size="sm"
+          onClick={() => setIntensity('medium')}
+        >
+          Medium
+        </Button>
+        <Button
+          variant={intensity === 'intense' ? 'magenta' : 'default'}
+          size="sm"
+          onClick={() => setIntensity('intense')}
+        >
+          Intense
+        </Button>
 
         <Button size="sm" variant="default" onClick={handleActivateAudio} disabled={userActivated}>
           {userActivated ? 'Audio enabled' : 'Enable audio (gesture)'}
         </Button>
-        <Button size="sm" variant={muted ? 'default' : 'magenta'} onClick={() => setMuted((m) => !m)}>
+        <Button
+          size="sm"
+          variant={muted ? 'default' : 'magenta'}
+          onClick={() => setMuted((m) => !m)}
+        >
           {muted ? 'Unmute ambience' : 'Mute ambience'}
         </Button>
-        <Button size="sm" variant="default" onClick={() => setAmbience('moon-city-night')}>Night</Button>
-        <Button size="sm" variant="default" onClick={() => setAmbience('underground-hum')}>Underground</Button>
-        <Button size="sm" variant="default" onClick={() => setAmbience('archive-quiet')}>Archive</Button>
-        <Button size="sm" variant="default" onClick={() => setAmbience('street-rain')}>Street rain</Button>
-        <Button size="sm" variant="default" onClick={() => setAmbience(null)}>None</Button>
+        <Button size="sm" variant="default" onClick={() => setAmbience('moon-city-night')}>
+          Night
+        </Button>
+        <Button size="sm" variant="default" onClick={() => setAmbience('underground-hum')}>
+          Underground
+        </Button>
+        <Button size="sm" variant="default" onClick={() => setAmbience('archive-quiet')}>
+          Archive
+        </Button>
+        <Button size="sm" variant="default" onClick={() => setAmbience('street-rain')}>
+          Street rain
+        </Button>
+        <Button size="sm" variant="default" onClick={() => setAmbience(null)}>
+          None
+        </Button>
       </div>
 
       <div className="fx-lab-grid">
         <div className="fx-lab-particles" data-testid="fx-particles">
-          <h3>Scene Particles — {activePreset} / {intensity}</h3>
+          <h3>
+            Scene Particles — {activePreset} / {intensity}
+          </h3>
           <div className="fx-lab-particle-stage">
-            <Suspense fallback={<p>Loading particles…</p>}>
-              <SceneParticlesSuspense
-                preset={activePreset}
-                intensity={intensity}
-                reducedMotion={reducedMotion}
-                style={{ width: '100%', height: 240 }}
-              />
-            </Suspense>
+            <SceneParticles
+              preset={activePreset}
+              intensity={intensity}
+              reducedMotion={reducedMotion}
+              style={{ width: '100%', height: 240 }}
+            />
           </div>
           <p className="fx-lab-caption">
-            Intended for restrained atmospheric depth. Avoid fast flashes or masking text and controls. Bounded to 36 particles; offscreen paused; reduced-motion uses static particles.
+            Intended for restrained atmospheric depth. Avoid fast flashes or masking text and
+            controls. Bounded to 36 particles; offscreen paused; reduced-motion uses static
+            particles.
           </p>
         </div>
 
@@ -119,35 +208,50 @@ export function FXLab() {
               durationMs={300}
               reducedMotion={reducedMotion}
               onComplete={handleTransitionComplete}
-              style={{ width: '100%', height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{
+                width: '100%',
+                height: 240,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
               <div className="fx-lab-transition-content">Scene Content</div>
             </ComicSceneTransition>
           </div>
           <div className="fx-lab-toolbar">
             {transitionOptions.map((v) => (
-            <Button
-              key={v}
-              size="sm"
-              variant={transition === v ? 'magenta' : 'default'}
-              onClick={() => { setTransition(v); setTransitionState(reducedMotion ? 'entered' : 'entering'); }}
-            >
-              {v}
-            </Button>
+              <Button
+                key={v}
+                size="sm"
+                variant={transition === v ? 'magenta' : 'default'}
+                onClick={() => {
+                  setTransition(v);
+                  setTransitionState(reducedMotion ? 'entered' : 'entering');
+                }}
+              >
+                {v}
+              </Button>
             ))}
             <Button size="sm" variant="default" onClick={triggerTransition}>
               Retrigger
             </Button>
           </div>
-          <p className="fx-lab-caption">Use for short scene changes. Avoid stacking transitions or delaying navigation.</p>
+          <p className="fx-lab-caption">
+            Use for short scene changes. Avoid stacking transitions or delaying navigation.
+          </p>
         </div>
 
         <div className="fx-lab-audio" data-testid="fx-audio">
           <h3>Scene Soundscape</h3>
           <div className="fx-lab-audio-status">
-            Muted: {muted ? 'yes' : 'no'} · Active: {ambience ?? 'none'} · User gesture: {userActivated ? 'ok' : 'pending'}
+            Muted: {muted ? 'yes' : 'no'} · Active: {ambience ?? 'none'} · User gesture:{' '}
+            {userActivated ? 'ok' : 'pending'}
           </div>
-          <p className="fx-lab-caption">Ambient sound is optional and consent-gated. Avoid autoplay, overlapping loops, or relying on audio to convey state.</p>
+          <p className="fx-lab-caption">
+            Ambient sound is optional and consent-gated. Avoid autoplay, overlapping loops, or
+            relying on audio to convey state.
+          </p>
           <div className="fx-lab-toolbar">
             {ambienceOptions.map((v) => (
               <Button
@@ -159,10 +263,21 @@ export function FXLab() {
                 {v ?? 'None'}
               </Button>
             ))}
-            <Button size="sm" variant="default" onClick={() => { setMuted((m) => !m); }}>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => {
+                setMuted((m) => !m);
+              }}
+            >
               {muted ? 'Unmute' : 'Mute'}
             </Button>
-            <Button size="sm" variant="default" onClick={handleActivateAudio} disabled={userActivated}>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={handleActivateAudio}
+              disabled={userActivated}
+            >
               {userActivated ? 'Gesture OK' : 'Enable gesture'}
             </Button>
           </div>
