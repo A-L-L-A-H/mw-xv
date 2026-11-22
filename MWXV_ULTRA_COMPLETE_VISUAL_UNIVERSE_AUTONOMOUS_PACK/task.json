@@ -4887,7 +4887,7 @@
       "id": "W9-008",
       "phase": "W9",
       "title": "Document complete addon asset handoff",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "role": "technical-writer",
       "parallel_group": "serial",
@@ -4917,8 +4917,34 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "",
-      "evidence": [],
+      "notes": "Created docs/design/addon-visual-handoff.md with the backend/API/Board boundary and explicit canonical asset-to-presentation mapping for all 12 active add-ons. Regenerated stale API/model/platform/workspace references from current dev source; unrelated local work remains outside this commit.",
+      "evidence": [
+        {
+          "command": "pnpm docs:generate",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md"
+        },
+        {
+          "command": "pnpm docs:check",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md; generated reference/docs/build/example gates passed"
+        },
+        {
+          "command": "pnpm docs:links",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md; 602 Markdown files and navigation targets passed"
+        },
+        {
+          "command": "node scripts/docs/generate-reference.mjs --check",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md"
+        },
+        {
+          "command": "git diff --check",
+          "exit_code": 0,
+          "artifact": "evidence/W9-008-addon-visual-handoff.md"
+        }
+      ],
       "commit": null
     },
     {

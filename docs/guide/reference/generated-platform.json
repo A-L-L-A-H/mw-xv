@@ -99,7 +99,8 @@
         "font:brand:generate",
         "fonts:prepare",
         "inventory",
-        "qa"
+        "qa",
+        "sounds:ambience"
       ]
     },
     {
@@ -358,7 +359,8 @@
       "font:brand:generate": "node scripts/generate-brand-font.mjs",
       "fonts:prepare": "node scripts/prepare-fonts.mjs",
       "inventory": "node scripts/asset-inventory.mjs",
-      "qa": "node scripts/asset-qa.mjs"
+      "qa": "node scripts/asset-qa.mjs",
+      "sounds:ambience": "node scripts/generate-scene-ambience.mjs"
     },
     "@moonwitness/auth": {
       "build": "tsc",
@@ -483,7 +485,7 @@
       "assets:check:bounds": "node packages/assets/scripts/check-svg-bounds.mjs",
       "assets:check:docs": "node scripts/export-doc-assets.mjs --check",
       "assets:export:docs": "node scripts/export-doc-assets.mjs",
-      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
+      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets sounds:ambience && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
       "assets:generate:illustrations": "node packages/assets/scripts/generate-illustrations.mjs && node scripts/export-doc-assets.mjs",
       "assets:render": "node packages/assets/scripts/render-social.mjs",
       "assets:validate": "node packages/assets/scripts/validate.mjs",
@@ -10094,5 +10096,5 @@
       "path": "/workflows/instances/:id/actions"
     }
   ],
-  "generatedFromSha256": "4e213ec2020c8ef0bff1bed0a4bcd38784ed101096ef36ceec365b4184f13556"
+  "generatedFromSha256": "16d4ff5879108451c1126494efb028b629aa713f1d5380761ad34d8d33f045b9"
 }

@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical state is `task.json`; this file is generated from it.
 
-Status counts: done 91 · skipped 3 · in_progress 0 · blocked 0 · todo 15.
+Status counts: done 92 · skipped 3 · in_progress 0 · blocked 0 · todo 14.
 
 ## W0
 
@@ -818,12 +818,13 @@ Status counts: done 91 · skipped 3 · in_progress 0 · blocked 0 · todo 15.
   - Verify: pnpm --filter @moonwitness/desktop typecheck; pnpm --filter @moonwitness/desktop test
   - Evidence: `pnpm --filter @moonwitness/ai-runtime build` (0) → `evidence/W9-007-desktop-adoption.md`; `pnpm --filter @moonwitness/desktop typecheck` (0) → `evidence/W9-007-desktop-adoption.md`; `pnpm --filter @moonwitness/desktop test` (0) → `evidence/W9-007-desktop-adoption.md; isolated retry 28/28 passed`
 
-- [ ] **W9-008 — Document complete addon asset handoff**
+- [x] **W9-008 — Document complete addon asset handoff**
   - Goal: Document how addons request/reuse UI asset IDs without importing artwork into ORM/server.
   - Depends on: W8-001, W8-012, W2-010
   - Deliverables: Developer guide for addon-to-visual mapping.
   - Acceptance: Backend packages remain presentation-agnostic.; No circular dependency from ORM to assets/UI.; Static visual ID to runtime component mapping is explicit.
   - Verify: pnpm docs:check; pnpm docs:links
+  - Evidence: `pnpm docs:generate` (0) → `evidence/W9-008-addon-visual-handoff.md`; `pnpm docs:check` (0) → `evidence/W9-008-addon-visual-handoff.md; generated reference/docs/build/example gates passed`; `pnpm docs:links` (0) → `evidence/W9-008-addon-visual-handoff.md; 602 Markdown files and navigation targets passed`; `node scripts/docs/generate-reference.mjs --check` (0) → `evidence/W9-008-addon-visual-handoff.md`; `git diff --check` (0) → `evidence/W9-008-addon-visual-handoff.md`
 
 ## W10
 
