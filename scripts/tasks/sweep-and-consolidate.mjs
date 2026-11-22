@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -657,18 +658,30 @@ export const AUDIT_TASKS = [
   }
 ];
 
-export async function sweepAndConsolidate() {
+export async function sweepAndConsolidate({
+  generatedAt = process.env.SOURCE_DATE_EPOCH
+    ? new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString()
+    : new Date().toISOString(),
+} = {}) {
   const tasks = [];
-  const seenCodes = new Set();
+  const tasksByCode = new Map();
 
   function addTask(task) {
-    if (seenCodes.has(task.code)) return false;
-    seenCodes.add(task.code);
+    if (!task || typeof task.code !== 'string' || !task.code.trim()) {
+      throw new Error('TaskOS source produced a record without a stable task code.');
+    }
+    const existing = tasksByCode.get(task.code);
+    if (existing) {
+      throw new Error(
+        `Duplicate TaskOS code "${task.code}" from "${existing.sourceRef?.file ?? 'unknown source'}" and "${task.sourceRef?.file ?? 'unknown source'}". Reconcile the source owners before generating the canonical registry.`
+      );
+    }
+    tasksByCode.set(task.code, task);
     tasks.push(task);
     return true;
   }
 
-  // 1. Ingest Master Roadmap & tasks.json (227 tasks)
+  // 1. Ingest the authoritative M/K roadmap index and ROADMAP.md checklist (239 tasks).
   const roadmapTasksRaw = await fs.readFile(path.join(rootDir, 'docs/roadmap/tasks.json'), 'utf8');
   const roadmapTasks = JSON.parse(roadmapTasksRaw).tasks;
   const roadmapText = await fs.readFile(path.join(rootDir, 'ROADMAP.md'), 'utf8');
@@ -770,7 +783,7 @@ export async function sweepAndConsolidate() {
           category: 'product',
           type: 'feature',
           priority: prio,
-          status: isDone ? 'done' : 'todo',
+          status,
           human: false,
           owner: 'wa-team',
           assignee: null,
@@ -797,59 +810,122 @@ export async function sweepAndConsolidate() {
         });
       }
     }
-  } catch {
-    // Optional file
+  } catch (error) {
+    throw new Error(`Failed to ingest required WhatsApp task source "${todoWaPath}": ${error.message}`, { cause: error });
   }
 
-  // 4. Ingest todo.md root items
-  const todoRootPath = path.join(rootDir, 'todo.md');
+  // Root todo.md is a navigation pointer. Verify it remains a pointer and never parse it as a backlog.
+  const rootTodoPath = path.join(rootDir, 'todo.md');
+  const rootTodoText = await fs.readFile(rootTodoPath, 'utf8');
+  if (!rootTodoText.includes('docs/tasks/tasks.json')) {
+    throw new Error('Root todo.md must remain a pointer to the canonical TaskOS registry.');
+  }
+
+  // Import only unchecked records from the archived MW checklist. They remain blocked until re-triaged.
+  const legacyTodoPath = path.join(rootDir, 'docs/archive/todos/todo.md');
   try {
-    const todoText = await fs.readFile(todoRootPath, 'utf8');
-    for (const line of todoText.split(/\r?\n/)) {
-      const match = /^\s*-\s*\[([ xX])\]\s+\*\*([A-Za-z0-9_.-]+)\*\*\s+(.*)$/.exec(line);
-      if (match) {
-        const isDone = match[1].toLowerCase() === 'x';
-        const rawCode = match[2];
-        const title = match[3].trim();
-        if (rawCode.startsWith('MW-')) {
-          addTask({
-            code: rawCode,
-            project: 'moonwitness',
-            series: 'MW',
-            milestone: 'PLATFORM-CONFIG',
-            horizon: isDone ? 'now' : 'now',
-            title,
-            summary: title.slice(0, 140),
-            problem: title,
-            proposedSolution: 'Fulfill configuration and acceptance requirement in workspace.',
-            category: 'infrastructure',
-            type: 'fix',
-            priority: 'p1',
-            status: isDone ? 'done' : 'todo',
-            human: false,
-            owner: 'core-team',
-            assignee: null,
-            risk: 'low',
-            effort: 's',
-            scores: null,
-            dependsOn: [],
-            blocks: [],
-            tags: ['platform', 'config'],
-            scope: { packages: [], files: [] },
-            acceptanceCriteria: [{ id: `${rawCode}-ac-1`, text: title, done: isDone }],
-            validation: { commands: ['pnpm verify'], expected: 'Pass' },
-            evidence: { paths: [], detailFile: 'todo.md', commitSha: null },
-            references: [],
-            blockedReason: null,
-            sourceRef: { file: 'todo.md', legacyId: rawCode },
-            url: '',
-            comments: []
-          });
-        }
-      }
+    const legacyTodoText = await fs.readFile(legacyTodoPath, 'utf8');
+    for (const line of legacyTodoText.split(/\r?\n/)) {
+      const match = /^\s*-\s*\[ \]\s+\*\*(MW-[A-Za-z0-9_.-]+)\*\*\s+(.*)$/.exec(line);
+      if (!match) continue;
+      const code = match[1];
+      const title = match[2].trim();
+      addTask({
+        code,
+        project: 'moonwitness',
+        series: 'MW',
+        milestone: 'LEGACY-TRIAGE',
+        horizon: 'later',
+        title,
+        summary: title.slice(0, 140),
+        problem: `Unchecked item retained in archived legacy TODO: ${title}`,
+        proposedSolution: 'Revalidate against current repository state and promote to an active roadmap/card only when still required.',
+        category: 'governance',
+        type: 'research',
+        priority: 'p1',
+        status: 'blocked',
+        human: true,
+        owner: 'repo-owner',
+        assignee: null,
+        risk: 'medium',
+        effort: null,
+        scores: null,
+        dependsOn: [],
+        blocks: [],
+        tags: ['legacy', 'archive', 'triage-required'],
+        scope: { packages: [], files: [] },
+        acceptanceCriteria: [
+          { id: `${code}-ac-1`, text: 'Current relevance and ownership are revalidated.', done: false }
+        ],
+        validation: { commands: ['pnpm automation:check:roadmap'], expected: 'Task is mapped to an active source or explicitly retired.' },
+        evidence: { paths: [], detailFile: 'docs/archive/todos/todo.md', commitSha: null },
+        references: ['docs/archive/todos/todo.md'],
+        blockedReason: 'Archived legacy backlog item; requires owner revalidation before execution.',
+        sourceRef: { file: 'docs/archive/todos/todo.md', legacyId: code },
+        url: '',
+        comments: []
+      });
     }
-  } catch {
-    // Optional file
+  } catch (error) {
+    throw new Error(`Failed to ingest required archived legacy TODO source "${legacyTodoPath}": ${error.message}`, { cause: error });
+  }
+
+  // Import the AI Corporation PR lifecycle IDs. Only PR.14 is still open and is a human approval gate.
+  const aiCorporationTodoPath = path.join(
+    rootDir,
+    'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md'
+  );
+  try {
+    const aiTodoText = await fs.readFile(aiCorporationTodoPath, 'utf8');
+    const importedApprovalCodes = new Set();
+    for (const line of aiTodoText.split(/\r?\n/)) {
+      const match = /^\s*-\s*\[([ xX])\]\s+\*\*(PR\.\d+)\*\*\s+(.*)$/.exec(line);
+      if (!match) continue;
+      const isDone = match[1].toLowerCase() === 'x';
+      const code = match[2];
+      const title = match[3].trim();
+      importedApprovalCodes.add(code);
+      addTask({
+        code,
+        project: 'moonwitness',
+        series: 'PR',
+        milestone: 'PROMOTION-GOVERNANCE',
+        horizon: 'now',
+        title,
+        summary: title.slice(0, 140),
+        problem: 'Promotion governance requirement recorded in the AI Corporation checklist.',
+        proposedSolution: 'Complete the approval/evidence requirement through the protected repository workflow.',
+        category: 'governance',
+        type: 'documentation',
+        priority: 'p0',
+        status: isDone ? 'done' : 'blocked',
+        human: true,
+        owner: 'repo-owner',
+        assignee: null,
+        risk: 'high',
+        effort: 'xs',
+        scores: null,
+        dependsOn: [],
+        blocks: [],
+        tags: ['governance', 'promotion', 'ai-corporation'],
+        scope: { packages: [], files: ['.github/workflows/promote.yml'] },
+        acceptanceCriteria: [
+          { id: `${code}-ac-1`, text: title, done: isDone }
+        ],
+        validation: { commands: ['pnpm promotion:approval-check'], expected: 'Required maintainer approval is present on the exact promotion candidate.' },
+        evidence: { paths: [], detailFile: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md', commitSha: null },
+        references: ['docs/roadmap/evidence/M12.14.md'],
+        blockedReason: isDone ? null : 'Maintainer approval is an explicit human gate; automation must not self-approve.',
+        sourceRef: { file: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md', legacyId: code },
+        url: '',
+        comments: []
+      });
+    }
+    if (!importedApprovalCodes.has('PR.14')) {
+      throw new Error('AI Corporation source is missing the expected PR.14 maintainer-approval gate.');
+    }
+  } catch (error) {
+    throw new Error(`Failed to ingest required AI Corporation task source "${aiCorporationTodoPath}": ${error.message}`, { cause: error });
   }
 
   // 5. Ingest todo-desktop.md
@@ -896,8 +972,8 @@ export async function sweepAndConsolidate() {
         });
       }
     }
-  } catch {
-    // Optional file
+  } catch (error) {
+    throw new Error(`Failed to ingest required Desktop task source todo-desktop.md: ${error.message}`, { cause: error });
   }
 
   // 6. Ingest evolution/backlog.json
@@ -906,6 +982,7 @@ export async function sweepAndConsolidate() {
     const evo = JSON.parse(evoText);
     for (const candidate of evo.candidates ?? []) {
       const isDone = candidate.status === 'completed';
+      const status = isDone ? 'done' : candidate.status === 'active' ? 'doing' : 'todo';
       addTask({
         code: candidate.id,
         project: 'moonwitness',
@@ -940,8 +1017,8 @@ export async function sweepAndConsolidate() {
         comments: []
       });
     }
-  } catch {
-    // Optional file
+  } catch (error) {
+    throw new Error(`Failed to ingest required evolution source evolution/backlog.json: ${error.message}`, { cause: error });
   }
 
   // Populate reverse blocks graph
@@ -965,7 +1042,7 @@ export async function sweepAndConsolidate() {
   return {
     schemaVersion: '2.0.0',
     format: 'moonwitness-tasks/v2',
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     projects: [
       {
         slug: 'moonwitness',
@@ -980,13 +1057,63 @@ export async function sweepAndConsolidate() {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  sweepAndConsolidate().then(async (result) => {
+  (async () => {
     const targetFile = path.join(rootDir, 'docs/tasks/tasks.json');
+    const checkOnly = process.argv.includes('--check');
+    const writeEnabled = process.argv.includes('--write');
+    if (checkOnly && writeEnabled) {
+      throw new Error('Choose only one mode: --check or --write.');
+    }
+
+    let generatedAt;
+    if (checkOnly) {
+      const currentRaw = await fs.readFile(targetFile, 'utf8');
+      if (!currentRaw.trim()) {
+        throw new Error('TaskOS registry is empty; --check cannot compare against an unavailable canonical registry.');
+      }
+      generatedAt = JSON.parse(currentRaw).generatedAt;
+      if (typeof generatedAt !== 'string' || !Number.isFinite(Date.parse(generatedAt))) {
+        throw new Error('TaskOS registry has no valid generatedAt timestamp for deterministic comparison.');
+      }
+    }
+
+    const result = await sweepAndConsolidate(
+      checkOnly ? { generatedAt } : {}
+    );
+    const output = `${JSON.stringify(result, null, 2)}\n`;
+
+    if (checkOnly) {
+      const currentRaw = await fs.readFile(targetFile, 'utf8');
+      if (currentRaw !== output) {
+        throw new Error('TaskOS registry differs from deterministic source projection. Review the source inventory before writing.');
+      }
+      console.log(`TaskOS source projection matches ${result.tasks.length} tasks.`);
+      return;
+    }
+
+    if (!writeEnabled) {
+      console.log(`Dry run: source inventory resolves to ${result.tasks.length} task records. No files changed. Use --write only after reviewing the source inventory.`);
+      return;
+    }
+
+    const schema = JSON.parse(
+      await fs.readFile(path.join(rootDir, 'docs/tasks/tasks.schema.json'), 'utf8')
+    );
+    const require = createRequire(new URL('../../packages/knowledge/package.json', import.meta.url));
+    const Ajv = require('ajv');
+    const addFormats = require('ajv-formats');
+    const ajv = new Ajv({ allErrors: true });
+    addFormats(ajv);
+    const validate = ajv.compile(schema);
+    if (!validate(result)) {
+      throw new Error(`Refusing to write invalid TaskOS registry: ${JSON.stringify(validate.errors)}`);
+    }
+
     await fs.mkdir(path.dirname(targetFile), { recursive: true });
-    await fs.writeFile(targetFile, JSON.stringify(result, null, 2) + '\n', 'utf8');
-    console.log(`Successfully swept and consolidated ${result.tasks.length} tasks into ${targetFile}`);
-  }).catch((err) => {
-    console.error('Sweep failed:', err);
+    await fs.writeFile(targetFile, output, 'utf8');
+    console.log(`Wrote ${result.tasks.length} validated TaskOS records to ${targetFile}`);
+  })().catch((error) => {
+    console.error('TaskOS source projection failed:', error);
     process.exit(1);
   });
 }
