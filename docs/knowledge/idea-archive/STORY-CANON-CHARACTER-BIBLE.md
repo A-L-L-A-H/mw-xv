@@ -147,7 +147,20 @@ Known unresolved pairs/gaps include:
 - Original poster/manuscript recovery and publication rights.
 - Historical 2023–2025 timeline: exact first dates remain unknown where primary evidence is absent.
 
-## 7. Canon registry status rules
+## 7. Recent MoonWitness story leads — not canon-locked
+
+These four episode / poster titles are retained from the available recent-conversation summary (around September 2026). The summary is a discovery aid, not a substitute for the original conversation transcript or source artwork prompt.
+
+| Story lead ID | Original title | What the currently available source supports | Status |
+|---|---|---|---|
+| MW-STORY-LEAD-0001 | **MOONWITNESS — Two Generations, One Toast** | The Library contains a matching image title/caption. Available context associates the concept with a father/son, memory and parallel-world narrative. | `DRAFT / SOURCE-PARTIAL`; recover the original episode text and prompt before expanding |
+| MW-STORY-LEAD-0002 | **MOONWITNESS — Chaos Before Dawn** | Available summary identifies a pre-dawn dream-world sequence and the name MyLuft. | `DRAFT / NEEDS-SOURCE`; plot, sequence and final wording not available |
+| MW-STORY-LEAD-0003 | **MOONWITNESS — BIRD OF A FEATHER** | Available summary confirms the exact title and that poster text was revised. | `DRAFT / TITLE-ONLY`; do not add a plot or characters from inference |
+| MW-STORY-LEAD-0004 | **MOONWITNESS — THUNDERSTRUCK** | Available summary preserves the title, a MyLuft dream-world framing and a “Wahyono” wordplay note. The V10 progress ledger separately uses the locator `MENGGIGIL / THUNDERSTRUCK`. | `DRAFT / UNRESOLVED`; do not assume the ledger's two labels are identical or interpret the wordplay as a religious claim |
+
+**Continuity rule:** keep these four records separate from `story_001` and `story_002` until original sources establish their relationship. No shared cast, chronology, canon status, episode numbering or ending is inferred. Preserve the title spelling and punctuation above. A future recovery pass must attach the original message / file locator, first-known date if evidenced, exact user wording and revision chain.
+
+## 8. Canon registry status rules
 
 Use `LOCKED` only for explicit owner-confirmed constraints with a traceable source. Use `PROVISIONAL` for accepted working lore with open review. Use `RETIRED` for superseded versions retained historically. Use `UNRESOLVED` for conflicts. Existing source labels such as `review`, `draft`, `published`, `registered`, `recovered_draft`, `proposed` and `user_submitted_in_chat` must not be flattened.
 
