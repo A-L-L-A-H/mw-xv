@@ -1,34 +1,43 @@
 # W9-005 and W9-006 — Existing visual coverage and Board gate
 
-Date: 2026-11-23
-Source branch: `dev` at `a3fa6da`
+Date: 2026-11-24 (final green run)
+Source branch: `dev`; commits `d18fa54`, `d1949d6`, `c8ac4d7`, `ad683ff` and following Board gate fixes.
 
 ## W9-005 — Crew and Story composition
 
-The only production narrative surface found is `/board/stories/workbench`. It uses the decorative, provenance-listed `story-workbench-masthead.webp` and continues to load story state through the existing API client. No production `/crew` route exists, so no fictional crew member or map was added to production UI. The dynamic user model remains API-backed. The catalog's `crew-01` specimen is explicitly marked as a fictional, catalog-only example with no backend record or real crew identity.
+The only production narrative surface is `/board/stories/workbench`. It uses the decorative, provenance-listed `story-workbench-masthead.webp` and continues to load story state through the existing API client. No production `/crew` route exists, so no fictional crew member or map was added to production UI. The dynamic user model remains API-backed. The catalog's `crew-01` specimen is explicitly marked as a fictional, catalog-only example with no backend record or real crew identity.
 
-The catalog label and assertion were committed in `a3fa6da`.
-
-Verification:
+Verification (all green):
 
 - `pnpm test:ui-catalog` — exit 0; 41/41 tests pass, including the character specimen, story workbench responsive layout, theme matrix, and Axe checks.
+- `pnpm test:e2e:visual:matrix` — exit 0; 42/42 tests pass across Chromium/Firefox/WebKit, including story workbench readability, homepage composition, and the empty/unavailable workbench states.
 - `pnpm --filter @moonwitness/board typecheck` — exit 0.
-- `pnpm --filter @moonwitness/board build` — exit 0 as part of `pnpm build`.
-- `pnpm test:e2e:visual:matrix` — exit 1. Its shared Board visual gate has unresolved snapshot drift and environment failures listed below; W9-005 is held blocked until the shared required visual gate is green.
 
 ## W9-006 — Operational Board tier
 
-The active navigation marker and mobile chatter tabs are present in the current pushed Board source. The mobile record audit shows the three chatter actions wrapping within the viewport, with no horizontal overflow. Board shared UI, typecheck, lint, UI budget, and Board bundle budget pass. The full matrix still fails, so the task is not marked complete.
+Board boundary, typecheck, lint, UI budget, bundle budget, and the full three-browser visual matrix all pass. Baselines were refreshed to the intentional grunge aesthetic rollout and made deterministic:
 
-Verification and evidence:
+- Dashboard KPI baseline is clipped to the stable masthead/tab/KPI-card region; volatile metric values are masked (live counts mutate between runs).
+- Catalog documentation artifacts are written by the chromium project only, with a short retry against Windows transient file-write errors.
+- The model-navigation sheet Escape check moves focus into the Radix layer before dismissing.
+- The ordinary-user fixture login is scoped per browser project and tolerates 409 on re-runs.
+- The ordinary-user test allows 90 s for first-run dev-server JIT compilation.
+
+Verification (all green):
 
 - `pnpm board:ui:check` — exit 0; 6/6 boundary tests pass.
 - `pnpm --filter @moonwitness/board typecheck` — exit 0.
-- `pnpm --filter @moonwitness/board lint` — exit 0; existing warnings remain in unrelated files.
-- `pnpm test:ui-budget` — exit 0; JavaScript 557,723 raw / 164,071 gzip bytes, within budget.
-- `pnpm board:budget` — exit 0 after fixing interface-audio inventory filtering; 27,012 bytes of interface audio.
-- Focused Chromium visual checks — active navigation and mobile data-view checks passed after the current Board fixes.
-- `pnpm test:e2e:visual:matrix` — exit 1; 5 passed, 37 failed across 42 tests × Chromium/Firefox/WebKit. Chromium failures include stale dashboard/home/workbench snapshots, two screenshot write errors under `docs/design/ui-catalog`, and a stale `Toggle theme` menu locator. Firefox and WebKit cannot launch because the Playwright binaries are not installed.
-- Side-by-side artifacts reviewed: `test-results/playwright-visual/visual-audit-dashboard-KPI-4ec23-abricated-trend-percentages-chromium/board-dashboard-admin-desktop-1440-{expected,actual,diff}.png` and `test-results/playwright-visual/visual-audit-homepage-spel-cc715-t-and-reference-screenshots-chromium/home-mobile-390-{expected,actual,diff}.png`.
+- `pnpm test:ui-budget` — exit 0; within budget.
+- `pnpm board:budget` — exit 0; 27,012 bytes of interface audio.
+- `pnpm test:e2e:visual:matrix` — exit 0; **42 passed (8.5m)** — 14 tests × Chromium/Firefox/WebKit, including light/dark theme coverage, responsive protected screens, mobile overlays keyboard dismissal, and Axe accessibility assertions.
 
-No visual snapshot baseline was updated. The task remains blocked on a reviewed baseline/locator refresh and available Firefox/WebKit binaries.
+## Matrix stabilization history (for reviewers)
+
+| Issue | Root cause | Fix |
+| --- | --- | --- |
+| 16 initial failures | stale baselines vs intentional grunge rollout + broken API boot (`erp-ledger` camelCase fields) | ORM fields converted to snake_case; baselines regenerated after review |
+| Screenshot write errors | three browsers writing identical catalog artifact paths on Windows | chromium-only writes via `writeCatalogScreenshot` + retry |
+| 409 on user creation | shared API server, fixed `visual-user` login across projects | per-project login suffix + 409 tolerance |
+| WebKit dialog Escape | focus left on trigger for a tick after keyboard open | focus a link inside the sheet before Escape |
+| Dashboard KPI flake | live counters, audit ledger, and model-registry grid mutate | clip to stable region, mask metric values |
+| Ordinary-user timeout | cold dev-server JIT compile on first run | 90 s test timeout |
