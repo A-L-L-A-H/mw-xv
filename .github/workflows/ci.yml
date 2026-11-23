@@ -32,6 +32,7 @@ jobs:
         run: pnpm install --frozen-lockfile --no-runtime
       - name: Verify workflow pins and roadmap contract
         run: |
+          pnpm test:action-pins
           pnpm automation:check:action-pins
           pnpm automation:check:action-tags
           pnpm automation:check:roadmap
