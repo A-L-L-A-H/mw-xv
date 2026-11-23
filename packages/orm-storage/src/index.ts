@@ -21,6 +21,7 @@ import { MAX_ATTACHMENT_BYTES } from '@moonwitness/types';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
 export type { AttachmentStorage, StoredObjectMetadata } from './storage.types.js';
+export * from './seed.js';
 import type { AttachmentStorage, StoredObjectMetadata } from './storage.types.js';
 
 function validateKey(key: string): string {
