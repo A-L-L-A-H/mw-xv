@@ -94,28 +94,22 @@ describe('@moonwitness/orm-storage initial seed module', () => {
     const baseBundle = buildStorageInitialSeed();
 
     const publicBucket = cloneSeed(baseBundle);
-    (
-      publicBucket as unknown as { buckets: Array<{ publicReadAllowed: boolean }> }
-    ).buckets[0]!.publicReadAllowed = true;
+    (publicBucket as unknown as { buckets: Array<{ publicReadAllowed: boolean }> }).buckets[0]!.publicReadAllowed = true;
     expect(() => validateStorageSeedBundle(publicBucket)).toThrow(/must not allow public reads/u);
 
     const oversizedPolicy = cloneSeed(baseBundle);
-    (
-      oversizedPolicy as unknown as { policies: Array<{ maxObjectBytes: number }> }
-    ).policies[0]!.maxObjectBytes = MAX_ATTACHMENT_BYTES + 1;
+    (oversizedPolicy as unknown as { policies: Array<{ maxObjectBytes: number }> }).policies[0]!.maxObjectBytes =
+      MAX_ATTACHMENT_BYTES + 1;
     expect(() => validateStorageSeedBundle(oversizedPolicy)).toThrow(/invalid object size limit/u);
 
     const brokenReference = cloneSeed(baseBundle);
-    (
-      brokenReference as unknown as { policies: Array<{ bucketCode: string }> }
-    ).policies[0]!.bucketCode = 'seed.storage.undefined';
+    (brokenReference as unknown as { policies: Array<{ bucketCode: string }> }).policies[0]!.bucketCode =
+      'seed.storage.undefined';
     expect(() => validateStorageSeedBundle(brokenReference)).toThrow(/unknown bucket/u);
 
     const unsupportedProvider = cloneSeed(baseBundle);
     const mutableProvider = unsupportedProvider.buckets[0] as { provider: string };
     mutableProvider.provider = 'gcs';
-    expect(() => validateStorageSeedBundle(unsupportedProvider)).toThrow(
-      /Unsupported storage seed provider/u
-    );
+    expect(() => validateStorageSeedBundle(unsupportedProvider)).toThrow(/Unsupported storage seed provider/u);
   });
 });

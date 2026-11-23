@@ -12,10 +12,7 @@ const AUTH = { companyId: 42, userId: 7 };
 describe('Mega-Wave I.4: Extended MCP Tools (PaaS, AGI M15-M18, Desktop)', () => {
   it('registers all 8 extended tools in AI_MCP_TOOLS and tools/list without breaking existing tools', async () => {
     const server = createAiMcpServer();
-    const response = await server.handleRequest(
-      { jsonrpc: '2.0', id: 1, method: 'tools/list' },
-      AUTH
-    );
+    const response = await server.handleRequest({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, AUTH);
     expect(response.error).toBeUndefined();
     const tools = (response.result?.tools as Array<{ name: string }>) ?? [];
     const names = new Set(tools.map((tool) => tool.name));
@@ -36,32 +33,21 @@ describe('Mega-Wave I.4: Extended MCP Tools (PaaS, AGI M15-M18, Desktop)', () =>
             timestamp: '2026-11-23T00:00:00Z',
             serviceId: 'mw-api-42',
             level: 'error',
-            message:
-              'Auth failed with Bearer eyJhbGciOiJIUzI1NiJ9.secret and api_key=supersecret123 sk-live99999999',
+            message: 'Auth failed with Bearer eyJhbGciOiJIUzI1NiJ9.secret and api_key=supersecret123 sk-live99999999',
           },
         ],
       },
     });
 
     const statusRes = await server.handleRequest(
-      {
-        jsonrpc: '2.0',
-        id: 2,
-        method: 'tools/call',
-        params: { name: 'paas.status', arguments: {} },
-      },
+      { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'paas.status', arguments: {} } },
       AUTH
     );
     expect(statusRes.error).toBeUndefined();
     expect((statusRes.result?.summary as { healthy: number }).healthy).toBe(2);
 
     const backupRes = await server.handleRequest(
-      {
-        jsonrpc: '2.0',
-        id: 3,
-        method: 'tools/call',
-        params: { name: 'paas.backup_plan', arguments: {} },
-      },
+      { jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'paas.backup_plan', arguments: {} } },
       AUTH
     );
     expect(backupRes.error).toBeUndefined();
@@ -170,12 +156,7 @@ describe('Mega-Wave I.4: Extended MCP Tools (PaaS, AGI M15-M18, Desktop)', () =>
     });
 
     const doctorRes = await server.handleRequest(
-      {
-        jsonrpc: '2.0',
-        id: 8,
-        method: 'tools/call',
-        params: { name: 'desktop.doctor', arguments: {} },
-      },
+      { jsonrpc: '2.0', id: 8, method: 'tools/call', params: { name: 'desktop.doctor', arguments: {} } },
       AUTH
     );
     expect(doctorRes.error).toBeUndefined();

@@ -27,18 +27,7 @@ function createInMemoryOrmHarness() {
   const auditRows: StoredAuditRow[] = [];
   let nextId = 1;
 
-  const agents = new Map<
-    string,
-    {
-      id: number;
-      company_id: number;
-      code: string;
-      active: boolean;
-      status: string;
-      is_emergency_stopped: boolean;
-      service_user_id: number | null;
-    }
-  >([
+  const agents = new Map<string, { id: number; company_id: number; code: string; active: boolean; status: string; is_emergency_stopped: boolean; service_user_id: number | null }>([
     [
       'agent_source',
       {
@@ -65,9 +54,8 @@ function createInMemoryOrmHarness() {
     ],
   ]);
 
-  vi.spyOn(Company, 'transaction').mockImplementation((async (
-    callback: (trx: unknown) => Promise<unknown>
-  ) => callback({})) as unknown as typeof Company.transaction);
+  vi.spyOn(Company, 'transaction').mockImplementation((async (callback: (trx: unknown) => Promise<unknown>) =>
+    callback({})) as unknown as typeof Company.transaction);
 
   vi.spyOn(Company, 'query').mockImplementation((() => ({
     findById: (id: number) => ({
@@ -245,13 +233,9 @@ describe('orm-a2a wire-compatibility with @moonwitness/ai-runtime', () => {
 
   it('rejects replayed nonces and duplicate message IDs with 409', async () => {
     const sharedNonce = 'wire_compat_replay_nonce_0001';
-    expect(
-      (await invokeDelegate(buildEnvelope('wire-replay-1', 1, { nonce: sharedNonce }))).statusCode
-    ).toBe(202);
+    expect((await invokeDelegate(buildEnvelope('wire-replay-1', 1, { nonce: sharedNonce }))).statusCode).toBe(202);
 
-    const replayRes = await invokeDelegate(
-      buildEnvelope('wire-replay-2', 2, { nonce: sharedNonce })
-    );
+    const replayRes = await invokeDelegate(buildEnvelope('wire-replay-2', 2, { nonce: sharedNonce }));
     expect(replayRes.statusCode).toBe(409);
     expect(replayRes.body.reasonCode).toBe('REPLAY_NONCE_DETECTED');
 

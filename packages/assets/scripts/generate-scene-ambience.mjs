@@ -28,8 +28,7 @@ function createWav(ambience) {
   for (let index = 0; index < binCount; index += 1) {
     const bin = ambience.noiseBins[index];
     const phase = random() * Math.PI * 2;
-    const amplitude =
-      noiseAmplitude / Math.pow(bin / ambience.noiseBins[0], ambience.spectralSlope);
+    const amplitude = noiseAmplitude / Math.pow(bin / ambience.noiseBins[0], ambience.spectralSlope);
     const angularFrequency = (Math.PI * 2 * bin) / durationSeconds;
     for (let sample = 0; sample < sampleCount; sample += 1) {
       samples[sample] += Math.sin((angularFrequency * sample) / sampleRate + phase) * amplitude;
@@ -85,13 +84,8 @@ const ambiences = [
     noiseBins: Array.from({ length: 170 }, (_, index) => index + 15),
     noiseAmplitude: 0.11,
     spectralSlope: 0.55,
-    tones: [
-      [55, 0.045, 0],
-      [110, 0.022, 37],
-      [165, 0.012, 71],
-    ],
-    description:
-      'Original synthesized night-air and distant electrical hum; no field recordings or music.',
+    tones: [[55, 0.045, 0], [110, 0.022, 37], [165, 0.012, 71]],
+    description: 'Original synthesized night-air and distant electrical hum; no field recordings or music.',
   },
   {
     id: 'underground-hum',
@@ -100,13 +94,8 @@ const ambiences = [
     noiseBins: Array.from({ length: 95 }, (_, index) => index + 2),
     noiseAmplitude: 0.105,
     spectralSlope: 0.82,
-    tones: [
-      [36, 0.052, 0],
-      [54, 0.036, 61],
-      [72, 0.018, 112],
-    ],
-    description:
-      'Original synthesized low ventilation resonance and soft room noise; no field recordings or music.',
+    tones: [[36, 0.052, 0], [54, 0.036, 61], [72, 0.018, 112]],
+    description: 'Original synthesized low ventilation resonance and soft room noise; no field recordings or music.',
   },
   {
     id: 'archive-quiet',
@@ -115,12 +104,8 @@ const ambiences = [
     noiseBins: Array.from({ length: 180 }, (_, index) => index + 70),
     noiseAmplitude: 0.047,
     spectralSlope: 0.9,
-    tones: [
-      [220, 0.008, 30],
-      [330, 0.005, 75],
-    ],
-    description:
-      'Original synthesized near-silent room tone; no clocks, voices, field recordings, or music.',
+    tones: [[220, 0.008, 30], [330, 0.005, 75]],
+    description: 'Original synthesized near-silent room tone; no clocks, voices, field recordings, or music.',
   },
   {
     id: 'street-rain',
@@ -129,12 +114,8 @@ const ambiences = [
     noiseBins: Array.from({ length: 390 }, (_, index) => index + 25),
     noiseAmplitude: 0.105,
     spectralSlope: 0.28,
-    tones: [
-      [120, 0.012, 19],
-      [240, 0.007, 86],
-    ],
-    description:
-      'Original synthesized soft rain texture with no thunder, voices, field recordings, or music.',
+    tones: [[120, 0.012, 19], [240, 0.007, 86]],
+    description: 'Original synthesized soft rain texture with no thunder, voices, field recordings, or music.',
   },
 ];
 
@@ -144,9 +125,7 @@ const generated = [];
 for (const ambience of ambiences) {
   const rendered = createWav(ambience);
   if (rendered.buffer.length > 25 * 1024) {
-    throw new Error(
-      `${ambience.filename}: ${rendered.buffer.length} bytes exceeds the 25 KiB sound budget`
-    );
+    throw new Error(`${ambience.filename}: ${rendered.buffer.length} bytes exceeds the 25 KiB sound budget`);
   }
   if (rendered.rms < 0.002 || rendered.peak > 0.72 || rendered.boundaryDelta > 2) {
     throw new Error(`${ambience.filename}: invalid audio envelope ${JSON.stringify(rendered)}`);

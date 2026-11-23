@@ -60,7 +60,6 @@ At minimum test repository's current supported breakpoints and visual audit widt
 ## 7. Performance gate
 
 Measure, do not guess:
-
 - Initial route JS and CSS (raw + gzip).
 - Critical and deferred asset transfer sizes.
 - Decode time and memory.

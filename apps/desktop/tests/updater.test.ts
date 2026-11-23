@@ -126,9 +126,7 @@ describe('desktop updater', () => {
     });
 
     it('returns offline without throwing on non-2xx HTTP responses', async () => {
-      const fetchMock = vi
-        .fn<typeof fetch>()
-        .mockResolvedValue(new Response('Service Unavailable', { status: 503 }));
+      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('Service Unavailable', { status: 503 }));
 
       const result = await checkForDesktopUpdate({
         currentVersion: DEFAULT_CURRENT_DESKTOP_VERSION,

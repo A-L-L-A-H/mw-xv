@@ -2,6 +2,7 @@
 
 > **Historical evidence snapshot.** This report was captured against the earlier `dev` HEAD below. Its task-graph source-of-truth and deliverables claims are superseded by the 2026-11-23 TaskOS recovery audit. The immutable current source snapshot contains arrays for all 109 `deliverables` values; current lifecycle ownership and migration evidence are documented in `docs/tasks/RECOVERY-INVENTORY.md`. Do not use this report's old `task.json` authority statement as current execution guidance.
 
+
 Audit basis: `dev` HEAD `e768079e4551c2f88b528f2a59acfc09ade4ba3e`, the preserved local changes present at audit time, the source reports `W0-001` through `W0-005`, and the project specifications. No existing feature was replaced.
 
 ## Reuse and gaps

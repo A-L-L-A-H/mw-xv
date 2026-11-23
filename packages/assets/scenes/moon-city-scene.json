@@ -4,7 +4,11 @@
       "id": "moon-city-hero",
       "staticFallback": "illustrations/home-hero-desktop.webp",
       "accessibilityFallback": "illustrations/home-hero-mobile.webp",
-      "clips": ["moon-city-cloud-drift-far", "moon-city-cloud-drift-near", "crew-01-idle"],
+      "clips": [
+        "moon-city-cloud-drift-far",
+        "moon-city-cloud-drift-near",
+        "crew-01-idle"
+      ],
       "layers": [
         {
           "id": "sky",
@@ -95,11 +99,7 @@
           "maxWidth": 767,
           "overlay": "illustrations/home-hero-mobile.webp",
           "layerOverrides": [
-            {
-              "layerId": "moon",
-              "position": { "x": 0.52, "y": 0.2 },
-              "parallax": { "x": 0.02, "y": 0.02 }
-            },
+            { "layerId": "moon", "position": { "x": 0.52, "y": 0.2 }, "parallax": { "x": 0.02, "y": 0.02 } },
             { "layerId": "prop-wires", "opacity": 0.45, "parallax": { "x": 0.18, "y": 0.08 } }
           ]
         },
@@ -117,14 +117,18 @@
       "loop": true,
       "direction": "forward",
       "pivot": { "x": 0.5, "y": 0.28 },
-      "frames": [{ "asset": "environments/moon-city-clouds-far.svg", "durationMs": 24000 }]
+      "frames": [
+        { "asset": "environments/moon-city-clouds-far.svg", "durationMs": 24000 }
+      ]
     },
     {
       "id": "moon-city-cloud-drift-near",
       "loop": true,
       "direction": "forward",
       "pivot": { "x": 0.5, "y": 0.34 },
-      "frames": [{ "asset": "environments/moon-city-clouds-near.svg", "durationMs": 14000 }]
+      "frames": [
+        { "asset": "environments/moon-city-clouds-near.svg", "durationMs": 14000 }
+      ]
     },
     {
       "id": "crew-01-idle",

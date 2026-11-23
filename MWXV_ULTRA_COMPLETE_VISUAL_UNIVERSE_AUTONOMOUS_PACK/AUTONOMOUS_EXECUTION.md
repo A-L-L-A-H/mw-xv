@@ -89,7 +89,6 @@ For each ready task:
 Allowed statuses: `todo`, `in_progress`, `blocked`, `done`, `skipped`.
 
 Every `done` task must include:
-
 - Actual commands executed and exit code.
 - Test/report/screenshot artifact paths where applicable.
 - Commit SHA if committed.

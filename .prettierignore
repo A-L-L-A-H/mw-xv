@@ -7,4 +7,3 @@ services
 pnpm-lock.yaml
 .env*
 coverage
-apps/isp/target

@@ -70,7 +70,10 @@ describe('A2A capability registry', () => {
     const registry = createA2aCapabilityRegistry();
 
     const candidates = findA2aCapabilityCandidates(registry, 'knowledge.query');
-    expect(candidates.map((claim) => claim.claimId)).toEqual(['a2a-claim-006', 'a2a-claim-005']);
+    expect(candidates.map((claim) => claim.claimId)).toEqual([
+      'a2a-claim-006',
+      'a2a-claim-005',
+    ]);
 
     const excluded = findA2aCapabilityCandidates(registry, 'knowledge.query', {
       excludeNodeIds: ['idn-sby-edge-02'],
@@ -92,17 +95,14 @@ describe('A2A capability registry', () => {
   it('registers claims with strict identity and confidence validation', () => {
     const registry = createA2aCapabilityRegistry();
 
-    expect(() => registerA2aCapabilityClaim(registry, makeClaim({ agentId: 'jkt-ghost' }))).toThrow(
-      'is not registered'
-    );
+    expect(() =>
+      registerA2aCapabilityClaim(registry, makeClaim({ agentId: 'jkt-ghost' }))
+    ).toThrow('is not registered');
     expect(() =>
       registerA2aCapabilityClaim(registry, makeClaim({ claimId: 'a2a-claim-001' }))
     ).toThrow('already registered');
     expect(() =>
-      registerA2aCapabilityClaim(
-        registry,
-        makeClaim({ capabilityCode: 'notification.dispatch', claimId: 'a2a-claim-011' })
-      )
+      registerA2aCapabilityClaim(registry, makeClaim({ capabilityCode: 'notification.dispatch', claimId: 'a2a-claim-011' }))
     ).toThrow('already claims capability');
     expect(() =>
       registerA2aCapabilityClaim(registry, makeClaim({ confidence: 101, claimId: 'a2a-claim-012' }))
@@ -123,27 +123,17 @@ describe('A2A capability registry', () => {
   it('delegates only across active nodes with an active executor claim', () => {
     const registry = createA2aCapabilityRegistry();
 
+    expect(() => delegateA2aCapability(registry, makeDelegation({ contractId: 'a2a-sla-001' }))).toThrow(
+      'already exists'
+    );
     expect(() =>
-      delegateA2aCapability(registry, makeDelegation({ contractId: 'a2a-sla-001' }))
-    ).toThrow('already exists');
-    expect(() =>
-      delegateA2aCapability(
-        registry,
-        makeDelegation({
-          executorNodeId: 'idn-jkt-core-01',
-          executorAgentId: 'jkt-notifier',
-          capabilityCode: 'notification.dispatch',
-        })
-      )
+      delegateA2aCapability(registry, makeDelegation({ executorNodeId: 'idn-jkt-core-01', executorAgentId: 'jkt-notifier', capabilityCode: 'notification.dispatch' }))
     ).toThrow('cross a node boundary');
     expect(() =>
       delegateA2aCapability(registry, makeDelegation({ executorAgentId: 'sby-knowledge' }))
     ).toThrow('has no active claim');
     expect(() =>
-      delegateA2aCapability(
-        registry,
-        makeDelegation({ responseWindowMinutes: 40, resolutionWindowMinutes: 30 })
-      )
+      delegateA2aCapability(registry, makeDelegation({ responseWindowMinutes: 40, resolutionWindowMinutes: 30 }))
     ).toThrow('resolutionWindowMinutes must exceed');
     expect(() =>
       delegateA2aCapability(registry, makeDelegation({ maxDelegationDepth: 4 }))
@@ -163,18 +153,14 @@ describe('A2A capability registry', () => {
   it('evaluates SLA state and calendar-aware deadlines', () => {
     const registry: A2aCapabilityRegistry = createA2aCapabilityRegistry();
 
-    expect(
-      evaluateA2aDelegation(registry, 'a2a-sla-001', '2026-11-21T02:04:00.000Z')
-    ).toMatchObject({
+    expect(evaluateA2aDelegation(registry, 'a2a-sla-001', '2026-11-21T02:04:00.000Z')).toMatchObject({
       status: 'active',
       responseDueAt: '2026-11-21T02:05:00.000Z',
       resolutionDueAt: '2026-11-21T02:30:00.000Z',
       responseOverdue: false,
       resolutionOverdue: false,
     });
-    expect(
-      evaluateA2aDelegation(registry, 'a2a-sla-001', '2026-11-21T02:31:00.000Z')
-    ).toMatchObject({
+    expect(evaluateA2aDelegation(registry, 'a2a-sla-001', '2026-11-21T02:31:00.000Z')).toMatchObject({
       responseOverdue: true,
       resolutionOverdue: true,
     });
@@ -188,14 +174,12 @@ describe('A2A capability registry', () => {
     const registryWithRetired = {
       ...registry,
       slaContracts: registry.slaContracts.map((contract) =>
-        contract.contractId === 'a2a-sla-001'
-          ? { ...contract, status: 'retired' as const }
-          : contract
+        contract.contractId === 'a2a-sla-001' ? { ...contract, status: 'retired' as const } : contract
       ),
     };
-    expect(
-      evaluateA2aDelegation(registryWithRetired, 'a2a-sla-001', '2026-11-21T00:00:00.000Z').status
-    ).toBe('retired');
+    expect(evaluateA2aDelegation(registryWithRetired, 'a2a-sla-001', '2026-11-21T00:00:00.000Z').status).toBe(
+      'retired'
+    );
   });
 
   it('computes business minutes across workday end and weekend', () => {
@@ -236,9 +220,9 @@ describe('A2A capability registry', () => {
     expect(() => recordA2aReputationEvent(registry, { ...event, delta: -50 })).toThrow(
       'fulfilled reputation events require a positive delta'
     );
-    expect(() =>
-      recordA2aReputationEvent(registry, { ...event, counterpartyAgentId: 'sby-triage' })
-    ).toThrow('counterparty must be a different agent');
+    expect(() => recordA2aReputationEvent(registry, { ...event, counterpartyAgentId: 'sby-triage' })).toThrow(
+      'counterparty must be a different agent'
+    );
 
     const updated = recordA2aReputationEvent(registry, event);
     expect(registry.reputationLedger).toHaveLength(8);

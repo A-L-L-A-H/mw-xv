@@ -27,7 +27,9 @@ function createBaseInput(
 
 describe('synthesizeEvolutionCandidates', () => {
   it('fails closed when proofGatePassed is false', () => {
-    const result = synthesizeEvolutionCandidates(createBaseInput({ proofGatePassed: false }));
+    const result = synthesizeEvolutionCandidates(
+      createBaseInput({ proofGatePassed: false })
+    );
 
     expect(result.accepted).toBe(false);
     expect(result.reason).toBe('PROOF_GATE_NOT_PASSED');
@@ -120,7 +122,9 @@ describe('synthesizeEvolutionCandidates', () => {
   });
 
   it('synthesizes a fallback memory candidate when lessons array is empty', () => {
-    const result = synthesizeEvolutionCandidates(createBaseInput({ lessons: [] }));
+    const result = synthesizeEvolutionCandidates(
+      createBaseInput({ lessons: [] })
+    );
 
     expect(result.accepted).toBe(true);
     expect(result.candidates).toHaveLength(2);

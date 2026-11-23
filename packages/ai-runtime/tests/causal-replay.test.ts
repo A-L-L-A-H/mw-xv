@@ -9,20 +9,8 @@ import {
 describe('findCausalDivergencePoint', () => {
   it('returns diverged=false when all checkpoints pass proof gate and stay below surprise threshold', () => {
     const checkpoints: CausalCheckpoint[] = [
-      {
-        stepIndex: 0,
-        checkpointId: 'cp-0',
-        commitSha: 'aaa1111',
-        proofGatePassed: true,
-        worldModelSurpriseBps: 0,
-      },
-      {
-        stepIndex: 1,
-        checkpointId: 'cp-1',
-        commitSha: 'bbb2222',
-        proofGatePassed: true,
-        worldModelSurpriseBps: 1200,
-      },
+      { stepIndex: 0, checkpointId: 'cp-0', commitSha: 'aaa1111', proofGatePassed: true, worldModelSurpriseBps: 0 },
+      { stepIndex: 1, checkpointId: 'cp-1', commitSha: 'bbb2222', proofGatePassed: true, worldModelSurpriseBps: 1200 },
     ];
 
     const result = findCausalDivergencePoint(checkpoints, { surpriseThresholdBps: 2500 });
@@ -145,13 +133,7 @@ describe('planCounterfactualFork', () => {
       companyId: 12,
       baseBranch: 'main',
       checkpoints: [
-        {
-          stepIndex: 0,
-          checkpointId: 'cp-0',
-          commitSha: '0000aaaa',
-          proofGatePassed: true,
-          worldModelSurpriseBps: 0,
-        },
+        { stepIndex: 0, checkpointId: 'cp-0', commitSha: '0000aaaa', proofGatePassed: true, worldModelSurpriseBps: 0 },
         {
           stepIndex: 1,
           checkpointId: 'cp-1',

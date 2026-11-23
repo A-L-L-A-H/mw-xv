@@ -7,7 +7,12 @@ import { fileURLToPath } from 'node:url';
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(await readFile(resolve(packageRoot, 'manifest.json'), 'utf8'));
 const licenses = JSON.parse(await readFile(resolve(packageRoot, 'licenses.json'), 'utf8'));
-const ambienceIds = ['moon-city-night', 'underground-hum', 'archive-quiet', 'street-rain'];
+const ambienceIds = [
+  'moon-city-night',
+  'underground-hum',
+  'archive-quiet',
+  'street-rain',
+];
 
 test('scene ambience pack is original, provenance-complete, seamless, and inside the audio budget', async () => {
   for (const ambienceId of ambienceIds) {

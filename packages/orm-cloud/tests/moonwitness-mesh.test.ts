@@ -228,9 +228,8 @@ describe('MoonWitness Mesh PaaS provider', () => {
   });
 
   it('redacts secrets in error responses', async () => {
-    const fetchSpy = vi.fn<typeof fetch>(
-      async () =>
-        new Response('Auth failed for Bearer top-secret-token password=hunter2', { status: 401 })
+    const fetchSpy = vi.fn<typeof fetch>(async () =>
+      new Response('Auth failed for Bearer top-secret-token password=hunter2', { status: 401 })
     );
 
     await expect(

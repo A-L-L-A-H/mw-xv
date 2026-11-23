@@ -19,7 +19,6 @@ Preserve canonical MoonWitness wordmark, crown, symbols, existing theme system a
 ## Character continuity
 
 Each recurring character needs:
-
 - Stable ID and approved identity sheet.
 - Front/side/back turnaround or approved silhouette sheet.
 - Height/proportion reference.
@@ -36,7 +35,6 @@ Do not use uncontrolled image generation that changes the character between scen
 ## Environment continuity
 
 Each environment has:
-
 - Environment ID, mood, palette, lighting, perspective and camera language.
 - Background/midground/foreground planes.
 - Props and reusable modules.
@@ -47,14 +45,14 @@ Each environment has:
 
 ## Motion grammar
 
-| Motion class | Use                                               | Rule                                                     |
-| ------------ | ------------------------------------------------- | -------------------------------------------------------- |
-| UI micro     | Hover, press, focus, status                       | Short and purposeful                                     |
-| Editorial    | Panel/heading reveal                              | Finite, deterministic, no layout jump                    |
-| Cinematic    | Scene entrance, camera pan/zoom, panel transition | Controlled timeline; user can proceed immediately        |
-| Character    | Idle, blink, hair, gesture, walk                  | Consistent cycle, bounded playback, pause when offscreen |
-| Ambient      | Clouds, rain, distant light, particles            | Subtle, opt-in intensity, low-power and static modes     |
-| Impact       | Flash, shake, burst, slash                        | Brief, rare, never obscures controls/content             |
+| Motion class | Use | Rule |
+|---|---|---|
+| UI micro | Hover, press, focus, status | Short and purposeful |
+| Editorial | Panel/heading reveal | Finite, deterministic, no layout jump |
+| Cinematic | Scene entrance, camera pan/zoom, panel transition | Controlled timeline; user can proceed immediately |
+| Character | Idle, blink, hair, gesture, walk | Consistent cycle, bounded playback, pause when offscreen |
+| Ambient | Clouds, rain, distant light, particles | Subtle, opt-in intensity, low-power and static modes |
+| Impact | Flash, shake, burst, slash | Brief, rare, never obscures controls/content |
 
 ## Animation craft rules
 

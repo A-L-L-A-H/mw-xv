@@ -13,10 +13,7 @@ import {
 } from '@moonwitness/orm-knowledge';
 import knex, { type Knex } from 'knex';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import {
-  localRetrievalHttpPlugin as localRetrievalRoutes,
-  resolveCorpusDataRoot,
-} from '@moonwitness/orm-knowledge';
+import { localRetrievalHttpPlugin as localRetrievalRoutes, resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
 
 const connectionString = process.env.POSTGRES_TEST_URL;
 if (process.env.REQUIRE_POSTGRES_TESTS === 'true' && !connectionString) {

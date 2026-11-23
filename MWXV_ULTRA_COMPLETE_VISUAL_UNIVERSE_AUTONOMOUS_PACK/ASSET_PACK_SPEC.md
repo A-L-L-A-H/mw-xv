@@ -72,7 +72,6 @@ All categories belong to one MoonWitness visual identity, not separate competing
 ## Minimum first vertical slice: Moon City
 
 The first production slice must include, at minimum by coverage rather than arbitrary file count:
-
 - One approved scene descriptor.
 - Sky, moon, cloud/atmosphere, distant city, midground city, foreground rooftop/props as separable layers.
 - One consistent pilot character or approved silhouette, with static pose and at least one loopable idle clip.

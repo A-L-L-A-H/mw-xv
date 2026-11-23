@@ -27,15 +27,15 @@ The owner-approved TaskOS migration and deterministic Visual Universe projection
 
 ## Phase register
 
-| Phase                                | Scope                                                                              | Verified outcome                                                                                                                                                                                                                                                                                                      | Remaining acceptance                                                                                                                                                                                                                                                                                        |
-| ------------------------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **0 — Stabilization**                | Branch, CI, toolchain and safety baseline                                          | `main` untouched; only `main` and `dev` are used; active branch rulesets prohibit deletion/non-fast-forward updates; main requires PR plus `quality-and-build`, `unit-tests`, and `knowledge-gate`; Docker/Corepack pnpm pin and drift regression test are in place; exact-SHA push and PR CI both pass all five jobs | **Remote Phase 0 complete.** Preserve the existing branch and release gates; no production deployment is implied                                                                                                                                                                                            |
-| **1 — TaskOS recovery**              | Rebuild from source provenance without data loss                                   | Owner-approved 627-record candidate is installed as canonical; previous 1,358-record blob is preserved byte-for-byte at the archive path; full identity reconciliation and candidate SHA are recorded                                                                                                                 | **Remote technical acceptance closed** on exact implementation SHA `e1b216eeb2bcca131a9efbb14fe91865cd6ee3fc`: push and PR CI each passed all five jobs, including canonical TaskOS and Visual Universe projection validators. Local native Desktop FLOW and human release approvals remain separate gates. |
-| **2 — Governance and documentation** | Roadmap, issue lifecycle, runtime support and canonical docs                       | Stabilization/active checkpoints refreshed; source-of-truth and review boundaries documented; runtime configuration cross-checked against upstream documentation                                                                                                                                                      | Formal maintainer refresh/sign-off of overdue runtime ledger entries; reconcile issue projections from exact evidence; do not mass-close issues                                                                                                                                                             |
-| **3 — ROCKSOUL FLOW integration**    | Repo Radar → Overlap → Plan → Packet → Dispatch → Worktree → Proof → Review → Sync | M13.09–M13.12 code/evidence exists; Board/Desktop boundary and server-authority contracts are documented; previous exact-SHA PostgreSQL integration lane passed                                                                                                                                                       | Local native Desktop end-to-end walkthrough with real isolated worktree; verify scope rejection, lease/fencing, redaction, human review and server-only acceptance                                                                                                                                          |
-| **4 — Roadmap completion**           | Evidence-led task completion                                                       | M13.09–M13.12 are already recorded complete in the M13 roadmap and have evidence files; no duplicate implementation was started                                                                                                                                                                                       | Keep other M/K tasks at their actual source state; update status only with test/evidence proof; close M13 issue projections only after the full journey is accepted                                                                                                                                         |
-| **5 — Product/creative portfolio**   | Preserve future initiatives without mixing them into the stabilization release     | Issues #15–#22 remain separately scoped proposals: extension/community, MoonWitness shared experience, GOD PROMISE/ROCKSOUL editorial workflow, Asmaul Husna visual reference, artwork-first creative pipeline, research workflow, Desktop harness evaluation and AEQ/BABYDOLL concept                                | Maintainer acceptance and atomic TaskOS tasks are required before any feature expansion; no proposal is treated as implemented or release-blocking by implication                                                                                                                                           |
-| **6 — Release and handoff**          | Exact-SHA verification, approvals, controlled promotion and local takeover         | PR #37 remains open; promotion report is separate from deployment; release gates are explicit; closeout handoff is prepared                                                                                                                                                                                           | Current CI green on the final candidate SHA, TaskOS data reconciliation, local acceptance, CODEOWNER review and M12.14 approval. No automatic merge, tag, publication or deployment                                                                                                                         |
+| Phase | Scope | Verified outcome | Remaining acceptance |
+|---|---|---|---|
+| **0 — Stabilization** | Branch, CI, toolchain and safety baseline | `main` untouched; only `main` and `dev` are used; active branch rulesets prohibit deletion/non-fast-forward updates; main requires PR plus `quality-and-build`, `unit-tests`, and `knowledge-gate`; Docker/Corepack pnpm pin and drift regression test are in place; exact-SHA push and PR CI both pass all five jobs | **Remote Phase 0 complete.** Preserve the existing branch and release gates; no production deployment is implied |
+| **1 — TaskOS recovery** | Rebuild from source provenance without data loss | Owner-approved 627-record candidate is installed as canonical; previous 1,358-record blob is preserved byte-for-byte at the archive path; full identity reconciliation and candidate SHA are recorded | **Remote technical acceptance closed** on exact implementation SHA `e1b216eeb2bcca131a9efbb14fe91865cd6ee3fc`: push and PR CI each passed all five jobs, including canonical TaskOS and Visual Universe projection validators. Local native Desktop FLOW and human release approvals remain separate gates. |
+| **2 — Governance and documentation** | Roadmap, issue lifecycle, runtime support and canonical docs | Stabilization/active checkpoints refreshed; source-of-truth and review boundaries documented; runtime configuration cross-checked against upstream documentation | Formal maintainer refresh/sign-off of overdue runtime ledger entries; reconcile issue projections from exact evidence; do not mass-close issues |
+| **3 — ROCKSOUL FLOW integration** | Repo Radar → Overlap → Plan → Packet → Dispatch → Worktree → Proof → Review → Sync | M13.09–M13.12 code/evidence exists; Board/Desktop boundary and server-authority contracts are documented; previous exact-SHA PostgreSQL integration lane passed | Local native Desktop end-to-end walkthrough with real isolated worktree; verify scope rejection, lease/fencing, redaction, human review and server-only acceptance |
+| **4 — Roadmap completion** | Evidence-led task completion | M13.09–M13.12 are already recorded complete in the M13 roadmap and have evidence files; no duplicate implementation was started | Keep other M/K tasks at their actual source state; update status only with test/evidence proof; close M13 issue projections only after the full journey is accepted |
+| **5 — Product/creative portfolio** | Preserve future initiatives without mixing them into the stabilization release | Issues #15–#22 remain separately scoped proposals: extension/community, MoonWitness shared experience, GOD PROMISE/ROCKSOUL editorial workflow, Asmaul Husna visual reference, artwork-first creative pipeline, research workflow, Desktop harness evaluation and AEQ/BABYDOLL concept | Maintainer acceptance and atomic TaskOS tasks are required before any feature expansion; no proposal is treated as implemented or release-blocking by implication |
+| **6 — Release and handoff** | Exact-SHA verification, approvals, controlled promotion and local takeover | PR #37 remains open; promotion report is separate from deployment; release gates are explicit; closeout handoff is prepared | Current CI green on the final candidate SHA, TaskOS data reconciliation, local acceptance, CODEOWNER review and M12.14 approval. No automatic merge, tag, publication or deployment |
 
 ## TaskOS data contract
 
@@ -43,17 +43,17 @@ The current canonical registry is **627 records**. The prior 1,358-record regist
 
 The source-backed migration design contains **627 records**:
 
-| Source group                | Records |
-| --------------------------- | ------: |
-| Roadmap                     |     239 |
-| WhatsApp checklist          |     112 |
-| Desktop checklist           |     128 |
-| Archived open MW items      |       7 |
-| AI Corporation PR lifecycle |      14 |
-| Evolution backlog           |       4 |
-| Audit backlog               |      14 |
-| Visual Universe             |     109 |
-| **Candidate total**         | **627** |
+| Source group | Records |
+|---|---:|
+| Roadmap | 239 |
+| WhatsApp checklist | 112 |
+| Desktop checklist | 128 |
+| Archived open MW items | 7 |
+| AI Corporation PR lifecycle | 14 |
+| Evolution backlog | 4 |
+| Audit backlog | 14 |
+| Visual Universe | 109 |
+| **Candidate total** | **627** |
 
 Expected candidate state distribution: **468 done, 49 doing, 89 todo, 21 blocked**.
 
@@ -66,7 +66,6 @@ The 731-record difference is fully reconciled, not an unexplained deletion. The 
 The non-cancelled push CI run [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and pull-request CI run [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241) both tested the exact `dev` head `def3df35b5d54d7359600e0471af5a6dd4cb7f29`. All five jobs passed in each run: quality/build, unit tests, knowledge gate, DX and PostgreSQL integration. The unit-test job ran `pnpm test:taskos`, built the workspace, ran unit tests, generated the candidate in non-mutating mode, validated it and uploaded the artifact.
 
 Exact development-head candidate:
-
 - Workflow artifact: [14780700916](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) (`taskos-candidate-def3df35b5d54d7359600e0471af5a6dd4cb7f29`).
 - Candidate JSON SHA-256: `7be52787d8eacfde6d17ff2320c8d5a750ec410b802635125e0ebbd9057a2dc1`.
 - Downloaded artifact ZIP SHA-256: `75e926dd4d2f27cb64aff50ccbb2a05c7352cd7d690f3276cd0b879f9e85a2a7`.
@@ -78,7 +77,6 @@ Exact development-head candidate:
 The exact-`dev` candidate is now generated with `SOURCE_DATE_EPOCH` derived from the source commit timestamp. Reruns for a fixed source SHA therefore reproduce the same `generatedAt` value; the migration artifact selected for canonical installation carries that deterministic timestamp.
 
 The full legacy-to-candidate identity reconciliation remains:
-
 - Legacy registry: 1,358 unique codes.
 - Shared legacy/candidate identities: 504.
 - Excluded: exactly 854 legacy `done` records with the stale root-`todo.md` source reference; they remain in the archived checklist and untouched legacy registry snapshot.
@@ -93,7 +91,6 @@ The full legacy-to-candidate identity reconciliation remains:
 The source review supports the configured Node 24 + pnpm 11 combination: Node 24 is LTS, and pnpm 11 supports Node 24. pnpm 12 is now the current line, but it should be evaluated as a separate controlled upgrade rather than adopted implicitly. PostgreSQL 16 remains supported; upstream lists 16.16 as current minor and 2028-11-09 as its final release date. Playwright's published requirements include Node 24 and Ubuntu 24.04. GitHub's migration of `ubuntu-latest` to Ubuntu 26.04 was scheduled to complete by 2026-11-19, so retaining an explicit `ubuntu-24.04` pin avoids an unreviewed runner change.
 
 Sources:
-
 - [Node.js releases](https://nodejs.org/en/about/previous-releases)
 - [pnpm compatibility](https://pnpm.io/installation)
 - [PostgreSQL versioning](https://www.postgresql.org/support/versioning/)

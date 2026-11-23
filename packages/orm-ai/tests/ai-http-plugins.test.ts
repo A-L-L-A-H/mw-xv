@@ -149,9 +149,7 @@ describe('orm-ai manifest HTTP plugins (INV-014)', () => {
       }
     }
 
-    const pcwSync = routes.find(
-      (r) => r.method === 'POST' && r.path === '/api/ai/desktop/pcw-sync'
-    );
+    const pcwSync = routes.find((r) => r.method === 'POST' && r.path === '/api/ai/desktop/pcw-sync');
     assert.ok(pcwSync);
     const res = createFakeReply();
     await pcwSync.handler({ params: {}, query: {}, body: {} }, res.reply);
@@ -159,7 +157,10 @@ describe('orm-ai manifest HTTP plugins (INV-014)', () => {
   });
 
   it('evaluateProofGateV2 enforces check matrix and diff-scope drift guard', () => {
-    const failed = evaluateProofGateV2({ checks: [{ code: 'unit', status: 'fail' }] }, undefined);
+    const failed = evaluateProofGateV2(
+      { checks: [{ code: 'unit', status: 'fail' }] },
+      undefined
+    );
     assert.equal(failed?.code, 'PROOF_CHECK_FAILED');
 
     const outOfScope = evaluateProofGateV2(

@@ -18,20 +18,20 @@ The supplied prompt directs the archive to cover creative work as well as softwa
 
 The following names appear explicitly in the supplied prompt. They are indexed here as user-provided concept seeds; their relationship, chronology, ownership and maturity must not be inferred from the name alone.
 
-| Seed ID          | Original name / wording             | Source context                          | Initial classification | Relationship / status                                                           |
-| ---------------- | ----------------------------------- | --------------------------------------- | ---------------------- | ------------------------------------------------------------------------------- |
-| `IDEA-SEED-0001` | MoonWitness                         | Brand, product and platform             | `USER IDEA`            | Existing product proposal; see Issue #16                                        |
-| `IDEA-SEED-0002` | MoonWitness Radio                   | Product / audio experience              | `USER IDEA`            | Radio MVP and ownership remain to be decided; see #16                           |
-| `IDEA-SEED-0003` | GOD PROMISE                         | Religion, content and visual concept    | `USER IDEA`            | Editorial / research track; see #17                                             |
-| `IDEA-SEED-0004` | GOD PROMISE / SF                    | Religion and content                    | `USER IDEA`            | Preserve “SF” as source wording; expansion and use need source confirmation     |
-| `IDEA-SEED-0005` | Qāf Kāf kahf Kun                    | Religion / concept label                | `USER IDEA`            | Preserve spelling; do not infer theology or meaning from the label              |
-| `IDEA-SEED-0006` | ROCKSOUL                            | Philosophy, creative work and brand     | `USER IDEA`            | Related editorial proposal exists; do not merge every ROCKSOUL-labelled project |
-| `IDEA-SEED-0007` | ANGEL WITH SHOTGUN                  | Creative / spiritual narrative label    | `USER IDEA`            | Story, character and symbolic scope unresolved                                  |
-| `IDEA-SEED-0008` | HISTA                               | Philosophy / framework                  | `USER IDEA`            | Definition and history require original-source review                           |
-| `IDEA-SEED-0009` | Asmaul Husna                        | Religious reference and visual concepts | `USER IDEA`            | Reference dataset and visual concept map have an existing proposal; see #18     |
-| `IDEA-SEED-0010` | Isa/Yesus                           | Religious / narrative concept           | `USER IDEA`            | Preserve as a topic label only; representation and canon need review            |
-| `IDEA-SEED-0011` | Malaikat, hero, dan peran spiritual | Religious / narrative concepts          | `USER IDEA`            | Separate source-based religious reference from metaphor and fiction             |
-| `IDEA-SEED-0012` | AEQ / BABYDOLL Service Jam          | Exploratory initiative                  | `USER IDEA`            | Existing separate concept record; see #22; do not merge prematurely             |
+| Seed ID | Original name / wording | Source context | Initial classification | Relationship / status |
+|---|---|---|---|---|
+| `IDEA-SEED-0001` | MoonWitness | Brand, product and platform | `USER IDEA` | Existing product proposal; see Issue #16 |
+| `IDEA-SEED-0002` | MoonWitness Radio | Product / audio experience | `USER IDEA` | Radio MVP and ownership remain to be decided; see #16 |
+| `IDEA-SEED-0003` | GOD PROMISE | Religion, content and visual concept | `USER IDEA` | Editorial / research track; see #17 |
+| `IDEA-SEED-0004` | GOD PROMISE / SF | Religion and content | `USER IDEA` | Preserve “SF” as source wording; expansion and use need source confirmation |
+| `IDEA-SEED-0005` | Qāf Kāf kahf Kun | Religion / concept label | `USER IDEA` | Preserve spelling; do not infer theology or meaning from the label |
+| `IDEA-SEED-0006` | ROCKSOUL | Philosophy, creative work and brand | `USER IDEA` | Related editorial proposal exists; do not merge every ROCKSOUL-labelled project |
+| `IDEA-SEED-0007` | ANGEL WITH SHOTGUN | Creative / spiritual narrative label | `USER IDEA` | Story, character and symbolic scope unresolved |
+| `IDEA-SEED-0008` | HISTA | Philosophy / framework | `USER IDEA` | Definition and history require original-source review |
+| `IDEA-SEED-0009` | Asmaul Husna | Religious reference and visual concepts | `USER IDEA` | Reference dataset and visual concept map have an existing proposal; see #18 |
+| `IDEA-SEED-0010` | Isa/Yesus | Religious / narrative concept | `USER IDEA` | Preserve as a topic label only; representation and canon need review |
+| `IDEA-SEED-0011` | Malaikat, hero, dan peran spiritual | Religious / narrative concepts | `USER IDEA` | Separate source-based religious reference from metaphor and fiction |
+| `IDEA-SEED-0012` | AEQ / BABYDOLL Service Jam | Exploratory initiative | `USER IDEA` | Existing separate concept record; see #22; do not merge prematurely |
 
 The prompt also requests preserving storylines, chapter/episode/arc titles, characters, aliases, universe rules, poster prompts, brand names, slogans, technical experiments, one-off wordplay, music references and unfinished fragments. No individual items in those broad categories are asserted here unless explicitly named above.
 

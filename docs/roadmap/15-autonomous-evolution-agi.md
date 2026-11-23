@@ -12,13 +12,13 @@ M14 builds exclusively on MoonWitness's native domain and execution planes:
 
 ### Why External Monolith Frameworks (Mastra, LangChain, CrewAI) Are Rejected
 
-| Concern                                                  | External Monolith Frameworks (Mastra / LangChain / CrewAI)                                                      | MoonWitness Canonical Stack (`orm-ai` + `ai-runtime` + `ai-evaluation` + MCP/A2A)                                                                         |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Source of truth (ADR 0007 D1–D2)**                     | Introduce shadow state stores, opaque memory tables, and framework-specific runners outside `@moonwitness/orm`. | All contracts, runs, grants, obligations, skills, and memories live in PostgreSQL via `defineModel`/`defineAddon`.                                        |
-| **Authority & tenant isolation (ADR 0007 D8, ADR 0006)** | Derive tool access from prompt chains or global process env; weak multi-company and `superadmin` isolation.     | Immutable single-company `ai.agent` (`role: 'user'`), execution-time `ai.capability_grant` checks, and `INTERNAL_PREFIXES` protection.                    |
-| **Acceptance & verification (ADR 0007 D6, D12)**         | Treat LLM self-reported completion as done; lack deterministic Proof-Carrying Work (PCW) gates.                 | Server-authoritative Proof Gate v2 (5-state check matrix, `validateDiffScope`, SHA-256 evidence digests, independent review).                             |
-| **Learning safety (ADR 0007 D10)**                       | Mutate prompts or vector stores live without ablation or rollback governance.                                   | Candidate-first `ai.skill_version` / `ai.memory_candidate`, offline `G0`–`G6` ablation/harm evaluation, `orm-workflow` promotion, and instant revocation. |
-| **Durability & protocol hygiene (ADR 0007 D9, D11)**     | Couple business logic to volatile framework SDKs and custom queue backends.                                     | Reuses `@moonwitness/jobs` (`SKIP LOCKED`, leases, monotonic fencing tokens, `AbortSignal`) and thin stateless MCP/A2A adapters.                          |
+| Concern | External Monolith Frameworks (Mastra / LangChain / CrewAI) | MoonWitness Canonical Stack (`orm-ai` + `ai-runtime` + `ai-evaluation` + MCP/A2A) |
+| --- | --- | --- |
+| **Source of truth (ADR 0007 D1–D2)** | Introduce shadow state stores, opaque memory tables, and framework-specific runners outside `@moonwitness/orm`. | All contracts, runs, grants, obligations, skills, and memories live in PostgreSQL via `defineModel`/`defineAddon`. |
+| **Authority & tenant isolation (ADR 0007 D8, ADR 0006)** | Derive tool access from prompt chains or global process env; weak multi-company and `superadmin` isolation. | Immutable single-company `ai.agent` (`role: 'user'`), execution-time `ai.capability_grant` checks, and `INTERNAL_PREFIXES` protection. |
+| **Acceptance & verification (ADR 0007 D6, D12)** | Treat LLM self-reported completion as done; lack deterministic Proof-Carrying Work (PCW) gates. | Server-authoritative Proof Gate v2 (5-state check matrix, `validateDiffScope`, SHA-256 evidence digests, independent review). |
+| **Learning safety (ADR 0007 D10)** | Mutate prompts or vector stores live without ablation or rollback governance. | Candidate-first `ai.skill_version` / `ai.memory_candidate`, offline `G0`–`G6` ablation/harm evaluation, `orm-workflow` promotion, and instant revocation. |
+| **Durability & protocol hygiene (ADR 0007 D9, D11)** | Couple business logic to volatile framework SDKs and custom queue backends. | Reuses `@moonwitness/jobs` (`SKIP LOCKED`, leases, monotonic fencing tokens, `AbortSignal`) and thin stateless MCP/A2A adapters. |
 
 ---
 

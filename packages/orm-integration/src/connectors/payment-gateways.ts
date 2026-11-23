@@ -21,13 +21,7 @@ export interface PaymentIntentRequest {
 export interface PaymentIntentResponse {
   readonly id: string;
   readonly clientSecret?: string;
-  readonly status:
-    | 'requires_payment_method'
-    | 'requires_confirmation'
-    | 'requires_action'
-    | 'processing'
-    | 'succeeded'
-    | 'canceled';
+  readonly status: 'requires_payment_method' | 'requires_confirmation' | 'requires_action' | 'processing' | 'succeeded' | 'canceled';
   readonly amount: number;
   readonly currency: string;
   readonly gateway: Gateway;
@@ -67,16 +61,8 @@ export interface PayoutRecord {
 export interface ReconciliationResult {
   readonly matched: number;
   readonly unmatchedGateway: PayoutRecord[];
-  readonly unmatchedLocal: {
-    readonly id: string;
-    readonly amount: number;
-    readonly currency: string;
-  }[];
-  readonly discrepancies: {
-    readonly gateway: PayoutRecord;
-    readonly local: { readonly id: string; readonly amount: number };
-    readonly difference: number;
-  }[];
+  readonly unmatchedLocal: { readonly id: string; readonly amount: number; readonly currency: string }[];
+  readonly discrepancies: { readonly gateway: PayoutRecord; readonly local: { readonly id: string; readonly amount: number }; readonly difference: number }[];
 }
 
 export interface StripeConfig {
@@ -100,12 +86,8 @@ export interface MidtransConfig {
 
 export type PaymentGatewayConfig = StripeConfig | XenditConfig | MidtransConfig;
 
-function assertGateway(
-  config: PaymentGatewayConfig,
-  expected: Gateway
-): asserts config is Extract<PaymentGatewayConfig, { [key in Gateway]: unknown }> {
-  const key =
-    expected === 'stripe' ? 'secretKey' : expected === 'xendit' ? 'secretKey' : 'serverKey';
+function assertGateway(config: PaymentGatewayConfig, expected: Gateway): asserts config is Extract<PaymentGatewayConfig, { [key in Gateway]: unknown }> {
+  const key = expected === 'stripe' ? 'secretKey' : expected === 'xendit' ? 'secretKey' : 'serverKey';
   if (!(key in config)) {
     throw new Error(`Invalid config for gateway ${expected}`);
   }
@@ -115,23 +97,18 @@ function generateIdempotencyKey(companyId: number, orderId: string): string {
   return `mw:${companyId}:${orderId}`;
 }
 
-export function buildStripePaymentIntent(
-  request: PaymentIntentRequest,
-  config: StripeConfig
-): PaymentIntentResponse {
+export function buildStripePaymentIntent(request: PaymentIntentRequest, config: StripeConfig): PaymentIntentResponse {
   assertGateway(config, 'stripe');
 
   const amountCents = Math.round(request.amount * 100);
   const paymentMethodTypes = request.paymentMethodTypes ?? ['card'];
 
-  const clientSecret = `pi_${request.orderId}_secret_${Buffer.from(
-    JSON.stringify({
-      amount: amountCents,
-      currency: request.currency.toLowerCase(),
-      customer: request.customerId,
-      metadata: { ...request.metadata, orderId: request.orderId },
-    })
-  ).toString('base64url')}`;
+  const clientSecret = `pi_${request.orderId}_secret_${Buffer.from(JSON.stringify({
+    amount: amountCents,
+    currency: request.currency.toLowerCase(),
+    customer: request.customerId,
+    metadata: { ...request.metadata, orderId: request.orderId }
+  })).toString('base64url')}`;
 
   return {
     id: `pi_${request.orderId}`,
@@ -143,10 +120,7 @@ export function buildStripePaymentIntent(
   };
 }
 
-export function buildXenditPaymentIntent(
-  request: PaymentIntentRequest,
-  config: XenditConfig
-): PaymentIntentResponse {
+export function buildXenditPaymentIntent(request: PaymentIntentRequest, config: XenditConfig): PaymentIntentResponse {
   assertGateway(config, 'xendit');
 
   const externalId = `xnd_${request.orderId}`;
@@ -166,21 +140,16 @@ export function buildXenditPaymentIntent(
   };
 }
 
-export function buildMidtransPaymentIntent(
-  request: PaymentIntentRequest,
-  config: MidtransConfig
-): PaymentIntentResponse {
+export function buildMidtransPaymentIntent(request: PaymentIntentRequest, config: MidtransConfig): PaymentIntentResponse {
   assertGateway(config, 'midtrans');
 
   const orderId = `mid_${request.orderId}`;
   const grossAmount = Math.round(request.amount * 100);
 
-  const snapToken = `snap-${orderId}-${Buffer.from(
-    JSON.stringify({
-      transaction_details: { order_id: orderId, gross_amount: grossAmount },
-      customer_details: { id: request.customerId },
-    })
-  ).toString('base64url')}`;
+  const snapToken = `snap-${orderId}-${Buffer.from(JSON.stringify({
+    transaction_details: { order_id: orderId, gross_amount: grossAmount },
+    customer_details: { id: request.customerId }
+  })).toString('base64url')}`;
 
   return {
     id: orderId,
@@ -196,11 +165,7 @@ export function buildMidtransPaymentIntent(
   };
 }
 
-export function buildPaymentIntent(
-  request: PaymentIntentRequest,
-  gateway: Gateway,
-  config: PaymentGatewayConfig
-): PaymentIntentResponse {
+export function buildPaymentIntent(request: PaymentIntentRequest, gateway: Gateway, config: PaymentGatewayConfig): PaymentIntentResponse {
   switch (gateway) {
     case 'stripe':
       return buildStripePaymentIntent(request, config as StripeConfig);
@@ -213,11 +178,7 @@ export function buildPaymentIntent(
   }
 }
 
-export function signRefundPayload(
-  request: RefundRequest,
-  gateway: Gateway,
-  secret: string
-): string {
+export function signRefundPayload(request: RefundRequest, gateway: Gateway, secret: string): string {
   const payload = JSON.stringify({
     paymentIntentId: request.paymentIntentId,
     amount: request.amount,
@@ -251,7 +212,7 @@ export function verifyRefundSignature(
   signature: string
 ): boolean {
   const expected = signRefundPayload(request, gateway, secret);
-
+  
   if (gateway === 'midtrans') {
     // Midtrans uses base64 encoded signatures
     const expectedBuffer = Buffer.from(expected, 'base64');
@@ -259,7 +220,7 @@ export function verifyRefundSignature(
     if (expectedBuffer.length !== suppliedBuffer.length) return false;
     return timingSafeEqual(expectedBuffer, suppliedBuffer);
   }
-
+  
   // Stripe and Xendit use hex encoded signatures
   const expectedBuffer = Buffer.from(expected, 'hex');
   const suppliedBuffer = Buffer.from(signature, 'hex');
@@ -294,8 +255,8 @@ export function reconcileStripePayouts(
 ): ReconciliationResult {
   const matched: string[] = [];
   const discrepancies: ReconciliationResult['discrepancies'] = [];
-  const gatewayMap = new Map(gatewayRecords.map((r) => [r.id, r]));
-  const localMap = new Map(localRecords.map((r) => [r.id, r]));
+  const gatewayMap = new Map(gatewayRecords.map(r => [r.id, r]));
+  const localMap = new Map(localRecords.map(r => [r.id, r]));
 
   for (const [id, gateway] of gatewayMap) {
     const local = localMap.get(id);
@@ -311,12 +272,8 @@ export function reconcileStripePayouts(
 
   return {
     matched: matched.length,
-    unmatchedGateway: gatewayRecords.filter(
-      (r) => !matched.includes(r.id) && !discrepancies.some((d) => d.gateway.id === r.id)
-    ),
-    unmatchedLocal: localRecords.filter(
-      (r) => !matched.includes(r.id) && !discrepancies.some((d) => d.local.id === r.id)
-    ),
+    unmatchedGateway: gatewayRecords.filter(r => !matched.includes(r.id) && !discrepancies.some(d => d.gateway.id === r.id)),
+    unmatchedLocal: localRecords.filter(r => !matched.includes(r.id) && !discrepancies.some(d => d.local.id === r.id)),
     discrepancies,
   };
 }
@@ -381,17 +338,14 @@ export const PaymentIntentRecord = defineModel('integration.payment_intent', {
     client_secret_ref: fields.string(),
     amount: fields.decimal({ required: true, precision: 18, scale: 2 }),
     currency: fields.string({ required: true, default: 'IDR' }),
-    status: fields.enum(
-      [
-        'requires_payment_method',
-        'requires_confirmation',
-        'requires_action',
-        'processing',
-        'succeeded',
-        'canceled',
-      ],
-      { required: true }
-    ),
+    status: fields.enum([
+      'requires_payment_method',
+      'requires_confirmation',
+      'requires_action',
+      'processing',
+      'succeeded',
+      'canceled',
+    ], { required: true }),
     order_id: fields.string({ required: true }),
     customer_id: fields.string({ required: true }),
     metadata_json: fields.text({ default: '{}' }),

@@ -154,8 +154,8 @@ describe('M16.02 Active Inference Expected Free Energy', () => {
     const d2 = evaluateExpectedFreeEnergy([c2, c1]);
 
     expect(d1.decisionSha256).toBe(d2.decisionSha256);
-    expect(d1.rankedCandidates.find((c) => c.actionId === 'act-a')?.label).not.toContain(
-      'sk-proj-supersecret1234567890'
-    );
+    expect(
+      d1.rankedCandidates.find((c) => c.actionId === 'act-a')?.label
+    ).not.toContain('sk-proj-supersecret1234567890');
   });
 });

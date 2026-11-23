@@ -13,18 +13,14 @@ test('FX Lab particles bounded, transitions interruptible, soundscape muted by d
     'data-particle-count',
     /\d+/
   );
-  const maxCount = await particles
-    .locator('[data-particle-preset]')
-    .getAttribute('data-particle-count');
+  const maxCount = await particles.locator('[data-particle-preset]').getAttribute('data-particle-count');
   expect(Number(maxCount ?? 0)).toBeLessThanOrEqual(36);
 
   // Transitions: click retriggers without blocking, keyboard cancels
   const transitions = lab.getByTestId('fx-transitions');
   await expect(transitions.locator('[data-transition-variant="panel-reveal"]')).toBeVisible();
   await transitions.getByRole('button', { name: 'Retrigger' }).click();
-  await expect(transitions.locator('[data-transition-state="entered"]')).toBeVisible({
-    timeout: 1000,
-  });
+  await expect(transitions.locator('[data-transition-state="entered"]')).toBeVisible({ timeout: 1000 });
 
   // Soundscape: starts muted, requires gesture, single source on scene switch
   const audio = lab.getByTestId('fx-audio');
@@ -54,9 +50,7 @@ test('Comic transitions respect reduced-motion and never hide content (W6-004)',
   await expect(content).toHaveText('Scene Content');
 });
 
-test('FX catalog documents purpose and anti-patterns for every effect family (W6-007)', async ({
-  page,
-}) => {
+test('FX catalog documents purpose and anti-patterns for every effect family (W6-007)', async ({ page }) => {
   await page.goto('./?skin=moonwitness-ink&mode=dark#fx-lab');
   const lab = page.getByTestId('fx-lab');
   await expect(lab.getByText(/Intended for restrained atmospheric depth/)).toBeVisible();
@@ -64,14 +58,10 @@ test('FX catalog documents purpose and anti-patterns for every effect family (W6
   await expect(lab.getByText(/Avoid autoplay, overlapping loops/)).toBeVisible();
   await expect(lab.getByRole('button', { name: 'Intense' })).toBeVisible();
   await lab.getByRole('button', { name: 'Intense' }).click();
-  await expect(
-    lab.getByTestId('fx-particles').locator('[data-particle-intensity="intense"]')
-  ).toBeVisible();
+  await expect(lab.getByTestId('fx-particles').locator('[data-particle-intensity="intense"]')).toBeVisible();
 });
 
-test('active particle scene stays within the Chromium frame-time budget (W6-003)', async ({
-  page,
-}) => {
+test('active particle scene stays within the Chromium frame-time budget (W6-003)', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#fx-lab');
   const lab = page.getByTestId('fx-lab');
@@ -105,9 +95,7 @@ test('active particle scene stays within the Chromium frame-time budget (W6-003)
   expect(frameReport.maxFrameMs).toBeLessThanOrEqual(150);
 });
 
-test('scene ambience loads only after consent and pauses the previous source on switch (W6-006)', async ({
-  page,
-}) => {
+test('scene ambience loads only after consent and pauses the previous source on switch (W6-006)', async ({ page }) => {
   await page.addInitScript(() => {
     type AudioEvent = { type: 'play' | 'pause'; src: string; volume: number; loop: boolean };
     const audioEvents: AudioEvent[] = [];
@@ -117,21 +105,11 @@ test('scene ambience loads only after consent and pauses the previous source on 
       construct(target, args) {
         const audio = Reflect.construct(target, args) as HTMLAudioElement;
         audio.play = () => {
-          audioEvents.push({
-            type: 'play',
-            src: audio.src,
-            volume: audio.volume,
-            loop: audio.loop,
-          });
+          audioEvents.push({ type: 'play', src: audio.src, volume: audio.volume, loop: audio.loop });
           return Promise.resolve();
         };
         audio.pause = () => {
-          audioEvents.push({
-            type: 'pause',
-            src: audio.src,
-            volume: audio.volume,
-            loop: audio.loop,
-          });
+          audioEvents.push({ type: 'pause', src: audio.src, volume: audio.volume, loop: audio.loop });
         };
         return audio;
       },
@@ -139,15 +117,9 @@ test('scene ambience loads only after consent and pauses the previous source on 
   });
   await page.goto('./#fx-lab');
   const audioPanel = page.getByTestId('fx-audio');
-  const readEvents = () =>
-    page.evaluate(
-      () =>
-        (
-          window as unknown as {
-            __sceneAudioEvents: Array<{ type: string; src: string; volume: number; loop: boolean }>;
-          }
-        ).__sceneAudioEvents
-    );
+  const readEvents = () => page.evaluate(() =>
+    (window as unknown as { __sceneAudioEvents: Array<{ type: string; src: string; volume: number; loop: boolean }> }).__sceneAudioEvents
+  );
   expect(await readEvents()).toEqual([]);
 
   await audioPanel.getByRole('button', { name: 'Enable gesture' }).click();
@@ -161,9 +133,7 @@ test('scene ambience loads only after consent and pauses the previous source on 
   expect(firstPlay.loop).toBe(true);
 
   await audioPanel.getByRole('button', { name: 'Archive' }).click();
-  await expect
-    .poll(async () => (await readEvents()).filter((entry) => entry.type === 'play'))
-    .toHaveLength(2);
+  await expect.poll(async () => (await readEvents()).filter((entry) => entry.type === 'play')).toHaveLength(2);
   const switchedEvents = await readEvents();
   expect(switchedEvents[1].type).toBe('pause');
   expect(switchedEvents[1].src).toMatch(/ambience-moon-city-night-.*\.wav/u);

@@ -4,9 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 
 const packageJsonPath = resolve(fileURLToPath(new URL('.', import.meta.url)), '../package.json');
-const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
-  scripts?: Record<string, string>;
-};
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as { scripts?: Record<string, string> };
 
 describe('orm-a2a package scripts', () => {
   it('defines a test script', () => {

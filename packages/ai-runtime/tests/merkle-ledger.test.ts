@@ -16,12 +16,7 @@ describe('M16.03 RFC 6962 Merkle Sovereignty Ledger', () => {
     const payload = { action: 'audit', seq: 1 };
     const leafHash = hashMerkleLeaf(payload);
     const expectedLeaf = createHash('sha256')
-      .update(
-        Buffer.concat([
-          Buffer.from([RFC6962_LEAF_DOMAIN_PREFIX]),
-          Buffer.from('{"action":"audit","seq":1}', 'utf8'),
-        ])
-      )
+      .update(Buffer.concat([Buffer.from([RFC6962_LEAF_DOMAIN_PREFIX]), Buffer.from('{"action":"audit","seq":1}', 'utf8')]))
       .digest('hex');
 
     expect(leafHash).toBe(expectedLeaf);
@@ -99,7 +94,11 @@ describe('M16.03 RFC 6962 Merkle Sovereignty Ledger', () => {
     expect(tamperedPayload.valid).toBe(false);
     expect(tamperedPayload.reason).toBe('MERKLE_ROOT_MISMATCH');
 
-    const tamperedRoot = verifyMerkleInclusionProof(events[2], proof, '0'.repeat(64));
+    const tamperedRoot = verifyMerkleInclusionProof(
+      events[2],
+      proof,
+      '0'.repeat(64)
+    );
     expect(tamperedRoot.valid).toBe(false);
     expect(tamperedRoot.reason).toBe('MERKLE_ROOT_MISMATCH');
   });

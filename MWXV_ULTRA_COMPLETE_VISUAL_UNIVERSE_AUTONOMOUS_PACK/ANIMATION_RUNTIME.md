@@ -19,31 +19,31 @@ A small, deterministic, resource-safe 2.5D presentation runtime for existing web
 ## Suggested typed contracts (conceptual)
 
 ```ts
-type SceneId = string;
-type AssetId = string;
-type ClipId = string;
+ type SceneId = string;
+ type AssetId = string;
+ type ClipId = string;
 
-interface SceneDefinition {
-  id: SceneId;
-  version: number;
-  pack: string;
-  layers: SceneLayer[];
-  camera?: CameraTrack;
-  timeline?: TimelineTrack;
-  breakpoints: SceneBreakpoint[];
-  fallback: StaticSceneFallback;
-}
+ interface SceneDefinition {
+   id: SceneId;
+   version: number;
+   pack: string;
+   layers: SceneLayer[];
+   camera?: CameraTrack;
+   timeline?: TimelineTrack;
+   breakpoints: SceneBreakpoint[];
+   fallback: StaticSceneFallback;
+ }
 
-interface SceneLayer {
-  id: string;
-  assetId: AssetId;
-  depth: number;
-  anchor?: { x: number; y: number };
-  transform?: { x?: number; y?: number; scale?: number; rotate?: number };
-  parallaxFactor?: number;
-  clipId?: ClipId;
-  decorative: boolean;
-}
+ interface SceneLayer {
+   id: string;
+   assetId: AssetId;
+   depth: number;
+   anchor?: { x: number; y: number };
+   transform?: { x?: number; y?: number; scale?: number; rotate?: number };
+   parallaxFactor?: number;
+   clipId?: ClipId;
+   decorative: boolean;
+ }
 ```
 
 The actual implementation must align with existing TS conventions; this excerpt is a contract sketch, not a forced API.
@@ -58,13 +58,13 @@ The actual implementation must align with existing TS conventions; this excerpt 
 
 ## Optional specialist engines
 
-| Engine category | Use only if                                                               | Required checks                                                                  |
-| --------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Rive            | Interactive vector character/state machines materially improve a use case | Runtime/license, authored file compatibility, bundle, accessibility and fallback |
-| Live2D          | Deformable anime character with facial/body rigging is a real requirement | SDK/model licensing, export format, runtime/browser support, bundle and fallback |
-| GSAP            | Existing Motion is demonstrably insufficient for a timeline feature       | API overlap, bundle, cleanup and license verification                            |
-| Pixi/Canvas     | Dense sprite/particle scene exceeds DOM/SVG performance                   | Measured device benchmark, context loss, lifecycle and accessible fallback       |
-| Three/WebGL     | True 3D camera/material/environment is required                           | Measured need, WebGL device support, bundle/memory and 2D fallback               |
+| Engine category | Use only if | Required checks |
+|---|---|---|
+| Rive | Interactive vector character/state machines materially improve a use case | Runtime/license, authored file compatibility, bundle, accessibility and fallback |
+| Live2D | Deformable anime character with facial/body rigging is a real requirement | SDK/model licensing, export format, runtime/browser support, bundle and fallback |
+| GSAP | Existing Motion is demonstrably insufficient for a timeline feature | API overlap, bundle, cleanup and license verification |
+| Pixi/Canvas | Dense sprite/particle scene exceeds DOM/SVG performance | Measured device benchmark, context loss, lifecycle and accessible fallback |
+| Three/WebGL | True 3D camera/material/environment is required | Measured need, WebGL device support, bundle/memory and 2D fallback |
 
 Do not add all of these. Select one specialist path only after a small proof and approval.
 

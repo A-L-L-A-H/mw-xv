@@ -68,7 +68,15 @@
     },
     "task": {
       "type": "object",
-      "required": ["code", "project", "series", "title", "status", "priority", "sourceRef"],
+      "required": [
+        "code",
+        "project",
+        "series",
+        "title",
+        "status",
+        "priority",
+        "sourceRef"
+      ],
       "additionalProperties": false,
       "properties": {
         "code": {
@@ -104,33 +112,11 @@
         },
         "category": {
           "type": "string",
-          "enum": [
-            "bug",
-            "security",
-            "architecture",
-            "performance",
-            "dx",
-            "product",
-            "innovation",
-            "documentation",
-            "infrastructure",
-            "governance",
-            "research",
-            "other"
-          ]
+          "enum": ["bug", "security", "architecture", "performance", "dx", "product", "innovation", "documentation", "infrastructure", "governance", "research", "other"]
         },
         "type": {
           "type": "string",
-          "enum": [
-            "fix",
-            "refactor",
-            "feature",
-            "research",
-            "experiment",
-            "infrastructure",
-            "documentation",
-            "other"
-          ]
+          "enum": ["fix", "refactor", "feature", "research", "experiment", "infrastructure", "documentation", "other"]
         },
         "priority": {
           "type": "string",

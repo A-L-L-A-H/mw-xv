@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createScenePlaybackController } from '../dist/lib/scene-playback.js';
+import {
+  createScenePlaybackController,
+} from '../dist/lib/scene-playback.js';
 import {
   applyKeyboardCameraAction,
   computeLayerParallax,
@@ -320,11 +322,17 @@ test('character adapter supports loop, ping-pong, one-shot, reduced-motion, and 
     },
   });
 
-  const rigResult = registry.resolveFrame({ ...baseClip, format: 'rig-optional' }, 100);
+  const rigResult = registry.resolveFrame(
+    { ...baseClip, format: 'rig-optional' },
+    100
+  );
   assert.equal(rigResult.adapterKind, 'rig-optional');
   assert.equal(rigResult.frameIndex, 2);
 
-  const unknownResult = registry.resolveFrame({ ...baseClip, format: 'unsupported-format' }, 100);
+  const unknownResult = registry.resolveFrame(
+    { ...baseClip, format: 'unsupported-format' },
+    100
+  );
   assert.equal(unknownResult.isStaticFallback, true);
   assert.equal(unknownResult.asset, '/static.png');
 

@@ -1,7 +1,12 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Button } from '@moonwitness/ui/components/button';
 import { Panel } from '@moonwitness/ui/components/panel';
-import { CheckCircleIcon, RefreshIcon, SparkleIcon, WarningIcon } from '@moonwitness/ui/icons';
+import {
+  CheckCircleIcon,
+  RefreshIcon,
+  SparkleIcon,
+  WarningIcon,
+} from '@moonwitness/ui/icons';
 
 type TelemetryLevel = 'info' | 'warn' | 'error';
 
@@ -25,8 +30,9 @@ function redactClientText(input: string): string {
   out = out.replace(REDACT_PATTERNS[0]!, 'Bearer [REDACTED]');
   out = out.replace(REDACT_PATTERNS[1]!, '[REDACTED_KEY]');
   out = out.replace(REDACT_PATTERNS[2]!, '[REDACTED_TOKEN]');
-  out = out.replace(REDACT_PATTERNS[3]!, (match, value: string) =>
-    match.replace(value, '[REDACTED]')
+  out = out.replace(
+    REDACT_PATTERNS[3]!,
+    (match, value: string) => match.replace(value, '[REDACTED]')
   );
   return out;
 }
@@ -41,10 +47,7 @@ function serializeUnknownArg(arg: unknown): string {
   }
 }
 
-function postTelemetry(
-  getApiUrl: () => string | null | undefined,
-  payload: TelemetryPayload
-): void {
+function postTelemetry(getApiUrl: () => string | null | undefined, payload: TelemetryPayload): void {
   const rawUrl = getApiUrl();
   if (!rawUrl || typeof rawUrl !== 'string') return;
   const apiUrl = rawUrl.replace(/\/+$/u, '');
@@ -250,7 +253,11 @@ export class DesktopErrorBoundary extends Component<
                     className: 'size-3.5',
                     'aria-hidden': 'true',
                   }),
-              React.createElement('span', null, this.state.copied ? 'Copied for AI' : 'Copy for AI')
+              React.createElement(
+                'span',
+                null,
+                this.state.copied ? 'Copied for AI' : 'Copy for AI'
+              )
             ),
             React.createElement(
               Button,

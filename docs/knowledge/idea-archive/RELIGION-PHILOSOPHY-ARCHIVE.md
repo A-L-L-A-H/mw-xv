@@ -6,7 +6,6 @@ This archive preserves named reference concepts and personal frameworks. It does
 ## 1. Non-negotiable separation
 
 Every future record must distinguish:
-
 1. Arabic/source-language scripture text.
 2. Textual witness, work, edition and passage.
 3. Translation / transliteration.
@@ -19,7 +18,6 @@ Every future record must distinguish:
 The target's existing ontology already distinguishes `RevelationIdentity`, `TextualWitness`, `Canon` and `Edition`. A relation or list membership does not prove identity equivalence or clear source rights.
 
 Relevant target docs:
-
 - [Revelation identity contract](../revelation-identity.md)
 - [Source rights and ingestion](../source-rights-and-ingestion.md)
 - [Mizan policy boundary](../mizan-policy-boundary-spec.md)
@@ -69,15 +67,15 @@ Other available user context mentions Asmaul Husna pairings such as Al-Fattāḥ
 
 ## 5. Other religious and conceptual seeds
 
-| Concept                                 | Classification                             | Safe interpretation / current status                                                                                 |
-| --------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| 72 → 73 unity criteria                  | USER IDEA                                  | Personal conceptual rule; source and meaning need owner-authored definition                                          |
-| POLARITY + RGBL + 9 GATES + 13 WAYS     | USER IDEA                                  | Proposed knowledge / analysis framework; not established theological or scientific classification                    |
-| 9 GATES / 13 WAYS                       | USER IDEA                                  | Preserve as labels; definitions and version history need exact-source recovery                                       |
-| Q47:35 “Secret 4” — wa / ila / la / lan | USER IDEA / RESEARCH HYPOTHESIS            | Lexical pattern claim; requires exact Arabic text, edition, segmentation and reproducible extraction                 |
-| Divinity / Boundary / Civilian          | USER IDEA                                  | Editorial classification levels; not religious rank                                                                  |
-| Malaikat, hero and spiritual roles      | USER IDEA / FICTIONAL-CONCEPT TRACK        | Keep scripture/tafsir statements separate from symbolic roles in fiction                                             |
-| Isa/Yesus topic                         | USER IDEA / RESTRICTED REPRESENTATION NOTE | Preserve text/reference only; do not make or commission visual character depictions under the recorded user boundary |
+| Concept | Classification | Safe interpretation / current status |
+|---|---|---|
+| 72 → 73 unity criteria | USER IDEA | Personal conceptual rule; source and meaning need owner-authored definition |
+| POLARITY + RGBL + 9 GATES + 13 WAYS | USER IDEA | Proposed knowledge / analysis framework; not established theological or scientific classification |
+| 9 GATES / 13 WAYS | USER IDEA | Preserve as labels; definitions and version history need exact-source recovery |
+| Q47:35 “Secret 4” — wa / ila / la / lan | USER IDEA / RESEARCH HYPOTHESIS | Lexical pattern claim; requires exact Arabic text, edition, segmentation and reproducible extraction |
+| Divinity / Boundary / Civilian | USER IDEA | Editorial classification levels; not religious rank |
+| Malaikat, hero and spiritual roles | USER IDEA / FICTIONAL-CONCEPT TRACK | Keep scripture/tafsir statements separate from symbolic roles in fiction |
+| Isa/Yesus topic | USER IDEA / RESTRICTED REPRESENTATION NOTE | Preserve text/reference only; do not make or commission visual character depictions under the recorded user boundary |
 
 The user's supplied master prompt explicitly prohibits depicting Allah as a human, character or visual object. Prior available context additionally records boundaries for visual treatment of Prophet Muhammad and Isa/Yesus. Because the full original conversation export is not present, those extra wording details remain sourced to available conversation memory summary, not to a raw transcript file.
 
@@ -96,7 +94,6 @@ The following concepts are preserved as personal framework / metaphor labels, no
 ## 7. Existing research-domain split
 
 Selected source repositories describe a provenance-first research separation:
-
 - TEXT / RGBL: exact source text, editions, passages, rights, variants and provenance.
 - STORY / MFTL: narratives and belief claims.
 - EVENT / LEGEND: historical event reconstruction.
@@ -117,6 +114,8 @@ This is a repository-documented domain model, not proof that the whole research 
 - Private testimony is not automatically public corpus content.
 - No private or child-sensitive archive content is sent to general search, embeddings, analytics or hosted inference.
 - No public release until source rights, consent, provenance and human review are recorded.
+
+
 
 ## 9. CRAYON and the pre-scriptural introduction framework
 
