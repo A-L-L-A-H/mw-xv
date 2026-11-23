@@ -76,7 +76,7 @@ test('dashboard KPI cards show current values without fabricated trend percentag
 
 test('desktop Board shell uses the compact crown lockup and a magenta active navigation rail', async ({
   page,
-}) => {
+}, testInfo) => {
   await mkdir(auditDirectory, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/login');
@@ -102,8 +102,7 @@ test('desktop Board shell uses the compact crown lockup and a magenta active nav
   await page
     .locator('nextjs-portal')
     .evaluateAll((elements) => elements.forEach((element) => element.remove()));
-  await page.screenshot({
-    path: path.join(root, 'docs/design/ui-catalog/board-sidebar-desktop-1440.png'),
+  await writeCatalogScreenshot(page, testInfo, 'board-sidebar-desktop-1440.png', {
     fullPage: true,
     animations: 'disabled',
   });
@@ -128,8 +127,7 @@ test('desktop Board shell uses the compact crown lockup and a magenta active nav
   await page
     .locator('nextjs-portal')
     .evaluateAll((elements) => elements.forEach((element) => element.remove()));
-  await page.screenshot({
-    path: path.join(root, 'docs/design/ui-catalog/board-sidebar-mobile-390.png'),
+  await writeCatalogScreenshot(page, testInfo, 'board-sidebar-mobile-390.png', {
     fullPage: false,
     animations: 'disabled',
   });
@@ -140,8 +138,7 @@ test('desktop Board shell uses the compact crown lockup and a magenta active nav
   const shortcutsDialog = page.getByRole('dialog', { name: 'Keyboard Mastery Cheatsheet' });
   await expect(shortcutsDialog.getByText('Manual', { exact: true })).toBeVisible();
   await expect(shortcutsDialog.getByText(/MoonWitness workflow/u)).toBeVisible();
-  await page.screenshot({
-    path: path.join(root, 'docs/design/ui-catalog/board-shortcuts-desktop-1440.png'),
+  await writeCatalogScreenshot(page, testInfo, 'board-shortcuts-desktop-1440.png', {
     fullPage: false,
     animations: 'disabled',
   });
@@ -149,7 +146,7 @@ test('desktop Board shell uses the compact crown lockup and a magenta active nav
 
 test('canonical page icons remain legible on Knowledge, Profile, Settings, and WhatsApp', async ({
   page,
-}) => {
+}, testInfo) => {
   await mkdir(catalogDirectory, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/login');
@@ -214,18 +211,19 @@ test('canonical page icons remain legible on Knowledge, Profile, Settings, and W
       await page.locator('nextjs-portal').evaluateAll((elements) => {
         elements.forEach((element) => element.remove());
       });
-      await page.screenshot({
-        path: path.join(catalogDirectory, `board-${screen.name}-icons-${viewport.name}.png`),
-        fullPage: true,
-        animations: 'disabled',
-      });
+      await writeCatalogScreenshot(
+        page,
+        testInfo,
+        `board-${screen.name}-icons-${viewport.name}.png`,
+        { fullPage: true, animations: 'disabled' }
+      );
     }
   }
 });
 
 test('canonical data-view icons remain legible on lists, forms, tags, and relations', async ({
   page,
-}) => {
+}, testInfo) => {
   await mkdir(catalogDirectory, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/login');
@@ -253,16 +251,14 @@ test('canonical data-view icons remain legible on lists, forms, tags, and relati
     await page.locator('nextjs-portal').evaluateAll((elements) => {
       elements.forEach((element) => element.remove());
     });
-    await page.screenshot({
-      path: path.join(catalogDirectory, `board-list-icons-${viewport.name}.png`),
+    await writeCatalogScreenshot(page, testInfo, `board-list-icons-${viewport.name}.png`, {
       fullPage: true,
       animations: 'disabled',
     });
 
     await acmeRecord.getByRole('checkbox').check();
     await expect(page.getByRole('button', { name: 'Tag Records' })).toBeVisible();
-    await page.screenshot({
-      path: path.join(catalogDirectory, `board-list-bulk-actions-${viewport.name}.png`),
+    await writeCatalogScreenshot(page, testInfo, `board-list-bulk-actions-${viewport.name}.png`, {
       fullPage: false,
       animations: 'disabled',
     });
@@ -270,8 +266,7 @@ test('canonical data-view icons remain legible on lists, forms, tags, and relati
     await expect(page).toHaveURL(/\/board\/m\/base\.partner\/\d+/u);
     await expect(page.getByRole('heading', { name: /Partner #\d+/u })).toBeVisible();
     await expectNoHorizontalOverflow(page, `record/icons/${viewport.name}`);
-    await page.screenshot({
-      path: path.join(catalogDirectory, `board-record-icons-${viewport.name}.png`),
+    await writeCatalogScreenshot(page, testInfo, `board-record-icons-${viewport.name}.png`, {
       fullPage: true,
       animations: 'disabled',
     });
@@ -279,8 +274,7 @@ test('canonical data-view icons remain legible on lists, forms, tags, and relati
     await page.goto('/board/m/base.partner/new');
     await expect(page.getByRole('heading', { name: 'New Partner' })).toBeVisible();
     await expectNoHorizontalOverflow(page, `form/icons/${viewport.name}`);
-    await page.screenshot({
-      path: path.join(catalogDirectory, `board-form-icons-${viewport.name}.png`),
+    await writeCatalogScreenshot(page, testInfo, `board-form-icons-${viewport.name}.png`, {
       fullPage: true,
       animations: 'disabled',
     });
@@ -289,7 +283,7 @@ test('canonical data-view icons remain legible on lists, forms, tags, and relati
 
 test('canonical activity, notification, and cron icons remain usable on desktop and mobile', async ({
   page,
-}) => {
+}, testInfo) => {
   await mkdir(catalogDirectory, { recursive: true });
   await page.clock.install({ time: new Date('2026-10-24T12:00:00.000Z') });
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -431,9 +425,7 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await page.screenshot({
-    path: path.join(catalogDirectory, 'board-activity-bell-icons-desktop-1440.png'),
-    animations: 'disabled',
+  await writeCatalogScreenshot(page, testInfo, 'board-activity-bell-icons-desktop-1440.png', {    animations: 'disabled',
   });
   await expectNoHorizontalOverflow(page, 'activity-bell/icons/desktop-1440');
 
@@ -459,9 +451,7 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await page.screenshot({
-    path: path.join(catalogDirectory, 'board-notification-bell-icons-desktop-1440.png'),
-    animations: 'disabled',
+  await writeCatalogScreenshot(page, testInfo, 'board-notification-bell-icons-desktop-1440.png', {    animations: 'disabled',
   });
 
   await page.keyboard.press('Escape');
@@ -473,16 +463,12 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await page.screenshot({
-    path: path.join(catalogDirectory, 'board-cron-panel-icons-desktop-1440.png'),
-    fullPage: true,
+  await writeCatalogScreenshot(page, testInfo, 'board-cron-panel-icons-desktop-1440.png', {    fullPage: true,
     animations: 'disabled',
   });
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({
-    path: path.join(catalogDirectory, 'board-cron-panel-icons-mobile-390.png'),
-    fullPage: true,
+  await writeCatalogScreenshot(page, testInfo, 'board-cron-panel-icons-mobile-390.png', {    fullPage: true,
     animations: 'disabled',
   });
   await expectNoHorizontalOverflow(page, 'cron-panel/icons/mobile-390');
@@ -511,9 +497,7 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await page.screenshot({
-    path: path.join(catalogDirectory, 'board-activity-bell-icons-mobile-390.png'),
-    animations: 'disabled',
+  await writeCatalogScreenshot(page, testInfo, 'board-activity-bell-icons-mobile-390.png', {    animations: 'disabled',
   });
   await expectNoHorizontalOverflow(page, 'activity-bell/icons/mobile-390');
 
@@ -523,15 +507,13 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await page.screenshot({
-    path: path.join(catalogDirectory, 'board-notification-bell-icons-mobile-390.png'),
-    animations: 'disabled',
+  await writeCatalogScreenshot(page, testInfo, 'board-notification-bell-icons-mobile-390.png', {    animations: 'disabled',
   });
   await expectNoHorizontalOverflow(page, 'notification-bell/icons/mobile-390');
   expect(browserErrors).toEqual([]);
 });
 
-test('ordinary-user dashboard has a verified visual baseline', async ({ page }) => {
+test('ordinary-user dashboard has a verified visual baseline', async ({ page }, testInfo) => {
   await mkdir(auditDirectory, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/login');
@@ -548,11 +530,13 @@ test('ordinary-user dashboard has a verified visual baseline', async ({ page }) 
   );
   expect(administratorSession).not.toBeNull();
 
-  const login = 'visual-user';
+  // One API server is shared by all three matrix projects. Scope the fixture
+  // login to the project and accept an existing record on retries (HTTP 409).
+  const login = `visual-user-${testInfo.project.name}`;
   const password = 'visual-user-only';
   const partnerResponse = await page.request.post('/api/base.partner', {
     headers: { authorization: `Bearer ${administratorSession!.access_token}` },
-    data: { name: 'Visual Audit User' },
+    data: { name: `Visual Audit User ${testInfo.project.name}` },
   });
   expect(partnerResponse.status()).toBe(201);
   const partner = (await partnerResponse.json()) as { data: { id: number } };
@@ -566,7 +550,7 @@ test('ordinary-user dashboard has a verified visual baseline', async ({ page }) 
       active: true,
     },
   });
-  expect(userResponse.status()).toBe(201);
+  expect([201, 409]).toContain(userResponse.status());
 
   await page.getByRole('button', { name: 'superadmin' }).click();
   await page.getByRole('menuitem', { name: 'Sign out' }).click();
@@ -593,7 +577,7 @@ test('ordinary-user dashboard has a verified visual baseline', async ({ page }) 
 
 test('mobile overlays keep accessible names, keyboard dismissal, focus return, and WCAG contrast', async ({
   page,
-}) => {
+}, testInfo) => {
   await mkdir(auditDirectory, { recursive: true });
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 375, height: 812 });
@@ -656,9 +640,7 @@ test('mobile overlays keep accessible names, keyboard dismissal, focus return, a
     path: path.join(auditDirectory, 'command-palette-mobile-375.png'),
     fullPage: false,
   });
-  await page.screenshot({
-    path: path.join(catalogDirectory, 'command-palette-motion-mobile-375.png'),
-    fullPage: false,
+  await writeCatalogScreenshot(page, testInfo, 'command-palette-motion-mobile-375.png', {    fullPage: false,
   });
   await page.keyboard.press('Escape');
   await expect(commandPalette).toBeHidden();
@@ -726,6 +708,25 @@ async function expectNoA11yViolations(page: Page, label: string) {
 
 function browserSuffix(testInfo: TestInfo): string {
   return testInfo.project.name === 'chromium' ? '' : `-${testInfo.project.name}`;
+}
+
+type CatalogShotOptions = Pick<
+  NonNullable<Parameters<Page['screenshot']>[0]>,
+  'fullPage' | 'animations'
+>;
+
+async function writeCatalogScreenshot(
+  page: Page,
+  testInfo: TestInfo,
+  fileName: string,
+  options: CatalogShotOptions = {}
+) {
+  // Canonical documentation artifacts come from the chromium project only.
+  // All three matrix projects writing the same path fails on Windows with a
+  // file-lock error; assertions still run in every browser.
+  if (testInfo.project.name !== 'chromium') return;
+  await mkdir(catalogDirectory, { recursive: true });
+  await page.screenshot({ path: path.join(catalogDirectory, fileName), ...options });
 }
 
 test('responsive screen audit: login matches the Enter the Shadow reference', async ({
@@ -1254,9 +1255,13 @@ test('responsive protected screens fit and remain accessible in both themes', as
           await page.getByRole('button', { name: 'Open model navigation' }).focus();
           await expect(page.getByRole('button', { name: 'Open model navigation' })).toBeFocused();
           await page.keyboard.press('Enter');
-          await expect(page.getByRole('dialog', { name: 'Model navigation' })).toBeVisible();
+          const navigationSheet = page.getByRole('dialog', { name: 'Model navigation' });
+          await expect(navigationSheet).toBeVisible();
+          // Move focus into the Radix layer before Escape; opening via the
+          // keyboard can leave focus on the trigger for a tick otherwise.
+          await navigationSheet.getByRole('link', { name: 'Dashboard' }).focus();
           await page.keyboard.press('Escape');
-          await expect(page.getByRole('dialog', { name: 'Model navigation' })).toBeHidden();
+          await expect(navigationSheet).toBeHidden();
         }
         if (size.name === 'desktop-1440' || size.name === 'mobile-375') {
           await expectNoA11yViolations(page, label);
