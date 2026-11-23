@@ -90,19 +90,34 @@ describe('Integration Seed', () => {
 
   describe('seedIntegrationData', () => {
     let mockDb: Knex;
+    let mockTrx: Knex.QueryBuilder;
     beforeEach(() => {
+      // Callable knex-like transaction mock supporting query-builder chaining:
+      // trx(table).where(...).first(...) and trx(table).insert(...)
+      const trxMock = Object.assign(vi.fn(() => trxMock), {
+        select: vi.fn().mockResolvedValue([]),
+        first: vi.fn().mockResolvedValue({ id: 1 }),
+        where: vi.fn(() => trxMock),
+        orderBy: vi.fn(() => trxMock),
+        insert: vi.fn().mockResolvedValue([{ id: 1 }]),
+      });
+      mockTrx = trxMock as unknown as Knex.QueryBuilder;
       mockDb = mock<Knex>();
-      mockDb.transaction.mockImplementation(async (cb) => cb(mockDb));
-      mockDb.mockImplementation(() => mockDb as unknown as Knex.QueryBuilder);
       mockDb.schema = mock<Knex.SchemaBuilder>();
+      mockDb.transaction.mockImplementation(async (cb) => cb(mockTrx));
+      mockDb.select.mockResolvedValue([]);
+      mockDb.first.mockResolvedValue({ id: 1 });
+      mockDb.where.mockReturnValue(mockDb);
+      mockDb.orderBy.mockReturnValue(mockDb);
+      mockDb.schema.hasTable.mockResolvedValue(true);
+      mockDb.insert.mockResolvedValue([{ id: 1 }]);
     });
 
     it('throws when secret ref pattern invalid', async () => {
       const bundle = buildIntegrationSeedBundle();
       bundle.webhookEndpoints[0].secretRef = 'INVALID_SECRET';
-      const { buildIntegrationSeedBundle: _, seedIntegrationData: seedFn } =
-        await import('../src/seed.js');
-      await expect(seedFn(mockDb, { companyId: 1 })).rejects.toThrow(/Invalid webhook secret ref/);
+      const { seedIntegrationData: seedFn } = await import('../src/seed.js');
+      await expect(seedFn(mockDb, { companyId: 1 }, bundle)).rejects.toThrow(/Invalid webhook secret ref/);
     });
 
     it('resolves companyId from options or first company', async () => {

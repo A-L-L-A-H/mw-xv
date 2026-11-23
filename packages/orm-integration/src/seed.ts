@@ -157,12 +157,16 @@ const WEBHOOK_ENDPOINT_SEEDS: readonly WebhookEndpointSeed[] = [
   },
 ];
 
+function deepClone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 export function buildIntegrationSeedBundle(): IntegrationSeedBundle {
   return {
     version: INTEGRATION_SEED_VERSION,
-    erpLedgerConnectors: ERP_CONNECTOR_SEEDS,
-    paymentGatewayConnectors: PAYMENT_GATEWAY_SEEDS,
-    webhookEndpoints: WEBHOOK_ENDPOINT_SEEDS,
+    erpLedgerConnectors: deepClone(ERP_CONNECTOR_SEEDS),
+    paymentGatewayConnectors: deepClone(PAYMENT_GATEWAY_SEEDS),
+    webhookEndpoints: deepClone(WEBHOOK_ENDPOINT_SEEDS),
   };
 }
 
@@ -208,9 +212,9 @@ async function resolveSeedCompanyId(
 
 export async function seedIntegrationData(
   db: Knex,
-  options: SeedIntegrationDataOptions = {}
+  options: SeedIntegrationDataOptions = {},
+  bundle: IntegrationSeedBundle = buildIntegrationSeedBundle()
 ): Promise<IntegrationSeedExecutionResult> {
-  const bundle = buildIntegrationSeedBundle();
   for (const endpoint of bundle.webhookEndpoints) {
     if (!WEBHOOK_SECRET_PATTERN.test(endpoint.secretRef)) {
       throw new Error(`Invalid webhook secret ref in seed: ${endpoint.secretRef}`);
