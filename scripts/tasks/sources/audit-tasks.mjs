@@ -990,7 +990,7 @@ export const AUDIT_TASKS = [
     category: 'product',
     type: 'feature',
     priority: 'p1',
-    status: 'todo',
+    status: 'blocked',
     human: false,
     owner: 'ui-catalog',
     assignee: null,
@@ -1064,7 +1064,7 @@ export const AUDIT_TASKS = [
       'packages/assets/manifest.json',
       'packages/assets/licenses.json'
     ],
-    blockedReason: null,
+    blockedReason: 'Wait for existing GitHub issue #52 (canonical SceneLab scene source) to complete; do not edit SceneLab.tsx before handoff.',
     sourceRef: {
       file: 'scripts/tasks/sources/audit-tasks.mjs',
       legacyId: 'AUD-019'

@@ -5,7 +5,7 @@
 ## Current registry
 
 - Canonical registry: 636 unique task codes; schema version `2.0.0`.
-- Lifecycle distribution: 468 `done`, 49 `doing`, 98 `todo`, 21 `blocked`.
+- Lifecycle distribution: 468 `done`, 49 `doing`, 97 `todo`, 22 `blocked`.
 - Source groups: roadmap 239, WhatsApp 112, Desktop 128, archived open MW 7, AI Corporation PR lifecycle 14, Evolution 4, audit 23, Visual Universe 109.
 - Exact previous registry backup blob: `d56499936761dcc062704d06588ee2679fd1aae2`, retained at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`.
 

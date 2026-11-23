@@ -1,7 +1,7 @@
 {
   "schemaVersion": "2.0.0",
   "format": "moonwitness-tasks/v2",
-  "generatedAt": "2026-11-23T08:11:02.155Z",
+  "generatedAt": "2026-11-23T08:12:04.765Z",
   "projects": [
     {
       "slug": "moonwitness",
@@ -17377,7 +17377,7 @@
       "category": "product",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "blocked",
       "human": false,
       "owner": "ui-catalog",
       "assignee": null,
@@ -17451,7 +17451,7 @@
         "packages/assets/manifest.json",
         "packages/assets/licenses.json"
       ],
-      "blockedReason": null,
+      "blockedReason": "Wait for existing GitHub issue #52 (canonical SceneLab scene source) to complete; do not edit SceneLab.tsx before handoff.",
       "sourceRef": {
         "file": "scripts/tasks/sources/audit-tasks.mjs",
         "legacyId": "AUD-019"
