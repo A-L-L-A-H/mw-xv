@@ -7,9 +7,9 @@
 
 | Object | Count | State |
 |---|---:|---|
-| Issues (PR objects excluded) | 146 | 51 open / 95 closed |
+| Issues (PR objects excluded) | 151 | 56 open / 95 closed |
 | Pull requests | 26 | 2 open / 24 closed |
-| Managed TaskOS issue markers | 0 | All unique at snapshot |
+| Duplicate TaskOS-managed issue markers | 0 | 23 observed managed markers are unique |
 | Duplicate stable-ID groups in issue titles | 21 | 20 legacy `MW-*` groups + one `CF-020` conflict |
 | TaskOS source records | 636 | Registry remains the only canonical task lifecycle source |
 
@@ -165,6 +165,11 @@ These counts are point-in-time API results. Re-fetch the issue/PR list before ma
 | [#169](https://github.com/A-L-L-A-H/mw-xv/issues/169) | [AUD-021] Test backward and end-boundary homepage filmstrip keys | open | AUD-021 | 1466489807:AUD-021 | 2026-11-23 | 2026-11-23 |
 | [#170](https://github.com/A-L-L-A-H/mw-xv/issues/170) | [AUD-022] Correct stale responsive accessibility coverage documentation | open | AUD-022 | 1466489807:AUD-022 | 2026-11-23 | 2026-11-23 |
 | [#171](https://github.com/A-L-L-A-H/mw-xv/issues/171) | [AUD-023] Verify responsive image source selection for homepage hero | open | AUD-023 | 1466489807:AUD-023 | 2026-11-23 | 2026-11-23 |
+| [#173](https://github.com/A-L-L-A-H/mw-xv/issues/173) | [FRAMEWORK] Preserve CRAYON v1.3 and reconcile companion-paper variants | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#174](https://github.com/A-L-L-A-H/mw-xv/issues/174) | [RESEARCH] Dīn Allah / Universal Iman Foundation — reconcile the four-book charter | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#175](https://github.com/A-L-L-A-H/mw-xv/issues/175) | [RESEARCH] Quantum–Fe Stone Energy — evidence review and safe validation boundary | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#176](https://github.com/A-L-L-A-H/mw-xv/issues/176) | [GAME] Reconcile MoonWitness RPG concept with ROCKSOUL GAME — The Lost Signal | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#177](https://github.com/A-L-L-A-H/mw-xv/issues/177) | [ARCHIVE] MoonWitness OS v2.0 — recover the model source before canonizing Mīzān | open | — | — | 2026-11-23 | 2026-11-23 |
 
 ## Pull request index
 

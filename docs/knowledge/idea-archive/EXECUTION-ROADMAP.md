@@ -56,6 +56,11 @@ P0 preservation is a prerequisite for any old repository retirement, not necessa
 | #21 | Desktop AI harness evaluation | reuse existing Tauri / risk-gate architecture |
 | #22 | AEQ / BABYDOLL | preserve independent concept; owner decision |
 | #27 | bjo163 source preservation / retirement | P0 mirror / rights / restore / non-import gate |
+| #173 | CRAYON v1.3 and companion-paper version reconciliation | framework source review; keep distinct from RGBL |
+| #174 | Dīn Allah / Universal Iman Foundation four-book charter | edition, source-witness and evidence-layer review |
+| #175 | Quantum–Fe Stone Energy | separate safe low-temperature thermal path from lab-only ferrite research |
+| #176 | MoonWitness RPG / 25-prophet concept vs The Lost Signal | preserve separate game lineages pending first-source recovery |
+| #177 | MoonWitness OS v2.0 / Mīzān model | recover first source and verify scale / axis definitions before canonization |
 
 There are also current engineering tasks and managed Issues for cloud foundation, A2A identity, jobs/outbox, SceneLab, UI visual review, CI and the roadmap. Do not create new work where a current task already owns the same files or acceptance.
 
@@ -65,6 +70,6 @@ There are also current engineering tasks and managed Issues for cloud foundation
 - Repository census: 280 accessible repo records; exact public CSV is committed; deep audit remains incomplete.
 - TaskOS: dev 636 unique tasks; 96 todo, 49 doing, 23 blocked, 468 done at the audited blob.
 - Story / canon: II and XII exact source records sampled; full manuscript recovery is open.
-- Issue consolidation: existing #15–#22/#27 reused; no duplicate Issues created.
+- Issue consolidation: existing #15–#22/#27 were reused; five distinct discovery/research proposals are now indexed as #173–#177. None is a TaskOS-managed implementation card.
 - Promotion / CI: automatic PR #81 remains a separate protected promotion batch. Do not merge or claim release from archive-doc commits alone.
 
