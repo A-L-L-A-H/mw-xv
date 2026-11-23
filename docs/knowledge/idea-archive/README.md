@@ -65,7 +65,7 @@ It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM,
 | Idea catalog records | See [catalog](IDEA-CATALOG.md) | Records can point to a shared idea family; not a count of every thought in history |
 | Stories / characters / canon | See [story bible](STORY-CANON-CHARACTER-BIBLE.md) | Source-backed counts are separated from memory-only leads |
 | Current TaskOS | 636 records on `dev` | 468 done, 49 doing, 96 todo, 23 blocked at blob `0cf7a159` |
-| GitHub Issues | 146 | 51 open, 95 closed in the audited two-page issue set; PR objects excluded |
+| GitHub Issues | 151 | 56 open, 95 closed in the current paginated issue audit; PR objects excluded |
 | Pull Requests | 26 | 2 open, 24 closed in the same endpoint results |
 
 **Do not sum repeated references as unique ideas.** A story title mentioned in a prompt, README and issue remains one idea with multiple sources. The catalog intentionally uses stable IDs to reduce duplicate counting.
@@ -101,10 +101,10 @@ Additional evidence states: `REPOSITORY-DOCUMENTED`, `USER-REPORTED`, `MISSING`,
 
 ## Coverage limitations
 
-The account Library root returned 94 objects in the 2026-11-23 listing snapshot. The 28 document/text/spreadsheet/PDF-type objects include both reviewed and unreviewed files; the count must not be described as 28 fully read documents. Sixty-three PNG objects were listed; individual original prompts, revision histories and publication permissions are not established for all of them.
+The first Library discovery snapshot recorded 94 objects and 63 PNGs. A later complete pagination pass on 2026-11-23 returned **279 root entries (278 files + 1 folder)** and **319 recursive entries (300 files + 19 folders)**. The latest root inventory contains 203 PNG, 33 Markdown, 28 ZIP, 6 JSON, 4 plain-text, 1 DOCX, 1 Python, 1 CSV and 1 unknown-MIME file. The earlier 94-object count is retained as a historical checkpoint; see [Library Source Register](LIBRARY-SOURCE-REGISTER.md) for both snapshots and the qualification.
 
 - The complete ChatGPT account conversation history was not exposed as a single source in this task. The prompt and selected available context were inspected; unprovided exports remain `MISSING`.
-- The Library inventory in this pass contains 94 returned objects: 63 PNGs, 28 document/text/spreadsheet/PDF-type files (3 TXT, 8 MD, 9 DOCX, 7 PDF, 1 XLSX), and 3 other files (2 PATCH, 1 ZIP). This is an inventory snapshot, not a claim that all 94 contents were read.
+- The complete paginated Library inventory is metadata-only. It does not establish that all 300 files were opened, that image-generation prompts and revisions are preserved, or that source rights are cleared.
 - Of 280 accessible repository metadata results, 30 were selected for README and root-tree review. The remaining repositories are still metadata-level in this pass.
 - Private repositories are counted but not identified in public documents; their code, issue, branch, tag, LFS, packages, artifacts and deployments have not been fully audited.
 - Gists, wikis, package registries, container registries, Actions artifacts, Pages, DNS, webhooks, local drives and independent backups require separate access and checks.
