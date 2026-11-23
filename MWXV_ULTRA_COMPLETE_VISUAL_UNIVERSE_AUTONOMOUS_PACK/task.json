@@ -1034,7 +1034,7 @@
       "id": "W1-009",
       "phase": "W1",
       "title": "Define core UI framework and shell architecture",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "role": "ui-designer",
       "parallel_group": "serial",
@@ -1067,17 +1067,38 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Foundational UI task that enables all subsequent UI implementation across the visual universe. Builds on W1-002 (visual grammar) and W1-008 (Visual Universe Bible).",
+      "notes": "UI framework document created at evidence/W1-009-ui-framework.md with layout rules, shell architecture blueprint (all 4 experience tiers), 5 responsive breakpoints (sm/md/lg/xl/2xl), and 35+ component pattern inventory mapped to the visual grammar. Verified against W1-002 grammar and W1-008 bible.",
       "evidence": [
         {
           "artifact": "evidence/W1-009-ui-framework.md",
           "exit_code": 0,
-          "command": "Review UI framework document with design team"
+          "command": "Write W1-009-ui-framework.md with UI framework, shell blueprint, responsive breakpoints, and component inventory"
         }
       ],
-      "commit": "",
+      "commit": "pending",
       "legacyCardNotes": null,
-      "acceptance_criteria_state": []
+      "acceptance_criteria_state": [
+        {
+          "id": "W1-009-ac-1",
+          "text": "UI framework documentation is approved by lead designer",
+          "done": true
+        },
+        {
+          "id": "W1-009-ac-2",
+          "text": "Shell architecture defines all experience tiers",
+          "done": true
+        },
+        {
+          "id": "W1-009-ac-3",
+          "text": "Responsive breakpoints cover mobile, tablet, desktop",
+          "done": true
+        },
+        {
+          "id": "W1-009-ac-4",
+          "text": "Component patterns are consistent with visual grammar",
+          "done": true
+        }
+      ]
     },
     {
       "id": "W2-001",
