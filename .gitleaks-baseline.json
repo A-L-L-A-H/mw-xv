@@ -1806,6 +1806,27 @@
     "Fingerprint": "4f404223d5d460a90203879328c0e0df8799e788:packages/ai-runtime/tests/obligation-monitor.test.ts:generic-api-key:231"
   },
   {
+    "RuleID": "generic-api-key",
+    "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+    "StartLine": 230,
+    "EndLine": 230,
+    "StartColumn": 22,
+    "EndColumn": 38,
+    "Match": "detail: 'failed with api_key=REDACTED and top-secret-vps-token-987654',",
+    "Secret": "REDACTED",
+    "File": "packages/ai-runtime/tests/obligation-monitor.test.ts",
+    "SymlinkFile": "",
+    "Commit": "387ac75808758027eefe6ef2457c38a90371d9f3",
+    "Link": "https://github.com/A-L-L-A-H/mw-xv/blob/387ac75808758027eefe6ef2457c38a90371d9f3/packages/ai-runtime/tests/obligation-monitor.test.ts#L230",
+    "Entropy": 4.5016294,
+    "Author": "MoonWitness Dev",
+    "Email": "dev@moonwitness.local",
+    "Date": "2026-11-24T04:48:47+07:00",
+    "Message": "Revert \"chore: remove unused files and dependencies flagged by knip\"\n\nThis reverts commit 4f404223d5d460a90203879328c0e0df8799e788.\n\n# Conflicts:\n#\tapps/desktop/desktop-web/shims/next-link.tsx\n#\tapps/desktop/package.json\n#\tpackages/orm-integration/src/seed.ts\n#\tpackages/orm-integration/tests/connectors.test.ts",
+    "Tags": [],
+    "Fingerprint": "387ac75808758027eefe6ef2457c38a90371d9f3:packages/ai-runtime/tests/obligation-monitor.test.ts:generic-api-key:230"
+  },
+  {
     "RuleID": "private-key",
     "Description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
     "StartLine": 356,
