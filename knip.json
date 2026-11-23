@@ -2,29 +2,20 @@
   "$schema": "https://knip.dev/schema.json",
   "workspaces": {
     ".": {
-      "entry": ["scripts/**/*.mjs", "vitest.config.*", "turbo.json", "tsconfig.base.json"],
-      "ignore": [
-        "scripts/**/*.test.mjs",
-        "scripts/**/*.spec.mjs",
-        "scripts/evolution/scaffold-exp-addon.mjs",
-        "scripts/addon-create.mjs"
-      ]
+      "entry": ["scripts/**/*.mjs", "turbo.json", "tsconfig.base.json"]
     },
-    "packages/*": {
-      "entry": ["src/index.ts", "vitest.config.*"],
-      "ignore": ["src/**/*.test.ts", "src/**/*.spec.ts", "dist/**", "build/**", "tests/**"]
+    "packages/*": {},
+    "apps/board": {
+      "entry": ["src/**/*.tsx", "src/**/*.ts"]
     },
-    "apps/*": {
-      "entry": ["src/**/*.tsx", "src/**/*.ts", "next.config.*", "vite.config.*"],
-      "ignore": [
-        "**/*.test.*",
-        "**/*.spec.*",
-        ".next/**",
-        "dist/**",
-        "build/**",
-        "playwright.config.*"
-      ]
-    }
+    "apps/ui-catalog": {
+      "entry": ["src/**/*.tsx"]
+    },
+    "apps/desktop": {},
+    "apps/api": {},
+    "apps/docs": {},
+    "apps/control-plane": {},
+    "apps/isp": {}
   },
   "rules": {
     "files": "warn",
@@ -36,31 +27,5 @@
     "enumMembers": "warn",
     "duplicates": "warn"
   },
-  "ignore": [
-    "node_modules/**",
-    "dist/**",
-    "build/**",
-    ".turbo/**",
-    ".next/**",
-    "coverage/**",
-    "*.config.*",
-    "*.d.ts",
-    "evolution/**",
-    "corpus/**",
-    "storage/**",
-    "logs/**",
-    "test-results/**",
-    "docs/**",
-    ".github/**",
-    ".githooks/**",
-    "ontology/**",
-    "MOONWITNESS_*",
-    "raw_arts/**",
-    "scripts/fixtures/**",
-    "apps/test-results/**",
-    "apps/control-plane/**",
-    "apps/isp/**",
-    "apps/docs/**"
-  ],
-  "ignoreDependencies": ["@types/node", "typescript", "vitest", "@vitest/coverage-v8"]
+  "ignoreDependencies": []
 }
