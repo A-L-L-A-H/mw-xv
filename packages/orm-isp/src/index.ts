@@ -82,3 +82,13 @@ export {
   type SubscriberOverageReport,
   type SubscriberQuotaSpec,
 } from './accounting-aggregator.js';
+export {
+  buildInitialIspSeedBundle,
+  enforceOverdueSubscriberSuspensions,
+  type BuildInitialIspSeedBundleOptions,
+  type EnforceOverdueSubscriberSuspensionsOptions,
+  type EnforceOverdueSubscriberSuspensionsResult,
+  type OverdueSubscriberSuspensionInput,
+  type OverdueSubscriberSuspensionResult,
+} from './provisioning-loop.js';
+
