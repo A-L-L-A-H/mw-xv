@@ -121,6 +121,8 @@ export function validateGitleaksSetup(workflow, config) {
   }
   if (!/regexTarget\s*=\s*"line"/.test(config))
     problems.push('Allowlist must match exact lines, not whole files or commits.');
+  if (!/\[\[allowlists\]\][\s\S]*?paths\s*=\s*\[[^\]]*gitleaks-baseline/u.test(config))
+    problems.push('The reviewed baseline must be allowlisted as a scanned path.');
 
   // A CRLF-terminated line otherwise escapes the `$` anchor and reads as a clean scan.
   if (
@@ -133,7 +135,7 @@ export function validateGitleaksSetup(workflow, config) {
     );
   }
 
-  const allowlistStart = config.indexOf('[allowlist]');
+  const allowlistStart = config.indexOf('[[allowlists]]');
   const customRulesStart = config.indexOf('[[rules]]', allowlistStart);
   const allowlistConfig =
     allowlistStart < 0

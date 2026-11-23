@@ -3,7 +3,7 @@ title = "MoonWitness secret scanning"
 [extend]
 useDefault = true
 
-[allowlist]
+[[allowlists]]
 description = "Exact synthetic fixtures and historical copies of their test patterns; credential findings are not allowlisted"
 regexTarget = "line"
 paths = ["\\.gitleaks-baseline\\.json$"]

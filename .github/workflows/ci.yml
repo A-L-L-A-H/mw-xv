@@ -50,9 +50,19 @@ jobs:
             --source . \
             --config .gitleaks.toml \
             --baseline-path .gitleaks-baseline.json \
+            --report-format json \
+            --report-path gitleaks-report.json \
             --redact \
             --no-banner \
             --exit-code 1
+      - name: Upload gitleaks report
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: gitleaks-report-${{ github.sha }}
+          path: gitleaks-report.json
+          if-no-files-found: warn
+          retention-days: 7
 
   static-analysis:
     runs-on: ubuntu-24.04
