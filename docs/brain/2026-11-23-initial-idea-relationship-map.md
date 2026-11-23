@@ -169,3 +169,10 @@ Issues #15–#22 and #27 are still open. They already cover the expansion bounda
 ### Promotion and verification boundary
 
 The `dev` branch contains the three new archive / inventory documents and their validation edits. The automation opened or refreshed [PR #81](https://github.com/A-L-L-A-H/mw-xv/pull/81), targeting `main`; it remains open and unmerged. Its diff includes a wider pre-existing development batch, not only this archive documentation. The latest exact-SHA CI and documentation checks were still pending when inspected. No successful merge, release or deployment is claimed.
+
+
+## 10. Canonical archive navigation
+
+The detailed, source-qualified archive now lives in [`docs/knowledge/idea-archive/README.md`](../knowledge/idea-archive/README.md). It links the idea catalog, project registry, canon registry, story and character bibles, visual/brand/product archives, religion/philosophy archive, history, repository report, unified proposal, execution roadmap, unresolved decisions and issue index.
+
+This Brain document remains the first relationship synthesis. It must not be treated as the full archive or as a canon authority. Where its earlier provisional statements differ from an exact source in the archive, prefer the cited source file and keep the difference visible for review.
