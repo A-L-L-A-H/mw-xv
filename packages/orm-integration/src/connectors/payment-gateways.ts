@@ -354,7 +354,7 @@ export function reconcilePayouts(
 
 export const PaymentGatewayConnector = defineModel('integration.payment_gateway_connector', {
   table: 'integration_payment_gateway_connectors',
-  order: 'company asc, gateway asc, id asc',
+  order: 'company_id asc, gateway asc, id asc',
   fields: {
     company: fields.belongsTo(Company, { required: true }),
     gateway: fields.enum(['stripe', 'xendit', 'midtrans'], { required: true }),
