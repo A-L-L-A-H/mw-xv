@@ -1,6 +1,7 @@
 # ADR 0008: Local-First Desktop Agent Harness (`apps/desktop`)
 
 - **Status:** Accepted Architecture Baseline (2026-11-22; implementation tracked in [`todo-desktop.md`](../../../todo-desktop.md))
+- **Runtime alignment (2026-11-23):** Node.js `24.x` supersedes the original `22.x` draft baseline and matches root engines, Desktop package, Docker and CI.
 - **Date:** 2026-11-22
 - **Decision owners:** MoonWitness maintainers
 - **Scope:** `apps/desktop` (`@moonwitness/desktop`), `apps/board` (`@moonwitness/board`), `@moonwitness/orm`, `@moonwitness/orm-ai`, `@moonwitness/ai-runtime`, `@moonwitness/local-ai`, `@moonwitness/jobs`, `@moonwitness/orm-storage`, `@moonwitness/ui`
@@ -44,7 +45,7 @@ We need an explicit architectural decision defining `apps/desktop` (`@moonwitnes
 
 | Dimension                  | `apps/board` (`@moonwitness/board`)                                                                       | `apps/desktop` (`@moonwitness/desktop`)                                                                                                                                                          |
 | -------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Primary Responsibility** | Browser Control Plane, metadata-driven CRUD/workflow views, Mission Control & review UI                   | Native Tauri v2 shell + Node.js `22.x` ESM harness sidecar, local SQLite sidecar, offline outbox sync, Git worktrees, bounded PTY, file/diff inspector, stdio MCP host                           |
+| **Primary Responsibility** | Browser Control Plane, metadata-driven CRUD/workflow views, Mission Control & review UI                   | Native Tauri v2 shell + Node.js `24.x` ESM harness sidecar, local SQLite sidecar, offline outbox sync, Git worktrees, bounded PTY, file/diff inspector, stdio MCP host                           |
 | **UI Components & Tokens** | Owns Next.js pages (`src/app/**`) using `@moonwitness/ui` & `@moonwitness/assets` (`pnpm board:ui:check`) | **Zero duplicated pages/components:** hosts `apps/board` (`../board/.next/standalone/apps/board`) directly via `tauri.conf.json` and exposes `window.__MW_DESKTOP__` (`DesktopCapabilityBridge`) |
 | **ORM & Domain Models**    | Never imports `@moonwitness/orm` or DB drivers; consumes `@moonwitness/client` & `@moonwitness/types`     | Never defines `defineModel` / `defineAddon`; executes existing `@moonwitness/orm-*` addon manifests against `~/.moonwitness/local.db`                                                            |
 | **OS & Local Execution**   | Strictly forbidden (`fs`, `child_process`, `node-pty`, `better-sqlite3`, Tauri Rust/Node APIs)            | Owns `DesktopCapabilityBridge` (`window.__MW_DESKTOP__`) + `DesktopRiskGate` + `GitWorktreeManager` + `LocalSidecar` + `McpHost`                                                                 |
@@ -58,9 +59,9 @@ We need an explicit architectural decision defining `apps/desktop` (`@moonwitnes
 4. `apps/desktop` MUST NOT bypass `apps/api` `INTERNAL_PREFIXES` (`'ai.'`, `'knowledge.'`, `'base.job'`, `'base.outbox_event'`, `'workflow.'`, `'auth.'`) or promote agent identities to `superadmin` / `system`.
 5. `@moonwitness/local-ai` remains strictly loopback-only and tool-free for K0–K9 research suggestions (`AI_MODE=disabled` default); general tool-using harness loops run solely in `@moonwitness/ai-runtime` and `@moonwitness/desktop`.
 
-### 2. Host Runtime Topology: Tauri v2 Native Window + Node.js `22.x` Harness Sidecar
+### 2. Host Runtime Topology: Tauri v2 Native Window + Node.js `24.x` Harness Sidecar
 
-`apps/desktop` uses a **Tauri v2** native window shell (`apps/desktop/tauri.conf.json`) paired with a **Node.js `22.x` ESM local harness host (`@moonwitness/desktop`)**:
+`apps/desktop` uses a **Tauri v2** native window shell (`apps/desktop/tauri.conf.json`) paired with a **Node.js `24.x` ESM local harness host (`@moonwitness/desktop`)**:
 
 1. **Tauri v2 Native Window & CSP Security (`tauri.conf.json`):**
    - `withGlobalTauri: false`, `freezePrototype: true`, `dangerousDisableAssetCspModification: false`.
@@ -69,8 +70,8 @@ We need an explicit architectural decision defining `apps/desktop` (`@moonwitnes
 2. **Preload / Bridge Membrane (`window.__MW_DESKTOP__` / `DesktopCapabilityBridge`):**
    - Exposes a frozen, schema-validated `DesktopCapabilityBridge` (`protocolVersion: '1.0'`, `hostSurface: 'apps/board'`) for `worktree`, `pty`, `risk`, `sidecar`, and `mcp`.
    - Never exposes raw filesystem, Node `process`, or arbitrary shell handles to the webview.
-3. **Node.js `22.x` ESM Local Harness Sidecar (`@moonwitness/desktop`):**
-   - Executes `@moonwitness/orm`, `better-sqlite3`, `@moonwitness/jobs`, `@moonwitness/orm-storage`, `@moonwitness/ai-runtime`, `@moonwitness/ai-mcp`, Git worktree leases, bounded PTY execution, and PCW outbox sync natively on the monorepo's pinned Node `22.x` LTS runtime with zero ORM re-implementation in Rust.
+3. **Node.js `24.x` ESM Local Harness Sidecar (`@moonwitness/desktop`):**
+   - Executes `@moonwitness/orm`, `better-sqlite3`, `@moonwitness/jobs`, `@moonwitness/orm-storage`, `@moonwitness/ai-runtime`, `@moonwitness/ai-mcp`, Git worktree leases, bounded PTY execution, and PCW outbox sync natively on the monorepo's pinned Node `24.x` LTS runtime with zero ORM re-implementation in Rust.
 
 ### 3. Dual-Dialect `@moonwitness/orm` Sidecar (`~/.moonwitness/local.db`) & PCW Sync Protocol
 
@@ -128,11 +129,11 @@ Every native capability exposed by `DesktopCapabilityBridge` (`window.__MW_DESKT
 1. **Electron Full Runtime (Bundled Chromium + Node Main/UtilityProcess):**
    - _Pros:_ Single JS process runtime for both windowing and Node native addons.
    - _Cons:_ Ships a ~150 MB duplicated Chromium binary per install and widens browser renderer attack surface compared to Tauri v2's `withGlobalTauri: false` + `freezePrototype: true` native WebView shell.
-   - _Disposition:_ **Rejected for outer shell**; Tauri v2 provides a lighter, stricter native window while keeping a clean Node.js `22.x` harness sidecar (`@moonwitness/desktop`) for `@moonwitness/orm` and `@moonwitness/ai-runtime`.
+   - _Disposition:_ **Rejected for outer shell**; Tauri v2 provides a lighter, stricter native window while keeping a clean Node.js `24.x` harness sidecar (`@moonwitness/desktop`) for `@moonwitness/orm` and `@moonwitness/ai-runtime`.
 2. **Pure Rust Sidecar Re-implementing `@moonwitness/orm` & `@moonwitness/ai-runtime`:**
    - _Pros:_ Single static binary.
    - _Cons:_ Duplicates 13+ ORM addon models, `isValidAiMutation`, `@moonwitness/jobs`, and `@moonwitness/ai-runtime` adapters in Rust, violating D2 (single ORM source of truth).
-   - _Disposition:_ **Rejected**; Node.js `22.x` sidecar reuses all TypeScript workspace packages directly.
+   - _Disposition:_ **Rejected**; Node.js `24.x` sidecar reuses all TypeScript workspace packages directly.
 3. **Duplicating UI Views Inside `apps/desktop` Outside `apps/board`:**
    - _Pros:_ Faster initial prototyping.
    - _Cons:_ Guarantees visual drift, breaks `pnpm board:ui:check` discipline, and duplicates auth, query caching, and addon metadata renderers.
@@ -152,6 +153,6 @@ Every native capability exposed by `DesktopCapabilityBridge` (`window.__MW_DESKT
 
 - **Positive:** Single UI system (`@moonwitness/ui` + `apps/board`), single domain schema (`@moonwitness/orm` + `@moonwitness/orm-ai`), lightweight Tauri v2 window CSP, full offline execution + cryptographic PCW sync to PostgreSQL, deterministic `R0–R4` containment, and zero security degradation to web-only `apps/board`.
 - **Costs / Trade-offs:**
-  - Requires bundling/launching the Node.js `22.x` harness sidecar alongside Tauri v2 (`apps/desktop/tauri.conf.json`) and testing `better-sqlite3` <-> `pg` serialization parity on every `@moonwitness/orm-ai` change.
+  - Requires bundling/launching the Node.js `24.x` harness sidecar alongside Tauri v2 (`apps/desktop/tauri.conf.json`) and testing `better-sqlite3` <-> `pg` serialization parity on every `@moonwitness/orm-ai` change.
   - Adds local IPC & OS-containment security surface (`DesktopCapabilityBridge`, worktrees, PTY, stdio MCP) requiring dedicated adversarial tests (`DSK-10`).
 - **Review Triggers:** Revisit this ADR if multi-device CRDT collaborative editing on local SQLite rows is required beyond outbox event reconciliation, if Tauri IPC marshaling reveals throughput bottlenecks for high-frequency PTY streams, or if A2A peer-agent desktop federation is proposed (requires separate A2A ADR).

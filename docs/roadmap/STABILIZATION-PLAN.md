@@ -49,14 +49,14 @@
 - [x] Recompute task counts from `ROADMAP.md` and `docs/roadmap/tasks.json`. Exact result: 239 tasks; roadmap checkboxes 157 checked / 82 unchecked; source statuses 157 complete / 47 in-progress / 35 todo. No current tracked generated progress dashboard was found to rewrite; old counts in dated audit narratives remain historical.
 - [x] Cross-check M13.01–M13.12 source status and evidence. All 12 are marked complete; each evidence file and every listed source/deliverable path exists in the exact audited tree.
 - [x] Reconcile completed issue lifecycle #32–#36 against promoted sources/evidence; preserve human fields and comments.
-- [x] Audit stale open/closed issues and duplicate task markers; no mass-close or issue mutation. The read-only audit returned 23 issues (15 open, 8 closed): 12 managed markers for M13.01–M13.12; no duplicate markers, malformed managed blocks, or orphan task IDs among those 12. All 12 issue projections have stale/missing source SHA (11 point to older SHAs, M13.01 has no source SHA line); 227/239 roadmap task IDs currently have no managed issue marker.
+- [x] Audit stale/open/closed issues and duplicate task markers. Snapshot before the TaskOS recovery issue was closed: 23 issues (15 open, 8 closed), with 12 managed markers for M13.01–M13.12; no duplicate markers, malformed blocks, or orphan task IDs among those 12. All 12 managed projections have stale/missing source SHA (11 old SHAs, M13.01 none); 227/239 roadmap task IDs have no managed issue marker. After the snapshot, issue #44 alone was updated with accepted migration evidence and closed as completed; no other issue was mutated and no mass-close was performed.
 - [ ] Reconcile missing/stale managed Issue projections from current exact evidence, and verify roadmap index/evidence links/generated progress artifacts agree. Use bounded, reviewed issue-sync batches; preserve human-owned fields and never mass-close.
 
 ### S3 — Runtime/toolchain documentation (P1)
 - [x] Align primary Node policy references across root engines, Docker, CI setup, Desktop package and docs to Node 24; runtime ledger refresh remains a separate review.
 - [ ] Refresh runtime support review ledger (Node reviewed; other overdue entries remain separately due).
-- [ ] Validate README Quickstart, support policy, Desktop architecture, Desktop TODO and Docker/CI statements.
-- [ ] Keep exact pnpm version/config consistent with Corepack, CI and package-manager policy.
+- [x] Validate README Quickstart/badge, support policy, active Desktop architecture and TODO, Docker and CI statements. The conflicting Node 22 references in the current Desktop ADR/blueprint and README badge were corrected; archived TODO snapshots remain unchanged.
+- [x] Keep exact pnpm `11.17.0` consistent across root `packageManager`, CI setup, Docker Corepack and package-manager drift checks; exact-SHA CI passed on `9aa6ca7d2b93767d864825b97b217f24881a0796`.
 
 ### S4 — Release/CI truth audit (P1)
 - [x] Inspect required checks and rulesets on `main` and `dev`; record the active `protect-main` / `protect-dev` rulesets and the restricted legacy branch-protection endpoint.
