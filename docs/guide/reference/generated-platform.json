@@ -48,7 +48,7 @@
       "name": "@moonwitness/desktop",
       "version": "1.0.0-rc.1",
       "directory": "apps/desktop",
-      "scripts": ["build", "test", "typecheck"]
+      "scripts": ["build", "build:web", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/docs",
@@ -307,6 +307,7 @@
     },
     "@moonwitness/desktop": {
       "build": "tsc",
+      "build:web": "vite build --config desktop-web/vite.config.ts",
       "test": "vitest run",
       "typecheck": "tsc --noEmit -p tsconfig.check.json"
     },
@@ -507,7 +508,11 @@
       "db:migrate": "pnpm --filter @moonwitness/api db:migrate",
       "dependency:candidate": "node scripts/dependency-candidate.mjs",
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
+      "desktop:build": "pnpm --filter @moonwitness/desktop... build && pnpm --filter @moonwitness/desktop build:web",
+      "desktop:mcp": "node apps/desktop/dist/cli.js mcp",
+      "desktop:test": "pnpm --filter @moonwitness/ai-mcp test && pnpm --filter @moonwitness/desktop test",
       "desktop:ui:check": "node --test scripts/check-desktop-non-overlap.test.mjs && node scripts/check-desktop-non-overlap.mjs",
+      "desktop:web": "pnpm --filter @moonwitness/desktop build:web",
       "dev": "pnpm --filter @moonwitness/ui build && node scripts/run-local-services.mjs dev",
       "dev:api": "pnpm --filter @moonwitness/api dev",
       "dev:board": "pnpm --filter @moonwitness/board dev",
@@ -522,11 +527,7 @@
       "docs:links": "node scripts/check-docs.mjs && node scripts/check-doc-navigation.mjs && node --test scripts/check-docs.test.mjs scripts/check-doc-navigation.test.mjs scripts/check-external-doc-links.test.mjs",
       "docs:links:external": "node scripts/check-external-doc-links.mjs",
       "docs:publication:check": "node scripts/check-docs-publication.mjs apps/docs/dist",
-      "dx:build": "node scripts/dx.mjs build",
-      "dx:dev": "node scripts/dx.mjs dev",
-      "dx:e2e": "node scripts/dx.mjs e2e",
-      "dx:start": "node scripts/dx.mjs start",
-      "dx:test": "node scripts/dx.mjs test",
+      "dx:test": "pnpm desktop:test",
       "evolution:check": "node scripts/evolution/check-constitution.mjs && node scripts/evolution/check-ratchet.mjs",
       "evolution:fitness": "node scripts/evolution/fitness-score.mjs",
       "evolution:postmortem": "node scripts/evolution/record-postmortem.mjs",
@@ -10010,5 +10011,5 @@
       "path": "/work-contracts/:id/verify"
     }
   ],
-  "generatedFromSha256": "d52de61b0824cb4c62de63e48e7763fbb199674e39f3b6f2c4d358c4b20305fd"
+  "generatedFromSha256": "f4a6b411b7699bf22e9c87b0b715316cc5fd5139f1aae213feb997c5d05c38f1"
 }

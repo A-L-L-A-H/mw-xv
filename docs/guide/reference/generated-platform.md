@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `d52de61b0824cb4c62de63e48e7763fbb199674e39f3b6f2c4d358c4b20305fd`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `f4a6b411b7699bf22e9c87b0b715316cc5fd5139f1aae213feb997c5d05c38f1`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -9,7 +9,7 @@ Source fingerprint: `d52de61b0824cb4c62de63e48e7763fbb199674e39f3b6f2c4d358c4b20
 | `@moonwitness/api`              | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
 | `@moonwitness/board`            | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
 | `@moonwitness/control-plane`    | App     | 0.1.0      | `dev`, `docker:build`, `fmt`                                                                                                                                                                                                                                                       |
-| `@moonwitness/desktop`          | App     | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/desktop`          | App     | 1.0.0-rc.1 | `build`, `build:web`, `test`, `typecheck`                                                                                                                                                                                                                                          |
 | `@moonwitness/docs`             | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
 | `@moonwitness/isp`              | App     | 0.1.0      | `cargo:build`, `clippy`, `dev`, `fmt`, `migrate`, `start`, `test`                                                                                                                                                                                                                  |
 | `@moonwitness/ui-catalog`       | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `diagnostics:generate`, `preview`, `test`                                                                                                                                                                                                           |
@@ -150,7 +150,11 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm db:migrate`
 - `pnpm dependency:candidate`
 - `pnpm dependency:plan`
+- `pnpm desktop:build`
+- `pnpm desktop:mcp`
+- `pnpm desktop:test`
 - `pnpm desktop:ui:check`
+- `pnpm desktop:web`
 - `pnpm dev`
 - `pnpm dev:api`
 - `pnpm dev:board`
@@ -165,10 +169,6 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm docs:links`
 - `pnpm docs:links:external`
 - `pnpm docs:publication:check`
-- `pnpm dx:build`
-- `pnpm dx:dev`
-- `pnpm dx:e2e`
-- `pnpm dx:start`
 - `pnpm dx:test`
 - `pnpm evolution:check`
 - `pnpm evolution:fitness`

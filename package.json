@@ -7,7 +7,7 @@
     "dev": "pnpm --filter @moonwitness/ui build && node scripts/run-local-services.mjs dev",
     "dev:api": "pnpm --filter @moonwitness/api dev",
     "dev:board": "pnpm --filter @moonwitness/board dev",
-    "desktop:build": "pnpm --filter @moonwitness/desktop build && pnpm --filter @moonwitness/desktop build:web",
+    "desktop:build": "pnpm --filter @moonwitness/desktop... build && pnpm --filter @moonwitness/desktop build:web",
     "desktop:web": "pnpm --filter @moonwitness/desktop build:web",
     "desktop:test": "pnpm --filter @moonwitness/ai-mcp test && pnpm --filter @moonwitness/desktop test",
     "desktop:mcp": "node apps/desktop/dist/cli.js mcp",

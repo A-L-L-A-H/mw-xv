@@ -103,3 +103,9 @@ Structured post-mortem rules persisted by autonomous and operator loops so resol
 - **Symptom**: CI quality-and-build failed test:ui-budget (JS gzip 165151 B > 165000 B) and ui-catalog mobile tests failed with 310px horizontal overflow
 - **Root Cause**: FXLab double-lazy-loaded SceneParticles (already static-imported and inside lazy FXLab) adding extra chunk overhead, while SpritePlayer used fixed px width/height instead of responsive min(100%, width) + aspectRatio
 - **Invariant**: Import static components directly inside already-lazy catalog panels instead of redundant nested lazy() chunks, keep SpritePlayer responsive with width: min(100%, scaledWidth) and aspectRatio, and run pnpm test:ui-budget and pnpm test:ui-catalog before pushing UI changes
+
+## INV-018: Desktop Build Dependency Closure and Vitest Timeout
+
+- **Symptom**: CI dx-test failed with missing @moonwitness/ai-mcp/@moonwitness/orm/@moonwitness/types declarations, and quality-and-build timed out at 5000ms in apps/desktop/tests/local-api-server.test.ts
+- **Root Cause**: Root desktop:build filtered only @moonwitness/desktop without its workspace dependency closure (...), and apps/desktop/vitest.config.ts omitted testTimeout for SQLite addon bootstrap tests
+- **Invariant**: Keep desktop:build filtered on @moonwitness/desktop... so clean CI jobs build all workspace dependencies, and configure testTimeout >= 30000ms in apps/desktop/vitest.config.ts
