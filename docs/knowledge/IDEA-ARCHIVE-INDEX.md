@@ -312,3 +312,82 @@ These issues are existing proposals/operations records, not proof that every fea
 **Not complete:** a full conversation-history crawl; a full private repository source-code audit; all 22 Library images/prompts inspected from original binary/source; a full story/canon/character reconstruction; every 148 public repository's source, CI, license and commit history; every private/GitHub external resource; or legal/theological/scientific verification of the archived ideas.
 
 **No GitHub issue was created or closed.** Existing issues #15–22 and #27 were reused. Repository edits in this audit are documentation-only; no legacy code, source dataset, image, audio, credential, private conversation or personal diary has been imported.
+
+
+## 11. Follow-up addendum — CRAYON and Future OS Library sources (2026-11-23)
+
+This addendum supersedes the earlier Library-count statements in Sections 1 and 10 for the 2026-11-23 follow-up snapshot. It is an additive archive correction; earlier snapshots remain historical evidence.
+
+### 11.1 Current Library inventory snapshot
+
+The Library listing returned **48 items** at this follow-up checkpoint:
+- 1 pasted TXT prompt (the consolidation instruction itself);
+- 13 Future OS ZIP archives;
+- 2 CRAYON Framework DOCX versions;
+- 32 PNG images.
+
+This is a listing count, not a claim that every binary, original prompt, or image has been fully reviewed. The two CRAYON documents and the 13 Future OS ZIP archives were inspected to differing depths below. The 32 PNGs were inventoried by name and selected descriptions only; generated image captions are not a substitute for original prompt history. Do not count the pasted master prompt as a new project idea.
+
+### 11.2 CRAYON Framework v1.3 — `ARCH-IDEA-CRAYON-001`
+
+**Evidence:** two Library DOCX files dated 2026-08-23:
+- `CRAYON_Framework_v1.3_Bilingual_FINAL.docx` — 46,372 bytes;
+- `CRAYON_Framework_v1.3_Bilingual_FINAL_REVISED.docx` — 47,177 bytes.
+
+A paragraph/table comparison found the revised document preserves the earlier v1.3 content and adds Section 16, **Simple Way Principle**. The revised edition adds the target audience and accessibility criteria, the **Shin-chan Test**, the rule to demonstrate a concrete example before explaining framework terminology, and the simple entry sequence **SEE → ASK → THINK → UNDERSTAND → DO**. The older edition ends at Section 15.
+
+**Classification:** `USER IDEA / DOCUMENTED FRAMEWORK BASELINE`; scientific validation and final canon/approval status are not established by the filenames. Preserve both source versions and their sequence; do not silently replace the earlier edition.
+
+**Core structure recorded in v1.3:**
+- `R1 REALITY` — begin with what can be observed.
+- `G2 GOVERNING ORDER` — examine how reality behaves, relates, and is structured.
+- `B3 BEING` — examine what exists, lives, experiences, or acts.
+- `L4 LIGHT` — integrate evidence and reasoning into clearer understanding.
+- A cumulative rule: higher levels contain earlier levels rather than replacing them.
+- A 12:00 / 3:00 / 6:00 / 9:00 clock metaphor and repeatable feedback cycle; the clock is explicitly a teaching metaphor, not a measurement or religious symbol.
+- **9 Gate:** SEE, HEAR, TOUCH, TASTE, SMELL, ATTEND, REMEMBER, REASON, CHOOSE. Gate is a process label, not a claim that human biology has only nine senses.
+- **13 Way:** OBSERVE, NOTICE, QUESTION, MEASURE, COMPARE, EXPLORE, UNDERSTAND, CONNECT, EVALUATE, REASON, CONCLUDE, ACT, LIVE. These inquiry moves are reusable, not a compulsory linear sequence.
+- Quality check: evidence, alternatives, reasoning, confidence/uncertainty; feedback loop returns to observation after action and new information.
+- Audience conditions are situational entry points, not fixed human or intelligence categories. The framework targets accessibility across childhood, school, adult and academic levels.
+
+**Explicit non-claims and change control:** the document calls CRAYON a proposed conceptual framework, not a validated scientific theory. It says the four levels do not measure intelligence, truth, faith, or certainty, and that mathematics/science/logic are not direct empirical measurements of Allah. Applications may add their own evidence, standards, laws, or scripture without silently changing the framework core. The document says changes to R/G/B/L, 9 Gate, or 13 Way must be treated as a framework revision, not an informal edit.
+
+**Unresolved:** the two DOCX files are versioned source artefacts, but the exact originating conversation, complete revision history before v1.3, and an explicit user canon-lock decision were not recovered in this pass. Keep v1.3 as the latest Library-observed baseline, not a claim of immutable or scientifically validated truth. The two associated CRAYON infographics remain separate visual assets.
+
+### 11.3 Future OS archive lineage — `ARCH-IDEA-FOS-001`
+
+**Evidence:** 13 ZIP archives in the Library, created on 2026-09-04, spanning `future-os-starter`, `future-os-m1`, `v0.3.0`, `v1-alpha`, and the numbered `v1.1`–`v1.9` sequence. File sizes and SHA-256 values below identify the exact observed files; they do not prove source-repository completeness or runtime correctness.
+
+| Library archive | Bytes | SHA-256 |
+|---|---:|---|
+| `future-os-starter.zip` | 14,398 | `47c776098138c4f2627d5e052409b0dcc62179e4e77cbc0b1cd9c583ca19d687` |
+| `future-os-m1.zip` | 17,926 | `53ac8aa45d368bb36e42fe136399cf4001819e6b2c3716a766a76594911810f0` |
+| `future-os-v0.3.0.zip` | 36,355 | `2d8097b4482339d0ef6e261f446f3e3bc424d450701f151fecc8e6cf20d88cec` |
+| `Future-OS-v1-alpha.zip` | 64,751 | `7fbdf57d945fb6343f72121b5f27160006e7af62a43b4fc00ac00342662bc3b3` |
+| `Future-OS-v1.1-F2.zip` | 63,199 | `eb4fccbcc25798e1744d56d82408c398d6b149b866eb281a5bd3ade7d2d7f0cc` |
+| `Future-OS-v1.2-F3.zip` | 75,474 | `8a82f17544c3270bcb4bfa7e1c6e80c256911676ba7576ca5ca1c7e4ce973286` |
+| `Future-OS-v1.3-F4.zip` | 76,564 | `b71bf79acd91876740d1d1c84d85b01f39971f2a3b4ec70546c569c64f553045` |
+| `Future-OS-v1.4-MLV-MERGE.zip` | 84,260 | `2ab0b685346652b369059a9c2092e7717a2787eded0ac2a9e3fdf4f05867a8e6` |
+| `Future-OS-v1.5-F5.zip` | 63,779 | `f03ced7c1613afe6578ca390aac6b8994ff693bcf160f56a823d170d193ce1e5` |
+| `Future-OS-v1.6-F6.zip` | 92,281 | `faf1074a6f991b6c46dceff9a17bbb30a50d0dadaefad4723648d22655f659a3` |
+| `Future-OS-v1.7-F7-MERGED.zip` | 98,590 | `cd13e050bbd19236729db93b1dce2dfda647beb055acfcae9bcd766f2ede3ca7` |
+| `Future-OS-v1.8-F8.zip` | 77,618 | `036b151321390c0a03b4ecfcd672f96b9ca7fe6999e921f04cfed64523735587` |
+| `Future-OS-v1.9-F9.zip` | 109,956 | `d937406be510ba4365005fa998c2cc12c3ff95c3415d3a3c017c3452e383e129` |
+
+**Observed identity and design thesis:** Future OS is a distinct Rust-first OS architecture based on a small trusted seL4/Microkit foundation and isolated services. Its stated design focuses on explicit authority/capabilities, intent, evidence/provenance, reversible or transactional actions, least privilege, agent delegation, revocation, accountability, privacy, and crypto agility. The constitution method is explicitly layered as **QURANIC PRINCIPLE → ENGINEERING INTERPRETATION → SYSTEM INVARIANT → TEST**; the README calls the religious text a design-principle source, not a technical specification or revealed implementation detail.
+
+**Observed implementation shape:** the inspected v1.9 archive contains 171 files (274 ZIP entries including directory entries), a Rust workspace, platform directories for AArch64/RISC-V/x86-64, a `system/future-os.system` description, service/app boundaries, build/check scripts, and host/build workflows. Package metadata says `1.9.0-alpha.1`. The README explicitly describes the repository as an architecture scaffold, not a production desktop OS; booting the full Microkit system requires a compatible SDK and cross-compilation environment. No production desktop shell, full driver stack, completed network stack, or production launch was verified here.
+
+**MLV merge — separate related record `ARCH-IDEA-MLV-001`:** the v1.4 merge archive and v1.9 README describe selected MLV architectural ideas integrated at the Future OS user/service-contract layer: explicit command envelopes/contracts, semantic schemas/modules, event journal and outbox separation, and a `validate → authorize → commit` execution path. The README explicitly keeps seL4/Microkit as the trusted isolation substrate. This is a relationship between two projects, not evidence that MLV and Future OS are the same OS or that application-layer semantics replace the kernel. Do not copy private source-repository material into this public archive.
+
+**Version/roadmap conflict — `UNRESOLVED`:**
+- The v1.9 archive's `Cargo.toml` identifies package `1.9.0-alpha.1`, but its README still labels the overall current state “v1.1 architecture alpha — F2 foundations” before later v1.4/v1.6/v1.8/v1.9 sections.
+- The README calls F9 “Durable Storage + Recovery”, while `docs/ROADMAP.md` calls F9 “WASM component runtime” and leaves it unchecked. The same roadmap marks F4 persistent ledger, F6 transactional storage/VFS, F7 service fabric, F8 networking, F9 WASM and later F10–F15 stages as incomplete, while marking F2/F3/F5 foundations complete and F1 partial.
+- The `Future-OS-v1.5-F5.zip` filename carries v1.5/F5, but its root Cargo package version remains `1.4.0-alpha.1`.
+- The numbered file name, package version, README status paragraph, and roadmap milestone labels therefore do not form a consistent release/status model. Do not infer that “F9” is complete from the ZIP filename.
+
+**Disposition:** preserve the 13 archives as an immutable historical series in the user's Library. This index records source metadata and architectural intent only; it does not import the ZIP contents, create a new OS implementation inside MW-XV, or override the existing K0-006 no-legacy-import decision. Compare Future OS with the existing MW-XV platform and desktop ownership boundaries before proposing any integration. Issue #21 already covers desktop AI/harness evaluation; it is not automatically an OS implementation task.
+
+### 11.4 Updated count and source boundary
+
+For this follow-up, the visible Library listing is **48 items**, not the earlier 22-file snapshot. The archive index now has source-backed entries for CRAYON and Future OS/MLV archive lineage; the 32 PNG items remain only partially inspected. This follow-up does not change the overall status from `PARTIAL / SOURCE-BOUNDED`, does not claim a full ChatGPT conversation-history crawl, and does not establish that all original prompts, manuscripts, or binary assets have been recovered.
