@@ -42,6 +42,7 @@
     "lint:ui": "pnpm exec eslint packages/ui/src scripts/check-ui-design-system.mjs scripts/check-ui-design-system.test.mjs scripts/check-ui-gate-wiring.test.mjs scripts/check-desktop-non-overlap.mjs scripts/check-desktop-non-overlap.test.mjs && pnpm --filter @moonwitness/board lint",
     "api:addon:check": "node --test scripts/check-api-addon-boundary.test.mjs && node scripts/check-api-addon-boundary.mjs",
     "hooks:install": "node scripts/setup-git-hooks.mjs",
+    "prepare": "node -e \"import('node:fs').then(({existsSync})=>{if(existsSync('.git')&&existsSync('scripts/setup-git-hooks.mjs')){return import('./scripts/setup-git-hooks.mjs')}})\"",
     "test:integration": "node scripts/run-postgres-tests.mjs",
     "test:integration:built": "node scripts/run-postgres-tests.mjs --built",
     "test:restore-drill": "node scripts/verify-application-restore.mjs",
