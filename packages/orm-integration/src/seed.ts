@@ -170,23 +170,6 @@ export function buildIntegrationSeedBundle(): IntegrationSeedBundle {
   };
 }
 
-function resolveInsertedId(inserted: unknown[], label: string): number {
-  const first = inserted[0];
-  if (first === undefined || first === null) {
-    throw new Error(`Seed insert returned no id for ${label}`);
-  }
-  if (typeof first === 'object' && 'id' in (first as Record<string, unknown>)) {
-    const id = (first as Record<string, unknown>).id;
-    if (typeof id === 'number') return id;
-    if (typeof id === 'string' && id.trim() !== '' && Number.isFinite(Number(id))) {
-      return Number(id);
-    }
-  }
-  if (typeof first === 'number') return first;
-  if (typeof first === 'string' && Number.isFinite(Number(first))) return Number(first);
-  throw new Error(`Seed insert returned an unusable id for ${label}`);
-}
-
 async function resolveSeedCompanyId(
   db: Knex,
   options: SeedIntegrationDataOptions
