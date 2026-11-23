@@ -27,7 +27,7 @@ GitHub repository search `user:bjo163` returned:
 All 148 public repository names matched the existing MW-XV public inventory CSV. The only archived public repository returned was `bjo163/moonwitness-memory`.
 
 Files:
-- [Public inventory snapshot 2026-11-23](inventory/bjo163-public-repositories-2026-11-23.csv)
+- [Public inventory snapshot 2026-11-23](../../migration/inventory/bjo163-public-repositories-2026-11-23.csv)
 - [Metadata search evidence](../../migration/ACCESSIBLE-REPO-SEARCH-SNAPSHOT-2026-11-23.md)
 - [Existing legacy source matrix](../../migration/SOURCE-MIGRATION-MATRIX.md)
 - [Retirement gates](../../migration/MIGRATION-ACCEPTANCE.md)
