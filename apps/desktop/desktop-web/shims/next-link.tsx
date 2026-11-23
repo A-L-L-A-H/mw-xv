@@ -44,7 +44,11 @@ export default function Link({
     ) {
       return;
     }
-    if (resolved.startsWith('http://') || resolved.startsWith('https://') || resolved.startsWith('mailto:')) {
+    if (
+      resolved.startsWith('http://') ||
+      resolved.startsWith('https://') ||
+      resolved.startsWith('mailto:')
+    ) {
       return;
     }
     event.preventDefault();

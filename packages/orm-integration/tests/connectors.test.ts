@@ -93,20 +93,21 @@ describe('Integration Seed', () => {
     beforeEach(() => {
       mockDb = mock<Knex>();
       mockDb.transaction.mockImplementation(async (cb) => cb(mockDb));
+      mockDb.mockImplementation(() => mockDb as unknown as Knex.QueryBuilder);
+      mockDb.schema = mock<Knex.SchemaBuilder>();
     });
 
     it('throws when secret ref pattern invalid', async () => {
       const bundle = buildIntegrationSeedBundle();
       bundle.webhookEndpoints[0].secretRef = 'INVALID_SECRET';
-      const { buildIntegrationSeedBundle: _, seedIntegrationData: seedFn } = await import('../src/seed.js');
+      const { buildIntegrationSeedBundle: _, seedIntegrationData: seedFn } =
+        await import('../src/seed.js');
       await expect(seedFn(mockDb, { companyId: 1 })).rejects.toThrow(/Invalid webhook secret ref/);
     });
 
     it('resolves companyId from options or first company', async () => {
       const bundle = buildIntegrationSeedBundle();
-      mockDb.mockImplementation(() =>
-        Promise.resolve([{ id: 42 }])
-      );
+      mockDb.mockImplementation(() => Promise.resolve([{ id: 42 }]));
       mockDb.select.mockResolvedValue([{ id: 42 }]);
       mockDb.first.mockResolvedValue({ id: 42 });
       mockDb.where.mockReturnValue(mockDb);

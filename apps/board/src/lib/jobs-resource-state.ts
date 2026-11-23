@@ -1,4 +1,9 @@
-export function jobsResourceState({ isLoading, isError, hasData, isEmpty = false }: {
+export function jobsResourceState({
+  isLoading,
+  isError,
+  hasData,
+  isEmpty = false,
+}: {
   isLoading: boolean;
   isError: boolean;
   hasData: boolean;

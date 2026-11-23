@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `bcaa3fe92ad86a870f660728aa43f52bc353ab29cced71a4b6acebe6eea54d77`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `445095e9cc43c27cb34637d8fadf5d051165a1b56c16175cc1544e345498292a`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -634,25 +634,32 @@ Models: 4; declared views: 4; menu entries: 4; seed rows: 18.
 
 Version: `1.0.0`; dependencies: `base`, `jobs`.
 
-Models: 2; declared views: 2; menu entries: 2; seed rows: 5.
+Models: 3; declared views: 2; menu entries: 2; seed rows: 12.
 
-| Model                          | Table                            | Field             | Kind      | Required | Optional | Default    | Relation                       |
-| ------------------------------ | -------------------------------- | ----------------- | --------- | -------- | -------- | ---------- | ------------------------------ |
-| `integration.webhook_delivery` | `integration_webhook_deliveries` | `attempts`        | integer   | No       | Yes      | [redacted] | —                              |
-| `integration.webhook_delivery` | `integration_webhook_deliveries` | `company`         | belongsTo | Yes      | No       | No         | `base.company`                 |
-| `integration.webhook_delivery` | `integration_webhook_deliveries` | `delivered_at`    | string    | No       | Yes      | No         | —                              |
-| `integration.webhook_delivery` | `integration_webhook_deliveries` | `endpoint`        | belongsTo | Yes      | No       | No         | `integration.webhook_endpoint` |
-| `integration.webhook_delivery` | `integration_webhook_deliveries` | `event_type`      | string    | Yes      | No       | No         | —                              |
-| `integration.webhook_delivery` | `integration_webhook_deliveries` | `last_error_code` | string    | No       | Yes      | No         | —                              |
-| `integration.webhook_delivery` | `integration_webhook_deliveries` | `outbox_event_id` | integer   | Yes      | No       | No         | —                              |
-| `integration.webhook_delivery` | `integration_webhook_deliveries` | `response_status` | integer   | No       | Yes      | No         | —                              |
-| `integration.webhook_delivery` | `integration_webhook_deliveries` | `status`          | enum      | Yes      | No       | No         | —                              |
-| `integration.webhook_endpoint` | `integration_webhook_endpoints`  | `company`         | belongsTo | Yes      | No       | No         | `base.company`                 |
-| `integration.webhook_endpoint` | `integration_webhook_endpoints`  | `enabled`         | boolean   | No       | Yes      | [redacted] | —                              |
-| `integration.webhook_endpoint` | `integration_webhook_endpoints`  | `event_types`     | text      | No       | Yes      | [redacted] | —                              |
-| `integration.webhook_endpoint` | `integration_webhook_endpoints`  | `name`            | string    | Yes      | No       | No         | —                              |
-| `integration.webhook_endpoint` | `integration_webhook_endpoints`  | `secret_ref`      | string    | Yes      | No       | No         | —                              |
-| `integration.webhook_endpoint` | `integration_webhook_endpoints`  | `url`             | string    | Yes      | No       | No         | —                              |
+| Model                                   | Table                                    | Field                | Kind      | Required | Optional | Default    | Relation                       |
+| --------------------------------------- | ---------------------------------------- | -------------------- | --------- | -------- | -------- | ---------- | ------------------------------ |
+| `integration.payment_gateway_connector` | `integration_payment_gateway_connectors` | `company`            | belongsTo | Yes      | No       | No         | `base.company`                 |
+| `integration.payment_gateway_connector` | `integration_payment_gateway_connectors` | `config_json`        | text      | Yes      | No       | No         | —                              |
+| `integration.payment_gateway_connector` | `integration_payment_gateway_connectors` | `enabled`            | boolean   | No       | Yes      | [redacted] | —                              |
+| `integration.payment_gateway_connector` | `integration_payment_gateway_connectors` | `gateway`            | enum      | Yes      | No       | No         | —                              |
+| `integration.payment_gateway_connector` | `integration_payment_gateway_connectors` | `is_default`         | boolean   | No       | Yes      | [redacted] | —                              |
+| `integration.payment_gateway_connector` | `integration_payment_gateway_connectors` | `name`               | string    | Yes      | No       | No         | —                              |
+| `integration.payment_gateway_connector` | `integration_payment_gateway_connectors` | `webhook_secret_ref` | string    | Yes      | No       | No         | —                              |
+| `integration.webhook_delivery`          | `integration_webhook_deliveries`         | `attempts`           | integer   | No       | Yes      | [redacted] | —                              |
+| `integration.webhook_delivery`          | `integration_webhook_deliveries`         | `company`            | belongsTo | Yes      | No       | No         | `base.company`                 |
+| `integration.webhook_delivery`          | `integration_webhook_deliveries`         | `delivered_at`       | string    | No       | Yes      | No         | —                              |
+| `integration.webhook_delivery`          | `integration_webhook_deliveries`         | `endpoint`           | belongsTo | Yes      | No       | No         | `integration.webhook_endpoint` |
+| `integration.webhook_delivery`          | `integration_webhook_deliveries`         | `event_type`         | string    | Yes      | No       | No         | —                              |
+| `integration.webhook_delivery`          | `integration_webhook_deliveries`         | `last_error_code`    | string    | No       | Yes      | No         | —                              |
+| `integration.webhook_delivery`          | `integration_webhook_deliveries`         | `outbox_event_id`    | integer   | Yes      | No       | No         | —                              |
+| `integration.webhook_delivery`          | `integration_webhook_deliveries`         | `response_status`    | integer   | No       | Yes      | No         | —                              |
+| `integration.webhook_delivery`          | `integration_webhook_deliveries`         | `status`             | enum      | Yes      | No       | No         | —                              |
+| `integration.webhook_endpoint`          | `integration_webhook_endpoints`          | `company`            | belongsTo | Yes      | No       | No         | `base.company`                 |
+| `integration.webhook_endpoint`          | `integration_webhook_endpoints`          | `enabled`            | boolean   | No       | Yes      | [redacted] | —                              |
+| `integration.webhook_endpoint`          | `integration_webhook_endpoints`          | `event_types`        | text      | No       | Yes      | [redacted] | —                              |
+| `integration.webhook_endpoint`          | `integration_webhook_endpoints`          | `name`               | string    | Yes      | No       | No         | —                              |
+| `integration.webhook_endpoint`          | `integration_webhook_endpoints`          | `secret_ref`         | string    | Yes      | No       | No         | —                              |
+| `integration.webhook_endpoint`          | `integration_webhook_endpoints`          | `url`                | string    | Yes      | No       | No         | —                              |
 
 ### Menus and seed coverage
 
@@ -661,15 +668,17 @@ Models: 2; declared views: 2; menu entries: 2; seed rows: 5.
 | `integration.webhook_delivery` | Webhook Deliveries | Technical |      491 | Development mode |
 | `integration.webhook_endpoint` | Webhook Endpoints  | Technical |      490 | Development mode |
 
-- Seed coverage: `base.model_access` has 2 declared seed row(s); seed values are not included.
-- Seed coverage: `integration.webhook_endpoint` has 3 declared seed row(s); seed values are not included.
+- Seed coverage: `base.model_access` has 3 declared seed row(s); seed values are not included.
+- Seed coverage: `integration.payment_gateway_connector` has 3 declared seed row(s); seed values are not included.
+- Seed coverage: `integration.webhook_endpoint` has 6 declared seed row(s); seed values are not included.
 
 ### Seeded model access rules
 
-| Group reference         | Model                          | Read | Create | Write | Delete |
-| ----------------------- | ------------------------------ | ---- | ------ | ----- | ------ |
-| `base.group_superadmin` | `integration.webhook_delivery` | Yes  | Yes    | Yes   | Yes    |
-| `base.group_superadmin` | `integration.webhook_endpoint` | Yes  | Yes    | Yes   | Yes    |
+| Group reference         | Model                                   | Read | Create | Write | Delete |
+| ----------------------- | --------------------------------------- | ---- | ------ | ----- | ------ |
+| `base.group_superadmin` | `integration.payment_gateway_connector` | Yes  | Yes    | Yes   | Yes    |
+| `base.group_superadmin` | `integration.webhook_delivery`          | Yes  | Yes    | Yes   | Yes    |
+| `base.group_superadmin` | `integration.webhook_endpoint`          | Yes  | Yes    | Yes   | Yes    |
 
 ## Addon `orm-storage`
 

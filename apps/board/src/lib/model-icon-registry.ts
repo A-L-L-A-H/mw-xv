@@ -16,8 +16,11 @@ export const MODEL_ICON_NAMES = Object.freeze({
   'auth.refresh_token': 'key',
 } as const);
 
-export type ModelIconName = typeof MODEL_ICON_NAMES[keyof typeof MODEL_ICON_NAMES];
+export type ModelIconName = (typeof MODEL_ICON_NAMES)[keyof typeof MODEL_ICON_NAMES];
 
 export function modelIconName(model: string): ModelIconName {
-  return MODEL_ICON_NAMES[model as keyof typeof MODEL_ICON_NAMES] ?? (model.startsWith('auth.') ? 'security' : 'model');
+  return (
+    MODEL_ICON_NAMES[model as keyof typeof MODEL_ICON_NAMES] ??
+    (model.startsWith('auth.') ? 'security' : 'model')
+  );
 }

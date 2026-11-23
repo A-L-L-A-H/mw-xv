@@ -6491,6 +6491,87 @@
       "depends": ["base", "jobs"],
       "models": [
         {
+          "name": "integration.payment_gateway_connector",
+          "table": "integration_payment_gateway_connectors",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "config_json",
+              "kind": "text",
+              "column": "config_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "enabled",
+              "kind": "boolean",
+              "column": "enabled",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "gateway",
+              "kind": "enum",
+              "column": "gateway",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["midtrans", "stripe", "xendit"]
+            },
+            {
+              "name": "is_default",
+              "kind": "boolean",
+              "column": "is_default",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "webhook_secret_ref",
+              "kind": "string",
+              "column": "webhook_secret_ref",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["company", "gateway", "is_default"]]
+        },
+        {
           "name": "integration.webhook_delivery",
           "table": "integration_webhook_deliveries",
           "fields": [
@@ -6680,10 +6761,19 @@
       ],
       "views": ["integration.webhook_delivery", "integration.webhook_endpoint"],
       "seeds": {
-        "integration.webhook_endpoint": 3,
-        "base.model_access": 2
+        "integration.webhook_endpoint": 6,
+        "integration.payment_gateway_connector": 3,
+        "base.model_access": 3
       },
       "accessRules": [
+        {
+          "group": "base.group_superadmin",
+          "model": "integration.payment_gateway_connector",
+          "read": true,
+          "create": true,
+          "write": true,
+          "unlink": true
+        },
         {
           "group": "base.group_superadmin",
           "model": "integration.webhook_delivery",
@@ -9699,5 +9789,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "bcaa3fe92ad86a870f660728aa43f52bc353ab29cced71a4b6acebe6eea54d77"
+  "generatedFromSha256": "445095e9cc43c27cb34637d8fadf5d051165a1b56c16175cc1544e345498292a"
 }
