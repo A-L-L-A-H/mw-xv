@@ -924,6 +924,9 @@ importers:
       '@moonwitness/orm-sales':
         specifier: workspace:*
         version: link:../orm-sales
+      '@moonwitness/orm-storage':
+        specifier: workspace:*
+        version: link:../orm-storage
       '@moonwitness/orm-workflow':
         specifier: workspace:*
         version: link:../orm-workflow
