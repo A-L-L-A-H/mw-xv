@@ -38,6 +38,24 @@ test('requires one exact pnpm version across workflow setup and the workspace ma
   );
 });
 
+test('checks the exact Corepack pnpm pin in Dockerfile as well as GitHub workflows', () => {
+  const mismatch = findPnpmVersionDrift(
+    [{ path: 'Dockerfile', content: 'RUN corepack prepare pnpm@11 --activate' }],
+    'pnpm@11.17.0'
+  );
+  assert.equal(mismatch.length, 1);
+  assert.equal(mismatch[0].path, 'Dockerfile');
+  assert.match(mismatch[0].reason, /must match the root packageManager pnpm@11\.17\.0/u);
+
+  assert.deepEqual(
+    findPnpmVersionDrift(
+      [{ path: 'Dockerfile', content: 'RUN corepack prepare pnpm@11.17.0 --activate' }],
+      'pnpm@11.17.0'
+    ),
+    []
+  );
+});
+
 test('installs pnpm 11 with a Node runtime and required frozen lockfile', () => {
   assert.equal(
     pnpmSetupOrderValid(
