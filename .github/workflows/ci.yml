@@ -128,8 +128,10 @@ jobs:
         run: |
           set -euo pipefail
           candidate_path="$RUNNER_TEMP/taskos-candidate-${GITHUB_SHA}.json"
+          # Pin generatedAt to the source commit so reruns of the same SHA are byte-for-byte reproducible.
           # Candidate mode is non-mutating and performs full schema/provenance/DAG validation.
-          pnpm tasks:sweep --candidate "$candidate_path"
+          source_date_epoch="$(git show -s --format=%ct "$GITHUB_SHA")"
+          SOURCE_DATE_EPOCH="$source_date_epoch" pnpm tasks:sweep --candidate "$candidate_path"
           TASKOS_CANDIDATE="$candidate_path" node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
           import { readFile } from 'node:fs/promises';

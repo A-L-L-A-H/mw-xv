@@ -135,15 +135,15 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 - [x] Required-source and duplicate-code checks in the importer.
 - [x] Deterministic projection interface for a fixed `generatedAt`.
 - [x] Global TaskOS mapping for Visual Universe task metadata and generated local projections.
-- [ ] Execute `pnpm test:taskos` on a real checkout.
+- [x] Run `pnpm test:taskos` in the unit-test job on exact-`dev` push and pull-request CI runs.
 - [x] Run source-backed TaskOS tests for all 627 records, duplicate IDs and source references.
-- [ ] Export the deterministic candidate and review the complete 1,358-to-627 reconciliation.
-- [ ] Restore `docs/tasks/tasks.json` once, from the reviewed projection.
-- [ ] Run `pnpm tasks:validate` and `pnpm automation:check:roadmap` against the selected canonical registry. Run `pnpm tasks:sweep --check` only after the candidate is deliberately applied.
-- [ ] Confirm Visual Universe `sync-task-state.mjs --check` reads the global registry and its local artifacts are byte-current.
-- [ ] Record exact-SHA evidence and only then declare TaskOS canonical.
+- [x] Export exact-`dev` candidate artifact 14780700916 and reconcile the complete 1,358-to-627 task-code identity set.
+- [ ] Obtain explicit data-owner approval, preserve the legacy registry as the rollback snapshot, and restore `docs/tasks/tasks.json` once from the accepted projection.
+- [ ] Run `pnpm tasks:validate` and `pnpm automation:check:roadmap` against the selected canonical registry after the approved migration. Run `pnpm tasks:sweep --check` only after the candidate is deliberately applied.
+- [ ] Confirm Visual Universe `sync-task-state.mjs --check` reads the global registry and its local artifacts are byte-current after migration.
+- [x] Record exact-SHA evidence for candidate generation/validation; canonical TaskOS status remains pending the approved write.
 
-**Do not describe TaskOS as restored until the empty registry has been populated, the real validation commands pass, and the exact candidate SHA is recorded.**
+**Do not describe TaskOS as migrated/canonical until the data owner approves the reconciled candidate, the one-time write is performed with a preserved rollback snapshot, and post-migration validators pass. The current 1,358-record legacy registry is populated and remains unchanged.**
 
 
 ## Visual Universe task-card preservation check — 2026-11-23
@@ -154,4 +154,15 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 - [x] Preserved the two task-specific legacy notes for W1-001 and W5-012 in a source-pinned notes addendum; 91 repeated generic atomicity notes remain in the immutable card archive.
 - [x] Added importer validation that re-reads every archived chunk, verifies Git blob SHA, exact path coverage and task-specific note text before accepting the Visual Universe source.
 - [x] Extracted pure TaskOS-driven Board/card renderers and added contract tests for per-criterion status, canonical notes, archived notes and honest missing-exit-code output.
-- [ ] Run `pnpm test:taskos` and the full CI suite on an exact, non-cancelled dev SHA. The legacy 1,358-record registry remains unchanged until the migration is reviewed and approved.
+- [x] Run `pnpm test:taskos` and the full CI suite on exact, non-cancelled dev SHA `${head}` (runs [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241)); all five jobs passed. The legacy 1,358-record registry remains unchanged until migration is reviewed and approved.
+
+
+## Exact development-head candidate evidence — 2026-11-23
+
+- Source: `dev` SHA `def3df35b5d54d7359600e0471af5a6dd4cb7f29`; push CI run [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869), artifact ID `14780700916`.
+- Candidate JSON SHA-256: `7be52787d8eacfde6d17ff2320c8d5a750ec410b802635125e0ebbd9057a2dc1`.
+- Candidate: 627 unique task IDs; source counts roadmap 239, WhatsApp 112, Desktop 128, archived open MW 7, AI Corporation PR lifecycle 14, Evolution 4, audit 14, Visual Universe 109.
+- Status counts: 468 done, 49 doing, 89 todo, 21 blocked.
+- Structural inspection: zero missing project references, source references, dependency IDs or block IDs; zero non-reciprocal edges; zero dependency cycles.
+- Exact-SHA push and PR CI each passed quality/build, unit tests (including TaskOS recovery candidate generation/validation), knowledge gate, DX, and PostgreSQL integration.
+- The canonical `docs/tasks/tasks.json` remains unchanged (1,358 records; blob SHA `d56499936761dcc062704d06588ee2679fd1aae2`). Candidate installation remains an explicit data-owner decision.

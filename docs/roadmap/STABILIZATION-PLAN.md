@@ -1,10 +1,11 @@
 # Current stabilization checkpoint — 2026-11-23 (Phase 0–6 closeout)
 
-- **Stable branch (`main`):** `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`; no main write, merge, force push, release or deployment.
-- **Development branch (`dev`):** implementation batch baseline `62e5ef656d58be11350e8a1d228da2205c5108eb`, 169 commits ahead of main and 0 behind at the last branch comparison. This checkpoint is source-SHA-bound; later documentation-only closeout commits may advance the branch.
-- **Promotion PR #37:** remains open, mergeable, and directed to `main`; CODEOWNER review by `bjo163` and separate M12.14 stable-release approval remain required. Promotion is not deployment.
-- **Toolchain correction in the implementation batch:** Docker Corepack now pins `pnpm@11.17.0`; `scripts/check-action-pins.mjs` includes Dockerfile in the pnpm drift check; a regression test covers the Docker pin. CI's candidate step now exports once in non-mutating `--candidate` mode and relies on the artifact rather than duplicating the projection or printing its Base64 payload.
-- **Current exact-SHA CI:** run [45087066909](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45087066909) verifies the code and TaskOS legacy-ID regression test at source SHA `379c130092faaab96b9f6e42b9ad1d28c67de08d`; it was still running at the audit snapshot. The follow-up closeout documentation commits require a final CI run on their own latest SHA. Re-fetch that final run before claiming completion. On previous SHA `33750563145315fabeb902c565a0a9075e85ea0f`, knowledge-gate, PostgreSQL integration, quality/build and DX jobs passed; TaskOS safety tests and unit-test build passed, but candidate export had not completed before that run was superseded.
+- **Stable branch (`main`):** `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`; unchanged. No merge, release or deployment was performed.
+- **Development branch (`dev`):** exact audited head `def3df35b5d54d7359600e0471af5a6dd4cb7f29` before this closeout commit. Development remains dev-first; no history rewrite or force push is used.
+- **Branch rules:** active `protect-dev` and `protect-main` rulesets. Both prohibit deletion/non-fast-forward updates; `main` additionally requires a PR and the `quality-and-build`, `unit-tests`, and `knowledge-gate` status checks. GitHub API access to the legacy branch-protection endpoint is restricted, but the active ruleset definitions were readable.
+- **Promotion PR #37:** remains open and mergeable, directed to `main`; CODEOWNER/release approval remains a separate gate. Promotion is not deployment.
+- **Toolchain correction:** Docker Corepack pins `pnpm@11.17.0`; `scripts/check-action-pins.mjs` checks Dockerfile; a regression test covers the exact Docker pin. CI candidate export is non-mutating and does not print the payload.
+- **Exact-SHA CI:** push run [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and PR run [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241) both completed all five jobs successfully against `def3df35b5d54d7359600e0471af5a6dd4cb7f29`: quality/build, unit tests (including `pnpm test:taskos` and candidate validation/upload), knowledge gate, DX and PostgreSQL integration.
 - **TaskOS source of truth:** the tracked `docs/tasks/tasks.json` is a valid 1,358-record legacy snapshot, not an empty file. 861 records still cite root `todo.md`, now a navigation pointer. The proposed source-backed projection is 627 records (468 done, 49 doing, 89 todo, 21 blocked). It has **not** been applied; 731 records of difference require a reviewed reconciliation and preserved backup.
 - **Recovery safety:** only export a candidate outside the worktree, review it, and retain the legacy snapshot. Do not run `--write`, TaskOS sync, or Visual Universe projection generation until migration is approved and validated.
 - **M13 / FLOW:** M13.09–M13.12 implementation and evidence exist. Full CI PostgreSQL integration passed on the earlier SHA; the new current-SHA CI is pending. The complete local Desktop journey still needs execution and evidence.
@@ -33,16 +34,17 @@
 - [x] No force push or history rewrite.
 - [ ] Reconfirm `main` and `dev` equality after future pushes.
 
-### S1 — TaskOS migration (P0, candidate generation implemented; test correction and migration review pending)
-- [x] Audited the exact Git blob: `docs/tasks/tasks.json` contains 1,358 valid JSON records; 861 legacy records still cite root `todo.md`, now a pointer.
-- [x] Inventory the current migration sources and counts in [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md), including the Visual Universe scoped task pack.
-- [x] Map source ownership: 627 candidate records across 8 source groups; root todo.md is a pointer, old completed lists remain historical, and Visual Universe metadata is preserved as a TaskOS project.
-- [ ] Rebuild registry from authoritative sources only; preserve stable task codes, status, dependencies, project/series, acceptance and provenance. Never synthesize 1,346 records from a count claim.
-- [x] Update schema/validator only as required; add an explicit empty-file guard and useful diagnostics before JSON parsing (implemented; tests added, hosted/local test execution pending).
-- [x] Rework the one-time importer: required-source fail-closed behavior, duplicate-ID rejection, fixed-timestamp deterministic output, lossless Visual Universe metadata, dry-run by default, and refusal to overwrite a populated registry.
-- [ ] Run automated validation for duplicate codes, unknown dependencies, DAG cycles, orphan references, status parity, source provenance and exact 627-record count. Static source inventory preflight found 627 unique IDs and no unknown roadmap/Visual Universe/AUD dependency references; CI/test execution is still required.
-- [ ] Run `pnpm test:taskos`, `pnpm tasks:sweep` (dry-run), `pnpm tasks:validate`, `pnpm tasks:sync` fail-closed tests and `pnpm automation:check:roadmap`; do not apply sync until review.
-- [ ] Record restoration evidence and exact SHA. Until then, TaskOS is **unavailable**, not authoritative.
+### S1 — TaskOS migration (P0, candidate validated; canonical write awaits explicit owner approval)
+- [x] Audited the exact Git blob: `docs/tasks/tasks.json` contains 1,358 valid legacy records; 861 old records cite root `todo.md`, now a pointer.
+- [x] Inventoried all eight authoritative source groups and built the non-mutating 627-record candidate with stable identities, statuses, dependencies, project metadata and provenance.
+- [x] Reconciled every candidate ID with the legacy registry: 504 shared, 854 completed historical records retained in the archive, and 123 new IDs; seven still-open legacy IDs are retained as blocked. No unidentified deletion remains.
+- [x] Implemented the empty/malformed registry guard, required-source fail-closed importer, duplicate-ID rejection, deterministic fixed-timestamp projection, lossless Visual Universe metadata and refusal to overwrite a populated canonical registry.
+- [x] Exact-SHA hosted CI passed `pnpm test:taskos`, candidate generation, schema/provenance/reference/dependency/DAG validation, and candidate upload on both push and PR runs for `def3df35b5d54d7359600e0471af5a6dd4cb7f29`.
+- [x] Independently inspected exact-`dev` artifact 14780700916: 627 unique IDs; expected state/source counts; zero missing project/source/dependency/block references; zero non-reciprocal edges or cycles.
+- [x] Preserved the original 1,358-record canonical file unchanged; its blob SHA remains `d56499936761dcc062704d06588ee2679fd1aae2`.
+- [ ] Obtain explicit data-owner acceptance of the 627-record candidate and backup/rollback plan before the one-time canonical write.
+- [ ] After approval only: apply once, then run `pnpm tasks:validate`, `pnpm automation:check:roadmap`, and Visual Universe projection checks against the newly canonical registry.
+- [ ] Do not describe TaskOS migration as complete until that approved write and post-migration validation succeed.
 
 ### S2 — Roadmap and Issue lifecycle reconciliation (P1)
 - [ ] Recompute task counts from `ROADMAP.md` and `docs/roadmap/tasks.json`; remove stale static totals.
@@ -96,7 +98,7 @@
 
 - Added `parseTasksRegistry()` in `scripts/tasks/validate-tasks.mjs`: empty/whitespace registry and malformed JSON now return a clear recovery diagnostic instead of an opaque JSON parse failure.
 - Added tests for empty, whitespace-only, malformed and valid JSON inputs in `scripts/tasks/validate-tasks.test.mjs`.
-- This is a fail-safe diagnostic fix only. **TaskOS is still unavailable**; no records were reconstructed, and sync/rebuild remains prohibited until provenance inventory is complete.
+- This historical checkpoint recorded only the fail-safe diagnostic change; no records were written at that time. Subsequent source inventory, candidate generation and exact-SHA validation are documented in the TaskOS recovery addendum below. The populated legacy registry remains untouched.
 - Validation execution was not possible in this remote edit session. Run `node --test scripts/tasks/validate-tasks.test.mjs` and `pnpm tasks:validate` on a checked-out dev candidate; the latter should fail safely with the recovery message until registry recovery.
 
 ## Consolidated SOT work — 2026-11-23
@@ -105,7 +107,7 @@
 - Task schema now requires `sourceRef.file` and supports lossless delegated metadata. Validator fails on empty/malformed files, missing source files, unknown project/dependency/block references, duplicate IDs and DAG cycles.
 - TaskOS sync now validates before any write. The one-time importer is fail-closed, defaults to dry-run and refuses to overwrite a populated registry.
 - The Visual Universe project is mapped into global TaskOS; its local `task.json`, `TASKS.md` and task cards are projections from the global registry. Local projection tests were added.
-- `pnpm test:taskos` is included in the unit-test runner, but has not yet been observed passing on a complete, non-cancelled exact-SHA CI run.
+- `pnpm test:taskos` passed in the unit-test job on both non-cancelled exact-SHA CI runs [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241), with the latter also exercising candidate build/validation/upload.
 - The existing 1,358-record legacy registry remains unchanged. No 627-record migration has been applied; TaskOS is not yet declared migrated.
 
 ## Additional implementation notes — 2026-11-23
@@ -125,3 +127,11 @@ Earlier zero-byte registry statements were incorrect for the exact dev tree. A d
 The initial isolated candidate implementation was added in `9a4d994` and CI was adjusted in `7efba2c`. Its first exact-head TaskOS test run exposed one defect in the new CLI output: the trailing newline was double-escaped and produced invalid JSON. The regression test caught this before build/unit tests or registry mutation. The newline correction is applied in the current stabilization patch; a fresh exact-SHA CI run must verify it.
 
 The 627-record candidate is not a canonical replacement until the complete old/new diff is reviewed and the previous 1,358-record registry is preserved.
+
+
+## Phase 0–1 exact-head verification addendum — 2026-11-23
+
+- Phase 0 remote acceptance is complete on `def3df35b5d54d7359600e0471af5a6dd4cb7f29`: branch rulesets were inspected; main remained unchanged; both push and pull-request CI completed all five jobs successfully.
+- Phase 1 candidate acceptance is complete on the same `dev` head: artifact [14780700916](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) contains 627 records (468 done / 49 doing / 89 todo / 21 blocked), all 627 IDs unique, and no missing project/source/dependency/block reference, non-reciprocal edge or cycle. Candidate JSON SHA-256: `7be52787d8eacfde6d17ff2320c8d5a750ec410b802635125e0ebbd9057a2dc1`.
+- The canonical registry is still the original 1,358-record blob `d56499936761dcc062704d06588ee2679fd1aae2`. The exact reduction is reconciled, but installation is intentionally awaiting the data owner's explicit acceptance and backup/rollback decision.
+- The CI candidate job now pins `SOURCE_DATE_EPOCH` to the timestamp of `GITHUB_SHA`; artifacts generated by reruns of the same source commit will therefore have stable generated timestamps.

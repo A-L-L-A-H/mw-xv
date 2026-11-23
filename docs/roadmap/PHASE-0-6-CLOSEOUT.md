@@ -3,23 +3,23 @@
 **Audit date:** 2026-11-23  
 **Repository:** `A-L-L-A-H/mw-xv`  
 **Target branch:** `dev`  
-**Implementation batch baseline:** `62e5ef656d58be11350e8a1d228da2205c5108eb`  
+**Audited development SHA before this closeout update:** `def3df35b5d54d7359600e0471af5a6dd4cb7f29`  
 **Stable baseline:** `main = 2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`
 
 This report separates work completed remotely from gates that require a real local runtime, a data-owner decision, or a CODEOWNER/release approval. It is not a declaration that the product is released.
 
 ## Executive status
 
-The remote stabilization batch is committed to `dev`. It fixes an exact pnpm version mismatch in Docker, extends the drift checker to cover Dockerfile, adds a regression test, and simplifies the TaskOS candidate CI path. The repository's main branch was not changed.
+The stabilization and TaskOS recovery implementation is committed to `dev`; `main` remains unchanged. Phase 0 is verified on exact development SHA `def3df35b5d54d7359600e0471af5a6dd4cb7f29`: both push CI [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and pull-request CI [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241) completed all five jobs successfully. Active `protect-dev` and `protect-main` rulesets are present; the main ruleset requires a PR and the `quality-and-build`, `unit-tests`, and `knowledge-gate` checks.
 
-**Not complete yet:** the 627-record TaskOS candidate has not been accepted as canonical; the full local Desktop workflow has not been run in the owner's checkout; and PR #37 / M12.14 remain human approval gates. CI run [45086573530](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45086573530) is the exact-SHA hosted verification to recheck before release claims.
+Phase 1's non-mutating 627-record candidate has been generated, inspected and reconciled against the existing 1,358-record registry. Its canonical installation is deliberately still gated on explicit data-owner acceptance and the preserved-backup/rollback decision. The full native Desktop FLOW walkthrough, PR #37 review and M12.14 release approval remain separate owner-controlled gates.
 
 ## Phase register
 
 | Phase | Scope | Verified outcome | Remaining acceptance |
 |---|---|---|---|
-| **0 — Stabilization** | Branch, CI, toolchain and safety baseline | `main` unchanged; development remains dev-first; Docker pins Corepack to `pnpm@11.17.0`; checker scans Dockerfile; regression test added; candidate CI no longer duplicates the export or prints its full payload to logs | Recheck all jobs on the new exact SHA; preserve protected branch/release rules |
-| **1 — TaskOS recovery** | Rebuild from source provenance without data loss | Source inventory, fail-closed validator, deterministic isolated candidate mode, and TaskOS safety tests exist. Legacy registry is valid JSON with 1,358 records; candidate design has 627 records | Obtain candidate artifact; inspect every 1,358→627 difference; preserve a byte-for-byte legacy backup; obtain maintainer acceptance; only then perform one-time migration and rerun validators |
+| **0 — Stabilization** | Branch, CI, toolchain and safety baseline | `main` untouched; only `main` and `dev` are used; active branch rulesets prohibit deletion/non-fast-forward updates; main requires PR plus `quality-and-build`, `unit-tests`, and `knowledge-gate`; Docker/Corepack pnpm pin and drift regression test are in place; exact-SHA push and PR CI both pass all five jobs | **Remote Phase 0 complete.** Preserve the existing branch and release gates; no production deployment is implied |
+| **1 — TaskOS recovery** | Rebuild from source provenance without data loss | Exact-`dev` candidate artifact is validated: 627 unique IDs; 468 done, 49 doing, 89 todo, 21 blocked; all 8 source groups accounted for; zero missing project/source/dependency/block references, non-reciprocal edges or cycles; full legacy-to-candidate ID reconciliation is recorded | Candidate preparation and validation complete. Canonical replacement remains blocked until the owner explicitly accepts the 627-record projection and backup/rollback plan; then run post-migration validators and projection checks |
 | **2 — Governance and documentation** | Roadmap, issue lifecycle, runtime support and canonical docs | Stabilization/active checkpoints refreshed; source-of-truth and review boundaries documented; runtime configuration cross-checked against upstream documentation | Formal maintainer refresh/sign-off of overdue runtime ledger entries; reconcile issue projections from exact evidence; do not mass-close issues |
 | **3 — ROCKSOUL FLOW integration** | Repo Radar → Overlap → Plan → Packet → Dispatch → Worktree → Proof → Review → Sync | M13.09–M13.12 code/evidence exists; Board/Desktop boundary and server-authority contracts are documented; previous exact-SHA PostgreSQL integration lane passed | Local native Desktop end-to-end walkthrough with real isolated worktree; verify scope rejection, lease/fencing, redaction, human review and server-only acceptance |
 | **4 — Roadmap completion** | Evidence-led task completion | M13.09–M13.12 are already recorded complete in the M13 roadmap and have evidence files; no duplicate implementation was started | Keep other M/K tasks at their actual source state; update status only with test/evidence proof; close M13 issue projections only after the full journey is accepted |
@@ -46,7 +46,7 @@ The source-backed migration design contains **627 records**:
 
 Expected candidate state distribution: **468 done, 49 doing, 89 todo, 21 blocked**.
 
-A complete identity check has already reconciled the 861 legacy rows whose `sourceRef.file` was the root `todo.md`: all 854 legacy `done` IDs match the 854 checked entries in the archived checklist, and all 7 legacy `todo` IDs match the 7 unchecked archive entries, with zero missing/extra IDs. The seven retained open IDs are `MW-CFG-003.3`, `MW-CICD-002`, `MW-CICD-002.3`, `MW-CICD-004`, `MW-CICD-004.2`, `MW-CICD-004.3`, and `MW-DOC-004.3`; they map to `blocked` pending re-triage. Legacy blob SHA: `d56499936761dcc062704d06588ee2679fd1aae2`; archive blob SHA: `f29ec364530195484f668287c5616bf91984554f`. A regression test for this exact mapping is now committed, pending hosted execution.
+A complete identity check has already reconciled the 861 legacy rows whose `sourceRef.file` was the root `todo.md`: all 854 legacy `done` IDs match the 854 checked entries in the archived checklist, and all 7 legacy `todo` IDs match the 7 unchecked archive entries, with zero missing/extra IDs. The seven retained open IDs are `MW-CFG-003.3`, `MW-CICD-002`, `MW-CICD-002.3`, `MW-CICD-004`, `MW-CICD-004.2`, `MW-CICD-004.3`, and `MW-DOC-004.3`; they map to `blocked` pending re-triage. Legacy blob SHA: `d56499936761dcc062704d06588ee2679fd1aae2`; archive blob SHA: `f29ec364530195484f668287c5616bf91984554f`. A regression test for this exact mapping is committed and passed in the exact-SHA unit-test job on both push and pull-request CI runs [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241).
 
 The 731-record difference is a reconciliation problem, not permission to delete. Do not:
 - replace `docs/tasks/tasks.json` with the 627-record candidate without a complete diff review and preserved legacy copy;
@@ -54,24 +54,30 @@ The 731-record difference is a reconciliation problem, not permission to delete.
 - run `pnpm tasks:sync` or regenerate Visual Universe task projections before the canonical migration passes validation and receives owner approval;
 - promote archived checklist rows to ready work without re-triage.
 
-## Final TaskOS candidate verification — 2026-11-23
+## Exact development-head TaskOS candidate verification — 2026-11-23
 
-The hosted CI run [45087443105](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45087443105) completed all five jobs successfully: quality/build, knowledge gate, DX, PostgreSQL integration, and unit tests. It also passed `pnpm test:action-pins`, `pnpm test:taskos`, isolated candidate generation and candidate upload.
+The non-cancelled push CI run [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and pull-request CI run [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241) both tested the exact `dev` head `def3df35b5d54d7359600e0471af5a6dd4cb7f29`. All five jobs passed in each run: quality/build, unit tests, knowledge gate, DX and PostgreSQL integration. The unit-test job ran `pnpm test:taskos`, built the workspace, ran unit tests, generated the candidate in non-mutating mode, validated it and uploaded the artifact.
 
-Candidate artifact ID: `14779558473`, generated from synthetic PR merge tree `0ac65eb3df98a3c8a9d416dfcd9696e1410ad6da` (PR head `c433aad30da0e2593245ae375b532859f3b1f851` into base `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`). The uncompressed candidate JSON SHA-256 is `46b3a89d31ed2079da598f12844d918d21a98bcc0f47a1912cd807b1e462f388`; the downloaded artifact ZIP SHA-256 is `6d0a5cf549b062223c9f677ab90de948e4beafa8f8fb05f785aa4ea00cea11eb`.
+Exact development-head candidate:
+- Workflow artifact: [14780700916](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) (`taskos-candidate-def3df35b5d54d7359600e0471af5a6dd4cb7f29`).
+- Candidate JSON SHA-256: `7be52787d8eacfde6d17ff2320c8d5a750ec410b802635125e0ebbd9057a2dc1`.
+- Downloaded artifact ZIP SHA-256: `75e926dd4d2f27cb64aff50ccbb2a05c7352cd7d690f3276cd0b879f9e85a2a7`.
+- Candidate metadata: `moonwitness-tasks/v2`, schema `2.0.0`, 627 task records, 627 unique task codes.
+- State counts: 468 `done`, 49 `doing`, 89 `todo`, 21 `blocked`.
+- Source groups: roadmap 239; WhatsApp 112; Desktop 128; archived open MW 7; AI Corporation PR lifecycle 14; Evolution 4; audit 14; Visual Universe 109.
+- Structural inspection: 0 missing project references, source references, dependency IDs or block IDs; 0 non-reciprocal edges; 0 dependency cycles.
 
-The complete task-code comparison is reconciled:
+The exact-`dev` candidate's task records, project metadata and schema match the previously reviewed 627-record candidate; only the generated timestamp differs because the CI job previously used wall-clock time. The workflow is being amended in this closeout to derive `SOURCE_DATE_EPOCH` from the source commit timestamp, making the artifact reproducible for a fixed commit.
 
+The full legacy-to-candidate identity reconciliation remains:
 - Legacy registry: 1,358 unique codes.
 - Shared legacy/candidate identities: 504.
-- Excluded from the active candidate: exactly 854 legacy `done` records, all from the stale root-`todo.md` source reference. They remain historical evidence in the archived checklist and untouched legacy snapshot.
-- Added to candidate: 123 new identities (14 AI Corporation PR lifecycle + 109 Visual Universe).
-- The seven open legacy IDs are all retained with their source moved to the archived checklist and status mapped from `todo` to `blocked` pending re-triage.
-- Total: `1,358 - 854 + 123 = 627`.
+- Excluded: exactly 854 legacy `done` records with the stale root-`todo.md` source reference; they remain in the archived checklist and untouched legacy registry snapshot.
+- Added: 123 new identities (14 AI Corporation PR lifecycle + 109 Visual Universe).
+- The seven open legacy IDs remain in the candidate as `blocked`, pending re-triage.
+- Arithmetic: `1,358 - 854 + 123 = 627`.
 
-Independent inspection of the candidate found no duplicate codes, missing projects or provenance, unresolved dependency/block IDs, non-reciprocal dependency edges or graph cycles. The full detailed inventory is in [RECOVERY-INVENTORY.md](../tasks/RECOVERY-INVENTORY.md).
-
-**This is a passed candidate-generation and validation gate, not a migration approval.** The current canonical registry remains the original 1,358-record file. The owner must review and accept the 627-record candidate and a preserved backup/rollback plan before any canonical write.
+**Phase 1 candidate and reconciliation work is complete; canonical migration is not yet authorized.** Do not replace `docs/tasks/tasks.json`, run the one-time importer with `--write`, run TaskOS sync, or regenerate Visual Universe projections until the data owner accepts the precise candidate and backup/rollback plan. After approval, apply once and rerun `pnpm tasks:validate`, `pnpm automation:check:roadmap`, and the Visual Universe projection check against the new canonical registry.
 
 ## Runtime and toolchain notes
 
