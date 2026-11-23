@@ -24,11 +24,7 @@ import {
   isValidSha256,
   isValidStorageKey,
 } from './validation.js';
-import {
-  evaluateProofGateV2,
-  isRecord,
-  requireAiCompanyContext,
-} from './ai-http-helpers.js';
+import { evaluateProofGateV2, isRecord, requireAiCompanyContext } from './ai-http-helpers.js';
 
 export const AI_DESKTOP_SYNC_ROUTE_PREFIXES = ['/api/ai', '/ai'] as const;
 
@@ -575,7 +571,13 @@ export const aiDesktopSyncHttpPlugin: AddonHttpPlugin = async (app, options) => 
           ? body.correlationId.trim()
           : `corr-${envelopeId}`;
       const modelName = typeof body.modelName === 'string' ? body.modelName : 'ai.agent_run';
-      const allowedRunStatuses = new Set(['pending', 'running', 'completed', 'failed', 'cancelled']);
+      const allowedRunStatuses = new Set([
+        'pending',
+        'running',
+        'completed',
+        'failed',
+        'cancelled',
+      ]);
       const runStatus = (
         typeof body.runStatus === 'string' && allowedRunStatuses.has(body.runStatus)
           ? body.runStatus

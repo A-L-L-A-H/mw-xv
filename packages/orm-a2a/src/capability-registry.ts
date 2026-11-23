@@ -254,12 +254,18 @@ export function findA2aCapabilityCandidates(
 
   return registry.capabilityClaims
     .filter((claim) => claim.capabilityCode === capabilityCode)
-    .filter((claim) => claim.status === 'active' || (filter.includeStandby === true && claim.status === 'standby'))
+    .filter(
+      (claim) =>
+        claim.status === 'active' || (filter.includeStandby === true && claim.status === 'standby')
+    )
     .filter((claim) => onlineNodeIds.has(claim.nodeId))
     .filter((claim) => activeAgentIds.has(claim.agentId))
     .filter((claim) => allowedNodeIds === null || allowedNodeIds.has(claim.nodeId))
     .filter((claim) => !excludedNodeIds.has(claim.nodeId))
-    .sort((left, right) => right.confidence - left.confidence || left.claimId.localeCompare(right.claimId));
+    .sort(
+      (left, right) =>
+        right.confidence - left.confidence || left.claimId.localeCompare(right.claimId)
+    );
 }
 
 export function resolveA2aCapability(

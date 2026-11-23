@@ -78,10 +78,17 @@ function buildTenantAad(tenantId: string, keyId: string, artifactId?: string): B
   if (!keyId.trim()) {
     throw new Error('keyId must be non-empty for AAD binding');
   }
-  return Buffer.from(`mw-vault:v1|tenant=${tenantId}|key=${keyId}|artifact=${artifactId ?? ''}`, 'utf8');
+  return Buffer.from(
+    `mw-vault:v1|tenant=${tenantId}|key=${keyId}|artifact=${artifactId ?? ''}`,
+    'utf8'
+  );
 }
 
-function gcmEncrypt(key: Buffer, plaintext: Uint8Array, aad: Buffer): {
+function gcmEncrypt(
+  key: Buffer,
+  plaintext: Uint8Array,
+  aad: Buffer
+): {
   iv: Buffer;
   authTag: Buffer;
   ciphertext: Buffer;
@@ -159,7 +166,10 @@ export function decryptArtifactEnvelope(
   if (envelope.tenantId !== options.expectedTenantId) {
     throw new Error('Envelope tenantId does not match expectedTenantId');
   }
-  if (options.expectedArtifactId !== undefined && envelope.artifactId !== options.expectedArtifactId) {
+  if (
+    options.expectedArtifactId !== undefined &&
+    envelope.artifactId !== options.expectedArtifactId
+  ) {
     throw new Error('Envelope artifactId does not match expectedArtifactId');
   }
   if (!envelope.encryptedDekBase64 || !envelope.dekIvBase64 || !envelope.dekAuthTagBase64) {
@@ -237,7 +247,9 @@ export function buildChunkManifest(
   return { manifest, chunkStore };
 }
 
-export type ChunkResolver = (sha256: string) => Buffer | Uint8Array | undefined | Promise<Buffer | Uint8Array | undefined>;
+export type ChunkResolver = (
+  sha256: string
+) => Buffer | Uint8Array | undefined | Promise<Buffer | Uint8Array | undefined>;
 
 /**
  * Verifies chunk manifest integrity:
@@ -278,7 +290,9 @@ export async function verifyChunkManifest(
     }
     const actualSha = createHash('sha256').update(buf).digest('hex');
     if (actualSha !== entry.sha256) {
-      errors.push(`Chunk ${entry.index} digest mismatch: expected ${entry.sha256}, got ${actualSha}`);
+      errors.push(
+        `Chunk ${entry.index} digest mismatch: expected ${entry.sha256}, got ${actualSha}`
+      );
       continue;
     }
     verifiedChunks += 1;

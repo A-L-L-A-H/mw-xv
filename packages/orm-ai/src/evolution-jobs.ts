@@ -49,14 +49,11 @@ import {
 
 export const AI_EVOLUTION_CYCLE_JOB = 'ai.evolution_cycle@v1' as const;
 export const AI_OBLIGATION_SWEEP_JOB = 'ai.obligation_sweep@v1' as const;
-export const AI_M16_SLEEP_DREAM_CONSOLIDATION_JOB =
-  'ai.m16.sleep_dream_consolidation@v1' as const;
-export const AI_M16_REDTEAM_ARENA_SWEEP_JOB =
-  'ai.m16.redteam_arena_sweep@v1' as const;
+export const AI_M16_SLEEP_DREAM_CONSOLIDATION_JOB = 'ai.m16.sleep_dream_consolidation@v1' as const;
+export const AI_M16_REDTEAM_ARENA_SWEEP_JOB = 'ai.m16.redteam_arena_sweep@v1' as const;
 export const AI_M15_EPISTEMIC_CALIBRATION_AUDIT_JOB =
   'ai.m15.epistemic_calibration_audit@v1' as const;
-export const AI_M17_INCIDENT_HEALER_SWEEP_JOB =
-  'ai.m17.incident_healer_sweep@v1' as const;
+export const AI_M17_INCIDENT_HEALER_SWEEP_JOB = 'ai.m17.incident_healer_sweep@v1' as const;
 
 export type AgiScheduledJobName =
   | typeof AI_EVOLUTION_CYCLE_JOB
@@ -103,7 +100,8 @@ export const AGI_CRON_SCHEDULES: readonly AgiCronScheduleDefinition[] = [
   {
     jobName: AI_M16_REDTEAM_ARENA_SWEEP_JOB,
     cronExpression: '0 4 * * *',
-    description: 'Execute adversarial red-team arena sweep and anchor audit leaf in Merkle transparency log.',
+    description:
+      'Execute adversarial red-team arena sweep and anchor audit leaf in Merkle transparency log.',
     requiresHumanApproval: true,
     automatedPromotionAllowed: false,
     automatedSelfMerge: false,
@@ -111,7 +109,8 @@ export const AGI_CRON_SCHEDULES: readonly AgiCronScheduleDefinition[] = [
   {
     jobName: AI_M15_EPISTEMIC_CALIBRATION_AUDIT_JOB,
     cronExpression: '0 */6 * * *',
-    description: 'Compute Brier/ECE epistemic calibration metrics and derive bounded autonomy policy.',
+    description:
+      'Compute Brier/ECE epistemic calibration metrics and derive bounded autonomy policy.',
     requiresHumanApproval: true,
     automatedPromotionAllowed: false,
     automatedSelfMerge: false,
@@ -119,7 +118,8 @@ export const AGI_CRON_SCHEDULES: readonly AgiCronScheduleDefinition[] = [
   {
     jobName: AI_M17_INCIDENT_HEALER_SWEEP_JOB,
     cronExpression: '*/15 * * * *',
-    description: 'Synthesize redacted incident healing proposals and fuzz-verify candidate policy invariants.',
+    description:
+      'Synthesize redacted incident healing proposals and fuzz-verify candidate policy invariants.',
     requiresHumanApproval: true,
     automatedPromotionAllowed: false,
     automatedSelfMerge: false,
@@ -179,9 +179,7 @@ function assertPositiveCompanyId(companyId: number, label: string): void {
   }
 }
 
-export function runEvolutionCycleJob(
-  input: EvolutionCycleJobInput
-): EvolutionCycleJobResult {
+export function runEvolutionCycleJob(input: EvolutionCycleJobInput): EvolutionCycleJobResult {
   assertPositiveCompanyId(input.companyId, 'companyId');
   if (input.synthesis.companyId !== input.companyId) {
     throw new Error('Cross-company evolution cycle job is forbidden');
@@ -234,19 +232,13 @@ export function runEvolutionCycleJob(
   };
 }
 
-export function runObligationSweepJob(
-  input: ObligationSweepJobInput
-): ObligationSweepJobResult {
+export function runObligationSweepJob(input: ObligationSweepJobInput): ObligationSweepJobResult {
   assertPositiveCompanyId(input.companyId, 'companyId');
   if (input.worldSnapshot.companyId !== input.companyId) {
     throw new Error('Cross-company obligation sweep job is forbidden');
   }
 
-  const report = evaluateObligationDrift(
-    input.obligations,
-    input.worldSnapshot,
-    input.options
-  );
+  const report = evaluateObligationDrift(input.obligations, input.worldSnapshot, input.options);
   const driftedCount = report.evaluations.filter(
     (evaluation) => evaluation.status !== 'intact'
   ).length;
@@ -312,10 +304,7 @@ export function runSleepDreamConsolidationJob(
     nowIso: input.nowIso,
   });
 
-  const remProbeReport = runRemDreamSelfProbe(
-    input.knowledgeNodes ?? [],
-    input.skillNodes ?? []
-  );
+  const remProbeReport = runRemDreamSelfProbe(input.knowledgeNodes ?? [], input.skillNodes ?? []);
 
   const semanticCandidateCount = nonRemReport.semanticCandidates.length;
   const probeCount = remProbeReport.probes.length;
@@ -393,10 +382,7 @@ export function runRedTeamArenaSweepJob(
     automatedSelfMerge: false,
   };
 
-  const allAuditEvents: readonly unknown[] = [
-    ...(input.priorAuditEvents ?? []),
-    auditLeaf,
-  ];
+  const allAuditEvents: readonly unknown[] = [...(input.priorAuditEvents ?? []), auditLeaf];
   const merkleAuditTree = buildMerkleAuditTree(allAuditEvents);
   const inclusionProof = generateMerkleInclusionProof(
     merkleAuditTree,
@@ -462,10 +448,7 @@ export function runEpistemicCalibrationAuditJob(
     input.predictions,
     input.calibrationOptions
   );
-  const autonomyPolicy = deriveDynamicAutonomyPolicy(
-    calibrationReport,
-    input.policyThresholds
-  );
+  const autonomyPolicy = deriveDynamicAutonomyPolicy(calibrationReport, input.policyThresholds);
   const driftDetected = autonomyPolicy.mode !== 'standard';
 
   const auditSha256 = sha256Hex(

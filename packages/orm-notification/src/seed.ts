@@ -52,7 +52,8 @@ const CHANNELS: readonly NotificationChannelSeed[] = [
   {
     code: 'email',
     label: 'Email',
-    description: 'Delivers durable correspondence and approval records to verified company mailboxes.',
+    description:
+      'Delivers durable correspondence and approval records to verified company mailboxes.',
     enabled: true,
     supportsDigest: true,
     defaultSeverity: 'low',
@@ -60,7 +61,8 @@ const CHANNELS: readonly NotificationChannelSeed[] = [
   {
     code: 'whatsapp',
     label: 'WhatsApp business inbox',
-    description: 'Routes inbound business messages and critical operational escalations through the company inbox.',
+    description:
+      'Routes inbound business messages and critical operational escalations through the company inbox.',
     enabled: true,
     supportsDigest: false,
     defaultSeverity: 'high',
@@ -68,7 +70,8 @@ const CHANNELS: readonly NotificationChannelSeed[] = [
   {
     code: 'webhook',
     label: 'Signed webhook',
-    description: 'Forwards machine-readable events to HTTPS endpoints with deterministic retry identity.',
+    description:
+      'Forwards machine-readable events to HTTPS endpoints with deterministic retry identity.',
     enabled: true,
     supportsDigest: false,
     defaultSeverity: 'medium',
@@ -193,7 +196,9 @@ export async function seedNotificationInitialData(
   let insertedTemplates = 0;
 
   for (const template of bundle.templates) {
-    const existing = await db(NotificationTemplate.tableName).where({ code: template.code }).first('id');
+    const existing = await db(NotificationTemplate.tableName)
+      .where({ code: template.code })
+      .first('id');
     if (existing) continue;
 
     await db(NotificationTemplate.tableName).insert({

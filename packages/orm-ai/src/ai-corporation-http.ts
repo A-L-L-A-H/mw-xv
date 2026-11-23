@@ -77,7 +77,9 @@ interface ProjectTaskDependencyLike {
 
 interface DynamicModelQuery {
   where(clause: Record<string, unknown>): DynamicModelQuery;
-  andWhere(cb: (qb: { where(c: Record<string, unknown>): { orWhereNull(col: string): void } }) => void): DynamicModelQuery;
+  andWhere(
+    cb: (qb: { where(c: Record<string, unknown>): { orWhereNull(col: string): void } }) => void
+  ): DynamicModelQuery;
   whereIn(col: string, values: readonly number[]): DynamicModelQuery;
   orderBy(col: string, dir: 'asc' | 'desc'): DynamicModelQuery;
   findOne(clause: Record<string, unknown>): Promise<Record<string, unknown> | undefined>;
@@ -449,8 +451,7 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
       const mutation = {
         company_id: ctx.companyId,
         code: normalizeSlugCode(body.code ?? body.name, 'provider'),
-        name:
-          typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'AI Provider',
+        name: typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'AI Provider',
         kind: (typeof body.kind === 'string' ? body.kind : 'mock') as ProviderKind,
         ...(typeof body.endpoint_url === 'string' ? { endpoint_url: body.endpoint_url } : {}),
         secret_ref: secretRef,
@@ -1018,9 +1019,7 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
             error: 'worktree_lease companyId does not match active company',
           });
         }
-        const leaseToken = Number(
-          rawWorktreeLease.fencingToken ?? rawWorktreeLease.fencing_token
-        );
+        const leaseToken = Number(rawWorktreeLease.fencingToken ?? rawWorktreeLease.fencing_token);
         if (!Number.isSafeInteger(leaseToken) || leaseToken < 1) {
           return reply.code(422).send({
             success: false,
@@ -1293,9 +1292,7 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
         ...(typeof body.origin_artifact_id === 'number'
           ? { origin_artifact_id: body.origin_artifact_id }
           : {}),
-        ...(typeof body.owner_agent_id === 'number'
-          ? { owner_agent_id: body.owner_agent_id }
-          : {}),
+        ...(typeof body.owner_agent_id === 'number' ? { owner_agent_id: body.owner_agent_id } : {}),
         owner_user_id: typeof body.owner_user_id === 'number' ? body.owner_user_id : ctx.userId,
         scope_json: typeof body.scope_json === 'string' ? body.scope_json : '{}',
         trigger_kind: (typeof body.trigger_kind === 'string'

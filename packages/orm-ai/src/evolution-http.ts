@@ -1,8 +1,4 @@
-import type {
-  AddonHttpPlugin,
-  AddonHttpReply,
-  AddonHttpRequestBase,
-} from '@moonwitness/orm';
+import type { AddonHttpPlugin, AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
 import {
   evaluateObligationDrift,
   synthesizeEvolutionCandidates,
@@ -247,10 +243,7 @@ function parseObligations(value: unknown): MonitorObligationRecord[] | null {
     if (entry.expectedRepoGitSha !== undefined && typeof entry.expectedRepoGitSha !== 'string') {
       return null;
     }
-    if (
-      entry.expectedTrackedFiles !== undefined &&
-      !isStringRecord(entry.expectedTrackedFiles)
-    ) {
+    if (entry.expectedTrackedFiles !== undefined && !isStringRecord(entry.expectedTrackedFiles)) {
       return null;
     }
     if (
@@ -311,10 +304,7 @@ function parseObligationScanBody(body: unknown, companyId: number): ObligationSc
   if (snapshot.repoGitSha !== undefined && typeof snapshot.repoGitSha !== 'string') {
     return { ok: false, status: 400, error: 'Invalid worldSnapshot.repoGitSha' };
   }
-  if (
-    snapshot.trackedFilesSha256 !== undefined &&
-    !isStringRecord(snapshot.trackedFilesSha256)
-  ) {
+  if (snapshot.trackedFilesSha256 !== undefined && !isStringRecord(snapshot.trackedFilesSha256)) {
     return { ok: false, status: 400, error: 'Invalid worldSnapshot.trackedFilesSha256' };
   }
   if (
@@ -323,7 +313,8 @@ function parseObligationScanBody(body: unknown, companyId: number): ObligationSc
   ) {
     return { ok: false, status: 400, error: 'Invalid worldSnapshot.dependencyManifestsSha256' };
   }
-  const paasNodes = snapshot.paasNodes === undefined ? undefined : parsePaasNodes(snapshot.paasNodes);
+  const paasNodes =
+    snapshot.paasNodes === undefined ? undefined : parsePaasNodes(snapshot.paasNodes);
   if (snapshot.paasNodes !== undefined && !paasNodes) {
     return { ok: false, status: 400, error: 'Invalid worldSnapshot.paasNodes' };
   }
@@ -335,9 +326,7 @@ function parseObligationScanBody(body: unknown, companyId: number): ObligationSc
       companyId,
       ...(typeof snapshot.observedAt === 'string' ? { observedAt: snapshot.observedAt } : {}),
       ...(typeof snapshot.repoGitSha === 'string' ? { repoGitSha: snapshot.repoGitSha } : {}),
-      ...(snapshot.trackedFilesSha256
-        ? { trackedFilesSha256: snapshot.trackedFilesSha256 }
-        : {}),
+      ...(snapshot.trackedFilesSha256 ? { trackedFilesSha256: snapshot.trackedFilesSha256 } : {}),
       ...(snapshot.dependencyManifestsSha256
         ? { dependencyManifestsSha256: snapshot.dependencyManifestsSha256 }
         : {}),

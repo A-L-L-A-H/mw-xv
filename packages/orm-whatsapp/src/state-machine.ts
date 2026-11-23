@@ -33,7 +33,10 @@ export interface AccountTransitionResult {
 }
 
 const ALLOWED_TRANSITIONS: Readonly<
-  Record<WhatsAppLifecycleState, Readonly<Partial<Record<WhatsAppLifecycleEvent, WhatsAppLifecycleState>>>>
+  Record<
+    WhatsAppLifecycleState,
+    Readonly<Partial<Record<WhatsAppLifecycleEvent, WhatsAppLifecycleState>>>
+  >
 > = {
   uninitialized: {
     QR_ISSUED: 'qr_pending',
@@ -100,8 +103,7 @@ const ALLOWED_TRANSITIONS: Readonly<
 
 export function isWhatsAppLifecycleState(value: unknown): value is WhatsAppLifecycleState {
   return (
-    typeof value === 'string' &&
-    (WHATSAPP_LIFECYCLE_STATES as readonly string[]).includes(value)
+    typeof value === 'string' && (WHATSAPP_LIFECYCLE_STATES as readonly string[]).includes(value)
   );
 }
 
@@ -136,11 +138,7 @@ export function transitionAccountState(
  * returned when a device slot is missing or evicted on the gateway.
  */
 export type NormalizedGowaErrorCategory =
-  | 'device_missing'
-  | 'rate_limited'
-  | 'auth_blocked'
-  | 'gateway_unavailable'
-  | 'client_error';
+  'device_missing' | 'rate_limited' | 'auth_blocked' | 'gateway_unavailable' | 'client_error';
 
 export interface NormalizedGowaError {
   readonly category: NormalizedGowaErrorCategory;
@@ -169,10 +167,7 @@ const AUTH_BLOCKED_PATTERNS = [
   /unauthorized\s+device/iu,
 ];
 
-export function normalizeGowaError(
-  error: unknown,
-  detailText?: string
-): NormalizedGowaError {
+export function normalizeGowaError(error: unknown, detailText?: string): NormalizedGowaError {
   const statusCode = error instanceof GowaError ? error.statusCode : 502;
   const upstreamCode = error instanceof GowaError ? error.upstreamCode : undefined;
   const rawMessage = [
@@ -215,10 +210,7 @@ export function normalizeGowaError(
     };
   }
 
-  if (
-    statusCode === 403 ||
-    AUTH_BLOCKED_PATTERNS.some((pattern) => pattern.test(rawMessage))
-  ) {
+  if (statusCode === 403 || AUTH_BLOCKED_PATTERNS.some((pattern) => pattern.test(rawMessage))) {
     return {
       category: 'auth_blocked',
       httpStatus: 403,
@@ -280,13 +272,9 @@ export interface OrphanDeviceRepairPlan {
   readonly reason: string;
 }
 
-export function planOrphanDeviceRepair(
-  input: OrphanDeviceCheckInput
-): OrphanDeviceRepairPlan {
-  const trackedActive =
-    input.dbStatus === 'connected' || input.dbStatus === 'reconnecting';
-  const missingInGateway =
-    !input.deviceId || !input.gatewayDeviceIds.includes(input.deviceId);
+export function planOrphanDeviceRepair(input: OrphanDeviceCheckInput): OrphanDeviceRepairPlan {
+  const trackedActive = input.dbStatus === 'connected' || input.dbStatus === 'reconnecting';
+  const missingInGateway = !input.deviceId || !input.gatewayDeviceIds.includes(input.deviceId);
   const unlinkedInGateway = input.gatewayDeviceConnected === false;
 
   if (!trackedActive || (!missingInGateway && !unlinkedInGateway)) {
