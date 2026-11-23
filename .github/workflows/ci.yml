@@ -127,7 +127,7 @@ jobs:
         run: |
           set -euo pipefail
           candidate_path="$RUNNER_TEMP/taskos-candidate-${GITHUB_SHA}.json"
-          pnpm tasks:sweep
+          # Candidate mode is non-mutating and performs full schema/provenance/DAG validation.
           pnpm tasks:sweep --candidate "$candidate_path"
           TASKOS_CANDIDATE="$candidate_path" node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
@@ -145,10 +145,6 @@ jobs:
           console.log('Validated 627 isolated TaskOS candidate records; canonical registry was not changed.');
           NODE
           echo "candidate_generated=true" >> "$GITHUB_OUTPUT"
-          echo "TASKOS_CANDIDATE_BEGIN"
-          base64 -w0 "$candidate_path"
-          echo
-          echo "TASKOS_CANDIDATE_END"
       - name: Upload the source-validated TaskOS recovery candidate
         if: always() && steps.taskos-recovery.outputs.candidate_generated == 'true'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
