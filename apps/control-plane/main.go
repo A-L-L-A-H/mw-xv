@@ -176,6 +176,7 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 	// PaaS node agent endpoints (authenticated via X-Control-Plane-Token or Bearer).
 	paasMgr := NewPaasManager(db, dockerBin, NewMeshManagerFromEnv(dockerBin), nil, nil)
 	paasMgr.MountRoutes(mux, adminToken)
+	RegisterGitBuilderRoutes(mux, paasMgr, adminToken)
 
 	// A2A peer-to-peer mesh federation endpoint (authenticated via HMAC-SHA256 envelope + private mesh IP).
 	a2aMgr := NewA2AManagerFromEnv()

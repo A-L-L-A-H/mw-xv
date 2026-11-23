@@ -23,15 +23,20 @@ import { Company, CompanyMembership, Partner, User } from '@moonwitness/orm-base
 import { projectHttpPlugin } from '@moonwitness/orm-project';
 import { workflowHttpPlugin } from '@moonwitness/orm-workflow';
 import {
+  PAAS_TEMPLATE_CATALOG,
   controlMeshPaasApp,
   deployViaMoonWitnessMesh,
+  evaluateMeshFailoverPlan,
   fetchMeshNodeMetrics,
   listMeshPaasApps,
+  type ActiveTenantDeployment,
   type MeshPaasAppAction,
+  type MeshVpsNode,
 } from '@moonwitness/orm-cloud';
 import { A2AProtocolError } from '@moonwitness/ai-runtime';
 import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moonwitness/types';
 import { A2AMeshClient } from './a2a-client.js';
+import { searchHybridLocalMemory, type HybridMemoryRecord } from './hybrid-memory.js';
 import { DESKTOP_ADDONS, LocalSidecarController } from './local-sidecar.js';
 import { importDesktopTasks } from './importer.js';
 import { buildVpsJoinCommand, ensureMeshCredentials } from './mesh-autopilot.js';
@@ -1868,6 +1873,134 @@ export async function startLocalApiServer(
         error: message,
       });
     }
+  });
+
+  // POST /api/desktop/memory/search — Hybrid Local Memory (BM25 + Ollama cosine rerank)
+  // Active in BOTH workspace and developer modes.
+  app.post('/api/desktop/memory/search', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const query = typeof body.query === 'string' ? body.query.trim() : '';
+    if (!query) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_MEMORY_SEARCH_REQUEST',
+        error: 'query is required',
+      });
+    }
+
+    const rawRecords = Array.isArray(body.records) ? body.records : [];
+    const records: HybridMemoryRecord[] = [];
+    for (const item of rawRecords) {
+      if (!isRecord(item)) continue;
+      const id = typeof item.id === 'string' ? item.id.trim() : '';
+      const title = typeof item.title === 'string' ? item.title : '';
+      const textBody = typeof item.body === 'string' ? item.body : '';
+      const rawKind = typeof item.kind === 'string' ? item.kind : 'document';
+      const kind: HybridMemoryRecord['kind'] =
+        rawKind === 'document' || rawKind === 'task' || rawKind === 'run_note'
+          ? rawKind
+          : 'document';
+      const companyId =
+        typeof item.companyId === 'number' && Number.isSafeInteger(item.companyId)
+          ? item.companyId
+          : req.auth.companyId;
+      if (!id) continue;
+      records.push({
+        id,
+        companyId,
+        kind,
+        title,
+        body: textBody,
+        ...(Array.isArray(item.tags)
+          ? { tags: item.tags.filter((tag): tag is string => typeof tag === 'string') }
+          : {}),
+        ...(typeof item.updatedAt === 'string' ? { updatedAt: item.updatedAt } : {}),
+      });
+    }
+
+    const limit =
+      typeof body.limit === 'number' && Number.isFinite(body.limit) && body.limit > 0
+        ? Math.floor(body.limit)
+        : undefined;
+    const ollamaEndpoint =
+      typeof body.ollamaEndpoint === 'string' && body.ollamaEndpoint.trim().length > 0
+        ? body.ollamaEndpoint.trim()
+        : undefined;
+    const embeddingModel =
+      typeof body.embeddingModel === 'string' && body.embeddingModel.trim().length > 0
+        ? body.embeddingModel.trim()
+        : undefined;
+    const timeoutMs =
+      typeof body.timeoutMs === 'number' && Number.isFinite(body.timeoutMs) && body.timeoutMs > 0
+        ? Math.floor(body.timeoutMs)
+        : undefined;
+
+    const result = await searchHybridLocalMemory({
+      companyId: req.auth.companyId,
+      query,
+      records,
+      ...(limit !== undefined ? { limit } : {}),
+      ...(ollamaEndpoint !== undefined ? { ollamaEndpoint } : {}),
+      ...(embeddingModel !== undefined ? { embeddingModel } : {}),
+      ...(timeoutMs !== undefined ? { timeoutMs } : {}),
+    });
+    return { success: true, data: result };
+  });
+
+  // GET /api/desktop/paas/templates — 1-Click PaaS Template Catalog (DX mode only)
+  app.get('/api/desktop/paas/templates', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    return {
+      success: true,
+      data: {
+        templates: PAAS_TEMPLATE_CATALOG,
+      },
+    };
+  });
+
+  // POST /api/desktop/paas/failover-plan — Multi-VPS EasyTier Mesh HA Failover Plan (DX mode only)
+  app.post('/api/desktop/paas/failover-plan', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    if (!Array.isArray(body.nodes) || !Array.isArray(body.deployments)) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_FAILOVER_PLAN_REQUEST',
+        error: 'nodes and deployments arrays are required',
+      });
+    }
+
+    const nodes = body.nodes as readonly MeshVpsNode[];
+    const deployments = body.deployments as readonly ActiveTenantDeployment[];
+    const minStandbyHeadroomMb =
+      typeof body.minStandbyHeadroomMb === 'number' && Number.isFinite(body.minStandbyHeadroomMb)
+        ? body.minStandbyHeadroomMb
+        : undefined;
+    const maxCpuLoadPercent =
+      typeof body.maxCpuLoadPercent === 'number' && Number.isFinite(body.maxCpuLoadPercent)
+        ? body.maxCpuLoadPercent
+        : undefined;
+
+    const plan = evaluateMeshFailoverPlan({
+      nodes,
+      deployments,
+      ...(minStandbyHeadroomMb !== undefined ? { minStandbyHeadroomMb } : {}),
+      ...(maxCpuLoadPercent !== undefined ? { maxCpuLoadPercent } : {}),
+    });
+    return { success: true, data: plan };
   });
 
   // POST /_desktop/rpc protected by ephemeral x-mw-desktop-token

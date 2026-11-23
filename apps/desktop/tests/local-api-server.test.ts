@@ -574,6 +574,43 @@ describe('LocalApiServer & Desktop Importer', () => {
     const a2aBlockedBody = (await a2aDelegateBlocked.json()) as { code: string };
     expect(a2aBlockedBody.code).toBe('WORKSPACE_MODE_RESTRICTED');
 
+    // Hybrid memory search is ACTIVE in workspace mode
+    const memorySearchWorkspace = await fetch(`${daemon.apiUrl}/api/desktop/memory/search`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        query: 'postgresql mesh backup',
+        records: [
+          {
+            id: 'doc-1',
+            kind: 'document',
+            title: 'PostgreSQL Mesh Backup',
+            body: 'Automated WAL backup over EasyTier private mesh.',
+          },
+        ],
+      }),
+    });
+    expect(memorySearchWorkspace.status).toBe(200);
+    const memorySearchWorkspaceBody = (await memorySearchWorkspace.json()) as {
+      success: boolean;
+      data: { hits: Array<{ id: string }> };
+    };
+    expect(memorySearchWorkspaceBody.success).toBe(true);
+    expect(memorySearchWorkspaceBody.data.hits[0]?.id).toBe('doc-1');
+
+    // PaaS templates & failover-plan are BLOCKED (403) in workspace mode
+    const templatesBlocked = await fetch(`${daemon.apiUrl}/api/desktop/paas/templates`, {
+      headers: authHeaders,
+    });
+    expect(templatesBlocked.status).toBe(403);
+
+    const failoverBlocked = await fetch(`${daemon.apiUrl}/api/desktop/paas/failover-plan`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ nodes: [], deployments: [] }),
+    });
+    expect(failoverBlocked.status).toBe(403);
+
     // 4. Switch to developer mode -> VPS status & mesh client endpoints unlock
     const devSwitch = await fetch(`${daemon.apiUrl}/api/desktop/mode`, {
       method: 'POST',
@@ -618,5 +655,80 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(a2aPublicRejected.status).toBe(400);
     const a2aPublicBody = (await a2aPublicRejected.json()) as { code: string };
     expect(a2aPublicBody.code).toBe('PUBLIC_ENDPOINT_FORBIDDEN');
+
+    // Hybrid memory search remains active in developer mode
+    const memorySearchDev = await fetch(`${daemon.apiUrl}/api/desktop/memory/search`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        query: 'mesh failover',
+        records: [
+          {
+            id: 'doc-2',
+            kind: 'run_note',
+            title: 'Mesh Failover Runbook',
+            body: 'Promote healthy standby node on degraded primary.',
+          },
+        ],
+      }),
+    });
+    expect(memorySearchDev.status).toBe(200);
+
+    // PaaS templates catalog unlocked in developer mode
+    const templatesDev = await fetch(`${daemon.apiUrl}/api/desktop/paas/templates`, {
+      headers: authHeaders,
+    });
+    expect(templatesDev.status).toBe(200);
+    const templatesDevBody = (await templatesDev.json()) as {
+      success: boolean;
+      data: { templates: Array<{ id: string }> };
+    };
+    expect(templatesDevBody.success).toBe(true);
+    expect(templatesDevBody.data.templates.length).toBeGreaterThanOrEqual(6);
+
+    // Mesh HA failover-plan unlocked in developer mode
+    const failoverDev = await fetch(`${daemon.apiUrl}/api/desktop/paas/failover-plan`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        nodes: [
+          {
+            nodeId: 'vps-1',
+            meshIp: '10.144.0.1',
+            region: 'sg',
+            healthy: false,
+            dockerStatus: 'offline',
+            availableRamMb: 0,
+            cpuLoadPercent: 100,
+          },
+          {
+            nodeId: 'vps-2',
+            meshIp: '10.144.0.2',
+            region: 'sg',
+            healthy: true,
+            dockerStatus: 'running',
+            availableRamMb: 4096,
+            cpuLoadPercent: 20,
+          },
+        ],
+        deployments: [
+          {
+            deploymentId: 'dep-1',
+            tenantId: 'tenant-1',
+            appSlug: 'api-core',
+            primaryNodeId: 'vps-1',
+            requiredRamMb: 512,
+          },
+        ],
+      }),
+    });
+    expect(failoverDev.status).toBe(200);
+    const failoverDevBody = (await failoverDev.json()) as {
+      success: boolean;
+      data: { actions: Array<{ kind: string }>; failClosed: boolean };
+    };
+    expect(failoverDevBody.success).toBe(true);
+    expect(failoverDevBody.data.failClosed).toBe(false);
+    expect(failoverDevBody.data.actions.some((a) => a.kind === 'failover_deploy')).toBe(true);
   });
 });

@@ -19,6 +19,10 @@ import {
   SignalIcon,
   WarningIcon,
 } from '@moonwitness/ui/icons';
+import {
+  PaasTemplateCatalog,
+  type PaasTemplateDefinition,
+} from './paas-template-catalog';
 
 export interface PaasStudioNodeMetrics {
   readonly nodeId: string;
@@ -68,6 +72,7 @@ export function PaasStudioPanel({
   const [desktopModeAvailable, setDesktopModeAvailable] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const [deploying, setDeploying] = useState<boolean>(false);
+  const [deployingTemplateId, setDeployingTemplateId] = useState<string | null>(null);
   const [busyAppId, setBusyAppId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -121,6 +126,37 @@ export function PaasStudioPanel({
   useEffect(() => {
     void refreshState();
   }, [refreshState]);
+
+  const handleDeployTemplate = useCallback(
+    async (template: PaasTemplateDefinition) => {
+      setDeployingTemplateId(template.id);
+      setErrorMessage(null);
+      setFeedback(null);
+      try {
+        const response = await fetch(`${normalizedBase}/apps/deploy`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            slug: template.id,
+            image: template.image,
+            port: template.defaultPort,
+            tenant,
+          }),
+        });
+        if (!response.ok) {
+          setErrorMessage(`Template deploy failed for ${template.name} (HTTP ${response.status}).`);
+          return;
+        }
+        setFeedback(`Deployed ${template.name} (${template.image}) to tenant ${tenant}.`);
+        await refreshState();
+      } catch {
+        setErrorMessage(`Unable to deploy template ${template.name}.`);
+      } finally {
+        setDeployingTemplateId(null);
+      }
+    },
+    [normalizedBase, refreshState, tenant]
+  );
 
   const handleDeploy = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -421,6 +457,11 @@ export function PaasStudioPanel({
           </div>
         )}
       </Panel>
+
+      <PaasTemplateCatalog
+        deployingTemplateId={deployingTemplateId}
+        onDeployTemplate={handleDeployTemplate}
+      />
 
       {activeLogs ? (
         <Panel

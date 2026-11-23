@@ -60,3 +60,23 @@ export {
   type TenantPaasQuotaDecision,
   type TenantPaasQuotaInput,
 } from './quota.js';
+export {
+  PAAS_TEMPLATE_CATALOG,
+  buildDeployParamsFromTemplate,
+  getPaasTemplateById,
+  type BuildTemplateDeployInput,
+  type PaasTemplateCategory,
+  type PaasTemplateDefinition,
+  type PaasTemplateId,
+} from './templates.js';
+export {
+  evaluateMeshFailoverPlan,
+  type ActiveTenantDeployment,
+  type MeshDockerStatus,
+  type MeshFailoverAction,
+  type MeshFailoverActionKind,
+  type MeshFailoverAlert,
+  type MeshFailoverPlan,
+  type MeshFailoverPlanInput,
+  type MeshVpsNode,
+} from './mesh-ha.js';
