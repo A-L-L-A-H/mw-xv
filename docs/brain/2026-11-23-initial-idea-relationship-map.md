@@ -79,3 +79,61 @@ Do not resolve these by inference. Keep them `UNRESOLVED` until the original sou
 No new GitHub issue is created by this initial map. Existing issues #15–#22 already cover the identified product, editorial, visual, research and concept proposals; #27 covers source-repository preservation. New execution tasks should be added only after checking those issues and the canonical TaskOS workflow in `docs/roadmap/ISSUE-SYNC-CONTRACT.md`.
 
 **Next valid step:** source-by-source intake and evidence-backed triage. Do not mark the wider archive complete on the basis of this map.
+
+
+## 8. Existing story, character and canon archive — reuse, do not recreate
+
+The following public research documents already exist in the target. They are valuable source maps, but their own status warnings must travel with every downstream record:
+
+- [Narrative archive index](../knowledge/narratives/INDEX.md)
+- [V10.1 expanded narrative](../knowledge/narratives/MASTER_NARRATIVE_V10_1_EXPANDED.md)
+- [V10 public draft / 99-chapter index](../knowledge/narratives/MASTER_NARRATIVE_V10_PUBLIC_DRAFT.md)
+- [Source crosswalk](../knowledge/narratives/SOURCE_CROSSWALK_V10.md)
+- [Historical progress ledger](../knowledge/narratives/PROGRESS_LEDGER_2023_2026.md)
+- [V10 recovery gaps](../knowledge/narratives/RECOVERY_GAPS_V10.md)
+- [Revelation / witness / canon / edition identity contract](../knowledge/revelation-identity.md)
+
+**Status warning:** V10.1 explicitly describes itself as a public expanded research edition, not the original V9/V10 transcript and not approved final canon. Its private-source leads are not permission to retrieve, reconstruct or publish missing manuscripts. The 2023–2025 chronology contains historical leads, not a forensic timeline.
+
+### Story structure already documented
+
+The public narrative source records:
+- A 99-chapter V10 editorial index and a 16-part V10.1 expanded companion.
+- MoonWitness II as a story / witness platform concept with the sequence `CAPTURE → CONNECT → WITNESS → UNDERSTAND → PRESERVE → PROMOTE → MOVE FORWARD`.
+- Thirteen named functions: Storytelling, Exposure, Change Advisory Board, Chasing Heart, Lovestruck, Breath Electric, Seduction, Fault Lines, Villain of the Story, Witness Archive, Sanity’s Last Breath, Past Presence and Promoting.
+- Eight era labels: BEFORE LIGHT, THE ARRIVAL, THE WITNESS, THE RUNAWAYS, THE EXPOSURE, THE CHANGE, END OF AN ERA and NEXT PHASE.
+
+These are `REPOSITORY-DOCUMENTED` editorial / lore records, not automatically a released product, verified external history or final author-approved canon. Retain their original files and their status labels.
+
+### Character and alias handling
+
+The public V10.1 text contains character candidates including THE SHADOW (number 00), A LAH / THE BOSS, DOGS FROM UNIVERSE, THE BLUE WITCH, DJ DAVID and other II / XII-era names. It lists multiple alias candidates and explicitly warns that alias similarity does not establish identity.
+
+Use `UNKNOWN` / `UNRESOLVED` when identity is not evidenced. Keep persona, alias, appearance, source passage and identity decision as separate records. Do not combine names because they resemble each other or a real / religious figure.
+
+### Existing unresolved continuity and source gaps
+
+The V10 recovery-gap register already lists, among others:
+- `00-MAIN GOD PROMISE` versus ROCKSOUL as distinct source leads requiring original-source recovery.
+- World Patch #014 wording conflict: FAMILY WITHOUT FEAR versus THE WRONG WAY / HELLROAD.
+- The Batteries four books and NPD 24:27 / 24:37 / 25:50 source and page-order gaps.
+- Candidate alias conflicts across THE SHADOW, DOGS FROM UNIVERSE, ROCKSOUL, 4-LAH and WALTER variants.
+- ZILL shadow-optics research versus ZILL tasawuf narrative as separate source leads.
+- MYLUFT / MA’LŪF / AL-WADŪD / Honey / Queen R terminology requiring source separation.
+- The distinction between historical dates, observation times, writing times and later corrections.
+
+Preserve the gap register as a review queue. Do not convert it into new duplicate issues without checking the crosswalk and existing TaskOS tasks.
+
+### Religious reference identity
+
+The existing identity contract differentiates:
+- `RevelationIdentity` — named revelation identity;
+- `TextualWitness` — a specific source-backed textual witness;
+- `Canon` — a tradition-scoped canon / collection classification;
+- `Edition` — a publication or representation of a textual witness.
+
+These are not interchangeable. Canon membership does not prove revelation identity; textual similarity does not establish identity equivalence. Preserve the source's evidence and version before any interpretive relationship is accepted.
+
+### Archive decision
+
+No second Story Bible, Character Bible or canon database is created here. The files above remain the source-backed public narrative archive. The new intake and this map act only as a navigation layer connecting current user-provided concepts to the existing evidence and unresolved gaps.
