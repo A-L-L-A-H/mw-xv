@@ -54,6 +54,25 @@ The 731-record difference is a reconciliation problem, not permission to delete.
 - run `pnpm tasks:sync` or regenerate Visual Universe task projections before the canonical migration passes validation and receives owner approval;
 - promote archived checklist rows to ready work without re-triage.
 
+## Final TaskOS candidate verification — 2026-11-23
+
+The hosted CI run [45087443105](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45087443105) completed all five jobs successfully: quality/build, knowledge gate, DX, PostgreSQL integration, and unit tests. It also passed `pnpm test:action-pins`, `pnpm test:taskos`, isolated candidate generation and candidate upload.
+
+Candidate artifact ID: `14779558473`, generated from synthetic PR merge tree `0ac65eb3df98a3c8a9d416dfcd9696e1410ad6da` (PR head `c433aad30da0e2593245ae375b532859f3b1f851` into base `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`). The uncompressed candidate JSON SHA-256 is `46b3a89d31ed2079da598f12844d918d21a98bcc0f47a1912cd807b1e462f388`; the downloaded artifact ZIP SHA-256 is `6d0a5cf549b062223c9f677ab90de948e4beafa8f8fb05f785aa4ea00cea11eb`.
+
+The complete task-code comparison is reconciled:
+
+- Legacy registry: 1,358 unique codes.
+- Shared legacy/candidate identities: 504.
+- Excluded from the active candidate: exactly 854 legacy `done` records, all from the stale root-`todo.md` source reference. They remain historical evidence in the archived checklist and untouched legacy snapshot.
+- Added to candidate: 123 new identities (14 AI Corporation PR lifecycle + 109 Visual Universe).
+- The seven open legacy IDs are all retained with their source moved to the archived checklist and status mapped from `todo` to `blocked` pending re-triage.
+- Total: `1,358 - 854 + 123 = 627`.
+
+Independent inspection of the candidate found no duplicate codes, missing projects or provenance, unresolved dependency/block IDs, non-reciprocal dependency edges or graph cycles. The full detailed inventory is in [RECOVERY-INVENTORY.md](../tasks/RECOVERY-INVENTORY.md).
+
+**This is a passed candidate-generation and validation gate, not a migration approval.** The current canonical registry remains the original 1,358-record file. The owner must review and accept the 627-record candidate and a preserved backup/rollback plan before any canonical write.
+
 ## Runtime and toolchain notes
 
 The source review supports the configured Node 24 + pnpm 11 combination: Node 24 is LTS, and pnpm 11 supports Node 24. pnpm 12 is now the current line, but it should be evaluated as a separate controlled upgrade rather than adopted implicitly. PostgreSQL 16 remains supported; upstream lists 16.16 as current minor and 2028-11-09 as its final release date. Playwright's published requirements include Node 24 and Ubuntu 24.04. GitHub's migration of `ubuntu-latest` to Ubuntu 26.04 was scheduled to complete by 2026-11-19, so retaining an explicit `ubuntu-24.04` pin avoids an unreviewed runner change.
