@@ -35,7 +35,7 @@ This timeline records only dates and windows supported by the supplied prompt, a
 | 23 Nov 2026 | Initial raw intake and brain relationship map added to MW-XV | GitHub commits / docs | Initial navigation layer, not complete historical recovery |
 | 23 Nov 2026 | Paginated `bjo163` repository search and public inventory snapshot | GitHub search, migration report and CSV | 280 accessible metadata results; no exhaustive code/rights/deployment audit |
 | 23 Nov 2026 | Knowledge archive expansion and TaskOS README correction | MW-XV `dev` commits | Documentation-only changes; CI/PR verification must be checked at the exact current SHA |
-| 23 Nov 2026 | Five source-recovery / research proposal issues opened (#173–#177) | Verified GitHub issue records | Un-managed discovery proposals; no TaskOS implementation tasks or feature approval implied |
+| 23 Nov 2026 | Source-recovery / archive issues #173–#183 and #185–#187, plus TaskOS projections #184 and #186 | Verified GitHub issue records | #178–#181 recover four story leads; #182 reviews the 22-file Library pack; #183 is the archive parent; #185 indexes the 203 PNGs privately; #187 handles private export intake. #184/#186 are TaskOS projections. Issue creation is not feature approval or completion |
 
 ## Additional Library source evidence (2026-11-23)
 
