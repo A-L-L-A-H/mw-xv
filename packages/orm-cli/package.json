@@ -1,0 +1,25 @@
+{
+  "name": "@moonwitness/orm-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "db:seed": "./dist/seed-runner.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/seed-runner.ts"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "knex": "^3.1.0",
+    "@moonwitness/orm-base": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
