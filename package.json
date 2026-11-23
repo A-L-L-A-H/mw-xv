@@ -2,6 +2,7 @@
   "name": "moonwitness-monorepo",
   "private": true,
   "version": "1.0.0-rc.1",
+  "license": "ISC",
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter @moonwitness/ui build && node scripts/run-local-services.mjs dev",
