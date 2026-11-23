@@ -115,7 +115,7 @@ function cssDeclarations(source, onDeclaration, onBlock) {
 
 function hasLiteralColor(value) {
   const code = maskCss(value);
-  if (/(?:^|[^\w-])#(?:[\da-f]{8}|[\da-f]{6}|[\da-f]{4}|[\da-f]{3})(?![\da-f\w-])/i.test(code))
+  if (/(?:^|[^\w-])#(?:[\da-f]{8}|[\da-f]{6}|[\da-f]{4}|[\da-f]{3})(?![\w-])/i.test(code))
     return true;
   if (/(?<![\w-])(?:white|black)(?![\w-])/i.test(code)) return true;
   const colors = /\b(?:rgba?|hsla?|oklch)\s*\(/gi;
