@@ -731,4 +731,158 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(failoverDevBody.data.failClosed).toBe(false);
     expect(failoverDevBody.data.actions.some((a) => a.kind === 'failover_deploy')).toBe(true);
   });
+
+  it('exposes M16 Sovereign Dreaming endpoints with workspace vs developer mode boundaries', async () => {
+    const tempHome = makeTempDir('mw-desktop-m16-');
+    const sqlitePath = path.join(tempHome, 'local.db');
+    writeFileSync(path.join(tempHome, 'mode.json'), JSON.stringify({ mode: 'workspace' }), 'utf8');
+
+    const daemon = await startDesktopSidecarDaemon({
+      repoRoot: process.cwd(),
+      desktopHomeDir: tempHome,
+      sqlitePath,
+      boardOrigin: 'http://127.0.0.1:5173',
+      apiBaseUrl: 'http://127.0.0.1:4242',
+      healthPort: 0,
+      apiPort: 0,
+      offlineMode: true,
+      installAddonsOnStart: true,
+    });
+    handles.push(daemon);
+
+    const loginRes = await fetch(`${daemon.apiUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ login: 'local', password: 'local-offline-session' }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginBody = (await loginRes.json()) as { data: { access_token: string } };
+    const authHeaders = {
+      authorization: `Bearer ${loginBody.data.access_token}`,
+      'content-type': 'application/json',
+    };
+
+    // 1. Sleep-Dream works in workspace mode
+    const sleepWs = await fetch(`${daemon.apiUrl}/api/desktop/ai/sleep-dream`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        companyId: '1',
+        nowIso: '2026-11-23T10:00:00.000Z',
+        memories: [
+          {
+            memoryId: 'mem-1',
+            companyId: '1',
+            topicKey: 'deploy-policy',
+            content: 'Always run deterministic gates before push.',
+            provenance: 'session-1',
+            createdAtIso: '2026-11-22T10:00:00.000Z',
+            importanceBps: 8500,
+            retrievalConfidenceBps: 9000,
+          },
+        ],
+        knowledgeNodes: [
+          {
+            nodeId: 'kn-1',
+            companyId: '1',
+            domain: 'security',
+            claim: 'Unverified local cache assumption',
+            verified: false,
+            confidenceBps: 4000,
+            evidenceCount: 0,
+          },
+        ],
+        skillNodes: [],
+      }),
+    });
+    expect(sleepWs.status).toBe(200);
+    const sleepWsBody = (await sleepWs.json()) as {
+      success: boolean;
+      data: {
+        nonRem: { survivingCount: number; automatedSelfAccept: boolean };
+        rem: { probes: unknown[] };
+      };
+    };
+    expect(sleepWsBody.success).toBe(true);
+    expect(sleepWsBody.data.nonRem.survivingCount).toBe(1);
+    expect(sleepWsBody.data.nonRem.automatedSelfAccept).toBe(false);
+    expect(sleepWsBody.data.rem.probes.length).toBeGreaterThanOrEqual(1);
+
+    // 2. Active Inference works in workspace mode
+    const efeWs = await fetch(`${daemon.apiUrl}/api/desktop/ai/active-inference`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        candidates: [
+          {
+            actionId: 'probe-docs',
+            kind: 'epistemic_action',
+            label: 'Read verification gate',
+            goalAlignmentBps: 7000,
+            successProbabilityBps: 9000,
+            priorUncertaintyBps: 8000,
+            expectedPosteriorUncertaintyBps: 2000,
+            reversible: true,
+          },
+        ],
+      }),
+    });
+    expect(efeWs.status).toBe(200);
+    const efeWsBody = (await efeWs.json()) as {
+      success: boolean;
+      data: { selectedActionId: string; automatedSelfAccept: boolean };
+    };
+    expect(efeWsBody.success).toBe(true);
+    expect(efeWsBody.data.selectedActionId).toBe('probe-docs');
+    expect(efeWsBody.data.automatedSelfAccept).toBe(false);
+
+    // 3. Merkle Audit Root works in workspace mode
+    const merkleWs = await fetch(`${daemon.apiUrl}/api/desktop/audit/merkle-root`, {
+      method: 'GET',
+      headers: authHeaders,
+    });
+    expect(merkleWs.status).toBe(200);
+    const merkleWsBody = (await merkleWs.json()) as {
+      success: boolean;
+      data: { rootHash: string; rfc6962DomainSeparated: boolean; leafCount: number };
+    };
+    expect(merkleWsBody.success).toBe(true);
+    expect(merkleWsBody.data.rootHash).toMatch(/^[0-9a-f]{64}$/u);
+    expect(merkleWsBody.data.rfc6962DomainSeparated).toBe(true);
+    expect(merkleWsBody.data.leafCount).toBeGreaterThanOrEqual(1);
+
+    // 4. Red-Team Arena blocked in workspace mode (403 WORKSPACE_MODE_RESTRICTED)
+    const redteamWs = await fetch(`${daemon.apiUrl}/api/desktop/ai/redteam-arena`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({}),
+    });
+    expect(redteamWs.status).toBe(403);
+    const redteamWsBody = (await redteamWs.json()) as { code: string };
+    expect(redteamWsBody.code).toBe('WORKSPACE_MODE_RESTRICTED');
+
+    // Switch to developer mode
+    const switchRes = await fetch(`${daemon.apiUrl}/api/desktop/mode`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ mode: 'developer' }),
+    });
+    expect(switchRes.status).toBe(200);
+
+    // Red-Team Arena unlocked in developer mode
+    const redteamDev = await fetch(`${daemon.apiUrl}/api/desktop/ai/redteam-arena`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({}),
+    });
+    expect(redteamDev.status).toBe(200);
+    const redteamDevBody = (await redteamDev.json()) as {
+      success: boolean;
+      data: { totalScenarios: number; defensePassRateBps: number; automatedSelfAccept: boolean };
+    };
+    expect(redteamDevBody.success).toBe(true);
+    expect(redteamDevBody.data.totalScenarios).toBeGreaterThanOrEqual(6);
+    expect(redteamDevBody.data.defensePassRateBps).toBe(10000);
+    expect(redteamDevBody.data.automatedSelfAccept).toBe(false);
+  });
 });

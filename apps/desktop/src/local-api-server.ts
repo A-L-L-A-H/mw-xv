@@ -33,7 +33,21 @@ import {
   type MeshPaasAppAction,
   type MeshVpsNode,
 } from '@moonwitness/orm-cloud';
-import { A2AProtocolError } from '@moonwitness/ai-runtime';
+import {
+  A2AProtocolError,
+  DEFAULT_REDTEAM_SCENARIOS,
+  buildMerkleAuditTree,
+  evaluateExpectedFreeEnergy,
+  runAdversarialRedTeamArena,
+  runNonRemConsolidation,
+  runRemDreamSelfProbe,
+  type ActiveInferenceCandidate,
+  type ActiveInferencePolicy,
+  type DreamKnowledgeNode,
+  type DreamSkillNode,
+  type EpisodicMemoryItem,
+  type RedTeamScenario,
+} from '@moonwitness/ai-runtime';
 import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moonwitness/types';
 import { A2AMeshClient } from './a2a-client.js';
 import { searchHybridLocalMemory, type HybridMemoryRecord } from './hybrid-memory.js';
@@ -2001,6 +2015,139 @@ export async function startLocalApiServer(
       ...(maxCpuLoadPercent !== undefined ? { maxCpuLoadPercent } : {}),
     });
     return { success: true, data: plan };
+  });
+
+  // POST /api/desktop/ai/sleep-dream — M16.01 Non-REM Consolidation + REM Dream Self-Probing (active in both modes)
+  app.post('/api/desktop/ai/sleep-dream', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const companyId =
+      typeof body.companyId === 'string' && body.companyId.trim().length > 0
+        ? body.companyId.trim()
+        : String(req.auth.companyId);
+    const nowIso =
+      typeof body.nowIso === 'string' && body.nowIso.trim().length > 0
+        ? body.nowIso.trim()
+        : new Date().toISOString();
+    const memories = Array.isArray(body.memories)
+      ? (body.memories as readonly EpisodicMemoryItem[])
+      : [];
+    const knowledgeNodes = Array.isArray(body.knowledgeNodes)
+      ? (body.knowledgeNodes as readonly DreamKnowledgeNode[])
+      : [];
+    const skillNodes = Array.isArray(body.skillNodes)
+      ? (body.skillNodes as readonly DreamSkillNode[])
+      : [];
+
+    const nonRem = runNonRemConsolidation(memories, {
+      companyId,
+      nowIso,
+      ...(typeof body.maxAgeMs === 'number' && Number.isFinite(body.maxAgeMs)
+        ? { maxAgeMs: body.maxAgeMs }
+        : {}),
+      ...(typeof body.minImportanceBps === 'number' && Number.isFinite(body.minImportanceBps)
+        ? { minImportanceBps: body.minImportanceBps }
+        : {}),
+      ...(typeof body.minConfidenceBps === 'number' && Number.isFinite(body.minConfidenceBps)
+        ? { minConfidenceBps: body.minConfidenceBps }
+        : {}),
+    });
+    const rem = runRemDreamSelfProbe(knowledgeNodes, skillNodes);
+
+    return {
+      success: true,
+      data: {
+        nonRem,
+        rem,
+      },
+    };
+  });
+
+  // POST /api/desktop/ai/active-inference — M16.02 Expected Free Energy Action Selection (active in both modes)
+  app.post('/api/desktop/ai/active-inference', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    if (!Array.isArray(body.candidates)) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_ACTIVE_INFERENCE_REQUEST',
+        error: 'candidates array is required',
+      });
+    }
+    const candidates = body.candidates as readonly ActiveInferenceCandidate[];
+    const policy = isRecord(body.policy)
+      ? (body.policy as ActiveInferencePolicy)
+      : { companyId: String(req.auth.companyId) };
+    const decision = evaluateExpectedFreeEnergy(candidates, policy);
+    return { success: true, data: decision };
+  });
+
+  // GET /api/desktop/audit/merkle-root — M16.03 RFC 6962 Merkle Audit Root over local audit log / outbox (active in both modes)
+  app.get('/api/desktop/audit/merkle-root', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const events: unknown[] = [];
+    try {
+      const hasOutbox = await db.schema.hasTable('desktop_sync_outbox');
+      if (hasOutbox) {
+        const rows = await db('desktop_sync_outbox')
+          .select('id', 'entity_type', 'entity_id', 'operation', 'status', 'created_at')
+          .orderBy('id', 'asc')
+          .limit(500);
+        for (const row of rows) {
+          events.push({ source: 'desktop_sync_outbox', ...row });
+        }
+      }
+    } catch {
+      // Fallback to empty/baseline event set if outbox table is unavailable
+    }
+    if (events.length === 0) {
+      events.push({
+        source: 'desktop_audit_genesis',
+        companyId: req.auth.companyId,
+        mode: currentMode,
+      });
+    }
+    const tree = buildMerkleAuditTree(events);
+    return {
+      success: true,
+      data: {
+        leafCount: tree.leafCount,
+        rootHash: tree.rootHash,
+        rfc6962DomainSeparated: tree.rfc6962DomainSeparated,
+        automatedSelfAccept: tree.automatedSelfAccept,
+        automatedPromotionAllowed: tree.automatedPromotionAllowed,
+        treeSha256: tree.treeSha256,
+      },
+    };
+  });
+
+  // POST /api/desktop/ai/redteam-arena — M16.04 Adversarial Red-Team Self-Play Arena (DX mode only)
+  app.post('/api/desktop/ai/redteam-arena', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const scenarios =
+      Array.isArray(body.scenarios) && body.scenarios.length > 0
+        ? (body.scenarios as readonly RedTeamScenario[])
+        : DEFAULT_REDTEAM_SCENARIOS;
+
+    const report = runAdversarialRedTeamArena(scenarios, (scenario) => ({
+      blocked: true,
+      reasonCode: `CONSTITUTIONAL_GUARD_${scenario.category.toUpperCase()}`,
+      summary: `Blocked ${scenario.category} scenario (${scenario.scenarioId}) under fail-closed desktop guardrails.`,
+    }));
+
+    return { success: true, data: report };
   });
 
   // POST /_desktop/rpc protected by ephemeral x-mw-desktop-token

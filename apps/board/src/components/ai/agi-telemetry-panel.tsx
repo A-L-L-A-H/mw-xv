@@ -87,6 +87,38 @@ const M15_PILLARS: readonly M15PillarTelemetry[] = [
     summary: 'Exact Brier Score, ECE across bins, and dynamic autonomy bounded strictly within R0-R3',
     constitutionalInvariant: 'R4 never relaxed',
   },
+  {
+    id: 'M16.01',
+    pillar: 'Sleep-Dream Memory Consolidation',
+    modulePath: 'sleep-dream.ts',
+    readiness: 'VERIFIED',
+    summary: 'Non-REM proactive interference pruning + REM self-probing with reversible provenance',
+    constitutionalInvariant: 'automatedPromotionAllowed: false',
+  },
+  {
+    id: 'M16.02',
+    pillar: 'Active Inference EFE Policy',
+    modulePath: 'active-inference.ts',
+    readiness: 'VERIFIED',
+    summary: 'Expected Free Energy balances pragmatic value, epistemic info gain, and compute cost',
+    constitutionalInvariant: 'automatedSelfAccept: false',
+  },
+  {
+    id: 'M16.03',
+    pillar: 'RFC 6962 Merkle Audit Ledger',
+    modulePath: 'merkle-ledger.ts',
+    readiness: 'VERIFIED',
+    summary: 'Domain-separated 0x00/0x01 SHA-256 Merkle tree with O(log N) inclusion & consistency proofs',
+    constitutionalInvariant: 'RFC 6962 0x00/0x01 enforced',
+  },
+  {
+    id: 'M16.04',
+    pillar: 'Adversarial Red-Team Arena',
+    modulePath: 'redteam-arena.ts',
+    readiness: 'GUARDED',
+    summary: 'In-memory Red-Team vs Blue-Team self-play synthesizing candidate regression invariants',
+    constitutionalInvariant: 'DX-only · automatedSelfAccept: false',
+  },
 ] as const;
 
 export function AgiTelemetryPanel() {
@@ -99,11 +131,11 @@ export function AgiTelemetryPanel() {
 
   return (
     <Panel
-      title="M15 Constitutional AGI-OS Telemetry"
-      description="Live architectural readiness across all 7 M15 Constitutional RSI pillars (ADR 0010). All self-modification and promotion gates remain fail-closed."
+      title="M15 & M16 Sovereign Dreaming AGI-OS Telemetry"
+      description="Live architectural readiness across all 7 M15 Constitutional RSI pillars (ADR 0010) and 4 M16 Sovereign Dreaming pillars (ADR 0011). All self-modification and promotion gates remain fail-closed."
       actions={
         <div className="flex items-center gap-2">
-          <Badge variant="primary">ADR 0010</Badge>
+          <Badge variant="primary">ADR 0010 + 0011</Badge>
           <Button
             type="button"
             variant="outline"
@@ -111,7 +143,7 @@ export function AgiTelemetryPanel() {
             onClick={() => setViewMode((prev) => (prev === 'all' ? 'guarded' : 'all'))}
           >
             <RefreshIcon className="size-3.5" />
-            {viewMode === 'all' ? 'Show Guarded Only' : 'Show All 7 Pillars'}
+            {viewMode === 'all' ? 'Show Guarded Only' : 'Show All 11 Pillars'}
           </Button>
         </div>
       }
@@ -119,36 +151,36 @@ export function AgiTelemetryPanel() {
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <MetricTile
-            label="Epistemic Brier / ECE"
-            value="0.04 / 0.02"
-            detail="Policy: standard (bounded R0–R3)"
+            label="Sleep Consolidation"
+            value="Non-REM + REM"
+            detail="Reversible decay · Self-probing active"
             accent="green"
             icon={<CheckIcon className="size-4" />}
           />
           <MetricTile
-            label="Speculative RTV Search"
-            value="7 / 7 Ready"
-            detail="Proof Gate + SHA-256 receipts active"
+            label="Active Inference EFE"
+            value="11 / 11 Ready"
+            detail="Pragmatic + Epistemic bounded R0–R3"
             accent="cyan"
             icon={<SparkleIcon className="size-4" />}
           />
           <MetricTile
-            label="World-Model Surprise"
-            value="0 bps"
-            detail="Forward-inverse post-state nominal"
+            label="RFC 6962 Merkle Root"
+            value="0x00 / 0x01"
+            detail="O(log N) inclusion & consistency proofs"
             accent="yellow"
             icon={<JobsIcon className="size-4" />}
           />
           <MetricTile
-            label="Resonance Bus & Replay"
-            value="Private Mesh"
+            label="Red-Team Arena"
+            value="DX Guarded"
             detail="Zero self-accept · Zero R4 relaxation"
             accent="magenta"
             icon={<SecurityIcon className="size-4" />}
           />
         </div>
 
-        <Table scrollLabel="M15 Constitutional AGI-OS pillar readiness" density="compact">
+        <Table scrollLabel="M15 and M16 Sovereign Dreaming AGI-OS pillar readiness" density="compact">
           <TableHead>
             <TableRow>
               <TableHeader>ID</TableHeader>

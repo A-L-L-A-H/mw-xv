@@ -54,3 +54,7 @@ export * from './invariant-synthesizer.js';
 export * from './semantic-bus.js';
 export * from './causal-replay.js';
 export * from './epistemic-calibration.js';
+export * from './sleep-dream.js';
+export * from './active-inference.js';
+export * from './merkle-ledger.js';
+export * from './redteam-arena.js';
