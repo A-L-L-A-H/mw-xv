@@ -902,9 +902,6 @@ importers:
       '@moonwitness/orm-project':
         specifier: workspace:*
         version: link:../orm-project
-      '@moonwitness/orm-storage':
-        specifier: workspace:*
-        version: link:../orm-storage
       '@moonwitness/orm-subscription':
         specifier: workspace:*
         version: link:../orm-subscription

@@ -4,7 +4,11 @@ import test from 'node:test';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { expectedAllowlistExpressions, validateGitleaksSetup } from './check-gitleaks-config.mjs';
+import {
+  expectedAllowlistExpressions,
+  validateGitleaksCliSetup,
+  validateGitleaksSetup,
+} from './check-gitleaks-config.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fallbackGitleaksWorkflow = [
@@ -192,4 +196,37 @@ test('committed non-secret placeholders for the pinned names stay below the entr
     }
   }
   assert.ok(matched.length >= 2, `placeholder sweep must not be vacuous: ${matched.join('\n')}`);
+});
+
+test('CI uses the allowed pinned gitleaks CLI with a reviewed baseline', async () => {
+  const ci = await readFile(path.join(root, '.github/workflows/ci.yml'), 'utf8');
+  const baseline = await readFile(path.join(root, '.gitleaks-baseline.json'), 'utf8');
+
+  assert.deepEqual(validateGitleaksCliSetup(ci, baseline), []);
+  assert.equal(/gitleaks\/gitleaks-action@/u.test(ci), false);
+  assert.ok(JSON.parse(baseline).length > 0);
+});
+
+test('CLI scanner policy rejects unpinned or unbaselined wiring', async () => {
+  const ci = await readFile(path.join(root, '.github/workflows/ci.yml'), 'utf8');
+  const baseline = await readFile(path.join(root, '.gitleaks-baseline.json'), 'utf8');
+
+  assert.ok(
+    validateGitleaksCliSetup(
+      ci.replace('--baseline-path .gitleaks-baseline.json', '--baseline-path elsewhere.json'),
+      baseline
+    ).some((issue) => /baseline/u.test(issue))
+  );
+  assert.ok(
+    validateGitleaksCliSetup(
+      ci.replace(/expected='[0-9a-f]{64}'/u, "expected='unpinned'"),
+      baseline
+    ).some((issue) => /checksum/u.test(issue))
+  );
+  assert.ok(
+    validateGitleaksCliSetup(ci.replace('fetch-depth: 0', 'fetch-depth: 1'), baseline).some(
+      (issue) => /full Git history/u.test(issue)
+    )
+  );
+  assert.ok(validateGitleaksCliSetup(ci, 'not-json').some((issue) => /valid JSON/u.test(issue)));
 });

@@ -25,14 +25,34 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      - name: Install pinned gitleaks CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          version='8.30.1'
+          archive="$RUNNER_TEMP/gitleaks_${version}_linux_x64.tar.gz"
+          curl --fail --silent --show-error --location \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${version}/gitleaks_${version}_linux_x64.tar.gz" \
+            --output "$archive"
+          expected='551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb'
+          actual="$(sha256sum "$archive" | cut -d' ' -f1)"
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::gitleaks checksum mismatch: expected $expected, got $actual"
+            exit 1
+          fi
+          tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
+          install -m 0755 "$RUNNER_TEMP/gitleaks" /usr/local/bin/gitleaks
       - name: Scan full Git history for secrets
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-          GITLEAKS_CONFIG: .gitleaks.toml
-          GITLEAKS_ENABLE_COMMENTS: 'false'
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          gitleaks detect \
+            --source . \
+            --config .gitleaks.toml \
+            --baseline-path .gitleaks-baseline.json \
+            --redact \
+            --no-banner \
+            --exit-code 1
 
   static-analysis:
     runs-on: ubuntu-24.04
@@ -109,6 +129,8 @@ jobs:
           pnpm automation:check:roadmap
           pnpm test:release-provenance
           node scripts/check-release-provenance.mjs
+          pnpm test:secrets
+          pnpm automation:check:secrets
       - name: Verify shared UI, API addon boundary, assets, and documentation links
         run: |
           pnpm board:ui:check
