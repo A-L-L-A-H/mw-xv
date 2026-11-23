@@ -146,6 +146,6 @@ Preserve its evidence classes (including Q-EXPLICIT / Q-CROSS, TRADITION, CREED,
 
 ## 11. MoonWitness OS v2.0 — memory-summary lead only
 
-The available account Memory Summary retains a structure labelled `4 SOURCE → 7 CHANNEL → 4 PROCESS → AMAL → 4 SCALE AXES → MĪZĀN`. It lists HIDAYAH / NAFS / JIN_SHAYTAN / HUMAN; HEARING / SIGHT / HEART / SKIN / TONGUE / HAND / FOOT; PERCEPTION / UNDERSTANDING / INTENTION / CHOICE; and PERPETRATOR / IMPACT / EXPOSURE / DURATION. It records 4–12–30–70 as scale tiers only, not as axes or magnitudes.
+The available account Memory Summary retains a structure labelled `4 SOURCE → 7 CHANNEL → 4 PROCESS → AMAL → 4 SCALE AXES → MĪZĀN`. It lists HIDAYAH / NAFS / JIN_SHAYTAN / HUMAN; HEARING / SIGHT / HEART / SKIN / TONGUE / HAND / FOOT; PERCEPTION / UNDERSTANDING / INTENTION / CHOICE; and PERPETRATOR / IMPACT / EXPOSURE / DURATION. It records 4–12–30–70 as scale tiers only, not as axes or magnitudes; **radius is not magnitude**.
 
 The summary further says the framework's Mīzān calculation is a BASE multiplied by applicable axis multipliers and explicitly says this is a framework, not a literal Qur’anic equation or divine judgment. Since the original source conversation/document was not recovered here, all this remains MEMORY-SUMMARY / NEEDS-SOURCE. Do not implement it as a theological adjudication engine or merge it with CRAYON, RGBL or the Universal Iman paper without explicit source and owner decisions.

@@ -248,7 +248,7 @@ The 23 issue bodies carrying a managed marker are listed in the main table. At t
 
 ## Consolidation actions recorded by this audit
 
-- No issue was created, closed, reopened, or deleted by this consolidation audit.
+- Five discovery / research proposal issues were created: [#173 CRAYON](https://github.com/A-L-L-A-H/mw-xv/issues/173), [#174 Universal Iman](https://github.com/A-L-L-A-H/mw-xv/issues/174), [#175 Quantum–Fe Stone](https://github.com/A-L-L-A-H/mw-xv/issues/175), [#176 game-lineage reconciliation](https://github.com/A-L-L-A-H/mw-xv/issues/176), and [#177 MoonWitness OS v2.0 source recovery](https://github.com/A-L-L-A-H/mw-xv/issues/177). They are deliberately un-managed proposal issues, not TaskOS execution cards.
 - Comments were added to [Issue #27](https://github.com/A-L-L-A-H/mw-xv/issues/27) to record the repository census, TaskOS reconciliation, CI findings, and duplicate `CF-020` conflict.
 - No PR was merged by this audit.
 - Existing issues #15–#22 and #27 were reused as source/decision records.
