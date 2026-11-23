@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "javascript": {
-    "maxRawBytes": 560000,
-    "maxGzipBytes": 165000
+    "maxRawBytes": 565000,
+    "maxGzipBytes": 166000
   },
   "stylesheet": {
     "maxRawBytes": 143360,

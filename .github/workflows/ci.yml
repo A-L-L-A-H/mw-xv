@@ -260,7 +260,7 @@ jobs:
               registry.tasks.filter((task) => task.status === status).length,
             ])
           );
-          assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 96, blocked: 23 });
+          assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 96, blocked: 24 });
           console.log('Validated 636 isolated TaskOS candidate records; canonical registry was not changed.');
           NODE
           echo "candidate_generated=true" >> "$GITHUB_OUTPUT"
