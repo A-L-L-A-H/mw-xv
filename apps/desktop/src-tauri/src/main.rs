@@ -359,16 +359,44 @@ fn build_bridge_init_script(api_url: &str, rpc_token: &str) -> String {
     )
 }
 
+fn resolve_bundled_sidecar_paths(exe_dir: &std::path::Path) -> Option<(String, String)> {
+    let sidecar_dir = exe_dir.join("resources").join("sidecar");
+    #[cfg(windows)]
+    let node_bin = sidecar_dir.join("node.exe");
+    #[cfg(not(windows))]
+    let node_bin = sidecar_dir.join("node");
+    let entry_script = sidecar_dir.join("dist").join("cli.js");
+
+    if node_bin.is_file() && entry_script.is_file() {
+        Some((
+            node_bin.to_string_lossy().into_owned(),
+            entry_script.to_string_lossy().into_owned(),
+        ))
+    } else {
+        None
+    }
+}
+
 impl SidecarProcessState {
     fn new() -> Self {
-        let node_binary = env::var("MW_DESKTOP_NODE_BIN").unwrap_or_else(|_| "node".to_string());
-        let entry_script = env::var("MW_DESKTOP_SIDECAR_ENTRY").unwrap_or_else(|_| {
-            let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-            path.pop();
-            path.push("dist");
-            path.push("cli.js");
-            path.to_string_lossy().into_owned()
-        });
+        let bundled = env::current_exe()
+            .ok()
+            .and_then(|exe| exe.parent().map(resolve_bundled_sidecar_paths))
+            .flatten();
+
+        let (default_node, default_entry) = match bundled {
+            Some((node_bin, entry_script)) => (node_bin, entry_script),
+            None => {
+                let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+                path.pop();
+                path.push("dist");
+                path.push("cli.js");
+                ("node".to_string(), path.to_string_lossy().into_owned())
+            }
+        };
+
+        let node_binary = env::var("MW_DESKTOP_NODE_BIN").unwrap_or(default_node);
+        let entry_script = env::var("MW_DESKTOP_SIDECAR_ENTRY").unwrap_or(default_entry);
         let api_port =
             env::var("MW_DESKTOP_API_PORT").unwrap_or_else(|_| DEFAULT_SIDECAR_API_PORT.to_string());
 
@@ -742,5 +770,33 @@ mod tests {
         assert!(script.contains("Object.freeze("));
         assert!(!script.contains("window.rpcToken"));
         assert!(!script.contains("window.__MW_DESKTOP_RPC_TOKEN__"));
+    }
+
+    #[test]
+    fn resolves_bundled_sidecar_when_present_and_returns_none_otherwise() {
+        let temp_root = env::temp_dir().join(format!(
+            "mw-desktop-sidecar-test-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&temp_root);
+        assert!(resolve_bundled_sidecar_paths(&temp_root).is_none());
+
+        let sidecar_dist = temp_root.join("resources").join("sidecar").join("dist");
+        std::fs::create_dir_all(&sidecar_dist).unwrap();
+        #[cfg(windows)]
+        let node_name = "node.exe";
+        #[cfg(not(windows))]
+        let node_name = "node";
+        let node_path = temp_root.join("resources").join("sidecar").join(node_name);
+        let entry_path = sidecar_dist.join("cli.js");
+        std::fs::write(&node_path, b"").unwrap();
+        std::fs::write(&entry_path, b"").unwrap();
+
+        let resolved = resolve_bundled_sidecar_paths(&temp_root)
+            .expect("bundled sidecar should resolve when node and cli.js exist");
+        assert_eq!(resolved.0, node_path.to_string_lossy());
+        assert_eq!(resolved.1, entry_path.to_string_lossy());
+
+        let _ = std::fs::remove_dir_all(&temp_root);
     }
 }

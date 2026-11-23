@@ -85,6 +85,7 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
+    "resources": ["resources/sidecar"],
     "icon": [
       "../../board/public/brand/app-icon-192.png",
       "../../board/public/brand/app-icon-512.png"

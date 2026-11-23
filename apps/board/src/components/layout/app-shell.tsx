@@ -64,6 +64,8 @@ import { Sheet, SheetContent, SheetTrigger } from '@moonwitness/ui/components/sh
 import { SoundToggle } from '@moonwitness/ui/components/audio';
 import { DesktopHarnessDrawer } from '@/components/ai/desktop-harness-drawer';
 import { AI_MISSION_CONTROL_ROUTES } from '@/components/ai/ai-api';
+import { UpdateBanner, type UpdateBannerStatus } from '@moonwitness/ui/components/update-banner';
+import { useDesktopBridge } from '@/lib/desktop-bridge';
 
 function NavItem({
   to,
@@ -169,6 +171,23 @@ function ModelNavigation({
         </div>
       ))}
     </nav>
+  );
+}
+
+function DesktopUpdateBannerMount() {
+  const { isDesktop } = useDesktopBridge();
+  const [dismissed, setDismissed] = useState(false);
+  const [status, setStatus] = useState<UpdateBannerStatus>('idle');
+
+  if (!isDesktop || dismissed) return null;
+
+  return (
+    <UpdateBanner
+      currentVersion="1.0.0-rc.1"
+      status={status}
+      onCheck={() => setStatus('checking')}
+      onDismiss={() => setDismissed(true)}
+    />
   );
 }
 
@@ -586,6 +605,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </DropdownMenu>
           </div>
         </header>
+
+        <DesktopUpdateBannerMount />
 
         <main className="min-w-0 flex-1 px-4 py-6 pb-24 sm:px-6 sm:py-8 sm:pb-8 lg:px-10">
           <div key={activeCompanyId ?? 'default-company'}>{children}</div>

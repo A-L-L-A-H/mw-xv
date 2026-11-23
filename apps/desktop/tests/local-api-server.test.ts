@@ -141,6 +141,50 @@ describe('LocalApiServer & Desktop Importer', () => {
     };
     expect(mcpBody.jsonrpc).toBe('2.0');
     expect(mcpBody.result.tools.some((t) => t.name === 'project.list_tasks')).toBe(true);
+
+    // 7. Offline admin & notification loopback endpoints
+    const authHeaders = { authorization: `Bearer ${token}` };
+
+    const jobsHealthRes = await fetch(`${daemon.apiUrl}/admin/jobs/health`, {
+      headers: authHeaders,
+    });
+    expect(jobsHealthRes.status).toBe(200);
+    const jobsHealthBody = (await jobsHealthRes.json()) as {
+      success: boolean;
+      data: { queued: number; running: number; dead: number; outboxPending: number; outboxDead: number };
+    };
+    expect(jobsHealthBody.success).toBe(true);
+    expect(typeof jobsHealthBody.data.queued).toBe('number');
+
+    const cronsRes = await fetch(`${daemon.apiUrl}/admin/crons`, { headers: authHeaders });
+    expect(cronsRes.status).toBe(200);
+    const cronsBody = (await cronsRes.json()) as { success: boolean; data: unknown[] };
+    expect(cronsBody.success).toBe(true);
+    expect(Array.isArray(cronsBody.data)).toBe(true);
+
+    const jobsRes = await fetch(`${daemon.apiUrl}/admin/jobs?status=dead&limit=20`, {
+      headers: authHeaders,
+    });
+    expect(jobsRes.status).toBe(200);
+    const jobsBody = (await jobsRes.json()) as { success: boolean; data: unknown[] };
+    expect(jobsBody.success).toBe(true);
+    expect(Array.isArray(jobsBody.data)).toBe(true);
+
+    const outboxRes = await fetch(`${daemon.apiUrl}/admin/outbox?status=dead&limit=20`, {
+      headers: authHeaders,
+    });
+    expect(outboxRes.status).toBe(200);
+    const outboxBody = (await outboxRes.json()) as { success: boolean; data: unknown[] };
+    expect(outboxBody.success).toBe(true);
+    expect(Array.isArray(outboxBody.data)).toBe(true);
+
+    const inboxRes = await fetch(`${daemon.apiUrl}/notifications/inbox?limit=20`, {
+      headers: authHeaders,
+    });
+    expect(inboxRes.status).toBe(200);
+    const inboxBody = (await inboxRes.json()) as { success: boolean; data: unknown[] };
+    expect(inboxBody.success).toBe(true);
+    expect(Array.isArray(inboxBody.data)).toBe(true);
   });
 
   it('imports moonwitness-tasks/v2 JSON idempotently by external_ref', async () => {

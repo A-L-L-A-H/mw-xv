@@ -591,6 +591,178 @@ export async function startLocalApiServer(
     return { success: true, data: models };
   });
 
+  // Offline admin & notification loopback endpoints backed by local.db
+  const countTableRows = async (
+    table: string,
+    filter?: (qb: Knex.QueryBuilder) => Knex.QueryBuilder
+  ): Promise<number> => {
+    if (!(await db.schema.hasTable(table))) return 0;
+    let qb = db(table);
+    if (filter) qb = filter(qb);
+    const row = (await qb.count({ count: '*' }).first()) as { count?: number | string } | undefined;
+    return Number(row?.count ?? 0);
+  };
+
+  app.get('/admin/jobs/health', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const [queued, running, dead, outboxPending, outboxDead] = await Promise.all([
+      countTableRows('base_jobs', (qb) => qb.where({ status: 'queued' })),
+      countTableRows('base_jobs', (qb) => qb.where({ status: 'running' })),
+      countTableRows('base_jobs', (qb) => qb.where({ status: 'dead' })),
+      countTableRows('base_outbox_events', (qb) => qb.whereIn('status', ['pending', 'processing'])),
+      countTableRows('base_outbox_events', (qb) => qb.where({ status: 'dead' })),
+    ]);
+    let oldestQueuedAt: string | null = null;
+    if (await db.schema.hasTable('base_jobs')) {
+      const oldest = (await db('base_jobs')
+        .where({ status: 'queued' })
+        .orderBy('available_at', 'asc')
+        .first()) as { available_at?: string | null } | undefined;
+      oldestQueuedAt = oldest?.available_at ?? null;
+    }
+    return {
+      success: true,
+      data: {
+        queued,
+        running,
+        dead,
+        outboxPending,
+        outboxDead,
+        oldestQueuedAt,
+      },
+    };
+  });
+
+  app.get('/admin/crons', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (!(await db.schema.hasTable('base_crons'))) {
+      return { success: true, data: [] };
+    }
+    const crons = await db('base_crons')
+      .orderBy('name', 'asc')
+      .select(
+        'id',
+        'code',
+        'name',
+        'handler',
+        'company_id',
+        'cron_expression',
+        'timezone',
+        'enabled',
+        'next_run_at',
+        'misfire_policy',
+        'concurrency_policy'
+      );
+    return { success: true, data: crons };
+  });
+
+  app.get<{ Querystring: { status?: string; limit?: string } }>(
+    '/admin/jobs',
+    async (req, reply) => {
+      if (!req.auth) {
+        return reply.code(401).send({ success: false, error: 'Authentication required' });
+      }
+      const limit = Number(req.query.limit ?? 50);
+      const allowedStatuses = new Set(['queued', 'running', 'succeeded', 'dead', 'cancelled']);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
+        return reply.code(400).send({ success: false, error: 'limit must be between 1 and 200' });
+      }
+      if (req.query.status && !allowedStatuses.has(req.query.status)) {
+        return reply.code(400).send({ success: false, error: 'Invalid job status' });
+      }
+      if (!(await db.schema.hasTable('base_jobs'))) {
+        return { success: true, data: [] };
+      }
+      let query = db('base_jobs').orderBy('id', 'desc').limit(limit);
+      if (req.query.status) {
+        query = query.where({ status: req.query.status });
+      }
+      const jobs = await query.select(
+        'id',
+        'handler',
+        'handler_version',
+        'company_id',
+        'status',
+        'priority',
+        'available_at',
+        'attempts',
+        'max_attempts',
+        'lease_owner',
+        'lease_until',
+        'fencing_token',
+        'create_date'
+      );
+      return { success: true, data: jobs };
+    }
+  );
+
+  app.get<{ Querystring: { status?: string; limit?: string } }>(
+    '/admin/outbox',
+    async (req, reply) => {
+      if (!req.auth) {
+        return reply.code(401).send({ success: false, error: 'Authentication required' });
+      }
+      const limit = Number(req.query.limit ?? 50);
+      const allowedStatuses = new Set(['pending', 'processing', 'published', 'dead']);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
+        return reply.code(400).send({ success: false, error: 'limit must be between 1 and 200' });
+      }
+      if (req.query.status && !allowedStatuses.has(req.query.status)) {
+        return reply.code(400).send({ success: false, error: 'Invalid outbox status' });
+      }
+      if (!(await db.schema.hasTable('base_outbox_events'))) {
+        return { success: true, data: [] };
+      }
+      let query = db('base_outbox_events').orderBy('id', 'desc').limit(limit);
+      if (req.query.status) {
+        query = query.where({ status: req.query.status });
+      }
+      const events = await query.select(
+        'id',
+        'event_type',
+        'aggregate_model',
+        'aggregate_id',
+        'company_id',
+        'status',
+        'attempts',
+        'max_attempts',
+        'available_at',
+        'last_error',
+        'created_at',
+        'published_at'
+      );
+      return { success: true, data: events };
+    }
+  );
+
+  app.get<{ Querystring: { limit?: string } }>(
+    '/notifications/inbox',
+    async (req, reply) => {
+      if (!req.auth) {
+        return reply.code(401).send({ success: false, error: 'Authentication required' });
+      }
+      const limit = Number(req.query.limit ?? 20);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
+        return reply.code(400).send({ success: false, error: 'limit must be between 1 and 200' });
+      }
+      if (!(await db.schema.hasTable('notification_notifications'))) {
+        return { success: true, data: [], unreadCount: 0 };
+      }
+      const notifications = await db('notification_notifications')
+        .orderBy('id', 'desc')
+        .limit(limit)
+        .select('*');
+      const unreadCount = await countTableRows('notification_notifications', (qb) =>
+        qb.where({ read: false })
+      ).catch(() => 0);
+      return { success: true, data: notifications, unreadCount };
+    }
+  );
+
   // INV-014 Addon HTTP plugins (project & workflow)
   const addonHostContext: AddonHttpHostContext = {
     canAccess: () => true,
