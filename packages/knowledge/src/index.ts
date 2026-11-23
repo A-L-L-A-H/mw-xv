@@ -20,3 +20,4 @@ export {
   type KnowledgeSnapshotInput,
 } from './canonical-json.js';
 export * from './schema-version.js';
+export * from './concept-graph.js';
