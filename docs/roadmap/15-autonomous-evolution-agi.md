@@ -1,6 +1,6 @@
 # M14 — Autonomous Evolution & Decentralized Mesh Swarm Plan (Path to AGI-Class Workforce)
 
-Status: **planned (post-M13 architecture roadmap)** — this document defines the next-phase evolution milestones built 100% from scratch on MoonWitness's canonical stack. It does not alter current release blockers, bypass [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md), or authorize live A2A federation prior to its dedicated ADR.
+Status: **in progress (foundation modules & ADR 0009 landed)** — this document defines the next-phase evolution milestones built 100% from scratch on MoonWitness's canonical stack. Foundation modules (`evolution-loop.ts`, `ablation-gate.ts`, `obligation-monitor.ts`, `a2a-protocol.ts`) and [ADR 0009](../decisions/0009-a2a-mesh-federation.md) are now implemented; it does not alter current release blockers or bypass [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md).
 
 ## Architectural Foundation & Rejection of External Agent Frameworks
 
@@ -24,7 +24,7 @@ M14 builds exclusively on MoonWitness's native domain and execution planes:
 
 ## M14.01 — Closed-Loop Self-Improvement (`Skill & Memory Evolution`)
 
-- **Status:** planned
+- **Status:** foundation implemented (`packages/ai-runtime/src/evolution-loop.ts`, `packages/ai-evaluation/src/ablation-gate.ts`)
 - **Prerequisites:** M12.08–M12.14, [M13.06](14-desktop-engineering.md), [M13.08](14-desktop-engineering.md), [M13.10](14-desktop-engineering.md).
 - **Governing decisions:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (D6, D10, D12), [ADR 0006](../decisions/0006-mandatory-addon-thin-api.md).
 - **Canonical owners:** `@moonwitness/orm-ai` (`ai.skill_version`, `ai.memory_candidate`), `@moonwitness/ai-runtime`, `@moonwitness/ai-evaluation`, `@moonwitness/orm-workflow`.
@@ -56,7 +56,7 @@ Close the learning loop safely so Proof-Gate-verified runs automatically synthes
 
 ## M14.02 — Continuous Obligation & World-Model Loop (`ai.obligation` + `base.cron`)
 
-- **Status:** planned
+- **Status:** foundation implemented (`packages/ai-runtime/src/obligation-monitor.ts`)
 - **Prerequisites:** M14.01, [M13.02](14-desktop-engineering.md), [M13.06](14-desktop-engineering.md), [M13.12](14-desktop-engineering.md).
 - **Governing decisions:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (D1, D3, D7, D11).
 - **Canonical owners:** `@moonwitness/orm-ai` (`ai.obligation`, `ai.work_contract`), `@moonwitness/jobs` (`base.cron`, `base.job`), `@moonwitness/ai-runtime` (`RepoSnapshot`, `validateDiffScope`), `apps/control-plane`.
@@ -91,9 +91,9 @@ Turn accepted deliverables into persistent, living invariants by pairing `ai.obl
 
 ## M14.03 — Decentralized Multi-Node Agent Swarm (`A2A` over EasyTier P2P Mesh)
 
-- **Status:** planned (**hard gate:** requires a dedicated A2A ADR before live enablement per [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) D9)
-- **Prerequisites:** M14.01, M14.02, dedicated A2A ADR accepted, [ADR 0001](../decisions/0001-platform-contracts.md) alignment.
-- **Governing decisions:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (D1, D6, D8, D9, D11, D12).
+- **Status:** foundation implemented ([ADR 0009](../decisions/0009-a2a-mesh-federation.md), `packages/ai-runtime/src/a2a-protocol.ts`)
+- **Prerequisites:** M14.01, M14.02, [ADR 0009](../decisions/0009-a2a-mesh-federation.md), [ADR 0001](../decisions/0001-platform-contracts.md) alignment.
+- **Governing decisions:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (D1, D6, D8, D9, D11, D12), [ADR 0009](../decisions/0009-a2a-mesh-federation.md).
 - **Canonical owners:** `@moonwitness/ai-runtime` (`DataClassificationRouter`, `pcw-verifier`), `@moonwitness/orm-ai`, `@moonwitness/jobs`, `apps/control-plane`, and a future stateless A2A adapter package.
 
 ### Goal

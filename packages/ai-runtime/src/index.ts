@@ -29,3 +29,21 @@ export * from './memory-evaluator.js';
 export * from './capability-gates.js';
 export * from './domain-services.js';
 export { AgentHarness } from './domain-services.js';
+export * from './evolution-loop.js';
+export {
+  evaluateObligationDrift,
+  type ObligationStatus as MonitorObligationStatus,
+  type ObligationDriftReasonCode,
+  type ObligationRecord as MonitorObligationRecord,
+  type PaasAppTelemetry,
+  type PaasNodeTelemetry,
+  type WorldStateSnapshot,
+  type ObligationDriftFinding,
+  type ObligationEvaluation,
+  type ReverificationContractProposal,
+  type CrossCompanySkippedObligation,
+  type ObligationDriftSummary,
+  type ObligationDriftReport,
+  type EvaluateObligationDriftOptions,
+} from './obligation-monitor.js';
+export * from './a2a-protocol.js';
