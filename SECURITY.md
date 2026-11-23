@@ -6,6 +6,10 @@ New credentials (registration, password change, and seeded superadmin bootstrap)
 
 Passwords are hashed with `scrypt` using `N = 2^17` (131072), `r = 8`, `p = 1`, a fresh 16-byte random salt, and constant-time comparison. Verification remains compatible with previously stored `scrypt$131072$8$1$...` hashes.
 
+## CI security gates
+
+Pull requests are gated by full-history gitleaks, CodeQL static analysis for JavaScript/TypeScript and Go, a CRITICAL-level dependency advisory audit, registry signature verification for every installed package, and a deterministic release-provenance policy check. Release builds additionally block on CRITICAL Trivy findings and attest the exact verified artifact, image digests, and SPDX SBOMs. All external actions are pinned to immutable commit SHAs and checked against their upstream version tags.
+
 ## Supported versions
 
 Security fixes target the latest published release. The `main` and `dev` branches are development and integration refs; they are not a promise of a supported deployment or response SLA. Use a supported release and follow its published correction notices.

@@ -34,6 +34,51 @@ jobs:
           GITLEAKS_ENABLE_COMMENTS: 'false'
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
 
+  static-analysis:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, go]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL for ${{ matrix.language }}
+        uses: github/codeql-action/init@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended
+      - name: Run CodeQL static analysis
+        uses: github/codeql-action/analyze@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
+        with:
+          category: /language:${{ matrix.language }}
+
+  dependency-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: '24'
+          pnpm-version: '11.17.0'
+      - name: Install frozen workspace dependencies
+        run: pnpm install --frozen-lockfile --no-runtime
+      - name: Block CRITICAL dependency advisories
+        run: pnpm audit --audit-level=critical
+      - name: Verify registry signatures for installed packages
+        run: pnpm audit signatures
+
   quality-and-build:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -62,6 +107,8 @@ jobs:
           pnpm automation:check:action-pins
           pnpm automation:check:action-tags
           pnpm automation:check:roadmap
+          pnpm test:release-provenance
+          node scripts/check-release-provenance.mjs
       - name: Verify shared UI, API addon boundary, assets, and documentation links
         run: |
           pnpm board:ui:check

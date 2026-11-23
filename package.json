@@ -111,6 +111,7 @@
     "release:dry-run": "node scripts/release-dry-run.mjs",
     "release:verify-attestations": "node scripts/verify-release-attestations.mjs",
     "test:release-dry-run": "node --test scripts/release-dry-run.test.mjs",
+    "test:release-provenance": "node --test scripts/check-release-provenance.test.mjs",
     "test:release-verify-attestations": "node --test scripts/verify-release-attestations.test.mjs",
     "test:release-prepare": "node --test scripts/prepare-release.test.mjs",
     "test:release-prepare-workflow": "node --test scripts/release-prepare-workflow.test.mjs",

@@ -628,6 +628,7 @@
       "test:release-plan": "node --test scripts/release-plan.test.mjs",
       "test:release-prepare": "node --test scripts/prepare-release.test.mjs",
       "test:release-prepare-workflow": "node --test scripts/release-prepare-workflow.test.mjs",
+      "test:release-provenance": "node --test scripts/check-release-provenance.test.mjs",
       "test:release-verify-attestations": "node --test scripts/verify-release-attestations.test.mjs",
       "test:release-workflow": "node --test scripts/release-workflow.test.mjs scripts/release-loop.test.mjs scripts/github-release-lifecycle.test.mjs scripts/release-artifact-identity.test.mjs",
       "test:render-changelog": "node --test scripts/render-changelog.test.mjs",
@@ -9689,5 +9690,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "7434691668f1662d7fc55c8b1c75416aed13025a074d3a8892a463db15e7cf72"
+  "generatedFromSha256": "ca6663f9dd54d5424f2f99e60836d6fe8794114a95f84e1f31c1497b56ff7136"
 }
