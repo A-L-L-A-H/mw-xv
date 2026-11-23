@@ -139,7 +139,10 @@ export const researchActorIdentityHttpPlugin: AddonHttpPlugin = async (app) => {
         return reply.code(400).send({ success: false, error: 'Invalid identity mapping request' });
       }
       const rawRequestId = (request as { readonly id?: unknown }).id;
-      const requestId = typeof rawRequestId === 'string' && rawRequestId.length > 0 ? rawRequestId : 'unknown-request';
+      const requestId =
+        typeof rawRequestId === 'string' && rawRequestId.length > 0
+          ? rawRequestId
+          : 'unknown-request';
 
       try {
         await db.transaction((trx) =>
