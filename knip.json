@@ -2,12 +2,7 @@
   "$schema": "https://knip.dev/schema.json",
   "workspaces": {
     ".": {
-      "entry": [
-        "scripts/**/*.mjs",
-        "vitest.config.*",
-        "turbo.json",
-        "tsconfig.base.json"
-      ],
+      "entry": ["scripts/**/*.mjs", "vitest.config.*", "turbo.json", "tsconfig.base.json"],
       "ignore": [
         "scripts/**/*.test.mjs",
         "scripts/**/*.spec.mjs",
@@ -16,25 +11,11 @@
       ]
     },
     "packages/*": {
-      "entry": [
-        "src/index.ts",
-        "vitest.config.*"
-      ],
-      "ignore": [
-        "src/**/*.test.ts",
-        "src/**/*.spec.ts",
-        "dist/**",
-        "build/**",
-        "tests/**"
-      ]
+      "entry": ["src/index.ts", "vitest.config.*"],
+      "ignore": ["src/**/*.test.ts", "src/**/*.spec.ts", "dist/**", "build/**", "tests/**"]
     },
     "apps/*": {
-      "entry": [
-        "src/**/*.tsx",
-        "src/**/*.ts",
-        "next.config.*",
-        "vite.config.*"
-      ],
+      "entry": ["src/**/*.tsx", "src/**/*.ts", "next.config.*", "vite.config.*"],
       "ignore": [
         "**/*.test.*",
         "**/*.spec.*",
@@ -46,12 +27,14 @@
     }
   },
   "rules": {
-    "dependencies": "error",
-    "devDependencies": "error",
-    "unlisted": "error",
-    "exports": "error",
-    "types": "error",
-    "enumMembers": "error"
+    "files": "warn",
+    "dependencies": "warn",
+    "devDependencies": "warn",
+    "unlisted": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "enumMembers": "warn",
+    "duplicates": "warn"
   },
   "ignore": [
     "node_modules/**",
@@ -79,10 +62,5 @@
     "apps/isp/**",
     "apps/docs/**"
   ],
-  "ignoreDependencies": [
-    "@types/node",
-    "typescript",
-    "vitest",
-    "@vitest/coverage-v8"
-  ]
+  "ignoreDependencies": ["@types/node", "typescript", "vitest", "@vitest/coverage-v8"]
 }

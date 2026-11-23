@@ -153,6 +153,10 @@ jobs:
           pnpm assets:check:bounds
           pnpm test:ui
           node scripts/check-docs.mjs
+      - name: Run knip (unused code/dependency detection, warn-only baseline)
+        run: pnpm exec knip --no-exit-code --no-progress
+      - name: Run dependency-cruiser (architecture boundary enforcement)
+        run: pnpm exec depcruise --config .dependency-cruiser.cjs packages apps
       - name: Enforce M15, M16, M17, and M18 Constitutional Invariants and Issue Planner Gates
         run: |
           node --test scripts/check-m15-invariants.test.mjs scripts/check-m16-invariants.test.mjs scripts/check-m17-invariants.test.mjs scripts/check-m18-invariants.test.mjs
