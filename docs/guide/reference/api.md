@@ -28,6 +28,24 @@ menyertakan `hasMore`. Satu sampai tiga kolom scalar yang memang dideklarasikan 
 Kolom tersembunyi atau relasi ditolak, dan record/company scope server selalu ditambahkan ke domain
 sebelum agregasi.
 
+## Endpoint agen (A2A dan MCP)
+
+| Endpoint                | Akses                                    | Kontrak                                                                      |
+| ----------------------- | ---------------------------------------- | ---------------------------------------------------------------------------- |
+| `POST /a2a/delegate`    | publik, tetapi **wajib** envelope A2A v1 | HMAC `MW_A2A_SIGNING_SECRET`, header `X-A2A-Protocol: a2a.v1`, nonce dan TTL |
+| `GET /api/ai/a2a/inbox` | superadmin/system dengan company scope   | Riwayat penerimaan yang persisten, `limit` 1–200, tanpa cache (`no-store`)   |
+
+Penerima A2A hanya aktif bila `MW_A2A_API_ENABLED=true`, `MW_A2A_SIGNING_SECRET` minimal 32 karakter,
+`MW_A2A_COMPANY_ID` valid, dan `MW_A2A_API_ENDPOINT` menunjuk ke host mesh privat. Endpoint ini
+sengaja ditandai `public` pada Fastify karena autentikasinya adalah envelope bertanda tangan, bukan
+bearer token; jangan mengirim kredensial sesi ke sana. Kedua route tercantum dalam
+`docs/guide/reference/generated-api.md` dan diberi tag `A2A` pada Swagger UI.
+
+MCP bukan endpoint HTTP publik. Tool `@moonwitness/ai-mcp` berjalan in-process, menolak pemanggilan
+tanpa autentikasi, mencatat setiap keputusan ke `ai.mcp`, memblokir tool `a2a.*`/yang belum disetujui,
+serta menghormati grant pencabutan dan emergency stop. Gunakan A2A untuk pesan antar-agent lintas
+perusahaan; gunakan MCP hanya untuk tool lokal yang sudah diberi grant.
+
 ## Client dan kompatibilitas
 
 Gunakan root exports `@moonwitness/client`; jangan bergantung pada file internal `apps/api/src`.

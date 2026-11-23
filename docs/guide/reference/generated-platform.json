@@ -9514,6 +9514,10 @@
       "path": "/"
     },
     {
+      "method": "POST",
+      "path": "/a2a/delegate"
+    },
+    {
       "method": "GET",
       "path": "/admin/crons"
     },
@@ -9619,6 +9623,10 @@
     },
     {
       "method": "GET",
+      "path": "/api/ai/a2a/inbox"
+    },
+    {
+      "method": "GET",
       "path": "/api/app/bootstrap"
     },
     {
@@ -9690,5 +9698,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "ca6663f9dd54d5424f2f99e60836d6fe8794114a95f84e1f31c1497b56ff7136"
+  "generatedFromSha256": "670cca68f99098dad8dde4c2a74b4180f4f7cdc0473e4e1cd87256e9a1f06e34"
 }

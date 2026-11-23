@@ -229,6 +229,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
       tags: [
         { name: 'Auth', description: 'Login, token refresh and current user' },
         { name: 'ORM', description: 'Generic CRUD and RPC endpoints' },
+        { name: 'A2A', description: 'Signed agent-to-agent receiver and administrator inbox' },
         { name: 'System', description: 'Health and status checks' },
       ],
       components: {

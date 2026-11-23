@@ -3,6 +3,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  addonRouteFilePaths,
   collectReferenceMetadata,
   fingerprintReferenceMetadata,
   extractRoutes,
@@ -186,9 +187,12 @@ async function listRouteFiles(directory) {
 
 test('generated API reference matches literal route declarations in source', async () => {
   const routesDirectory = path.join(root, 'apps/api/src/routes');
-  const routeFiles = await listRouteFiles(routesDirectory);
+  const routeFiles = [...(await listRouteFiles(routesDirectory)), ...addonRouteFilePaths];
   const routeGroups = await Promise.all(
-    routeFiles.map(async (file) => extractRoutes(await readFile(file, 'utf8'), file))
+    routeFiles.map(async (file) => {
+      const absolute = file.startsWith(root) ? file : path.join(root, file);
+      return extractRoutes(await readFile(absolute, 'utf8'), file);
+    })
   );
   const sourceRoutes = routeGroups.flat();
   const metadata = await collectReferenceMetadata();
@@ -200,6 +204,14 @@ test('generated API reference matches literal route declarations in source', asy
       (left, right) =>
         left.path.localeCompare(right.path, 'en') || left.method.localeCompare(right.method, 'en')
     )
+  );
+  assert.ok(
+    metadata.routes.some((route) => route.method === 'POST' && route.path === '/a2a/delegate'),
+    'the signed A2A receiver must appear in the generated API reference'
+  );
+  assert.ok(
+    metadata.routes.some((route) => route.method === 'GET' && route.path === '/api/ai/a2a/inbox'),
+    'the administrator A2A inbox must appear in the generated API reference'
   );
   assert.equal(metadata.safety.applicationStarted, false);
   assert.equal(metadata.safety.databaseConnected, false);
