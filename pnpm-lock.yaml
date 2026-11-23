@@ -335,6 +335,9 @@ importers:
       '@moonwitness/types':
         specifier: workspace:*
         version: link:../../packages/types
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
       fastify:
         specifier: ^5.12.6
         version: 5.12.7
@@ -351,6 +354,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
+      '@types/better-sqlite3':
+        specifier: ^9.6.0
+        version: 9.6.0
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.4

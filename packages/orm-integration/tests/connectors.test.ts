@@ -94,40 +94,53 @@ describe('Integration Seed', () => {
     beforeEach(() => {
       // Callable knex-like transaction mock supporting query-builder chaining:
       // trx(table).where(...).first(...) and trx(table).insert(...)
-      const trxMock = Object.assign(vi.fn(() => trxMock), {
-        select: vi.fn().mockResolvedValue([]),
-        first: vi.fn().mockResolvedValue({ id: 1 }),
-        where: vi.fn(() => trxMock),
-        orderBy: vi.fn(() => trxMock),
-        insert: vi.fn().mockResolvedValue([{ id: 1 }]),
-      });
+      const trxMock = Object.assign(
+        vi.fn(() => trxMock),
+        {
+          select: vi.fn().mockResolvedValue([]),
+          first: vi.fn().mockResolvedValue({ id: 1 }),
+          where: vi.fn(() => trxMock),
+          orderBy: vi.fn(() => trxMock),
+          insert: vi.fn().mockResolvedValue([{ id: 1 }]),
+        }
+      );
       mockTrx = trxMock as unknown as Knex.QueryBuilder;
-      mockDb = mock<Knex>();
-      mockDb.schema = mock<Knex.SchemaBuilder>();
-      mockDb.transaction.mockImplementation(async (cb) => cb(mockTrx));
-      mockDb.select.mockResolvedValue([]);
-      mockDb.first.mockResolvedValue({ id: 1 });
-      mockDb.where.mockReturnValue(mockDb);
-      mockDb.orderBy.mockReturnValue(mockDb);
-      mockDb.schema.hasTable.mockResolvedValue(true);
-      mockDb.insert.mockResolvedValue([{ id: 1 }]);
+      const dbMock = Object.assign(
+        vi.fn(() => Promise.resolve([{ id: 42 }])),
+        {
+          schema: {
+            hasTable: vi.fn().mockResolvedValue(true),
+          },
+          transaction: vi.fn().mockImplementation(async (cb) => cb(mockTrx)),
+          select: vi.fn().mockResolvedValue([]),
+          first: vi.fn().mockResolvedValue({ id: 1 }),
+          where: vi.fn(() => dbMock),
+          orderBy: vi.fn(() => dbMock),
+          insert: vi.fn().mockResolvedValue([{ id: 1 }]),
+        }
+      );
+      mockDb = dbMock as unknown as Knex;
     });
 
     it('throws when secret ref pattern invalid', async () => {
       const bundle = buildIntegrationSeedBundle();
-      bundle.webhookEndpoints[0].secretRef = 'INVALID_SECRET';
+      (bundle.webhookEndpoints[0] as { secretRef: string }).secretRef =
+        'INVALID_SECRET';
       const { seedIntegrationData: seedFn } = await import('../src/seed.js');
-      await expect(seedFn(mockDb, { companyId: 1 }, bundle)).rejects.toThrow(/Invalid webhook secret ref/);
+      await expect(seedFn(mockDb, { companyId: 1 }, bundle)).rejects.toThrow(
+        /Invalid webhook secret ref/
+      );
     });
 
     it('resolves companyId from options or first company', async () => {
       const bundle = buildIntegrationSeedBundle();
-      mockDb.mockImplementation(() => Promise.resolve([{ id: 42 }]));
-      mockDb.select.mockResolvedValue([{ id: 42 }]);
-      mockDb.first.mockResolvedValue({ id: 42 });
-      mockDb.where.mockReturnValue(mockDb);
-      mockDb.orderBy.mockReturnValue(mockDb);
-      mockDb.schema.hasTable.mockResolvedValue(true);
+      const dbMock = mockDb as unknown as ReturnType<typeof vi.fn>;
+      dbMock.mockImplementation(() => Promise.resolve([{ id: 42 }]));
+      vi.mocked(mockDb.select).mockResolvedValue([{ id: 42 }]);
+      vi.mocked(mockDb.first).mockResolvedValue({ id: 42 });
+      vi.mocked(mockDb.where).mockReturnValue(mockDb as unknown as Knex.QueryBuilder);
+      vi.mocked(mockDb.orderBy).mockReturnValue(mockDb as unknown as Knex.QueryBuilder);
+      vi.mocked(mockDb.schema.hasTable).mockResolvedValue(true);
 
       const { seedIntegrationData } = await import('../src/seed.js');
       const result = await seedIntegrationData(mockDb, { companyId: 99 });
@@ -135,12 +148,12 @@ describe('Integration Seed', () => {
     });
 
     it('returns correct counts and inserts nothing when all exist', async () => {
-      mockDb.select.mockResolvedValue([]);
-      mockDb.first.mockResolvedValue({ id: 1 });
-      mockDb.where.mockReturnValue(mockDb);
-      mockDb.orderBy.mockReturnValue(mockDb);
-      mockDb.schema.hasTable.mockResolvedValue(true);
-      mockDb.insert.mockResolvedValue([{ id: 1 }]);
+      vi.mocked(mockDb.select).mockResolvedValue([]);
+      vi.mocked(mockDb.first).mockResolvedValue({ id: 1 });
+      vi.mocked(mockDb.where).mockReturnValue(mockDb as unknown as Knex.QueryBuilder);
+      vi.mocked(mockDb.orderBy).mockReturnValue(mockDb as unknown as Knex.QueryBuilder);
+      vi.mocked(mockDb.schema.hasTable).mockResolvedValue(true);
+      vi.mocked(mockDb.insert).mockResolvedValue([{ id: 1 }]);
 
       const { seedIntegrationData } = await import('../src/seed.js');
       const result = await seedIntegrationData(mockDb, { companyId: 1 });

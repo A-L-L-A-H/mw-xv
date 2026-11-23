@@ -50,6 +50,7 @@
     "@moonwitness/orm-storage": "workspace:*",
     "@moonwitness/orm-workflow": "workspace:*",
     "@moonwitness/types": "workspace:*",
+    "better-sqlite3": "^13.0.3",
     "fastify": "^5.12.6",
     "knex": "^3.3.0",
     "objection": "^3.1.5"
@@ -57,6 +58,7 @@
   "devDependencies": {
     "@moonwitness/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^26.6.4",
     "@vitejs/plugin-react": "^5.0.0",
     "cmdk": "^1.1.1",

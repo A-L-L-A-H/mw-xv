@@ -62,6 +62,7 @@ export default [
   {
     ignores: [
       '**/dist/**',
+      '**/dist-board/**',
       '**/.next*/**',
       '**/node_modules/**',
       '.qoder-tmp/**',
