@@ -23,6 +23,10 @@ This timeline records only dates and windows supported by the supplied prompt, a
 | 15 Oct 2026 | Knowledge privacy / source ingestion / K0-006 decisions | MW-XIV / MW-XV governance history | Owner-approved no-legacy-import boundary must be respected |
 | 17 Oct 2026 | #033 FAITH TO ACTION — KOPIHITAM - SIACENG logged in chat | XII patch register | In-chat record is not proof of external dispatch or approval |
 | 21 Oct 2026 | XII source-to-record inventory, 33-patch and character review | XII docs | Editorial status remains separate from external acceptance |
+| 17 Oct 2026 | QUANTUM–FE STONE ENERGY preliminary research paper and DIY planner | Library DOCX / XLSX | No physical experiment or new DFT result; research and novelty claims remain preliminary |
+| 20 Aug 2026 | Dīn Allah / Universal Iman Foundation four-book charter | Library DOCX | Research framework; filename/internal version labels conflict and require reconciliation |
+| 23 Aug 2026 | CRAYON Framework v1.3 and “An Easy Way to Understand Allah” paper v2 | Library DOCX / PDF | Source versions are distinct; companion paper has Gate / 13-Way wording variations |
+| 26 Oct 2026 | ROCKSOUL GAME — THE LOST SIGNAL game repository reached a documented M1 local browser demo checkpoint | `bjo163/rocksoul-game` README / BLUEPRINT / TODO; branch `main` HEAD `38dd326c0e3f` | README calls the game preproduction; local demo and reported Vercel build are not proof of an authenticated online game or MMO |
 | 24 Oct 2026 | V10 public research pack and expanded narrative companion published in XIV | V10 docs / progress ledger | Public research pack is not the original V10 manuscript and does not authorize private-source import |
 | 26 Oct 2026 | Moonframe M13 readiness snapshot | Moonframe README | Automated checks and component inventory do not replace human visual review |
 | 22 Nov 2026 | MW-XV issues #15–#22 and #27 opened as product/source-consolidation proposals | GitHub issue metadata | Proposal issue creation does not prove feature implementation or final approval |
@@ -36,7 +40,9 @@ This timeline records only dates and windows supported by the supplied prompt, a
 - The current 775-line master prompt is archived verbatim at `docs/raw/2026-11-23-master-prompt-total-idea-archive.md`.
 - A separate older 439-line Library note named `Pasted text.txt` was inspected as a source but is personal/private and is not reproduced in this public archive.
 - `Omniscience_Method_RGBL_AI_Ready_Research_Paper.md` is a separate 437-line Library paper, version 1.0 dated 17 August 2026; the method is summarized in `FRAMEWORK-REGISTRY.md`.
-- Twenty-one image files were enumerated in the Library root. Original prompts, revision history and publication rights are not recovered for every image; see `LIBRARY-SOURCE-REGISTER.md`.
+- Ninety-four Library objects were enumerated in the root snapshot, including 63 PNG files. Only selected document sources were read; original prompts, revisions and publication rights are not recovered for every image. See `LIBRARY-SOURCE-REGISTER.md`.
+
+The account Memory Summary also retains a MoonWitness OS v2.0 architecture label; the first-source document and original conversation wording have not yet been recovered, so it remains MEMORY-SUMMARY / NEEDS-SOURCE rather than a dated source-history event.
 
 ## Version and correction policy
 

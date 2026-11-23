@@ -28,12 +28,18 @@ This registry distinguishes a product/project from a repository and from an indi
 | PRJ-0021 | Local AI / Desktop Harness | Local agent execution, MCP, worktrees, risk gates and proof-carrying work | MW-XV Issue #21; desktop/AI packages | REPOSITORY-DOCUMENTED | Reuse MW-XV desktop/runtime boundaries; no competing agent runtime |
 | PRJ-0022 | AGI/g4f experiments | Model aggregation and provider research | `bjo163/agilty` | THIRD-PARTY FORK REFERENCE | GitHub metadata marks the repo as a fork; README identifies GPT4Free/g4f, not an original AGI system |
 
+| PRJ-0023 | CRAYON Framework | General learning / inquiry framework with four cumulative levels, 9 Gate and 13 Way | Library CRAYON v1.3; “Easy Way to Understand Allah” v2 paper | USER IDEA / CONCEPTUAL FRAMEWORK | Versioned baseline; not a validated scientific or cognitive theory; distinct from RGBL OMNISCIENCE METHOD |
+| PRJ-0024 | Dīn Allah — Universal Iman Foundation | Qur’an-governed, four-book comparative research architecture | Library Universal Iman Foundation charter, 20 Aug 2026 | USER IDEA / RESEARCH PROPOSAL | Source-layered synthesis; filename/internal version labels conflict; not a new religion or revelation |
+| PRJ-0025 | QUANTUM–FE STONE ENERGY | Preliminary solar thermal / iron-oxide / ferrite research and DIY planning | Library research paper + 7-tab DIY planner, 17 Oct 2026 | USER IDEA / RESEARCH PROPOSAL | No experiment or new DFT result; novelty unverified; high-temperature ferrite/redox work is lab-only |
+| PRJ-0026 | ROCKSOUL GAME — THE LOST SIGNAL | Narrative-first 2D adventure / idle restoration browser game | `bjo163/rocksoul-game`, README / BLUEPRINT / TODO; main HEAD `38dd326c0e3f` | REPOSITORY-DOCUMENTED / PREPRODUCTION | Early local demo; game repository is read-only to this connection; not production-certified and not a day-one MMO |
+ 
 ## Portfolio interpretation
 
 - **Forward platform target:** PRJ-0005.
 - **Editorial / creative tracks:** PRJ-0001–0008, with separate product/canon boundaries.
 - **Historical source repositories:** PRJ-0002–0004 and PRJ-0015; do not infer that the existence of a successor makes every historical source disposable.
-- **Adjacent product/engineering experiments:** PRJ-0016–0022; reuse only after scope, owner, rights and runtime fit are demonstrated.
+- **Adjacent product/engineering experiments:** PRJ-0016–0026; reuse only after scope, owner, rights and runtime fit are demonstrated.
+- **Framework / research projects:** PRJ-0023–0025 remain research-first; do not make them new MW-XV apps or data stores without an approved gap.
 - **Business context:** PRJ-0018–0020; keep internal operational details in an approved private system, not this public repo.
 
 ## Registry update rules

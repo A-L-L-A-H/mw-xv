@@ -101,7 +101,10 @@ Additional evidence states: `REPOSITORY-DOCUMENTED`, `USER-REPORTED`, `MISSING`,
 
 ## Coverage limitations
 
+The account Library root returned 94 objects in the 2026-11-23 listing snapshot. The 28 document/text/spreadsheet/PDF-type objects include both reviewed and unreviewed files; the count must not be described as 28 fully read documents. Sixty-three PNG objects were listed; individual original prompts, revision histories and publication permissions are not established for all of them.
+
 - The complete ChatGPT account conversation history was not exposed as a single source in this task. The prompt and selected available context were inspected; unprovided exports remain `MISSING`.
+- The Library inventory in this pass contains 94 returned objects: 63 PNGs, 28 document/text/spreadsheet/PDF-type files (3 TXT, 8 MD, 9 DOCX, 7 PDF, 1 XLSX), and 3 other files (2 PATCH, 1 ZIP). This is an inventory snapshot, not a claim that all 94 contents were read.
 - Of 280 accessible repository metadata results, 30 were selected for README and root-tree review. The remaining repositories are still metadata-level in this pass.
 - Private repositories are counted but not identified in public documents; their code, issue, branch, tag, LFS, packages, artifacts and deployments have not been fully audited.
 - Gists, wikis, package registries, container registries, Actions artifacts, Pages, DNS, webhooks, local drives and independent backups require separate access and checks.

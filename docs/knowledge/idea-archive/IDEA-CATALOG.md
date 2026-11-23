@@ -96,9 +96,26 @@
 | IDEA-0059 | WhatsApp connector evaluation; no OpenClaw direction | USER IDEA / DECISION LEAD | Available recent context | Prior preference recorded; connector decision needs fresh exact-version audit |
 | IDEA-0060 | YouTube monitoring / push / live status | USER IDEA | Available recent context | Monitoring requirements not yet converted into validated source-backed task set |
 
+## F. Learning, religious-method, research and game concepts
+
+| Stable ID | Idea / original label | Classification | Current home / evidence | State |
+|---|---|---|---|---|
+| IDEA-0061 | **CRAYON Framework v1.3** — R1 Reality → G2 Governing Order → B3 Being → L4 Light; 9 Gate; 13 Way; clock model | USER IDEA · LIBRARY-SOURCE-READ | `CRAYON_Framework_v1.3_Bilingual_FINAL.docx` (23 Aug 2026); paired PDF | Version 1.3 baseline; proposed conceptual/educational framework, not validated scientific theory |
+| IDEA-0062 | **An Easy Way to Understand Allah** — bilingual pre-scriptural conceptual paper using R1/G2/B3/L4, 9 Gates and 13 Ways | USER IDEA · LIBRARY-SOURCE-READ | `Easy_Way_to_Understand_Allah_Bilingual_Research_Paper_v2_FINAL.docx` | Version 2 paper; non-scriptural entry point; conceptual proposal, not proof or experimentally validated persuasion method |
+| IDEA-0063 | **Dīn Allah — 4 Kitab Allah / Universal Iman Foundation** | USER IDEA · LIBRARY-SOURCE-PARTIAL | `Din_Allah_4_Kitab_Universal_Iman_Foundation_v1.8_FINAL_Universal_Iman_Charter.docx` (20 Aug 2026) | Qur’an-governed comparative research proposal; filename says v1.8 while internal cover says v1.7 and footer also references v1.2; version labels need reconciliation |
+| IDEA-0064 | **QUANTUM–FE STONE ENERGY** — solar air heating, thermal storage, Fe-oxide/ferrite screening | USER IDEA · LIBRARY-SOURCE-PARTIAL | `Quantum_FE_Stone_Research_Paper_ID.docx` and `Quantum_FE_Stone_Research_DIY.xlsx` (17 Oct 2026) | Preliminary scoping review and proposal; no physical experiment or new DFT result; material novelty not established |
+| IDEA-0065 | **ROCKSOUL GAME — THE LOST SIGNAL** | REPOSITORY-DOCUMENTED · USER IDEA | `bjo163/rocksoul-game`, README / BLUEPRINT / TODO; main HEAD `38dd326c0e3f` (26 Oct 2026) | Early local browser demo / preproduction; not a launched MMO; game canon remains candidate |
+| IDEA-0066 | **MEGA TILESET MOONWITNESS / JOURNEY OF LIGHT** — 32×32 top-down RPG visual direction | LIBRARY-CAPTION-ONLY | Selected image captions in Library, including `You need to title this image.irikare.png` and `Moonwitness: Journey of Light Map.png` | Caption/visual metadata only; original prompt, source master and reuse rights are not established |
+| IDEA-0067 | **MoonWitness RPG / 25-prophet Qur’an-mirror game concept** | MEMORY-SUMMARY · USER IDEA · UNRESOLVED | Available account Memory Summary only | Keep separate from ROCKSOUL GAME — The Lost Signal until first-source wording and intended relationship are recovered |
+| IDEA-0068 | **MoonWitness OS v2.0 model** — “4 SOURCE → 7 CHANNEL → 4 PROCESS → AMAL → 4 SCALE AXES → MĪZĀN” | MEMORY-SUMMARY · USER IDEA · NEEDS-SOURCE | Available account Memory Summary only | Preserve as a memory lead; original definitions, ordering and source conversation still need recovery before canon or implementation |
+
+**Version distinction:** CRAYON v1.3 uses `G2 = Governing Order` and `B3 = Being`. The separately named `OMNISCIENCE METHOD / RGBL` paper uses `G = Guidance` and `B = Balance`. These are not interchangeable versions of one acronym.
+
+**CRAYON document variation:** the v1.3 baseline lists Gate 1–9 as SEE, HEAR, TOUCH, TASTE, SMELL, ATTEND, REMEMBER, REASON, CHOOSE; its 13 Ways end with REASON, CONCLUDE, ACT, LIVE. The separate “Easy Way to Understand Allah” paper uses a Gate wording variant (SIGHT, HEARING, TOUCH/BODY, SMELL, TASTE, ATTEND, UNDERSTAND, INTEND, CHOOSE) and a 13-Way variant including REVIEW. Keep both source versions visible until the owner decides whether they are application-specific variants or a formal revision.
+
 ## Catalog status
 
-- **60 stable concept records** are indexed above.
+- **68 stable concept records** are indexed above.
 - Some rows are a family-level record rather than one atomic utterance; do not multiply them into separate unique ideas without a source.
 - Rows marked `REPOSITORY-DOCUMENTED` are not automatically user-locked canon or production capabilities.
 - The catalog is intentionally incomplete where primary source text, complete conversation history, art files, or private archive consent is unavailable.

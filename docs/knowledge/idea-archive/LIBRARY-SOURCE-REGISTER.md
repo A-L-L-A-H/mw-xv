@@ -1,36 +1,51 @@
 # Library Source Register — Availability, Provenance & Privacy
 
-**Snapshot:** 2026-11-23 · **Status:** metadata inventory only.
-This register distinguishes the current-turn master prompt from older Library files with the same generic filename. It deliberately does not expose private diary content or republish unreviewed image binaries.
+**Snapshot:** 2026-11-23 · **Status:** metadata inventory plus selected source review.  
+This register distinguishes raw files, inspected documents, generated captions and unreviewed media. A Library listing is not a full ChatGPT account export.
 
-## Text sources
+## Root inventory snapshot
 
-| Source record | Library / conversation identity | Observed size | Status and treatment |
-|---|---|---:|---|
-| SRC-LIB-0001 | Current-turn user attachment `Pasted text.txt` | 775 lines | Read in full; preserved verbatim at [raw master prompt](../../raw/2026-11-23-master-prompt-total-idea-archive.md) |
-| SRC-LIB-0002 | Older Library `Pasted text.txt` (19 Jun 2026) | 439 lines | Personal first-person note with sensitive private content. **Not copied or summarized in this public repository.** Retain the Library original; any future use requires a scoped private/local intake and explicit publication/retention decision |
-| SRC-LIB-0003 | `Omniscience_Method_RGBL_AI_Ready_Research_Paper.md` | 437 lines | Version 1.0 dated 17 Aug 2026; method summarized in [Framework Registry](FRAMEWORK-REGISTRY.md). Personal experiential detail is not reproduced here |
-| SRC-LIB-0004 | Library folder named `rocksoul` | Folder metadata only in this pass | Folder was visible; recursive contents were not resolved by the available listing call. Do not infer it is empty |
+The Library root listing available in this pass returned **94 objects**:
 
-## Image sources
+| File class | Count | Qualification |
+|---|---:|---|
+| PNG | 63 | Metadata listed; original prompts, revisions and rights were not established for every image |
+| TXT / MD / DOCX / PDF / XLSX | 28 | 3 TXT, 8 MD, 9 DOCX, 7 PDF, 1 XLSX; some were read, some remain metadata-only |
+| PATCH / ZIP | 3 | 2 PATCH and 1 ZIP; content was not included in the selected research review |
 
-The Library root listing returned **21 image files** (19 PNG and 2 JPG) with generic filenames such as `image.png`, numbered `image(n).png`, UUID-named PNG files, two camera-style JPG filenames and one ChatGPT Image filename. These are Library source objects, not assets cleared for publication.
+This is a count of returned Library objects, not a statement that 94 objects were read. The Library listing showed no next-page cursor in this snapshot. The root listing also does not guarantee that every folder, past attachment, conversation export or locally stored item is visible.
 
-- Image file metadata was enumerated and image files were opened in read-only image mode during the audit.
-- Original prompt histories, revision chains, approval records and per-image license/publication rights were not available for every image.
-- Some prior Library search captions described poster / infographic ideas (e.g. Moon / ROCKSOUL / RGB / Spear & Salt / Mars / accountability and other visual concepts). A generated/search caption is **not** the user's original prompt or proof of authorship/canon.
-- No image binary, font, sound or personal photo was copied into MW-XV.
-- New production assets must use the target `packages/assets` manifest and the existing human review / rights gates.
+## Selected text and structured sources
+
+| Source record | Library source | Observed format / date | Review state and treatment |
+|---|---|---|---|
+| SRC-LIB-0001 | Current-turn master prompt, `Teks yang ditempel (1)(2).txt` | 775 lines · 23 Nov 2026 | **SOURCE-READ**; preserved verbatim at [raw master prompt](../../raw/2026-11-23-master-prompt-total-idea-archive.md) |
+| SRC-LIB-0002 | Older Library `Pasted text.txt` | 439 lines · 19 Jun 2026 | **PRIVATE-WITHHELD**; sensitive first-person note; not copied or summarized into public Git |
+| SRC-LIB-0003 | `Omniscience_Method_RGBL_AI_Ready_Research_Paper.md` | 437 lines · v1.0 · 17 Aug 2026 | **SOURCE-READ**; summarized in [Framework Registry](FRAMEWORK-REGISTRY.md); personal experiential detail omitted |
+| SRC-LIB-0004 | Library folder `rocksoul` | Folder metadata | **METADATA-ONLY**; recursive contents were not resolved by the listing call; do not infer it is empty |
+| SRC-LIB-0005 | `CRAYON_Framework_v1.3_Bilingual_FINAL.docx` and paired PDF | 9 pages · v1.3 · 23 Aug 2026 | **SOURCE-READ** for the DOCX text; four cumulative levels, clock metaphor, 9 Gate, 13 Way, audience conditions and non-claims recorded |
+| SRC-LIB-0006 | `Easy_Way_to_Understand_Allah_Bilingual_Research_Paper_v2_FINAL.docx` and paired PDF | 16 pages · v2 | **SOURCE-READ** for the DOCX text; non-scriptural conceptual starting framework; PDF is listed as a paired copy |
+| SRC-LIB-0007 | `Din_Allah_4_Kitab_Universal_Iman_Foundation_v1.8_FINAL_Universal_Iman_Charter.docx` | 56 pages · 20 Aug 2026 | **SOURCE-PARTIAL**; first pages and four-book section inspected. Filename v1.8 conflicts with internal cover v1.7 and footer v1.2 |
+| SRC-LIB-0008 | `Quantum_FE_Stone_Research_Paper_ID.docx` and paired PDF | 14 pages · v1.0 · 17 Oct 2026 | **SOURCE-PARTIAL**; executive summary, method, selected technical sections inspected; preliminary scoping review/proposal only |
+| SRC-LIB-0009 | `Quantum_FE_Stone_Research_DIY.xlsx` | 7 worksheets · 149 extracted rows · v1.0 | **SOURCE-READ**; planner, DIY recipes, BOQ, experiment log, candidate materials and selected literature rows reviewed; explicitly reports no physical experiment |
+| SRC-LIB-0010 | Remaining Library image collection | 63 PNG records | **METADATA-ONLY / RIGHTS-REVIEW** unless an individual item is separately inspected; do not treat captions as original prompt history |
+
+## Image sources and caption-only visual leads
+
+The Library contains image objects with titles / captions relating to (among others) ROCKSOUL / GOD PROMISE posters, MoonWitness Bass-Hunter / Shirat bridge art, a Journey of Light world map, CRAYON / RGB-related posters, “One Moon / AEQ-GHAUTS”, Ya’juj & Ma’juj visual concepts, and a 32×32 “Mega Tileset MoonWitness” top-down RPG atlas.
+
+Some of these titles and descriptions came from generated Library/search captions rather than the original image-generation prompt. They are therefore **CAPTION-ONLY** evidence: useful for navigation and idea recovery, not proof of exact original wording, authorship, canon or reuse rights. No PNG binary, font, music, personal photo or other Library media was copied into MW-XV by this archive update.
 
 ## Evidence-state policy
 
-- `SOURCE-READ`: text bytes were read in full.
-- `METADATA-ONLY`: filename/date/size was observed; contents not reviewed.
-- `IMAGE-OPENED`: image binary was opened for read-only inspection; original prompt/rights may still be missing.
-- `PRIVATE-WITHHELD`: source is available to the user but omitted from public output due private/sensitive content.
-- `CAPTION-ONLY`: only a generated/library caption is known; not original wording.
-- `RIGHTS-REVIEW`: publication or reuse requires per-asset rights review.
+- `SOURCE-READ` — extracted text was read in the inspected range / full document as stated per row.
+- `SOURCE-PARTIAL` — only selected pages or sections were read.
+- `METADATA-ONLY` — filename/date/size was observed; contents not reviewed.
+- `IMAGE-OPENED` — binary was opened read-only; original prompt and rights may still be missing.
+- `PRIVATE-WITHHELD` — source is private/sensitive and omitted from public output.
+- `CAPTION-ONLY` — generated/library caption, not the original user prompt.
+- `RIGHTS-REVIEW` — publication or reuse requires per-asset rights review.
 
 ## Current limits
 
-The Library inventory is not a complete ChatGPT account export. It does not prove that every conversation attachment, older version, prompt, image, local file, gist or backup has been surfaced. New material should be added as source references first; never silently rewrite the original.
+The Library inventory is not a complete ChatGPT account export. It does not prove that every historical conversation attachment, original prompt, older version, image revision, local file, gist, wiki, release asset or backup has been surfaced. User-supplied artwork is not automatically cleared for public redistribution. New material should be added first as a source reference with exact access state; never silently rewrite or overwrite the original.

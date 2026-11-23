@@ -115,3 +115,37 @@ This is a repository-documented domain model, not proof that the whole research 
 - No private or child-sensitive archive content is sent to general search, embeddings, analytics or hosted inference.
 - No public release until source rights, consent, provenance and human review are recorded.
 
+
+
+## 9. CRAYON and the pre-scriptural introduction framework
+
+**Sources:** `CRAYON_Framework_v1.3_Bilingual_FINAL.docx` (Library, 23 Aug 2026) and `Easy_Way_to_Understand_Allah_Bilingual_Research_Paper_v2_FINAL.docx`.
+
+The v1.3 framework's four cumulative layers are:
+
+- `R1 — REALITY`: what exists and can be observed.
+- `G2 — GOVERNING ORDER`: patterns, relationships, regularities and rules in reality.
+- `B3 — BEING`: existence, life, mind, consciousness, agency and human experience.
+- `L4 — LIGHT`: integrated understanding through reasoning and interpretation.
+
+The clock model (12 / 3 / 6 / 9) is a teaching metaphor. The 9 Gate and 13 Way layers describe proposed human-side information processing and inquiry; they are not established cognitive-science taxonomies. The paper expressly calls CRAYON a proposed conceptual framework, not a validated scientific theory. It also says maths/science/logic do not themselves constitute direct empirical measurement of Allah.
+
+**Companion paper:** “An Easy Way to Understand Allah” v2 proposes a non-scriptural entry point for audiences with different religious backgrounds. It separates observation, inference and theological identification. The paper itself says the exact R/G/B/L, 9-Gate and 13-Way construction is proposed and requires empirical testing before claims about effectiveness or persuasion.
+
+**Version issue to preserve:** CRAYON v1.3 names its Gate 6–9 as ATTEND / REMEMBER / REASON / CHOOSE and its 13 Ways include REASON before CONCLUDE. The companion v2 uses ATTEND / UNDERSTAND / INTEND / CHOOSE and includes REVIEW in its 13-Way sequence. This is a documented source variation, not a silent correction.
+
+**Do not merge with OMNISCIENCE RGBL.** The separately archived RGBL paper uses Reality / Guidance / Balance / Light; CRAYON uses Reality / Governing Order / Being / Light.
+
+## 10. Dīn Allah — four-book source architecture and Universal Iman Foundation
+
+**Source:** Library document `Din_Allah_4_Kitab_Universal_Iman_Foundation_v1.8_FINAL_Universal_Iman_Charter.docx`, dated 20 Aug 2026. The file name says v1.8; internal title/cover text labels the charter v1.7 and references a v1.2 research-paper footer. That version history needs reconciliation.
+
+The document calls “Dīn Allah” a Qur’anic concept and “Universal Iman Foundation” an analytical synthesis proposed in the paper, not a new revelation or divine appointment. Its four-book comparative architecture names Taurat, Zabur, Injil and Qur’an. The paper uses Qur’an as a supervisory criterion in its own research model and distinguishes Qur’anic identification of earlier Books from representative current textual witnesses. It explicitly warns against equating current canonical texts automatically with the original revelation named by the Qur’an.
+
+Preserve its evidence classes (including Q-EXPLICIT / Q-CROSS, TRADITION, CREED, SYNTHESIS and HYPOTHESIS) and keep the author's analytical evidence score separate from any assertion of divine truth. This archive records the proposal; it does not validate its theological conclusions or declare scholarly consensus.
+
+## 11. MoonWitness OS v2.0 — memory-summary lead only
+
+The available account Memory Summary retains a structure labelled `4 SOURCE → 7 CHANNEL → 4 PROCESS → AMAL → 4 SCALE AXES → MĪZĀN`. It lists HIDAYAH / NAFS / JIN_SHAYTAN / HUMAN; HEARING / SIGHT / HEART / SKIN / TONGUE / HAND / FOOT; PERCEPTION / UNDERSTANDING / INTENTION / CHOICE; and PERPETRATOR / IMPACT / EXPOSURE / DURATION. It records 4–12–30–70 as scale tiers only, not as axes or magnitudes.
+
+The summary further says the framework's Mīzān calculation is a BASE multiplied by applicable axis multipliers and explicitly says this is a framework, not a literal Qur’anic equation or divine judgment. Since the original source conversation/document was not recovered here, all this remains MEMORY-SUMMARY / NEEDS-SOURCE. Do not implement it as a theological adjudication engine or merge it with CRAYON, RGBL or the Universal Iman paper without explicit source and owner decisions.
