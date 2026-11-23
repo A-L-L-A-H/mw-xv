@@ -1,13 +1,16 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyPluginAsync } from 'fastify';
 import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { jobsManifest } from '@moonwitness/jobs';
 import { manifest as notificationManifest } from '@moonwitness/orm-notification';
 import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
-import { manifest as knowledgeManifest, storeConceptProfiles } from '@moonwitness/orm-knowledge';
+import {
+  conceptProfileHttpPlugin,
+  manifest as knowledgeManifest,
+  storeConceptProfiles,
+} from '@moonwitness/orm-knowledge';
 import knex, { type Knex } from 'knex';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { conceptProfileRoutes } from '../src/routes/concept-profile.routes.js';
 
 const profileId = 'mw:concept-profile:api-synthetic-candidate';
 const profileDocument = {
@@ -69,7 +72,7 @@ describe('concept profile read route authorization boundary', () => {
           groupPermissions: [],
         };
     });
-    await app.register(conceptProfileRoutes);
+    await app.register(conceptProfileHttpPlugin as FastifyPluginAsync);
   });
 
   afterEach(async () => {

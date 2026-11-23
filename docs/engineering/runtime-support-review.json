@@ -4,10 +4,10 @@
     {
       "id": "node",
       "component": "Node.js",
-      "configured": "22",
+      "configured": "24",
       "owner": "repository maintainer (@bjo163)",
-      "reviewedAt": "2026-10-06",
-      "reviewBy": "2026-11-06",
+      "reviewedAt": "2026-11-23",
+      "reviewBy": "2026-12-23",
       "source": "https://github.com/nodejs/Release/blob/main/schedule.json"
     },
     {

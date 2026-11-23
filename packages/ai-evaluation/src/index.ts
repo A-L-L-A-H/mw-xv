@@ -743,3 +743,8 @@ export async function runOverlapDetectorBenchmark(options?: {
     benchmarkSha256: createHash('sha256').update(JSON.stringify(summaryBase)).digest('hex'),
   };
 }
+
+export * from './ablation-gate.js';
+export * from './world-sim.js';
+export * from './adversarial-suite.js';
+export * from './agi-benchmark.js';

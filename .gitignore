@@ -23,4 +23,5 @@ apps/todo/target/
 apps/todo/web/node_modules/
 apps/todo/web/dist/
 apps/todo/web/package-lock.json
+apps/desktop/src-tauri/resources/
 .DS_Store

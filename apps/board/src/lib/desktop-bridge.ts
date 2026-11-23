@@ -252,6 +252,90 @@ export interface DesktopLocalMcpServerConfig {
   readonly enabled: boolean;
 }
 
+export interface DesktopWorktreeAcquireRequest {
+  readonly runId: string;
+  readonly baseRef?: string;
+  readonly allowedPaths?: readonly string[];
+  readonly taskCode?: string;
+  readonly workContractId?: number;
+}
+
+export interface DesktopVisualDnaPalette {
+  readonly primary: string;
+  readonly secondary: string;
+  readonly accent: string;
+  readonly surface: string;
+  readonly ink: string;
+}
+
+export interface DesktopVisualDnaProfile {
+  readonly schemaVersion: 1;
+  readonly profileId: string;
+  readonly name: string;
+  readonly aesthetic: string;
+  readonly palette: DesktopVisualDnaPalette;
+  readonly typography: {
+    readonly displayFont: string;
+    readonly bodyFont: string;
+    readonly monoFont: string;
+  };
+  readonly borderStyle: string;
+  readonly motionPolicy: 'reduced' | 'snappy' | 'expressive';
+  readonly rules: readonly string[];
+  readonly profileSha256: string;
+}
+
+export interface DesktopVisualDnaValidationResult {
+  readonly valid: boolean;
+  readonly profileId: string;
+  readonly checkedAt: string;
+  readonly violations: readonly {
+    readonly code: string;
+    readonly severity: 'error' | 'warning';
+    readonly message: string;
+    readonly token?: string;
+  }[];
+}
+
+export interface DesktopWorkspaceOrbitRepo {
+  readonly repoId: string;
+  readonly label: string;
+  readonly rootPath: string;
+  readonly branch: string | null;
+  readonly headCommit: string | null;
+  readonly dirty: boolean;
+  readonly activeLeaseCount: number;
+  readonly health: 'healthy' | 'dirty' | 'degraded' | 'offline';
+}
+
+export interface DesktopWorkspaceOrbitStatus {
+  readonly schemaVersion: 1;
+  readonly orbitId: string;
+  readonly capturedAt: string;
+  readonly activeRepoId: string | null;
+  readonly repositories: readonly DesktopWorkspaceOrbitRepo[];
+  readonly totalActiveLeases: number;
+  readonly conflictCount: number;
+}
+
+export interface DesktopFlowPrimeDetail {
+  readonly taskCode: string;
+  readonly taskTitle: string;
+  readonly runId?: string;
+  readonly contractCode?: string;
+  readonly scopePaths?: readonly string[];
+  readonly openDrawer?: boolean;
+}
+
+export const DESKTOP_FLOW_PRIME_EVENT = 'mw:desktop-flow-prime';
+
+export function dispatchDesktopFlowPrime(detail: DesktopFlowPrimeDetail): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(
+    new CustomEvent<DesktopFlowPrimeDetail>(DESKTOP_FLOW_PRIME_EVENT, { detail })
+  );
+}
+
 export interface DesktopBridgeSnapshot {
   readonly protocolVersion: '1.0';
   readonly hostSurface: 'apps/board';
@@ -261,6 +345,8 @@ export interface DesktopBridgeSnapshot {
   readonly activeLeases: readonly DesktopGitWorktreeLease[];
   readonly sidecar: DesktopLocalSidecarState;
   readonly mcpServers: readonly DesktopLocalMcpServerConfig[];
+  readonly visualDna?: DesktopVisualDnaProfile | null;
+  readonly workspaceOrbit?: DesktopWorkspaceOrbitStatus | null;
 }
 
 export interface DesktopCapabilityBridge {
@@ -269,6 +355,7 @@ export interface DesktopCapabilityBridge {
   getStatus(): Promise<DesktopBridgeSnapshot>;
   readonly worktree: {
     listLeases(): Promise<readonly DesktopGitWorktreeLease[]>;
+    acquire?(request: DesktopWorktreeAcquireRequest): Promise<DesktopGitWorktreeLease>;
     diff(runId: string): Promise<DesktopWorktreeDiffSummary>;
     readFile?(runId: string, relativePath: string): Promise<string>;
     release(runId: string): Promise<DesktopGitWorktreeLease>;
@@ -299,6 +386,13 @@ export interface DesktopCapabilityBridge {
   };
   readonly mcp: {
     listServers(): readonly DesktopLocalMcpServerConfig[];
+  };
+  readonly visualDna?: {
+    getProfile?(): Promise<DesktopVisualDnaProfile | null>;
+    validateProfile?(profile: DesktopVisualDnaProfile): Promise<DesktopVisualDnaValidationResult>;
+  };
+  readonly workspaceOrbit?: {
+    getStatus?(): Promise<DesktopWorkspaceOrbitStatus>;
   };
   dispose(): void;
 }

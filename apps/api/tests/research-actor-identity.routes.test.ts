@@ -5,7 +5,7 @@ import knex, { type Knex } from 'knex';
 import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { manifest as knowledgeManifest } from '@moonwitness/orm-knowledge';
-import { researchActorIdentityRoutes } from '../src/routes/research-actor-identity.routes.js';
+import { researchActorIdentityHttpPlugin as researchActorIdentityRoutes } from '@moonwitness/orm-knowledge';
 
 describe('research actor identity provisioning API', () => {
   let db: Knex;
@@ -154,6 +154,7 @@ describe('research actor identity provisioning API', () => {
 
   it('documents the bearer-authenticated request and conflict/permission responses', async () => {
     const docsApp = Fastify();
+    docsApp.decorate('db', db);
     await docsApp.register(swagger, {
       openapi: {
         info: { title: 'Test API', version: '1.0.0' },

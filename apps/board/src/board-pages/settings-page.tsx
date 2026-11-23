@@ -2,15 +2,31 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckIcon, MoonIcon, SettingsIcon, SunIcon } from '@moonwitness/ui/icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  CheckIcon,
+  CodeIcon,
+  ColumnsIcon,
+  MoonIcon,
+  RefreshIcon,
+  SecurityIcon,
+  SettingsIcon,
+  SignalIcon,
+  SunIcon,
+} from '@moonwitness/ui/icons';
 import { toast } from '@moonwitness/ui/components/toast';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { NotificationPreferences } from '@/components/settings/notification-preferences';
+import { DesktopDoctorCard } from '@/components/desktop/desktop-doctor-card';
+import { LocalRagSearchPanel } from '@/components/ai/local-rag-search-panel';
+import { useDesktopBridge } from '@/lib/desktop-bridge';
+import { useDesktopMode } from '@/lib/desktop-mode';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { Label } from '@moonwitness/ui/components/label';
 import { Input } from '@moonwitness/ui/components/input';
+import { MetricTile } from '@moonwitness/ui/components/metric-tile';
+import { Panel } from '@moonwitness/ui/components/panel';
 import {
   Select,
   SelectContent,
@@ -83,6 +99,35 @@ function validateTypedConfigValue(value: string, valueType: ConfigValueType): st
   return null;
 }
 
+interface LocalAiModelEntry {
+  id: string;
+  providerId: string;
+  providerName: string;
+  providerKind: 'ollama' | 'lmstudio' | 'vllm';
+  endpoint: string;
+}
+
+interface LocalAiDiscoveryPayload {
+  onlineCount: number;
+  models: LocalAiModelEntry[];
+  recommendedWorkspaceModel: string | null;
+  recommendedDevModel: string | null;
+}
+
+interface LocalBackupEntry {
+  fileName: string;
+  sha256: string;
+  sizeBytes: number;
+  createdAt: string;
+  verified: boolean;
+}
+
+interface LocalBackupsPayload {
+  sqlitePath: string;
+  backupsDir: string | null;
+  backups: LocalBackupEntry[];
+}
+
 const TIMEZONES = [
   'UTC',
   'Asia/Jakarta',
@@ -98,6 +143,8 @@ const TIMEZONES = [
 export function SettingsPage() {
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'superadmin' || user?.role === 'system';
+  const { isDesktop } = useDesktopBridge();
+  const { mode: desktopMode, setMode: setDesktopMode } = useDesktopMode();
   const { skin, mode, density, skins, setSkin, setMode, setDensity } = useSkin();
   const router = useRouter();
   const [storedPreferences] = useState<BoardPreferences>(readPreferences);
@@ -122,6 +169,47 @@ export function SettingsPage() {
   const [creatingFlag, setCreatingFlag] = useState(false);
 
   const queryClient = useQueryClient();
+  const localAiQuery = useQuery({
+    queryKey: ['desktop', 'ai', 'models'],
+    queryFn: async () => {
+      const response = await client.request<{
+        success: boolean;
+        data: LocalAiDiscoveryPayload;
+      }>('/api/desktop/ai/models');
+      return response.data;
+    },
+    enabled: isDesktop,
+  });
+  const localBackupsQuery = useQuery({
+    queryKey: ['desktop', 'backups'],
+    queryFn: async () => {
+      const response = await client.request<{
+        success: boolean;
+        data: LocalBackupsPayload;
+      }>('/api/desktop/backups');
+      return response.data;
+    },
+    enabled: isDesktop,
+  });
+  const createBackupMutation = useMutation({
+    mutationFn: async () => {
+      const response = await client.request<{
+        success: boolean;
+        data: LocalBackupEntry;
+      }>('/api/desktop/backups', {
+        method: 'POST',
+        body: {},
+      });
+      return response.data;
+    },
+    onSuccess: async (entry) => {
+      toast.success(`Created verified backup: ${entry.fileName}`);
+      await queryClient.invalidateQueries({ queryKey: ['desktop', 'backups'] });
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Unable to create local backup.');
+    },
+  });
   const { data: userPreferences, isLoading: userLoading } = useQuery({
     queryKey: ['settings', 'user', user?.id],
     queryFn: () => client.getMe(),
@@ -406,6 +494,201 @@ export function SettingsPage() {
         <h1 className="ink-title mt-2 text-4xl sm:text-5xl">Settings</h1>
         <p className="mt-2 text-ink-soft">Personal display and regional preferences.</p>
       </header>
+
+      {isDesktop && (
+        <section className="ink-panel space-y-5 bg-card p-5 sm:p-8">
+          <div className="flex items-start gap-3">
+            <span className="grid size-10 shrink-0 place-items-center border-2 border-ink bg-primary text-primary-foreground shadow-ink-sm">
+              {desktopMode === 'workspace' ? (
+                <ColumnsIcon className="size-5" />
+              ) : (
+                <CodeIcon className="size-5" />
+              )}
+            </span>
+            <div>
+              <h2 className="font-display text-xl uppercase tracking-wide">
+                Desktop Experience Mode
+              </h2>
+              <p className="text-sm text-ink-soft">
+                Switch between clean Workspace productivity and full DX / Developer agent harness.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                {
+                  id: 'workspace',
+                  label: 'Workspace',
+                  description:
+                    'Tasks & Kanban, Knowledge, Stories, Notes — offline-first, zero technical clutter.',
+                  icon: ColumnsIcon,
+                },
+                {
+                  id: 'developer',
+                  label: 'DX / Developer',
+                  description:
+                    'Full AI Mission Control, Git Worktrees, Bounded PTY, MCP Server, and Model Explorer.',
+                  icon: CodeIcon,
+                },
+              ] as const
+            ).map((option) => {
+              const Icon = option.icon;
+              const selected = desktopMode === option.id;
+              return (
+                <Button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => {
+                    setDesktopMode(option.id);
+                    toast.success(
+                      `Switched Desktop Experience Mode to ${option.label}.`
+                    );
+                  }}
+                  className={`flex h-auto flex-col items-start gap-2 border-2 p-4 text-left transition-colors ${
+                    selected
+                      ? 'border-ink bg-primary/30 shadow-ink-sm'
+                      : 'border-ink/30 hover:border-ink'
+                  }`}
+                >
+                  <div className="flex w-full items-center gap-2">
+                    <Icon className="size-5 shrink-0" />
+                    <span className="font-display uppercase">{option.label}</span>
+                    {selected && <CheckIcon className="ml-auto size-4 shrink-0" />}
+                  </div>
+                  <span className="text-xs font-normal normal-case text-ink-soft">
+                    {option.description}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {isDesktop && <DesktopDoctorCard />}
+
+      {isDesktop && <LocalRagSearchPanel />}
+
+      {isDesktop && (
+        <Panel className="space-y-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <SecurityIcon className="size-5 text-primary" />
+                <h2 className="font-display text-xl uppercase tracking-wide">
+                  Local AI &amp; Offline Backup
+                </h2>
+                <Badge variant={localAiQuery.data && localAiQuery.data.onlineCount > 0 ? 'cyan' : 'default'}>
+                  {localAiQuery.data ? `${localAiQuery.data.onlineCount} provider(s) online` : 'Scanning...'}
+                </Badge>
+              </div>
+              <p className="text-sm text-ink-soft">
+                Zero-config Ollama / LM Studio discovery and SHA-256 verified local SQLite snapshots.
+                Available in both Workspace and DX modes.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={localAiQuery.isFetching}
+                onClick={() => void localAiQuery.refetch()}
+              >
+                <RefreshIcon className="mr-2 size-4" />
+                {localAiQuery.isFetching ? 'Scanning...' : 'Rescan Local AI'}
+              </Button>
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                disabled={createBackupMutation.isPending}
+                onClick={() => createBackupMutation.mutate()}
+              >
+                <CheckIcon className="mr-2 size-4" />
+                {createBackupMutation.isPending ? 'Backing up...' : 'Create Local Backup'}
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <MetricTile
+              label="Discovered Local Models"
+              value={String(localAiQuery.data?.models.length ?? 0)}
+              icon={<SignalIcon className="size-4 text-primary" />}
+            />
+            <MetricTile
+              label="Recommended Model"
+              value={
+                (desktopMode === 'developer'
+                  ? localAiQuery.data?.recommendedDevModel
+                  : localAiQuery.data?.recommendedWorkspaceModel) ?? 'None detected'
+              }
+              icon={<CodeIcon className="size-4 text-primary" />}
+            />
+            <MetricTile
+              label="Verified Local Backups"
+              value={String(localBackupsQuery.data?.backups.length ?? 0)}
+              icon={<SecurityIcon className="size-4 text-primary" />}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
+              Local AI Models (Ollama / LM Studio / vLLM)
+            </p>
+            {localAiQuery.isLoading ? (
+              <Skeleton className="h-14 w-full" />
+            ) : localAiQuery.data && localAiQuery.data.models.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {localAiQuery.data.models.map((model) => (
+                  <Badge key={`${model.providerId}:${model.id}`} variant="cyan">
+                    {model.providerName}: {model.id}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-ink-soft">
+                No local Ollama (127.0.0.1:11434) or LM Studio (127.0.0.1:1234) models detected.
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2 border-t border-ink/20 pt-4">
+            <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
+              Offline SQLite Backups
+            </p>
+            {localBackupsQuery.isLoading ? (
+              <Skeleton className="h-16 w-full" />
+            ) : localBackupsQuery.data && localBackupsQuery.data.backups.length > 0 ? (
+              <div className="space-y-2">
+                {localBackupsQuery.data.backups.slice(0, 5).map((backup) => (
+                  <div
+                    key={backup.fileName}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded border border-ink/20 px-3 py-2 text-xs"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate font-mono font-medium">{backup.fileName}</div>
+                      <div className="font-mono text-[11px] text-ink-soft">
+                        SHA-256: {backup.sha256.slice(0, 16)}... &bull; {(backup.sizeBytes / 1024).toFixed(1)} KB
+                      </div>
+                    </div>
+                    <Badge variant={backup.verified ? 'cyan' : 'destructive'}>
+                      {backup.verified ? 'Verified' : 'Unverified'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-ink-soft">
+                No local backups created yet. Click &ldquo;Create Local Backup&rdquo; to snapshot your offline database.
+              </p>
+            )}
+          </div>
+        </Panel>
+      )}
 
       <section className="ink-panel space-y-6 bg-card p-5 sm:p-8">
         <div className="flex items-start gap-3">

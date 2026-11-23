@@ -2,7 +2,6 @@ import Fastify from 'fastify';
 import { readQuranPassage, readTextualWitnessPassage } from '@moonwitness/corpus';
 import { canAccess } from '../src/auth/policy.js';
 import { getRecordRuleDomain } from '../src/auth/rules.js';
-import { resolveCorpusDataRoot } from '../src/routes/corpus.routes.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import knex, { type Knex } from 'knex';
 import { installAddons } from '@moonwitness/orm';
@@ -15,9 +14,10 @@ import {
   createResearchGraphRelease,
   manifest as knowledgeManifest,
   readActiveResearchGraphRelease,
+  researchReviewHttpPlugin as researchReviewRoutes,
+  resolveCorpusDataRoot,
 } from '@moonwitness/orm-knowledge';
 import { ensureResearchReviewWorkflow } from '../src/research-review-workflow.js';
-import { researchReviewRoutes } from '../src/routes/research-review.routes.js';
 
 const subjectId = 'mw:assertion:api-review-001';
 const scopeId = 'mw:concept:api-review-scope';

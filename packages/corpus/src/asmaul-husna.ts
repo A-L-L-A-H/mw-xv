@@ -1,0 +1,217 @@
+export type AsmaulHusnaCluster =
+  | 'Mercy'
+  | 'Sovereignty'
+  | 'Knowledge'
+  | 'Creation'
+  | 'Justice'
+  | 'Guidance'
+  | 'Sustenance'
+  | 'Majesty';
+
+export interface AsmaulHusnaEntry {
+  readonly ordinal: number;
+  readonly arabic: string;
+  readonly transliteration: string;
+  readonly meaningEn: string;
+  readonly meaningId: string;
+  readonly cluster: AsmaulHusnaCluster;
+}
+
+export type AsmaulHusnaRelationKind =
+  | 'complementary_pair'
+  | 'thematic_kin'
+  | 'attribute_intensification';
+
+export interface AsmaulHusnaConceptEdge {
+  readonly fromOrdinal: number;
+  readonly toOrdinal: number;
+  readonly relation: AsmaulHusnaRelationKind;
+  readonly cluster: AsmaulHusnaCluster;
+}
+
+export const ASMAUL_HUSNA_DATASET: readonly AsmaulHusnaEntry[] = Object.freeze([
+  { ordinal: 1, arabic: 'الرَّحْمَنُ', transliteration: 'Ar-Rahman', meaningEn: 'The Most Merciful', meaningId: 'Yang Maha Pengasih', cluster: 'Mercy' },
+  { ordinal: 2, arabic: 'الرَّحِيمُ', transliteration: 'Ar-Rahim', meaningEn: 'The Most Compassionate', meaningId: 'Yang Maha Penyayang', cluster: 'Mercy' },
+  { ordinal: 3, arabic: 'الْمَلِكُ', transliteration: 'Al-Malik', meaningEn: 'The King and Sovereign', meaningId: 'Yang Maha Merajai', cluster: 'Sovereignty' },
+  { ordinal: 4, arabic: 'الْقُدُّوسُ', transliteration: 'Al-Quddus', meaningEn: 'The Most Holy', meaningId: 'Yang Maha Suci', cluster: 'Majesty' },
+  { ordinal: 5, arabic: 'السَّلَامُ', transliteration: 'As-Salam', meaningEn: 'The Source of Peace', meaningId: 'Yang Maha Memberi Kesejahteraan', cluster: 'Mercy' },
+  { ordinal: 6, arabic: 'الْمُؤْمِنُ', transliteration: 'Al-Mumin', meaningEn: 'The Giver of Security', meaningId: 'Yang Maha Memberi Keamanan', cluster: 'Sustenance' },
+  { ordinal: 7, arabic: 'الْمُهَيْمِنُ', transliteration: 'Al-Muhaymin', meaningEn: 'The Guardian and Overseer', meaningId: 'Yang Maha Memelihara', cluster: 'Sovereignty' },
+  { ordinal: 8, arabic: 'الْعَزِيزُ', transliteration: 'Al-Aziz', meaningEn: 'The Almighty', meaningId: 'Yang Maha Perkasa', cluster: 'Majesty' },
+  { ordinal: 9, arabic: 'الْجَبَّارُ', transliteration: 'Al-Jabbar', meaningEn: 'The Compeller and Restorer', meaningId: 'Yang Memiliki Mutlak Kegagahan', cluster: 'Majesty' },
+  { ordinal: 10, arabic: 'الْمُتَكَبِّرُ', transliteration: 'Al-Mutakabbir', meaningEn: 'The Supreme', meaningId: 'Yang Maha Megah', cluster: 'Majesty' },
+  { ordinal: 11, arabic: 'الْخَالِقُ', transliteration: 'Al-Khaliq', meaningEn: 'The Creator', meaningId: 'Yang Maha Pencipta', cluster: 'Creation' },
+  { ordinal: 12, arabic: 'الْبَارِئُ', transliteration: 'Al-Bari', meaningEn: 'The Evolver and Maker', meaningId: 'Yang Maha Melepaskan', cluster: 'Creation' },
+  { ordinal: 13, arabic: 'الْمُصَوِّرُ', transliteration: 'Al-Musawwir', meaningEn: 'The Fashioner of Forms', meaningId: 'Yang Maha Membentuk Rupa', cluster: 'Creation' },
+  { ordinal: 14, arabic: 'الْغَفَّارُ', transliteration: 'Al-Ghaffar', meaningEn: 'The Constant Forgiver', meaningId: 'Yang Maha Pengampun', cluster: 'Mercy' },
+  { ordinal: 15, arabic: 'الْقَهَّارُ', transliteration: 'Al-Qahhar', meaningEn: 'The All-Prevailing One', meaningId: 'Yang Maha Menundukkan', cluster: 'Sovereignty' },
+  { ordinal: 16, arabic: 'الْوَهَّابُ', transliteration: 'Al-Wahhab', meaningEn: 'The Supreme Bestower', meaningId: 'Yang Maha Pemberi Karunia', cluster: 'Sustenance' },
+  { ordinal: 17, arabic: 'الرَّزَّاقُ', transliteration: 'Ar-Razzaq', meaningEn: 'The Provider', meaningId: 'Yang Maha Pemberi Rezeki', cluster: 'Sustenance' },
+  { ordinal: 18, arabic: 'الْفَتَّاحُ', transliteration: 'Al-Fattah', meaningEn: 'The Opener and Judge', meaningId: 'Yang Maha Pembuka Rahmat', cluster: 'Guidance' },
+  { ordinal: 19, arabic: 'الْعَلِيمُ', transliteration: 'Al-Alim', meaningEn: 'The All-Knowing', meaningId: 'Yang Maha Mengetahui', cluster: 'Knowledge' },
+  { ordinal: 20, arabic: 'الْقَابِضُ', transliteration: 'Al-Qabid', meaningEn: 'The Withholder', meaningId: 'Yang Maha Menyempitkan', cluster: 'Sovereignty' },
+  { ordinal: 21, arabic: 'الْبَاسِطُ', transliteration: 'Al-Basit', meaningEn: 'The Extender', meaningId: 'Yang Maha Melapangkan', cluster: 'Sustenance' },
+  { ordinal: 22, arabic: 'الْخَافِضُ', transliteration: 'Al-Khafid', meaningEn: 'The Reducer', meaningId: 'Yang Maha Merendahkan', cluster: 'Justice' },
+  { ordinal: 23, arabic: 'الرَّافِعُ', transliteration: 'Ar-Rafi', meaningEn: 'The Exalter', meaningId: 'Yang Maha Meninggikan', cluster: 'Majesty' },
+  { ordinal: 24, arabic: 'الْمُعِزُّ', transliteration: 'Al-Muizz', meaningEn: 'The Honourer and Bestower', meaningId: 'Yang Maha Memuliakan', cluster: 'Sovereignty' },
+  { ordinal: 25, arabic: 'الْمُذِلُّ', transliteration: 'Al-Mudhill', meaningEn: 'The Dishonourer', meaningId: 'Yang Maha Menghinakan', cluster: 'Justice' },
+  { ordinal: 26, arabic: 'السَّمِيعُ', transliteration: 'As-Sami', meaningEn: 'The All-Hearing', meaningId: 'Yang Maha Mendengar', cluster: 'Knowledge' },
+  { ordinal: 27, arabic: 'الْبَصِيرُ', transliteration: 'Al-Basir', meaningEn: 'The All-Seeing', meaningId: 'Yang Maha Melihat', cluster: 'Knowledge' },
+  { ordinal: 28, arabic: 'الْحَكَمُ', transliteration: 'Al-Hakam', meaningEn: 'The Impartial Judge', meaningId: 'Yang Maha Menetapkan', cluster: 'Justice' },
+  { ordinal: 29, arabic: 'الْعَدْلُ', transliteration: 'Al-Adl', meaningEn: 'The Utterly Just', meaningId: 'Yang Maha Adil', cluster: 'Justice' },
+  { ordinal: 30, arabic: 'اللَّطِيفُ', transliteration: 'Al-Latif', meaningEn: 'The Subtle One', meaningId: 'Yang Maha Lembut', cluster: 'Mercy' },
+  { ordinal: 31, arabic: 'الْخَبِيرُ', transliteration: 'Al-Khabir', meaningEn: 'The All-Aware', meaningId: 'Yang Maha Mengenal', cluster: 'Knowledge' },
+  { ordinal: 32, arabic: 'الْحَلِيمُ', transliteration: 'Al-Halim', meaningEn: 'The Most Forbearing', meaningId: 'Yang Maha Penyantun', cluster: 'Mercy' },
+  { ordinal: 33, arabic: 'الْعَظِيمُ', transliteration: 'Al-Azim', meaningEn: 'The Magnificent', meaningId: 'Yang Maha Agung', cluster: 'Majesty' },
+  { ordinal: 34, arabic: 'الْغَفُورُ', transliteration: 'Al-Ghafur', meaningEn: 'The Great Forgiver', meaningId: 'Yang Maha Memberi Pengampunan', cluster: 'Mercy' },
+  { ordinal: 35, arabic: 'الشَّكُورُ', transliteration: 'Ash-Shakur', meaningEn: 'The Most Appreciative', meaningId: 'Yang Maha Pembalas Budi', cluster: 'Mercy' },
+  { ordinal: 36, arabic: 'الْعَلِيُّ', transliteration: 'Al-Aliyy', meaningEn: 'The Most High', meaningId: 'Yang Maha Tinggi', cluster: 'Majesty' },
+  { ordinal: 37, arabic: 'الْكَبِيرُ', transliteration: 'Al-Kabir', meaningEn: 'The Most Great', meaningId: 'Yang Maha Besar', cluster: 'Majesty' },
+  { ordinal: 38, arabic: 'الْحَفِيظُ', transliteration: 'Al-Hafiz', meaningEn: 'The Preserver', meaningId: 'Yang Maha Memelihara', cluster: 'Sustenance' },
+  { ordinal: 39, arabic: 'الْمُقِيتُ', transliteration: 'Al-Muqit', meaningEn: 'The Sustainer', meaningId: 'Yang Maha Pemberi Kecukupan', cluster: 'Sustenance' },
+  { ordinal: 40, arabic: 'الْحَسِيبُ', transliteration: 'Al-Hasib', meaningEn: 'The Reckoner', meaningId: 'Yang Maha Membuat Perhitungan', cluster: 'Justice' },
+  { ordinal: 41, arabic: 'الْجَلِيلُ', transliteration: 'Al-Jalil', meaningEn: 'The Majestic', meaningId: 'Yang Maha Luhur', cluster: 'Majesty' },
+  { ordinal: 42, arabic: 'الْكَرِيمُ', transliteration: 'Al-Karim', meaningEn: 'The Most Generous', meaningId: 'Yang Maha Pemurah', cluster: 'Sustenance' },
+  { ordinal: 43, arabic: 'الرَّقِيبُ', transliteration: 'Ar-Raqib', meaningEn: 'The Watchful', meaningId: 'Yang Maha Mengawasi', cluster: 'Knowledge' },
+  { ordinal: 44, arabic: 'الْمُجِيبُ', transliteration: 'Al-Mujib', meaningEn: 'The Responsive One', meaningId: 'Yang Maha Mengabulkan', cluster: 'Mercy' },
+  { ordinal: 45, arabic: 'الْوَاسِعُ', transliteration: 'Al-Wasi', meaningEn: 'The All-Encompassing', meaningId: 'Yang Maha Luas', cluster: 'Knowledge' },
+  { ordinal: 46, arabic: 'الْحَكِيمُ', transliteration: 'Al-Hakim', meaningEn: 'The All-Wise', meaningId: 'Yang Maha Bijaksana', cluster: 'Knowledge' },
+  { ordinal: 47, arabic: 'الْوَدُودُ', transliteration: 'Al-Wadud', meaningEn: 'The Most Loving', meaningId: 'Yang Maha Mengasihi', cluster: 'Mercy' },
+  { ordinal: 48, arabic: 'الْمَجِيدُ', transliteration: 'Al-Majid', meaningEn: 'The Glorious', meaningId: 'Yang Maha Mulia', cluster: 'Majesty' },
+  { ordinal: 49, arabic: 'الْبَاعِثُ', transliteration: 'Al-Baith', meaningEn: 'The Resurrector', meaningId: 'Yang Maha Membangkitkan', cluster: 'Creation' },
+  { ordinal: 50, arabic: 'الشَّهِيدُ', transliteration: 'Ash-Shahid', meaningEn: 'The All-Witnessing', meaningId: 'Yang Maha Menyaksikan', cluster: 'Knowledge' },
+  { ordinal: 51, arabic: 'الْحَقُّ', transliteration: 'Al-Haqq', meaningEn: 'The Absolute Truth', meaningId: 'Yang Maha Benar', cluster: 'Justice' },
+  { ordinal: 52, arabic: 'الْوَكِيلُ', transliteration: 'Al-Wakil', meaningEn: 'The Trustee and Disposer of Affairs', meaningId: 'Yang Maha Memelihara', cluster: 'Sustenance' },
+  { ordinal: 53, arabic: 'الْقَوِيُّ', transliteration: 'Al-Qawiyy', meaningEn: 'The All-Strong', meaningId: 'Yang Maha Kuat', cluster: 'Majesty' },
+  { ordinal: 54, arabic: 'الْمَتِينُ', transliteration: 'Al-Matin', meaningEn: 'The Firm and Steadfast', meaningId: 'Yang Maha Kokoh', cluster: 'Majesty' },
+  { ordinal: 55, arabic: 'الْوَلِيُّ', transliteration: 'Al-Waliyy', meaningEn: 'The Protecting Associate', meaningId: 'Yang Maha Melindungi', cluster: 'Guidance' },
+  { ordinal: 56, arabic: 'الْحَمِيدُ', transliteration: 'Al-Hamid', meaningEn: 'The Praiseworthy', meaningId: 'Yang Maha Terpuji', cluster: 'Majesty' },
+  { ordinal: 57, arabic: 'الْمُحْصِي', transliteration: 'Al-Muhsi', meaningEn: 'The All-Enumerating', meaningId: 'Yang Maha Menghitung', cluster: 'Knowledge' },
+  { ordinal: 58, arabic: 'الْمُبْدِئُ', transliteration: 'Al-Mubdi', meaningEn: 'The Originator', meaningId: 'Yang Maha Memulai', cluster: 'Creation' },
+  { ordinal: 59, arabic: 'الْمُعِيدُ', transliteration: 'Al-Muid', meaningEn: 'The Restorer', meaningId: 'Yang Maha Mengembalikan Kehidupan', cluster: 'Creation' },
+  { ordinal: 60, arabic: 'الْمُحْيِي', transliteration: 'Al-Muhyi', meaningEn: 'The Giver of Life', meaningId: 'Yang Maha Menghidupkan', cluster: 'Creation' },
+  { ordinal: 61, arabic: 'الْمُمِيتُ', transliteration: 'Al-Mumit', meaningEn: 'The Bringer of Death', meaningId: 'Yang Maha Mematikan', cluster: 'Creation' },
+  { ordinal: 62, arabic: 'الْحَيُّ', transliteration: 'Al-Hayy', meaningEn: 'The Ever-Living', meaningId: 'Yang Maha Hidup', cluster: 'Creation' },
+  { ordinal: 63, arabic: 'الْقَيُّومُ', transliteration: 'Al-Qayyum', meaningEn: 'The Self-Subsisting Sustainer', meaningId: 'Yang Maha Mandiri', cluster: 'Sovereignty' },
+  { ordinal: 64, arabic: 'الْوَاجِدُ', transliteration: 'Al-Wajid', meaningEn: 'The Perceiver and Finder', meaningId: 'Yang Maha Penemu', cluster: 'Knowledge' },
+  { ordinal: 65, arabic: 'الْمَاجِدُ', transliteration: 'Al-Maajid', meaningEn: 'The Illustrious and Noble', meaningId: 'Yang Maha Mulia', cluster: 'Majesty' },
+  { ordinal: 66, arabic: 'الْوَاحِدُ', transliteration: 'Al-Wahid', meaningEn: 'The One', meaningId: 'Yang Maha Tunggal', cluster: 'Sovereignty' },
+  { ordinal: 67, arabic: 'الْأَحَدُ', transliteration: 'Al-Ahad', meaningEn: 'The Unique and Indivisible', meaningId: 'Yang Maha Esa', cluster: 'Sovereignty' },
+  { ordinal: 68, arabic: 'الصَّمَدُ', transliteration: 'As-Samad', meaningEn: 'The Eternal Refuge', meaningId: 'Yang Maha Dibutuhkan', cluster: 'Sustenance' },
+  { ordinal: 69, arabic: 'الْقَادِرُ', transliteration: 'Al-Qadir', meaningEn: 'The Capable and Omnipotent', meaningId: 'Yang Maha Menentukan', cluster: 'Sovereignty' },
+  { ordinal: 70, arabic: 'الْمُقْتَدِرُ', transliteration: 'Al-Muqtadir', meaningEn: 'The All-Determiner', meaningId: 'Yang Maha Berkuasa', cluster: 'Sovereignty' },
+  { ordinal: 71, arabic: 'الْمُقَدِّمُ', transliteration: 'Al-Muqaddim', meaningEn: 'The Expediter', meaningId: 'Yang Maha Mendahulukan', cluster: 'Sovereignty' },
+  { ordinal: 72, arabic: 'الْمُؤَخِّرُ', transliteration: 'Al-Muakhkhir', meaningEn: 'The Delayer', meaningId: 'Yang Maha Mengakhirkan', cluster: 'Sovereignty' },
+  { ordinal: 73, arabic: 'الْأَوَّلُ', transliteration: 'Al-Awwal', meaningEn: 'The First', meaningId: 'Yang Maha Awal', cluster: 'Majesty' },
+  { ordinal: 74, arabic: 'الْآخِرُ', transliteration: 'Al-Akhir', meaningEn: 'The Last', meaningId: 'Yang Maha Akhir', cluster: 'Majesty' },
+  { ordinal: 75, arabic: 'الظَّاهِرُ', transliteration: 'Az-Zahir', meaningEn: 'The Manifest', meaningId: 'Yang Maha Nyata', cluster: 'Knowledge' },
+  { ordinal: 76, arabic: 'الْبَاطِنُ', transliteration: 'Al-Batin', meaningEn: 'The Hidden One', meaningId: 'Yang Maha Ghaib', cluster: 'Knowledge' },
+  { ordinal: 77, arabic: 'الْوَالِي', transliteration: 'Al-Wali', meaningEn: 'The Governor', meaningId: 'Yang Maha Memerintah', cluster: 'Sovereignty' },
+  { ordinal: 78, arabic: 'الْمُتَعَالِي', transliteration: 'Al-Mutaali', meaningEn: 'The Self-Exalted', meaningId: 'Yang Maha Tinggi', cluster: 'Majesty' },
+  { ordinal: 79, arabic: 'الْبَرُّ', transliteration: 'Al-Barr', meaningEn: 'The Source of All Goodness', meaningId: 'Yang Maha Penderma', cluster: 'Mercy' },
+  { ordinal: 80, arabic: 'التَّوَّابُ', transliteration: 'At-Tawwab', meaningEn: 'The Ever-Acceptor of Repentance', meaningId: 'Yang Maha Penerima Tobat', cluster: 'Mercy' },
+  { ordinal: 81, arabic: 'الْمُنْتَقِمُ', transliteration: 'Al-Muntaqim', meaningEn: 'The Avenger', meaningId: 'Yang Maha Pemberi Balasan', cluster: 'Justice' },
+  { ordinal: 82, arabic: 'الْعَفُوُّ', transliteration: 'Al-Afuww', meaningEn: 'The Pardoner', meaningId: 'Yang Maha Pemaaf', cluster: 'Mercy' },
+  { ordinal: 83, arabic: 'الرَّؤُوفُ', transliteration: 'Ar-Rauf', meaningEn: 'The Most Kind', meaningId: 'Yang Maha Pengasuh', cluster: 'Mercy' },
+  { ordinal: 84, arabic: 'مَالِكُ الْمُلْكِ', transliteration: 'Malik-ul-Mulk', meaningEn: 'Master of the Kingdom', meaningId: 'Yang Maha Penguasa Kerajaan', cluster: 'Sovereignty' },
+  { ordinal: 85, arabic: 'ذُو الْجَلَالِ وَالْإِكْرَامِ', transliteration: 'Dhul-Jalali wal-Ikram', meaningEn: 'Possessor of Glory and Honour', meaningId: 'Yang Maha Pemilik Kebesaran dan Kemuliaan', cluster: 'Majesty' },
+  { ordinal: 86, arabic: 'الْمُقْسِطُ', transliteration: 'Al-Muqsit', meaningEn: 'The Equitable', meaningId: 'Yang Maha Pemberi Keadilan', cluster: 'Justice' },
+  { ordinal: 87, arabic: 'الْجَامِعُ', transliteration: 'Al-Jami', meaningEn: 'The Gatherer', meaningId: 'Yang Maha Mengumpulkan', cluster: 'Justice' },
+  { ordinal: 88, arabic: 'الْغَنِيُّ', transliteration: 'Al-Ghaniyy', meaningEn: 'The Self-Sufficient', meaningId: 'Yang Maha Kaya', cluster: 'Sustenance' },
+  { ordinal: 89, arabic: 'الْمُغْنِي', transliteration: 'Al-Mughni', meaningEn: 'The Enricher', meaningId: 'Yang Maha Pemberi Kekayaan', cluster: 'Sustenance' },
+  { ordinal: 90, arabic: 'الْمَانِعُ', transliteration: 'Al-Mani', meaningEn: 'The Withholder and Preventer', meaningId: 'Yang Maha Mencegah', cluster: 'Sovereignty' },
+  { ordinal: 91, arabic: 'الضَّارُّ', transliteration: 'Ad-Darr', meaningEn: 'The Distresser', meaningId: 'Yang Maha Penimpa Kemudharatan', cluster: 'Justice' },
+  { ordinal: 92, arabic: 'النَّافِعُ', transliteration: 'An-Nafi', meaningEn: 'The Propitious and Benefactor', meaningId: 'Yang Maha Memberi Manfaat', cluster: 'Sustenance' },
+  { ordinal: 93, arabic: 'النُّورُ', transliteration: 'An-Nur', meaningEn: 'The Light', meaningId: 'Yang Maha Bercahaya', cluster: 'Guidance' },
+  { ordinal: 94, arabic: 'الْهَادِي', transliteration: 'Al-Hadi', meaningEn: 'The Guide', meaningId: 'Yang Maha Pemberi Petunjuk', cluster: 'Guidance' },
+  { ordinal: 95, arabic: 'الْبَدِيعُ', transliteration: 'Al-Badi', meaningEn: 'The Incomparable Originator', meaningId: 'Yang Maha Pencipta Tiada Bandingannya', cluster: 'Creation' },
+  { ordinal: 96, arabic: 'الْبَاقِي', transliteration: 'Al-Baqi', meaningEn: 'The Everlasting', meaningId: 'Yang Maha Kekal', cluster: 'Majesty' },
+  { ordinal: 97, arabic: 'الْوَارِثُ', transliteration: 'Al-Warith', meaningEn: 'The Inheritor', meaningId: 'Yang Maha Pewaris', cluster: 'Sovereignty' },
+  { ordinal: 98, arabic: 'الرَّشِيدُ', transliteration: 'Ar-Rashid', meaningEn: 'The Guide to the Right Path', meaningId: 'Yang Maha Pandai', cluster: 'Guidance' },
+  { ordinal: 99, arabic: 'الصَّبُورُ', transliteration: 'As-Sabur', meaningEn: 'The Most Patient', meaningId: 'Yang Maha Sabar', cluster: 'Mercy' },
+]);
+
+export const ASMAUL_HUSNA_CONCEPT_EDGES: readonly AsmaulHusnaConceptEdge[] = Object.freeze([
+  { fromOrdinal: 1, toOrdinal: 2, relation: 'attribute_intensification', cluster: 'Mercy' },
+  { fromOrdinal: 14, toOrdinal: 34, relation: 'attribute_intensification', cluster: 'Mercy' },
+  { fromOrdinal: 34, toOrdinal: 82, relation: 'thematic_kin', cluster: 'Mercy' },
+  { fromOrdinal: 80, toOrdinal: 83, relation: 'thematic_kin', cluster: 'Mercy' },
+  { fromOrdinal: 11, toOrdinal: 12, relation: 'thematic_kin', cluster: 'Creation' },
+  { fromOrdinal: 12, toOrdinal: 13, relation: 'thematic_kin', cluster: 'Creation' },
+  { fromOrdinal: 58, toOrdinal: 59, relation: 'complementary_pair', cluster: 'Creation' },
+  { fromOrdinal: 60, toOrdinal: 61, relation: 'complementary_pair', cluster: 'Creation' },
+  { fromOrdinal: 62, toOrdinal: 63, relation: 'complementary_pair', cluster: 'Sovereignty' },
+  { fromOrdinal: 20, toOrdinal: 21, relation: 'complementary_pair', cluster: 'Sovereignty' },
+  { fromOrdinal: 22, toOrdinal: 23, relation: 'complementary_pair', cluster: 'Justice' },
+  { fromOrdinal: 24, toOrdinal: 25, relation: 'complementary_pair', cluster: 'Justice' },
+  { fromOrdinal: 26, toOrdinal: 27, relation: 'complementary_pair', cluster: 'Knowledge' },
+  { fromOrdinal: 19, toOrdinal: 31, relation: 'thematic_kin', cluster: 'Knowledge' },
+  { fromOrdinal: 19, toOrdinal: 46, relation: 'thematic_kin', cluster: 'Knowledge' },
+  { fromOrdinal: 28, toOrdinal: 29, relation: 'thematic_kin', cluster: 'Justice' },
+  { fromOrdinal: 29, toOrdinal: 86, relation: 'thematic_kin', cluster: 'Justice' },
+  { fromOrdinal: 71, toOrdinal: 72, relation: 'complementary_pair', cluster: 'Sovereignty' },
+  { fromOrdinal: 73, toOrdinal: 74, relation: 'complementary_pair', cluster: 'Majesty' },
+  { fromOrdinal: 75, toOrdinal: 76, relation: 'complementary_pair', cluster: 'Knowledge' },
+  { fromOrdinal: 88, toOrdinal: 89, relation: 'attribute_intensification', cluster: 'Sustenance' },
+  { fromOrdinal: 91, toOrdinal: 92, relation: 'complementary_pair', cluster: 'Justice' },
+  { fromOrdinal: 93, toOrdinal: 94, relation: 'thematic_kin', cluster: 'Guidance' },
+  { fromOrdinal: 94, toOrdinal: 98, relation: 'thematic_kin', cluster: 'Guidance' },
+  { fromOrdinal: 3, toOrdinal: 84, relation: 'attribute_intensification', cluster: 'Sovereignty' },
+  { fromOrdinal: 66, toOrdinal: 67, relation: 'attribute_intensification', cluster: 'Sovereignty' },
+]);
+
+const BY_ORDINAL = new Map<number, AsmaulHusnaEntry>(
+  ASMAUL_HUSNA_DATASET.map((entry) => [entry.ordinal, entry])
+);
+
+export function getAsmaulHusnaByOrdinal(ordinal: number): AsmaulHusnaEntry | undefined {
+  return BY_ORDINAL.get(ordinal);
+}
+
+export function getAsmaulHusnaByCluster(
+  cluster: AsmaulHusnaCluster
+): readonly AsmaulHusnaEntry[] {
+  return ASMAUL_HUSNA_DATASET.filter((entry) => entry.cluster === cluster);
+}
+
+export function searchAsmaulHusna(query: string): readonly AsmaulHusnaEntry[] {
+  const normalized = query.trim().toLowerCase();
+  if (normalized.length === 0) return [];
+  return ASMAUL_HUSNA_DATASET.filter(
+    (entry) =>
+      entry.arabic.includes(query.trim()) ||
+      entry.transliteration.toLowerCase().includes(normalized) ||
+      entry.meaningEn.toLowerCase().includes(normalized) ||
+      entry.meaningId.toLowerCase().includes(normalized) ||
+      entry.cluster.toLowerCase().includes(normalized)
+  );
+}
+
+export function getRelatedAsmaulHusna(ordinal: number): readonly AsmaulHusnaEntry[] {
+  const relatedOrdinals = new Set<number>();
+  for (const edge of ASMAUL_HUSNA_CONCEPT_EDGES) {
+    if (edge.fromOrdinal === ordinal) relatedOrdinals.add(edge.toOrdinal);
+    if (edge.toOrdinal === ordinal) relatedOrdinals.add(edge.fromOrdinal);
+  }
+  return Array.from(relatedOrdinals)
+    .sort((a, b) => a - b)
+    .map((ord) => BY_ORDINAL.get(ord))
+    .filter((entry): entry is AsmaulHusnaEntry => entry !== undefined);
+}
+
+export function summarizeAsmaulHusnaClusters(): Readonly<Record<AsmaulHusnaCluster, number>> {
+  const counts: Record<AsmaulHusnaCluster, number> = {
+    Mercy: 0,
+    Sovereignty: 0,
+    Knowledge: 0,
+    Creation: 0,
+    Justice: 0,
+    Guidance: 0,
+    Sustenance: 0,
+    Majesty: 0,
+  };
+  for (const entry of ASMAUL_HUSNA_DATASET) {
+    counts[entry.cluster] += 1;
+  }
+  return Object.freeze(counts);
+}

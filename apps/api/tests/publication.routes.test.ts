@@ -1,13 +1,13 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyPluginAsync } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import knex, { type Knex } from 'knex';
 import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import {
   manifest as knowledgeManifest,
+  publicationHttpPlugin,
   recordPublicationSnapshot,
 } from '@moonwitness/orm-knowledge';
-import { publicationRoutes } from '../src/routes/publication.routes.js';
 
 const validCitations = [
   {
@@ -69,7 +69,7 @@ describe('approved publication read API & revision/takedown (K8-003, K8-006)', (
         };
       }
     });
-    await app.register(publicationRoutes);
+    await app.register(publicationHttpPlugin as FastifyPluginAsync);
   });
 
   afterEach(async () => {

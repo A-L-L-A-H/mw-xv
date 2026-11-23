@@ -181,3 +181,31 @@ export {
   type StoredPublicationAuditRevision,
   type SupersedeOrTakedownInput,
 } from './publication-store.js';
+export { resolveCorpusDataRoot } from './corpus-root.js';
+export { conceptProfileHttpPlugin } from './http-plugins/concept-profile.plugin.js';
+export { publicationHttpPlugin } from './http-plugins/publication.plugin.js';
+export {
+  bugCaseHttpPlugin,
+  type BugCaseHttpPluginOptions,
+} from './http-plugins/bug-case.plugin.js';
+export { childProtectionHttpPlugin } from './http-plugins/child-protection.plugin.js';
+export { storyWorkbenchHttpPlugin } from './http-plugins/story-workbench.plugin.js';
+export { corpusHttpPlugin } from './http-plugins/corpus.plugin.js';
+export { evidenceHttpPlugin } from './http-plugins/evidence.plugin.js';
+export {
+  localAiSuggestionHttpPlugin,
+  type LocalAiSuggestionHttpPluginOptions,
+} from './http-plugins/local-ai-suggestion.plugin.js';
+export { localRetrievalHttpPlugin } from './http-plugins/local-retrieval.plugin.js';
+export { researchActorIdentityHttpPlugin } from './http-plugins/research-actor-identity.plugin.js';
+export {
+  researchDuplicateCandidateHttpPlugin,
+  type ResearchDuplicateCandidateHttpPluginOptions,
+} from './http-plugins/research-duplicate-candidates.plugin.js';
+export {
+  researchExplanationHttpPlugin,
+  type ResearchExplanationHttpPluginOptions,
+} from './http-plugins/research-explanation.plugin.js';
+export { researchPrivacyHttpPlugin } from './http-plugins/research-privacy.plugin.js';
+export { researchReviewHttpPlugin } from './http-plugins/research-review.plugin.js';
+export { researchWitnessHttpPlugin } from './http-plugins/research-witness.plugin.js';

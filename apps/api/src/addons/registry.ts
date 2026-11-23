@@ -15,7 +15,8 @@ import { manifest as subscriptionAddon } from '@moonwitness/orm-subscription';
 import { manifest as integrationAddon } from '@moonwitness/orm-integration';
 import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
-import { manifest as aiAddon, isValidAiMutation } from '@moonwitness/orm-ai';
+import { manifest as aiAddon, ensureAiJobHandlersRegistered, isValidAiMutation } from '@moonwitness/orm-ai';
+import { manifest as a2aAddon } from '@moonwitness/orm-a2a';
 import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
 import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 import { manifest as ispAddon } from '@moonwitness/orm-isp';
@@ -30,31 +31,10 @@ import { authRoutes } from '../routes/auth.routes.js';
 import { genericRoutes } from '../routes/generic.routes.js';
 import { bootstrapRoutes } from '../routes/bootstrap.routes.js';
 import { menuRegistry } from './action-menu-registry.js';
-import { whatsappRoutes } from '../routes/whatsapp.routes.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
 import { canAccess } from '../auth/policy.js';
 import { getRecordRuleDomain } from '../auth/rules.js';
 import { hasCompanyAccess, recordAiAudit } from '../ai-corporation/route-helpers.js';
-import { corpusRoutes } from '../routes/corpus.routes.js';
-import { evidenceRoutes } from '../routes/evidence.routes.js';
-import { researchExplanationRoutes } from '../routes/research-explanation.routes.js';
-import { researchActorIdentityRoutes } from '../routes/research-actor-identity.routes.js';
-import { researchDuplicateCandidateRoutes } from '../routes/research-duplicate-candidates.routes.js';
-import { researchReviewRoutes } from '../routes/research-review.routes.js';
-import { researchPrivacyRoutes } from '../routes/research-privacy.routes.js';
-import { researchWitnessRoutes } from '../routes/research-witness.routes.js';
-import { conceptProfileRoutes } from '../routes/concept-profile.routes.js';
-import { storyWorkbenchRoutes } from '../routes/story-workbench.routes.js';
-import { localRetrievalRoutes } from '../routes/local-retrieval.routes.js';
-import { localAiSuggestionRoutes } from '../routes/local-ai-suggestion.routes.js';
-import { childProtectionRoutes } from '../routes/child-protection.routes.js';
-import { publicationRoutes } from '../routes/publication.routes.js';
-import { bugCaseRoutes } from '../routes/bug-case.routes.js';
-import {
-  aiCorporationRoutes,
-  ensureAiJobHandlersRegistered,
-} from '../routes/ai-corporation.routes.js';
-import { aiDesktopSyncRoutes } from '../routes/ai-desktop-sync.routes.js';
 
 export interface ApiAddonRuntimeContext {
   jwtSecret: string;
@@ -142,15 +122,6 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'whatsapp',
     manifest: whatsappManifest,
-    async registerRoutes(app, ctx) {
-      await app.register(whatsappRoutes, {
-        attachmentStorage: ctx.attachmentStorage,
-        attachmentScanner:
-          ctx.attachmentScanner === undefined ? createAttachmentScanner() : ctx.attachmentScanner,
-        createVideoPoster: ctx.createVideoPoster,
-        fetchContactAvatar: ctx.fetchContactAvatar,
-      });
-    },
   },
   {
     name: 'request',
@@ -190,23 +161,6 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
     async postInstall(db) {
       await ensureResearchReviewWorkflow(db);
     },
-    async registerRoutes(app) {
-      await app.register(corpusRoutes);
-      await app.register(evidenceRoutes);
-      await app.register(researchExplanationRoutes);
-      await app.register(researchActorIdentityRoutes);
-      await app.register(researchDuplicateCandidateRoutes);
-      await app.register(researchReviewRoutes);
-      await app.register(researchPrivacyRoutes);
-      await app.register(researchWitnessRoutes);
-      await app.register(conceptProfileRoutes);
-      await app.register(storyWorkbenchRoutes);
-      await app.register(localRetrievalRoutes);
-      await app.register(localAiSuggestionRoutes);
-      await app.register(childProtectionRoutes);
-      await app.register(publicationRoutes);
-      await app.register(bugCaseRoutes);
-    },
   },
   {
     name: 'orm-storage',
@@ -226,15 +180,10 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
     async postInstall() {
       ensureAiJobHandlersRegistered();
     },
-    async registerRoutes(app, ctx) {
-      ensureAiJobHandlersRegistered();
-      await app.register(aiCorporationRoutes, {
-        attachmentStorage: ctx.attachmentStorage,
-      });
-      await app.register(aiDesktopSyncRoutes, {
-        attachmentStorage: ctx.attachmentStorage,
-      });
-    },
+  },
+  {
+    name: 'a2a',
+    manifest: a2aAddon,
   },
 ];
 
@@ -345,6 +294,8 @@ export async function registerApiAddonRoutes(
 ): Promise<void> {
   const hostContext = {
     ...ctx,
+    attachmentScanner:
+      ctx.attachmentScanner === undefined ? createAttachmentScanner() : ctx.attachmentScanner,
     canAccess,
     getRecordRuleDomain,
     hasCompanyAccess,

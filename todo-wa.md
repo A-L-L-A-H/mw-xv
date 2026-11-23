@@ -2,6 +2,8 @@
 
 > Audit per 25 Oktober 2026. Cakupan: integrasi Board → API MoonWitness → GoWA di workspace ini. Kemampuan GoWA yang belum diverifikasi langsung ditandai untuk validasi, bukan diasumsikan tersedia.
 
+> **TaskOS migration freeze:** This checklist is a source snapshot for the one-time import of 112 `WA-` records. During the current recovery window, preserve its IDs and checkbox states. Once `docs/tasks/tasks.json` is restored and validated, TaskOS owns lifecycle state; do not edit this checklist as a second backlog. Any post-recovery change must be made through TaskOS and reflected only by an approved generated view.
+
 ## Kondisi saat ini
 
 Sudah tersedia di kode:

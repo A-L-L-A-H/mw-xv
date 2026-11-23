@@ -32,6 +32,26 @@ export {
   type LocalAiSuggestionResult,
   type SuggestionCandidateValidator,
 } from './suggestion-generation.js';
+export {
+  createMultiProviderLlmRouter,
+  estimatePromptTokens,
+  isLoopbackEndpointUrl,
+  ProviderRouterError,
+  type BudgetCeilingConfig,
+  type BudgetUsageSnapshot,
+  type CircuitBreakerConfig,
+  type MultiProviderLlmRouter,
+  type PrivacyTier,
+  type ProviderExecutionResult,
+  type ProviderExecutor,
+  type ProviderHealthSnapshot,
+  type ProviderLocality,
+  type ProviderRouteRequest,
+  type ProviderRouteResponse,
+  type ProviderRouterConfig,
+  type RouterProviderConfig,
+  type RouterProviderKind,
+} from './provider-router.js';
 
 export interface LocalAiConfig {
   mode: LocalAiMode;

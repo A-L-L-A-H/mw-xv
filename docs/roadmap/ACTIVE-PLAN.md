@@ -1,14 +1,17 @@
 # Jalur rilis aktif
 
-## Checkpoint aktual — 2026-11-23 (source of truth: remote branch heads)
+## Current checkpoint — 2026-11-23 (Phase 0–6 stabilization; not released)
 
-- **`dev` first observed:** `7871a592db5488eafbaeeb0bfbbdc079a4231cfe`; intervening non-overlapping commits, including `a58a43327fbc9267a9840bb65b0ad2735b069907` (`docs(ui): document addon visual handoff`), were preserved. **`main`:** `c9df672332540639981180b38ab8c675d8964a80`. Common merge base: `a6cd74a6f189e7ea053b046e94a06ea2d36530fc`. The branch refs are diverged: the initial compare showed `main` 17 commits and `dev` 2 commits beyond the common base; fetch the latest refs before any promotion. Do not merge/rebase or force-push as part of M13.05; use M1.09 for a separate main→dev synchronization and full diff review. Tidak ada merge/rebase/force-push dalam batch ini. Sinkronisasi main→dev harus mengikuti M1.09 dan review diff khusus sebelum promosi berikutnya.
-- **Master roadmap:** 235 task (170 M-series + 65 K-series); 153 checkbox selesai dan 82 terbuka (49 M-series + 33 K-series). Canonical TaskOS `docs/tasks/tasks.json` adalah sumber status; metadata `docs/roadmap/tasks.json` diselaraskan terhadap status kanonik saat konsolidasi.
-- **Release gate:** M12.14 masih `in_progress` pada task index dan status `doing` di TaskOS; evidence M12.14 masih menyebut PR.14 menunggu persetujuan maintainer/CODEOWNER. PR #30 menggabungkan `dev` head lama `a6cd74a`, bukan head `dev` saat checkpoint ini. Jangan simpulkan status rilis dari merge PR #30 saja; rekonsiliasi current SHA, approval dan required checks sebelum promosi.
-- **Desktop / ROCKSOUL FLOW:** M13.01–M13.04 complete dengan evidence. M13.05 baru terdaftar sebagai `todo`: gate server-side WorkContract creation terhadap project dependency readiness. M13 tidak menjadi release blocker dan tidak memberi izin deployment.
-- **Sumber legacy:** keputusan K0-006 tetap mengikat: clean-room rebuild dari requirement, tanpa impor kode/data/aset legacy, dan tanpa runtime dependency ke `bjo163/*`. Inventaris 148 repository tetap sebatas metadata publik; bukan audit source, rights, privacy dan private-resource lengkap.
+- **Stable branch:** `main` tetap pada `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`; tidak ada perubahan pada `main`, merge, stable release, atau deployment.
+- **Development branch:** baseline implementasi `62e5ef656d58be11350e8a1d228da2205c5108eb`; 169 commits ahead of main, 0 behind pada perbandingan terakhir. Pemeriksaan CI harus mengacu pada SHA terbaru, bukan memakai hasil run lama.
+- **Toolchain:** Corepack di Docker dikunci ke pnpm `11.17.0`; pemeriksaan drift kini memindai Dockerfile serta workflow; regression test ditambahkan.
+- **CI:** [run 45086573530](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45086573530) adalah kandidat CI baru setelah perbaikan. Hasilnya belum boleh disebut green sebelum semua job selesai pada SHA yang sama. Run sebelumnya di `3375056…` lulus pada knowledge-gate, PostgreSQL integration, quality/build dan DX; unit safety tests + unit build lulus, tetapi langkah kandidat recovery belum selesai.
+- **TaskOS:** registry legacy valid berisi 1.358 records; 861 source reference masih menunjuk root `todo.md` yang kini hanya pointer. Kandidat sumber terverifikasi berisi 627 records (468 done, 49 doing, 89 todo, 21 blocked); belum dimigrasikan. Kandidat harus di-review dan snapshot lama dipertahankan.
+- **M13 / ROCKSOUL FLOW:** implementasi M13.09–M13.12 dan evidence tersedia; acceptance untuk keseluruhan journey Desktop/Board masih membutuhkan uji lokal dari Repo Radar sampai Review/Sync.
+- **Promotion PR #37:** tetap terbuka dan membutuhkan CODEOWNER review serta M12.14 approval terpisah. Promotion tidak sama dengan deployment.
+- **Phase closeout dan handoff lokal:** [PHASE-0-6-CLOSEOUT.md](PHASE-0-6-CLOSEOUT.md).
 
-Diperbarui 2026-11-23. Goal penuh: 232 task (167 M-series + 65 K-series); seluruh task dan acceptance M0–M12/K0–K9 dipertahankan. M13 adalah workstream Desktop Engineering terpisah, bukan release blocker. Gunakan `pnpm roadmap:progress -- --format json` untuk jumlah terkini, bukan snapshot angka dalam dokumen.
+
 
 ## Checkpoint historis — 2026-10-23
 

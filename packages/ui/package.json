@@ -237,6 +237,18 @@
     "./lib/scene-soundscape": {
       "types": "./dist/lib/scene-soundscape.d.ts",
       "import": "./dist/lib/scene-soundscape.js"
+    },
+    "./components/update-banner": {
+      "types": "./dist/components/update-banner.d.ts",
+      "import": "./dist/components/update-banner.js"
+    },
+    "./components/mode-picker": {
+      "types": "./dist/components/mode-picker.d.ts",
+      "import": "./dist/components/mode-picker.js"
+    },
+    "./components/log-console": {
+      "types": "./dist/components/log-console.d.ts",
+      "import": "./dist/components/log-console.js"
     }
   },
   "scripts": {

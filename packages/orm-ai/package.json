@@ -19,6 +19,8 @@
     "test": "tsc -p tsconfig.check.json && vitest run"
   },
   "dependencies": {
+    "@moonwitness/ai-evaluation": "workspace:*",
+    "@moonwitness/ai-runtime": "workspace:*",
     "@moonwitness/jobs": "workspace:*",
     "@moonwitness/orm": "workspace:*",
     "@moonwitness/orm-base": "workspace:*",

@@ -343,6 +343,8 @@ export interface ReconcileResult {
   readonly unsupportedReferences: readonly string[];
 }
 
+import { storageVaultHttpPlugin } from './http-plugin.js';
+
 export interface ReconcileOptions {
   readonly apply: boolean;
   readonly olderThan: Date;
@@ -354,6 +356,7 @@ export const manifest = defineAddon({
   name: 'orm-storage',
   version: '1.0.0',
   models: [],
+  httpPlugins: [storageVaultHttpPlugin],
 });
 
 export const storageManifest = manifest;
@@ -522,3 +525,19 @@ export async function reconcileAttachmentStorage(
 
 export { S3AttachmentStorage, closeS3AttachmentStorage } from './s3.js';
 export type { S3AttachmentStorageOptions } from './s3.js';
+export { storageVaultHttpPlugin } from './http-plugin.js';
+export {
+  buildChunkManifest,
+  decryptArtifactEnvelope,
+  encryptArtifactEnvelope,
+  reassembleChunkManifest,
+  verifyChunkManifest,
+  type BuiltChunkArtifact,
+  type ChunkManifest,
+  type ChunkManifestEntry,
+  type ChunkResolver,
+  type ChunkVerificationResult,
+  type DecryptEnvelopeOptions,
+  type EncryptEnvelopeOptions,
+  type EncryptedEnvelope,
+} from './encrypted-vault.js';

@@ -14,8 +14,7 @@ import {
 } from '@moonwitness/orm-knowledge';
 import knex, { type Knex } from 'knex';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { localAiSuggestionRoutes } from '../src/routes/local-ai-suggestion.routes.js';
-import { resolveCorpusDataRoot } from '../src/routes/corpus.routes.js';
+import { localAiSuggestionHttpPlugin as localAiSuggestionRoutes, resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
 
 const connectionString = process.env.POSTGRES_TEST_URL;
 if (process.env.REQUIRE_POSTGRES_TESTS === 'true' && !connectionString) {

@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `538475e1821be3aa466c04eaa12d5e4cc6669256a0368802b292e65bc51bf586`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `baa1f2bad1f74607f6097868fae13a341382fc932ee48ff56deb387e7a722df1`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -9,7 +9,7 @@ Source fingerprint: `538475e1821be3aa466c04eaa12d5e4cc6669256a0368802b292e65bc51
 | `@moonwitness/api`              | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
 | `@moonwitness/board`            | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
 | `@moonwitness/control-plane`    | App     | 0.1.0      | `dev`, `docker:build`, `fmt`                                                                                                                                                                                                                                                       |
-| `@moonwitness/desktop`          | App     | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/desktop`          | App     | 1.0.0-rc.1 | `build`, `build:web`, `test`, `typecheck`                                                                                                                                                                                                                                          |
 | `@moonwitness/docs`             | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
 | `@moonwitness/isp`              | App     | 0.1.0      | `cargo:build`, `clippy`, `dev`, `fmt`, `migrate`, `start`, `test`                                                                                                                                                                                                                  |
 | `@moonwitness/ui-catalog`       | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `diagnostics:generate`, `preview`, `test`                                                                                                                                                                                                           |
@@ -26,6 +26,7 @@ Source fingerprint: `538475e1821be3aa466c04eaa12d5e4cc6669256a0368802b292e65bc51
 | `@moonwitness/local-ai`         | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/logger`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm`              | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-a2a`          | Package | 1.0.0-rc.1 | `build`                                                                                                                                                                                                                                                                            |
 | `@moonwitness/orm-ai`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-base`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-cloud`        | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
@@ -88,6 +89,10 @@ Source fingerprint: `538475e1821be3aa466c04eaa12d5e4cc6669256a0368802b292e65bc51
 | `LOG_TO_FILE`                       | boolean        | Yes                       | No                       |
 | `METRICS_TOKEN`                     | secret         | Yes                       | Yes                      |
 | `MOONWITNESS_CORPUS_ROOT`           | string         | No                        | No                       |
+| `MW_A2A_API_ENABLED`                | boolean        | Yes                       | No                       |
+| `MW_A2A_API_ENDPOINT`               | string         | Yes                       | No                       |
+| `MW_A2A_COMPANY_ID`                 | string         | Yes                       | No                       |
+| `MW_A2A_SIGNING_SECRET`             | secret         | Yes                       | Yes                      |
 | `NODE_ENV`                          | string         | Yes                       | No                       |
 | `OUTBOX_HANDLERS_MODULE`            | string         | Yes                       | No                       |
 | `OUTBOX_WORKER_HEALTH_PORT`         | integer        | Yes                       | No                       |
@@ -150,7 +155,11 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm db:migrate`
 - `pnpm dependency:candidate`
 - `pnpm dependency:plan`
+- `pnpm desktop:build`
+- `pnpm desktop:mcp`
+- `pnpm desktop:test`
 - `pnpm desktop:ui:check`
+- `pnpm desktop:web`
 - `pnpm dev`
 - `pnpm dev:api`
 - `pnpm dev:board`
@@ -165,10 +174,6 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm docs:links`
 - `pnpm docs:links:external`
 - `pnpm docs:publication:check`
-- `pnpm dx:build`
-- `pnpm dx:dev`
-- `pnpm dx:e2e`
-- `pnpm dx:start`
 - `pnpm dx:test`
 - `pnpm evolution:check`
 - `pnpm evolution:fitness`
@@ -214,6 +219,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm roadmap:progress`
 - `pnpm start`
 - `pnpm start:built`
+- `pnpm tasks:sweep`
 - `pnpm tasks:sync`
 - `pnpm tasks:validate`
 - `pnpm test`
@@ -265,6 +271,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm test:roadmap`
 - `pnpm test:secrets`
 - `pnpm test:security-policy`
+- `pnpm test:taskos`
 - `pnpm test:ubuntu-runner-candidate`
 - `pnpm test:ui`
 - `pnpm test:ui-budget`

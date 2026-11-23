@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "7073292800b30dc4ee938370ae6b907fb2b292c2400e360332c81ed334714e65",
+  "sourceSha256": "9ff2690f01bd254ffc5d0c79a16411552accbe319b0e44d81148f853d9153a68",
   "packages": [
     {
       "name": "@moonwitness/ai-evaluation",
@@ -289,6 +289,12 @@
     },
     {
       "from": "@moonwitness/ai-mcp",
+      "to": "@moonwitness/orm-project",
+      "kind": "runtime",
+      "manifest": "packages/ai-mcp"
+    },
+    {
+      "from": "@moonwitness/ai-mcp",
       "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/ai-mcp"
@@ -523,6 +529,24 @@
     },
     {
       "from": "@moonwitness/desktop",
+      "to": "@moonwitness/assets",
+      "kind": "development",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
+      "to": "@moonwitness/client",
+      "kind": "development",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
+      "to": "@moonwitness/ui",
+      "kind": "development",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
       "to": "@moonwitness/ai-mcp",
       "kind": "runtime",
       "manifest": "apps/desktop"
@@ -685,12 +709,6 @@
     },
     {
       "from": "@moonwitness/orm-cloud",
-      "to": "@moonwitness/jobs",
-      "kind": "development",
-      "manifest": "packages/orm-cloud"
-    },
-    {
-      "from": "@moonwitness/orm-cloud",
       "to": "@moonwitness/orm-crm",
       "kind": "development",
       "manifest": "packages/orm-cloud"
@@ -717,6 +735,12 @@
       "from": "@moonwitness/orm-cloud",
       "to": "@moonwitness/orm-workflow",
       "kind": "development",
+      "manifest": "packages/orm-cloud"
+    },
+    {
+      "from": "@moonwitness/orm-cloud",
+      "to": "@moonwitness/jobs",
+      "kind": "runtime",
       "manifest": "packages/orm-cloud"
     },
     {
@@ -787,12 +811,6 @@
     },
     {
       "from": "@moonwitness/orm-isp",
-      "to": "@moonwitness/jobs",
-      "kind": "development",
-      "manifest": "packages/orm-isp"
-    },
-    {
-      "from": "@moonwitness/orm-isp",
       "to": "@moonwitness/orm-crm",
       "kind": "development",
       "manifest": "packages/orm-isp"
@@ -819,6 +837,12 @@
       "from": "@moonwitness/orm-isp",
       "to": "@moonwitness/orm-workflow",
       "kind": "development",
+      "manifest": "packages/orm-isp"
+    },
+    {
+      "from": "@moonwitness/orm-isp",
+      "to": "@moonwitness/jobs",
+      "kind": "runtime",
       "manifest": "packages/orm-isp"
     },
     {
@@ -1020,6 +1044,12 @@
       "manifest": "packages/orm-sales"
     },
     {
+      "from": "@moonwitness/orm-sales",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-sales"
+    },
+    {
       "from": "@moonwitness/orm-storage",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -1052,6 +1082,12 @@
     {
       "from": "@moonwitness/orm-subscription",
       "to": "@moonwitness/orm-sales",
+      "kind": "runtime",
+      "manifest": "packages/orm-subscription"
+    },
+    {
+      "from": "@moonwitness/orm-subscription",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-subscription"
     },

@@ -68,7 +68,8 @@
         "objective",
         "deliverables",
         "acceptance_criteria",
-        "verification"
+        "verification",
+        "acceptance_criteria_state"
       ],
       "properties": {
         "id": {
@@ -152,6 +153,32 @@
             "string",
             "null"
           ]
+        },
+        "acceptance_criteria_state": {
+          "type": "array",
+          "description": "Canonical TaskOS acceptance criterion state; this is the source for checkbox state in generated task cards.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "text",
+              "done"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "done": {
+                "type": "boolean"
+              }
+            }
+          }
         }
       }
     }

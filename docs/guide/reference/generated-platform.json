@@ -48,7 +48,7 @@
       "name": "@moonwitness/desktop",
       "version": "1.0.0-rc.1",
       "directory": "apps/desktop",
-      "scripts": ["build", "test", "typecheck"]
+      "scripts": ["build", "build:web", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/docs",
@@ -156,6 +156,12 @@
       "version": "1.0.0-rc.1",
       "directory": "packages/orm",
       "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-a2a",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/orm-a2a",
+      "scripts": ["build"]
     },
     {
       "name": "@moonwitness/orm-ai",
@@ -307,6 +313,7 @@
     },
     "@moonwitness/desktop": {
       "build": "tsc",
+      "build:web": "vite build --config desktop-web/vite.config.ts",
       "test": "vitest run",
       "typecheck": "tsc --noEmit -p tsconfig.check.json"
     },
@@ -396,6 +403,9 @@
     "@moonwitness/orm": {
       "build": "tsc",
       "test": "vitest run"
+    },
+    "@moonwitness/orm-a2a": {
+      "build": "tsc"
     },
     "@moonwitness/orm-ai": {
       "build": "tsc",
@@ -507,7 +517,11 @@
       "db:migrate": "pnpm --filter @moonwitness/api db:migrate",
       "dependency:candidate": "node scripts/dependency-candidate.mjs",
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
+      "desktop:build": "pnpm --filter @moonwitness/desktop... build && pnpm --filter @moonwitness/desktop build:web",
+      "desktop:mcp": "node apps/desktop/dist/cli.js mcp",
+      "desktop:test": "pnpm --filter @moonwitness/ai-mcp test && pnpm --filter @moonwitness/desktop test",
       "desktop:ui:check": "node --test scripts/check-desktop-non-overlap.test.mjs && node scripts/check-desktop-non-overlap.mjs",
+      "desktop:web": "pnpm --filter @moonwitness/desktop build:web",
       "dev": "pnpm --filter @moonwitness/ui build && node scripts/run-local-services.mjs dev",
       "dev:api": "pnpm --filter @moonwitness/api dev",
       "dev:board": "pnpm --filter @moonwitness/board dev",
@@ -522,11 +536,7 @@
       "docs:links": "node scripts/check-docs.mjs && node scripts/check-doc-navigation.mjs && node --test scripts/check-docs.test.mjs scripts/check-doc-navigation.test.mjs scripts/check-external-doc-links.test.mjs",
       "docs:links:external": "node scripts/check-external-doc-links.mjs",
       "docs:publication:check": "node scripts/check-docs-publication.mjs apps/docs/dist",
-      "dx:build": "node scripts/dx.mjs build",
-      "dx:dev": "node scripts/dx.mjs dev",
-      "dx:e2e": "node scripts/dx.mjs e2e",
-      "dx:start": "node scripts/dx.mjs start",
-      "dx:test": "node scripts/dx.mjs test",
+      "dx:test": "pnpm desktop:test",
       "evolution:check": "node scripts/evolution/check-constitution.mjs && node scripts/evolution/check-ratchet.mjs",
       "evolution:fitness": "node scripts/evolution/fitness-score.mjs",
       "evolution:postmortem": "node scripts/evolution/record-postmortem.mjs",
@@ -571,6 +581,7 @@
       "roadmap:progress": "node scripts/roadmap/progress-dashboard.mjs",
       "start": "node scripts/run-local-services.mjs start",
       "start:built": "node scripts/run-local-services.mjs start:built",
+      "tasks:sweep": "node scripts/tasks/sweep-and-consolidate.mjs",
       "tasks:sync": "node scripts/tasks/sync-roadmap.mjs",
       "tasks:validate": "node scripts/tasks/validate-tasks.mjs",
       "test": "pnpm test:unit",
@@ -622,6 +633,7 @@
       "test:roadmap": "node --test scripts/roadmap/validate-roadmap.test.mjs scripts/roadmap/sync-issues.test.mjs scripts/roadmap/changed-task-ids.test.mjs scripts/roadmap/select-issue-sync-batch.test.mjs scripts/roadmap/lifecycle.test.mjs scripts/roadmap/lifecycle-snapshot.test.mjs scripts/roadmap/collect-lifecycle-snapshot.test.mjs scripts/roadmap/resume-stale-issue-sync.test.mjs scripts/roadmap/issue-sync-continuation.test.mjs scripts/roadmap/issue-sync-workflow.test.mjs scripts/roadmap/issue-intake.test.mjs scripts/roadmap/progress-dashboard.test.mjs scripts/roadmap/progress-workflow.test.mjs scripts/roadmap/audit-issues.test.mjs",
       "test:secrets": "node --test scripts/check-gitleaks-config.test.mjs",
       "test:security-policy": "node --test scripts/security-scan-policy.test.mjs scripts/check-trivy-sarif.test.mjs",
+      "test:taskos": "node --test scripts/tasks/validate-tasks.test.mjs scripts/tasks/sync-roadmap.test.mjs scripts/tasks/sweep-and-consolidate.test.mjs scripts/tasks/visual-universe-projection.test.mjs scripts/tasks/visual-universe-renderers.test.mjs",
       "test:ubuntu-runner-candidate": "node --test scripts/check-ubuntu-runner-candidate.test.mjs",
       "test:ui": "pnpm --filter @moonwitness/ui build && node --test packages/ui/tests/*.test.mjs && node packages/ui/scripts/verify-package.mjs",
       "test:ui-budget": "node --test apps/ui-catalog/tests/bundle-budget.test.mjs && pnpm --filter @moonwitness/ui-catalog build:built && pnpm ui:budget",
@@ -868,6 +880,30 @@
       "configuredInExample": false,
       "secret": false,
       "valueType": "string"
+    },
+    {
+      "name": "MW_A2A_API_ENABLED",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "boolean"
+    },
+    {
+      "name": "MW_A2A_API_ENDPOINT",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "MW_A2A_COMPANY_ID",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "MW_A2A_SIGNING_SECRET",
+      "configuredInExample": true,
+      "secret": true,
+      "valueType": "secret"
     },
     {
       "name": "NODE_ENV",
@@ -9497,22 +9533,6 @@
     },
     {
       "method": "GET",
-      "path": "/agents"
-    },
-    {
-      "method": "POST",
-      "path": "/agents"
-    },
-    {
-      "method": "GET",
-      "path": "/agents/:id"
-    },
-    {
-      "method": "PATCH",
-      "path": "/agents/:id"
-    },
-    {
-      "method": "GET",
       "path": "/api/:model"
     },
     {
@@ -9585,135 +9605,7 @@
     },
     {
       "method": "GET",
-      "path": "/api/corpus/passages/:editionId/:locator"
-    },
-    {
-      "method": "GET",
-      "path": "/api/corpus/sources/:sourceId"
-    },
-    {
-      "method": "GET",
       "path": "/api/models"
-    },
-    {
-      "method": "GET",
-      "path": "/api/public/publications"
-    },
-    {
-      "method": "GET",
-      "path": "/api/public/publications/:publicationId"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/actor-identities"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/bug-cases"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/bug-cases/:caseId"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/bug-cases/:caseId/transitions"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/bug-cases/:caseId/verify-outcome"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/child-protection/gate-check"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/concept-profiles/:profileId"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/duplicate-candidates"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/evidence/resolve"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/graph/search"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/privacy/projections"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/privacy/revocations"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/publications/:publicationId/audit"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/publications/:publicationId/supersede"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/publications/:publicationId/takedown"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/relations/:relationId/explanation"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/retrieval/chunk"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/reviews"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/reviews/:id/decision"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/reviews/:subjectId/history"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/stories/:storyId"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/stories/:storyId"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/suggestions"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/suggestions/:suggestionId"
-    },
-    {
-      "method": "POST",
-      "path": "/api/research/suggestions/generate"
-    },
-    {
-      "method": "GET",
-      "path": "/api/research/witnesses/:witnessId"
-    },
-    {
-      "method": "GET",
-      "path": "/artifacts"
-    },
-    {
-      "method": "POST",
-      "path": "/artifacts"
     },
     {
       "method": "POST",
@@ -9748,54 +9640,6 @@
       "path": "/auth/register"
     },
     {
-      "method": "POST",
-      "path": "/desktop/artifacts/upload"
-    },
-    {
-      "method": "POST",
-      "path": "/desktop/lease"
-    },
-    {
-      "method": "POST",
-      "path": "/desktop/pcw-sync"
-    },
-    {
-      "method": "GET",
-      "path": "/desktop/pull"
-    },
-    {
-      "method": "POST",
-      "path": "/emergency-stop"
-    },
-    {
-      "method": "GET",
-      "path": "/eval-summary"
-    },
-    {
-      "method": "GET",
-      "path": "/governance/approvals"
-    },
-    {
-      "method": "POST",
-      "path": "/governance/approvals"
-    },
-    {
-      "method": "POST",
-      "path": "/governance/approvals/:id/decide"
-    },
-    {
-      "method": "GET",
-      "path": "/grants"
-    },
-    {
-      "method": "POST",
-      "path": "/grants"
-    },
-    {
-      "method": "POST",
-      "path": "/grants/:id/revoke"
-    },
-    {
       "method": "GET",
       "path": "/health"
     },
@@ -9809,43 +9653,7 @@
     },
     {
       "method": "GET",
-      "path": "/memory"
-    },
-    {
-      "method": "POST",
-      "path": "/memory"
-    },
-    {
-      "method": "POST",
-      "path": "/memory/:id/revoke"
-    },
-    {
-      "method": "GET",
       "path": "/metrics"
-    },
-    {
-      "method": "GET",
-      "path": "/obligations"
-    },
-    {
-      "method": "POST",
-      "path": "/obligations"
-    },
-    {
-      "method": "PATCH",
-      "path": "/obligations/:id"
-    },
-    {
-      "method": "GET",
-      "path": "/providers"
-    },
-    {
-      "method": "POST",
-      "path": "/providers"
-    },
-    {
-      "method": "PATCH",
-      "path": "/providers/:id"
     },
     {
       "method": "GET",
@@ -9853,212 +9661,8 @@
     },
     {
       "method": "GET",
-      "path": "/runs"
-    },
-    {
-      "method": "POST",
-      "path": "/runs"
-    },
-    {
-      "method": "GET",
-      "path": "/runs/:id"
-    },
-    {
-      "method": "POST",
-      "path": "/runs/:id/cancel"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/account"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/agents"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/connect"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/contacts/check"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/conversations"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/archive"
-    },
-    {
-      "method": "PUT",
-      "path": "/whatsapp/conversations/:id/assignment"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/conversations/:id/contact"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/conversations/:id/contact/avatar"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/conversations/:id/group"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/conversations/:id/group/avatar"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/conversations/:id/group/invite-link"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/group/invite-link/reset"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/group/leave"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/group/participants/:action"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/group/settings"
-    },
-    {
-      "method": "PUT",
-      "path": "/whatsapp/conversations/:id/labels"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/conversations/:id/messages"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/messages"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/conversations/:id/notes"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/notes"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/pin"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/read"
-    },
-    {
-      "method": "PUT",
-      "path": "/whatsapp/conversations/:id/state"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/conversations/:id/uploads"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/disconnect"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/gowa/webhook/:deviceId"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/groups"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/groups/invite-preview"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/groups/join"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/labels"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/labels"
-    },
-    {
-      "method": "DELETE",
-      "path": "/whatsapp/labels/:id"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/media/:id"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/media/:id/thumbnail"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/messages/:id/edit"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/messages/:id/forward"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/messages/:id/reaction"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/messages/:id/retry"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/messages/:id/revoke"
-    },
-    {
-      "method": "GET",
       "path": "/whatsapp/readyz"
-    },
-    {
-      "method": "GET",
-      "path": "/whatsapp/statuses"
-    },
-    {
-      "method": "POST",
-      "path": "/whatsapp/statuses"
-    },
-    {
-      "method": "GET",
-      "path": "/work-contracts"
-    },
-    {
-      "method": "POST",
-      "path": "/work-contracts"
-    },
-    {
-      "method": "GET",
-      "path": "/work-contracts/:id"
-    },
-    {
-      "method": "POST",
-      "path": "/work-contracts/:id/verify"
     }
   ],
-  "generatedFromSha256": "538475e1821be3aa466c04eaa12d5e4cc6669256a0368802b292e65bc51bf586"
+  "generatedFromSha256": "baa1f2bad1f74607f6097868fae13a341382fc932ee48ff56deb387e7a722df1"
 }

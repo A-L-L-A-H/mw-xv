@@ -12,6 +12,14 @@ import {
   WorkflowError,
   type WorkflowRole,
 } from './runtime.js';
+import {
+  evaluateApprovalQuorum,
+  validateSagaDag,
+  planSagaCompensation,
+  type ApprovalQuorumPolicy,
+  type ApprovalVote,
+  type SagaStepDefinition,
+} from './saga-engine.js';
 
 interface StartBody {
   code: string;
@@ -368,4 +376,125 @@ export const workflowHttpPlugin: AddonHttpPlugin = async (app, options) => {
       }
     }
   );
+
+  app.post<{ Body: unknown }>('/api/workflow/saga/plan', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (!req.auth.companyId) {
+      return reply.code(403).send({ success: false, error: 'Active company is required' });
+    }
+
+    if (!isRecord(req.body)) {
+      return reply.code(400).send({ success: false, error: 'Invalid saga plan payload' });
+    }
+
+    if (!Array.isArray(req.body.steps)) {
+      return reply.code(400).send({ success: false, error: 'steps array is required' });
+    }
+
+    const steps: SagaStepDefinition<Record<string, unknown>, unknown>[] = [];
+    for (const rawStep of req.body.steps) {
+      if (!isRecord(rawStep) || typeof rawStep.id !== 'string' || !rawStep.id.trim()) {
+        return reply.code(400).send({ success: false, error: 'Each step must have a non-empty string id' });
+      }
+      if (rawStep.dependsOn !== undefined) {
+        if (!Array.isArray(rawStep.dependsOn) || !rawStep.dependsOn.every((dep) => typeof dep === 'string')) {
+          return reply.code(400).send({ success: false, error: 'dependsOn must be an array of strings' });
+        }
+      }
+      const hasCompensator = Boolean(rawStep.hasCompensator);
+      steps.push({
+        id: rawStep.id,
+        ...(Array.isArray(rawStep.dependsOn) ? { dependsOn: rawStep.dependsOn } : {}),
+        ...(typeof rawStep.idempotencyScope === 'string' ? { idempotencyScope: rawStep.idempotencyScope } : {}),
+        execute: () => ({}),
+        ...(hasCompensator ? { compensate: () => {} } : {}),
+      });
+    }
+
+    try {
+      const validated = validateSagaDag(steps);
+      const compensationPlan = planSagaCompensation(
+        validated.executionOrder.map((stepId) => ({ stepId, idempotencyKey: `mock:${stepId}` })),
+        validated.stepsById
+      );
+      return reply.code(200).send({
+        success: true,
+        data: {
+          executionOrder: validated.executionOrder,
+          stepCount: validated.executionOrder.length,
+          compensationPlan,
+        },
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      return reply.code(400).send({ success: false, error: errorMessage });
+    }
+  });
+
+  app.post<{ Body: unknown }>('/api/workflow/quorum/evaluate', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (!req.auth.companyId) {
+      return reply.code(403).send({ success: false, error: 'Active company is required' });
+    }
+
+    if (!isRecord(req.body)) {
+      return reply.code(400).send({ success: false, error: 'Invalid quorum evaluation payload' });
+    }
+
+    if (!isRecord(req.body.policy)) {
+      return reply.code(400).send({ success: false, error: 'policy object is required' });
+    }
+    if (!Array.isArray(req.body.votes)) {
+      return reply.code(400).send({ success: false, error: 'votes array is required' });
+    }
+
+    const rawPolicy = req.body.policy;
+    if (
+      typeof rawPolicy.requiredApprovals !== 'number' ||
+      !Array.isArray(rawPolicy.eligibleApproverIds) ||
+      !rawPolicy.eligibleApproverIds.every((id) => typeof id === 'string') ||
+      typeof rawPolicy.requesterId !== 'string'
+    ) {
+      return reply.code(400).send({ success: false, error: 'Invalid quorum policy fields' });
+    }
+
+    const policy: ApprovalQuorumPolicy = {
+      requiredApprovals: rawPolicy.requiredApprovals,
+      eligibleApproverIds: rawPolicy.eligibleApproverIds,
+      requesterId: rawPolicy.requesterId,
+      ...(typeof rawPolicy.allowSelfApproval === 'boolean' ? { allowSelfApproval: rawPolicy.allowSelfApproval } : {}),
+      ...(Array.isArray(rawPolicy.requiredRoles) && rawPolicy.requiredRoles.every((r) => typeof r === 'string')
+        ? { requiredRoles: rawPolicy.requiredRoles }
+        : {}),
+      ...(typeof rawPolicy.enforceDistinctRoles === 'boolean' ? { enforceDistinctRoles: rawPolicy.enforceDistinctRoles } : {}),
+      ...(typeof rawPolicy.rejectOnAnyRejection === 'boolean' ? { rejectOnAnyRejection: rawPolicy.rejectOnAnyRejection } : {}),
+    };
+
+    const votes: ApprovalVote[] = [];
+    for (const rawVote of req.body.votes) {
+      if (
+        !isRecord(rawVote) ||
+        typeof rawVote.approverId !== 'string' ||
+        typeof rawVote.role !== 'string' ||
+        !['approve', 'reject'].includes(String(rawVote.decision)) ||
+        (typeof rawVote.decidedAt !== 'string' && !(rawVote.decidedAt instanceof Date))
+      ) {
+        return reply.code(400).send({ success: false, error: 'Invalid approval vote structure' });
+      }
+      votes.push({
+        approverId: rawVote.approverId,
+        role: rawVote.role,
+        decision: rawVote.decision as 'approve' | 'reject',
+        decidedAt: rawVote.decidedAt,
+        ...(typeof rawVote.reason === 'string' ? { reason: rawVote.reason } : {}),
+      });
+    }
+
+    const result = evaluateApprovalQuorum(policy, votes);
+    return reply.code(200).send({ success: true, data: result });
+  });
 };

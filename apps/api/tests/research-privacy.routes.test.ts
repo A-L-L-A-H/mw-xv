@@ -5,7 +5,7 @@ import knex, { type Knex } from 'knex';
 import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { manifest as knowledgeManifest } from '@moonwitness/orm-knowledge';
-import { researchPrivacyRoutes } from '../src/routes/research-privacy.routes.js';
+import { researchPrivacyHttpPlugin as researchPrivacyRoutes } from '@moonwitness/orm-knowledge';
 
 function sha256(value: string): string {
   return createHash('sha256').update(value, 'utf8').digest('hex');

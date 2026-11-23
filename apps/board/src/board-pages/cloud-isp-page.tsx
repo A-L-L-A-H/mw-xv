@@ -11,7 +11,10 @@ import { Panel } from '@moonwitness/ui/components/panel';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { toast } from '@moonwitness/ui/components/toast';
 import { client } from '@/lib/client';
+import { useDesktopBridge } from '@/lib/desktop-bridge';
 import { scopedQueryKey } from '@/lib/query-scope';
+import { MeshFleetDrawer } from '@/components/ai/mesh-fleet-drawer';
+import { PaasStudioPanel } from '@/components/cloud/paas-studio-panel';
 
 interface CloudHealthPayload {
   controlPlane: 'connected' | 'unreachable';
@@ -78,6 +81,7 @@ interface LiveSessionsPayload {
 
 export function CloudIspPage() {
   const queryClient = useQueryClient();
+  const { isDesktop } = useDesktopBridge();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const [terraformPreview, setTerraformPreview] = useState<string | null>(null);
 
@@ -316,6 +320,10 @@ export function CloudIspPage() {
           detail={`${ispHealthQuery.data?.subscriberCount ?? subscribersQuery.data?.length ?? 0} subscribers`}
         />
       </div>
+
+      {isDesktop ? <MeshFleetDrawer /> : null}
+
+      <PaasStudioPanel />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title="Cloud Applications" description="Managed through /api/cloud/apps/:id/deploy">

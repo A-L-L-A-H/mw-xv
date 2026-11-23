@@ -1,5 +1,8 @@
 # apps/todo TaskOS v2 Implementation Plan
 
+> **Historical implementation plan — not a live backlog or proof of completion.** Its original 1,346-task estimate is unverified. The actual repository registry `docs/tasks/tasks.json` is currently zero-byte; the verified recovery inventory contains 627 candidate records pending tests and approval. Do not use this document's historical checkboxes or task count to drive current execution. Current SOT status is maintained in `docs/tasks/README.md`, `docs/tasks/RECOVERY-INVENTORY.md`, and `docs/roadmap/STABILIZATION-PLAN.md`.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement full `moonwitness-tasks/v2` contract support in `apps/todo` (moonwitness-dx) including SQLite schema migrations, enriched Task struct, lossless import/export CLI, enhanced MCP tools, and Second Brain web UI.
@@ -8,7 +11,7 @@
 
 **Tech Stack:** Rust 2024, rusqlite 0.42 (with FTS5), axum 0.8, rmcp 3.10, React 19, Tailwind CSS, Vite, chrono, serde_json.
 
-**Spec:** `docs/tasks/tasks.schema.json` (moonwitness-tasks/v2), `docs/tasks/tasks.json` (1,346 canonical tasks), `docs/superpowers/plans/2026-11-22-taskos-second-brain-centralization.md`
+**Historical spec reference:** `docs/tasks/tasks.schema.json` (moonwitness-tasks/v2). The previous 1,346-task estimate is not a verified count; current migration inputs are documented in `docs/tasks/RECOVERY-INVENTORY.md` and the registry remains unavailable until recovery passes.
 
 ## Global Constraints
 
@@ -538,7 +541,7 @@ git commit --allow-empty -m "chore(todo): complete TaskOS v2 and Second Brain im
 
 ## Execution Options
 
-Plan complete and saved to `docs/superpowers/plans/2026-11-22-todo-taskos-v2-implementation.md`. Two execution options:
+This plan document was created and saved; its existence does **not** prove its implementation steps completed. Treat its checkboxes as historical planning context, not current project status.
 
 1. **Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 

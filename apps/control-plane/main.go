@@ -76,6 +76,10 @@ var registry = map[string]containerMeta{
 		Restart: "unless-stopped",
 		Volumes: []string{"isp_data:/data"},
 	},
+	"easytier": {
+		Image:   easytierImage,
+		Restart: "unless-stopped",
+	},
 }
 
 // DB is the global SQLite handle for control-plane metadata.
@@ -111,11 +115,28 @@ func main() {
 		log.Fatalf("failed to resolve admin token: %v", err)
 	}
 
-	// Ensure all registry services are running at startup.
-	for name, meta := range registry {
-		if err := ensureService(ctx, cfg.dockerBin, name, meta); err != nil {
-			log.Printf("warning: could not ensure service %s: %v", name, err)
+	meshMgr := NewMeshManagerFromEnv(cfg.dockerBin)
+	log.Printf("mesh config: %s", meshMgr.RedactedSummary())
+	if meshMgr.configErr != nil {
+		log.Printf("warning: mesh configuration invalid (fail-closed): %s", RedactMeshSecret(meshMgr.configErr.Error(), meshMgr.cfg.NetworkSecret))
+	}
+
+	// Gate legacy registry auto-start behind MW_CONTROL_PLANE_AUTOSTART_LEGACY=true
+	// so VPS Compose deployments never collide with rogue legacy containers on restart.
+	if shouldAutostartLegacyRegistry() {
+		for name, meta := range registry {
+			if name == easytierServiceName {
+				if !meshMgr.cfg.Enabled || meshMgr.configErr != nil {
+					continue
+				}
+				meta = EasytierContainerMeta(meshMgr.cfg)
+			}
+			if err := ensureService(ctx, cfg.dockerBin, name, meta); err != nil {
+				log.Printf("warning: could not ensure service %s: %s", name, RedactMeshSecret(err.Error(), meshMgr.cfg.NetworkSecret))
+			}
 		}
+	} else {
+		log.Printf("legacy registry auto-start disabled (set MW_CONTROL_PLANE_AUTOSTART_LEGACY=true to enable)")
 	}
 
 	srv := &http.Server{
@@ -137,6 +158,14 @@ func main() {
 	log.Println("control-plane stopped")
 }
 
+// shouldAutostartLegacyRegistry returns true only when
+// MW_CONTROL_PLANE_AUTOSTART_LEGACY is explicitly set to "true".
+// Defaults to false so VPS Compose deployments never collide with legacy
+// registry containers on startup.
+func shouldAutostartLegacyRegistry() bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv("MW_CONTROL_PLANE_AUTOSTART_LEGACY")), "true")
+}
+
 // buildMux wires the full HTTP router for the control plane. Every route
 // except GET /health requires Bearer auth with the resolved admin token.
 func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
@@ -144,6 +173,7 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 
 	// Health stays unauthenticated for container/orchestrator liveness probes.
 	mux.HandleFunc("/health", handleHealth(db, dockerBin))
+	mux.HandleFunc("/mesh/status", requireBearerAuth(adminToken, handleMeshStatus(NewMeshManagerFromEnv(dockerBin))))
 	mux.HandleFunc("/services", requireBearerAuth(adminToken, handleServices(dockerBin)))
 	mux.HandleFunc("/services/", requireBearerAuth(adminToken, handleService(dockerBin)))
 	mux.HandleFunc("/deploy", requireBearerAuth(adminToken, handleDeploy(db, dockerBin)))
@@ -155,6 +185,15 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 	mux.HandleFunc("/api/deployments", requireBearerAuth(adminToken, handleApiDeployments(db)))
 	mux.HandleFunc("/api/deployments/", requireBearerAuth(adminToken, handleApiDeployment(db)))
 	mux.HandleFunc("/api/containers/", requireBearerAuth(adminToken, handleContainerSubroutes(dockerBin)))
+
+	// PaaS node agent endpoints (authenticated via X-Control-Plane-Token or Bearer).
+	paasMgr := NewPaasManager(db, dockerBin, NewMeshManagerFromEnv(dockerBin), nil, nil)
+	paasMgr.MountRoutes(mux, adminToken)
+	RegisterGitBuilderRoutes(mux, paasMgr, adminToken)
+
+	// A2A peer-to-peer mesh federation endpoint (authenticated via HMAC-SHA256 envelope + private mesh IP).
+	a2aMgr := NewA2AManagerFromEnv()
+	mux.HandleFunc("/a2a/delegate", a2aMgr.HandleDelegate())
 
 	return mux
 }
@@ -264,8 +303,10 @@ CREATE TABLE IF NOT EXISTS service_status (
 `
 
 func initSchema() error {
-	_, err := DB.Exec(schemaDDL)
-	return err
+	if _, err := DB.Exec(schemaDDL); err != nil {
+		return err
+	}
+	return initPaasSchema(DB)
 }
 
 // serviceRow mirrors the services table.

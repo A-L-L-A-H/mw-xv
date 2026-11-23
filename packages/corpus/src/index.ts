@@ -44,3 +44,16 @@ export type {
   QuranPassageSnapshot,
   ReadQuranPassageRequest,
 } from './quran-passage.js';
+export {
+  ASMAUL_HUSNA_CONCEPT_EDGES,
+  ASMAUL_HUSNA_DATASET,
+  getAsmaulHusnaByCluster,
+  getAsmaulHusnaByOrdinal,
+  getRelatedAsmaulHusna,
+  searchAsmaulHusna,
+  summarizeAsmaulHusnaClusters,
+  type AsmaulHusnaCluster,
+  type AsmaulHusnaConceptEdge,
+  type AsmaulHusnaEntry,
+  type AsmaulHusnaRelationKind,
+} from './asmaul-husna.js';

@@ -1,0 +1,34 @@
+{
+  "name": "@moonwitness/orm-a2a",
+  "version": "1.0.0-rc.1",
+  "description": "Addon-first A2A mesh federation API receiver and durable inbox",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@moonwitness/ai-runtime": "workspace:*",
+    "@moonwitness/orm": "workspace:*",
+    "@moonwitness/orm-ai": "workspace:*",
+    "@moonwitness/orm-base": "workspace:*",
+    "@moonwitness/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "~5.7.3"
+  }
+}

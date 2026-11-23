@@ -64,7 +64,7 @@ import {
   transitionWorkflow,
 } from '@moonwitness/orm-workflow';
 import { buildApp } from '../src/app.js';
-import { resolveCorpusDataRoot } from '../src/routes/corpus.routes.js';
+import { resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
 import { verifyDefaultBaseAccounts } from '../src/startup-checks.js';
 import { createPostgresKnexConfig } from '../src/config/knexfile.js';
 import { LocalFileAttachmentStorage, type AttachmentStorage } from '@moonwitness/orm-storage';

@@ -14,3 +14,23 @@ export {
   type SubscriptionInstance,
 } from './automation.js';
 export { createSubscriptionHttpPlugin, subscriptionHttpPlugin } from './http.js';
+export { subscriptionMetricsHttpPlugin } from './http-plugin.js';
+export {
+  DEFAULT_DUNNING_POLICY,
+  calculateMidCycleProration,
+  advanceDunningState,
+  normalizeToMrrCents,
+  calculateMrrAndArr,
+  calculateCohortRetention,
+  type ProrationInput,
+  type ProrationResult,
+  type DunningStatus,
+  type DunningEvent,
+  type DunningPolicy,
+  type DunningState,
+  type DunningTransitionResult,
+  type BillingInterval,
+  type SubscriptionRevenueRecord,
+  type RevenueMetricsResult,
+  type CohortRetentionResult,
+} from './revenue-engine.js';

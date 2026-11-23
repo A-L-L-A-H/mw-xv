@@ -1,6 +1,7 @@
 # MoonWitness XV — AI Corporation Local-First Desktop Harness Blueprint
 
 - **Document status:** Accepted Extension to the AI Corporation Blueprint (2026-11-22)
+- **Runtime alignment (2026-11-23):** Node.js `24.x` is the current Desktop sidecar baseline; earlier `22.x` references are superseded.
 - **Canonical Architecture & ADR:**
   - [ADR 0008: Local-First Desktop Agent Harness](../../docs/architecture/adr/0008-local-first-desktop-agent-harness.md)
   - [Desktop Local-First Harness Architecture](../../docs/architecture/desktop-local-first-harness.md)
@@ -46,7 +47,7 @@ flowchart LR
   subgraph UserHost["Developer Workstation (apps/desktop)"]
     UI["apps/board in Tauri v2 WebView (tauri.conf.json CSP)"]
     Bridge["window.__MW_DESKTOP__ (DesktopCapabilityBridge)"]
-    Host["Node 22.x ESM Local Harness Sidecar (@moonwitness/desktop)"]
+    Host["Node 24.x ESM Local Harness Sidecar (@moonwitness/desktop)"]
     Gate["DesktopRiskGate (R0-R4 + Grant + HumanApprovalToken)"]
     DB[("~/.moonwitness/local.db (SQLite WAL)")]
     Blobs[("~/.moonwitness/storage/ (UUID + SHA-256)")]
@@ -127,7 +128,7 @@ To align `DSK-0`–`DSK-10` with [`AI-CORPORATION-IMPLEMENTATION-PLAN.md`](AI-CO
 | Desktop Phase | Focus                                                                                                       | Coupled `M12` Dependencies          |
 | ------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | **`DSK-0`**   | Architecture freeze, ADR `0008`, blueprint, non-overlap & baseline verification                             | `M12.01`, `M12.02`                  |
-| **`DSK-1`**   | `apps/desktop` Tauri v2 (`tauri.conf.json`) + Node `22.x` sidecar scaffold & zero-overlap `apps/board` host | `M12.10` (`@moonwitness/ui` parity) |
+| **`DSK-1`**   | `apps/desktop` Tauri v2 (`tauri.conf.json`) + Node `24.x` sidecar scaffold & zero-overlap `apps/board` host | `M12.10` (`@moonwitness/ui` parity) |
 | **`DSK-2`**   | Dual-dialect `@moonwitness/orm` SQLite sidecar (`~/.moonwitness/local.db`)                                  | `M12.03` (`@moonwitness/orm-ai`)    |
 | **`DSK-3`**   | Outbox PCW sync engine (`ai.agent_run`, `ai.artifact_manifest`, `base.outbox_event` <-> `apps/api`)         | `M12.05`, `M12.07`                  |
 | **`DSK-4`**   | `window.__MW_DESKTOP__` (`DesktopCapabilityBridge`) hardened IPC membrane                                   | `M12.10`                            |

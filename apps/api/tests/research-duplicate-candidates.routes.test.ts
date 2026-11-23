@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import swagger from '@fastify/swagger';
 import type { StoredResearchGraphRelease } from '@moonwitness/orm-knowledge';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { researchDuplicateCandidateRoutes } from '../src/routes/research-duplicate-candidates.routes.js';
+import { researchDuplicateCandidateHttpPlugin as researchDuplicateCandidateRoutes } from '@moonwitness/orm-knowledge';
 
 const digest = 'a'.repeat(64);
 const scopeId = 'mw:concept:duplicate-scope';
@@ -395,6 +395,7 @@ describe('research duplicate candidates API', () => {
 
   it('documents authenticated success and generic errors in OpenAPI', async () => {
     const app = Fastify();
+    app.decorate('db', {} as never);
     await app.register(swagger, {
       openapi: {
         info: { title: 'Test API', version: '1.0.0' },

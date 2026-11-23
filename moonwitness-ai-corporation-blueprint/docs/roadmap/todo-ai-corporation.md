@@ -1,5 +1,7 @@
 # MOONWITNESS XV — AI CORPORATION TODO
 
+> **TaskOS migration freeze:** PR.01–PR.14 are imported as the promotion-governance lifecycle snapshot. PR.14 remains a human-owned approval gate; automation must not satisfy it. AI0/AI1 entries remain proposals and are not silently promoted into official tasks. After TaskOS recovery, lifecycle status belongs to `docs/tasks/tasks.json`; preserve this file as source evidence, not a second live task queue.
+
 > **Document type:** Granular implementation checklist / living work ledger  
 > **Status:** Proposed; Phase 0 must be completed against the exact current `dev` SHA before implementation starts.  
 > **Architecture invariant:** **ORM Addon-First** — all durable business/domain state is declared through MoonWitness addons and the existing ORM lifecycle.  

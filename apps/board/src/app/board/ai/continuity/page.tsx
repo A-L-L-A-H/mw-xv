@@ -27,6 +27,7 @@ import {
   SecurityIcon,
 } from '@moonwitness/ui/icons';
 import { useAiArtifacts, useAiObligations, useAiWorkContracts } from '@/components/ai/ai-api';
+import { EvolutionObligationsPanel } from '@/components/ai/evolution-obligations-panel';
 import { MissionControlShell, ProvenanceBadge } from '@/components/ai/mission-control-chrome';
 
 export default function AiContinuityPage() {
@@ -404,6 +405,7 @@ export default function AiContinuityPage() {
           </Table>
         )}
       </Panel>
+      <EvolutionObligationsPanel />
     </MissionControlShell>
   );
 }

@@ -1,17 +1,39 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseTasksRegistry, toRoadmapTaskStatus, validateTasks } from './validate-tasks.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+export function assertTaskRegistryValid(validation) {
+  if (!validation || validation.valid !== true) {
+    const details = Array.isArray(validation?.errors) ? validation.errors : [];
+    throw new Error(
+      [
+        'Refusing TaskOS sync: canonical registry has not passed validation.',
+        ...details.map((detail) => `- ${detail}`),
+      ].join('\n')
+    );
+  }
+  if (!Number.isSafeInteger(validation.taskCount) || validation.taskCount < 1) {
+    throw new Error('Refusing TaskOS sync: canonical registry contains no task records.');
+  }
+}
 
 export async function syncRoadmap() {
   const tasksFilePath = path.join(rootDir, 'docs/tasks/tasks.json');
   const roadmapTasksPath = path.join(rootDir, 'docs/roadmap/tasks.json');
   const roadmapMdPath = path.join(rootDir, 'ROADMAP.md');
 
+  const validation = await validateTasks({ checkRoadmapParity: false });
+  assertTaskRegistryValid(validation);
+
   const tasksRaw = await fs.readFile(tasksFilePath, 'utf8');
-  const canonicalData = JSON.parse(tasksRaw);
-  const canonicalTasks = canonicalData.tasks ?? [];
+  const canonicalData = parseTasksRegistry(tasksRaw);
+  if (!Array.isArray(canonicalData.tasks) || canonicalData.tasks.length === 0) {
+    throw new Error('Refusing TaskOS sync: canonical registry contains no task records.');
+  }
+  const canonicalTasks = canonicalData.tasks;
   const canonicalMap = new Map(canonicalTasks.map((t) => [t.code, t]));
 
   const roadmapTasksRaw = await fs.readFile(roadmapTasksPath, 'utf8');
@@ -21,7 +43,10 @@ export async function syncRoadmap() {
   for (const rt of roadmapData.tasks) {
     const ct = canonicalMap.get(rt.id);
     if (!ct) continue;
-    const ctStatus = ct.status === 'done' ? 'complete' : ct.status === 'doing' ? 'in_progress' : ct.status === 'blocked' ? 'blocked' : 'todo';
+    const ctStatus = toRoadmapTaskStatus(ct.status);
+    if (ctStatus === null) {
+      throw new Error(`Task "${ct.code}" has unsupported TaskOS status "${ct.status}" for roadmap projection.`);
+    }
     if (rt.status !== ctStatus) {
       rt.status = ctStatus;
       updatedRoadmapTasks += 1;
@@ -55,6 +80,9 @@ export async function syncRoadmap() {
     await fs.writeFile(roadmapMdPath, newLines.join('\n'), 'utf8');
     console.log(`Updated ${updatedLines} checkboxes in ${roadmapMdPath}`);
   }
+
+  const postSyncValidation = await validateTasks();
+  assertTaskRegistryValid(postSyncValidation);
 
   return { updatedRoadmapTasks, updatedLines };
 }

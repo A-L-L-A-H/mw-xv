@@ -74,7 +74,8 @@
         "series",
         "title",
         "status",
-        "priority"
+        "priority",
+        "sourceRef"
       ],
       "additionalProperties": false,
       "properties": {
@@ -212,14 +213,19 @@
         },
         "sourceRef": {
           "type": "object",
+          "required": ["file"],
           "additionalProperties": false,
           "properties": {
-            "file": { "type": "string" },
+            "file": { "type": "string", "minLength": 1 },
             "legacyId": { "type": ["string", "null"] }
           }
         },
         "url": {
           "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Lossless source-specific fields retained for delegated work-package projections. Canonical lifecycle fields remain at the TaskOS task root."
         },
         "comments": {
           "type": "array",

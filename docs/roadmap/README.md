@@ -35,6 +35,11 @@ Roadmap ini terdiri dari 167 kartu M-series dan 65 kartu K-series (232 task). Ch
 | [Local AI knowledge rebuild](12-local-ai-rebuild.md) | K0-001–K9-007 | Domain ownership, rights, privacy, local AI, migration and acceptance            |
 | [AI Corporation](13-ai-corporation.md)               | M12.01–M12.14 | Audit baseline, ADR 0007, ORM-AI, runtime, MCP, PCW, workforce, memory, UI, eval |
 | [Desktop Engineering](14-desktop-engineering.md)     | M13.01–M13.05 | ROCKSOUL FLOW audit, Repo Radar, Overlap, Prompt Forge, Task Deck dependency gate |
+| [Autonomous Evolution & Mesh](15-autonomous-evolution-agi.md) | M14.01–M14.07 | A2A mesh federation, PaaS quota, gitbuilder, and hybrid evolution jobs |
+| [Constitutional AGI OS](16-constitutional-agi-os.md)  | M15.01–M15.07 | 7 constitutional AGI-OS pillars, invariant synthesizer, and eval-lab |
+| [Sovereign Dreaming AGI](17-sovereign-dreaming-agi.md)| M16.01–M16.04 | Non-REM memory consolidation, Active Inference EFE, and Merkle ledger |
+| [Verifiable Mesh Consensus](18-verifiable-mesh-agi-consensus.md) | M17.01–M17.04 | Verifiable A2A consensus, policy fuzzer, sandbox runner, and self-healing |
+| [Autonomous Eval Benchmark](19-autonomous-eval-benchmark-suite.md) | M18.01–M18.03 | Deterministic world-model simulator, adversarial suite, and 8-axis AGI benchmark |
 
 Lihat juga [Issues dan delivery — M11.01–M11.15](11-issues-delivery.md): issue sync, lifecycle, commit/push, auto-PR/merge dan recovery.
 

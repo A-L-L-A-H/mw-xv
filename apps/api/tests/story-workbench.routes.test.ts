@@ -1,13 +1,15 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyPluginAsync } from 'fastify';
 import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { jobsManifest } from '@moonwitness/jobs';
 import { manifest as notificationManifest } from '@moonwitness/orm-notification';
 import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
-import { manifest as knowledgeManifest } from '@moonwitness/orm-knowledge';
+import {
+  manifest as knowledgeManifest,
+  storyWorkbenchHttpPlugin,
+} from '@moonwitness/orm-knowledge';
 import knex, { type Knex } from 'knex';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { storyWorkbenchRoutes } from '../src/routes/story-workbench.routes.js';
 
 const storyId = 'mw:story:api-editorial-sample';
 
@@ -70,7 +72,7 @@ describe('story workbench tenant and revision boundary', () => {
         groupPermissions: [],
       };
     });
-    await app.register(storyWorkbenchRoutes);
+    await app.register(storyWorkbenchHttpPlugin as FastifyPluginAsync);
   });
 
   afterEach(async () => {

@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
-import Fastify from 'fastify';
+import Fastify, { type FastifyPluginAsync } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import knex, { type Knex } from 'knex';
 import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
-import { childProtectionRoutes } from '../src/routes/child-protection.routes.js';
+import { childProtectionHttpPlugin } from '@moonwitness/orm-knowledge';
 
 const sha = (value: string) => createHash('sha256').update(value, 'utf8').digest('hex');
 
@@ -47,7 +47,7 @@ describe('child protection and publication risk API gate', () => {
         };
       }
     });
-    await app.register(childProtectionRoutes);
+    await app.register(childProtectionHttpPlugin as FastifyPluginAsync);
   });
 
   afterEach(async () => {

@@ -23,6 +23,7 @@ import {
   SparkleIcon,
 } from '@moonwitness/ui/icons';
 import { useAiEvalSummary, useAiMemory } from '@/components/ai/ai-api';
+import { AgiTelemetryPanel } from '@/components/ai/agi-telemetry-panel';
 import { MissionControlShell, ProvenanceBadge } from '@/components/ai/mission-control-chrome';
 
 const DEFAULT_CAPABILITY_GATES = [
@@ -296,6 +297,8 @@ export default function AiEvalLabPage() {
           </div>
         </Panel>
       </div>
+
+      <AgiTelemetryPanel />
     </MissionControlShell>
   );
 }

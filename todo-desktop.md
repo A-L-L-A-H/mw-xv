@@ -1,10 +1,12 @@
 # MoonWitness XV — `apps/desktop` Local-First Agent Harness TODO
 
+> **TaskOS migration freeze:** This completed checklist is retained as source evidence for 128 `DSK-` records. Preserve the original checkbox states for provenance. After TaskOS recovery, the canonical registry owns lifecycle state; do not reopen or edit this historical checklist as a parallel task queue.
+
 > **Document type:** Granular engineering checklist / living work ledger (`DSK-0`–`DSK-10`)  
 > **Scope:** `apps/desktop` (`@moonwitness/desktop`) — MoonWitness Local-First Agent Harness (inspired by Antigravity, Codex Desktop, and DeepSeek dsh-superagent; derived from `apps/board` with **zero overlap**)  
 > **Architecture invariants:**
 >
-> - **Zero Overlap:** `apps/board` (`@moonwitness/board`) is the Control Plane & Shared UI Surface (`@moonwitness/ui`); `apps/desktop` (`@moonwitness/desktop`) is the Local-First Execution Plane & Native Harness Host (`Tauri v2` + Node `22.x` ESM sidecar).
+> - **Zero Overlap:** `apps/board` (`@moonwitness/board`) is the Control Plane & Shared UI Surface (`@moonwitness/ui`); `apps/desktop` (`@moonwitness/desktop`) is the Local-First Execution Plane & Native Harness Host (`Tauri v2` + Node `24.x` ESM sidecar).
 > - **ORM Addon-First & Dual-Dialect Parity:** Local SQLite sidecar (`~/.moonwitness/local.db`) runs the exact same workspace addon manifests (`orm-base`, `orm-organization`, `jobs`, `orm-notification`, `orm-workflow`, `orm-storage`, `orm-knowledge`, `orm-ai`) as central `apps/api` PostgreSQL.
 > - **Proof-Carrying Work (PCW):** Local execution never equates to `accepted` completion; evidence blobs (`~/.moonwitness/storage/`), `ai.artifact_manifest` (`ai.evidence_artifact` SHA-256 digests), `ai.agent_run`, and `base.outbox_event` sync via `PcwSyncEnvelope` to central `apps/api` for independent verification.
 >   **Governing documents:**
@@ -63,14 +65,14 @@
 
 ## `DSK-1` — `apps/desktop` Scaffold, Tauri v2 Window & Zero-Overlap `apps/board` Shell
 
-**Goal:** Scaffold `apps/desktop` (`@moonwitness/desktop`) as a hardened Tauri v2 native window + Node `22.x` ESM harness sidecar hosting `apps/board` with zero duplicated UI pages, zero duplicated CSS tokens, and zero duplicated ORM models.
+**Goal:** Scaffold `apps/desktop` (`@moonwitness/desktop`) as a hardened Tauri v2 native window + Node `24.x` ESM harness sidecar hosting `apps/board` with zero duplicated UI pages, zero duplicated CSS tokens, and zero duplicated ORM models.
 
 - [x] **DSK-1.1** Create `apps/desktop/package.json` (`@moonwitness/desktop`, `"version": "1.0.0-rc.1"`, `"private": true`, ESM `"type": "module"`, scripts for `build`, `test`, `typecheck`) referencing `@moonwitness/types` and `@moonwitness/orm` (core foundation wired; remaining runtime integrations `@moonwitness/orm-*`, `@moonwitness/jobs`, `@moonwitness/ai-runtime`, `@moonwitness/local-ai`, `@moonwitness/logger` pending) without duplicating UI or model files.
 - [x] **DSK-1.2** Configure `apps/desktop/tsconfig.json`, `apps/desktop/tsconfig.check.json`, and `apps/desktop/vitest.config.ts` extending `tsconfig.base.json` with strict TypeScript (`noImplicitAny`, zero explicit `any` per `@moonwitness/eslint-config`).
 - [x] **DSK-1.3** Author `apps/desktop/tauri.conf.json` (`com.moonwitness.desktop`) binding `devUrl: http://127.0.0.1:5173/board` and `frontendDist: ../board/.next/standalone/apps/board` directly to `apps/board` with single-window navigation containment.
 - [x] **DSK-1.4** Enforce hardened Tauri v2 security flags in `tauri.conf.json`: `withGlobalTauri: false`, `freezePrototype: true`, `dangerousDisableAssetCspModification: false`, `frame-ancestors: ['none']`, `object-src: ['none']`, and `connect-src` allowlisting `'self'`, loopback (`127.0.0.1` / `localhost` on `3000`, `5173`, `11434`), and `ipc:` / `http://ipc.localhost`.
-- [x] **DSK-1.5** Implement Node `22.x` ESM sidecar entrypoint (`apps/desktop/src/index.ts`, `apps/desktop/src/bridge.ts`) managing `createDesktopHarnessBridge`, crash-safe lifecycle disposal (`dispose()`), and single-instance sidecar coordination.
-- [x] **DSK-1.6** Wire Tauri native Rust shell (`src-tauri/`) / sidecar launcher spawning the hardened Node `22.x` `@moonwitness/desktop` harness process and forwarding validated `window.__MW_DESKTOP__` commands.
+- [x] **DSK-1.5** Implement Node `24.x` ESM sidecar entrypoint (`apps/desktop/src/index.ts`, `apps/desktop/src/bridge.ts`) managing `createDesktopHarnessBridge`, crash-safe lifecycle disposal (`dispose()`), and single-instance sidecar coordination.
+- [x] **DSK-1.6** Wire Tauri native Rust shell (`src-tauri/`) / sidecar launcher spawning the hardened Node `24.x` `@moonwitness/desktop` harness process and forwarding validated `window.__MW_DESKTOP__` commands.
 - [x] **DSK-1.7** **INVARIANT:** Add `scripts/check-desktop-non-overlap.mjs` (`pnpm desktop:ui:check`) asserting `apps/desktop` contains zero forked `apps/board` page routes, zero raw HTML form controls (`<button>`, `<input>`, `<select>`, `<textarea>`, `<svg>`), zero `defineModel`/`defineAddon` calls, and `apps/board` contains zero `better-sqlite3`, `node-pty`, `node:fs`, or Tauri runtime imports.
 - [x] **DSK-1.8** Extend `apps/board` Mission Control & shell (`apps/board/src/components/layout/app-shell.tsx` and future `/board/ai/*` views) with progressive-enhancement detection of `window.__MW_DESKTOP__` to mount Desktop Harness drawers (Worktree Diff, Bounded PTY Console, SQLite Sync Status, Local MCP Inspector) purely using `@moonwitness/ui` primitives.
 - [x] **DSK-1.9** Verify `apps/board` passes `pnpm board:ui:check`, `pnpm --filter @moonwitness/board typecheck`, `pnpm --filter @moonwitness/board lint`, and `pnpm board:budget` unchanged when `window.__MW_DESKTOP__` is undefined (web mode).
@@ -247,7 +249,7 @@
   - Network disconnect mid-PCW upload -> idempotent outbox retry on reconnect (`syncPending`) with zero duplicate artifacts.
   - Tampered SHA-256 blob upload -> server rejects (`conflict`) and quarantines envelope (`conflictOutboxCount`).
   - Concurrent revocation during active PTY -> immediate `AbortSignal` process-tree termination.
-- [x] **DSK-10.6** Add Node `22.x` LTS native ABI rebuild verification for `better-sqlite3` and `node-pty` alongside Tauri v2 sidecar bundling on Windows and Linux/macOS CI runners.
+- [x] **DSK-10.6** Add Node `24.x` LTS native ABI rebuild verification for `better-sqlite3` and `node-pty` alongside Tauri v2 sidecar bundling on Windows and Linux/macOS CI runners.
 - [x] **DSK-10.7** Configure reproducible Tauri v2 desktop packaging (`tauri build` / unsigned CI bundle check + platform signing hooks for Windows Authenticode / macOS notarization without committing signing secrets).
 - [x] **DSK-10.8** Add desktop Playwright E2E harness launching `apps/desktop` / `apps/board` with `window.__MW_DESKTOP__` attached against mock `apps/api` + `MockProvider` verifying worktree diff review, bounded PTY execution, and offline sync banner.
 - [x] **DSK-10.9** Add `apps/desktop` checks to CI (`.github/workflows/ci.yml` using SHA-pinned actions): `pnpm --filter @moonwitness/desktop build`, `typecheck`, `lint`, `test`, and `pnpm desktop:ui:check`.

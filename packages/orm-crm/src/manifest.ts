@@ -2,12 +2,14 @@ import { defineAddon, ref, seed } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
 import { Lead, LeadStage, LeadTagLink, Opportunity } from './models/index.js';
 import { views } from './views.js';
+import { crmHttpPlugin } from './http-plugin.js';
 
 export const manifest = defineAddon({
   name: 'crm',
   version: '1.0.0',
   depends: ['base'],
   models: [LeadStage, Lead, Opportunity, LeadTagLink],
+  httpPlugins: [crmHttpPlugin],
   data: [
     seed(LeadStage, 'crm.stage_new', {
       company: ref('base.company_default'),

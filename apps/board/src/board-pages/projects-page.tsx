@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AddonIcon,
   CheckCircleIcon,
+  CodeIcon,
   ColumnsIcon,
   RefreshIcon,
   SparkleIcon,
@@ -19,6 +20,12 @@ import { Panel } from '@moonwitness/ui/components/panel';
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { toast } from '@moonwitness/ui/components/toast';
 import { client } from '@/lib/client';
+import {
+  dispatchDesktopFlowPrime,
+  useDesktopBridge,
+  type DesktopGitWorktreeLease,
+} from '@/lib/desktop-bridge';
+import { useDesktopMode } from '@/lib/desktop-mode';
 import { scopedQueryKey } from '@/lib/query-scope';
 
 interface ProjectSummary {
@@ -98,6 +105,9 @@ function priorityVariant(
 
 export function ProjectsPage() {
   const queryClient = useQueryClient();
+  const { isDesktop, bridge, snapshot, refreshSnapshot } = useDesktopBridge();
+  const { mode: desktopMode } = useDesktopMode();
+  const isWorkspaceDesktop = isDesktop && desktopMode === 'workspace';
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [todoCode, setTodoCode] = useState('TASK-0880');
   const [todoTitle, setTodoTitle] = useState('');
@@ -114,6 +124,54 @@ export function ProjectsPage() {
     code: string;
     created: boolean;
   } | null>(null);
+  const [boundLeasesByTaskId, setBoundLeasesByTaskId] = useState<
+    Record<number, DesktopGitWorktreeLease>
+  >({});
+  const [bindingTaskId, setBindingTaskId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dagFilter, setDagFilter] = useState<'all' | 'ready' | 'blocked'>('all');
+  const [draggingTaskId, setDraggingTaskId] = useState<number | null>(null);
+  const [dragOverStageId, setDragOverStageId] = useState<number | null>(null);
+  const [selectedTaskIds, setSelectedTaskIds] = useState<number[]>([]);
+  const [batchTargetStageId, setBatchTargetStageId] = useState<string>('');
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const quickCreateTitleRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isEditable =
+        target !== null &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable);
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      if (isEditable || event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
+
+      if (event.key === '/') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (event.key.toLowerCase() === 'n') {
+        event.preventDefault();
+        quickCreateTitleRef.current?.focus();
+      } else if (event.key.toLowerCase() === 'f') {
+        event.preventDefault();
+        setDagFilter((prev) => (prev === 'all' ? 'ready' : prev === 'ready' ? 'blocked' : 'all'));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const projectsQuery = useQuery({
     queryKey: scopedQueryKey(['projects', 'list']),
@@ -244,7 +302,50 @@ export function ProjectsPage() {
     },
   });
 
+  const importTaskOsMutation = useMutation({
+    mutationFn: async () => {
+      const res = await client.request<{
+        success: boolean;
+        data: {
+          projectsCreated: number;
+          projectsUpdated: number;
+          tasksCreated: number;
+          tasksUpdated: number;
+          dependenciesCreated: number;
+        };
+      }>('/api/desktop/projects/import-taskos', { method: 'POST', body: {} });
+      return res.data;
+    },
+    onSuccess: async (summary) => {
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success(
+        `TaskOS imported: ${summary.tasksCreated} created, ${summary.tasksUpdated} updated, ${summary.dependenciesCreated} deps.`
+      );
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to import TaskOS tasks.');
+    },
+  });
+
+  const batchMoveStageMutation = useMutation({
+    mutationFn: async ({ taskIds, stageId }: { taskIds: number[]; stageId: number }) => {
+      await Promise.all(
+        taskIds.map((taskId) => client.model('project.task').write(taskId, { stage_id: stageId }))
+      );
+      return taskIds.length;
+    },
+    onSuccess: async (count) => {
+      setSelectedTaskIds([]);
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success(`Moved ${count} task(s) to target stage.`);
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Unable to batch move tasks.');
+    },
+  });
+
   const board = boardQuery.data;
+  const activeDesktopLeases = useMemo(() => snapshot?.activeLeases ?? [], [snapshot?.activeLeases]);
   const dagNodeById = useMemo(
     () => new Map((board?.dag.nodes ?? []).map((node) => [node.id, node])),
     [board]
@@ -253,6 +354,119 @@ export function ProjectsPage() {
     () => new Map((board?.tasks ?? []).map((task) => [task.id, task])),
     [board]
   );
+
+  const filteredTasks = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return (board?.tasks ?? []).filter((task) => {
+      const node = dagNodeById.get(task.id);
+      if (dagFilter === 'ready' && !node?.is_ready) return false;
+      if (dagFilter === 'blocked' && !(node && node.blocked_by_ids.length > 0)) return false;
+      if (!query) return true;
+      const haystack = `${task.code} ${task.title} ${task.description ?? ''}`.toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [board?.tasks, dagFilter, dagNodeById, searchQuery]);
+
+  const toggleTaskSelection = (taskId: number) => {
+    setSelectedTaskIds((prev) =>
+      prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
+    );
+  };
+
+  const handleStageDrop = (stageId: number, rawTaskId: string) => {
+    setDragOverStageId(null);
+    const parsedId = Number(rawTaskId || draggingTaskId);
+    setDraggingTaskId(null);
+    if (!Number.isFinite(parsedId) || parsedId <= 0) return;
+    const draggedTask = taskById.get(parsedId);
+    if (!draggedTask || draggedTask.stage_id === stageId) return;
+    moveStageMutation.mutate({ taskId: parsedId, stageId });
+  };
+
+  const findTaskLease = (task: TaskSummary): DesktopGitWorktreeLease | null => {
+    const cached = boundLeasesByTaskId[task.id];
+    if (cached && cached.status === 'active') return cached;
+    const normalizedCode = task.code.toLowerCase().replace(/[^a-z0-9-_]/gu, '-');
+    return (
+      activeDesktopLeases.find(
+        (lease) =>
+          lease.status === 'active' &&
+          (lease.runId.toLowerCase().includes(normalizedCode) ||
+            lease.branchName.toLowerCase().includes(normalizedCode))
+      ) ?? null
+    );
+  };
+
+  const handleBindDesktopWorktree = async (task: TaskSummary) => {
+    if (!isDesktop || !bridge) {
+      toast.info(
+        `Web-only mode: open MoonWitness Desktop to bind an isolated worktree for ${task.code}.`
+      );
+      return;
+    }
+
+    const existingLease = findTaskLease(task);
+    const contractCode =
+      lastDispatchedContract?.taskCode === task.code
+        ? lastDispatchedContract.code
+        : `WC-${task.code}`;
+
+    if (existingLease) {
+      dispatchDesktopFlowPrime({
+        taskCode: task.code,
+        taskTitle: task.title,
+        runId: existingLease.runId,
+        contractCode,
+        scopePaths: existingLease.allowedPaths,
+        openDrawer: true,
+      });
+      toast.success(
+        `Opened FLOW Cockpit for ${task.code} on active lease ${existingLease.branchName}.`
+      );
+      return;
+    }
+
+    const sanitizedRunId = `task-${task.code.toLowerCase().replace(/[^a-z0-9-_]/gu, '-')}`;
+    setBindingTaskId(task.id);
+    try {
+      if (bridge.worktree.acquire) {
+        const lease = await bridge.worktree.acquire({
+          runId: sanitizedRunId,
+          taskCode: task.code,
+          workContractId:
+            lastDispatchedContract?.taskCode === task.code
+              ? lastDispatchedContract.contractId
+              : undefined,
+        });
+        setBoundLeasesByTaskId((prev) => ({ ...prev, [task.id]: lease }));
+        await refreshSnapshot();
+        dispatchDesktopFlowPrime({
+          taskCode: task.code,
+          taskTitle: task.title,
+          runId: lease.runId,
+          contractCode,
+          scopePaths: lease.allowedPaths,
+          openDrawer: true,
+        });
+        toast.success(`Bound Desktop worktree ${lease.branchName} for ${task.code}.`);
+      } else {
+        dispatchDesktopFlowPrime({
+          taskCode: task.code,
+          taskTitle: task.title,
+          runId: activeDesktopLeases[0]?.runId,
+          contractCode,
+          openDrawer: true,
+        });
+        toast.info(
+          `Primed FLOW Cockpit for ${task.code} (worktree.acquire not exposed in this preload build).`
+        );
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : `Failed to bind worktree for ${task.code}.`);
+    } finally {
+      setBindingTaskId(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -264,6 +478,16 @@ export function ProjectsPage() {
         description="Zero-overlap Kanban stages, dependency DAG blocker radar, TaskOS sync, and 1-click AI WorkContract dispatch."
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={isDesktop ? 'cyan' : 'default'}>
+              {isDesktop ? `Desktop Harness · ${activeDesktopLeases.length} lease(s)` : 'Web Mode'}
+            </Badge>
+            {isDesktop ? (
+              <Badge variant={boardQuery.isFetching ? 'magenta' : 'primary'}>
+                {boardQuery.isFetching
+                  ? 'Local SQLite · Syncing'
+                  : 'Offline-First · Synced'}
+              </Badge>
+            ) : null}
             {(projectsQuery.data ?? []).map((project) => (
               <Button
                 key={project.id}
@@ -274,6 +498,17 @@ export function ProjectsPage() {
                 {project.name}
               </Button>
             ))}
+            {isDesktop && !isWorkspaceDesktop ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => importTaskOsMutation.mutate()}
+                disabled={importTaskOsMutation.isPending}
+              >
+                <AddonIcon className="mr-1.5 size-4" />
+                {importTaskOsMutation.isPending ? 'Importing...' : 'Import TaskOS (627)'}
+              </Button>
+            ) : null}
             <Button
               size="sm"
               variant="outline"
@@ -331,85 +566,229 @@ export function ProjectsPage() {
         </Panel>
       )}
 
+      <Panel
+        frame="scuffed"
+        density="compact"
+        title="Board Controls & Shortcuts"
+        description="Press / or Ctrl+K to search, n for quick-create, f to cycle DAG filter, Ctrl/Cmd+Click to multi-select, or drag cards across stages."
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="min-w-56 flex-1">
+            <Input
+              ref={searchInputRef}
+              aria-label="Search project tasks"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tasks by code or title (/, Ctrl+K)..."
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant={dagFilter === 'all' ? 'default' : 'outline'}
+              onClick={() => setDagFilter('all')}
+            >
+              All ({board?.tasks.length ?? 0})
+            </Button>
+            <Button
+              size="sm"
+              variant={dagFilter === 'ready' ? 'default' : 'outline'}
+              onClick={() => setDagFilter('ready')}
+            >
+              Ready ({board?.dag.ready_task_ids.length ?? 0})
+            </Button>
+            <Button
+              size="sm"
+              variant={dagFilter === 'blocked' ? 'default' : 'outline'}
+              onClick={() => setDagFilter('blocked')}
+            >
+              Blocked ({board?.dag.blocked_task_ids.length ?? 0})
+            </Button>
+          </div>
+        </div>
+        {selectedTaskIds.length > 0 ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t-2 border-ink pt-3">
+            <Badge variant="primary">{selectedTaskIds.length} selected</Badge>
+            <SelectField
+              aria-label="Batch target stage"
+              value={batchTargetStageId}
+              onChange={(e) => setBatchTargetStageId(e.target.value)}
+            >
+              <option value="">Select target stage...</option>
+              {(board?.stages ?? []).map((stage) => (
+                <option key={stage.id} value={String(stage.id)}>
+                  {stage.name}
+                </option>
+              ))}
+            </SelectField>
+            <Button
+              size="sm"
+              variant="default"
+              disabled={!batchTargetStageId || batchMoveStageMutation.isPending}
+              onClick={() => {
+                const targetId = Number(batchTargetStageId);
+                if (Number.isFinite(targetId) && targetId > 0) {
+                  batchMoveStageMutation.mutate({
+                    taskIds: selectedTaskIds,
+                    stageId: targetId,
+                  });
+                }
+              }}
+            >
+              Move Selected
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSelectedTaskIds([])}
+            >
+              Clear Selection
+            </Button>
+          </div>
+        ) : null}
+      </Panel>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
         {(board?.stages ?? []).map((stage, stageIndex) => {
-          const stageTasks = (board?.tasks ?? []).filter((task) => task.stage_id === stage.id);
+          const stageTasks = filteredTasks.filter((task) => task.stage_id === stage.id);
           const nextStage = board?.stages[stageIndex + 1] ?? null;
+          const isDropTarget = dragOverStageId === stage.id;
           return (
-            <Panel
+            <div
               key={stage.id}
-              frame="scuffed"
-              density="compact"
-              title={`${stage.name} (${stageTasks.length})`}
-              description={stage.wip_limit ? `WIP limit: ${stage.wip_limit}` : undefined}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (dragOverStageId !== stage.id) setDragOverStageId(stage.id);
+              }}
+              onDragLeave={() => {
+                if (dragOverStageId === stage.id) setDragOverStageId(null);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                handleStageDrop(stage.id, e.dataTransfer.getData('text/plain'));
+              }}
+              className={isDropTarget ? 'ring-2 ring-cyan transition-shadow' : undefined}
             >
-              <div className="space-y-3">
-                {stageTasks.length === 0 ? (
-                  <p className="font-mono text-xs text-ink-faint">Empty stage</p>
-                ) : (
-                  stageTasks.map((task) => {
-                    const node = dagNodeById.get(task.id);
-                    const blockerCodes = (node?.blocked_by_ids ?? [])
-                      .map((id) => taskById.get(id)?.code ?? `#${id}`)
-                      .join(', ');
-                    return (
-                      <article
-                        key={task.id}
-                        className="space-y-2 border-2 border-ink bg-paper p-3 shadow-ink-sm"
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-1">
-                          <span className="font-mono text-xs font-bold">{task.code}</span>
-                          <div className="flex items-center gap-1">
-                            <Badge variant={priorityVariant(task.priority)}>{task.priority}</Badge>
-                            {blockerCodes ? (
-                              <Badge variant="destructive">BLOCKED BY {blockerCodes}</Badge>
-                            ) : node?.is_ready ? (
-                              <Badge variant="cyan">READY</Badge>
+              <Panel
+                frame="scuffed"
+                density="compact"
+                title={`${stage.name} (${stageTasks.length})`}
+                description={stage.wip_limit ? `WIP limit: ${stage.wip_limit}` : undefined}
+              >
+                <div className="space-y-3">
+                  {stageTasks.length === 0 ? (
+                    <p className="font-mono text-xs text-ink-faint">Empty stage</p>
+                  ) : (
+                    stageTasks.map((task) => {
+                      const node = dagNodeById.get(task.id);
+                      const taskLease = findTaskLease(task);
+                      const waitsOnCodes = (node?.blocked_by_ids ?? []).map(
+                        (id) => taskById.get(id)?.code ?? `#${id}`
+                      );
+                      const isSelected = selectedTaskIds.includes(task.id);
+                      return (
+                        <article
+                          key={task.id}
+                          draggable
+                          onDragStart={(e) => {
+                            setDraggingTaskId(task.id);
+                            e.dataTransfer.setData('text/plain', String(task.id));
+                            e.dataTransfer.effectAllowed = 'move';
+                          }}
+                          onDragEnd={() => {
+                            setDraggingTaskId(null);
+                            setDragOverStageId(null);
+                          }}
+                          onClick={(e) => {
+                            if (e.ctrlKey || e.metaKey) {
+                              e.preventDefault();
+                              toggleTaskSelection(task.id);
+                            }
+                          }}
+                          className={`space-y-2 border-2 bg-paper p-3 shadow-ink-sm cursor-grab active:cursor-grabbing ${
+                            isSelected ? 'border-magenta ring-2 ring-magenta/40' : 'border-ink'
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-1">
+                            <span className="font-mono text-xs font-bold">{task.code}</span>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <Badge variant={priorityVariant(task.priority)}>{task.priority}</Badge>
+                              {waitsOnCodes.length > 0 ? (
+                                <Badge variant="destructive">
+                                  WAITS ON: {waitsOnCodes.join(', ')}
+                                </Badge>
+                              ) : node?.is_ready ? (
+                                <Badge variant="cyan">READY</Badge>
+                              ) : null}
+                              {taskLease ? (
+                                <Badge variant="primary">LEASE: {taskLease.branchName}</Badge>
+                              ) : null}
+                            </div>
+                          </div>
+                          <p className="font-display text-sm uppercase leading-tight">{task.title}</p>
+                          {task.description ? (
+                            <p className="text-xs text-ink-soft line-clamp-2">{task.description}</p>
+                          ) : null}
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {nextStage ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={moveStageMutation.isPending}
+                                onClick={() =>
+                                  moveStageMutation.mutate({ taskId: task.id, stageId: nextStage.id })
+                                }
+                              >
+                                Move -&gt; {nextStage.name}
+                              </Button>
+                            ) : null}
+                            {!isWorkspaceDesktop ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  disabled={dispatchContractMutation.isPending}
+                                  onClick={() => dispatchContractMutation.mutate(task)}
+                                >
+                                  <SparkleIcon className="mr-1 size-3.5" />
+                                  Dispatch AI
+                                </Button>
+                                {node?.is_ready ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={bindingTaskId === task.id}
+                                    onClick={() => void handleBindDesktopWorktree(task)}
+                                  >
+                                    <CodeIcon className="mr-1 size-3.5" />
+                                    {bindingTaskId === task.id
+                                      ? 'Binding…'
+                                      : taskLease
+                                        ? 'Open FLOW'
+                                        : isDesktop
+                                          ? 'Bind Worktree'
+                                          : 'Desktop Worktree'}
+                                  </Button>
+                                ) : null}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={syncStageMutation.isPending}
+                                  onClick={() => syncStageMutation.mutate(task)}
+                                >
+                                  <RefreshIcon className="mr-1 size-3.5" />
+                                  Sync AI Stage
+                                </Button>
+                              </>
                             ) : null}
                           </div>
-                        </div>
-                        <p className="font-display text-sm uppercase leading-tight">{task.title}</p>
-                        {task.description ? (
-                          <p className="text-xs text-ink-soft line-clamp-2">{task.description}</p>
-                        ) : null}
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {nextStage ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={moveStageMutation.isPending}
-                              onClick={() =>
-                                moveStageMutation.mutate({ taskId: task.id, stageId: nextStage.id })
-                              }
-                            >
-                              Move -&gt; {nextStage.name}
-                            </Button>
-                          ) : null}
-                          <Button
-                            size="sm"
-                            variant="default"
-                            disabled={dispatchContractMutation.isPending}
-                            onClick={() => dispatchContractMutation.mutate(task)}
-                          >
-                            <SparkleIcon className="mr-1 size-3.5" />
-                            Dispatch AI
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={syncStageMutation.isPending}
-                            onClick={() => syncStageMutation.mutate(task)}
-                          >
-                            <RefreshIcon className="mr-1 size-3.5" />
-                            Sync AI Stage
-                          </Button>
-                        </div>
-                      </article>
-                    );
-                  })
-                )}
-              </div>
-            </Panel>
+                        </article>
+                      );
+                    })
+                  )}
+                </div>
+              </Panel>
+            </div>
           );
         })}
       </div>
@@ -427,10 +806,11 @@ export function ProjectsPage() {
             placeholder="TASK-0880"
           />
           <Input
+            ref={quickCreateTitleRef}
             aria-label="TaskOS Title"
             value={todoTitle}
             onChange={(e) => setTodoTitle(e.target.value)}
-            placeholder="New synced task title (optional for export-only)"
+            placeholder="New synced task title (press n to focus)"
             className="md:col-span-2"
           />
           <SelectField

@@ -11,7 +11,7 @@
 
 `apps/desktop` (`@moonwitness/desktop`) brings a local-first, workspace-isolated coding and operations agent harness (inspired by Antigravity, Codex Desktop, and DeepSeek dsh-superagent) onto MoonWitness XV's Addon-First platform without fracturing its domain model or UI system.
 
-Whereas `apps/board` operates as a browser-based Control Plane connected to `apps/api` and PostgreSQL, `apps/desktop` hosts `apps/board` inside a hardened Tauri v2 native window (`apps/desktop/tauri.conf.json`) paired with a Node.js `22.x` ESM local harness sidecar—executing agent loops against developer repositories and loopback inference runtimes offline or online while producing cryptographically hashed **Proof-Carrying Work (PCW)** that reconciles back to central `apps/api` PostgreSQL.
+Whereas `apps/board` operates as a browser-based Control Plane connected to `apps/api` and PostgreSQL, `apps/desktop` hosts `apps/board` inside a hardened Tauri v2 native window (`apps/desktop/tauri.conf.json`) paired with a Node.js `24.x` ESM local harness sidecar—executing agent loops against developer repositories and loopback inference runtimes offline or online while producing cryptographically hashed **Proof-Carrying Work (PCW)** that reconciles back to central `apps/api` PostgreSQL.
 
 ---
 
@@ -35,10 +35,10 @@ flowchart TB
     Board --> ClientSDK
   end
 
-  subgraph DesktopHost["apps/desktop (Tauri v2 Shell + Node 22.x Local-First Harness Host)"]
+  subgraph DesktopHost["apps/desktop (Tauri v2 Shell + Node 24.x Local-First Harness Host)"]
     TauriShell["Tauri v2 Native Window (tauri.conf.json: CSP, freezePrototype, withGlobalTauri=false)"]
     Bridge["Frozen Bridge (window.__MW_DESKTOP__ / DesktopCapabilityBridge)"]
-    SidecarHost["Node 22.x ESM Harness Sidecar (@moonwitness/desktop)"]
+    SidecarHost["Node 24.x ESM Harness Sidecar (@moonwitness/desktop)"]
     RiskGate["DesktopRiskGate (R0-R4 + ai.capability_grant + HumanApprovalToken)"]
     LocalDB[("~/.moonwitness/local.db (SQLite WAL via @moonwitness/orm)")]
     LocalStore[("~/.moonwitness/storage/ (LocalFileAttachmentStorage)")]
@@ -113,7 +113,7 @@ sequenceDiagram
   autonumber
   participant Board as "apps/board (Tauri WebView)"
   participant Bridge as "DesktopCapabilityBridge"
-  participant Sidecar as "Node 22.x Harness Sidecar"
+  participant Sidecar as "Node 24.x Harness Sidecar"
   participant LocalDB as "~/.moonwitness/local.db"
   participant API as "apps/api (Fastify + PostgreSQL)"
 

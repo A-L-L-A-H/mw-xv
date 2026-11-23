@@ -46,6 +46,7 @@ flowchart LR
   pkg1 -->|runtime| pkg19
   pkg1 -->|runtime| pkg20
   pkg1 -->|runtime| pkg25
+  pkg1 -->|runtime| pkg28
   pkg1 -->|runtime| pkg36
   pkg2 -->|runtime| pkg17
   pkg2 -->|runtime| pkg23
@@ -85,6 +86,9 @@ flowchart LR
   pkg6 -->|runtime| pkg37
   pkg7 -->|runtime| pkg36
   pkg9 -->|runtime| pkg15
+  pkg10 -->|development| pkg4
+  pkg10 -->|development| pkg7
+  pkg10 -->|development| pkg37
   pkg10 -->|runtime| pkg1
   pkg10 -->|runtime| pkg2
   pkg10 -->|runtime| pkg14
@@ -112,12 +116,12 @@ flowchart LR
   pkg19 -->|runtime| pkg34
   pkg20 -->|runtime| pkg18
   pkg20 -->|runtime| pkg36
-  pkg21 -->|development| pkg14
   pkg21 -->|development| pkg22
   pkg21 -->|development| pkg26
   pkg21 -->|development| pkg27
   pkg21 -->|development| pkg30
   pkg21 -->|development| pkg34
+  pkg21 -->|runtime| pkg14
   pkg21 -->|runtime| pkg18
   pkg21 -->|runtime| pkg20
   pkg21 -->|runtime| pkg28
@@ -129,12 +133,12 @@ flowchart LR
   pkg23 -->|runtime| pkg18
   pkg23 -->|runtime| pkg20
   pkg23 -->|runtime| pkg36
-  pkg24 -->|development| pkg14
   pkg24 -->|development| pkg22
   pkg24 -->|development| pkg26
   pkg24 -->|development| pkg27
   pkg24 -->|development| pkg30
   pkg24 -->|development| pkg34
+  pkg24 -->|runtime| pkg14
   pkg24 -->|runtime| pkg18
   pkg24 -->|runtime| pkg20
   pkg24 -->|runtime| pkg28
@@ -168,12 +172,14 @@ flowchart LR
   pkg30 -->|runtime| pkg18
   pkg30 -->|runtime| pkg20
   pkg30 -->|runtime| pkg22
+  pkg30 -->|runtime| pkg36
   pkg31 -->|runtime| pkg18
   pkg31 -->|runtime| pkg36
   pkg32 -->|runtime| pkg18
   pkg32 -->|runtime| pkg20
   pkg32 -->|runtime| pkg22
   pkg32 -->|runtime| pkg30
+  pkg32 -->|runtime| pkg36
   pkg33 -->|runtime| pkg18
   pkg33 -->|runtime| pkg20
   pkg34 -->|runtime| pkg14

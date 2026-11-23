@@ -88,7 +88,11 @@ test('checked-in support ledger covers every declared platform runtime', async (
       'utf8'
     )
   );
-  const reviews = evaluateRuntimeSupportReviews(ledger, '2026-10-14T00:00:00.000Z');
+  const latestReviewedAt = ledger.items
+    .map(({ reviewedAt }) => reviewedAt)
+    .sort()
+    .at(-1);
+  const reviews = evaluateRuntimeSupportReviews(ledger, `${latestReviewedAt}T00:00:00.000Z`);
 
   assert.deepEqual(
     reviews.map(({ id }) => id),
@@ -245,8 +249,22 @@ test('audit summarizes paginated inventory and compares a prior baseline', () =>
         workflowRuns: { count: 5 },
       },
     },
-    nodeSchedule: { v22: { end: '2027-04-30' } },
-    supportReviewPolicy,
+    nodeSchedule: { v24: { end: '2028-04-30' } },
+    supportReviewPolicy: {
+      ...supportReviewPolicy,
+      items: [
+        ...supportReviewPolicy.items,
+        {
+          id: 'node',
+          component: 'Node.js',
+          configured: '24',
+          owner: 'repository maintainer',
+          reviewedAt: '2026-10-01',
+          reviewBy: '2026-11-01',
+          source: 'https://github.com/nodejs/Release/blob/main/schedule.json',
+        },
+      ],
+    },
   });
 
   assert.equal(report.inventory.artifacts.count, 1);
@@ -260,13 +278,18 @@ test('audit summarizes paginated inventory and compares a prior baseline', () =>
   });
   assert.equal(report.trends.artifactBytesDelta, 224);
   assert.equal(report.trends.workflowRunCountDelta, -2);
+  assert.equal(report.runtimeSupport.node.major, 24);
+  assert.equal(report.runtimeSupport.node.endOfLife, '2028-04-30');
   assert.equal(report.runtimeSupport.node.status, 'supported-on-audit-date');
   assert.deepEqual(
     report.runtimeSupport.reviews.map(({ component, reviewStatus }) => ({
       component,
       reviewStatus,
     })),
-    [{ component: 'PostgreSQL', reviewStatus: 'current' }]
+    [
+      { component: 'PostgreSQL', reviewStatus: 'current' },
+      { component: 'Node.js', reviewStatus: 'current' },
+    ]
   );
   assert.match(report.limitations.join(' '), /Registry inventory unknown/u);
   assert.match(report.limitations.join(' '), /read:packages/u);

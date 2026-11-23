@@ -3,7 +3,7 @@
 - Related task: `K6-004`
 - Governing policy: [Knowledge privacy and safeguarding](knowledge-privacy-and-safeguarding.md)
 - Runtime contract: [`packages/research/src/child-protection-gate.ts`](../../packages/research/src/child-protection-gate.ts) and [`packages/research/src/child-protection-gate.schema.json`](../../packages/research/src/child-protection-gate.schema.json)
-- API enforcement route: [`apps/api/src/routes/child-protection.routes.ts`](../../apps/api/src/routes/child-protection.routes.ts)
+- API enforcement route: [`packages/orm-knowledge/src/http-plugins/child-protection.plugin.ts`](../../packages/orm-knowledge/src/http-plugins/child-protection.plugin.ts)
 
 ## Core fail-closed controls
 

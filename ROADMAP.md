@@ -2,7 +2,7 @@
 
 Dokumen ini adalah sumber utama rencana lintas milestone. Dibuat 2026-10-04 berdasarkan seluruh rencana yang disepakati. Checkbox kosong berarti belum diverifikasi selesai, termasuk fitur yang implementasi awalnya sudah ada.
 
-**Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 170 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
+**Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 174 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/roadmap/tasks.json); status resmi tetap checklist ini.
 
 **Rencana eksekusi aktif (audit 2026-10-14; jumlah kartu diukur ulang 2026-11-23):** checklist dokumen ini berisi 82 kartu terbuka (49 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
 
@@ -252,6 +252,10 @@ Workstream Desktop yang diaktifkan secara terpisah untuk mengembangkan pengalama
 - [x] M13.06 Proof Gate v2 (`@moonwitness/ai-runtime` `pcw-verifier.ts` 5-state check matrix & `validateDiffScope` + `apps/desktop` `inspectDiff` `scopeClean`/`outOfScopeFiles` drift guard). Evidence: [M13.06](docs/roadmap/evidence/M13.06.md).
 - [x] M13.07 Desktop `R0` Overlap Detector bridge (`bridge.worktree.detectOverlap`), Board Cockpit Drawer tabs (`Radar & Overlap`, `Prompt Packet`, `Out-of-Scope Drift`), serta migrasi route `workflow` & `project` ke ORM addon `manifest.httpPlugins` (`INV-014`). Evidence: [M13.07](docs/roadmap/evidence/M13.07.md).
 - [x] M13.08 Plan Forge Markdown projection/reconciler (`plan-markdown.ts`) & Memory Ledger advisory doc-proposal export (`memory-doc-proposal.ts`) di `@moonwitness/ai-runtime`. Evidence: [M13.08](docs/roadmap/evidence/M13.08.md).
+- [x] M13.09 Gate eksekusi `POST /api/ai/runs` (readiness DAG Project, status WorkContract, execution packet, worktree lease) dan integrasi Desktop worktree bind + tab terpadu `FLOW Cockpit` di Board. Evidence: [M13.09](docs/roadmap/evidence/M13.09.md).
+- [x] M13.10 Proof Gate v2 pada `POST /api/ai/work-contracts/:id/verify` dan `POST /api/ai/desktop/pcw-sync` dengan otoritas status `accepted` khusus server (plus migrasi 5 route `@moonwitness/orm-knowledge` ke `manifest.httpPlugins`). Evidence: [M13.10](docs/roadmap/evidence/M13.10.md).
+- [x] M13.11 Visual DNA Lab deterministik (`visual-dna.ts`: `DesignProfile`, audit WCAG/reduced-motion/provenance) di `@moonwitness/ai-runtime` serta mirror web-safe Board. Evidence: [M13.11](docs/roadmap/evidence/M13.11.md).
+- [x] M13.12 Workspace Orbit audit (`workspace-orbit.ts` dan `docs/architecture/workspace-orbit-audit.md`) yang menegakkan batas Control Plane vs Desktop Execution Plane. Evidence: [M13.12](docs/roadmap/evidence/M13.12.md).
 
 ## K — Local AI knowledge rebuild (K0–K9)
 

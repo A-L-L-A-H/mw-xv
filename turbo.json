@@ -1,21 +1,41 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "NODE_ENV",
+    "NEXT_PUBLIC_*",
+    "DATABASE_URL",
+    "POSTGRES_TEST_URL",
+    "PORT",
+    "HOST",
+    "SOURCE_DATE_EPOCH"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**"],
-      "inputs": ["src/**", "package.json", "tsconfig*.json", "next.config.ts", "vite.config.*"]
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig*.json",
+        "next.config.ts",
+        "vite.config.*",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ]
     },
     "typecheck": {
       "dependsOn": ["^build"],
+      "inputs": ["src/**", "tests/**", "package.json", "tsconfig*.json"],
       "outputs": []
     },
     "lint": {
+      "inputs": ["src/**", "tests/**", "package.json", ".eslintrc*", "eslint.config.*"],
       "outputs": []
     },
     "test": {
       "dependsOn": ["build"],
-      "outputs": []
+      "inputs": ["src/**", "tests/**", "test/**", "package.json", "tsconfig*.json", "vitest.config.*"],
+      "outputs": ["coverage/**"]
     }
   }
 }

@@ -4,7 +4,7 @@ RUN apt-get update \
     && apt-get install --yes --no-install-recommends python3 make g++ \
     && rm -rf /var/lib/apt/lists/* \
     && corepack enable \
-    && corepack prepare pnpm@11 --activate
+    && corepack prepare pnpm@11.17.0 --activate
 WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/package.json

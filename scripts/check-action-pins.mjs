@@ -207,12 +207,12 @@ async function main() {
     }
   }
   const packageManifest = JSON.parse(await readFile(join(repositoryRoot, 'package.json'), 'utf8'));
-  findings.push(...findPnpmVersionDrift(sources, packageManifest.packageManager ?? ''));
-  const runtimeSources = [
+  const toolchainSources = [
     ...sources,
     { path: 'Dockerfile', content: await readFile(join(repositoryRoot, 'Dockerfile'), 'utf8') },
   ];
-  findings.push(...findNodeVersionDrift(runtimeSources, packageManifest.engines?.node));
+  findings.push(...findPnpmVersionDrift(toolchainSources, packageManifest.packageManager ?? ''));
+  findings.push(...findNodeVersionDrift(toolchainSources, packageManifest.engines?.node));
   const pnpmSetup = sources.find(
     (source) => source.path === '.github/actions/setup-pnpm/action.yml'
   );

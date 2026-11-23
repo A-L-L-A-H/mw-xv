@@ -87,8 +87,52 @@ export {
   parseDesktopCliArgs,
   startDesktopSidecarDaemon,
   type DesktopCliOptions,
+  type DesktopCliSubcommand,
   type DesktopSidecarDaemonHandle,
 } from './cli.js';
+export {
+  ensureLocalWorkspaceBootstrap,
+  startLocalApiServer,
+  type LocalApiServerHandle,
+  type LocalApiServerOptions,
+  type LocalAuthContext,
+  type LocalWorkspaceBootstrapResult,
+} from './local-api-server.js';
+export {
+  DesktopSyncEngine,
+  computeCanonicalSha256,
+  resolveSyncConflict,
+  type RecordLocalMutationInput,
+  type SyncBatchPlan,
+  type SyncConflictRecord,
+  type SyncConflictResolution,
+  type SyncEngineStatus,
+  type SyncOperation,
+  type SyncOutboxEntry,
+  type SyncRecordVersion,
+} from './sync-engine.js';
+export {
+  searchLocalRagDocuments,
+  type LocalRagDocument,
+  type LocalRagDocumentKind,
+  type LocalRagSearchHit,
+  type LocalRagSearchOptions,
+  type LocalRagSearchResult,
+} from './local-rag.js';
+export {
+  runDesktopDoctor,
+  runDesktopDoctorRepair,
+  type DesktopDoctorOptions,
+  type DesktopDoctorRepairResult,
+  type DesktopDoctorReport,
+  type DoctorCheckResult,
+  type DoctorCheckStatus,
+} from './doctor.js';
+export {
+  importDesktopTasks,
+  type DesktopImportOptions,
+  type DesktopImportSummary,
+} from './importer.js';
 export {
   executeProjectTaskInSandbox,
   type AutonomousTaskExecutionOptions,

@@ -1,5 +1,6 @@
-import { defineAddon, defineView, ref, seed } from '@moonwitness/orm';
+import { defineAddon, defineView, ref, seed, type AddonHttpPlugin } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
+import { whatsappHttpPlugin } from './http-plugins/index.js';
 import {
   WhatsappAccount,
   WhatsappConversation,
@@ -185,4 +186,5 @@ export const whatsappManifest = defineAddon({
     sequence: 520 + index,
     developmentOnly: true,
   })),
+  httpPlugins: [whatsappHttpPlugin as unknown as AddonHttpPlugin],
 });

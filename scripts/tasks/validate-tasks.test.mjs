@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { parseTasksRegistry, toRoadmapTaskStatus } from './validate-tasks.mjs';
 
 const require = createRequire(new URL('../../packages/knowledge/package.json', import.meta.url));
 const Ajv = require('ajv');
@@ -78,4 +79,39 @@ test('tasks.schema.json is a valid Draft-07 JSON Schema and accepts valid v2 tas
 
   const valid = validate(sample);
   assert.equal(valid, true, JSON.stringify(validate.errors, null, 2));
+});
+
+test('TaskOS registry parser fails with recovery guidance on empty input', () => {
+  assert.throws(
+    () => parseTasksRegistry(''),
+    /TaskOS registry.*empty.*Recovery mode is active/i
+  );
+});
+
+test('TaskOS registry parser fails with recovery guidance on whitespace-only input', () => {
+  assert.throws(
+    () => parseTasksRegistry('  ' + String.fromCharCode(10, 9)),
+    /TaskOS registry.*empty.*Recovery mode is active/i
+  );
+});
+
+test('TaskOS registry parser reports invalid JSON clearly', () => {
+  assert.throws(
+    () => parseTasksRegistry('{ invalid'),
+    /TaskOS registry.*invalid JSON/i
+  );
+});
+
+test('TaskOS registry parser accepts syntactically valid JSON', () => {
+  assert.deepEqual(parseTasksRegistry('{"tasks":[]}'), { tasks: [] });
+});
+
+test('TaskOS statuses map consistently to the roadmap projection', () => {
+  assert.equal(toRoadmapTaskStatus('done'), 'complete');
+  assert.equal(toRoadmapTaskStatus('doing'), 'in_progress');
+  assert.equal(toRoadmapTaskStatus('review'), 'in_progress');
+  assert.equal(toRoadmapTaskStatus('blocked'), 'blocked');
+  assert.equal(toRoadmapTaskStatus('backlog'), 'todo');
+  assert.equal(toRoadmapTaskStatus('todo'), 'todo');
+  assert.equal(toRoadmapTaskStatus('unknown'), null);
 });

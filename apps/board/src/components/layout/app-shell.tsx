@@ -63,7 +63,14 @@ import { NotificationBell } from './notification-bell';
 import { Sheet, SheetContent, SheetTrigger } from '@moonwitness/ui/components/sheet';
 import { SoundToggle } from '@moonwitness/ui/components/audio';
 import { DesktopHarnessDrawer } from '@/components/ai/desktop-harness-drawer';
+import { DesktopLogDrawer } from '@/components/ai/desktop-log-drawer';
+import { WorkspaceAssistantDrawer } from '@/components/ai/workspace-assistant-drawer';
+import { QuickCaptureModal } from '@/components/desktop/quick-capture-modal';
 import { AI_MISSION_CONTROL_ROUTES } from '@/components/ai/ai-api';
+import { UpdateBanner, type UpdateBannerStatus } from '@moonwitness/ui/components/update-banner';
+import { ModePicker } from '@moonwitness/ui/components/mode-picker';
+import { useDesktopBridge } from '@/lib/desktop-bridge';
+import { useDesktopMode } from '@/lib/desktop-mode';
 
 function NavItem({
   to,
@@ -103,12 +110,14 @@ function ModelNavigation({
   isLoading,
   canReadResearch,
   canEditStories,
+  isWorkspaceDesktop = false,
   onNavigate,
 }: {
   groups: Array<[string, ModelInfo[]]>;
   isLoading: boolean;
   canReadResearch: boolean;
   canEditStories: boolean;
+  isWorkspaceDesktop?: boolean;
   onNavigate?: () => void;
 }) {
   return (
@@ -143,38 +152,70 @@ function ModelNavigation({
         icon={CompanyIcon}
         onNavigate={onNavigate}
       />
-      <NavItem to="/board/cloud" label="Cloud & ISP" icon={GlobeIcon} onNavigate={onNavigate} />
-      <NavItem
-        to="/board/ai/hq"
-        label="AI Mission Control"
-        icon={SparkleIcon}
-        onNavigate={onNavigate}
-      />
-      {isLoading &&
-        Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-8 bg-ink/10" />)}
-      {groups.map(([group, items]) => (
-        <div key={group} className="space-y-1">
-          <p className="px-3 pb-1 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-faint">
-            {group}
-          </p>
-          {items.map((item) => (
-            <NavItem
-              key={item.model}
-              to={`/board/m/${item.model}`}
-              label={item.menu.label ?? modelLabel(item.model)}
-              icon={modelIcon(item.model)}
-              onNavigate={onNavigate}
-            />
+      <NavItem to="/board/studio" label="Studio" icon={SparkleIcon} onNavigate={onNavigate} />
+      {!isWorkspaceDesktop && (
+        <>
+          <NavItem to="/board/cloud" label="Cloud & ISP" icon={GlobeIcon} onNavigate={onNavigate} />
+          <NavItem
+            to="/board/ai/hq"
+            label="AI Mission Control"
+            icon={SparkleIcon}
+            onNavigate={onNavigate}
+          />
+          {isLoading &&
+            Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-8 bg-ink/10" />)}
+          {groups.map(([group, items]) => (
+            <div key={group} className="space-y-1">
+              <p className="px-3 pb-1 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-faint">
+                {group}
+              </p>
+              {items.map((item) => (
+                <NavItem
+                  key={item.model}
+                  to={`/board/m/${item.model}`}
+                  label={item.menu.label ?? modelLabel(item.model)}
+                  icon={modelIcon(item.model)}
+                  onNavigate={onNavigate}
+                />
+              ))}
+            </div>
           ))}
-        </div>
-      ))}
+        </>
+      )}
     </nav>
+  );
+}
+
+function DesktopUpdateBannerMount() {
+  const { isDesktop } = useDesktopBridge();
+  const [dismissed, setDismissed] = useState(false);
+  const [status, setStatus] = useState<UpdateBannerStatus>('idle');
+
+  if (!isDesktop || dismissed) return null;
+
+  return (
+    <UpdateBanner
+      currentVersion="1.0.0-rc.1"
+      status={status}
+      onCheck={() => setStatus('checking')}
+      onDismiss={() => setDismissed(true)}
+    />
   );
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const { theme, toggle } = useTheme();
+  const { isDesktop } = useDesktopBridge();
+  const {
+    mode: desktopMode,
+    isChosen: desktopModeChosen,
+    setMode: setDesktopMode,
+  } = useDesktopMode();
+  const isWorkspaceDesktop = isDesktop && desktopMode === 'workspace';
+  const toggleDesktopMode = useCallback(() => {
+    setDesktopMode(desktopMode === 'workspace' ? 'developer' : 'workspace');
+  }, [desktopMode, setDesktopMode]);
   const { data: models, isLoading } = useModels();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const commandPaletteTriggerRef = useRef<HTMLButtonElement>(null);
@@ -358,23 +399,43 @@ export function AppShell({ children }: { children: ReactNode }) {
           isLoading={isLoading}
           canReadResearch={researchAccess}
           canEditStories={canEditStories}
+          isWorkspaceDesktop={isWorkspaceDesktop}
         />
-        <div className="border-t-2 border-dashed border-ink/20 p-3">
-          <Button
-            type="button"
-            onClick={toggleDevelopmentMode}
-            aria-pressed={developmentMode}
-            className={cn(
-              'flex w-full items-center gap-3 border-2 px-3 py-2 text-left font-mono text-xs uppercase tracking-wider transition-colors',
-              developmentMode
-                ? 'border-primary bg-primary text-primary-foreground font-bold'
-                : 'border-ink/30 bg-transparent text-ink-soft hover:border-ink hover:text-ink'
+        {(isDesktop || !isWorkspaceDesktop) && (
+          <div className="space-y-2 border-t-2 border-dashed border-ink/20 p-3">
+            {isDesktop && (
+              <Button
+                type="button"
+                onClick={toggleDesktopMode}
+                aria-label={`Switch desktop mode (current: ${desktopMode === 'workspace' ? 'Workspace' : 'DX / Developer'})`}
+                className="flex w-full items-center gap-3 border-2 border-ink/30 bg-transparent px-3 py-2 text-left font-mono text-xs uppercase tracking-wider text-ink-soft transition-colors hover:border-ink hover:text-ink"
+              >
+                {desktopMode === 'workspace' ? (
+                  <ColumnsIcon className="size-4" />
+                ) : (
+                  <CodeIcon className="size-4" />
+                )}
+                {desktopMode === 'workspace' ? 'Mode: Workspace' : 'Mode: DX / Dev'}
+              </Button>
             )}
-          >
-            <CodeIcon className="size-4" />
-            {developmentMode ? 'Development Mode: On' : 'Development Mode'}
-          </Button>
-        </div>
+            {!isWorkspaceDesktop && (
+              <Button
+                type="button"
+                onClick={toggleDevelopmentMode}
+                aria-pressed={developmentMode}
+                className={cn(
+                  'flex w-full items-center gap-3 border-2 px-3 py-2 text-left font-mono text-xs uppercase tracking-wider transition-colors',
+                  developmentMode
+                    ? 'border-primary bg-primary text-primary-foreground font-bold'
+                    : 'border-ink/30 bg-transparent text-ink-soft hover:border-ink hover:text-ink'
+                )}
+              >
+                <CodeIcon className="size-4" />
+                {developmentMode ? 'Development Mode: On' : 'Development Mode'}
+              </Button>
+            )}
+          </div>
+        )}
         <div className="sidebar-zine-collage" aria-hidden="true">
           <DecorativeMotif kind="eye-target" className="sidebar-zine-eye" />
           <span className="sidebar-zine-note">
@@ -413,24 +474,44 @@ export function AppShell({ children }: { children: ReactNode }) {
                 isLoading={isLoading}
                 canReadResearch={researchAccess}
                 canEditStories={canEditStories}
+                isWorkspaceDesktop={isWorkspaceDesktop}
                 onNavigate={() => setMobileNavOpen(false)}
               />
-              <div className="border-t-2 border-dashed border-ink/20 p-3">
-                <Button
-                  type="button"
-                  onClick={toggleDevelopmentMode}
-                  aria-pressed={developmentMode}
-                  className={cn(
-                    'flex w-full items-center gap-3 border-2 px-3 py-2 text-left font-mono text-xs uppercase tracking-wider transition-colors',
-                    developmentMode
-                      ? 'border-primary bg-primary text-primary-foreground font-bold'
-                      : 'border-ink/30 bg-transparent text-ink-soft hover:border-ink hover:text-ink'
+              {(isDesktop || !isWorkspaceDesktop) && (
+                <div className="space-y-2 border-t-2 border-dashed border-ink/20 p-3">
+                  {isDesktop && (
+                    <Button
+                      type="button"
+                      onClick={toggleDesktopMode}
+                      aria-label={`Switch desktop mode (current: ${desktopMode === 'workspace' ? 'Workspace' : 'DX / Developer'})`}
+                      className="flex w-full items-center gap-3 border-2 border-ink/30 bg-transparent px-3 py-2 text-left font-mono text-xs uppercase tracking-wider text-ink-soft transition-colors hover:border-ink hover:text-ink"
+                    >
+                      {desktopMode === 'workspace' ? (
+                        <ColumnsIcon className="size-4" />
+                      ) : (
+                        <CodeIcon className="size-4" />
+                      )}
+                      {desktopMode === 'workspace' ? 'Mode: Workspace' : 'Mode: DX / Dev'}
+                    </Button>
                   )}
-                >
-                  <CodeIcon className="size-4" />
-                  {developmentMode ? 'Development Mode: On' : 'Development Mode'}
-                </Button>
-              </div>
+                  {!isWorkspaceDesktop && (
+                    <Button
+                      type="button"
+                      onClick={toggleDevelopmentMode}
+                      aria-pressed={developmentMode}
+                      className={cn(
+                        'flex w-full items-center gap-3 border-2 px-3 py-2 text-left font-mono text-xs uppercase tracking-wider transition-colors',
+                        developmentMode
+                          ? 'border-primary bg-primary text-primary-foreground font-bold'
+                          : 'border-ink/30 bg-transparent text-ink-soft hover:border-ink hover:text-ink'
+                      )}
+                    >
+                      <CodeIcon className="size-4" />
+                      {developmentMode ? 'Development Mode: On' : 'Development Mode'}
+                    </Button>
+                  )}
+                </div>
+              )}
               <div className="sidebar-zine-collage" aria-hidden="true">
                 <DecorativeMotif kind="eye-target" className="sidebar-zine-eye" />
                 <span className="sidebar-zine-note">
@@ -456,7 +537,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Button>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <DesktopHarnessDrawer />
+            {isDesktop && <WorkspaceAssistantDrawer />}
+            {!isWorkspaceDesktop && <DesktopHarnessDrawer />}
             {/* Tenant / Company Switcher */}
             {companies.length > 0 && (
               <DropdownMenu>
@@ -587,6 +669,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
+        <DesktopUpdateBannerMount />
+
         <main className="min-w-0 flex-1 px-4 py-6 pb-24 sm:px-6 sm:py-8 sm:pb-8 lg:px-10">
           <div key={activeCompanyId ?? 'default-company'}>{children}</div>
         </main>
@@ -644,30 +728,32 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
 
           {/* AI Mission Control Section */}
-          <CommandGroup heading="AI Mission Control">
-            {AI_MISSION_CONTROL_ROUTES.map((route) => {
-              const RouteIcon = route.icon;
-              return (
-                <CommandItem
-                  key={route.href}
-                  value={`${route.label} ${route.href}`}
-                  onSelect={() => {
-                    setPaletteOpen(false);
-                    setPaletteQuery('');
-                    router.push(route.href);
-                  }}
-                >
-                  <RouteIcon /> {route.label}
-                  <span
-                    className="ml-auto max-w-[45%] truncate font-mono text-xs text-ink-faint"
-                    title={route.href}
+          {!isWorkspaceDesktop && (
+            <CommandGroup heading="AI Mission Control">
+              {AI_MISSION_CONTROL_ROUTES.map((route) => {
+                const RouteIcon = route.icon;
+                return (
+                  <CommandItem
+                    key={route.href}
+                    value={`${route.label} ${route.href}`}
+                    onSelect={() => {
+                      setPaletteOpen(false);
+                      setPaletteQuery('');
+                      router.push(route.href);
+                    }}
                   >
-                    {route.href}
-                  </span>
-                </CommandItem>
-              );
-            })}
-          </CommandGroup>
+                    <RouteIcon /> {route.label}
+                    <span
+                      className="ml-auto max-w-[45%] truncate font-mono text-xs text-ink-faint"
+                      title={route.href}
+                    >
+                      {route.href}
+                    </span>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          )}
 
           {/* System Modules Section */}
           {visibleGroups.map(([group, items]) => (
@@ -701,6 +787,15 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Keyboard Shortcuts Cheatsheet Modal */}
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+
+      {/* First-Launch Desktop Experience Mode Picker */}
+      {isDesktop && !desktopModeChosen && <ModePicker onSelect={setDesktopMode} />}
+
+      {/* Centralized Desktop Log Console / Copy Diagnostics */}
+      {isDesktop && <DesktopLogDrawer />}
+
+      {/* Desktop Quick-Capture Modal & Offline Sync Indicator */}
+      {isDesktop && <QuickCaptureModal />}
     </div>
   );
 }
