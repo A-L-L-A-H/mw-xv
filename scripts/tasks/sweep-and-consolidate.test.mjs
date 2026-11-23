@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import { mapEvolutionStatus, sweepAndConsolidate } from './sweep-and-consolidate.mjs';
 import { validateTaskRegistryData } from './validate-tasks.mjs';
@@ -49,6 +50,39 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
     'todo-wa.md': 112,
   });
 
+
+  // Reconcile every old root-todo record by stable code against the archived checklist.
+  // The checked items remain historical evidence; only the seven unchecked items are re-imported as blocked.
+  const legacyRegistry = JSON.parse(await readFile('docs/tasks/tasks.json', 'utf8'));
+  const archivedTodoText = await readFile('docs/archive/todos/todo.md', 'utf8');
+  const archivedRows = archivedTodoText
+    .split(/\\r?\\n/)
+    .map((line) => /^\\s*-\\s*\\[([ xX])\\]\\s+\\*\\*(MW-[A-Za-z0-9_.-]+)\\*\\*/.exec(line))
+    .filter(Boolean);
+  const legacyRootTodo = legacyRegistry.tasks.filter((task) => task.sourceRef?.file === 'todo.md');
+  const legacyDoneCodes = legacyRootTodo.filter((task) => task.status === 'done').map((task) => task.code).sort();
+  const legacyOpenCodes = legacyRootTodo.filter((task) => task.status === 'todo').map((task) => task.code).sort();
+  const archivedCheckedCodes = archivedRows.filter((row) => row[1].toLowerCase() === 'x').map((row) => row[2]).sort();
+  const archivedOpenCodes = archivedRows.filter((row) => row[1] === ' ').map((row) => row[2]).sort();
+
+  assert.equal(legacyRootTodo.length, 861);
+  assert.equal(legacyDoneCodes.length, 854);
+  assert.equal(legacyOpenCodes.length, 7);
+  assert.equal(archivedRows.length, 861);
+  assert.deepEqual(legacyDoneCodes, archivedCheckedCodes);
+  assert.deepEqual(legacyOpenCodes, archivedOpenCodes);
+
+  const importedLegacyOpen = result.tasks
+    .filter((task) => task.sourceRef.file === 'docs/archive/todos/todo.md')
+    .map((task) => task.code)
+    .sort();
+  assert.deepEqual(importedLegacyOpen, archivedOpenCodes);
+  assert.ok(
+    result.tasks
+      .filter((task) => task.sourceRef.file === 'docs/archive/todos/todo.md')
+      .every((task) => task.status === 'blocked'),
+    'Open archived legacy tasks must be retained as blocked pending re-triage.'
+  );
 
   // Check specific task codes
   const taskByCode = new Map(result.tasks.map((t) => [t.code, t]));
