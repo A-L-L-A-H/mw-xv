@@ -1,0 +1,88 @@
+{
+  "$schema": "https://knip.dev/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [
+        "scripts/**/*.mjs",
+        "vitest.config.*",
+        "turbo.json",
+        "tsconfig.base.json"
+      ],
+      "ignore": [
+        "scripts/**/*.test.mjs",
+        "scripts/**/*.spec.mjs",
+        "scripts/evolution/scaffold-exp-addon.mjs",
+        "scripts/addon-create.mjs"
+      ]
+    },
+    "packages/*": {
+      "entry": [
+        "src/index.ts",
+        "vitest.config.*"
+      ],
+      "ignore": [
+        "src/**/*.test.ts",
+        "src/**/*.spec.ts",
+        "dist/**",
+        "build/**",
+        "tests/**"
+      ]
+    },
+    "apps/*": {
+      "entry": [
+        "src/**/*.tsx",
+        "src/**/*.ts",
+        "next.config.*",
+        "vite.config.*"
+      ],
+      "ignore": [
+        "**/*.test.*",
+        "**/*.spec.*",
+        ".next/**",
+        "dist/**",
+        "build/**",
+        "playwright.config.*"
+      ]
+    }
+  },
+  "rules": {
+    "dependencies": "error",
+    "devDependencies": "error",
+    "unlisted": "error",
+    "exports": "error",
+    "types": "error",
+    "enumMembers": "error"
+  },
+  "ignore": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    ".turbo/**",
+    ".next/**",
+    "coverage/**",
+    "*.config.*",
+    "*.d.ts",
+    "evolution/**",
+    "corpus/**",
+    "storage/**",
+    "logs/**",
+    "test-results/**",
+    "docs/**",
+    ".github/**",
+    ".githooks/**",
+    "ontology/**",
+    "MOONWITNESS_*",
+    "raw_arts/**",
+    "scripts/fixtures/**",
+    "apps/test-results/**",
+    "apps/control-plane/**",
+    "apps/isp/**",
+    "apps/docs/**"
+  ],
+  "ignoreDependencies": [
+    "@types/node",
+    "typescript",
+    "vitest",
+    "@vitest/coverage-v8"
+  ]
+}
