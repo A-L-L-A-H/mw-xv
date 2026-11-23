@@ -508,9 +508,6 @@ importers:
       '@moonwitness/ai-runtime':
         specifier: workspace:*
         version: link:../ai-runtime
-      '@moonwitness/orm-ai':
-        specifier: workspace:*
-        version: link:../orm-ai
       '@moonwitness/types':
         specifier: workspace:*
         version: link:../types

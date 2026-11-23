@@ -9,6 +9,7 @@ export {
   ISPRadiusOutbox,
 } from './models/index.js';
 export { createIspHttpPlugin, ispHttpPlugin, type IspHttpPluginOptions } from './http.js';
+export { ispHardeningHttpPlugin } from './http-plugin.js';
 export {
   ISP_INTERNAL_AUTH_DOMAIN,
   resolveIspAdminToken,

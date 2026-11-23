@@ -1,4 +1,5 @@
 export { manifest } from './manifest.js';
+export { crmHttpPlugin } from './http-plugin.js';
 export { LeadStage, Lead, Opportunity, LeadTagLink } from './models/index.js';
 export {
   DEFAULT_LEAD_SCORING_WEIGHTS,

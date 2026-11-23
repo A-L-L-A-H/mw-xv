@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@moonwitness/ai-runtime": "workspace:*",
-    "@moonwitness/orm-ai": "workspace:*",
     "@moonwitness/types": "workspace:*"
   },
   "devDependencies": {

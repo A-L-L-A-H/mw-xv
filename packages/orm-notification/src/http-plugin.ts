@@ -1,6 +1,7 @@
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { isRecord } from '@moonwitness/types';
 import { Notification, NotificationPreference } from './models.js';
+import { NotificationRouter, type RoutableNotification, type UserNotificationPolicy } from './notification-router.js';
 
 interface InboxQuery {
   [key: string]: string | undefined;
@@ -153,4 +154,54 @@ export const notificationHttpPlugin: AddonHttpPlugin = async (app) => {
       return { success: true, data: { channel: req.params.channel, enabled: body.enabled } };
     }
   );
+
+  const defaultRouter = new NotificationRouter();
+
+  app.post('/api/notifications/route', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (!req.auth.companyId) {
+      return reply.code(403).send({ success: false, error: 'Active company is required' });
+    }
+
+    if (!isRecord(req.body)) {
+      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+    }
+
+    const { notification, userPolicy, nowMs } = req.body;
+    if (!isRecord(notification)) {
+      return reply.code(400).send({ success: false, error: 'notification object is required' });
+    }
+
+    const { id, userId, severity, category, title, body } = notification;
+    if (
+      typeof id !== 'string' ||
+      typeof userId !== 'string' ||
+      typeof severity !== 'string' ||
+      typeof category !== 'string' ||
+      typeof title !== 'string' ||
+      typeof body !== 'string'
+    ) {
+      return reply.code(400).send({
+        success: false,
+        error: 'notification must include id, userId, severity, category, title, and body as strings',
+      });
+    }
+
+    const router = new NotificationRouter();
+    if (isRecord(userPolicy)) {
+      router.setUserPolicy(userPolicy as unknown as UserNotificationPolicy);
+    }
+
+    try {
+      const decision = router.route(
+        notification as unknown as RoutableNotification,
+        typeof nowMs === 'number' ? nowMs : undefined
+      );
+      return reply.code(200).send({ success: true, data: decision });
+    } catch (err: unknown) {
+      return reply.code(400).send({ success: false, error: (err as Error).message });
+    }
+  });
 };

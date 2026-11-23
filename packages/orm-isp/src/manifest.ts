@@ -11,6 +11,7 @@ import {
 } from './models/index.js';
 import { views } from './views.js';
 import { ispHttpPlugin } from './http.js';
+import { ispHardeningHttpPlugin } from './http-plugin.js';
 
 export const manifest = defineAddon({
   name: 'isp',
@@ -25,7 +26,7 @@ export const manifest = defineAddon({
     ISPRadiusSession,
     ISPRadiusOutbox,
   ],
-  httpPlugins: [ispHttpPlugin],
+  httpPlugins: [ispHttpPlugin, ispHardeningHttpPlugin],
   data: [
     seed(ISPType, 'isp.type_pppoe', {
       company: ref('base.company_default'),

@@ -24,6 +24,7 @@ import {
   SignalIcon,
   WarningIcon,
 } from '@moonwitness/ui/icons';
+import { MeshTopologyPanel } from './mesh-topology-panel';
 import {
   PaasTemplateCatalog,
   type PaasTemplateDefinition,
@@ -672,10 +673,15 @@ export function PaasStudioPanel({
       >
         <Tabs defaultValue="logs-stats" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="mesh-topology">Mesh Topology</TabsTrigger>
             <TabsTrigger value="logs-stats">Live Logs &amp; Stats</TabsTrigger>
             <TabsTrigger value="vps-wizard">Add VPS Node Wizard</TabsTrigger>
             <TabsTrigger value="pg-backups">PostgreSQL Backups &amp; Restore</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="mesh-topology">
+            <MeshTopologyPanel apiBase={normalizedBase} />
+          </TabsContent>
 
           <TabsContent value="logs-stats" className="space-y-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">

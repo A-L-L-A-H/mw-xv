@@ -14,6 +14,7 @@ export {
   type SubscriptionInstance,
 } from './automation.js';
 export { createSubscriptionHttpPlugin, subscriptionHttpPlugin } from './http.js';
+export { subscriptionMetricsHttpPlugin } from './http-plugin.js';
 export {
   DEFAULT_DUNNING_POLICY,
   calculateMidCycleProration,

@@ -8,13 +8,14 @@ import {
 } from './models/index.js';
 import { views } from './views.js';
 import { subscriptionHttpPlugin } from './http.js';
+import { subscriptionMetricsHttpPlugin } from './http-plugin.js';
 
 export const manifest = defineAddon({
   name: 'subscription',
   version: '1.0.0',
   depends: ['base', 'sales'],
   models: [SubscriptionPlan, Subscription, SubscriptionInvoiceLine, SubscriptionTagLink],
-  httpPlugins: [subscriptionHttpPlugin],
+  httpPlugins: [subscriptionHttpPlugin, subscriptionMetricsHttpPlugin],
   data: [
     seed(SubscriptionPlan, 'subscription.plan_monthly_basic', {
       company_id: 1,
