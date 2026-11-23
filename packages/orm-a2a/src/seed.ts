@@ -10,6 +10,8 @@ export type A2aCapabilityStatus = 'active' | 'standby' | 'suspended';
 
 export type A2aSlaRiskClass = 'standard' | 'confidential' | 'regulated';
 
+import { DEFAULT_TIMEZONE, DEFAULT_UTC_OFFSET_MINUTES } from '@moonwitness/orm-base';
+
 export type A2aDelegationStatus = 'active' | 'renewal_due' | 'retired';
 
 export type A2aReputationOutcome = 'fulfilled' | 'breached';
@@ -75,8 +77,8 @@ export interface A2aReputationEventSeed {
 export interface A2aCapabilitySeedBundle {
   readonly version: '2026.11.1';
   readonly generatedAt: '2026-11-22T00:00:00.000Z';
-  readonly timezone: 'Asia/Jakarta';
-  readonly utcOffsetMinutes: 420;
+  readonly timezone: typeof DEFAULT_TIMEZONE;
+  readonly utcOffsetMinutes: typeof DEFAULT_UTC_OFFSET_MINUTES;
   readonly workStartMinute: 540;
   readonly workEndMinute: 1020;
   readonly nodes: readonly A2aMeshNode[];
@@ -436,8 +438,8 @@ export function buildA2aCapabilitySeed(): A2aCapabilitySeedBundle {
   return {
     version: '2026.11.1',
     generatedAt: '2026-11-22T00:00:00.000Z',
-    timezone: 'Asia/Jakarta',
-    utcOffsetMinutes: 420,
+    timezone: DEFAULT_TIMEZONE,
+    utcOffsetMinutes: DEFAULT_UTC_OFFSET_MINUTES,
     workStartMinute: 540,
     workEndMinute: 1020,
     nodes: NODES.map((node) => ({ ...node })),

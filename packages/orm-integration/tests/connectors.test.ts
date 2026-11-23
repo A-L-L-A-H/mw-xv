@@ -124,8 +124,7 @@ describe('Integration Seed', () => {
 
     it('throws when secret ref pattern invalid', async () => {
       const bundle = buildIntegrationSeedBundle();
-      (bundle.webhookEndpoints[0] as { secretRef: string }).secretRef =
-        'INVALID_SECRET';
+      (bundle.webhookEndpoints[0] as { secretRef: string }).secretRef = 'INVALID_SECRET';
       const { seedIntegrationData: seedFn } = await import('../src/seed.js');
       await expect(seedFn(mockDb, { companyId: 1 }, bundle)).rejects.toThrow(
         /Invalid webhook secret ref/

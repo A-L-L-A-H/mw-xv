@@ -1,6 +1,7 @@
 import { knex, type Knex } from 'knex';
 import {
   Company,
+  DEFAULT_TIMEZONE,
   User,
   Partner,
   AccessGroup,
@@ -102,7 +103,7 @@ const COMPANY_DATA = {
   countryCode: 'ID',
   currencyCode: 'IDR',
   languageCode: 'id-ID',
-  timezone: 'Asia/Jakarta',
+  timezone: DEFAULT_TIMEZONE,
 };
 
 const UNITS: OrganizationUnitSeed[] = [

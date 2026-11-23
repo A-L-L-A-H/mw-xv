@@ -1,5 +1,7 @@
 export type WhatsappHelpdeskPriority = 'P1' | 'P2' | 'P3' | 'P4';
 
+import { DEFAULT_TIMEZONE, DEFAULT_UTC_OFFSET_MINUTES } from '@moonwitness/orm-base';
+
 export type WhatsappHelpdeskCategory =
   'security' | 'sharia_compliance' | 'billing' | 'delivery' | 'technical' | 'account' | 'general';
 
@@ -62,8 +64,8 @@ export interface WhatsappHelpdeskCategoryRule {
 
 export interface WhatsappHelpdeskSeedBundle {
   readonly version: string;
-  readonly timezone: 'Asia/Jakarta';
-  readonly utcOffsetMinutes: number;
+  readonly timezone: typeof DEFAULT_TIMEZONE;
+  readonly utcOffsetMinutes: typeof DEFAULT_UTC_OFFSET_MINUTES;
   readonly workStartMinute: number;
   readonly workEndMinute: number;
   readonly templates: readonly WhatsappTransactionalTemplate[];
@@ -484,8 +486,8 @@ const CATEGORY_RULES: readonly WhatsappHelpdeskCategoryRule[] = [
 
 const SEED_BUNDLE: WhatsappHelpdeskSeedBundle = {
   version: '1.0.0',
-  timezone: 'Asia/Jakarta',
-  utcOffsetMinutes: 420,
+  timezone: DEFAULT_TIMEZONE,
+  utcOffsetMinutes: DEFAULT_UTC_OFFSET_MINUTES,
   workStartMinute: 9 * 60,
   workEndMinute: 18 * 60,
   templates: TEMPLATES,
