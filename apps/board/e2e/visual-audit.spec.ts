@@ -1238,6 +1238,7 @@ test('responsive protected screens fit and remain accessible in both themes', as
           await page.getByRole('button', { name: /^User menu for/u }).click();
           await expect(page.getByRole('menuitem', { name: 'Toggle theme' })).toBeVisible();
           await page.getByRole('menuitem', { name: 'Toggle theme' }).click();
+          await expect(page.getByRole('menuitem', { name: 'Toggle theme' })).toBeHidden();
           await expect
             .poll(() =>
               page.locator('html').evaluate((element) => element.classList.contains('dark'))
@@ -1246,6 +1247,7 @@ test('responsive protected screens fit and remain accessible in both themes', as
           await page.getByRole('button', { name: /^User menu for/u }).click();
           await expect(page.getByRole('menuitem', { name: 'Toggle theme' })).toBeVisible();
           await page.getByRole('menuitem', { name: 'Toggle theme' }).click();
+          await expect(page.getByRole('menuitem', { name: 'Toggle theme' })).toBeHidden();
           await expect
             .poll(() =>
               page.locator('html').evaluate((element) => element.classList.contains('dark'))
