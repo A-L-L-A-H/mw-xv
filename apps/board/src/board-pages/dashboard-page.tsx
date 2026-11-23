@@ -45,7 +45,7 @@ import { DashboardKpiGrid } from '@/components/dashboard/kpi-grid';
 import { cn } from '@/lib/utils';
 import { BarChart } from '@moonwitness/ui/components/chart';
 import { toast } from '@moonwitness/ui/components/toast';
-import { jobsResourceState } from '@/lib/jobs-resource-state.mjs';
+import { jobsResourceState } from '@/lib/jobs-resource-state';
 
 export function DashboardPage() {
   const { user } = useAuth();

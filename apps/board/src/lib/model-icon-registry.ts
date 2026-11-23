@@ -14,8 +14,10 @@ export const MODEL_ICON_NAMES = Object.freeze({
   'base.language': 'language',
   'organization.team': 'team',
   'auth.refresh_token': 'key',
-});
+} as const);
 
-export function modelIconName(model) {
-  return MODEL_ICON_NAMES[model] ?? (model.startsWith('auth.') ? 'security' : 'model');
+export type ModelIconName = typeof MODEL_ICON_NAMES[keyof typeof MODEL_ICON_NAMES];
+
+export function modelIconName(model: string): ModelIconName {
+  return MODEL_ICON_NAMES[model as keyof typeof MODEL_ICON_NAMES] ?? (model.startsWith('auth.') ? 'security' : 'model');
 }
