@@ -118,7 +118,11 @@ function buildLayerTransformCss(
   if (offsetX !== 0 || offsetY !== 0) {
     parts.push(`translate3d(${offsetX}px, ${offsetY}px, 0)`);
   }
-  if (typeof transform?.scale === 'number' && Number.isFinite(transform.scale) && transform.scale !== 1) {
+  if (
+    typeof transform?.scale === 'number' &&
+    Number.isFinite(transform.scale) &&
+    transform.scale !== 1
+  ) {
     parts.push(`scale(${transform.scale})`);
   }
   if (
@@ -420,7 +424,9 @@ export function LayeredScene({
               clipPath: layer.clipPath,
               transform: transformCss,
               transformOrigin: formatPivotOrigin(layer.pivot),
-              transition: transitionsDisabled ? 'none' : 'transform 160ms ease-out, opacity 160ms ease-out',
+              transition: transitionsDisabled
+                ? 'none'
+                : 'transform 160ms ease-out, opacity 160ms ease-out',
               pointerEvents: 'none',
             };
 

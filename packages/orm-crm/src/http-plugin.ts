@@ -44,7 +44,9 @@ export const crmHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { signals, weights, thresholds } = req.body;
@@ -52,7 +54,8 @@ export const crmHttpPlugin: AddonHttpPlugin = async (app) => {
       return reply.code(400).send({ success: false, error: 'signals object is required' });
     }
 
-    const { firmographicFit, engagement, buyingIntent, budgetFit, timelineUrgency, adjustments } = signals;
+    const { firmographicFit, engagement, buyingIntent, budgetFit, timelineUrgency, adjustments } =
+      signals;
     if (
       typeof firmographicFit !== 'number' ||
       typeof engagement !== 'number' ||
@@ -64,7 +67,9 @@ export const crmHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     if (adjustments !== undefined && !isRecord(adjustments)) {
-      return reply.code(400).send({ success: false, error: 'adjustments must be a record of numbers' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'adjustments must be a record of numbers' });
     }
 
     try {
@@ -84,7 +89,9 @@ export const crmHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { deals, stageProbabilitiesBps } = req.body;
@@ -93,13 +100,25 @@ export const crmHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     for (const deal of deals) {
-      if (!isRecord(deal) || typeof deal.id !== 'string' || typeof deal.stage !== 'string' || typeof deal.amountCents !== 'number') {
-        return reply.code(400).send({ success: false, error: 'Each deal must include id, stage, and numeric amountCents' });
+      if (
+        !isRecord(deal) ||
+        typeof deal.id !== 'string' ||
+        typeof deal.stage !== 'string' ||
+        typeof deal.amountCents !== 'number'
+      ) {
+        return reply
+          .code(400)
+          .send({
+            success: false,
+            error: 'Each deal must include id, stage, and numeric amountCents',
+          });
       }
     }
 
     if (stageProbabilitiesBps !== undefined && !isRecord(stageProbabilitiesBps)) {
-      return reply.code(400).send({ success: false, error: 'stageProbabilitiesBps must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'stageProbabilitiesBps must be an object' });
     }
 
     try {

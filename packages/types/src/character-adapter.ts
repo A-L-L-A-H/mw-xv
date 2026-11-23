@@ -103,7 +103,11 @@ export function isCharacterPlaybackRequest(value: unknown): value is CharacterPl
   if (!isNonEmptyString(candidate.characterId) || !isNonEmptyString(candidate.clipId)) {
     return false;
   }
-  if (typeof candidate.timeMs !== 'number' || !Number.isFinite(candidate.timeMs) || candidate.timeMs < 0) {
+  if (
+    typeof candidate.timeMs !== 'number' ||
+    !Number.isFinite(candidate.timeMs) ||
+    candidate.timeMs < 0
+  ) {
     return false;
   }
   if (candidate.reducedMotion !== undefined && typeof candidate.reducedMotion !== 'boolean') {
@@ -111,13 +115,17 @@ export function isCharacterPlaybackRequest(value: unknown): value is CharacterPl
   }
   if (
     candidate.pinnedFrame !== undefined &&
-    (typeof candidate.pinnedFrame !== 'number' || !Number.isInteger(candidate.pinnedFrame) || candidate.pinnedFrame < 0)
+    (typeof candidate.pinnedFrame !== 'number' ||
+      !Number.isInteger(candidate.pinnedFrame) ||
+      candidate.pinnedFrame < 0)
   ) {
     return false;
   }
   if (
     candidate.playbackRate !== undefined &&
-    (typeof candidate.playbackRate !== 'number' || !Number.isFinite(candidate.playbackRate) || candidate.playbackRate <= 0)
+    (typeof candidate.playbackRate !== 'number' ||
+      !Number.isFinite(candidate.playbackRate) ||
+      candidate.playbackRate <= 0)
   ) {
     return false;
   }

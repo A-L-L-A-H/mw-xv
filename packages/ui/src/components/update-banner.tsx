@@ -11,12 +11,7 @@ import {
 } from '../icons/index.js';
 
 export type UpdateBannerStatus =
-  | 'idle'
-  | 'checking'
-  | 'available'
-  | 'downloading'
-  | 'ready'
-  | 'error';
+  'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'error';
 
 export type UpdateBannerProps = Omit<ComponentProps<'div'>, 'children'> & {
   currentVersion: string;
@@ -107,8 +102,8 @@ export function UpdateBanner({
 
         {status === 'available' && (
           <span className="inline-flex items-center gap-1.5 font-mono text-xs text-ink">
-            <DownloadIcon className="size-3.5" aria-hidden="true" />
-            v{availableVersion ?? 'new'} available (current v{currentVersion})
+            <DownloadIcon className="size-3.5" aria-hidden="true" />v{availableVersion ?? 'new'}{' '}
+            available (current v{currentVersion})
           </span>
         )}
 
@@ -124,8 +119,8 @@ export function UpdateBanner({
 
         {status === 'ready' && (
           <span className="inline-flex items-center gap-1.5 font-mono text-xs text-ink">
-            <CheckCircleIcon className="size-3.5" aria-hidden="true" />
-            v{availableVersion ?? 'update'} ready — restart to apply
+            <CheckCircleIcon className="size-3.5" aria-hidden="true" />v
+            {availableVersion ?? 'update'} ready — restart to apply
           </span>
         )}
 

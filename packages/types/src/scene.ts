@@ -24,7 +24,12 @@ export interface LayerDefinition {
 }
 
 export interface CameraDefinition {
-  readonly bounds: { readonly left: number; readonly top: number; readonly right: number; readonly bottom: number };
+  readonly bounds: {
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+  };
   readonly parallax?: BoundedParallax;
 }
 
@@ -87,22 +92,40 @@ export interface SceneBundle {
 export function isNormalizedPoint(value: unknown): value is NormalizedPoint {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
   const p = value as Record<string, unknown>;
-  return typeof p.x === 'number' && Number.isFinite(p.x) && p.x >= 0 && p.x <= 1
-    && typeof p.y === 'number' && Number.isFinite(p.y) && p.y >= 0 && p.y <= 1;
+  return (
+    typeof p.x === 'number' &&
+    Number.isFinite(p.x) &&
+    p.x >= 0 &&
+    p.x <= 1 &&
+    typeof p.y === 'number' &&
+    Number.isFinite(p.y) &&
+    p.y >= 0 &&
+    p.y <= 1
+  );
 }
 
 export function isBoundedParallax(value: unknown): value is BoundedParallax {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
   const p = value as Record<string, unknown>;
-  return typeof p.x === 'number' && Number.isFinite(p.x) && Math.abs(p.x) <= 1
-    && typeof p.y === 'number' && Number.isFinite(p.y) && Math.abs(p.y) <= 1;
+  return (
+    typeof p.x === 'number' &&
+    Number.isFinite(p.x) &&
+    Math.abs(p.x) <= 1 &&
+    typeof p.y === 'number' &&
+    Number.isFinite(p.y) &&
+    Math.abs(p.y) <= 1
+  );
 }
 
 export function isLayerDefinition(value: unknown): value is LayerDefinition {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
   const l = value as Record<string, unknown>;
-  return typeof l.id === 'string' && l.id.length > 0
-    && typeof l.asset === 'string' && l.asset.length > 0
-    && Number.isInteger(l.order)
-    && isNormalizedPoint(l.position);
+  return (
+    typeof l.id === 'string' &&
+    l.id.length > 0 &&
+    typeof l.asset === 'string' &&
+    l.asset.length > 0 &&
+    Number.isInteger(l.order) &&
+    isNormalizedPoint(l.position)
+  );
 }

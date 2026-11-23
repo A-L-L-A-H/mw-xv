@@ -24,10 +24,7 @@ export function computeDesiredSchemaState(
       digest: computeAddonSchemaDigest(addon),
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
-  const digest = createHash('sha256')
-    .update(JSON.stringify(snapshots))
-    .digest('hex')
-    .slice(0, 16);
+  const digest = createHash('sha256').update(JSON.stringify(snapshots)).digest('hex').slice(0, 16);
 
   return { version, digest, addons: snapshots };
 }
@@ -40,11 +37,7 @@ export interface AppliedSchemaState {
 export type SchemaComparisonKind = 'current' | 'outdated' | 'drifted' | 'ahead';
 
 export type SchemaComparisonReason =
-  | 'matched'
-  | 'uninitialized'
-  | 'version_behind'
-  | 'digest_mismatch'
-  | 'version_ahead';
+  'matched' | 'uninitialized' | 'version_behind' | 'digest_mismatch' | 'version_ahead';
 
 export interface SchemaComparisonResult {
   readonly kind: SchemaComparisonKind;

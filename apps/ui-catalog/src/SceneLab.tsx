@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@moonwitness/ui/components/button';
-import { LayeredScene, type SceneLayerDescriptor, type SceneBreakpointDescriptor } from '@moonwitness/ui/components/layered-scene';
+import {
+  LayeredScene,
+  type SceneLayerDescriptor,
+  type SceneBreakpointDescriptor,
+} from '@moonwitness/ui/components/layered-scene';
 import { SpritePlayer, type SpriteClipMetadata } from '@moonwitness/ui/components/sprite-player';
 import { createSceneTimeline, type TimelineStatus } from '@moonwitness/ui/lib/scene-timeline';
 import { getActiveSceneHarness } from '@moonwitness/ui/lib/scene-test-harness';
@@ -58,17 +62,19 @@ const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = HERO_SCENE.layers.map((l
   alt: `Moon City ${layer.id.replaceAll('-', ' ')}`,
 }));
 
-const SCENE_BREAKPOINTS: readonly SceneBreakpointDescriptor[] = HERO_SCENE.breakpoints.map((breakpoint) => ({
-  name: breakpoint.name,
-  minWidth: breakpoint.minWidth,
-  maxWidth: breakpoint.maxWidth,
-  layerOverrides: breakpoint.layerOverrides?.map((override) => ({
-    layerId: override.layerId,
-    opacity: override.opacity,
-    pivot: override.position,
-    parallax: override.parallax,
-  })),
-}));
+const SCENE_BREAKPOINTS: readonly SceneBreakpointDescriptor[] = HERO_SCENE.breakpoints.map(
+  (breakpoint) => ({
+    name: breakpoint.name,
+    minWidth: breakpoint.minWidth,
+    maxWidth: breakpoint.maxWidth,
+    layerOverrides: breakpoint.layerOverrides?.map((override) => ({
+      layerId: override.layerId,
+      opacity: override.opacity,
+      pivot: override.position,
+      parallax: override.parallax,
+    })),
+  })
+);
 
 const IDLE_CLIP_DEFINITION = moonCitySceneBundle.clips.find((clip) => clip.id === 'crew-01-idle');
 if (!IDLE_CLIP_DEFINITION) throw new Error('Canonical crew-01-idle clip is missing');
@@ -100,8 +106,20 @@ export function SceneLab() {
     const timeline = createSceneTimeline({
       totalDurationMs: 1800,
       tracks: [
-        { id: 'sky-entrance', startMs: 0, durationMs: 600, kind: 'entrance', triggers: ['city-reveal'] },
-        { id: 'city-reveal', startMs: 400, durationMs: 800, kind: 'layer-transition', triggers: ['crew-idle'] },
+        {
+          id: 'sky-entrance',
+          startMs: 0,
+          durationMs: 600,
+          kind: 'entrance',
+          triggers: ['city-reveal'],
+        },
+        {
+          id: 'city-reveal',
+          startMs: 400,
+          durationMs: 800,
+          kind: 'layer-transition',
+          triggers: ['crew-idle'],
+        },
         { id: 'crew-idle', startMs: 900, durationMs: 900, kind: 'clip' },
       ],
     });
@@ -128,8 +146,7 @@ export function SceneLab() {
     [layers, hiddenIds]
   );
 
-  const toggleLayer = (id: string) =>
-    setHiddenIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleLayer = (id: string) => setHiddenIds((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const moveLayer = (index: number, delta: -1 | 1) => {
     setLayers((prev) => {
@@ -149,7 +166,15 @@ export function SceneLab() {
   return (
     <div className="scene-lab" data-testid="scene-lab">
       <div className="scene-lab-toolbar">
-        <Button variant="default" onClick={() => { setLayers([...INITIAL_LAYERS]); setHiddenIds({}); setComposition('desktop'); setStaticMode(Boolean(harness.reducedMotion)); }}>
+        <Button
+          variant="default"
+          onClick={() => {
+            setLayers([...INITIAL_LAYERS]);
+            setHiddenIds({});
+            setComposition('desktop');
+            setStaticMode(Boolean(harness.reducedMotion));
+          }}
+        >
           Reset inspector
         </Button>
         <Button
@@ -198,7 +223,8 @@ export function SceneLab() {
         </label>
       </div>
       <p className="scene-lab-status" data-testid="scene-timeline-status">
-        Environment: Moon City · Composition: {composition} ({viewportWidth}px) · Timeline: {timelineStatus} ({timelineTimeMs}ms) · Active planes: {displayedLayers.length}
+        Environment: Moon City · Composition: {composition} ({viewportWidth}px) · Timeline:{' '}
+        {timelineStatus} ({timelineTimeMs}ms) · Active planes: {displayedLayers.length}
       </p>
       <div
         className={`scene-lab-stage ${composition === 'mobile' ? 'scene-lab-stage-mobile' : ''}`}
@@ -245,14 +271,25 @@ export function SceneLab() {
                       onChange={() => toggleLayer(layer.id)}
                     />
                     <span>
-                      {layer.id} (z={layer.zOrder} · pivot {layer.pivot?.x ?? 0.5},{layer.pivot?.y ?? 0.5} · px {layer.parallax?.x ?? 0})
+                      {layer.id} (z={layer.zOrder} · pivot {layer.pivot?.x ?? 0.5},
+                      {layer.pivot?.y ?? 0.5} · px {layer.parallax?.x ?? 0})
                     </span>
                   </label>
                   <div className="scene-lab-plane-actions">
-                    <Button size="sm" variant="default" onClick={() => moveLayer(index, -1)} disabled={index === 0}>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => moveLayer(index, -1)}
+                      disabled={index === 0}
+                    >
                       Back
                     </Button>
-                    <Button size="sm" variant="default" onClick={() => moveLayer(index, 1)} disabled={index === layers.length - 1}>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => moveLayer(index, 1)}
+                      disabled={index === layers.length - 1}
+                    >
                       Front
                     </Button>
                   </div>

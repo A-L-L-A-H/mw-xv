@@ -1,4 +1,12 @@
-import { Suspense, lazy, useEffect, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useState,
+  type ComponentType,
+  type ReactNode,
+  type SVGProps,
+} from 'react';
 import {
   DEFAULT_SKIN_ID,
   themeRegistry,
@@ -1919,11 +1927,16 @@ function CatalogContent() {
                     </div>
                     <div>
                       <dt>Uploading / downloading</dt>
-                      <dd>Streaming attachment transfer with size limit and checksum verification.</dd>
+                      <dd>
+                        Streaming attachment transfer with size limit and checksum verification.
+                      </dd>
                     </div>
                     <div>
                       <dt>Rejected / infected / clean</dt>
-                      <dd>Only where an attached scanner reports actual scan results; otherwise not displayed.</dd>
+                      <dd>
+                        Only where an attached scanner reports actual scan results; otherwise not
+                        displayed.
+                      </dd>
                     </div>
                     <div>
                       <dt>Permission denied</dt>
@@ -1954,7 +1967,8 @@ function CatalogContent() {
                     </div>
                   </dl>
                   <p className="auth-coverage-boundary">
-                    Catalog boundary specimen · no production storage route or Board consumer screen exists.
+                    Catalog boundary specimen · no production storage route or Board consumer screen
+                    exists.
                   </p>
                 </Panel>
               </div>

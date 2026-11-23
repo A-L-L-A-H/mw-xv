@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { getActiveSceneHarness } from './scene-test-harness.js';
 
-export type ScenePlaybackState = 'idle' | 'playing' | 'paused' | 'static' | 'completed' | 'disposed';
+export type ScenePlaybackState =
+  'idle' | 'playing' | 'paused' | 'static' | 'completed' | 'disposed';
 
 export interface ScenePlaybackScheduler {
   requestAnimationFrame?: (callback: (timestamp: number) => void) => number;
@@ -140,7 +141,7 @@ export function createScenePlaybackController(
   options: ScenePlaybackOptions = {}
 ): ScenePlaybackController {
   const durationMs = normalizeDuration(options.durationMs);
-  const loop = options.loop ?? (durationMs !== null);
+  const loop = options.loop ?? durationMs !== null;
   const playbackRate =
     typeof options.playbackRate === 'number' &&
     Number.isFinite(options.playbackRate) &&
@@ -395,7 +396,8 @@ export function createScenePlaybackController(
     attachObservers(element: Element | null, win?: SceneObserverWindow): () => void {
       if (disposed) return () => {};
       const hostWindow: SceneObserverWindow | undefined =
-        win ?? (typeof window !== 'undefined' ? (window as unknown as SceneObserverWindow) : undefined);
+        win ??
+        (typeof window !== 'undefined' ? (window as unknown as SceneObserverWindow) : undefined);
       const localCleanups: Array<() => void> = [];
 
       const registerCleanup = (cleanup: () => void): void => {
@@ -523,12 +525,9 @@ export function useScenePlayback(options: UseScenePlaybackOptions = {}): UseScen
   const [snapshot, setSnapshot] = useState<ScenePlaybackSnapshot>(() => controller.getSnapshot());
   const [observedElement, setObservedElement] = useState<Element | null>(null);
 
-  const ref = useCallback(
-    (element: Element | null) => {
-      setObservedElement(element);
-    },
-    []
-  );
+  const ref = useCallback((element: Element | null) => {
+    setObservedElement(element);
+  }, []);
 
   useEffect(() => {
     controller.setReducedMotion(effectiveReducedMotion);

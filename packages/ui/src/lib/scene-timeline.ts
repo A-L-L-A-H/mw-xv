@@ -167,9 +167,7 @@ export function createSceneTimeline(options: SceneTimelineOptions): SceneTimelin
   }, 0);
 
   const totalDurationMs =
-    options.totalDurationMs !== undefined
-      ? options.totalDurationMs
-      : computedDurationMs;
+    options.totalDurationMs !== undefined ? options.totalDurationMs : computedDurationMs;
 
   if (!Number.isFinite(totalDurationMs) || totalDurationMs < 0) {
     throw new Error('Scene timeline totalDurationMs must be a finite non-negative number.');
@@ -233,7 +231,11 @@ export function createSceneTimeline(options: SceneTimelineOptions): SceneTimelin
     return snapshot;
   }
 
-  function fireDueEvents(previousTimeMs: number, currentTimeMs: number, includeAtStart: boolean): void {
+  function fireDueEvents(
+    previousTimeMs: number,
+    currentTimeMs: number,
+    includeAtStart: boolean
+  ): void {
     for (const track of sortedTracks) {
       if (firedEventIds.has(track.id)) continue;
       const crossedStart = includeAtStart

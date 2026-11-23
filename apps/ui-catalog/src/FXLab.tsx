@@ -47,15 +47,16 @@ export function FXLab() {
     (typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const soundscapeRef = useMemo(
-    () => createSceneSoundscapeController({
-      maxVolume: 0.18,
-      sources: {
-        'moon-city-night': moonCityNightAmbience,
-        'underground-hum': undergroundHumAmbience,
-        'archive-quiet': archiveQuietAmbience,
-        'street-rain': streetRainAmbience,
-      },
-    }),
+    () =>
+      createSceneSoundscapeController({
+        maxVolume: 0.18,
+        sources: {
+          'moon-city-night': moonCityNightAmbience,
+          'underground-hum': undergroundHumAmbience,
+          'archive-quiet': archiveQuietAmbience,
+          'street-rain': streetRainAmbience,
+        },
+      }),
     []
   );
 

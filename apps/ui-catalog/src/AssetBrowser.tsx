@@ -38,7 +38,11 @@ const filters: { key: InventoryFilter; label: string }[] = [
 ];
 
 function valuesFor(key: InventoryFilter, assets: AssetRecord[]): string[] {
-  return [...new Set(assets.map((asset) => asset[key]).filter((value): value is string => Boolean(value)))].sort();
+  return [
+    ...new Set(
+      assets.map((asset) => asset[key]).filter((value): value is string => Boolean(value))
+    ),
+  ].sort();
 }
 
 export function AssetBrowser() {
@@ -47,7 +51,12 @@ export function AssetBrowser() {
   const [blockedProvenance, setBlockedProvenance] = useState<Set<string>>(new Set());
   const [loadError, setLoadError] = useState(false);
   const [selected, setSelected] = useState<Record<InventoryFilter, string>>({
-    kind: '', pack: '', subject: '', domain: '', variant: '', status: '',
+    kind: '',
+    pack: '',
+    subject: '',
+    domain: '',
+    variant: '',
+    status: '',
   });
   useEffect(() => {
     let active = true;
@@ -60,23 +69,41 @@ export function AssetBrowser() {
         if (!response.ok) throw new Error('Asset provenance could not be loaded.');
         return response.json() as Promise<{ sourceAssets?: ProvenanceEntry[] }>;
       }),
-    ]).then(([manifest, provenance]) => {
-      if (!active) return;
-      setAssets(manifest.assets);
-      setBlockedProvenance(new Set((provenance.sourceAssets ?? [])
-        .filter((entry) => entry.status === 'blocked' || entry.license === 'unverified')
-        .map((entry) => entry.path)));
-    }).catch(() => {
-      if (active) setLoadError(true);
-    });
-    return () => { active = false; };
+    ])
+      .then(([manifest, provenance]) => {
+        if (!active) return;
+        setAssets(manifest.assets);
+        setBlockedProvenance(
+          new Set(
+            (provenance.sourceAssets ?? [])
+              .filter((entry) => entry.status === 'blocked' || entry.license === 'unverified')
+              .map((entry) => entry.path)
+          )
+        );
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
-  const visibleAssets = useMemo(() => assets.filter((asset) => {
-    const matchesSearch = `${asset.path} ${asset.kind ?? ''} ${asset.pack ?? ''} ${asset.subject ?? ''} ${asset.domain ?? ''}`
-      .toLocaleLowerCase()
-      .includes(search.toLocaleLowerCase());
-    return matchesSearch && filters.every(({ key }) => !selected[key] || asset[key] === selected[key]);
-  }).sort((left, right) => left.path.localeCompare(right.path)), [search, selected]);
+  const visibleAssets = useMemo(
+    () =>
+      assets
+        .filter((asset) => {
+          const matchesSearch =
+            `${asset.path} ${asset.kind ?? ''} ${asset.pack ?? ''} ${asset.subject ?? ''} ${asset.domain ?? ''}`
+              .toLocaleLowerCase()
+              .includes(search.toLocaleLowerCase());
+          return (
+            matchesSearch &&
+            filters.every(({ key }) => !selected[key] || asset[key] === selected[key])
+          );
+        })
+        .sort((left, right) => left.path.localeCompare(right.path)),
+    [search, selected]
+  );
 
   function updateFilter(key: InventoryFilter, event: ChangeEvent<HTMLSelectElement>) {
     const value = event.currentTarget.value;
@@ -84,7 +111,11 @@ export function AssetBrowser() {
   }
 
   return (
-    <div className="asset-browser" data-testid="asset-browser" aria-busy={assets.length === 0 && !loadError}>
+    <div
+      className="asset-browser"
+      data-testid="asset-browser"
+      aria-busy={assets.length === 0 && !loadError}
+    >
       <div className="asset-browser-controls">
         <label className="asset-browser-search">
           <span>Find an asset</span>
@@ -100,9 +131,17 @@ export function AssetBrowser() {
           return (
             <label key={key} className="asset-browser-filter">
               <span>{label}</span>
-              <select aria-label={label} value={selected[key]} onChange={(event) => updateFilter(key, event)}>
+              <select
+                aria-label={label}
+                value={selected[key]}
+                onChange={(event) => updateFilter(key, event)}
+              >
                 <option value="">All {label.toLocaleLowerCase()}s</option>
-                {values.map((value) => <option key={value} value={value}>{value}</option>)}
+                {values.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
               </select>
               {values.length === 0 && <small>No registered {label.toLocaleLowerCase()} tags</small>}
             </label>
@@ -110,10 +149,14 @@ export function AssetBrowser() {
         })}
       </div>
       <p className="asset-browser-count" role="status" aria-live="polite">
-        {assets.length === 0 && !loadError ? 'Loading canonical asset inventory…' : `${visibleAssets.length} of ${assets.length} canonical assets`}
+        {assets.length === 0 && !loadError
+          ? 'Loading canonical asset inventory…'
+          : `${visibleAssets.length} of ${assets.length} canonical assets`}
       </p>
       {loadError ? (
-        <p className="asset-browser-empty" role="alert">The asset inventory could not be loaded.</p>
+        <p className="asset-browser-empty" role="alert">
+          The asset inventory could not be loaded.
+        </p>
       ) : visibleAssets.length === 0 && assets.length > 0 ? (
         <p className="asset-browser-empty">No assets match these filters.</p>
       ) : visibleAssets.length > 0 ? (
@@ -126,14 +169,29 @@ export function AssetBrowser() {
                   {previewByPath[asset.path] ? (
                     <img src={previewByPath[asset.path]} alt="" loading="lazy" />
                   ) : (
-                    <span aria-hidden="true">{asset.format?.toUpperCase() ?? asset.kind?.toUpperCase() ?? 'ASSET'}</span>
+                    <span aria-hidden="true">
+                      {asset.format?.toUpperCase() ?? asset.kind?.toUpperCase() ?? 'ASSET'}
+                    </span>
                   )}
                 </div>
                 <div className="asset-browser-details">
                   <code>{asset.path}</code>
-                  <span>{[asset.kind, asset.variant, asset.width && asset.height ? `${asset.width} × ${asset.height}` : ''].filter(Boolean).join(' · ')}</span>
-                  <span className={blocked ? 'asset-browser-status is-blocked' : 'asset-browser-status'}>
-                    {blocked ? 'Blocked · rights review' : asset.status ?? (asset.kind === 'source' ? 'Source only' : 'Runtime asset')}
+                  <span>
+                    {[
+                      asset.kind,
+                      asset.variant,
+                      asset.width && asset.height ? `${asset.width} × ${asset.height}` : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                  <span
+                    className={blocked ? 'asset-browser-status is-blocked' : 'asset-browser-status'}
+                  >
+                    {blocked
+                      ? 'Blocked · rights review'
+                      : (asset.status ??
+                        (asset.kind === 'source' ? 'Source only' : 'Runtime asset'))}
                   </span>
                 </div>
               </li>
