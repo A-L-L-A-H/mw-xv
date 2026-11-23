@@ -64,7 +64,7 @@ K0-006 remains binding. No legacy code, dataset, asset, prompt, font, sound, pri
 
 This documentation and audit pass is substantially consolidated, but **all audits are not complete** until the missing source access, P0 preservation, rights, restore, per-repository technical, human review and CI/promote gates above are evidenced. This report is the current honest checkpoint, not a claim of total recovery.
 
-## Latest follow-up — 2026-11-23 09:08 UTC
+## Earlier follow-up — 2026-11-23 09:08 UTC (historical snapshot; superseded by the later reconciliation below)
 
 - `dev` HEAD at this snapshot: `3cbe3dab434652e661cac5005715d71fab44fdb4`; `main`: `5dd3da3389cdd4b55ef1a538f0dc46c13918f108`.
 - The exact TaskOS blob was parsed: 636 unique task codes; 468 done, 49 doing, 96 todo, 23 blocked; zero duplicate IDs; zero dangling dependencies; zero missing acceptance criteria; zero missing source references.
