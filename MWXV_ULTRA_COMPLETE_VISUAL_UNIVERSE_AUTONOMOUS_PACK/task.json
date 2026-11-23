@@ -1031,6 +1031,55 @@
       ]
     },
     {
+      "id": "W1-009",
+      "phase": "W1",
+      "title": "Define core UI framework and shell architecture",
+      "status": "todo",
+      "priority": "P1",
+      "role": "ui-designer",
+      "parallel_group": "serial",
+      "depends_on": [
+        "W1-008"
+      ],
+      "objective": "Establish the main application shell, layout system, and UI foundation that implements the visual grammar across all experience tiers. Define core layout patterns, viewport handling, and the structural framework that hosts all visual domains.",
+      "scope_hints": [
+        "UI framework specification",
+        "layout system",
+        "viewport and responsive breakpoints",
+        "structural component patterns"
+      ],
+      "deliverables": [
+        "UI framework document with layout rules",
+        "Shell architecture blueprint",
+        "Responsive breakpoint definitions",
+        "Component pattern inventory"
+      ],
+      "acceptance_criteria": [
+        "UI framework documentation is approved by lead designer",
+        "Shell architecture defines all experience tiers",
+        "Responsive breakpoints cover mobile, tablet, desktop",
+        "Component patterns are consistent with visual grammar"
+      ],
+      "verification": [
+        "Review UI framework document",
+        "Verify shell architecture covers all tiers",
+        "Test responsive layout at breakpoints"
+      ],
+      "risk": "low",
+      "human_approval_required": false,
+      "notes": "Foundational UI task that enables all subsequent UI implementation across the visual universe. Builds on W1-002 (visual grammar) and W1-008 (Visual Universe Bible).",
+      "evidence": [
+        {
+          "artifact": "evidence/W1-009-ui-framework.md",
+          "exit_code": 0,
+          "command": "Review UI framework document with design team"
+        }
+      ],
+      "commit": "",
+      "legacyCardNotes": null,
+      "acceptance_criteria_state": []
+    },
+    {
       "id": "W2-001",
       "phase": "W2",
       "title": "Design backward-compatible asset manifest extension",
@@ -7463,5 +7512,5 @@
       ]
     }
   ],
-  "task_count": 109
+  "task_count": 110
 }
