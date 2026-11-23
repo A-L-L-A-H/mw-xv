@@ -47,3 +47,10 @@ export {
   type EvaluateObligationDriftOptions,
 } from './obligation-monitor.js';
 export * from './a2a-protocol.js';
+export * from './speculative-tree.js';
+export * from './skill-tree.js';
+export * from './world-model-gate.js';
+export * from './invariant-synthesizer.js';
+export * from './semantic-bus.js';
+export * from './causal-replay.js';
+export * from './epistemic-calibration.js';
