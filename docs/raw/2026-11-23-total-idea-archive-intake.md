@@ -4,7 +4,7 @@
 **Classification:** `FACT` (source exists) · `USER IDEA` (named concepts) · `UNRESOLVED` (history and canon not yet reconciled)  
 **Status:** `RAW / INTAKE ONLY` — not a complete archive, not an approved new product roadmap  
 **Captured:** 2026-11-23  
-**Source:** User-uploaded `Pasted text(5).txt`, titled “MASTER PROMPT — TOTAL IDEA ARCHIVE & UNIFIED PROJECT CONSOLIDATION” (775 lines)
+**Source:** User-uploaded `Pasted text.txt`, titled “MASTER PROMPT — TOTAL IDEA ARCHIVE & UNIFIED PROJECT CONSOLIDATION” (775 lines)
 
 ## 1. Source and scope
 
