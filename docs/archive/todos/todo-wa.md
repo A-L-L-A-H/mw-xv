@@ -45,7 +45,7 @@ Goal aktif difokuskan pada inbox yang aman dan dapat diandalkan: pairing/status 
 - Fitur UI yang termasuk **NEXT** dicatat konsisten pada bagian P Board WhatsApp di `todo-ui.md` (WUI-10, WUI-15, WUI-18, WUI-19). WUI untuk pairing, inbox, percakapan, composer, dan media tetap mengikuti prioritas v1.
 - **Kriteria selesai goal ini:** semua gap P0 yang dapat diverifikasi lokal tertutup; sisa yang memerlukan device dicatat eksplisit sebagai bukti operasional tertunda; tes API/Board/storage lulus; dokumentasi dan checklist selaras; perubahan WhatsApp terpilah, di-commit, dan di-push.
 
-> Semua perubahan antarmuka juga memiliki checklist khusus di [`todo-ui.md`](todo-ui.md), bagian **P. Board WhatsApp**. Item UI di bawah memakai ID silang `WUI-*`; aturan visual, aksesibilitas, komponen shared, serta bukti screenshot mengikuti UI Bible dan package `@moonwitness/ui`.
+> Semua perubahan antarmuka juga memiliki checklist khusus di arsip `docs/archive/todos/todo-ui.md`, bagian **P. Board WhatsApp**. Item UI di bawah memakai ID silang `WUI-*`; aturan visual, aksesibilitas, komponen shared, serta bukti screenshot mengikuti UI Bible dan package `@moonwitness/ui`.
 
 ## P0 — pairing, status koneksi, dan pengiriman aman
 

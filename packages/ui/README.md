@@ -112,4 +112,4 @@ Use real product copy and data on production pages. Dashboard percentage trends 
 - `pnpm test:ui`, `pnpm test:assets`, and the existing UI Catalog screenshot tests check reusable behavior and generated sources.
 - Visual acceptance uses reviewed screenshots and responsive specimens. The same deterministically rendered catalog examples are the visual regression surface.
 
-See [`TOKENS.md`](./TOKENS.md) for semantic token values, theme behavior, typography, and contrast targets. See repository [`todo-ui.md`](../../todo-ui.md) for the phased execution checklist and its current evidence.
+See [`TOKENS.md`](./TOKENS.md) for semantic token values, theme behavior, typography, and contrast targets. See repository ["TOKENS.md`](./TOKENS.md) untuk nilai token semantik, perilaku tema, tipografi, dan target kontras. Evidence checklist dan implementasi dilihat dari arsip `docs/archive/todos/todo-ui.md` for the phased execution checklist and its current evidence.

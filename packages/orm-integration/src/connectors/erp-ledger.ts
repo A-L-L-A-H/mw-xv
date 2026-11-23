@@ -23,34 +23,35 @@ export interface JournalLine {
 export interface PSAKAccount {
   code: string;
   name: string;
+  name_id: string;
   type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
   parentCode?: string;
   isActive: boolean;
 }
 
-export const PSAK_CHART_OF_ACCOUNTS: PSAKAccount[] = [
-  { code: '1000', name: 'Kas', type: 'asset', isActive: true },
-  { code: '1100', name: 'Bank', type: 'asset', isActive: true },
-  { code: '1200', name: 'Piutang Usaha', type: 'asset', isActive: true },
-  { code: '1300', name: 'Persediaan', type: 'asset', isActive: true },
-  { code: '1400', name: 'Aset Tetap', type: 'asset', isActive: true },
-  { code: '1500', name: 'Aset Tidak Berwujud', type: 'asset', isActive: true },
-  { code: '2000', name: 'Hutang Usaha', type: 'liability', isActive: true },
-  { code: '2100', name: 'Hutang Pajak', type: 'liability', isActive: true },
-  { code: '2200', name: 'Biaya Yang Masih Harus Dibayar', type: 'liability', isActive: true },
-  { code: '2300', name: 'Hutang Jangka Panjang', type: 'liability', isActive: true },
-  { code: '3000', name: 'Modal Disetor', type: 'equity', isActive: true },
-  { code: '3100', name: 'Laba Ditahan', type: 'equity', isActive: true },
-  { code: '4000', name: 'Penjualan', type: 'revenue', isActive: true },
-  { code: '4100', name: 'Pendapatan Jasa', type: 'revenue', isActive: true },
-  { code: '4200', name: 'Pendapatan Lain-lain', type: 'revenue', isActive: true },
-  { code: '5000', name: 'Harga Pokok Penjualan', type: 'expense', isActive: true },
-  { code: '5100', name: 'Biaya Gaji', type: 'expense', isActive: true },
-  { code: '5200', name: 'Biaya Sewa', type: 'expense', isActive: true },
-  { code: '5300', name: 'Biaya Utilitas', type: 'expense', isActive: true },
-  { code: '5400', name: 'Biaya Penyusutan', type: 'expense', isActive: true },
-  { code: '5500', name: 'Biaya Lain-lain', type: 'expense', isActive: true },
-];
+export const PSAK_CHART_OF_ACCOUNTS = new Map<string, PSAKAccount>([
+  ['1000', { code: '1000', name: 'Kas', name_id: 'Kas', type: 'asset', isActive: true }],
+  ['1100', { code: '1100', name: 'Bank', name_id: 'Bank', type: 'asset', isActive: true }],
+  ['1200', { code: '1200', name: 'Piutang Usaha', name_id: 'Piutang Usaha', type: 'asset', isActive: true }],
+  ['1300', { code: '1300', name: 'Persediaan', name_id: 'Persediaan', type: 'asset', isActive: true }],
+  ['1400', { code: '1400', name: 'Aset Tetap', name_id: 'Aset Tetap', type: 'asset', isActive: true }],
+  ['1500', { code: '1500', name: 'Aset Tidak Berwujud', name_id: 'Aset Tidak Berwujud', type: 'asset', isActive: true }],
+  ['2000', { code: '2000', name: 'Hutang Usaha', name_id: 'Hutang Usaha', type: 'liability', isActive: true }],
+  ['2100', { code: '2100', name: 'Hutang Pajak', name_id: 'Hutang Pajak', type: 'liability', isActive: true }],
+  ['2200', { code: '2200', name: 'Biaya Yang Masih Harus Dibayar', name_id: 'Biaya Yang Masih Harus Dibayar', type: 'liability', isActive: true }],
+  ['2300', { code: '2300', name: 'Hutang Jangka Panjang', name_id: 'Hutang Jangka Panjang', type: 'liability', isActive: true }],
+  ['3000', { code: '3000', name: 'Modal Disetor', name_id: 'Modal Disetor', type: 'equity', isActive: true }],
+  ['3100', { code: '3100', name: 'Laba Ditahan', name_id: 'Laba Ditahan', type: 'equity', isActive: true }],
+  ['4000', { code: '4000', name: 'Penjualan', name_id: 'Penjualan', type: 'revenue', isActive: true }],
+  ['4100', { code: '4100', name: 'Pendapatan Jasa', name_id: 'Pendapatan Jasa', type: 'revenue', isActive: true }],
+  ['4200', { code: '4200', name: 'Pendapatan Lain-lain', name_id: 'Pendapatan Lain-lain', type: 'revenue', isActive: true }],
+  ['5000', { code: '5000', name: 'Harga Pokok Penjualan', name_id: 'Harga Pokok Penjualan', type: 'expense', isActive: true }],
+  ['5100', { code: '5100', name: 'Biaya Gaji', name_id: 'Biaya Gaji', type: 'expense', isActive: true }],
+  ['5200', { code: '5200', name: 'Biaya Sewa', name_id: 'Biaya Sewa', type: 'expense', isActive: true }],
+  ['5300', { code: '5300', name: 'Biaya Utilitas', name_id: 'Biaya Utilitas', type: 'expense', isActive: true }],
+  ['5400', { code: '5400', name: 'Biaya Penyusutan', name_id: 'Biaya Penyusutan', type: 'expense', isActive: true }],
+  ['5500', { code: '5500', name: 'Biaya Lain-lain', name_id: 'Biaya Lain-lain', type: 'expense', isActive: true }],
+]);
 
 export function validateJournalEntry(entry: JournalEntry): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
@@ -73,7 +74,7 @@ export function validateJournalEntry(entry: JournalEntry): { valid: boolean; err
     totalDebit += line.debit;
     totalCredit += line.credit;
 
-    const account = PSAK_CHART_OF_ACCOUNTS.find((a) => a.code === line.accountCode);
+    const account = PSAK_CHART_OF_ACCOUNTS.get(line.accountCode);
     if (!account) errors.push(`Unknown account code: ${line.accountCode}`);
     else if (!account.isActive) errors.push(`Inactive account: ${line.accountCode}`);
   }
@@ -86,7 +87,7 @@ export function validateJournalEntry(entry: JournalEntry): { valid: boolean; err
 }
 
 export function mapToPSAKAccount(internalCode: string): PSAKAccount | undefined {
-  return PSAK_CHART_OF_ACCOUNTS.find((a) => a.code === internalCode);
+  return PSAK_CHART_OF_ACCOUNTS.get(internalCode);
 }
 
 export function exportToAccurateFormat(entry: JournalEntry): string {

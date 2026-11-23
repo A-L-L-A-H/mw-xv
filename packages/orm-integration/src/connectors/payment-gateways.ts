@@ -99,17 +99,17 @@ function generateIdempotencyKey(companyId: number, orderId: string): string {
 
 export function buildStripePaymentIntent(request: PaymentIntentRequest, config: StripeConfig): PaymentIntentResponse {
   assertGateway(config, 'stripe');
-  
+
   const amountCents = Math.round(request.amount * 100);
   const paymentMethodTypes = request.paymentMethodTypes ?? ['card'];
-  
+
   const clientSecret = `pi_${request.orderId}_secret_${Buffer.from(JSON.stringify({
     amount: amountCents,
     currency: request.currency.toLowerCase(),
     customer: request.customerId,
     metadata: { ...request.metadata, orderId: request.orderId }
   })).toString('base64url')}`;
-  
+
   return {
     id: `pi_${request.orderId}`,
     clientSecret,
@@ -122,10 +122,10 @@ export function buildStripePaymentIntent(request: PaymentIntentRequest, config: 
 
 export function buildXenditPaymentIntent(request: PaymentIntentRequest, config: XenditConfig): PaymentIntentResponse {
   assertGateway(config, 'xendit');
-  
+
   const externalId = `xnd_${request.orderId}`;
   const callbackUrl = request.returnUrl ?? '';
-  
+
   return {
     id: externalId,
     clientSecret: undefined,
@@ -142,15 +142,15 @@ export function buildXenditPaymentIntent(request: PaymentIntentRequest, config: 
 
 export function buildMidtransPaymentIntent(request: PaymentIntentRequest, config: MidtransConfig): PaymentIntentResponse {
   assertGateway(config, 'midtrans');
-  
+
   const orderId = `mid_${request.orderId}`;
   const grossAmount = Math.round(request.amount * 100);
-  
+
   const snapToken = `snap-${orderId}-${Buffer.from(JSON.stringify({
     transaction_details: { order_id: orderId, gross_amount: grossAmount },
     customer_details: { id: request.customerId }
   })).toString('base64url')}`;
-  
+
   return {
     id: orderId,
     clientSecret: snapToken,
@@ -186,7 +186,7 @@ export function signRefundPayload(request: RefundRequest, gateway: Gateway, secr
     metadata: request.metadata,
     timestamp: Date.now(),
   });
-  
+
   switch (gateway) {
     case 'stripe':
       return createHmac('sha256', secret).update(payload).digest('hex');
@@ -211,7 +211,7 @@ export function verifyRefundSignature(
   const expected = signRefundPayload(request, gateway, secret);
   const expectedBuffer = Buffer.from(expected);
   const suppliedBuffer = Buffer.from(signature);
-  
+
   if (expectedBuffer.length !== suppliedBuffer.length) return false;
   return timingSafeEqual(expectedBuffer, suppliedBuffer);
 }
@@ -222,10 +222,10 @@ export function dispatchRefund(
   config: PaymentGatewayConfig
 ): RefundResponse {
   assertGateway(config, gateway);
-  
+
   const refundId = `re_${gateway}_${request.paymentIntentId}_${Date.now()}`;
   const amount = request.amount ?? 0;
-  
+
   return {
     id: refundId,
     paymentIntentId: request.paymentIntentId,
@@ -245,11 +245,11 @@ export function reconcileStripePayouts(
   const discrepancies: ReconciliationResult['discrepancies'] = [];
   const gatewayMap = new Map(gatewayRecords.map(r => [r.id, r]));
   const localMap = new Map(localRecords.map(r => [r.id, r]));
-  
+
   for (const [id, gateway] of gatewayMap) {
     const local = localMap.get(id);
     if (!local) continue;
-    
+
     const diff = Math.abs(gateway.amount - local.amount);
     if (diff <= 0.01) {
       matched.push(id);
@@ -257,7 +257,7 @@ export function reconcileStripePayouts(
       discrepancies.push({ gateway, local, difference: gateway.amount - local.amount });
     }
   }
-  
+
   return {
     matched: matched.length,
     unmatchedGateway: gatewayRecords.filter(r => !matched.includes(r.id) && !discrepancies.some(d => d.gateway.id === r.id)),
@@ -342,7 +342,6 @@ export const PaymentIntentRecord = defineModel('integration.payment_intent', {
     idempotency_key: fields.string({ required: true }),
   },
   unique: [['connector', 'external_id']],
-  indexes: [['company', 'status'], ['company', 'order_id']],
 });
 
 export const RefundRecord = defineModel('integration.refund', {
@@ -360,7 +359,6 @@ export const RefundRecord = defineModel('integration.refund', {
     metadata_json: fields.text({ default: '{}' }),
   },
   unique: [['payment_intent', 'external_id']],
-  indexes: [['company', 'status']],
 });
 
 export const PayoutReconciliationRecord = defineModel('integration.payout_reconciliation', {
@@ -378,7 +376,6 @@ export const PayoutReconciliationRecord = defineModel('integration.payout_reconc
     discrepancy_count: fields.integer({ required: true, default: 0 }),
     details_json: fields.text({ required: true }),
   },
-  indexes: [['company', 'period_start'], ['connector', 'period_start']],
 });
 
 export function buildJournalEntryFromPaymentIntent(
@@ -393,41 +390,43 @@ export function buildJournalEntryFromPaymentIntent(
   }[];
   total: number;
 } {
+  const amount = Number(paymentIntent.amount);
+  const fee = gatewayFee ?? 0;
   const lines = [
     {
       account_code: '1101',
-      debit: paymentIntent.amount,
+      debit: amount,
       credit: 0,
       description: `Payment received: ${paymentIntent.order_id}`,
     },
     {
       account_code: '4101',
       debit: 0,
-      credit: paymentIntent.amount,
+      credit: amount,
       description: `Revenue: ${paymentIntent.order_id}`,
     },
   ];
-  
-  if (gatewayFee && gatewayFee > 0) {
+
+  if (fee > 0) {
     lines.push(
       {
         account_code: '6101',
-        debit: gatewayFee,
+        debit: fee,
         credit: 0,
         description: `Gateway fee: ${paymentIntent.gateway}`,
       },
       {
         account_code: '1101',
         debit: 0,
-        credit: gatewayFee,
+        credit: fee,
         description: `Gateway fee deduction: ${paymentIntent.gateway}`,
       }
     );
   }
-  
+
   return {
     lines,
-    total: paymentIntent.amount,
+    total: amount,
   };
 }
 
@@ -443,21 +442,22 @@ export function buildJournalEntryFromRefund(
   }[];
   total: number;
 } {
+  const amount = Number(refund.amount);
   return {
     lines: [
       {
         account_code: '4101',
-        debit: refund.amount,
+        debit: amount,
         credit: 0,
         description: `Revenue reversal: ${refund.external_id}`,
       },
       {
         account_code: '1101',
         debit: 0,
-        credit: refund.amount,
+        credit: amount,
         description: `Cash outflow for refund: ${refund.external_id}`,
       },
     ],
-    total: refund.amount,
+    total: amount,
   };
 }

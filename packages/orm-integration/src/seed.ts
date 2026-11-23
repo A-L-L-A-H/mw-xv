@@ -1,5 +1,7 @@
 import { seed, ref } from '@moonwitness/orm';
-import { PaymentGatewayConnector, WebhookEndpoint } from './models.js';
+import { PaymentGatewayConnector } from './connectors/payment-gateways.js';
+import { WebhookEndpoint } from './models.js';
+import type { Knex } from 'knex';
 
 const defaultCompanyRef = ref('base.company_default');
 
@@ -84,7 +86,7 @@ export const seedData = [
   }),
 ];
 
-export async function seedPaymentGateways(knex: any): Promise<void> {
+export async function seedPaymentGateways(knex: Knex): Promise<void> {
   for (const s of seedData) {
     await s(knex);
   }

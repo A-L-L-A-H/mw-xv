@@ -339,7 +339,7 @@ describe('Payment Gateways Connector', () => {
     });
 
     it('throws on unsupported gateway for signing', () => {
-      expect(() => signRefundPayload(refundRequest, 'unknown' as any, 'secret'))
+      expect(() => signRefundPayload(refundRequest, 'unknown' as never, 'secret'))
         .toThrow('Unsupported gateway for refund signing');
     });
   });
@@ -423,11 +423,11 @@ describe('Payment Gateways Connector', () => {
   });
 
   describe('Journal Entry Builders', () => {
-    const mockPaymentIntent = {
+    const mockPaymentIntent: InstanceType<typeof PaymentIntentRecord> = {
       amount: 100000,
       order_id: 'ORD-001',
       gateway: 'stripe' as const,
-    } as any;
+    } as InstanceType<typeof PaymentIntentRecord>;
 
     it('builds journal entry from payment intent', () => {
       const result = buildJournalEntryFromPaymentIntent(mockPaymentIntent, 2900);
@@ -442,10 +442,10 @@ describe('Payment Gateways Connector', () => {
     });
 
     it('builds journal entry from refund', () => {
-      const mockRefund = {
+      const mockRefund: InstanceType<typeof RefundRecord> = {
         amount: 50000,
         external_id: 're_123',
-      } as any;
+      } as InstanceType<typeof RefundRecord>;
 
       const result = buildJournalEntryFromRefund(mockRefund, 100000);
       
