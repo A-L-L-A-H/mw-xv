@@ -125,7 +125,7 @@ Selected source dispositions are recorded in [SOURCE-MIGRATION-MATRIX.md](../mig
 | `moonwitness-II` | Story & Witness platform, narrative cycle, data-backed characters/eras | Narrative source; verify exact canon records |
 | `moonwitness-xii-season-global-championships` | 33 indexed slots, championship registry and 15-episode research references | Historical/creative archive; preserve provenance and unresolved gaps |
 | `moonwitness-xiv` | Earlier metadata-driven monorepo / knowledge platform lineage | `REFERENCE_ONLY`; do not duplicate target platform |
-| `moonwitness-v2` (private) | Earlier Next.js/MUI admin dashboard | README accessible; not independently audited beyond that |
+| Earlier private MoonWitness admin-dashboard prototype | Earlier Next.js/MUI admin dashboard | A README was accessible through the authorized connection; identity/details are intentionally omitted from this public index, and no deeper audit is claimed |
 | `moonwitness-corpus` | RGBL, exact text, editions, passages, provenance, rights and evidence | `CLEAN_ROOM_REBUILD`; exact data hash/rights checks required |
 | `rocksouldx` | Repo Radar, Overlap Detector, Plan/Prompt Forge, Task Deck, Proof Gate, Memory Ledger, Visual DNA Lab | `CLEAN_ROOM_REBUILD`; no second agent runner |
 | `rocksoul-assets` | Brand, SVG/PNG/APNG/WebM/Lottie, sound and asset registry | `REFERENCE_ONLY`; individual asset/font/media rights review |
