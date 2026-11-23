@@ -1,3 +1,5 @@
+> **Master archive notice (2026-11-23):** This earlier monolithic source-backed index is retained as a detailed appendix. The current navigational source of truth is [docs/knowledge/idea-archive/README.md](idea-archive/README.md), which links the separate idea, project, canon, character, visual, framework, brand/product, repository, issue, execution and unresolved registries. Do not maintain competing catalogues here.
+
 # Total Idea Archive & Cross-Project Index
 
 **Audit date:** 2026-11-23 (Asia/Jakarta)  
