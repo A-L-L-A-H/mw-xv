@@ -109,7 +109,7 @@ export async function sweepAndConsolidate({
     });
   }
 
-  // 2. Ingest Audit Tasks (AUD-001..AUD-014)
+  // 2. Ingest Audit Tasks (AUD-001..AUD-024)
   for (const aud of AUDIT_TASKS) {
     addTask(aud);
   }

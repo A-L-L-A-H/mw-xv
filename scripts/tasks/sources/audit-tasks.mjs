@@ -1210,7 +1210,7 @@ export const AUDIT_TASKS = [
       'apps/board/src/components/home/horizontal-filmstrip.tsx',
       'apps/board/e2e/public-home.spec.ts'
     ],
-    blockedReason: null,
+    blockedReason: 'Maintainer re-triage required: current source evidence does not support the proposed documentation change. Do not edit the document until this finding is replaced or retired.',
     sourceRef: {
       file: 'scripts/tasks/sources/audit-tasks.mjs',
       legacyId: 'AUD-021'
@@ -1224,14 +1224,14 @@ export const AUDIT_TASKS = [
     series: 'AUD',
     milestone: 'AUDIT-NOW',
     horizon: 'now',
-    title: 'Correct the outdated responsive accessibility coverage note in visual-direction.md',
-    summary: 'Align visual-audit documentation with the current Axe checks in visual-audit.spec.ts.',
-    problem: 'docs/design/visual-direction.md still says protected mobile/tablet screens are not included in automated Axe coverage, while the current protected-screen loop runs Axe across mobile, tablet and desktop sizes in light and dark themes.',
-    proposedSolution: 'Update only the Visual audit coverage paragraph and stale accessibility finding. Record exact route/viewport/theme coverage from the current test; do not imply that automated Axe replaces keyboard or manual review.',
+    title: 'Re-triage the responsive accessibility documentation finding',
+    summary: 'Hold the documentation-only finding because the current document already matches the verified Axe coverage.',
+    problem: 'The design document already states that protected-page Axe scans run at 375x812 and 1440x1000, while 768x1024 tablet coverage currently checks overflow and screenshots only. The task claim that protected-page Axe also runs at 768 is contradicted by the current visual-audit source.',
+    proposedSolution: 'Do not change documentation. Keep this record blocked until a maintainer retires the stale finding or replaces it with an accurate, independently scoped follow-up.',
     category: 'documentation',
     type: 'documentation',
     priority: 'p1',
-    status: 'todo',
+    status: 'blocked',
     human: false,
     owner: 'docs',
     assignee: null,
@@ -1376,5 +1376,58 @@ export const AUDIT_TASKS = [
     },
     url: '',
     comments: []
+  },
+
+  {
+    code: 'AUD-024',
+    project: 'moonwitness',
+    series: 'AUD',
+    milestone: 'AUDIT-NEXT',
+    horizon: 'next',
+    title: 'Add tablet Axe scans for protected Board screens',
+    summary: 'Cover the existing protected-page accessibility matrix at the 768x1024 tablet viewport.',
+    problem: 'The protected-screen loop in apps/board/e2e/visual-audit.spec.ts runs five views in both themes at mobile, tablet and desktop sizes, but calls expectNoA11yViolations only for mobile-375 and desktop-1440. The tablet-768 pass currently checks horizontal overflow and screenshots without an Axe scan.',
+    proposedSolution: 'Add one standalone Playwright spec at apps/board/e2e/responsive-protected-axe.spec.ts. Authenticate with the existing visual-audit admin fixture, scan the dashboard, partner list, new partner form, profile and settings at 768x1024 in both light and dark themes, and use the same axe WCAG tags as the existing helper. Keep visual-audit.spec.ts, production UI, screenshots and documentation unchanged.',
+    category: 'architecture',
+    type: 'feature',
+    priority: 'p2',
+    status: 'todo',
+    human: false,
+    owner: 'board-ui',
+    assignee: null,
+    risk: 'low',
+    effort: 's',
+    scores: null,
+    dependsOn: [],
+    blocks: [],
+    tags: ['board', 'accessibility', 'e2e', 'playwright', 'tablet'],
+    scope: {
+      packages: ['@moonwitness/board'],
+      files: ['apps/board/e2e/responsive-protected-axe.spec.ts']
+    },
+    acceptanceCriteria: [
+      { id: 'AUD-024-ac-1', text: 'The new spec scans /board, /board/m/base.partner, /board/m/base.partner/new, /board/profile and /board/settings at 768x1024.', done: false },
+      { id: 'AUD-024-ac-2', text: 'Every protected view is scanned in both light and dark themes using @axe-core/playwright and the existing WCAG 2.1 A/AA tags.', done: false },
+      { id: 'AUD-024-ac-3', text: 'The test is isolated in responsive-protected-axe.spec.ts and does not modify visual-audit.spec.ts, production components, assets or documentation.', done: false },
+      { id: 'AUD-024-ac-4', text: 'The focused Playwright command passes on Chromium and reports zero automatically detectable Axe violations.', done: false }
+    ],
+    validation: {
+      commands: ['pnpm --filter @moonwitness/board exec playwright test e2e/responsive-protected-axe.spec.ts --config playwright.config.ts'],
+      expected: 'The tablet-only protected-page accessibility spec passes with no Axe violations.'
+    },
+    evidence: {
+      paths: [],
+      detailFile: 'apps/board/e2e/visual-audit.spec.ts',
+      commitSha: null
+    },
+    references: ['apps/board/e2e/visual-audit.spec.ts', 'docs/design/visual-direction.md'],
+    blockedReason: null,
+    sourceRef: {
+      file: 'scripts/tasks/sources/audit-tasks.mjs',
+      legacyId: 'AUD-024'
+    },
+    url: '',
+    comments: []
   }
+
 ];
