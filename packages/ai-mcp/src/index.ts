@@ -11,6 +11,35 @@ import {
   type TaskStatus,
 } from '@moonwitness/orm-project';
 import { isRecord, type JsonObject, type JsonValue } from '@moonwitness/types';
+import {
+  EXTENDED_MCP_TOOLS,
+  dispatchExtendedMcpTool,
+  isExtendedMcpToolName,
+  type DesktopQuickCaptureRecord,
+  type ExtendedToolProviders,
+} from './extended-tools.js';
+
+export {
+  EXTENDED_MCP_TOOLS,
+  computeMerkleEntryHash,
+  dispatchExtendedMcpTool,
+  isExtendedMcpToolName,
+  redactSecretText,
+  verifyMerkleAuditChain,
+  type AgiGovernanceSnapshot,
+  type DesktopDoctorCheck,
+  type DesktopLocalSearchHit,
+  type DesktopQuickCaptureRecord,
+  type ExtendedMcpToolDescriptor,
+  type ExtendedMcpToolName,
+  type ExtendedToolDispatchContext,
+  type ExtendedToolDispatchOutcome,
+  type ExtendedToolProviders,
+  type MerkleAuditEntry,
+  type PaasBackupPlanEntry,
+  type PaasLogRecord,
+  type PaasServiceStatus,
+} from './extended-tools.js';
 
 interface KnexQueryBuilderLike {
   where(filter: Record<string, unknown>): KnexQueryBuilderLike;
@@ -185,6 +214,7 @@ export const AI_MCP_TOOLS: readonly AiMcpToolDescriptor[] = [
     idempotent: true,
     requiredCapability: 'project.write@v1',
   },
+  ...EXTENDED_MCP_TOOLS,
 ];
 
 const KNOWN_TOOL_NAMES = new Set(AI_MCP_TOOLS.map((t) => t.name));
@@ -232,6 +262,7 @@ async function recordDbAuditLog(
 export interface AiMcpServerOptions {
   readonly db?: unknown;
   readonly emergencyStopController?: EmergencyStopController;
+  readonly extendedToolProviders?: ExtendedToolProviders;
 }
 
 export interface AiMcpServer {
@@ -253,6 +284,7 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
     string,
     { readonly payloadHash: string; readonly result: Record<string, unknown> }
   >();
+  const captureStore = new Map<string, DesktopQuickCaptureRecord>();
 
   return {
     async healthCheck() {
@@ -1230,6 +1262,35 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
               }),
             };
           }
+        }
+
+        if (isExtendedMcpToolName(toolName)) {
+          const outcome = await dispatchExtendedMcpTool(toolName, rawArgs, {
+            companyId,
+            actorUserId,
+            providers: options.extendedToolProviders,
+            captureStore,
+          });
+          if (!outcome.ok) {
+            return {
+              jsonrpc: '2.0',
+              id,
+              status: outcome.status,
+              error: { code: outcome.code, message: outcome.message },
+            };
+          }
+          await recordDbAuditLog(options.db, {
+            model: 'ai.mcp',
+            recordId: companyId,
+            operation: `mcp_tool_${toolName.replace(/\./gu, '_')}`,
+            actorId: actorUserId,
+            changes: { toolName },
+          });
+          return {
+            jsonrpc: '2.0',
+            id,
+            result: outcome.result,
+          };
         }
       }
 

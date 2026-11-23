@@ -522,3 +522,18 @@ export async function reconcileAttachmentStorage(
 
 export { S3AttachmentStorage, closeS3AttachmentStorage } from './s3.js';
 export type { S3AttachmentStorageOptions } from './s3.js';
+export {
+  buildChunkManifest,
+  decryptArtifactEnvelope,
+  encryptArtifactEnvelope,
+  reassembleChunkManifest,
+  verifyChunkManifest,
+  type BuiltChunkArtifact,
+  type ChunkManifest,
+  type ChunkManifestEntry,
+  type ChunkResolver,
+  type ChunkVerificationResult,
+  type DecryptEnvelopeOptions,
+  type EncryptEnvelopeOptions,
+  type EncryptedEnvelope,
+} from './encrypted-vault.js';
