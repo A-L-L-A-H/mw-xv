@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `f4a6b411b7699bf22e9c87b0b715316cc5fd5139f1aae213feb997c5d05c38f1`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `baa1f2bad1f74607f6097868fae13a341382fc932ee48ff56deb387e7a722df1`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -26,6 +26,7 @@ Source fingerprint: `f4a6b411b7699bf22e9c87b0b715316cc5fd5139f1aae213feb997c5d05
 | `@moonwitness/local-ai`         | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/logger`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm`              | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-a2a`          | Package | 1.0.0-rc.1 | `build`                                                                                                                                                                                                                                                                            |
 | `@moonwitness/orm-ai`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-base`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-cloud`        | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
@@ -88,6 +89,10 @@ Source fingerprint: `f4a6b411b7699bf22e9c87b0b715316cc5fd5139f1aae213feb997c5d05
 | `LOG_TO_FILE`                       | boolean        | Yes                       | No                       |
 | `METRICS_TOKEN`                     | secret         | Yes                       | Yes                      |
 | `MOONWITNESS_CORPUS_ROOT`           | string         | No                        | No                       |
+| `MW_A2A_API_ENABLED`                | boolean        | Yes                       | No                       |
+| `MW_A2A_API_ENDPOINT`               | string         | Yes                       | No                       |
+| `MW_A2A_COMPANY_ID`                 | string         | Yes                       | No                       |
+| `MW_A2A_SIGNING_SECRET`             | secret         | Yes                       | Yes                      |
 | `NODE_ENV`                          | string         | Yes                       | No                       |
 | `OUTBOX_HANDLERS_MODULE`            | string         | Yes                       | No                       |
 | `OUTBOX_WORKER_HEALTH_PORT`         | integer        | Yes                       | No                       |
