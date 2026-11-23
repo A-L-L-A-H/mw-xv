@@ -56,8 +56,8 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   const legacyRegistry = JSON.parse(await readFile('docs/tasks/tasks.json', 'utf8'));
   const archivedTodoText = await readFile('docs/archive/todos/todo.md', 'utf8');
   const archivedRows = archivedTodoText
-    .split(/\\r?\\n/)
-    .map((line) => /^\\s*-\\s*\\[([ xX])\\]\\s+\\*\\*(MW-[A-Za-z0-9_.-]+)\\*\\*/.exec(line))
+    .split(/\r?\n/)
+    .map((line) => /^\s*-\s*\[([ xX])\]\s+\*\*(MW-[A-Za-z0-9_.-]+)\*\*/.exec(line))
     .filter(Boolean);
   const legacyRootTodo = legacyRegistry.tasks.filter((task) => task.sourceRef?.file === 'todo.md');
   const legacyDoneCodes = legacyRootTodo.filter((task) => task.status === 'done').map((task) => task.code).sort();
