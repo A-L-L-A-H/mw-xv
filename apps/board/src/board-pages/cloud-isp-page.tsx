@@ -14,6 +14,7 @@ import { client } from '@/lib/client';
 import { useDesktopBridge } from '@/lib/desktop-bridge';
 import { scopedQueryKey } from '@/lib/query-scope';
 import { MeshFleetDrawer } from '@/components/ai/mesh-fleet-drawer';
+import { PaasStudioPanel } from '@/components/cloud/paas-studio-panel';
 
 interface CloudHealthPayload {
   controlPlane: 'connected' | 'unreachable';
@@ -321,6 +322,8 @@ export function CloudIspPage() {
       </div>
 
       {isDesktop ? <MeshFleetDrawer /> : null}
+
+      <PaasStudioPanel />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title="Cloud Applications" description="Managed through /api/cloud/apps/:id/deploy">

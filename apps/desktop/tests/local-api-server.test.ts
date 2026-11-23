@@ -373,11 +373,44 @@ describe('LocalApiServer & Desktop Importer', () => {
     const importBlockedBody = (await importBlocked.json()) as { code: string };
     expect(importBlockedBody.code).toBe('WORKSPACE_MODE_RESTRICTED');
 
-    // 6. Normal workspace routes remain functional in workspace mode
+    // 6. Normal workspace routes & AI assistant remain functional in workspace mode
     const bootRes = await fetch(`${daemon.apiUrl}/api/app/bootstrap`, { headers: authHeaders });
     expect(bootRes.status).toBe(200);
     const boardRes = await fetch(`${daemon.apiUrl}/api/projects/1/board`, { headers: authHeaders });
     expect(boardRes.status).toBe(200);
+
+    const workspaceAssistRes = await fetch(`${daemon.apiUrl}/api/desktop/ai/assist`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ action: 'summarize_tasks', prompt: 'Daily check-in' }),
+    });
+    expect(workspaceAssistRes.status).toBe(200);
+    const workspaceAssistBody = (await workspaceAssistRes.json()) as {
+      success: boolean;
+      data: { mode: string; readOnly: boolean; riskTier: string };
+    };
+    expect(workspaceAssistBody.success).toBe(true);
+    expect(workspaceAssistBody.data.mode).toBe('workspace');
+    expect(workspaceAssistBody.data.readOnly).toBe(true);
+    expect(workspaceAssistBody.data.riskTier).toBe('R0');
+
+    // AI task runner & PaaS Studio routes are blocked 403 in workspace mode
+    for (const [method, endpoint, body] of [
+      ['POST', '/api/desktop/ai/run-task', { taskId: 'T-1', code: 'T-1', title: 'Test' }],
+      ['GET', '/api/desktop/paas/metrics', undefined],
+      ['GET', '/api/desktop/paas/apps', undefined],
+      ['POST', '/api/desktop/paas/apps/deploy', { slug: 'demo', image: 'nginx:alpine' }],
+      ['POST', '/api/desktop/paas/apps/demo/restart', {}],
+    ] as const) {
+      const blocked = await fetch(`${daemon.apiUrl}${endpoint}`, {
+        method,
+        headers: authHeaders,
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      });
+      expect(blocked.status).toBe(403);
+      const blockedJson = (await blocked.json()) as { code: string };
+      expect(blockedJson.code).toBe('WORKSPACE_MODE_RESTRICTED');
+    }
 
     // 7. Switch to developer mode via POST /api/desktop/mode and verify persistence + unlock
     const switchRes = await fetch(`${daemon.apiUrl}/api/desktop/mode`, {

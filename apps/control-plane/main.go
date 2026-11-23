@@ -173,6 +173,10 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 	mux.HandleFunc("/api/deployments/", requireBearerAuth(adminToken, handleApiDeployment(db)))
 	mux.HandleFunc("/api/containers/", requireBearerAuth(adminToken, handleContainerSubroutes(dockerBin)))
 
+	// PaaS node agent endpoints (authenticated via X-Control-Plane-Token or Bearer).
+	paasMgr := NewPaasManager(db, dockerBin, NewMeshManagerFromEnv(dockerBin), nil, nil)
+	paasMgr.MountRoutes(mux, adminToken)
+
 	return mux
 }
 
@@ -281,8 +285,10 @@ CREATE TABLE IF NOT EXISTS service_status (
 `
 
 func initSchema() error {
-	_, err := DB.Exec(schemaDDL)
-	return err
+	if _, err := DB.Exec(schemaDDL); err != nil {
+		return err
+	}
+	return initPaasSchema(DB)
 }
 
 // serviceRow mirrors the services table.

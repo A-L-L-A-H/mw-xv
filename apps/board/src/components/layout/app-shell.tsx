@@ -63,6 +63,7 @@ import { NotificationBell } from './notification-bell';
 import { Sheet, SheetContent, SheetTrigger } from '@moonwitness/ui/components/sheet';
 import { SoundToggle } from '@moonwitness/ui/components/audio';
 import { DesktopHarnessDrawer } from '@/components/ai/desktop-harness-drawer';
+import { WorkspaceAssistantDrawer } from '@/components/ai/workspace-assistant-drawer';
 import { AI_MISSION_CONTROL_ROUTES } from '@/components/ai/ai-api';
 import { UpdateBanner, type UpdateBannerStatus } from '@moonwitness/ui/components/update-banner';
 import { ModePicker } from '@moonwitness/ui/components/mode-picker';
@@ -533,6 +534,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Button>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {isDesktop && <WorkspaceAssistantDrawer />}
             {!isWorkspaceDesktop && <DesktopHarnessDrawer />}
             {/* Tenant / Company Switcher */}
             {companies.length > 0 && (

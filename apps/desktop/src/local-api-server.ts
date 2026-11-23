@@ -22,12 +22,24 @@ import { Model } from 'objection';
 import { Company, CompanyMembership, Partner, User } from '@moonwitness/orm-base';
 import { projectHttpPlugin } from '@moonwitness/orm-project';
 import { workflowHttpPlugin } from '@moonwitness/orm-workflow';
+import {
+  controlMeshPaasApp,
+  deployViaMoonWitnessMesh,
+  fetchMeshNodeMetrics,
+  listMeshPaasApps,
+  type MeshPaasAppAction,
+} from '@moonwitness/orm-cloud';
 import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moonwitness/types';
 import { DESKTOP_ADDONS, LocalSidecarController } from './local-sidecar.js';
 import { importDesktopTasks } from './importer.js';
 import { buildVpsJoinCommand, ensureMeshCredentials } from './mesh-autopilot.js';
 import { MeshClientController } from './mesh-client.js';
 import { discoverLocalAiProviders } from './local-ai-discovery.js';
+import {
+  dispatchTaskAgentRun,
+  runWorkspaceAssistant,
+  type WorkspaceAssistantAction,
+} from './ai-assistant.js';
 import {
   createLocalDbBackup,
   listLocalDbBackups,
@@ -1514,6 +1526,232 @@ export async function startLocalApiServer(
 
   app.post('/api/desktop/vps/onboarding', handleVpsSuperadminOnboarding);
   app.post('/api/desktop/vps/onboarding/superadmin', handleVpsSuperadminOnboarding);
+
+  // Desktop AI Assistant & Autonomous Task Runner
+  const VALID_ASSISTANT_ACTIONS = new Set<WorkspaceAssistantAction>([
+    'summarize_tasks',
+    'draft_note',
+    'search_knowledge',
+    'chat',
+  ]);
+
+  app.post('/api/desktop/ai/assist', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const rawAction = typeof body.action === 'string' ? body.action.trim() : 'chat';
+    const action: WorkspaceAssistantAction = VALID_ASSISTANT_ACTIONS.has(
+      rawAction as WorkspaceAssistantAction
+    )
+      ? (rawAction as WorkspaceAssistantAction)
+      : 'chat';
+    const prompt = typeof body.prompt === 'string' ? body.prompt : '';
+    const endpoint = typeof body.endpoint === 'string' ? body.endpoint.trim() : undefined;
+    const model = typeof body.model === 'string' ? body.model.trim() : undefined;
+    const tasks = Array.isArray(body.tasks) ? body.tasks : undefined;
+    const knowledge = Array.isArray(body.knowledge) ? body.knowledge : undefined;
+
+    const result = await runWorkspaceAssistant({
+      mode: currentMode,
+      action,
+      prompt,
+      ...(endpoint ? { endpoint } : {}),
+      ...(model ? { model } : {}),
+      ...(tasks ? { tasks } : {}),
+      ...(knowledge ? { knowledge } : {}),
+      autoDiscover: body.autoDiscover === true,
+    });
+    return { success: true, data: result };
+  });
+
+  app.post('/api/desktop/ai/run-task', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const taskId = typeof body.taskId === 'string' ? body.taskId.trim() : '';
+    const code = typeof body.code === 'string' ? body.code.trim() : taskId || 'TASK';
+    const title = typeof body.title === 'string' ? body.title.trim() : '';
+    const description = typeof body.description === 'string' ? body.description.trim() : '';
+    if (!taskId || !title) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_TASK_AGENT_REQUEST',
+        error: 'taskId and title are required',
+      });
+    }
+    const model = typeof body.model === 'string' ? body.model.trim() : undefined;
+    const baseRef = typeof body.baseRef === 'string' ? body.baseRef.trim() : undefined;
+    const allowedPaths = Array.isArray(body.allowedPaths)
+      ? body.allowedPaths.filter((p): p is string => typeof p === 'string')
+      : undefined;
+    const verificationCommands = Array.isArray(body.verificationCommands)
+      ? body.verificationCommands.filter((c): c is string => typeof c === 'string')
+      : undefined;
+
+    const result = await dispatchTaskAgentRun({
+      mode: currentMode,
+      taskId,
+      code,
+      title,
+      description,
+      ...(model ? { model } : {}),
+      ...(baseRef ? { baseRef } : {}),
+      ...(allowedPaths ? { allowedPaths } : {}),
+      ...(verificationCommands ? { verificationCommands } : {}),
+      acquireWorktree: body.acquireWorktree === true,
+      riskGate: vpsRiskGate,
+      auth: {
+        companyId: workspace.companyId,
+        agentId: workspace.userId,
+        expectedPolicyVersion: 1,
+        dataClassification: 'local_only',
+        grant: {
+          grantId: `grant-desktop-task-agent-${taskId}`,
+          companyId: workspace.companyId,
+          agentId: workspace.userId,
+          capability: 'ai.task_agent_run@v1',
+          allowedRiskTier: 'R2',
+          allowedClassification: 'local_only',
+          policyVersion: 1,
+          status: 'active',
+          expiresAt: new Date(Date.now() + 600_000).toISOString(),
+          maxCallsPerRun: 10,
+        },
+      },
+    });
+    return { success: true, data: result };
+  });
+
+  // Desktop MoonWitness Mesh PaaS Studio routes (DX mode only)
+  const resolveMeshPaasConfig = (): { endpoint: string; token: string } => {
+    const endpoint =
+      process.env.MW_VPS_CONTROL_PLANE_URL?.trim() || 'http://10.144.0.1:3003';
+    const token =
+      process.env.MW_VPS_ADMIN_TOKEN?.trim() ||
+      process.env.CONTROL_PLANE_TOKEN?.trim() ||
+      '';
+    return { endpoint, token };
+  };
+
+  app.get('/api/desktop/paas/metrics', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const { endpoint, token } = resolveMeshPaasConfig();
+    try {
+      const metrics = await fetchMeshNodeMetrics({ endpoint, ...(token ? { token } : {}) });
+      return { success: true, data: metrics };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Mesh PaaS node unreachable';
+      return reply.code(502).send({ success: false, code: 'MESH_PAAS_UNREACHABLE', error: message });
+    }
+  });
+
+  app.get('/api/desktop/paas/apps', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const { endpoint, token } = resolveMeshPaasConfig();
+    try {
+      const apps = await listMeshPaasApps({ endpoint, ...(token ? { token } : {}) });
+      return { success: true, data: apps };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Mesh PaaS node unreachable';
+      return reply.code(502).send({ success: false, code: 'MESH_PAAS_UNREACHABLE', error: message });
+    }
+  });
+
+  app.post('/api/desktop/paas/apps/deploy', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const slug = typeof body.slug === 'string' ? body.slug.trim() : '';
+    const image = typeof body.image === 'string' ? body.image.trim() : '';
+    if (!slug || !image) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_PAAS_DEPLOY_REQUEST',
+        error: 'slug and image are required',
+      });
+    }
+    const domain = typeof body.domain === 'string' ? body.domain.trim() : undefined;
+    const port = typeof body.port === 'number' && Number.isInteger(body.port) ? body.port : undefined;
+    const tenant = typeof body.tenant === 'string' ? body.tenant.trim() : undefined;
+    const env = isRecord(body.env)
+      ? Object.fromEntries(
+          Object.entries(body.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+        )
+      : undefined;
+
+    const { endpoint, token } = resolveMeshPaasConfig();
+    try {
+      const result = await deployViaMoonWitnessMesh({
+        endpoint,
+        ...(token ? { token } : {}),
+        slug,
+        image,
+        ...(domain ? { domain } : {}),
+        ...(port !== undefined ? { port } : {}),
+        ...(tenant ? { tenant } : {}),
+        ...(env ? { env } : {}),
+      });
+      return { success: true, data: result };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Mesh PaaS deploy failed';
+      return reply.code(502).send({ success: false, code: 'MESH_PAAS_DEPLOY_FAILED', error: message });
+    }
+  });
+
+  const VALID_PAAS_ACTIONS = new Set<MeshPaasAppAction>(['restart', 'stop', 'delete', 'logs']);
+
+  app.post<{ Params: { slug: string; action: string } }>(
+    '/api/desktop/paas/apps/:slug/:action',
+    async (req, reply) => {
+      if (!req.auth) {
+        return reply.code(401).send({ success: false, error: 'Authentication required' });
+      }
+      if (currentMode === 'workspace') {
+        return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+      }
+      const slug = req.params.slug.trim();
+      const action = req.params.action.trim() as MeshPaasAppAction;
+      if (!slug || !VALID_PAAS_ACTIONS.has(action)) {
+        return reply.code(400).send({
+          success: false,
+          code: 'INVALID_PAAS_ACTION',
+          error: "action must be 'restart', 'stop', 'delete', or 'logs'",
+        });
+      }
+      const { endpoint, token } = resolveMeshPaasConfig();
+      try {
+        const result = await controlMeshPaasApp({
+          endpoint,
+          ...(token ? { token } : {}),
+          appIdOrSlug: slug,
+          action,
+        });
+        return { success: true, data: result };
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Mesh PaaS action failed';
+        return reply.code(502).send({ success: false, code: 'MESH_PAAS_ACTION_FAILED', error: message });
+      }
+    }
+  );
 
   // POST /_desktop/rpc protected by ephemeral x-mw-desktop-token
   app.post('/_desktop/rpc', async (req, reply) => {

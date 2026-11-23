@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -207,6 +208,17 @@ function main() {
     }
   }
 
+  // 5. Optional EasyTier binary staging (non-fatal if absent so CI stays fast & green)
+  const easytierBinName = process.platform === 'win32' ? 'easytier-core.exe' : 'easytier-core';
+  const easytierSource = path.join(os.homedir(), '.moonwitness', 'bin', easytierBinName);
+  let easytierStaged = false;
+  if (fs.existsSync(easytierSource)) {
+    const sidecarBinDir = path.join(sidecarDir, 'bin');
+    fs.mkdirSync(sidecarBinDir, { recursive: true });
+    fs.copyFileSync(easytierSource, path.join(sidecarBinDir, easytierBinName));
+    easytierStaged = true;
+  }
+
   const { total, files } = measureDirBytes(sidecarDir);
   const mb = (total / (1024 * 1024)).toFixed(2);
   console.log(
@@ -215,6 +227,7 @@ function main() {
       sidecarDir,
       nodeBinary: nodeDest,
       entryScript: path.join(sidecarDistDir, 'cli.js'),
+      easytierStaged,
       stagedPackages: stagedNames.size,
       files,
       totalMB: Number(mb),

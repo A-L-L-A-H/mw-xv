@@ -120,7 +120,7 @@ export function ensureMeshCredentials(desktopHomeDir?: string): MeshCredentialsS
   applyRestrictivePermissions(resolvedHome, 0o700);
 
   const networkName = `mw-mesh-${crypto.randomBytes(4).toString('hex')}`;
-  const networkSecret = crypto.randomBytes(32).toString('base64url');
+  const networkSecret = `mw_${crypto.randomBytes(32).toString('base64url')}`;
   const subnet = DEFAULT_MESH_SUBNET;
 
   fs.writeFileSync(secretRefPath, serializeMeshEnv(networkName, networkSecret, subnet), {
