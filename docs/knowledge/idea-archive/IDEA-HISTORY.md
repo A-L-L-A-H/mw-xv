@@ -19,6 +19,7 @@ This timeline records only dates and windows supported by the supplied prompt, a
 | 2024 | ZENIX / ZENIVERSE, Odoo, AI-persona, GIS/DCIM, HR and Fastify experiments | USER-REPORTED technical history | Individual deployments and continuity into MW-XV are not proven |
 | 2025 | ISP/backend/network integration, authentication, WhatsApp and automation ideas | USER-REPORTED technical history | No complete project chronology or exact SHAs in current prompt |
 | Sep 2026 | GOD PROMISE, MoonWitness II, crew/world rules, poster and music/riddle experiments | REPOSITORY-DOCUMENTED + USER-REPORTED | Each original prompt/version is not fully recovered in this archive |
+| Sep 2026 (summary-only; exact first appearances unverified) | MOONWITNESS — Two Generations, One Toast; Chaos Before Dawn; BIRD OF A FEATHER; THUNDERSTRUCK | USER-REPORTED memory-summary leads; one matching Library image caption for Two Generations | Titles are preserved; only partial premise notes survive for some; full original prompts, plot details and revision order remain missing |
 | 30 Sep 2026 | MENGGIGIL / THUNDERSTRUCK creative narrative leads | Historical locator in V10 progress ledger | Primary original text and event facts are not available here |
 | 15 Oct 2026 | Knowledge privacy / source ingestion / K0-006 decisions | MW-XIV / MW-XV governance history | Owner-approved no-legacy-import boundary must be respected |
 | 17 Oct 2026 | #033 FAITH TO ACTION — KOPIHITAM - SIACENG logged in chat | XII patch register | In-chat record is not proof of external dispatch or approval |
@@ -41,7 +42,7 @@ This timeline records only dates and windows supported by the supplied prompt, a
 - The current 775-line master prompt is archived verbatim at `docs/raw/2026-11-23-master-prompt-total-idea-archive.md`.
 - A separate older 439-line Library note named `Pasted text.txt` was inspected as a source but is personal/private and is not reproduced in this public archive.
 - `Omniscience_Method_RGBL_AI_Ready_Research_Paper.md` is a separate 437-line Library paper, version 1.0 dated 17 August 2026; the method is summarized in `FRAMEWORK-REGISTRY.md`.
-- Ninety-four Library objects were enumerated in the root snapshot, including 63 PNG files. Only selected document sources were read; original prompts, revisions and publication rights are not recovered for every image. See `LIBRARY-SOURCE-REGISTER.md`.
+- The first Library root snapshot enumerated 94 objects / 63 PNGs. A later fully paginated listing returned 279 root entries (278 files + 1 folder) and 319 recursive entries (300 files + 19 folders), including 203 PNGs. These are metadata counts, not counts of content-reviewed or rights-cleared assets. See `LIBRARY-SOURCE-REGISTER.md` for both snapshots.
 
 The account Memory Summary also retains a MoonWitness OS v2.0 architecture label; the first-source document and original conversation wording have not yet been recovered, so it remains MEMORY-SUMMARY / NEEDS-SOURCE rather than a dated source-history event.
 
