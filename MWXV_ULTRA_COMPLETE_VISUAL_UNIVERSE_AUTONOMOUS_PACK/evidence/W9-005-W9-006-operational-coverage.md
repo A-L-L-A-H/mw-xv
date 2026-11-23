@@ -33,11 +33,11 @@ Verification (all green):
 
 ## Matrix stabilization history (for reviewers)
 
-| Issue | Root cause | Fix |
-| --- | --- | --- |
-| 16 initial failures | stale baselines vs intentional grunge rollout + broken API boot (`erp-ledger` camelCase fields) | ORM fields converted to snake_case; baselines regenerated after review |
-| Screenshot write errors | three browsers writing identical catalog artifact paths on Windows | chromium-only writes via `writeCatalogScreenshot` + retry |
-| 409 on user creation | shared API server, fixed `visual-user` login across projects | per-project login suffix + 409 tolerance |
-| WebKit dialog Escape | focus left on trigger for a tick after keyboard open | focus a link inside the sheet before Escape |
-| Dashboard KPI flake | live counters, audit ledger, and model-registry grid mutate | clip to stable region, mask metric values |
-| Ordinary-user timeout | cold dev-server JIT compile on first run | 90 s test timeout |
+| Issue                   | Root cause                                                                                      | Fix                                                                    |
+| ----------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 16 initial failures     | stale baselines vs intentional grunge rollout + broken API boot (`erp-ledger` camelCase fields) | ORM fields converted to snake_case; baselines regenerated after review |
+| Screenshot write errors | three browsers writing identical catalog artifact paths on Windows                              | chromium-only writes via `writeCatalogScreenshot` + retry              |
+| 409 on user creation    | shared API server, fixed `visual-user` login across projects                                    | per-project login suffix + 409 tolerance                               |
+| WebKit dialog Escape    | focus left on trigger for a tick after keyboard open                                            | focus a link inside the sheet before Escape                            |
+| Dashboard KPI flake     | live counters, audit ledger, and model-registry grid mutate                                     | clip to stable region, mask metric values                              |
+| Ordinary-user timeout   | cold dev-server JIT compile on first run                                                        | 90 s test timeout                                                      |
