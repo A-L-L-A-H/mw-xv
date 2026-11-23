@@ -1,0 +1,400 @@
+import { defineView } from '@moonwitness/orm';
+import { ComplianceFramework, ComplianceControl, ComplianceAssessment, ComplianceFinding, ComplianceRemediation, CompliancePolicy, ComplianceEvidence } from './models/index.js';
+
+export const views = [
+  defineView(ComplianceFramework, {
+    title: 'Compliance Frameworks',
+    list: {
+      columns: ['code', 'name', 'version', 'category', 'status', 'company', 'owner', 'effective_date', 'expiry_date'],
+      order: 'create_date desc, id desc',
+      decorations: [
+        { color: 'success', domain: [['status', '=', 'active']] },
+        { color: 'warning', domain: [['status', '=', 'draft']] },
+        { color: 'info', domain: [['status', '=', 'deprecated']] },
+        { color: 'muted', domain: [['status', '=', 'archived']] },
+      ],
+    },
+    form: {
+      sections: [
+        {
+          title: 'Framework Details',
+          columns: 2,
+          fields: ['code', 'name', 'version', 'category', 'status', 'company', 'owner'],
+        },
+        {
+          title: 'Dates & Reference',
+          columns: 2,
+          fields: ['effective_date', 'expiry_date', 'issuer', 'reference_url'],
+        },
+        {
+          title: 'Description & Notes',
+          fields: ['description', 'tags', 'notes'],
+        },
+      ],
+    },
+    search: {
+      fields: ['code', 'name', 'description', 'issuer', 'reference_url'],
+      filters: [
+        { label: 'Active', domain: [['status', '=', 'active']] },
+        { label: 'Draft', domain: [['status', '=', 'draft']] },
+        { label: 'Regulatory', domain: [['category', '=', 'regulatory']] },
+        { label: 'Industry', domain: [['category', '=', 'industry']] },
+        { label: 'Internal', domain: [['category', '=', 'internal']] },
+        { label: 'ESG', domain: [['category', '=', 'esg']] },
+      ],
+      groupBy: [
+        { label: 'Category', field: 'category' },
+        { label: 'Status', field: 'status' },
+        { label: 'Company', field: 'company_id' },
+        { label: 'Owner', field: 'owner_id' },
+      ],
+    },
+  }),
+
+  defineView(ComplianceControl, {
+    title: 'Compliance Controls',
+    list: {
+      columns: ['control_id', 'framework', 'name', 'control_type', 'status', 'company', 'owner', 'frequency', 'automation_level'],
+      order: 'create_date desc, id desc',
+      decorations: [
+        { color: 'success', domain: [['status', '=', 'active']] },
+        { color: 'warning', domain: [['status', '=', 'draft']] },
+        { color: 'info', domain: [['status', '=', 'deprecated']] },
+        { color: 'muted', domain: [['status', '=', 'archived']] },
+      ],
+    },
+    form: {
+      sections: [
+        {
+          title: 'Control Details',
+          columns: 2,
+          fields: ['control_id', 'framework', 'company', 'name', 'control_type', 'status', 'owner', 'reviewer'],
+        },
+        {
+          title: 'Risk & Objective',
+          columns: 2,
+          fields: ['risk_category', 'control_objective', 'testing_procedure'],
+        },
+        {
+          title: 'Schedule & Automation',
+          columns: 2,
+          fields: ['frequency', 'automation_level', 'evidence_requirements', 'related_controls'],
+        },
+        {
+          title: 'Tags & Notes',
+          fields: ['tags', 'notes'],
+        },
+      ],
+    },
+    search: {
+      fields: ['control_id', 'name', 'description', 'risk_category', 'control_objective', 'testing_procedure'],
+      filters: [
+        { label: 'Active', domain: [['status', '=', 'active']] },
+        { label: 'Draft', domain: [['status', '=', 'draft']] },
+        { label: 'Preventive', domain: [['control_type', '=', 'preventive']] },
+        { label: 'Detective', domain: [['control_type', '=', 'detective']] },
+        { label: 'Corrective', domain: [['control_type', '=', 'corrective']] },
+        { label: 'Directive', domain: [['control_type', '=', 'directive']] },
+        { label: 'Compensating', domain: [['control_type', '=', 'compensating']] },
+      ],
+      groupBy: [
+        { label: 'Control Type', field: 'control_type' },
+        { label: 'Status', field: 'status' },
+        { label: 'Framework', field: 'framework_id' },
+        { label: 'Company', field: 'company_id' },
+        { label: 'Owner', field: 'owner_id' },
+      ],
+    },
+  }),
+
+  defineView(ComplianceAssessment, {
+    title: 'Compliance Assessments',
+    list: {
+      columns: ['assessment_no', 'framework', 'company', 'assessment_date', 'status', 'overall_score', 'maturity_level', 'controls_tested', 'controls_passed', 'controls_failed'],
+      order: 'assessment_date desc, id desc',
+      decorations: [
+        { color: 'success', domain: [['status', '=', 'completed']] },
+        { color: 'info', domain: [['status', '=', 'in_progress']] },
+        { color: 'warning', domain: [['status', '=', 'planned']] },
+        { color: 'danger', domain: [['status', '=', 'cancelled']] },
+      ],
+    },
+    form: {
+      sections: [
+        {
+          title: 'Assessment',
+          columns: 2,
+          fields: ['assessment_no', 'framework', 'company', 'assessment_date', 'period_start', 'period_end', 'status', 'assessor', 'reviewer'],
+        },
+        {
+          title: 'Scope & Results',
+          columns: 2,
+          fields: ['scope', 'overall_score', 'maturity_level', 'controls_tested', 'controls_passed', 'controls_failed', 'controls_not_applicable'],
+        },
+        {
+          title: 'Findings Summary',
+          columns: 2,
+          fields: ['findings_critical', 'findings_high', 'findings_medium', 'findings_low'],
+        },
+        {
+          title: 'Timeline & Report',
+          columns: 2,
+          fields: ['completed_date', 'next_assessment_date', 'report_reference', 'notes'],
+        },
+      ],
+    },
+    search: {
+      fields: ['assessment_no', 'report_reference', 'notes'],
+      filters: [
+        { label: 'Planned', domain: [['status', '=', 'planned']] },
+        { label: 'In Progress', domain: [['status', '=', 'in_progress']] },
+        { label: 'Completed', domain: [['status', '=', 'completed']] },
+        { label: 'Cancelled', domain: [['status', '=', 'cancelled']] },
+        { label: 'Initial', domain: [['maturity_level', '=', 'initial']] },
+        { label: 'Managed', domain: [['maturity_level', '=', 'managed']] },
+        { label: 'Defined', domain: [['maturity_level', '=', 'defined']] },
+        { label: 'Quantitatively Managed', domain: [['maturity_level', '=', 'quantitatively_managed']] },
+        { label: 'Optimizing', domain: [['maturity_level', '=', 'optimizing']] },
+      ],
+      groupBy: [
+        { label: 'Status', field: 'status' },
+        { label: 'Maturity Level', field: 'maturity_level' },
+        { label: 'Framework', field: 'framework_id' },
+        { label: 'Company', field: 'company_id' },
+        { label: 'Assessor', field: 'assessor_id' },
+      ],
+    },
+  }),
+
+  defineView(ComplianceFinding, {
+    title: 'Compliance Findings',
+    list: {
+      columns: ['finding_no', 'assessment', 'control', 'title', 'severity', 'status', 'company', 'reported_by', 'assigned_to', 'target_resolution_date'],
+      order: 'create_date desc, id desc',
+      decorations: [
+        { color: 'danger', domain: [['severity', '=', 'critical']] },
+        { color: 'warning', domain: [['severity', '=', 'high']] },
+        { color: 'info', domain: [['severity', '=', 'medium']] },
+        { color: 'muted', domain: [['severity', '=', 'low']] },
+        { color: 'success', domain: [['status', '=', 'resolved']] },
+        { color: 'warning', domain: [['status', '=', 'risk_accepted']] },
+      ],
+    },
+    form: {
+      sections: [
+        {
+          title: 'Finding Details',
+          columns: 2,
+          fields: ['finding_no', 'assessment', 'control', 'company', 'title', 'severity', 'status', 'reported_by', 'assigned_to'],
+        },
+        {
+          title: 'Description & Impact',
+          fields: ['description', 'root_cause', 'impact', 'recommendation'],
+        },
+        {
+          title: 'Risk & Resolution',
+          columns: 2,
+          fields: ['risk_rating', 'target_resolution_date', 'actual_resolution_date', 'risk_acceptance_rationale', 'risk_accepted_by', 'risk_accepted_date'],
+        },
+        {
+          title: 'Tags & Notes',
+          fields: ['tags', 'notes'],
+        },
+      ],
+    },
+    search: {
+      fields: ['finding_no', 'title', 'description', 'root_cause', 'impact', 'recommendation'],
+      filters: [
+        { label: 'Critical', domain: [['severity', '=', 'critical']] },
+        { label: 'High', domain: [['severity', '=', 'high']] },
+        { label: 'Medium', domain: [['severity', '=', 'medium']] },
+        { label: 'Low', domain: [['severity', '=', 'low']] },
+        { label: 'Open', domain: [['status', '=', 'open']] },
+        { label: 'In Progress', domain: [['status', '=', 'in_progress']] },
+        { label: 'Resolved', domain: [['status', '=', 'resolved']] },
+        { label: 'Risk Accepted', domain: [['status', '=', 'risk_accepted']] },
+      ],
+      groupBy: [
+        { label: 'Severity', field: 'severity' },
+        { label: 'Status', field: 'status' },
+        { label: 'Assessment', field: 'assessment_id' },
+        { label: 'Company', field: 'company_id' },
+        { label: 'Assigned To', field: 'assigned_to_id' },
+      ],
+    },
+  }),
+
+  defineView(ComplianceRemediation, {
+    title: 'Compliance Remediations',
+    list: {
+      columns: ['remediation_no', 'finding', 'title', 'status', 'priority', 'company', 'owner', 'verifier', 'target_completion_date', 'verification_date'],
+      order: 'create_date desc, id desc',
+      decorations: [
+        { color: 'danger', domain: [['priority', '=', 'critical']] },
+        { color: 'warning', domain: [['priority', '=', 'high']] },
+        { color: 'info', domain: [['priority', '=', 'medium']] },
+        { color: 'muted', domain: [['priority', '=', 'low']] },
+        { color: 'success', domain: [['status', '=', 'verified']] },
+        { color: 'warning', domain: [['status', '=', 'in_progress']] },
+        { color: 'info', domain: [['status', '=', 'pending']] },
+        { color: 'danger', domain: [['status', '=', 'rejected']] },
+      ],
+    },
+    form: {
+      sections: [
+        {
+          title: 'Remediation Details',
+          columns: 2,
+          fields: ['remediation_no', 'finding', 'company', 'title', 'status', 'priority', 'owner', 'verifier'],
+        },
+        {
+          title: 'Plan & Progress',
+          columns: 2,
+          fields: ['description', 'action_plan', 'start_date', 'target_completion_date', 'actual_completion_date'],
+        },
+        {
+          title: 'Verification & Costs',
+          columns: 2,
+          fields: ['verification_date', 'verification_notes', 'evidence_references', 'cost_estimate_minor', 'actual_cost_minor'],
+        },
+        {
+          title: 'Tags & Notes',
+          fields: ['tags', 'notes'],
+        },
+      ],
+    },
+    search: {
+      fields: ['remediation_no', 'title', 'description', 'action_plan', 'verification_notes'],
+      filters: [
+        { label: 'Critical Priority', domain: [['priority', '=', 'critical']] },
+        { label: 'High Priority', domain: [['priority', '=', 'high']] },
+        { label: 'Medium Priority', domain: [['priority', '=', 'medium']] },
+        { label: 'Low Priority', domain: [['priority', '=', 'low']] },
+        { label: 'Pending', domain: [['status', '=', 'pending']] },
+        { label: 'In Progress', domain: [['status', '=', 'in_progress']] },
+        { label: 'Completed', domain: [['status', '=', 'completed']] },
+        { label: 'Verified', domain: [['status', '=', 'verified']] },
+        { label: 'Rejected', domain: [['status', '=', 'rejected']] },
+      ],
+      groupBy: [
+        { label: 'Priority', field: 'priority' },
+        { label: 'Status', field: 'status' },
+        { label: 'Finding', field: 'finding_id' },
+        { label: 'Company', field: 'company_id' },
+        { label: 'Owner', field: 'owner_id' },
+      ],
+    },
+  }),
+
+  defineView(CompliancePolicy, {
+    title: 'Compliance Policies',
+    list: {
+      columns: ['policy_no', 'title', 'framework', 'status', 'version', 'company', 'owner', 'approver', 'effective_date', 'review_date'],
+      order: 'create_date desc, id desc',
+      decorations: [
+        { color: 'success', domain: [['status', '=', 'published']] },
+        { color: 'info', domain: [['status', '=', 'approved']] },
+        { color: 'warning', domain: [['status', '=', 'under_review']] },
+        { color: 'warning', domain: [['status', '=', 'draft']] },
+        { color: 'muted', domain: [['status', '=', 'archived']] },
+      ],
+    },
+    form: {
+      sections: [
+        {
+          title: 'Policy Details',
+          columns: 2,
+          fields: ['policy_no', 'framework', 'company', 'title', 'status', 'version', 'owner', 'approver'],
+        },
+        {
+          title: 'Content & Applicability',
+          fields: ['description', 'content', 'applicability', 'related_policies'],
+        },
+        {
+          title: 'Dates & Approval',
+          columns: 2,
+          fields: ['effective_date', 'review_date', 'approved_date', 'tags'],
+        },
+        {
+          title: 'Notes',
+          fields: ['notes'],
+        },
+      ],
+    },
+    search: {
+      fields: ['policy_no', 'title', 'description', 'content', 'applicability'],
+      filters: [
+        { label: 'Published', domain: [['status', '=', 'published']] },
+        { label: 'Approved', domain: [['status', '=', 'approved']] },
+        { label: 'Under Review', domain: [['status', '=', 'under_review']] },
+        { label: 'Draft', domain: [['status', '=', 'draft']] },
+        { label: 'Archived', domain: [['status', '=', 'archived']] },
+      ],
+      groupBy: [
+        { label: 'Status', field: 'status' },
+        { label: 'Framework', field: 'framework_id' },
+        { label: 'Company', field: 'company_id' },
+        { label: 'Owner', field: 'owner_id' },
+      ],
+    },
+  }),
+
+  defineView(ComplianceEvidence, {
+    title: 'Compliance Evidence',
+    list: {
+      columns: ['evidence_no', 'title', 'evidence_type', 'status', 'company', 'assessment', 'control', 'finding', 'remediation', 'collected_date', 'expiry_date'],
+      order: 'create_date desc, id desc',
+      decorations: [
+        { color: 'success', domain: [['status', '=', 'accepted']] },
+        { color: 'warning', domain: [['status', '=', 'under_review']] },
+        { color: 'info', domain: [['status', '=', 'submitted']] },
+        { color: 'danger', domain: [['status', '=', 'rejected']] },
+        { color: 'info', domain: [['status', '=', 'expired']] },
+      ],
+    },
+    form: {
+      sections: [
+        {
+          title: 'Evidence Details',
+          columns: 2,
+          fields: ['evidence_no', 'assessment', 'control', 'finding', 'remediation', 'company', 'title', 'evidence_type', 'status'],
+        },
+        {
+          title: 'File Information',
+          columns: 2,
+          fields: ['file_path', 'file_hash', 'file_size', 'mime_type', 'collected_date', 'expiry_date'],
+        },
+        {
+          title: 'Collection & Review',
+          columns: 2,
+          fields: ['description', 'collected_by', 'reviewed_by', 'review_date', 'review_notes'],
+        },
+        {
+          title: 'Tags & Notes',
+          fields: ['tags', 'notes'],
+        },
+      ],
+    },
+    search: {
+      fields: ['evidence_no', 'title', 'description', 'file_path', 'file_hash', 'review_notes'],
+      filters: [
+        { label: 'Accepted', domain: [['status', '=', 'accepted']] },
+        { label: 'Under Review', domain: [['status', '=', 'under_review']] },
+        { label: 'Submitted', domain: [['status', '=', 'submitted']] },
+        { label: 'Rejected', domain: [['status', '=', 'rejected']] },
+        { label: 'Expired', domain: [['status', '=', 'expired']] },
+        { label: 'Document', domain: [['evidence_type', '=', 'document']] },
+        { label: 'Screenshot', domain: [['evidence_type', '=', 'screenshot']] },
+        { label: 'Log', domain: [['evidence_type', '=', 'log']] },
+        { label: 'Certificate', domain: [['evidence_type', '=', 'certificate']] },
+      ],
+      groupBy: [
+        { label: 'Evidence Type', field: 'evidence_type' },
+        { label: 'Status', field: 'status' },
+        { label: 'Assessment', field: 'assessment_id' },
+        { label: 'Company', field: 'company_id' },
+        { label: 'Collected By', field: 'collected_by_id' },
+      ],
+    },
+  }),
+];
