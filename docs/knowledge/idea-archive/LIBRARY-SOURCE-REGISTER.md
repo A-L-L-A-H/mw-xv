@@ -3,23 +3,45 @@
 **Snapshot:** 2026-11-23 · **Status:** metadata inventory plus selected source review.  
 This register distinguishes raw files, inspected documents, generated captions and unreviewed media. A Library listing is not a full ChatGPT account export.
 
-## Root inventory snapshot
+## Current complete inventory snapshot — 2026-11-23 follow-up pagination
 
-The Library root listing available in this pass returned **94 objects**:
+A complete paginated Library listing was performed after the earlier 94-object discovery snapshot. The latest result is:
 
-| File class | Count | Qualification |
-|---|---:|---|
-| PNG | 63 | Metadata listed; original prompts, revisions and rights were not established for every image |
-| TXT / MD / DOCX / PDF / XLSX | 28 | 3 TXT, 8 MD, 9 DOCX, 7 PDF, 1 XLSX; some were read, some remain metadata-only |
-| PATCH / ZIP | 3 | 2 PATCH and 1 ZIP; content was not included in the selected research review |
+| Scope | Entries | Files | Folders | Pagination |
+|---|---:|---:|---:|---|
+| Library root only | 279 | 278 | 1 | 3 pages; cursor exhausted |
+| Recursive Library tree | 319 | 300 | 19 | 4 pages; cursor exhausted |
 
-This is a count of returned Library objects, not a statement that 94 objects were read. The Library listing showed no next-page cursor in this snapshot. The root listing also does not guarantee that every folder, past attachment, conversation export or locally stored item is visible.
+### Root-file MIME inventory
+
+| File class | Count |
+|---|---:|
+| PNG | 203 |
+| Markdown | 33 |
+| ZIP | 28 |
+| JSON | 6 |
+| Plain text | 4 |
+| DOCX | 1 |
+| Python | 1 |
+| CSV | 1 |
+| Unknown MIME | 1 |
+| **Files total** | **278** |
+
+The one root folder is `/MoonWitness`. Its recursive subtree adds 18 nested folders and 22 files, for a recursive total of 319 entries. Across the recursive tree, MIME counts are 203 PNG, 43 Markdown, 28 ZIP, 11 TypeScript, 7 JSON, 4 plain-text, 1 DOCX, 1 Python, 1 CSV and 1 unknown-MIME file.
+
+The `/MoonWitness` subtree includes a platform blueprint, foundation index, ADRs, governance / AI specifications, TypeScript contracts, package sources and tests. The inventory is metadata-only; the existence of code or a blueprint does not establish completeness, current deployment, ownership equivalence or approval to import it into MW-XV.
+
+### Earlier snapshot retained as history
+
+An earlier Library listing snapshot recorded 94 objects (63 PNG, 28 document/text/spreadsheet/PDF-type objects and 3 other files). That count remains a historical checkpoint, not the latest total. The later paginated listing is used for current inventory counts. Differences between snapshots are not interpreted as proof of deletion or addition of particular files.
+
+These counts describe returned Library metadata only. They do not mean all file contents, image prompts, revisions, provenance or rights have been read or cleared. The Library is not a complete ChatGPT account export.
 
 ## Selected text and structured sources
 
 | Source record | Library source | Observed format / date | Review state and treatment |
 |---|---|---|---|
-| SRC-LIB-0001 | Current-turn master prompt, `Teks yang ditempel (1)(2).txt` | 775 lines · 23 Nov 2026 | **SOURCE-READ**; preserved verbatim at [raw master prompt](../../raw/2026-11-23-master-prompt-total-idea-archive.md) |
+| SRC-LIB-0001 | Current-turn master prompt, `Teks yang ditempel (1).txt` | 775 lines · 23 Nov 2026 | **SOURCE-READ**; preserved verbatim at [raw master prompt](../../raw/2026-11-23-master-prompt-total-idea-archive.md) |
 | SRC-LIB-0002 | Older Library `Pasted text.txt` | 439 lines · 19 Jun 2026 | **PRIVATE-WITHHELD**; sensitive first-person note; not copied or summarized into public Git |
 | SRC-LIB-0003 | `Omniscience_Method_RGBL_AI_Ready_Research_Paper.md` | 437 lines · v1.0 · 17 Aug 2026 | **SOURCE-READ**; summarized in [Framework Registry](FRAMEWORK-REGISTRY.md); personal experiential detail omitted |
 | SRC-LIB-0004 | Library folder `rocksoul` | Folder metadata | **METADATA-ONLY**; recursive contents were not resolved by the listing call; do not infer it is empty |
@@ -28,11 +50,12 @@ This is a count of returned Library objects, not a statement that 94 objects wer
 | SRC-LIB-0007 | `Din_Allah_4_Kitab_Universal_Iman_Foundation_v1.8_FINAL_Universal_Iman_Charter.docx` | 56 pages · 20 Aug 2026 | **SOURCE-PARTIAL**; first pages and four-book section inspected. Filename v1.8 conflicts with internal cover v1.7 and footer v1.2 |
 | SRC-LIB-0008 | `Quantum_FE_Stone_Research_Paper_ID.docx` and paired PDF | 14 pages · v1.0 · 17 Oct 2026 | **SOURCE-PARTIAL**; executive summary, method, selected technical sections inspected; preliminary scoping review/proposal only |
 | SRC-LIB-0009 | `Quantum_FE_Stone_Research_DIY.xlsx` | 7 worksheets · 149 extracted rows · v1.0 | **SOURCE-READ**; planner, DIY recipes, BOQ, experiment log, candidate materials and selected literature rows reviewed; explicitly reports no physical experiment |
-| SRC-LIB-0010 | Remaining Library image collection | 63 PNG records | **METADATA-ONLY / RIGHTS-REVIEW** unless an individual item is separately inspected; do not treat captions as original prompt history |
+| SRC-LIB-0010 | Remaining Library image collection | 203 PNG records in the latest root inventory | **METADATA-ONLY / RIGHTS-REVIEW** unless an individual item is separately inspected; do not treat captions as original prompt history |
+| SRC-LIB-0011 | Library folder `/MoonWitness` | 18 nested folders · 22 files (Markdown, TypeScript and JSON) | **METADATA-ONLY** inventory; blueprint, contracts, code, governance and tests require source-by-source review before any target adoption |
 
 ## Image sources and caption-only visual leads
 
-The Library contains image objects with titles / captions relating to (among others) ROCKSOUL / GOD PROMISE posters, MoonWitness Bass-Hunter / Shirat bridge art, a Journey of Light world map, CRAYON / RGB-related posters, “One Moon / AEQ-GHAUTS”, Ya’juj & Ma’juj visual concepts, and a 32×32 “Mega Tileset MoonWitness” top-down RPG atlas.
+The latest root inventory contains 203 PNG image files. Image objects with titles / captions relate to (among others) ROCKSOUL / GOD PROMISE posters, MoonWitness Bass-Hunter / Shirat bridge art, a Journey of Light world map, CRAYON / RGB-related posters, “One Moon / AEQ-GHAUTS”, Ya’juj & Ma’juj visual concepts, and a 32×32 “Mega Tileset MoonWitness” top-down RPG atlas.
 
 Some of these titles and descriptions came from generated Library/search captions rather than the original image-generation prompt. They are therefore **CAPTION-ONLY** evidence: useful for navigation and idea recovery, not proof of exact original wording, authorship, canon or reuse rights. No PNG binary, font, music, personal photo or other Library media was copied into MW-XV by this archive update.
 
