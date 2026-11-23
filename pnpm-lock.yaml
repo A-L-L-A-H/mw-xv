@@ -782,6 +782,12 @@ importers:
 
   packages/orm-ai:
     dependencies:
+      '@moonwitness/ai-evaluation':
+        specifier: workspace:*
+        version: link:../ai-evaluation
+      '@moonwitness/ai-runtime':
+        specifier: workspace:*
+        version: link:../ai-runtime
       '@moonwitness/jobs':
         specifier: workspace:*
         version: link:../jobs

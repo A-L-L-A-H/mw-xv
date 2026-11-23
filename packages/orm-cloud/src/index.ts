@@ -42,3 +42,21 @@ export {
   type MoonWitnessMeshDeployResult,
 } from './providers/moonwitness-mesh.js';
 export { exportCloudTerraformHcl } from './terraform.js';
+export {
+  DEFAULT_PAAS_PLANS,
+  evaluateTenantPaasQuota,
+  PaasQuotaExceededError,
+  planSubscriptionEnforcement,
+  type PaasPlanLimits,
+  type PaasPlanTier,
+  type PaasQuotaDenialCode,
+  type PaasSubscriptionStatus,
+  type SubscriptionEnforcementAction,
+  type SubscriptionEnforcementAudit,
+  type SubscriptionEnforcementInput,
+  type SubscriptionEnforcementOperation,
+  type SubscriptionEnforcementPlan,
+  type TenantPaasProjectedUsage,
+  type TenantPaasQuotaDecision,
+  type TenantPaasQuotaInput,
+} from './quota.js';

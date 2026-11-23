@@ -1,5 +1,10 @@
 import { isIP } from 'node:net';
 import { controlPlaneAuthHeaders, resolveControlPlaneToken } from '../auth.js';
+import {
+  evaluateTenantPaasQuota,
+  PaasQuotaExceededError,
+  type TenantPaasQuotaInput,
+} from '../quota.js';
 
 export type MeshPaasAppAction = 'restart' | 'stop' | 'delete' | 'logs';
 
@@ -17,6 +22,7 @@ export interface MoonWitnessMeshDeployParams extends MeshProviderBaseParams {
   readonly port?: number;
   readonly tenant?: string;
   readonly env?: Readonly<Record<string, string>>;
+  readonly quotaCheck?: TenantPaasQuotaInput;
 }
 
 export interface MoonWitnessMeshDeployResult {
@@ -167,6 +173,13 @@ async function readErrorSummary(response: Response, secrets: readonly (string | 
 export async function deployViaMoonWitnessMesh(
   params: MoonWitnessMeshDeployParams
 ): Promise<MoonWitnessMeshDeployResult> {
+  if (params.quotaCheck) {
+    const decision = evaluateTenantPaasQuota(params.quotaCheck);
+    if (!decision.allowed) {
+      throw new PaasQuotaExceededError(decision);
+    }
+  }
+
   const baseUrl = buildBaseUrl(params.endpoint);
   const token = resolveAuthToken(params.token);
   const fetchImpl = params.fetchImpl ?? globalThis.fetch;

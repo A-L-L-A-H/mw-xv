@@ -1,5 +1,6 @@
 import { defineAddon } from '@moonwitness/orm';
 import { data } from './data.js';
+import { evolutionHttpPlugin } from './evolution-http.js';
 import {
   AcceptanceCriterion,
   Agent,
@@ -42,6 +43,7 @@ export const manifest = defineAddon({
   ],
   data,
   views,
+  httpPlugins: [evolutionHttpPlugin],
   menus: [
     { model: Agent.modelName, label: 'Agents', group: 'AI Corporation', sequence: 60 },
     {

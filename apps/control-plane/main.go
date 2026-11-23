@@ -177,6 +177,10 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 	paasMgr := NewPaasManager(db, dockerBin, NewMeshManagerFromEnv(dockerBin), nil, nil)
 	paasMgr.MountRoutes(mux, adminToken)
 
+	// A2A peer-to-peer mesh federation endpoint (authenticated via HMAC-SHA256 envelope + private mesh IP).
+	a2aMgr := NewA2AManagerFromEnv()
+	mux.HandleFunc("/a2a/delegate", a2aMgr.HandleDelegate())
+
 	return mux
 }
 

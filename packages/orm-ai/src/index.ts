@@ -1,4 +1,5 @@
 export { manifest } from './manifest.js';
+export { evolutionHttpPlugin } from './evolution-http.js';
 export * from './models.js';
 export {
   assertAcyclicAgentHierarchy,

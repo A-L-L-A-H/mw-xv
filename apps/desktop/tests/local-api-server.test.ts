@@ -561,6 +561,19 @@ describe('LocalApiServer & Desktop Importer', () => {
     });
     expect(meshPeersBlocked.status).toBe(403);
 
+    const a2aDelegateBlocked = await fetch(`${daemon.apiUrl}/api/desktop/a2a/delegate`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        targetEndpoint: 'http://10.144.0.2:8080/a2a/delegate',
+        targetAgentId: 'mesh-node-2',
+        payload: { task: 'ping' },
+      }),
+    });
+    expect(a2aDelegateBlocked.status).toBe(403);
+    const a2aBlockedBody = (await a2aDelegateBlocked.json()) as { code: string };
+    expect(a2aBlockedBody.code).toBe('WORKSPACE_MODE_RESTRICTED');
+
     // 4. Switch to developer mode -> VPS status & mesh client endpoints unlock
     const devSwitch = await fetch(`${daemon.apiUrl}/api/desktop/mode`, {
       method: 'POST',
@@ -591,5 +604,19 @@ describe('LocalApiServer & Desktop Importer', () => {
       body: JSON.stringify({}),
     });
     expect(meshDisconnectDev.status).toBe(200);
+
+    // A2A delegate is active in developer mode and enforces private mesh IP via A2AMeshClient
+    const a2aPublicRejected = await fetch(`${daemon.apiUrl}/api/desktop/a2a/delegate`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        targetEndpoint: 'https://example.com/a2a/delegate',
+        targetAgentId: 'mesh-node-public',
+        payload: { task: 'ping' },
+      }),
+    });
+    expect(a2aPublicRejected.status).toBe(400);
+    const a2aPublicBody = (await a2aPublicRejected.json()) as { code: string };
+    expect(a2aPublicBody.code).toBe('PUBLIC_ENDPOINT_FORBIDDEN');
   });
 });

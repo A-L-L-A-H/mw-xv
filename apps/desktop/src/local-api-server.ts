@@ -29,7 +29,9 @@ import {
   listMeshPaasApps,
   type MeshPaasAppAction,
 } from '@moonwitness/orm-cloud';
+import { A2AProtocolError } from '@moonwitness/ai-runtime';
 import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moonwitness/types';
+import { A2AMeshClient } from './a2a-client.js';
 import { DESKTOP_ADDONS, LocalSidecarController } from './local-sidecar.js';
 import { importDesktopTasks } from './importer.js';
 import { buildVpsJoinCommand, ensureMeshCredentials } from './mesh-autopilot.js';
@@ -1752,6 +1754,121 @@ export async function startLocalApiServer(
       }
     }
   );
+
+  // POST /api/desktop/a2a/delegate (DX-only; blocked 403 in workspace mode)
+  app.post('/api/desktop/a2a/delegate', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const targetEndpoint =
+      typeof body.targetEndpoint === 'string' ? body.targetEndpoint.trim() : '';
+    const targetAgentId =
+      typeof body.targetAgentId === 'string' ? body.targetAgentId.trim() : '';
+    const sourceAgentId =
+      typeof body.sourceAgentId === 'string' && body.sourceAgentId.trim().length > 0
+        ? body.sourceAgentId.trim()
+        : `desktop-user-${req.auth.userId}`;
+    const payload = isRecord(body.payload) ? body.payload : null;
+    if (!targetEndpoint || !targetAgentId || !payload) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_A2A_DELEGATION_REQUEST',
+        error: 'targetEndpoint, targetAgentId, and object payload are required',
+      });
+    }
+    const delegationDepth =
+      typeof body.delegationDepth === 'number' && Number.isInteger(body.delegationDepth)
+        ? body.delegationDepth
+        : 1;
+    const fencingToken =
+      typeof body.fencingToken === 'number' && Number.isInteger(body.fencingToken)
+        ? body.fencingToken
+        : Date.now();
+    const rawClassification =
+      typeof body.dataClassification === 'string' ? body.dataClassification.trim() : 'local_only';
+    const dataClassification: 'local_only' | 'cloud_eligible' | 'restricted' =
+      rawClassification === 'local_only' ||
+      rawClassification === 'cloud_eligible' ||
+      rawClassification === 'restricted'
+        ? rawClassification
+        : 'local_only';
+    const ttlMs =
+      typeof body.ttlMs === 'number' && Number.isFinite(body.ttlMs) && body.ttlMs > 0
+        ? Math.floor(body.ttlMs)
+        : 60_000;
+    const runId =
+      typeof body.runId === 'string' && body.runId.trim().length > 0
+        ? body.runId.trim()
+        : `a2a-${randomUUID()}`;
+    const agentId =
+      typeof body.agentId === 'number' && Number.isSafeInteger(body.agentId) && body.agentId > 0
+        ? body.agentId
+        : req.auth.userId;
+
+    const signingSecret =
+      process.env.MOONWITNESS_A2A_SECRET?.trim() ||
+      process.env.MOONWITNESS_CONTROL_PLANE_TOKEN?.trim() ||
+      rpcToken;
+    const a2aClient = new A2AMeshClient({
+      signingSecret,
+      riskGate: new DesktopRiskGate(),
+    });
+    const expiresIso = new Date(Date.now() + ttlMs).toISOString();
+
+    try {
+      const result = await a2aClient.delegateToMeshNode({
+        runId,
+        agentId,
+        sourceAgentId,
+        targetAgentId,
+        ...(typeof body.sourceEndpoint === 'string' && body.sourceEndpoint.trim().length > 0
+          ? { sourceEndpoint: body.sourceEndpoint.trim() }
+          : {}),
+        targetEndpoint,
+        companyId: req.auth.companyId,
+        delegationDepth,
+        dataClassification,
+        fencingToken,
+        ttlMs,
+        payload,
+        expectedPolicyVersion: 1,
+        grant: {
+          grantId: `a2a-grant-${randomUUID()}`,
+          companyId: req.auth.companyId,
+          agentId,
+          capability: 'mesh.delegate@v1',
+          policyVersion: 1,
+          allowedRiskTier: 'R2',
+          allowedClassification: dataClassification,
+          maxCallsPerRun: 5,
+          status: 'active',
+          expiresAt: expiresIso,
+        },
+      });
+      return reply.code(result.ok ? 200 : result.statusCode || 502).send({
+        success: result.ok,
+        data: result,
+      });
+    } catch (err: unknown) {
+      if (err instanceof A2AProtocolError) {
+        return reply.code(400).send({
+          success: false,
+          code: err.reasonCode,
+          error: err.message,
+        });
+      }
+      const message = err instanceof Error ? err.message : 'A2A delegation failed';
+      return reply.code(502).send({
+        success: false,
+        code: 'A2A_DELEGATION_FAILED',
+        error: message,
+      });
+    }
+  });
 
   // POST /_desktop/rpc protected by ephemeral x-mw-desktop-token
   app.post('/_desktop/rpc', async (req, reply) => {
