@@ -9,13 +9,7 @@ import {
 export const SUBSCRIPTION_SEED_VERSION = '1.0.0';
 
 export type SubscriptionPlanInterval = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
-export type SubscriptionState =
-  | 'draft'
-  | 'pending'
-  | 'active'
-  | 'paused'
-  | 'cancelled'
-  | 'expired';
+export type SubscriptionState = 'draft' | 'pending' | 'active' | 'paused' | 'cancelled' | 'expired';
 
 export interface SubscriptionPlanSeed {
   readonly name: string;
@@ -287,7 +281,7 @@ export function buildSubscriptionInitialSeed(): SubscriptionInitialSeedBundle {
 
 export async function seedSubscriptionInitialData(
   db: Knex,
-  options: SeedSubscriptionInitialDataOptions = {},
+  options: SeedSubscriptionInitialDataOptions = {}
 ): Promise<SubscriptionSeedExecutionResult> {
   const bundle = buildSubscriptionInitialSeed();
   const relations = await resolveSubscriptionSeedRelations(db, options, bundle);
@@ -311,7 +305,7 @@ export async function seedSubscriptionInitialData(
         planIds.set(plan.code, Number(existing.id));
         continue;
       }
-      const inserted = await trx(SubscriptionPlan.tableName)
+      const inserted = (await trx(SubscriptionPlan.tableName)
         .insert({
           company_id: relations.companyId,
           name: plan.name,
@@ -324,7 +318,7 @@ export async function seedSubscriptionInitialData(
           trial_days: plan.trialDays,
           is_active: plan.isActive ? 1 : 0,
         })
-        .returning('id') as unknown[];
+        .returning('id')) as unknown[];
       planIds.set(plan.code, resolveInsertedId(inserted, `plan ${plan.code}`));
       counts.insertedPlans += 1;
     }
@@ -353,7 +347,7 @@ export async function seedSubscriptionInitialData(
       ) {
         throw new Error(`Unresolved subscription seed relation for ${subscription.name}`);
       }
-      const inserted = await trx(Subscription.tableName)
+      const inserted = (await trx(Subscription.tableName)
         .insert({
           company_id: relations.companyId,
           name: subscription.name,
@@ -368,8 +362,11 @@ export async function seedSubscriptionInitialData(
           assigned_to_id: assignedToId,
           description: subscription.description,
         })
-        .returning('id') as unknown[];
-      subscriptionIds.set(subscription.name, resolveInsertedId(inserted, `subscription ${subscription.name}`));
+        .returning('id')) as unknown[];
+      subscriptionIds.set(
+        subscription.name,
+        resolveInsertedId(inserted, `subscription ${subscription.name}`)
+      );
       counts.insertedSubscriptions += 1;
     }
 
@@ -400,7 +397,9 @@ export async function seedSubscriptionInitialData(
       const subscriptionId = subscriptionIds.get(link.subscriptionName);
       const tagId = relations.tags.get(link.tagName);
       if (!subscriptionId || !tagId) {
-        throw new Error(`Unresolved subscription seed tag link ${link.tagName}/${link.subscriptionName}`);
+        throw new Error(
+          `Unresolved subscription seed tag link ${link.tagName}/${link.subscriptionName}`
+        );
       }
       const existing = await trx(SubscriptionTagLink.tableName)
         .where({
@@ -424,7 +423,7 @@ export async function seedSubscriptionInitialData(
 
 function assertSubscriptionInitialSeed(
   bundle: SubscriptionInitialSeedBundle,
-  context: string,
+  context: string
 ): void {
   const planCodes = new Set(bundle.plans.map((plan) => plan.code));
   if (planCodes.size !== bundle.plans.length) {
@@ -481,24 +480,43 @@ interface SubscriptionSeedRelations {
 async function resolveSubscriptionSeedRelations(
   db: Knex,
   options: SeedSubscriptionInitialDataOptions,
-  bundle: SubscriptionInitialSeedBundle,
+  bundle: SubscriptionInitialSeedBundle
 ): Promise<SubscriptionSeedRelations> {
   const companyId = await resolveCompanyId(db, options);
-  const partners = await resolveIdsByValue(db, 'partners', 'email', uniqueValues(bundle.subscriptions.map((subscription) => subscription.partnerEmail)));
-  const users = await resolveIdsByValue(db, 'users', 'login', uniqueValues(bundle.subscriptions.map((subscription) => subscription.assignedToLogin)));
+  const partners = await resolveIdsByValue(
+    db,
+    'partners',
+    'email',
+    uniqueValues(bundle.subscriptions.map((subscription) => subscription.partnerEmail))
+  );
+  const users = await resolveIdsByValue(
+    db,
+    'users',
+    'login',
+    uniqueValues(bundle.subscriptions.map((subscription) => subscription.assignedToLogin))
+  );
   const saleOrders = await resolveIdsByValue(
     db,
     'sale_orders',
     'name',
-    uniqueValues(bundle.subscriptions.map((subscription) => subscription.saleOrderName).filter((name): name is string => name !== null)),
+    uniqueValues(
+      bundle.subscriptions
+        .map((subscription) => subscription.saleOrderName)
+        .filter((name): name is string => name !== null)
+    )
   );
-  const tags = await resolveIdsByValue(db, 'tags', 'name', uniqueValues(bundle.tagLinks.map((link) => link.tagName)));
+  const tags = await resolveIdsByValue(
+    db,
+    'tags',
+    'name',
+    uniqueValues(bundle.tagLinks.map((link) => link.tagName))
+  );
   return { companyId, partners, users, saleOrders, tags };
 }
 
 async function resolveCompanyId(
   db: Knex,
-  options: SeedSubscriptionInitialDataOptions,
+  options: SeedSubscriptionInitialDataOptions
 ): Promise<number> {
   const rows = await db('companies').select('id', 'name');
   let company: { id: number | string; name: string } | undefined;
@@ -509,9 +527,10 @@ async function resolveCompanyId(
     company = rows.find((row) => String(row.name) === options.companyName);
     if (!company) throw new Error(`Subscription seed company ${options.companyName} not found`);
   } else {
-    company = rows.find((row) => String(row.name) === SEED_COMPANY)
-      ?? rows.find((row) => Number(row.id) === 1)
-      ?? rows[0];
+    company =
+      rows.find((row) => String(row.name) === SEED_COMPANY) ??
+      rows.find((row) => Number(row.id) === 1) ??
+      rows[0];
   }
   if (!company) throw new Error('Subscription seed company not found');
   return Number(company.id);
@@ -521,11 +540,13 @@ async function resolveIdsByValue(
   db: Knex,
   table: string,
   column: string,
-  values: readonly string[],
+  values: readonly string[]
 ): Promise<Map<string, number>> {
   const resolved = new Map<string, number>();
   for (const value of values) {
-    const row = await db(table).where({ [column]: value }).first('id');
+    const row = await db(table)
+      .where({ [column]: value })
+      .first('id');
     if (!row) throw new Error(`Subscription seed ${table} ${value} not found`);
     resolved.set(value, Number(row.id));
   }

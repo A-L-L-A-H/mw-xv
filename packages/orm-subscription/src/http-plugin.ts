@@ -42,7 +42,9 @@ export const subscriptionMetricsHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { records } = req.body;
@@ -78,16 +80,12 @@ export const subscriptionMetricsHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
-    const {
-      currentPlanPeriodCents,
-      newPlanPeriodCents,
-      cycleStart,
-      cycleEnd,
-      changeAt,
-    } = req.body;
+    const { currentPlanPeriodCents, newPlanPeriodCents, cycleStart, cycleEnd, changeAt } = req.body;
 
     if (
       typeof currentPlanPeriodCents !== 'number' ||
@@ -98,7 +96,8 @@ export const subscriptionMetricsHttpPlugin: AddonHttpPlugin = async (app) => {
     ) {
       return reply.code(400).send({
         success: false,
-        error: 'currentPlanPeriodCents, newPlanPeriodCents, cycleStart, cycleEnd, and changeAt are required',
+        error:
+          'currentPlanPeriodCents, newPlanPeriodCents, cycleStart, cycleEnd, and changeAt are required',
       });
     }
 

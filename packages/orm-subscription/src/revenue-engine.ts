@@ -153,7 +153,7 @@ export function advanceDunningState(
   current: DunningState,
   event: DunningEvent,
   now: string | number | Date,
-  policy: DunningPolicy = DEFAULT_DUNNING_POLICY,
+  policy: DunningPolicy = DEFAULT_DUNNING_POLICY
 ): DunningTransitionResult {
   const nowMs = toEpochMs(now);
 
@@ -360,7 +360,7 @@ export function normalizeToMrrCents(record: SubscriptionRevenueRecord): number {
  * Calculates aggregate integer-cent MRR and ARR across a set of subscriptions.
  */
 export function calculateMrrAndArr(
-  records: readonly SubscriptionRevenueRecord[],
+  records: readonly SubscriptionRevenueRecord[]
 ): RevenueMetricsResult {
   let activeSubscriptions = 0;
   let mrrCents = 0;
@@ -385,7 +385,7 @@ export function calculateMrrAndArr(
  */
 export function calculateCohortRetention(
   startSnapshot: readonly SubscriptionRevenueRecord[],
-  endSnapshot: readonly SubscriptionRevenueRecord[],
+  endSnapshot: readonly SubscriptionRevenueRecord[]
 ): CohortRetentionResult {
   const startByCustomer = new Map<string, number>();
   for (const rec of startSnapshot) {

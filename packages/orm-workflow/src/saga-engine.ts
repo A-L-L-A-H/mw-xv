@@ -14,7 +14,7 @@ export class SagaValidationError extends Error {
   constructor(
     code: SagaValidationErrorCode,
     message: string,
-    details: Record<string, unknown> = {},
+    details: Record<string, unknown> = {}
   ) {
     super(message);
     this.name = 'SagaValidationError';
@@ -122,7 +122,7 @@ export interface SagaExecutionResult {
 export function deriveStepIdempotencyKey(
   workflowRunId: string,
   stepId: string,
-  idempotencyScope?: string,
+  idempotencyScope?: string
 ): string {
   const normalizedRunId = workflowRunId.trim();
   const normalizedStepId = stepId.trim();
@@ -134,7 +134,7 @@ export function deriveStepIdempotencyKey(
 }
 
 export function validateSagaDag<TContext>(
-  steps: readonly SagaStepDefinition<TContext, unknown>[],
+  steps: readonly SagaStepDefinition<TContext, unknown>[]
 ): ValidatedSagaDag<TContext> {
   const stepsById = new Map<string, SagaStepDefinition<TContext, unknown>>();
 
@@ -166,14 +166,14 @@ export function validateSagaDag<TContext>(
         throw new SagaValidationError(
           'SELF_DEPENDENCY',
           `Saga step "${id}" cannot depend on itself`,
-          { stepId: id },
+          { stepId: id }
         );
       }
       if (!stepsById.has(dep)) {
         throw new SagaValidationError(
           'MISSING_DEPENDENCY',
           `Saga step "${id}" depends on unknown step "${dep}"`,
-          { stepId: id, missingDependencyId: dep },
+          { stepId: id, missingDependencyId: dep }
         );
       }
       inDegree.set(id, (inDegree.get(id) ?? 0) + 1);
@@ -211,7 +211,7 @@ export function validateSagaDag<TContext>(
     throw new SagaValidationError(
       'CYCLE_DETECTED',
       `Saga DAG contains a cycle involving steps: ${cycleMembers.join(', ')}`,
-      { cycleMembers },
+      { cycleMembers }
     );
   }
 
@@ -220,7 +220,7 @@ export function validateSagaDag<TContext>(
 
 export function planSagaCompensation<TContext>(
   completedSteps: readonly { stepId: string; idempotencyKey: string }[],
-  stepsById: ReadonlyMap<string, SagaStepDefinition<TContext, unknown>>,
+  stepsById: ReadonlyMap<string, SagaStepDefinition<TContext, unknown>>
 ): readonly SagaCompensationPlanEntry[] {
   const plan: SagaCompensationPlanEntry[] = [];
   for (let idx = completedSteps.length - 1; idx >= 0; idx -= 1) {
@@ -237,7 +237,7 @@ export function planSagaCompensation<TContext>(
 
 export async function executeSaga<TContext>(
   steps: readonly SagaStepDefinition<TContext, unknown>[],
-  options: SagaExecutionOptions<TContext>,
+  options: SagaExecutionOptions<TContext>
 ): Promise<SagaExecutionResult> {
   const { executionOrder, stepsById } = validateSagaDag(steps);
   const ledger = options.replayLedger ?? new InMemorySagaReplayLedger();
@@ -250,7 +250,7 @@ export async function executeSaga<TContext>(
     const idempotencyKey = deriveStepIdempotencyKey(
       options.workflowRunId,
       stepId,
-      step.idempotencyScope,
+      step.idempotencyScope
     );
 
     const existing = ledger.get(idempotencyKey);
@@ -404,7 +404,7 @@ export interface QuorumEvaluationResult {
 
 export function evaluateApprovalQuorum(
   policy: ApprovalQuorumPolicy,
-  votes: readonly ApprovalVote[],
+  votes: readonly ApprovalVote[]
 ): QuorumEvaluationResult {
   const violations: QuorumViolation[] = [];
   const eligibleSet = new Set(policy.eligibleApproverIds);
@@ -476,7 +476,7 @@ export function evaluateApprovalQuorum(
   }
 
   const missingRequiredRoles = (policy.requiredRoles ?? []).filter(
-    (role) => !approvedRoles.has(role),
+    (role) => !approvedRoles.has(role)
   );
   const remainingApprovalsNeeded = Math.max(0, policy.requiredApprovals - validApprovalCount);
 
@@ -578,7 +578,7 @@ function toEpochMs(value: Date | string | number): number {
 export function evaluateSlaEscalation(
   policy: SlaEscalationPolicy,
   input: SlaEvaluationInput,
-  clock: DeterministicClock = () => new Date(),
+  clock: DeterministicClock = () => new Date()
 ): SlaEvaluationResult {
   if (
     policy.warningAtMs < 0 ||
@@ -586,7 +586,7 @@ export function evaluateSlaEscalation(
     policy.breachAtMs < policy.escalateAtMs
   ) {
     throw new Error(
-      'Invalid SLA policy: thresholds must satisfy 0 <= warningAtMs <= escalateAtMs <= breachAtMs',
+      'Invalid SLA policy: thresholds must satisfy 0 <= warningAtMs <= escalateAtMs <= breachAtMs'
     );
   }
 
@@ -628,7 +628,8 @@ export function evaluateSlaEscalation(
     startedAtIso: new Date(startedAtMs).toISOString(),
     evaluatedAtIso: new Date(evaluatedAtMs).toISOString(),
     deadlineAtIso: new Date(deadlineAtMs).toISOString(),
-    nextTransitionAtIso: nextTransitionAtMs === null ? null : new Date(nextTransitionAtMs).toISOString(),
+    nextTransitionAtIso:
+      nextTransitionAtMs === null ? null : new Date(nextTransitionAtMs).toISOString(),
     notifyRoles,
   };
 }
