@@ -39,6 +39,9 @@ It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM,
 | 15. Execution roadmap | [EXECUTION-ROADMAP.md](EXECUTION-ROADMAP.md) | Sequencing and LOCAL AI / CLOUD AI / HUMAN REVIEW responsibilities |
 | 16. Unresolved register | [UNRESOLVED-DECISIONS.md](UNRESOLVED-DECISIONS.md) | Conflicts, evidence, options and owner decisions still required |
 | 17. GitHub issue index | [ISSUE-INDEX.md](ISSUE-INDEX.md) | Existing issue and PR inventory; no duplicate issue creation |
+| 18. Framework registry | [FRAMEWORK-REGISTRY.md](FRAMEWORK-REGISTRY.md) | RGBL, HISTA, Mizan and other source-qualified frameworks |
+| 19. Library source register | [LIBRARY-SOURCE-REGISTER.md](LIBRARY-SOURCE-REGISTER.md) | Source availability, prompt/image limitations and privacy boundaries |
+| 20. Audit status report | [AUDIT-STATUS-REPORT.md](AUDIT-STATUS-REPORT.md) | Consolidated findings, CI and remaining gates |
 
 ## Source coverage and honest statistics
 
