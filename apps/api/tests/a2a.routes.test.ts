@@ -233,12 +233,16 @@ describe('A2A API durable mesh inbox', () => {
     const accepted = await postEnvelope(first);
     expect(accepted.statusCode).toBe(202);
 
-    const replay = await postEnvelope(first);
-    expect(replay.statusCode).toBe(409);
-    expect(replay.json().reasonCode).toBe('REPLAY_NONCE_DETECTED');
+    // Advance fencing while reusing the consumed nonce, so this assertion exercises
+    // the persistent nonce ledger rather than the earlier stale-fencing guard.
+    const nonceReplay = await postEnvelope(
+      signedEnvelope('message-replay-nonce-reuse', 2, { nonce: 'replay_nonce_0001' })
+    );
+    expect(nonceReplay.statusCode).toBe(409);
+    expect(nonceReplay.json().reasonCode).toBe('REPLAY_NONCE_DETECTED');
 
     const duplicateId = await postEnvelope(
-      signedEnvelope('message-replay', 2, { nonce: 'replay_nonce_0002' })
+      signedEnvelope('message-replay', 3, { nonce: 'replay_nonce_0003' })
     );
     expect(duplicateId.statusCode).toBe(409);
     expect(duplicateId.json().reasonCode).toBe('DUPLICATE_MESSAGE_ID');
