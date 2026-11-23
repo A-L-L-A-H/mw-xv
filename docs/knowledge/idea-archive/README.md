@@ -45,6 +45,8 @@ It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM,
 
 ## Source coverage and honest statistics
 
+The issue/PR and TaskOS figures below were rechecked against the live `dev` snapshot after the first archive batch; see [Issue Index](ISSUE-INDEX.md) for the issue-level inventory.
+
 ### Sources actually inspected
 
 1. The owner-provided `Pasted text.txt`: **775 lines**, read in full.
@@ -64,8 +66,8 @@ It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM,
 | README + root-tree reviewed | 30 repositories | Selected, relevance-led sample; not all 280 |
 | Idea catalog records | See [catalog](IDEA-CATALOG.md) | Records can point to a shared idea family; not a count of every thought in history |
 | Stories / characters / canon | See [story bible](STORY-CANON-CHARACTER-BIBLE.md) | Source-backed counts are separated from memory-only leads |
-| Current TaskOS | 636 records on `dev` | 468 done, 49 doing, 96 todo, 23 blocked at blob `0cf7a159` |
-| GitHub Issues | 151 | 56 open, 95 closed in the current paginated issue audit; PR objects excluded |
+| Current TaskOS | 637 records on `dev` | 468 done, 49 doing, 96 todo, 24 blocked at blob `4d677b63` |
+| GitHub Issues | 161 | 66 open, 95 closed in the current paginated issue audit; PR objects excluded |
 | Pull Requests | 26 | 2 open, 24 closed in the same endpoint results |
 
 **Do not sum repeated references as unique ideas.** A story title mentioned in a prompt, README and issue remains one idea with multiple sources. The catalog intentionally uses stable IDs to reduce duplicate counting.
