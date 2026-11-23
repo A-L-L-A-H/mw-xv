@@ -6,11 +6,11 @@
 - Target branch: `dev`
 - Pack baseline: `0b89060602c659efdd5e9e1a12c166fee237418e`
 - Task count: **109 atomic tasks**
-- Canonical lifecycle registry: `docs/tasks/tasks.json` (project `visual-universe`; the tracked file contains 1,358 legacy records. Migration to the reviewed 627-record source-backed projection is pending, so the legacy snapshot is not the approved execution queue)
+- Canonical lifecycle registry: `docs/tasks/tasks.json` (project `visual-universe`; owner-approved migration applied on 2026-11-23; 627 canonical records across two projects. The previous 1,358-record registry is preserved at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`)
 - Pack configuration: `pack-manifest.json`
 - Immutable migration source snapshot: `legacy/task-source-2026-11-23.json`
-- Generated local machine projection: `task.json` (not yet regenerated from an approved, migrated TaskOS source)
-- Generated human-readable projection: `TASKS.md` (migration-status placeholder; not a live task queue)
+- Generated local machine projection: `task.json` (derived from canonical TaskOS using `tools/sync-task-state.mjs`)
+- Generated human-readable projection: `TASKS.md` (derived view; not an independent lifecycle authority)
 
 ## Start here
 
@@ -18,7 +18,7 @@
 2. Read `PROJECT_CHARTER.md`, `AUDIT_BASELINE.md`, `ARCHITECTURE.md`, `VISUAL_BIBLE.md`, and `ASSET_PACK_SPEC.md`.
 3. Read `ADDON_ASSET_MATRIX.md`, `ANIMATION_RUNTIME.md`, `CREATIVE_LAB.md`, and `QA_ACCEPTANCE.md`.
 4. Revalidate current `dev` HEAD and workspace. The repository may have moved since pack creation.
-5. After TaskOS recovery, load the `visual-universe` project records from `docs/tasks/tasks.json`; execute tasks in dependency order. Do not edit `task.json` or `TASKS.md` as independent status sources. Regenerate these local views with `node tools/sync-task-state.mjs`.
+5. Load the `visual-universe` project records from canonical `docs/tasks/tasks.json`; execute tasks in dependency order. Do not edit `task.json`, `TASKS.md` or individual task cards as independent status sources. Verify projections with `node tools/sync-task-state.mjs --check`; regenerate only from the canonical registry with `node tools/sync-task-state.mjs`.
 6. Work autonomously on non-blocked tasks; do not ask broad questions. Only request human approval at the explicit approval gates.
 
 ## What this is

@@ -1,26 +1,32 @@
 # MoonWitness TaskOS — Centralized Work Registry (`docs/tasks/`)
 
-> **Current status (2026-11-23): migration is not yet applied.** The exact `dev` tree contains a valid, non-empty legacy registry (1,358 records, approximately 2.52 MB). It is not the new source-backed 627-record projection. Do not overwrite it automatically.
+> **Canonical status (2026-11-23): migrated and owner-approved.** `docs/tasks/tasks.json` is now the canonical `moonwitness-tasks/v2` registry with **627 records**. The former 1,358-record registry is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json` for rollback and historical audit.
 
-## Current registry and migration boundary
+## Current registry
 
-The tracked `docs/tasks/tasks.json` currently contains 1,358 historical records. A Git blob-level audit found unique task codes and source references, but 861 records still cite root `todo.md`; that file is now only a pointer to this registry. Those records need explicit provenance reconciliation rather than being treated as a current active source.
+- Canonical registry: 627 unique task codes; schema version `2.0.0`.
+- Lifecycle distribution: 468 `done`, 49 `doing`, 89 `todo`, 21 `blocked`.
+- Source groups: roadmap 239, WhatsApp 112, Desktop 128, archived open MW 7, AI Corporation PR lifecycle 14, Evolution 4, audit 14, Visual Universe 109.
+- Canonical Git blob: `8216b6503d154d635112be96c41939a9efd38390`.
+- Exact previous registry backup blob: `d56499936761dcc062704d06588ee2679fd1aae2`, retained at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`.
+- Candidate JSON SHA-256 before commit: `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`.
 
-The reviewed migration inventory defines a new projection of 627 records from eight sources. It replaces the stale root-`todo.md` ingestion with seven still-open archived MW records, and adds the reviewed promotion-governance and Visual Universe task groups. The candidate is not canonical until it has been exported, reviewed against the existing registry, and deliberately applied with the previous registry preserved in Git history or an explicit archive.
+The owner approved the one-time migration in chat on 2026-11-23. The full 1,358-to-627 task-code reconciliation is recorded in `RECOVERY-INVENTORY.md`. The 854 completed legacy rows removed from the active set remain in the preserved registry snapshot and archived checklist; the seven still-open legacy rows remain present as `blocked` pending re-triage. No legacy record was silently discarded.
 
 ## Authority rules
 
-- **Task identity and lifecycle:** `docs/tasks/tasks.json` remains the current on-disk registry, but the 1,358-record legacy state is not approved as the post-migration source of truth.
-- **Roadmap completion:** `ROADMAP.md` checkboxes plus linked evidence remain the completion proof for M/K work.
+- **Task identity and lifecycle:** `docs/tasks/tasks.json` is the sole canonical TaskOS registry.
+- **Roadmap completion:** `ROADMAP.md` checkboxes and linked evidence remain the completion proof for M/K work; TaskOS statuses must pass roadmap parity.
 - **Human triage:** GitHub Issues own assignees, discussion and human approval gates.
 - **Delivery/release:** exact source SHA, required CI, promotion PR/review and release metadata; never infer release readiness from checkboxes.
-- **Projections:** `docs/roadmap/tasks.json`, root `todo.md`, and Visual Universe `task.json`, `TASKS.md` and cards are views, not competing lifecycle authorities.
+- **Projections:** `docs/roadmap/tasks.json`, root `todo.md`, and Visual Universe `task.json`, `TASKS.md` and individual task cards are views, not competing lifecycle authorities.
 
 ## Core files
 
 - `docs/tasks/tasks.schema.json`: JSON Schema Draft-07 for `moonwitness-tasks/v2`.
-- `docs/tasks/tasks.json`: existing legacy registry; do not overwrite until the 627-record migration is reviewed.
-- `docs/tasks/RECOVERY-INVENTORY.md`: source inventory, source ownership, migration decisions and validation gates.
+- `docs/tasks/tasks.json`: canonical 627-record lifecycle registry.
+- `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`: immutable pre-migration 1,358-record snapshot; retain it for rollback and audit.
+- `docs/tasks/RECOVERY-INVENTORY.md`: source inventory, complete identity reconciliation, migration evidence and validation gates.
 
 ## Safe commands
 
@@ -28,29 +34,27 @@ The reviewed migration inventory defines a new projection of 627 records from ei
 # Run focused registry, provenance, import and projection tests
 pnpm test:taskos
 
-# Preview the 627-record source projection without writing anything
-pnpm tasks:sweep
-
-# Export a validated candidate outside the repository (recommended)
-node scripts/tasks/sweep-and-consolidate.mjs \
-  --candidate /tmp/taskos-candidate.json
-
-# Validate the currently committed registry
+# Validate the canonical registry and roadmap parity
 pnpm tasks:validate
+pnpm automation:check:roadmap
 
-# Compare the committed registry to the deterministic projection only
-# after the candidate has intentionally become canonical
+# Confirm the registry exactly matches its deterministic source projection
 pnpm tasks:sweep -- --check
 
-# Sync roadmap projections only after canonical TaskOS validation
-pnpm tasks:sync
-pnpm automation:check:roadmap
+# Confirm the Visual Universe views are generated from canonical TaskOS
+node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs --check
+
+# Regenerate Visual Universe local views only after canonical validation
+node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs
 ```
 
-The `--candidate` mode validates the generated projection and writes it only outside the repository worktree. It never edits `docs/tasks/tasks.json`. The `--write` mode remains a one-time operation for an empty registry and correctly refuses to replace a non-empty file. CI exports the candidate to `RUNNER_TEMP`, verifies its record count and status distribution, and uploads it as a workflow artifact; CI does not apply the migration.
+The `--candidate` mode remains non-mutating and writes only outside the repository. The one-time `--write` importer is for an empty registry and refuses to overwrite a populated canonical file. Do not use it to replace the migrated registry. Canonical lifecycle changes must use the reviewed TaskOS workflow and must preserve source provenance and dependency integrity.
 
-## Migration exit criteria
+## Migration record
 
-The expected candidate is 627 unique task records with lifecycle counts of 468 `done`, 49 `doing`, 89 `todo`, and 21 `blocked`. Before applying it, compare the full candidate with the existing registry, preserve the previous 1,358-record snapshot, verify provenance for the 861 legacy `todo.md` records against the archived source, then run schema, graph, dependency, roadmap-parity and projection validation on the exact candidate SHA.
-
-Do not describe TaskOS as migrated until the candidate is reviewed, the intentional historical-record reduction is documented, the canonical file is replaced deliberately, and exact-SHA validation passes.
+- Owner approval: 2026-11-23.
+- Migration parent: `dev` SHA `0e90a59688386a6635c46f209b09d05296393148`.
+- Previous registry blob: `d56499936761dcc062704d06588ee2679fd1aae2` (1,358 records).
+- New canonical registry blob: `8216b6503d154d635112be96c41939a9efd38390` (627 records).
+- Candidate JSON SHA-256: `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`.
+- CI must continue to run TaskOS safety tests, canonical validation, deterministic source comparison, roadmap parity and Visual Universe projection validation on every candidate SHA.

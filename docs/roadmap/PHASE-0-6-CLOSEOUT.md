@@ -3,7 +3,7 @@
 **Audit date:** 2026-11-23  
 **Repository:** `A-L-L-A-H/mw-xv`  
 **Target branch:** `dev`  
-**Audited development SHA before this closeout update:** `def3df35b5d54d7359600e0471af5a6dd4cb7f29`  
+**Migration source SHA:** `0e90a59688386a6635c46f209b09d05296393148`  
 **Stable baseline:** `main = 2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`
 
 This report separates work completed remotely from gates that require a real local runtime, a data-owner decision, or a CODEOWNER/release approval. It is not a declaration that the product is released.
@@ -12,14 +12,14 @@ This report separates work completed remotely from gates that require a real loc
 
 The stabilization and TaskOS recovery implementation is committed to `dev`; `main` remains unchanged. Phase 0 is verified on exact development SHA `def3df35b5d54d7359600e0471af5a6dd4cb7f29`: both push CI [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and pull-request CI [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241) completed all five jobs successfully. Active `protect-dev` and `protect-main` rulesets are present; the main ruleset requires a PR and the `quality-and-build`, `unit-tests`, and `knowledge-gate` checks.
 
-Phase 1's non-mutating 627-record candidate has been generated, inspected and reconciled against the existing 1,358-record registry. Its canonical installation is deliberately still gated on explicit data-owner acceptance and the preserved-backup/rollback decision. The full native Desktop FLOW walkthrough, PR #37 review and M12.14 release approval remain separate owner-controlled gates.
+Phase 1's 627-record TaskOS candidate was approved by the owner and installed as canonical on `dev`. The former 1,358-record registry is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`. The migration commit adds exact-SHA CI validation for canonical TaskOS, deterministic projection and Visual Universe projections. The full native Desktop FLOW walkthrough, PR #37 review and M12.14 release approval remain separate owner-controlled gates.
 
 ## Phase register
 
 | Phase | Scope | Verified outcome | Remaining acceptance |
 |---|---|---|---|
 | **0 — Stabilization** | Branch, CI, toolchain and safety baseline | `main` untouched; only `main` and `dev` are used; active branch rulesets prohibit deletion/non-fast-forward updates; main requires PR plus `quality-and-build`, `unit-tests`, and `knowledge-gate`; Docker/Corepack pnpm pin and drift regression test are in place; exact-SHA push and PR CI both pass all five jobs | **Remote Phase 0 complete.** Preserve the existing branch and release gates; no production deployment is implied |
-| **1 — TaskOS recovery** | Rebuild from source provenance without data loss | Exact-`dev` candidate artifact is validated: 627 unique IDs; 468 done, 49 doing, 89 todo, 21 blocked; all 8 source groups accounted for; zero missing project/source/dependency/block references, non-reciprocal edges or cycles; full legacy-to-candidate ID reconciliation is recorded | Candidate preparation and validation complete. Canonical replacement remains blocked until the owner explicitly accepts the 627-record projection and backup/rollback plan; then run post-migration validators and projection checks |
+| **1 — TaskOS recovery** | Rebuild from source provenance without data loss | Owner-approved 627-record candidate is installed as canonical; previous 1,358-record blob is preserved byte-for-byte at the archive path; full identity reconciliation and candidate SHA are recorded | Exact migration-SHA canonical validators, deterministic projection and Visual Universe projection check must pass in CI before Phase 1 is fully closed |
 | **2 — Governance and documentation** | Roadmap, issue lifecycle, runtime support and canonical docs | Stabilization/active checkpoints refreshed; source-of-truth and review boundaries documented; runtime configuration cross-checked against upstream documentation | Formal maintainer refresh/sign-off of overdue runtime ledger entries; reconcile issue projections from exact evidence; do not mass-close issues |
 | **3 — ROCKSOUL FLOW integration** | Repo Radar → Overlap → Plan → Packet → Dispatch → Worktree → Proof → Review → Sync | M13.09–M13.12 code/evidence exists; Board/Desktop boundary and server-authority contracts are documented; previous exact-SHA PostgreSQL integration lane passed | Local native Desktop end-to-end walkthrough with real isolated worktree; verify scope rejection, lease/fencing, redaction, human review and server-only acceptance |
 | **4 — Roadmap completion** | Evidence-led task completion | M13.09–M13.12 are already recorded complete in the M13 roadmap and have evidence files; no duplicate implementation was started | Keep other M/K tasks at their actual source state; update status only with test/evidence proof; close M13 issue projections only after the full journey is accepted |
@@ -28,7 +28,7 @@ Phase 1's non-mutating 627-record candidate has been generated, inspected and re
 
 ## TaskOS data contract
 
-The current tracked registry is **1,358 legacy records**, not an empty file. Its 861 historical references to root `todo.md` are stale as current provenance because root `todo.md` is now a pointer.
+The current canonical registry is **627 records**. The prior 1,358-record registry (Git blob `d56499936761dcc062704d06588ee2679fd1aae2`) is preserved at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`. Its 861 historical references to root `todo.md` were reconciled: 854 completed IDs remain as historical evidence and seven open IDs are retained as blocked.
 
 The source-backed migration design contains **627 records**:
 
@@ -48,11 +48,7 @@ Expected candidate state distribution: **468 done, 49 doing, 89 todo, 21 blocked
 
 A complete identity check has already reconciled the 861 legacy rows whose `sourceRef.file` was the root `todo.md`: all 854 legacy `done` IDs match the 854 checked entries in the archived checklist, and all 7 legacy `todo` IDs match the 7 unchecked archive entries, with zero missing/extra IDs. The seven retained open IDs are `MW-CFG-003.3`, `MW-CICD-002`, `MW-CICD-002.3`, `MW-CICD-004`, `MW-CICD-004.2`, `MW-CICD-004.3`, and `MW-DOC-004.3`; they map to `blocked` pending re-triage. Legacy blob SHA: `d56499936761dcc062704d06588ee2679fd1aae2`; archive blob SHA: `f29ec364530195484f668287c5616bf91984554f`. A regression test for this exact mapping is committed and passed in the exact-SHA unit-test job on both push and pull-request CI runs [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241).
 
-The 731-record difference is a reconciliation problem, not permission to delete. Do not:
-- replace `docs/tasks/tasks.json` with the 627-record candidate without a complete diff review and preserved legacy copy;
-- run the one-time importer with `--write`;
-- run `pnpm tasks:sync` or regenerate Visual Universe task projections before the canonical migration passes validation and receives owner approval;
-- promote archived checklist rows to ready work without re-triage.
+The 731-record difference is fully reconciled, not an unexplained deletion. The canonical replacement was approved by the owner; do not rerun the one-time importer with `--write` or modify the archived legacy blob. The seven archived open rows remain blocked pending re-triage.
 
 ## Exact development-head TaskOS candidate verification — 2026-11-23
 
@@ -67,7 +63,7 @@ Exact development-head candidate:
 - Source groups: roadmap 239; WhatsApp 112; Desktop 128; archived open MW 7; AI Corporation PR lifecycle 14; Evolution 4; audit 14; Visual Universe 109.
 - Structural inspection: 0 missing project references, source references, dependency IDs or block IDs; 0 non-reciprocal edges; 0 dependency cycles.
 
-The exact-`dev` candidate's task records, project metadata and schema match the previously reviewed 627-record candidate; only the generated timestamp differs because the CI job previously used wall-clock time. The workflow is being amended in this closeout to derive `SOURCE_DATE_EPOCH` from the source commit timestamp, making the artifact reproducible for a fixed commit.
+The exact-`dev` candidate is now generated with `SOURCE_DATE_EPOCH` derived from the source commit timestamp. Reruns for a fixed source SHA therefore reproduce the same `generatedAt` value; the migration artifact selected for canonical installation carries that deterministic timestamp.
 
 The full legacy-to-candidate identity reconciliation remains:
 - Legacy registry: 1,358 unique codes.
@@ -77,7 +73,7 @@ The full legacy-to-candidate identity reconciliation remains:
 - The seven open legacy IDs remain in the candidate as `blocked`, pending re-triage.
 - Arithmetic: `1,358 - 854 + 123 = 627`.
 
-**Phase 1 candidate and reconciliation work is complete; canonical migration is not yet authorized.** Do not replace `docs/tasks/tasks.json`, run the one-time importer with `--write`, run TaskOS sync, or regenerate Visual Universe projections until the data owner accepts the precise candidate and backup/rollback plan. After approval, apply once and rerun `pnpm tasks:validate`, `pnpm automation:check:roadmap`, and the Visual Universe projection check against the new canonical registry.
+**Owner-approved migration is applied.** New canonical registry blob: `8216b6503d154d635112be96c41939a9efd38390`; candidate JSON SHA-256: `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`. Previous registry blob `d56499936761dcc062704d06588ee2679fd1aae2` is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`. Do not rerun the one-time importer with `--write`. Migration-SHA CI now verifies `pnpm tasks:validate`, `pnpm automation:check:roadmap`, `pnpm tasks:sweep -- --check`, and the Visual Universe projection check.
 
 ## Runtime and toolchain notes
 
@@ -92,68 +88,23 @@ Sources:
 
 The machine-readable `docs/engineering/runtime-support-review.json` still shows overdue pnpm/PostgreSQL/Playwright/runner review dates. This report does not silently rewrite the accountable maintainer's review dates or sign on their behalf. The maintainer must confirm the read-through and update the ledger.
 
-## Local Codex handoff
+## Local Codex handoff — post-migration
 
-Run this in the actual owner checkout. Do not discard or overwrite existing local changes.
+The TaskOS canonical migration has been applied to `dev`. In the owner checkout, do not reset, clean or overwrite unowned changes. First fetch the current `origin/dev` and inspect the exact SHA before local acceptance.
 
-### 1. Establish the checkout
-
-PowerShell:
-
-```powershell
-git status --short --branch
-git fetch origin
-git branch --show-current
-git rev-parse HEAD
-git rev-parse origin/dev
-node --version
-pnpm --version
-```
-
-Expected branch is `dev`. The checkout should match the latest `origin/dev` SHA before testing. Use Node.js 24.x and pnpm 11.17.0. If the worktree is dirty, stop and inspect it; do not reset, clean, or stash blindly.
-
-### 2. Export and inspect a non-mutating TaskOS candidate
-
-```powershell
-$sha = (git rev-parse HEAD).Trim()
-$candidate = Join-Path $env:TEMP "taskos-candidate-$sha.json"
-pnpm tasks:sweep --candidate $candidate
-node -e "const r=JSON.parse(require('node:fs').readFileSync(process.argv[1],'utf8')); const s=Object.fromEntries(['done','doing','todo','blocked'].map(k=>[k,r.tasks.filter(t=>t.status===k).length])); console.log({count:r.tasks.length,status:s}); if(r.tasks.length!==627||JSON.stringify(s)!==JSON.stringify({done:468,doing:49,todo:89,blocked:21})) process.exit(1)" $candidate
-```
-
-Keep the candidate outside the repository. Inspect and report its SHA-256, source counts, state counts, duplicate IDs, unresolved dependencies, cycles, provenance failures and the full diff against the legacy snapshot. Do not install it as canonical during this verification run.
-
-### 3. Run focused validation
+Run these checks on the migration commit:
 
 ```powershell
 pnpm test:taskos
-pnpm automation:check:roadmap
 pnpm tasks:validate
-pnpm --filter @moonwitness/desktop test
-pnpm --filter @moonwitness/board typecheck
-pnpm dx:test
+pnpm automation:check:roadmap
+pnpm tasks:sweep -- --check
+node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs --check
 ```
 
-Record each command's exit code and exact HEAD. If PostgreSQL integration is required, build first and use the repository's isolated test database/service configuration; never point tests at user or production data.
+If the Visual Universe projection check reports stale files, review its deterministic output and regenerate only those projections from canonical TaskOS; do not edit `task.json`, `TASKS.md`, or individual task cards as independent status sources. Keep the previous registry backup untouched.
 
-### 4. Execute the complete FLOW acceptance journey
-
-In the real Desktop-capable checkout, walk one disposable project/task through:
-
-1. Repo Radar: read-only snapshot pinned to a repository revision; sensitive paths excluded and evidence redacted.
-2. Overlap Detector: deterministic advisory result; no automatic mutation.
-3. Plan Forge: compile a bounded WorkContract/Execution Packet with explicit scope and acceptance criteria.
-4. Dispatch: accept only an eligible ready task and preserve dependency DAG constraints.
-5. Worktree lease: acquire an isolated worktree and verify lease/fencing token behavior.
-6. Proof Gate: prove changed paths remain in scope; reject out-of-scope drift and missing required evidence.
-7. Review: an independent human review is required; automated advisory output cannot self-approve.
-8. Sync: only the server-authoritative accepted state may sync; retain an auditable evidence trail.
-
-Capture redacted logs, test output, commit SHA, worktree status and screenshots only where useful. Do not expose secrets or private task payloads.
-
-### 5. Return evidence; do not bypass gates
-
-Return the exact tested SHA, worktree status before/after, command outputs, candidate file hash, candidate-vs-legacy reconciliation report, PostgreSQL/browser/desktop result, and any failures. Make no canonical registry write, mass issue close, merge, tag, release or deployment without the relevant owner approval.
+The native Desktop FLOW walkthrough remains a separate acceptance gate: use one disposable task/worktree, verify Repo Radar, Overlap, Plan, Dispatch, lease/fencing, Proof Gate, human review and server-authoritative Sync. Do not merge PR #37, create a release, publish trusted docs or deploy as part of this migration.
 
 ## Documentation publication gate
 
@@ -161,7 +112,7 @@ Issue [#2](https://github.com/A-L-L-A-H/mw-xv/issues/2) remains open for the tru
 
 ## Release blockers and decision owners
 
-- **TaskOS migration:** repository maintainer/data owner must accept the reconciled candidate and preserved legacy snapshot.
+- **TaskOS post-migration verification:** exact-SHA canonical validators and Visual Universe projection check must be green; the previous 1,358-record snapshot is already preserved.
 - **PR #37:** CODEOWNER/repository maintainer review is required on the final exact source SHA.
 - **M12.14:** stable-release approval remains a separate human-controlled gate.
 - **Desktop end-to-end acceptance:** local Codex/maintainer must run the real native journey in the owner checkout.

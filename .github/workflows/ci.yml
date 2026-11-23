@@ -148,6 +148,13 @@ jobs:
           console.log('Validated 627 isolated TaskOS candidate records; canonical registry was not changed.');
           NODE
           echo "candidate_generated=true" >> "$GITHUB_OUTPUT"
+      - name: Validate canonical TaskOS registry and projections
+        run: |
+          set -euo pipefail
+          pnpm tasks:validate
+          pnpm automation:check:roadmap
+          pnpm tasks:sweep -- --check
+          node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs --check
       - name: Upload the source-validated TaskOS recovery candidate
         if: always() && steps.taskos-recovery.outputs.candidate_generated == 'true'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0

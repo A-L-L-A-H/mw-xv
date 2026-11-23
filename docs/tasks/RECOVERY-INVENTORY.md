@@ -1,10 +1,11 @@
 # TaskOS Recovery Inventory
 
-**Snapshot:** `dev` repository source inventory reviewed on 2026-11-23.
-**Registry status:** exact `dev` contains a valid legacy registry with 1,358 records (about 2.52 MB); the separate 627-record source projection has not been applied.
-**Purpose:** source-backed migration inventory and ownership contract. This document is not the task registry.
+**Historical source snapshot:** pre-migration `dev` SHA `0e90a59688386a6635c46f209b09d05296393148`, audited on 2026-11-23.
+**Current registry status:** `docs/tasks/tasks.json` is the owner-approved 627-record canonical registry. The prior 1,358-record registry is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json` (Git blob `d56499936761dcc062704d06588ee2679fd1aae2`).
+**Migration:** applied on 2026-11-23 after explicit owner approval. Candidate JSON SHA-256 `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`; canonical Git blob `8216b6503d154d635112be96c41939a9efd38390`.
+**Purpose:** source inventory, complete identity reconciliation, migration evidence and ongoing TaskOS validation contract.
 
-## Existing registry audit — exact dev HEAD
+## Pre-migration legacy registry audit — dev parent 0e90a596
 
 A direct Git blob audit of `docs/tasks/tasks.json` found 1,358 valid JSON records. The source-reference distribution is:
 
@@ -20,7 +21,7 @@ A direct Git blob audit of `docs/tasks/tasks.json` found 1,358 valid JSON record
 
 Task codes are unique and every record has a `sourceRef.file`, but the 861 `todo.md` references are stale as current provenance because root `todo.md` is now a pointer. The source-backed candidate inventory intentionally uses the archived checklist and imports only its seven still-open records; it adds 14 promotion-governance and 109 Visual Universe records for a candidate total of 627.
 
-Do not run `--write` against this populated registry. Export the 627-record candidate outside the worktree, review the 1,358-to-627 reconciliation, preserve the previous snapshot, and only then consider an explicit canonical migration. CI must never write to `docs/tasks/tasks.json`.
+**Historical pre-migration instruction:** the 1,358-record file was not to be overwritten before review. The owner subsequently approved the reconciled candidate; its exact previous Git blob is now retained at `${oldArchivePath}`. The canonical registry has been replaced once by a Git tree update, not by running the one-time `--write` importer. CI remains read-only and must never write to `docs/tasks/tasks.json`.
 
 ## Exact legacy TODO identity reconciliation — 2026-11-23
 
@@ -34,7 +35,7 @@ A direct blob read plus a line-by-line parse of the archived checklist proves th
 - All seven unchecked IDs are retained by the source-backed candidate as `blocked` pending owner re-triage:
   `MW-CFG-003.3`, `MW-CICD-002`, `MW-CICD-002.3`, `MW-CICD-004`, `MW-CICD-004.2`, `MW-CICD-004.3`, `MW-DOC-004.3`.
 
-This resolves the old root-pointer provenance for that 861-record subset: 854 completed entries remain in the archived historical checklist; seven open entries are retained as blocked work. This does not delete the legacy snapshot and does not itself approve the canonical migration. A regression assertion covering this exact identity mapping has been added to `scripts/tasks/sweep-and-consolidate.test.mjs`; its final exact-SHA hosted execution is still pending.
+This resolves the old root-pointer provenance for that 861-record subset: 854 completed entries remain in the archived historical checklist; seven open entries are retained as blocked work. The full legacy registry is also preserved byte-for-byte at `${oldArchivePath}`. A regression assertion covering this exact identity mapping passed in the exact-SHA unit-test job.
 
 ## Full legacy-to-candidate ID reconciliation — 2026-11-23
 
@@ -55,7 +56,7 @@ The uploaded candidate was compared by task code against the complete legacy reg
 | Candidate duplicate codes | 0 | None |
 | Candidate total | 627 | 504 retained + 123 new |
 
-The 854 removed codes are exactly the completed subset of the 861 root-`todo.md` records. The remaining seven open IDs are included in the candidate under `docs/archive/todos/todo.md` and are mapped from legacy `todo` to TaskOS `blocked` pending re-triage. The 854 completed checklist entries remain in the immutable archive and in the untouched legacy registry snapshot until an explicit owner-approved migration.
+The 854 removed codes are exactly the completed subset of the 861 root-`todo.md` records. The remaining seven open IDs are included in the candidate under `docs/archive/todos/todo.md` and are mapped from legacy `todo` to TaskOS `blocked` pending re-triage. The 854 completed checklist entries remain in the immutable archive and in the byte-for-byte legacy registry backup at `${oldArchivePath}` after the owner-approved migration.
 
 Arithmetic: **1,358 - 854 + 123 = 627**. This accounts for the full net change of 731 records; it is not an unexplained deletion. The 497 other legacy records (roadmap, audit, WhatsApp, Desktop and Evolution source groups) plus the seven archived open MW items account for the 504 retained identities.
 
@@ -66,11 +67,11 @@ Arithmetic: **1,358 - 854 + 123 = 627**. This accounts for the full net change o
 - Independent artifact inspection found no missing dependency or block IDs, non-reciprocal dependency edges, or dependency cycles.
 - Hosted CI run [45087443105](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45087443105) completed all five jobs successfully and uploaded the validated candidate artifact. The artifact itself remains a review candidate, not the canonical registry.
 
-**Migration decision:** Do not apply yet. The owner must accept the reviewed candidate and a byte-for-byte backup/rollback plan. The current 1,358-record canonical registry remains unchanged.
+**Migration decision:** Owner approval was received on 2026-11-23. The 627-record projection was applied as canonical on `dev`; the prior 1,358-record blob `d56499936761dcc062704d06588ee2679fd1aae2` is preserved at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`. New canonical blob: `8216b6503d154d635112be96c41939a9efd38390`. Candidate JSON SHA-256: `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`. Post-migration validation is enforced by the new CI checks; record exact-SHA outcomes below after the run completes.
 
 ## Canonical ownership target
 
-After the initial, reviewed migration, `docs/tasks/tasks.json` is the only canonical task lifecycle registry for this repository.
+`docs/tasks/tasks.json` is now the only canonical task lifecycle registry for this repository. The pre-migration registry is a read-only backup, not a second active queue.
 
 - Task ID, project, status, priority, owner, dependency graph, acceptance criteria, validation and provenance live in TaskOS.
 - `ROADMAP.md`, `docs/roadmap/tasks.json`, root `todo.md`, and GitHub Issues are views, navigation or operational projections. Their task status must not be independently edited as a second authority after TaskOS recovery.
@@ -154,7 +155,7 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 - [x] Preserved the two task-specific legacy notes for W1-001 and W5-012 in a source-pinned notes addendum; 91 repeated generic atomicity notes remain in the immutable card archive.
 - [x] Added importer validation that re-reads every archived chunk, verifies Git blob SHA, exact path coverage and task-specific note text before accepting the Visual Universe source.
 - [x] Extracted pure TaskOS-driven Board/card renderers and added contract tests for per-criterion status, canonical notes, archived notes and honest missing-exit-code output.
-- [x] Run `pnpm test:taskos` and the full CI suite on exact, non-cancelled dev SHA `${head}` (runs [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241)); all five jobs passed. The legacy 1,358-record registry remains unchanged until migration is reviewed and approved.
+- [x] Run `pnpm test:taskos` and the full CI suite on exact, non-cancelled pre-migration dev SHA `def3df35b5d54d7359600e0471af5a6dd4cb7f29` (runs [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241)); all five jobs passed.
 
 
 ## Exact development-head candidate evidence — 2026-11-23
@@ -165,4 +166,16 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 - Status counts: 468 done, 49 doing, 89 todo, 21 blocked.
 - Structural inspection: zero missing project references, source references, dependency IDs or block IDs; zero non-reciprocal edges; zero dependency cycles.
 - Exact-SHA push and PR CI each passed quality/build, unit tests (including TaskOS recovery candidate generation/validation), knowledge gate, DX, and PostgreSQL integration.
-- The canonical `docs/tasks/tasks.json` remains unchanged (1,358 records; blob SHA `d56499936761dcc062704d06588ee2679fd1aae2`). Candidate installation remains an explicit data-owner decision.
+- At this historical checkpoint, `docs/tasks/tasks.json` was still 1,358 records (blob SHA `d56499936761dcc062704d06588ee2679fd1aae2`). The owner subsequently approved and applied the 627-record candidate; the old blob is preserved at `${oldArchivePath}`.
+
+
+## Owner-approved TaskOS migration applied — 2026-11-23
+
+- Approval: explicit owner approval in chat on 2026-11-23.
+- Source candidate: push CI artifact `14781137522` from exact pre-migration `dev` SHA `0e90a59688386a6635c46f209b09d05296393148`.
+- Candidate JSON SHA-256: `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`; `generatedAt` is pinned to `2026-11-23T00:45:36.000Z`, the source commit timestamp.
+- New canonical Git blob: `8216b6503d154d635112be96c41939a9efd38390`; canonical path: `docs/tasks/tasks.json`.
+- Previous 1,358-record Git blob `d56499936761dcc062704d06588ee2679fd1aae2` was not reserialized or edited; the Git tree now references this exact blob at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json` to preserve byte-for-byte rollback.
+- Candidate contains 627 unique records: 468 done, 49 doing, 89 todo, 21 blocked; source groups total 627 across all eight reviewed sources.
+- Exact legacy identity arithmetic remains `1,358 - 854 + 123 = 627`; 854 completed historical rows remain recoverable in the backup/archive, seven open legacy items remain as blocked, and 123 reviewed IDs were added.
+- Next gates: canonical validation, roadmap parity, deterministic source comparison, and Visual Universe task projection checks on the migration commit's exact SHA.
