@@ -2,9 +2,7 @@ import { createHash } from 'node:crypto';
 import { createRedactor } from './redaction.js';
 
 export type ActiveInferenceActionKind =
-  | 'epistemic_action'
-  | 'optimal_question'
-  | 'pragmatic_action';
+  'epistemic_action' | 'optimal_question' | 'pragmatic_action';
 
 export interface ActiveInferenceCandidate {
   readonly actionId: string;
@@ -99,23 +97,11 @@ export function evaluateExpectedFreeEnergy(
   policy: ActiveInferencePolicy = {}
 ): ActiveInferenceDecision {
   const redactor = createRedactor();
-  const pragmaticWeightBps = clampBps(
-    policy.pragmaticWeightBps ?? DEFAULT_PRAGMATIC_WEIGHT_BPS
-  );
-  const epistemicWeightBps = clampBps(
-    policy.epistemicWeightBps ?? DEFAULT_EPISTEMIC_WEIGHT_BPS
-  );
-  const costWeightBps = clampBps(
-    policy.costWeightBps ?? DEFAULT_COST_WEIGHT_BPS
-  );
-  const maxTokenBudget = Math.max(
-    1,
-    Math.floor(policy.maxTokenBudget ?? DEFAULT_MAX_TOKEN_BUDGET)
-  );
-  const maxLatencyMs = Math.max(
-    1,
-    Math.floor(policy.maxLatencyMs ?? DEFAULT_MAX_LATENCY_MS)
-  );
+  const pragmaticWeightBps = clampBps(policy.pragmaticWeightBps ?? DEFAULT_PRAGMATIC_WEIGHT_BPS);
+  const epistemicWeightBps = clampBps(policy.epistemicWeightBps ?? DEFAULT_EPISTEMIC_WEIGHT_BPS);
+  const costWeightBps = clampBps(policy.costWeightBps ?? DEFAULT_COST_WEIGHT_BPS);
+  const maxTokenBudget = Math.max(1, Math.floor(policy.maxTokenBudget ?? DEFAULT_MAX_TOKEN_BUDGET));
+  const maxLatencyMs = Math.max(1, Math.floor(policy.maxLatencyMs ?? DEFAULT_MAX_LATENCY_MS));
   const irreversibleRiskPenaltyBps = clampBps(
     policy.irreversibleRiskPenaltyBps ?? DEFAULT_IRREVERSIBLE_RISK_PENALTY_BPS
   );
@@ -142,71 +128,56 @@ export function evaluateExpectedFreeEnergy(
     };
   }
 
-  const evaluated: EvaluatedActiveInferenceCandidate[] = candidates.map(
-    (candidate) => {
-      const goalAlignmentBps = clampBps(candidate.goalAlignmentBps);
-      const successProbabilityBps = clampBps(candidate.successProbabilityBps);
-      const priorUncertaintyBps = clampBps(candidate.priorUncertaintyBps);
-      const expectedPosteriorUncertaintyBps = clampBps(
-        candidate.expectedPosteriorUncertaintyBps
-      );
-      const reversible = candidate.reversible ?? true;
+  const evaluated: EvaluatedActiveInferenceCandidate[] = candidates.map((candidate) => {
+    const goalAlignmentBps = clampBps(candidate.goalAlignmentBps);
+    const successProbabilityBps = clampBps(candidate.successProbabilityBps);
+    const priorUncertaintyBps = clampBps(candidate.priorUncertaintyBps);
+    const expectedPosteriorUncertaintyBps = clampBps(candidate.expectedPosteriorUncertaintyBps);
+    const reversible = candidate.reversible ?? true;
 
-      const pragmaticValueBps = clampBps(
-        Math.round((goalAlignmentBps * successProbabilityBps) / 10_000)
-      );
-      const epistemicInfoGainBps = clampBps(
-        Math.max(0, priorUncertaintyBps - expectedPosteriorUncertaintyBps)
-      );
+    const pragmaticValueBps = clampBps(
+      Math.round((goalAlignmentBps * successProbabilityBps) / 10_000)
+    );
+    const epistemicInfoGainBps = clampBps(
+      Math.max(0, priorUncertaintyBps - expectedPosteriorUncertaintyBps)
+    );
 
-      const tokenCostBps = clampBps(
-        Math.round(
-          (Math.max(0, candidate.estimatedTokens ?? 0) / maxTokenBudget) *
-            10_000
-        )
-      );
-      const latencyCostBps = clampBps(
-        Math.round(
-          (Math.max(0, candidate.estimatedLatencyMs ?? 0) / maxLatencyMs) *
-            10_000
-        )
-      );
-      const interruptionCostBps =
-        candidate.kind === 'optimal_question'
-          ? clampBps(
-              candidate.humanInterruptionCostBps ??
-                DEFAULT_HUMAN_INTERRUPTION_COST_BPS
-            )
-          : 0;
-      const riskPenaltyBps =
-        !reversible && priorUncertaintyBps >= uncertaintyThresholdBps
-          ? irreversibleRiskPenaltyBps
-          : 0;
+    const tokenCostBps = clampBps(
+      Math.round((Math.max(0, candidate.estimatedTokens ?? 0) / maxTokenBudget) * 10_000)
+    );
+    const latencyCostBps = clampBps(
+      Math.round((Math.max(0, candidate.estimatedLatencyMs ?? 0) / maxLatencyMs) * 10_000)
+    );
+    const interruptionCostBps =
+      candidate.kind === 'optimal_question'
+        ? clampBps(candidate.humanInterruptionCostBps ?? DEFAULT_HUMAN_INTERRUPTION_COST_BPS)
+        : 0;
+    const riskPenaltyBps =
+      !reversible && priorUncertaintyBps >= uncertaintyThresholdBps
+        ? irreversibleRiskPenaltyBps
+        : 0;
 
-      const computeCostBps = clampBps(
-        Math.round((tokenCostBps + latencyCostBps) / 2) +
-          interruptionCostBps +
-          riskPenaltyBps
-      );
+    const computeCostBps = clampBps(
+      Math.round((tokenCostBps + latencyCostBps) / 2) + interruptionCostBps + riskPenaltyBps
+    );
 
-      // Expected Free Energy G(pi) = weightedCost - weightedPragmatic - weightedEpistemic (lower is better)
-      const expectedFreeEnergyBps =
-        Math.round((computeCostBps * costWeightBps) / 10_000) -
-        Math.round((pragmaticValueBps * pragmaticWeightBps) / 10_000) -
-        Math.round((epistemicInfoGainBps * epistemicWeightBps) / 10_000);
+    // Expected Free Energy G(pi) = weightedCost - weightedPragmatic - weightedEpistemic (lower is better)
+    const expectedFreeEnergyBps =
+      Math.round((computeCostBps * costWeightBps) / 10_000) -
+      Math.round((pragmaticValueBps * pragmaticWeightBps) / 10_000) -
+      Math.round((epistemicInfoGainBps * epistemicWeightBps) / 10_000);
 
-      return {
-        actionId: candidate.actionId,
-        kind: candidate.kind,
-        label: redactor.redactString(candidate.label.trim()),
-        pragmaticValueBps,
-        epistemicInfoGainBps,
-        computeCostBps,
-        expectedFreeEnergyBps,
-        reversible,
-      };
-    }
-  );
+    return {
+      actionId: candidate.actionId,
+      kind: candidate.kind,
+      label: redactor.redactString(candidate.label.trim()),
+      pragmaticValueBps,
+      epistemicInfoGainBps,
+      computeCostBps,
+      expectedFreeEnergyBps,
+      reversible,
+    };
+  });
 
   evaluated.sort((left, right) => {
     if (left.expectedFreeEnergyBps !== right.expectedFreeEnergyBps) {

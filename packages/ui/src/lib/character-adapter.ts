@@ -166,8 +166,7 @@ export function createSpriteSequenceAdapter(): CharacterAdapter {
         options.playbackRate > 0
           ? options.playbackRate
           : 1;
-      const effectiveTimeMs =
-        (Number.isFinite(timeMs) && timeMs > 0 ? timeMs : 0) * playbackRate;
+      const effectiveTimeMs = (Number.isFinite(timeMs) && timeMs > 0 ? timeMs : 0) * playbackRate;
       const durations = resolveFrameDurations(clip);
       const mode = resolvePlaybackMode(clip);
 

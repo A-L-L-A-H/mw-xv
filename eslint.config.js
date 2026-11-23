@@ -22,6 +22,7 @@ export default [
       '.qoder-tmp/**',
       'apps/todo/**',
       'services/**',
+      'apps/desktop/src-tauri/target/**',
       'pnpm-lock.yaml',
       '.env*',
     ],

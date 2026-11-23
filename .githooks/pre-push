@@ -1,7 +1,17 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -eu
 
-echo "Running Board shared UI, API addon boundary, and typecheck gates before push..."
-pnpm board:ui:check
+echo "Running shared UI design, desktop, lint, API addon boundary, and typecheck gates before push..."
+pnpm ui:check
+pnpm lint:ui
 pnpm api:addon:check
 pnpm --filter @moonwitness/board typecheck
+
+echo "Running fast CI-parity checks before push..."
+node scripts/check-action-pins.mjs
+node scripts/check-action-tag-pins.mjs
+node scripts/check-gitleaks-config.mjs
+node scripts/check-docs.mjs
+node scripts/roadmap/validate-roadmap.mjs
+node scripts/tasks/validate-tasks.mjs
+node scripts/evolution/check-constitution.mjs

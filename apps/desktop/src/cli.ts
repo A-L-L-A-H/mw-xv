@@ -1,11 +1,7 @@
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import {
-  createAiMcpServer,
-  serveAiMcpStdio,
-  type AiMcpAuthContext,
-} from '@moonwitness/ai-mcp';
+import { createAiMcpServer, serveAiMcpStdio, type AiMcpAuthContext } from '@moonwitness/ai-mcp';
 import { createDesktopHarnessBridge } from './bridge.js';
 import { importDesktopTasks } from './importer.js';
 import {

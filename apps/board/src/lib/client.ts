@@ -8,12 +8,8 @@ function resolveApiBaseUrl(): string {
       return desktopApiUrl.trim();
     }
   }
-  const envApiUrl =
-    typeof process !== 'undefined' ? process.env?.NEXT_PUBLIC_API_URL : undefined;
-  return (
-    envApiUrl ??
-    (typeof window === 'undefined' ? 'http://localhost' : window.location.origin)
-  );
+  const envApiUrl = typeof process !== 'undefined' ? process.env?.NEXT_PUBLIC_API_URL : undefined;
+  return envApiUrl ?? (typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
 }
 
 /**

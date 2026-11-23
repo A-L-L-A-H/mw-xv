@@ -1,10 +1,7 @@
 import { createHash } from 'node:crypto';
 import { createRedactor } from './redaction.js';
 
-export type DynamicAutonomyMode =
-  | 'standard'
-  | 'require_extra_rtv_branches'
-  | 'require_human_gate';
+export type DynamicAutonomyMode = 'standard' | 'require_extra_rtv_branches' | 'require_human_gate';
 
 export type BoundedAutonomyTier = 'R0' | 'R1' | 'R2' | 'R3';
 
@@ -223,10 +220,8 @@ export function computeEpistemicCalibration(
       };
     }
 
-    const binConfidence =
-      bucket.reduce((acc, item) => acc + item.p, 0) / bucket.length;
-    const binAccuracy =
-      bucket.reduce((acc, item) => acc + item.y, 0) / bucket.length;
+    const binConfidence = bucket.reduce((acc, item) => acc + item.p, 0) / bucket.length;
+    const binAccuracy = bucket.reduce((acc, item) => acc + item.y, 0) / bucket.length;
     const gap = Math.abs(binConfidence - binAccuracy);
     eceSum += (bucket.length / sampleCount) * gap;
 
@@ -296,9 +291,7 @@ export function deriveDynamicAutonomyPolicy(
     mode = 'require_human_gate';
   }
   if (calibration.ece >= humanGateEceThreshold) {
-    reasons.push(
-      `ECE ${calibration.ece} reached human-gate threshold ${humanGateEceThreshold}.`
-    );
+    reasons.push(`ECE ${calibration.ece} reached human-gate threshold ${humanGateEceThreshold}.`);
     mode = 'require_human_gate';
   }
   if (calibration.brierScore >= humanGateBrierThreshold) {
@@ -319,9 +312,7 @@ export function deriveDynamicAutonomyPolicy(
     extraRtvBranches = 2;
   } else {
     if (calibration.ece >= extraRtvEceThreshold) {
-      reasons.push(
-        `ECE ${calibration.ece} reached extra-RTV threshold ${extraRtvEceThreshold}.`
-      );
+      reasons.push(`ECE ${calibration.ece} reached extra-RTV threshold ${extraRtvEceThreshold}.`);
       mode = 'require_extra_rtv_branches';
     }
     if (calibration.brierScore >= extraRtvBrierThreshold) {

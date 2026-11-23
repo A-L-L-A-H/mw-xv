@@ -67,7 +67,7 @@ function clamp(value: number, min: number, max: number): number {
 export function scoreLead(
   signals: LeadSignals,
   weights: LeadScoringWeights = DEFAULT_LEAD_SCORING_WEIGHTS,
-  thresholds: LeadTierThresholds = DEFAULT_LEAD_TIER_THRESHOLDS,
+  thresholds: LeadTierThresholds = DEFAULT_LEAD_TIER_THRESHOLDS
 ): LeadScoreResult {
   const totalWeight =
     weights.firmographicFit +
@@ -86,15 +86,14 @@ export function scoreLead(
     (clamp(signals.engagement, 0, 100) * weights.engagement) / totalWeight;
   const buyingIntentContribution =
     (clamp(signals.buyingIntent, 0, 100) * weights.buyingIntent) / totalWeight;
-  const budgetContribution =
-    (clamp(signals.budgetFit, 0, 100) * weights.budgetFit) / totalWeight;
+  const budgetContribution = (clamp(signals.budgetFit, 0, 100) * weights.budgetFit) / totalWeight;
   const timelineContribution =
     (clamp(signals.timelineUrgency, 0, 100) * weights.timelineUrgency) / totalWeight;
 
   const adjustmentTotal = signals.adjustments
     ? Object.values(signals.adjustments).reduce(
         (acc, val) => acc + (Number.isFinite(val) ? val : 0),
-        0,
+        0
       )
     : 0;
 
@@ -108,11 +107,7 @@ export function scoreLead(
 
   const score = Math.round(clamp(rawScore, 0, 100));
   const tier: LeadTier =
-    score >= thresholds.hotMinScore
-      ? 'hot'
-      : score >= thresholds.warmMinScore
-        ? 'warm'
-        : 'cold';
+    score >= thresholds.hotMinScore ? 'hot' : score >= thresholds.warmMinScore ? 'warm' : 'cold';
 
   return {
     score,
@@ -168,11 +163,16 @@ export const DEFAULT_STAGE_PROBABILITIES_BPS: Readonly<Record<string, number>> =
  */
 export function forecastPipelineRevenue(
   deals: readonly PipelineDeal[],
-  stageProbabilitiesBps: Readonly<Record<string, number>> = DEFAULT_STAGE_PROBABILITIES_BPS,
+  stageProbabilitiesBps: Readonly<Record<string, number>> = DEFAULT_STAGE_PROBABILITIES_BPS
 ): PipelineForecastResult {
   const stageMap = new Map<
     string,
-    { dealCount: number; grossAmountCents: number; weightedAmountCents: number; stageProbabilityBps: number }
+    {
+      dealCount: number;
+      grossAmountCents: number;
+      weightedAmountCents: number;
+      stageProbabilityBps: number;
+    }
   >();
 
   let totalDeals = 0;
@@ -188,7 +188,7 @@ export function forecastPipelineRevenue(
     const effectiveBps = clamp(
       deal.probabilityBps !== undefined ? Math.round(deal.probabilityBps) : defaultBps,
       0,
-      10000,
+      10000
     );
     const weightedCents = Math.round((deal.amountCents * effectiveBps) / 10000);
 
@@ -282,7 +282,7 @@ export function detectStaleDeals(
     defaultRule?: StaleDealRule;
     stageRules?: Readonly<Record<string, StaleDealRule>>;
     closedStages?: readonly string[];
-  } = {},
+  } = {}
 ): StaleDealEscalation[] {
   const asOfMs = toEpochMs(asOf);
   const defaultRule = options.defaultRule ?? DEFAULT_STALE_DEAL_RULE;

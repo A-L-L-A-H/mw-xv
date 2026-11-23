@@ -130,7 +130,10 @@ export function assertPrivateMeshEndpoint(endpoint: string): URL {
   return parsed;
 }
 
-export function redactMeshSecrets(input: string, secrets: readonly (string | undefined)[] = []): string {
+export function redactMeshSecrets(
+  input: string,
+  secrets: readonly (string | undefined)[] = []
+): string {
   let output = input;
 
   for (const secret of secrets) {
@@ -160,7 +163,10 @@ function resolveAuthToken(token?: string): string | undefined {
   return resolveControlPlaneToken();
 }
 
-async function readErrorSummary(response: Response, secrets: readonly (string | undefined)[]): Promise<string> {
+async function readErrorSummary(
+  response: Response,
+  secrets: readonly (string | undefined)[]
+): Promise<string> {
   try {
     const raw = await response.text();
     if (!raw.trim()) return `HTTP ${response.status}`;
@@ -242,9 +248,7 @@ export async function listMeshPaasApps(
     throw new Error(`MoonWitness Mesh list apps failed (${response.status}): ${detail}`);
   }
 
-  const payload = (await response.json()) as
-    | { apps?: MeshPaasAppSummary[] }
-    | MeshPaasAppSummary[];
+  const payload = (await response.json()) as { apps?: MeshPaasAppSummary[] } | MeshPaasAppSummary[];
 
   if (Array.isArray(payload)) {
     return payload;
@@ -316,7 +320,10 @@ export async function controlMeshPaasApp(
 
   const response = await fetchImpl(url, {
     method,
-    headers: controlPlaneAuthHeaders(token, method === 'POST' ? { 'content-type': 'application/json' } : undefined),
+    headers: controlPlaneAuthHeaders(
+      token,
+      method === 'POST' ? { 'content-type': 'application/json' } : undefined
+    ),
     signal: AbortSignal.timeout(params.timeoutMs ?? DEFAULT_TIMEOUT_MS),
   });
 

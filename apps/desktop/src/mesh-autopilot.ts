@@ -103,7 +103,7 @@ export function ensureMeshCredentials(desktopHomeDir?: string): MeshCredentialsS
 
     if (!networkName || !networkSecret) {
       throw new Error(
-        `Existing mesh credentials file at ${secretRefPath} is missing MW_MESH_NETWORK_NAME or MW_MESH_NETWORK_SECRET.`,
+        `Existing mesh credentials file at ${secretRefPath} is missing MW_MESH_NETWORK_NAME or MW_MESH_NETWORK_SECRET.`
       );
     }
 
@@ -148,7 +148,9 @@ export function readRawMeshEnvForBootstrap(desktopHomeDir?: string): RawMeshEnvB
   const secretRefPath = path.join(resolvedHome, 'mesh.env');
 
   if (!fs.existsSync(secretRefPath)) {
-    throw new Error(`Mesh credentials file not found at ${secretRefPath}. Run ensureMeshCredentials() first.`);
+    throw new Error(
+      `Mesh credentials file not found at ${secretRefPath}. Run ensureMeshCredentials() first.`
+    );
   }
 
   const parsed = parseEnvFile(fs.readFileSync(secretRefPath, 'utf8'));

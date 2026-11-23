@@ -281,10 +281,11 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         }
       }
 
-      const agentUrl = (options.controlPlaneUrl ?? effectiveTarget?.api_url ?? defaultAgentUrl).replace(
-        /\/+$/u,
-        ''
-      );
+      const agentUrl = (
+        options.controlPlaneUrl ??
+        effectiveTarget?.api_url ??
+        defaultAgentUrl
+      ).replace(/\/+$/u, '');
       const ports =
         cloudApp.host_port && cloudApp.port ? [`${cloudApp.host_port}:${cloudApp.port}`] : [];
       try {
@@ -304,11 +305,13 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
         if (!res.ok) {
           const completedAt = new Date().toISOString().slice(0, 19);
-          await CloudDeployment.query().findById(deployment.id).patch({
-            status: 'failed',
-            completed_at: completedAt,
-            error_message: `Control plane deploy failed (${res.status})`,
-          });
+          await CloudDeployment.query()
+            .findById(deployment.id)
+            .patch({
+              status: 'failed',
+              completed_at: completedAt,
+              error_message: `Control plane deploy failed (${res.status})`,
+            });
           return reply.code(502).send({
             success: false,
             error: `Control plane deploy failed (${res.status})`,
@@ -567,7 +570,12 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     );
 
     fastify.post('/api/cloud/targets/probe', async (req, reply) => {
-      const ctx = requireAuthorizedModelAccess(req, reply, CloudDeploymentTarget.modelName, 'write');
+      const ctx = requireAuthorizedModelAccess(
+        req,
+        reply,
+        CloudDeploymentTarget.modelName,
+        'write'
+      );
       if (!ctx) return;
       const result = await probeCloudTargetsHealth({
         companyId: ctx.companyId,

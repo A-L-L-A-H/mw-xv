@@ -54,15 +54,14 @@ import { cn } from '@/lib/utils';
 import { displayName, relationKey, type Row } from './field-utils';
 import { One2ManyWidget } from './one2many-widget';
 import {
-  FieldCell,
-  formatFieldValue,
   registerFieldWidget,
   resolveFieldWidget,
   type ExtendedFieldMeta,
   type FieldCellRendererProps,
   type FieldWidgetRendererProps,
   type RegisteredFieldWidget,
-} from './widget-registry';
+} from './field-widget-registry';
+import { FieldCell } from './widget-registry';
 
 export { FieldCell };
 export type {

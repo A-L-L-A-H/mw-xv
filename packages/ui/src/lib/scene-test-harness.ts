@@ -56,10 +56,18 @@ function sanitizeConfig(config: SceneHarnessConfig | null | undefined): SceneHar
     disableTransitions?: boolean;
   } = {};
 
-  if (typeof config.fixedTimeMs === 'number' && Number.isFinite(config.fixedTimeMs) && config.fixedTimeMs >= 0) {
+  if (
+    typeof config.fixedTimeMs === 'number' &&
+    Number.isFinite(config.fixedTimeMs) &&
+    config.fixedTimeMs >= 0
+  ) {
     normalized.fixedTimeMs = config.fixedTimeMs;
   }
-  if (typeof config.fixedFrame === 'number' && Number.isFinite(config.fixedFrame) && config.fixedFrame >= 0) {
+  if (
+    typeof config.fixedFrame === 'number' &&
+    Number.isFinite(config.fixedFrame) &&
+    config.fixedFrame >= 0
+  ) {
     normalized.fixedFrame = Math.trunc(config.fixedFrame);
   }
   if (typeof config.reducedMotion === 'boolean') {

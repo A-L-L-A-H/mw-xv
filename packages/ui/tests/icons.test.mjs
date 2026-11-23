@@ -177,7 +177,7 @@ test('core controls preserve native form semantics and use package-owned styles'
     )
   );
   assert.match(disabledSlottedButton, /aria-disabled="true"/u);
-  assert.match(disabledSlottedButton, /tabindex="-1"/u);
+  assert.doesNotMatch(disabledSlottedButton, /tabindex="-1"/u);
   assert.match(disabledSlottedButton, /href="\/profile"/u);
   assert.match(disabledSlottedButton, /data-variant="default"/u);
 

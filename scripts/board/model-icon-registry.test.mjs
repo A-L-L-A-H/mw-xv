@@ -4,10 +4,12 @@ import { MODEL_ICON_NAMES, modelIconName } from '../../apps/board/src/lib/model-
 
 test('public base model menus use the canonical domain icon exports', () => {
   assert.deepEqual(
-    Object.fromEntries(['partner', 'company', 'user', 'activity', 'attachment', 'tag'].map((name) => [
-      `base.${name}`,
-      MODEL_ICON_NAMES[`base.${name}`],
-    ])),
+    Object.fromEntries(
+      ['partner', 'company', 'user', 'activity', 'attachment', 'tag'].map((name) => [
+        `base.${name}`,
+        MODEL_ICON_NAMES[`base.${name}`],
+      ])
+    ),
     {
       'base.partner': 'partner',
       'base.company': 'company',

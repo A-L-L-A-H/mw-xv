@@ -1,10 +1,11 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `baa1f2bad1f74607f6097868fae13a341382fc932ee48ff56deb387e7a722df1`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `bcaa3fe92ad86a870f660728aa43f52bc353ab29cced71a4b6acebe6eea54d77`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                |
 | ------ | ----------------------------------- |
 | GET    | `/`                                 |
+| POST   | `/a2a/delegate`                     |
 | GET    | `/admin/crons`                      |
 | POST   | `/admin/crons`                      |
 | PATCH  | `/admin/crons/:id`                  |
@@ -31,6 +32,7 @@ Extracted from literal Fastify route declarations. Source fingerprint: `baa1f2ba
 | GET    | `/api/:model/group-count`           |
 | POST   | `/api/:model/onchange`              |
 | GET    | `/api/:model/views`                 |
+| GET    | `/api/ai/a2a/inbox`                 |
 | GET    | `/api/app/bootstrap`                |
 | GET    | `/api/base.attachment/:id/download` |
 | POST   | `/api/base.attachment/upload`       |

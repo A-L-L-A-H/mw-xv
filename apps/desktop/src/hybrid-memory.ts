@@ -203,9 +203,7 @@ export async function searchHybridLocalMemory(
     }
     const titleRedaction = redactSensitiveText(record.title, knownSecrets);
     const bodyRedaction = redactSensitiveText(record.body, knownSecrets);
-    const safeTags = (record.tags ?? []).map(
-      (tag) => redactSensitiveText(tag, knownSecrets).text
-    );
+    const safeTags = (record.tags ?? []).map((tag) => redactSensitiveText(tag, knownSecrets).text);
     const titleTokens = tokenize(titleRedaction.text);
     const bodyTokens = tokenize(bodyRedaction.text);
     const tagTokens = safeTags.flatMap((tag) => tokenize(tag));

@@ -16,11 +16,13 @@ import {
 } from '@moonwitness/orm-storage';
 import { createLogger, type LogLevel } from '@moonwitness/logger';
 import { isRecord, PlatformError } from '@moonwitness/types';
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@moonwitness/orm';
 import ormPlugin from './plugins/orm.plugin.js';
 import authPlugin, { validateJwtSecret } from './plugins/auth.plugin.js';
 import observabilityPlugin from './plugins/observability.plugin.js';
 import { createPostgresRateLimitStoreCtor } from './plugins/rate-limit-store.js';
 import { config, localAiConfig } from './config/env.js';
+import { resolveRateLimitStore, resolveTrustProxy } from './config/runtime-security.js';
 import { createDatabase } from './database/knex.js';
 import { databaseErrorCode, databaseErrorContext } from './database/errors.js';
 import { installPrivacySafeNotFoundHandler } from './not-found.js';
@@ -105,12 +107,6 @@ export function resolveCorsOrigin(
   return nodeEnv === 'production' ? false : true;
 }
 
-function resolveTrustProxy(env: NodeJS.ProcessEnv = process.env, nodeEnv = config.env): boolean {
-  if (env.TRUST_PROXY === 'true') return true;
-  if (env.TRUST_PROXY === 'false') return false;
-  return nodeEnv === 'production';
-}
-
 export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
   const authConfig = config.auth ?? {
     accessTtlSeconds: 15 * 60,
@@ -119,8 +115,14 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   };
   const jwtSecret = validateJwtSecret(options.jwtSecret ?? authConfig.jwtSecret);
   const superadminPassword = options.superadminPassword ?? config.superadminPassword;
-  if (superadminPassword && (superadminPassword.length < 6 || superadminPassword.length > 1024)) {
-    throw new Error('SUPERADMIN_PASSWORD must be between 6 and 1024 characters when configured');
+  if (
+    superadminPassword &&
+    (superadminPassword.length < MIN_PASSWORD_LENGTH ||
+      superadminPassword.length > MAX_PASSWORD_LENGTH)
+  ) {
+    throw new Error(
+      `SUPERADMIN_PASSWORD must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters when configured`
+    );
   }
 
   const db = options.db ?? createDatabase();
@@ -227,6 +229,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
       tags: [
         { name: 'Auth', description: 'Login, token refresh and current user' },
         { name: 'ORM', description: 'Generic CRUD and RPC endpoints' },
+        { name: 'A2A', description: 'Signed agent-to-agent receiver and administrator inbox' },
         { name: 'System', description: 'Health and status checks' },
       ],
       components: {
@@ -252,7 +255,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
 
   await app.register(rateLimit, {
     global: false,
-    ...(process.env.RATE_LIMIT_STORE === 'postgres'
+    ...(resolveRateLimitStore() === 'postgres'
       ? { store: createPostgresRateLimitStoreCtor(db) as never }
       : {}),
   });

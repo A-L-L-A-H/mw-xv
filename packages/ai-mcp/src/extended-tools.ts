@@ -24,7 +24,8 @@ export type ExtendedMcpToolName =
 export const EXTENDED_MCP_TOOLS: readonly ExtendedMcpToolDescriptor[] = [
   {
     name: 'paas.status',
-    description: 'Read Coolify-class PaaS service health, replica readiness, and deployment status.',
+    description:
+      'Read Coolify-class PaaS service health, replica readiness, and deployment status.',
     riskTier: 'R0',
     readOnly: true,
     idempotent: true,
@@ -32,7 +33,8 @@ export const EXTENDED_MCP_TOOLS: readonly ExtendedMcpToolDescriptor[] = [
   },
   {
     name: 'paas.backup_plan',
-    description: 'Inspect PaaS backup schedules, retention policy, and latest encrypted snapshot posture.',
+    description:
+      'Inspect PaaS backup schedules, retention policy, and latest encrypted snapshot posture.',
     riskTier: 'R0',
     readOnly: true,
     idempotent: true,
@@ -66,7 +68,8 @@ export const EXTENDED_MCP_TOOLS: readonly ExtendedMcpToolDescriptor[] = [
   },
   {
     name: 'desktop.doctor',
-    description: 'Run pure-offline local desktop diagnostics (runtime, SQLite/WAL, loopback AI, disk).',
+    description:
+      'Run pure-offline local desktop diagnostics (runtime, SQLite/WAL, loopback AI, disk).',
     riskTier: 'R0',
     readOnly: true,
     idempotent: true,
@@ -74,7 +77,8 @@ export const EXTENDED_MCP_TOOLS: readonly ExtendedMcpToolDescriptor[] = [
   },
   {
     name: 'desktop.local_search',
-    description: 'Search local offline desktop notes/documents with strict loopback-only isolation.',
+    description:
+      'Search local offline desktop notes/documents with strict loopback-only isolation.',
     riskTier: 'R0',
     readOnly: true,
     idempotent: true,
@@ -180,7 +184,9 @@ export interface ExtendedToolProviders {
   ) => Promise<readonly PaasLogRecord[]> | readonly PaasLogRecord[];
   readonly getAgiGovernanceStatus?: (
     companyId: number
-  ) => Promise<Partial<AgiGovernanceSnapshot> & Record<string, unknown>> | (Partial<AgiGovernanceSnapshot> & Record<string, unknown>);
+  ) =>
+    | Promise<Partial<AgiGovernanceSnapshot> & Record<string, unknown>>
+    | (Partial<AgiGovernanceSnapshot> & Record<string, unknown>);
   readonly runDesktopDoctor?: (
     companyId: number
   ) => Promise<readonly DesktopDoctorCheck[]> | readonly DesktopDoctorCheck[];
@@ -208,7 +214,12 @@ export interface ExtendedToolDispatchContext {
 
 export type ExtendedToolDispatchOutcome =
   | { readonly ok: true; readonly result: Record<string, unknown> }
-  | { readonly ok: false; readonly status: number; readonly code: number; readonly message: string };
+  | {
+      readonly ok: false;
+      readonly status: number;
+      readonly code: number;
+      readonly message: string;
+    };
 
 const INLINE_SECRET_PATTERNS: readonly RegExp[] = [
   /\b(Bearer\s+)[A-Za-z0-9._~+/=-]{8,}/giu,
@@ -333,7 +344,8 @@ export async function dispatchExtendedMcpTool(
 
   switch (toolName) {
     case 'paas.status': {
-      const serviceId = typeof rawArgs.serviceId === 'string' ? rawArgs.serviceId.trim() : undefined;
+      const serviceId =
+        typeof rawArgs.serviceId === 'string' ? rawArgs.serviceId.trim() : undefined;
       const services = providers?.getPaasStatus
         ? await providers.getPaasStatus(companyId, serviceId)
         : defaultPaasStatus(companyId, serviceId);
@@ -370,7 +382,8 @@ export async function dispatchExtendedMcpTool(
     }
 
     case 'paas.logs_query': {
-      const serviceId = typeof rawArgs.serviceId === 'string' ? rawArgs.serviceId.trim() : undefined;
+      const serviceId =
+        typeof rawArgs.serviceId === 'string' ? rawArgs.serviceId.trim() : undefined;
       const levelRaw = typeof rawArgs.level === 'string' ? rawArgs.level : undefined;
       const level =
         levelRaw === 'debug' || levelRaw === 'info' || levelRaw === 'warn' || levelRaw === 'error'
@@ -535,7 +548,9 @@ export async function dispatchExtendedMcpTool(
         };
       }
       const tags = Array.isArray(rawArgs.tags)
-        ? rawArgs.tags.filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0).map((tag) => tag.trim())
+        ? rawArgs.tags
+            .filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0)
+            .map((tag) => tag.trim())
         : [];
       const idempotencyKey =
         typeof rawArgs.idempotencyKey === 'string' && rawArgs.idempotencyKey.trim().length > 0

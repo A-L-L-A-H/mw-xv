@@ -90,17 +90,10 @@ export interface BudgetUsageSnapshot {
 
 export class ProviderRouterError extends Error {
   readonly code:
-    | 'PRIVACY_BLOCKED'
-    | 'BUDGET_EXCEEDED'
-    | 'NO_ELIGIBLE_PROVIDER'
-    | 'ALL_PROVIDERS_FAILED';
+    'PRIVACY_BLOCKED' | 'BUDGET_EXCEEDED' | 'NO_ELIGIBLE_PROVIDER' | 'ALL_PROVIDERS_FAILED';
 
   constructor(
-    code:
-      | 'PRIVACY_BLOCKED'
-      | 'BUDGET_EXCEEDED'
-      | 'NO_ELIGIBLE_PROVIDER'
-      | 'ALL_PROVIDERS_FAILED',
+    code: 'PRIVACY_BLOCKED' | 'BUDGET_EXCEEDED' | 'NO_ELIGIBLE_PROVIDER' | 'ALL_PROVIDERS_FAILED',
     message: string
   ) {
     super(message);
@@ -149,16 +142,15 @@ export interface MultiProviderLlmRouter {
   resetCircuit(providerId: string): void;
 }
 
-export function createMultiProviderLlmRouter(
-  config: ProviderRouterConfig
-): MultiProviderLlmRouter {
+export function createMultiProviderLlmRouter(config: ProviderRouterConfig): MultiProviderLlmRouter {
   if (config.providers.length === 0) {
     throw new TypeError('ProviderRouterConfig.providers must contain at least one provider');
   }
 
   const now = config.now ?? (() => Date.now());
   const cb: CircuitBreakerConfig = {
-    failureThreshold: config.circuitBreaker?.failureThreshold ?? DEFAULT_CIRCUIT_BREAKER.failureThreshold,
+    failureThreshold:
+      config.circuitBreaker?.failureThreshold ?? DEFAULT_CIRCUIT_BREAKER.failureThreshold,
     windowSize: config.circuitBreaker?.windowSize ?? DEFAULT_CIRCUIT_BREAKER.windowSize,
     cooldownMs: config.circuitBreaker?.cooldownMs ?? DEFAULT_CIRCUIT_BREAKER.cooldownMs,
   };
@@ -180,7 +172,10 @@ export function createMultiProviderLlmRouter(
   let totalTokensUsed = 0;
   let totalCostUsd = 0;
 
-  function getCircuitState(state: ProviderState, currentMs: number): 'closed' | 'open' | 'half-open' {
+  function getCircuitState(
+    state: ProviderState,
+    currentMs: number
+  ): 'closed' | 'open' | 'half-open' {
     if (state.openedAtMs === null) return 'closed';
     if (currentMs - state.openedAtMs >= cb.cooldownMs) return 'half-open';
     return 'open';
@@ -256,9 +251,7 @@ export function createMultiProviderLlmRouter(
       );
     }
 
-    const healthy = privacyFiltered.filter(
-      (state) => getCircuitState(state, currentMs) !== 'open'
-    );
+    const healthy = privacyFiltered.filter((state) => getCircuitState(state, currentMs) !== 'open');
 
     if (healthy.length === 0) {
       throw new ProviderRouterError(
@@ -269,10 +262,16 @@ export function createMultiProviderLlmRouter(
 
     return healthy.sort((a, b) => {
       if (request.preferredProviderId) {
-        if (a.config.id === request.preferredProviderId && b.config.id !== request.preferredProviderId) {
+        if (
+          a.config.id === request.preferredProviderId &&
+          b.config.id !== request.preferredProviderId
+        ) {
           return -1;
         }
-        if (b.config.id === request.preferredProviderId && a.config.id !== request.preferredProviderId) {
+        if (
+          b.config.id === request.preferredProviderId &&
+          a.config.id !== request.preferredProviderId
+        ) {
           return 1;
         }
       }
@@ -357,7 +356,11 @@ export function createMultiProviderLlmRouter(
       const estimatedTokens =
         estimatePromptTokens(request.prompt) + (request.maxOutputTokens ?? 256);
 
-      const attempts: Array<{ readonly providerId: string; readonly ok: boolean; readonly error?: string }> = [];
+      const attempts: Array<{
+        readonly providerId: string;
+        readonly ok: boolean;
+        readonly error?: string;
+      }> = [];
 
       for (const candidate of candidates) {
         checkBudgetPreFlight(candidate.config, estimatedTokens);

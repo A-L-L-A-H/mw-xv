@@ -148,7 +148,7 @@
     background: linear-gradient(
       115deg,
       transparent 15%,
-      rgb(255 255 255 / 44%) 50%,
+      color-mix(in srgb, var(--mw-highlight) 44%, transparent) 50%,
       transparent 85%
     );
     transform: translateX(-160%) skewX(-24deg);
@@ -334,7 +334,7 @@
     max-width: 100%;
     overflow: hidden;
     border: 2px solid var(--mw-border);
-    background: var(--mw-surface-muted);
+    background: var(--mw-muted);
     aspect-ratio: var(--mw-artwork-ratio, 16 / 9);
   }
   .mw-ui-artwork-frame[data-shape='portrait'] {
@@ -426,7 +426,7 @@
     background: linear-gradient(
       115deg,
       transparent 10%,
-      rgb(255 255 255 / 55%) 50%,
+      color-mix(in srgb, var(--mw-highlight) 55%, transparent) 50%,
       transparent 90%
     );
     transform: translateX(-160%) skewX(-24deg);
@@ -512,7 +512,10 @@
   .mw-ui-metric-tile[data-surface='paper'] {
     border-color: var(--mw-ink-black);
     background: var(--mw-paper-cream);
-    background-image: radial-gradient(rgb(13 13 13 / 10%) 1px, transparent 1.2px);
+    background-image: radial-gradient(
+      color-mix(in srgb, var(--mw-ink-black) 10%, transparent) 1px,
+      transparent 1.2px
+    );
     background-size: 7px 7px;
     color: var(--mw-ink-black);
     filter: drop-shadow(3px 3px 0 var(--mw-ink-black));
@@ -520,7 +523,10 @@
   .mw-ui-metric-tile[data-surface='ink'] {
     border-color: var(--mw-paper-cream);
     background: var(--mw-ink-panel);
-    background-image: radial-gradient(rgb(243 239 228 / 9%) 1px, transparent 1.2px);
+    background-image: radial-gradient(
+      color-mix(in srgb, var(--mw-paper-cream) 9%, transparent) 1px,
+      transparent 1.2px
+    );
     background-size: 7px 7px;
     color: var(--mw-paper-cream);
     filter: drop-shadow(3px 3px 0 var(--mw-ink-black));
@@ -1027,7 +1033,6 @@
   .mw-ui-select-content::before,
   .mw-ui-command::before,
   .mw-ui-manga-panel::before {
-    --mw-chalk-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='none'%3E%3Cpath d='M1 2L28 0 58 3 92 0 128 3 166 0 199 2 197 26 200 54 197 80 199 99 164 97 126 100 88 97 48 100 14 97 1 99 3 70 0 40 3 14Z' fill='none' stroke='%23000' stroke-width='4.2' stroke-dasharray='26 3 10 2 34 4'/%3E%3Cpath d='M4 6L52 4M78 3L128 5M154 4L194 6M6 94L62 96M100 95L148 97M172 95L196 93M5 22L4 56M196 28L195 66' stroke='%23000' stroke-width='2' stroke-dasharray='9 4 4 5'/%3E%3Ccircle cx='7' cy='8' r='2' fill='%23000'/%3E%3Ccircle cx='193' cy='9' r='1.7' fill='%23000'/%3E%3Ccircle cx='192' cy='92' r='2.1' fill='%23000'/%3E%3Ccircle cx='8' cy='91' r='1.6' fill='%23000'/%3E%3C/svg%3E");
     content: '';
     position: absolute;
     inset: 0;
@@ -1323,7 +1328,7 @@
   }
   .mw-ui-date-picker {
     display: grid;
-    gap: var(--mw-spacing-2, 0.5rem);
+    gap: var(--mw-space-2);
   }
   @media (min-width: 480px) {
     .mw-ui-date-picker {
@@ -1632,11 +1637,22 @@
     }
   }
 
-  .mw-ui-dialog-overlay {
+  .mw-ui-dialog-overlay,
+  .mw-ui-sheet-overlay {
     position: fixed;
     inset: 0;
-    z-index: 50;
+    z-index: var(--mw-layer-overlay);
     background: var(--mw-backdrop);
+  }
+  .mw-ui-mode-picker {
+    z-index: var(--mw-layer-dialog);
+  }
+  .mw-ui-dialog-content,
+  .mw-ui-sheet-content {
+    z-index: var(--mw-layer-dialog);
+  }
+  .mw-ui-popover-content {
+    z-index: var(--mw-layer-popover);
   }
   .mw-ui-dialog-overlay,
   .mw-ui-sheet-overlay {
@@ -1659,7 +1675,7 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    z-index: 51;
+    z-index: var(--mw-layer-dialog);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     width: min(calc(100% - 2rem), 32rem);
@@ -1713,7 +1729,7 @@
     font-size: 0.875rem;
   }
   .mw-ui-tooltip-content {
-    z-index: 60;
+    z-index: var(--mw-layer-popover);
     width: max-content;
     max-width: min(24rem, calc(100vw - 2rem));
     border: 2px solid var(--mw-ink);
@@ -1777,7 +1793,7 @@
   }
 
   .mw-ui-menu-content {
-    z-index: 60;
+    z-index: var(--mw-layer-popover);
     max-height: var(--radix-dropdown-menu-content-available-height);
     min-width: 8rem;
     overflow: auto;
@@ -1898,7 +1914,7 @@
   }
   .mw-ui-select-content {
     position: relative;
-    z-index: 60;
+    z-index: var(--mw-layer-popover);
     min-width: 8rem;
     max-height: var(--radix-select-content-available-height);
     overflow: hidden;
@@ -2368,7 +2384,10 @@
     border: 2px solid var(--mw-ink-black);
     padding: 0.45rem 0.8rem;
     background: var(--mw-paper-cream);
-    background-image: radial-gradient(rgb(13 13 13 / 10%) 1px, transparent 1.2px);
+    background-image: radial-gradient(
+      color-mix(in srgb, var(--mw-ink-black) 10%, transparent) 1px,
+      transparent 1.2px
+    );
     background-size: 6px 6px;
     color: var(--mw-ink-black);
     clip-path: var(--mw-grunge-clip-torn-card);
@@ -2414,7 +2433,7 @@
     height: 0.6rem;
     pointer-events: none;
     background: color-mix(in srgb, var(--mw-paper-cream) 80%, var(--mw-yellow));
-    border: 1px solid rgb(13 13 13 / 40%);
+    border: 1px solid color-mix(in srgb, var(--mw-ink-black) 40%, transparent);
     clip-path: var(--mw-grunge-clip-tape);
     transform: translateX(-50%) rotate(-3deg);
   }
@@ -2428,8 +2447,15 @@
     padding: 1.15rem;
     background: var(--mw-ink-panel);
     background-image:
-      radial-gradient(rgb(243 239 228 / 11%) 1px, transparent 1.3px),
-      repeating-linear-gradient(-24deg, transparent 0 13px, rgb(243 239 228 / 5%) 13px 14px);
+      radial-gradient(
+        color-mix(in srgb, var(--mw-paper-cream) 11%, transparent) 1px,
+        transparent 1.3px
+      ),
+      repeating-linear-gradient(
+        -24deg,
+        transparent 0 13px,
+        color-mix(in srgb, var(--mw-paper-cream) 5%, transparent) 13px 14px
+      );
     background-size:
       7px 7px,
       auto;
@@ -2443,8 +2469,15 @@
     border-color: var(--mw-ink-black);
     background: var(--mw-paper-cream);
     background-image:
-      radial-gradient(rgb(13 13 13 / 11%) 1px, transparent 1.3px),
-      repeating-linear-gradient(-24deg, transparent 0 13px, rgb(13 13 13 / 5%) 13px 14px);
+      radial-gradient(
+        color-mix(in srgb, var(--mw-ink-black) 11%, transparent) 1px,
+        transparent 1.3px
+      ),
+      repeating-linear-gradient(
+        -24deg,
+        transparent 0 13px,
+        color-mix(in srgb, var(--mw-ink-black) 5%, transparent) 13px 14px
+      );
     color: var(--mw-ink-black);
   }
   .mw-ui-manga-panel[data-accent='yellow'] {

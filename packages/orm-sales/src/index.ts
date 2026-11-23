@@ -22,3 +22,14 @@ export {
   type ProjectedOrderLinePayload,
   type ProjectedOrderPayload,
 } from './quote-engine.js';
+export {
+  buildSalesInitialSeed,
+  seedSalesInitialData,
+  type SalesSeedStateCode,
+  type SalesInitialStateSeed,
+  type SalesInitialOrderSeed,
+  type SalesInitialLineSeed,
+  type SalesInitialSeed,
+  type SalesSeedExecutionResult,
+  type SeedSalesInitialDataOptions,
+} from './seed.js';

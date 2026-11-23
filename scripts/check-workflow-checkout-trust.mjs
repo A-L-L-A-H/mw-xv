@@ -23,6 +23,7 @@ const requiredWriteConcurrencyGroups = new Map([
   ['dependency-candidate.yml:publish', 'dev-branch-updates'],
   ['roadmap-issue-plan.yml:apply', 'roadmap-issue-sync'],
   ['release.yml:publish', 'release-asset-updates'],
+  ['desktop-release.yml:publish-desktop-release', 'release-asset-updates'],
   ['release-orchestrate.yml:publish-rc', 'release-asset-updates'],
   ['release-orchestrate.yml:publish-stable', 'release-asset-updates'],
   ['pages.yml:store-versioned-docs', 'release-asset-updates'],

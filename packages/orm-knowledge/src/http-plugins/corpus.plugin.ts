@@ -263,7 +263,11 @@ async function readPublishedSource(sourceId: string): Promise<SourceCitation | n
   return null;
 }
 
-function logRequestError(request: unknown, payload: Record<string, unknown>, message: string): void {
+function logRequestError(
+  request: unknown,
+  payload: Record<string, unknown>,
+  message: string
+): void {
   const logger = (request as { readonly log?: { error: (obj: unknown, msg: string) => void } })
     ?.log;
   logger?.error(payload, message);
@@ -333,12 +337,10 @@ export const corpusHttpPlugin: AddonHttpPlugin = async (app) => {
       },
     },
     async (request, reply) => {
-      if (
-        !(
-          (request.params.editionId === quranEditionId && request.params.locator === quranLocator) ||
-          (request.params.editionId === webpEditionId && request.params.locator === webpLocator)
-        )
-      ) {
+      if (!(
+        (request.params.editionId === quranEditionId && request.params.locator === quranLocator) ||
+        (request.params.editionId === webpEditionId && request.params.locator === webpLocator)
+      )) {
         return reply.code(404).send({ success: false, error: 'Passage not found' });
       }
       try {

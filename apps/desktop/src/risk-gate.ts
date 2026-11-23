@@ -92,7 +92,7 @@ export function redactSensitiveText(
   for (const secret of knownSecrets) {
     const trimmed = secret.trim();
     if (trimmed.length >= 6) {
-      output = output.replace(new RegExp(escapeRegExp(trimmed), 'g'), '[REDACTED_SECRET]');
+      output = output.replace(new RegExp(escapeRegExp(trimmed), 'g'), '[REDACTED]');
     }
   }
   output = output.replace(AUTH_SCHEME_PATTERN, '$1 [REDACTED]');

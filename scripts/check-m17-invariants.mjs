@@ -6,7 +6,8 @@ import process from 'node:process';
 
 const defaultRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-export const ADR_0012_RELATIVE_PATH = 'docs/decisions/0012-verifiable-a2a-consensus-self-healing.md';
+export const ADR_0012_RELATIVE_PATH =
+  'docs/decisions/0012-verifiable-a2a-consensus-self-healing.md';
 
 export const A2A_CONSENSUS_MODULE = 'packages/ai-runtime/src/a2a-consensus.ts';
 export const POLICY_FUZZER_MODULE = 'packages/ai-runtime/src/policy-fuzzer.ts';
@@ -23,13 +24,16 @@ export const M17_MODULES = [
 const FORBIDDEN_PATTERNS = [
   {
     code: 'FORBIDDEN_NODE_FS_IMPORT',
-    regex: /\b(?:from\s+['"](?:node:)?fs(?:\/promises)?['"]|import\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\)|require\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\))/u,
+    regex:
+      /\b(?:from\s+['"](?:node:)?fs(?:\/promises)?['"]|import\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\)|require\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\))/u,
     message: 'Direct node:fs import is forbidden inside @moonwitness/ai-runtime M17 modules.',
   },
   {
     code: 'FORBIDDEN_CHILD_PROCESS_IMPORT',
-    regex: /\b(?:from\s+['"](?:node:)?child_process['"]|import\s*\(\s*['"](?:node:)?child_process['"]\s*\)|require\s*\(\s*['"](?:node:)?child_process['"]\s*\))/u,
-    message: 'Direct node:child_process import is forbidden inside @moonwitness/ai-runtime M17 modules.',
+    regex:
+      /\b(?:from\s+['"](?:node:)?child_process['"]|import\s*\(\s*['"](?:node:)?child_process['"]\s*\)|require\s*\(\s*['"](?:node:)?child_process['"]\s*\))/u,
+    message:
+      'Direct node:child_process import is forbidden inside @moonwitness/ai-runtime M17 modules.',
   },
   {
     code: 'FORBIDDEN_EVAL_CALL',
@@ -39,7 +43,8 @@ const FORBIDDEN_PATTERNS = [
   {
     code: 'FORBIDDEN_NEW_FUNCTION',
     regex: /\bnew\s+Function\b/u,
-    message: 'Dynamic new Function() execution is forbidden inside @moonwitness/ai-runtime M17 modules.',
+    message:
+      'Dynamic new Function() execution is forbidden inside @moonwitness/ai-runtime M17 modules.',
   },
 ];
 
@@ -140,8 +145,7 @@ export function checkM17ModuleSource(relativePath, source) {
       violations.push({
         file: relativePath,
         code: 'MISSING_CALIBRATION_WEIGHTED_QUORUM',
-        message:
-          'a2a-consensus.ts must enforce calibration-weighted quorum checks (Brier/ECE).',
+        message: 'a2a-consensus.ts must enforce calibration-weighted quorum checks (Brier/ECE).',
       });
     }
   }

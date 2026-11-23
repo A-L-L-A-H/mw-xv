@@ -47,7 +47,6 @@ export function Button({
     return cloneElement(child as ReactElement<Record<string, unknown>>, {
       ...props,
       'aria-disabled': true,
-      tabIndex: -1,
       onClick: (event: MouseEvent<HTMLElement>) => {
         event.preventDefault();
         event.stopPropagation();

@@ -21,18 +21,18 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
     true,
     candidateValidation.errors.join('\n')
   );
-  assert.equal(candidateValidation.taskCount, 627);
+  assert.equal(candidateValidation.taskCount, 637);
 
-  // Source inventory: 239 roadmap + 14 audit + 112 WhatsApp + 7 legacy MW
+  // Source inventory: 239 roadmap + 24 audit + 112 WhatsApp + 7 legacy MW
   // + 14 promotion lifecycle + 128 desktop + 4 evolution + 109 Visual Universe records.
-  assert.equal(result.tasks.length, 627, `Expected 627 source-backed tasks, got ${result.tasks.length}`);
+  assert.equal(result.tasks.length, 637, `Expected 637 source-backed tasks, got ${result.tasks.length}`);
   const statusCounts = Object.fromEntries(
     ['done', 'doing', 'todo', 'blocked'].map((status) => [
       status,
       result.tasks.filter((task) => task.status === status).length,
     ])
   );
-  assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 89, blocked: 21 });
+  assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 96, blocked: 24 });
 
   const sourceCounts = Object.fromEntries(
     [...new Set(result.tasks.map((task) => task.sourceRef.file))]
@@ -45,7 +45,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
     'docs/roadmap/tasks.json': 239,
     'evolution/backlog.json': 4,
     'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md': 14,
-    'scripts/tasks/sources/audit-tasks.mjs': 14,
+    'scripts/tasks/sources/audit-tasks.mjs': 24,
     'todo-desktop.md': 128,
     'todo-wa.md': 112,
   });
@@ -195,7 +195,7 @@ test('isolated recovery candidate mode writes validated output without touching 
     const candidate = JSON.parse(await readFile(candidatePath, 'utf8'));
     const validation = await validateTaskRegistryData(candidate);
     assert.equal(validation.valid, true, validation.errors.join('\n'));
-    assert.equal(candidate.tasks.length, 627);
+    assert.equal(candidate.tasks.length, 637);
     assert.equal(await readFile(canonicalPath, 'utf8'), canonicalBefore);
     assert.equal((await stat(candidatePath)).isFile(), true);
   } finally {

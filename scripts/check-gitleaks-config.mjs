@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workflowsDir = path.join(root, '.github', 'workflows');
 const configPath = path.join(root, '.gitleaks.toml');
 const actionReference = /gitleaks\/gitleaks-action@[0-9a-f]{40}\s+#\s*v\d+\.\d+\.\d+/;
+const fetchDepth = /fetch-depth:\s*0/u;
 const exactLine = (segments) => new RegExp(segments.join(''), 'u');
 const runtimeSecretNames = [
   'JWT_SECRET',
@@ -120,6 +121,10 @@ export function validateGitleaksSetup(workflow, config) {
   }
   if (!/regexTarget\s*=\s*"line"/.test(config))
     problems.push('Allowlist must match exact lines, not whole files or commits.');
+  if (!/\[\[allowlists\]\][\s\S]*?paths\s*=\s*\[[^\]]*gitleaks-baseline/u.test(config))
+    problems.push('The reviewed baseline must be allowlisted as a scanned path.');
+  if (!/\[\[allowlists\]\][\s\S]*?paths\s*=\s*\[[^\]]*asset-map/u.test(config))
+    problems.push('The generated asset-map hash metadata must be allowlisted as a scanned path.');
 
   // A CRLF-terminated line otherwise escapes the `$` anchor and reads as a clean scan.
   if (
@@ -132,7 +137,7 @@ export function validateGitleaksSetup(workflow, config) {
     );
   }
 
-  const allowlistStart = config.indexOf('[allowlist]');
+  const allowlistStart = config.indexOf('[[allowlists]]');
   const customRulesStart = config.indexOf('[[rules]]', allowlistStart);
   const allowlistConfig =
     allowlistStart < 0
@@ -153,31 +158,94 @@ export function validateGitleaksSetup(workflow, config) {
   return problems;
 }
 
-async function findActiveGitleaksWorkflow() {
-  for (const filename of ['ci.yml']) {
-    try {
-      const content = await readFile(path.join(workflowsDir, filename), 'utf8');
-      if (/gitleaks\/gitleaks-action@/u.test(content)) return content;
-    } catch (error) {
-      if (error?.code !== 'ENOENT') throw error;
-    }
+const baselinePath = path.join(root, '.gitleaks-baseline.json');
+
+export function validateGitleaksCliSetup(workflow, baseline) {
+  const problems = [];
+  if (!workflow) {
+    problems.push('CI workflow is missing.');
+    return problems;
   }
-  return null;
+  if (/gitleaks\/gitleaks-action@/u.test(workflow)) {
+    problems.push('CI must not use the third-party gitleaks action blocked by repository policy.');
+  }
+  if (!fetchDepth.test(workflow)) problems.push('Gitleaks must scan full Git history.');
+  if (!/^\s*contents:\s*read\s*$/m.test(workflow))
+    problems.push('Gitleaks workflow must grant contents: read.');
+  if (
+    !/curl[^\n]*--location/u.test(workflow) ||
+    !/gitleaks_\$\{version\}_linux_x64\.tar\.gz/u.test(workflow)
+  )
+    problems.push('Gitleaks CLI download must pin the Linux x64 release archive.');
+  if (!/expected='[0-9a-f]{64}'/u.test(workflow))
+    problems.push('Gitleaks CLI download must pin a SHA-256 checksum.');
+  if (!/gitleaks detect/u.test(workflow)) problems.push('CI must run gitleaks detect.');
+  if (!/--baseline-path\s+\.gitleaks-baseline\.json/u.test(workflow))
+    problems.push('CI must apply the reviewed false-positive baseline.');
+  if (!baseline) {
+    problems.push('The reviewed gitleaks baseline is missing.');
+    return problems;
+  }
+  let findings;
+  try {
+    findings = JSON.parse(baseline);
+  } catch {
+    problems.push('The gitleaks baseline must be valid JSON.');
+    return problems;
+  }
+  if (!Array.isArray(findings) || findings.length === 0) {
+    problems.push('The gitleaks baseline must record the reviewed synthetic findings.');
+    return problems;
+  }
+  if (
+    findings.some(
+      (finding) =>
+        typeof finding.Fingerprint !== 'string' ||
+        finding.Fingerprint.length === 0 ||
+        typeof finding.Secret !== 'string' ||
+        finding.Secret.length === 0
+    )
+  ) {
+    problems.push('Every baseline finding must retain its fingerprint and matching secret.');
+  }
+  return problems;
+}
+
+async function findActiveGitleaksWorkflow() {
+  try {
+    const content = await readFile(path.join(workflowsDir, 'ci.yml'), 'utf8');
+    return /gitleaks\/gitleaks-action@/u.test(content) ? content : null;
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    return null;
+  }
 }
 
 async function main() {
-  const workflow = await findActiveGitleaksWorkflow();
   const config = await readFile(configPath, 'utf8');
-  const problems = validateGitleaksSetup(workflow, config);
+  const actionWorkflow = await findActiveGitleaksWorkflow();
+  const problems = validateGitleaksSetup(actionWorkflow, config);
+  if (!actionWorkflow) {
+    const [workflowResult, baselineResult] = await Promise.allSettled([
+      readFile(path.join(workflowsDir, 'ci.yml'), 'utf8'),
+      readFile(baselinePath, 'utf8'),
+    ]);
+    problems.push(
+      ...validateGitleaksCliSetup(
+        workflowResult.status === 'fulfilled' ? workflowResult.value : null,
+        baselineResult.status === 'fulfilled' ? baselineResult.value : null
+      )
+    );
+  }
   if (problems.length) {
     for (const problem of problems) process.stderr.write(`${problem}\n`);
     process.exitCode = 1;
     return;
   }
   process.stdout.write(
-    workflow
+    actionWorkflow
       ? 'Gitleaks workflow and exact-line allowlist are valid.\n'
-      : 'Gitleaks config and exact-line allowlist are valid (standalone; no dedicated workflow).\n'
+      : 'Gitleaks CLI workflow, baseline, and exact-line allowlist are valid.\n'
   );
 }
 

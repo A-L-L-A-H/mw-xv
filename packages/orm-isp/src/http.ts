@@ -89,10 +89,11 @@ function requireAuthorizedModelAccess(
 export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHttpPlugin {
   return async (fastifyApp) => {
     const fastify = fastifyApp as FastifyInstance;
-    const baseUrl = (options.ispServiceUrl ?? process.env.MW_ISP_URL ?? 'http://127.0.0.1:3002').replace(
-      /\/+$/u,
-      ''
-    );
+    const baseUrl = (
+      options.ispServiceUrl ??
+      process.env.MW_ISP_URL ??
+      'http://127.0.0.1:3002'
+    ).replace(/\/+$/u, '');
     const fetchImpl = options.fetchImpl ?? globalThis.fetch;
     const adminToken = resolveIspAdminToken({
       adminToken: options.adminToken,
@@ -356,12 +357,14 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
         }
 
         if (dispatched) {
-          await ISPRadiusOutbox.query().findById(outboxRow.id).patch({
-            status: 'sent',
-            sent_at: new Date().toISOString().slice(0, 19),
-            response: JSON.stringify({ immediateDispatch: true }),
-            error_message: null,
-          });
+          await ISPRadiusOutbox.query()
+            .findById(outboxRow.id)
+            .patch({
+              status: 'sent',
+              sent_at: new Date().toISOString().slice(0, 19),
+              response: JSON.stringify({ immediateDispatch: true }),
+              error_message: null,
+            });
         }
 
         return {

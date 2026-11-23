@@ -181,8 +181,7 @@ export function CloudIspPage() {
   });
 
   const exportTerraformMutation = useMutation({
-    mutationFn: async () =>
-      client.request<string>('/api/cloud/export/terraform'),
+    mutationFn: async () => client.request<string>('/api/cloud/export/terraform'),
     onSuccess: (hcl) => {
       setTerraformPreview(typeof hcl === 'string' ? hcl : JSON.stringify(hcl, null, 2));
       toast.success('Terraform HCL generated.');
@@ -301,7 +300,9 @@ export function CloudIspPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile
           label="Docker Agent"
-          value={cloudHealthQuery.data?.controlPlane ?? (cloudHealthQuery.isLoading ? '...' : 'error')}
+          value={
+            cloudHealthQuery.data?.controlPlane ?? (cloudHealthQuery.isLoading ? '...' : 'error')
+          }
           detail={`Docker: ${cloudHealthQuery.data?.docker ?? 'unknown'}`}
         />
         <MetricTile
@@ -503,7 +504,9 @@ export function CloudIspPage() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          disabled={sub.status === 'suspended' || suspendSubscriberMutation.isPending}
+                          disabled={
+                            sub.status === 'suspended' || suspendSubscriberMutation.isPending
+                          }
                           onClick={() => suspendSubscriberMutation.mutate(sub.id)}
                         >
                           Suspend

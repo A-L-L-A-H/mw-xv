@@ -19,10 +19,7 @@ export interface AdversarialActionSample {
   readonly boundaryProbe: boolean;
 }
 
-export type PolicyFuzzFindingKind =
-  | 'contradiction'
-  | 'shadow_allow_regression'
-  | 'boundary_escape';
+export type PolicyFuzzFindingKind = 'contradiction' | 'shadow_allow_regression' | 'boundary_escape';
 
 export interface PolicyFuzzFinding {
   readonly kind: PolicyFuzzFindingKind;
@@ -145,7 +142,10 @@ export function fuzzPolicyInvariants(
 ): PolicyFuzzReport {
   const redactor = createRedactor();
   const seed = Number.isInteger(options.seed) ? (options.seed as number) : DEFAULT_SEED;
-  const iterations = Math.max(1, Math.min(10_000, Math.floor(options.iterations ?? DEFAULT_ITERATIONS)));
+  const iterations = Math.max(
+    1,
+    Math.min(10_000, Math.floor(options.iterations ?? DEFAULT_ITERATIONS))
+  );
   const forbiddenResources = new Set(
     options.forbiddenBoundaryResources ?? DEFAULT_FORBIDDEN_BOUNDARY_RESOURCES
   );
@@ -158,7 +158,8 @@ export function fuzzPolicyInvariants(
 
   for (let i = 0; i < iterations; i += 1) {
     const action = ADVERSARIAL_ACTIONS[Math.floor(nextRandom() * ADVERSARIAL_ACTIONS.length)]!;
-    const resource = ADVERSARIAL_RESOURCES[Math.floor(nextRandom() * ADVERSARIAL_RESOURCES.length)]!;
+    const resource =
+      ADVERSARIAL_RESOURCES[Math.floor(nextRandom() * ADVERSARIAL_RESOURCES.length)]!;
     const riskTier = Math.floor(nextRandom() * 5);
     const boundaryProbe = forbiddenResources.has(resource) || riskTier >= 4;
 

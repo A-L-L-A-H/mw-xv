@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {
-  isApiFatalLine,
-  waitForApiReady,
-} from './local-service-orchestrator.mjs';
+import { isApiFatalLine, waitForApiReady } from './local-service-orchestrator.mjs';
 
 test('waits until the API is ready without starting dependent services early', async () => {
   let calls = 0;

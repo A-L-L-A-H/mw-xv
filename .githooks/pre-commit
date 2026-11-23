@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Running pre-commit verification gates..."
+
+# Run constitution check and fast preflight
+node scripts/evolution/check-constitution.mjs
+node scripts/preflight-fast.mjs
+
+echo "Pre-commit checks passed successfully."

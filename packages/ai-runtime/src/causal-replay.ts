@@ -8,10 +8,7 @@ export type CausalRootCauseCategory =
   | 'tool_error'
   | 'environment_drift';
 
-export type DivergenceTriggerReason =
-  | 'PROOF_GATE_FAILED'
-  | 'WORLD_MODEL_SURPRISE_SPIKE'
-  | 'BOTH';
+export type DivergenceTriggerReason = 'PROOF_GATE_FAILED' | 'WORLD_MODEL_SURPRISE_SPIKE' | 'BOTH';
 
 export interface CausalCheckpoint {
   readonly stepIndex: number;

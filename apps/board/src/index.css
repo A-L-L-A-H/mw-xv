@@ -164,10 +164,10 @@
     pointer-events: none;
     background: var(--ink);
     opacity: 0.72;
-    -webkit-mask-image: var(--board-chalk-mask);
+    -webkit-mask-image: var(--mw-chalk-mask);
     -webkit-mask-size: 100% 100%;
     -webkit-mask-repeat: no-repeat;
-    mask-image: var(--board-chalk-mask);
+    mask-image: var(--mw-chalk-mask);
     mask-size: 100% 100%;
     mask-repeat: no-repeat;
   }
@@ -213,8 +213,15 @@
   /* Raw-art Board chrome: chalk-scratched sidebar seam, jagged magenta active nav brush, topbar tape seam. */
   .board-sidebar {
     background-image:
-      radial-gradient(rgb(243 239 228 / 7%) 1px, transparent 1.2px),
-      repeating-linear-gradient(-22deg, transparent 0 18px, rgb(243 239 228 / 3%) 18px 19px);
+      radial-gradient(
+        color-mix(in srgb, var(--mw-paper-cream) 7%, transparent) 1px,
+        transparent 1.2px
+      ),
+      repeating-linear-gradient(
+        -22deg,
+        transparent 0 18px,
+        color-mix(in srgb, var(--mw-paper-cream) 3%, transparent) 18px 19px
+      );
     background-size:
       8px 8px,
       auto;
@@ -439,7 +446,10 @@
   border: 2px solid var(--mw-ink-black);
   padding: var(--mw-torn-safe-inset) var(--mw-space-4);
   background: var(--mw-paper-cream);
-  background-image: radial-gradient(rgb(13 13 13 / 11%) 1px, transparent 1.2px);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--mw-ink-black) 11%, transparent) 1px,
+    transparent 1.2px
+  );
   background-size: 7px 7px;
   color: var(--mw-ink-black);
   box-shadow: none;

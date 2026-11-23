@@ -40,9 +40,10 @@ export function TagInput({
   const id = providedId ?? generatedId;
   const descriptionId = description ? `${id}-description` : undefined;
   const errorId = error ? `${id}-error` : undefined;
-  const describedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined;
-  const invalidState = invalid || Boolean(error);
   const atLimit = maxTags !== undefined && value.length >= maxTags;
+  const limitId = atLimit ? `${id}-limit` : undefined;
+  const describedBy = [descriptionId, errorId, limitId].filter(Boolean).join(' ') || undefined;
+  const invalidState = invalid || Boolean(error);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' || event.key === ',') {
@@ -68,7 +69,7 @@ export function TagInput({
       <div className="mw-ui-tag-input">
         <ul className="mw-ui-tag-list">
           {value.map((tag, index) => (
-            <li className="mw-ui-tag" key={tag}>
+            <li className="mw-ui-tag" key={`${tag}-${index}`}>
               <span>{tag}</span>
               <button
                 aria-label={`Remove ${tag}`}
@@ -86,16 +87,23 @@ export function TagInput({
           aria-describedby={describedBy}
           aria-invalid={invalidState ? true : undefined}
           aria-required={required ? true : undefined}
+          aria-disabled={atLimit ? true : undefined}
           className="mw-ui-input"
           data-empty={value.length === 0}
-          disabled={disabled || atLimit}
+          disabled={disabled}
           id={id}
           name={name}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          placeholder={atLimit ? 'Maximum tags reached' : placeholder}
+          readOnly={atLimit}
           type="text"
         />
       </div>
+      {atLimit ? (
+        <span className="mw-ui-visually-hidden" id={limitId}>
+          Maximum {maxTags} tags reached.
+        </span>
+      ) : null}
       {description ? (
         <div className="mw-ui-field-description" id={descriptionId}>
           {description}

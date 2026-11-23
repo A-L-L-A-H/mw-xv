@@ -33,13 +33,7 @@ export const DEFAULT_PAAS_PLANS: Readonly<Record<PaasPlanTier, PaasPlanLimits>> 
 });
 
 export type PaasSubscriptionStatus =
-  | 'active'
-  | 'trialing'
-  | 'past_due'
-  | 'suspended'
-  | 'cancelled'
-  | 'expired'
-  | 'pending';
+  'active' | 'trialing' | 'past_due' | 'suspended' | 'cancelled' | 'expired' | 'pending';
 
 export type PaasQuotaDenialCode =
   | 'SUBSCRIPTION_INACTIVE'

@@ -78,7 +78,7 @@ describe('searchHybridLocalMemory', () => {
     });
 
     expect(result.query).not.toContain('super-secret-known-token');
-    expect(result.query).toContain('[REDACTED_SECRET]');
+    expect(result.query).toContain('[REDACTED]');
     const taskHit = result.hits.find((hit) => hit.id === 'task-2');
     expect(taskHit).toBeDefined();
     expect(taskHit?.redacted).toBe(true);

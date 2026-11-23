@@ -1,10 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { createHash } from 'node:crypto';
-import {
-  WhatsappAccount,
-  WhatsappConversation,
-  WhatsappGroupOperation,
-} from '../models.js';
+import { WhatsappAccount, WhatsappConversation, WhatsappGroupOperation } from '../models.js';
 import { isRecord } from '@moonwitness/types';
 import { gowaRequest, GowaError } from '../runtime/gowa-client.js';
 import parsePhoneNumberFromString from 'libphonenumber-js/max';

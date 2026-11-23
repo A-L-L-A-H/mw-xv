@@ -2,6 +2,11 @@ import { createHash } from 'node:crypto';
 import { AccessDeniedError, ValidationError } from '@moonwitness/types';
 import type { LocalTodoTaskSnapshot } from '@moonwitness/orm-project';
 import { redactSensitiveText } from './risk-gate.js';
+import {
+  resolveSyncConflict,
+  type SyncConflictRecord,
+  type SyncRecordVersion,
+} from './sync-engine.js';
 import type {
   DesktopArtifactUploadRequest,
   DesktopArtifactUploadResponse,
@@ -22,6 +27,30 @@ export interface QuarantinedEnvelopeRecord {
   readonly agentRunId: string;
   readonly reason: string;
   readonly quarantinedAt: string;
+}
+
+export interface RemoteDelta {
+  readonly entityType: string;
+  readonly entityId: string;
+  readonly operation: 'upsert' | 'delete';
+  readonly lamportClock: number;
+  readonly nodeId: string;
+  readonly updatedAt: string;
+  readonly fields: Readonly<Record<string, unknown>>;
+  readonly tombstone: boolean;
+}
+
+export interface PullRemoteDeltasRequest {
+  readonly companyId: number;
+  readonly sinceCursor?: string;
+  readonly localVersions?: readonly SyncRecordVersion[];
+}
+
+export interface PullRemoteDeltasResponse {
+  readonly deltas: readonly RemoteDelta[];
+  readonly conflicts: readonly SyncConflictRecord[];
+  readonly nextCursor: string;
+  readonly serverClock: number;
 }
 
 export interface DesktopUpstreamSyncClientOptions {
@@ -55,7 +84,7 @@ function normalizeBaseUrl(rawUrl: string): string {
     parsed.password ||
     parsed.hash
   ) {
-    throw new AccessDeniedError(`Unsafe upstream apiBaseUrl rejected: '${rawUrl}'`);
+    throw new ValidationError(`Unsafe upstream apiBaseUrl rejected: '${rawUrl}'`);
   }
   return parsed.toString().replace(/\/+$/u, '');
 }
@@ -129,6 +158,63 @@ export class DesktopUpstreamSyncClient implements UpstreamPcwSyncTransport {
       throw new ValidationError(`Desktop pull sync failed (${response.status}): ${detail}`);
     }
     return (await response.json()) as DesktopPullSyncResponse;
+  }
+
+  async pullRemoteDeltas(options: PullRemoteDeltasRequest): Promise<PullRemoteDeltasResponse> {
+    if (!Number.isSafeInteger(options.companyId) || options.companyId <= 0) {
+      throw new ValidationError('companyId must be a positive integer');
+    }
+
+    const requestBody = {
+      companyId: options.companyId,
+      sinceCursor: options.sinceCursor,
+      localVersions: options.localVersions ?? [],
+    };
+
+    const response = await this.requestWithRetry('/api/desktop/sync/pull', {
+      method: 'POST',
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const detail = await this.readSafeErrorText(response);
+      throw new ValidationError(`Pull remote deltas failed (${response.status}): ${detail}`);
+    }
+
+    const rawResponse = (await response.json()) as {
+      readonly deltas?: readonly unknown[];
+      readonly nextCursor?: string;
+      readonly serverClock?: number;
+    };
+
+    const localVersions = options.localVersions ?? [];
+    const localMap = new Map<string, SyncRecordVersion>();
+    for (const lv of localVersions) {
+      const key = `${lv.entityType}::${lv.entityId}`;
+      localMap.set(key, lv);
+    }
+
+    const deltas: RemoteDelta[] = [];
+    const conflicts: SyncConflictRecord[] = [];
+
+    for (const delta of rawResponse.deltas ?? []) {
+      const d = delta as RemoteDelta;
+      deltas.push(d);
+
+      const key = `${d.entityType}::${d.entityId}`;
+      const localVersion = localMap.get(key);
+      if (localVersion) {
+        const conflict = resolveSyncConflict(localVersion, d);
+        conflicts.push(conflict);
+      }
+    }
+
+    return {
+      deltas,
+      conflicts,
+      nextCursor: rawResponse.nextCursor ?? '',
+      serverClock: rawResponse.serverClock ?? 0,
+    };
   }
 
   async uploadArtifact(

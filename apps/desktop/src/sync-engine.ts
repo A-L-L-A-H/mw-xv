@@ -91,7 +91,7 @@ function compareLamportOrder(
   localClock: number,
   localNodeId: string,
   remoteClock: number,
-  remoteNodeId: string,
+  remoteNodeId: string
 ): number {
   if (localClock !== remoteClock) {
     return localClock - remoteClock;
@@ -104,13 +104,13 @@ function compareLamportOrder(
 
 export function resolveSyncConflict(
   local: SyncRecordVersion,
-  remote: SyncRecordVersion,
+  remote: SyncRecordVersion
 ): SyncConflictRecord {
   const order = compareLamportOrder(
     local.lamportClock,
     local.nodeId,
     remote.lamportClock,
-    remote.nodeId,
+    remote.nodeId
   );
   const localKeys = Object.keys(local.fields).sort();
   const remoteKeys = Object.keys(remote.fields).sort();
@@ -119,8 +119,10 @@ export function resolveSyncConflict(
     const hasLocal = Object.prototype.hasOwnProperty.call(local.fields, key);
     const hasRemote = Object.prototype.hasOwnProperty.call(remote.fields, key);
     if (!hasLocal || !hasRemote) return false;
-    return JSON.stringify(canonicalizeValue(local.fields[key])) !==
-      JSON.stringify(canonicalizeValue(remote.fields[key]));
+    return (
+      JSON.stringify(canonicalizeValue(local.fields[key])) !==
+      JSON.stringify(canonicalizeValue(remote.fields[key]))
+    );
   });
 
   // Tombstone vs upsert or tombstone vs tombstone: strict LWW-Lamport wins
@@ -142,10 +144,10 @@ export function resolveSyncConflict(
   }
 
   const localOnlyKeys = localKeys.filter(
-    (key) => !Object.prototype.hasOwnProperty.call(remote.fields, key),
+    (key) => !Object.prototype.hasOwnProperty.call(remote.fields, key)
   );
   const remoteOnlyKeys = remoteKeys.filter(
-    (key) => !Object.prototype.hasOwnProperty.call(local.fields, key),
+    (key) => !Object.prototype.hasOwnProperty.call(local.fields, key)
   );
 
   // Disjoint or complementary field updates: deterministic field-level CRDT merge
@@ -204,7 +206,9 @@ export class DesktopSyncEngine {
   constructor(options?: { readonly nodeId?: string; readonly initialClock?: number }) {
     this.nodeId = options?.nodeId?.trim() || 'desktop-local';
     this.lamportClock =
-      typeof options?.initialClock === 'number' && Number.isInteger(options.initialClock) && options.initialClock >= 0
+      typeof options?.initialClock === 'number' &&
+      Number.isInteger(options.initialClock) &&
+      options.initialClock >= 0
         ? options.initialClock
         : 0;
   }
@@ -214,7 +218,11 @@ export class DesktopSyncEngine {
   }
 
   public advanceClock(remoteClock?: number): number {
-    if (typeof remoteClock === 'number' && Number.isFinite(remoteClock) && remoteClock > this.lamportClock) {
+    if (
+      typeof remoteClock === 'number' &&
+      Number.isFinite(remoteClock) &&
+      remoteClock > this.lamportClock
+    ) {
       this.lamportClock = Math.floor(remoteClock);
     }
     this.lamportClock += 1;
@@ -294,7 +302,7 @@ export class DesktopSyncEngine {
           remote.lamportClock,
           remote.nodeId,
           existing.lamportClock,
-          existing.nodeId,
+          existing.nodeId
         ) > 0
       ) {
         remoteMap.set(key, remote);
@@ -350,9 +358,15 @@ export class DesktopSyncEngine {
       pullEntries.push(remoteEntry);
     }
 
-    pushEntries.sort((a, b) => a.lamportClock - b.lamportClock || a.entityId.localeCompare(b.entityId));
-    pullEntries.sort((a, b) => a.lamportClock - b.lamportClock || a.entityId.localeCompare(b.entityId));
-    conflicts.sort((a, b) => a.entityType.localeCompare(b.entityType) || a.entityId.localeCompare(b.entityId));
+    pushEntries.sort(
+      (a, b) => a.lamportClock - b.lamportClock || a.entityId.localeCompare(b.entityId)
+    );
+    pullEntries.sort(
+      (a, b) => a.lamportClock - b.lamportClock || a.entityId.localeCompare(b.entityId)
+    );
+    conflicts.sort(
+      (a, b) => a.entityType.localeCompare(b.entityType) || a.entityId.localeCompare(b.entityId)
+    );
 
     const generatedAt = new Date().toISOString();
     const batchCore = {

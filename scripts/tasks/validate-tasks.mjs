@@ -88,7 +88,9 @@ export async function validateTaskRegistryData(tasksData, { checkRoadmapParity =
       if (!dependencyTask) {
         errors.push(`Task "${task.code}" references unknown dependency "${dependency}".`);
       } else if (!(dependencyTask.blocks ?? []).includes(task.code)) {
-        errors.push(`Dependency edge "${task.code}" -> "${dependency}" is missing its reciprocal blocks reference.`);
+        errors.push(
+          `Dependency edge "${task.code}" -> "${dependency}" is missing its reciprocal blocks reference.`
+        );
       }
     }
     for (const blockedTask of blockedTasks) {
@@ -96,7 +98,9 @@ export async function validateTaskRegistryData(tasksData, { checkRoadmapParity =
       if (!target) {
         errors.push(`Task "${task.code}" references unknown blocked task "${blockedTask}".`);
       } else if (!(target.dependsOn ?? []).includes(task.code)) {
-        errors.push(`Blocks edge "${task.code}" -> "${blockedTask}" has no reciprocal dependency reference.`);
+        errors.push(
+          `Blocks edge "${task.code}" -> "${blockedTask}" has no reciprocal dependency reference.`
+        );
       }
     }
   }
@@ -172,7 +176,9 @@ export async function validateTaskRegistryData(tasksData, { checkRoadmapParity =
     }
     for (const checkboxId of roadmapCheckState.keys()) {
       if (!roadmapById.has(checkboxId)) {
-        errors.push(`ROADMAP.md contains task "${checkboxId}" that is missing from docs/roadmap/tasks.json.`);
+        errors.push(
+          `ROADMAP.md contains task "${checkboxId}" that is missing from docs/roadmap/tasks.json.`
+        );
       }
     }
 
@@ -185,7 +191,9 @@ export async function validateTaskRegistryData(tasksData, { checkRoadmapParity =
       if (checkRoadmapParity) {
         const expectedStatus = toRoadmapTaskStatus(canonical.status);
         if (expectedStatus === null) {
-          errors.push(`Task "${canonical.code}" has status "${canonical.status}" with no roadmap projection mapping.`);
+          errors.push(
+            `Task "${canonical.code}" has status "${canonical.status}" with no roadmap projection mapping.`
+          );
         } else if (roadmapTask.status !== expectedStatus) {
           errors.push(
             `Status mismatch on "${roadmapTask.id}": roadmap index is "${roadmapTask.status}", but TaskOS maps to "${expectedStatus}".`
@@ -204,7 +212,9 @@ export async function validateTaskRegistryData(tasksData, { checkRoadmapParity =
 
     for (const canonical of tasksData.tasks) {
       if (/^(?:M\d+\.\d+|K\d+-\d+)$/u.test(canonical.code) && !roadmapById.has(canonical.code)) {
-        errors.push(`TaskOS roadmap task "${canonical.code}" is missing from docs/roadmap/tasks.json.`);
+        errors.push(
+          `TaskOS roadmap task "${canonical.code}" is missing from docs/roadmap/tasks.json.`
+        );
       }
     }
   } catch (err) {
@@ -214,8 +224,19 @@ export async function validateTaskRegistryData(tasksData, { checkRoadmapParity =
   return {
     valid: errors.length === 0,
     taskCount: tasksData.tasks.length,
-    errors
+    errors,
   };
+}
+
+export function findStaleRecoveryNarrative(narrative, taskCount) {
+  if (taskCount === 0) return [];
+  const staleClaims = [
+    [/Recovery status:\s*BLOCKED/iu, 'todo.md still declares recovery BLOCKED'],
+    [/zero-byte/iu, 'todo.md still describes the registry as zero-byte'],
+    [/Do not (?:run|resume)/iu, 'todo.md still contains a do-not-resume recovery instruction'],
+    [/TaskOS remains unavailable/iu, 'todo.md still says TaskOS is unavailable'],
+  ];
+  return staleClaims.filter(([pattern]) => pattern.test(narrative)).map(([, message]) => message);
 }
 
 export async function validateTasks({ checkRoadmapParity = true } = {}) {
@@ -227,21 +248,33 @@ export async function validateTasks({ checkRoadmapParity = true } = {}) {
   } catch (error) {
     return { valid: false, taskCount: 0, errors: [error.message] };
   }
-  return validateTaskRegistryData(tasksData, { checkRoadmapParity });
+  const result = await validateTaskRegistryData(tasksData, { checkRoadmapParity });
+  try {
+    const narrative = await fs.readFile(path.join(rootDir, 'todo.md'), 'utf8');
+    result.errors.push(...findStaleRecoveryNarrative(narrative, result.taskCount));
+  } catch (error) {
+    if (error.code !== 'ENOENT') result.errors.push(`Failed reading todo.md: ${error.message}`);
+  }
+  result.valid = result.errors.length === 0;
+  return result;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  validateTasks().then((res) => {
-    if (res.valid) {
-      console.log(`TaskOS Validation PASSED: ${res.taskCount} tasks verified zero-drift and schema-valid.`);
-      process.exit(0);
-    } else {
-      console.error(`TaskOS Validation FAILED with ${res.errors.length} error(s):`);
-      for (const err of res.errors) console.error(` - ${err}`);
+  validateTasks()
+    .then((res) => {
+      if (res.valid) {
+        console.log(
+          `TaskOS Validation PASSED: ${res.taskCount} tasks verified zero-drift and schema-valid.`
+        );
+        process.exit(0);
+      } else {
+        console.error(`TaskOS Validation FAILED with ${res.errors.length} error(s):`);
+        for (const err of res.errors) console.error(` - ${err}`);
+        process.exit(1);
+      }
+    })
+    .catch((err) => {
+      console.error('TaskOS validation execution error:', err);
       process.exit(1);
-    }
-  }).catch((err) => {
-    console.error('TaskOS validation execution error:', err);
-    process.exit(1);
-  });
+    });
 }

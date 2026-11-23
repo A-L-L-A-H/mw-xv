@@ -1,4 +1,4 @@
-import { defineModel, fields } from '@moonwitness/orm';
+import { defineModel, fields, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@moonwitness/orm';
 import { Partner } from './partner.js';
 import { Language } from './language.js';
 
@@ -39,9 +39,18 @@ export async function resolveUserPreferences(userId: number): Promise<UserPrefer
   };
 }
 
+function assertPasswordPolicy(password: string): void {
+  if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
+    throw new Error(
+      `Superadmin password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`
+    );
+  }
+}
+
 /** Initialize only the seeded superadmin whose password has never been set. */
 export async function initializeSuperadminPassword(password: string | undefined): Promise<void> {
   if (!password) return;
+  assertPasswordPolicy(password);
   const identity = User.knex()('_orm_data')
     .select('record_id')
     .where({ id: 'base.user_superadmin', model: User.modelName });
@@ -52,9 +61,7 @@ export async function initializeSuperadminPassword(password: string | undefined)
 
 /** Replace the seeded superadmin password after an explicit administrative reset. */
 export async function resetSuperadminPassword(password: string): Promise<void> {
-  if (password.length < 6 || password.length > 1024) {
-    throw new Error('Superadmin password must be between 6 and 1024 characters');
-  }
+  assertPasswordPolicy(password);
   const identity = User.knex()('_orm_data')
     .select('record_id')
     .where({ id: 'base.user_superadmin', model: User.modelName });

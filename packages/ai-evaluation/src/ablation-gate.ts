@@ -15,11 +15,7 @@ export interface CandidateAblationGateInput {
 }
 
 export type AblationCaseOutcome =
-  | 'improved'
-  | 'regressed'
-  | 'harmed'
-  | 'unchanged_pass'
-  | 'unchanged_fail';
+  'improved' | 'regressed' | 'harmed' | 'unchanged_pass' | 'unchanged_fail';
 
 export interface AblationCaseDelta {
   readonly caseId: string;
@@ -120,17 +116,12 @@ export function runCandidateAblationGate(
   }
 
   const totalCases = allCaseIds.length;
-  const baselinePassRate =
-    totalCases > 0 ? roundRate(baselinePassedCount / totalCases) : 0;
-  const candidatePassRate =
-    totalCases > 0 ? roundRate(candidatePassedCount / totalCases) : 0;
+  const baselinePassRate = totalCases > 0 ? roundRate(baselinePassedCount / totalCases) : 0;
+  const candidatePassRate = totalCases > 0 ? roundRate(candidatePassedCount / totalCases) : 0;
   const passRateDelta = roundRate(candidatePassRate - baselinePassRate);
 
   const eligibleForWorkflowPromotion =
-    totalCases > 0 &&
-    passRateDelta > 0 &&
-    regressionCount === 0 &&
-    harmCount === 0;
+    totalCases > 0 && passRateDelta > 0 && regressionCount === 0 && harmCount === 0;
 
   const gateSha256 = sha256Hex(
     JSON.stringify({

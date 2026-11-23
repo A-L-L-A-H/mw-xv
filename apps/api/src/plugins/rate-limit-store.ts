@@ -65,7 +65,11 @@ export class PostgresRateLimitStore {
   private readonly timeWindowMs: number;
   private tableReadyPromise: Promise<void> | null = null;
 
-  constructor(db: Knex, timeWindowMs: number | string = 60_000, sharedTableReady?: Promise<void> | null) {
+  constructor(
+    db: Knex,
+    timeWindowMs: number | string = 60_000,
+    sharedTableReady?: Promise<void> | null
+  ) {
     this.db = db;
     this.timeWindowMs = parseTimeWindowMs(timeWindowMs, 60_000);
     this.tableReadyPromise = sharedTableReady ?? null;

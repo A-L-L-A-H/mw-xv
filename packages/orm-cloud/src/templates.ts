@@ -2,12 +2,7 @@ import type { MoonWitnessMeshDeployParams } from './providers/moonwitness-mesh.j
 import type { TenantPaasQuotaInput } from './quota.js';
 
 export type PaasTemplateId =
-  | 'postgres-16'
-  | 'redis-7'
-  | 'ollama-local'
-  | 'static-site'
-  | 'node-api'
-  | 'moonwitness-tenant';
+  'postgres-16' | 'redis-7' | 'ollama-local' | 'static-site' | 'node-api' | 'moonwitness-tenant';
 
 export type PaasTemplateCategory = 'database' | 'cache' | 'ai' | 'web' | 'api' | 'platform';
 

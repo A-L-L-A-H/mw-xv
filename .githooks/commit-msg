@@ -1,0 +1,64 @@
+#!/bin/sh
+# commit-msg: Enforce conventional commit format
+# Format: <type>(<scope>): <subject>
+# Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci, revert
+
+set -eu
+
+MSG_FILE="$1"
+COMMIT_MSG=$(cat "$MSG_FILE")
+
+# Skip merge commits, revert commits, and fixup/squash
+echo "$COMMIT_MSG" | grep -qE "^(Merge|Revert|fixup!|squash!)" && exit 0
+
+# Conventional commit regex
+CONVENTIONAL_REGEX="^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\([a-z0-9\-]+\))?: .{1,100}"
+
+if ! echo "$COMMIT_MSG" | grep -qE "$CONVENTIONAL_REGEX"; then
+  echo "❌ Invalid commit message format."
+  echo ""
+  echo "Expected: <type>(<scope>): <subject>"
+  echo ""
+  echo "Types:"
+  echo "  feat       - New feature"
+  echo "  fix        - Bug fix"
+  echo "  docs       - Documentation only"
+  echo "  style      - Formatting, missing semicolons, etc."
+  echo "  refactor   - Code change that neither fixes bug nor adds feature"
+  echo "  perf       - Performance improvement"
+  echo "  test       - Adding/updating tests"
+  echo "  chore      - Maintenance, deps, build config"
+  echo "  build      - Build system changes"
+  echo "  ci         - CI config changes"
+  echo "  revert     - Reverts a previous commit"
+  echo ""
+  echo "Examples:"
+  echo "  feat(orm-notification): add seed data and idempotency tests"
+  echo "  fix(ui): reject cyclic token aliases"
+  echo "  docs(api): expose signed A2A routes"
+  echo "  chore(deps): upgrade typescript to 5.7"
+  echo ""
+  echo "Your message:"
+  echo "  $COMMIT_MSG"
+  exit 1
+fi
+
+# Check subject line length (max 100 chars)
+SUBJECT=$(echo "$COMMIT_MSG" | head -1)
+if [ ${#SUBJECT} -gt 100 ]; then
+  echo "❌ Subject line too long (${#SUBJECT} > 100 chars)"
+  exit 1
+fi
+
+# Check for issue reference in body (optional but recommended for feat/fix)
+TYPE=$(echo "$COMMIT_MSG" | sed -E 's/^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\([a-z0-9\-]+\))?: .*/\1/')
+if [ "$TYPE" = "feat" ] || [ "$TYPE" = "fix" ]; then
+  # Check if body has issue reference
+  BODY=$(echo "$COMMIT_MSG" | tail -n +3)
+  if ! echo "$BODY" | grep -qE "(#[0-9]+|[A-Z]+-[0-9]+)"; then
+    echo "⚠️  $TYPE commit should reference an issue (e.g. #123 or MW-UI-001) in body"
+    echo "   (This is a warning, not an error)"
+  fi
+fi
+
+exit 0

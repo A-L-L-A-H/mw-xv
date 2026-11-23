@@ -1,13 +1,5 @@
-import type {
-  AddonHttpPlugin,
-  AddonHttpReply,
-  AddonHttpRequestBase,
-} from '@moonwitness/orm';
-import {
-  planCoaBatch,
-  type CoaPlanInput,
-  type SubscriberLifecycleStatus,
-} from './coa-policy.js';
+import type { AddonHttpPlugin, AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
+import { planCoaBatch, type CoaPlanInput, type SubscriberLifecycleStatus } from './coa-policy.js';
 import {
   aggregateRadiusAccounting,
   type RadiusAccountingPacket,
@@ -44,7 +36,12 @@ function parseCoaPlanInput(item: unknown): CoaPlanInput | null {
   const subscriberStatus = item.subscriberStatus as SubscriberLifecycleStatus;
   if (!['active', 'suspended', 'terminated'].includes(subscriberStatus)) return null;
 
-  if (!isRecord(item.session) || !isRecord(item.profile) || !isRecord(item.nas) || !isRecord(item.policy)) {
+  if (
+    !isRecord(item.session) ||
+    !isRecord(item.profile) ||
+    !isRecord(item.nas) ||
+    !isRecord(item.policy)
+  ) {
     return null;
   }
 
@@ -82,34 +79,55 @@ function parseCoaPlanInput(item: unknown): CoaPlanInput | null {
       sessionId: session.sessionId,
       username: session.username,
       totalBytesUsed: session.totalBytesUsed,
-      ...(typeof session.framedIpAddress === 'string' ? { framedIpAddress: session.framedIpAddress } : {}),
-      ...(typeof session.sessionDurationSeconds === 'number' ? { sessionDurationSeconds: session.sessionDurationSeconds } : {}),
+      ...(typeof session.framedIpAddress === 'string'
+        ? { framedIpAddress: session.framedIpAddress }
+        : {}),
+      ...(typeof session.sessionDurationSeconds === 'number'
+        ? { sessionDurationSeconds: session.sessionDurationSeconds }
+        : {}),
     },
     profile: {
       name: profile.name,
       downloadKbps: profile.downloadKbps,
       uploadKbps: profile.uploadKbps,
-      ...(typeof profile.burstDownloadKbps === 'number' ? { burstDownloadKbps: profile.burstDownloadKbps } : {}),
-      ...(typeof profile.burstUploadKbps === 'number' ? { burstUploadKbps: profile.burstUploadKbps } : {}),
-      ...(typeof profile.burstPeriodSeconds === 'number' ? { burstPeriodSeconds: profile.burstPeriodSeconds } : {}),
+      ...(typeof profile.burstDownloadKbps === 'number'
+        ? { burstDownloadKbps: profile.burstDownloadKbps }
+        : {}),
+      ...(typeof profile.burstUploadKbps === 'number'
+        ? { burstUploadKbps: profile.burstUploadKbps }
+        : {}),
+      ...(typeof profile.burstPeriodSeconds === 'number'
+        ? { burstPeriodSeconds: profile.burstPeriodSeconds }
+        : {}),
     },
     nas: {
       nasIp: nas.nasIp,
       secret: nas.secret,
       ...(typeof nas.coaPort === 'number' ? { coaPort: nas.coaPort } : {}),
       ...(typeof nas.vendor === 'string' ? { vendor: nas.vendor } : {}),
-      ...(typeof nas.healthStatus === 'string' && ['healthy', 'degraded', 'offline'].includes(nas.healthStatus)
+      ...(typeof nas.healthStatus === 'string' &&
+      ['healthy', 'degraded', 'offline'].includes(nas.healthStatus)
         ? { healthStatus: nas.healthStatus as 'healthy' | 'degraded' | 'offline' }
         : {}),
       ...(typeof nas.isActive === 'boolean' ? { isActive: nas.isActive } : {}),
     },
     policy: {
       quotaBytes: policy.quotaBytes,
-      ...(typeof policy.throttleThresholdRatio === 'number' ? { throttleThresholdRatio: policy.throttleThresholdRatio } : {}),
-      ...(typeof policy.throttleDownloadRatio === 'number' ? { throttleDownloadRatio: policy.throttleDownloadRatio } : {}),
-      ...(typeof policy.throttleUploadRatio === 'number' ? { throttleUploadRatio: policy.throttleUploadRatio } : {}),
-      ...(typeof policy.minThrottleKbps === 'number' ? { minThrottleKbps: policy.minThrottleKbps } : {}),
-      ...(typeof policy.disconnectOnHardQuota === 'boolean' ? { disconnectOnHardQuota: policy.disconnectOnHardQuota } : {}),
+      ...(typeof policy.throttleThresholdRatio === 'number'
+        ? { throttleThresholdRatio: policy.throttleThresholdRatio }
+        : {}),
+      ...(typeof policy.throttleDownloadRatio === 'number'
+        ? { throttleDownloadRatio: policy.throttleDownloadRatio }
+        : {}),
+      ...(typeof policy.throttleUploadRatio === 'number'
+        ? { throttleUploadRatio: policy.throttleUploadRatio }
+        : {}),
+      ...(typeof policy.minThrottleKbps === 'number'
+        ? { minThrottleKbps: policy.minThrottleKbps }
+        : {}),
+      ...(typeof policy.disconnectOnHardQuota === 'boolean'
+        ? { disconnectOnHardQuota: policy.disconnectOnHardQuota }
+        : {}),
     },
   };
 }
@@ -135,10 +153,18 @@ function parseRadiusPacket(item: unknown): RadiusAccountingPacket | null {
     acctStatusType: item.acctStatusType as RadiusAcctStatusType,
     eventTimestampMs: item.eventTimestampMs,
     ...(typeof item.acctInputOctets === 'number' ? { acctInputOctets: item.acctInputOctets } : {}),
-    ...(typeof item.acctOutputOctets === 'number' ? { acctOutputOctets: item.acctOutputOctets } : {}),
-    ...(typeof item.acctInputGigawords === 'number' ? { acctInputGigawords: item.acctInputGigawords } : {}),
-    ...(typeof item.acctOutputGigawords === 'number' ? { acctOutputGigawords: item.acctOutputGigawords } : {}),
-    ...(typeof item.acctSessionTimeSeconds === 'number' ? { acctSessionTimeSeconds: item.acctSessionTimeSeconds } : {}),
+    ...(typeof item.acctOutputOctets === 'number'
+      ? { acctOutputOctets: item.acctOutputOctets }
+      : {}),
+    ...(typeof item.acctInputGigawords === 'number'
+      ? { acctInputGigawords: item.acctInputGigawords }
+      : {}),
+    ...(typeof item.acctOutputGigawords === 'number'
+      ? { acctOutputGigawords: item.acctOutputGigawords }
+      : {}),
+    ...(typeof item.acctSessionTimeSeconds === 'number'
+      ? { acctSessionTimeSeconds: item.acctSessionTimeSeconds }
+      : {}),
     ...(typeof item.framedIpAddress === 'string' ? { framedIpAddress: item.framedIpAddress } : {}),
   };
 }
@@ -165,12 +191,12 @@ export const ispHardeningHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
-    const items = Array.isArray(req.body.items)
-      ? req.body.items
-      : [req.body];
+    const items = Array.isArray(req.body.items) ? req.body.items : [req.body];
 
     const parsedInputs: CoaPlanInput[] = [];
     for (const rawItem of items) {
@@ -190,7 +216,9 @@ export const ispHardeningHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     if (!Array.isArray(req.body.packets)) {
@@ -201,7 +229,9 @@ export const ispHardeningHttpPlugin: AddonHttpPlugin = async (app) => {
     for (const raw of req.body.packets) {
       const parsed = parseRadiusPacket(raw);
       if (!parsed) {
-        return reply.code(400).send({ success: false, error: 'Invalid accounting packet structure' });
+        return reply
+          .code(400)
+          .send({ success: false, error: 'Invalid accounting packet structure' });
       }
       packets.push(parsed);
     }
@@ -215,15 +245,18 @@ export const ispHardeningHttpPlugin: AddonHttpPlugin = async (app) => {
       }
     }
 
-    const staleSessionThresholdSeconds = typeof req.body.staleSessionThresholdSeconds === 'number'
-      ? req.body.staleSessionThresholdSeconds
-      : undefined;
-    const nasSilentThresholdSeconds = typeof req.body.nasSilentThresholdSeconds === 'number'
-      ? req.body.nasSilentThresholdSeconds
-      : undefined;
-    const duplicateStormRatioThreshold = typeof req.body.duplicateStormRatioThreshold === 'number'
-      ? req.body.duplicateStormRatioThreshold
-      : undefined;
+    const staleSessionThresholdSeconds =
+      typeof req.body.staleSessionThresholdSeconds === 'number'
+        ? req.body.staleSessionThresholdSeconds
+        : undefined;
+    const nasSilentThresholdSeconds =
+      typeof req.body.nasSilentThresholdSeconds === 'number'
+        ? req.body.nasSilentThresholdSeconds
+        : undefined;
+    const duplicateStormRatioThreshold =
+      typeof req.body.duplicateStormRatioThreshold === 'number'
+        ? req.body.duplicateStormRatioThreshold
+        : undefined;
 
     const result = aggregateRadiusAccounting(packets, {
       nowMs,

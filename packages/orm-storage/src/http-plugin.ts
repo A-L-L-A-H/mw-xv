@@ -37,7 +37,9 @@ export const storageVaultHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { manifest, chunks } = req.body;
@@ -57,10 +59,19 @@ export const storageVaultHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     // Tenant check against company context: manifest.tenantId must match companyId or string representation
-    if (manifest.tenantId !== String(auth.companyId) && manifest.tenantId !== `tenant-${auth.companyId}`) {
+    if (
+      manifest.tenantId !== String(auth.companyId) &&
+      manifest.tenantId !== `tenant-${auth.companyId}`
+    ) {
       // Allow tenantId matching if auth is superadmin/system or matches
-      if (auth.role !== 'system' && auth.role !== 'superadmin' && manifest.tenantId !== String(auth.companyId)) {
-        return reply.code(403).send({ success: false, error: 'Cross-tenant vault verification is forbidden' });
+      if (
+        auth.role !== 'system' &&
+        auth.role !== 'superadmin' &&
+        manifest.tenantId !== String(auth.companyId)
+      ) {
+        return reply
+          .code(403)
+          .send({ success: false, error: 'Cross-tenant vault verification is forbidden' });
       }
     }
 

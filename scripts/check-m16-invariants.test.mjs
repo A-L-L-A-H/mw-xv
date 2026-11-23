@@ -55,7 +55,11 @@ test('passes when ADR 0011 and all 4 compliant M16 modules exist', () => {
   try {
     writeRelative(rootDir, ADR_0011_RELATIVE_PATH, '# ADR 0011\n');
     for (const mod of M16_MODULES) {
-      writeRelative(rootDir, mod, mod === MERKLE_LEDGER_MODULE ? VALID_MERKLE_SOURCE : VALID_MODULE_SOURCE);
+      writeRelative(
+        rootDir,
+        mod,
+        mod === MERKLE_LEDGER_MODULE ? VALID_MERKLE_SOURCE : VALID_MODULE_SOURCE
+      );
     }
 
     const result = evaluateM16Invariants({ rootDir });

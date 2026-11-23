@@ -198,8 +198,7 @@ export function scoreSkillTransferability(
     for (const sample of input.crossDomainSamples) {
       const sampleCount = safeSampleCount(sample.sampleCount);
       const sampleDelta =
-        clampRateBps(sample.withSkillSuccessRateBps) -
-        clampRateBps(sample.baselineSuccessRateBps);
+        clampRateBps(sample.withSkillSuccessRateBps) - clampRateBps(sample.baselineSuccessRateBps);
       const weight = Math.max(1, sampleCount);
       weightedDeltaSum += sampleDelta * weight;
       totalWeight += weight;
@@ -218,10 +217,7 @@ export function scoreSkillTransferability(
   );
 
   let status: SkillNodeStatus;
-  if (
-    transferDeltaBps <= revocationThresholdBps ||
-    worstDomainDeltaBps <= revocationThresholdBps
-  ) {
+  if (transferDeltaBps <= revocationThresholdBps || worstDomainDeltaBps <= revocationThresholdBps) {
     status = 'revocation_candidate';
   } else if (negativeTransferDetected) {
     status = 'prune_recommended';
@@ -345,10 +341,7 @@ export function buildCollectiveSkillTree(
     if (parentId === null) {
       rootNodeIds.push(entry.id);
     }
-    if (
-      assessment.status === 'prune_recommended' ||
-      assessment.status === 'revocation_candidate'
-    ) {
+    if (assessment.status === 'prune_recommended' || assessment.status === 'revocation_candidate') {
       degradedNodeIds.push(entry.id);
     }
 
@@ -415,8 +408,7 @@ export function pruneDegradedSkillNodes(tree: CollectiveSkillTree): SkillTreePru
   const sortedNodes = [...tree.nodes].sort((left, right) => left.id.localeCompare(right.id));
   for (const node of sortedNodes) {
     const isRevocation = node.status === 'revocation_candidate';
-    const isPrune =
-      node.status === 'prune_recommended' || node.assessment.transferDeltaBps < 0;
+    const isPrune = node.status === 'prune_recommended' || node.assessment.transferDeltaBps < 0;
 
     if (isRevocation || isPrune) {
       const finalStatus: 'prune_recommended' | 'revocation_candidate' = isRevocation

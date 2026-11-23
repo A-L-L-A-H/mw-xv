@@ -227,6 +227,7 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
     'paper-cream',
     'ink-black',
     'ink-panel',
+    'color-ink-muted',
     'yellow',
     'violet',
     'on-violet',
@@ -234,14 +235,20 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
     'magenta-readable',
     'cyan-readable',
     'violet-readable',
+    'warning-readable',
+    'success-readable',
     'signal-blue',
+    'cyan',
     'font-grunge',
+    'font-condensed',
     'font-brush',
     'font-display',
     'font-sans',
     'font-mono',
+    'font-size-2xs',
     'font-size-xs',
     'line-height-normal',
+    'avatar-size',
     'space-1',
     'space-8',
     'panel-gap-compact',
@@ -249,6 +256,8 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
     'panel-padding-compact',
     'panel-padding-comfortable',
     'frame-width',
+    'border-strong',
+    'border-subtle',
     'torn-safe-inset',
     'decorative-rotation',
     'radius-sm',
@@ -276,6 +285,13 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
     'grunge-radius-hand',
     'motion-ease',
     'motion-ease-emphasis',
+    'layer-base',
+    'layer-raised',
+    'layer-sticky',
+    'layer-overlay',
+    'layer-dialog',
+    'layer-popover',
+    'layer-toast',
   ]) {
     assert.ok(tokenValue(name).length > 0, `Expected --mw-${name}`);
   }
@@ -288,6 +304,14 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
   assert.equal(tokenValue('signal-blue'), '#00b8f0');
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /--mw-motion-normal:\s*0ms/);
+
+  const layer = (name) => Number(tokenValue(name));
+  assert.ok(layer('layer-base') < layer('layer-raised'));
+  assert.ok(layer('layer-raised') < layer('layer-sticky'));
+  assert.ok(layer('layer-sticky') < layer('layer-overlay'));
+  assert.ok(layer('layer-overlay') < layer('layer-dialog'));
+  assert.ok(layer('layer-dialog') < layer('layer-popover'));
+  assert.ok(layer('layer-popover') < layer('layer-toast'));
 });
 
 test('shared controls and overlays use the semantic motion scale', async () => {
@@ -327,6 +351,10 @@ test('interactive surfaces expose opt-in feedback only for hover pointers withou
 });
 
 test('shared tokens avoid app-specific global styling and external font loading', () => {
-  assert.doesNotMatch(css, /@import\s+url|https?:\/\//i);
-  assert.doesNotMatch(css, /(^|\})\s*(html|body|\*)\s*\{/);
+  // Inline data URIs (e.g. the chalk mask) legitimately contain an XML namespace URL.
+  // Strip them so the check still rejects real network-loaded resources.
+  const cssWithoutInlineDataUris = css.replace(/url\(\s*["']?data:[^)]*["']?\s*\)/gi, '');
+  assert.match(cssWithoutInlineDataUris, /--mw-chalk-mask:\s*[^;]+;/u);
+  assert.doesNotMatch(cssWithoutInlineDataUris, /@import\s+url|https?:\/\//i);
+  assert.doesNotMatch(cssWithoutInlineDataUris, /(^|\})\s*(html|body|\*)\s*\{/);
 });

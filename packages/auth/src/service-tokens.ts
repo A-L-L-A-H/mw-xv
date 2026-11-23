@@ -209,11 +209,7 @@ export class ServiceTokenAuthority {
    * Rotate to a new active signing key while keeping the previous active key
    * valid for verification during `graceWindowMs`.
    */
-  rotateKey(
-    nextKey: SigningKeyRecord,
-    graceWindowMs: number,
-    nowMs: number = Date.now()
-  ): void {
+  rotateKey(nextKey: SigningKeyRecord, graceWindowMs: number, nowMs: number = Date.now()): void {
     if (!nextKey.kid.trim()) {
       throw new Error('Next signing key kid must be non-empty');
     }
@@ -289,7 +285,11 @@ export class ServiceTokenAuthority {
   verifyToken(token: string, options: VerifyServiceTokenOptions = {}): TokenVerificationResult {
     const parts = token.split('.');
     if (parts.length !== 3 || parts.some((p) => p.length === 0)) {
-      return { valid: false, code: 'MALFORMED_TOKEN', reason: 'Token must have 3 non-empty segments' };
+      return {
+        valid: false,
+        code: 'MALFORMED_TOKEN',
+        reason: 'Token must have 3 non-empty segments',
+      };
     }
 
     const [encodedHeader, encodedPayload, encodedSig] = parts as [string, string, string];
@@ -297,13 +297,23 @@ export class ServiceTokenAuthority {
     let claims: Partial<ServiceTokenClaims>;
     try {
       header = JSON.parse(fromBase64Url(encodedHeader).toString('utf8')) as Partial<TokenHeader>;
-      claims = JSON.parse(fromBase64Url(encodedPayload).toString('utf8')) as Partial<ServiceTokenClaims>;
+      claims = JSON.parse(
+        fromBase64Url(encodedPayload).toString('utf8')
+      ) as Partial<ServiceTokenClaims>;
     } catch {
-      return { valid: false, code: 'MALFORMED_TOKEN', reason: 'Token header or payload is not valid JSON' };
+      return {
+        valid: false,
+        code: 'MALFORMED_TOKEN',
+        reason: 'Token header or payload is not valid JSON',
+      };
     }
 
     if (header.alg !== 'HS256' || header.typ !== 'MW-SVC' || typeof header.kid !== 'string') {
-      return { valid: false, code: 'UNSUPPORTED_ALG', reason: 'Unsupported token algorithm or header' };
+      return {
+        valid: false,
+        code: 'UNSUPPORTED_ALG',
+        reason: 'Unsupported token algorithm or header',
+      };
     }
 
     const keyRecord = this.keys.get(header.kid);
@@ -311,7 +321,11 @@ export class ServiceTokenAuthority {
       return { valid: false, code: 'UNKNOWN_KID', reason: `Unknown key ID: ${header.kid}` };
     }
     if (keyRecord.revoked) {
-      return { valid: false, code: 'KEY_REVOKED', reason: `Signing key "${header.kid}" is revoked` };
+      return {
+        valid: false,
+        code: 'KEY_REVOKED',
+        reason: `Signing key "${header.kid}" is revoked`,
+      };
     }
 
     const nowMs = options.nowMs ?? Date.now();
@@ -330,7 +344,11 @@ export class ServiceTokenAuthority {
     const providedSig = fromBase64Url(encodedSig);
 
     if (!constantTimeEqualBytes(expectedSig, providedSig)) {
-      return { valid: false, code: 'INVALID_SIGNATURE', reason: 'HMAC signature verification failed' };
+      return {
+        valid: false,
+        code: 'INVALID_SIGNATURE',
+        reason: 'HMAC signature verification failed',
+      };
     }
 
     if (
@@ -343,7 +361,11 @@ export class ServiceTokenAuthority {
       typeof claims.exp !== 'number' ||
       typeof claims.jti !== 'string'
     ) {
-      return { valid: false, code: 'MALFORMED_TOKEN', reason: 'Token claims are missing required fields' };
+      return {
+        valid: false,
+        code: 'MALFORMED_TOKEN',
+        reason: 'Token claims are missing required fields',
+      };
     }
 
     const nowSec = Math.floor(nowMs / 1000);

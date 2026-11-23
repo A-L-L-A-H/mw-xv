@@ -46,9 +46,7 @@ const CHECK_LABELS: Record<DoctorCheckResult['id'], string> = {
   easytier_binary: 'EasyTier Sidecar',
 };
 
-function badgeVariantForStatus(
-  status: DoctorCheckStatus
-): 'cyan' | 'primary' | 'destructive' {
+function badgeVariantForStatus(status: DoctorCheckStatus): 'cyan' | 'primary' | 'destructive' {
   if (status === 'ok') return 'cyan';
   if (status === 'warn') return 'primary';
   return 'destructive';

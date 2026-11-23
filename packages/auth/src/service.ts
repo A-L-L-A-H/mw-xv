@@ -1,6 +1,11 @@
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 import type { Transaction } from 'objection';
-import { hashPassword, verifyPassword } from '@moonwitness/orm';
+import {
+  hashPassword,
+  verifyPassword,
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+} from '@moonwitness/orm';
 import {
   Company,
   Partner,
@@ -184,8 +189,10 @@ export function createAuthService(options: AuthServiceOptions) {
       currentPassword: string,
       newPassword: string
     ): Promise<void> {
-      if (newPassword.length < 12 || newPassword.length > 1024) {
-        throw new RangeError('New password must be between 12 and 1024 characters');
+      if (newPassword.length < MIN_PASSWORD_LENGTH || newPassword.length > MAX_PASSWORD_LENGTH) {
+        throw new RangeError(
+          `New password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`
+        );
       }
       const user = await User.query().findById(userId);
       if (

@@ -162,10 +162,7 @@ export function planCoaAction(input: CoaPlanInput): CoaPlanResult {
   } else if (quotaBytes > 0 && usedBytes >= quotaBytes && disconnectOnHardQuota) {
     action = 'disconnect';
     reason = 'hard_quota_exceeded';
-  } else if (
-    quotaBytes > 0 &&
-    (usedBytes >= quotaBytes || usageRatio >= throttleThreshold)
-  ) {
+  } else if (quotaBytes > 0 && (usedBytes >= quotaBytes || usageRatio >= throttleThreshold)) {
     action = 'throttle';
     reason = usedBytes >= quotaBytes ? 'hard_quota_throttle' : 'soft_quota_throttle';
   }

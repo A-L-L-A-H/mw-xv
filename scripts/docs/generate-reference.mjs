@@ -15,6 +15,9 @@ const outputs = new Map([
   ['docs/guide/reference/generated-api.md', renderApiMarkdown],
 ]);
 
+/** Addon HTTP plugins register first-class routes that belong in the API reference too. */
+export const addonRouteFilePaths = ['packages/orm-a2a/src/http-plugin.ts'];
+
 const compare = (left, right) => left.localeCompare(right, 'en');
 
 function safeDefault(field) {
@@ -408,7 +411,7 @@ export async function collectReferenceMetadata() {
       source: await readFile(path.join(root, file), 'utf8'),
     }))
   );
-  const routePaths = await filesUnder('apps/api/src/routes', '.ts');
+  const routePaths = [...(await filesUnder('apps/api/src/routes', '.ts')), ...addonRouteFilePaths];
   const routeSources = await Promise.all(
     routePaths.map(async (file) => ({
       path: file,

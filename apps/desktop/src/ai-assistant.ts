@@ -18,10 +18,7 @@ import type { WorktreeSandbox } from './worktree-sandbox.js';
 export type AssistantExperienceMode = 'workspace' | 'developer';
 
 export type WorkspaceAssistantAction =
-  | 'summarize_tasks'
-  | 'draft_note'
-  | 'search_knowledge'
-  | 'chat';
+  'summarize_tasks' | 'draft_note' | 'search_knowledge' | 'chat';
 
 export interface WorkspaceAssistantTaskContext {
   readonly id: string;
@@ -141,22 +138,19 @@ function sanitizeRunId(raw: string): string {
   return prefixed.slice(0, 64);
 }
 
-function resolveChatEndpoint(
-  rawEndpoint: string,
-  providerKind: LocalAiProviderKind
-): string {
+function resolveChatEndpoint(rawEndpoint: string, providerKind: LocalAiProviderKind): string {
   const parsed = new URL(rawEndpoint);
   if (providerKind === 'ollama') {
-    if (parsed.pathname === '' || parsed.pathname === '/' || parsed.pathname.endsWith('/api/tags')) {
+    if (
+      parsed.pathname === '' ||
+      parsed.pathname === '/' ||
+      parsed.pathname.endsWith('/api/tags')
+    ) {
       parsed.pathname = '/api/chat';
     }
     return parsed.toString();
   }
-  if (
-    parsed.pathname === '' ||
-    parsed.pathname === '/' ||
-    parsed.pathname.endsWith('/v1/models')
-  ) {
+  if (parsed.pathname === '' || parsed.pathname === '/' || parsed.pathname.endsWith('/v1/models')) {
     parsed.pathname = '/v1/chat/completions';
   }
   return parsed.toString();
@@ -184,8 +178,7 @@ function extractCitations(
 
   for (const item of knowledge) {
     const haystack = `${item.title} ${item.excerpt}`.toLowerCase();
-    const matches =
-      terms.length === 0 || terms.some((term) => haystack.includes(term));
+    const matches = terms.length === 0 || terms.some((term) => haystack.includes(term));
     if (matches) {
       citations.push({
         id: item.id,
@@ -289,7 +282,10 @@ function buildOfflineFallback(
   };
 }
 
-function buildSystemPrompt(mode: AssistantExperienceMode, action: WorkspaceAssistantAction): string {
+function buildSystemPrompt(
+  mode: AssistantExperienceMode,
+  action: WorkspaceAssistantAction
+): string {
   const role =
     mode === 'workspace'
       ? 'You are MoonWitness Assistant, a helpful read-only workspace assistant for tasks, notes, and knowledge. Avoid developer or shell jargon.'
@@ -464,8 +460,7 @@ export async function runWorkspaceAssistant(
         fallbackReason = 'No local loopback LLM detected';
       }
     } catch (error) {
-      fallbackReason =
-        error instanceof Error ? error.message : 'Local AI discovery failed';
+      fallbackReason = error instanceof Error ? error.message : 'Local AI discovery failed';
     }
   }
 
@@ -512,8 +507,7 @@ export async function runWorkspaceAssistant(
         durationMs: Math.max(0, Date.now() - startedAt),
       };
     } catch (error) {
-      fallbackReason =
-        error instanceof Error ? error.message : 'Local LLM request failed';
+      fallbackReason = error instanceof Error ? error.message : 'Local LLM request failed';
     }
   }
 

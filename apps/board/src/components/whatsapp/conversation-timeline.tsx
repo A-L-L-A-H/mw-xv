@@ -395,7 +395,7 @@ export function ConversationTimeline({
                   <span>{messageStatusLabel[message.status] ?? 'Status unavailable'}</span>
                 </p>
                 {message.last_error && (
-                  <p role="status" className="mt-1 text-xs text-red-800 dark:text-red-200">
+                  <p role="status" className="mt-1 text-xs text-[color:var(--mw-error)] ">
                     {message.last_error}
                   </p>
                 )}

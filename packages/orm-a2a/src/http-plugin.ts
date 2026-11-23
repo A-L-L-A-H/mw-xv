@@ -136,7 +136,9 @@ function normalizeIpAddress(value: string | undefined | null): string | null {
   return candidate.toLowerCase();
 }
 
-function parseMeshEndpoint(value: string): { readonly host: string; readonly origin: string } | null {
+function parseMeshEndpoint(
+  value: string
+): { readonly host: string; readonly origin: string } | null {
   try {
     const trimmed = value.trim();
     const normalized = trimmed.includes('://') ? trimmed : `http://${trimmed}`;
@@ -298,9 +300,7 @@ async function persistA2AReceipt(
       };
     }
 
-    const replayCutoff = new Date(
-      nowMs - MAX_A2A_TTL_MS - DEFAULT_A2A_CLOCK_SKEW_MS
-    ).toISOString();
+    const replayCutoff = new Date(nowMs - MAX_A2A_TTL_MS - DEFAULT_A2A_CLOCK_SKEW_MS).toISOString();
     const recentReceipts = await AuditLog.query(trx)
       .where({
         model: A2A_MESSAGE_MODEL,
@@ -453,93 +453,118 @@ async function persistA2AReceipt(
 }
 
 export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpHostContext) => {
-  fastify.post('/a2a/delegate', { config: { public: true } }, async (request, reply) => {
-    const config = readA2AApiConfig();
-    if (!config.enabled) {
-      return reply.code(404).send({ success: false, error: 'A2A API receiver is disabled' });
-    }
-    if (!config.valid) {
-      return reply.code(503).send({ success: false, error: config.error });
-    }
-    if (request.headers['x-a2a-protocol'] !== 'a2a.v1') {
-      return reply.code(400).send({
-        success: false,
-        error: 'X-A2A-Protocol must be a2a.v1',
-        reasonCode: 'INVALID_PROTOCOL_VERSION',
+  fastify.post(
+    '/a2a/delegate',
+    {
+      config: { public: true },
+      schema: {
+        tags: ['A2A'],
+        description:
+          'Public signed A2A v1 envelope receiver. Requires X-A2A-Protocol and a valid HMAC envelope; never accepts a bearer token.',
+      },
+    },
+    async (request, reply) => {
+      const config = readA2AApiConfig();
+      if (!config.enabled) {
+        return reply.code(404).send({ success: false, error: 'A2A API receiver is disabled' });
+      }
+      if (!config.valid) {
+        return reply.code(503).send({ success: false, error: config.error });
+      }
+      if (request.headers['x-a2a-protocol'] !== 'a2a.v1') {
+        return reply.code(400).send({
+          success: false,
+          error: 'X-A2A-Protocol must be a2a.v1',
+          reasonCode: 'INVALID_PROTOCOL_VERSION',
+        });
+      }
+
+      const rawRequest = request as unknown as {
+        raw?: { socket?: { remoteAddress?: string | null } };
+      };
+      const remoteAddress = normalizeIpAddress(rawRequest.raw?.socket?.remoteAddress);
+      if (!remoteAddress || !isPrivateMeshHost(remoteAddress)) {
+        return reply.code(403).send({
+          success: false,
+          error: 'A2A requests must originate directly from a private EasyTier mesh IP',
+          reasonCode: 'PUBLIC_ENDPOINT_FORBIDDEN',
+        });
+      }
+
+      const envelope = parseEnvelope(request.body);
+      if (!envelope) {
+        return reply.code(400).send({
+          success: false,
+          error: 'Malformed A2A envelope',
+          reasonCode: 'INVALID_ENVELOPE',
+        });
+      }
+
+      if (Buffer.byteLength(JSON.stringify(envelope), 'utf8') > MAX_ENVELOPE_BYTES) {
+        return reply.code(413).send({
+          success: false,
+          error: 'A2A envelope exceeds the API receiver size limit',
+          reasonCode: 'ENVELOPE_TOO_LARGE',
+        });
+      }
+
+      const sourceEndpoint =
+        envelope.sourceEndpoint === undefined
+          ? undefined
+          : parseMeshEndpoint(envelope.sourceEndpoint);
+      const targetEndpoint = parseMeshEndpoint(envelope.targetEndpoint);
+      if (
+        envelope.sourceEndpoint !== undefined &&
+        (!sourceEndpoint || sourceEndpoint.host !== remoteAddress)
+      ) {
+        return reply.code(403).send({
+          success: false,
+          error: 'A2A sourceEndpoint must match the direct private mesh peer address',
+          reasonCode: 'SOURCE_ENDPOINT_MISMATCH',
+        });
+      }
+      if (!targetEndpoint || targetEndpoint.origin !== config.endpointOrigin) {
+        return reply.code(403).send({
+          success: false,
+          error: 'A2A targetEndpoint does not identify this configured API receiver',
+          reasonCode: 'TARGET_ENDPOINT_MISMATCH',
+        });
+      }
+
+      const initialVerification = verifyA2AEnvelope(envelope, {
+        signingSecret: config.signingSecret,
+        expectedCompanyId: config.companyId,
+      });
+      if (!initialVerification.valid) {
+        return sendReject(
+          reply,
+          verificationReject(initialVerification.reasonCode, initialVerification.reason)
+        );
+      }
+
+      const persisted = await persistA2AReceipt(envelope, config, Date.now(), remoteAddress);
+      if (!persisted.ok) return sendReject(reply, persisted.error);
+
+      return reply.code(202).send({
+        status: 'queued',
+        messageId: envelope.messageId,
+        companyId: envelope.companyId,
+        delegationDepth: envelope.delegationDepth,
+        fencingToken: envelope.fencingToken,
+        receivedAt: persisted.receivedAt,
       });
     }
-
-    const rawRequest = request as unknown as { raw?: { socket?: { remoteAddress?: string | null } } };
-    const remoteAddress = normalizeIpAddress(rawRequest.raw?.socket?.remoteAddress);
-    if (!remoteAddress || !isPrivateMeshHost(remoteAddress)) {
-      return reply.code(403).send({
-        success: false,
-        error: 'A2A requests must originate directly from a private EasyTier mesh IP',
-        reasonCode: 'PUBLIC_ENDPOINT_FORBIDDEN',
-      });
-    }
-
-    const envelope = parseEnvelope(request.body);
-    if (!envelope) {
-      return reply.code(400).send({
-        success: false,
-        error: 'Malformed A2A envelope',
-        reasonCode: 'INVALID_ENVELOPE',
-      });
-    }
-
-    if (Buffer.byteLength(JSON.stringify(envelope), 'utf8') > MAX_ENVELOPE_BYTES) {
-      return reply.code(413).send({
-        success: false,
-        error: 'A2A envelope exceeds the API receiver size limit',
-        reasonCode: 'ENVELOPE_TOO_LARGE',
-      });
-    }
-
-    const sourceEndpoint =
-      envelope.sourceEndpoint === undefined ? undefined : parseMeshEndpoint(envelope.sourceEndpoint);
-    const targetEndpoint = parseMeshEndpoint(envelope.targetEndpoint);
-    if (envelope.sourceEndpoint !== undefined && (!sourceEndpoint || sourceEndpoint.host !== remoteAddress)) {
-      return reply.code(403).send({
-        success: false,
-        error: 'A2A sourceEndpoint must match the direct private mesh peer address',
-        reasonCode: 'SOURCE_ENDPOINT_MISMATCH',
-      });
-    }
-    if (!targetEndpoint || targetEndpoint.origin !== config.endpointOrigin) {
-      return reply.code(403).send({
-        success: false,
-        error: 'A2A targetEndpoint does not identify this configured API receiver',
-        reasonCode: 'TARGET_ENDPOINT_MISMATCH',
-      });
-    }
-
-    const initialVerification = verifyA2AEnvelope(envelope, {
-      signingSecret: config.signingSecret,
-      expectedCompanyId: config.companyId,
-    });
-    if (!initialVerification.valid) {
-      return sendReject(
-        reply,
-        verificationReject(initialVerification.reasonCode, initialVerification.reason)
-      );
-    }
-
-    const persisted = await persistA2AReceipt(envelope, config, Date.now(), remoteAddress);
-    if (!persisted.ok) return sendReject(reply, persisted.error);
-
-    return reply.code(202).send({
-      status: 'queued',
-      messageId: envelope.messageId,
-      companyId: envelope.companyId,
-      delegationDepth: envelope.delegationDepth,
-      fencingToken: envelope.fencingToken,
-      receivedAt: persisted.receivedAt,
-    });
-  });
+  );
 
   fastify.get<{ Querystring: { limit?: string } }>(
     '/api/ai/a2a/inbox',
+    {
+      schema: {
+        tags: ['A2A'],
+        description:
+          'Administrator-only view of the durable A2A message inbox. Requires an authenticated superadmin or system actor with company context.',
+      },
+    },
     async (request, reply) => {
       reply.header('Cache-Control', 'private, no-store');
       const auth = request.auth;
@@ -552,14 +577,18 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
 
       const role = auth.role === 'system' || auth.role === 'superadmin' ? auth.role : 'user';
       if (!options.hasCompanyAccess) {
-        return reply.code(503).send({ success: false, error: 'Company access validation unavailable' });
+        return reply
+          .code(503)
+          .send({ success: false, error: 'Company access validation unavailable' });
       }
       const hasAccess = await options.hasCompanyAccess(auth.userId, auth.companyId, role);
       if (!hasAccess) {
         return reply.code(403).send({ success: false, error: 'Company access denied' });
       }
       if (role !== 'system' && role !== 'superadmin') {
-        return reply.code(403).send({ success: false, error: 'A2A inbox access requires an administrator' });
+        return reply
+          .code(403)
+          .send({ success: false, error: 'A2A inbox access requires an administrator' });
       }
 
       const config = readA2AApiConfig();
@@ -570,12 +599,16 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
         return reply.code(503).send({ success: false, error: config.error });
       }
       if (auth.companyId !== config.companyId) {
-        return reply.code(403).send({ success: false, error: 'A2A inbox is outside the configured company' });
+        return reply
+          .code(403)
+          .send({ success: false, error: 'A2A inbox is outside the configured company' });
       }
 
       const requestedLimit = request.query.limit === undefined ? 50 : Number(request.query.limit);
       if (!Number.isSafeInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > 200) {
-        return reply.code(400).send({ success: false, error: 'limit must be an integer from 1 to 200' });
+        return reply
+          .code(400)
+          .send({ success: false, error: 'limit must be an integer from 1 to 200' });
       }
 
       const rows = await AuditLog.query()

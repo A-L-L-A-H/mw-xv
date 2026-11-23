@@ -85,10 +85,7 @@ export interface MeshFleetAuthContext {
   readonly now?: Date;
 }
 
-export type MeshFetchFn = (
-  input: string,
-  init?: RequestInit
-) => Promise<Response>;
+export type MeshFetchFn = (input: string, init?: RequestInit) => Promise<Response>;
 
 /**
  * Checks whether an IPv4 address belongs to one of the allowed private mesh CIDRs:
@@ -161,10 +158,9 @@ export function assertPrivateMeshEndpoint(endpointUrl: string): URL {
     );
   }
   if (parsed.username || parsed.password || parsed.hash) {
-    throw new AccessDeniedError(
-      'Mesh endpoint URL must not contain credentials or URL fragments',
-      { code: 'access_denied' }
-    );
+    throw new AccessDeniedError('Mesh endpoint URL must not contain credentials or URL fragments', {
+      code: 'access_denied',
+    });
   }
   const host = parsed.hostname.replace(/^\[|\]$/gu, '');
   if (!isPrivateMeshIp(host)) {
@@ -319,7 +315,9 @@ export class MeshFleetClient {
       const text = await response.text();
       if (!response.ok) {
         const safeErr = redactSensitiveText(text, [node.adminToken]).text;
-        throw new Error(`Mesh node '${node.nodeId}' ${init.method} ${path} failed (${response.status}): ${safeErr}`);
+        throw new Error(
+          `Mesh node '${node.nodeId}' ${init.method} ${path} failed (${response.status}): ${safeErr}`
+        );
       }
       if (!text.trim()) {
         return {} as T;
@@ -361,7 +359,10 @@ export class MeshFleetClient {
   async listNodeServices(
     nodeId: string,
     auth: MeshFleetAuthContext
-  ): Promise<{ readonly data: readonly MeshRemoteService[]; readonly decision: RiskEvaluationDecision }> {
+  ): Promise<{
+    readonly data: readonly MeshRemoteService[];
+    readonly decision: RiskEvaluationDecision;
+  }> {
     const node = this.resolveNode(nodeId);
     const decision = this.gateRead(auth);
     const raw = await this.requestJson<readonly MeshRemoteService[] | null>(node, '/services', {
@@ -375,7 +376,10 @@ export class MeshFleetClient {
     nodeId: string,
     service: MeshServiceRegistration,
     auth: MeshFleetAuthContext
-  ): Promise<{ readonly data: { readonly name: string; readonly status: string }; readonly decision: RiskEvaluationDecision }> {
+  ): Promise<{
+    readonly data: { readonly name: string; readonly status: string };
+    readonly decision: RiskEvaluationDecision;
+  }> {
     const node = this.resolveNode(nodeId);
     const decision = this.gateMutate(auth);
     const data = await this.requestJson<{ readonly name: string; readonly status: string }>(

@@ -68,7 +68,8 @@ export interface ProvisionReport {
 }
 
 const NODE_ID_RE = /^[a-z0-9][a-z0-9-]{1,62}$/u;
-const HOST_RE = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)$/u;
+const HOST_RE =
+  /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)$/u;
 const SSH_USER_RE = /^[a-z_][a-z0-9_-]{0,31}$/u;
 const NETWORK_NAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9._-]{1,63}$/u;
 const DOMAIN_RE = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/iu;

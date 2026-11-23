@@ -103,16 +103,26 @@ function normalizeZero(value: number): number {
 }
 
 function resolveCameraBounds(bounds?: Partial<CameraBounds>): CameraBounds {
-  const minX = Number.isFinite(bounds?.minX) ? (bounds!.minX as number) : DEFAULT_CAMERA_BOUNDS.minX;
-  const maxX = Number.isFinite(bounds?.maxX) ? (bounds!.maxX as number) : DEFAULT_CAMERA_BOUNDS.maxX;
-  const minY = Number.isFinite(bounds?.minY) ? (bounds!.minY as number) : DEFAULT_CAMERA_BOUNDS.minY;
-  const maxY = Number.isFinite(bounds?.maxY) ? (bounds!.maxY as number) : DEFAULT_CAMERA_BOUNDS.maxY;
-  const minZoom = Number.isFinite(bounds?.minZoom) && (bounds!.minZoom as number) > 0
-    ? (bounds!.minZoom as number)
-    : DEFAULT_CAMERA_BOUNDS.minZoom;
-  const maxZoom = Number.isFinite(bounds?.maxZoom) && (bounds!.maxZoom as number) > 0
-    ? (bounds!.maxZoom as number)
-    : DEFAULT_CAMERA_BOUNDS.maxZoom;
+  const minX = Number.isFinite(bounds?.minX)
+    ? (bounds!.minX as number)
+    : DEFAULT_CAMERA_BOUNDS.minX;
+  const maxX = Number.isFinite(bounds?.maxX)
+    ? (bounds!.maxX as number)
+    : DEFAULT_CAMERA_BOUNDS.maxX;
+  const minY = Number.isFinite(bounds?.minY)
+    ? (bounds!.minY as number)
+    : DEFAULT_CAMERA_BOUNDS.minY;
+  const maxY = Number.isFinite(bounds?.maxY)
+    ? (bounds!.maxY as number)
+    : DEFAULT_CAMERA_BOUNDS.maxY;
+  const minZoom =
+    Number.isFinite(bounds?.minZoom) && (bounds!.minZoom as number) > 0
+      ? (bounds!.minZoom as number)
+      : DEFAULT_CAMERA_BOUNDS.minZoom;
+  const maxZoom =
+    Number.isFinite(bounds?.maxZoom) && (bounds!.maxZoom as number) > 0
+      ? (bounds!.maxZoom as number)
+      : DEFAULT_CAMERA_BOUNDS.maxZoom;
 
   return {
     minX: Math.min(minX, maxX),
@@ -152,7 +162,9 @@ export function computeLayerParallax(
     return { translateX: 0, translateY: 0 };
   }
   const maxShiftPx =
-    typeof options?.maxShiftPx === 'number' && Number.isFinite(options.maxShiftPx) && options.maxShiftPx >= 0
+    typeof options?.maxShiftPx === 'number' &&
+    Number.isFinite(options.maxShiftPx) &&
+    options.maxShiftPx >= 0
       ? options.maxShiftPx
       : DEFAULT_MAX_PARALLAX_SHIFT_PX;
   const factorX = clampNumber(parallax.x, -1, 1);
@@ -178,7 +190,9 @@ export function applyKeyboardCameraAction(
       ? options.panStep
       : DEFAULT_PAN_STEP;
   const zoomStep =
-    typeof options?.zoomStep === 'number' && Number.isFinite(options.zoomStep) && options.zoomStep > 0
+    typeof options?.zoomStep === 'number' &&
+    Number.isFinite(options.zoomStep) &&
+    options.zoomStep > 0
       ? options.zoomStep
       : DEFAULT_ZOOM_STEP;
 
@@ -186,34 +200,52 @@ export function applyKeyboardCameraAction(
     case 'ArrowLeft':
       return {
         handled: true,
-        state: clampCameraState({ x: state.x - panStep, y: state.y, zoom: state.zoom }, resolvedBounds),
+        state: clampCameraState(
+          { x: state.x - panStep, y: state.y, zoom: state.zoom },
+          resolvedBounds
+        ),
       };
     case 'ArrowRight':
       return {
         handled: true,
-        state: clampCameraState({ x: state.x + panStep, y: state.y, zoom: state.zoom }, resolvedBounds),
+        state: clampCameraState(
+          { x: state.x + panStep, y: state.y, zoom: state.zoom },
+          resolvedBounds
+        ),
       };
     case 'ArrowUp':
       return {
         handled: true,
-        state: clampCameraState({ x: state.x, y: state.y - panStep, zoom: state.zoom }, resolvedBounds),
+        state: clampCameraState(
+          { x: state.x, y: state.y - panStep, zoom: state.zoom },
+          resolvedBounds
+        ),
       };
     case 'ArrowDown':
       return {
         handled: true,
-        state: clampCameraState({ x: state.x, y: state.y + panStep, zoom: state.zoom }, resolvedBounds),
+        state: clampCameraState(
+          { x: state.x, y: state.y + panStep, zoom: state.zoom },
+          resolvedBounds
+        ),
       };
     case '+':
     case '=':
       return {
         handled: true,
-        state: clampCameraState({ x: state.x, y: state.y, zoom: state.zoom + zoomStep }, resolvedBounds),
+        state: clampCameraState(
+          { x: state.x, y: state.y, zoom: state.zoom + zoomStep },
+          resolvedBounds
+        ),
       };
     case '-':
     case '_':
       return {
         handled: true,
-        state: clampCameraState({ x: state.x, y: state.y, zoom: state.zoom - zoomStep }, resolvedBounds),
+        state: clampCameraState(
+          { x: state.x, y: state.y, zoom: state.zoom - zoomStep },
+          resolvedBounds
+        ),
       };
     case '0':
     case 'Home':
@@ -229,7 +261,9 @@ export function applyKeyboardCameraAction(
   }
 }
 
-export function createSceneCameraController(options: SceneCameraOptions = {}): SceneCameraController {
+export function createSceneCameraController(
+  options: SceneCameraOptions = {}
+): SceneCameraController {
   const bounds = resolveCameraBounds(options.bounds);
   const pointerStrength = clampNumber(options.pointerStrength ?? DEFAULT_POINTER_STRENGTH, 0, 1);
   const scrollStrength = clampNumber(options.scrollStrength ?? DEFAULT_SCROLL_STRENGTH, 0, 1);
@@ -238,7 +272,9 @@ export function createSceneCameraController(options: SceneCameraOptions = {}): S
       ? options.panStep
       : DEFAULT_PAN_STEP;
   const zoomStep =
-    typeof options.zoomStep === 'number' && Number.isFinite(options.zoomStep) && options.zoomStep > 0
+    typeof options.zoomStep === 'number' &&
+    Number.isFinite(options.zoomStep) &&
+    options.zoomStep > 0
       ? options.zoomStep
       : DEFAULT_ZOOM_STEP;
 

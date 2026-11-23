@@ -4,10 +4,7 @@ import { createRedactor, type RedactionContext } from './redaction.js';
 export type WorldModelReasonCode = 'UNEXPECTED_SIDE_EFFECT' | 'PREDICTION_MISMATCH';
 
 export type WorldModelFindingCategory =
-  | 'changed_files'
-  | 'http_health'
-  | 'container_health'
-  | 'invariant';
+  'changed_files' | 'http_health' | 'container_health' | 'invariant';
 
 export interface ExpectedHttpHealthCheck {
   readonly endpoint: string;
@@ -371,8 +368,7 @@ export function evaluateWorldModelConsistency(
       } else {
         const passMatches = observed.passed === expected.expectedPass;
         const valueMatches =
-          expected.expectedValue === undefined ||
-          observed.observedValue === expected.expectedValue;
+          expected.expectedValue === undefined || observed.observedValue === expected.expectedValue;
         if (!passMatches || !valueMatches) {
           mismatchedChecks += 1;
           const expectedVal =

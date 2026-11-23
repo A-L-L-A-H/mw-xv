@@ -37,7 +37,7 @@ import {
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { Switch } from '@moonwitness/ui/components/switch';
 import { useAuth } from '@/hooks/use-auth-context';
-import { useSkin } from '@/components/providers/skin-provider';
+import { useSkin } from '@/components/providers/skin-context';
 import { client } from '@/lib/client';
 import {
   DEFAULT_PREFERENCES,
@@ -542,9 +542,7 @@ export function SettingsPage() {
                   aria-pressed={selected}
                   onClick={() => {
                     setDesktopMode(option.id);
-                    toast.success(
-                      `Switched Desktop Experience Mode to ${option.label}.`
-                    );
+                    toast.success(`Switched Desktop Experience Mode to ${option.label}.`);
                   }}
                   className={`flex h-auto flex-col items-start gap-2 border-2 p-4 text-left transition-colors ${
                     selected
@@ -580,13 +578,19 @@ export function SettingsPage() {
                 <h2 className="font-display text-xl uppercase tracking-wide">
                   Local AI &amp; Offline Backup
                 </h2>
-                <Badge variant={localAiQuery.data && localAiQuery.data.onlineCount > 0 ? 'cyan' : 'default'}>
-                  {localAiQuery.data ? `${localAiQuery.data.onlineCount} provider(s) online` : 'Scanning...'}
+                <Badge
+                  variant={
+                    localAiQuery.data && localAiQuery.data.onlineCount > 0 ? 'cyan' : 'default'
+                  }
+                >
+                  {localAiQuery.data
+                    ? `${localAiQuery.data.onlineCount} provider(s) online`
+                    : 'Scanning...'}
                 </Badge>
               </div>
               <p className="text-sm text-ink-soft">
-                Zero-config Ollama / LM Studio discovery and SHA-256 verified local SQLite snapshots.
-                Available in both Workspace and DX modes.
+                Zero-config Ollama / LM Studio discovery and SHA-256 verified local SQLite
+                snapshots. Available in both Workspace and DX modes.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -672,7 +676,8 @@ export function SettingsPage() {
                     <div className="min-w-0">
                       <div className="truncate font-mono font-medium">{backup.fileName}</div>
                       <div className="font-mono text-[11px] text-ink-soft">
-                        SHA-256: {backup.sha256.slice(0, 16)}... &bull; {(backup.sizeBytes / 1024).toFixed(1)} KB
+                        SHA-256: {backup.sha256.slice(0, 16)}... &bull;{' '}
+                        {(backup.sizeBytes / 1024).toFixed(1)} KB
                       </div>
                     </div>
                     <Badge variant={backup.verified ? 'cyan' : 'destructive'}>
@@ -683,7 +688,8 @@ export function SettingsPage() {
               </div>
             ) : (
               <p className="text-xs text-ink-soft">
-                No local backups created yet. Click &ldquo;Create Local Backup&rdquo; to snapshot your offline database.
+                No local backups created yet. Click &ldquo;Create Local Backup&rdquo; to snapshot
+                your offline database.
               </p>
             )}
           </div>

@@ -29,11 +29,13 @@ export function Field({
   const descriptionId = description ? `${htmlFor}-description` : undefined;
   const errorId = error ? `${htmlFor}-error` : undefined;
   const describedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined;
+  const childProps = children.props as DescribedControlProps;
   const control = cloneElement(children, {
     id: htmlFor,
-    'aria-describedby': describedBy,
-    'aria-invalid': error ? true : undefined,
-    'aria-required': required ? true : undefined,
+    'aria-describedby':
+      [childProps['aria-describedby'], describedBy].filter(Boolean).join(' ') || undefined,
+    'aria-invalid': error ? true : childProps['aria-invalid'],
+    'aria-required': required ? true : childProps['aria-required'],
   });
 
   return (

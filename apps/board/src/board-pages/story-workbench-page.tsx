@@ -275,7 +275,7 @@ export function StoryWorkbenchPage() {
             </div>
             <div
               role="note"
-              className="flex gap-3 border-2 border-amber-700/50 bg-amber-100/50 p-3 text-sm text-ink dark:bg-amber-950/20"
+              className="flex gap-3 border-2 border-[color:var(--mw-warning-readable)] bg-[color:color-mix(in_srgb,var(--mw-warning)_50%,var(--mw-paper))] p-3 text-sm text-ink "
             >
               <WarningIcon aria-hidden="true" className="size-5 shrink-0" />
               <p>
@@ -467,7 +467,7 @@ export function StoryWorkbenchPage() {
               {viewingHistory && displayed && (
                 <p
                   role="note"
-                  className="mt-4 border-l-4 border-amber-700/50 bg-amber-100/50 p-3 text-sm text-ink dark:bg-amber-950/20"
+                  className="mt-4 border-l-4 border-[color:var(--mw-warning-readable)] bg-[color:color-mix(in_srgb,var(--mw-warning)_50%,var(--mw-paper))] p-3 text-sm text-ink "
                 >
                   Historical revisions are immutable. Return to the latest revision to make and save
                   edits.

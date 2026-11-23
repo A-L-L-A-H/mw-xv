@@ -1,13 +1,10 @@
-import type { ComponentProps } from 'react';
+'use client';
+
+import { type ComponentProps } from 'react';
+import { useModalFocus } from '../lib/use-modal-focus.js';
 import { Badge } from './badge.js';
 import { Button } from './button.js';
-import {
-  CheckCircleIcon,
-  CloseIcon,
-  CodeIcon,
-  ColumnsIcon,
-  SparkleIcon,
-} from '../icons/index.js';
+import { CheckCircleIcon, CloseIcon, CodeIcon, ColumnsIcon, SparkleIcon } from '../icons/index.js';
 
 export type DesktopExperienceMode = 'workspace' | 'developer';
 
@@ -66,8 +63,10 @@ export function ModePicker({
   className,
   ...props
 }: ModePickerProps) {
+  const containerRef = useModalFocus<HTMLDivElement>(onDismiss);
+
   const classes = [
-    'mw-ui-mode-picker fixed inset-0 z-50 flex items-center justify-center bg-night/80 p-4 backdrop-blur-sm',
+    'mw-ui-mode-picker fixed inset-0 flex items-center justify-center bg-night/80 p-4 backdrop-blur-sm',
     className,
   ]
     .filter(Boolean)
@@ -75,12 +74,14 @@ export function ModePicker({
 
   return (
     <div
+      ref={containerRef}
       data-slot="mode-picker"
       role="dialog"
       aria-modal="true"
       aria-labelledby="mw-mode-picker-title"
       aria-describedby="mw-mode-picker-description"
       className={classes}
+      tabIndex={-1}
       {...props}
     >
       <div className="relative w-full max-w-2xl border-4 border-ink bg-paper p-6 text-ink shadow-ink sm:p-8">

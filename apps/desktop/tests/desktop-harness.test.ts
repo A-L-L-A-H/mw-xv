@@ -701,7 +701,7 @@ describe('MoonWitness Desktop Harness', () => {
       query: 'local-first',
       debugHeader: 'Bearer [REDACTED]',
       apiKey: '[REDACTED]',
-      leakedToken: '[REDACTED_SECRET]',
+      leakedToken: '[REDACTED]',
     });
 
     // Second call succeeds; third call exceeds server maxCallsPerRun=2.

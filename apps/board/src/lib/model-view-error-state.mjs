@@ -1,7 +1,8 @@
 export function modelViewErrorState(error) {
-  const status = typeof error === 'object' && error !== null && 'status' in error
-    ? Number(error.status)
-    : Number.NaN;
+  const status =
+    typeof error === 'object' && error !== null && 'status' in error
+      ? Number(error.status)
+      : Number.NaN;
 
   if (status === 403) {
     return {

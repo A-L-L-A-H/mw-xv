@@ -22,10 +22,12 @@ The operating principle is to reuse existing domain owners. A new package or ser
 
 ## 2. Exact target baseline and current governance
 
-> **Current SOT correction — 2026-11-23:** This strategy predates the TaskOS recovery audit. Its original count and branch figures are historical, not current execution status. `docs/tasks/tasks.json` is currently zero-byte and unavailable. The verified recovery inventory contains **627 candidate IDs** from eight source groups; no canonical records have been restored or fabricated. See [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md), [Active Plan](../roadmap/ACTIVE-PLAN.md), and [Stabilization Plan](../roadmap/STABILIZATION-PLAN.md). Until recovery passes, completion authority is the roadmap checkbox plus evidence; `docs/roadmap/tasks.json` is the M/K ID/dependency/detail index; GitHub Issues are operational and human-triage views. After recovery, TaskOS owns lifecycle and all TODO/roadmap/card lists are projections.
+
+> **Superseding live-state correction — 2026-11-23:** The registry is not empty. The earlier zero-byte statement came from an incomplete large-file read and is withdrawn. Direct Git-blob inspection confirms a populated TaskOS registry. At the audit baseline, `dev` (`08e7e3cbdcdfdfa2214196b5622da9b6184d4918`) contains **636 unique task records** (468 done, 49 doing, 97 todo, 22 blocked; blob `210f91e853a7241b6b3249ed65c1ca79b98274b3`); `main` (`5dd3da3389cdd4b55ef1a538f0dc46c13918f108`) contains **627** (468 done, 49 doing, 89 todo, 21 blocked; blob `8216b6503d154d635112be96c41939a9efd38390`). All main IDs exist on dev; dev has nine additional audit records, `AUD-015`–`AUD-023`. The earlier 627-record owner-approved migration remains a valid historical checkpoint, not the current dev total. PR [#81](https://github.com/A-L-L-A-H/mw-xv/pull/81) is still open and not release-ready: exact-SHA CI has TaskOS test, generated docs asset and Gitleaks failures; PostgreSQL integration and JS/TS CodeQL were cancelled. See [ACTIVE-PLAN.md](../roadmap/ACTIVE-PLAN.md) and [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md) for the verified detail. The following original planning-baseline subsections are retained as historical snapshots, not current status.
 
 
-### 2.1 Repository state checked
+
+### 2.2 Original repository state checked (historical; superseded by the live-state correction)
 
 | Item | Observed state |
 |---|---|
@@ -41,7 +43,7 @@ The operating principle is to reuse existing domain owners. A new package or ser
 
 PR #30 merged the older `dev` head `a6cd74a` into `main`. That does not mean the current `dev` head was promoted. Before another promotion, reconcile the 17 main-only commits and 2 dev-only commits using the accepted main→dev synchronization process (M1.09), review the full diff, and rerun the relevant acceptance gates. Do not solve divergence with force-push, blind rebase, or a third branch.
 
-### 2.2 Roadmap and TaskOS counts
+### 2.3 Original roadmap and TaskOS counts (historical recovery baseline; superseded)
 
 The verified source inventory currently has **239 roadmap-index tasks** (174 M-series + 65 K-series): **157 complete**, **47 in progress**, and **35 todo**. `ROADMAP.md` has 157 checked and 82 unchecked task IDs, matching the 239-task index.
 
@@ -49,7 +51,7 @@ The expanded TaskOS registry is **not currently populated**: `docs/tasks/tasks.j
 
 During recovery, completion authority is the roadmap checkbox plus evidence; `docs/roadmap/tasks.json` is the M/K identity/dependency/detail index; GitHub Issues are operational/human triage views; delivery state requires exact SHA, CI, promotion and release evidence. After a fully validated one-time restore, TaskOS will own lifecycle for all repository projects, and roadmap/TODO/Visual Universe lists become projections. No static totals should be used as current progress.
 
-### 2.3 Release boundary
+### 2.4 Original release boundary (historical; verify current PR/CI before acting)
 
 M12.14 remains in progress until the exact current source SHA, hosted checks and required maintainer approval are reconciled. An older successful test run or merged PR for a prior `dev` head is not evidence for the current branch head. M13 is an independently authorized engineering workstream, not a release blocker and not an application deployment authorization.
 

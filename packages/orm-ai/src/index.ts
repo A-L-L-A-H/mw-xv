@@ -1,13 +1,7 @@
 export { manifest } from './manifest.js';
 export { evolutionHttpPlugin } from './evolution-http.js';
-export {
-  AI_CORPORATION_ROUTE_PREFIXES,
-  aiCorporationHttpPlugin,
-} from './ai-corporation-http.js';
-export {
-  AI_DESKTOP_SYNC_ROUTE_PREFIXES,
-  aiDesktopSyncHttpPlugin,
-} from './ai-desktop-sync-http.js';
+export { AI_CORPORATION_ROUTE_PREFIXES, aiCorporationHttpPlugin } from './ai-corporation-http.js';
+export { AI_DESKTOP_SYNC_ROUTE_PREFIXES, aiDesktopSyncHttpPlugin } from './ai-desktop-sync-http.js';
 export {
   ensureAiJobHandlersRegistered,
   ensureDefaultExecutionPolicy,
@@ -51,6 +45,8 @@ export {
   type SleepDreamConsolidationJobResult,
 } from './evolution-jobs.js';
 export * from './models.js';
+export * from './cognitive-trace-store.js';
+export * from './seed.js';
 export {
   assertAcyclicAgentHierarchy,
   assertAcyclicWorkContractHierarchy,

@@ -68,11 +68,10 @@ function buildRedactedSnippet(text: string, matchedTerms: readonly string[], max
 export function searchLocalRagDocuments(
   documents: readonly LocalRagDocument[],
   query: string,
-  options: LocalRagSearchOptions = {},
+  options: LocalRagSearchOptions = {}
 ): LocalRagSearchResult {
   const trimmedQuery = query.trim();
-  const allowedKinds =
-    options.kinds && options.kinds.length > 0 ? new Set(options.kinds) : null;
+  const allowedKinds = options.kinds && options.kinds.length > 0 ? new Set(options.kinds) : null;
   const filteredDocs = allowedKinds
     ? documents.filter((doc) => allowedKinds.has(doc.kind))
     : documents;

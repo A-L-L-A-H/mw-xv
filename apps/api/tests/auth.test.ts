@@ -295,7 +295,19 @@ describe('authentication and authorization', () => {
         url: '/auth/register',
         payload: {
           login: 'ab', // minLength 3
-          password: '123', // minLength 6
+          password: '123', // minLength 12
+        },
+      });
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('rejects passwords shorter than 12 characters on registration', async () => {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: {
+          login: 'short-password-user',
+          password: 'a'.repeat(11),
         },
       });
       expect(response.statusCode).toBe(400);

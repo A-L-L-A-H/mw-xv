@@ -142,10 +142,7 @@ function computeMerkleTreeHash(leafHashes: readonly string[]): string {
   return hashMerkleNode(left, right);
 }
 
-function computeAuditPath(
-  leafHashes: readonly string[],
-  leafIndex: number
-): MerkleAuditPathStep[] {
+function computeAuditPath(leafHashes: readonly string[], leafIndex: number): MerkleAuditPathStep[] {
   const count = leafHashes.length;
   if (count <= 1) {
     return [];
@@ -385,8 +382,7 @@ export function verifyMerkleConsistency(
     };
   }
 
-  const consistencyProof =
-    m === n ? [] : computeConsistencySubproof(m, newerTree.leafHashes, true);
+  const consistencyProof = m === n ? [] : computeConsistencySubproof(m, newerTree.leafHashes, true);
   const consistent = verifyConsistencyProofHashes(
     m,
     n,

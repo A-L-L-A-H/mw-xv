@@ -15,20 +15,36 @@ export const views = [
     list: { columns: ['sequence', 'code', 'name', 'company'], order: 'sequence asc, id asc' },
     form: {
       sections: [
-        { title: 'Type', columns: 2, fields: ['company', 'code', 'name', 'sequence', 'description'] },
+        {
+          title: 'Type',
+          columns: 2,
+          fields: ['company', 'code', 'name', 'sequence', 'description'],
+        },
       ],
     },
     search: { fields: ['code', 'name'] },
   }),
   defineView(ISPNAS, {
     title: 'NAS Devices',
-    list: { columns: ['name', 'ip_address', 'vendor', 'location', 'is_active', 'project', 'company'] },
+    list: {
+      columns: ['name', 'ip_address', 'vendor', 'location', 'is_active', 'project', 'company'],
+    },
     form: {
       sections: [
         {
           title: 'Router / NAS Gateway',
           columns: 2,
-          fields: ['company', 'project', 'name', 'ip_address', 'secret', 'vendor', 'model', 'location', 'is_active'],
+          fields: [
+            'company',
+            'project',
+            'name',
+            'ip_address',
+            'secret',
+            'vendor',
+            'model',
+            'location',
+            'is_active',
+          ],
         },
         { title: 'Notes', fields: ['description'] },
       ],
@@ -38,14 +54,29 @@ export const views = [
   defineView(ISPBandwidthProfile, {
     title: 'Bandwidth Profiles',
     list: {
-      columns: ['name', 'download_kbps', 'upload_kbps', 'burst_download_kbps', 'burst_upload_kbps', 'company'],
+      columns: [
+        'name',
+        'download_kbps',
+        'upload_kbps',
+        'burst_download_kbps',
+        'burst_upload_kbps',
+        'company',
+      ],
     },
     form: {
       sections: [
         {
           title: 'Speed Limits',
           columns: 2,
-          fields: ['company', 'name', 'download_kbps', 'upload_kbps', 'burst_download_kbps', 'burst_upload_kbps', 'burst_period'],
+          fields: [
+            'company',
+            'name',
+            'download_kbps',
+            'upload_kbps',
+            'burst_download_kbps',
+            'burst_upload_kbps',
+            'burst_period',
+          ],
         },
       ],
     },
@@ -59,7 +90,16 @@ export const views = [
         {
           title: 'Subnet & Range',
           columns: 2,
-          fields: ['company', 'name', 'network', 'gateway', 'range_start', 'range_end', 'dns1', 'dns2'],
+          fields: [
+            'company',
+            'name',
+            'network',
+            'gateway',
+            'range_start',
+            'range_end',
+            'dns1',
+            'dns2',
+          ],
         },
         { title: 'Description', fields: ['description'] },
       ],
@@ -69,7 +109,16 @@ export const views = [
   defineView(ISPSubscriber, {
     title: 'ISP Subscribers',
     list: {
-      columns: ['username', 'partner', 'type', 'profile', 'subscription', 'project', 'status', 'expiry_date'],
+      columns: [
+        'username',
+        'partner',
+        'type',
+        'profile',
+        'subscription',
+        'project',
+        'status',
+        'expiry_date',
+      ],
       decorations: [
         { color: 'success', domain: [['status', '=', 'active']] },
         { color: 'warning', domain: [['status', '=', 'suspended']] },
@@ -82,12 +131,30 @@ export const views = [
         {
           title: 'Customer & Commercial Link',
           columns: 2,
-          fields: ['company', 'partner', 'subscription', 'project', 'monthly_price_minor', 'currency'],
+          fields: [
+            'company',
+            'partner',
+            'subscription',
+            'project',
+            'monthly_price_minor',
+            'currency',
+          ],
         },
         {
           title: 'RADIUS Access',
           columns: 2,
-          fields: ['username', 'password', 'type', 'status', 'profile', 'pool', 'ip_address', 'mac_address', 'start_date', 'expiry_date'],
+          fields: [
+            'username',
+            'password',
+            'type',
+            'status',
+            'profile',
+            'pool',
+            'ip_address',
+            'mac_address',
+            'start_date',
+            'expiry_date',
+          ],
         },
       ],
     },
@@ -106,7 +173,15 @@ export const views = [
   defineView(ISPRadiusSession, {
     title: 'RADIUS Sessions',
     list: {
-      columns: ['session_id', 'username', 'nas_ip', 'framed_ip_address', 'acct_session_time', 'start_time', 'stop_time'],
+      columns: [
+        'session_id',
+        'username',
+        'nas_ip',
+        'framed_ip_address',
+        'acct_session_time',
+        'start_time',
+        'stop_time',
+      ],
     },
     form: {
       sections: [
@@ -144,7 +219,20 @@ export const views = [
         {
           title: 'Outbox Event',
           columns: 2,
-          fields: ['company', 'username', 'type', 'status', 'nas_ip', 'nas_port', 'acct_session_id', 'framed_ip_address', 'created_at', 'sent_at', 'response', 'error_message'],
+          fields: [
+            'company',
+            'username',
+            'type',
+            'status',
+            'nas_ip',
+            'nas_port',
+            'acct_session_id',
+            'framed_ip_address',
+            'created_at',
+            'sent_at',
+            'response',
+            'error_message',
+          ],
         },
       ],
     },

@@ -232,9 +232,7 @@ export function evaluateMeshFailoverPlan(input: MeshFailoverPlanInput): MeshFail
     failClosed,
   };
 
-  const planSha256 = createHash('sha256')
-    .update(JSON.stringify(canonicalPayload))
-    .digest('hex');
+  const planSha256 = createHash('sha256').update(JSON.stringify(canonicalPayload)).digest('hex');
 
   return {
     ...canonicalPayload,

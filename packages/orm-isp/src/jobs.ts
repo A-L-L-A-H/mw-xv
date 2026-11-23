@@ -53,9 +53,7 @@ function parseIspJobPayload(payload: unknown): IspJobPayload {
   return { companyId: payload.companyId };
 }
 
-export function registerIspJobHandlers(
-  options: RegisterIspJobHandlersOptions = {}
-): () => void {
+export function registerIspJobHandlers(options: RegisterIspJobHandlersOptions = {}): () => void {
   const disposers: Array<() => void> = [];
   try {
     disposers.push(
@@ -133,10 +131,7 @@ export function registerIspJobHandlers(
   };
 }
 
-export async function ensureIspCrons(
-  db: Knex,
-  options: EnsureIspCronsOptions = {}
-): Promise<void> {
+export async function ensureIspCrons(db: Knex, options: EnsureIspCronsOptions = {}): Promise<void> {
   if (!(await db.schema.hasTable('crons'))) {
     return;
   }

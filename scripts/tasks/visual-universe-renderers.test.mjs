@@ -27,9 +27,7 @@ function makeTask(overrides = {}) {
     risk: 'low',
     human_approval_required: false,
     notes: 'Canonical task note.',
-    evidence: [
-      { command: 'pnpm test:taskos', exit_code: null, artifact: 'evidence/W0-001.md' },
-    ],
+    evidence: [{ command: 'pnpm test:taskos', exit_code: null, artifact: 'evidence/W0-001.md' }],
     commit: null,
     parallel_group: 'serial',
     legacyCardNotes: {
@@ -50,8 +48,16 @@ test('Task card renderer is driven by canonical TaskOS state, not prior card con
   assert.match(rendered, /Legacy note preserved from the archived card\./u);
   assert.match(rendered, /historical context; not lifecycle state/u);
   assert.match(rendered, /Git blob SHA: `a{40}`/u);
-  assert.doesNotMatch(rendered, /exit not recorded/u, 'in-progress work must not render a completion exit code');
-  assert.doesNotMatch(rendered, /evidence\/W0-001\.md/u, 'in-progress work must not render completion evidence paths');
+  assert.doesNotMatch(
+    rendered,
+    /exit not recorded/u,
+    'in-progress work must not render a completion exit code'
+  );
+  assert.doesNotMatch(
+    rendered,
+    /evidence\/W0-001\.md/u,
+    'in-progress work must not render completion evidence paths'
+  );
 });
 
 test('completed task cards mark missing execution exit codes as not recorded', () => {
@@ -94,35 +100,43 @@ test('task graph validator rejects duplicate IDs, unknown dependencies and cycle
     /references unknown dependency/u
   );
   assert.throws(
-    () => validateVisualUniverseTaskGraph([
-      makeTask({ id: 'W0-001', depends_on: ['W0-002'] }),
-      makeTask({ id: 'W0-002', depends_on: ['W0-001'], acceptance_criteria: [], acceptance_criteria_state: [] }),
-    ]),
+    () =>
+      validateVisualUniverseTaskGraph([
+        makeTask({ id: 'W0-001', depends_on: ['W0-002'] }),
+        makeTask({
+          id: 'W0-002',
+          depends_on: ['W0-001'],
+          acceptance_criteria: [],
+          acceptance_criteria_state: [],
+        }),
+      ]),
     /must be acyclic/u
   );
 });
 
 test('task graph validator rejects acceptance text/state drift and duplicate criterion IDs', () => {
   assert.throws(
-    () => validateVisualUniverseTaskGraph([
-      makeTask({
-        acceptance_criteria_state: [
-          { id: 'W0-001-ac-1', text: 'Different text', done: true },
-          { id: 'W0-001-ac-2', text: 'Run tests', done: false },
-        ],
-      }),
-    ]),
+    () =>
+      validateVisualUniverseTaskGraph([
+        makeTask({
+          acceptance_criteria_state: [
+            { id: 'W0-001-ac-1', text: 'Different text', done: true },
+            { id: 'W0-001-ac-2', text: 'Run tests', done: false },
+          ],
+        }),
+      ]),
     /acceptance criterion text projection drift/u
   );
   assert.throws(
-    () => validateVisualUniverseTaskGraph([
-      makeTask({
-        acceptance_criteria_state: [
-          { id: 'duplicate', text: 'Inspect branch', done: true },
-          { id: 'duplicate', text: 'Run tests', done: false },
-        ],
-      }),
-    ]),
+    () =>
+      validateVisualUniverseTaskGraph([
+        makeTask({
+          acceptance_criteria_state: [
+            { id: 'duplicate', text: 'Inspect branch', done: true },
+            { id: 'duplicate', text: 'Run tests', done: false },
+          ],
+        }),
+      ]),
     /duplicate acceptance criterion/u
   );
 });

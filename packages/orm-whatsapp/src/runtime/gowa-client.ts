@@ -1,8 +1,5 @@
 import { readWhatsAppGatewayConfig } from './config.js';
-import {
-  recordWhatsAppGatewayRequest,
-  startWhatsAppGatewayRequest,
-} from './metrics.js';
+import { recordWhatsAppGatewayRequest, startWhatsAppGatewayRequest } from './metrics.js';
 
 type GowaEnvelope<T> = { code?: string; message?: string; results?: T; status?: number };
 

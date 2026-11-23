@@ -110,7 +110,8 @@ export function VpsOnboardingCard() {
   });
 
   const status = statusQuery.data;
-  const canBootstrap = login.trim().length >= 3 && password.length >= 12 && !bootstrapMutation.isPending;
+  const canBootstrap =
+    login.trim().length >= 3 && password.length >= 12 && !bootstrapMutation.isPending;
 
   return (
     <Panel className="space-y-6 border-primary/20">

@@ -22,7 +22,9 @@ export interface QuietHoursWindow {
 export interface UserNotificationPolicy {
   readonly userId: string;
   /** Channels enabled for each severity level. */
-  readonly channelsBySeverity: Readonly<Partial<Record<NotificationSeverity, readonly NotificationChannel[]>>>;
+  readonly channelsBySeverity: Readonly<
+    Partial<Record<NotificationSeverity, readonly NotificationChannel[]>>
+  >;
   /** Fallback channels when severity is not explicitly mapped. */
   readonly defaultChannels?: readonly NotificationChannel[];
   /** Optional per-user quiet hours. Overridable ONLY by `critical` severity. */
@@ -41,7 +43,8 @@ export interface RoutableNotification {
   readonly createdAtMs: number;
 }
 
-export type RouteAction = 'deliver' | 'suppressed_quiet_hours' | 'suppressed_duplicate' | 'no_channels';
+export type RouteAction =
+  'deliver' | 'suppressed_quiet_hours' | 'suppressed_duplicate' | 'no_channels';
 
 export interface RouteDecision {
   readonly notificationId: string;
@@ -112,7 +115,10 @@ export class NotificationRouter {
   private readonly policies = new Map<string, UserNotificationPolicy>();
   private readonly dedupeWindowMs: number;
   /** Map from composite dedupe key -> { lastSeenMs, firstNotificationId } */
-  private readonly recentFingerprints = new Map<string, { lastSeenMs: number; notificationId: string }>();
+  private readonly recentFingerprints = new Map<
+    string,
+    { lastSeenMs: number; notificationId: string }
+  >();
   /** Per-user queued notifications awaiting digest compilation. */
   private readonly digestQueue = new Map<string, RoutableNotification[]>();
 
@@ -128,7 +134,10 @@ export class NotificationRouter {
     this.policies.set(policy.userId, policy);
   }
 
-  private resolveChannels(policy: UserNotificationPolicy | undefined, severity: NotificationSeverity): NotificationChannel[] {
+  private resolveChannels(
+    policy: UserNotificationPolicy | undefined,
+    severity: NotificationSeverity
+  ): NotificationChannel[] {
     if (!policy) {
       return severity === 'critical' ? ['desktop', 'whatsapp', 'email', 'webhook'] : ['desktop'];
     }
@@ -137,7 +146,10 @@ export class NotificationRouter {
   }
 
   private fingerprint(notification: RoutableNotification): string {
-    return notification.dedupeKey ?? `${notification.userId}:${notification.category}:${notification.title}`;
+    return (
+      notification.dedupeKey ??
+      `${notification.userId}:${notification.category}:${notification.title}`
+    );
   }
 
   private pruneExpiredFingerprints(nowMs: number): void {
@@ -152,7 +164,10 @@ export class NotificationRouter {
     }
   }
 
-  route(notification: RoutableNotification, nowMs: number = notification.createdAtMs): RouteDecision {
+  route(
+    notification: RoutableNotification,
+    nowMs: number = notification.createdAtMs
+  ): RouteDecision {
     this.pruneExpiredFingerprints(nowMs);
 
     const key = this.fingerprint(notification);

@@ -61,7 +61,8 @@ export function runAdversarialBenchmarkSuite(
   }));
   vectors.push({
     vectorId: 'prompt_injection_arena',
-    blocked: arenaReport.breachCount === 0 && arenaReport.blockedCount === arenaReport.totalScenarios,
+    blocked:
+      arenaReport.breachCount === 0 && arenaReport.blockedCount === arenaReport.totalScenarios,
     critical: true,
     detail: `${arenaReport.blockedCount}/${arenaReport.totalScenarios} red-team scenarios blocked`,
   });
@@ -137,7 +138,8 @@ export function runAdversarialBenchmarkSuite(
   const redactedLine = redactor.redactString(`token=${leakedSecret}`);
   vectors.push({
     vectorId: 'sandbox_secret_leakage',
-    blocked: sbxCheck.secretLeakDetected && !sbxCheck.passed && !redactedLine.includes(leakedSecret),
+    blocked:
+      sbxCheck.secretLeakDetected && !sbxCheck.passed && !redactedLine.includes(leakedSecret),
     critical: true,
     detail: sbxCheck.secretLeakDetected ? 'secret leak caught and redacted' : 'secret leak missed',
   });
@@ -162,7 +164,13 @@ export function runAdversarialBenchmarkSuite(
     signature: {
       algorithm: 'hmac-sha256' as const,
       keyId: 'k1',
-      signatureHex: signPeerAttestationPayload(proposalId, peerId, 'approve', attPayload, peerSecret),
+      signatureHex: signPeerAttestationPayload(
+        proposalId,
+        peerId,
+        'approve',
+        attPayload,
+        peerSecret
+      ),
       issuedAt: '2026-11-23T00:00:00.000Z',
     },
     merkleProof: proof,

@@ -133,7 +133,7 @@ function assertNonNegativeInt(value: number, label: string): void {
 function resolveTieredUnitPrice(
   baseUnitPriceCents: number,
   quantity: number,
-  tiers?: readonly VolumePriceTier[],
+  tiers?: readonly VolumePriceTier[]
 ): number {
   if (!tiers || tiers.length === 0) return baseUnitPriceCents;
   let matchedPrice = baseUnitPriceCents;
@@ -201,7 +201,7 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
     const appliedUnitPriceCents = resolveTieredUnitPrice(
       line.unitPriceCents,
       line.quantity,
-      line.volumeTiers,
+      line.volumeTiers
     );
     const grossSubtotalCents = appliedUnitPriceCents * line.quantity;
 
@@ -227,7 +227,7 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
 
   const subtotalAfterLineDiscounts = preQuoteDiscountLines.reduce(
     (acc, item) => acc + item.afterLineDiscountCents,
-    0,
+    0
   );
 
   const quoteBps = input.quoteDiscountBps ?? 0;
@@ -239,12 +239,12 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
 
   const quoteDiscountTotalCents = Math.min(
     subtotalAfterLineDiscounts,
-    Math.round((subtotalAfterLineDiscounts * quoteBps) / 10000) + quoteFixed,
+    Math.round((subtotalAfterLineDiscounts * quoteBps) / 10000) + quoteFixed
   );
 
   const quoteDiscountAllocations = allocateIntegerCents(
     quoteDiscountTotalCents,
-    preQuoteDiscountLines.map((item) => item.afterLineDiscountCents),
+    preQuoteDiscountLines.map((item) => item.afterLineDiscountCents)
   );
 
   const approvalReasons: string[] = [];
@@ -257,12 +257,9 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
     const grossMarginBps =
       netSubtotalCents > 0 ? Math.floor((grossMarginCents * 10000) / netSubtotalCents) : 0;
 
-    if (
-      input.minLineGrossMarginBps !== undefined &&
-      grossMarginBps < input.minLineGrossMarginBps
-    ) {
+    if (input.minLineGrossMarginBps !== undefined && grossMarginBps < input.minLineGrossMarginBps) {
       approvalReasons.push(
-        `Line ${item.line.lineId} gross margin ${grossMarginBps}bps is below floor ${input.minLineGrossMarginBps}bps`,
+        `Line ${item.line.lineId} gross margin ${grossMarginBps}bps is below floor ${input.minLineGrossMarginBps}bps`
       );
     }
 
@@ -296,7 +293,7 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
 
   if (input.minGrossMarginBps !== undefined && grossMarginBps < input.minGrossMarginBps) {
     approvalReasons.push(
-      `Quote gross margin ${grossMarginBps}bps is below floor ${input.minGrossMarginBps}bps`,
+      `Quote gross margin ${grossMarginBps}bps is below floor ${input.minGrossMarginBps}bps`
     );
   }
 

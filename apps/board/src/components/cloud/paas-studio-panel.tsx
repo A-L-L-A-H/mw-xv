@@ -25,10 +25,8 @@ import {
   WarningIcon,
 } from '@moonwitness/ui/icons';
 import { MeshTopologyPanel } from './mesh-topology-panel';
-import {
-  PaasTemplateCatalog,
-  type PaasTemplateDefinition,
-} from './paas-template-catalog';
+import { PaasTemplateCatalog } from './paas-template-catalog';
+import type { PaasTemplateDefinition } from './paas-template-data';
 
 export interface PaasStudioNodeMetrics {
   readonly nodeId: string;
@@ -89,6 +87,8 @@ function statusBadgeVariant(status: string): 'primary' | 'cyan' | 'destructive' 
   return 'default';
 }
 
+const initialLogTimestamp = () => new Date().toISOString();
+
 export function PaasStudioPanel({
   apiBase = '/api/desktop/paas',
   tenants = DEFAULT_TENANTS,
@@ -112,13 +112,14 @@ export function PaasStudioPanel({
 
   // Wave C.13: Live Logs & Stats state
   const [selectedLogApp, setSelectedLogApp] = useState<string>('control-plane');
-  const [logEntries, setLogEntries] = useState<readonly LogConsoleEntry[]>([
+  const [logEntries, setLogEntries] = useState<readonly LogConsoleEntry[]>(() => [
     {
       id: 'init-1',
-      timestamp: new Date().toISOString(),
+      timestamp: initialLogTimestamp(),
       level: 'info',
       source: 'mesh',
-      message: 'Live PaaS log stream ready. Select an app or click Refresh to pull stream/polling logs.',
+      message:
+        'Live PaaS log stream ready. Select an app or click Refresh to pull stream/polling logs.',
     },
   ]);
   const [logsLoading, setLogsLoading] = useState<boolean>(false);
@@ -173,13 +174,16 @@ export function PaasStudioPanel({
         const text = payload.logs?.trim();
         if (text) {
           setLogEntries(
-            text.split(/\r?\n/u).slice(-40).map((line, index) => ({
-              id: `poll-${Date.now()}-${index}`,
-              timestamp: new Date().toISOString(),
-              level: line.toLowerCase().includes('error') ? 'error' : 'info',
-              source: 'mesh',
-              message: line,
-            }))
+            text
+              .split(/\r?\n/u)
+              .slice(-40)
+              .map((line, index) => ({
+                id: `poll-${Date.now()}-${index}`,
+                timestamp: new Date().toISOString(),
+                level: line.toLowerCase().includes('error') ? 'error' : 'info',
+                source: 'mesh',
+                message: line,
+              }))
           );
           return;
         }
@@ -248,8 +252,7 @@ export function PaasStudioPanel({
         createdAt: payload.createdAt ?? new Date().toISOString(),
         sizeMb: payload.sizeMb ?? 150,
         sha256:
-          payload.sha256 ??
-          '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+          payload.sha256 ?? '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
         verified: payload.verified ?? true,
       };
       setBackups((prev) => [created, ...prev]);
@@ -318,9 +321,7 @@ export function PaasStudioPanel({
 
       setDesktopModeAvailable(true);
       const metricsData = (await metricsRes.json()) as PaasStudioNodeMetrics;
-      const appsPayload = (await appsRes.json()) as
-        | { apps?: PaasStudioApp[] }
-        | PaasStudioApp[];
+      const appsPayload = (await appsRes.json()) as { apps?: PaasStudioApp[] } | PaasStudioApp[];
 
       setMetrics(metricsData);
       setApps(Array.isArray(appsPayload) ? appsPayload : (appsPayload.apps ?? []));
@@ -332,7 +333,13 @@ export function PaasStudioPanel({
   }, [normalizedBase]);
 
   useEffect(() => {
-    void refreshState();
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void refreshState();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [refreshState]);
 
   const handleDeployTemplate = useCallback(
@@ -464,8 +471,8 @@ export function PaasStudioPanel({
             <div className="space-y-1">
               <p className="font-medium">Desktop DX Mode Required for Live Mesh PaaS</p>
               <p className="opacity-80">
-                You are currently viewing PaaS Studio in Web Mode. Launch MoonWitness Desktop DX
-                to connect directly to your private mesh control-plane via{' '}
+                You are currently viewing PaaS Studio in Web Mode. Launch MoonWitness Desktop DX to
+                connect directly to your private mesh control-plane via{' '}
                 <code>{normalizedBase}/*</code>.
               </p>
             </div>
@@ -508,7 +515,10 @@ export function PaasStudioPanel({
         title="Deploy Container App"
         description="Provision a new app with automatic TLS routing on your private mesh node."
       >
-        <form onSubmit={(event) => void handleDeploy(event)} className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <form
+          onSubmit={(event) => void handleDeploy(event)}
+          className="grid grid-cols-1 gap-4 md:grid-cols-2"
+        >
           <div className="space-y-1.5">
             <Label htmlFor="paas-app-slug">App Slug</Label>
             <Input
@@ -811,7 +821,9 @@ export function PaasStudioPanel({
           <TabsContent value="pg-backups" className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="space-y-0.5">
-                <p className="text-sm font-semibold">PostgreSQL Snapshots &amp; Dry-Run Verification</p>
+                <p className="text-sm font-semibold">
+                  PostgreSQL Snapshots &amp; Dry-Run Verification
+                </p>
                 <p className="text-xs opacity-75">
                   All snapshots are checksummed with SHA-256 before restore verification.
                 </p>
@@ -877,12 +889,7 @@ export function PaasStudioPanel({
         <Panel
           title={`Logs: ${activeLogs.slug}`}
           actions={
-            <Button
-              type="button"
-              size="xs"
-              variant="ghost"
-              onClick={() => setActiveLogs(null)}
-            >
+            <Button type="button" size="xs" variant="ghost" onClick={() => setActiveLogs(null)}>
               Close
             </Button>
           }

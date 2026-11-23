@@ -170,10 +170,7 @@ export function LocalRagSearchPanel() {
       ) : result && result.hits.length > 0 ? (
         <div className="space-y-2.5">
           {result.hits.map((hit) => (
-            <div
-              key={hit.id}
-              className="space-y-2 border-2 border-ink/25 bg-paper p-3"
-            >
+            <div key={hit.id} className="space-y-2 border-2 border-ink/25 bg-paper p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <Button

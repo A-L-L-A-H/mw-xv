@@ -127,10 +127,7 @@ export function signPeerAttestationPayload(
   return createHmac('sha256', secret).update(canonical, 'utf8').digest('hex');
 }
 
-function verifyHmacSignature(
-  attestation: PeerExecutionAttestation,
-  secret: string
-): boolean {
+function verifyHmacSignature(attestation: PeerExecutionAttestation, secret: string): boolean {
   if (
     attestation.signature.algorithm !== 'hmac-sha256' ||
     !HEX_SHA256_REGEX.test(attestation.signature.signatureHex)
@@ -165,7 +162,10 @@ export function evaluateA2AConsensus(
   policy: A2AConsensusPolicy = {}
 ): A2AConsensusResult {
   const redactor = createRedactor();
-  const minVerifiedPeers = Math.max(1, Math.floor(policy.minVerifiedPeers ?? DEFAULT_MIN_VERIFIED_PEERS));
+  const minVerifiedPeers = Math.max(
+    1,
+    Math.floor(policy.minVerifiedPeers ?? DEFAULT_MIN_VERIFIED_PEERS)
+  );
   const quorumThresholdBps = Math.max(
     5001,
     Math.min(10_000, Math.round(policy.quorumThresholdBps ?? DEFAULT_QUORUM_THRESHOLD_BPS))

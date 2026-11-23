@@ -63,7 +63,10 @@ export function generateSceneParticles(
       id: index,
       xPct: Number((rand() * 100).toFixed(2)),
       yPct: Number((rand() * 100).toFixed(2)),
-      sizePx: preset === 'rain' ? Number((1 + rand() * 1.5).toFixed(2)) : Number((2 + rand() * 3).toFixed(2)),
+      sizePx:
+        preset === 'rain'
+          ? Number((1 + rand() * 1.5).toFixed(2))
+          : Number((2 + rand() * 3).toFixed(2)),
       durationMs: Math.round(1400 + rand() * 1800),
       delayMs: Math.round(rand() * 1200),
       opacity: Number((0.28 + rand() * 0.55).toFixed(2)),
@@ -137,10 +140,10 @@ export function SceneParticles({
             opacity: particle.opacity,
             background:
               preset === 'sparks'
-                ? 'var(--mw-yellow, #ffe031)'
+                ? 'var(--mw-yellow)'
                 : preset === 'rain'
-                  ? 'var(--mw-cyan, #39e6ff)'
-                  : 'var(--mw-paper, #f3efe4)',
+                  ? 'var(--mw-cyan)'
+                  : 'var(--mw-paper)',
             transform: staticMode ? 'none' : 'translate3d(0, 0, 0)',
             animationDuration: staticMode ? '0ms' : `${particle.durationMs}ms`,
             animationDelay: staticMode ? '0ms' : `${particle.delayMs}ms`,

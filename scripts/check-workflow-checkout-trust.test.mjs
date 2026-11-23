@@ -229,6 +229,7 @@ test('write workflows use separate resource locks while keeping conflicting writ
     ['release-prepare.yml', 'dev-branch-updates'],
     ['roadmap-issue-plan.yml', 'roadmap-issue-sync'],
     ['release.yml', 'release-asset-updates'],
+    ['desktop-release.yml', 'release-asset-updates'],
     ['release-orchestrate.yml', 'release-asset-updates'],
     ['pages.yml', 'release-asset-updates'],
     ['pages.yml', 'pages-site-deployment'],

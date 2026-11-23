@@ -396,18 +396,27 @@ export const workflowHttpPlugin: AddonHttpPlugin = async (app, options) => {
     const steps: SagaStepDefinition<Record<string, unknown>, unknown>[] = [];
     for (const rawStep of req.body.steps) {
       if (!isRecord(rawStep) || typeof rawStep.id !== 'string' || !rawStep.id.trim()) {
-        return reply.code(400).send({ success: false, error: 'Each step must have a non-empty string id' });
+        return reply
+          .code(400)
+          .send({ success: false, error: 'Each step must have a non-empty string id' });
       }
       if (rawStep.dependsOn !== undefined) {
-        if (!Array.isArray(rawStep.dependsOn) || !rawStep.dependsOn.every((dep) => typeof dep === 'string')) {
-          return reply.code(400).send({ success: false, error: 'dependsOn must be an array of strings' });
+        if (
+          !Array.isArray(rawStep.dependsOn) ||
+          !rawStep.dependsOn.every((dep) => typeof dep === 'string')
+        ) {
+          return reply
+            .code(400)
+            .send({ success: false, error: 'dependsOn must be an array of strings' });
         }
       }
       const hasCompensator = Boolean(rawStep.hasCompensator);
       steps.push({
         id: rawStep.id,
         ...(Array.isArray(rawStep.dependsOn) ? { dependsOn: rawStep.dependsOn } : {}),
-        ...(typeof rawStep.idempotencyScope === 'string' ? { idempotencyScope: rawStep.idempotencyScope } : {}),
+        ...(typeof rawStep.idempotencyScope === 'string'
+          ? { idempotencyScope: rawStep.idempotencyScope }
+          : {}),
         execute: () => ({}),
         ...(hasCompensator ? { compensate: () => {} } : {}),
       });
@@ -466,12 +475,19 @@ export const workflowHttpPlugin: AddonHttpPlugin = async (app, options) => {
       requiredApprovals: rawPolicy.requiredApprovals,
       eligibleApproverIds: rawPolicy.eligibleApproverIds,
       requesterId: rawPolicy.requesterId,
-      ...(typeof rawPolicy.allowSelfApproval === 'boolean' ? { allowSelfApproval: rawPolicy.allowSelfApproval } : {}),
-      ...(Array.isArray(rawPolicy.requiredRoles) && rawPolicy.requiredRoles.every((r) => typeof r === 'string')
+      ...(typeof rawPolicy.allowSelfApproval === 'boolean'
+        ? { allowSelfApproval: rawPolicy.allowSelfApproval }
+        : {}),
+      ...(Array.isArray(rawPolicy.requiredRoles) &&
+      rawPolicy.requiredRoles.every((r) => typeof r === 'string')
         ? { requiredRoles: rawPolicy.requiredRoles }
         : {}),
-      ...(typeof rawPolicy.enforceDistinctRoles === 'boolean' ? { enforceDistinctRoles: rawPolicy.enforceDistinctRoles } : {}),
-      ...(typeof rawPolicy.rejectOnAnyRejection === 'boolean' ? { rejectOnAnyRejection: rawPolicy.rejectOnAnyRejection } : {}),
+      ...(typeof rawPolicy.enforceDistinctRoles === 'boolean'
+        ? { enforceDistinctRoles: rawPolicy.enforceDistinctRoles }
+        : {}),
+      ...(typeof rawPolicy.rejectOnAnyRejection === 'boolean'
+        ? { rejectOnAnyRejection: rawPolicy.rejectOnAnyRejection }
+        : {}),
     };
 
     const votes: ApprovalVote[] = [];

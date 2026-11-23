@@ -4,6 +4,17 @@ export { Notification, NotificationPreference, NotificationTemplate } from './mo
 export { enqueueNotification, registerNotificationOutboxConsumer } from './runtime.js';
 export type { NotificationRequest } from './runtime.js';
 export {
+  NOTIFICATION_SEED_VERSION,
+  buildNotificationInitialSeed,
+  seedNotificationInitialData,
+  type NotificationChannelSeed,
+  type NotificationInitialSeedBundle,
+  type NotificationSeedChannelCode,
+  type NotificationSeedExecutionResult,
+  type NotificationTemplateSeed,
+  type NotificationTemplateSeedChannel,
+} from './seed.js';
+export {
   NotificationRouter,
   isWithinQuietHours,
   type DigestBatch,

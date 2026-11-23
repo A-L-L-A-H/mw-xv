@@ -1,4 +1,5 @@
-export type SceneAmbienceId = 'moon-city-night' | 'underground-hum' | 'archive-quiet' | 'street-rain';
+export type SceneAmbienceId =
+  'moon-city-night' | 'underground-hum' | 'archive-quiet' | 'street-rain';
 
 export interface AmbienceAudioInstance {
   loop: boolean;

@@ -1,7 +1,11 @@
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { isRecord } from '@moonwitness/types';
 import { Notification, NotificationPreference } from './models.js';
-import { NotificationRouter, type RoutableNotification, type UserNotificationPolicy } from './notification-router.js';
+import {
+  NotificationRouter,
+  type RoutableNotification,
+  type UserNotificationPolicy,
+} from './notification-router.js';
 
 interface InboxQuery {
   [key: string]: string | undefined;
@@ -166,7 +170,9 @@ export const notificationHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { notification, userPolicy, nowMs } = req.body;
@@ -185,7 +191,8 @@ export const notificationHttpPlugin: AddonHttpPlugin = async (app) => {
     ) {
       return reply.code(400).send({
         success: false,
-        error: 'notification must include id, userId, severity, category, title, and body as strings',
+        error:
+          'notification must include id, userId, severity, category, title, and body as strings',
       });
     }
 

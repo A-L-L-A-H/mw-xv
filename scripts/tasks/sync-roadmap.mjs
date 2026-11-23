@@ -45,7 +45,9 @@ export async function syncRoadmap() {
     if (!ct) continue;
     const ctStatus = toRoadmapTaskStatus(ct.status);
     if (ctStatus === null) {
-      throw new Error(`Task "${ct.code}" has unsupported TaskOS status "${ct.status}" for roadmap projection.`);
+      throw new Error(
+        `Task "${ct.code}" has unsupported TaskOS status "${ct.status}" for roadmap projection.`
+      );
     }
     if (rt.status !== ctStatus) {
       rt.status = ctStatus;
@@ -88,10 +90,14 @@ export async function syncRoadmap() {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  syncRoadmap().then((res) => {
-    console.log(`Roadmap Sync completed: ${res.updatedRoadmapTasks} task(s) and ${res.updatedLines} markdown line(s) updated.`);
-  }).catch((err) => {
-    console.error('Roadmap sync failed:', err);
-    process.exit(1);
-  });
+  syncRoadmap()
+    .then((res) => {
+      console.log(
+        `Roadmap Sync completed: ${res.updatedRoadmapTasks} task(s) and ${res.updatedLines} markdown line(s) updated.`
+      );
+    })
+    .catch((err) => {
+      console.error('Roadmap sync failed:', err);
+      process.exit(1);
+    });
 }

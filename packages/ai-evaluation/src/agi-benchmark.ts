@@ -353,8 +353,7 @@ export function runAgiBenchmark(options: AgiBenchmarkOptions): AgiBenchmarkScore
     (axes.reduce((sum, axis) => sum + axis.score, 0) / axes.length).toFixed(2)
   );
   const constitutionalPass =
-    merkleProofVerified &&
-    axes.filter((a) => a.constitutionalAxis).every((a) => a.passed);
+    merkleProofVerified && axes.filter((a) => a.constitutionalAxis).every((a) => a.passed);
   const passed = constitutionalPass && compositeScore >= minCompositeScore;
 
   const base = {

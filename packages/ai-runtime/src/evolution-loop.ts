@@ -53,9 +53,7 @@ export interface MemoryCandidateProposal extends EvolutionProposalGuardrails {
   readonly content: string;
 }
 
-export type EvolutionCandidateProposal =
-  | SkillVersionProposal
-  | MemoryCandidateProposal;
+export type EvolutionCandidateProposal = SkillVersionProposal | MemoryCandidateProposal;
 
 export type EvolutionRejectionReason = 'PROOF_GATE_NOT_PASSED';
 
@@ -81,11 +79,7 @@ function normalizeSlug(raw: string): string {
 export function synthesizeEvolutionCandidates(
   input: EvolutionSynthesisInput
 ): EvolutionSynthesisResult {
-  if (
-    !input.proofGatePassed ||
-    !Number.isInteger(input.companyId) ||
-    input.companyId <= 0
-  ) {
+  if (!input.proofGatePassed || !Number.isInteger(input.companyId) || input.companyId <= 0) {
     const rejectedHash = sha256Hex(
       JSON.stringify({
         accepted: false,
@@ -116,9 +110,7 @@ export function synthesizeEvolutionCandidates(
     .filter((check) => check.passed)
     .map((check) => {
       const safeName = redactor.redactString(check.name.trim());
-      const safeSummary = check.summary
-        ? redactor.redactString(check.summary.trim())
-        : '';
+      const safeSummary = check.summary ? redactor.redactString(check.summary.trim()) : '';
       return safeSummary.length > 0 ? `${safeName}: ${safeSummary}` : safeName;
     })
     .sort((a, b) => a.localeCompare(b));
@@ -131,9 +123,7 @@ export function synthesizeEvolutionCandidates(
     )
   ).sort((a, b) => a.localeCompare(b));
 
-  const skillSlug = normalizeSlug(
-    input.skillSlug ?? `contract-${safeWorkContractId}`
-  );
+  const skillSlug = normalizeSlug(input.skillSlug ?? `contract-${safeWorkContractId}`);
   const skillTitle = `Verified procedure for ${safeWorkContractId}`;
   const skillContentLines = [
     `Work contract: ${safeWorkContractId}`,
@@ -175,32 +165,17 @@ export function synthesizeEvolutionCandidates(
   };
 
   const scopeKind = input.scopeKind ?? 'project';
-  const scopeRef = redactor.redactString(
-    (input.scopeRef ?? safeWorkContractId).trim()
-  );
+  const scopeRef = redactor.redactString((input.scopeRef ?? safeWorkContractId).trim());
 
   const memorySources =
     deduplicatedLessons.length > 0
       ? deduplicatedLessons
       : [safeDiffSummary || `Verified run ${safeRunId} passed Proof Gate v2.`];
 
-  const memoryProposals: MemoryCandidateProposal[] = memorySources.map(
-    (lesson, index) => {
-      const memoryTitle = `Lesson ${index + 1} from ${safeWorkContractId}`;
-      const memoryContentSha256 = sha256Hex(
-        JSON.stringify({
-          artifactKind: 'ai.memory_candidate',
-          companyId: input.companyId,
-          runId: safeRunId,
-          workContractId: safeWorkContractId,
-          scopeKind,
-          scopeRef,
-          title: memoryTitle,
-          content: lesson,
-        })
-      );
-      return {
-        candidateId: `mem_cand_${memoryContentSha256.slice(0, 16)}`,
+  const memoryProposals: MemoryCandidateProposal[] = memorySources.map((lesson, index) => {
+    const memoryTitle = `Lesson ${index + 1} from ${safeWorkContractId}`;
+    const memoryContentSha256 = sha256Hex(
+      JSON.stringify({
         artifactKind: 'ai.memory_candidate',
         companyId: input.companyId,
         runId: safeRunId,
@@ -209,18 +184,26 @@ export function synthesizeEvolutionCandidates(
         scopeRef,
         title: memoryTitle,
         content: lesson,
-        candidateOnly: true,
-        requiresHumanApproval: true,
-        automatedPromotionAllowed: false,
-        contentSha256: memoryContentSha256,
-      };
-    }
-  );
+      })
+    );
+    return {
+      candidateId: `mem_cand_${memoryContentSha256.slice(0, 16)}`,
+      artifactKind: 'ai.memory_candidate',
+      companyId: input.companyId,
+      runId: safeRunId,
+      workContractId: safeWorkContractId,
+      scopeKind,
+      scopeRef,
+      title: memoryTitle,
+      content: lesson,
+      candidateOnly: true,
+      requiresHumanApproval: true,
+      automatedPromotionAllowed: false,
+      contentSha256: memoryContentSha256,
+    };
+  });
 
-  const candidates: readonly EvolutionCandidateProposal[] = [
-    skillProposal,
-    ...memoryProposals,
-  ];
+  const candidates: readonly EvolutionCandidateProposal[] = [skillProposal, ...memoryProposals];
 
   const synthesisSha256 = sha256Hex(
     JSON.stringify({

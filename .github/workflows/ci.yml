@@ -15,6 +15,100 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secret-scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Install pinned gitleaks CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          version='8.30.1'
+          archive="$RUNNER_TEMP/gitleaks_${version}_linux_x64.tar.gz"
+          curl --fail --silent --show-error --location \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${version}/gitleaks_${version}_linux_x64.tar.gz" \
+            --output "$archive"
+          expected='551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb'
+          actual="$(sha256sum "$archive" | cut -d' ' -f1)"
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::gitleaks checksum mismatch: expected $expected, got $actual"
+            exit 1
+          fi
+          tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
+          install -m 0755 "$RUNNER_TEMP/gitleaks" /usr/local/bin/gitleaks
+      - name: Scan full Git history for secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          gitleaks detect \
+            --source . \
+            --config .gitleaks.toml \
+            --baseline-path .gitleaks-baseline.json \
+            --report-format json \
+            --report-path gitleaks-report.json \
+            --redact \
+            --no-banner \
+            --exit-code 1
+      - name: Upload gitleaks report
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: gitleaks-report-${{ github.sha }}
+          path: gitleaks-report.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  static-analysis:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, go]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL for ${{ matrix.language }}
+        uses: github/codeql-action/init@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended
+      - name: Run CodeQL static analysis
+        uses: github/codeql-action/analyze@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
+        with:
+          category: /language:${{ matrix.language }}
+
+  dependency-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: '24'
+          pnpm-version: '11.17.0'
+      - name: Install frozen workspace dependencies
+        run: pnpm install --frozen-lockfile --no-runtime
+      - name: Block CRITICAL dependency advisories
+        run: pnpm audit --audit-level=critical
+      - name: Verify registry signatures for installed packages
+        run: pnpm audit signatures
+
   quality-and-build:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -43,10 +137,16 @@ jobs:
           pnpm automation:check:action-pins
           pnpm automation:check:action-tags
           pnpm automation:check:roadmap
+          pnpm test:release-provenance
+          node scripts/check-release-provenance.mjs
+          pnpm test:secrets
+          pnpm automation:check:secrets
       - name: Verify shared UI, API addon boundary, assets, and documentation links
         run: |
           pnpm board:ui:check
           pnpm desktop:ui:check
+          pnpm ui:design:check
+          pnpm lint:ui
           pnpm api:addon:check
           pnpm test:assets
           pnpm exec playwright install chromium
@@ -153,15 +253,15 @@ jobs:
           import { readFile } from 'node:fs/promises';
 
           const registry = JSON.parse(await readFile(process.env.TASKOS_CANDIDATE, 'utf8'));
-          assert.equal(registry.tasks.length, 627);
+          assert.equal(registry.tasks.length, 637);
           const statusCounts = Object.fromEntries(
             ['done', 'doing', 'todo', 'blocked'].map((status) => [
               status,
               registry.tasks.filter((task) => task.status === status).length,
             ])
           );
-          assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 89, blocked: 21 });
-          console.log('Validated 627 isolated TaskOS candidate records; canonical registry was not changed.');
+          assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 96, blocked: 24 });
+          console.log('Validated 637 isolated TaskOS candidate records; canonical registry was not changed.');
           NODE
           echo "candidate_generated=true" >> "$GITHUB_OUTPUT"
       - name: Validate canonical TaskOS registry and projections
