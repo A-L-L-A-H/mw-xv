@@ -130,6 +130,10 @@ Capture redacted logs, test output, commit SHA, worktree status and screenshots 
 
 Return the exact tested SHA, worktree status before/after, command outputs, candidate file hash, candidate-vs-legacy reconciliation report, PostgreSQL/browser/desktop result, and any failures. Make no canonical registry write, mass issue close, merge, tag, release or deployment without the relevant owner approval.
 
+## Documentation publication gate
+
+Issue [#2](https://github.com/A-L-L-A-H/mw-xv/issues/2) remains open for the trusted documentation publication incident on `main`. The Pages workflow supports safe `dev` previews, but preview success is not a production publication. Since PR #37 has not been merged and `main` is intentionally unchanged, do not close the incident or publish from an untrusted ref. Re-run the trusted Pages workflow only after the promotion/release owner authorizes a verified `main` SHA or stable release tag.
+
 ## Release blockers and decision owners
 
 - **TaskOS migration:** repository maintainer/data owner must accept the reconciled candidate and preserved legacy snapshot.
