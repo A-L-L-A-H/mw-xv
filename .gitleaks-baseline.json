@@ -1762,5 +1762,26 @@
     "Message": "Agent host session 131241ec-b1be-48dc-ad73-4f4d417361f9 - baseline checkpoint",
     "Tags": [],
     "Fingerprint": "1e7725e590d53f524925065741a1cf2a47f1ca36:docs/roadmap/evidence/K4-004.md:generic-api-key:11"
+  },
+  {
+    "RuleID": "generic-api-key",
+    "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+    "StartLine": 9,
+    "EndLine": 9,
+    "StartColumn": 6,
+    "EndColumn": 86,
+    "Match": "tokensSha256\": \"6201ba52a577d498f7910012fe2158dfd673037b0df8c317cb020c5d8e47d7cf\"",
+    "Secret": "6201ba52a577d498f7910012fe2158dfd673037b0df8c317cb020c5d8e47d7cf",
+    "File": "docs/assets/moonwitness/asset-map.json",
+    "SymlinkFile": "",
+    "Commit": "0c49f898973fe1dfaea679d28de9e671b7a81e47",
+    "Link": "https://github.com/A-L-L-A-H/mw-xv/blob/0c49f898973fe1dfaea679d28de9e671b7a81e47/docs/assets/moonwitness/asset-map.json#L9",
+    "Entropy": 3.8515632,
+    "Author": "MoonWitness Dev",
+    "Email": "dev@moonwitness.local",
+    "Date": "2026-11-23T08:31:30Z",
+    "Message": "ci: refresh generated docs assets and TaskOS source counts",
+    "Tags": [],
+    "Fingerprint": "0c49f898973fe1dfaea679d28de9e671b7a81e47:docs/assets/moonwitness/asset-map.json:generic-api-key:9"
   }
 ]
