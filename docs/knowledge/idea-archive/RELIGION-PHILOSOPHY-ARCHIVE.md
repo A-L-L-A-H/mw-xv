@@ -20,7 +20,7 @@ The target's existing ontology already distinguishes `RevelationIdentity`, `Text
 Relevant target docs:
 - [Revelation identity contract](../revelation-identity.md)
 - [Source rights and ingestion](../source-rights-and-ingestion.md)
-- [Mizan policy boundary](../knowledge/mizan-policy-boundary-spec.md)
+- [Mizan policy boundary](../mizan-policy-boundary-spec.md)
 - [MW-XV Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17)
 - [MW-XV Issue #18](https://github.com/A-L-L-A-H/mw-xv/issues/18)
 - [Research method proposal](https://github.com/A-L-L-A-H/mw-xv/issues/20)
