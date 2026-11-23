@@ -61,8 +61,11 @@ services:
       - MW_CONTROL_PLANE_DB_PATH=/data/control-plane.db
       - MW_INTERNAL_SECRET=${MW_INTERNAL_SECRET:-${JWT_SECRET:-}}
       - DOCKER_BIN=docker
+    # The Docker socket is intentionally not mounted: it grants host-root equivalent access.
+    # Opt in explicitly with:
+    #   docker compose -f docker-compose.yml -f docker-compose.docker-socket.yml \
+    #     --profile docker-in-docker up control-plane-docker
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - control-plane_data:/data
     depends_on:
       - postgres

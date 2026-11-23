@@ -2,7 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { parseTasksRegistry, toRoadmapTaskStatus } from './validate-tasks.mjs';
+import {
+  findStaleRecoveryNarrative,
+  parseTasksRegistry,
+  toRoadmapTaskStatus,
+  validateTasks,
+} from './validate-tasks.mjs';
 
 const require = createRequire(new URL('../../packages/knowledge/package.json', import.meta.url));
 const Ajv = require('ajv');
@@ -25,8 +30,8 @@ test('tasks.schema.json is a valid Draft-07 JSON Schema and accepts valid v2 tas
         name: 'MoonWitness Platform',
         repos: ['A-L-L-A-H/mw-xv'],
         color: 'blue',
-        statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done']
-      }
+        statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done'],
+      },
     ],
     tasks: [
       {
@@ -54,27 +59,27 @@ test('tasks.schema.json is a valid Draft-07 JSON Schema and accepts valid v2 tas
         tags: ['ci', 'ai', 'conformance'],
         scope: {
           packages: ['@moonwitness/orm-ai'],
-          files: ['package.json']
+          files: ['package.json'],
         },
         acceptanceCriteria: [
-          { id: 'ac-1', text: 'All packages run in test:unit:built', done: false }
+          { id: 'ac-1', text: 'All packages run in test:unit:built', done: false },
         ],
         validation: {
           commands: ['pnpm verify'],
-          expected: 'Pass 100%'
+          expected: 'Pass 100%',
         },
         evidence: {
           paths: [],
           detailFile: null,
-          commitSha: null
+          commitSha: null,
         },
         references: [],
         blockedReason: null,
         sourceRef: { file: 'audit', legacyId: null },
         url: '',
-        comments: []
-      }
-    ]
+        comments: [],
+      },
+    ],
   };
 
   const valid = validate(sample);
@@ -82,10 +87,7 @@ test('tasks.schema.json is a valid Draft-07 JSON Schema and accepts valid v2 tas
 });
 
 test('TaskOS registry parser fails with recovery guidance on empty input', () => {
-  assert.throws(
-    () => parseTasksRegistry(''),
-    /TaskOS registry.*empty.*Recovery mode is active/i
-  );
+  assert.throws(() => parseTasksRegistry(''), /TaskOS registry.*empty.*Recovery mode is active/i);
 });
 
 test('TaskOS registry parser fails with recovery guidance on whitespace-only input', () => {
@@ -96,10 +98,7 @@ test('TaskOS registry parser fails with recovery guidance on whitespace-only inp
 });
 
 test('TaskOS registry parser reports invalid JSON clearly', () => {
-  assert.throws(
-    () => parseTasksRegistry('{ invalid'),
-    /TaskOS registry.*invalid JSON/i
-  );
+  assert.throws(() => parseTasksRegistry('{ invalid'), /TaskOS registry.*invalid JSON/i);
 });
 
 test('TaskOS registry parser accepts syntactically valid JSON', () => {
@@ -114,4 +113,27 @@ test('TaskOS statuses map consistently to the roadmap projection', () => {
   assert.equal(toRoadmapTaskStatus('backlog'), 'todo');
   assert.equal(toRoadmapTaskStatus('todo'), 'todo');
   assert.equal(toRoadmapTaskStatus('unknown'), null);
+});
+
+test('stale recovery claims are rejected only for a non-empty registry', () => {
+  const stale = [
+    'Recovery status: BLOCKED',
+    'currently zero-byte',
+    'Do not resume autonomous implementation',
+    'while TaskOS remains unavailable',
+  ].join('\n');
+  assert.equal(findStaleRecoveryNarrative(stale, 0).length, 0);
+  assert.deepEqual(findStaleRecoveryNarrative(stale, 627), [
+    'todo.md still declares recovery BLOCKED',
+    'todo.md still describes the registry as zero-byte',
+    'todo.md still contains a do-not-resume recovery instruction',
+    'todo.md still says TaskOS is unavailable',
+  ]);
+  assert.deepEqual(findStaleRecoveryNarrative('Registry status: RECOVERED / ACTIVE', 627), []);
+});
+
+test('committed todo.md recovery narrative matches the valid registry', async () => {
+  const result = await validateTasks();
+  assert.equal(result.valid, true, result.errors.join('\n'));
+  assert.ok(result.taskCount > 0);
 });

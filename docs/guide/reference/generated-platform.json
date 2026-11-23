@@ -161,7 +161,7 @@
       "name": "@moonwitness/orm-a2a",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-a2a",
-      "scripts": ["build"]
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-ai",
@@ -405,7 +405,8 @@
       "test": "vitest run"
     },
     "@moonwitness/orm-a2a": {
-      "build": "tsc"
+      "build": "tsc",
+      "test": "vitest run"
     },
     "@moonwitness/orm-ai": {
       "build": "tsc",
@@ -550,6 +551,7 @@
       "jobs:worker": "pnpm --filter @moonwitness/api jobs:worker",
       "lint": "eslint .",
       "lint:fix": "eslint . --fix",
+      "lint:ui": "pnpm exec eslint packages/ui/src scripts/check-ui-design-system.mjs scripts/check-ui-design-system.test.mjs scripts/check-ui-gate-wiring.test.mjs scripts/check-desktop-non-overlap.mjs scripts/check-desktop-non-overlap.test.mjs && pnpm --filter @moonwitness/board lint",
       "local-ai:eval": "node scripts/local-ai/eval.mjs",
       "local-ai:register-model": "node scripts/local-ai/register-model.mjs",
       "local-ai:tournament": "node scripts/local-ai/tournament.mjs",
@@ -638,6 +640,7 @@
       "test:ui": "pnpm --filter @moonwitness/ui build && node --test packages/ui/tests/*.test.mjs && node packages/ui/scripts/verify-package.mjs",
       "test:ui-budget": "node --test apps/ui-catalog/tests/bundle-budget.test.mjs && pnpm --filter @moonwitness/ui-catalog build:built && pnpm ui:budget",
       "test:ui-catalog": "pnpm --filter @moonwitness/ui-catalog build && pnpm --filter @moonwitness/ui-catalog test",
+      "test:ui-design-check": "node --test scripts/check-ui-design-system.test.mjs scripts/check-ui-gate-wiring.test.mjs",
       "test:unit": "pnpm build && pnpm test:unit:built",
       "test:unit-runner-policy": "node --test scripts/unit-runner-policy.test.mjs",
       "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-project test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-whatsapp test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/orm-ai test && pnpm --filter @moonwitness/ai-runtime test && pnpm --filter @moonwitness/ai-mcp test && pnpm --filter @moonwitness/ai-evaluation test && pnpm --filter @moonwitness/local-ai typecheck && pnpm --filter @moonwitness/local-ai test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
@@ -648,8 +651,12 @@
       "test:workspace-version-policy": "node --test scripts/workspace-version-policy.test.mjs",
       "typecheck": "pnpm build && pnpm --filter @moonwitness/board typecheck",
       "ui:budget": "node scripts/check-ui-catalog-budget.mjs",
+      "ui:check": "pnpm board:ui:check && pnpm desktop:ui:check && pnpm ui:design:check",
+      "ui:design:audit": "node scripts/check-ui-design-system.mjs --strict",
+      "ui:design:check": "pnpm test:ui-design-check && node scripts/check-ui-design-system.mjs",
+      "ui:design:report": "node scripts/check-ui-design-system.mjs --json",
       "ui:visual:update": "pnpm --filter @moonwitness/ui-catalog build && pnpm --filter @moonwitness/ui-catalog exec playwright test --update-snapshots",
-      "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:unit:built && pnpm test:architecture && pnpm architecture:check:built && pnpm docs:build:built"
+      "verify": "pnpm ui:check && pnpm lint:ui && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:unit:built && pnpm test:architecture && pnpm architecture:check:built && pnpm docs:build:built"
     }
   },
   "environment": [
@@ -970,6 +977,24 @@
       "configuredInExample": true,
       "secret": true,
       "valueType": "secret"
+    },
+    {
+      "name": "TRUST_PROXY",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "boolean"
+    },
+    {
+      "name": "TRUST_PROXY_CIDRS",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "TRUST_PROXY_HOPS",
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "integer"
     },
     {
       "name": "VITEST",
@@ -9664,5 +9689,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "baa1f2bad1f74607f6097868fae13a341382fc932ee48ff56deb387e7a722df1"
+  "generatedFromSha256": "7434691668f1662d7fc55c8b1c75416aed13025a074d3a8892a463db15e7cf72"
 }

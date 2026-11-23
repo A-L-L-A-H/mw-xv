@@ -65,7 +65,7 @@ describe('passwords', () => {
   it('rejects invalid reset passwords and missing seeded superadmin records', async () => {
     await installAddons(db, [manifest]);
     await expect(resetSuperadminPassword('short')).rejects.toThrow(
-      'Superadmin password must be between 6 and 1024 characters'
+      'Superadmin password must be between 12 and 1024 characters'
     );
 
     await db('_orm_data').where({ id: 'base.user_superadmin', model: User.modelName }).delete();

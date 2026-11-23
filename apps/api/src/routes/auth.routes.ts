@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { AuthError, ConflictError, type AuthService, type AuthSession } from '@moonwitness/auth';
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@moonwitness/orm';
 import type { Partner, User } from '@moonwitness/orm-base';
 import { invalidateAuthCache } from '../plugins/auth.plugin.js';
 
@@ -50,7 +51,11 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (fastify,
           additionalProperties: false,
           properties: {
             login: { type: 'string', minLength: 3, maxLength: 255 },
-            password: { type: 'string', minLength: 6, maxLength: 1024 },
+            password: {
+              type: 'string',
+              minLength: MIN_PASSWORD_LENGTH,
+              maxLength: MAX_PASSWORD_LENGTH,
+            },
             name: { type: 'string', minLength: 1, maxLength: 255 },
             email: { type: 'string', format: 'email', maxLength: 255 },
           },
@@ -175,7 +180,11 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (fastify,
           additionalProperties: false,
           properties: {
             current_password: { type: 'string', minLength: 1, maxLength: 1024 },
-            new_password: { type: 'string', minLength: 12, maxLength: 1024 },
+            new_password: {
+              type: 'string',
+              minLength: MIN_PASSWORD_LENGTH,
+              maxLength: MAX_PASSWORD_LENGTH,
+            },
           },
         },
       },

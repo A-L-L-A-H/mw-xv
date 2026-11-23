@@ -77,3 +77,48 @@ describe('login rate limiting', () => {
     expect(refreshStatuses[9]).toBe(429);
   });
 });
+
+describe('login rate limiting with untrusted proxies', () => {
+  it('ignores spoofed X-Forwarded-For headers by default', async () => {
+    const saved = {
+      TRUST_PROXY: process.env.TRUST_PROXY,
+      TRUST_PROXY_HOPS: process.env.TRUST_PROXY_HOPS,
+      TRUST_PROXY_CIDRS: process.env.TRUST_PROXY_CIDRS,
+    };
+    delete process.env.TRUST_PROXY;
+    delete process.env.TRUST_PROXY_HOPS;
+    delete process.env.TRUST_PROXY_CIDRS;
+
+    const db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+    const proxyApp = await buildApp({
+      db,
+      jwtSecret: 'test-secret-test-secret-test-secret-123',
+      loginRateMax: 2,
+    });
+    await proxyApp.ready();
+    try {
+      const statuses: number[] = [];
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const response = await proxyApp.inject({
+          method: 'POST',
+          url: '/auth/login',
+          payload: {},
+          remoteAddress: '198.51.100.20',
+          headers: { 'x-forwarded-for': `203.0.113.${attempt + 1}` },
+        });
+        statuses.push(response.statusCode);
+      }
+      expect(statuses).toEqual([400, 400, 429]);
+    } finally {
+      await proxyApp.close();
+      for (const [name, value] of Object.entries(saved)) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+      }
+    }
+  });
+});

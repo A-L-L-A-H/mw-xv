@@ -47,4 +47,9 @@ export {
   type ViewExtension,
   type ResolvedViews,
 } from './view.js';
-export { hashPassword, verifyPassword } from './password.js';
+export {
+  hashPassword,
+  verifyPassword,
+  MIN_PASSWORD_LENGTH,
+  MAX_PASSWORD_LENGTH,
+} from './password.js';

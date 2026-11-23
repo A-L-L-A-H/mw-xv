@@ -1,5 +1,11 @@
 # Security policy
 
+## Password policy
+
+New credentials (registration, password change, and seeded superadmin bootstrap) require 12–1024 characters. Existing accounts created under the former 6-character minimum can still sign in; they must choose a 12-character-or-longer password when changing it.
+
+Passwords are hashed with `scrypt` using `N = 2^17` (131072), `r = 8`, `p = 1`, a fresh 16-byte random salt, and constant-time comparison. Verification remains compatible with previously stored `scrypt$131072$8$1$...` hashes.
+
 ## Supported versions
 
 Security fixes target the latest published release. The `main` and `dev` branches are development and integration refs; they are not a promise of a supported deployment or response SLA. Use a supported release and follow its published correction notices.

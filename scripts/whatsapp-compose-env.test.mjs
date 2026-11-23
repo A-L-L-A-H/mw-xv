@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { localServiceScripts } from './local-service-scripts.mjs';
 
-const composeFiles = ['docker-compose.production.yml', 'docker-compose.prd.yml'];
+const canonicalComposeFile = 'docker-compose.production.yml';
+const compatibilityComposeFile = 'docker-compose.prd.yml';
 
 function serviceBlock(source, name) {
   const start = source.search(new RegExp(`^  ${name}:\\s*$`, 'mu'));
@@ -74,63 +75,52 @@ test('production WhatsApp gateway validation runs only in API and outbox process
   }
 });
 
-for (const file of composeFiles) {
-  test(`${file} scopes WhatsApp gateway and webhook secrets to the required services`, () => {
-    const source = readFileSync(file, 'utf8');
-    const commonEnvironment = source.match(
-      /^x-app-environment:\s*&[^\r\n]+\r?\n([\s\S]*?)(?=^x-whatsapp-gateway-credentials:|^services:)/mu
-    );
-    const credentials = source.match(
-      /^x-whatsapp-gateway-credentials:\s*&[^\r\n]+\r?\n([\s\S]*?)(?=^services:)/mu
-    );
-    const webhookEnvironment = source.match(
-      /^x-whatsapp-webhook-environment:\s*&[^\r\n]+\r?\n([\s\S]*?)(?=^services:)/mu
-    );
-    assert.ok(commonEnvironment, 'Compose must define a shared non-provider environment');
-    assert.ok(credentials, 'Compose must define a dedicated GoWA credentials environment');
-    assert.ok(webhookEnvironment, 'Compose must define a dedicated webhook environment');
-    assert.match(credentials[1], /^ {2}WHATSAPP_GATEWAY_USERNAME:/mu);
-    assert.match(credentials[1], /^ {2}WHATSAPP_GATEWAY_PASSWORD:/mu);
-    assert.match(webhookEnvironment[1], /^ {2}WHATSAPP_WEBHOOK_URL:/mu);
-    assert.match(webhookEnvironment[1], /^ {2}WHATSAPP_WEBHOOK_SECRET:/mu);
-    assert.doesNotMatch(
-      commonEnvironment[1],
-      /WHATSAPP_GATEWAY_(?:USERNAME|PASSWORD)|WHATSAPP_WEBHOOK_SECRET/u
-    );
+test('canonical production Compose scopes WhatsApp gateway and webhook secrets to required services', () => {
+  const source = readFileSync(canonicalComposeFile, 'utf8');
+  const commonEnvironment = source.match(
+    /^ {4}x-app-environment:\s*&[^\r\n]+\r?\n([\s\S]*?)(?=^ {4}x-whatsapp-gateway-credentials:)/mu
+  );
+  const credentials = source.match(
+    /^ {4}x-whatsapp-gateway-credentials:\s*&[^\r\n]+\r?\n([\s\S]*?)(?=^ {4}x-whatsapp-webhook-environment:)/mu
+  );
+  const webhookEnvironment = source.match(
+    /^ {4}x-whatsapp-webhook-environment:\s*&[^\r\n]+\r?\n([\s\S]*?)(?=^ {4}build:)/mu
+  );
+  assert.ok(commonEnvironment, 'Compose must define a shared non-provider environment');
+  assert.ok(credentials, 'Compose must define a dedicated GoWA credentials environment');
+  assert.ok(webhookEnvironment, 'Compose must define a dedicated webhook environment');
+  assert.match(credentials[1], /^ {6}WHATSAPP_GATEWAY_USERNAME:/mu);
+  assert.match(credentials[1], /^ {6}WHATSAPP_GATEWAY_PASSWORD:/mu);
+  assert.match(webhookEnvironment[1], /^ {6}WHATSAPP_WEBHOOK_URL:/mu);
+  assert.match(webhookEnvironment[1], /^ {6}WHATSAPP_WEBHOOK_SECRET:/mu);
+  assert.doesNotMatch(
+    commonEnvironment[1],
+    /WHATSAPP_GATEWAY_(?:USERNAME|PASSWORD)|WHATSAPP_WEBHOOK_SECRET/u
+  );
 
-    const environmentAnchors = file.endsWith('prd.yml')
-      ? {
-          app: 'app-environment',
-          gateway: 'whatsapp-gateway-credentials',
-          webhook: 'whatsapp-webhook-environment',
-        }
-      : {
-          app: 'app_environment',
-          gateway: 'whatsapp_gateway_credentials',
-          webhook: 'whatsapp_webhook_environment',
-        };
-    const expectedApiEnvironmentMerge = new RegExp(
-      `^ {6}<<:\\s*\\[\\*${environmentAnchors.app},\\s*\\*${environmentAnchors.gateway},\\s*\\*${environmentAnchors.webhook}\\]$`,
-      'mu'
+  const expectedApiEnvironmentMerge =
+    /^ {6}<<:\s*\[\*app_environment,\s*\*whatsapp_gateway_credentials,\s*\*whatsapp_webhook_environment\]$/mu;
+  const expectedOutboxEnvironmentMerge =
+    /^ {6}<<:\s*\[\*app_environment,\s*\*whatsapp_gateway_credentials\]$/mu;
+  assert.match(serviceBlock(source, 'api'), expectedApiEnvironmentMerge);
+  assert.match(serviceBlock(source, 'outbox-worker'), expectedOutboxEnvironmentMerge);
+  assert.doesNotMatch(serviceBlock(source, 'outbox-worker'), /WHATSAPP_WEBHOOK_SECRET/u);
+  for (const name of ['jobs-worker', 'jobs-scheduler']) {
+    const block = serviceBlock(source, name);
+    assert.doesNotMatch(block, /WHATSAPP_GATEWAY_(?:USERNAME|PASSWORD)|WHATSAPP_WEBHOOK_SECRET/u);
+    assert.doesNotMatch(block, /\*whatsapp_gateway_credentials/u);
+    assert.match(
+      block,
+      /attachments:\/var\/lib\/moonwitness\/attachments/u,
+      `${name} must share the attachment store so scheduled cleanup sees the same objects`
     );
-    const expectedOutboxEnvironmentMerge = new RegExp(
-      `^ {6}<<:\\s*\\[\\*${environmentAnchors.app},\\s*\\*${environmentAnchors.gateway}\\]$`,
-      'mu'
-    );
-    assert.match(serviceBlock(source, 'api'), expectedApiEnvironmentMerge);
-    assert.match(serviceBlock(source, 'outbox-worker'), expectedOutboxEnvironmentMerge);
-    assert.doesNotMatch(serviceBlock(source, 'outbox-worker'), /WHATSAPP_WEBHOOK_SECRET/u);
-    for (const name of ['jobs-worker', 'jobs-scheduler']) {
-      const block = serviceBlock(source, name);
-      assert.doesNotMatch(block, /WHATSAPP_GATEWAY_(?:USERNAME|PASSWORD)|WHATSAPP_WEBHOOK_SECRET/u);
-      assert.doesNotMatch(block, new RegExp(`\\*${environmentAnchors.gateway}`, 'u'));
-      assert.match(
-        block,
-        /attachments:\/var\/lib\/moonwitness\/attachments/u,
-        `${name} must share the attachment store so scheduled cleanup sees the same objects`
-      );
-    }
-    const board = serviceBlock(source, 'board');
-    assert.doesNotMatch(board, /WHATSAPP_GATEWAY_(?:USERNAME|PASSWORD)|WHATSAPP_WEBHOOK_SECRET/u);
-  });
-}
+  }
+  assert.doesNotMatch(serviceBlock(source, 'board'), /^ {4}environment:/mu);
+});
+
+test('prd Compose entrypoint delegates to the canonical hardened stack', () => {
+  const source = readFileSync(compatibilityComposeFile, 'utf8');
+  assert.match(source, /^include:\r?\n {2}- docker-compose\.production\.yml$/mu);
+  assert.doesNotMatch(source, /^services:/mu);
+  assert.doesNotMatch(source, /docker\.sock/u);
+});
