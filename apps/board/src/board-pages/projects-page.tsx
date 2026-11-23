@@ -299,6 +299,31 @@ export function ProjectsPage() {
     },
   });
 
+  const importTaskOsMutation = useMutation({
+    mutationFn: async () => {
+      const res = await client.request<{
+        success: boolean;
+        data: {
+          projectsCreated: number;
+          projectsUpdated: number;
+          tasksCreated: number;
+          tasksUpdated: number;
+          dependenciesCreated: number;
+        };
+      }>('/api/desktop/projects/import-taskos', { method: 'POST', body: {} });
+      return res.data;
+    },
+    onSuccess: async (summary) => {
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success(
+        `TaskOS imported: ${summary.tasksCreated} created, ${summary.tasksUpdated} updated, ${summary.dependenciesCreated} deps.`
+      );
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to import TaskOS tasks.');
+    },
+  });
+
   const batchMoveStageMutation = useMutation({
     mutationFn: async ({ taskIds, stageId }: { taskIds: number[]; stageId: number }) => {
       await Promise.all(
@@ -470,6 +495,17 @@ export function ProjectsPage() {
                 {project.name}
               </Button>
             ))}
+            {isDesktop ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => importTaskOsMutation.mutate()}
+                disabled={importTaskOsMutation.isPending}
+              >
+                <AddonIcon className="mr-1.5 size-4" />
+                {importTaskOsMutation.isPending ? 'Importing...' : 'Import TaskOS (627)'}
+              </Button>
+            ) : null}
             <Button
               size="sm"
               variant="outline"

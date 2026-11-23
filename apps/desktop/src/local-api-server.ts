@@ -1,4 +1,6 @@
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
 import type { Knex } from 'knex';
@@ -22,6 +24,8 @@ import { projectHttpPlugin } from '@moonwitness/orm-project';
 import { workflowHttpPlugin } from '@moonwitness/orm-workflow';
 import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moonwitness/types';
 import { DESKTOP_ADDONS, LocalSidecarController } from './local-sidecar.js';
+import { importDesktopTasks } from './importer.js';
+import { buildVpsJoinCommand, ensureMeshCredentials } from './mesh-autopilot.js';
 import type { DesktopCapabilityBridge } from './types.js';
 
 export interface LocalAuthContext {
@@ -954,6 +958,86 @@ export async function startLocalApiServer(
       id: rpcId,
       error: { code: -32601, message: `Unsupported JSON-RPC method '${method}'` },
     });
+  });
+
+  // Desktop loopback endpoints: Mesh Fleet & TaskOS import
+  const buildRedactedMeshPayload = () => {
+    const status = ensureMeshCredentials();
+    const joinCommand = buildVpsJoinCommand({
+      networkName: status.networkName,
+      subnet: status.subnet,
+    });
+    return {
+      configured: true,
+      networkName: status.networkName,
+      subnet: status.subnet,
+      redactedSecret: status.redactedSecret,
+      secretRefPath: status.secretRefPath,
+      created: status.created,
+      joinCommand,
+      nodes: [] as Array<{
+        id: string;
+        hostname: string;
+        meshIp: string;
+        status: 'online' | 'degraded' | 'offline';
+        containers: Array<{
+          id: string;
+          name: string;
+          image: string;
+          status: string;
+          health: 'healthy' | 'unhealthy' | 'starting' | 'unknown';
+        }>;
+      }>,
+    };
+  };
+
+  app.get('/api/desktop/mesh/status', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    return { success: true, data: buildRedactedMeshPayload() };
+  });
+
+  app.post('/api/desktop/mesh/bootstrap', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    return { success: true, data: buildRedactedMeshPayload() };
+  });
+
+  app.post('/api/desktop/projects/import-taskos', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const requestedPath =
+      typeof body.sourcePath === 'string' && body.sourcePath.trim().length > 0
+        ? body.sourcePath.trim()
+        : null;
+
+    const candidates = requestedPath
+      ? [path.resolve(requestedPath)]
+      : [
+          path.resolve(process.cwd(), 'docs/tasks/tasks.json'),
+          path.resolve(process.cwd(), '../../docs/tasks/tasks.json'),
+          path.resolve(process.cwd(), '../docs/tasks/tasks.json'),
+        ];
+
+    const resolvedSource = candidates.find((candidate) => existsSync(candidate));
+    if (!resolvedSource) {
+      return reply.code(404).send({
+        success: false,
+        error: 'TaskOS source file docs/tasks/tasks.json not found.',
+      });
+    }
+
+    const summary = await importDesktopTasks({
+      db,
+      companyId: workspace.companyId,
+      userId: workspace.userId,
+      sourcePath: resolvedSource,
+    });
+    return { success: true, data: summary };
   });
 
   // POST /_desktop/rpc protected by ephemeral x-mw-desktop-token
