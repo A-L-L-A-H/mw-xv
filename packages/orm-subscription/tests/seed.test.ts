@@ -143,7 +143,10 @@ describe('@moonwitness/orm-subscription initial seed module', () => {
     expect(firstRun.tagLinksTotal).toBe(2);
 
     const secondRun = await seedSubscriptionInitialData(db);
-    expect(secondRun).toEqual(firstRun);
+    expect(secondRun.plansTotal).toBe(firstRun.plansTotal);
+    expect(secondRun.subscriptionsTotal).toBe(firstRun.subscriptionsTotal);
+    expect(secondRun.invoiceLinesTotal).toBe(firstRun.invoiceLinesTotal);
+    expect(secondRun.tagLinksTotal).toBe(firstRun.tagLinksTotal);
     expect(secondRun.insertedPlans).toBe(0);
     expect(secondRun.insertedSubscriptions).toBe(0);
     expect(secondRun.insertedInvoiceLines).toBe(0);

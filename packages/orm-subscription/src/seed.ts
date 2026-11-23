@@ -324,7 +324,7 @@ export async function seedSubscriptionInitialData(
           trial_days: plan.trialDays,
           is_active: plan.isActive ? 1 : 0,
         })
-        .returning('id');
+        .returning('id') as unknown[];
       planIds.set(plan.code, resolveInsertedId(inserted, `plan ${plan.code}`));
       counts.insertedPlans += 1;
     }
@@ -368,7 +368,7 @@ export async function seedSubscriptionInitialData(
           assigned_to_id: assignedToId,
           description: subscription.description,
         })
-        .returning('id');
+        .returning('id') as unknown[];
       subscriptionIds.set(subscription.name, resolveInsertedId(inserted, `subscription ${subscription.name}`));
       counts.insertedSubscriptions += 1;
     }
@@ -536,12 +536,14 @@ function uniqueValues(values: readonly string[]): string[] {
   return [...new Set(values)];
 }
 
-function resolveInsertedId(inserted: unknown, context: string): number {
-  if (typeof inserted === 'number' && Number.isInteger(inserted)) return inserted;
-  if (inserted && typeof inserted === 'object') {
-    const record = inserted as Record<string, unknown>;
-    const id = record.id ?? record.last_insert_rowid ?? record.lastInsertRowid;
-    if (typeof id === 'number' && Number.isInteger(id)) return id;
+function resolveInsertedId(inserted: readonly unknown[], context: string): number {
+  const value = inserted[0];
+  if (typeof value === 'number' && Number.isFinite(value)) return Number(value);
+  if (typeof value === 'bigint') return Number(value);
+  if (typeof value === 'string' && /^\d+$/.test(value)) return Number(value);
+  if (value && typeof value === 'object' && 'id' in value) {
+    const id = (value as { readonly id?: unknown }).id;
+    if (typeof id === 'number' && Number.isFinite(id)) return Number(id);
     if (typeof id === 'bigint') return Number(id);
     if (typeof id === 'string' && /^\d+$/.test(id)) return Number(id);
   }
