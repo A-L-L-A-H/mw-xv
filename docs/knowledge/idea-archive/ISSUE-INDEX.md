@@ -11,6 +11,7 @@ GitHub Issues were read across two pages and pull-request objects were filtered 
 | Pull Requests | 26 | 2 | 24 |
 | Managed TaskOS marker identities detected | 23 | — | — |
 | Duplicate managed marker identities | 0 | — | — |
+| Duplicate non-managed stable task ID | 1 identity (`CF-020`) | #74 open | #75 closed |
 
 Issue endpoint responses include pull requests; those records were excluded from the Issue counts above. At the audit timestamp, #15–#22 and #27 were open. No new GitHub issue was created by this archive pass because the relevant concept work already has owner/source proposals and new managed work must first enter canonical TaskOS.
 
@@ -28,6 +29,10 @@ Issue endpoint responses include pull requests; those records were excluded from
 | [#22](https://github.com/A-L-L-A-H/mw-xv/issues/22) | AEQ / BABYDOLL Service Jam concept register | Open | Separate exploratory initiative, no assumed integration |
 | [#27](https://github.com/A-L-L-A-H/mw-xv/issues/27) | Preserve and selectively migrate bjo163 sources | Open | P0 source preservation and K0-006 no-import boundary |
 
+## Duplicate stable-ID anomaly
+
+A direct fetch confirmed that [#74](https://github.com/A-L-L-A-H/mw-xv/issues/74) and [#75](https://github.com/A-L-L-A-H/mw-xv/issues/75) use the same title and stable identifier `CF-020`, with substantially identical scope/acceptance text. #74 is open; #75 is closed. Neither has a `moonwitness-task` managed marker, so this does not contradict the 23 unique managed marker count above. The pre-existing finding was recorded by the repository owner in [Issue #27 comment 7095707915](https://github.com/A-L-L-A-H/mw-xv/issues/27#issuecomment-7095707915). No change has been made to either issue. The canonical record and treatment of the other discussion must be established through maintainer triage, preserving provenance and comments.
+
 ## Other active workstreams discovered
 
 - #80 Cloud Engineering Foundation & Operations EPIC, with #55–#79 for cloud runtime, health, failover, jobs, A2A, backup/restore and CI reconciliation.
@@ -44,7 +49,8 @@ Managed work uses the canonical `docs/tasks/tasks.json` task IDs and markers des
 
 This archive pass:
 - reuses existing #15–#22 and #27;
-- adds one evidence comment to #27 at [comment 7095534255](https://github.com/A-L-L-A-H/mw-xv/issues/27#issuecomment-7095534255);
+- adds repository-inventory and archive summaries to #27 at [comment 7095534255](https://github.com/A-L-L-A-H/mw-xv/issues/27#issuecomment-7095534255) and [comment 7096119251](https://github.com/A-L-L-A-H/mw-xv/issues/27#issuecomment-7096119251);
+- preserves the pre-existing #74/#75 `CF-020` identity conflict without changing either issue;
 - creates no duplicate issues;
 - changes no issue lifecycle status;
 - does not mark any proposal accepted or any code feature completed.
