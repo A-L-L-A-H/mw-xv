@@ -200,6 +200,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-governance",
+      "version": "1.0.0",
+      "directory": "packages/orm-governance",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-helpdesk",
       "version": "1.0.0",
       "directory": "packages/orm-helpdesk",
@@ -453,6 +459,10 @@
       "test": "vitest run"
     },
     "@moonwitness/orm-crm": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
+    "@moonwitness/orm-governance": {
       "build": "tsc",
       "test": "vitest run"
     },
@@ -9830,5 +9840,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "a1abe1d82dc6020cd1b75c92bcb53e7c2e28aa0d781056fb833bc4d860588ad2"
+  "generatedFromSha256": "10580fc3bfe88875848ec51aec2845417cd645547a08b479b58973e236327b0a"
 }
