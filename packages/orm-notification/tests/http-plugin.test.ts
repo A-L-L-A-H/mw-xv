@@ -13,6 +13,16 @@ interface RecordedResponse {
   payload: unknown;
 }
 
+interface RouteResponse {
+  success: true;
+  data: {
+    notificationId: string;
+    action: string;
+    channels: string[];
+    queuedForDigest?: boolean;
+  };
+}
+
 type PluginApp = Parameters<AddonHttpPlugin>[0];
 type RouteHandler = (
   req: AddonHttpRequestBase & { body: unknown; params: unknown; query: unknown },
@@ -130,7 +140,7 @@ describe('notificationHttpPlugin /api/notifications/route (INV-014 manifest.http
     );
 
     expect(res.statusCode).toBe(200);
-    const body = res.payload as any;
+    const body = res.payload as RouteResponse;
     expect(body.success).toBe(true);
     expect(body.data.notificationId).toBe('notif-1');
     expect(body.data.action).toBe('deliver');
@@ -170,7 +180,7 @@ describe('notificationHttpPlugin /api/notifications/route (INV-014 manifest.http
     );
 
     expect(res.statusCode).toBe(200);
-    const body = res.payload as any;
+    const body = res.payload as RouteResponse;
     expect(body.success).toBe(true);
     expect(body.data.action).toBe('suppressed_quiet_hours');
     expect(body.data.queuedForDigest).toBe(true);

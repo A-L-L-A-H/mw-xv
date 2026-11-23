@@ -1,3 +1,4 @@
+import type { Knex } from 'knex';
 import {
   Project,
   ProjectMilestone,
@@ -5,6 +6,69 @@ import {
   ProjectTask,
   ProjectTaskDependency,
 } from './models.js';
+
+type StageFields = {
+  company_id: number;
+  code: string;
+  name: string;
+  sequence: number;
+  is_closed: boolean;
+  fold: boolean;
+  wip_limit?: number;
+  project_id?: number;
+};
+
+type ProjectFields = {
+  company_id: number;
+  code: string;
+  name: string;
+  status: string;
+  start_date: string;
+  target_date: string;
+  sequence: number;
+  description?: string;
+  partner_id?: number;
+  department_id?: number;
+  team_id?: number;
+  owner_id?: number;
+};
+
+type MilestoneFields = {
+  company_id: number;
+  project_id: number;
+  code: string;
+  name: string;
+  due_date: string;
+  status: string;
+  description?: string;
+  owner_id?: number;
+};
+
+type TaskFields = {
+  company_id: number;
+  project_id: number;
+  stage_id: number;
+  milestone_id: number;
+  code: string;
+  title: string;
+  priority: string;
+  status: string;
+  position: number;
+  description?: string;
+  parent_id?: number;
+  assignee_id?: number;
+  reviewer_id?: number;
+  estimate_minutes?: number;
+  due_date?: string;
+  external_ref?: string;
+};
+
+type DependencyFields = {
+  company_id: number;
+  task_id: number;
+  depends_on_id: number;
+  kind: string;
+};
 
 export const PROJECT_SEED_VERSION = '1.0.0';
 
@@ -353,16 +417,16 @@ export function buildProjectInitialSeed(): ProjectInitialSeedBundle {
   };
 }
 
-async function resolveSeedId(db: any, model: string, externalId: string): Promise<number | null> {
+async function resolveSeedId(db: Knex, model: string, externalId: string): Promise<number | null> {
   const row = await db('_orm_data').where({ id: externalId, model }).first('record_id');
   return row ? Number(row.record_id) : null;
 }
 
 async function insertSeedRow(
-  db: any,
+  db: Knex,
   modelName: string,
   externalId: string,
-  fields: Record<string, any>
+  fields: StageFields | ProjectFields | MilestoneFields | TaskFields | DependencyFields
 ): Promise<boolean> {
   const existing = await db('_orm_data')
     .where({ id: externalId, model: modelName })
@@ -373,7 +437,7 @@ async function insertSeedRow(
   return true;
 }
 
-export async function seedProjectInitialData(db: any) {
+export async function seedProjectInitialData(db: Knex) {
   const bundle = buildProjectInitialSeed();
   let insertedStages = 0;
   let insertedProjects = 0;
@@ -385,7 +449,7 @@ export async function seedProjectInitialData(db: any) {
   if (!companyId) throw new Error('Default company not seeded');
 
   for (const stage of bundle.stages) {
-    const fields: Record<string, any> = {
+    const fields: StageFields = {
       company_id: companyId,
       code: stage.code,
       name: stage.name,
@@ -403,7 +467,7 @@ export async function seedProjectInitialData(db: any) {
   }
 
   for (const project of bundle.projects) {
-    const fields: Record<string, any> = {
+    const fields: ProjectFields = {
       company_id: companyId,
       code: project.code,
       name: project.name,
@@ -440,7 +504,7 @@ export async function seedProjectInitialData(db: any) {
   for (const milestone of bundle.milestones) {
     const projectId = await resolveSeedId(db, 'project.project', milestone.project.externalId);
     if (!projectId) continue;
-    const fields: Record<string, any> = {
+    const fields: MilestoneFields = {
       company_id: companyId,
       project_id: projectId,
       code: milestone.code,
@@ -462,7 +526,7 @@ export async function seedProjectInitialData(db: any) {
     const stageId = await resolveSeedId(db, 'project.stage', task.stage.externalId);
     const milestoneId = await resolveSeedId(db, 'project.milestone', task.milestone.externalId);
     if (!projectId || !stageId || !milestoneId) continue;
-    const fields: Record<string, any> = {
+    const fields: TaskFields = {
       company_id: companyId,
       project_id: projectId,
       stage_id: stageId,
@@ -497,7 +561,7 @@ export async function seedProjectInitialData(db: any) {
     const taskId = await resolveSeedId(db, 'project.task', dep.task.externalId);
     const dependsOnId = await resolveSeedId(db, 'project.task', dep.dependsOn.externalId);
     if (!taskId || !dependsOnId) continue;
-    const fields: Record<string, any> = {
+    const fields: DependencyFields = {
       company_id: companyId,
       task_id: taskId,
       depends_on_id: dependsOnId,

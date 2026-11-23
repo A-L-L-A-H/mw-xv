@@ -50,7 +50,7 @@ export async function probeCloudTargetsHealth(
 
   for (const target of targets) {
     const url = target.api_url ?? 'http://127.0.0.1:3003';
-    let resolvedStatus: 'healthy' | 'degraded' | 'offline' = 'offline';
+    let resolvedStatus: 'healthy' | 'degraded' | 'offline';
     try {
       const res = await fetchImpl(`${url.replace(/\/+$/u, '')}/health`, {
         headers: controlPlaneAuthHeaders(resolvedToken),

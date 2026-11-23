@@ -500,7 +500,6 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         });
 
         let upstream: Response | null = null;
-        let upstreamUrl: string | null = null;
         if (deployment.container_id) {
           try {
             const cloudAppRecord = await CloudApp.query().findById(deployment.app_id);
@@ -519,13 +518,15 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
                 process.env.MW_CONTROL_PLANE_URL ??
                 defaultAgentUrl
               ).replace(/\/+$/u, '');
-              upstreamUrl = `${agentUrl}/api/containers/${encodeURIComponent(deployment.container_id)}/logs?follow=true&tail=100`;
               const controller = new AbortController();
               req.raw.once('close', () => controller.abort());
-              const res = await fetchImpl(upstreamUrl, {
-                headers: controlPlaneAuthHeaders(resolvedToken),
-                signal: controller.signal,
-              });
+              const res = await fetchImpl(
+                `${agentUrl}/api/containers/${encodeURIComponent(deployment.container_id)}/logs?follow=true&tail=100`,
+                {
+                  headers: controlPlaneAuthHeaders(resolvedToken),
+                  signal: controller.signal,
+                }
+              );
               if (res.ok && res.body) upstream = res;
             }
           } catch {

@@ -124,6 +124,7 @@ export interface LocalApiServerOptions {
   readonly rpcToken?: string;
   readonly desktopHomeDir?: string;
   readonly initialMode?: DesktopExperienceMode;
+  readonly ispApiUrl?: string;
 }
 
 export interface LocalApiServerHandle {
@@ -184,6 +185,117 @@ const WORKSPACE_MODE_RESTRICTED_BODY = Object.freeze({
 
 function isDesktopExperienceMode(value: unknown): value is DesktopExperienceMode {
   return value === 'workspace' || value === 'developer';
+}
+
+const DEFAULT_ISP_API_URL = 'http://127.0.0.1:8091';
+
+type IspProxyUpstreamResult =
+  | { status: number; body: unknown }
+  | null;
+
+/**
+ * Deterministic offline ISP state used when the ISP service is unreachable.
+ * Mirrors the Nusantara FTTx deployment so the desktop UI stays functional
+ * while the ISP sidecar is down; every field is derived from fixed seed data,
+ * never randomized.
+ */
+const ISP_FALLBACK_SUBSCRIBERS: readonly {
+  readonly subscriberId: number;
+  readonly username: string;
+  readonly fullName: string;
+  readonly plan: string;
+  readonly status: 'active' | 'suspended';
+  readonly monthlyQuotaBytes: number;
+  readonly quotaUsedBytes: number;
+}[] = Object.freeze([
+  {
+    subscriberId: 1,
+    username: 'widodo.fttx.cbn',
+    fullName: 'Widodo Santoso',
+    plan: 'Nusantara FTTx Home 50',
+    status: 'active',
+    monthlyQuotaBytes: 1_099_511_627_776,
+    quotaUsedBytes: 412_316_860_416,
+  },
+  {
+    subscriberId: 2,
+    username: 'sari.fttx.cbn',
+    fullName: 'Sari Rahmawati',
+    plan: 'Nusantara FTTx Home 100',
+    status: 'active',
+    monthlyQuotaBytes: 2_199_023_255_552,
+    quotaUsedBytes: 1_521_887_903_744,
+  },
+  {
+    subscriberId: 3,
+    username: 'bharata.dedicated.jkt',
+    fullName: 'CV Bharata Digital',
+    plan: 'Jakarta Dedicated 1:1 200M',
+    status: 'suspended',
+    monthlyQuotaBytes: 8_796_093_022_208,
+    quotaUsedBytes: 8_796_093_022_208,
+  },
+]);
+
+const ISP_FALLBACK_STATS = Object.freeze({
+  totalSubscribers: ISP_FALLBACK_SUBSCRIBERS.length,
+  activeSubscribers: ISP_FALLBACK_SUBSCRIBERS.filter((s) => s.status === 'active').length,
+  suspendedSubscribers: ISP_FALLBACK_SUBSCRIBERS.filter((s) => s.status === 'suspended')
+    .length,
+  totalQuotaBytes: ISP_FALLBACK_SUBSCRIBERS.reduce((sum, s) => sum + s.monthlyQuotaBytes, 0),
+  usedQuotaBytes: ISP_FALLBACK_SUBSCRIBERS.reduce((sum, s) => sum + s.quotaUsedBytes, 0),
+  onlineSessions: 2,
+  source: 'fallback' as const,
+});
+
+const ISP_FALLBACK_SESSIONS = Object.freeze([
+  {
+    sessionId: 'radsession-0001-widodo',
+    username: 'widodo.fttx.cbn',
+    nasIdentifier: 'nas-cbn-fttx-01',
+    framedIpAddress: '10.60.10.24',
+    startedAt: '2026-11-23T01:12:45Z',
+    state: 'active' as const,
+  },
+  {
+    sessionId: 'radsession-0002-sari',
+    username: 'sari.fttx.cbn',
+    nasIdentifier: 'nas-cbn-fttx-02',
+    framedIpAddress: '10.60.11.8',
+    startedAt: '2026-11-23T03:40:02Z',
+    state: 'active' as const,
+  },
+]);
+
+interface IspDisconnectInput {
+  readonly username?: unknown;
+  readonly sessionId?: unknown;
+}
+
+async function forwardToIspService(
+  ispApiUrl: string,
+  method: 'GET' | 'POST',
+  routePath: string,
+  payload: unknown,
+): Promise<IspProxyUpstreamResult> {
+  const controller = new AbortController();
+  const upstreamTimeout = setTimeout(() => controller.abort(), 2000);
+  try {
+    const response = await fetch(`${ispApiUrl}${routePath}`, {
+      method,
+      headers: { 'content-type': 'application/json' },
+      ...(method === 'POST' && payload !== undefined
+        ? { body: JSON.stringify(payload) }
+        : {}),
+      signal: controller.signal,
+    });
+    const body: unknown = await response.json().catch(() => null);
+    return { status: response.status, body };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(upstreamTimeout);
+  }
 }
 
 function resolveDesktopHomeDirForMode(options: LocalApiServerOptions): string | null {
@@ -359,7 +471,7 @@ export async function ensureLocalWorkspaceBootstrap(
     partner = { id: partnerIdInserted };
   }
 
-  let user = (await db(User.tableName).where({ login: 'local' }).first()) as
+  const user = (await db(User.tableName).where({ login: 'local' }).first()) as
     | { id: number; partner_id?: number | null }
     | undefined;
   const userId = user
@@ -1603,6 +1715,149 @@ export async function startLocalApiServer(
 
   app.post('/api/desktop/vps/onboarding', handleVpsSuperadminOnboarding);
   app.post('/api/desktop/vps/onboarding/superadmin', handleVpsSuperadminOnboarding);
+
+  // Wave O — Desktop ISP proxy (forwards to ISP service, deterministic fallback offline)
+  const ispApiUrl =
+    options.ispApiUrl ??
+    process.env.ISP_API_URL ??
+    (process.env.MW_ISP_SIDECAR_URL && process.env.MW_ISP_SIDECAR_URL.trim().length > 0
+      ? process.env.MW_ISP_SIDECAR_URL.trim()
+      : DEFAULT_ISP_API_URL);
+
+  app.get('/api/desktop/isp/subscribers', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const upstream = await forwardToIspService(
+      ispApiUrl,
+      'GET',
+      '/api/isp/subscribers',
+      undefined,
+    );
+    if (upstream) {
+      return reply.code(upstream.status).send(upstream.body);
+    }
+    return { success: true, data: { subscribers: ISP_FALLBACK_SUBSCRIBERS, source: 'fallback' } };
+  });
+
+  app.post('/api/desktop/isp/subscribers', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const upstream = await forwardToIspService(
+      ispApiUrl,
+      'POST',
+      '/api/isp/subscribers',
+      body,
+    );
+    if (upstream) {
+      return reply.code(upstream.status).send(upstream.body);
+    }
+    const username = typeof body.username === 'string' ? body.username.trim() : '';
+    const fullName = typeof body.fullName === 'string' ? body.fullName.trim() : '';
+    const plan = typeof body.plan === 'string' ? body.plan.trim() : '';
+    if (!username || !fullName || !plan) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_ISP_SUBSCRIBER_REQUEST',
+        error: 'username, fullName and plan are required',
+      });
+    }
+    const nextId =
+      ISP_FALLBACK_SUBSCRIBERS.reduce((max, s) => Math.max(max, s.subscriberId), 0) + 1;
+    return {
+      success: true,
+      data: {
+        subscriber: {
+          subscriberId: nextId,
+          username,
+          fullName,
+          plan,
+          status: 'active',
+          monthlyQuotaBytes: 1_099_511_627_776,
+          quotaUsedBytes: 0,
+        },
+        source: 'fallback',
+      },
+    };
+  });
+
+  app.get('/api/desktop/isp/sessions', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const upstream = await forwardToIspService(ispApiUrl, 'GET', '/api/isp/sessions', undefined);
+    if (upstream) {
+      return reply.code(upstream.status).send(upstream.body);
+    }
+    return { success: true, data: { sessions: ISP_FALLBACK_SESSIONS, source: 'fallback' } };
+  });
+
+  app.post('/api/desktop/isp/disconnect', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const upstream = await forwardToIspService(
+      ispApiUrl,
+      'POST',
+      '/api/isp/disconnect',
+      body,
+    );
+    if (upstream) {
+      return reply.code(upstream.status).send(upstream.body);
+    }
+    const input: IspDisconnectInput = body;
+    const username = typeof input.username === 'string' ? input.username.trim() : '';
+    const sessionId = typeof input.sessionId === 'string' ? input.sessionId.trim() : '';
+    if (!username && !sessionId) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_ISP_DISCONNECT_REQUEST',
+        error: 'username or sessionId is required',
+      });
+    }
+    const matched = ISP_FALLBACK_SESSIONS.find(
+      (session) =>
+        (username.length > 0 && session.username === username) ||
+        (sessionId.length > 0 && session.sessionId === sessionId),
+    );
+    if (!matched) {
+      return reply.code(404).send({
+        success: false,
+        code: 'ISP_SESSION_NOT_FOUND',
+        error: 'No matching active session in fallback ISP state',
+      });
+    }
+    return {
+      success: true,
+      data: {
+        disconnected: true,
+        sessionId: matched.sessionId,
+        username: matched.username,
+        nasIdentifier: matched.nasIdentifier,
+        source: 'fallback',
+      },
+    };
+  });
+
+  app.get('/api/desktop/isp/stats', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const upstream = await forwardToIspService(ispApiUrl, 'GET', '/api/isp/stats', undefined);
+    if (upstream) {
+      return reply.code(upstream.status).send(upstream.body);
+    }
+    return { success: true, data: ISP_FALLBACK_STATS };
+  });
 
   // Desktop AI Assistant & Autonomous Task Runner
   const VALID_ASSISTANT_ACTIONS = new Set<WorkspaceAssistantAction>([

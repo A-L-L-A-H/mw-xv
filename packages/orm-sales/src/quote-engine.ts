@@ -166,8 +166,8 @@ function allocateIntegerCents(totalAmountCents: number, weights: readonly number
     return { index, floorShare, remainder };
   });
 
-  let distributed = shares.reduce((acc, s) => acc + s.floorShare, 0);
-  let leftover = totalAmountCents - distributed;
+  const distributed = shares.reduce((acc, s) => acc + s.floorShare, 0);
+  const leftover = totalAmountCents - distributed;
 
   const byRemainder = [...shares].sort((a, b) => {
     if (b.remainder !== a.remainder) return b.remainder - a.remainder;

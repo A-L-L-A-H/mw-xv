@@ -946,8 +946,8 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
               }
             }
 
-            let stageId: number | null = null;
             const rawStageId = rawArgs.stage_id ?? rawArgs.stageId;
+            let stageId: number | null;
             if (
               typeof rawStageId === 'number' &&
               Number.isSafeInteger(rawStageId) &&

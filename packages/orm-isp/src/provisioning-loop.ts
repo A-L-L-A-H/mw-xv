@@ -589,9 +589,11 @@ export async function enforceOverdueSubscriberSuspensions(
       continue;
     }
 
-    await ISPSubscriber.query()
+    console.error('[DEBUG] Patching subscriber', candidate.subscriber.id, 'to suspended');
+    const patchResult = await ISPSubscriber.query()
       .findById(candidate.subscriber.id)
       .patch({ status: 'suspended' });
+    console.error('[DEBUG] Patch result:', patchResult);
     const outbox = await ISPRadiusOutbox.query().insert({
       company_id: candidate.subscriber.company_id,
       username: candidate.subscriber.username,

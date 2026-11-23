@@ -199,7 +199,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
           changes: JSON.stringify({ reason, secret: '[redacted]' }),
         });
 
-        let runtimeSynced = false;
+        let runtimeSynced: boolean;
         try {
           const res = await fetchImpl(
             `${baseUrl}/api/clients/${encodeURIComponent(nas.ip_address)}/rotate-secret`,

@@ -14,6 +14,21 @@ interface RecordedResponse {
   payload: unknown;
 }
 
+interface ErrorResponse {
+  success: false;
+  error: string;
+}
+
+interface VerifyResponse {
+  success: true;
+  data: {
+    valid: boolean;
+    verifiedChunks: number;
+    totalBytes: number;
+    errors: unknown[];
+  };
+}
+
 type PluginApp = Parameters<AddonHttpPlugin>[0];
 type RouteHandler = (
   req: AddonHttpRequestBase & { body: unknown; params: unknown; query: unknown },
@@ -132,7 +147,7 @@ describe('storageVaultHttpPlugin (INV-014 manifest.httpPlugins)', () => {
     );
 
     expect(res.statusCode).toBe(200);
-    const body = res.payload as any;
+    const body = res.payload as VerifyResponse;
     expect(body.success).toBe(true);
     expect(body.data.valid).toBe(true);
     expect(body.data.verifiedChunks).toBe(built.manifest.chunks.length);
@@ -157,7 +172,7 @@ describe('storageVaultHttpPlugin (INV-014 manifest.httpPlugins)', () => {
     );
 
     expect(res.statusCode).toBe(200);
-    const body = res.payload as any;
+    const body = res.payload as VerifyResponse;
     expect(body.success).toBe(true);
     expect(body.data.valid).toBe(false);
     expect(body.data.errors.length).toBeGreaterThan(0);

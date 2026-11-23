@@ -13,6 +13,21 @@ interface RecordedResponse {
   payload: unknown;
 }
 
+interface ErrorResponse {
+  success: false;
+  error: string;
+}
+
+interface QuoteResponse {
+  success: true;
+  data: {
+    quoteId: string;
+    grossSubtotalCents: number;
+    grandTotalCents: number;
+    lines: unknown[];
+  };
+}
+
 type PluginApp = Parameters<AddonHttpPlugin>[0];
 type RouteHandler = (
   req: AddonHttpRequestBase & { body: unknown; params: unknown; query: unknown },
@@ -137,7 +152,7 @@ describe('quoteHttpPlugin (INV-014 manifest.httpPlugins)', () => {
       { userId: 1, role: 'user', companyId: 1 }
     );
     expect(res.statusCode).toBe(200);
-    const body = res.payload as any;
+    const body = res.payload as QuoteResponse;
     expect(body.success).toBe(true);
     expect(body.data.quoteId).toBe('Q-001');
     expect(body.data.grossSubtotalCents).toBe(10000);

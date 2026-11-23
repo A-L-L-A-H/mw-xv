@@ -31,7 +31,7 @@ function createMockKnex(initial?: Partial<MockDbTables>) {
   const knex = (tableName: string) => {
     const key = tableName as keyof MockDbTables;
     const rows = tables[key] ?? [];
-    let filters: Record<string, unknown>[] = [];
+    const filters: Record<string, unknown>[] = [];
 
     const matches = (row: Record<string, unknown>) =>
       filters.every((filter) =>

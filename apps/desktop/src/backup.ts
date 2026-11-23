@@ -221,7 +221,7 @@ export async function listLocalDbBackups(backupsDir: string): Promise<LocalDbBac
     }
 
     const actualSha256 = await computeFileSha256(filePath);
-    let manifest: LocalDbBackupManifest | null = null;
+    let manifest: LocalDbBackupManifest | null;
     try {
       const rawManifest = await fs.readFile(manifestPath, 'utf8');
       manifest = parseManifest(JSON.parse(rawManifest));
@@ -266,7 +266,7 @@ export async function restoreLocalDbBackup(
     resolveConfinedBackupPath(backupsDir, manifestPath);
   }
 
-  let manifest: LocalDbBackupManifest | null = null;
+  let manifest: LocalDbBackupManifest | null;
   try {
     const rawManifest = await fs.readFile(manifestPath, 'utf8');
     manifest = parseManifest(JSON.parse(rawManifest));

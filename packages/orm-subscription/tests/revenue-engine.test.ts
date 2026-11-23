@@ -36,7 +36,7 @@ describe('Mid-Cycle Plan Proration Calculator', () => {
 
 describe('Dunning Retry & Grace-Period State Machine', () => {
   it('transitions active -> past_due -> grace -> suspended -> canceled and supports recovery', () => {
-    let state: DunningState = {
+    const state: DunningState = {
       status: 'active',
       retryCount: 0,
       nextRetryAtMs: null,
