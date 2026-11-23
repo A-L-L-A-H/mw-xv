@@ -24,7 +24,7 @@ function copyBoardRouteHtmlPlugin(): Plugin {
 
 export default defineConfig({
   root: __dirname,
-  base: './',
+  base: '/',
   publicDir: path.join(boardRoot, 'public'),
   plugins: [react(), copyBoardRouteHtmlPlugin()],
   css: {

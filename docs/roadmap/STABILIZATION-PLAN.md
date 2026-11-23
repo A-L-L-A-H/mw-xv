@@ -41,16 +41,16 @@
 - [x] Preserved the exact legacy registry blob `d56499936761dcc062704d06588ee2679fd1aae2` at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`.
 - [x] Applied the approved 627-record candidate to canonical `docs/tasks/tasks.json`; blob SHA `8216b6503d154d635112be96c41939a9efd38390`, candidate JSON SHA-256 `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`.
 - [x] Added deterministic CI timestamp pinning via source commit timestamp.
-- [ ] Verify `pnpm tasks:validate`, `pnpm automation:check:roadmap`, and `pnpm tasks:sweep -- --check` on this migration commit's exact SHA.
-- [ ] Verify Visual Universe `sync-task-state.mjs --check` and regenerate/commit any stale generated projections.
-- [ ] Record final exact-SHA CI results before closing Phase 1.
+- [x] Verify `pnpm tasks:validate`, `pnpm automation:check:roadmap`, and `pnpm tasks:sweep -- --check` on exact implementation SHA `e1b216eeb2bcca131a9efbb14fe91865cd6ee3fc`; both push and PR unit-test jobs passed.
+- [x] Regenerate and commit the TaskOS-driven Visual Universe projections; `sync-task-state.mjs --check` passed on exact SHA `e1b216eeb2bcca131a9efbb14fe91865cd6ee3fc` (109 cards across 11 phases, plus `task.json` and `TASKS.md`).
+- [x] Record exact-SHA CI: push run [45095239162](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45095239162) and PR run [45095243555](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45095243555) both passed all five jobs.
 
 ### S2 — Roadmap and Issue lifecycle reconciliation (P1)
-- [ ] Recompute task counts from `ROADMAP.md` and `docs/roadmap/tasks.json`; remove stale static totals.
-- [ ] Cross-check M13.01–M13.08 source status and evidence.
+- [x] Recompute task counts from `ROADMAP.md` and `docs/roadmap/tasks.json`. Exact result: 239 tasks; roadmap checkboxes 157 checked / 82 unchecked; source statuses 157 complete / 47 in-progress / 35 todo. No current tracked generated progress dashboard was found to rewrite; old counts in dated audit narratives remain historical.
+- [x] Cross-check M13.01–M13.12 source status and evidence. All 12 are marked complete; each evidence file and every listed source/deliverable path exists in the exact audited tree.
 - [x] Reconcile completed issue lifecycle #32–#36 against promoted sources/evidence; preserve human fields and comments.
-- [ ] Audit stale open/closed issues and duplicate task markers; no mass-close.
-- [ ] Ensure roadmap index, evidence links, managed Issue blocks and generated progress artifacts agree.
+- [x] Audit stale open/closed issues and duplicate task markers; no mass-close or issue mutation. The read-only audit returned 23 issues (15 open, 8 closed): 12 managed markers for M13.01–M13.12; no duplicate markers, malformed managed blocks, or orphan task IDs among those 12. All 12 issue projections have stale/missing source SHA (11 point to older SHAs, M13.01 has no source SHA line); 227/239 roadmap task IDs currently have no managed issue marker.
+- [ ] Reconcile missing/stale managed Issue projections from current exact evidence, and verify roadmap index/evidence links/generated progress artifacts agree. Use bounded, reviewed issue-sync batches; preserve human-owned fields and never mass-close.
 
 ### S3 — Runtime/toolchain documentation (P1)
 - [x] Align primary Node policy references across root engines, Docker, CI setup, Desktop package and docs to Node 24; runtime ledger refresh remains a separate review.
@@ -59,8 +59,8 @@
 - [ ] Keep exact pnpm version/config consistent with Corepack, CI and package-manager policy.
 
 ### S4 — Release/CI truth audit (P1)
-- [ ] Inspect required checks and rulesets on `main` and `dev`; record access/API limitations.
-- [ ] Fetch PR #31 CI runs and verify all required jobs on exact source SHA; resolve pending/ambiguous checks.
+- [x] Inspect required checks and rulesets on `main` and `dev`; record the active `protect-main` / `protect-dev` rulesets and the restricted legacy branch-protection endpoint.
+- [x] Fetch PR #31 CI runs and verify all required jobs on exact source SHA: source `a3fa6da5b6b4e47e42240c8ec2c9ef8561416064`, push run [45053735229](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45053735229), PR run [45053738507](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45053738507); both passed all five jobs.
 - [x] Confirm M12.14 stable-release approval remains a separate unresolved human gate; do not infer from merge.
 - [ ] Confirm promotion workflow cannot promote stale heads and promotion report correctly distinguishes pending, failed, skipped and success.
 - [ ] Confirm release tagging/publication remains gated and deployment is not implicitly authorized.
