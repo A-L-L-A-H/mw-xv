@@ -121,17 +121,22 @@ func main() {
 		log.Printf("warning: mesh configuration invalid (fail-closed): %s", RedactMeshSecret(meshMgr.configErr.Error(), meshMgr.cfg.NetworkSecret))
 	}
 
-	// Ensure all registry services are running at startup.
-	for name, meta := range registry {
-		if name == easytierServiceName {
-			if !meshMgr.cfg.Enabled || meshMgr.configErr != nil {
-				continue
+	// Gate legacy registry auto-start behind MW_CONTROL_PLANE_AUTOSTART_LEGACY=true
+	// so VPS Compose deployments never collide with rogue legacy containers on restart.
+	if shouldAutostartLegacyRegistry() {
+		for name, meta := range registry {
+			if name == easytierServiceName {
+				if !meshMgr.cfg.Enabled || meshMgr.configErr != nil {
+					continue
+				}
+				meta = EasytierContainerMeta(meshMgr.cfg)
 			}
-			meta = EasytierContainerMeta(meshMgr.cfg)
+			if err := ensureService(ctx, cfg.dockerBin, name, meta); err != nil {
+				log.Printf("warning: could not ensure service %s: %s", name, RedactMeshSecret(err.Error(), meshMgr.cfg.NetworkSecret))
+			}
 		}
-		if err := ensureService(ctx, cfg.dockerBin, name, meta); err != nil {
-			log.Printf("warning: could not ensure service %s: %s", name, RedactMeshSecret(err.Error(), meshMgr.cfg.NetworkSecret))
-		}
+	} else {
+		log.Printf("legacy registry auto-start disabled (set MW_CONTROL_PLANE_AUTOSTART_LEGACY=true to enable)")
 	}
 
 	srv := &http.Server{
@@ -151,6 +156,14 @@ func main() {
 	defer cancel()
 	_ = srv.Shutdown(shutdownCtx)
 	log.Println("control-plane stopped")
+}
+
+// shouldAutostartLegacyRegistry returns true only when
+// MW_CONTROL_PLANE_AUTOSTART_LEGACY is explicitly set to "true".
+// Defaults to false so VPS Compose deployments never collide with legacy
+// registry containers on startup.
+func shouldAutostartLegacyRegistry() bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv("MW_CONTROL_PLANE_AUTOSTART_LEGACY")), "true")
 }
 
 // buildMux wires the full HTTP router for the control plane. Every route

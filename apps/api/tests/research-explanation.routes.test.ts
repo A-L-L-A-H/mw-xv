@@ -3,8 +3,7 @@ import swagger from '@fastify/swagger';
 import { readQuranPassage } from '@moonwitness/corpus';
 import type { StoredResearchGraphRelease } from '@moonwitness/orm-knowledge';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { resolveCorpusDataRoot } from '../src/routes/corpus.routes.js';
-import { researchExplanationRoutes } from '../src/routes/research-explanation.routes.js';
+import { researchExplanationHttpPlugin as researchExplanationRoutes, resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
 
 const relationId = 'mw:relation:api-fixture';
 const evidenceId = 'mw:evidence:api-fixture';
@@ -716,6 +715,7 @@ describe('research relation explanation API', () => {
 
   it('registers authenticated GET OpenAPI docs with cache and failure contracts', async () => {
     const app = Fastify();
+    app.decorate('db', {} as never);
     await app.register(swagger, {
       openapi: {
         info: { title: 'Test API', version: '1.0.0' },

@@ -73,6 +73,17 @@ import {
   type DesktopLogSource,
 } from './log-hub.js';
 import {
+  DesktopSyncEngine,
+  type RecordLocalMutationInput,
+  type SyncRecordVersion,
+} from './sync-engine.js';
+import {
+  searchLocalRagDocuments,
+  type LocalRagDocument,
+  type LocalRagDocumentKind,
+} from './local-rag.js';
+import { runDesktopDoctor, runDesktopDoctorRepair } from './doctor.js';
+import {
   VpsOnboardingClient,
   type VpsComposeAction,
   type VpsOnboardingAuthContext,
@@ -1181,15 +1192,21 @@ export async function startLocalApiServer(
     return { success: true, data: buildDesktopModePayload(currentMode) };
   });
 
+  const meshClientController = new MeshClientController({
+    ...(desktopHomeDir && desktopHomeDir !== ':memory:' ? { desktopHomeDir } : {}),
+  });
+
   app.get('/api/desktop/mesh/status', async (req, reply) => {
     if (!req.auth) {
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     }
-    return { success: true, data: buildRedactedMeshPayload() };
-  });
-
-  const meshClientController = new MeshClientController({
-    ...(desktopHomeDir && desktopHomeDir !== ':memory:' ? { desktopHomeDir } : {}),
+    return {
+      success: true,
+      data: {
+        ...buildRedactedMeshPayload(),
+        clientStatus: meshClientController.getStatus(),
+      },
+    };
   });
 
   app.post('/api/desktop/mesh/bootstrap', async (req, reply) => {
@@ -1210,6 +1227,11 @@ export async function startLocalApiServer(
       return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
     }
     const status = meshClientController.start();
+    logHub.ingest({
+      level: 'info',
+      source: 'mesh',
+      message: `Mesh client connect initiated for network ${status.networkName} (state=${status.state})`,
+    });
     return { success: true, data: status };
   });
 
@@ -1221,6 +1243,11 @@ export async function startLocalApiServer(
       return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
     }
     const status = meshClientController.stop();
+    logHub.ingest({
+      level: 'info',
+      source: 'mesh',
+      message: `Mesh client disconnected for network ${status.networkName} (state=${status.state})`,
+    });
     return { success: true, data: status };
   });
 
@@ -2263,6 +2290,221 @@ export async function startLocalApiServer(
       bundle: markdown,
       entryCount: logHub.getEntryCount(),
     };
+  });
+
+  // Wave D.20 — Offline-First Bidirectional Delta Sync Engine (active in BOTH modes)
+  const syncEngine = new DesktopSyncEngine({
+    nodeId: `desktop-${workspace.companyId}`,
+  });
+
+  app.get('/api/desktop/sync/status', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    return { success: true, data: syncEngine.getStatus() };
+  });
+
+  app.post('/api/desktop/sync/plan', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    if (Array.isArray(body.localMutations)) {
+      for (const rawMutation of body.localMutations) {
+        if (!isRecord(rawMutation)) continue;
+        const entityType = typeof rawMutation.entityType === 'string' ? rawMutation.entityType.trim() : '';
+        const entityId = typeof rawMutation.entityId === 'string' ? rawMutation.entityId.trim() : '';
+        const operation = rawMutation.operation === 'delete' ? 'delete' : 'upsert';
+        if (!entityType || !entityId) continue;
+        const mutationInput: RecordLocalMutationInput = {
+          entityType,
+          entityId,
+          operation,
+          ...(isRecord(rawMutation.fields) ? { fields: rawMutation.fields } : {}),
+        };
+        syncEngine.recordLocalMutation(mutationInput);
+      }
+    }
+    const remoteVersions: SyncRecordVersion[] = Array.isArray(body.remoteVersions)
+      ? (body.remoteVersions as SyncRecordVersion[])
+      : [];
+    const plan = syncEngine.planBidirectionalSync(remoteVersions);
+    return { success: true, data: plan };
+  });
+
+  // Wave D.21 — Native OS Quick-Capture (active in BOTH modes)
+  app.post('/api/desktop/quick-capture', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const title = typeof body.title === 'string' ? body.title.trim() : '';
+    if (!title) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Quick-capture title is required',
+      });
+    }
+    const description = typeof body.description === 'string' ? body.description.trim() : '';
+    const source = typeof body.source === 'string' && body.source.trim() ? body.source.trim() : 'quick_capture';
+    const stageId = workspace.stageIds.backlog ?? Object.values(workspace.stageIds)[0];
+    const nowIso = new Date().toISOString();
+
+    const inserted = await db('project_task').insert({
+      name: title,
+      description,
+      project_id: workspace.projectId,
+      stage_id: stageId,
+      company_id: workspace.companyId,
+      user_id: workspace.userId,
+      priority: 'normal',
+      state: 'open',
+      create_date: nowIso,
+      write_date: nowIso,
+    });
+    const taskId = Array.isArray(inserted) ? Number(inserted[0]) : Number(inserted);
+
+    syncEngine.recordLocalMutation({
+      entityType: 'project.task',
+      entityId: String(taskId),
+      operation: 'upsert',
+      fields: {
+        name: title,
+        description,
+        project_id: workspace.projectId,
+        stage_id: stageId,
+      },
+      updatedAt: nowIso,
+    });
+
+    const logEntry = logHub.ingest({
+      level: 'info',
+      source: 'sidecar',
+      message: `Quick-capture inbox task #${taskId} created (${source}): ${title}`,
+    });
+
+    return {
+      success: true,
+      data: {
+        task: {
+          id: taskId,
+          name: title,
+          description,
+          projectId: workspace.projectId,
+          stageId,
+        },
+        logEntry,
+      },
+    };
+  });
+
+  // Wave D.22 — Embedded Local Offline Hybrid RAG Search Hub (active in BOTH modes)
+  app.post('/api/desktop/ai/local-search', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const query = typeof body.query === 'string' ? body.query.trim() : '';
+    if (!query) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Search query is required',
+      });
+    }
+    const limit =
+      typeof body.limit === 'number' && Number.isFinite(body.limit) && body.limit > 0
+        ? body.limit
+        : 20;
+    const kinds = Array.isArray(body.kinds)
+      ? body.kinds.filter(
+          (k): k is LocalRagDocumentKind => k === 'task' || k === 'doc' || k === 'log',
+        )
+      : undefined;
+
+    const corpus: LocalRagDocument[] = [];
+    try {
+      const hasTasks = await db.schema.hasTable('project_task');
+      if (hasTasks) {
+        const tasks = await db('project_task')
+          .select('id', 'name', 'description', 'priority', 'state')
+          .where('company_id', req.auth.companyId)
+          .limit(300);
+        for (const task of tasks) {
+          corpus.push({
+            id: `task:${String(task.id)}`,
+            kind: 'task',
+            title: String(task.name ?? ''),
+            body: String(task.description ?? ''),
+            metadata: { taskId: task.id, priority: task.priority, state: task.state },
+          });
+        }
+      }
+    } catch {
+      // Non-fatal if task table is absent
+    }
+
+    if (Array.isArray(body.documents)) {
+      for (const rawDoc of body.documents) {
+        if (!isRecord(rawDoc)) continue;
+        const docId = typeof rawDoc.id === 'string' ? rawDoc.id : `doc:${corpus.length + 1}`;
+        const docTitle = typeof rawDoc.title === 'string' ? rawDoc.title : '';
+        const docBody = typeof rawDoc.body === 'string' ? rawDoc.body : '';
+        corpus.push({
+          id: docId,
+          kind: 'doc',
+          title: docTitle,
+          body: docBody,
+        });
+      }
+    }
+
+    for (const entry of logHub.list({ limit: 200 })) {
+      corpus.push({
+        id: `log:${entry.id}`,
+        kind: 'log',
+        title: `${entry.source} [${entry.level}]`,
+        body: entry.detail ? `${entry.message} ${entry.detail}` : entry.message,
+        metadata: { timestamp: entry.timestamp, source: entry.source, level: entry.level },
+      });
+    }
+
+    const result = searchLocalRagDocuments(corpus, query, {
+      limit,
+      ...(kinds && kinds.length > 0 ? { kinds } : {}),
+    });
+    return { success: true, data: result };
+  });
+
+  // Wave D.23 — Desktop Self-Repair Doctor (active in BOTH modes)
+  app.get('/api/desktop/doctor', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const report = await runDesktopDoctor({
+      db,
+      desktopHomeDir,
+      apiPort: port,
+      apiHealthy: true,
+    });
+    return { success: true, data: report };
+  });
+
+  app.post('/api/desktop/doctor/repair', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const repairResult = await runDesktopDoctorRepair({
+      db,
+      desktopHomeDir,
+      apiPort: port,
+      apiHealthy: true,
+    });
+    logHub.ingest({
+      level: 'info',
+      source: 'sidecar',
+      message: `Desktop doctor repair completed (actions=${repairResult.actionsTaken.length}, pruned=${repairResult.prunedTempFiles})`,
+    });
+    return { success: true, data: repairResult };
   });
 
   // POST /_desktop/rpc protected by ephemeral x-mw-desktop-token

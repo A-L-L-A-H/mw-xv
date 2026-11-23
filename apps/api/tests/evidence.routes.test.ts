@@ -2,8 +2,7 @@ import Fastify from 'fastify';
 import swagger from '@fastify/swagger';
 import { readQuranPassage } from '@moonwitness/corpus';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { evidenceRoutes } from '../src/routes/evidence.routes.js';
-import { resolveCorpusDataRoot } from '../src/routes/corpus.routes.js';
+import { evidenceHttpPlugin as evidenceRoutes, resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
 
 const quranSelector = {
   source_id: 'mw:source:tanzil-quran-text',

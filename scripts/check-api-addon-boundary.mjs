@@ -34,31 +34,7 @@ const CORE_API_ROUTE_ALLOWLIST = new Set([
  * NEVER add new entries here. All new custom domain routes MUST be defined inside their
  * workspace addon package (`packages/orm-*`) and exported via `manifest.httpPlugins`.
  */
-const LEGACY_DOMAIN_ROUTE_ALLOWLIST = new Set([
-  'apps/api/src/routes/ai-corporation.routes.ts',
-  'apps/api/src/routes/ai-desktop-sync.routes.ts',
-  'apps/api/src/routes/corpus.routes.ts',
-  'apps/api/src/routes/evidence.routes.ts',
-  'apps/api/src/routes/local-ai-suggestion.routes.ts',
-  'apps/api/src/routes/local-retrieval.routes.ts',
-  'apps/api/src/routes/research-actor-identity.routes.ts',
-  'apps/api/src/routes/research-duplicate-candidates.routes.ts',
-  'apps/api/src/routes/research-explanation.routes.ts',
-  'apps/api/src/routes/research-privacy.routes.ts',
-  'apps/api/src/routes/research-review.routes.ts',
-  'apps/api/src/routes/research-witness.routes.ts',
-  'apps/api/src/routes/whatsapp.routes.ts',
-  'apps/api/src/routes/whatsapp/accounts.routes.ts',
-  'apps/api/src/routes/whatsapp/conversations.routes.ts',
-  'apps/api/src/routes/whatsapp/group-management.routes.ts',
-  'apps/api/src/routes/whatsapp/groups.routes.ts',
-  'apps/api/src/routes/whatsapp/media.routes.ts',
-  'apps/api/src/routes/whatsapp/message-actions.routes.ts',
-  'apps/api/src/routes/whatsapp/messages.routes.ts',
-  'apps/api/src/routes/whatsapp/statuses.routes.ts',
-  'apps/api/src/routes/whatsapp/triage.routes.ts',
-  'apps/api/src/routes/whatsapp/webhooks.routes.ts',
-]);
+const LEGACY_DOMAIN_ROUTE_ALLOWLIST = new Set([]);
 
 function isAllowedApiRouteFile(normalizedPath) {
   return (

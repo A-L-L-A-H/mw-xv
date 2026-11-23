@@ -12,8 +12,7 @@ import {
 } from '@moonwitness/orm-knowledge';
 import knex, { type Knex } from 'knex';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { localRetrievalRoutes } from '../src/routes/local-retrieval.routes.js';
-import { resolveCorpusDataRoot } from '../src/routes/corpus.routes.js';
+import { localRetrievalHttpPlugin as localRetrievalRoutes, resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
 
 const sourceId = 'mw:source:tanzil-quran-text';
 const editionId = 'mw:edition:tanzil-quran-text-v1.1-uthmani-txt2';

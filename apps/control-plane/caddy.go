@@ -24,6 +24,9 @@ var (
 	// dnsLabelPattern validates a single RFC 1123 DNS label (1..63 chars).
 	dnsLabelPattern = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$`)
 
+	// paasContainerNamePattern validates Docker container names strictly.
+	paasContainerNamePattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$`)
+
 	// reservedPaasSlugs protects private mesh services from ever being
 	// aliased or exposed through the public PaaS reverse proxy.
 	reservedPaasSlugs = map[string]bool{
@@ -53,10 +56,23 @@ var (
 // CaddyRoute represents a single public HTTPS reverse-proxy route from a
 // validated domain to a private PaaS container upstream on the Docker network.
 type CaddyRoute struct {
-	Slug     string `json:"slug"`
-	TenantID string `json:"tenantId"`
-	Domain   string `json:"domain"`
-	Port     int    `json:"port"`
+	Slug         string `json:"slug"`
+	TenantID     string `json:"tenantId"`
+	Domain       string `json:"domain"`
+	Port         int    `json:"port"`
+	UpstreamHost string `json:"upstreamHost,omitempty"`
+}
+
+// ValidateContainerName validates a Docker container name strictly against
+// ^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$ to prevent injection or traversal.
+func ValidateContainerName(name string) error {
+	if name == "" {
+		return errors.New("container name is required")
+	}
+	if !paasContainerNamePattern.MatchString(name) {
+		return fmt.Errorf("invalid container name: %q", name)
+	}
+	return nil
 }
 
 // ValidatePaasSlug enforces strict slug syntax to prevent container name,
@@ -143,6 +159,11 @@ func GenerateCaddyfile(routes []CaddyRoute) (string, error) {
 		if err := ValidatePaasPort(rt.Port); err != nil {
 			return "", fmt.Errorf("invalid route port: %w", err)
 		}
+		if rt.UpstreamHost != "" {
+			if err := ValidateContainerName(rt.UpstreamHost); err != nil {
+				return "", fmt.Errorf("invalid route upstream host: %w", err)
+			}
+		}
 		if prev, exists := seenDomains[rt.Domain]; exists {
 			return "", fmt.Errorf("duplicate domain %q claimed by %q and %q", rt.Domain, prev, rt.Slug)
 		}
@@ -165,7 +186,11 @@ func GenerateCaddyfile(routes []CaddyRoute) (string, error) {
 	b.WriteString("}\n")
 
 	for _, rt := range sorted {
-		upstream := fmt.Sprintf("%s:%d", PaasContainerName(rt.Slug), rt.Port)
+		host := rt.UpstreamHost
+		if host == "" {
+			host = PaasContainerName(rt.Slug)
+		}
+		upstream := fmt.Sprintf("%s:%d", host, rt.Port)
 		b.WriteString("\n")
 		b.WriteString(rt.Domain)
 		b.WriteString(" {\n")

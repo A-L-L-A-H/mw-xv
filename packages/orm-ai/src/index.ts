@@ -1,15 +1,54 @@
 export { manifest } from './manifest.js';
 export { evolutionHttpPlugin } from './evolution-http.js';
 export {
+  AI_CORPORATION_ROUTE_PREFIXES,
+  aiCorporationHttpPlugin,
+} from './ai-corporation-http.js';
+export {
+  AI_DESKTOP_SYNC_ROUTE_PREFIXES,
+  aiDesktopSyncHttpPlugin,
+} from './ai-desktop-sync-http.js';
+export {
+  ensureAiJobHandlersRegistered,
+  ensureDefaultExecutionPolicy,
+  evaluateProofGateV2,
+  hasCompanyAccess,
+  normalizeSlugCode,
+  parseAiRunJobPayload,
+  recordAiAudit,
+  requireAiCompanyContext,
+  type AiRunJobPayload,
+  type ProofGateEvaluationError,
+} from './ai-http-helpers.js';
+export {
+  AGI_CRON_SCHEDULES,
   AI_EVOLUTION_CYCLE_JOB,
+  AI_M15_EPISTEMIC_CALIBRATION_AUDIT_JOB,
+  AI_M16_REDTEAM_ARENA_SWEEP_JOB,
+  AI_M16_SLEEP_DREAM_CONSOLIDATION_JOB,
+  AI_M17_INCIDENT_HEALER_SWEEP_JOB,
   AI_OBLIGATION_SWEEP_JOB,
+  runEpistemicCalibrationAuditJob,
   runEvolutionCycleJob,
+  runIncidentHealerSweepJob,
   runObligationSweepJob,
+  runRedTeamArenaSweepJob,
+  runSleepDreamConsolidationJob,
+  type AgiCronScheduleDefinition,
+  type AgiScheduledJobName,
   type CandidateAblationInputSet,
+  type EpistemicCalibrationAuditJobInput,
+  type EpistemicCalibrationAuditJobResult,
   type EvolutionCycleJobInput,
   type EvolutionCycleJobResult,
+  type IncidentHealerSweepJobInput,
+  type IncidentHealerSweepJobResult,
   type ObligationSweepJobInput,
   type ObligationSweepJobResult,
+  type RedTeamArenaSweepJobInput,
+  type RedTeamArenaSweepJobResult,
+  type SleepDreamConsolidationJobInput,
+  type SleepDreamConsolidationJobResult,
 } from './evolution-jobs.js';
 export * from './models.js';
 export {

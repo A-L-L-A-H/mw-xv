@@ -10,8 +10,12 @@ import {
   S3AttachmentStorage,
   type AttachmentStorage,
 } from '@moonwitness/orm-storage';
-import { whatsappRoutes } from '../src/routes/whatsapp.routes.js';
-import { whatsappManifest } from '@moonwitness/orm-whatsapp';
+import {
+  MalwareScannerUnavailableError,
+  whatsappHttpPlugin as whatsappRoutes,
+  whatsappManifest,
+  type AttachmentScanner,
+} from '@moonwitness/orm-whatsapp';
 import { createHmac, randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
 import sharp from 'sharp';
@@ -23,10 +27,6 @@ import {
   dispatchQueuedWhatsAppMessage,
   registerWhatsAppOutboxConsumer,
 } from '../src/whatsapp/outbox-consumer.js';
-import {
-  MalwareScannerUnavailableError,
-  type AttachmentScanner,
-} from '../src/whatsapp/clamav-scanner.js';
 
 const postgres = process.env.WHATSAPP_TEST_POSTGRES === 'true';
 

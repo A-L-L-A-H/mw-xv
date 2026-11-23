@@ -9,8 +9,50 @@ export interface FastifyRateLimitRouteOptions {
   timeWindow?: number | string;
 }
 
-function parseTimeWindowMs(value: number | string | undefined, fallbackMs: number): number {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
+const DURATION_UNITS_MS: Readonly<Record<string, number>> = {
+  ms: 1,
+  millisecond: 1,
+  milliseconds: 1,
+  s: 1_000,
+  sec: 1_000,
+  secs: 1_000,
+  second: 1_000,
+  seconds: 1_000,
+  m: 60_000,
+  min: 60_000,
+  mins: 60_000,
+  minute: 60_000,
+  minutes: 60_000,
+  h: 3_600_000,
+  hr: 3_600_000,
+  hrs: 3_600_000,
+  hour: 3_600_000,
+  hours: 3_600_000,
+  d: 86_400_000,
+  day: 86_400_000,
+  days: 86_400_000,
+};
+
+export function parseTimeWindowMs(value: number | string | undefined, fallbackMs: number): number {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.floor(value);
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim().toLowerCase();
+    if (!trimmed) return fallbackMs;
+    if (/^\d+(?:\.\d+)?$/u.test(trimmed)) {
+      const parsed = Number(trimmed);
+      if (Number.isFinite(parsed) && parsed > 0) return Math.floor(parsed);
+    }
+    const match = /^(\d+(?:\.\d+)?)\s*([a-z]+)$/u.exec(trimmed);
+    if (match) {
+      const amount = Number(match[1]);
+      const unitMs = DURATION_UNITS_MS[match[2]!];
+      if (Number.isFinite(amount) && amount > 0 && unitMs) {
+        return Math.floor(amount * unitMs);
+      }
+    }
+  }
   return fallbackMs;
 }
 
@@ -23,9 +65,14 @@ export class PostgresRateLimitStore {
   private readonly timeWindowMs: number;
   private tableReadyPromise: Promise<void> | null = null;
 
-  constructor(db: Knex, timeWindowMs = 60_000) {
+  constructor(db: Knex, timeWindowMs: number | string = 60_000, sharedTableReady?: Promise<void> | null) {
     this.db = db;
-    this.timeWindowMs = timeWindowMs;
+    this.timeWindowMs = parseTimeWindowMs(timeWindowMs, 60_000);
+    this.tableReadyPromise = sharedTableReady ?? null;
+  }
+
+  getTimeWindowMs(): number {
+    return this.timeWindowMs;
   }
 
   private async ensureTable(): Promise<void> {
@@ -44,10 +91,15 @@ export class PostgresRateLimitStore {
     return this.tableReadyPromise;
   }
 
+  async pruneExpired(nowMs = Date.now()): Promise<number> {
+    await this.ensureTable();
+    return this.db('_api_rate_limits').where('expires_at_ms', '<=', nowMs).del();
+  }
+
   async incr(
     key: string,
     cb: (error: Error | null, result?: DistributedRateLimitEntry) => void,
-    timeWindow?: number
+    timeWindow?: number | string
   ): Promise<void> {
     try {
       await this.ensureTable();
@@ -101,7 +153,8 @@ export class PostgresRateLimitStore {
   child(routeOptions: FastifyRateLimitRouteOptions): PostgresRateLimitStore {
     return new PostgresRateLimitStore(
       this.db,
-      parseTimeWindowMs(routeOptions?.timeWindow, this.timeWindowMs)
+      parseTimeWindowMs(routeOptions?.timeWindow, this.timeWindowMs),
+      this.tableReadyPromise
     );
   }
 }

@@ -107,9 +107,14 @@ type PaasManager struct {
 	db            *sql.DB
 	dockerBin     string
 	dockerNetwork string
+	backupDir     string
 	meshMgr       *MeshManager
 	caddyMgr      *CaddyManager
 	runner        CommandRunner
+	streamRunner  StreamCommandRunner
+	binaryRunner  BinaryCommandRunner
+	stdinRunner   StdinCommandRunner
+	healthProber  HealthProber
 	startedAt     time.Time
 }
 
@@ -131,9 +136,14 @@ func NewPaasManager(db *sql.DB, dockerBin string, meshMgr *MeshManager, caddyMgr
 		db:            db,
 		dockerBin:     dockerBin,
 		dockerNetwork: strings.TrimSpace(os.Getenv("MW_PAAS_DOCKER_NETWORK")),
+		backupDir:     env("MW_PAAS_BACKUP_DIR", "./backups"),
 		meshMgr:       meshMgr,
 		caddyMgr:      caddyMgr,
 		runner:        runner,
+		streamRunner:  runCmdStreamLines,
+		binaryRunner:  runCmdBinaryOutput,
+		stdinRunner:   runCmdWithStdin,
+		healthProber:  defaultHTTPHealthProbe,
 		startedAt:     time.Now().UTC(),
 	}
 }
@@ -270,6 +280,9 @@ func (m *PaasManager) MountRoutes(mux *http.ServeMux, adminToken string) {
 	mux.HandleFunc("/paas/apps", requirePaasAuth(adminToken, m.handleApps()))
 	mux.HandleFunc("/paas/apps/deploy", requirePaasAuth(adminToken, m.handleDeploy()))
 	mux.HandleFunc("/paas/apps/", requirePaasAuth(adminToken, m.handleAppSubroutes()))
+	mux.HandleFunc("/paas/backups/postgres", requirePaasAuth(adminToken, m.handleBackupPostgres()))
+	mux.HandleFunc("/paas/backups", requirePaasAuth(adminToken, m.handleListBackups()))
+	mux.HandleFunc("/paas/backups/restore", requirePaasAuth(adminToken, m.handleRestoreBackup()))
 }
 
 func (m *PaasManager) handleNodeMetrics() http.HandlerFunc {
@@ -519,6 +532,15 @@ func (m *PaasManager) handleAppSubroutes() http.HandlerFunc {
 			return
 		}
 
+		if len(parts) == 3 && parts[1] == "logs" && parts[2] == "stream" {
+			if r.Method != http.MethodGet {
+				writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+				return
+			}
+			m.handleAppLogsStream(w, r, slug)
+			return
+		}
+
 		if len(parts) != 2 {
 			writePaasJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
 			return
@@ -532,6 +554,12 @@ func (m *PaasManager) handleAppSubroutes() http.HandlerFunc {
 				return
 			}
 			m.handleAppLogs(w, r, slug)
+		case "stats":
+			if r.Method != http.MethodGet {
+				writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+				return
+			}
+			m.handleAppStats(w, r, slug)
 		case "restart":
 			if r.Method != http.MethodPost {
 				writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
@@ -659,10 +687,11 @@ func (m *PaasManager) syncCaddyRoutes(ctx context.Context) error {
 			continue
 		}
 		routes = append(routes, CaddyRoute{
-			Slug:     app.Slug,
-			TenantID: app.TenantID,
-			Domain:   app.Domain,
-			Port:     app.Port,
+			Slug:         app.Slug,
+			TenantID:     app.TenantID,
+			Domain:       app.Domain,
+			Port:         app.Port,
+			UpstreamHost: app.ContainerName,
 		})
 	}
 	_, err = m.caddyMgr.Sync(ctx, routes)

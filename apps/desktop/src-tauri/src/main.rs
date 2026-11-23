@@ -687,6 +687,138 @@ fn mw_desktop_emergency_stop(
     Ok(state.status())
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct QuickCaptureResponse {
+    accepted: bool,
+    status_code: u16,
+    result: serde_json::Value,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct OpenLogsFolderResponse {
+    opened: bool,
+    path: String,
+}
+
+fn resolve_desktop_logs_dir() -> PathBuf {
+    if let Ok(explicit_home) = env::var("MW_DESKTOP_HOME") {
+        let trimmed = explicit_home.trim();
+        if !trimmed.is_empty() {
+            return PathBuf::from(trimmed).join("logs");
+        }
+    }
+    let home = env::var("USERPROFILE")
+        .or_else(|_| env::var("HOME"))
+        .unwrap_or_else(|_| ".".to_string());
+    PathBuf::from(home).join(".moonwitness").join("logs")
+}
+
+fn build_quick_capture_http_request(
+    host_port: &str,
+    title: &str,
+    description: Option<&str>,
+) -> Result<Vec<u8>, String> {
+    let trimmed_title = title.trim();
+    if trimmed_title.is_empty() {
+        return Err("Quick-capture title must not be empty".to_string());
+    }
+    let body = serde_json::to_vec(&serde_json::json!({
+        "title": trimmed_title,
+        "description": description.unwrap_or("").trim(),
+        "source": "tauri_quick_capture",
+    }))
+    .map_err(|err| format!("Failed to serialize quick-capture body: {err}"))?;
+
+    let headers = format!(
+        "POST /api/desktop/quick-capture HTTP/1.1\r\nHost: {host_port}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+        body.len()
+    );
+    let mut request = Vec::with_capacity(headers.len() + body.len());
+    request.extend_from_slice(headers.as_bytes());
+    request.extend_from_slice(&body);
+    Ok(request)
+}
+
+#[tauri::command]
+fn trigger_quick_capture(
+    window: WebviewWindow,
+    title: String,
+    description: Option<String>,
+    state: State<'_, SidecarProcessState>,
+) -> Result<QuickCaptureResponse, String> {
+    if window.label() != ALLOWED_WINDOW_LABEL {
+        return Err(format!(
+            "Quick-capture rejected from non-main window '{}'",
+            window.label()
+        ));
+    }
+    let _ = state.spawn_if_needed()?;
+    let runtime = state.runtime_snapshot();
+    let host_port = parse_loopback_host_port(&runtime.api_url)?;
+    let addr: SocketAddr = host_port
+        .parse()
+        .map_err(|err| format!("Invalid loopback address '{host_port}': {err}"))?;
+    let mut stream = TcpStream::connect_timeout(&addr, Duration::from_secs(3))
+        .map_err(|err| format!("Failed to connect to sidecar quick-capture at {host_port}: {err}"))?;
+    let _ = stream.set_read_timeout(Some(Duration::from_secs(10)));
+    let _ = stream.set_write_timeout(Some(Duration::from_secs(5)));
+
+    let request = build_quick_capture_http_request(&host_port, &title, description.as_deref())?;
+    stream
+        .write_all(&request)
+        .map_err(|err| format!("Failed to write quick-capture request: {err}"))?;
+    stream
+        .flush()
+        .map_err(|err| format!("Failed to flush quick-capture request: {err}"))?;
+
+    let mut raw_response = Vec::new();
+    stream
+        .read_to_end(&mut raw_response)
+        .map_err(|err| format!("Failed to read quick-capture response: {err}"))?;
+
+    let (status_code, result) = parse_rpc_http_response(&raw_response)?;
+    if status_code >= 400 {
+        return Err(format!(
+            "Quick-capture failed with HTTP {}: {}",
+            status_code, result
+        ));
+    }
+    Ok(QuickCaptureResponse {
+        accepted: true,
+        status_code,
+        result,
+    })
+}
+
+#[tauri::command]
+fn open_logs_folder(window: WebviewWindow) -> Result<OpenLogsFolderResponse, String> {
+    if window.label() != ALLOWED_WINDOW_LABEL {
+        return Err(format!(
+            "Open logs folder rejected from non-main window '{}'",
+            window.label()
+        ));
+    }
+    let logs_dir = resolve_desktop_logs_dir();
+    std::fs::create_dir_all(&logs_dir)
+        .map_err(|err| format!("Failed to ensure desktop logs directory: {err}"))?;
+
+    #[cfg(target_os = "windows")]
+    let spawn_result = Command::new("explorer").arg(&logs_dir).spawn();
+    #[cfg(target_os = "macos")]
+    let spawn_result = Command::new("open").arg(&logs_dir).spawn();
+    #[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
+    let spawn_result = Command::new("xdg-open").arg(&logs_dir).spawn();
+
+    spawn_result.map_err(|err| format!("Failed to open logs folder: {err}"))?;
+
+    Ok(OpenLogsFolderResponse {
+        opened: true,
+        path: logs_dir.to_string_lossy().into_owned(),
+    })
+}
+
 fn main() {
     let sidecar_state = SidecarProcessState::new();
     let _ = sidecar_state.spawn_if_needed();
@@ -703,7 +835,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             mw_desktop_sidecar_status,
             mw_desktop_forward_command,
-            mw_desktop_emergency_stop
+            mw_desktop_emergency_stop,
+            trigger_quick_capture,
+            open_logs_folder
         ])
         .build(tauri::generate_context!())
         .expect("error while building MoonWitness Desktop Tauri application");
@@ -828,5 +962,31 @@ mod tests {
         assert_eq!(resolved.1, entry_path.to_string_lossy());
 
         let _ = std::fs::remove_dir_all(&temp_root);
+    }
+
+    #[test]
+    fn builds_quick_capture_http_request_and_rejects_empty_title() {
+        assert!(build_quick_capture_http_request("127.0.0.1:4242", "   ", None).is_err());
+
+        let req_bytes = build_quick_capture_http_request(
+            "127.0.0.1:4242",
+            "Follow up with QA",
+            Some("Verify installer smoke test"),
+        )
+        .unwrap();
+        let req_text = String::from_utf8(req_bytes).unwrap();
+        assert!(req_text.starts_with("POST /api/desktop/quick-capture HTTP/1.1\r\n"));
+        assert!(req_text.contains("Host: 127.0.0.1:4242\r\n"));
+        assert!(req_text.contains(r#""title":"Follow up with QA""#));
+        assert!(req_text.contains(r#""source":"tauri_quick_capture""#));
+    }
+
+    #[test]
+    fn resolves_desktop_logs_dir_under_logs_subdir() {
+        let logs_dir = resolve_desktop_logs_dir();
+        assert_eq!(
+            logs_dir.file_name().and_then(|n| n.to_str()),
+            Some("logs")
+        );
     }
 }

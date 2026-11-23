@@ -210,26 +210,72 @@ function main() {
 
   // 5. Optional EasyTier binary staging (non-fatal if absent so CI stays fast & green)
   const easytierBinName = process.platform === 'win32' ? 'easytier-core.exe' : 'easytier-core';
-  const easytierSource = path.join(os.homedir(), '.moonwitness', 'bin', easytierBinName);
+  function resolveEasyTierBinarySource() {
+    const envBin = process.env.MW_EASYTIER_BIN?.trim();
+    if (envBin && fs.existsSync(envBin) && fs.statSync(envBin).isFile()) {
+      return { source: envBin, origin: 'MW_EASYTIER_BIN' };
+    }
+    const homeBin = path.join(os.homedir(), '.moonwitness', 'bin', easytierBinName);
+    if (fs.existsSync(homeBin) && fs.statSync(homeBin).isFile()) {
+      return { source: homeBin, origin: 'desktop_home' };
+    }
+    const pathEnv = process.env.PATH || '';
+    for (const dir of pathEnv.split(path.delimiter)) {
+      const trimmedDir = dir.trim();
+      if (!trimmedDir) continue;
+      const candidate = path.join(trimmedDir, easytierBinName);
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        return { source: candidate, origin: 'PATH' };
+      }
+    }
+    return null;
+  }
+
+  const easytierMatch = resolveEasyTierBinarySource();
   let easytierStaged = false;
-  if (fs.existsSync(easytierSource)) {
+  let easytierRelativePath = null;
+  if (easytierMatch) {
     const sidecarBinDir = path.join(sidecarDir, 'bin');
     fs.mkdirSync(sidecarBinDir, { recursive: true });
-    fs.copyFileSync(easytierSource, path.join(sidecarBinDir, easytierBinName));
+    fs.copyFileSync(easytierMatch.source, path.join(sidecarBinDir, easytierBinName));
     easytierStaged = true;
+    easytierRelativePath = path.posix.join('bin', easytierBinName);
   }
 
   const { total, files } = measureDirBytes(sidecarDir);
   const mb = (total / (1024 * 1024)).toFixed(2);
+
+  const manifest = {
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    platform: process.platform,
+    arch: process.arch,
+    nodeBinary: nodeBinName,
+    entryScript: 'dist/cli.js',
+    easytier: {
+      available: easytierStaged,
+      binaryName: easytierBinName,
+      relativePath: easytierRelativePath,
+      origin: easytierMatch?.origin ?? null,
+    },
+    stagedPackages: stagedNames.size,
+    files: files + 1,
+    totalMB: Number(mb),
+  };
+  const manifestPath = path.join(sidecarDir, 'manifest.json');
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+
   console.log(
     JSON.stringify({
       status: 'ok',
       sidecarDir,
+      manifestPath,
       nodeBinary: nodeDest,
       entryScript: path.join(sidecarDistDir, 'cli.js'),
       easytierStaged,
+      easytierOrigin: easytierMatch?.origin ?? null,
       stagedPackages: stagedNames.size,
-      files,
+      files: manifest.files,
       totalMB: Number(mb),
     }),
   );

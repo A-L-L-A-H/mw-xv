@@ -12,7 +12,7 @@ import { manifest as knowledgeManifest } from '@moonwitness/orm-knowledge';
 import knex from 'knex';
 import { installPrivacySafeNotFoundHandler } from '../src/not-found.js';
 import { authRoutes } from '../src/routes/auth.routes.js';
-import { researchPrivacyRoutes } from '../src/routes/research-privacy.routes.js';
+import { researchPrivacyHttpPlugin as researchPrivacyRoutes } from '@moonwitness/orm-knowledge';
 
 describe('request logging privacy', () => {
   let temporaryDirectory: string | undefined;

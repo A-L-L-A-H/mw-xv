@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it } from 'vitest';
+import { afterEach, describe, it, vi } from 'vitest';
 import knex, { type Knex } from 'knex';
 import Fastify from 'fastify';
 import { defineAddon, defineModel, fields, Registry } from '@moonwitness/orm';
@@ -10,6 +10,7 @@ import path from 'node:path';
 import {
   PostgresRateLimitStore,
   createPostgresRateLimitStoreCtor,
+  parseTimeWindowMs,
 } from '../src/plugins/rate-limit-store.js';
 import { runPreDeployMigrations } from '../src/commands/db-migrate.js';
 import { installApiAddons, registerApiAddonRoutes } from '../src/addons/registry.js';
@@ -46,6 +47,60 @@ describe('Wave 2 API multi-replica and addon-first v2 contracts', () => {
     assert.equal(hit1.current, 1);
     assert.equal(hit2.current, 2);
     assert.ok(hit2.ttl > 0 && hit2.ttl <= 60_000);
+  });
+
+  it('PostgresRateLimitStore parses string timeWindow, supports child() overrides, counts down TTL, and resets after expiry', async () => {
+    vi.useFakeTimers();
+    cleanups.push(() => vi.useRealTimers());
+    vi.setSystemTime(new Date('2026-11-23T00:00:00.000Z'));
+
+    assert.equal(parseTimeWindowMs('15 minutes', 60_000), 900_000);
+    assert.equal(parseTimeWindowMs('30s', 60_000), 30_000);
+    assert.equal(parseTimeWindowMs('500ms', 60_000), 500);
+    assert.equal(parseTimeWindowMs('2 hours', 60_000), 7_200_000);
+    assert.equal(parseTimeWindowMs('1 day', 60_000), 86_400_000);
+    assert.equal(parseTimeWindowMs('5000', 60_000), 5_000);
+    assert.equal(parseTimeWindowMs('invalid', 60_000), 60_000);
+
+    const db: Knex = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+    cleanups.push(() => db.destroy());
+
+    const Store = createPostgresRateLimitStoreCtor(db);
+    const rootStore = new Store({ timeWindow: '1 minute' });
+    assert.equal(rootStore.getTimeWindowMs(), 60_000);
+
+    const routeChild = rootStore.child({ timeWindow: '10 seconds' });
+    assert.equal(routeChild.getTimeWindowMs(), 10_000);
+
+    const incr = (store: PostgresRateLimitStore, key: string, timeWindow?: number | string) =>
+      new Promise<{ current: number; ttl: number }>((resolve, reject) => {
+        void store.incr(key, (err, res) => (err ? reject(err) : resolve(res!)), timeWindow);
+      });
+
+    const hit1 = await incr(routeChild, 'route:login:1.2.3.4');
+    assert.equal(hit1.current, 1);
+    assert.equal(hit1.ttl, 10_000);
+
+    // Advance 4 seconds: TTL must count down without resetting the window
+    vi.advanceTimersByTime(4_000);
+    const hit2 = await incr(routeChild, 'route:login:1.2.3.4');
+    assert.equal(hit2.current, 2);
+    assert.equal(hit2.ttl, 6_000);
+
+    // Advance 6 more seconds (window expired): counter resets to 1 with fresh 10_000ms TTL
+    vi.advanceTimersByTime(6_000);
+    const hit3 = await incr(routeChild, 'route:login:1.2.3.4');
+    assert.equal(hit3.current, 1);
+    assert.equal(hit3.ttl, 10_000);
+
+    // Expired rows are pruned cleanly
+    vi.advanceTimersByTime(10_000);
+    const pruned = await rootStore.pruneExpired();
+    assert.equal(pruned, 1);
   });
 
   it('runPreDeployMigrations installs tables and SKIP_BOOT_MIGRATIONS registers models without running DDL', async () => {

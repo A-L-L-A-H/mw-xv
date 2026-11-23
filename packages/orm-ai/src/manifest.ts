@@ -1,4 +1,6 @@
 import { defineAddon } from '@moonwitness/orm';
+import { aiCorporationHttpPlugin } from './ai-corporation-http.js';
+import { aiDesktopSyncHttpPlugin } from './ai-desktop-sync-http.js';
 import { data } from './data.js';
 import { evolutionHttpPlugin } from './evolution-http.js';
 import {
@@ -43,7 +45,7 @@ export const manifest = defineAddon({
   ],
   data,
   views,
-  httpPlugins: [evolutionHttpPlugin],
+  httpPlugins: [evolutionHttpPlugin, aiCorporationHttpPlugin, aiDesktopSyncHttpPlugin],
   menus: [
     { model: Agent.modelName, label: 'Agents', group: 'AI Corporation', sequence: 60 },
     {

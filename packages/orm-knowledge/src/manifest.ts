@@ -24,7 +24,17 @@ import { PublicationSnapshot } from './publication.model.js';
 import { bugCaseHttpPlugin } from './http-plugins/bug-case.plugin.js';
 import { childProtectionHttpPlugin } from './http-plugins/child-protection.plugin.js';
 import { conceptProfileHttpPlugin } from './http-plugins/concept-profile.plugin.js';
+import { corpusHttpPlugin } from './http-plugins/corpus.plugin.js';
+import { evidenceHttpPlugin } from './http-plugins/evidence.plugin.js';
+import { localAiSuggestionHttpPlugin } from './http-plugins/local-ai-suggestion.plugin.js';
+import { localRetrievalHttpPlugin } from './http-plugins/local-retrieval.plugin.js';
 import { publicationHttpPlugin } from './http-plugins/publication.plugin.js';
+import { researchActorIdentityHttpPlugin } from './http-plugins/research-actor-identity.plugin.js';
+import { researchDuplicateCandidateHttpPlugin } from './http-plugins/research-duplicate-candidates.plugin.js';
+import { researchExplanationHttpPlugin } from './http-plugins/research-explanation.plugin.js';
+import { researchPrivacyHttpPlugin } from './http-plugins/research-privacy.plugin.js';
+import { researchReviewHttpPlugin } from './http-plugins/research-review.plugin.js';
+import { researchWitnessHttpPlugin } from './http-plugins/research-witness.plugin.js';
 import { storyWorkbenchHttpPlugin } from './http-plugins/story-workbench.plugin.js';
 import { views } from './views.js';
 
@@ -295,6 +305,16 @@ export const manifest = defineAddon({
     childProtectionHttpPlugin,
     publicationHttpPlugin,
     bugCaseHttpPlugin,
+    corpusHttpPlugin,
+    evidenceHttpPlugin,
+    researchExplanationHttpPlugin,
+    researchActorIdentityHttpPlugin,
+    researchDuplicateCandidateHttpPlugin,
+    researchReviewHttpPlugin,
+    researchPrivacyHttpPlugin,
+    researchWitnessHttpPlugin,
+    localRetrievalHttpPlugin,
+    localAiSuggestionHttpPlugin,
   ],
   menus: [
     {

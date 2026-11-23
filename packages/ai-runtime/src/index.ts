@@ -58,3 +58,7 @@ export * from './sleep-dream.js';
 export * from './active-inference.js';
 export * from './merkle-ledger.js';
 export * from './redteam-arena.js';
+export * from './a2a-consensus.js';
+export * from './policy-fuzzer.js';
+export * from './sandbox-runner.js';
+export * from './incident-healer.js';

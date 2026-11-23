@@ -1,3 +1,4 @@
+import '@fastify/multipart';
 import type { FastifyRequest } from 'fastify';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { Knex } from 'knex';

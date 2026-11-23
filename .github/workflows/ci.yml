@@ -30,6 +30,13 @@ jobs:
           pnpm-version: '11.17.0'
       - name: Install frozen workspace dependencies
         run: pnpm install --frozen-lockfile --no-runtime
+      - name: Cache Turborepo artifacts
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
       - name: Verify workflow pins and roadmap contract
         run: |
           pnpm test:action-pins
@@ -46,6 +53,18 @@ jobs:
           pnpm assets:check:bounds
           pnpm test:ui
           node scripts/check-docs.mjs
+      - name: Enforce M15, M16, and M17 Constitutional Invariants and Issue Planner Gates
+        run: |
+          node --test scripts/check-m15-invariants.test.mjs scripts/check-m16-invariants.test.mjs
+          if [ -f scripts/check-m17-invariants.test.mjs ]; then
+            node --test scripts/check-m17-invariants.test.mjs
+          fi
+          node scripts/check-m15-invariants.mjs --json
+          node scripts/check-m16-invariants.mjs --json
+          if [ -f scripts/check-m17-invariants.mjs ]; then
+            node scripts/check-m17-invariants.mjs --json
+          fi
+          node --test scripts/roadmap-issue-planner.test.mjs
       - name: Build workspace and verify budgets
         id: build-workspace
         run: |
