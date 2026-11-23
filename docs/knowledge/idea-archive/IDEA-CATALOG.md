@@ -109,13 +109,26 @@
 | IDEA-0067 | **MoonWitness RPG / 25-prophet Qur’an-mirror game concept** | MEMORY-SUMMARY · USER IDEA · UNRESOLVED | Available account Memory Summary only; see MW-XV [Issue #176](https://github.com/A-L-L-A-H/mw-xv/issues/176) | Keep separate from ROCKSOUL GAME — The Lost Signal until first-source wording and intended relationship are recovered |
 | IDEA-0068 | **MoonWitness OS v2.0 model** — “4 SOURCE → 7 CHANNEL → 4 PROCESS → AMAL → 4 SCALE AXES → MĪZĀN” | MEMORY-SUMMARY · USER IDEA · NEEDS-SOURCE | Available account Memory Summary only; see MW-XV [Issue #177](https://github.com/A-L-L-A-H/mw-xv/issues/177) | Preserve as a memory lead; original definitions, ordering and source conversation still need recovery before canon or implementation |
 
+
+## Additional MoonWitness story seeds — summary-only intake
+
+The following titles are preserved from available recent-conversation context dated around September 2026. These are **USER IDEA / DRAFT** records, not locked canon. Original transcripts and full revision chains were not available in this audit; do not invent missing plot, cast, episode order or ending.
+
+| Stable ID | Original title | Classification | Source evidence | Current status / boundary |
+|---|---|---|---|---|
+| IDEA-0069 | **MOONWITNESS — Two Generations, One Toast** | USER IDEA · MEMORY-SUMMARY · LIBRARY-CAPTION-ONLY | Recent conversation summary; Library image caption/file title `Moonwitness: Two Generations, One Toast.png` | DRAFT; father/son, memory and parallel-world motifs appear in the available summary/caption. Exact dialogue, plot sequence and approved visual prompt are not recovered. |
+| IDEA-0070 | **MOONWITNESS — Chaos Before Dawn** | USER IDEA · MEMORY-SUMMARY | Recent conversation summary of a pre-dawn / dream-world narrative involving MyLuft | DRAFT; retain the title and limited summary only. Full source text, cast details and chronology remain missing. |
+| IDEA-0071 | **MOONWITNESS — BIRD OF A FEATHER** | USER IDEA · MEMORY-SUMMARY | Recent conversation summary records the title and a poster-text revision request | DRAFT; title-only lead. Plot, characters, universe link and ending are unresolved. |
+| IDEA-0072 | **MOONWITNESS — THUNDERSTRUCK** | USER IDEA · MEMORY-SUMMARY | Recent conversation summary dated 30 Sep 2026; V10 progress ledger separately mentions `MENGGIGIL / THUNDERSTRUCK` | DRAFT; a “Wahyono” wordplay note is remembered. Its relationship to `MENGGIGIL`, to any religious term, or to other story characters is not established. |
+
+
 **Version distinction:** CRAYON v1.3 uses `G2 = Governing Order` and `B3 = Being`. The separately named `OMNISCIENCE METHOD / RGBL` paper uses `G = Guidance` and `B = Balance`. These are not interchangeable versions of one acronym.
 
 **CRAYON document variation:** the v1.3 baseline lists Gate 1–9 as SEE, HEAR, TOUCH, TASTE, SMELL, ATTEND, REMEMBER, REASON, CHOOSE; its 13 Ways end with REASON, CONCLUDE, ACT, LIVE. The separate “Easy Way to Understand Allah” paper uses a Gate wording variant (SIGHT, HEARING, TOUCH/BODY, SMELL, TASTE, ATTEND, UNDERSTAND, INTEND, CHOOSE) and a 13-Way variant including REVIEW. Keep both source versions visible until the owner decides whether they are application-specific variants or a formal revision.
 
 ## Catalog status
 
-- **68 stable concept records** are indexed above.
+- **72 stable concept records** are indexed above.
 - Some rows are a family-level record rather than one atomic utterance; do not multiply them into separate unique ideas without a source.
 - Rows marked `REPOSITORY-DOCUMENTED` are not automatically user-locked canon or production capabilities.
 - The catalog is intentionally incomplete where primary source text, complete conversation history, art files, or private archive consent is unavailable.
