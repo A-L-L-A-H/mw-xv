@@ -11,7 +11,10 @@ export const ISPType = defineModel('isp.isp_type', {
   table: 'isp_isp_types',
   order: 'sequence asc, name asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
     name: fields.string({ required: true, unique: true, label: 'Name' }),
     code: fields.string({ required: true, unique: true, label: 'Code' }),
     description: fields.text({ label: 'Description' }),
@@ -23,8 +26,14 @@ export const ISPNAS = defineModel('isp.nas', {
   table: 'isp_nas',
   order: 'name asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
-    project: fields.belongsTo(modelRef(() => Project), { label: 'Project' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
+    project: fields.belongsTo(
+      modelRef(() => Project),
+      { label: 'Project' }
+    ),
     name: fields.string({ required: true, label: 'NAS Name' }),
     description: fields.text({ label: 'Description' }),
     ip_address: fields.string({ required: true, unique: true, label: 'IP Address' }),
@@ -47,7 +56,10 @@ export const ISPBandwidthProfile = defineModel('isp.bandwidth_profile', {
   table: 'isp_bandwidth_profiles',
   order: 'name asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
     name: fields.string({ required: true, unique: true, label: 'Profile Name' }),
     download_kbps: fields.integer({ required: true, label: 'Download (kbps)' }),
     upload_kbps: fields.integer({ required: true, label: 'Upload (kbps)' }),
@@ -61,7 +73,10 @@ export const ISPPool = defineModel('isp.ip_pool', {
   table: 'isp_ip_pools',
   order: 'name asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
     name: fields.string({ required: true, unique: true, label: 'Pool Name' }),
     description: fields.text({ label: 'Description' }),
     network: fields.string({ required: true, label: 'Network CIDR' }),
@@ -77,12 +92,30 @@ export const ISPSubscriber = defineModel('isp.subscriber', {
   table: 'isp_subscribers',
   order: 'username asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
-    partner: fields.belongsTo(modelRef(() => Partner), { required: true, label: 'Customer' }),
-    subscription: fields.belongsTo(modelRef(() => Subscription), { label: 'Subscription' }),
-    project: fields.belongsTo(modelRef(() => Project), { label: 'Project' }),
-    profile: fields.belongsTo(modelRef(() => ISPBandwidthProfile), { label: 'Bandwidth Profile' }),
-    pool: fields.belongsTo(modelRef(() => ISPPool), { label: 'IP Pool' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
+    partner: fields.belongsTo(
+      modelRef(() => Partner),
+      { required: true, label: 'Customer' }
+    ),
+    subscription: fields.belongsTo(
+      modelRef(() => Subscription),
+      { label: 'Subscription' }
+    ),
+    project: fields.belongsTo(
+      modelRef(() => Project),
+      { label: 'Project' }
+    ),
+    profile: fields.belongsTo(
+      modelRef(() => ISPBandwidthProfile),
+      { label: 'Bandwidth Profile' }
+    ),
+    pool: fields.belongsTo(
+      modelRef(() => ISPPool),
+      { label: 'IP Pool' }
+    ),
     username: fields.string({ required: true, unique: true, label: 'Username' }),
     password: fields.string({ required: true, sensitive: true, label: 'RADIUS Password' }),
     type: fields.enum(['pppoe', 'hotspot', 'static'], {
@@ -108,11 +141,17 @@ export const ISPRadiusSession = defineModel('isp.radius_session', {
   table: 'isp_radius_sessions',
   order: 'start_time desc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
-    subscriber: fields.belongsTo(modelRef(() => ISPSubscriber), {
-      required: true,
-      label: 'Subscriber',
-    }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
+    subscriber: fields.belongsTo(
+      modelRef(() => ISPSubscriber),
+      {
+        required: true,
+        label: 'Subscriber',
+      }
+    ),
     session_id: fields.string({ required: true, unique: true, label: 'Session ID' }),
     nas_ip: fields.string({ label: 'NAS IP' }),
     nas_port: fields.string({ label: 'NAS Port' }),
@@ -134,7 +173,10 @@ export const ISPRadiusOutbox = defineModel('isp.radius_outbox', {
   table: 'isp_radius_outbox',
   order: 'created_at asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
     nas_ip: fields.string({ label: 'NAS IP' }),
     nas_port: fields.string({ label: 'NAS Port' }),
     username: fields.string({ required: true, label: 'Username' }),

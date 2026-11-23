@@ -2,12 +2,7 @@ import { createConnection } from 'node:net';
 import { isRecord } from '@moonwitness/types';
 import { ispAuthHeaders, resolveIspAdminToken } from './auth.js';
 import { meterSessionsToSubscriptionInvoices } from './metering.js';
-import {
-  ISPNAS,
-  ISPRadiusOutbox,
-  ISPRadiusSession,
-  ISPSubscriber,
-} from './models/index.js';
+import { ISPNAS, ISPRadiusOutbox, ISPRadiusSession, ISPSubscriber } from './models/index.js';
 
 export type IspNasRecord = InstanceType<typeof ISPNAS>;
 export type NasHealthStatus = 'healthy' | 'degraded' | 'offline';

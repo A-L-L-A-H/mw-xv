@@ -12,5 +12,7 @@ export function selectHealthyNas<T extends HaNasCandidate>(devices: readonly T[]
 
   const healthy = active.filter((d) => (d.health_status ?? 'healthy') === 'healthy');
   const pool = healthy.length > 0 ? healthy : active;
-  return [...pool].sort((a, b) => (a.ha_priority ?? 100) - (b.ha_priority ?? 100) || a.id - b.id)[0];
+  return [...pool].sort(
+    (a, b) => (a.ha_priority ?? 100) - (b.ha_priority ?? 100) || a.id - b.id
+  )[0];
 }

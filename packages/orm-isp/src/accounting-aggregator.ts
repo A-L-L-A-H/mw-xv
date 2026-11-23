@@ -48,10 +48,7 @@ export interface SubscriberOverageReport {
   readonly overageAmountMinor: number;
 }
 
-export type NasAlertCode =
-  | 'STALE_SESSIONS_HIGH'
-  | 'DUPLICATE_PACKET_STORM'
-  | 'NAS_SILENT';
+export type NasAlertCode = 'STALE_SESSIONS_HIGH' | 'DUPLICATE_PACKET_STORM' | 'NAS_SILENT';
 
 export interface NasHealthReport {
   readonly nasIp: string;
