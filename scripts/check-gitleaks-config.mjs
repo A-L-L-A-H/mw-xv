@@ -123,6 +123,8 @@ export function validateGitleaksSetup(workflow, config) {
     problems.push('Allowlist must match exact lines, not whole files or commits.');
   if (!/\[\[allowlists\]\][\s\S]*?paths\s*=\s*\[[^\]]*gitleaks-baseline/u.test(config))
     problems.push('The reviewed baseline must be allowlisted as a scanned path.');
+  if (!/\[\[allowlists\]\][\s\S]*?paths\s*=\s*\[[^\]]*asset-map/u.test(config))
+    problems.push('The generated asset-map hash metadata must be allowlisted as a scanned path.');
 
   // A CRLF-terminated line otherwise escapes the `$` anchor and reads as a clean scan.
   if (
