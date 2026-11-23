@@ -68,12 +68,18 @@ test('dashboard KPI cards show current values without fabricated trend percentag
     fullPage: true,
   });
   // The dashboard's "Available Modules" grid grows and shrinks with the model
-  // registry, so a full-page capture can never be stable. The KPI cards under
-  // test live in the masthead region, which is deterministic.
+  // registry, and live counters plus the audit ledger mutate between runs, so
+  // a raw full-page capture can never be stable. KPI card chrome, layout, and
+  // theme stay under test; volatile values are masked and the capture is
+  // clipped to the masthead region.
   await expect(page).toHaveScreenshot('board-dashboard-admin-desktop-1440.png', {
     animations: 'disabled',
     caret: 'hide',
     clip: { x: 0, y: 0, width: 1440, height: 1000 },
+    mask: [
+      page.locator('.mw-ui-metric-tile-value'),
+      page.locator('.ink-panel').filter({ hasText: 'System Audit Ledger Events' }),
+    ],
   });
 });
 
@@ -523,6 +529,7 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
 });
 
 test('ordinary-user dashboard has a verified visual baseline', async ({ page }, testInfo) => {
+  test.setTimeout(90_000); // First run pays the dev-server JIT compile cost.
   await mkdir(auditDirectory, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/login');
