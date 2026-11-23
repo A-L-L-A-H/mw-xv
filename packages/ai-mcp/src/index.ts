@@ -731,7 +731,10 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
               jsonrpc: '2.0',
               id,
               status: 503,
-              error: { code: -32002, message: 'Database connection is not configured for project tools' },
+              error: {
+                code: -32002,
+                message: 'Database connection is not configured for project tools',
+              },
             };
           }
 
@@ -749,7 +752,9 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
               code: String(row.code ?? ''),
               title: String(row.title ?? ''),
               status: (typeof row.status === 'string' ? row.status : 'backlog') as TaskStatus,
-              priority: (typeof row.priority === 'string' ? row.priority : 'normal') as TaskPriority,
+              priority: (typeof row.priority === 'string'
+                ? row.priority
+                : 'normal') as TaskPriority,
               stage_id: typeof row.stage_id === 'number' ? row.stage_id : null,
             }));
 
@@ -764,7 +769,11 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
 
           const resolveProjectId = async (): Promise<number | null | 'not_found'> => {
             const rawProjectId = rawArgs.project_id ?? rawArgs.projectId;
-            if (typeof rawProjectId === 'number' && Number.isSafeInteger(rawProjectId) && rawProjectId > 0) {
+            if (
+              typeof rawProjectId === 'number' &&
+              Number.isSafeInteger(rawProjectId) &&
+              rawProjectId > 0
+            ) {
               const proj = await db('project_projects')
                 .where({ id: rawProjectId, company_id: companyId })
                 .first();
@@ -939,11 +948,20 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
 
             let stageId: number | null = null;
             const rawStageId = rawArgs.stage_id ?? rawArgs.stageId;
-            if (typeof rawStageId === 'number' && Number.isSafeInteger(rawStageId) && rawStageId > 0) {
+            if (
+              typeof rawStageId === 'number' &&
+              Number.isSafeInteger(rawStageId) &&
+              rawStageId > 0
+            ) {
               const stage = await db('project_stages')
                 .where({ id: rawStageId, company_id: companyId })
                 .first();
-              if (!stage || (stage.project_id !== null && stage.project_id !== undefined && stage.project_id !== resolvedProjectId)) {
+              if (
+                !stage ||
+                (stage.project_id !== null &&
+                  stage.project_id !== undefined &&
+                  stage.project_id !== resolvedProjectId)
+              ) {
                 return {
                   jsonrpc: '2.0',
                   id,
@@ -974,7 +992,9 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
               typeof rawArgs.code === 'string' && rawArgs.code.trim()
                 ? rawArgs.code.trim()
                 : `TASK-${createHash('sha256')
-                    .update(`${companyId}:${resolvedProjectId}:${title}:${externalRef ?? Date.now()}`)
+                    .update(
+                      `${companyId}:${resolvedProjectId}:${title}:${externalRef ?? Date.now()}`
+                    )
                     .digest('hex')
                     .slice(0, 8)
                     .toUpperCase()}`;
@@ -994,7 +1014,8 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
 
             await db('project_tasks').insert(newTaskRow);
             const createdTask =
-              (await db('project_tasks').where({ company_id: companyId, code }).first()) ?? newTaskRow;
+              (await db('project_tasks').where({ company_id: companyId, code }).first()) ??
+              newTaskRow;
 
             await recordDbAuditLog(options.db, {
               model: 'project.task',
@@ -1021,7 +1042,9 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
             const rawTaskCode = rawArgs.task_code ?? rawArgs.taskCode;
             let task: Record<string, unknown> | undefined;
             if (typeof rawTaskId === 'number' && Number.isSafeInteger(rawTaskId) && rawTaskId > 0) {
-              task = await db('project_tasks').where({ id: rawTaskId, company_id: companyId }).first();
+              task = await db('project_tasks')
+                .where({ id: rawTaskId, company_id: companyId })
+                .first();
             } else if (typeof rawTaskCode === 'string' && rawTaskCode.trim()) {
               task = await db('project_tasks')
                 .where({ code: rawTaskCode.trim(), company_id: companyId })
@@ -1062,17 +1085,25 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
                   jsonrpc: '2.0',
                   id,
                   status: 403,
-                  error: { code: -32003, message: 'Target stage not found or belongs to another company/project' },
+                  error: {
+                    code: -32003,
+                    message: 'Target stage not found or belongs to another company/project',
+                  },
                 };
               }
             }
 
             if (targetStatus === 'in_progress' && !force) {
-              const allTasks = await db('project_tasks').where({ company_id: companyId }).select('*');
+              const allTasks = await db('project_tasks')
+                .where({ company_id: companyId })
+                .select('*');
               const allDeps = await db('project_task_dependencies')
                 .where({ company_id: companyId })
                 .select('*');
-              const graph = buildProjectDependencyGraph(toGraphTasks(allTasks), toGraphDeps(allDeps));
+              const graph = buildProjectDependencyGraph(
+                toGraphTasks(allTasks),
+                toGraphDeps(allDeps)
+              );
               const node = graph.nodes.find((n) => n.id === taskId);
               if (node && node.blocked_by_ids.length > 0) {
                 return {
@@ -1081,7 +1112,8 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
                   status: 409,
                   error: {
                     code: -32009,
-                    message: 'Cannot move blocked task to in_progress while unresolved blocks dependencies exist',
+                    message:
+                      'Cannot move blocked task to in_progress while unresolved blocks dependencies exist',
                     data: { blocked_by_ids: [...node.blocked_by_ids] },
                   },
                 };
@@ -1099,11 +1131,12 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
             if (typeof qb.update === 'function' && Object.keys(updates).length > 0) {
               await qb.update(updates);
             }
-            const updatedTask =
-              (await db('project_tasks').where({ id: taskId, company_id: companyId }).first()) ?? {
-                ...task,
-                ...updates,
-              };
+            const updatedTask = (await db('project_tasks')
+              .where({ id: taskId, company_id: companyId })
+              .first()) ?? {
+              ...task,
+              ...updates,
+            };
 
             await recordDbAuditLog(options.db, {
               model: 'project.task',
@@ -1140,7 +1173,10 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
                 jsonrpc: '2.0',
                 id,
                 status: 400,
-                error: { code: -32602, message: 'Valid positive task_id and depends_on_id are required' },
+                error: {
+                  code: -32602,
+                  message: 'Valid positive task_id and depends_on_id are required',
+                },
               };
             }
 
@@ -1158,7 +1194,12 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
               db('project_tasks').where({ id: dependsOnId, company_id: companyId }).first(),
             ]);
 
-            if (!task || !blocker || task.company_id !== companyId || blocker.company_id !== companyId) {
+            if (
+              !task ||
+              !blocker ||
+              task.company_id !== companyId ||
+              blocker.company_id !== companyId
+            ) {
               return {
                 jsonrpc: '2.0',
                 id,
@@ -1184,7 +1225,9 @@ export function createAiMcpServer(options: AiMcpServerOptions = {}): AiMcpServer
             }
 
             if (kind === 'blocks') {
-              const allTasks = await db('project_tasks').where({ company_id: companyId }).select('*');
+              const allTasks = await db('project_tasks')
+                .where({ company_id: companyId })
+                .select('*');
               const allDeps = await db('project_task_dependencies')
                 .where({ company_id: companyId })
                 .select('*');
@@ -1326,7 +1369,10 @@ export async function handleAiMcpHttp(
   if (!isRecord(parsed) || typeof parsed.method !== 'string') {
     return {
       jsonrpc: '2.0',
-      id: isRecord(parsed) && (typeof parsed.id === 'string' || typeof parsed.id === 'number') ? parsed.id : null,
+      id:
+        isRecord(parsed) && (typeof parsed.id === 'string' || typeof parsed.id === 'number')
+          ? parsed.id
+          : null,
       status: 400,
       error: { code: -32600, message: 'Invalid Request: expected JSON-RPC 2.0 object with method' },
     };

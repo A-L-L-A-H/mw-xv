@@ -139,8 +139,7 @@ function parseStrictIpv4(host: string): readonly [number, number, number, number
 }
 
 function isValidIpv6UlaFd00(rawHost: string): boolean {
-  const host =
-    rawHost.startsWith('[') && rawHost.endsWith(']') ? rawHost.slice(1, -1) : rawHost;
+  const host = rawHost.startsWith('[') && rawHost.endsWith(']') ? rawHost.slice(1, -1) : rawHost;
   if (!host.includes(':') || host.includes('%') || host.includes('.')) {
     return false;
   }

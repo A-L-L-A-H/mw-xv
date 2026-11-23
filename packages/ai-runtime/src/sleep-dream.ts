@@ -4,9 +4,7 @@ import { createRedactor } from './redaction.js';
 export type SleepMemoryStatus = 'active' | 'decayed';
 
 export type NonRemDecayReason =
-  | 'proactive_interference_conflict'
-  | 'stale_low_salience'
-  | 'already_decayed';
+  'proactive_interference_conflict' | 'stale_low_salience' | 'already_decayed';
 
 export interface EpisodicMemoryItem {
   readonly memoryId: string;
@@ -261,17 +259,11 @@ export function runNonRemConsolidation(
   const targetCompanyId = options.companyId.trim();
   const nowMs = parseIsoMs(options.nowIso);
   const maxAgeMs = Math.max(0, options.maxAgeMs ?? DEFAULT_MAX_AGE_MS);
-  const minImportanceBps = clampBps(
-    options.minImportanceBps ?? DEFAULT_MIN_IMPORTANCE_BPS
-  );
-  const minConfidenceBps = clampBps(
-    options.minConfidenceBps ?? DEFAULT_MIN_CONFIDENCE_BPS
-  );
+  const minImportanceBps = clampBps(options.minImportanceBps ?? DEFAULT_MIN_IMPORTANCE_BPS);
+  const minConfidenceBps = clampBps(options.minConfidenceBps ?? DEFAULT_MIN_CONFIDENCE_BPS);
   const maxSummaryItemsPerTopic = Math.max(
     1,
-    Math.floor(
-      options.maxSummaryItemsPerTopic ?? DEFAULT_MAX_SUMMARY_ITEMS_PER_TOPIC
-    )
+    Math.floor(options.maxSummaryItemsPerTopic ?? DEFAULT_MAX_SUMMARY_ITEMS_PER_TOPIC)
   );
 
   let outOfScopeIgnoredCount = 0;
@@ -314,7 +306,13 @@ export function runNonRemConsolidation(
             redactedProvenance
           );
     const lastAccessedAtIso = item.lastAccessedAtIso ?? item.createdAtIso;
-    const tags = [...new Set((item.tags ?? []).map((tag) => redactor.redactString(tag.trim())).filter((tag) => tag.length > 0))].sort();
+    const tags = [
+      ...new Set(
+        (item.tags ?? [])
+          .map((tag) => redactor.redactString(tag.trim()))
+          .filter((tag) => tag.length > 0)
+      ),
+    ].sort();
 
     inScope.push({
       memoryId: item.memoryId,
@@ -383,9 +381,7 @@ export function runNonRemConsolidation(
       });
     }
 
-    const distinctContentHashes = new Set(
-      activeItems.map((item) => item.contentSha256)
-    );
+    const distinctContentHashes = new Set(activeItems.map((item) => item.contentSha256));
     const hasConflict = distinctContentHashes.size > 1;
     const dominantItem = activeItems[0];
     const survivingForTopic: ConsolidatedMemoryRecord[] = [];
@@ -398,8 +394,7 @@ export function runNonRemConsolidation(
         item.contentSha256 !== dominantItem.contentSha256;
       const isStale =
         ageMs > maxAgeMs &&
-        (item.importanceBps < minImportanceBps ||
-          item.retrievalConfidenceBps < minConfidenceBps);
+        (item.importanceBps < minImportanceBps || item.retrievalConfidenceBps < minConfidenceBps);
 
       if (isConflicting) {
         decayedCount += 1;
@@ -414,9 +409,7 @@ export function runNonRemConsolidation(
           createdAtIso: item.createdAtIso,
           lastAccessedAtIso: item.lastAccessedAtIso,
           importanceBps: clampBps(Math.round(item.importanceBps * 0.5)),
-          retrievalConfidenceBps: clampBps(
-            Math.round(item.retrievalConfidenceBps * 0.5)
-          ),
+          retrievalConfidenceBps: clampBps(Math.round(item.retrievalConfidenceBps * 0.5)),
           status: 'decayed',
           decayReason: 'proactive_interference_conflict',
           supersededByMemoryId: dominantItem.memoryId,
@@ -439,9 +432,7 @@ export function runNonRemConsolidation(
           createdAtIso: item.createdAtIso,
           lastAccessedAtIso: item.lastAccessedAtIso,
           importanceBps: clampBps(Math.round(item.importanceBps * 0.7)),
-          retrievalConfidenceBps: clampBps(
-            Math.round(item.retrievalConfidenceBps * 0.7)
-          ),
+          retrievalConfidenceBps: clampBps(Math.round(item.retrievalConfidenceBps * 0.7)),
           status: 'decayed',
           decayReason: 'stale_low_salience',
           reversible: true,
@@ -471,25 +462,14 @@ export function runNonRemConsolidation(
     }
 
     if (survivingForTopic.length > 0) {
-      const selectedForSummary = survivingForTopic.slice(
-        0,
-        maxSummaryItemsPerTopic
-      );
+      const selectedForSummary = survivingForTopic.slice(0, maxSummaryItemsPerTopic);
       const sourceMemoryIds = selectedForSummary.map((entry) => entry.memoryId);
-      const sourceHashes = selectedForSummary.map(
-        (entry) => entry.originalSha256
-      );
-      const uniqueSnippets = [
-        ...new Set(selectedForSummary.map((entry) => entry.content)),
-      ];
-      const summaryText = redactor.redactString(
-        `[${topicKey}] ${uniqueSnippets.join(' | ')}`
-      );
+      const sourceHashes = selectedForSummary.map((entry) => entry.originalSha256);
+      const uniqueSnippets = [...new Set(selectedForSummary.map((entry) => entry.content))];
+      const summaryText = redactor.redactString(`[${topicKey}] ${uniqueSnippets.join(' | ')}`);
       const averageConfidenceBps = clampBps(
-        selectedForSummary.reduce(
-          (sum, entry) => sum + entry.retrievalConfidenceBps,
-          0
-        ) / selectedForSummary.length
+        selectedForSummary.reduce((sum, entry) => sum + entry.retrievalConfidenceBps, 0) /
+          selectedForSummary.length
       );
       const averageImportanceBps = clampBps(
         selectedForSummary.reduce((sum, entry) => sum + entry.importanceBps, 0) /
@@ -566,10 +546,7 @@ export function runRemDreamSelfProbe(
 
     if (!node.verified || node.evidenceCount <= 0 || confidenceBps < 6000) {
       const priorityBps = clampBps(
-        10_000 -
-          confidenceBps +
-          (node.verified ? 0 : 1500) +
-          (node.evidenceCount <= 0 ? 1000 : 0)
+        10_000 - confidenceBps + (node.verified ? 0 : 1500) + (node.evidenceCount <= 0 ? 1000 : 0)
       );
       const probeKey = `assumption::${companyId}::${node.nodeId}`;
       if (!seenProbeKeys.has(probeKey)) {
@@ -601,18 +578,13 @@ export function runRemDreamSelfProbe(
       }
       const skillDomain = normalizeDomain(skill.domain);
       const proficiencyBps = clampBps(skill.proficiencyBps);
-      if (
-        skillDomain !== domain &&
-        (proficiencyBps < 6500 || confidenceBps < 6500)
-      ) {
+      if (skillDomain !== domain && (proficiencyBps < 6500 || confidenceBps < 6500)) {
         const probeKey = `cross::${companyId}::${node.nodeId}::${skill.skillId}`;
         if (!seenProbeKeys.has(probeKey)) {
           seenProbeKeys.add(probeKey);
           weakCrossDomainLinkCount += 1;
           const redactedSkillName = redactor.redactString(skill.name.trim());
-          const priorityBps = clampBps(
-            10_000 - Math.min(proficiencyBps, confidenceBps)
-          );
+          const priorityBps = clampBps(10_000 - Math.min(proficiencyBps, confidenceBps));
           const probeHash = sha256Canonical({
             probeKey,
             domain,
@@ -651,17 +623,12 @@ export function runRemDreamSelfProbe(
       }
       const nodeDomain = normalizeDomain(node.domain);
       const confidenceBps = clampBps(node.confidenceBps);
-      if (
-        nodeDomain !== skillDomain &&
-        (proficiencyBps < 6500 || confidenceBps < 6500)
-      ) {
+      if (nodeDomain !== skillDomain && (proficiencyBps < 6500 || confidenceBps < 6500)) {
         const probeKey = `cross::${companyId}::${node.nodeId}::${skill.skillId}`;
         if (!seenProbeKeys.has(probeKey)) {
           seenProbeKeys.add(probeKey);
           weakCrossDomainLinkCount += 1;
-          const priorityBps = clampBps(
-            10_000 - Math.min(proficiencyBps, confidenceBps)
-          );
+          const priorityBps = clampBps(10_000 - Math.min(proficiencyBps, confidenceBps));
           const probeHash = sha256Canonical({
             probeKey,
             nodeDomain,
@@ -750,9 +717,7 @@ export function reconsolidateMemoryFeedback(
           );
 
     const previousImportanceBps = clampBps(item.importanceBps);
-    const previousRetrievalConfidenceBps = clampBps(
-      item.retrievalConfidenceBps
-    );
+    const previousRetrievalConfidenceBps = clampBps(item.retrievalConfidenceBps);
     let importanceBps = previousImportanceBps;
     let retrievalConfidenceBps = previousRetrievalConfidenceBps;
 
@@ -762,26 +727,19 @@ export function reconsolidateMemoryFeedback(
         Math.min(5000, Math.round(event.weightBps ?? DEFAULT_FEEDBACK_WEIGHT_BPS))
       );
       if (event.outcome === 'hit') {
-        retrievalConfidenceBps = clampBps(
-          retrievalConfidenceBps + Math.round(weight * 0.5)
-        );
+        retrievalConfidenceBps = clampBps(retrievalConfidenceBps + Math.round(weight * 0.5));
         importanceBps = clampBps(importanceBps + Math.round(weight * 0.25));
       } else if (event.outcome === 'miss') {
-        retrievalConfidenceBps = clampBps(
-          retrievalConfidenceBps - Math.round(weight * 0.4)
-        );
+        retrievalConfidenceBps = clampBps(retrievalConfidenceBps - Math.round(weight * 0.4));
         importanceBps = clampBps(importanceBps - Math.round(weight * 0.2));
       } else {
-        retrievalConfidenceBps = clampBps(
-          retrievalConfidenceBps - Math.round(weight * 0.8)
-        );
+        retrievalConfidenceBps = clampBps(retrievalConfidenceBps - Math.round(weight * 0.8));
         importanceBps = clampBps(importanceBps - Math.round(weight * 0.3));
       }
       appliedFeedbackCount += 1;
     }
 
-    const initialStatus: SleepMemoryStatus =
-      item.status === 'decayed' ? 'decayed' : 'active';
+    const initialStatus: SleepMemoryStatus = item.status === 'decayed' ? 'decayed' : 'active';
     const reactivated =
       initialStatus === 'decayed' &&
       events.some((event) => event.outcome === 'hit') &&

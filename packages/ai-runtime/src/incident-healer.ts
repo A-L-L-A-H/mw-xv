@@ -101,7 +101,9 @@ export function synthesizeIncidentHealingProposal(
       occurrenceCount: data.count,
       sampleMessages: data.samples,
     }))
-    .sort((a, b) => b.occurrenceCount - a.occurrenceCount || a.signature.localeCompare(b.signature));
+    .sort(
+      (a, b) => b.occurrenceCount - a.occurrenceCount || a.signature.localeCompare(b.signature)
+    );
 
   const primaryCluster = faultClusters[0] ?? null;
   const causalDivergence =

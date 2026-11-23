@@ -2,10 +2,7 @@ import { createHash } from 'node:crypto';
 import { createRedactor, type RedactionContext } from './redaction.js';
 
 export type SpeculativeBranchDisqualificationReason =
-  | 'proof_gate_v2_failed'
-  | 'scope_not_clean'
-  | 'invalid_test_metrics'
-  | 'invalid_cost_or_latency';
+  'proof_gate_v2_failed' | 'scope_not_clean' | 'invalid_test_metrics' | 'invalid_cost_or_latency';
 
 export interface TrajectoryEventInput {
   readonly stepIndex: number;
@@ -368,9 +365,7 @@ export function selectWinningSpeculativeBranch(
     }
 
     const testPassRateBps =
-      branch.testsTotal === 0
-        ? 0
-        : clampBps((branch.testsPassed / branch.testsTotal) * 10_000);
+      branch.testsTotal === 0 ? 0 : clampBps((branch.testsPassed / branch.testsTotal) * 10_000);
     const qualityScoreBps = clampBps(branch.qualityScoreBps ?? testPassRateBps);
     // Deterministic 70% objective test pass rate + 30% quality score
     const compositeScoreBps = clampBps(testPassRateBps * 0.7 + qualityScoreBps * 0.3);

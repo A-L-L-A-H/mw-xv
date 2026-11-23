@@ -175,7 +175,9 @@ function evaluateSingleObligation(
           target: redactor.redactString(filePath),
           expected: redactor.redactString(expectedHash),
           observed: '<missing>',
-          message: redactor.redactString(`Tracked file ${filePath} is missing from world snapshot.`),
+          message: redactor.redactString(
+            `Tracked file ${filePath} is missing from world snapshot.`
+          ),
         });
       } else if (observedHash !== expectedHash) {
         findings.push({

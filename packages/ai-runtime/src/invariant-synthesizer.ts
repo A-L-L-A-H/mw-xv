@@ -20,9 +20,7 @@ export type ProtectedConstitutionalGate = (typeof PROTECTED_CONSTITUTIONAL_GATES
 export type InvariantSeverity = 'low' | 'medium' | 'high' | 'critical';
 
 export type InvariantRejectionReasonCode =
-  | 'INVALID_INCIDENT_INPUT'
-  | 'PROTECTED_GATE_WEAKENING_FORBIDDEN'
-  | 'AUTOMATED_PROMOTION_FORBIDDEN';
+  'INVALID_INCIDENT_INPUT' | 'PROTECTED_GATE_WEAKENING_FORBIDDEN' | 'AUTOMATED_PROMOTION_FORBIDDEN';
 
 export interface InvariantIncidentInput {
   readonly incidentId: string;
@@ -116,7 +114,10 @@ function detectProtectedGateWeakening(
 
   for (const gate of PROTECTED_CONSTITUTIONAL_GATES) {
     const gateLower = gate.toLowerCase();
-    const pattern = new RegExp(`(?:^|[^a-z0-9-])${gateLower.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(?:$|[^a-z0-9-])`, 'iu');
+    const pattern = new RegExp(
+      `(?:^|[^a-z0-9-])${gateLower.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(?:$|[^a-z0-9-])`,
+      'iu'
+    );
     if (pattern.test(lowerCombined)) {
       blocked.add(gate);
     }
@@ -150,11 +151,11 @@ function buildNodeTestSkeleton(spec: InvariantRuleSpec): string {
     `test('${safeRuleId}: ${safeTitle}', () => {`,
     `  const expectedInvariant = '${safeAssertion}';`,
     `  const observedViolation = '${safeViolation}';`,
-    '  assert.ok(expectedInvariant.length > 0, \'Invariant assertion must be non-empty\');',
+    "  assert.ok(expectedInvariant.length > 0, 'Invariant assertion must be non-empty');",
     '  assert.notStrictEqual(',
     '    observedViolation,',
     '    expectedInvariant,',
-    '    \'Regression guard: observed violation must remain distinct from expected invariant\',',
+    "    'Regression guard: observed violation must remain distinct from expected invariant',",
     '  );',
     '});',
     '',

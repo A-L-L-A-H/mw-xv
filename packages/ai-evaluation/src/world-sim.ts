@@ -99,9 +99,7 @@ export function generateWorldSimScenario(request: WorldSimScenarioRequest): Worl
 
   const expectedSha = deterministicHex(rng, 8);
   const trackedFileHash = deterministicHex(rng, 16);
-  const driftedSha = faults.injectObligationDrift
-    ? deterministicHex(rng, 8)
-    : expectedSha;
+  const driftedSha = faults.injectObligationDrift ? deterministicHex(rng, 8) : expectedSha;
 
   const obligations: readonly MonitorObligationRecord[] = [
     {
@@ -222,13 +220,15 @@ export function generateWorldSimScenario(request: WorldSimScenarioRequest): Worl
       proofGatePassed: !injectDivergence,
       worldModelSurpriseBps: injectDivergence ? 7800 : 350,
       summary: injectDivergence ? 'Environment drift triggered proof gate failure' : 'Clean step',
-      environmentDriftSignals: injectDivergence ? ['mesh_latency_spike', 'node_alpha_degraded'] : [],
+      environmentDriftSignals: injectDivergence
+        ? ['mesh_latency_spike', 'node_alpha_degraded']
+        : [],
     },
   ];
 
   const calibrationSamples: EpistemicPredictionSample[] = [];
   for (let i = 0; i < 10; i += 1) {
-    const p = Number((0.15 + (i * 0.08)).toFixed(2));
+    const p = Number((0.15 + i * 0.08).toFixed(2));
     const clampedP = Math.min(0.95, p);
     const outcome: 0 | 1 = rng() < clampedP ? 1 : 0;
     calibrationSamples.push({
@@ -239,31 +239,32 @@ export function generateWorldSimScenario(request: WorldSimScenarioRequest): Worl
     });
   }
 
-  const incidentLogs: readonly StructuredIncidentLog[] = faults.injectIncidentFaults === false
-    ? [
-        {
-          timestamp: '2026-11-23T00:02:00.000Z',
-          service: 'gateway',
-          level: 'info',
-          message: 'All synthetic probes nominal',
-        },
-      ]
-    : [
-        {
-          timestamp: '2026-11-23T00:02:00.000Z',
-          service: 'gateway',
-          level: 'error',
-          errorCode: 'MESH_TIMEOUT',
-          message: `Mesh timeout after ${Math.round(driftProb * 1000)}ms with token sk-secret-99887766554433221100`,
-        },
-        {
-          timestamp: '2026-11-23T00:02:05.000Z',
-          service: 'gateway',
-          level: 'error',
-          errorCode: 'MESH_TIMEOUT',
-          message: 'Mesh timeout on peer relay node-alpha',
-        },
-      ];
+  const incidentLogs: readonly StructuredIncidentLog[] =
+    faults.injectIncidentFaults === false
+      ? [
+          {
+            timestamp: '2026-11-23T00:02:00.000Z',
+            service: 'gateway',
+            level: 'info',
+            message: 'All synthetic probes nominal',
+          },
+        ]
+      : [
+          {
+            timestamp: '2026-11-23T00:02:00.000Z',
+            service: 'gateway',
+            level: 'error',
+            errorCode: 'MESH_TIMEOUT',
+            message: `Mesh timeout after ${Math.round(driftProb * 1000)}ms with token sk-secret-99887766554433221100`,
+          },
+          {
+            timestamp: '2026-11-23T00:02:05.000Z',
+            service: 'gateway',
+            level: 'error',
+            errorCode: 'MESH_TIMEOUT',
+            message: 'Mesh timeout on peer relay node-alpha',
+          },
+        ];
 
   const basePayload = {
     seed,
@@ -279,9 +280,7 @@ export function generateWorldSimScenario(request: WorldSimScenarioRequest): Worl
     incidentLogs,
   };
 
-  const scenarioSha256 = createHash('sha256')
-    .update(JSON.stringify(basePayload))
-    .digest('hex');
+  const scenarioSha256 = createHash('sha256').update(JSON.stringify(basePayload)).digest('hex');
 
   return {
     ...basePayload,

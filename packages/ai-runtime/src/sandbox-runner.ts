@@ -75,7 +75,10 @@ export function buildEphemeralSandboxManifest(
   const engine: SandboxRuntimeEngine = request.engine ?? 'docker';
   const cpuCores = Math.max(0.25, Math.min(MAX_CPU_CORES, request.cpuCores ?? 1));
   const memoryMb = Math.max(128, Math.min(MAX_MEMORY_MB, Math.floor(request.memoryMb ?? 512)));
-  const timeoutMs = Math.max(1000, Math.min(MAX_TIMEOUT_MS, Math.floor(request.timeoutMs ?? 30_000)));
+  const timeoutMs = Math.max(
+    1000,
+    Math.min(MAX_TIMEOUT_MS, Math.floor(request.timeoutMs ?? 30_000))
+  );
 
   const sanitizedEnvKeys = Object.keys(request.env ?? {})
     .filter((key) => !SENSITIVE_ENV_KEY_REGEX.test(key))
