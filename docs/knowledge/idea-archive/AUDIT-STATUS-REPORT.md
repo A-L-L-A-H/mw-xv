@@ -63,3 +63,13 @@ K0-006 remains binding. No legacy code, dataset, asset, prompt, font, sound, pri
 ## What “complete” means here
 
 This documentation and audit pass is substantially consolidated, but **all audits are not complete** until the missing source access, P0 preservation, rights, restore, per-repository technical, human review and CI/promote gates above are evidenced. This report is the current honest checkpoint, not a claim of total recovery.
+
+## Latest follow-up — 2026-11-23 09:08 UTC
+
+- `dev` HEAD at this snapshot: `3cbe3dab434652e661cac5005715d71fab44fdb4`; `main`: `5dd3da3389cdd4b55ef1a538f0dc46c13918f108`.
+- The exact TaskOS blob was parsed: 636 unique task codes; 468 done, 49 doing, 96 todo, 23 blocked; zero duplicate IDs; zero dangling dependencies; zero missing acceptance criteria; zero missing source references.
+- Roadmap issue sync succeeded on the snapshot (run `45144270287`). 
+- CI run `45144276594` was still in progress: secret scan and dependency audit succeeded, while quality/build, unit, PostgreSQL integration, knowledge, DX and static-analysis jobs remained in progress. Documentation Pages remained pending.
+- The earlier markdown-link failure was traced to one wrong relative path in the repository consolidation report and corrected in commit `65ab52e6e65e8af68253f25f748c065578b8ee94`. The newer exact-SHA quality/build job must confirm that fix.
+- PR #81 remains open and has no approving review. Its current head was `3cbe3d`; it contains 158 changed files, and `main` is 2 commits ahead of the comparison base. The visible PR review state was `COMMENTED`; one CodeQL comment thread remains open. Promotion is not approved.
+- The archive README now indexes the new framework, Library-source and audit-status registers; the Raw README links the verbatim 775-line master prompt; the Creative Visual Bible includes 11 Library-observed caption-only concept leads. No image bytes or private personal note content was copied.
