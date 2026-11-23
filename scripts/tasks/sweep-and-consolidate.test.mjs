@@ -32,7 +32,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
       result.tasks.filter((task) => task.status === status).length,
     ])
   );
-  assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 97, blocked: 22 });
+  assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 96, blocked: 23 });
 
   const sourceCounts = Object.fromEntries(
     [...new Set(result.tasks.map((task) => task.sourceRef.file))]

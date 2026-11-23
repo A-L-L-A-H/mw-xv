@@ -762,9 +762,7 @@ export const AUDIT_TASKS = [
     dependsOn: [
       'AUD-015'
     ],
-    blocks: [
-      'AUD-019'
-    ],
+    blocks: [],
     tags: [
       'ui-catalog',
       'assets',
@@ -841,9 +839,7 @@ export const AUDIT_TASKS = [
     dependsOn: [
       'AUD-015'
     ],
-    blocks: [
-      'AUD-019'
-    ],
+    blocks: [],
     tags: [
       'ui-catalog',
       'scene-lab',
@@ -920,9 +916,7 @@ export const AUDIT_TASKS = [
     dependsOn: [
       'AUD-015'
     ],
-    blocks: [
-      'AUD-019'
-    ],
+    blocks: [],
     tags: [
       'ui-catalog',
       'scene-lab',
@@ -997,14 +991,8 @@ export const AUDIT_TASKS = [
     risk: 'medium',
     effort: 's',
     scores: null,
-    dependsOn: [
-      'AUD-016',
-      'AUD-017',
-      'AUD-018'
-    ],
-    blocks: [
-      'AUD-020'
-    ],
+    dependsOn: [],
+    blocks: [],
     tags: [
       'ui-catalog',
       'scene-lab',
@@ -1064,7 +1052,8 @@ export const AUDIT_TASKS = [
       'packages/assets/manifest.json',
       'packages/assets/licenses.json'
     ],
-    blockedReason: 'Wait for existing GitHub issue #52 (canonical SceneLab scene source) to complete; do not edit SceneLab.tsx before handoff.',
+    blockedReason: 'Canonical SceneLab integration is already owned by existing GitHub issue #53; retain this record for traceability only and do not execute independently. Issue #53 must wait for issue #52.',
+    metadata: { supersededByIssue: 53, executionAllowed: false, externalPrerequisiteIssue: 52 },
     sourceRef: {
       file: 'scripts/tasks/sources/audit-tasks.mjs',
       legacyId: 'AUD-019'
@@ -1085,16 +1074,14 @@ export const AUDIT_TASKS = [
     category: 'architecture',
     type: 'feature',
     priority: 'p2',
-    status: 'todo',
+    status: 'blocked',
     human: false,
     owner: 'ui-catalog',
     assignee: null,
     risk: 'low',
     effort: 's',
     scores: null,
-    dependsOn: [
-      'AUD-019'
-    ],
+    dependsOn: [],
     blocks: [],
     tags: [
       'ui-catalog',
@@ -1141,7 +1128,8 @@ export const AUDIT_TASKS = [
       'apps/ui-catalog/src/SceneLab.tsx',
       'apps/ui-catalog/tests/scene-harness.spec.ts'
     ],
-    blockedReason: null,
+    blockedReason: 'The SceneLab status and missing-metadata tests are already included in existing GitHub issue #53; retain this record for traceability only and do not execute a duplicate task.',
+    metadata: { supersededByIssue: 53, executionAllowed: false },
     sourceRef: {
       file: 'scripts/tasks/sources/audit-tasks.mjs',
       legacyId: 'AUD-020'

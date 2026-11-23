@@ -1,7 +1,7 @@
 {
   "schemaVersion": "2.0.0",
   "format": "moonwitness-tasks/v2",
-  "generatedAt": "2026-11-23T08:22:53.599Z",
+  "generatedAt": "2026-11-23T08:27:02.236Z",
   "projects": [
     {
       "slug": "moonwitness",
@@ -17124,7 +17124,10 @@
         "legacyId": "AUD-015"
       },
       "url": "",
-      "comments": []
+      "comments": [],
+      "metadata": {
+        "parentIssue": 53
+      }
     },
     {
       "code": "AUD-016",
@@ -17149,9 +17152,7 @@
       "dependsOn": [
         "AUD-015"
       ],
-      "blocks": [
-        "AUD-019"
-      ],
+      "blocks": [],
       "tags": [
         "ui-catalog",
         "assets",
@@ -17203,7 +17204,10 @@
         "legacyId": "AUD-016"
       },
       "url": "",
-      "comments": []
+      "comments": [],
+      "metadata": {
+        "parentIssue": 53
+      }
     },
     {
       "code": "AUD-017",
@@ -17228,9 +17232,7 @@
       "dependsOn": [
         "AUD-015"
       ],
-      "blocks": [
-        "AUD-019"
-      ],
+      "blocks": [],
       "tags": [
         "ui-catalog",
         "scene-lab",
@@ -17282,7 +17284,10 @@
         "legacyId": "AUD-017"
       },
       "url": "",
-      "comments": []
+      "comments": [],
+      "metadata": {
+        "parentIssue": 53
+      }
     },
     {
       "code": "AUD-018",
@@ -17307,9 +17312,7 @@
       "dependsOn": [
         "AUD-015"
       ],
-      "blocks": [
-        "AUD-019"
-      ],
+      "blocks": [],
       "tags": [
         "ui-catalog",
         "scene-lab",
@@ -17362,7 +17365,10 @@
         "legacyId": "AUD-018"
       },
       "url": "",
-      "comments": []
+      "comments": [],
+      "metadata": {
+        "parentIssue": 53
+      }
     },
     {
       "code": "AUD-019",
@@ -17384,14 +17390,8 @@
       "risk": "medium",
       "effort": "s",
       "scores": null,
-      "dependsOn": [
-        "AUD-016",
-        "AUD-017",
-        "AUD-018"
-      ],
-      "blocks": [
-        "AUD-020"
-      ],
+      "dependsOn": [],
+      "blocks": [],
       "tags": [
         "ui-catalog",
         "scene-lab",
@@ -17451,13 +17451,18 @@
         "packages/assets/manifest.json",
         "packages/assets/licenses.json"
       ],
-      "blockedReason": "Wait for existing GitHub issue #52 (canonical SceneLab scene source) to complete; do not edit SceneLab.tsx before handoff.",
+      "blockedReason": "Canonical SceneLab integration is already owned by existing GitHub issue #53; retain this record for traceability only and do not execute independently. Issue #53 must wait for issue #52.",
       "sourceRef": {
         "file": "scripts/tasks/sources/audit-tasks.mjs",
         "legacyId": "AUD-019"
       },
       "url": "",
-      "comments": []
+      "comments": [],
+      "metadata": {
+        "supersededByIssue": 53,
+        "executionAllowed": false,
+        "externalPrerequisiteIssue": 52
+      }
     },
     {
       "code": "AUD-020",
@@ -17472,16 +17477,14 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p2",
-      "status": "todo",
+      "status": "blocked",
       "human": false,
       "owner": "ui-catalog",
       "assignee": null,
       "risk": "low",
       "effort": "s",
       "scores": null,
-      "dependsOn": [
-        "AUD-019"
-      ],
+      "dependsOn": [],
       "blocks": [],
       "tags": [
         "ui-catalog",
@@ -17528,13 +17531,17 @@
         "apps/ui-catalog/src/SceneLab.tsx",
         "apps/ui-catalog/tests/scene-harness.spec.ts"
       ],
-      "blockedReason": null,
+      "blockedReason": "The SceneLab status and missing-metadata tests are already included in existing GitHub issue #53; retain this record for traceability only and do not execute a duplicate task.",
       "sourceRef": {
         "file": "scripts/tasks/sources/audit-tasks.mjs",
         "legacyId": "AUD-020"
       },
       "url": "",
-      "comments": []
+      "comments": [],
+      "metadata": {
+        "supersededByIssue": 53,
+        "executionAllowed": false
+      }
     },
     {
       "code": "AUD-021",
