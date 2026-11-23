@@ -67,19 +67,16 @@ test('dashboard KPI cards show current values without fabricated trend percentag
     path: path.join(auditDirectory, 'dashboard-kpi-no-trend-desktop-1440.png'),
     fullPage: true,
   });
-  // The dashboard's "Available Modules" grid grows and shrinks with the model
-  // registry, and live counters plus the audit ledger mutate between runs, so
-  // a raw full-page capture can never be stable. KPI card chrome, layout, and
-  // theme stay under test; volatile values are masked and the capture is
-  // clipped to the masthead region.
+  // The dashboard below the KPI grid is live data: the model registry grid,
+  // worker telemetry, and the audit ledger all change height and values
+  // between runs, so the capture is clipped to the deterministic masthead,
+  // tab bar, and KPI card region. Volatile metric values are masked while
+  // card chrome, layout, and theme stay under test.
   await expect(page).toHaveScreenshot('board-dashboard-admin-desktop-1440.png', {
     animations: 'disabled',
     caret: 'hide',
-    clip: { x: 0, y: 0, width: 1440, height: 1000 },
-    mask: [
-      page.locator('.mw-ui-metric-tile-value'),
-      page.locator('.ink-panel').filter({ hasText: 'System Audit Ledger Events' }),
-    ],
+    clip: { x: 0, y: 0, width: 1440, height: 780 },
+    mask: [page.locator('.mw-ui-metric-tile-value')],
   });
 });
 
@@ -743,7 +740,17 @@ async function writeCatalogScreenshot(
   // file-lock error; assertions still run in every browser.
   if (testInfo.project.name !== 'chromium') return;
   await mkdir(catalogDirectory, { recursive: true });
-  await page.screenshot({ path: path.join(catalogDirectory, fileName), ...options });
+  // Windows intermittently fails the png write with a transient UNKNOWN /
+  // sharing-violation error from antivirus scanning; retry briefly.
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      await page.screenshot({ path: path.join(catalogDirectory, fileName), ...options });
+      return;
+    } catch (error) {
+      if (attempt >= 2) throw error;
+      await page.waitForTimeout(250 * (attempt + 1));
+    }
+  }
 }
 
 test('responsive screen audit: login matches the Enter the Shadow reference', async ({
