@@ -99,12 +99,12 @@ export interface MeshProcessHandle {
 export type MeshSpawnFn = (
   command: string,
   args: readonly string[],
-  options: { readonly shell: false; readonly stdio: 'ignore' | 'pipe' },
+  options: { readonly shell: false; readonly stdio: 'ignore' | 'pipe' }
 ) => MeshProcessHandle;
 
 export type MeshExecFileFn = (
   command: string,
-  args: readonly string[],
+  args: readonly string[]
 ) => Promise<{ readonly stdout: string; readonly stderr: string }>;
 
 export interface MeshClientControllerOptions {
@@ -133,7 +133,7 @@ function assertSafeToken(value: string, label: string): string {
   const trimmed = value.trim();
   if (!trimmed || !SAFE_TOKEN_PATTERN.test(trimmed) || trimmed.startsWith('-')) {
     throw new ValidationError(
-      `${label} must be a non-empty safe token without whitespace, control characters, or leading dashes.`,
+      `${label} must be a non-empty safe token without whitespace, control characters, or leading dashes.`
     );
   }
   return trimmed;
@@ -143,7 +143,7 @@ function assertSafeBootstrapHost(host: string): string {
   const trimmed = host.trim();
   if (!trimmed || !SAFE_HOST_PATTERN.test(trimmed) || trimmed.startsWith('-')) {
     throw new ValidationError(
-      'bootstrapHost must be a valid hostname or IP address without whitespace or leading dashes.',
+      'bootstrapHost must be a valid hostname or IP address without whitespace or leading dashes.'
     );
   }
   return trimmed;
@@ -152,17 +152,16 @@ function assertSafeBootstrapHost(host: string): string {
 function assertPrivateMeshIpValue(ip: string, label: string): string {
   const trimmed = ip.trim();
   if (!isPrivateMeshIp(trimmed)) {
-    throw new AccessDeniedError(
-      `${label} '${trimmed}' is not a private mesh IP address.`,
-      { code: 'access_denied' },
-    );
+    throw new AccessDeniedError(`${label} '${trimmed}' is not a private mesh IP address.`, {
+      code: 'access_denied',
+    });
   }
   return trimmed;
 }
 
 function defaultExecFile(
   command: string,
-  args: readonly string[],
+  args: readonly string[]
 ): Promise<{ readonly stdout: string; readonly stderr: string }> {
   return new Promise((resolve, reject) => {
     execFile(command, [...args], { shell: false, timeout: 5000 }, (error, stdout, stderr) => {
@@ -178,7 +177,7 @@ function defaultExecFile(
 function defaultSpawn(
   command: string,
   args: readonly string[],
-  options: { readonly shell: false; readonly stdio: 'ignore' | 'pipe' },
+  options: { readonly shell: false; readonly stdio: 'ignore' | 'pipe' }
 ): ChildProcess {
   return spawn(command, [...args], {
     shell: options.shell,
@@ -211,11 +210,11 @@ export function redactEasyTierArgs(args: readonly string[]): readonly string[] {
 export function buildEasyTierClientArgs(options: EasyTierClientArgsOptions): string[] {
   const networkName = assertSafeToken(options.networkName, 'networkName');
   const networkSecret = assertSafeToken(options.networkSecret, 'networkSecret');
-  const useDhcp = options.dhcp ?? (options.ipv4 === undefined);
+  const useDhcp = options.dhcp ?? options.ipv4 === undefined;
   const bootstrapHost = assertSafeBootstrapHost(options.bootstrapHost ?? DEFAULT_BOOTSTRAP_HOST);
   const bootstrapPort = assertValidPort(
     options.bootstrapPort ?? DEFAULT_BOOTSTRAP_PORT,
-    'bootstrapPort',
+    'bootstrapPort'
   );
 
   const args: string[] = [];
@@ -233,7 +232,7 @@ export function buildEasyTierClientArgs(options: EasyTierClientArgsOptions): str
     networkSecret,
     '--peers',
     `tcp://${bootstrapHost}:${bootstrapPort}`,
-    `udp://${bootstrapHost}:${bootstrapPort}`,
+    `udp://${bootstrapHost}:${bootstrapPort}`
   );
 
   if (options.hostname !== undefined) {
@@ -253,7 +252,7 @@ export function buildEasyTierExecSpec(
   options: Partial<EasyTierClientArgsOptions> & {
     readonly desktopHomeDir?: string;
     readonly binaryPath?: string;
-  } = {},
+  } = {}
 ): EasyTierExecSpec {
   let networkName = options.networkName;
   let networkSecret = options.networkSecret;
@@ -275,9 +274,10 @@ export function buildEasyTierExecSpec(
     hostname: options.hostname,
   });
 
-  const defaultBinary = process.platform === 'win32'
-    ? path.join(resolveDesktopHomeDir(options.desktopHomeDir), 'bin', 'easytier-core.exe')
-    : 'easytier-core';
+  const defaultBinary =
+    process.platform === 'win32'
+      ? path.join(resolveDesktopHomeDir(options.desktopHomeDir), 'bin', 'easytier-core.exe')
+      : 'easytier-core';
 
   return {
     command: options.binaryPath?.trim() || defaultBinary,
@@ -293,7 +293,7 @@ export function buildEasyTierExecSpec(
  * and redacting secrets in the returned status object.
  */
 export function resolveMeshSyncTarget(
-  meshEnv?: RawMeshEnvBootstrap | MeshSyncTargetInput,
+  meshEnv?: RawMeshEnvBootstrap | MeshSyncTargetInput
 ): MeshSyncTarget {
   const input: MeshSyncTargetInput = meshEnv ?? {};
   let networkName = input.networkName;
@@ -314,18 +314,18 @@ export function resolveMeshSyncTarget(
   const validatedNetworkSecret = assertSafeToken(networkSecret, 'networkSecret');
   const controlPlaneMeshIp = assertPrivateMeshIpValue(
     input.controlPlaneMeshIp ?? DEFAULT_CONTROL_PLANE_MESH_IP,
-    'controlPlaneMeshIp',
+    'controlPlaneMeshIp'
   );
   const controlPlanePort = assertValidPort(
     input.controlPlanePort ?? DEFAULT_CONTROL_PLANE_PORT,
-    'controlPlanePort',
+    'controlPlanePort'
   );
   const apiPort = assertValidPort(input.apiPort ?? DEFAULT_MESH_API_PORT, 'apiPort');
   const boardPort = assertValidPort(input.boardPort ?? DEFAULT_MESH_BOARD_PORT, 'boardPort');
   const bootstrapHost = assertSafeBootstrapHost(input.bootstrapHost ?? DEFAULT_BOOTSTRAP_HOST);
   const bootstrapPort = assertValidPort(
     input.bootstrapPort ?? DEFAULT_BOOTSTRAP_PORT,
-    'bootstrapPort',
+    'bootstrapPort'
   );
 
   const controlPlaneUrl = `http://${controlPlaneMeshIp}:${controlPlanePort}`;
@@ -340,7 +340,8 @@ export function resolveMeshSyncTarget(
     networkName: validatedNetworkName,
     redactedSecret: redactMeshSecret(validatedNetworkSecret),
     subnet: (subnet ?? DEFAULT_MESH_SUBNET).trim(),
-    secretRefPath: secretRefPath ?? path.join(resolveDesktopHomeDir(input.desktopHomeDir), 'mesh.env'),
+    secretRefPath:
+      secretRefPath ?? path.join(resolveDesktopHomeDir(input.desktopHomeDir), 'mesh.env'),
     controlPlaneMeshIp,
     controlPlaneUrl,
     apiUrl,
@@ -361,7 +362,7 @@ interface RawEasyTierPeerRecord {
 
 function parseEasyTierPeersJson(
   stdout: string,
-  ports: { readonly controlPlanePort: number; readonly apiPort: number; readonly boardPort: number },
+  ports: { readonly controlPlanePort: number; readonly apiPort: number; readonly boardPort: number }
 ): DiscoveredMeshPeer[] {
   let parsed: unknown;
   try {
@@ -380,7 +381,7 @@ function parseEasyTierPeersJson(
       continue;
     }
     const rec = entry as RawEasyTierPeerRecord;
-    const rawIp = typeof rec.ipv4 === 'string' ? rec.ipv4.split('/')[0]?.trim() ?? '' : '';
+    const rawIp = typeof rec.ipv4 === 'string' ? (rec.ipv4.split('/')[0]?.trim() ?? '') : '';
     if (!rawIp || !isPrivateMeshIp(rawIp)) {
       continue;
     }
@@ -391,17 +392,21 @@ function parseEasyTierPeersJson(
     assertPrivateMeshEndpoint(apiUrl);
     assertPrivateMeshEndpoint(boardUrl);
 
-    const parsedLat = typeof rec.lat_ms === 'number'
-      ? rec.lat_ms
-      : typeof rec.lat_ms === 'string' && rec.lat_ms.trim() !== '' && Number.isFinite(Number(rec.lat_ms))
-        ? Number(rec.lat_ms)
-        : undefined;
+    const parsedLat =
+      typeof rec.lat_ms === 'number'
+        ? rec.lat_ms
+        : typeof rec.lat_ms === 'string' &&
+            rec.lat_ms.trim() !== '' &&
+            Number.isFinite(Number(rec.lat_ms))
+          ? Number(rec.lat_ms)
+          : undefined;
 
     peers.push({
       ipv4: rawIp,
-      hostname: typeof rec.hostname === 'string' && rec.hostname.trim().length > 0
-        ? rec.hostname.trim()
-        : rawIp,
+      hostname:
+        typeof rec.hostname === 'string' && rec.hostname.trim().length > 0
+          ? rec.hostname.trim()
+          : rawIp,
       cost: typeof rec.cost === 'string' ? rec.cost : undefined,
       latencyMs: parsedLat,
       controlPlaneUrl,
@@ -500,12 +505,12 @@ export class MeshClientController {
   public async discoverPeers(): Promise<readonly DiscoveredMeshPeer[]> {
     const controlPlanePort = assertValidPort(
       this.options.controlPlanePort ?? DEFAULT_CONTROL_PLANE_PORT,
-      'controlPlanePort',
+      'controlPlanePort'
     );
     const apiPort = assertValidPort(this.options.apiPort ?? DEFAULT_MESH_API_PORT, 'apiPort');
     const boardPort = assertValidPort(
       this.options.boardPort ?? DEFAULT_MESH_BOARD_PORT,
-      'boardPort',
+      'boardPort'
     );
 
     const { stdout } = await this.execFileFn(this.resolveCliBinary(), ['-o', 'json', 'peer']);

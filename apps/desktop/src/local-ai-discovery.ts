@@ -130,7 +130,8 @@ function parseOllamaModels(
     if (!id) {
       continue;
     }
-    const sizeBytes = typeof entry.size === 'number' && Number.isFinite(entry.size) ? entry.size : undefined;
+    const sizeBytes =
+      typeof entry.size === 'number' && Number.isFinite(entry.size) ? entry.size : undefined;
     const family =
       isRecord(entry.details) && typeof entry.details.family === 'string'
         ? entry.details.family
@@ -286,7 +287,9 @@ export async function discoverLocalAiProviders(
 ): Promise<LocalAiDiscoveryResult> {
   const providers = options.providers ?? DEFAULT_LOCAL_AI_PROVIDERS;
   const timeoutMs =
-    typeof options.timeoutMs === 'number' && Number.isFinite(options.timeoutMs) && options.timeoutMs > 0
+    typeof options.timeoutMs === 'number' &&
+    Number.isFinite(options.timeoutMs) &&
+    options.timeoutMs > 0
       ? Math.floor(options.timeoutMs)
       : DEFAULT_LOCAL_AI_TIMEOUT_MS;
   const fetchImpl = options.fetchImpl ?? fetch;

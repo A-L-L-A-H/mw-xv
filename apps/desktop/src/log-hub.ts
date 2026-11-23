@@ -65,10 +65,7 @@ const SENSITIVE_PATTERNS: readonly RegExp[] = [
   /(?:api[_-]?key|token|secret|password|passwd|authorization)\s*[:=]\s*["']?([^\s"',;}{]+)["']?/giu,
 ];
 
-export function redactSensitiveText(
-  input: string,
-  knownSecrets: readonly string[] = []
-): string {
+export function redactSensitiveText(input: string, knownSecrets: readonly string[] = []): string {
   let result = input;
   for (const secret of knownSecrets) {
     if (secret.length >= 4) {
@@ -80,9 +77,8 @@ export function redactSensitiveText(
   result = result.replace(SENSITIVE_PATTERNS[1]!, '[REDACTED_KEY]');
   result = result.replace(SENSITIVE_PATTERNS[2]!, '[REDACTED_TOKEN]');
   result = result.replace(SENSITIVE_PATTERNS[3]!, '[REDACTED_JWT]');
-  result = result.replace(
-    SENSITIVE_PATTERNS[4]!,
-    (match, capturedValue: string) => match.replace(capturedValue, '[REDACTED]')
+  result = result.replace(SENSITIVE_PATTERNS[4]!, (match, capturedValue: string) =>
+    match.replace(capturedValue, '[REDACTED]')
   );
 
   return result;
@@ -209,7 +205,8 @@ export class DesktopLogHub {
         return false;
       }
       if (search.length > 0) {
-        const haystack = `${entry.message} ${entry.detail ?? ''} ${entry.source} ${entry.level}`.toLowerCase();
+        const haystack =
+          `${entry.message} ${entry.detail ?? ''} ${entry.source} ${entry.level}`.toLowerCase();
         if (!haystack.includes(search)) return false;
       }
       return true;

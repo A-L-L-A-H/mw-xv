@@ -1,10 +1,6 @@
 import { isIP } from 'node:net';
 import { AccessDeniedError, ValidationError } from '@moonwitness/types';
-import {
-  DesktopRiskGate,
-  redactSensitiveText,
-  redactSensitiveValue,
-} from './risk-gate.js';
+import { DesktopRiskGate, redactSensitiveText, redactSensitiveValue } from './risk-gate.js';
 import type {
   DataClassification,
   DesktopCapabilityGrant,
@@ -73,10 +69,7 @@ export interface VpsComposeControlResult {
   readonly decision: RiskEvaluationDecision;
 }
 
-export type VpsOnboardingFetchFn = (
-  input: string,
-  init?: RequestInit
-) => Promise<Response>;
+export type VpsOnboardingFetchFn = (input: string, init?: RequestInit) => Promise<Response>;
 
 function isAllowedPrivateMeshIPv4(ip: string): boolean {
   if (ip === '127.0.0.1') {
@@ -131,7 +124,9 @@ export function assertVpsMeshEndpoint(endpointUrl: string): URL {
   try {
     parsed = new URL(endpointUrl);
   } catch {
-    throw new ValidationError(`Invalid VPS onboarding URL: ${redactSensitiveText(endpointUrl).text}`);
+    throw new ValidationError(
+      `Invalid VPS onboarding URL: ${redactSensitiveText(endpointUrl).text}`
+    );
   }
 
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
@@ -142,17 +137,15 @@ export function assertVpsMeshEndpoint(endpointUrl: string): URL {
   }
 
   if (parsed.username !== '' || parsed.password !== '') {
-    throw new AccessDeniedError(
-      'VPS onboarding URL must not contain embedded credentials',
-      { code: 'access_denied' }
-    );
+    throw new AccessDeniedError('VPS onboarding URL must not contain embedded credentials', {
+      code: 'access_denied',
+    });
   }
 
   if (parsed.hash !== '') {
-    throw new AccessDeniedError(
-      'VPS onboarding URL must not contain a fragment',
-      { code: 'access_denied' }
-    );
+    throw new AccessDeniedError('VPS onboarding URL must not contain a fragment', {
+      code: 'access_denied',
+    });
   }
 
   if (!isAllowedVpsMeshHost(parsed.hostname)) {
@@ -210,9 +203,7 @@ export class VpsOnboardingClient {
     this.nodeId = config.nodeId.trim();
     this.adminToken = config.adminToken;
     this.controlPlaneUrl = assertVpsMeshEndpoint(config.controlPlaneUrl);
-    this.remoteApiUrl = config.remoteApiUrl
-      ? assertVpsMeshEndpoint(config.remoteApiUrl)
-      : null;
+    this.remoteApiUrl = config.remoteApiUrl ? assertVpsMeshEndpoint(config.remoteApiUrl) : null;
     this.riskGate = options.riskGate;
     this.fetchFn = options.fetchFn ?? ((input, init) => fetch(input, init));
   }

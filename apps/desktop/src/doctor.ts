@@ -87,7 +87,7 @@ function findEasyTierBinary(desktopHomeDir: string | null, explicitPath?: string
 
 function formatSupportReportMarkdown(
   checks: readonly DoctorCheckResult[],
-  generatedAt: string,
+  generatedAt: string
 ): string {
   const lines = [
     '# MoonWitness Desktop Support Report',
@@ -101,7 +101,7 @@ function formatSupportReportMarkdown(
       (check) =>
         `- [${check.status.toUpperCase()}] **${check.id}**: ${redactSensitiveText(check.message).text}${
           check.detail ? ` (${redactSensitiveText(check.detail).text})` : ''
-        }`,
+        }`
     ),
     '',
   ];
@@ -109,7 +109,7 @@ function formatSupportReportMarkdown(
 }
 
 export async function runDesktopDoctor(
-  options: DesktopDoctorOptions,
+  options: DesktopDoctorOptions
 ): Promise<DesktopDoctorReport> {
   const checks: DoctorCheckResult[] = [];
 
@@ -119,9 +119,7 @@ export async function runDesktopDoctor(
     const rows = Array.isArray(raw) ? raw : [];
     const firstRow = rows[0] as Record<string, unknown> | undefined;
     const integrityValue =
-      firstRow && typeof firstRow.integrity_check === 'string'
-        ? firstRow.integrity_check
-        : 'ok';
+      firstRow && typeof firstRow.integrity_check === 'string' ? firstRow.integrity_check : 'ok';
     const isOk = integrityValue.toLowerCase() === 'ok';
     checks.push({
       id: 'sqlite_integrity',
@@ -222,7 +220,7 @@ export async function runDesktopDoctor(
 }
 
 export async function runDesktopDoctorRepair(
-  options: DesktopDoctorOptions,
+  options: DesktopDoctorOptions
 ): Promise<DesktopDoctorRepairResult> {
   const actionsTaken: string[] = [];
   let prunedTempFiles = 0;

@@ -200,7 +200,9 @@ function parseTasksV2Json(sourcePath: string): {
         due_date: rawTask.dueDate ?? rawTask.due_date ?? null,
       },
       dependsOnRefs: Array.isArray(rawTask.dependsOn)
-        ? rawTask.dependsOn.filter((dep: unknown): dep is string => typeof dep === 'string' && dep.trim().length > 0)
+        ? rawTask.dependsOn.filter(
+            (dep: unknown): dep is string => typeof dep === 'string' && dep.trim().length > 0
+          )
         : [],
     });
   }
@@ -445,18 +447,20 @@ export async function importDesktopTasks(
         .first()) as { id: number; code: string } | undefined;
 
       if (existingTask) {
-        await trx('project_tasks').where({ id: existingTask.id }).update({
-          project_id: projectId,
-          stage_id: stageId,
-          title: mapped.title,
-          description: mapped.description ?? null,
-          priority: mapped.priority,
-          status: mapped.status,
-          blocked_reason: mapped.blocked_reason ?? null,
-          due_date: mapped.due_date ?? null,
-          write_uid: userId,
-          write_date: now,
-        });
+        await trx('project_tasks')
+          .where({ id: existingTask.id })
+          .update({
+            project_id: projectId,
+            stage_id: stageId,
+            title: mapped.title,
+            description: mapped.description ?? null,
+            priority: mapped.priority,
+            status: mapped.status,
+            blocked_reason: mapped.blocked_reason ?? null,
+            due_date: mapped.due_date ?? null,
+            write_uid: userId,
+            write_date: now,
+          });
         taskIdByExternalRef.set(item.externalRef, existingTask.id);
         tasksUpdated += 1;
       } else {

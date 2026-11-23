@@ -23,11 +23,7 @@ export interface DesktopUpdateManifest {
 }
 
 export type DesktopUpdateCheckStatus =
-  | 'up-to-date'
-  | 'available'
-  | 'offline'
-  | 'invalid-manifest'
-  | 'invalid-endpoint';
+  'up-to-date' | 'available' | 'offline' | 'invalid-manifest' | 'invalid-endpoint';
 
 export interface DesktopUpdateCheckResult {
   readonly status: DesktopUpdateCheckStatus;
@@ -182,7 +178,8 @@ function verifyManifestMetadata(
   manifest: DesktopUpdateManifest,
   platformKey?: string
 ): { readonly signaturePresent: boolean; readonly sha256Valid: boolean; readonly valid: boolean } {
-  const platformEntry = platformKey && manifest.platforms ? manifest.platforms[platformKey] : undefined;
+  const platformEntry =
+    platformKey && manifest.platforms ? manifest.platforms[platformKey] : undefined;
   const firstPlatformEntry = manifest.platforms ? Object.values(manifest.platforms)[0] : undefined;
   const activeEntry = platformEntry ?? firstPlatformEntry;
 
