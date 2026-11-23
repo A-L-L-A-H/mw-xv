@@ -269,7 +269,7 @@ export function fieldSchema(field: Field): JSONSchema {
   }
   if (field.kind === 'json') {
     return {
-      type: nonNullable ? ['object', 'array'] : ['object', 'array', 'null'],
+      type: nonNullable ? ['object', 'array', 'string'] : ['object', 'array', 'null', 'string'],
       ...(hasStaticDefault ? { default: staticDefault } : {}),
     };
   }
