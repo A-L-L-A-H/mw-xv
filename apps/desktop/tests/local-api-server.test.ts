@@ -509,7 +509,26 @@ describe('LocalApiServer & Desktop Importer', () => {
     });
     expect(vpsOnboardingBlocked.status).toBe(403);
 
-    // 4. Switch to developer mode -> VPS status endpoint unlocks
+    const meshConnectBlocked = await fetch(`${daemon.apiUrl}/api/desktop/mesh/connect`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({}),
+    });
+    expect(meshConnectBlocked.status).toBe(403);
+
+    const meshDisconnectBlocked = await fetch(`${daemon.apiUrl}/api/desktop/mesh/disconnect`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({}),
+    });
+    expect(meshDisconnectBlocked.status).toBe(403);
+
+    const meshPeersBlocked = await fetch(`${daemon.apiUrl}/api/desktop/mesh/peers`, {
+      headers: authHeaders,
+    });
+    expect(meshPeersBlocked.status).toBe(403);
+
+    // 4. Switch to developer mode -> VPS status & mesh client endpoints unlock
     const devSwitch = await fetch(`${daemon.apiUrl}/api/desktop/mode`, {
       method: 'POST',
       headers: authHeaders,
@@ -527,5 +546,17 @@ describe('LocalApiServer & Desktop Importer', () => {
     };
     expect(vpsStatusDevBody.success).toBe(true);
     expect(typeof vpsStatusDevBody.data.nodeId).toBe('string');
+
+    const meshPeersDev = await fetch(`${daemon.apiUrl}/api/desktop/mesh/peers`, {
+      headers: authHeaders,
+    });
+    expect(meshPeersDev.status).toBe(200);
+
+    const meshDisconnectDev = await fetch(`${daemon.apiUrl}/api/desktop/mesh/disconnect`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({}),
+    });
+    expect(meshDisconnectDev.status).toBe(200);
   });
 });

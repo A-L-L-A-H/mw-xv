@@ -105,6 +105,25 @@ export function MeshFleetDrawer() {
     },
   });
 
+  const connectMeshMutation = useMutation({
+    mutationFn: async () => {
+      const response = await client.request<{
+        success: boolean;
+        data: { state: string; dhcp: boolean; networkName: string };
+      }>('/api/desktop/mesh/connect', { method: 'POST', body: {} });
+      return response.data;
+    },
+    onSuccess: async (payload) => {
+      toast.success(`Mesh client ${payload.state} (--dhcp) on ${payload.networkName}.`);
+      await queryClient.invalidateQueries({
+        queryKey: scopedQueryKey(['desktop', 'mesh', 'status']),
+      });
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Unable to connect EasyTier mesh.');
+    },
+  });
+
   const mesh = meshStatusQuery.data;
   const nodes = mesh?.nodes ?? [];
   const totalContainers = nodes.reduce((sum, node) => sum + node.containers.length, 0);
@@ -142,15 +161,26 @@ export function MeshFleetDrawer() {
           </p>
         </div>
 
-        <Button
-          variant="default"
-          size="sm"
-          disabled={bootstrapMutation.isPending}
-          onClick={() => bootstrapMutation.mutate()}
-        >
-          <RefreshIcon className="mr-2 size-4" />
-          {bootstrapMutation.isPending ? 'Initializing...' : 'Initialize / Refresh Mesh'}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={connectMeshMutation.isPending}
+            onClick={() => connectMeshMutation.mutate()}
+          >
+            <SignalIcon className="mr-2 size-4" />
+            {connectMeshMutation.isPending ? 'Connecting...' : 'Connect Mesh (--dhcp)'}
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            disabled={bootstrapMutation.isPending}
+            onClick={() => bootstrapMutation.mutate()}
+          >
+            <RefreshIcon className="mr-2 size-4" />
+            {bootstrapMutation.isPending ? 'Initializing...' : 'Initialize / Refresh Mesh'}
+          </Button>
+        </div>
       </div>
 
       {meshStatusQuery.isLoading ? (

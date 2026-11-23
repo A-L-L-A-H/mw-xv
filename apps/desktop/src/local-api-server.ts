@@ -26,6 +26,7 @@ import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moon
 import { DESKTOP_ADDONS, LocalSidecarController } from './local-sidecar.js';
 import { importDesktopTasks } from './importer.js';
 import { buildVpsJoinCommand, ensureMeshCredentials } from './mesh-autopilot.js';
+import { MeshClientController } from './mesh-client.js';
 import { discoverLocalAiProviders } from './local-ai-discovery.js';
 import {
   createLocalDbBackup,
@@ -1125,6 +1126,10 @@ export async function startLocalApiServer(
     return { success: true, data: buildRedactedMeshPayload() };
   });
 
+  const meshClientController = new MeshClientController({
+    ...(desktopHomeDir && desktopHomeDir !== ':memory:' ? { desktopHomeDir } : {}),
+  });
+
   app.post('/api/desktop/mesh/bootstrap', async (req, reply) => {
     if (!req.auth) {
       return reply.code(401).send({ success: false, error: 'Authentication required' });
@@ -1133,6 +1138,43 @@ export async function startLocalApiServer(
       return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
     }
     return { success: true, data: buildRedactedMeshPayload() };
+  });
+
+  app.post('/api/desktop/mesh/connect', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const status = meshClientController.start();
+    return { success: true, data: status };
+  });
+
+  app.post('/api/desktop/mesh/disconnect', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const status = meshClientController.stop();
+    return { success: true, data: status };
+  });
+
+  app.get('/api/desktop/mesh/peers', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    try {
+      const peers = await meshClientController.discoverPeers();
+      return { success: true, data: { status: meshClientController.getStatus(), peers } };
+    } catch {
+      return { success: true, data: { status: meshClientController.getStatus(), peers: [] } };
+    }
   });
 
   app.post('/api/desktop/projects/import-taskos', async (req, reply) => {
@@ -1536,6 +1578,7 @@ export async function startLocalApiServer(
   const stop = async (): Promise<void> => {
     if (stopped) return;
     stopped = true;
+    meshClientController.stop();
     await app.close();
   };
 
