@@ -918,9 +918,9 @@
 .auth-shadow {
   --auth-ink: var(--mw-ink-black);
   --auth-paper: var(--mw-paper-cream);
-  --auth-input-border: var(--auth-input-border);
-  --auth-input-surface: var(--auth-input-surface);
-  --auth-input-placeholder: var(--auth-input-placeholder);
+  --auth-input-border: var(--mw-night-outline);
+  --auth-input-surface: var(--mw-night-soft);
+  --auth-input-placeholder: var(--mw-paper-muted);
   position: relative;
   display: grid;
   min-height: 100dvh;

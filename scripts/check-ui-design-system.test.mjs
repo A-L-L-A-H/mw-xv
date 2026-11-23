@@ -86,6 +86,22 @@ test('token references require a static definition, even when an inline fallback
   );
 });
 
+test('self-referential token aliases are rejected but fallback defaults are allowed', () => {
+  const result = auditUiSources(
+    sourceFiles([
+      [
+        'apps/board/src/index.css',
+        '.auth-card { --auth-border: var(--auth-border); --auth-surface: var(--auth-surface, #fff); color: var(--auth-surface); }',
+      ],
+    ]),
+    manifest
+  );
+  assert.deepEqual(
+    result.findings.filter(({ rule }) => rule === 'cyclic-token').map(({ evidence }) => evidence),
+    ['--auth-border: var(--auth-border)']
+  );
+});
+
 test('composite shadow tokens cannot be embedded in a color slot', () => {
   const { findings } = auditUiSources(
     sourceFiles([

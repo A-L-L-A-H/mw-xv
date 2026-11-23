@@ -257,6 +257,16 @@ export function auditUiSources(files, uiManifest) {
       const evidence = `${property}: ${value}`;
       if (property.startsWith('--')) definitions.add(property);
       reference(value, valueOffset);
+      const selfReference = /^\s*var\s*\(\s*(--[\w-]+)\s*\)\s*$/.exec(maskCss(value));
+      if (property.startsWith('--') && selfReference?.[1] === property) {
+        add(
+          file,
+          offset,
+          'cyclic-token',
+          'Custom property references itself without a fallback; use a concrete value or a var() fallback.',
+          evidence
+        );
+      }
       if (property.startsWith('--mw-') && !isUiFile(file) && literalSharedValue(value)) {
         add(
           file,
