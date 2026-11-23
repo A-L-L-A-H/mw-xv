@@ -240,5 +240,5 @@ jobs:
         run: pnpm install --frozen-lockfile --no-runtime
       - name: Install Playwright browsers
         run: pnpm exec playwright install chromium
-      - name: Run moonwitness-dx full test suite (dx:test)
-        run: pnpm dx:test
+      - name: Run MoonWitness Desktop & MCP test suite (desktop:test)
+        run: pnpm desktop:build && pnpm desktop:test

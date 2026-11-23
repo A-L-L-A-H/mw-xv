@@ -87,8 +87,22 @@ export {
   parseDesktopCliArgs,
   startDesktopSidecarDaemon,
   type DesktopCliOptions,
+  type DesktopCliSubcommand,
   type DesktopSidecarDaemonHandle,
 } from './cli.js';
+export {
+  ensureLocalWorkspaceBootstrap,
+  startLocalApiServer,
+  type LocalApiServerHandle,
+  type LocalApiServerOptions,
+  type LocalAuthContext,
+  type LocalWorkspaceBootstrapResult,
+} from './local-api-server.js';
+export {
+  importDesktopTasks,
+  type DesktopImportOptions,
+  type DesktopImportSummary,
+} from './importer.js';
 export {
   executeProjectTaskInSandbox,
   type AutonomousTaskExecutionOptions,

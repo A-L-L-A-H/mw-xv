@@ -155,3 +155,14 @@ Every native capability exposed by `DesktopCapabilityBridge` (`window.__MW_DESKT
   - Requires bundling/launching the Node.js `22.x` harness sidecar alongside Tauri v2 (`apps/desktop/tauri.conf.json`) and testing `better-sqlite3` <-> `pg` serialization parity on every `@moonwitness/orm-ai` change.
   - Adds local IPC & OS-containment security surface (`DesktopCapabilityBridge`, worktrees, PTY, stdio MCP) requiring dedicated adversarial tests (`DSK-10`).
 - **Review Triggers:** Revisit this ADR if multi-device CRDT collaborative editing on local SQLite rows is required beyond outbox event reconciliation, if Tauri IPC marshaling reveals throughput bottlenecks for high-frequency PTY streams, or if A2A peer-agent desktop federation is proposed (requires separate A2A ADR).
+
+---
+
+## Consolidation Addendum (2026-11-23): Pure Offline Desktop & `apps/todo` Retirement
+
+To eliminate the parallel Rust/HTML task app (`apps/todo`) and legacy wrapper (`scripts/dx.mjs`) while enabling zero-dependency pure-offline desktop execution:
+
+1. **Canonical MCP Project Tools (`@moonwitness/ai-mcp`):** Added 6 canonical Kanban/Project tools (`project.list_projects`, `project.list_tasks`, `project.next_task`, `project.create_task`, `project.move_task`, `project.add_dependency`) backed by `@moonwitness/orm-project` (`buildProjectDependencyGraph`) plus `serveAiMcpStdio` and `handleAiMcpHttp` transports.
+2. **Loopback Local API Server (`apps/desktop/src/local-api-server.ts`):** The Node.js desktop sidecar serves a loopback-only Fastify 5 adapter (`127.0.0.1:4242`) directly over `~/.moonwitness/local.db` (`DESKTOP_ADDONS`), mounting offline `/auth/*`, `/api/app/bootstrap`, generic CRUD, INV-014 `projectHttpPlugin` / `workflowHttpPlugin`, token-gated `POST /_desktop/rpc`, and Streamable HTTP `POST /mcp`.
+3. **Thin Static Board Bundle (`apps/desktop/desktop-web/`):** Tauri v2 embeds a thin Vite static build (`apps/desktop/dist-board/`) that imports `apps/board` pages directly without duplicating UI components or requiring `apps/api` (port 3000) or `next dev` (port 5173) at runtime.
+4. **Legacy Retirement:** `apps/todo/` and `scripts/dx.mjs` are deleted; legacy `moonwitness-tasks/v2` JSON and `board.db` SQLite data can be imported idempotently via `node apps/desktop/dist/cli.js import <path>`.
