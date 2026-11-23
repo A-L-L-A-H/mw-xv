@@ -34,8 +34,7 @@ export async function probeCloudTargetsHealth(
   options: ProbeCloudTargetsHealthOptions = {}
 ): Promise<ProbeCloudTargetsHealthResult> {
   const resolvedToken =
-    options.adminToken ??
-    resolveControlPlaneToken({ jwtSecret: options.jwtSecret });
+    options.adminToken ?? resolveControlPlaneToken({ jwtSecret: options.jwtSecret });
   const timeoutMs = options.timeoutMs ?? DEFAULT_HEALTH_TIMEOUT_MS;
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
 
@@ -70,16 +69,23 @@ export async function probeCloudTargetsHealth(
     }
 
     if (target.health_status !== resolvedStatus) {
-      await CloudDeploymentTarget.query().findById(target.id).patch({ health_status: resolvedStatus });
+      await CloudDeploymentTarget.query()
+        .findById(target.id)
+        .patch({ health_status: resolvedStatus });
     }
 
     switch (resolvedStatus) {
-      case 'healthy': healthy += 1; break;
-      case 'degraded': degraded += 1; break;
-      default: offline += 1; break;
+      case 'healthy':
+        healthy += 1;
+        break;
+      case 'degraded':
+        degraded += 1;
+        break;
+      default:
+        offline += 1;
+        break;
     }
   }
 
   return { probed: targets.length, healthy, degraded, offline };
 }
-

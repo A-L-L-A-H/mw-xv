@@ -155,7 +155,9 @@ export function calculateTenantInvoice(input: InvoiceCalculationInput): BillingI
     },
   ];
 
-  const overageContainerHours = Math.ceil(Math.max(0, containerHours - pricing.includedContainerHours));
+  const overageContainerHours = Math.ceil(
+    Math.max(0, containerHours - pricing.includedContainerHours)
+  );
   if (overageContainerHours > 0) {
     lineItems.push({
       code: 'overage_container_hours',
@@ -225,11 +227,7 @@ export function calculateTenantInvoice(input: InvoiceCalculationInput): BillingI
 }
 
 export type BillingLifecycleState =
-  | 'active'
-  | 'soft_warning'
-  | 'grace_period'
-  | 'hard_suspended'
-  | 'canceled';
+  'active' | 'soft_warning' | 'grace_period' | 'hard_suspended' | 'canceled';
 
 export interface BillingLifecycleInput {
   readonly tenantId: string;
@@ -256,11 +254,12 @@ export interface BillingLifecycleTransition {
 const DEFAULT_SOFT_WARNING_PERCENT = 80;
 const DEFAULT_GRACE_PERIOD_DAYS = 7;
 
-export function evaluateBillingLifecycle(
-  input: BillingLifecycleInput
-): BillingLifecycleTransition {
+export function evaluateBillingLifecycle(input: BillingLifecycleInput): BillingLifecycleTransition {
   const softWarningPercent = input.softWarningThresholdPercent ?? DEFAULT_SOFT_WARNING_PERCENT;
-  const gracePeriodDays = Math.max(1, Math.floor(input.gracePeriodDays ?? DEFAULT_GRACE_PERIOD_DAYS));
+  const gracePeriodDays = Math.max(
+    1,
+    Math.floor(input.gracePeriodDays ?? DEFAULT_GRACE_PERIOD_DAYS)
+  );
   const daysPastDue = Math.max(0, Math.floor(input.daysPastDue));
 
   let state: BillingLifecycleState;
@@ -343,7 +342,10 @@ export function verifyBillingWebhookSignature(
     return { valid: false, reason: 'Webhook secret is empty' };
   }
 
-  const normalizedSig = input.signatureHex.trim().toLowerCase().replace(/^sha256=/u, '');
+  const normalizedSig = input.signatureHex
+    .trim()
+    .toLowerCase()
+    .replace(/^sha256=/u, '');
   if (!/^[0-9a-f]{64}$/u.test(normalizedSig)) {
     return { valid: false, reason: 'Signature is not a valid 64-char hex SHA-256 digest' };
   }
@@ -371,9 +373,7 @@ export function verifyBillingWebhookSignature(
 }
 
 export type BillingWebhookEventType =
-  | 'invoice.paid'
-  | 'invoice.payment_failed'
-  | 'subscription.canceled';
+  'invoice.paid' | 'invoice.payment_failed' | 'subscription.canceled';
 
 export interface BillingWebhookEvent {
   readonly eventId: string;

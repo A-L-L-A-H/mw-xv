@@ -30,7 +30,16 @@ export const views = [
   defineView(CloudServer, {
     title: 'Cloud Servers',
     list: {
-      columns: ['name', 'provider', 'ip_address', 'cpu_cores', 'ram_gb', 'disk_gb', 'status', 'subscription'],
+      columns: [
+        'name',
+        'provider',
+        'ip_address',
+        'cpu_cores',
+        'ram_gb',
+        'disk_gb',
+        'status',
+        'subscription',
+      ],
       decorations: [
         { color: 'success', domain: [['status', '=', 'active']] },
         { color: 'warning', domain: [['status', '=', 'maintenance']] },
@@ -43,12 +52,30 @@ export const views = [
         {
           title: 'Compute Node',
           columns: 2,
-          fields: ['company', 'provider', 'name', 'server_name', 'ip_address', 'provider_instance_id', 'status'],
+          fields: [
+            'company',
+            'provider',
+            'name',
+            'server_name',
+            'ip_address',
+            'provider_instance_id',
+            'status',
+          ],
         },
         {
           title: 'Capacity & Commercials',
           columns: 2,
-          fields: ['cpu_cores', 'ram_gb', 'disk_gb', 'os', 'partner', 'project', 'subscription', 'monthly_price_minor', 'currency'],
+          fields: [
+            'cpu_cores',
+            'ram_gb',
+            'disk_gb',
+            'os',
+            'partner',
+            'project',
+            'subscription',
+            'monthly_price_minor',
+            'currency',
+          ],
         },
       ],
     },
@@ -62,7 +89,17 @@ export const views = [
         {
           title: 'Target Environment',
           columns: 2,
-          fields: ['company', 'name', 'environment', 'server', 'project', 'docker_host', 'port', 'api_url', 'is_active'],
+          fields: [
+            'company',
+            'name',
+            'environment',
+            'server',
+            'project',
+            'docker_host',
+            'port',
+            'api_url',
+            'is_active',
+          ],
         },
       ],
     },
@@ -71,19 +108,47 @@ export const views = [
   defineView(CloudApp, {
     title: 'Cloud Applications',
     list: {
-      columns: ['name', 'image', 'image_tag', 'domain', 'deployment_target', 'project', 'subscription', 'is_active'],
+      columns: [
+        'name',
+        'image',
+        'image_tag',
+        'domain',
+        'deployment_target',
+        'project',
+        'subscription',
+        'is_active',
+      ],
     },
     form: {
       sections: [
         {
           title: 'Application & Commercial Ownership',
           columns: 2,
-          fields: ['company', 'name', 'deployment_target', 'partner', 'project', 'subscription', 'monthly_price_minor', 'currency', 'is_active'],
+          fields: [
+            'company',
+            'name',
+            'deployment_target',
+            'partner',
+            'project',
+            'subscription',
+            'monthly_price_minor',
+            'currency',
+            'is_active',
+          ],
         },
         {
           title: 'Container & Routing',
           columns: 2,
-          fields: ['image', 'image_tag', 'port', 'host_port', 'domain', 'health_check_url', 'volumes', 'env_vars'],
+          fields: [
+            'image',
+            'image_tag',
+            'port',
+            'host_port',
+            'domain',
+            'health_check_url',
+            'volumes',
+            'env_vars',
+          ],
         },
         { title: 'Description', fields: ['description'] },
       ],
@@ -93,7 +158,16 @@ export const views = [
   defineView(CloudDeployment, {
     title: 'Deployments',
     list: {
-      columns: ['app', 'version', 'image_tag', 'status', 'trigger', 'container_id', 'started_at', 'completed_at'],
+      columns: [
+        'app',
+        'version',
+        'image_tag',
+        'status',
+        'trigger',
+        'container_id',
+        'started_at',
+        'completed_at',
+      ],
       decorations: [
         { color: 'success', domain: [['status', '=', 'running']] },
         { color: 'warning', domain: [['status', '=', 'building']] },
@@ -106,7 +180,17 @@ export const views = [
         {
           title: 'Execution',
           columns: 2,
-          fields: ['company', 'app', 'version', 'image_tag', 'status', 'trigger', 'container_id', 'started_at', 'completed_at'],
+          fields: [
+            'company',
+            'app',
+            'version',
+            'image_tag',
+            'status',
+            'trigger',
+            'container_id',
+            'started_at',
+            'completed_at',
+          ],
         },
         { title: 'Output', fields: ['log', 'error_message'] },
       ],

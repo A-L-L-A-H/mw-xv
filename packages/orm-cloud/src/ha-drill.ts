@@ -123,7 +123,9 @@ export async function runMeshHaFailoverDrill(
     ...(input.minStandbyHeadroomMb !== undefined
       ? { minStandbyHeadroomMb: input.minStandbyHeadroomMb }
       : {}),
-    ...(input.maxCpuLoadPercent !== undefined ? { maxCpuLoadPercent: input.maxCpuLoadPercent } : {}),
+    ...(input.maxCpuLoadPercent !== undefined
+      ? { maxCpuLoadPercent: input.maxCpuLoadPercent }
+      : {}),
   });
 
   const deployActions = failoverPlan.actions.filter((a) => a.kind === 'failover_deploy');
@@ -207,7 +209,9 @@ export async function runMeshHaFailoverDrill(
     ...(input.minStandbyHeadroomMb !== undefined
       ? { minStandbyHeadroomMb: input.minStandbyHeadroomMb }
       : {}),
-    ...(input.maxCpuLoadPercent !== undefined ? { maxCpuLoadPercent: input.maxCpuLoadPercent } : {}),
+    ...(input.maxCpuLoadPercent !== undefined
+      ? { maxCpuLoadPercent: input.maxCpuLoadPercent }
+      : {}),
   });
 
   // Split-brain check: after failed node rejoins, zero deployments should flap or have dual primaries
@@ -237,8 +241,7 @@ export async function runMeshHaFailoverDrill(
     rtoMet: totalRtoMs <= rtoTargetMs,
   };
 
-  const passed =
-    phases.every((p) => p.passed) && !splitBrainDetected && rtoMetrics.rtoMet;
+  const passed = phases.every((p) => p.passed) && !splitBrainDetected && rtoMetrics.rtoMet;
 
   const canonical = {
     drillId: input.drillId,

@@ -1,7 +1,10 @@
 import { CloudApp, CloudDeploymentTarget, CloudProvider, CloudServer } from './models/index.js';
 
 function hclIdent(raw: string): string {
-  const normalized = raw.toLowerCase().replace(/[^a-z0-9_]+/gu, '_').replace(/^_+|_+$/gu, '');
+  const normalized = raw
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/gu, '_')
+    .replace(/^_+|_+$/gu, '');
   return normalized || 'resource';
 }
 
@@ -65,12 +68,7 @@ export async function exportCloudTerraformHcl(companyId: number): Promise<string
         `  name  = ${hclString(app.name)}`,
         `  image = ${hclString(`${app.image}:${app.image_tag ?? 'latest'}`)}`,
         ...(app.port && app.host_port
-          ? [
-              '  ports {',
-              `    internal = ${app.port}`,
-              `    external = ${app.host_port}`,
-              '  }',
-            ]
+          ? ['  ports {', `    internal = ${app.port}`, `    external = ${app.host_port}`, '  }']
           : []),
         '}',
         ''

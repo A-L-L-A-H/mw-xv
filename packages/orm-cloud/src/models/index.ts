@@ -11,7 +11,10 @@ export const CloudProvider = defineModel('cloud.provider', {
   table: 'cloud_providers',
   order: 'name asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
     name: fields.string({ required: true, label: 'Provider Name' }),
     code: fields.string({ required: true, unique: true, label: 'Code' }),
     type: fields.enum(['docker_agent', 'coolify', 'gcp', 'vps_ssh'], {
@@ -31,14 +34,29 @@ export const CloudServer = defineModel('cloud.server', {
   table: 'cloud_servers',
   order: 'name asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
-    provider: fields.belongsTo(modelRef(() => CloudProvider), {
-      required: true,
-      label: 'Cloud Provider',
-    }),
-    partner: fields.belongsTo(modelRef(() => Partner), { label: 'Customer' }),
-    project: fields.belongsTo(modelRef(() => Project), { label: 'Project' }),
-    subscription: fields.belongsTo(modelRef(() => Subscription), { label: 'Subscription' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
+    provider: fields.belongsTo(
+      modelRef(() => CloudProvider),
+      {
+        required: true,
+        label: 'Cloud Provider',
+      }
+    ),
+    partner: fields.belongsTo(
+      modelRef(() => Partner),
+      { label: 'Customer' }
+    ),
+    project: fields.belongsTo(
+      modelRef(() => Project),
+      { label: 'Project' }
+    ),
+    subscription: fields.belongsTo(
+      modelRef(() => Subscription),
+      { label: 'Subscription' }
+    ),
     name: fields.string({ required: true, unique: true, label: 'Name' }),
     server_name: fields.string({ label: 'Hostname' }),
     ip_address: fields.string({ label: 'Public IP' }),
@@ -64,9 +82,18 @@ export const CloudDeploymentTarget = defineModel('cloud.deployment_target', {
   table: 'cloud_deployment_targets',
   order: 'name asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
-    server: fields.belongsTo(modelRef(() => CloudServer), { label: 'Server' }),
-    project: fields.belongsTo(modelRef(() => Project), { label: 'Project' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
+    server: fields.belongsTo(
+      modelRef(() => CloudServer),
+      { label: 'Server' }
+    ),
+    project: fields.belongsTo(
+      modelRef(() => Project),
+      { label: 'Project' }
+    ),
     name: fields.string({ required: true, unique: true, label: 'Target Name' }),
     environment: fields.enum(['production', 'staging', 'development'], {
       required: true,
@@ -91,14 +118,29 @@ export const CloudApp = defineModel('cloud.app', {
   table: 'cloud_apps',
   order: 'name asc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
-    deployment_target: fields.belongsTo(modelRef(() => CloudDeploymentTarget), {
-      required: true,
-      label: 'Deployment Target',
-    }),
-    partner: fields.belongsTo(modelRef(() => Partner), { label: 'Customer' }),
-    project: fields.belongsTo(modelRef(() => Project), { label: 'Project' }),
-    subscription: fields.belongsTo(modelRef(() => Subscription), { label: 'Subscription' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
+    deployment_target: fields.belongsTo(
+      modelRef(() => CloudDeploymentTarget),
+      {
+        required: true,
+        label: 'Deployment Target',
+      }
+    ),
+    partner: fields.belongsTo(
+      modelRef(() => Partner),
+      { label: 'Customer' }
+    ),
+    project: fields.belongsTo(
+      modelRef(() => Project),
+      { label: 'Project' }
+    ),
+    subscription: fields.belongsTo(
+      modelRef(() => Subscription),
+      { label: 'Subscription' }
+    ),
     name: fields.string({ required: true, unique: true, label: 'App Name' }),
     description: fields.text({ label: 'Description' }),
     image: fields.string({ required: true, label: 'Container Image' }),
@@ -120,8 +162,14 @@ export const CloudDeployment = defineModel('cloud.deployment', {
   table: 'cloud_deployments',
   order: 'started_at desc, id desc',
   fields: {
-    company: fields.belongsTo(modelRef(() => Company), { required: true, label: 'Company' }),
-    app: fields.belongsTo(modelRef(() => CloudApp), { required: true, label: 'App' }),
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true, label: 'Company' }
+    ),
+    app: fields.belongsTo(
+      modelRef(() => CloudApp),
+      { required: true, label: 'App' }
+    ),
     version: fields.string({ label: 'Version' }),
     image_tag: fields.string({ label: 'Image Tag' }),
     status: fields.enum(['pending', 'building', 'running', 'failed', 'stopped'], {
