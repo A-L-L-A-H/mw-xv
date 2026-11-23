@@ -34,3 +34,15 @@ export {
   type RevenueMetricsResult,
   type CohortRetentionResult,
 } from './revenue-engine.js';
+export {
+  SUBSCRIPTION_SEED_VERSION,
+  buildSubscriptionInitialSeed,
+  seedSubscriptionInitialData,
+  type SubscriptionPlanSeed,
+  type SubscriptionContractSeed,
+  type SubscriptionInvoiceLineSeed,
+  type SubscriptionTagLinkSeed,
+  type SubscriptionInitialSeedBundle,
+  type SubscriptionSeedExecutionResult,
+  type SeedSubscriptionInitialDataOptions,
+} from './seed.js';
