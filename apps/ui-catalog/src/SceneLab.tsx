@@ -19,8 +19,11 @@ import fallbackHeroDesktop from '@moonwitness/assets/illustrations/home-hero-des
 import fallbackHeroMobile from '@moonwitness/assets/illustrations/home-hero-mobile.webp';
 import moonCitySceneBundle from '@moonwitness/assets/scenes/moon-city-scene.json';
 
-const HERO_SCENE = moonCitySceneBundle.scenes.find((scene) => scene.id === 'moon-city-hero');
-if (!HERO_SCENE) throw new Error('Canonical Moon City hero scene is missing');
+const HERO_SCENE = (() => {
+  const scene = moonCitySceneBundle.scenes.find((entry) => entry.id === 'moon-city-hero');
+  if (!scene) throw new Error('Canonical Moon City hero scene is missing');
+  return scene;
+})();
 
 const SCENE_LAYER_SOURCES: Record<string, string> = {
   'environments/moon-city-sky.svg': skyUrl,
