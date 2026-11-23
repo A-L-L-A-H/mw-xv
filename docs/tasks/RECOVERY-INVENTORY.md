@@ -22,6 +22,20 @@ Task codes are unique and every record has a `sourceRef.file`, but the 861 `todo
 
 Do not run `--write` against this populated registry. Export the 627-record candidate outside the worktree, review the 1,358-to-627 reconciliation, preserve the previous snapshot, and only then consider an explicit canonical migration. CI must never write to `docs/tasks/tasks.json`.
 
+## Exact legacy TODO identity reconciliation — 2026-11-23
+
+A direct blob read plus a line-by-line parse of the archived checklist proves the complete 861-record `todo.md` subset is reconciled by stable task code:
+
+- Legacy registry blob: `d56499936761dcc062704d06588ee2679fd1aae2` (`docs/tasks/tasks.json` at the pre-closeout source tree).
+- Archived checklist blob: `f29ec364530195484f668287c5616bf91984554f` (`docs/archive/todos/todo.md`).
+- Legacy rows with `sourceRef.file === "todo.md"`: **861** (854 `done`, 7 `todo`, 0 `doing`).
+- Archived checklist rows: **861** (854 checked, 7 unchecked).
+- Checked archive IDs and the 854 legacy `done` IDs are identical; unchecked archive IDs and the 7 legacy `todo` IDs are identical. Both set comparisons have **zero missing and zero extra IDs**.
+- All seven unchecked IDs are retained by the source-backed candidate as `blocked` pending owner re-triage:
+  `MW-CFG-003.3`, `MW-CICD-002`, `MW-CICD-002.3`, `MW-CICD-004`, `MW-CICD-004.2`, `MW-CICD-004.3`, `MW-DOC-004.3`.
+
+This resolves the old root-pointer provenance for that 861-record subset: 854 completed entries remain in the archived historical checklist; seven open entries are retained as blocked work. This does not delete the legacy snapshot and does not itself approve the canonical migration. A regression assertion covering this exact identity mapping has been added to `scripts/tasks/sweep-and-consolidate.test.mjs`; its final exact-SHA hosted execution is still pending.
+
 ## Canonical ownership target
 
 After the initial, reviewed migration, `docs/tasks/tasks.json` is the only canonical task lifecycle registry for this repository.
