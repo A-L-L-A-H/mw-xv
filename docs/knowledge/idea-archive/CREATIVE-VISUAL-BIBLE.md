@@ -62,6 +62,26 @@ Source: prior user context; exact original prompt export not available here.
 | VIS-0005 | ROCKSOUL metal / absurd metal poster family | Per-brief | User concept family; individual prompts/assets not fully inventoried |
 | VIS-0006 | Artwork-first production pipeline | PNG / WebP / SVG as appropriate | Existing target proposal: MW-XV Issue #19 |
 
+## 2A. Library-observed artwork concepts — caption-only references
+
+The following concepts were found through Library image descriptions / captions during the 2026-11-23 source inventory. They are retained as *discovery labels*, not exact prompt wording, source-authenticated artwork titles, approved canon or permission to publish. The original prompt/revision chain is not fully recovered.
+
+| Visual lead | Observed description / title | Evidence status | Reuse boundary |
+|---|---|---|---|
+| VIS-LIB-001 | **ROBINHUD INDONESIA** | Library caption / source image observed | Preserve label only; do not infer a real organization, character identity or campaign approval |
+| VIS-LIB-002 | **I WANT TO SPLIT THE MOON** | Library caption / poster concept | Creative metaphor; no literal scientific or religious claim |
+| VIS-LIB-003 | **RockSoul: The Codex of Balance** | Library caption / visual concept | Related to Memory RED + Ruhani BLUE = Nature GREEN motif; not the same as RGBL method |
+| VIS-LIB-004 | **Janji Allah: Heroes of Spear & Salt** | Library caption / artwork concept | Spear and salt are paired narrative metaphors; not established religious attributes |
+| VIS-LIB-005 | **NEXT STOP MARS / Peta misi akhir zaman ke Mars** | Library caption / poster concept | Creative future-mission framing; not prophecy, astronomy evidence or an approved mission |
+| VIS-LIB-006 | **Padang Mahsyar — four vision panels** | Library caption / infographic concept | Symbolic editorial art only; not an authoritative description of unseen realities |
+| VIS-LIB-007 | **The spiritual journey of salt and blood** | Library caption / image concept | Metaphor only; not anatomical, health or scientific evidence |
+| VIS-LIB-008 | **Burial / preservation regulation infographic** | Library caption / infographic concept | Any legal, medical or regulatory claim requires an exact jurisdiction, source and current review |
+| VIS-LIB-009 | **Business / ISP mission visual** | Library caption / business-themed artwork | Keep operational/customer information private; no production status inferred |
+| VIS-LIB-010 | **RGB light-source infographic** | Library caption / infographic concept | Distinguish additive RGB light from the separate R–G–B–L epistemic framework |
+| VIS-LIB-011 | **Shinchan / Master Roshi / song-inspired fan-art concepts** | Library caption / fan-art or music reference | Private reference only; third-party characters, marks and lyrics are not cleared production assets |
+
+No raw image binaries were copied into this public repository. The Library source register records the 21 image-file inventory and the missing original prompts/rights. The canonical production path remains Issue #19 and `packages/assets`.
+
 ## 3. Exact copy and text safety
 
 Preserve exact casing and punctuation for source wording, including:
