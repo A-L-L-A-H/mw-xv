@@ -34,6 +34,7 @@ Do not infer resolutions from later titles, aliases, generated summaries or mode
 | UNR-0025 | P2 | 2023–2025 origin chronology | V10 progress ledger labels early dates as historical leads | Find raw dated sources; retain broad window; leave unknown | Keep broad window; never invent first appearance dates | Owner / NEEDS_SOURCE |
 | UNR-0026 | P2 | Original image prompts, poster masters and approved revisions | User prompts and some poster context exist; original media files not supplied in this archive pass | Upload originals into private archive; source locator only; defer | Keep brief text and source locator; no binary or rights claim without source | Owner / NEEDS_SOURCE |
 | UNR-0027 | P2 | ANGEL WITH SHOTGUN naming vs `rocksoul-aws` | User creative label and LAW-domain repository are both named in independent sources | Shared inspiration; same project; separate workstreams | Record separate records; do not infer relation | Owner / UNRESOLVED |
+| UNR-0028 | P1 | Duplicate stable issue identity `CF-020` | #74 (open) and #75 (closed) have same title and substantially same scope/acceptance; neither has a managed TaskOS marker; prior finding is recorded in #27 comment 7095707915 | Establish one canonical issue; retain/annotate historical discussion on the other; reconcile only after maintainer decision | Do not auto-close, reopen, delete or change either issue; ask issue owner/maintainer to decide canonical identity | Maintainer / TRIAGE REQUIRED |
 
 ## Additional unresolved source recovery
 
