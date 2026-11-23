@@ -67,10 +67,13 @@ test('dashboard KPI cards show current values without fabricated trend percentag
     path: path.join(auditDirectory, 'dashboard-kpi-no-trend-desktop-1440.png'),
     fullPage: true,
   });
+  // The dashboard's "Available Modules" grid grows and shrinks with the model
+  // registry, so a full-page capture can never be stable. The KPI cards under
+  // test live in the masthead region, which is deterministic.
   await expect(page).toHaveScreenshot('board-dashboard-admin-desktop-1440.png', {
     animations: 'disabled',
     caret: 'hide',
-    fullPage: true,
+    clip: { x: 0, y: 0, width: 1440, height: 1000 },
   });
 });
 
