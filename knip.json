@@ -1,0 +1,31 @@
+{
+  "$schema": "https://knip.dev/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/**/*.mjs", "turbo.json", "tsconfig.base.json"]
+    },
+    "packages/*": {},
+    "apps/board": {
+      "entry": ["src/**/*.tsx", "src/**/*.ts"]
+    },
+    "apps/ui-catalog": {
+      "entry": ["src/**/*.tsx"]
+    },
+    "apps/desktop": {},
+    "apps/api": {},
+    "apps/docs": {},
+    "apps/control-plane": {},
+    "apps/isp": {}
+  },
+  "rules": {
+    "files": "warn",
+    "dependencies": "warn",
+    "devDependencies": "warn",
+    "unlisted": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "enumMembers": "warn",
+    "duplicates": "warn"
+  },
+  "ignoreDependencies": ["go"]
+}

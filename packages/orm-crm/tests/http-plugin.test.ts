@@ -13,6 +13,16 @@ interface RecordedResponse {
   payload: unknown;
 }
 
+interface ErrorResponse {
+  success: false;
+  error: string;
+}
+
+interface SuccessResponse<T> {
+  success: true;
+  data: T;
+}
+
 type PluginApp = Parameters<AddonHttpPlugin>[0];
 type RouteHandler = (
   req: AddonHttpRequestBase & { body: unknown; params: unknown; query: unknown },
@@ -95,7 +105,7 @@ describe('crmHttpPlugin (INV-014 manifest.httpPlugins)', () => {
 
     const res = await harness.invokePost('/api/crm/leads/score', {});
     expect(res.statusCode).toBe(401);
-    expect((res.payload as any).error).toBe('Authentication required');
+    expect((res.payload as ErrorResponse).error).toBe('Authentication required');
   });
 
   it('rejects unauthenticated requests without valid companyId', async () => {
@@ -116,7 +126,7 @@ describe('crmHttpPlugin (INV-014 manifest.httpPlugins)', () => {
       { userId: 1, role: 'user' }
     );
     expect(res.statusCode).toBe(403);
-    expect((res.payload as any).error).toBe('Active company is required');
+    expect((res.payload as ErrorResponse).error).toBe('Active company is required');
   });
 
   it('scores lead successfully with valid authentication', async () => {
@@ -137,7 +147,11 @@ describe('crmHttpPlugin (INV-014 manifest.httpPlugins)', () => {
       { userId: 1, role: 'user', companyId: 1 }
     );
     expect(res.statusCode).toBe(200);
-    const body = res.payload as any;
+    const body = res.payload as SuccessResponse<{
+      score: number;
+      tier: string;
+      breakdown: unknown;
+    }>;
     expect(body.success).toBe(true);
     expect(body.data.score).toBeGreaterThan(0);
     expect(['hot', 'warm', 'cold']).toContain(body.data.tier);
@@ -174,7 +188,11 @@ describe('crmHttpPlugin (INV-014 manifest.httpPlugins)', () => {
       { userId: 1, role: 'user', companyId: 1 }
     );
     expect(res.statusCode).toBe(200);
-    const body = res.payload as any;
+    const body = res.payload as SuccessResponse<{
+      totalDeals: number;
+      totalGrossCents: number;
+      totalWeightedCents: number;
+    }>;
     expect(body.success).toBe(true);
     expect(body.data.totalDeals).toBe(2);
     expect(body.data.totalGrossCents).toBe(300000);

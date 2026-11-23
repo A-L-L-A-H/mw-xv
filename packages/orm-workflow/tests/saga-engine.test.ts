@@ -51,14 +51,14 @@ describe('saga-engine', () => {
         { id: 'charge', dependsOn: ['nonexistent_step'], execute: () => 'ok' },
       ];
       expect(() => validateSagaDag(missingDep)).toThrowError(
-        expect.objectContaining({ code: 'MISSING_DEPENDENCY' }),
+        expect.objectContaining({ code: 'MISSING_DEPENDENCY' })
       );
 
       const selfDep: SagaStepDefinition[] = [
         { id: 'loop', dependsOn: ['loop'], execute: () => 'ok' },
       ];
       expect(() => validateSagaDag(selfDep)).toThrowError(
-        expect.objectContaining({ code: 'SELF_DEPENDENCY' }),
+        expect.objectContaining({ code: 'SELF_DEPENDENCY' })
       );
     });
   });
@@ -190,7 +190,7 @@ describe('saga-engine', () => {
       expect(secondAttempt.stepResults[0]?.status).toBe('replayed');
       expect(secondAttempt.stepResults[1]?.status).toBe('executed');
       expect(secondAttempt.stepResults[0]?.idempotencyKey).toBe(
-        deriveStepIdempotencyKey('run-replay-42', 'allocate_inventory'),
+        deriveStepIdempotencyKey('run-replay-42', 'allocate_inventory')
       );
     });
   });
@@ -247,7 +247,7 @@ describe('saga-engine', () => {
             decision: 'approve',
             decidedAt: '2026-11-23T01:05:00Z',
           },
-        ],
+        ]
       );
 
       expect(selfApproval.status).toBe('invalid');
@@ -328,7 +328,7 @@ describe('saga-engine', () => {
       const onTrack = evaluateSlaEscalation(
         policy,
         { startedAt },
-        () => startedAt.getTime() + 60_000 * 10,
+        () => startedAt.getTime() + 60_000 * 10
       );
       expect(onTrack.stage).toBe('on_track');
       expect(onTrack.overdueMs).toBe(0);
@@ -338,7 +338,7 @@ describe('saga-engine', () => {
       const warning = evaluateSlaEscalation(
         policy,
         { startedAt },
-        () => startedAt.getTime() + 60_000 * 35,
+        () => startedAt.getTime() + 60_000 * 35
       );
       expect(warning.stage).toBe('warning');
       expect(warning.notifyRoles).toEqual(['assignee']);
@@ -347,7 +347,7 @@ describe('saga-engine', () => {
       const escalate = evaluateSlaEscalation(
         policy,
         { startedAt },
-        () => startedAt.getTime() + 60_000 * 55,
+        () => startedAt.getTime() + 60_000 * 55
       );
       expect(escalate.stage).toBe('escalate');
       expect(escalate.remainingMs).toBe(60_000 * 5);
@@ -357,7 +357,7 @@ describe('saga-engine', () => {
       const breach = evaluateSlaEscalation(
         policy,
         { startedAt },
-        () => startedAt.getTime() + 60_000 * 75,
+        () => startedAt.getTime() + 60_000 * 75
       );
       expect(breach.stage).toBe('breach');
       expect(breach.remainingMs).toBe(0);

@@ -84,7 +84,9 @@ describe('mesh-autopilot', () => {
     expect(cmd).toContain("MW_MESH_SUBNET='10.144.0.0/24'");
     expect(cmd).toContain("MW_MESH_IP='10.144.0.1'");
     expect(cmd).toContain("MW_CONTROL_PLANE_PORT='3003'");
-    expect(cmd).toContain("MW_MESH_PEERS='tcp://peer1.example.com:11010,udp://peer2.example.com:11010'");
+    expect(cmd).toContain(
+      "MW_MESH_PEERS='tcp://peer1.example.com:11010,udp://peer2.example.com:11010'"
+    );
     expect(cmd).toContain("bash 'scripts/install-control-plane-vps.sh'");
 
     const remoteCmd = buildVpsJoinCommand({
@@ -92,7 +94,7 @@ describe('mesh-autopilot', () => {
       repoRawBaseUrl: 'https://raw.githubusercontent.com/org/repo/main/',
     });
     expect(remoteCmd).toContain(
-      "curl -fsSL 'https://raw.githubusercontent.com/org/repo/main/scripts/install-control-plane-vps.sh' | sudo ",
+      "curl -fsSL 'https://raw.githubusercontent.com/org/repo/main/scripts/install-control-plane-vps.sh' | sudo "
     );
     expect(remoteCmd.endsWith(' bash')).toBe(true);
   });
@@ -102,7 +104,7 @@ describe('mesh-autopilot', () => {
       buildVpsJoinCommand({
         networkName: 'mw-mesh-12345678',
         controlPlaneMeshIp: '0.0.0.0',
-      }),
+      })
     ).toThrow(/private mesh IP/i);
   });
 });

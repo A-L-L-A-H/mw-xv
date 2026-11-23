@@ -3,7 +3,7 @@ import { describe, it } from 'vitest';
 import Fastify from 'fastify';
 import { whatsappManifest, whatsappHttpPlugin } from '../src/index.js';
 import { DisabledAttachmentScanner } from '../src/runtime/clamav-scanner.js';
-import type { AttachmentStorage } from '@moonwitness/orm-storage';
+import type { AttachmentStorage, StoredObjectMetadata } from '@moonwitness/orm-storage';
 
 const stubStorage: AttachmentStorage = {
   async put(key, content) {
@@ -15,8 +15,8 @@ const stubStorage: AttachmentStorage = {
   async delete() {
     return;
   },
-  async *list() {
-    return;
+  async *list(): AsyncIterable<StoredObjectMetadata> {
+    yield* [] as unknown as AsyncIterable<StoredObjectMetadata>;
   },
 };
 

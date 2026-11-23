@@ -4,6 +4,12 @@ import licensesUrl from '@moonwitness/assets/licenses.json?url';
 import heroDesktop from '@moonwitness/assets/illustrations/home-hero-desktop.webp';
 import heroMobile from '@moonwitness/assets/illustrations/home-hero-mobile.webp';
 import boardMasthead from '@moonwitness/assets/illustrations/board-masthead.webp';
+import {
+  buildProvenanceIndex,
+  resolveAssetReviewStatuses,
+  type AssetProvenanceEntry,
+  type AssetReviewStatus,
+} from './asset-review-status';
 
 type AssetRecord = {
   path: string;
@@ -22,7 +28,6 @@ type AssetRecord = {
 
 type InventoryFilter = 'kind' | 'pack' | 'subject' | 'domain' | 'variant' | 'status';
 
-type ProvenanceEntry = { path: string; status?: string; license?: string };
 const previewByPath: Record<string, string> = {
   'illustrations/home-hero-desktop.webp': heroDesktop,
   'illustrations/home-hero-mobile.webp': heroMobile,
@@ -48,7 +53,9 @@ function valuesFor(key: InventoryFilter, assets: AssetRecord[]): string[] {
 export function AssetBrowser() {
   const [search, setSearch] = useState('');
   const [assets, setAssets] = useState<AssetRecord[]>([]);
-  const [blockedProvenance, setBlockedProvenance] = useState<Set<string>>(new Set());
+  const [resolvedStatuses, setResolvedStatuses] = useState<Map<string, AssetReviewStatus>>(
+    new Map()
+  );
   const [loadError, setLoadError] = useState(false);
   const [selected, setSelected] = useState<Record<InventoryFilter, string>>({
     kind: '',
@@ -67,17 +74,16 @@ export function AssetBrowser() {
       }),
       fetch(licensesUrl).then((response) => {
         if (!response.ok) throw new Error('Asset provenance could not be loaded.');
-        return response.json() as Promise<{ sourceAssets?: ProvenanceEntry[] }>;
+        return response.json() as Promise<{ sourceAssets?: AssetProvenanceEntry[] }>;
       }),
     ])
       .then(([manifest, provenance]) => {
         if (!active) return;
         setAssets(manifest.assets);
-        setBlockedProvenance(
-          new Set(
-            (provenance.sourceAssets ?? [])
-              .filter((entry) => entry.status === 'blocked' || entry.license === 'unverified')
-              .map((entry) => entry.path)
+        setResolvedStatuses(
+          resolveAssetReviewStatuses(
+            manifest.assets,
+            buildProvenanceIndex(provenance.sourceAssets ?? [])
           )
         );
       })
@@ -162,7 +168,7 @@ export function AssetBrowser() {
       ) : visibleAssets.length > 0 ? (
         <ul className="asset-browser-grid" aria-label="Canonical asset inventory">
           {visibleAssets.map((asset) => {
-            const blocked = blockedProvenance.has(asset.path);
+            const status = resolvedStatuses.get(asset.path) ?? 'unverified';
             return (
               <li className="asset-browser-card" key={asset.path}>
                 <div className="asset-browser-preview">
@@ -186,12 +192,19 @@ export function AssetBrowser() {
                       .join(' · ')}
                   </span>
                   <span
-                    className={blocked ? 'asset-browser-status is-blocked' : 'asset-browser-status'}
+                    className={
+                      status === 'blocked' || status === 'unverified'
+                        ? 'asset-browser-status is-blocked'
+                        : 'asset-browser-status'
+                    }
                   >
-                    {blocked
+                    {status === 'blocked'
                       ? 'Blocked · rights review'
-                      : (asset.status ??
-                        (asset.kind === 'source' ? 'Source only' : 'Runtime asset'))}
+                      : status === 'unverified'
+                        ? 'Unverified · provenance pending'
+                        : status === 'review'
+                          ? 'Review · pending acceptance'
+                          : 'Approved'}
                   </span>
                 </div>
               </li>

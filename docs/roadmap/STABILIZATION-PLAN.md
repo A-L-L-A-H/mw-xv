@@ -29,12 +29,14 @@
 ## Work status
 
 ### S0 — Branch synchronization (DONE)
+
 - [x] Verified `dev` was the exact source SHA for PR #31 promotion.
 - [x] Fast-forwarded `dev` to the promotion merge commit `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`, using expected-head protection.
 - [x] No force push or history rewrite.
 - [ ] Reconfirm `main` and `dev` equality after future pushes.
 
 ### S1 — TaskOS migration (P0, owner-approved canonical write applied)
+
 - [x] Audited the pre-migration registry blob: 1,358 unique records; 861 records referenced root `todo.md`, now a pointer.
 - [x] Inventoried all eight authoritative sources and built the deterministic 627-record candidate.
 - [x] Reconciled all task IDs: 504 shared, 854 completed historical IDs archived, and 123 reviewed IDs added; all seven still-open legacy IDs are retained as blocked.
@@ -46,6 +48,7 @@
 - [x] Record exact-SHA CI: push run [45095239162](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45095239162) and PR run [45095243555](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45095243555) both passed all five jobs.
 
 ### S2 — Roadmap and Issue lifecycle reconciliation (P1)
+
 - [x] Recompute task counts from `ROADMAP.md` and `docs/roadmap/tasks.json`. Exact result: 239 tasks; roadmap checkboxes 157 checked / 82 unchecked; source statuses 157 complete / 47 in-progress / 35 todo. No current tracked generated progress dashboard was found to rewrite; old counts in dated audit narratives remain historical.
 - [x] Cross-check M13.01–M13.12 source status and evidence. All 12 are marked complete; each evidence file and every listed source/deliverable path exists in the exact audited tree.
 - [x] Reconcile completed issue lifecycle #32–#36 against promoted sources/evidence; preserve human fields and comments.
@@ -53,12 +56,14 @@
 - [ ] Reconcile missing/stale managed Issue projections from current exact evidence, and verify roadmap index/evidence links/generated progress artifacts agree. Use bounded, reviewed issue-sync batches; preserve human-owned fields and never mass-close.
 
 ### S3 — Runtime/toolchain documentation (P1)
+
 - [x] Align primary Node policy references across root engines, Docker, CI setup, Desktop package and docs to Node 24; runtime ledger refresh remains a separate review.
 - [ ] Refresh runtime support review ledger (Node reviewed; other overdue entries remain separately due).
 - [x] Validate README Quickstart/badge, support policy, active Desktop architecture and TODO, Docker and CI statements. The conflicting Node 22 references in the current Desktop ADR/blueprint and README badge were corrected; archived TODO snapshots remain unchanged.
 - [x] Keep exact pnpm `11.17.0` consistent across root `packageManager`, CI setup, Docker Corepack and package-manager drift checks; exact-SHA CI passed on `9aa6ca7d2b93767d864825b97b217f24881a0796`.
 
 ### S4 — Release/CI truth audit (P1)
+
 - [x] Inspect required checks and rulesets on `main` and `dev`; record the active `protect-main` / `protect-dev` rulesets and the restricted legacy branch-protection endpoint.
 - [x] Fetch PR #31 CI runs and verify all required jobs on exact source SHA: source `a3fa6da5b6b4e47e42240c8ec2c9ef8561416064`, push run [45053735229](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45053735229), PR run [45053738507](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45053738507); both passed all five jobs.
 - [x] Confirm M12.14 stable-release approval remains a separate unresolved human gate; do not infer from merge.
@@ -66,6 +71,7 @@
 - [ ] Confirm release tagging/publication remains gated and deployment is not implicitly authorized.
 
 ### S5 — ROCKSOUL FLOW current-state matrix (P1)
+
 - [ ] Preserve M13.01 as historical audit baseline.
 - [ ] Update current statuses for M13.02–M13.08 from implementation/evidence, not directory existence.
 - [ ] Record current gaps: Visual DNA profile exporter and any integration gaps discovered by source/runtime tests.
@@ -73,6 +79,7 @@
 - [ ] Keep capability boundaries, redaction, scope, human approval and canonical ORM/task authority intact.
 
 ### S6 — Clean/stable verification (P1)
+
 - [ ] Run roadmap/task/docs validators.
 - [ ] Run package-level tests for changed areas first.
 - [ ] Run workspace build, unit tests, PostgreSQL integration, Board/desktop checks and E2E according to affected risk and required CI.
@@ -117,8 +124,6 @@
 - Regression tests cover skipped state, canonical evidence additions, absent exit-code metadata, cleared canonical values and status mappings.
 - The unit CI runner includes `pnpm test:taskos`. These test definitions are committed; execution remains pending.
 
-
-
 ## Audit correction and isolated candidate export — 2026-11-23
 
 Earlier zero-byte registry statements were incorrect for the exact dev tree. A direct Git blob read confirms that `docs/tasks/tasks.json` parses as 1,358 records. Its legacy source distribution includes 861 entries attributed to root `todo.md`; root `todo.md` is now a pointer, so those records require reconciliation against the archived checklist.
@@ -127,7 +132,6 @@ The initial isolated candidate implementation was added in `9a4d994` and CI was 
 
 The 627-record candidate was accepted and installed after the complete old/new diff was reviewed; the previous 1,358-record blob is preserved at the documented archive path.
 
-
 ## Phase 0–1 exact-head verification addendum — 2026-11-23
 
 - Phase 0 remote acceptance is complete on `def3df35b5d54d7359600e0471af5a6dd4cb7f29`: branch rulesets were inspected; main remained unchanged; both push and pull-request CI completed all five jobs successfully.
@@ -135,7 +139,6 @@ The 627-record candidate was accepted and installed after the complete old/new d
 - The owner approved the candidate and it is now installed as canonical. New canonical blob SHA: `8216b6503d154d635112be96c41939a9efd38390`; candidate JSON SHA-256: `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`.
 - The former 1,358-record blob `d56499936761dcc062704d06588ee2679fd1aae2` is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`.
 - The CI candidate job pins `SOURCE_DATE_EPOCH` to the timestamp of `GITHUB_SHA`; exact-SHA CI now also runs canonical validation and deterministic source comparison.
-
 
 ## Owner-approved TaskOS migration record — 2026-11-23
 

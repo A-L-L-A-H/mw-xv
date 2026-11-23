@@ -25,35 +25,35 @@ MoonWitness adopts a **Constitutional Recursive Self-Improvement (RSI) & World-M
 
 ### The 7 M15 Pillars
 
-1. **M15.01 — Speculative Tree Search & Recursive Tournament Voting (`speculative-tree.ts`)** *(informed by arXiv:2604.16529)*
+1. **M15.01 — Speculative Tree Search & Recursive Tournament Voting (`speculative-tree.ts`)** _(informed by arXiv:2604.16529)_
    - Evaluates $N$ parallel speculative worktree or mesh branches.
    - Disqualifies fail-closed any branch failing Proof Gate v2 or reporting `scopeClean === false`.
    - Compresses trajectories and ranks passing branches via deterministic Recursive Tournament Voting (RTV) with objective test pass-rate and latency/cost tie-breakers.
    - Emits a redacted `SpeculativeTournamentReport` with `automatedSelfAccept: false` and deterministic `reportSha256`.
 
-2. **M15.02 — Collective Skill Tree Search (`skill-tree.ts`)** *(informed by CSTS / CSN-Assess, arXiv:2606.16774)*
+2. **M15.02 — Collective Skill Tree Search (`skill-tree.ts`)** _(informed by CSTS / CSN-Assess, arXiv:2606.16774)_
    - Organizes procedural skills into a hierarchical parent-child tree across MoonWitness domains (`orm`, `board`, `paas`, `desktop`, `knowledge`).
    - Scores cross-domain transferability (`transferDeltaBps`); negative transfer (`transferDeltaBps < 0`) flags degraded nodes as `prune_recommended` or `revocation_candidate`.
    - Enforces `automatedPromotionAllowed: false` and emits deterministic `treeSha256`.
 
-3. **M15.03 — Forward-Inverse World-Model Surprise Gate (`world-model-gate.ts`)** *(informed by ICLR 2026 RSI Forward-Inverse consistency)*
+3. **M15.03 — Forward-Inverse World-Model Surprise Gate (`world-model-gate.ts`)** _(informed by ICLR 2026 RSI Forward-Inverse consistency)_
    - Compares pre-execution predicted post-state (expected changed files, HTTP/container health, invariants) against observed post-state.
    - Computes `surpriseScoreBps` (`0..10000`), classifies `UNEXPECTED_SIDE_EFFECT` and `PREDICTION_MISMATCH`, and emits an advisory `ai.obligation` proposal when surprise meets or exceeds the configured threshold (`automatedSelfAccept: false`, `reportSha256`).
 
-4. **M15.04 — Constitutional Auto-Invariant Synthesizer (`invariant-synthesizer.ts`)** *(informed by AIDE² / Aria)*
+4. **M15.04 — Constitutional Auto-Invariant Synthesizer (`invariant-synthesizer.ts`)** _(informed by AIDE² / Aria)_
    - Compiles verified failure traces and drift reports into candidate deterministic invariant specifications (`candidate` status only).
    - Strictly forbids modifying or weakening immutable constitutional gates (`R0`–`R4`, `ai-drift-watchdog`, `board:ui:check`, `desktop:ui:check`, `api:addon:check`).
    - Enforces `automatedPromotionAllowed: false`, secret redaction via `createRedactor()`, and SHA-256 proposal digests.
 
-5. **M15.05 — Mesh Semantic Resonance Bus (`semantic-bus.ts`)** *(informed by openswarm-os + EasyTier A2A)*
+5. **M15.05 — Mesh Semantic Resonance Bus (`semantic-bus.ts`)** _(informed by openswarm-os + EasyTier A2A)_
    - Routes bounded semantic signals (hypotheses, surprise alerts, skill revocation advisories) exclusively across private EasyTier mesh IPs (`isPrivateMeshHost` fail-closed).
    - Enforces company isolation (`companyId`), TTL expiry, resonance threshold filtering, secret redaction via `createRedactor()`, and SHA-256 envelope digests.
 
-6. **M15.06 — Counterfactual Causal Time-Machine Replay (`causal-replay.ts`)** *(MoonWitness Original)*
+6. **M15.06 — Counterfactual Causal Time-Machine Replay (`causal-replay.ts`)** _(MoonWitness Original)_
    - Scans checkpointed execution traces to pinpoint the earliest step where Proof Gate failed or World-Model Surprise spiked.
    - Attributes root cause (`prompt_ambiguity | missing_context | skill_negative_transfer | tool_error | environment_drift`) and compiles a deterministic counterfactual branch fork plan anchored at that checkpoint commit SHA (`automatedSelfAccept: false`, `planSha256`).
 
-7. **M15.07 — Epistemic Brier/ECE Calibration Ledger (`epistemic-calibration.ts`)** *(MoonWitness Original)*
+7. **M15.07 — Epistemic Brier/ECE Calibration Ledger (`epistemic-calibration.ts`)** _(MoonWitness Original)_
    - Tracks predicted confidence probabilities against binary Proof Gate verification outcomes across agents and domains.
    - Computes deterministic Brier score, Expected Calibration Error (ECE), reliability bins, and calibration drift alerts (`automatedSelfAccept: false`, `ledgerSha256`).
 

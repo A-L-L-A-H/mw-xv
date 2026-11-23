@@ -129,6 +129,7 @@ export const ISPSubscriber = defineModel('isp.subscriber', {
     expiry_date: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}$', label: 'Expiry Date' }),
     monthly_price_minor: fields.integer({ label: 'Monthly Price (minor units)' }),
     currency: fields.string({ required: true, default: 'USD', label: 'Currency' }),
+    is_active: fields.boolean({ required: true, default: true, label: 'Active' }),
     status: fields.enum(['active', 'suspended', 'terminated'], {
       required: true,
       default: 'active',

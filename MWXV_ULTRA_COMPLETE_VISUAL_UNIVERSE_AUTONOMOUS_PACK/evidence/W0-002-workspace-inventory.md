@@ -4,13 +4,13 @@ Source: current `pnpm-workspace.yaml`, package manifests, and `pnpm -r list --de
 
 ## Apps
 
-| App | Workspace package | Visual relevance |
-| --- | --- | --- |
-| `apps/api` | `@moonwitness/api` | API and addon lifecycle; no visual runtime dependency |
-| `apps/board` | `@moonwitness/board` | Product UI; depends on assets, client, types, UI |
-| `apps/desktop` | `@moonwitness/desktop` | Tauri desktop client; no assets/UI dependency |
-| `apps/docs` | `@moonwitness/docs` | Documentation site; depends on assets and UI |
-| `apps/ui-catalog` | `@moonwitness/ui-catalog` | Existing UI catalog; depends on assets and UI |
+| App               | Workspace package         | Visual relevance                                      |
+| ----------------- | ------------------------- | ----------------------------------------------------- |
+| `apps/api`        | `@moonwitness/api`        | API and addon lifecycle; no visual runtime dependency |
+| `apps/board`      | `@moonwitness/board`      | Product UI; depends on assets, client, types, UI      |
+| `apps/desktop`    | `@moonwitness/desktop`    | Tauri desktop client; no assets/UI dependency         |
+| `apps/docs`       | `@moonwitness/docs`       | Documentation site; depends on assets and UI          |
+| `apps/ui-catalog` | `@moonwitness/ui-catalog` | Existing UI catalog; depends on assets and UI         |
 
 ## Packages
 

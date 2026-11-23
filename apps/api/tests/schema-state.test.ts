@@ -25,7 +25,11 @@ describe('API migration coordinator', () => {
   });
 
   it('retries a failed migration and records the applied state', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
     const sleeps: number[] = [];
     const statuses: string[] = [];
     let attempts = 0;
@@ -61,7 +65,11 @@ describe('API migration coordinator', () => {
   });
 
   it('redacts credentials and database URLs from migration errors', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
     let attempts = 0;
 
     await coordinateApiMigration(db, {
@@ -84,7 +92,11 @@ describe('API migration coordinator', () => {
   });
 
   it('waits until the applied schema matches the worker expectation', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
     await db.schema.createTable('_orm_schema_state', (table) => {
       table.string('id').primary();
       table.string('status').notNullable();
@@ -140,7 +152,11 @@ describe('API migration coordinator', () => {
   });
 
   it('marks the API ready only after the migration callback completes', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
     const readiness = { ready: false, status: 'running' as const };
     let migrated = false;
 
@@ -162,7 +178,11 @@ describe('API migration coordinator', () => {
   });
 
   it('stops after the configured attempt limit', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
     let attempts = 0;
 
     await expect(
@@ -183,7 +203,11 @@ describe('API migration coordinator', () => {
   });
 
   it('retries transient state table initialization failures', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
     let ensureCalls = 0;
 
     await coordinateApiMigration(db, {
@@ -202,7 +226,11 @@ describe('API migration coordinator', () => {
   });
 
   it('revalidates schema state after acquiring the migration lock', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
     let migrations = 0;
 
     const state = await coordinateApiMigration(db, {
@@ -238,7 +266,11 @@ describe('API migration coordinator', () => {
   });
 
   it('releases the lock and retries when persisting the running state fails', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
     let runningWrites = 0;
     let releaseCalls = 0;
     let migrations = 0;

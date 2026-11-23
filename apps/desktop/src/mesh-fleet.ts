@@ -1,6 +1,6 @@
 import { isIP } from 'node:net';
 import { AccessDeniedError, ValidationError } from '@moonwitness/types';
-import { DesktopRiskGate, redactSensitiveText } from './risk-gate.js';
+import { redactSensitiveText, type DesktopRiskGate } from './risk-gate.js';
 import type {
   DataClassification,
   DesktopCapabilityGrant,

@@ -113,32 +113,14 @@
       "visual_domain": "Agents, profiles, models, providers, contracts, runs, taskforces, skills and memory"
     }
   ],
-  "phase_order": [
-    "W0",
-    "W1",
-    "W2",
-    "W3",
-    "W4",
-    "W5",
-    "W6",
-    "W7",
-    "W8",
-    "W9",
-    "W10"
-  ],
+  "phase_order": ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10"],
   "execution_policy": {
     "mode": "autonomous_incremental",
     "max_parallel_agents": 4,
     "max_parallel_tasks_per_shared_area": 1,
     "max_attempts_per_task": 2,
     "max_retries_per_gate": 1,
-    "task_states": [
-      "todo",
-      "in_progress",
-      "blocked",
-      "done",
-      "skipped"
-    ],
+    "task_states": ["todo", "in_progress", "blocked", "done", "skipped"],
     "completion_rule": "A task is done only when all acceptance criteria pass and concrete evidence is recorded. A commit alone is not proof.",
     "stop_conditions": [
       "stop after two failed attempts on the same task and mark blocked with logs",
@@ -183,10 +165,7 @@
       "parallel_group": "serial",
       "depends_on": [],
       "objective": "Confirm repository root, branch and exact HEAD before any modification.",
-      "scope_hints": [
-        "repository root",
-        ".git"
-      ],
+      "scope_hints": ["repository root", ".git"],
       "deliverables": [
         "Baseline report with current SHA, worktree state, branch protection observations."
       ],
@@ -195,10 +174,7 @@
         "Work begins from latest dev; no hard reset, force push or destructive checkout.",
         "Record current HEAD and dirty files."
       ],
-      "verification": [
-        "git status --short --branch",
-        "git rev-parse HEAD"
-      ],
+      "verification": ["git status --short --branch", "git rev-parse HEAD"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Verified origin points to A-L-L-A-H/mw-xv; local dev HEAD exactly matched remote dev. Existing dirty worktree preserved. Branch-protection rules remain unverified from local metadata.",
@@ -237,9 +213,7 @@
       "priority": "P0",
       "role": "auditor",
       "parallel_group": "serial",
-      "depends_on": [
-        "W0-001"
-      ],
+      "depends_on": ["W0-001"],
       "objective": "Refresh package inventory from pnpm workspace rather than relying on this pack snapshot.",
       "scope_hints": [
         "pnpm-workspace.yaml",
@@ -247,18 +221,13 @@
         "packages/*/package.json",
         "apps/*/package.json"
       ],
-      "deliverables": [
-        "Updated package/app inventory and dependency graph."
-      ],
+      "deliverables": ["Updated package/app inventory and dependency graph."],
       "acceptance_criteria": [
         "All workspace package.json files are accounted for.",
         "Apps are separately identified from packages.",
         "No new duplicate package is proposed without a demonstrated consumer."
       ],
-      "verification": [
-        "pnpm -r list --depth -1",
-        "inspect pnpm-workspace.yaml and package.json"
-      ],
+      "verification": ["pnpm -r list --depth -1", "inspect pnpm-workspace.yaml and package.json"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Inventory refreshed from current manifests. 26 packages, five pnpm apps; apps/todo has no package.json and is Rust-only.",
@@ -297,25 +266,16 @@
       "priority": "P0",
       "role": "auditor",
       "parallel_group": "serial",
-      "depends_on": [
-        "W0-001"
-      ],
+      "depends_on": ["W0-001"],
       "objective": "Refresh API addon registry, manifests, dependencies, postInstall hooks and routes.",
-      "scope_hints": [
-        "apps/api/src/addons/registry.ts",
-        "packages/*/src/manifest.ts"
-      ],
-      "deliverables": [
-        "Addon registry map and addon-to-domain inventory."
-      ],
+      "scope_hints": ["apps/api/src/addons/registry.ts", "packages/*/src/manifest.ts"],
+      "deliverables": ["Addon registry map and addon-to-domain inventory."],
       "acceptance_criteria": [
         "All active manifests are found from actual registry, not folder-name guessing.",
         "Health/runtime modules without ORM manifest are identified separately.",
         "No DB migrations or seeds are changed by this audit task."
       ],
-      "verification": [
-        "pnpm --filter @moonwitness/api build"
-      ],
+      "verification": ["pnpm --filter @moonwitness/api build"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Registry verified from imports. The prescribed typecheck script is absent; package build runs tsc and passed.",
@@ -356,23 +316,14 @@
       "parallel_group": "serial",
       "depends_on": [],
       "objective": "Refresh asset count, schema version, generator ownership, current UI exports, FX and consumers.",
-      "scope_hints": [
-        "packages/assets",
-        "packages/ui",
-        "apps/board/package.json"
-      ],
-      "deliverables": [
-        "Asset/UI baseline with exact counts and source paths."
-      ],
+      "scope_hints": ["packages/assets", "packages/ui", "apps/board/package.json"],
+      "deliverables": ["Asset/UI baseline with exact counts and source paths."],
       "acceptance_criteria": [
         "manifest and license manifest are read directly.",
         "Generator ownership and package exports are documented.",
         "Newer dev commits are preserved; do not revert existing grunge/anime kinetics changes."
       ],
-      "verification": [
-        "pnpm assets:validate",
-        "pnpm test:ui"
-      ],
+      "verification": ["pnpm assets:validate", "pnpm test:ui"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Asset and UI baseline were verified. The initial test exposed a stale engine assertion; it now matches the existing >=24 manifest and Node 24 CI floor. The dirty manifest value was preserved.",
@@ -414,23 +365,14 @@
       "parallel_group": "serial",
       "depends_on": [],
       "objective": "Trace each active addon to its real routes, views, screens, permission boundaries and user-visible states.",
-      "scope_hints": [
-        "apps/board/src",
-        "apps/api/src/addons",
-        "packages/orm-*"
-      ],
-      "deliverables": [
-        "Domain-to-screen-to-asset matrix with verified references."
-      ],
+      "scope_hints": ["apps/board/src", "apps/api/src/addons", "packages/orm-*"],
+      "deliverables": ["Domain-to-screen-to-asset matrix with verified references."],
       "acceptance_criteria": [
         "No fictional route, menu, model or functionality is invented.",
         "Unmapped domains are labelled not found/unverified, not assumed.",
         "Static visual assets remain outside ORM domain manifests."
       ],
-      "verification": [
-        "pnpm board:ui:check",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["pnpm board:ui:check", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Mapped existing domains only; unknown dedicated screens are stated explicitly. Static assets remain package-owned.",
@@ -469,31 +411,16 @@
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
-      "depends_on": [
-        "W0-002",
-        "W0-003",
-        "W0-004",
-        "W0-005"
-      ],
+      "depends_on": ["W0-002", "W0-003", "W0-004", "W0-005"],
       "objective": "Compare current code with this pack and adjust task backlog to avoid duplication.",
-      "scope_hints": [
-        "docs/design",
-        "packages/assets",
-        "packages/ui",
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Baseline delta document and updated dependency decisions."
-      ],
+      "scope_hints": ["docs/design", "packages/assets", "packages/ui", "apps/ui-catalog"],
+      "deliverables": ["Baseline delta document and updated dependency decisions."],
       "acceptance_criteria": [
         "Existing implementations are reused.",
         "Task IDs remain stable unless a task is explicitly retired with reason.",
         "No task is marked done without repository evidence."
       ],
-      "verification": [
-        "git diff --check",
-        "review task.json dependency integrity"
-      ],
+      "verification": ["git diff --check", "review task.json dependency integrity"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Current implementation delta recorded. Normalized the task schema/mirror without changing IDs or dependencies; graph and mirror checks pass.",
@@ -532,9 +459,7 @@
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
-      "depends_on": [
-        "W0-006"
-      ],
+      "depends_on": ["W0-006"],
       "objective": "Formalize the user's zine/punk/manga reference into a production-grade visual bible while preserving current brand identity.",
       "scope_hints": [
         "packages/ui/README.md",
@@ -550,9 +475,7 @@
         "Black/ink, paper/white, hot magenta, electric blue/cyan and signal yellow are token-mapped.",
         "Grunge, manga ink, photocopy, ripped paper and urban anime environment have controlled intensity tiers."
       ],
-      "verification": [
-        "visual review via UI Catalog"
-      ],
+      "verification": ["visual review via UI Catalog"],
       "risk": "low",
       "human_approval_required": true,
       "notes": "Approved by user in chat on 2026-11-22 (Asia/Jakarta). Accepted the art-direction proposal at evidence/art-direction-proposal.md as canonical, retaining the existing MoonWitness token identity and its stated safeguards.",
@@ -600,25 +523,16 @@
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-001"
-      ],
+      "depends_on": ["W1-001"],
       "objective": "Separate immersive story surfaces from operational UI and functional admin surfaces.",
-      "scope_hints": [
-        "packages/ui/README.md",
-        "docs/design/visual-direction.md"
-      ],
-      "deliverables": [
-        "Experience-tier rules and examples."
-      ],
+      "scope_hints": ["packages/ui/README.md", "docs/design/visual-direction.md"],
+      "deliverables": ["Experience-tier rules and examples."],
       "acceptance_criteria": [
         "Living World pages may use cinematic scenes and sustained movement within budgets.",
         "Board tables/forms/data remain readable and interaction-first.",
         "Micro-interaction, editorial, cinematic and ambient animation have separate use policies."
       ],
-      "verification": [
-        "documentation review"
-      ],
+      "verification": ["documentation review"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Design contract completed from the approved art direction; no new visual asset is claimed.",
@@ -657,26 +571,17 @@
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-001"
-      ],
+      "depends_on": ["W1-001"],
       "objective": "Specify repeatable identity sheets and safe depiction rules for recurring cast.",
-      "scope_hints": [
-        "docs/design",
-        "packages/assets"
-      ],
-      "deliverables": [
-        "Character Bible template and continuity contract."
-      ],
+      "scope_hints": ["docs/design", "packages/assets"],
+      "deliverables": ["Character Bible template and continuity contract."],
       "acceptance_criteria": [
         "Stable character IDs, silhouette, proportions, outfit, palette and signature props.",
         "Default crew art can use anonymous/back-facing hooded silhouettes; identifiable faces require approved identity design.",
         "No random changes to face, hair, clothing or body proportions across scenes.",
         "Do not depict Allah or represent sacred figures visually; use text/name only where product content explicitly requires it."
       ],
-      "verification": [
-        "character bible schema validation"
-      ],
+      "verification": ["character bible schema validation"],
       "risk": "low",
       "human_approval_required": true,
       "notes": "Character identity schema/template approved under W1 character bible task. Pilot identity/face/outfit remain a separate approval gate per visual-universe-bible-approved.md. No canonical face produced.",
@@ -730,25 +635,16 @@
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-001"
-      ],
+      "depends_on": ["W1-001"],
       "objective": "Specify line weight, cel-shading, shadows, highlight, grain and color grading.",
-      "scope_hints": [
-        "packages/assets",
-        "docs/design"
-      ],
-      "deliverables": [
-        "Rendering style guide and reference sheet specification."
-      ],
+      "scope_hints": ["packages/assets", "docs/design"],
+      "deliverables": ["Rendering style guide and reference sheet specification."],
       "acceptance_criteria": [
         "Every production asset declares a style/renderer profile.",
         "Lighting and color grading remain consistent across scene packs.",
         "Do not bake interface labels or dynamic data into artwork."
       ],
-      "verification": [
-        "visual contact sheet review"
-      ],
+      "verification": ["visual contact sheet review"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Design contract completed from the approved art direction; no new visual asset is claimed.",
@@ -787,25 +683,16 @@
       "priority": "P0",
       "role": "designer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-001"
-      ],
+      "depends_on": ["W1-001"],
       "objective": "Keep graphic lettering separate from product copy and provide approved fonts/license handling.",
-      "scope_hints": [
-        "packages/assets/fonts",
-        "packages/assets/licenses.json"
-      ],
-      "deliverables": [
-        "Typography/lettering policy and asset brief."
-      ],
+      "scope_hints": ["packages/assets/fonts", "packages/assets/licenses.json"],
+      "deliverables": ["Typography/lettering policy and asset brief."],
       "acceptance_criteria": [
         "UI copy remains live text.",
         "Artwork lettering is decorative only and separately authored/licensed.",
         "Font files and subsets retain source/hash/license provenance."
       ],
-      "verification": [
-        "pnpm assets:validate"
-      ],
+      "verification": ["pnpm assets:validate"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Design contract completed from the approved art direction; no new visual asset is claimed.",
@@ -844,26 +731,16 @@
       "priority": "P0",
       "role": "designer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-001",
-        "W1-002"
-      ],
+      "depends_on": ["W1-001", "W1-002"],
       "objective": "Specify wide, tall, square, panel, hero and parallax-safe compositions.",
-      "scope_hints": [
-        "packages/assets/scripts/prepare-artwork.mjs",
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Composition recipes and focal-safe-area rules."
-      ],
+      "scope_hints": ["packages/assets/scripts/prepare-artwork.mjs", "apps/ui-catalog"],
+      "deliverables": ["Composition recipes and focal-safe-area rules."],
       "acceptance_criteria": [
         "Desktop/mobile assets have deliberate art direction, not blind center crops.",
         "Focal points and text-safe areas are explicit.",
         "No important character feature is unintentionally cut at supported breakpoints."
       ],
-      "verification": [
-        "responsive UI catalog preview"
-      ],
+      "verification": ["responsive UI catalog preview"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Desktop 16:9 and mobile 9:16 composition recipes, focal pins, and text-safe guides authored in moon-city-scene.json and verified live in UI Catalog SceneLab Playwright harness (31/31 pass).",
@@ -909,23 +786,15 @@
       "parallel_group": "serial",
       "depends_on": [],
       "objective": "Set reduced-motion, alternative static scene, keyboard, captions and sound consent rules.",
-      "scope_hints": [
-        "packages/ui/README.md",
-        "packages/ui/TOKENS.md"
-      ],
-      "deliverables": [
-        "Accessibility and motion policy."
-      ],
+      "scope_hints": ["packages/ui/README.md", "packages/ui/TOKENS.md"],
+      "deliverables": ["Accessibility and motion policy."],
       "acceptance_criteria": [
         "Information never depends on animation/audio.",
         "Reduced-motion produces meaningful static/low-motion scene.",
         "Sound remains muted until explicitly enabled.",
         "No effects block focus, text selection or pointer interaction."
       ],
-      "verification": [
-        "pnpm test:ui",
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui", "pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Accessibility and motion policy is already implemented in packages/ui/README.md, TOKENS.md, tokens.css and components.css. Existing tests verify muted-by-default audio, explicit playback, reduced motion, focus and non-interactive decorative FX; no duplicate policy layer was added.",
@@ -974,32 +843,16 @@
       "priority": "P0",
       "role": "technical-writer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-001",
-        "W1-002",
-        "W1-003",
-        "W1-004",
-        "W1-005",
-        "W1-006",
-        "W1-007"
-      ],
+      "depends_on": ["W1-001", "W1-002", "W1-003", "W1-004", "W1-005", "W1-006", "W1-007"],
       "objective": "Consolidate approved decisions into canonical docs without duplicating existing UI Bible.",
-      "scope_hints": [
-        "docs/design",
-        "packages/ui/README.md"
-      ],
-      "deliverables": [
-        "Canonical visual universe guide and links from existing design docs."
-      ],
+      "scope_hints": ["docs/design", "packages/ui/README.md"],
+      "deliverables": ["Canonical visual universe guide and links from existing design docs."],
       "acceptance_criteria": [
         "Single source of truth is identified.",
         "Existing docs are updated by linking/targeted additions, not copied into competing versions.",
         "Open decisions are clearly listed."
       ],
-      "verification": [
-        "pnpm docs:check",
-        "pnpm docs:links"
-      ],
+      "verification": ["pnpm docs:check", "pnpm docs:links"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Canonical visual guide recorded at evidence/visual-universe-bible-approved.md and linked from docs/design/visual-direction.md; built documentation and link checks passed.",
@@ -1038,28 +891,21 @@
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
-      "depends_on": [
-        "W0-004",
-        "W1-008"
-      ],
+      "depends_on": ["W0-004", "W1-008"],
       "objective": "Extend existing manifest only where needed for stable asset IDs, pack/domain tags, source and variants.",
       "scope_hints": [
         "packages/assets/manifest.json",
         "packages/assets/licenses.json",
         "packages/assets/scripts/validate.mjs"
       ],
-      "deliverables": [
-        "Versioned schema proposal and fixtures."
-      ],
+      "deliverables": ["Versioned schema proposal and fixtures."],
       "acceptance_criteria": [
         "Keep one canonical packages/assets/manifest.json.",
         "Keep existing package license/provenance source of truth.",
         "Do not create competing master inventories.",
         "Old assets remain readable or have a deterministic converter."
       ],
-      "verification": [
-        "node --test packages/assets/tests/*.test.mjs"
-      ],
+      "verification": ["node --test packages/assets/tests/*.test.mjs"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Backward-compatible extension proposal only. Existing manifest schema v1 and licenses.json remain unchanged. Future stable IDs derive from canonical paths; no competing inventory created.",
@@ -1103,25 +949,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-001"
-      ],
+      "depends_on": ["W2-001"],
       "objective": "Implement schema validation for the approved asset metadata extension.",
-      "scope_hints": [
-        "packages/assets/scripts/validate.mjs",
-        "packages/assets/tests"
-      ],
-      "deliverables": [
-        "Schema validator, valid/invalid fixtures and tests."
-      ],
+      "scope_hints": ["packages/assets/scripts/validate.mjs", "packages/assets/tests"],
+      "deliverables": ["Schema validator, valid/invalid fixtures and tests."],
       "acceptance_criteria": [
         "Reject duplicate IDs/paths, malformed variants and invalid references.",
         "Support source/master/generated relationships.",
         "Validation errors include file and field context."
       ],
-      "verification": [
-        "pnpm test:assets"
-      ],
+      "verification": ["pnpm test:assets"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Validated optional schema-v1 metadata and references while retaining legacy entries. Generated source provenance is recorded as blocked from distribution pending terms review.",
@@ -1160,25 +997,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-001"
-      ],
+      "depends_on": ["W2-001"],
       "objective": "Add creator, source method, upstream source, license, generated date, modifications and approval status.",
-      "scope_hints": [
-        "packages/assets/licenses.json",
-        "packages/assets/scripts/validate.mjs"
-      ],
-      "deliverables": [
-        "Provenance validator and docs."
-      ],
+      "scope_hints": ["packages/assets/licenses.json", "packages/assets/scripts/validate.mjs"],
+      "deliverables": ["Provenance validator and docs."],
       "acceptance_criteria": [
         "No unknown or blank licensing metadata for distributable assets.",
         "AI-generated content is labelled accurately with applicable terms verified.",
         "Unverified source is marked blocked/non-distributable."
       ],
-      "verification": [
-        "pnpm test:assets"
-      ],
+      "verification": ["pnpm test:assets"],
       "risk": "medium",
       "human_approval_required": false,
       "notes": "Source provenance is validated for tagged sources; AI-generated rights remain explicitly blocked until terms are verified.",
@@ -1217,25 +1045,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-002"
-      ],
+      "depends_on": ["W2-002"],
       "objective": "Ensure each generator only replaces the paths it owns.",
-      "scope_hints": [
-        "packages/assets/scripts/manifest-ownership.mjs",
-        "packages/assets/scripts"
-      ],
-      "deliverables": [
-        "Generator ownership registry and tests."
-      ],
+      "scope_hints": ["packages/assets/scripts/manifest-ownership.mjs", "packages/assets/scripts"],
+      "deliverables": ["Generator ownership registry and tests."],
       "acceptance_criteria": [
         "Existing manifest ownership helper is reused.",
         "Manual/master assets cannot be deleted by generators.",
         "Generators are deterministic and idempotent."
       ],
-      "verification": [
-        "pnpm test:assets"
-      ],
+      "verification": ["pnpm test:assets"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Existing explicit generator ownership helper and focused tests satisfy all acceptance criteria; verified against current source.",
@@ -1274,24 +1093,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-002"
-      ],
+      "depends_on": ["W2-002"],
       "objective": "Provide CLI/report output filtered by pack, category, subject, domain, format and status.",
-      "scope_hints": [
-        "packages/assets/scripts/asset-inventory.mjs"
-      ],
-      "deliverables": [
-        "Asset inventory command and test fixtures."
-      ],
+      "scope_hints": ["packages/assets/scripts/asset-inventory.mjs"],
+      "deliverables": ["Asset inventory command and test fixtures."],
       "acceptance_criteria": [
         "Inventory uses canonical manifest.",
         "Source files and distributable files are distinguishable.",
         "Orphans and broken references are reported."
       ],
-      "verification": [
-        "pnpm test:assets"
-      ],
+      "verification": ["pnpm test:assets"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Canonical manifest query CLI supports pack/category/subject/domain/format/status filters, source/distribution classification, and orphan/missing/broken-reference audits.",
@@ -1330,27 +1141,19 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-004",
-        "W1-006"
-      ],
+      "depends_on": ["W2-004", "W1-006"],
       "objective": "Extend Sharp generation for responsive artwork variants, AVIF/WebP where suitable and focal-safe crops.",
       "scope_hints": [
         "packages/assets/scripts/prepare-artwork.mjs",
         "packages/assets/package.json"
       ],
-      "deliverables": [
-        "Responsive derivative generation and metadata."
-      ],
+      "deliverables": ["Responsive derivative generation and metadata."],
       "acceptance_criteria": [
         "Master files are never overwritten.",
         "Quality/size presets are documented and measured.",
         "No unconditional AVIF migration without browser compatibility evidence."
       ],
-      "verification": [
-        "pnpm assets:generate",
-        "pnpm assets:validate"
-      ],
+      "verification": ["pnpm assets:generate", "pnpm assets:validate"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -1389,26 +1192,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-002",
-        "W2-006"
-      ],
+      "depends_on": ["W2-002", "W2-006"],
       "objective": "Define and implement layer asset handling for PNG/WebP/AVIF/SVG outputs while preserving alpha.",
-      "scope_hints": [
-        "packages/assets/scripts",
-        "packages/assets/tests"
-      ],
-      "deliverables": [
-        "Layer validation/export utility and sample fixtures."
-      ],
+      "scope_hints": ["packages/assets/scripts", "packages/assets/tests"],
+      "deliverables": ["Layer validation/export utility and sample fixtures."],
       "acceptance_criteria": [
         "Transparent layer dimensions and origins align exactly.",
         "Layer ordering and pivot/focal metadata preserved.",
         "No flattening of runtime layers into a single image."
       ],
-      "verification": [
-        "pnpm test:assets"
-      ],
+      "verification": ["pnpm test:assets"],
       "risk": "medium",
       "human_approval_required": false,
       "notes": "",
@@ -1447,25 +1240,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-002"
-      ],
+      "depends_on": ["W2-002"],
       "objective": "Define frame dimensions, frame count, timing, loop, direction, pivot and atlas references.",
-      "scope_hints": [
-        "packages/assets/manifest.json",
-        "packages/assets/scripts"
-      ],
-      "deliverables": [
-        "Sprite sheet metadata validator and generated preview."
-      ],
+      "scope_hints": ["packages/assets/manifest.json", "packages/assets/scripts"],
+      "deliverables": ["Sprite sheet metadata validator and generated preview."],
       "acceptance_criteria": [
         "Frame bounds are valid.",
         "Timing and playback metadata are deterministic.",
         "Frames are not generated from an unreviewed single raster crop."
       ],
-      "verification": [
-        "pnpm test:assets"
-      ],
+      "verification": ["pnpm test:assets"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Sprite metadata and atlas bounds are validated; the generated SVG preview is explicitly metadata-only, with no unreviewed frame art. No production character atlas exists yet.",
@@ -1504,26 +1288,16 @@
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-002",
-        "W2-008"
-      ],
+      "depends_on": ["W2-002", "W2-008"],
       "objective": "Define scene descriptors and animation clips that reference canonical asset IDs.",
-      "scope_hints": [
-        "packages/assets",
-        "docs/design"
-      ],
-      "deliverables": [
-        "Scene schema and animation metadata schema."
-      ],
+      "scope_hints": ["packages/assets", "docs/design"],
+      "deliverables": ["Scene schema and animation metadata schema."],
       "acceptance_criteria": [
         "References resolve through canonical asset manifest.",
         "Scene files contain layout/animation data, not embedded secrets or domain business records.",
         "No cyclic references."
       ],
-      "verification": [
-        "schema fixture tests"
-      ],
+      "verification": ["schema fixture tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Presentation-only scene and clip descriptors are validated against canonical manifest paths, with explicit schema keys and acyclic composition. No production scene IDs/assets are claimed.",
@@ -1562,31 +1336,20 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-005",
-        "W2-006",
-        "W2-007",
-        "W2-008",
-        "W2-009"
-      ],
+      "depends_on": ["W2-005", "W2-006", "W2-007", "W2-008", "W2-009"],
       "objective": "Ensure every public asset category is included in build/package and docs asset sync.",
       "scope_hints": [
         "packages/assets/package.json",
         "scripts/export-doc-assets.mjs",
         "scripts/copy-board-public-assets.mjs"
       ],
-      "deliverables": [
-        "Explicit package exports and pack verification tests."
-      ],
+      "deliverables": ["Explicit package exports and pack verification tests."],
       "acceptance_criteria": [
         "Only intended runtime outputs are shipped.",
         "High-resolution source/master assets are not copied into consumer bundles by default.",
         "Asset package remains framework-independent and zero-runtime-dependency."
       ],
-      "verification": [
-        "pnpm --filter @moonwitness/assets pack --dry-run",
-        "pnpm test:assets"
-      ],
+      "verification": ["pnpm --filter @moonwitness/assets pack --dry-run", "pnpm test:assets"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Excluded brand/source/** and source/** from @moonwitness/assets files allowlist, expanded copy-board-public-assets.mjs for animation/environments/scenes while excluding source/, and enforced tarball non-source + export verification tests.",
@@ -1630,27 +1393,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-005",
-        "W2-010"
-      ],
+      "depends_on": ["W2-005", "W2-010"],
       "objective": "Generate deterministic contact sheets grouped by pack/category/character/scene.",
-      "scope_hints": [
-        "packages/assets/scripts",
-        "docs/design/assets"
-      ],
-      "deliverables": [
-        "Contact sheet generator and docs output."
-      ],
+      "scope_hints": ["packages/assets/scripts", "docs/design/assets"],
+      "deliverables": ["Contact sheet generator and docs output."],
       "acceptance_criteria": [
         "Contact sheets include stable IDs and variants.",
         "No generated docs or binary output is committed without repository conventions.",
         "Image rendering works in existing Playwright/Sharp tooling."
       ],
-      "verification": [
-        "pnpm assets:render",
-        "pnpm assets:validate"
-      ],
+      "verification": ["pnpm assets:render", "pnpm assets:validate"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Added generate-contact-sheets.mjs with deterministic pack/category grouping, stable IDs and variants, Playwright+Sharp PNG output, and unit tests wired into pnpm assets:render.",
@@ -1694,27 +1446,16 @@
       "priority": "P0",
       "role": "qa",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-005",
-        "W2-010"
-      ],
+      "depends_on": ["W2-005", "W2-010"],
       "objective": "Extend QA for duplicates, oversized files, unused outputs and wrong generated folder ownership.",
-      "scope_hints": [
-        "packages/assets/tests",
-        "scripts"
-      ],
-      "deliverables": [
-        "Asset quality report and thresholds."
-      ],
+      "scope_hints": ["packages/assets/tests", "scripts"],
+      "deliverables": ["Asset quality report and thresholds."],
       "acceptance_criteria": [
         "Thresholds are based on measured consumer budgets.",
         "Large source masters are exempt from runtime budgets but included in repository tracking review.",
         "All exceptions are documented and narrow."
       ],
-      "verification": [
-        "pnpm test:assets",
-        "pnpm ui:budget"
-      ],
+      "verification": ["pnpm test:assets", "pnpm ui:budget"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Added packages/assets/scripts/asset-qa.mjs and asset-qa.test.mjs verifying runtime budgets, source-master exemptions, duplicate detection with narrow documented exceptions, and folder/manifest ownership.",
@@ -1763,25 +1504,16 @@
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-003",
-        "W2-009"
-      ],
+      "depends_on": ["W1-003", "W2-009"],
       "objective": "Define character IDs, role, silhouette, palette, proportions, outfit and continuity metadata.",
-      "scope_hints": [
-        "packages/assets/source/world/characters"
-      ],
-      "deliverables": [
-        "Character registry specification and initial template."
-      ],
+      "scope_hints": ["packages/assets/source/world/characters"],
+      "deliverables": ["Character registry specification and initial template."],
       "acceptance_criteria": [
         "Each recurring character has one stable identity.",
         "No character is bound to an AI provider/model identity.",
         "Default crew figures may remain anonymous/back-facing unless identity is approved."
       ],
-      "verification": [
-        "character schema tests"
-      ],
+      "verification": ["character schema tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Committed eebd21b. crew-01 registry + schema + tests + manifest/licenses provenance. validate.mjs green, pnpm test:assets 44/44.",
@@ -1825,14 +1557,9 @@
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W3-001",
-        "W1-004"
-      ],
+      "depends_on": ["W3-001", "W1-004"],
       "objective": "Produce/review one canonical character sheet as the pilot for production quality.",
-      "scope_hints": [
-        "packages/assets/source/world/characters"
-      ],
+      "scope_hints": ["packages/assets/source/world/characters"],
       "deliverables": [
         "Master character sheet with front/side/back, scale, silhouette and palette."
       ],
@@ -1841,9 +1568,7 @@
         "Character remains consistent with Visual Bible.",
         "Source master and provenance recorded."
       ],
-      "verification": [
-        "contact sheet review"
-      ],
+      "verification": ["contact sheet review"],
       "risk": "medium",
       "human_approval_required": true,
       "notes": "Committed a2c9033. crew-01 character sheet SVG master + manifest/licenses provenance + registry masterAssetIds. validate.mjs green, pnpm test:assets 44/44.",
@@ -1887,24 +1612,16 @@
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W3-002"
-      ],
+      "depends_on": ["W3-002"],
       "objective": "Prepare approved eye/mouth/expression variants only for characters requiring visible facial animation.",
-      "scope_hints": [
-        "packages/assets/source/world/characters"
-      ],
-      "deliverables": [
-        "Expression sheet and state mapping."
-      ],
+      "scope_hints": ["packages/assets/source/world/characters"],
+      "deliverables": ["Expression sheet and state mapping."],
       "acceptance_criteria": [
         "Expression shapes preserve identity.",
         "No unnecessary face visibility for anonymous crew designs.",
         "Variants are named and measurable."
       ],
-      "verification": [
-        "character consistency review"
-      ],
+      "verification": ["character consistency review"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "No expression sheet needed: crew-01 anonymous/back-facing, recognizable-face prohibited. Conditional task; none apply.",
@@ -1948,24 +1665,16 @@
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W3-002"
-      ],
+      "depends_on": ["W3-002"],
       "objective": "Prepare reusable static poses and gestures for narrative scenes.",
-      "scope_hints": [
-        "packages/assets/source/world/characters"
-      ],
-      "deliverables": [
-        "Pose pack and metadata."
-      ],
+      "scope_hints": ["packages/assets/source/world/characters"],
+      "deliverables": ["Pose pack and metadata."],
       "acceptance_criteria": [
         "Poses do not alter character identity/outfit.",
         "Pose IDs are stable and previewable.",
         "Pose usage/licensing is recorded."
       ],
-      "verification": [
-        "contact sheet review"
-      ],
+      "verification": ["contact sheet review"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Committed e4bb5d6. crew-01 idle-standing + waving pose masters + manifest/licenses provenance + registry variantAssetIds. validate.mjs green, pnpm test:assets 44/44.",
@@ -2009,26 +1718,16 @@
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W3-002",
-        "W2-007"
-      ],
+      "depends_on": ["W3-002", "W2-007"],
       "objective": "Prepare layered masters for selected pilot character with pivots and hierarchy.",
-      "scope_hints": [
-        "packages/assets/source/world/characters"
-      ],
-      "deliverables": [
-        "Layered source files, pivot metadata and preview."
-      ],
+      "scope_hints": ["packages/assets/source/world/characters"],
+      "deliverables": ["Layered source files, pivot metadata and preview."],
       "acceptance_criteria": [
         "Body/hair/arm/prop layers align without visible seams.",
         "Layer names and pivots are stable.",
         "Source remains editable."
       ],
-      "verification": [
-        "layer alignment test",
-        "visual preview"
-      ],
+      "verification": ["layer alignment test", "visual preview"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Committed 5c19b8f. crew-01 layered hood/torso/outline SVG masters + crew-01-pivots.json (normalized pivots), manifest/licenses provenance. validate.mjs green, pnpm test:assets 46/46.",
@@ -2072,25 +1771,16 @@
       "priority": "P0",
       "role": "animator",
       "parallel_group": "serial",
-      "depends_on": [
-        "W3-005",
-        "W2-008"
-      ],
+      "depends_on": ["W3-005", "W2-008"],
       "objective": "Create subtle idle/breathing clip for pilot character.",
-      "scope_hints": [
-        "packages/assets/animation"
-      ],
-      "deliverables": [
-        "Idle clip and animation metadata."
-      ],
+      "scope_hints": ["packages/assets/animation"],
+      "deliverables": ["Idle clip and animation metadata."],
       "acceptance_criteria": [
         "Loop is seamless.",
         "Movement is subtle and intentional.",
         "Reduced-motion has a still pose fallback."
       ],
-      "verification": [
-        "animation playback test"
-      ],
+      "verification": ["animation playback test"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Committed da84758. crew-01 idle ping-pong clip (frame-01/02 + clip.json), reduced-motion still fallback, animation dir added to inventory scan, manifest/licenses provenance. validate.mjs green, pnpm test:assets 46/46.",
@@ -2134,26 +1824,16 @@
       "priority": "P0",
       "role": "animator",
       "parallel_group": "serial",
-      "depends_on": [
-        "W3-003",
-        "W3-005",
-        "W3-006"
-      ],
+      "depends_on": ["W3-003", "W3-005", "W3-006"],
       "objective": "Add optional blink/hair movement as separated clips or states.",
-      "scope_hints": [
-        "packages/assets/animation"
-      ],
-      "deliverables": [
-        "Blink/hair animation metadata and previews."
-      ],
+      "scope_hints": ["packages/assets/animation"],
+      "deliverables": ["Blink/hair animation metadata and previews."],
       "acceptance_criteria": [
         "No forced facial detail where design is anonymous.",
         "Loop/state triggers behave deterministically.",
         "Animation can pause offscreen."
       ],
-      "verification": [
-        "animation playback test"
-      ],
+      "verification": ["animation playback test"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Committed 30f3719. crew-01 hair-move ping-pong clip (2 frames + clip.json), no facial detail, reduced-motion fallback. validate.mjs green, pnpm test:assets 46/46.",
@@ -2197,25 +1877,16 @@
       "priority": "P0",
       "role": "animator",
       "parallel_group": "serial",
-      "depends_on": [
-        "W3-005",
-        "W2-008"
-      ],
+      "depends_on": ["W3-005", "W2-008"],
       "objective": "Produce a small representative movement set for pilot character.",
-      "scope_hints": [
-        "packages/assets/animation"
-      ],
-      "deliverables": [
-        "Walk/turn prototype clips and docs."
-      ],
+      "scope_hints": ["packages/assets/animation"],
+      "deliverables": ["Walk/turn prototype clips and docs."],
       "acceptance_criteria": [
         "Frame timing/pivots are correct.",
         "No foot sliding beyond approved style.",
         "A static pose fallback always exists."
       ],
-      "verification": [
-        "sprite/rig preview"
-      ],
+      "verification": ["sprite/rig preview"],
       "risk": "medium",
       "human_approval_required": false,
       "notes": "Committed 1da1b3a. crew-01 walk + turn prototype clips (2 frames each + clip.json), aligned pivots, static pose fallbacks. validate.mjs green, pnpm test:assets 46/46.",
@@ -2259,27 +1930,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W3-001",
-        "W3-006",
-        "W2-009"
-      ],
+      "depends_on": ["W3-001", "W3-006", "W2-009"],
       "objective": "Provide deterministic preview for turnaround, layers, poses and clips in UI Catalog/Creative Lab.",
-      "scope_hints": [
-        "apps/ui-catalog",
-        "packages/ui"
-      ],
-      "deliverables": [
-        "Character preview specimen and tests."
-      ],
+      "scope_hints": ["apps/ui-catalog", "packages/ui"],
+      "deliverables": ["Character preview specimen and tests."],
       "acceptance_criteria": [
         "Preview loads by asset ID.",
         "No business data or backend route is embedded.",
         "Playback can pause, reset and switch state."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Committed 1cd0c68. CharacterPreview component + UI Catalog specimen; animation assets exposed via @moonwitness/assets. ui build green, board typecheck green, board:ui:check green, test:assets 46/46, test:ui-catalog 29/29.",
@@ -2323,25 +1983,16 @@
       "priority": "P0",
       "role": "art-director",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-004",
-        "W1-006"
-      ],
+      "depends_on": ["W1-004", "W1-006"],
       "objective": "Specify canonical visual environment, lighting, perspective and prop vocabulary.",
-      "scope_hints": [
-        "packages/assets/source/world/environments"
-      ],
-      "deliverables": [
-        "Environment Bible and shot breakdown."
-      ],
+      "scope_hints": ["packages/assets/source/world/environments"],
+      "deliverables": ["Environment Bible and shot breakdown."],
       "acceptance_criteria": [
         "Moon City palette/lighting matches canonical world.",
         "Environment modules can be reused across pages.",
         "No embedded interface copy/statistics."
       ],
-      "verification": [
-        "environment contact sheet review"
-      ],
+      "verification": ["environment contact sheet review"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Canonical Moon City Environment Kit authored (environment-kit.json, moon-city-environment-kit.md) with palette, horizon perspective, depth order, and zero embedded UI copy.",
@@ -2385,26 +2036,16 @@
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W4-001",
-        "W2-007"
-      ],
+      "depends_on": ["W4-001", "W2-007"],
       "objective": "Create master sky/moon layers with alpha and responsive safe zones.",
-      "scope_hints": [
-        "packages/assets/source/world/environments"
-      ],
-      "deliverables": [
-        "Sky and moon source assets and variants."
-      ],
+      "scope_hints": ["packages/assets/source/world/environments"],
+      "deliverables": ["Sky and moon source assets and variants."],
       "acceptance_criteria": [
         "Layer boundaries and transparent alpha are valid.",
         "Moon is not flattened into unrelated foreground.",
         "Focal point metadata exists."
       ],
-      "verification": [
-        "pnpm test:assets",
-        "visual preview"
-      ],
+      "verification": ["pnpm test:assets", "visual preview"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Original ISC hand-authored sky starfield and transparent crescent moon disc layers exported to packages/assets/environments/ with focal-point metadata; legacy unverified AI rasters remain source-only.",
@@ -2443,24 +2084,16 @@
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W4-002"
-      ],
+      "depends_on": ["W4-002"],
       "objective": "Create clouds, haze and atmospheric depth layers.",
-      "scope_hints": [
-        "packages/assets/source/world/environments"
-      ],
-      "deliverables": [
-        "Cloud/haze pack with animation suitability notes."
-      ],
+      "scope_hints": ["packages/assets/source/world/environments"],
+      "deliverables": ["Cloud/haze pack with animation suitability notes."],
       "acceptance_criteria": [
         "Layers are loopable or static as declared.",
         "No visible seams in looping movement.",
         "Opacity does not obscure required text."
       ],
-      "verification": [
-        "visual preview"
-      ],
+      "verification": ["visual preview"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Original ISC loopable primary and secondary cloud drift SVG layers authored and exported with bounded opacity and seamless edges.",
@@ -2499,25 +2132,16 @@
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W4-001",
-        "W2-007"
-      ],
+      "depends_on": ["W4-001", "W2-007"],
       "objective": "Create background skyline and city silhouettes.",
-      "scope_hints": [
-        "packages/assets/source/world/environments"
-      ],
-      "deliverables": [
-        "Distant/midground city pack."
-      ],
+      "scope_hints": ["packages/assets/source/world/environments"],
+      "deliverables": ["Distant/midground city pack."],
       "acceptance_criteria": [
         "Perspective and lighting match scene bible.",
         "Layer depth order is documented.",
         "Desktop and mobile composition is supported."
       ],
-      "verification": [
-        "visual preview"
-      ],
+      "verification": ["visual preview"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Original ISC distant and midground Moon City skyline SVG layers exported and verified in responsive scene preview.",
@@ -2556,26 +2180,19 @@
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W4-001",
-        "W2-007"
-      ],
+      "depends_on": ["W4-001", "W2-007"],
       "objective": "Create railing, rooftop, wires, signs and safe foreground occluders.",
       "scope_hints": [
         "packages/assets/source/world/environments",
         "packages/assets/source/world/props"
       ],
-      "deliverables": [
-        "Foreground and prop pack."
-      ],
+      "deliverables": ["Foreground and prop pack."],
       "acceptance_criteria": [
         "Alpha edges are clean.",
         "Foreground does not obscure text/controls.",
         "Scene layers are separately addressable."
       ],
-      "verification": [
-        "visual preview"
-      ],
+      "verification": ["visual preview"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Original ISC foreground rooftop, railing, wires, and text-free signal sign props authored and exported with clean alpha.",
@@ -2614,26 +2231,16 @@
       "priority": "P0",
       "role": "artist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W4-001",
-        "W4-004",
-        "W4-005"
-      ],
+      "depends_on": ["W4-001", "W4-004", "W4-005"],
       "objective": "Produce reusable underground, archive, rooftop and street environment briefs/assets.",
-      "scope_hints": [
-        "packages/assets/source/world/environments"
-      ],
-      "deliverables": [
-        "Environment coverage pack and metadata."
-      ],
+      "scope_hints": ["packages/assets/source/world/environments"],
+      "deliverables": ["Environment coverage pack and metadata."],
       "acceptance_criteria": [
         "Each environment has coherent visual identity.",
         "Reusable shared props are canonical.",
         "No per-addon duplicated copy of the same background."
       ],
-      "verification": [
-        "contact sheet review"
-      ],
+      "verification": ["contact sheet review"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Four canonical reusable alternate environments authored under ISC: underground, archive, rooftop, and street.",
@@ -2672,28 +2279,16 @@
       "priority": "P0",
       "role": "animator",
       "parallel_group": "serial",
-      "depends_on": [
-        "W4-002",
-        "W4-003",
-        "W4-004",
-        "W4-005"
-      ],
+      "depends_on": ["W4-002", "W4-003", "W4-004", "W4-005"],
       "objective": "Specify which layers move, speed ranges, loop duration and pause conditions.",
-      "scope_hints": [
-        "packages/assets/animation",
-        "packages/assets/scenes"
-      ],
-      "deliverables": [
-        "Environment animation map."
-      ],
+      "scope_hints": ["packages/assets/animation", "packages/assets/scenes"],
+      "deliverables": ["Environment animation map."],
       "acceptance_criteria": [
         "Motion is subtle, bounded and deterministic.",
         "No default infinite heavy animation on operational pages.",
         "Reduced motion maps to a static composite."
       ],
-      "verification": [
-        "scene contract tests"
-      ],
+      "verification": ["scene contract tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Canonical Moon City scene bundle defines bounded parallax channels, loop durations, and reduced-motion static fallbacks.",
@@ -2732,25 +2327,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W4-007",
-        "W3-009"
-      ],
+      "depends_on": ["W4-007", "W3-009"],
       "objective": "Preview isolated planes and order with background transparency.",
-      "scope_hints": [
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Environment preview specimen/tool."
-      ],
+      "scope_hints": ["apps/ui-catalog"],
+      "deliverables": ["Environment preview specimen/tool."],
       "acceptance_criteria": [
         "All planes can be toggled and reordered.",
         "Pivots/origins are inspectable.",
         "Preview is usable on narrow viewports."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "UI Catalog SceneLab depth & pivot inspector toggles visibility, reorders z-planes, shows safe guides, and passes 390px mobile overflow check.",
@@ -2789,28 +2375,17 @@
       "priority": "P1",
       "role": "architect",
       "parallel_group": "serial",
-      "depends_on": [
-        "W0-006",
-        "W1-007"
-      ],
+      "depends_on": ["W0-006", "W1-007"],
       "objective": "Audit existing Motion dependency in Board and choose CSS/SVG/Motion first; adapter seams for specialist character SDKs.",
-      "scope_hints": [
-        "apps/board/package.json",
-        "packages/ui/package.json"
-      ],
-      "deliverables": [
-        "Decision record and dependency/licensing matrix."
-      ],
+      "scope_hints": ["apps/board/package.json", "packages/ui/package.json"],
+      "deliverables": ["Decision record and dependency/licensing matrix."],
       "acceptance_criteria": [
         "Use existing motion package where capable.",
         "Do not add GSAP/Rive/Live2D/Three/Pixi by default.",
         "Paid/proprietary SDK requires explicit human approval.",
         "No runtime dependency is added to assets package."
       ],
-      "verification": [
-        "dependency graph review",
-        "bundle baseline"
-      ],
+      "verification": ["dependency graph review", "bundle baseline"],
       "risk": "low",
       "human_approval_required": true,
       "notes": "Approved by user in chat on 2026-11-22 (Asia/Jakarta): use CSS/SVG-first scene implementation, retain the existing Motion dependency without using it absent measured need; do not add another runtime dependency.",
@@ -2859,28 +2434,16 @@
       "priority": "P1",
       "role": "architect",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-009",
-        "W5-001"
-      ],
+      "depends_on": ["W2-009", "W5-001"],
       "objective": "Specify SceneDefinition, LayerDefinition, CameraDefinition, Clip, Event, State and fallback contracts.",
-      "scope_hints": [
-        "packages/types",
-        "packages/ui",
-        "apps/board"
-      ],
-      "deliverables": [
-        "Typed scene/runtime contract design."
-      ],
+      "scope_hints": ["packages/types", "packages/ui", "apps/board"],
+      "deliverables": ["Typed scene/runtime contract design."],
       "acceptance_criteria": [
         "Assets are referenced by stable IDs.",
         "No business-domain state is stored in scene manifests.",
         "Scene data is serializable and validated."
       ],
-      "verification": [
-        "typecheck",
-        "schema tests"
-      ],
+      "verification": ["typecheck", "schema tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Committed 636bc0 (rebased bc79c59). packages/types/src/scene.ts + index export + scene.test.mjs; build green, types tests 16/16.",
@@ -2924,25 +2487,15 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-002",
-        "W2-002"
-      ],
+      "depends_on": ["W5-002", "W2-002"],
       "objective": "Validate layers, ordering, bounds, animation refs, breakpoints and accessibility fallbacks.",
-      "scope_hints": [
-        "packages/assets/scripts",
-        "packages/types"
-      ],
-      "deliverables": [
-        "Scene validator and test fixtures."
-      ],
+      "scope_hints": ["packages/assets/scripts", "packages/types"],
+      "deliverables": ["Scene validator and test fixtures."],
       "acceptance_criteria": [
         "Reject missing assets, cyclic references, invalid depth and missing fallback.",
         "Reports actionable file/field locations."
       ],
-      "verification": [
-        "unit tests"
-      ],
+      "verification": ["unit tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Extended scene-schema.mjs and packages/types/src/scene.ts with breakpoints, layerOverrides, and accessibilityFallback validation and unit tests.",
@@ -2981,27 +2534,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-002",
-        "W5-001"
-      ],
+      "depends_on": ["W5-002", "W5-001"],
       "objective": "Create deterministic play/pause/seek/reset lifecycle with visibility and unmount cleanup.",
-      "scope_hints": [
-        "packages/ui",
-        "apps/board"
-      ],
-      "deliverables": [
-        "Scene playback controller and unit tests."
-      ],
+      "scope_hints": ["packages/ui", "apps/board"],
+      "deliverables": ["Scene playback controller and unit tests."],
       "acceptance_criteria": [
         "No leaked observers/timers/listeners.",
         "Offscreen scenes pause when appropriate.",
         "Reduced-motion/static mode is respected."
       ],
-      "verification": [
-        "unit tests",
-        "browser lifecycle test"
-      ],
+      "verification": ["unit tests", "browser lifecycle test"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Implemented createScenePlaybackController and useScenePlayback with play/pause/seek/step/reset, offscreen IntersectionObserver pause, reduced-motion static mode, and zero leaked handles on dispose.",
@@ -3045,28 +2587,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-003",
-        "W5-004",
-        "W2-007"
-      ],
+      "depends_on": ["W5-003", "W5-004", "W2-007"],
       "objective": "Render ordered image/vector/video-frame layers in a responsive scene viewport.",
-      "scope_hints": [
-        "packages/ui/src",
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Scene renderer component."
-      ],
+      "scope_hints": ["packages/ui/src", "apps/ui-catalog"],
+      "deliverables": ["Scene renderer component."],
       "acceptance_criteria": [
         "Layer order, opacity, transform, blend and clipping are typed.",
         "No giant full-page screenshot mockup as background.",
         "Static fallback if animation runtime cannot initialize."
       ],
-      "verification": [
-        "pnpm test:ui",
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui", "pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Implemented LayeredScene responsive multi-layer renderer with ordered zOrder planes, breakpoint overrides, blend/clip/transform, and static fallback.",
@@ -3110,27 +2640,17 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-005",
-        "W4-007"
-      ],
+      "depends_on": ["W5-005", "W4-007"],
       "objective": "Support bounded camera pan/zoom and pointer/scroll linked depth movement.",
-      "scope_hints": [
-        "packages/ui/src",
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Camera/parallax system and specimens."
-      ],
+      "scope_hints": ["packages/ui/src", "apps/ui-catalog"],
+      "deliverables": ["Camera/parallax system and specimens."],
       "acceptance_criteria": [
         "Respect prefers-reduced-motion.",
         "No perpetual motion on data views.",
         "No scroll hijacking.",
         "Touch/keyboard remain usable."
       ],
-      "verification": [
-        "browser interaction tests"
-      ],
+      "verification": ["browser interaction tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Implemented bounded camera and parallax controller with keyboard pan/zoom/reset, passive scroll/pointer inputs, and zero motion in reduced-motion or operational mode.",
@@ -3179,27 +2699,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-004",
-        "W5-005"
-      ],
+      "depends_on": ["W5-004", "W5-005"],
       "objective": "Coordinate scene entrance, layer transitions, clips and event triggers.",
-      "scope_hints": [
-        "packages/ui/src",
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Timeline API and deterministic preview."
-      ],
+      "scope_hints": ["packages/ui/src", "apps/ui-catalog"],
+      "deliverables": ["Timeline API and deterministic preview."],
       "acceptance_criteria": [
         "Timeline can play/pause/restart and complete.",
         "Navigation does not trap user waiting for animation.",
         "No unbounded recursive timeline."
       ],
-      "verification": [
-        "unit tests",
-        "browser tests"
-      ],
+      "verification": ["unit tests", "browser tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Implemented finite non-recursive scene timeline coordinator with cycle/depth validation (MAX_TIMELINE_DEPTH=16) and non-blocking complete/cancel.",
@@ -3243,26 +2752,16 @@
       "priority": "P1",
       "role": "architect",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-002",
-        "W3-009"
-      ],
+      "depends_on": ["W5-002", "W3-009"],
       "objective": "Create adapter interface to play approved sprite/rig/clip assets without hard-coding one vendor.",
-      "scope_hints": [
-        "packages/ui/src",
-        "packages/types"
-      ],
-      "deliverables": [
-        "Character renderer adapter contract and basic implementation."
-      ],
+      "scope_hints": ["packages/ui/src", "packages/types"],
+      "deliverables": ["Character renderer adapter contract and basic implementation."],
       "acceptance_criteria": [
         "Sprite/image sequence is supported in baseline.",
         "Rive/Live2D adapters remain optional and isolated.",
         "Character identity data is separate from playback engine."
       ],
-      "verification": [
-        "adapter tests"
-      ],
+      "verification": ["adapter tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Separated CharacterIdentity from CharacterPlaybackRequest/CharacterAdapter in @moonwitness/types and implemented baseline SpriteSequenceAdapter + isolated registry in @moonwitness/ui.",
@@ -3306,27 +2805,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-008",
-        "W2-008"
-      ],
+      "depends_on": ["W5-008", "W2-008"],
       "objective": "Render sprite sequences with timing, loop, pause, scale and fallback.",
-      "scope_hints": [
-        "packages/ui/src",
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Sprite player component and tests."
-      ],
+      "scope_hints": ["packages/ui/src", "apps/ui-catalog"],
+      "deliverables": ["Sprite player component and tests."],
       "acceptance_criteria": [
         "Frame count and duration follow metadata.",
         "Playback pauses offscreen and on reduced-motion.",
         "No memory leak after source replacement/unmount."
       ],
-      "verification": [
-        "unit tests",
-        "browser tests"
-      ],
+      "verification": ["unit tests", "browser tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Implemented metadata-driven SpritePlayer with loop/ping-pong/one-shot timing, scale, offscreen pause, reduced-motion static fallback, and clean unmount disposal.",
@@ -3370,27 +2858,16 @@
       "priority": "P1",
       "role": "qa",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-005",
-        "W5-006",
-        "W5-007"
-      ],
+      "depends_on": ["W5-005", "W5-006", "W5-007"],
       "objective": "Provide test controls for fixed frame/time, reduced motion and deterministic scene snapshots.",
-      "scope_hints": [
-        "apps/ui-catalog/tests",
-        "apps/board/e2e"
-      ],
-      "deliverables": [
-        "Scene test harness."
-      ],
+      "scope_hints": ["apps/ui-catalog/tests", "apps/board/e2e"],
+      "deliverables": ["Scene test harness."],
       "acceptance_criteria": [
         "Snapshots do not capture mid-transition nondeterministically.",
         "Animation can be disabled or pinned to known timeline state.",
         "Visual regression includes key viewports."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Implemented deterministic scene test harness supporting URL query pins and global overrides, verified in UI Catalog Playwright suite.",
@@ -3434,31 +2911,20 @@
       "priority": "P1",
       "role": "architect",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-004",
-        "W5-005",
-        "W5-006",
-        "W5-007",
-        "W5-008"
-      ],
+      "depends_on": ["W5-004", "W5-005", "W5-006", "W5-007", "W5-008"],
       "objective": "Extract a separate scene-runtime package only if more than one consumer needs stable reusable contracts.",
       "scope_hints": [
         "packages/*/package.json",
         "apps/board/package.json",
         "apps/ui-catalog/package.json"
       ],
-      "deliverables": [
-        "Extraction decision, package boundary or documented no-extraction result."
-      ],
+      "deliverables": ["Extraction decision, package boundary or documented no-extraction result."],
       "acceptance_criteria": [
         "No speculative package proliferation.",
         "If extracted, zero app route/auth/domain knowledge.",
         "Package exports and consumers are explicit."
       ],
-      "verification": [
-        "workspace build",
-        "package verification"
-      ],
+      "verification": ["workspace build", "package verification"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Documented explicit no-speculative-extraction decision keeping pure presentation runtime inside @moonwitness/ui and @moonwitness/types with verified package exports and budgets.",
@@ -3502,29 +2968,16 @@
       "priority": "P1",
       "role": "specialist",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-001",
-        "W5-008",
-        "W5-011"
-      ],
+      "depends_on": ["W5-001", "W5-008", "W5-011"],
       "objective": "Only if visual need is demonstrated, implement one isolated proof using approved licensing and bundle budget.",
-      "scope_hints": [
-        "apps/board",
-        "packages/ui"
-      ],
-      "deliverables": [
-        "POC report; otherwise explicit skipped decision."
-      ],
+      "scope_hints": ["apps/board", "packages/ui"],
+      "deliverables": ["POC report; otherwise explicit skipped decision."],
       "acceptance_criteria": [
         "No proprietary assets or paid licensing without approval.",
         "No required SDK in default asset/UI package.",
         "Fallback sprite/2.5D scene remains complete."
       ],
-      "verification": [
-        "license review",
-        "bundle budget",
-        "browser playback test"
-      ],
+      "verification": ["license review", "bundle budget", "browser playback test"],
       "risk": "high",
       "human_approval_required": true,
       "notes": "Skipped optional external rig engine POC: baseline 2.5D LayeredScene + SpritePlayer satisfies all Moon City motion/accessibility/bundle requirements without third-party SDKs.",
@@ -3567,26 +3020,20 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "serial",
-      "depends_on": [
-        "W0-004"
-      ],
+      "depends_on": ["W0-004"],
       "objective": "Audit all exported effects and CSS keyframes including latest raw-art grunge kinetics.",
       "scope_hints": [
         "packages/ui/src/components/effects.tsx",
         "packages/ui/src/styles/components.css",
         "packages/ui/src/styles/tokens.css"
       ],
-      "deliverables": [
-        "FX reuse map and gap list."
-      ],
+      "deliverables": ["FX reuse map and gap list."],
       "acceptance_criteria": [
         "Existing effects are not duplicated.",
         "Latest dev commit and budget changes are preserved.",
         "Effects are grouped by UI micro, cinematic and ambient."
       ],
-      "verification": [
-        "pnpm test:ui"
-      ],
+      "verification": ["pnpm test:ui"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -3630,26 +3077,16 @@
       "priority": "P1",
       "role": "designer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W6-001",
-        "W1-007"
-      ],
+      "depends_on": ["W6-001", "W1-007"],
       "objective": "Define impact, frame-freeze, slash, transition, particles, glow and camera shake with safe intensity levels.",
-      "scope_hints": [
-        "packages/ui",
-        "docs/design"
-      ],
-      "deliverables": [
-        "FX contract and design examples."
-      ],
+      "scope_hints": ["packages/ui", "docs/design"],
+      "deliverables": ["FX contract and design examples."],
       "acceptance_criteria": [
         "All FX have static/reduced-motion alternative.",
         "No FX covers controls or content.",
         "Intensity and duration are bounded."
       ],
-      "verification": [
-        "FX preview review"
-      ],
+      "verification": ["FX preview review"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -3688,26 +3125,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W6-002",
-        "W5-004"
-      ],
+      "depends_on": ["W6-002", "W5-004"],
       "objective": "Build measured lightweight particle presets for rain, dust, stars and sparks.",
-      "scope_hints": [
-        "packages/ui/src",
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Particle presets and performance tests."
-      ],
+      "scope_hints": ["packages/ui/src", "apps/ui-catalog"],
+      "deliverables": ["Particle presets and performance tests."],
       "acceptance_criteria": [
         "Particle count and frame time are bounded.",
         "Pause offscreen/unmounted.",
         "Static fallback supported."
       ],
-      "verification": [
-        "browser performance test"
-      ],
+      "verification": ["browser performance test"],
       "risk": "medium",
       "human_approval_required": false,
       "notes": "Bounded particle presets passed active Chromium measurement at 30 particles: 119 requestAnimationFrame samples, p95 16.7ms, max 16.8ms; test budgets p95 <=50ms and max <=150ms.",
@@ -3756,26 +3183,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W6-002",
-        "W5-007"
-      ],
+      "depends_on": ["W6-002", "W5-007"],
       "objective": "Build reusable ink wipe, panel reveal, cut/impact and soft transition.",
-      "scope_hints": [
-        "packages/ui/src",
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Transition components and specimens."
-      ],
+      "scope_hints": ["packages/ui/src", "apps/ui-catalog"],
+      "deliverables": ["Transition components and specimens."],
       "acceptance_criteria": [
         "Transitions are interruptible and do not block navigation.",
         "Keyboard and reduced-motion work.",
         "No content remains hidden on animation failure."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -3819,27 +3236,16 @@
       "priority": "P1",
       "role": "sound-designer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-007",
-        "W2-003"
-      ],
+      "depends_on": ["W1-007", "W2-003"],
       "objective": "Create/procure approved short ambient loops and document provenance.",
-      "scope_hints": [
-        "packages/assets/sounds",
-        "packages/ui/src"
-      ],
-      "deliverables": [
-        "Optional ambience masters and optimized variants."
-      ],
+      "scope_hints": ["packages/assets/sounds", "packages/ui/src"],
+      "deliverables": ["Optional ambience masters and optimized variants."],
       "acceptance_criteria": [
         "No copyrighted music or unlicensed sound effects.",
         "User must explicitly enable ambience.",
         "Audio is lazy-loaded and has mute/stop lifecycle."
       ],
-      "verification": [
-        "audio tests",
-        "provenance validation"
-      ],
+      "verification": ["audio tests", "provenance validation"],
       "risk": "low",
       "human_approval_required": true,
       "notes": "Completed after explicit user request to resolve the blocker. Four original deterministic ambience loops are generated, registered in manifest and provenance license, exported to static docs assets, and verified for duration, loop continuity, level and size. Existing W1-007 consent policy and W2-003 provenance contract satisfy dependencies; no third-party license or canonical art direction decision is involved.",
@@ -3898,28 +3304,17 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W6-005",
-        "W5-004"
-      ],
+      "depends_on": ["W6-005", "W5-004"],
       "objective": "Integrate optional scene ambience without coupling playback to hover/scroll.",
-      "scope_hints": [
-        "packages/ui/src",
-        "apps/board/src"
-      ],
-      "deliverables": [
-        "Soundscape controller and settings integration."
-      ],
+      "scope_hints": ["packages/ui/src", "apps/board/src"],
+      "deliverables": ["Soundscape controller and settings integration."],
       "acceptance_criteria": [
         "Default is muted.",
         "One or policy-limited set of sources only; avoid overlapping loops.",
         "Scene changes stop/fade old ambience.",
         "Audio failure cannot break UX."
       ],
-      "verification": [
-        "pnpm test:ui",
-        "browser audio tests"
-      ],
+      "verification": ["pnpm test:ui", "browser audio tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Integrated the scene ambience controller with canonical ambience assets. Playback remains muted until gesture and opt-in, only one source plays, source changes and mute pause prior audio, missing sources stay silent, volume is capped in FX Lab, and playback errors are contained.",
@@ -3983,26 +3378,15 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W6-002",
-        "W6-003",
-        "W6-004"
-      ],
+      "depends_on": ["W6-002", "W6-003", "W6-004"],
       "objective": "Expose each effect in UI Catalog with light/dark, reduced-motion and intensity variants.",
-      "scope_hints": [
-        "apps/ui-catalog",
-        "packages/ui"
-      ],
-      "deliverables": [
-        "FX catalogue specimen and snapshots."
-      ],
+      "scope_hints": ["apps/ui-catalog", "packages/ui"],
+      "deliverables": ["FX catalogue specimen and snapshots."],
       "acceptance_criteria": [
         "All FX have documented intended use and anti-pattern.",
         "No duplicate one-off CSS effect outside shared package without reason."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "FX catalog exposes shared effects with intended-use/anti-pattern guidance and verified intensity variants. Contact sheet binary generation is outside acceptance criteria and none is claimed.",
@@ -4041,23 +3425,15 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "serial",
-      "depends_on": [
-        "W0-006"
-      ],
+      "depends_on": ["W0-006"],
       "objective": "Map current specimens, state controls, screenshot harness and bundle budget.",
-      "scope_hints": [
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Creative Lab integration plan."
-      ],
+      "scope_hints": ["apps/ui-catalog"],
+      "deliverables": ["Creative Lab integration plan."],
       "acceptance_criteria": [
         "Extend existing app and test harness.",
         "Do not create a duplicate catalog app."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -4091,25 +3467,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W7-001",
-        "W2-005"
-      ],
+      "depends_on": ["W7-001", "W2-005"],
       "objective": "Browse canonical assets by category, pack, subject, domain, variant and status.",
-      "scope_hints": [
-        "apps/ui-catalog/src"
-      ],
-      "deliverables": [
-        "Asset browser UI with deterministic fixture data."
-      ],
+      "scope_hints": ["apps/ui-catalog/src"],
+      "deliverables": ["Asset browser UI with deterministic fixture data."],
       "acceptance_criteria": [
         "Uses manifest data.",
         "No fabricated production domain records.",
         "Keyboard/filter/accessibility supported."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Asset browser uses canonical manifest and provenance with accessible filters, loading/error states, responsive layout, and no fabricated domain data. Its bundle stays inside configured budgets.",
@@ -4148,26 +3515,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W7-002",
-        "W3-009",
-        "W5-008"
-      ],
+      "depends_on": ["W7-002", "W3-009", "W5-008"],
       "objective": "Preview identity sheets, poses, expressions and animation states.",
-      "scope_hints": [
-        "apps/ui-catalog/src"
-      ],
-      "deliverables": [
-        "Character Studio."
-      ],
+      "scope_hints": ["apps/ui-catalog/src"],
+      "deliverables": ["Character Studio."],
       "acceptance_criteria": [
         "Character ID and state displayed as metadata.",
         "Preview can pause/reset/switch variants.",
         "No persistent editing API implied unless implemented."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Character Studio previews canonical imported clip frames with working play/pause/reset; reduced motion starts static and playback is explicit. Both motion modes now pass browser tests.",
@@ -4221,25 +3578,15 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W7-002",
-        "W4-008",
-        "W5-005"
-      ],
+      "depends_on": ["W7-002", "W4-008", "W5-005"],
       "objective": "Toggle layers, change z-order, inspect pivots and preview breakpoints.",
-      "scope_hints": [
-        "apps/ui-catalog/src"
-      ],
-      "deliverables": [
-        "Environment/Layer Inspector."
-      ],
+      "scope_hints": ["apps/ui-catalog/src"],
+      "deliverables": ["Environment/Layer Inspector."],
       "acceptance_criteria": [
         "Preview state can be reset to fixture baseline.",
         "Does not mutate canonical assets."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "SceneLab Moon City inspector already provides breakpoint-specific Desktop/Mobile compositions, guides, layer controls and a canonical reset; verified the reset and layer baseline on mobile-width harness.",
@@ -4273,26 +3620,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W7-003",
-        "W6-007",
-        "W5-007"
-      ],
+      "depends_on": ["W7-003", "W6-007", "W5-007"],
       "objective": "Provide play/pause/reset/scrub or discrete deterministic states for animation/FX.",
-      "scope_hints": [
-        "apps/ui-catalog/src"
-      ],
-      "deliverables": [
-        "Timeline/FX lab specimen."
-      ],
+      "scope_hints": ["apps/ui-catalog/src"],
+      "deliverables": ["Timeline/FX lab specimen."],
       "acceptance_criteria": [
         "Preview is deterministic in tests.",
         "No autoplay with sound.",
         "Does not require a production authoring server."
       ],
-      "verification": [
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Deterministic timeline controls include a range scrubber; browser harness verifies completion and seeking to 1200ms without sound autoplay.",
@@ -4336,25 +3673,15 @@
       "priority": "P1",
       "role": "qa",
       "parallel_group": "serial",
-      "depends_on": [
-        "W7-004",
-        "W7-005",
-        "W1-006"
-      ],
+      "depends_on": ["W7-004", "W7-005", "W1-006"],
       "objective": "Preview desktop/tablet/mobile compositions and reduced-motion mode.",
-      "scope_hints": [
-        "apps/ui-catalog/tests"
-      ],
-      "deliverables": [
-        "Responsive preview controls and screenshots."
-      ],
+      "scope_hints": ["apps/ui-catalog/tests"],
+      "deliverables": ["Responsive preview controls and screenshots."],
       "acceptance_criteria": [
         "Breakpoints are actual app breakpoints, not arbitrary labels.",
         "Focal point and clipping can be reviewed side-by-side."
       ],
-      "verification": [
-        "Playwright visual tests"
-      ],
+      "verification": ["Playwright visual tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Desktop/mobile scene compositions pass browser checks for Moon City focal pivots (72%/24% desktop, 52%/20% mobile), responsive crops and static fallback. Desktop/mobile screenshots are recorded.",
@@ -4398,28 +3725,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W7-002",
-        "W5-003",
-        "W2-012"
-      ],
+      "depends_on": ["W7-002", "W5-003", "W2-012"],
       "objective": "Show missing refs, provenance gaps, size, format and scene validation.",
-      "scope_hints": [
-        "apps/ui-catalog/src",
-        "packages/assets/scripts"
-      ],
-      "deliverables": [
-        "Diagnostics panel and actionable messages."
-      ],
+      "scope_hints": ["apps/ui-catalog/src", "packages/assets/scripts"],
+      "deliverables": ["Diagnostics panel and actionable messages."],
       "acceptance_criteria": [
         "Diagnostics sourced from validators.",
         "No false green when validation has not run.",
         "Can export report."
       ],
-      "verification": [
-        "pnpm test:ui-catalog",
-        "pnpm assets:validate"
-      ],
+      "verification": ["pnpm test:ui-catalog", "pnpm assets:validate"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Build-time report comes from canonical asset and scene validators, remains unavailable in the UI until loaded, and exports as JSON; browser load/export passes.",
@@ -4478,28 +3793,17 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real base models, views, menu/access rules, API routes and current Board consumer. Domain: People, partners, companies, users, activities, attachments, tags, records.",
-      "scope_hints": [
-        "packages/orm-base",
-        "apps/api/src/addons/registry.ts",
-        "apps/board/src"
-      ],
-      "deliverables": [
-        "base domain-to-screen-to-asset mapping with source paths and real states"
-      ],
+      "scope_hints": ["packages/orm-base", "apps/api/src/addons/registry.ts", "apps/board/src"],
+      "deliverables": ["base domain-to-screen-to-asset mapping with source paths and real states"],
       "acceptance_criteria": [
         "Every model, view, route and permission cited is verified in current source.",
         "Missing or unavailable consumer routes are explicitly marked, not invented.",
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -4548,28 +3852,17 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real auth models, views, menu/access rules, API routes and current Board consumer. Domain: Identity, login, registration, security and session states.",
-      "scope_hints": [
-        "packages/auth",
-        "apps/api/src/addons/registry.ts",
-        "apps/board/src"
-      ],
-      "deliverables": [
-        "auth domain-to-screen-to-asset mapping with source paths and real states"
-      ],
+      "scope_hints": ["packages/auth", "apps/api/src/addons/registry.ts", "apps/board/src"],
+      "deliverables": ["auth domain-to-screen-to-asset mapping with source paths and real states"],
       "acceptance_criteria": [
         "Every model, view, route and permission cited is verified in current source.",
         "Missing or unavailable consumer routes are explicitly marked, not invented.",
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -4618,28 +3911,17 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real jobs models, views, menu/access rules, API routes and current Board consumer. Domain: Queues, jobs, scheduled work, execution and failure states.",
-      "scope_hints": [
-        "packages/jobs",
-        "apps/api/src/addons/registry.ts",
-        "apps/board/src"
-      ],
-      "deliverables": [
-        "jobs domain-to-screen-to-asset mapping with source paths and real states"
-      ],
+      "scope_hints": ["packages/jobs", "apps/api/src/addons/registry.ts", "apps/board/src"],
+      "deliverables": ["jobs domain-to-screen-to-asset mapping with source paths and real states"],
       "acceptance_criteria": [
         "Every model, view, route and permission cited is verified in current source.",
         "Missing or unavailable consumer routes are explicitly marked, not invented.",
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -4688,9 +3970,7 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real integration models, views, menu/access rules, API routes and current Board consumer. Domain: Webhook endpoints, delivery and connector states.",
       "scope_hints": [
         "packages/orm-integration",
@@ -4706,10 +3986,7 @@
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -4758,15 +4035,9 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real whatsapp models, views, menu/access rules, API routes and current Board consumer. Domain: Accounts, conversations, messages, media and contact states.",
-      "scope_hints": [
-        "packages/orm-whatsapp",
-        "apps/api/src/addons/registry.ts",
-        "apps/board/src"
-      ],
+      "scope_hints": ["packages/orm-whatsapp", "apps/api/src/addons/registry.ts", "apps/board/src"],
       "deliverables": [
         "whatsapp domain-to-screen-to-asset mapping with source paths and real states"
       ],
@@ -4776,10 +4047,7 @@
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -4828,15 +4096,9 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real request models, views, menu/access rules, API routes and current Board consumer. Domain: Purchase requests and approval lifecycle.",
-      "scope_hints": [
-        "packages/orm-request",
-        "apps/api/src/addons/registry.ts",
-        "apps/board/src"
-      ],
+      "scope_hints": ["packages/orm-request", "apps/api/src/addons/registry.ts", "apps/board/src"],
       "deliverables": [
         "request domain-to-screen-to-asset mapping with source paths and real states"
       ],
@@ -4846,10 +4108,7 @@
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -4898,9 +4157,7 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real notification models, views, menu/access rules, API routes and current Board consumer. Domain: Inbox, unread/read/archived and channel states.",
       "scope_hints": [
         "packages/orm-notification",
@@ -4916,10 +4173,7 @@
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -4968,9 +4222,7 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real organization models, views, menu/access rules, API routes and current Board consumer. Domain: Departments, teams, positions, memberships and hierarchy.",
       "scope_hints": [
         "packages/orm-organization",
@@ -4986,10 +4238,7 @@
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -5038,15 +4287,9 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real workflow models, views, menu/access rules, API routes and current Board consumer. Domain: Definitions, instances, transitions, approvals and event history.",
-      "scope_hints": [
-        "packages/orm-workflow",
-        "apps/api/src/addons/registry.ts",
-        "apps/board/src"
-      ],
+      "scope_hints": ["packages/orm-workflow", "apps/api/src/addons/registry.ts", "apps/board/src"],
       "deliverables": [
         "workflow domain-to-screen-to-asset mapping with source paths and real states"
       ],
@@ -5056,10 +4299,7 @@
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -5108,9 +4348,7 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real knowledge models, views, menu/access rules, API routes and current Board consumer. Domain: Witness testimony, source, evidence, corrections, interpretations and research graph.",
       "scope_hints": [
         "packages/orm-knowledge",
@@ -5126,10 +4364,7 @@
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -5178,15 +4413,9 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real orm-storage models, views, menu/access rules, API routes and current Board consumer. Domain: Attachment storage providers and lifecycle states; currently provider addon has no domain models.",
-      "scope_hints": [
-        "packages/orm-storage",
-        "apps/api/src/addons/registry.ts",
-        "apps/board/src"
-      ],
+      "scope_hints": ["packages/orm-storage", "apps/api/src/addons/registry.ts", "apps/board/src"],
       "deliverables": [
         "orm-storage domain-to-screen-to-asset mapping with source paths and real states"
       ],
@@ -5196,10 +4425,7 @@
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -5248,28 +4474,17 @@
       "priority": "P1",
       "role": "auditor",
       "parallel_group": "addon-audit",
-      "depends_on": [
-        "W0-005"
-      ],
+      "depends_on": ["W0-005"],
       "objective": "Inspect the real ai models, views, menu/access rules, API routes and current Board consumer. Domain: Agents, profiles, models, providers, contracts, runs, taskforces, skills and memory.",
-      "scope_hints": [
-        "packages/orm-ai",
-        "apps/api/src/addons/registry.ts",
-        "apps/board/src"
-      ],
-      "deliverables": [
-        "ai domain-to-screen-to-asset mapping with source paths and real states"
-      ],
+      "scope_hints": ["packages/orm-ai", "apps/api/src/addons/registry.ts", "apps/board/src"],
+      "deliverables": ["ai domain-to-screen-to-asset mapping with source paths and real states"],
       "acceptance_criteria": [
         "Every model, view, route and permission cited is verified in current source.",
         "Missing or unavailable consumer routes are explicitly marked, not invented.",
         "Existing visual assets/components are identified for reuse.",
         "ORM/API ownership boundaries remain unchanged."
       ],
-      "verification": [
-        "focused source review",
-        "pnpm --filter @moonwitness/board typecheck"
-      ],
+      "verification": ["focused source review", "pnpm --filter @moonwitness/board typecheck"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "",
@@ -5318,18 +4533,9 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D01",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D01", "W2-005", "W1-008"],
       "objective": "Implement only the verified base asset references, UI compositions and state treatments based on W8-D01. Domain: People, partners, companies, users, activities, attachments, tags, records.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets",
-        "packages/ui",
-        "packages/orm-base"
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets", "packages/ui", "packages/orm-base"],
       "deliverables": [
         "base addon asset coverage and tested UI specimens/consumer integration where a real screen exists"
       ],
@@ -5400,18 +4606,9 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D02",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D02", "W2-005", "W1-008"],
       "objective": "Implement only the verified auth asset references, UI compositions and state treatments based on W8-D02. Domain: Identity, login, registration, security and session states.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets",
-        "packages/ui",
-        "packages/auth"
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets", "packages/ui", "packages/auth"],
       "deliverables": [
         "auth addon asset coverage and tested UI specimens/consumer integration where a real screen exists"
       ],
@@ -5487,18 +4684,9 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D03",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D03", "W2-005", "W1-008"],
       "objective": "Implement only the verified jobs asset references, UI compositions and state treatments based on W8-D03. Domain: Queues, jobs, scheduled work, execution and failure states.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets",
-        "packages/ui",
-        "packages/jobs"
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets", "packages/ui", "packages/jobs"],
       "deliverables": [
         "jobs addon asset coverage and tested UI specimens/consumer integration where a real screen exists"
       ],
@@ -5589,11 +4777,7 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D04",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D04", "W2-005", "W1-008"],
       "objective": "Implement only the verified integration asset references, UI compositions and state treatments based on W8-D04. Domain: Webhook endpoints, delivery and connector states.",
       "scope_hints": [
         "apps/board/src",
@@ -5691,18 +4875,9 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D05",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D05", "W2-005", "W1-008"],
       "objective": "Implement only the verified whatsapp asset references, UI compositions and state treatments based on W8-D05. Domain: Accounts, conversations, messages, media and contact states.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets",
-        "packages/ui",
-        "packages/orm-whatsapp"
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets", "packages/ui", "packages/orm-whatsapp"],
       "deliverables": [
         "whatsapp addon asset coverage and tested UI specimens/consumer integration where a real screen exists"
       ],
@@ -5788,18 +4963,9 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D06",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D06", "W2-005", "W1-008"],
       "objective": "Implement only the verified request asset references, UI compositions and state treatments based on W8-D06. Domain: Purchase requests and approval lifecycle.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets",
-        "packages/ui",
-        "packages/orm-request"
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets", "packages/ui", "packages/orm-request"],
       "deliverables": [
         "request addon asset coverage and tested UI specimens/consumer integration where a real screen exists"
       ],
@@ -5890,11 +5056,7 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D07",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D07", "W2-005", "W1-008"],
       "objective": "Implement only the verified notification asset references, UI compositions and state treatments based on W8-D07. Domain: Inbox, unread/read/archived and channel states.",
       "scope_hints": [
         "apps/board/src",
@@ -5992,11 +5154,7 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D08",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D08", "W2-005", "W1-008"],
       "objective": "Implement only the verified organization asset references, UI compositions and state treatments based on W8-D08. Domain: Departments, teams, positions, memberships and hierarchy.",
       "scope_hints": [
         "apps/board/src",
@@ -6089,18 +5247,9 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D09",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D09", "W2-005", "W1-008"],
       "objective": "Implement only the verified workflow asset references, UI compositions and state treatments based on W8-D09. Domain: Definitions, instances, transitions, approvals and event history.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets",
-        "packages/ui",
-        "packages/orm-workflow"
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets", "packages/ui", "packages/orm-workflow"],
       "deliverables": [
         "workflow addon asset coverage and tested UI specimens/consumer integration where a real screen exists"
       ],
@@ -6191,19 +5340,9 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D10",
-        "W2-005",
-        "W1-008",
-        "W4-001"
-      ],
+      "depends_on": ["W8-D10", "W2-005", "W1-008", "W4-001"],
       "objective": "Implement only the verified knowledge asset references, UI compositions and state treatments based on W8-D10. Domain: Witness testimony, source, evidence, corrections, interpretations and research graph.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets",
-        "packages/ui",
-        "packages/orm-knowledge"
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets", "packages/ui", "packages/orm-knowledge"],
       "deliverables": [
         "knowledge addon asset coverage and tested UI specimens/consumer integration where a real screen exists"
       ],
@@ -6294,18 +5433,9 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D11",
-        "W2-005",
-        "W1-008"
-      ],
+      "depends_on": ["W8-D11", "W2-005", "W1-008"],
       "objective": "Implement only the verified orm-storage asset references, UI compositions and state treatments based on W8-D11. Domain: Attachment storage providers and lifecycle states; currently provider addon has no domain models.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets",
-        "packages/ui",
-        "packages/orm-storage"
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets", "packages/ui", "packages/orm-storage"],
       "deliverables": [
         "orm-storage addon asset coverage and tested UI specimens/consumer integration where a real screen exists"
       ],
@@ -6381,19 +5511,9 @@
       "priority": "P1",
       "role": "domain-designer",
       "parallel_group": "addon-visuals",
-      "depends_on": [
-        "W8-D12",
-        "W2-005",
-        "W1-008",
-        "W3-001"
-      ],
+      "depends_on": ["W8-D12", "W2-005", "W1-008", "W3-001"],
       "objective": "Implement only the verified ai asset references, UI compositions and state treatments based on W8-D12. Domain: Agents, profiles, models, providers, contracts, runs, taskforces, skills and memory.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets",
-        "packages/ui",
-        "packages/orm-ai"
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets", "packages/ui", "packages/orm-ai"],
       "deliverables": [
         "ai addon asset coverage and tested UI specimens/consumer integration where a real screen exists"
       ],
@@ -6469,27 +5589,16 @@
       "priority": "P0",
       "role": "scene-composer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W3-006",
-        "W4-007",
-        "W5-003"
-      ],
+      "depends_on": ["W3-006", "W4-007", "W5-003"],
       "objective": "Compose approved sky, moon, cloud, city, character and foreground assets into one scene.",
-      "scope_hints": [
-        "packages/assets/scenes/home"
-      ],
-      "deliverables": [
-        "Versioned Moon City scene manifest."
-      ],
+      "scope_hints": ["packages/assets/scenes/home"],
+      "deliverables": ["Versioned Moon City scene manifest."],
       "acceptance_criteria": [
         "All references resolve.",
         "Scene has desktop/mobile variants or responsive composition rules.",
         "Scene contains no UI copy or product metrics."
       ],
-      "verification": [
-        "scene validation",
-        "contact sheet"
-      ],
+      "verification": ["scene validation", "contact sheet"],
       "risk": "low",
       "human_approval_required": true,
       "notes": "Pilot character identity and source licensing need explicit approval; current crew registry is review-only and generated Moon City art is not distributable.",
@@ -6528,22 +5637,14 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W9-001",
-        "W5-005",
-        "W5-006",
-        "W5-007",
-        "W5-009"
-      ],
+      "depends_on": ["W9-001", "W5-005", "W5-006", "W5-007", "W5-009"],
       "objective": "Integrate first living scene into homepage without replacing real HTML navigation/copy/CTA.",
       "scope_hints": [
         "apps/board/src/app/page.tsx",
         "apps/board/src/components/home",
         "apps/board/src/app/global.css"
       ],
-      "deliverables": [
-        "Production homepage hero scene."
-      ],
+      "deliverables": ["Production homepage hero scene."],
       "acceptance_criteria": [
         "Visual hierarchy matches approved reference DNA.",
         "Character and environment animation are visible but not distracting.",
@@ -6598,28 +5699,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W9-002",
-        "W6-004",
-        "W5-006"
-      ],
+      "depends_on": ["W9-002", "W6-004", "W5-006"],
       "objective": "Connect homepage story sections with controlled reveal/camera transitions.",
-      "scope_hints": [
-        "apps/board/src/app/page.tsx",
-        "apps/board/src/app/global.css"
-      ],
-      "deliverables": [
-        "Scroll-linked scene transition specimens and production integration."
-      ],
+      "scope_hints": ["apps/board/src/app/page.tsx", "apps/board/src/app/global.css"],
+      "deliverables": ["Scroll-linked scene transition specimens and production integration."],
       "acceptance_criteria": [
         "No scroll hijacking or hidden content.",
         "Reduced-motion has direct static order.",
         "Mobile touch scrolling remains native."
       ],
-      "verification": [
-        "Playwright scroll tests",
-        "reduced-motion tests"
-      ],
+      "verification": ["Playwright scroll tests", "reduced-motion tests"],
       "risk": "medium",
       "human_approval_required": false,
       "notes": "Blocked by W9-002; no production scene exists to transition between.",
@@ -6658,26 +5747,15 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W8-009",
-        "W8-010",
-        "W9-001"
-      ],
+      "depends_on": ["W8-009", "W8-010", "W9-001"],
       "objective": "Use existing asset IDs and scene contracts for the next two content experiences when those routes exist.",
-      "scope_hints": [
-        "apps/board/src"
-      ],
-      "deliverables": [
-        "Signals/Archive scene integration or documented route-gap decision."
-      ],
+      "scope_hints": ["apps/board/src"],
+      "deliverables": ["Signals/Archive scene integration or documented route-gap decision."],
       "acceptance_criteria": [
         "No fake routes or unsupported live data.",
         "If actual route is absent, create approved catalog specimen only and record blocker."
       ],
-      "verification": [
-        "pnpm --filter @moonwitness/board typecheck",
-        "pnpm test:e2e"
-      ],
+      "verification": ["pnpm --filter @moonwitness/board typecheck", "pnpm test:e2e"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Blocked by W9-001 and absent /signals and /archive routes; no route or production data will be invented.",
@@ -6711,27 +5789,16 @@
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W8-001",
-        "W8-010",
-        "W3-009"
-      ],
+      "depends_on": ["W8-001", "W8-010", "W3-009"],
       "objective": "Apply character/environment assets to existing user and story experiences only where supported by product data.",
-      "scope_hints": [
-        "apps/board/src"
-      ],
-      "deliverables": [
-        "Crew/Story scene or editorial compositions."
-      ],
+      "scope_hints": ["apps/board/src"],
+      "deliverables": ["Crew/Story scene or editorial compositions."],
       "acceptance_criteria": [
         "Real users remain real data or neutral avatars.",
         "Fictional character examples are visibly marked as examples in catalog.",
         "No fictional crew metrics or maps in production."
       ],
-      "verification": [
-        "pnpm test:e2e:visual",
-        "pnpm test:ui-catalog"
-      ],
+      "verification": ["pnpm test:e2e:visual", "pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Story editorial composition and catalog-only crew sample are verified, but the required shared visual E2E gate remains red on snapshot and locator drift. Resume after W9-006 visual baseline/gate is repaired; do not add fictional crew data or assets to production.",
@@ -6771,28 +5838,16 @@
       "priority": "P0",
       "role": "qa",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-005",
-        "W6-002",
-        "W8-001"
-      ],
+      "depends_on": ["W5-005", "W6-002", "W8-001"],
       "objective": "Ensure new immersive runtime does not leak into dense forms, tables or admin data flows.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/ui"
-      ],
-      "deliverables": [
-        "Board regression report."
-      ],
+      "scope_hints": ["apps/board/src", "packages/ui"],
+      "deliverables": ["Board regression report."],
       "acceptance_criteria": [
         "Existing Board light/dark themes, skins and density remain intact.",
         "Operational screens use restrained motion and valid focus boundaries.",
         "No measurable layout shift/regression."
       ],
-      "verification": [
-        "pnpm board:ui:check",
-        "pnpm test:e2e:visual:matrix"
-      ],
+      "verification": ["pnpm board:ui:check", "pnpm test:e2e:visual:matrix"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Board boundary, typecheck, lint, responsive overflow and bundle budgets pass, but visual matrix fails: Chromium baseline/write/locator issues and missing Firefox/WebKit executables. No snapshots were updated. Resume after reviewing current UI against expected baselines and restoring the browser matrix.",
@@ -6832,17 +5887,10 @@
       "priority": "P0",
       "role": "architect",
       "parallel_group": "serial",
-      "depends_on": [
-        "W5-002",
-        "W5-011"
-      ],
+      "depends_on": ["W5-002", "W5-011"],
       "objective": "Audit desktop UI technology and performance before adopting world runtime.",
-      "scope_hints": [
-        "apps/desktop"
-      ],
-      "deliverables": [
-        "Desktop integration decision and optional proof."
-      ],
+      "scope_hints": ["apps/desktop"],
+      "deliverables": ["Desktop integration decision and optional proof."],
       "acceptance_criteria": [
         "No UI/assets dependency added blindly.",
         "Shared formats can be consumed without browser-only globals leaking into shared contracts.",
@@ -6895,30 +5943,16 @@
       "priority": "P0",
       "role": "technical-writer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W8-001",
-        "W8-012",
-        "W2-010"
-      ],
+      "depends_on": ["W8-001", "W8-012", "W2-010"],
       "objective": "Document how addons request/reuse UI asset IDs without importing artwork into ORM/server.",
-      "scope_hints": [
-        "docs",
-        "packages/orm-*",
-        "packages/assets",
-        "packages/ui"
-      ],
-      "deliverables": [
-        "Developer guide for addon-to-visual mapping."
-      ],
+      "scope_hints": ["docs", "packages/orm-*", "packages/assets", "packages/ui"],
+      "deliverables": ["Developer guide for addon-to-visual mapping."],
       "acceptance_criteria": [
         "Backend packages remain presentation-agnostic.",
         "No circular dependency from ORM to assets/UI.",
         "Static visual ID to runtime component mapping is explicit."
       ],
-      "verification": [
-        "pnpm docs:check",
-        "pnpm docs:links"
-      ],
+      "verification": ["pnpm docs:check", "pnpm docs:links"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Created docs/design/addon-visual-handoff.md with the backend/API/Board boundary and explicit canonical asset-to-presentation mapping for all 12 active add-ons. Regenerated stale API/model/platform/workspace references from current dev source; unrelated local work remains outside this commit.",
@@ -6967,27 +6001,16 @@
       "priority": "P1",
       "role": "performance",
       "parallel_group": "serial",
-      "depends_on": [
-        "W9-002"
-      ],
+      "depends_on": ["W9-002"],
       "objective": "Measure current and new scene route cold load, JS/CSS, asset transfer, CPU/GPU and frame cadence.",
-      "scope_hints": [
-        "scripts",
-        "apps/board",
-        "apps/ui-catalog"
-      ],
-      "deliverables": [
-        "Baseline and budget document."
-      ],
+      "scope_hints": ["scripts", "apps/board", "apps/ui-catalog"],
+      "deliverables": ["Baseline and budget document."],
       "acceptance_criteria": [
         "Measurements on named reference devices/browser.",
         "Initial route and deferred scene budgets are separated.",
         "No arbitrary performance claim."
       ],
-      "verification": [
-        "pnpm board:budget",
-        "Playwright performance run"
-      ],
+      "verification": ["pnpm board:budget", "Playwright performance run"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Blocked by W9-002; performance measurements for the new scene cannot be recorded before that route exists. Existing Board bundle budget passes.",
@@ -7026,28 +6049,16 @@
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W10-001",
-        "W2-006",
-        "W9-002"
-      ],
+      "depends_on": ["W10-001", "W2-006", "W9-002"],
       "objective": "Implement lazy scene loading, preloading policy and responsive media selection.",
-      "scope_hints": [
-        "apps/board/src",
-        "packages/assets"
-      ],
-      "deliverables": [
-        "Loading/cache policy and tests."
-      ],
+      "scope_hints": ["apps/board/src", "packages/assets"],
+      "deliverables": ["Loading/cache policy and tests."],
       "acceptance_criteria": [
         "Only initial scene critical assets are eagerly loaded.",
         "Offscreen scenes do not download unnecessary media.",
         "Failed loads show fallback and retry where relevant."
       ],
-      "verification": [
-        "network asset audit",
-        "pnpm test:e2e"
-      ],
+      "verification": ["network asset audit", "pnpm test:e2e"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Blocked by W9-002 and W10-001; no approved scene assets exist for loading/cache optimization.",
@@ -7086,27 +6097,16 @@
       "priority": "P1",
       "role": "accessibility",
       "parallel_group": "serial",
-      "depends_on": [
-        "W1-007",
-        "W5-004",
-        "W9-002"
-      ],
+      "depends_on": ["W1-007", "W5-004", "W9-002"],
       "objective": "Support reduced-motion, data-saver/low-capability settings where detectably appropriate.",
-      "scope_hints": [
-        "packages/ui",
-        "apps/board"
-      ],
-      "deliverables": [
-        "Motion mode policy and tests."
-      ],
+      "scope_hints": ["packages/ui", "apps/board"],
+      "deliverables": ["Motion mode policy and tests."],
       "acceptance_criteria": [
         "User preference is respected before first meaningful playback.",
         "Low-power mode does not imply inaccessible hidden content.",
         "No preference is silently overridden."
       ],
-      "verification": [
-        "Playwright reduced-motion tests"
-      ],
+      "verification": ["Playwright reduced-motion tests"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Blocked by W9-002; reduced-motion and low-power scene policy needs the production scene consumer.",
@@ -7145,29 +6145,16 @@
       "priority": "P1",
       "role": "qa",
       "parallel_group": "serial",
-      "depends_on": [
-        "W9-002",
-        "W9-006",
-        "W10-003"
-      ],
+      "depends_on": ["W9-002", "W9-006", "W10-003"],
       "objective": "Run desktop/tablet/mobile, light/dark, keyboard, touch, reduced motion and fallback tests.",
-      "scope_hints": [
-        "apps/ui-catalog/tests",
-        "apps/board/e2e"
-      ],
-      "deliverables": [
-        "Visual evidence matrix and issues list."
-      ],
+      "scope_hints": ["apps/ui-catalog/tests", "apps/board/e2e"],
+      "deliverables": ["Visual evidence matrix and issues list."],
       "acceptance_criteria": [
         "Critical production pages have review evidence.",
         "Axe/keyboard checks cover changed user flows.",
         "Known limitations are explicit."
       ],
-      "verification": [
-        "pnpm test:ui",
-        "pnpm test:ui-catalog",
-        "pnpm test:e2e:visual:matrix"
-      ],
+      "verification": ["pnpm test:ui", "pnpm test:ui-catalog", "pnpm test:e2e:visual:matrix"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Blocked by W9-002, W9-006, and W10-003; visual matrix remains red and the scene is absent.",
@@ -7206,20 +6193,10 @@
       "priority": "P1",
       "role": "qa",
       "parallel_group": "serial",
-      "depends_on": [
-        "W2-010",
-        "W5-011",
-        "W9-007"
-      ],
+      "depends_on": ["W2-010", "W5-011", "W9-007"],
       "objective": "Build, pack and consume assets/UI packages from apps and run API/desktop boundaries.",
-      "scope_hints": [
-        "packages/assets",
-        "packages/ui",
-        "apps/*/package.json"
-      ],
-      "deliverables": [
-        "Package verification report."
-      ],
+      "scope_hints": ["packages/assets", "packages/ui", "apps/*/package.json"],
+      "deliverables": ["Package verification report."],
       "acceptance_criteria": [
         "Public exports resolve from actual consumer apps.",
         "No private dist imports.",
@@ -7277,31 +6254,17 @@
       "priority": "P1",
       "role": "release-engineer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W10-004",
-        "W10-005"
-      ],
+      "depends_on": ["W10-004", "W10-005"],
       "objective": "Run relevant repository CI gates and check license, provenance, dependencies, performance and accessibility.",
-      "scope_hints": [
-        ".github/workflows",
-        "packages",
-        "apps"
-      ],
-      "deliverables": [
-        "Release-quality report."
-      ],
+      "scope_hints": [".github/workflows", "packages", "apps"],
+      "deliverables": ["Release-quality report."],
       "acceptance_criteria": [
         "No secrets or licensing violations.",
         "No broken source manifests or generated artifacts.",
         "No unreviewed breaking API changes.",
         "No failing relevant required gate."
       ],
-      "verification": [
-        "pnpm lint",
-        "pnpm test",
-        "pnpm test:integration",
-        "pnpm test:e2e"
-      ],
+      "verification": ["pnpm lint", "pnpm test", "pnpm test:integration", "pnpm test:e2e"],
       "risk": "high",
       "human_approval_required": false,
       "notes": "Blocked by W10-004; full release quality/security review requires the scene and visual/accessibility matrix.",
@@ -7345,29 +6308,16 @@
       "priority": "P1",
       "role": "technical-writer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W10-006"
-      ],
+      "depends_on": ["W10-006"],
       "objective": "Publish final implementation, asset catalog and evidence guide.",
-      "scope_hints": [
-        "README.md",
-        "docs",
-        "CHANGELOG.md",
-        "ROADMAP.md"
-      ],
-      "deliverables": [
-        "Final changelog, README/docs index, evidence links and closure report."
-      ],
+      "scope_hints": ["README.md", "docs", "CHANGELOG.md", "ROADMAP.md"],
+      "deliverables": ["Final changelog, README/docs index, evidence links and closure report."],
       "acceptance_criteria": [
         "All tasks have accurate statuses and evidence.",
         "Deferred/blocked tasks are not claimed complete.",
         "Version bump follows repo release policy, not every commit."
       ],
-      "verification": [
-        "pnpm docs:check",
-        "pnpm docs:links",
-        "git diff --check"
-      ],
+      "verification": ["pnpm docs:check", "pnpm docs:links", "git diff --check"],
       "risk": "low",
       "human_approval_required": false,
       "notes": "Blocked by W10-006; final handoff cannot claim hero acceptance while upstream gates remain blocked.",
@@ -7406,27 +6356,17 @@
       "priority": "P1",
       "role": "release-engineer",
       "parallel_group": "serial",
-      "depends_on": [
-        "W10-007"
-      ],
+      "depends_on": ["W10-007"],
       "objective": "Commit coherent completed batches and push only through repository-approved branch workflow.",
-      "scope_hints": [
-        "git"
-      ],
-      "deliverables": [
-        "Commit hashes and dev push/PR evidence."
-      ],
+      "scope_hints": ["git"],
+      "deliverables": ["Commit hashes and dev push/PR evidence."],
       "acceptance_criteria": [
         "No force push or protected branch bypass.",
         "Never push main/master directly.",
         "If dev is protected and direct push is rejected, use repository-approved PR path or stop and report exact blocker.",
         "No empty commits."
       ],
-      "verification": [
-        "git status --short --branch",
-        "git log -n 10 --oneline",
-        "git remote -v"
-      ],
+      "verification": ["git status --short --branch", "git log -n 10 --oneline", "git remote -v"],
       "risk": "high",
       "human_approval_required": false,
       "notes": "Blocked by W10-007; incremental commits are pushed, but final release closeout depends on all prior acceptance.",

@@ -17,12 +17,13 @@ use radius_protocol::{
     verify_chap_password, verify_response_authenticator, RadiusAttribute,
 };
 use sha2::Sha256;
+use sqlx::Row;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::str::FromStr;
 use std::time::Duration;
 use tokio::net::UdpSocket;
 use tokio::signal;
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 
 #[derive(Parser, Debug)]
 #[command(name = "moonwitness-isp", version, about = "MoonWitness ISP & RADIUS Server")]
@@ -252,13 +253,25 @@ impl Database {
                 .bind(reason)
                 .execute(&self.pool)
                 .await?;
+            // Sessions established under the previous secret are no longer
+            // trusted: the NAS must re-authenticate with the new credential.
+            // Terminate cause 6 = Admin-Reset per RFC 2866 §5.4.6.
+            sqlx::query(
+                "UPDATE radius_sessions
+                 SET status = 'terminated', terminate_cause = 6, stopped_at = datetime('now'), updated_at = datetime('now')
+                 WHERE nas_ip = ?1 AND status = 'active'",
+            )
+            .bind(ip_address)
+            .execute(&self.pool)
+            .await?;
         }
         Ok(client)
     }
 
     async fn find_subscriber(&self, username: &str) -> Result<Option<SubscriberRow>> {
         let row = sqlx::query_as(
-            "SELECT id, username, password, connection_type, framed_ip, download_kbps, upload_kbps, status
+            "SELECT id, username, password, connection_type, framed_ip, download_kbps, upload_kbps, status,
+                    quota_bytes, quota_reset_cadence, quota_used_bytes, last_quota_reset_at
              FROM subscribers WHERE username = ?1",
         )
         .bind(username)
@@ -485,6 +498,76 @@ impl Database {
         .await?;
         Ok(())
     }
+
+    /// Reset quota_used_bytes to 0 and update last_quota_reset_at if the cadence window has elapsed.
+    async fn maybe_reset_quota(&self, username: &str) -> Result<()> {
+        let row = sqlx::query(
+            "SELECT quota_reset_cadence, last_quota_reset_at FROM subscribers WHERE username = ?1",
+        )
+        .bind(username)
+        .fetch_optional(&self.pool)
+        .await?;
+        let Some(r) = row else { return Ok(()) };
+        let cadence: String = r.try_get("quota_reset_cadence")?;
+        if cadence == "never" {
+            return Ok(());
+        }
+        let reset_sql = match cadence.as_str() {
+            "daily" => "date('now', '-1 day')",
+            "weekly" => "date('now', '-7 day')",
+            "monthly" => "date('now', '-1 month')",
+            _ => return Ok(()),
+        };
+        let updated = sqlx::query(&format!(
+            "UPDATE subscribers
+             SET quota_used_bytes = 0, last_quota_reset_at = datetime('now')
+             WHERE username = ?1
+               AND quota_reset_cadence = ?2
+               AND date(last_quota_reset_at) < {reset_sql}",
+        ))
+        .bind(username)
+        .bind(cadence)
+        .execute(&self.pool)
+        .await?;
+        if updated.rows_affected() > 0 {
+            debug!("Quota reset for {}", username);
+        }
+        Ok(())
+    }
+
+    /// Accumulate octets from radius_sessions into subscribers.quota_used_bytes for active sessions.
+    async fn accumulate_quota_usage(&self, username: &str) -> Result<()> {
+        let total: Option<i64> = sqlx::query_scalar(
+            "SELECT COALESCE(SUM(acct_input_octets + acct_output_octets), 0)
+             FROM radius_sessions WHERE username = ?1 AND status = 'active'",
+        )
+        .bind(username)
+        .fetch_one(&self.pool)
+        .await?;
+        sqlx::query(
+            "UPDATE subscribers
+             SET quota_used_bytes = quota_used_bytes + ?1
+             WHERE username = ?2 AND ?1 > 0",
+        )
+        .bind(total)
+        .bind(username)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+
+    /// Mark quota-disconnect flag on active sessions for this subscriber.
+    async fn mark_quota_disconnect(&self, username: &str) -> Result<()> {
+        sqlx::query(
+            "UPDATE radius_sessions
+             SET quota_disconnect_sent = 1
+             WHERE username = ?1 AND status = 'active' AND quota_disconnect_sent = 0",
+        )
+        .bind(username)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
 }
 
 #[derive(sqlx::FromRow, serde::Serialize, Debug)]
@@ -521,6 +604,13 @@ struct SubscriberRow {
     download_kbps: i64,
     upload_kbps: i64,
     status: String,
+    quota_bytes: i64,
+    #[allow(dead_code)]
+    quota_reset_cadence: String,
+    #[allow(dead_code)]
+    quota_used_bytes: i64,
+    #[allow(dead_code)]
+    last_quota_reset_at: String,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize, Debug)]
@@ -711,6 +801,42 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
             &[RadiusAttribute::string(
                 attr_type::REPLY_MESSAGE,
                 "Invalid credentials",
+            )],
+            secret,
+        ));
+    }
+
+    // Quota enforcement: reset if cadence window elapsed, then check limit.
+    db.maybe_reset_quota(&username).await.ok()?;
+    db.accumulate_quota_usage(&username).await.ok()?;
+    let fresh_usage: Option<i64> = sqlx::query_scalar(
+        "SELECT quota_used_bytes FROM subscribers WHERE username = ?1",
+    )
+    .bind(&username)
+    .fetch_optional(&db.pool)
+    .await
+    .ok()?;
+    let quota_limit = subscriber.quota_bytes;
+    if quota_limit > 0 && fresh_usage.unwrap_or(0) >= quota_limit {
+        let _ = db
+            .mark_quota_disconnect(&username)
+            .await;
+        let _ = db
+            .log_auth(
+                Some(nas.id),
+                &username,
+                false,
+                src_ip,
+                "Monthly quota exceeded",
+            )
+            .await;
+        return Some(encode_response(
+            codes::ACCESS_REJECT,
+            packet.identifier,
+            &packet.authenticator,
+            &[RadiusAttribute::string(
+                attr_type::REPLY_MESSAGE,
+                "Monthly quota exceeded",
             )],
             secret,
         ));
@@ -1644,5 +1770,163 @@ mod tests {
         assert_eq!(sessions[0].status, "terminated");
         assert_eq!(sessions[0].terminate_cause, Some(6));
         assert!(sessions[0].stopped_at.is_some());
+    }
+
+    #[tokio::test]
+    async fn quota_exceeded_rejects_access_request() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("Quota NAS", "127.0.0.1", "quota-secret-123")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "quota-user".to_string(),
+            password: "quota-pass".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: Some("100.64.2.1".to_string()),
+            download_kbps: Some(102400),
+            upload_kbps: Some(51200),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+
+        // Set quota to 100KB (102400 bytes)
+        sqlx::query(
+            "UPDATE subscribers SET quota_bytes = 102400, quota_used_bytes = 102400, quota_reset_cadence = 'monthly', last_quota_reset_at = datetime('now') WHERE username = 'quota-user'",
+        )
+        .execute(db.pool())
+        .await
+        .unwrap();
+
+        let req = build_pap_access_request(10, "quota-user", "quota-pass", b"quota-secret-123");
+        let resp = decode_packet(
+            &process_access_request(&db, &req, "127.0.0.1")
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(resp.code, codes::ACCESS_REJECT);
+        let msg = resp
+            .attribute(attr_type::REPLY_MESSAGE)
+            .map(RadiusAttribute::as_str)
+            .unwrap();
+        assert_eq!(msg, "Monthly quota exceeded");
+    }
+
+    #[tokio::test]
+    async fn quota_cadence_reset_allows_access_after_window() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("Cadence NAS", "127.0.0.1", "cadence-secret-123")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "cadence-user".to_string(),
+            password: "cadence-pass".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: Some("100.64.3.1".to_string()),
+            download_kbps: Some(102400),
+            upload_kbps: Some(51200),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+
+        // Set quota to 100KB, usage already at limit, but last reset was 8 days ago (weekly cadence)
+        sqlx::query(
+            "UPDATE subscribers SET quota_bytes = 102400, quota_used_bytes = 102400, quota_reset_cadence = 'weekly', last_quota_reset_at = datetime('now', '-8 day') WHERE username = 'cadence-user'",
+        )
+        .execute(db.pool())
+        .await
+        .unwrap();
+
+        // First request triggers reset, should accept
+        let req = build_pap_access_request(11, "cadence-user", "cadence-pass", b"cadence-secret-123");
+        let resp = decode_packet(
+            &process_access_request(&db, &req, "127.0.0.1")
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(resp.code, codes::ACCESS_ACCEPT);
+
+        // Usage should be reset to 0
+        let usage: i64 = sqlx::query_scalar("SELECT quota_used_bytes FROM subscribers WHERE username = 'cadence-user'")
+            .fetch_one(db.pool())
+            .await
+            .unwrap();
+        assert_eq!(usage, 0);
+    }
+
+    #[tokio::test]
+    async fn rotate_client_secret_terminates_active_sessions() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("Rotate NAS", "127.0.0.1", "rotate-secret-old")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "rotate-user".to_string(),
+            password: "rotate-pass".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: Some("100.64.4.1".to_string()),
+            download_kbps: Some(102400),
+            upload_kbps: Some(51200),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+
+        // Create an active session for this NAS
+        db.record_accounting(
+            "sess-rotate-001",
+            "rotate-user",
+            "127.0.0.1",
+            Some("1".to_string()),
+            Some("100.64.4.1".to_string()),
+            None,
+            acct_status::START,
+            0,
+            0,
+            0,
+            None,
+        )
+        .await
+        .unwrap();
+
+        let sessions_before = db.list_sessions().await.unwrap();
+        assert_eq!(sessions_before.len(), 1);
+        assert_eq!(sessions_before[0].status, "active");
+
+        // Rotate the secret
+        let rotated = db
+            .rotate_client_secret("127.0.0.1", "rotate-secret-new", "admin-rotation")
+            .await
+            .unwrap();
+        assert!(rotated.is_some());
+
+        // Session should be terminated
+        let sessions_after = db.list_sessions().await.unwrap();
+        assert_eq!(sessions_after.len(), 1);
+        assert_eq!(sessions_after[0].status, "terminated");
+        assert_eq!(sessions_after[0].terminate_cause, Some(6));
+
+        // Subsequent auth from same NAS with OLD secret should fail
+        let req_old = build_pap_access_request(12, "rotate-user", "rotate-pass", b"rotate-secret-old");
+        let resp_old = decode_packet(
+            &process_access_request(&db, &req_old, "127.0.0.1")
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(resp_old.code, codes::ACCESS_REJECT, "Old secret should not authenticate");
+
+        // Auth with NEW secret should work
+        let req_new = build_pap_access_request(13, "rotate-user", "rotate-pass", b"rotate-secret-new");
+        let resp_new = decode_packet(
+            &process_access_request(&db, &req_new, "127.0.0.1")
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(resp_new.code, codes::ACCESS_ACCEPT);
     }
 }

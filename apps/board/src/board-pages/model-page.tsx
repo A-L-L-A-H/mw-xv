@@ -11,7 +11,7 @@ import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { ListView } from '@/components/views/list-view';
 import { FormView } from '@/components/views/form-view';
 import { availableViews, parseViewName, type BoardViewName } from '@/lib/action-result';
-import { modelViewErrorState } from '@/lib/model-view-error-state.mjs';
+import { modelViewErrorState } from '@/lib/model-view-error-state';
 
 const viewFallback = () => <Skeleton className="h-96 w-full bg-ink/10" />;
 

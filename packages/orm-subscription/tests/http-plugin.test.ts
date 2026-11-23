@@ -13,6 +13,28 @@ interface RecordedResponse {
   payload: unknown;
 }
 
+interface ErrorResponse {
+  success: false;
+  error: string;
+}
+
+interface RevenueMetricsResponse {
+  success: true;
+  data: {
+    activeSubscriptions: number;
+    mrrCents: number;
+    arrCents: number;
+  };
+}
+
+interface ProrationResponse {
+  success: true;
+  data: {
+    direction: string;
+    netProrationCents: number;
+  };
+}
+
 type PluginApp = Parameters<AddonHttpPlugin>[0];
 type RouteHandler = (
   req: AddonHttpRequestBase & { body: unknown; params: unknown; query: unknown },
@@ -120,7 +142,7 @@ describe('subscriptionMetricsHttpPlugin (INV-014 manifest.httpPlugins)', () => {
       { userId: 1, role: 'user', companyId: 1 }
     );
     expect(res.statusCode).toBe(200);
-    const body = res.payload as any;
+    const body = res.payload as RevenueMetricsResponse;
     expect(body.success).toBe(true);
     expect(body.data.activeSubscriptions).toBe(2);
     expect(body.data.mrrCents).toBe(20000);
@@ -143,7 +165,7 @@ describe('subscriptionMetricsHttpPlugin (INV-014 manifest.httpPlugins)', () => {
       { userId: 1, role: 'user', companyId: 1 }
     );
     expect(res.statusCode).toBe(200);
-    const body = res.payload as any;
+    const body = res.payload as RevenueMetricsResponse;
     expect(body.success).toBe(true);
     expect(body.data.direction).toBe('upgrade');
     expect(body.data.netProrationCents).toBeGreaterThan(0);

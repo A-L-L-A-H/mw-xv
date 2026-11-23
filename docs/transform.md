@@ -8,7 +8,7 @@ Tidak menambah app workspace baru. `apps/board` menjadi app Next.js; `apps/docs`
 
 “Lengkap” berarti seluruh kebutuhan UI yang benar-benar dipakai homepage dan Board tercakup dalam sistem bersama. Bukan berarti setiap fitur pada mockup otomatis dibuat, semua file harus vektor, atau semua media dimasukkan ke `@moonwitness/ui`.
 
-Pelaksanaan detail visual Home, Board, workbench, aset sampai detail kecil, Bible terbaru, dan bukti review dicatat pada [`todo-ui.md`](../todo-ui.md). Checklist tersebut adalah satu-satunya rencana eksekusi visual agar tahapan tidak diduplikasi di sini.
+Pelaksanaan detail visual Home, Board, workbench, aset sampai detail kecil, Bible terbaru, dan bukti review dicatat pada Checklist visual dicatat di arsip `docs/archive/todos/todo-ui.md`. Checklist tersebut adalah satu-satunya rencana eksekusi visual agar tahapan tidak diduplikasi di sini.
 
 ## 1. Pembagian tanggung jawab package
 

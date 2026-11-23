@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@moonwitness/ui/components/button';
 import { useAuth } from '@/hooks/use-auth-context';
 import { client } from '@/lib/client';
-import { workflowActionState } from '@/lib/workflow-action-state.mjs';
+import { workflowActionState } from '@/lib/workflow-action-state';
 
 interface WorkflowTransition {
   action: string;

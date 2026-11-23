@@ -39,6 +39,12 @@ const ALLOWED_BRIDGE_COMMANDS: &[&str] = &[
     "sidecar.listEnvelopes",
     "mcp.listServers",
     "mcp.invoke",
+    "isp.subscribers.list",
+    "isp.subscribers.create",
+    "isp.sessions.list",
+    "isp.disconnect",
+    "isp.stats",
+    "sync.pull",
 ];
 
 #[derive(Debug, Serialize)]
@@ -336,6 +342,20 @@ fn build_bridge_init_script(api_url: &str, rpc_token: &str) -> String {
     mcp: Object.freeze({{
       listServers: () => invokeRpc('mcp.listServers', {{}}),
       invoke: (req) => invokeRpc('mcp.invoke', req),
+    }}),
+    isp: Object.freeze({{
+      subscribers: Object.freeze({{
+        list: (params) => invokeRpc('isp.subscribers.list', params || {{}}),
+        create: (payload) => invokeRpc('isp.subscribers.create', payload),
+      }}),
+      sessions: Object.freeze({{
+        list: (params) => invokeRpc('isp.sessions.list', params || {{}}),
+      }}),
+      disconnect: (payload) => invokeRpc('isp.disconnect', payload),
+      stats: () => invokeRpc('isp.stats', {{}}),
+    }}),
+    sync: Object.freeze({{
+      pull: (payload) => invokeRpc('sync.pull', payload || {{}}),
     }}),
   }});
 
@@ -934,6 +954,47 @@ mod tests {
         assert!(script.contains("Object.freeze("));
         assert!(!script.contains("window.rpcToken"));
         assert!(!script.contains("window.__MW_DESKTOP_RPC_TOKEN__"));
+    }
+
+    #[test]
+    fn enforces_bridge_command_allowlist_with_isp_and_sync() {
+        assert!(validate_bridge_command("isp.subscribers.list").is_ok());
+        assert!(validate_bridge_command("isp.subscribers.create").is_ok());
+        assert!(validate_bridge_command("isp.sessions.list").is_ok());
+        assert!(validate_bridge_command("isp.disconnect").is_ok());
+        assert!(validate_bridge_command("isp.stats").is_ok());
+        assert!(validate_bridge_command("sync.pull").is_ok());
+        assert!(validate_bridge_command("isp.subscribers.delete").is_err());
+    }
+
+    #[test]
+    fn builds_init_script_with_isp_and_sync_namespaces() {
+        let script = build_bridge_init_script("http://127.0.0.1:4242", "tok");
+        assert!(script.contains("isp.subscribers.list"));
+        assert!(script.contains("isp.subscribers.create"));
+        assert!(script.contains("isp.sessions.list"));
+        assert!(script.contains("isp.disconnect"));
+        assert!(script.contains("isp.stats"));
+        assert!(script.contains("sync.pull"));
+    }
+
+    #[test]
+    fn deserializes_forward_command_request_for_new_commands() {
+        let json = r#"{"command":"isp.subscribers.list","senderOrigin":"http://127.0.0.1:5173","payload":{"page":1}}"#;
+        let req: ForwardCommandRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(req.command, "isp.subscribers.list");
+        assert_eq!(req.sender_origin, "http://127.0.0.1:5173");
+        assert_eq!(req.payload["page"], 1);
+    }
+
+    #[test]
+    fn validate_bridge_command_accepts_isp_and_sync() {
+        assert!(validate_bridge_command("isp.subscribers.list").is_ok());
+        assert!(validate_bridge_command("isp.subscribers.create").is_ok());
+        assert!(validate_bridge_command("isp.sessions.list").is_ok());
+        assert!(validate_bridge_command("isp.disconnect").is_ok());
+        assert!(validate_bridge_command("isp.stats").is_ok());
+        assert!(validate_bridge_command("sync.pull").is_ok());
     }
 
     #[test]

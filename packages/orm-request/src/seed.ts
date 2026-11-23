@@ -1,5 +1,55 @@
+import type { Knex } from 'knex';
 import { WorkflowDefinition } from '@moonwitness/orm-workflow';
 import { PurchaseRequest } from './models.js';
+
+type CurrencyFields = {
+  code: string;
+  name: string;
+  symbol: string;
+};
+
+type ServiceCatalogFields = {
+  code: string;
+  name: string;
+  category: string;
+  description: string;
+  unit: string;
+  workflowCode: string;
+  slaCode: string;
+  estimatedAmountMinor: number;
+  currencyCode: string;
+  active: boolean;
+};
+
+type SlaPolicyFields = {
+  code: string;
+  name: string;
+  severity: string;
+  responseMinutes: number;
+  resolutionMinutes: number;
+  escalationMinutes: number;
+  escalationRole: string;
+  active: boolean;
+};
+
+type ApprovalChainFields = {
+  code: string;
+  version: number;
+  name: string;
+  serviceCatalogCode: string;
+  slaCode: string;
+  enabled: boolean;
+  config: string;
+};
+
+type RequestFields = {
+  title: string;
+  description: string;
+  amount_minor: number;
+  currency_id: number;
+  company_id: number;
+  vendor_id?: number | null;
+};
 
 const REQUEST_SEED_VERSION = '1.0.0';
 
@@ -432,7 +482,7 @@ export function buildRequestInitialSeed() {
   };
 }
 
-async function resolveForeignKey(db: any, table: string, conditions: Record<string, any>) {
+async function resolveForeignKey(db: Knex, table: string, conditions: Record<string, unknown>) {
   const row = await db(table).where(conditions).first('id');
   if (!row) {
     throw new Error(`Missing seed foreign key in ${table}: ${JSON.stringify(conditions)}`);
@@ -440,7 +490,7 @@ async function resolveForeignKey(db: any, table: string, conditions: Record<stri
   return Number(row.id);
 }
 
-export async function seedRequestInitialData(db: any) {
+export async function seedRequestInitialData(db: Knex) {
   const bundle = buildRequestInitialSeed();
   let insertedCurrencies = 0;
   let insertedDefinitions = 0;
@@ -478,14 +528,15 @@ export async function seedRequestInitialData(db: any) {
     const vendorId = request.vendorEmail
       ? await resolveForeignKey(db, 'partners', { email: request.vendorEmail })
       : null;
-    await db(PurchaseRequest.tableName).insert({
+    const fields: RequestFields = {
       title: request.title,
       description: request.description,
       amount_minor: request.amountMinor,
       currency_id: currencyId,
       company_id: companyId,
       vendor_id: vendorId,
-    });
+    };
+    await db(PurchaseRequest.tableName).insert(fields);
     insertedRequests += 1;
   }
 

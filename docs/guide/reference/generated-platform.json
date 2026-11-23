@@ -176,15 +176,39 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-cli",
+      "version": "1.0.0",
+      "directory": "packages/orm-cli",
+      "scripts": ["build", "dev"]
+    },
+    {
       "name": "@moonwitness/orm-cloud",
       "version": "1.0.0",
       "directory": "packages/orm-cloud",
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-compliance",
+      "version": "1.0.0",
+      "directory": "packages/orm-compliance",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-crm",
       "version": "1.0.0",
       "directory": "packages/orm-crm",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-governance",
+      "version": "1.0.0",
+      "directory": "packages/orm-governance",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-helpdesk",
+      "version": "1.0.0",
+      "directory": "packages/orm-helpdesk",
       "scripts": ["build", "test"]
     },
     {
@@ -233,6 +257,12 @@
       "name": "@moonwitness/orm-sales",
       "version": "1.0.0",
       "directory": "packages/orm-sales",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-sharia",
+      "version": "1.0.0",
+      "directory": "packages/orm-sharia",
       "scripts": ["build", "test"]
     },
     {
@@ -416,11 +446,27 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-cli": {
+      "build": "tsc",
+      "dev": "tsx src/seed-runner.ts"
+    },
     "@moonwitness/orm-cloud": {
       "build": "tsc",
       "test": "vitest run"
     },
+    "@moonwitness/orm-compliance": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
     "@moonwitness/orm-crm": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
+    "@moonwitness/orm-governance": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
+    "@moonwitness/orm-helpdesk": {
       "build": "tsc",
       "test": "vitest run"
     },
@@ -453,6 +499,10 @@
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/orm-sales": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
+    "@moonwitness/orm-sharia": {
       "build": "tsc",
       "test": "vitest run"
     },
@@ -651,6 +701,7 @@
       "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
       "test:workflow-trust": "node --test scripts/check-workflow-checkout-trust.test.mjs",
       "test:workspace-version-policy": "node --test scripts/workspace-version-policy.test.mjs",
+      "timezone:check": "node scripts/check-timezone-centralization.mjs",
       "typecheck": "pnpm build && pnpm --filter @moonwitness/board typecheck",
       "ui:budget": "node scripts/check-ui-catalog-budget.mjs",
       "ui:check": "pnpm board:ui:check && pnpm desktop:ui:check && pnpm ui:design:check",
@@ -6491,6 +6542,87 @@
       "depends": ["base", "jobs"],
       "models": [
         {
+          "name": "integration.payment_gateway_connector",
+          "table": "integration_payment_gateway_connectors",
+          "fields": [
+            {
+              "name": "company",
+              "kind": "belongsTo",
+              "column": "company_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "relation": "base.company"
+            },
+            {
+              "name": "config_json",
+              "kind": "text",
+              "column": "config_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "enabled",
+              "kind": "boolean",
+              "column": "enabled",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "gateway",
+              "kind": "enum",
+              "column": "gateway",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["midtrans", "stripe", "xendit"]
+            },
+            {
+              "name": "is_default",
+              "kind": "boolean",
+              "column": "is_default",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "webhook_secret_ref",
+              "kind": "string",
+              "column": "webhook_secret_ref",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["company", "gateway", "is_default"]]
+        },
+        {
           "name": "integration.webhook_delivery",
           "table": "integration_webhook_deliveries",
           "fields": [
@@ -6680,10 +6812,19 @@
       ],
       "views": ["integration.webhook_delivery", "integration.webhook_endpoint"],
       "seeds": {
-        "integration.webhook_endpoint": 3,
-        "base.model_access": 2
+        "integration.webhook_endpoint": 6,
+        "integration.payment_gateway_connector": 3,
+        "base.model_access": 3
       },
       "accessRules": [
+        {
+          "group": "base.group_superadmin",
+          "model": "integration.payment_gateway_connector",
+          "read": true,
+          "create": true,
+          "write": true,
+          "unlink": true
+        },
         {
           "group": "base.group_superadmin",
           "model": "integration.webhook_delivery",
@@ -9699,5 +9840,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "bcaa3fe92ad86a870f660728aa43f52bc353ab29cced71a4b6acebe6eea54d77"
+  "generatedFromSha256": "10580fc3bfe88875848ec51aec2845417cd645547a08b479b58973e236327b0a"
 }

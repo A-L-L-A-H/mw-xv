@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { AccessDeniedError } from '@moonwitness/types';
-import {
-  DesktopRiskGate,
-  NativeHumanApprovalIssuer,
-} from '../src/risk-gate.js';
+import { DesktopRiskGate, NativeHumanApprovalIssuer } from '../src/risk-gate.js';
 import {
   MeshFleetClient,
   assertPrivateMeshEndpoint,
@@ -81,8 +78,12 @@ describe('isPrivateMeshIp & assertPrivateMeshEndpoint', () => {
     }
 
     expect(() => assertPrivateMeshEndpoint('http://8.8.8.8:3003')).toThrow(AccessDeniedError);
-    expect(() => assertPrivateMeshEndpoint('https://vps.example.com:3003')).toThrow(AccessDeniedError);
-    expect(() => assertPrivateMeshEndpoint('http://user:pass@10.144.144.1:3003')).toThrow(AccessDeniedError);
+    expect(() => assertPrivateMeshEndpoint('https://vps.example.com:3003')).toThrow(
+      AccessDeniedError
+    );
+    expect(() => assertPrivateMeshEndpoint('http://user:pass@10.144.144.1:3003')).toThrow(
+      AccessDeniedError
+    );
     expect(() => assertPrivateMeshEndpoint('ftp://10.144.144.1:3003')).toThrow(AccessDeniedError);
   });
 });
@@ -123,7 +124,13 @@ describe('MeshFleetClient', () => {
       if (url.endsWith('/services')) {
         return new Response(
           JSON.stringify([
-            { id: 'abc123', name: 'easytier', image: 'easytier/easytier:latest', state: 'running', status: 'Up 1h' },
+            {
+              id: 'abc123',
+              name: 'easytier',
+              image: 'easytier/easytier:latest',
+              state: 'running',
+              status: 'Up 1h',
+            },
           ]),
           { status: 200 }
         );
@@ -169,12 +176,17 @@ describe('MeshFleetClient', () => {
 
     const fetchMock = vi.fn(async (url: string) => {
       if (url.endsWith('/api/services')) {
-        return new Response(JSON.stringify({ name: 'mw-worker', status: 'registered' }), { status: 201 });
-      }
-      if (url.endsWith('/api/deploy')) {
-        return new Response(JSON.stringify({ name: 'mw-worker', status: 'success', container_id: 'deadbeef1234' }), {
+        return new Response(JSON.stringify({ name: 'mw-worker', status: 'registered' }), {
           status: 201,
         });
+      }
+      if (url.endsWith('/api/deploy')) {
+        return new Response(
+          JSON.stringify({ name: 'mw-worker', status: 'success', container_id: 'deadbeef1234' }),
+          {
+            status: 201,
+          }
+        );
       }
       return new Response('not found', { status: 404 });
     });
@@ -193,7 +205,11 @@ describe('MeshFleetClient', () => {
 
     // R0 grant must be blocked from R2 mutation
     await expect(
-      client.registerNodeService('vps-eu-01', { name: 'mw-worker', image: 'nginx:alpine' }, makeAuth('R0'))
+      client.registerNodeService(
+        'vps-eu-01',
+        { name: 'mw-worker', image: 'nginx:alpine' },
+        makeAuth('R0')
+      )
     ).rejects.toThrow(AccessDeniedError);
 
     // R2 grant succeeds for R2 service registration
@@ -207,7 +223,11 @@ describe('MeshFleetClient', () => {
 
     // R3 deploy without HumanApprovalToken must be blocked
     await expect(
-      client.deployNodeService('vps-eu-01', { name: 'mw-worker', image: 'nginx:alpine' }, makeAuth('R3'))
+      client.deployNodeService(
+        'vps-eu-01',
+        { name: 'mw-worker', image: 'nginx:alpine' },
+        makeAuth('R3')
+      )
     ).rejects.toThrow(AccessDeniedError);
 
     // R3 deploy with valid signed HumanApprovalToken succeeds
@@ -228,7 +248,9 @@ describe('MeshFleetClient', () => {
   it('redacts admin tokens if a remote node error body echoes them', async () => {
     const riskGate = new DesktopRiskGate();
     const rawToken = 'super-sensitive-admin-token-987654';
-    const fetchMock = vi.fn(async () => new Response(`auth failed for ${rawToken}`, { status: 500 }));
+    const fetchMock = vi.fn(
+      async () => new Response(`auth failed for ${rawToken}`, { status: 500 })
+    );
 
     const client = new MeshFleetClient({
       riskGate,
@@ -242,6 +264,8 @@ describe('MeshFleetClient', () => {
       ],
     });
 
-    await expect(client.listNodeServices('vps-us-01', makeAuth('R0'))).rejects.toThrow('[REDACTED]');
+    await expect(client.listNodeServices('vps-us-01', makeAuth('R0'))).rejects.toThrow(
+      '[REDACTED]'
+    );
   });
 });

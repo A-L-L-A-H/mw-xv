@@ -22,23 +22,23 @@ MoonWitness adopts a **Sovereign Dreaming, Active Inference & RFC 6962 Merkle Tr
 
 ### The 4 M16 Pillars
 
-1. **M16.01 — Sleep-Time Compute & Reversible Dreaming Memory Consolidation (`sleep-dream.ts`)** *(informed by Sleep-Time Compute / SleepGate / SCM / MemDream / REALM — arXiv:2504.13171, arXiv:2604.20943, arXiv:2609.16053)*
+1. **M16.01 — Sleep-Time Compute & Reversible Dreaming Memory Consolidation (`sleep-dream.ts`)** _(informed by Sleep-Time Compute / SleepGate / SCM / MemDream / REALM — arXiv:2504.13171, arXiv:2604.20943, arXiv:2609.16053)_
    - **Non-REM consolidation (`runNonRemConsolidation`):** Detects stale or conflicting proactive interference within company scope, applies **reversible-only soft-decay** (`status: 'decayed'`, preserving original provenance and content hash — never destructive hard deletion), and compresses surviving episodic items into compact semantic summary candidates (`automatedPromotionAllowed: false`, `reportSha256`).
    - **REM dream self-probe (`runRemDreamSelfProbe`):** Synthesizes deterministic self-probe queries over knowledge and skill nodes to expose unverified assumptions and weak cross-domain links (`probeSha256`).
    - **Reconsolidation feedback (`reconsolidateMemoryFeedback`):** Updates memory importance and retrieval confidence weights deterministically from observed hit/miss feedback.
 
-2. **M16.02 — Active Inference Expected Free Energy & Epistemic Action (`active-inference.ts`)** *(informed by Active Inference Context Acquisition & Epistemic Action — Jun/Sep 2026)*
+2. **M16.02 — Active Inference Expected Free Energy & Epistemic Action (`active-inference.ts`)** _(informed by Active Inference Context Acquisition & Epistemic Action — Jun/Sep 2026)_
    - Evaluates candidate next actions via `evaluateExpectedFreeEnergy(candidates, policy)`, computing `pragmaticValueBps`, `epistemicInfoGainBps`, `computeCostBps`, and `expectedFreeEnergyBps`.
    - Deterministically selects `epistemic_action` (gather more context/probe), `optimal_question` (ask one surgical clarifying question), or `pragmatic_action` (execute now).
    - Enforces `automatedSelfAccept: false`, redaction via `createRedactor()`, and deterministic `decisionSha256`.
 
-3. **M16.03 — RFC 6962 Merkle Audit Transparency Ledger (`merkle-ledger.ts`)** *(informed by RFC 6962 Certificate Transparency / PunkGo — arXiv:2602.20214)*
+3. **M16.03 — RFC 6962 Merkle Audit Transparency Ledger (`merkle-ledger.ts`)** _(informed by RFC 6962 Certificate Transparency / PunkGo — arXiv:2602.20214)_
    - Implements strict RFC 6962 cryptographic domain separation to prevent second-preimage attacks:
      - Leaf hash (`hashMerkleLeaf`): `SHA-256(0x00 || canonicalJson)`
      - Internal node hash (`hashMerkleNode`): `SHA-256(0x01 || leftHash || rightHash)`
    - Exports `buildMerkleAuditTree(events)` (redacting sensitive fields via `createRedactor()`), `generateMerkleInclusionProof(tree, leafIndex)`, `verifyMerkleInclusionProof(leafPayload, proof, expectedRootHash)`, and `verifyMerkleConsistency(olderEvents, newerEvents)` proving append-only integrity in $O(\log N)$ hashes.
 
-4. **M16.04 — Offline Adversarial Red-Team Self-Play Arena (`redteam-arena.ts`)** *(MoonWitness Original)*
+4. **M16.04 — Offline Adversarial Red-Team Self-Play Arena (`redteam-arena.ts`)** _(MoonWitness Original)_
    - Executes pure in-memory Red-Team vs Blue-Team self-play across `DEFAULT_REDTEAM_SCENARIOS` (`prompt_injection`, `path_traversal`, `overconfident_plan`, `a2a_spoofing`, `paas_quota_bypass`, `self_accept_forgery`).
    - Computes `defensePassRateBps`, records every bypassed attack, and invokes `synthesizeInvariantRuleProposal` (`./invariant-synthesizer.js`) for every breach so candidate regression rules are generated automatically (`automatedPromotionAllowed: false`, `automatedSelfAccept: false`, `arenaSha256`).
 

@@ -10,29 +10,12 @@
       "depictionPolicy": "anonymous-back-facing",
       "silhouette": "hooded crew figure, adult proportions, standard build",
       "outfit": "industrial workwear shirt and trousers",
-      "paletteTokens": [
-        "ink-900",
-        "paper-white",
-        "hot-magenta-500"
-      ],
+      "paletteTokens": ["ink-900", "paper-white", "hot-magenta-500"],
       "proportions": "standard adult",
-      "signatureProps": [
-        "tool-satchel",
-        "crew-badge"
-      ],
-      "allowedVariants": [
-        "idle-standing",
-        "waving",
-        "walking-loop"
-      ],
-      "prohibitedVariants": [
-        "recognizable-face",
-        "sacred-figure",
-        "real-person-likeness"
-      ],
-      "masterAssetIds": [
-        "source/world/characters/crew-01-sheet.svg"
-      ],
+      "signatureProps": ["tool-satchel", "crew-badge"],
+      "allowedVariants": ["idle-standing", "waving", "walking-loop"],
+      "prohibitedVariants": ["recognizable-face", "sacred-figure", "real-person-likeness"],
+      "masterAssetIds": ["source/world/characters/crew-01-sheet.svg"],
       "variantAssetIds": [
         "source/world/characters/crew-01-pose-idle-standing.svg",
         "source/world/characters/crew-01-pose-waving.svg",

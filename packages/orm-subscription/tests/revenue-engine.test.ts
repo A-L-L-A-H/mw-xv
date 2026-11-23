@@ -36,7 +36,7 @@ describe('Mid-Cycle Plan Proration Calculator', () => {
 
 describe('Dunning Retry & Grace-Period State Machine', () => {
   it('transitions active -> past_due -> grace -> suspended -> canceled and supports recovery', () => {
-    let state: DunningState = {
+    const state: DunningState = {
       status: 'active',
       retryCount: 0,
       nextRetryAtMs: null,
@@ -59,7 +59,11 @@ describe('Dunning Retry & Grace-Period State Machine', () => {
     expect(t3.nextState.graceEndsAtMs).not.toBeNull();
 
     // Recovery from grace restores active & resets retryCount
-    const recovered = advanceDunningState(t3.nextState, 'payment_succeeded', '2026-06-06T00:00:00Z');
+    const recovered = advanceDunningState(
+      t3.nextState,
+      'payment_succeeded',
+      '2026-06-06T00:00:00Z'
+    );
     expect(recovered.nextState.status).toBe('active');
     expect(recovered.nextState.retryCount).toBe(0);
 

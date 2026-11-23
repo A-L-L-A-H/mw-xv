@@ -8,11 +8,19 @@ describe('Multi-Channel NotificationRouter', () => {
   const DAY_UTC_MS = Date.UTC(2026, 0, 15, 10, 0, 0);
 
   it('evaluates overnight and same-day quiet hours windows accurately', () => {
-    const overnight = { startMinuteOfDay: 22 * 60, endMinuteOfDay: 7 * 60, timezoneOffsetMinutes: 0 };
+    const overnight = {
+      startMinuteOfDay: 22 * 60,
+      endMinuteOfDay: 7 * 60,
+      timezoneOffsetMinutes: 0,
+    };
     expect(isWithinQuietHours(NIGHT_UTC_MS, overnight)).toBe(true);
     expect(isWithinQuietHours(DAY_UTC_MS, overnight)).toBe(false);
 
-    const afternoon = { startMinuteOfDay: 13 * 60, endMinuteOfDay: 15 * 60, timezoneOffsetMinutes: 0 };
+    const afternoon = {
+      startMinuteOfDay: 13 * 60,
+      endMinuteOfDay: 15 * 60,
+      timezoneOffsetMinutes: 0,
+    };
     expect(isWithinQuietHours(Date.UTC(2026, 0, 15, 14, 0, 0), afternoon)).toBe(true);
     expect(isWithinQuietHours(DAY_UTC_MS, afternoon)).toBe(false);
   });

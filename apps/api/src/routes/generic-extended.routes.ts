@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import { BaseModel, Registry, type Domain } from '@moonwitness/orm';
+import { Registry, type BaseModel, type Domain } from '@moonwitness/orm';
 import type { Transaction } from 'objection';
 import { isRecord, type JsonObject } from '@moonwitness/types';
 import {

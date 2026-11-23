@@ -3,7 +3,10 @@ import swagger from '@fastify/swagger';
 import { readQuranPassage } from '@moonwitness/corpus';
 import type { StoredResearchGraphRelease } from '@moonwitness/orm-knowledge';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { researchExplanationHttpPlugin as researchExplanationRoutes, resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
+import {
+  researchExplanationHttpPlugin as researchExplanationRoutes,
+  resolveCorpusDataRoot,
+} from '@moonwitness/orm-knowledge';
 
 const relationId = 'mw:relation:api-fixture';
 const evidenceId = 'mw:evidence:api-fixture';

@@ -59,16 +59,16 @@ Original wording and product identities are preserved separately from taglines p
 
 ## 7. Adjacent product concepts
 
-| Product / brand | Original intent in available sources | Status |
-|---|---|---|
-| AEQ / BABYDOLL Service Jam | Exploratory service initiative and “simple plan / just do it” concept | Separate, unresolved; Issue #22 |
-| MoonShips / MOONSKY | Messaging channel operator console | Existing standalone repository; not assumed to equal MoonWitness Radio |
-| MoonShips Mini-PaaS | User exploration around a small PaaS, Loco.rs and SQLite-first | User idea / technical research, not accepted MW-XV platform architecture |
-| ARSY | Governed agent orchestration | Proposed architecture / product capability, not a claim of general AGI |
-| Mission Board | Mission / task / workflow experience | Product concept; reuse TaskOS/workflow ownership and decide its UI purpose |
-| Exatel / Supercorridor / IDPLAY | ISP/FTTH/network/cloud businesses | Business context; separate from narrative product and keep internal operational data private |
-| AgentOPS Corridor | OLT/NMS platform | Engineering product context; exact current repo/production audit not in this creative pass |
-| Caroline / FollowTrack | WhatsApp customer-support persona and customer follow-up system | Product/automation context; no customer data should enter this public archive |
+| Product / brand                 | Original intent in available sources                                  | Status                                                                                       |
+| ------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| AEQ / BABYDOLL Service Jam      | Exploratory service initiative and “simple plan / just do it” concept | Separate, unresolved; Issue #22                                                              |
+| MoonShips / MOONSKY             | Messaging channel operator console                                    | Existing standalone repository; not assumed to equal MoonWitness Radio                       |
+| MoonShips Mini-PaaS             | User exploration around a small PaaS, Loco.rs and SQLite-first        | User idea / technical research, not accepted MW-XV platform architecture                     |
+| ARSY                            | Governed agent orchestration                                          | Proposed architecture / product capability, not a claim of general AGI                       |
+| Mission Board                   | Mission / task / workflow experience                                  | Product concept; reuse TaskOS/workflow ownership and decide its UI purpose                   |
+| Exatel / Supercorridor / IDPLAY | ISP/FTTH/network/cloud businesses                                     | Business context; separate from narrative product and keep internal operational data private |
+| AgentOPS Corridor               | OLT/NMS platform                                                      | Engineering product context; exact current repo/production audit not in this creative pass   |
+| Caroline / FollowTrack          | WhatsApp customer-support persona and customer follow-up system       | Product/automation context; no customer data should enter this public archive                |
 
 ## 8. Brand governance
 

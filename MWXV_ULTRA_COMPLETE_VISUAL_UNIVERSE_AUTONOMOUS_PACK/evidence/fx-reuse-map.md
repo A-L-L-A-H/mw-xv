@@ -2,11 +2,11 @@
 
 ## Source-backed reuse map
 
-| Group | Existing exports or CSS | Use |
-| --- | --- | --- |
-| UI micro | `LoadingProgress`, `LoadingSpinner`, `SignalOrbit`, `LiveIndicator`, `InkUnderline`, `AccentMarker` | Loading, API-derived active state, emphasis and status without new domain effects |
-| Cinematic | `AnimeImpactBurst`, `AnimeActionLines`, `GrungeStamp`, `GrungeDivider`, `MangaPanel`, `InkFrame`, `ZineSticker`, `SpeechBubble` | Short transitions, action accents, framed callouts and manga panels |
-| Ambient | `EditorialTexture`, `SpeedLines`, `Doodle`, `DecorativeMotif`, `GrungeCanvas` | Static page atmosphere and restrained background texture |
+| Group     | Existing exports or CSS                                                                                                         | Use                                                                               |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| UI micro  | `LoadingProgress`, `LoadingSpinner`, `SignalOrbit`, `LiveIndicator`, `InkUnderline`, `AccentMarker`                             | Loading, API-derived active state, emphasis and status without new domain effects |
+| Cinematic | `AnimeImpactBurst`, `AnimeActionLines`, `GrungeStamp`, `GrungeDivider`, `MangaPanel`, `InkFrame`, `ZineSticker`, `SpeechBubble` | Short transitions, action accents, framed callouts and manga panels               |
+| Ambient   | `EditorialTexture`, `SpeedLines`, `Doodle`, `DecorativeMotif`, `GrungeCanvas`                                                   | Static page atmosphere and restrained background texture                          |
 
 `packages/ui/src/components/effects.tsx` contains the shared React/SVG effects. `packages/ui/src/styles/components.css` owns their scoped keyframes, including pulse/progress/spin, anime slam/slash/impact/speed sweep/brush wipe, grunge cel shake, ink draw and speech pop. Motion timings live in `tokens.css`. Reduced-motion rules disable or remove nonessential effects; visibility-aware hooks pause offscreen animation. Audio cues are separate in `components/audio.tsx` and `lib/audio-runtime.ts`, default muted, and require user activation.
 

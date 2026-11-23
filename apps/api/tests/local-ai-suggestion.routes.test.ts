@@ -20,7 +20,10 @@ import {
 } from '@moonwitness/orm-knowledge';
 import knex, { type Knex } from 'knex';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { localAiSuggestionHttpPlugin as localAiSuggestionRoutes, resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
+import {
+  localAiSuggestionHttpPlugin as localAiSuggestionRoutes,
+  resolveCorpusDataRoot,
+} from '@moonwitness/orm-knowledge';
 
 const sourceId = 'mw:source:tanzil-quran-text';
 const editionId = 'mw:edition:tanzil-quran-text-v1.1-uthmani-txt2';

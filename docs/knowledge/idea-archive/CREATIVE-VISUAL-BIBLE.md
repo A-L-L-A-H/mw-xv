@@ -20,17 +20,20 @@ Source: `bjo163/moonwitness-II/docs/MASTER_BLUEPRINT.md` (blob `d413d100aa1ab328
 **Source:** available account Memory Summary of the owner's “Official Creative Director of the MoonWitness Universe” brief (dated 30 July 2026), plus later visual corrections. The exact original prompt and complete image-prompt revision chain are not attached to this archive snapshot. Treat this as a source-qualified owner direction, not as proof every output has been approved.
 
 **Format and quality bar**
+
 - Default poster canvas: **vertical 9:16**.
 - High-detail, high-resolution, premium illustration; strong professional typography, cinematic lighting and social-media legibility.
 - Target feel: high-budget game / anime-film key art, not a generic low-detail cartoon. Preserve negative space and text-safe hierarchy when typography is present.
 
 **Visual DNA**
+
 - Cosmic Spirituality; Future Civilization; Divine Wisdom; Gaming Culture; Sci-Fi; Anime Energy; Emotional Storytelling.
 - Mood range: Epic, Funny, Hopeful, Emotional, Mysterious and Inspirational.
 - Lighting language: Bloom, Volumetric Lighting, Neon, God Rays and High Contrast.
 - Broad quality references named in the brief: AAA game key art, premium comic, streaming-series poster and anime opening. These are quality / composition references only, not permission to copy protected characters, logos, layouts or a living creator's distinctive style.
 
 **Output-mode variation**
+
 - Cinematic Game Poster.
 - Manga / comic-panel narrative.
 - RPG Game UI (e.g. status bars, inventory and dialogue panels).
@@ -40,6 +43,7 @@ Source: `bjo163/moonwitness-II/docs/MASTER_BLUEPRINT.md` (blob `d413d100aa1ab328
 The variation rule is to avoid repeating the prior poster's layout; choose a new composition/theme for each episode rather than applying one fixed template. This is an art-direction preference, not a requirement to turn every concept into a game UI.
 
 **Character and sacred-subject boundaries**
+
 - The owner repeatedly requested hidden faces: hoodies, masks, back-facing poses or silhouettes. Face concealment is a design rule for the relevant series, not a character identity clue.
 - ROCKSOUL's red outfit is a recurring visual cue. “Muthenroshi-like mentor” and “Arale-like chaos catalyst” are inspiration-language from the creative brief only; production artwork must use original, rights-cleared characters and must not reproduce protected character designs.
 - Do not depict Allah as a person, character, body, object or located figure. Do not visually portray prophets or sacred figures as identifiable characters. Prefer text, architecture, light, landscape, objects and non-identifying symbols.
@@ -86,31 +90,31 @@ Source: prior user context; exact original prompt export not available here.
 
 ## 2. Poster / content output records
 
-| Visual ID | Brief / wording | Aspect / output | Status |
-|---|---|---|---|
-| VIS-0001 | A-L-L-A-H.COM — EMPIRE OF THE LIGHT | 4:5 vertical fantasy-cosmic poster | Brief remembered; final approved source image not in this intake |
-| VIS-0002 | Research / spiritual knowledge poster | 9:16 vertical | Style preference recorded; per-poster prompt must be sourced |
-| VIS-0003 | MoonWitness / Lines — Visual Effect Mansa | Responsive web / story environment | Repository direction documented |
-| VIS-0004 | MoonWitness XII Crew | Original hidden-face silhouettes / street-comic | Repository documents original SVG art; not all poster binaries recovered |
-| VIS-0005 | ROCKSOUL metal / absurd metal poster family | Per-brief | User concept family; individual prompts/assets not fully inventoried |
-| VIS-0006 | Artwork-first production pipeline | PNG / WebP / SVG as appropriate | Existing target proposal: MW-XV Issue #19 |
+| Visual ID | Brief / wording                             | Aspect / output                                 | Status                                                                   |
+| --------- | ------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ |
+| VIS-0001  | A-L-L-A-H.COM — EMPIRE OF THE LIGHT         | 4:5 vertical fantasy-cosmic poster              | Brief remembered; final approved source image not in this intake         |
+| VIS-0002  | Research / spiritual knowledge poster       | 9:16 vertical                                   | Style preference recorded; per-poster prompt must be sourced             |
+| VIS-0003  | MoonWitness / Lines — Visual Effect Mansa   | Responsive web / story environment              | Repository direction documented                                          |
+| VIS-0004  | MoonWitness XII Crew                        | Original hidden-face silhouettes / street-comic | Repository documents original SVG art; not all poster binaries recovered |
+| VIS-0005  | ROCKSOUL metal / absurd metal poster family | Per-brief                                       | User concept family; individual prompts/assets not fully inventoried     |
+| VIS-0006  | Artwork-first production pipeline           | PNG / WebP / SVG as appropriate                 | Existing target proposal: MW-XV Issue #19                                |
 
 ## 2A. Library-observed artwork concepts — caption-only references
 
-The following concepts were found through Library image descriptions / captions during the 2026-11-23 source inventory. They are retained as *discovery labels*, not exact prompt wording, source-authenticated artwork titles, approved canon or permission to publish. The original prompt/revision chain is not fully recovered.
+The following concepts were found through Library image descriptions / captions during the 2026-11-23 source inventory. They are retained as _discovery labels_, not exact prompt wording, source-authenticated artwork titles, approved canon or permission to publish. The original prompt/revision chain is not fully recovered.
 
-| Visual lead | Observed description / title | Evidence status | Reuse boundary |
-|---|---|---|---|
-| VIS-LIB-001 | **ROBINHUD INDONESIA** | Library caption / source image observed | Preserve label only; do not infer a real organization, character identity or campaign approval |
-| VIS-LIB-002 | **I WANT TO SPLIT THE MOON** | Library caption / poster concept | Creative metaphor; no literal scientific or religious claim |
-| VIS-LIB-003 | **RockSoul: The Codex of Balance** | Library caption / visual concept | Related to Memory RED + Ruhani BLUE = Nature GREEN motif; not the same as RGBL method |
-| VIS-LIB-004 | **Janji Allah: Heroes of Spear & Salt** | Library caption / artwork concept | Spear and salt are paired narrative metaphors; not established religious attributes |
-| VIS-LIB-005 | **NEXT STOP MARS / Peta misi akhir zaman ke Mars** | Library caption / poster concept | Creative future-mission framing; not prophecy, astronomy evidence or an approved mission |
-| VIS-LIB-006 | **Padang Mahsyar — four vision panels** | Library caption / infographic concept | Symbolic editorial art only; not an authoritative description of unseen realities |
-| VIS-LIB-007 | **The spiritual journey of salt and blood** | Library caption / image concept | Metaphor only; not anatomical, health or scientific evidence |
-| VIS-LIB-008 | **Burial / preservation regulation infographic** | Library caption / infographic concept | Any legal, medical or regulatory claim requires an exact jurisdiction, source and current review |
-| VIS-LIB-009 | **Business / ISP mission visual** | Library caption / business-themed artwork | Keep operational/customer information private; no production status inferred |
-| VIS-LIB-010 | **RGB light-source infographic** | Library caption / infographic concept | Distinguish additive RGB light from the separate R–G–B–L epistemic framework |
+| Visual lead | Observed description / title                                 | Evidence status                              | Reuse boundary                                                                                     |
+| ----------- | ------------------------------------------------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| VIS-LIB-001 | **ROBINHUD INDONESIA**                                       | Library caption / source image observed      | Preserve label only; do not infer a real organization, character identity or campaign approval     |
+| VIS-LIB-002 | **I WANT TO SPLIT THE MOON**                                 | Library caption / poster concept             | Creative metaphor; no literal scientific or religious claim                                        |
+| VIS-LIB-003 | **RockSoul: The Codex of Balance**                           | Library caption / visual concept             | Related to Memory RED + Ruhani BLUE = Nature GREEN motif; not the same as RGBL method              |
+| VIS-LIB-004 | **Janji Allah: Heroes of Spear & Salt**                      | Library caption / artwork concept            | Spear and salt are paired narrative metaphors; not established religious attributes                |
+| VIS-LIB-005 | **NEXT STOP MARS / Peta misi akhir zaman ke Mars**           | Library caption / poster concept             | Creative future-mission framing; not prophecy, astronomy evidence or an approved mission           |
+| VIS-LIB-006 | **Padang Mahsyar — four vision panels**                      | Library caption / infographic concept        | Symbolic editorial art only; not an authoritative description of unseen realities                  |
+| VIS-LIB-007 | **The spiritual journey of salt and blood**                  | Library caption / image concept              | Metaphor only; not anatomical, health or scientific evidence                                       |
+| VIS-LIB-008 | **Burial / preservation regulation infographic**             | Library caption / infographic concept        | Any legal, medical or regulatory claim requires an exact jurisdiction, source and current review   |
+| VIS-LIB-009 | **Business / ISP mission visual**                            | Library caption / business-themed artwork    | Keep operational/customer information private; no production status inferred                       |
+| VIS-LIB-010 | **RGB light-source infographic**                             | Library caption / infographic concept        | Distinguish additive RGB light from the separate R–G–B–L epistemic framework                       |
 | VIS-LIB-011 | **Shinchan / Master Roshi / song-inspired fan-art concepts** | Library caption / fan-art or music reference | Private reference only; third-party characters, marks and lyrics are not cleared production assets |
 
 No raw image binaries were copied into this public repository. The Library source register records the 21 image-file inventory and the missing original prompts/rights. The canonical production path remains Issue #19 and `packages/assets`.
@@ -118,6 +122,7 @@ No raw image binaries were copied into this public repository. The Library sourc
 ## 3. Exact copy and text safety
 
 Preserve exact casing and punctuation for source wording, including:
+
 - `SUNSHINE BELONG`
 - `FIND LIGHT IN DARKNESS`
 - `HOW U REMIND ME`
@@ -162,4 +167,3 @@ Do not create a second asset manager, a mandatory 3D pipeline or a separate Crea
 - `bjo163/rocksoul-ui`: code-first React UI implementation grammar; separate repository and release contract.
 - `bjo163/moonframe`: README reports 70+ reusable components, 15 skins, 43 page templates and 8 multi-route starters; its own M13 readiness notes say human visual approvals remain incomplete. Treat as design/engineering reference, not a wholesale import.
 - MW-XV already owns `packages/assets`, `packages/ui` and `apps/ui-catalog`; reuse those owners rather than cloning visual systems.
-

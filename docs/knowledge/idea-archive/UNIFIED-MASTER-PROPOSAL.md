@@ -14,6 +14,7 @@ MoonWitness is the central message / witness / shared-experience product directi
 ## 2. Current state
 
 ### Verified source state
+
 - Target is public `A-L-L-A-H/mw-xv`, a TypeScript monorepo with Fastify API, Next.js Board, PostgreSQL, addons, TaskOS, knowledge/research/corpus, assets/UI and a local AI Desktop/Runtime architecture.
 - Current `dev` TaskOS snapshot contains 637 unique records. `main` remains at the original 627-record snapshot. The 1,358-record predecessor is preserved separately.
 - 161 actual GitHub issues and 26 PRs were read across the paginated API; current totals are 66 open / 95 closed.
@@ -23,6 +24,7 @@ MoonWitness is the central message / witness / shared-experience product directi
 - Existing public narrative archive includes MW II / XII source material and V10/V10.1 editorial research documents.
 
 ### Not proven
+
 - Full ChatGPT account history or private archive ingestion.
 - Full primary source recovery for all personal manuscripts, characters, posters and image prompts.
 - Exhaustive code/branch/license/deployment audit of 280 repos.
@@ -43,6 +45,7 @@ MoonWitness is the central message / witness / shared-experience product directi
 ## 4. Target architecture
 
 ### Platform layer
+
 - One API/control plane in MW-XV.
 - One Board surface for public/product experience and admin workflows.
 - One canonical auth / tenant / permission authority.
@@ -50,6 +53,7 @@ MoonWitness is the central message / witness / shared-experience product directi
 - PostgreSQL-backed durable records, audit, jobs and outbox.
 
 ### Knowledge layer
+
 - Corpus: exact source identities, editions, passages, citations, rights.
 - Research: analysis, comparison, extraction rules, hypotheses and counter-evidence.
 - Knowledge: source-backed records, story/editorial review and publication.
@@ -58,12 +62,14 @@ MoonWitness is the central message / witness / shared-experience product directi
 - Documentation: raw → brain → accepted spec/ADR/knowledge record; not a second runtime database.
 
 ### Execution layer
+
 - Desktop is a constrained local execution harness.
 - AI Runtime and MCP integrations stay behind capability grants, risk gates, sandboxed worktrees and human approvals.
 - Proof-carrying work: source SHA, diff, tests, verification and rollback evidence.
 - TaskOS remains the task lifecycle source; GitHub Issues are its human-facing projection.
 
 ### Experience layer
+
 - Public Board for approved content.
 - Existing UI Catalog / Creative Lab for artwork review.
 - Radio is initially a product specification, not a new data store until on-demand/scheduled/live requirements are decided.
@@ -90,6 +96,7 @@ No automatic step can declare divine approval, canonical identity, external disp
 ## 6. Creative and visual direction
 
 Keep visual grammar separated by work:
+
 - MoonWitness II Lines / cinematic / electric / mysterious / emotional / Gen-Z grunge.
 - MoonWitness XII hidden-face silhouette / street comic / urban punk / halftone.
 - ROCKSOUL metal / industrial / absurd / editorial.
@@ -109,38 +116,42 @@ Use one canonical `packages/assets` manifest and existing UI Catalog. Do not cop
 ## 8. Product and platform strategy
 
 ### Near-term
+
 - Stabilize and certify existing MW-XV architecture: TaskOS, issue synchronization, API/ORM ownership, knowledge provenance, privacy/revocation, story/canon and visual asset contracts.
 - Finish current open operational/CI cloud foundation and code-review gates rather than adding more product surface in parallel.
 - Build the first coherent public/private user journey across Board, Knowledge, Story and reviewed publication.
 
 ### Mid-term
+
 - Decide MoonWitness Radio MVP based on specific usage: on-demand / schedule / live and rights/licensing.
 - Revisit Community / Experience / Extension Hub only with accepted user journeys, moderation/safety and data ownership.
 - Improve local AI source recovery, evidence graph and review workflows only where exact gaps remain.
 
 ### Long-term
+
 - Develop an integrated ecosystem while retaining independent project identity where useful.
 - Consider cross-domain visual narrative or game experiences only after story/canon, rights and production ownership are settled.
 - Evaluate ARSY as a governed orchestration architecture, not unrestricted autonomous agent authority.
 
 ## 9. Cross-project dependencies
 
-| Workstream | Depends on | Cannot proceed safely until |
-|---|---|---|
-| Complete idea archive | Source access, archive taxonomy, provenance | Full export and private-source authorization still missing |
-| Story / character continuity | Original sources, source version, identity schema | Manuscript/alias conflicts reviewed |
-| GOD PROMISE | Corpus/edition/translation/context and human review | Source attribution is verified |
-| Asmaul Husna data | Selected list/edition and source review | All 99 records source-checked |
-| Artwork generation | Original brief, copyright review, assets manifest | Rights and human art approval pass |
-| Radio | Product decision, storage/notification/integration | MVP and audio-rights policy decided |
-| Community | Auth, moderation, workflow, publication | Data owner and safety boundaries accepted |
-| Progression/rewards | Experience domain, eligibility, fulfilment, anti-abuse | No reward/payment decision yet |
-| Legacy retirement | Full mirror, restore, LFS, artifact/deployment audit | P0/P5 preservation evidence passes |
-| Desktop AI | Local risk gates, worktree isolation, PCW, review | Current upstream/desktop comparison complete |
+| Workstream                   | Depends on                                             | Cannot proceed safely until                                |
+| ---------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| Complete idea archive        | Source access, archive taxonomy, provenance            | Full export and private-source authorization still missing |
+| Story / character continuity | Original sources, source version, identity schema      | Manuscript/alias conflicts reviewed                        |
+| GOD PROMISE                  | Corpus/edition/translation/context and human review    | Source attribution is verified                             |
+| Asmaul Husna data            | Selected list/edition and source review                | All 99 records source-checked                              |
+| Artwork generation           | Original brief, copyright review, assets manifest      | Rights and human art approval pass                         |
+| Radio                        | Product decision, storage/notification/integration     | MVP and audio-rights policy decided                        |
+| Community                    | Auth, moderation, workflow, publication                | Data owner and safety boundaries accepted                  |
+| Progression/rewards          | Experience domain, eligibility, fulfilment, anti-abuse | No reward/payment decision yet                             |
+| Legacy retirement            | Full mirror, restore, LFS, artifact/deployment audit   | P0/P5 preservation evidence passes                         |
+| Desktop AI                   | Local risk gates, worktree isolation, PCW, review      | Current upstream/desktop comparison complete               |
 
 ## 10. Gap analysis and debt
 
 ### Knowledge / creative debt
+
 - Missing complete source exports/manuscripts and prompt history.
 - Missing exact first appearance / revision chronology.
 - Partial story/character/canon reconciliation across II/XII/XIV and MW-XV.
@@ -148,6 +159,7 @@ Use one canonical `packages/assets` manifest and existing UI Catalog. Do not cop
 - Poster artwork binaries and rights/source provenance not completely recovered.
 
 ### Repository / technical debt
+
 - Only 30 selected public repos got README/root-tree review; no full source/test audit of all 280.
 - No verified mirror/LFS restore proof for the source estate.
 - Private repository/resource census still limited to repository metadata results.
@@ -156,17 +168,17 @@ Use one canonical `packages/assets` manifest and existing UI Catalog. Do not cop
 
 ## 11. Risk register
 
-| Risk | Probability / impact | Mitigation |
-|---|---|---|
-| Private ChatGPT/archive data published | High / Critical | Keep unprovided export MISSING; private intake local-only; consent, retention and access gate |
-| Canon altered by AI synthesis | Medium / High | Preserve original wording, status, exact source and unresolved conflicts |
-| Religious statement mistaken for revelation/tafsir | Medium / Critical | Source-edition, context and human review; separate personal interpretation |
-| Copyright / trademark violation | Medium / High | Source-specific rights, original artwork and attribution review |
-| Parallel runtime / ORM / UI created | Medium / High | Enforce target domain ownership matrix and source-backed gap proof |
-| Private repo content exposed in public archive | Medium / Critical | Count only, keep private names/content out of public files |
-| Legacy repo retired prematurely | Medium / Critical | K0-006 / P0 / P5 gates and restore tests |
-| PR promoted with unrelated sensitive changes | Medium / Critical | No merge; CODEOWNER and required check review on exact head |
-| TaskOS/issue drift | Medium / High | Canonical registry, schema validator and bounded sync contract |
+| Risk                                               | Probability / impact | Mitigation                                                                                    |
+| -------------------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------- |
+| Private ChatGPT/archive data published             | High / Critical      | Keep unprovided export MISSING; private intake local-only; consent, retention and access gate |
+| Canon altered by AI synthesis                      | Medium / High        | Preserve original wording, status, exact source and unresolved conflicts                      |
+| Religious statement mistaken for revelation/tafsir | Medium / Critical    | Source-edition, context and human review; separate personal interpretation                    |
+| Copyright / trademark violation                    | Medium / High        | Source-specific rights, original artwork and attribution review                               |
+| Parallel runtime / ORM / UI created                | Medium / High        | Enforce target domain ownership matrix and source-backed gap proof                            |
+| Private repo content exposed in public archive     | Medium / Critical    | Count only, keep private names/content out of public files                                    |
+| Legacy repo retired prematurely                    | Medium / Critical    | K0-006 / P0 / P5 gates and restore tests                                                      |
+| PR promoted with unrelated sensitive changes       | Medium / Critical    | No merge; CODEOWNER and required check review on exact head                                   |
+| TaskOS/issue drift                                 | Medium / High        | Canonical registry, schema validator and bounded sync contract                                |
 
 ## 12. Alternatives considered
 

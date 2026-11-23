@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  searchHybridLocalMemory,
-  type HybridMemoryRecord,
-} from '../src/hybrid-memory.js';
+import { searchHybridLocalMemory, type HybridMemoryRecord } from '../src/hybrid-memory.js';
 
 const SAMPLE_RECORDS: readonly HybridMemoryRecord[] = [
   {
@@ -92,7 +89,7 @@ describe('searchHybridLocalMemory', () => {
     const mockFetch: typeof fetch = vi.fn(async (_url, init) => {
       const parsed = JSON.parse(String(init?.body ?? '{}')) as { prompt?: string };
       const prompt = parsed.prompt ?? '';
-      let embedding = [0, 1];
+      let embedding: number[];
       if (prompt.includes('outage')) {
         embedding = [1, 0];
       } else if (prompt.includes('Postmortem')) {

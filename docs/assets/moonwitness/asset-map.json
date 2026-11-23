@@ -1609,7 +1609,7 @@
       "output": "docs/assets/moonwitness/scenes/moon-city-scene.json",
       "kind": "scene",
       "format": "json",
-      "sha256": "dee17b91aa3d332094153ebec27a13d7b7006e5ff53d9f363a94f482bda73c28"
+      "sha256": "64fd073145099b6d215d2d1406c01a3ba6845adf8d3e9460513e97d4536e88df"
     },
     {
       "source": "packages/assets/sounds/ambience-archive-quiet.wav",

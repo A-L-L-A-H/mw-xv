@@ -3,3 +3,5 @@ export * from './runtime.js';
 export * from './lifecycle-events.js';
 export * from './dead-letter.js';
 export * from './addon-registration.js';
+export * from './cron-scheduler.js';
+export * from './concurrency-limiter.js';
