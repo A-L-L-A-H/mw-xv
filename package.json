@@ -41,6 +41,7 @@
     "test:ui-design-check": "node --test scripts/check-ui-design-system.test.mjs scripts/check-ui-gate-wiring.test.mjs",
     "lint:ui": "pnpm exec eslint packages/ui/src scripts/check-ui-design-system.mjs scripts/check-ui-design-system.test.mjs scripts/check-ui-gate-wiring.test.mjs scripts/check-desktop-non-overlap.mjs scripts/check-desktop-non-overlap.test.mjs && pnpm --filter @moonwitness/board lint",
     "api:addon:check": "node --test scripts/check-api-addon-boundary.test.mjs && node scripts/check-api-addon-boundary.mjs",
+    "agent:boundary:check": "node --test scripts/check-addon-agent-boundary.test.mjs && node scripts/check-addon-agent-boundary.mjs",
     "timezone:check": "node scripts/check-timezone-centralization.mjs",
     "hooks:install": "node scripts/setup-git-hooks.mjs",
     "prepare": "node -e \"import('node:fs').then(({existsSync})=>{if(existsSync('.git')&&existsSync('scripts/setup-git-hooks.mjs')){return import('./scripts/setup-git-hooks.mjs')}})\"",
