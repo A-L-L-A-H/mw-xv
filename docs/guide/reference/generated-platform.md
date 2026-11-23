@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `445095e9cc43c27cb34637d8fadf5d051165a1b56c16175cc1544e345498292a`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `a1abe1d82dc6020cd1b75c92bcb53e7c2e28aa0d781056fb833bc4d860588ad2`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -29,8 +29,11 @@ Source fingerprint: `445095e9cc43c27cb34637d8fadf5d051165a1b56c16175cc1544e34549
 | `@moonwitness/orm-a2a`          | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-ai`           | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-base`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-cli`          | Package | 1.0.0      | `build`, `dev`                                                                                                                                                                                                                                                                     |
 | `@moonwitness/orm-cloud`        | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-compliance`   | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-crm`          | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-helpdesk`     | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-integration`  | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-isp`          | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-knowledge`    | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
@@ -39,6 +42,7 @@ Source fingerprint: `445095e9cc43c27cb34637d8fadf5d051165a1b56c16175cc1544e34549
 | `@moonwitness/orm-project`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-request`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-sales`        | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-sharia`       | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-storage`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-subscription` | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-whatsapp`     | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
@@ -291,6 +295,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm test:whatsapp`
 - `pnpm test:workflow-trust`
 - `pnpm test:workspace-version-policy`
+- `pnpm timezone:check`
 - `pnpm typecheck`
 - `pnpm ui:budget`
 - `pnpm ui:check`

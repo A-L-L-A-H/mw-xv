@@ -176,15 +176,33 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-cli",
+      "version": "1.0.0",
+      "directory": "packages/orm-cli",
+      "scripts": ["build", "dev"]
+    },
+    {
       "name": "@moonwitness/orm-cloud",
       "version": "1.0.0",
       "directory": "packages/orm-cloud",
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-compliance",
+      "version": "1.0.0",
+      "directory": "packages/orm-compliance",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-crm",
       "version": "1.0.0",
       "directory": "packages/orm-crm",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-helpdesk",
+      "version": "1.0.0",
+      "directory": "packages/orm-helpdesk",
       "scripts": ["build", "test"]
     },
     {
@@ -233,6 +251,12 @@
       "name": "@moonwitness/orm-sales",
       "version": "1.0.0",
       "directory": "packages/orm-sales",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-sharia",
+      "version": "1.0.0",
+      "directory": "packages/orm-sharia",
       "scripts": ["build", "test"]
     },
     {
@@ -416,11 +440,23 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-cli": {
+      "build": "tsc",
+      "dev": "tsx src/seed-runner.ts"
+    },
     "@moonwitness/orm-cloud": {
       "build": "tsc",
       "test": "vitest run"
     },
+    "@moonwitness/orm-compliance": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
     "@moonwitness/orm-crm": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
+    "@moonwitness/orm-helpdesk": {
       "build": "tsc",
       "test": "vitest run"
     },
@@ -453,6 +489,10 @@
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/orm-sales": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
+    "@moonwitness/orm-sharia": {
       "build": "tsc",
       "test": "vitest run"
     },
@@ -651,6 +691,7 @@
       "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
       "test:workflow-trust": "node --test scripts/check-workflow-checkout-trust.test.mjs",
       "test:workspace-version-policy": "node --test scripts/workspace-version-policy.test.mjs",
+      "timezone:check": "node scripts/check-timezone-centralization.mjs",
       "typecheck": "pnpm build && pnpm --filter @moonwitness/board typecheck",
       "ui:budget": "node scripts/check-ui-catalog-budget.mjs",
       "ui:check": "pnpm board:ui:check && pnpm desktop:ui:check && pnpm ui:design:check",
@@ -9789,5 +9830,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "445095e9cc43c27cb34637d8fadf5d051165a1b56c16175cc1544e345498292a"
+  "generatedFromSha256": "a1abe1d82dc6020cd1b75c92bcb53e7c2e28aa0d781056fb833bc4d860588ad2"
 }
