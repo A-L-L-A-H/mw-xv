@@ -360,8 +360,7 @@ export function buildPlatformAudit(input) {
     typeof configuredNodeVersion === 'string' && /^\d+$/u.test(configuredNodeVersion)
       ? Number(configuredNodeVersion)
       : null;
-  const nodeScheduleKey =
-    configuredNodeMajor === null ? null : `v${configuredNodeMajor}`;
+  const nodeScheduleKey = configuredNodeMajor === null ? null : `v${configuredNodeMajor}`;
   const nodeSupport = nodeScheduleKey ? nodeSchedule?.[nodeScheduleKey] : undefined;
   const workflowPermissionStatus =
     workflowPermissions?.status ?? (workflowPermissions ? 'available' : 'unknown');

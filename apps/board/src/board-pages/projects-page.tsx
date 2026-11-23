@@ -483,9 +483,7 @@ export function ProjectsPage() {
             </Badge>
             {isDesktop ? (
               <Badge variant={boardQuery.isFetching ? 'magenta' : 'primary'}>
-                {boardQuery.isFetching
-                  ? 'Local SQLite · Syncing'
-                  : 'Offline-First · Synced'}
+                {boardQuery.isFetching ? 'Local SQLite · Syncing' : 'Offline-First · Synced'}
               </Badge>
             ) : null}
             {(projectsQuery.data ?? []).map((project) => (
@@ -637,11 +635,7 @@ export function ProjectsPage() {
             >
               Move Selected
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setSelectedTaskIds([])}
-            >
+            <Button size="sm" variant="outline" onClick={() => setSelectedTaskIds([])}>
               Clear Selection
             </Button>
           </div>
@@ -712,7 +706,9 @@ export function ProjectsPage() {
                           <div className="flex flex-wrap items-center justify-between gap-1">
                             <span className="font-mono text-xs font-bold">{task.code}</span>
                             <div className="flex flex-wrap items-center gap-1">
-                              <Badge variant={priorityVariant(task.priority)}>{task.priority}</Badge>
+                              <Badge variant={priorityVariant(task.priority)}>
+                                {task.priority}
+                              </Badge>
                               {waitsOnCodes.length > 0 ? (
                                 <Badge variant="destructive">
                                   WAITS ON: {waitsOnCodes.join(', ')}
@@ -725,7 +721,9 @@ export function ProjectsPage() {
                               ) : null}
                             </div>
                           </div>
-                          <p className="font-display text-sm uppercase leading-tight">{task.title}</p>
+                          <p className="font-display text-sm uppercase leading-tight">
+                            {task.title}
+                          </p>
                           {task.description ? (
                             <p className="text-xs text-ink-soft line-clamp-2">{task.description}</p>
                           ) : null}
@@ -736,7 +734,10 @@ export function ProjectsPage() {
                                 variant="outline"
                                 disabled={moveStageMutation.isPending}
                                 onClick={() =>
-                                  moveStageMutation.mutate({ taskId: task.id, stageId: nextStage.id })
+                                  moveStageMutation.mutate({
+                                    taskId: task.id,
+                                    stageId: nextStage.id,
+                                  })
                                 }
                               >
                                 Move -&gt; {nextStage.name}

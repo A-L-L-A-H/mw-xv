@@ -45,14 +45,17 @@ export function projectVisualUniverseTask(task) {
       .filter((entry) => typeof entry?.artifact === 'string')
       .map((entry) => [entry.artifact, entry])
   );
-  const canonicalEvidencePaths = task.evidence?.paths ?? originalEvidence.map((entry) => entry.artifact);
+  const canonicalEvidencePaths =
+    task.evidence?.paths ?? originalEvidence.map((entry) => entry.artifact);
   const evidence = canonicalEvidencePaths.map((artifact) => {
     const existing = originalEvidenceByPath.get(artifact);
-    return existing ?? {
-      artifact,
-      command: 'Evidence path recorded in canonical TaskOS; execution metadata not recorded.',
-      exit_code: null,
-    };
+    return (
+      existing ?? {
+        artifact,
+        command: 'Evidence path recorded in canonical TaskOS; execution metadata not recorded.',
+        exit_code: null,
+      }
+    );
   });
 
   return {

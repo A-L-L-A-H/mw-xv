@@ -12,22 +12,21 @@ export const WORLD_SIM_MODULE = 'packages/ai-evaluation/src/world-sim.ts';
 export const ADVERSARIAL_SUITE_MODULE = 'packages/ai-evaluation/src/adversarial-suite.ts';
 export const AGI_BENCHMARK_MODULE = 'packages/ai-evaluation/src/agi-benchmark.ts';
 
-export const M18_MODULES = [
-  WORLD_SIM_MODULE,
-  ADVERSARIAL_SUITE_MODULE,
-  AGI_BENCHMARK_MODULE,
-];
+export const M18_MODULES = [WORLD_SIM_MODULE, ADVERSARIAL_SUITE_MODULE, AGI_BENCHMARK_MODULE];
 
 const FORBIDDEN_PATTERNS = [
   {
     code: 'FORBIDDEN_NODE_FS_IMPORT',
-    regex: /\b(?:from\s+['"](?:node:)?fs(?:\/promises)?['"]|import\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\)|require\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\))/u,
+    regex:
+      /\b(?:from\s+['"](?:node:)?fs(?:\/promises)?['"]|import\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\)|require\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\))/u,
     message: 'Direct node:fs import is forbidden inside @moonwitness/ai-evaluation M18 modules.',
   },
   {
     code: 'FORBIDDEN_CHILD_PROCESS_IMPORT',
-    regex: /\b(?:from\s+['"](?:node:)?child_process['"]|import\s*\(\s*['"](?:node:)?child_process['"]\s*\)|require\s*\(\s*['"](?:node:)?child_process['"]\s*\))/u,
-    message: 'Direct node:child_process import is forbidden inside @moonwitness/ai-evaluation M18 modules.',
+    regex:
+      /\b(?:from\s+['"](?:node:)?child_process['"]|import\s*\(\s*['"](?:node:)?child_process['"]\s*\)|require\s*\(\s*['"](?:node:)?child_process['"]\s*\))/u,
+    message:
+      'Direct node:child_process import is forbidden inside @moonwitness/ai-evaluation M18 modules.',
   },
   {
     code: 'FORBIDDEN_EVAL_CALL',
@@ -37,12 +36,14 @@ const FORBIDDEN_PATTERNS = [
   {
     code: 'FORBIDDEN_NEW_FUNCTION',
     regex: /\bnew\s+Function\b/u,
-    message: 'Dynamic new Function() execution is forbidden inside @moonwitness/ai-evaluation M18 modules.',
+    message:
+      'Dynamic new Function() execution is forbidden inside @moonwitness/ai-evaluation M18 modules.',
   },
   {
     code: 'FORBIDDEN_MATH_RANDOM',
     regex: /\bMath\.random\s*\(/u,
-    message: 'Non-deterministic Math.random() is forbidden in M18 modules; use seeded mulberry32 PRNG.',
+    message:
+      'Non-deterministic Math.random() is forbidden in M18 modules; use seeded mulberry32 PRNG.',
   },
 ];
 
@@ -80,14 +81,8 @@ export function checkM18ModuleSource(relativePath, source) {
     });
   }
 
-  if (
-    relativePath === ADVERSARIAL_SUITE_MODULE ||
-    relativePath === AGI_BENCHMARK_MODULE
-  ) {
-    if (
-      !CONSTITUTIONAL_PASS_REGEX.test(source) ||
-      !CONSTITUTIONAL_HARD_FAIL_REGEX.test(source)
-    ) {
+  if (relativePath === ADVERSARIAL_SUITE_MODULE || relativePath === AGI_BENCHMARK_MODULE) {
+    if (!CONSTITUTIONAL_PASS_REGEX.test(source) || !CONSTITUTIONAL_HARD_FAIL_REGEX.test(source)) {
       violations.push({
         file: relativePath,
         code: 'MISSING_CONSTITUTIONAL_HARD_FAIL',
@@ -111,8 +106,7 @@ export function evaluateM18Invariants({ rootDir = defaultRoot, allowPartial = fa
     violations.push({
       file: ADR_0013_RELATIVE_PATH,
       code: 'MISSING_ADR_0013',
-      message:
-        'ADR 0013 (docs/decisions/0013-autonomous-eval-harness-world-sim.md) is required.',
+      message: 'ADR 0013 (docs/decisions/0013-autonomous-eval-harness-world-sim.md) is required.',
     });
   }
 

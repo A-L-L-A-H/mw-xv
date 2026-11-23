@@ -17,11 +17,20 @@ export function validateVisualUniverseTaskGraph(tasks) {
 
   for (const task of tasks) {
     assert.ok(typeof task.id === 'string' && task.id.trim(), 'Task ID is required');
-    assert.ok(allowedStatuses.has(task.status), `${task.id} has unsupported status "${task.status}"`);
+    assert.ok(
+      allowedStatuses.has(task.status),
+      `${task.id} has unsupported status "${task.status}"`
+    );
     assert.ok(Array.isArray(task.depends_on), `${task.id} depends_on must be an array`);
     assert.ok(Array.isArray(task.deliverables), `${task.id} deliverables must be an array`);
-    assert.ok(Array.isArray(task.acceptance_criteria), `${task.id} acceptance_criteria must be an array`);
-    assert.ok(Array.isArray(task.acceptance_criteria_state), `${task.id} acceptance_criteria_state must be an array`);
+    assert.ok(
+      Array.isArray(task.acceptance_criteria),
+      `${task.id} acceptance_criteria must be an array`
+    );
+    assert.ok(
+      Array.isArray(task.acceptance_criteria_state),
+      `${task.id} acceptance_criteria_state must be an array`
+    );
     assert.equal(
       task.acceptance_criteria_state.length,
       task.acceptance_criteria.length,
@@ -31,11 +40,25 @@ export function validateVisualUniverseTaskGraph(tasks) {
     const criterionIds = new Set();
     for (let i = 0; i < task.acceptance_criteria_state.length; i += 1) {
       const criterion = task.acceptance_criteria_state[i];
-      assert.ok(typeof criterion.id === 'string' && criterion.id.trim(), `${task.id} acceptance criterion ID is required`);
-      assert.ok(!criterionIds.has(criterion.id), `${task.id} has duplicate acceptance criterion "${criterion.id}"`);
+      assert.ok(
+        typeof criterion.id === 'string' && criterion.id.trim(),
+        `${task.id} acceptance criterion ID is required`
+      );
+      assert.ok(
+        !criterionIds.has(criterion.id),
+        `${task.id} has duplicate acceptance criterion "${criterion.id}"`
+      );
       criterionIds.add(criterion.id);
-      assert.equal(criterion.text, task.acceptance_criteria[i], `${task.id} acceptance criterion text projection drift`);
-      assert.equal(typeof criterion.done, 'boolean', `${task.id} acceptance criterion done state must be boolean`);
+      assert.equal(
+        criterion.text,
+        task.acceptance_criteria[i],
+        `${task.id} acceptance criterion text projection drift`
+      );
+      assert.equal(
+        typeof criterion.done,
+        'boolean',
+        `${task.id} acceptance criterion done state must be boolean`
+      );
     }
 
     assert.equal(
@@ -82,18 +105,25 @@ export function renderVisualUniverseBoard(tasks) {
     lines.push(`## ${phase}`, '');
     for (const task of tasks.filter((entry) => entry.phase === phase)) {
       const box = task.status === 'done' || task.status === 'skipped' ? 'x' : ' ';
-      const detail = task.status === 'blocked' || task.status === 'skipped'
-        ? ` — **${statusLabel(task)}:** ${task.notes || 'See task evidence.'}`
-        : task.status === 'in_progress' ? ' — **IN PROGRESS**' : '';
+      const detail =
+        task.status === 'blocked' || task.status === 'skipped'
+          ? ` — **${statusLabel(task)}:** ${task.notes || 'See task evidence.'}`
+          : task.status === 'in_progress'
+            ? ' — **IN PROGRESS**'
+            : '';
       lines.push(`- [${box}] **${task.id} — ${task.title}**${detail}`);
       lines.push(`  - Goal: ${task.objective}`);
       lines.push(`  - Depends on: ${task.depends_on.length ? task.depends_on.join(', ') : 'none'}`);
       lines.push(`  - Deliverables: ${task.deliverables.join('; ')}`);
       const criteriaProgress = `${task.acceptance_criteria_state.filter((criterion) => criterion.done).length}/${task.acceptance_criteria_state.length}`;
-      lines.push(`  - Acceptance (${criteriaProgress} complete): ${task.acceptance_criteria_state.map((criterion) => `[${criterion.done ? 'x' : ' '}] ${criterion.text}`).join('; ')}`);
+      lines.push(
+        `  - Acceptance (${criteriaProgress} complete): ${task.acceptance_criteria_state.map((criterion) => `[${criterion.done ? 'x' : ' '}] ${criterion.text}`).join('; ')}`
+      );
       lines.push(`  - Verify: ${task.verification.join('; ')}`);
       if (task.evidence.length) {
-        lines.push(`  - Evidence: ${task.evidence.map((entry) => `\`${entry.command}\` (${entry.exit_code ?? 'not recorded'}) → \`${entry.artifact}\``).join('; ')}`);
+        lines.push(
+          `  - Evidence: ${task.evidence.map((entry) => `\`${entry.command}\` (${entry.exit_code ?? 'not recorded'}) → \`${entry.artifact}\``).join('; ')}`
+        );
       }
       lines.push('');
     }
@@ -122,7 +152,9 @@ export function renderVisualUniverseTaskCard(task) {
     '',
     '## Scope hints',
     '',
-    ...(task.scope_hints.length ? task.scope_hints.map((hint) => `- \`${hint}\``) : ['- None specified.']),
+    ...(task.scope_hints.length
+      ? task.scope_hints.map((hint) => `- \`${hint}\``)
+      : ['- None specified.']),
     '',
     '## Deliverables',
     '',
@@ -130,7 +162,9 @@ export function renderVisualUniverseTaskCard(task) {
     '',
     '## Acceptance criteria',
     '',
-    ...task.acceptance_criteria_state.map((criterion) => `- [${criterion.done ? 'x' : ' '}] ${criterion.text}`),
+    ...task.acceptance_criteria_state.map(
+      (criterion) => `- [${criterion.done ? 'x' : ' '}] ${criterion.text}`
+    ),
     '',
     '## Verification',
     '',
@@ -150,7 +184,9 @@ export function renderVisualUniverseTaskCard(task) {
       lines.push(`  - \`${evidencePath}\``);
     }
     lines.push(`- Commit SHA: ${task.commit ?? 'pending commit'}`);
-    lines.push(`- Reviewer decision: ${task.status === 'skipped' ? `Existing capability verified; ${task.notes}` : 'Acceptance evidence recorded.'}`);
+    lines.push(
+      `- Reviewer decision: ${task.status === 'skipped' ? `Existing capability verified; ${task.notes}` : 'Acceptance evidence recorded.'}`
+    );
     lines.push(`- Residual issues: ${task.notes || 'None recorded.'}`);
   } else {
     lines.push('- Commands / exit codes:');
@@ -168,7 +204,7 @@ export function renderVisualUniverseTaskCard(task) {
       legacyNote.text,
       '',
       `- Source: \`${legacyNote.sourceFile}\``,
-      `- Git blob SHA: \`${legacyNote.sourceBlobSha}\``,
+      `- Git blob SHA: \`${legacyNote.sourceBlobSha}\``
     );
   }
   lines.push('', '## Notes', '', notes, '');

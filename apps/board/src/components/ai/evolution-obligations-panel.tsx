@@ -2,12 +2,7 @@
 
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import {
-  CheckIcon,
-  RefreshIcon,
-  SecurityIcon,
-  SignalIcon,
-} from '@moonwitness/ui/icons';
+import { CheckIcon, RefreshIcon, SecurityIcon, SignalIcon } from '@moonwitness/ui/icons';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';

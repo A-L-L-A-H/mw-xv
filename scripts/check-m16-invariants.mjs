@@ -20,13 +20,16 @@ export const M16_MODULES = [
 const FORBIDDEN_IMPORT_PATTERNS = [
   {
     code: 'FORBIDDEN_NODE_FS_IMPORT',
-    regex: /\b(?:from\s+['"](?:node:)?fs(?:\/promises)?['"]|import\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\)|require\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\))/u,
+    regex:
+      /\b(?:from\s+['"](?:node:)?fs(?:\/promises)?['"]|import\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\)|require\s*\(\s*['"](?:node:)?fs(?:\/promises)?['"]\s*\))/u,
     message: 'Direct node:fs import is forbidden inside @moonwitness/ai-runtime M16 modules.',
   },
   {
     code: 'FORBIDDEN_CHILD_PROCESS_IMPORT',
-    regex: /\b(?:from\s+['"](?:node:)?child_process['"]|import\s*\(\s*['"](?:node:)?child_process['"]\s*\)|require\s*\(\s*['"](?:node:)?child_process['"]\s*\))/u,
-    message: 'Direct node:child_process import is forbidden inside @moonwitness/ai-runtime M16 modules.',
+    regex:
+      /\b(?:from\s+['"](?:node:)?child_process['"]|import\s*\(\s*['"](?:node:)?child_process['"]\s*\)|require\s*\(\s*['"](?:node:)?child_process['"]\s*\))/u,
+    message:
+      'Direct node:child_process import is forbidden inside @moonwitness/ai-runtime M16 modules.',
   },
 ];
 

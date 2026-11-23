@@ -6,7 +6,15 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = path.join(root, 'packages/assets');
 const target = path.join(root, 'apps/board/public');
-const publicAssetDirectories = ['brand', 'illustrations', 'materials', 'sounds', 'animation', 'environments', 'scenes'];
+const publicAssetDirectories = [
+  'brand',
+  'illustrations',
+  'materials',
+  'sounds',
+  'animation',
+  'environments',
+  'scenes',
+];
 for (const directory of publicAssetDirectories) {
   const sourceDirectory = path.join(source, directory);
   if (!existsSync(sourceDirectory)) continue;

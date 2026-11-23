@@ -15,7 +15,11 @@ import { manifest as subscriptionAddon } from '@moonwitness/orm-subscription';
 import { manifest as integrationAddon } from '@moonwitness/orm-integration';
 import { manifest as requestAddon } from '@moonwitness/orm-request';
 import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
-import { manifest as aiAddon, ensureAiJobHandlersRegistered, isValidAiMutation } from '@moonwitness/orm-ai';
+import {
+  manifest as aiAddon,
+  ensureAiJobHandlersRegistered,
+  isValidAiMutation,
+} from '@moonwitness/orm-ai';
 import { manifest as a2aAddon } from '@moonwitness/orm-a2a';
 import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
 import { whatsappManifest } from '@moonwitness/orm-whatsapp';

@@ -21,8 +21,14 @@ test('extractRoadmapId parses bracketed and prefix roadmap keys', () => {
 });
 
 test('formatIssueTitle formats standard issue title with stable key', () => {
-  assert.equal(formatIssueTitle('M13.09', 'Implement FLOW Cockpit'), '[M13.09] Implement FLOW Cockpit');
-  assert.equal(formatIssueTitle('M13.09', '[M13.09] Implement FLOW Cockpit'), '[M13.09] Implement FLOW Cockpit');
+  assert.equal(
+    formatIssueTitle('M13.09', 'Implement FLOW Cockpit'),
+    '[M13.09] Implement FLOW Cockpit'
+  );
+  assert.equal(
+    formatIssueTitle('M13.09', '[M13.09] Implement FLOW Cockpit'),
+    '[M13.09] Implement FLOW Cockpit'
+  );
 });
 
 test('preserveHumanNotes preserves notes before and after managed markers', () => {

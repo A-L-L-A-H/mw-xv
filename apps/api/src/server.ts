@@ -9,14 +9,10 @@ async function main() {
     validateWhatsAppProductionConfig(process.env);
     const { buildApp } = await import('./app.js');
     const { computeDesiredSchemaState, Registry } = await import('@moonwitness/orm');
-    const {
-      getApiAddonManifests,
-      installApiAddons,
-      registerApiAddons,
-    } = await import('./addons/registry.js');
-    const { API_SCHEMA_VERSION, runApiSchemaMigration, waitForSchemaReady } = await import(
-      './database/schema-state.js'
-    );
+    const { getApiAddonManifests, installApiAddons, registerApiAddons } =
+      await import('./addons/registry.js');
+    const { API_SCHEMA_VERSION, runApiSchemaMigration, waitForSchemaReady } =
+      await import('./database/schema-state.js');
     const { createMigrationDatabase } = await import('./database/knex.js');
     const { verifyDefaultBaseAccounts, verifyRequiredModels } = await import('./startup-checks.js');
     const { gracefulShutdown } = await import('./lifecycle/graceful-shutdown.js');

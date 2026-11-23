@@ -18,7 +18,9 @@ export const SYNC_END_MARKER = '<!-- mw-roadmap-sync:end -->';
  */
 export function extractRoadmapId(title) {
   if (typeof title !== 'string') return null;
-  const match = title.match(/\[([A-Z]\d+(?:\.[A-Za-z0-9_-]+)?)\]/u) || title.match(/^([A-Z]\d+(?:\.[A-Za-z0-9_-]+)?)\b/u);
+  const match =
+    title.match(/\[([A-Z]\d+(?:\.[A-Za-z0-9_-]+)?)\]/u) ||
+    title.match(/^([A-Z]\d+(?:\.[A-Za-z0-9_-]+)?)\b/u);
   return match ? match[1] : null;
 }
 
@@ -49,7 +51,9 @@ export function renderManagedBlock(task, status = 'open', evidenceData = {}) {
     task.summary ? `- **Summary:** ${task.summary}` : null,
     evidenceData.commitSha ? `- **Linked Commit:** \`${evidenceData.commitSha}\`` : null,
     evidenceData.ciGreen ? `- **CI Status:** \`GREEN\`` : null,
-    evidenceData.evidenceArtifact ? `- **Evidence Artifact:** \`${evidenceData.evidenceArtifact}\`` : null,
+    evidenceData.evidenceArtifact
+      ? `- **Evidence Artifact:** \`${evidenceData.evidenceArtifact}\``
+      : null,
     SYNC_END_MARKER,
   ].filter(Boolean);
 
@@ -168,8 +172,8 @@ export function planRoadmapIssues({
       conflicts.push({
         taskId,
         type: 'DUPLICATE_REMOTE_ISSUE',
-        message: `Multiple issues exist for key [${taskId}]: ${matchingIssues.map(i => i.number).join(', ')}`,
-        issueNumbers: matchingIssues.map(i => i.number),
+        message: `Multiple issues exist for key [${taskId}]: ${matchingIssues.map((i) => i.number).join(', ')}`,
+        issueNumbers: matchingIssues.map((i) => i.number),
       });
       continue;
     }

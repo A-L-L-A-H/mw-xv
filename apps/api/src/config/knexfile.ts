@@ -25,7 +25,11 @@ export function createMigrationPostgresKnexConfig(
   connectionString: string,
   limits: Pick<
     typeof config.db,
-    'poolMin' | 'poolMax' | 'acquireTimeoutMs' | 'statementTimeoutMs' | 'migrationStatementTimeoutMs'
+    | 'poolMin'
+    | 'poolMax'
+    | 'acquireTimeoutMs'
+    | 'statementTimeoutMs'
+    | 'migrationStatementTimeoutMs'
   >,
   overrides: Pick<Knex.Config, 'searchPath'> = {}
 ): Knex.Config {

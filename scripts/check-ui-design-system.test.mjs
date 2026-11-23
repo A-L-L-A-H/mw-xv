@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
-import { auditUiSources, compareUiBaseline, createUiBaseline } from './check-ui-design-system.mjs';
+import {
+  auditUiSources,
+  auditWorkspaceUi,
+  compareUiBaseline,
+  createUiBaseline,
+} from './check-ui-design-system.mjs';
 
 const manifest = {
   exports: {
@@ -114,6 +122,36 @@ test('composite shadow tokens cannot be embedded in a color slot', () => {
     findings.filter(({ rule }) => rule === 'composite-token-slot').map(({ evidence }) => evidence),
     ['box-shadow: 4px 4px 0 var(--mw-shadow-ink)']
   );
+});
+
+test('workspace audit includes app desktop-web UI sources', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'mw-ui-scan-'));
+  try {
+    await mkdir(join(root, 'packages/ui/src'), { recursive: true });
+    await writeFile(
+      join(root, 'packages/ui/package.json'),
+      JSON.stringify({ exports: { './components.css': './src/styles/components.css' } })
+    );
+    await mkdir(join(root, 'apps/desktop/desktop-web'), { recursive: true });
+    await writeFile(
+      join(root, 'apps/desktop/package.json'),
+      JSON.stringify({ dependencies: { '@moonwitness/ui': 'workspace:*' } })
+    );
+    await writeFile(join(root, 'apps/desktop/desktop-web/panel.css'), '.panel { color: #123456; }');
+
+    const report = await auditWorkspaceUi(root);
+
+    assert.ok(
+      report.findings.some(
+        (finding) =>
+          finding.file === 'apps/desktop/desktop-web/panel.css' &&
+          finding.rule === 'hardcoded-color'
+      )
+    );
+    assert.ok(report.coverage.apps.some((app) => app.app === 'apps/desktop'));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test('JSX audit checks nested class strings and style literals without flagging payload colors', () => {

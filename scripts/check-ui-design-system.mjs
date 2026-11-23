@@ -643,7 +643,7 @@ export async function auditWorkspaceUi(root) {
       if (!Object.hasOwn(manifest.dependencies ?? {}, '@moonwitness/ui')) continue;
       const app = `apps/${entry.name}`;
       consumers.push(app);
-      for (const folder of ['src', 'web/src']) {
+      for (const folder of ['src', 'web/src', 'desktop-web']) {
         const directory = path.join(appDirectory, folder);
         if (await optionalStat(directory)) await scan(directory);
       }

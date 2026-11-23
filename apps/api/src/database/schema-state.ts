@@ -58,8 +58,13 @@ export interface MigrationCoordinatorOptions {
 }
 
 export class SchemaVersionAheadError extends Error {
-  constructor(readonly appliedVersion: number, readonly desiredVersion: number) {
-    super(`Database schema version ${appliedVersion} is ahead of application version ${desiredVersion}`);
+  constructor(
+    readonly appliedVersion: number,
+    readonly desiredVersion: number
+  ) {
+    super(
+      `Database schema version ${appliedVersion} is ahead of application version ${desiredVersion}`
+    );
     this.name = 'SchemaVersionAheadError';
   }
 }
@@ -178,7 +183,10 @@ async function tryAcquireMigrationLock(db: Knex): Promise<boolean> {
 
 async function releaseMigrationLock(db: Knex): Promise<void> {
   if (db.client.config.client !== 'pg') return;
-  await db.raw('SELECT pg_advisory_unlock(?, hashtext(?))', [MIGRATION_LOCK_KEY, MIGRATION_LOCK_NAME]);
+  await db.raw('SELECT pg_advisory_unlock(?, hashtext(?))', [
+    MIGRATION_LOCK_KEY,
+    MIGRATION_LOCK_NAME,
+  ]);
 }
 
 export interface SchemaWaitOptions {
@@ -190,7 +198,9 @@ export async function waitForSchemaReady(
   db: Knex,
   options: SchemaWaitOptions
 ): Promise<SchemaStateRecord> {
-  const sleep = options.sleep ?? ((milliseconds) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds)));
+  const sleep =
+    options.sleep ??
+    ((milliseconds) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds)));
   while (true) {
     if (!(await db.schema.hasTable('_orm_schema_state'))) {
       await sleep(1_000);

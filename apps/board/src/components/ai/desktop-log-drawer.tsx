@@ -3,10 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
-import {
-  LogConsole,
-  type LogConsoleEntry,
-} from '@moonwitness/ui/components/log-console';
+import { LogConsole, type LogConsoleEntry } from '@moonwitness/ui/components/log-console';
 import {
   Sheet,
   SheetContent,
@@ -15,11 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@moonwitness/ui/components/sheet';
-import {
-  CheckCircleIcon,
-  CodeIcon,
-  SparkleIcon,
-} from '@moonwitness/ui/icons';
+import { CheckCircleIcon, CodeIcon, SparkleIcon } from '@moonwitness/ui/icons';
 import { useDesktopMode } from '@/lib/desktop-mode';
 
 interface DesktopApiWindow extends Window {
@@ -50,10 +43,12 @@ function buildFallbackMarkdown(entries: readonly LogConsoleEntry[]): string {
     `- **Entries**: ${entries.length}`,
     '',
     '```text',
-    ...entries.slice(-50).map(
-      (entry) =>
-        `[${entry.timestamp}] [${entry.level.toUpperCase()}] [${entry.source}] ${entry.message}`
-    ),
+    ...entries
+      .slice(-50)
+      .map(
+        (entry) =>
+          `[${entry.timestamp}] [${entry.level.toUpperCase()}] [${entry.source}] ${entry.message}`
+      ),
     '```',
   ];
   return lines.join('\n');
@@ -208,9 +203,7 @@ export function DesktopLogDrawer() {
           >
             <CodeIcon className="size-3.5" aria-hidden="true" />
             <span>Logs</span>
-            {errorCount > 0 ? (
-              <Badge variant="destructive">{errorCount}</Badge>
-            ) : null}
+            {errorCount > 0 ? <Badge variant="destructive">{errorCount}</Badge> : null}
           </Button>
         </div>
       </SheetTrigger>

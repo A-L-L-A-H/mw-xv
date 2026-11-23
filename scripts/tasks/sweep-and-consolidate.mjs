@@ -10,10 +10,10 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.
 export function mapEvolutionStatus(sourceStatus) {
   if (sourceStatus === 'completed') return 'done';
   if (sourceStatus === 'active') return 'doing';
-  throw new Error(`Unsupported evolution backlog status "${sourceStatus}". Add an explicit mapping before importing.`);
+  throw new Error(
+    `Unsupported evolution backlog status "${sourceStatus}". Add an explicit mapping before importing.`
+  );
 }
-
-
 
 export async function sweepAndConsolidate({
   generatedAt = process.env.SOURCE_DATE_EPOCH
@@ -63,7 +63,11 @@ export async function sweepAndConsolidate({
     }
 
     const series = t.id.startsWith('M') ? 'M' : t.id.startsWith('K') ? 'K' : 'ROADMAP';
-    const horizon = isChecked ? 'now' : t.milestone?.startsWith('M1') || t.milestone?.startsWith('K1') ? 'now' : 'next';
+    const horizon = isChecked
+      ? 'now'
+      : t.milestone?.startsWith('M1') || t.milestone?.startsWith('K1')
+        ? 'now'
+        : 'next';
 
     addTask({
       code: t.id,
@@ -74,7 +78,8 @@ export async function sweepAndConsolidate({
       title: t.title,
       summary: t.title.slice(0, 140),
       problem: `Roadmap requirement defined in ${t.detailFile ?? 'ROADMAP.md'}`,
-      proposedSolution: t.output ?? 'Implement verified deliverable according to roadmap specification.',
+      proposedSolution:
+        t.output ?? 'Implement verified deliverable according to roadmap specification.',
       category: series === 'K' ? 'research' : 'architecture',
       type: 'feature',
       priority: t.priority ?? 'p1',
@@ -90,22 +95,22 @@ export async function sweepAndConsolidate({
       tags: [series.toLowerCase(), ...(t.labels ?? [])],
       scope: { packages: [], files: [] },
       acceptanceCriteria: [
-        { id: `${t.id}-ac-1`, text: t.output ?? 'Deliverable accepted', done: isChecked }
+        { id: `${t.id}-ac-1`, text: t.output ?? 'Deliverable accepted', done: isChecked },
       ],
       validation: {
         commands: ['pnpm verify'],
-        expected: 'All acceptance criteria and evidence proven'
+        expected: 'All acceptance criteria and evidence proven',
       },
       evidence: {
         paths: t.evidence ? [t.evidence] : [],
         detailFile: t.detailFile ?? null,
-        commitSha: null
+        commitSha: null,
       },
       references: t.detailFile ? [t.detailFile] : [],
       blockedReason: status === 'blocked' ? 'Awaiting upstream dependency or CODEOWNER gate' : null,
       sourceRef: { file: 'docs/roadmap/tasks.json', legacyId: t.id },
       url: '',
-      comments: []
+      comments: [],
     });
   }
 
@@ -125,7 +130,13 @@ export async function sweepAndConsolidate({
         const rawCode = match[2];
         const title = match[3].trim();
         const code = `WA-${rawCode}`;
-        const prio = rawCode.startsWith('P0') ? 'p0' : rawCode.startsWith('P1') ? 'p1' : rawCode.startsWith('P2') ? 'p2' : 'p3';
+        const prio = rawCode.startsWith('P0')
+          ? 'p0'
+          : rawCode.startsWith('P1')
+            ? 'p1'
+            : rawCode.startsWith('P2')
+              ? 'p2'
+              : 'p3';
 
         addTask({
           code,
@@ -136,7 +147,8 @@ export async function sweepAndConsolidate({
           title,
           summary: title.slice(0, 140),
           problem: `WhatsApp gateway requirement: ${title}`,
-          proposedSolution: 'Verify and integrate GoWA gateway functionality according to specification.',
+          proposedSolution:
+            'Verify and integrate GoWA gateway functionality according to specification.',
           category: 'product',
           type: 'feature',
           priority: prio,
@@ -151,24 +163,25 @@ export async function sweepAndConsolidate({
           blocks: [],
           tags: ['whatsapp', 'gowa', prio],
           scope: { packages: ['@moonwitness/orm-whatsapp', '@moonwitness/api'], files: [] },
-          acceptanceCriteria: [
-            { id: `${code}-ac-1`, text: title, done: isDone }
-          ],
+          acceptanceCriteria: [{ id: `${code}-ac-1`, text: title, done: isDone }],
           validation: {
             commands: ['pnpm test:whatsapp'],
-            expected: 'WhatsApp gateway test suites pass'
+            expected: 'WhatsApp gateway test suites pass',
           },
           evidence: { paths: [], detailFile: 'todo-wa.md', commitSha: null },
           references: ['docs/operations/whatsapp.md'],
           blockedReason: null,
           sourceRef: { file: 'todo-wa.md', legacyId: rawCode },
           url: '',
-          comments: []
+          comments: [],
         });
       }
     }
   } catch (error) {
-    throw new Error(`Failed to ingest required WhatsApp task source "${todoWaPath}": ${error.message}`, { cause: error });
+    throw new Error(
+      `Failed to ingest required WhatsApp task source "${todoWaPath}": ${error.message}`,
+      { cause: error }
+    );
   }
 
   // Root todo.md is a navigation pointer. Verify it remains a pointer and never parse it as a backlog.
@@ -196,7 +209,8 @@ export async function sweepAndConsolidate({
         title,
         summary: title.slice(0, 140),
         problem: `Unchecked item retained in archived legacy TODO: ${title}`,
-        proposedSolution: 'Revalidate against current repository state and promote to an active roadmap/card only when still required.',
+        proposedSolution:
+          'Revalidate against current repository state and promote to an active roadmap/card only when still required.',
         category: 'governance',
         type: 'research',
         priority: 'p1',
@@ -212,19 +226,30 @@ export async function sweepAndConsolidate({
         tags: ['legacy', 'archive', 'triage-required'],
         scope: { packages: [], files: [] },
         acceptanceCriteria: [
-          { id: `${code}-ac-1`, text: 'Current relevance and ownership are revalidated.', done: false }
+          {
+            id: `${code}-ac-1`,
+            text: 'Current relevance and ownership are revalidated.',
+            done: false,
+          },
         ],
-        validation: { commands: ['pnpm automation:check:roadmap'], expected: 'Task is mapped to an active source or explicitly retired.' },
+        validation: {
+          commands: ['pnpm automation:check:roadmap'],
+          expected: 'Task is mapped to an active source or explicitly retired.',
+        },
         evidence: { paths: [], detailFile: 'docs/archive/todos/todo.md', commitSha: null },
         references: ['docs/archive/todos/todo.md'],
-        blockedReason: 'Archived legacy backlog item; requires owner revalidation before execution.',
+        blockedReason:
+          'Archived legacy backlog item; requires owner revalidation before execution.',
         sourceRef: { file: 'docs/archive/todos/todo.md', legacyId: code },
         url: '',
-        comments: []
+        comments: [],
       });
     }
   } catch (error) {
-    throw new Error(`Failed to ingest required archived legacy TODO source "${legacyTodoPath}": ${error.message}`, { cause: error });
+    throw new Error(
+      `Failed to ingest required archived legacy TODO source "${legacyTodoPath}": ${error.message}`,
+      { cause: error }
+    );
   }
 
   // Import the AI Corporation PR lifecycle IDs. Only PR.14 is still open and is a human approval gate.
@@ -251,7 +276,8 @@ export async function sweepAndConsolidate({
         title,
         summary: title.slice(0, 140),
         problem: 'Promotion governance requirement recorded in the AI Corporation checklist.',
-        proposedSolution: 'Complete the approval/evidence requirement through the protected repository workflow.',
+        proposedSolution:
+          'Complete the approval/evidence requirement through the protected repository workflow.',
         category: 'governance',
         type: 'documentation',
         priority: 'p0',
@@ -266,23 +292,38 @@ export async function sweepAndConsolidate({
         blocks: [],
         tags: ['governance', 'promotion', 'ai-corporation'],
         scope: { packages: [], files: ['.github/workflows/promote.yml'] },
-        acceptanceCriteria: [
-          { id: `${code}-ac-1`, text: title, done: isDone }
-        ],
-        validation: { commands: ['pnpm promotion:approval-check'], expected: 'Required maintainer approval is present on the exact promotion candidate.' },
-        evidence: { paths: [], detailFile: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md', commitSha: null },
+        acceptanceCriteria: [{ id: `${code}-ac-1`, text: title, done: isDone }],
+        validation: {
+          commands: ['pnpm promotion:approval-check'],
+          expected: 'Required maintainer approval is present on the exact promotion candidate.',
+        },
+        evidence: {
+          paths: [],
+          detailFile: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
+          commitSha: null,
+        },
         references: ['docs/roadmap/evidence/M12.14.md'],
-        blockedReason: isDone ? null : 'Maintainer approval is an explicit human gate; automation must not self-approve.',
-        sourceRef: { file: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md', legacyId: code },
+        blockedReason: isDone
+          ? null
+          : 'Maintainer approval is an explicit human gate; automation must not self-approve.',
+        sourceRef: {
+          file: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
+          legacyId: code,
+        },
         url: '',
-        comments: []
+        comments: [],
       });
     }
     if (!importedApprovalCodes.has('PR.14')) {
-      throw new Error('AI Corporation source is missing the expected PR.14 maintainer-approval gate.');
+      throw new Error(
+        'AI Corporation source is missing the expected PR.14 maintainer-approval gate.'
+      );
     }
   } catch (error) {
-    throw new Error(`Failed to ingest required AI Corporation task source "${aiCorporationTodoPath}": ${error.message}`, { cause: error });
+    throw new Error(
+      `Failed to ingest required AI Corporation task source "${aiCorporationTodoPath}": ${error.message}`,
+      { cause: error }
+    );
   }
 
   // 5. Ingest todo-desktop.md
@@ -325,12 +366,15 @@ export async function sweepAndConsolidate({
           blockedReason: null,
           sourceRef: { file: 'todo-desktop.md', legacyId: code },
           url: '',
-          comments: []
+          comments: [],
         });
       }
     }
   } catch (error) {
-    throw new Error(`Failed to ingest required Desktop task source todo-desktop.md: ${error.message}`, { cause: error });
+    throw new Error(
+      `Failed to ingest required Desktop task source todo-desktop.md: ${error.message}`,
+      { cause: error }
+    );
   }
 
   // 6. Ingest evolution/backlog.json
@@ -364,7 +408,8 @@ export async function sweepAndConsolidate({
         proposedSolution: 'Fulfill architecture evolution requirement.',
         category: 'architecture',
         type: 'refactor',
-        priority: candidate.priority === 'high' ? 'p0' : candidate.priority === 'medium' ? 'p1' : 'p2',
+        priority:
+          candidate.priority === 'high' ? 'p0' : candidate.priority === 'medium' ? 'p1' : 'p2',
         status,
         human: false,
         owner: 'core-team',
@@ -377,17 +422,23 @@ export async function sweepAndConsolidate({
         tags: ['evolution', candidate.category ?? 'architecture'],
         scope: { packages: [], files: candidate.targetFiles ?? [] },
         acceptanceCriteria: [{ id: `${candidate.id}-ac-1`, text: candidate.title, done: isDone }],
-        validation: { commands: candidate.acceptanceCheck ? [candidate.acceptanceCheck] : [], expected: 'Pass' },
+        validation: {
+          commands: candidate.acceptanceCheck ? [candidate.acceptanceCheck] : [],
+          expected: 'Pass',
+        },
         evidence: { paths: [], detailFile: 'evolution/backlog.json', commitSha: null },
         references: [],
         blockedReason: null,
         sourceRef: { file: 'evolution/backlog.json', legacyId: candidate.id },
         url: '',
-        comments: []
+        comments: [],
       });
     }
   } catch (error) {
-    throw new Error(`Failed to ingest required evolution source evolution/backlog.json: ${error.message}`, { cause: error });
+    throw new Error(
+      `Failed to ingest required evolution source evolution/backlog.json: ${error.message}`,
+      { cause: error }
+    );
   }
 
   // Import the scoped Visual Universe execution graph without losing its
@@ -428,10 +479,17 @@ export async function sweepAndConsolidate({
       visualCardArchiveManifest.entryCount !== visualPack.tasks.length ||
       !Array.isArray(visualCardArchiveManifest.chunks)
     ) {
-      throw new Error('Visual Universe task-card archive manifest is missing, malformed or has the wrong record count.');
+      throw new Error(
+        'Visual Universe task-card archive manifest is missing, malformed or has the wrong record count.'
+      );
     }
-    if (visualCardNotes.sourceSnapshot !== 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/manifest.json') {
-      throw new Error('Visual Universe task-card notes addendum points to an unexpected archive manifest.');
+    if (
+      visualCardNotes.sourceSnapshot !==
+      'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/manifest.json'
+    ) {
+      throw new Error(
+        'Visual Universe task-card notes addendum points to an unexpected archive manifest.'
+      );
     }
 
     const archivedCardsByPath = new Map();
@@ -445,19 +503,32 @@ export async function sweepAndConsolidate({
       }
       const chunkPath = path.join(rootDir, chunk.path);
       const chunkData = JSON.parse(await fs.readFile(chunkPath, 'utf8'));
-      if (chunkData.snapshot !== visualCardArchiveManifest.snapshot || !Array.isArray(chunkData.entries)) {
-        throw new Error(`Visual Universe task-card archive chunk "${chunk.path}" has an invalid format.`);
+      if (
+        chunkData.snapshot !== visualCardArchiveManifest.snapshot ||
+        !Array.isArray(chunkData.entries)
+      ) {
+        throw new Error(
+          `Visual Universe task-card archive chunk "${chunk.path}" has an invalid format.`
+        );
       }
       for (const card of chunkData.entries) {
-        if (typeof card.path !== 'string' || typeof card.content !== 'string' || typeof card.blobSha !== 'string') {
-          throw new Error(`Visual Universe task-card archive chunk "${chunk.path}" has a malformed entry.`);
+        if (
+          typeof card.path !== 'string' ||
+          typeof card.content !== 'string' ||
+          typeof card.blobSha !== 'string'
+        ) {
+          throw new Error(
+            `Visual Universe task-card archive chunk "${chunk.path}" has a malformed entry.`
+          );
         }
         const actualBlobSha = createHash('sha1')
           .update(`blob ${Buffer.byteLength(card.content, 'utf8')}\0`)
           .update(card.content, 'utf8')
           .digest('hex');
         if (actualBlobSha !== card.blobSha) {
-          throw new Error(`Archived task card "${card.path}" does not match its recorded Git blob SHA.`);
+          throw new Error(
+            `Archived task card "${card.path}" does not match its recorded Git blob SHA.`
+          );
         }
         if (archivedCardsByPath.has(card.path)) {
           throw new Error(`Duplicate archived Visual Universe task-card path "${card.path}".`);
@@ -474,14 +545,18 @@ export async function sweepAndConsolidate({
     for (const sourceTask of visualPack.tasks) {
       const expectedCardPath = `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/${sourceTask.phase}/${sourceTask.id}.md`;
       if (!archivedCardsByPath.has(expectedCardPath)) {
-        throw new Error(`Immutable Visual Universe task-card archive is missing "${expectedCardPath}".`);
+        throw new Error(
+          `Immutable Visual Universe task-card archive is missing "${expectedCardPath}".`
+        );
       }
     }
 
     const visualCardNotesByTask = new Map();
     for (const note of visualCardNotes.entries) {
       if (!visualTaskIds.has(note.taskId)) {
-        throw new Error(`Task-card notes addendum references unknown Visual Universe task "${note.taskId}".`);
+        throw new Error(
+          `Task-card notes addendum references unknown Visual Universe task "${note.taskId}".`
+        );
       }
       if (visualCardNotesByTask.has(note.taskId)) {
         throw new Error(`Duplicate task-card notes addendum entry for "${note.taskId}".`);
@@ -493,15 +568,23 @@ export async function sweepAndConsolidate({
         typeof note.sourceBlobSha !== 'string' ||
         !/^[a-f0-9]{40}$/u.test(note.sourceBlobSha)
       ) {
-        throw new Error(`Task-card notes addendum entry for "${note.taskId}" has invalid provenance or text.`);
+        throw new Error(
+          `Task-card notes addendum entry for "${note.taskId}" has invalid provenance or text.`
+        );
       }
       const archivedCard = archivedCardsByPath.get(note.sourcePath);
       if (!archivedCard || archivedCard.blobSha !== note.sourceBlobSha) {
-        throw new Error(`Task-card note provenance for "${note.taskId}" does not match the immutable card archive.`);
+        throw new Error(
+          `Task-card note provenance for "${note.taskId}" does not match the immutable card archive.`
+        );
       }
-      const originalNote = (archivedCard.content.match(/^## Notes\s*\n([\s\S]*)$/m)?.[1] ?? '').trim();
+      const originalNote = (
+        archivedCard.content.match(/^## Notes\s*\n([\s\S]*)$/m)?.[1] ?? ''
+      ).trim();
       if (originalNote !== note.text.trim()) {
-        throw new Error(`Task-card note text for "${note.taskId}" differs from its immutable card archive.`);
+        throw new Error(
+          `Task-card note text for "${note.taskId}" differs from its immutable card archive.`
+        );
       }
       visualCardNotesByTask.set(note.taskId, note);
     }
@@ -512,7 +595,7 @@ export async function sweepAndConsolidate({
         in_progress: 'doing',
         blocked: 'blocked',
         done: 'done',
-        skipped: 'done'
+        skipped: 'done',
       };
       if (!statusMap[sourceTask.status]) {
         throw new Error(`Unsupported status "${sourceTask.status}" for ${sourceTask.id}.`);
@@ -547,24 +630,27 @@ export async function sweepAndConsolidate({
         acceptanceCriteria: (sourceTask.acceptance_criteria ?? []).map((text, index) => ({
           id: `${sourceTask.id}-ac-${index + 1}`,
           text,
-          done: isComplete
+          done: isComplete,
         })),
         validation: {
           commands: sourceTask.verification ?? [],
-          expected: 'All delegated work-package acceptance criteria are met.'
+          expected: 'All delegated work-package acceptance criteria are met.',
         },
         evidence: {
-          paths: [...new Set((sourceTask.evidence ?? []).map((entry) => entry.artifact).filter(Boolean))],
+          paths: [
+            ...new Set((sourceTask.evidence ?? []).map((entry) => entry.artifact).filter(Boolean)),
+          ],
           detailFile: `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/${sourceTask.phase}/${sourceTask.id}.md`,
-          commitSha: sourceTask.commit ?? null
+          commitSha: sourceTask.commit ?? null,
         },
         references: sourceTask.scope_hints ?? [],
-        blockedReason: sourceTask.status === 'blocked'
-          ? sourceTask.notes || 'Blocked in the delegated Visual Universe work package.'
-          : null,
+        blockedReason:
+          sourceTask.status === 'blocked'
+            ? sourceTask.notes || 'Blocked in the delegated Visual Universe work package.'
+            : null,
         sourceRef: {
           file: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json',
-          legacyId: sourceTask.id
+          legacyId: sourceTask.id,
         },
         url: '',
         comments: [],
@@ -577,11 +663,14 @@ export async function sweepAndConsolidate({
                 sourceBlobSha: visualCardNotesByTask.get(sourceTask.id).sourceBlobSha,
               }
             : null,
-        }
+        },
       });
     }
   } catch (error) {
-    throw new Error(`Failed to ingest required Visual Universe task source "${visualPackPath}": ${error.message}`, { cause: error });
+    throw new Error(
+      `Failed to ingest required Visual Universe task source "${visualPackPath}": ${error.message}`,
+      { cause: error }
+    );
   }
 
   // Populate reverse blocks graph
@@ -612,17 +701,17 @@ export async function sweepAndConsolidate({
         name: 'MoonWitness Enterprise Platform',
         repos: ['A-L-L-A-H/mw-xv'],
         color: 'blue',
-        statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done']
+        statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done'],
       },
       {
         slug: 'visual-universe',
         name: 'MoonWitness Visual Universe',
         repos: ['A-L-L-A-H/mw-xv'],
         color: 'purple',
-        statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done']
-      }
+        statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done'],
+      },
     ],
-    tasks
+    tasks,
   };
 }
 
@@ -651,7 +740,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
         candidateFile === targetFile ||
         (!relativeCandidate.startsWith('..') && !path.isAbsolute(relativeCandidate))
       ) {
-        throw new Error('TaskOS candidate output must be outside the repository; the canonical registry is never a CI scratch file.');
+        throw new Error(
+          'TaskOS candidate output must be outside the repository; the canonical registry is never a CI scratch file.'
+        );
       }
     }
 
@@ -668,11 +759,15 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     if (checkOnly) {
       const currentRaw = await fs.readFile(targetFile, 'utf8');
       if (!currentRaw.trim()) {
-        throw new Error('TaskOS registry is empty; --check cannot compare against an unavailable canonical registry.');
+        throw new Error(
+          'TaskOS registry is empty; --check cannot compare against an unavailable canonical registry.'
+        );
       }
       generatedAt = JSON.parse(currentRaw).generatedAt;
       if (typeof generatedAt !== 'string' || !Number.isFinite(Date.parse(generatedAt))) {
-        throw new Error('TaskOS registry has no valid generatedAt timestamp for deterministic comparison.');
+        throw new Error(
+          'TaskOS registry has no valid generatedAt timestamp for deterministic comparison.'
+        );
       }
     }
 
@@ -691,7 +786,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     if (checkOnly) {
       const currentRaw = await fs.readFile(targetFile, 'utf8');
       if (currentRaw !== output) {
-        throw new Error('TaskOS registry differs from deterministic source projection. Review the source inventory before writing.');
+        throw new Error(
+          'TaskOS registry differs from deterministic source projection. Review the source inventory before writing.'
+        );
       }
       console.log(`TaskOS source projection matches ${result.tasks.length} tasks.`);
       return;
@@ -700,12 +797,16 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     if (candidateFile) {
       await fs.mkdir(path.dirname(candidateFile), { recursive: true });
       await fs.writeFile(candidateFile, output, { encoding: 'utf8', flag: 'wx' });
-      console.log(`Wrote ${result.tasks.length} validated TaskOS records to isolated candidate ${candidateFile}; canonical registry unchanged.`);
+      console.log(
+        `Wrote ${result.tasks.length} validated TaskOS records to isolated candidate ${candidateFile}; canonical registry unchanged.`
+      );
       return;
     }
 
     if (!writeEnabled) {
-      console.log(`Dry run: source inventory resolves to ${result.tasks.length} task records. No files changed. Use --write only after reviewing the source inventory.`);
+      console.log(
+        `Dry run: source inventory resolves to ${result.tasks.length} task records. No files changed. Use --write only after reviewing the source inventory.`
+      );
       return;
     }
 

@@ -41,7 +41,11 @@ function sampleTask(overrides = {}) {
     scope: { packages: [], files: ['repository root'] },
     acceptanceCriteria: [{ id: 'W0-001-ac-1', text: 'Verify the branch', done: true }],
     validation: { commands: ['git status --short --branch'], expected: 'Pass' },
-    evidence: { paths: ['evidence/W0-001.md'], detailFile: 'tasks/W0/W0-001.md', commitSha: 'a'.repeat(40) },
+    evidence: {
+      paths: ['evidence/W0-001.md'],
+      detailFile: 'tasks/W0/W0-001.md',
+      commitSha: 'a'.repeat(40),
+    },
     metadata,
     ...overrides,
   };
@@ -143,10 +147,7 @@ test('Visual Universe projection preserves per-criterion TaskOS completion state
     ],
   });
   const projected = projectVisualUniverseTask(source);
-  assert.deepEqual(projected.acceptance_criteria, [
-    'Inspect current branch',
-    'Run focused tests',
-  ]);
+  assert.deepEqual(projected.acceptance_criteria, ['Inspect current branch', 'Run focused tests']);
   assert.deepEqual(projected.acceptance_criteria_state, [
     { id: 'W0-001-ac-1', text: 'Inspect current branch', done: true },
     { id: 'W0-001-ac-2', text: 'Run focused tests', done: false },
