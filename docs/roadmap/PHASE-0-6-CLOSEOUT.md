@@ -14,12 +14,23 @@ The stabilization and TaskOS recovery implementation is committed to `dev`; `mai
 
 Phase 1's 627-record TaskOS candidate was approved by the owner and installed as canonical on `dev`. The former 1,358-record registry is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`. The migration commit adds exact-SHA CI validation for canonical TaskOS, deterministic projection and Visual Universe projections. The full native Desktop FLOW walkthrough, PR #37 review and M12.14 release approval remain separate owner-controlled gates.
 
+### Exact-SHA verification — 2026-11-23
+
+The owner-approved TaskOS migration and deterministic Visual Universe projections are verified on implementation SHA `e1b216eeb2bcca131a9efbb14fe91865cd6ee3fc`:
+
+- Push CI [45095239162](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45095239162): all five jobs passed.
+- PR #37 CI [45095243555](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45095243555): all five jobs passed.
+- The unit job passed `pnpm test:taskos`, the candidate recovery exercise, `pnpm tasks:validate`, `pnpm automation:check:roadmap`, `pnpm tasks:sweep -- --check`, and `sync-task-state.mjs --check`.
+- Visual Universe now has `task.json`, `TASKS.md`, and 109 task cards across 11 phases, all generated from canonical TaskOS.
+- Historical promotion PR #31 was rechecked: push run [45053735229](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45053735229) and PR run [45053738507](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45053738507) passed all five jobs on source SHA `a3fa6da5b6b4e47e42240c8ec2c9ef8561416064`.
+- `main` remains `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`; PR #37 remains open. No merge, tag, release, or deployment was performed.
+
 ## Phase register
 
 | Phase | Scope | Verified outcome | Remaining acceptance |
 |---|---|---|---|
 | **0 — Stabilization** | Branch, CI, toolchain and safety baseline | `main` untouched; only `main` and `dev` are used; active branch rulesets prohibit deletion/non-fast-forward updates; main requires PR plus `quality-and-build`, `unit-tests`, and `knowledge-gate`; Docker/Corepack pnpm pin and drift regression test are in place; exact-SHA push and PR CI both pass all five jobs | **Remote Phase 0 complete.** Preserve the existing branch and release gates; no production deployment is implied |
-| **1 — TaskOS recovery** | Rebuild from source provenance without data loss | Owner-approved 627-record candidate is installed as canonical; previous 1,358-record blob is preserved byte-for-byte at the archive path; full identity reconciliation and candidate SHA are recorded | Exact migration-SHA canonical validators, deterministic projection and Visual Universe projection check must pass in CI before Phase 1 is fully closed |
+| **1 — TaskOS recovery** | Rebuild from source provenance without data loss | Owner-approved 627-record candidate is installed as canonical; previous 1,358-record blob is preserved byte-for-byte at the archive path; full identity reconciliation and candidate SHA are recorded | **Remote technical acceptance closed** on exact implementation SHA `e1b216eeb2bcca131a9efbb14fe91865cd6ee3fc`: push and PR CI each passed all five jobs, including canonical TaskOS and Visual Universe projection validators. Local native Desktop FLOW and human release approvals remain separate gates. |
 | **2 — Governance and documentation** | Roadmap, issue lifecycle, runtime support and canonical docs | Stabilization/active checkpoints refreshed; source-of-truth and review boundaries documented; runtime configuration cross-checked against upstream documentation | Formal maintainer refresh/sign-off of overdue runtime ledger entries; reconcile issue projections from exact evidence; do not mass-close issues |
 | **3 — ROCKSOUL FLOW integration** | Repo Radar → Overlap → Plan → Packet → Dispatch → Worktree → Proof → Review → Sync | M13.09–M13.12 code/evidence exists; Board/Desktop boundary and server-authority contracts are documented; previous exact-SHA PostgreSQL integration lane passed | Local native Desktop end-to-end walkthrough with real isolated worktree; verify scope rejection, lease/fencing, redaction, human review and server-only acceptance |
 | **4 — Roadmap completion** | Evidence-led task completion | M13.09–M13.12 are already recorded complete in the M13 roadmap and have evidence files; no duplicate implementation was started | Keep other M/K tasks at their actual source state; update status only with test/evidence proof; close M13 issue projections only after the full journey is accepted |
