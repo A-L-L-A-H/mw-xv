@@ -7,11 +7,11 @@
 
 | Object | Count | State |
 |---|---:|---|
-| Issues (PR objects excluded) | 151 | 56 open / 95 closed |
+| Issues (PR objects excluded) | 161 | 66 open / 95 closed |
 | Pull requests | 26 | 2 open / 24 closed |
-| Duplicate TaskOS-managed issue markers | 0 | 23 observed managed markers are unique |
+| Duplicate TaskOS-managed issue markers | 0 | 25 observed managed markers are unique |
 | Duplicate stable-ID groups in issue titles | 21 | 20 legacy `MW-*` groups + one `CF-020` conflict |
-| TaskOS source records | 636 | Registry remains the only canonical task lifecycle source |
+| TaskOS source records | 637 | Registry remains the only canonical task lifecycle source |
 
 These counts are point-in-time API results. Re-fetch the issue/PR list before making any lifecycle or release decision.
 
@@ -200,6 +200,16 @@ These counts are point-in-time API results. Re-fetch the issue/PR list before ma
 | [#48](https://github.com/A-L-L-A-H/mw-xv/pull/48) | release: promote dev to main | closed | `dev` → `main` | 2026-11-23 | 2026-11-23 |
 | [#81](https://github.com/A-L-L-A-H/mw-xv/pull/81) | release: promote dev to main | open | `dev` → `main` | 2026-11-23 | 2026-11-23 |
 | [#82](https://github.com/A-L-L-A-H/mw-xv/pull/82) | chore(ci): bump the actions group with 9 updates | closed | `dependabot/github_actions/dev/actions-fa77643155` → `dev` | 2026-11-23 | 2026-11-23 |
+| [#178](https://github.com/A-L-L-A-H/mw-xv/issues/178) | [STORY] Recover primary source for MOONWITNESS — Two Generations, One Toast | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#179](https://github.com/A-L-L-A-H/mw-xv/issues/179) | [STORY] Recover primary source for MOONWITNESS — Chaos Before Dawn | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#180](https://github.com/A-L-L-A-H/mw-xv/issues/180) | [STORY] Recover primary source for MOONWITNESS — BIRD OF A FEATHER | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#181](https://github.com/A-L-L-A-H/mw-xv/issues/181) | [STORY] Recover primary source for MOONWITNESS — THUNDERSTRUCK | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#182](https://github.com/A-L-L-A-H/mw-xv/issues/182) | [ARCHIVE] Review the 22-file MoonWitness Foundation Library pack | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#183](https://github.com/A-L-L-A-H/mw-xv/issues/183) | [KNOWLEDGE ARCHIVE] Complete the Total Idea Archive through source recovery and human review | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#184](https://github.com/A-L-L-A-H/mw-xv/issues/184) | [AUD-024] Add tablet Axe coverage for protected Board screens | open | AUD-024 | 1466489807:AUD-024 | 2026-11-23 | 2026-11-23 |
+| [#185](https://github.com/A-L-L-A-H/mw-xv/issues/185) | [VISUAL] Create a private provenance index for the 203 Library PNG sources | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#186](https://github.com/A-L-L-A-H/mw-xv/issues/186) | [AUD-009] Fix logger synchronous file I/O and deep secret redaction | open | AUD-009 | 1466489807:AUD-009 | 2026-11-23 | 2026-11-23 |
+| [#187](https://github.com/A-L-L-A-H/mw-xv/issues/187) | [SOURCE INTAKE] Preserve the complete ChatGPT export in a private, source-traceable archive | open | — | — | 2026-11-23 | 2026-11-23 |
 | [#172](https://github.com/A-L-L-A-H/mw-xv/pull/172) | chore(ci): bump the actions group across 1 directory with 11 updates | open | `dependabot/github_actions/dev/actions-ce72366ff0` → `dev` | 2026-11-23 | 2026-11-23 |
 
 ## Duplicate / conflict audit
@@ -240,15 +250,16 @@ The records have the same stable title ID and substantially identical scope. Nei
 
 ### TaskOS-managed projection
 
-The 23 issue bodies carrying a managed marker are listed in the main table. At this snapshot:
+The 25 issue bodies carrying a managed marker are listed in the main table. At this snapshot:
 - Marker identity is unique; no duplicate managed marker was detected.
-- The nine newest managed tasks are `AUD-015`–`AUD-023`, issues #163–#171.
+- `AUD-015`–`AUD-023` are projected at #163–#171; `AUD-024` is projected at #184. Issue #186 is the first observed issue projection for the existing `AUD-009` task.
 - A managed issue is a projection of TaskOS, not an independent task source.
 - No managed issue was manually created or rewritten by this archive pass.
 
 ## Consolidation actions recorded by this audit
 
 - Five discovery / research proposal issues were created: [#173 CRAYON](https://github.com/A-L-L-A-H/mw-xv/issues/173), [#174 Universal Iman](https://github.com/A-L-L-A-H/mw-xv/issues/174), [#175 Quantum–Fe Stone](https://github.com/A-L-L-A-H/mw-xv/issues/175), [#176 game-lineage reconciliation](https://github.com/A-L-L-A-H/mw-xv/issues/176), and [#177 MoonWitness OS v2.0 source recovery](https://github.com/A-L-L-A-H/mw-xv/issues/177). They are deliberately un-managed proposal issues, not TaskOS execution cards.
+- Additional un-managed source/archive proposals now track the four MoonWitness story leads (#178–#181), the 22-file Library foundation pack (#182), the wider archive recovery parent (#183), the 203-PNG private provenance index (#185) and the private ChatGPT export intake (#187). The TaskOS-managed projections #184 and #186 remain linked to canonical TaskOS records.
 - Comments were added to [Issue #27](https://github.com/A-L-L-A-H/mw-xv/issues/27) to record the repository census, TaskOS reconciliation, CI findings, and duplicate `CF-020` conflict.
 - No PR was merged by this audit.
 - Existing issues #15–#22 and #27 were reused as source/decision records.
