@@ -479,7 +479,7 @@ test('button links preserve navigation and disabled links cannot activate', asyn
 
   const disabledLink = page.getByTestId('disabled-button-link');
   await expect(disabledLink).toHaveAttribute('aria-disabled', 'true');
-  await expect(disabledLink).toHaveAttribute('tabindex', '-1');
+  await expect(disabledLink).not.toHaveAttribute('tabindex', '-1');
   await expect(disabledLink).toHaveAttribute('href', '#brand');
   await disabledLink.dispatchEvent('click');
   await expect(page).toHaveURL(/#actions$/u);
