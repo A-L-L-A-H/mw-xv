@@ -1,6 +1,19 @@
 # Jalur rilis aktif
 
-## Current checkpoint — 2026-11-23 (Phase 0–6 stabilization; not released)
+## Current verified audit checkpoint — 2026-11-23 (pre-archive docs baseline; not released)
+
+The following exact state was verified from GitHub before this documentation-only archive batch. Later commits on `dev` change the branch head; this block identifies the audited baseline, not a claim about subsequent CI.
+
+- **Audited `dev` baseline:** `08e7e3cbdcdfdfa2214196b5622da9b6184d4918`.
+- **Audited `main` baseline:** `5dd3da3389cdd4b55ef1a538f0dc46c13918f108`.
+- **Branch relationship:** `dev` is 18 commits ahead and 2 behind `main` at the comparison checkpoint. PR [#81](https://github.com/A-L-L-A-H/mw-xv/pull/81) remains the open `dev → main` promotion candidate; do not merge while the exact-SHA gates below fail.
+- **TaskOS on audited `dev`:** 636 unique task codes, 468 done, 49 doing, 97 todo, 22 blocked. Registry blob: `210f91e853a7241b6b3249ed65c1ca79b98274b3`. The nine additions beyond the 627-record migration checkpoint are `AUD-015`–`AUD-023`.
+- **TaskOS on audited `main`:** 627 unique task codes, 468 done, 49 doing, 89 todo, 21 blocked. Registry blob: `8216b6503d154d635112be96c41939a9efd38390`. No IDs from main are absent on dev; the difference is the nine audit tasks above.
+- **Exact-SHA CI:** run [45137839915](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45137839915) on `08e7e3c` is not green. `unit-tests` fails because `scripts/tasks/sweep-and-consolidate.test.mjs` expects 14 audit-source rows while the registry/source now contains 23; `quality-and-build` fails because generated docs assets `styles/tokens.css` and `asset-map.json` are stale; `secret-scan` reports 28 Gitleaks findings across 510 commits and requires redacted report triage. PostgreSQL integration and JS/TS CodeQL were cancelled. Knowledge gate, Go CodeQL, DX test and dependency audit passed.
+- **Review:** no approving CODEOWNER review was present in the PR #81 review list at this checkpoint; the visible review was a COMMENTED security-bot review.
+- **Release boundary:** no promotion to main, stable release or deployment is claimed. Keep secrets redacted while reviewing the Gitleaks artifact; do not add blanket allowlists or suppress findings without provenance-based triage.
+
+## Superseded checkpoint — 2026-11-23 (historical Phase 0–6 snapshot; not released)
 
 - **Stable branch:** `main` tetap pada `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`; tidak ada perubahan pada `main`, merge, stable release, atau deployment.
 - **Development branch:** baseline implementasi `62e5ef656d58be11350e8a1d228da2205c5108eb`; 169 commits ahead of main, 0 behind pada perbandingan terakhir. Pemeriksaan CI harus mengacu pada SHA terbaru, bukan memakai hasil run lama.
