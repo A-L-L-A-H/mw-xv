@@ -61,6 +61,13 @@ P0 preservation is a prerequisite for any old repository retirement, not necessa
 | #175 | Quantum–Fe Stone Energy | separate safe low-temperature thermal path from lab-only ferrite research |
 | #176 | MoonWitness RPG / 25-prophet concept vs The Lost Signal | preserve separate game lineages pending first-source recovery |
 | #177 | MoonWitness OS v2.0 / Mīzān model | recover first source and verify scale / axis definitions before canonization |
+| #178–#181 | Four MoonWitness story leads | recover one primary source / revision chain per title; keep every record draft until owner review |
+| #182 | 22-file MoonWitness Library foundation pack | content/provenance audit only; no code import or project merge |
+| #183 | Total Idea Archive completion parent | coordinate source recovery, review and human decision gaps; link bounded child issues |
+| #184 | TaskOS `AUD-024` | managed projection for tablet Axe coverage; lifecycle remains in canonical TaskOS |
+| #185 | 203 Library PNG provenance | private metadata index; no public file IDs, raw image upload or assumed rights |
+| #186 | TaskOS `AUD-009` | managed projection for logger I/O/redaction work; lifecycle remains in canonical TaskOS |
+| #187 | Private ChatGPT export intake | owner-supplied private/local export; privacy and retention review before parsing |
 
 There are also current engineering tasks and managed Issues for cloud foundation, A2A identity, jobs/outbox, SceneLab, UI visual review, CI and the roadmap. Do not create new work where a current task already owns the same files or acceptance.
 
@@ -68,8 +75,8 @@ There are also current engineering tasks and managed Issues for cloud foundation
 
 - Knowledge archive: initial stable catalog and bibles are committed on `dev` (see archive index).
 - Repository census: 280 accessible repo records; exact public CSV is committed; deep audit remains incomplete.
-- TaskOS: dev 636 unique tasks; 96 todo, 49 doing, 23 blocked, 468 done at the audited blob.
+- TaskOS: dev 637 unique tasks; 96 todo, 49 doing, 24 blocked, 468 done at blob `4d677b63`; main remains at 627.
 - Story / canon: II and XII exact source records sampled; full manuscript recovery is open.
-- Issue consolidation: existing #15–#22/#27 were reused; five distinct discovery/research proposals are now indexed as #173–#177. None is a TaskOS-managed implementation card.
+- Issue consolidation: #15–#22 and #27 remain the original product/source entry points; un-managed proposals #173–#183, #185 and #187 cover source-recovery / archive discovery, while #184 and #186 are TaskOS-managed projections. The current issue index records 161 issues and 26 PRs.
 - Promotion / CI: automatic PR #81 remains a separate protected promotion batch. Do not merge or claim release from archive-doc commits alone.
 
