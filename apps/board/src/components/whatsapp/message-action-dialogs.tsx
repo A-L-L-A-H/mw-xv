@@ -8,6 +8,7 @@ import { Checkbox } from '@moonwitness/ui/components/checkbox';
 import { Input } from '@moonwitness/ui/components/input';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { Textarea } from '@moonwitness/ui/components/textarea';
+import { useModalFocus } from '@moonwitness/ui/lib/use-modal-focus';
 import { client } from '@/lib/client';
 import { scopedQueryKey } from '@/lib/query-scope';
 import {
@@ -47,6 +48,10 @@ export function MessageActionDialogs({
   onCloseRevoke,
 }: MessageActionDialogsProps) {
   const queryClient = useQueryClient();
+  const forwardDialogRef = useModalFocus<HTMLElement>(onCloseForward);
+  const reactionDialogRef = useModalFocus<HTMLElement>(onCloseReact);
+  const editDialogRef = useModalFocus<HTMLElement>(onCloseEdit);
+  const revokeDialogRef = useModalFocus<HTMLElement>(onCloseRevoke);
   const [forwardConversationSearch, setForwardConversationSearch] = useState('');
   const [debouncedForwardConversationSearch, setDebouncedForwardConversationSearch] = useState('');
   const [forwardShowArchived, setForwardShowArchived] = useState(false);
@@ -61,11 +66,17 @@ export function MessageActionDialogs({
   } | null>(null);
 
   useEffect(() => {
-    if (forwardingMessage) {
+    if (!forwardingMessage) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
       setForwardConversationSearch('');
       setDebouncedForwardConversationSearch('');
       setForwardShowArchived(false);
-    }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [forwardingMessage]);
 
   useEffect(() => {
@@ -217,10 +228,12 @@ export function MessageActionDialogs({
       {forwardingMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4">
           <section
+            ref={forwardDialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="whatsapp-forward-title"
-            className="w-full max-w-md border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_#171717]"
+            tabIndex={-1}
+            className="w-full max-w-md border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_var(--mw-ink-black)]"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -306,10 +319,12 @@ export function MessageActionDialogs({
       {reactingTo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4">
           <section
+            ref={reactionDialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="whatsapp-reaction-title"
-            className="w-full max-w-sm border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_#171717]"
+            tabIndex={-1}
+            className="w-full max-w-sm border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_var(--mw-ink-black)]"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -345,11 +360,13 @@ export function MessageActionDialogs({
       {editingMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4">
           <form
+            ref={editDialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="whatsapp-edit-title"
+            tabIndex={-1}
             onSubmit={(event) => void editMessage(event)}
-            className="w-full max-w-lg border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_#171717]"
+            className="w-full max-w-lg border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_var(--mw-ink-black)]"
           >
             <h2 id="whatsapp-edit-title" className="font-display text-xl uppercase">
               Edit message
@@ -384,10 +401,12 @@ export function MessageActionDialogs({
       {revokingMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4">
           <section
+            ref={revokeDialogRef}
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="whatsapp-revoke-title"
-            className="w-full max-w-md border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_#171717]"
+            tabIndex={-1}
+            className="w-full max-w-md border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_var(--mw-ink-black)]"
           >
             <h2 id="whatsapp-revoke-title" className="font-display text-xl uppercase">
               Delete for everyone?

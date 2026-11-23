@@ -47,6 +47,8 @@ jobs:
         run: |
           pnpm board:ui:check
           pnpm desktop:ui:check
+          pnpm ui:design:check
+          pnpm lint:ui
           pnpm api:addon:check
           pnpm test:assets
           pnpm exec playwright install chromium

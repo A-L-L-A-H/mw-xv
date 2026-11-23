@@ -25,7 +25,7 @@ export function DialogOverlay({
     <Primitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        'mw-ui-dialog-overlay fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0',
+        'mw-ui-dialog-overlay fixed inset-0 bg-[color:var(--mw-backdrop)] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0',
         className
       )}
       {...props}
@@ -44,7 +44,7 @@ export function DialogContent({
       <Primitive.Content
         data-slot="dialog-content"
         className={cn(
-          'mw-ui-dialog-content fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-none border-4 border-ink bg-paper p-6 text-ink shadow-ink-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg',
+          'mw-ui-dialog-content fixed top-[50%] left-[50%] grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-none border-4 border-ink bg-paper p-6 text-ink shadow-ink-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg',
           className
         )}
         {...props}

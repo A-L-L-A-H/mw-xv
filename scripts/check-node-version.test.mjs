@@ -25,14 +25,14 @@ test('checkNodeParity reports clean parity for Node 24.x LTS', () => {
   assert.deepEqual(res.warnings, []);
 });
 
-test('checkNodeParity reports clean parity for Node 26.x LTS alongside 24.x pin', () => {
+test('checkNodeParity rejects Node 26.x when the repository is pinned to 24.x', () => {
   const res = checkNodeParity({
     currentVersion: 'v26.0.0',
     expectedRange: '24.x',
     nvmrcVersion: '24',
   });
-  assert.equal(res.ok, true);
-  assert.deepEqual(res.warnings, []);
+  assert.equal(res.ok, false);
+  assert.match(res.warnings[0], /supported LTS/u);
 });
 
 test('checkNodeParity rejects odd-numbered and retired Node versions', () => {
@@ -70,6 +70,10 @@ test('repository .nvmrc, .node-version, and every workspace package match root e
   assert.equal(pkg.engines.node, '24.x');
   assert.equal(parseMajorVersion(nvmrc), parseMajorVersion(pkg.engines.node));
   assert.equal(parseMajorVersion(nodeVersion), parseMajorVersion(pkg.engines.node));
+
+  const workspace = await readFile(path.join(root, 'pnpm-workspace.yaml'), 'utf8');
+  assert.match(workspace, /^nodeVersion:\s*24\./mu);
+  assert.match(workspace, /^engineStrict:\s*true$/mu);
 
   for (const directory of ['apps', 'packages']) {
     for (const entry of readdirSync(path.join(root, directory))) {

@@ -77,6 +77,7 @@ export function DatePicker({
         />
         {includeTime ? (
           <input
+            aria-label={`${label} time`}
             aria-describedby={describedBy}
             aria-invalid={associate(invalidState)}
             className="mw-ui-input"

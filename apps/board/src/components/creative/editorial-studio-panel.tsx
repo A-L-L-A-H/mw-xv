@@ -11,23 +11,13 @@ import { Panel } from '@moonwitness/ui/components/panel';
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@moonwitness/ui/components/tabs';
 import { Textarea } from '@moonwitness/ui/components/textarea';
-import {
-  CheckIcon,
-  DocumentIcon,
-  SearchIcon,
-  SparkleIcon,
-} from '@moonwitness/ui/icons';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { CheckIcon, DocumentIcon, SearchIcon, SparkleIcon } from '@moonwitness/ui/icons';
 
 type ImprintKey = 'GOD PROMISE' | 'ROCKSOUL';
 
 type AsmaulCluster =
-  | 'All'
-  | 'Mercy'
-  | 'Sovereignty'
-  | 'Knowledge'
-  | 'Creation'
-  | 'Justice'
-  | 'Guidance';
+  'All' | 'Mercy' | 'Sovereignty' | 'Knowledge' | 'Creation' | 'Justice' | 'Guidance';
 
 interface AsmaulConceptEntry {
   readonly id: number;
@@ -228,6 +218,8 @@ export function EditorialStudioPanel() {
         <TabsList>
           <TabsTrigger value="editorial">GOD PROMISE &amp; ROCKSOUL Editorial</TabsTrigger>
           <TabsTrigger value="asmaul-husna">Asmaul Husna Concept Explorer</TabsTrigger>
+          <TabsTrigger value="husna-graph">Asmaul Husna Knowledge Graph</TabsTrigger>
+          <TabsTrigger value="extensions">Extension Hub Marketplace</TabsTrigger>
         </TabsList>
 
         <TabsContent value="editorial">
@@ -394,6 +386,24 @@ export function EditorialStudioPanel() {
                 </div>
               )}
             </div>
+          </Panel>
+        </TabsContent>
+
+        <TabsContent value="husna-graph">
+          <Panel>
+            <EmptyState
+              title="Knowledge graph belum tersedia"
+              description="Explorer graf Asmaul Husna belum dipasang di workspace ini."
+            />
+          </Panel>
+        </TabsContent>
+
+        <TabsContent value="extensions">
+          <Panel>
+            <EmptyState
+              title="Extension hub belum tersedia"
+              description="Katalog ekstensi belum dipasang di workspace ini."
+            />
           </Panel>
         </TabsContent>
       </Tabs>

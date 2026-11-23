@@ -114,7 +114,8 @@ export function LogConsole({
       if (levelFilter !== 'all' && entry.level !== levelFilter) return false;
       if (sourceFilter !== 'all' && entry.source !== sourceFilter) return false;
       if (normalizedQuery.length > 0) {
-        const haystack = `${entry.message} ${entry.detail ?? ''} ${entry.source} ${entry.level}`.toLowerCase();
+        const haystack =
+          `${entry.message} ${entry.detail ?? ''} ${entry.source} ${entry.level}`.toLowerCase();
         if (!haystack.includes(normalizedQuery)) return false;
       }
       return true;
@@ -135,24 +136,15 @@ export function LogConsole({
     .join(' ');
 
   return (
-    <div
-      data-slot="log-console"
-      data-display-mode={displayMode}
-      className={rootClasses}
-      {...props}
-    >
+    <div data-slot="log-console" data-display-mode={displayMode} className={rootClasses} {...props}>
       <Panel
         title={title}
         description={description}
         density="compact"
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={errorCount > 0 ? 'destructive' : 'default'}>
-              {errorCount} err
-            </Badge>
-            <Badge variant={warnCount > 0 ? 'magenta' : 'default'}>
-              {warnCount} warn
-            </Badge>
+            <Badge variant={errorCount > 0 ? 'destructive' : 'default'}>{errorCount} err</Badge>
+            <Badge variant={warnCount > 0 ? 'magenta' : 'default'}>{warnCount} warn</Badge>
             <Button
               type="button"
               variant="ghost"
@@ -260,9 +252,17 @@ export function LogConsole({
           </div>
 
           <div
+            data-slot="log-console-summary"
+            role="status"
+            aria-live="polite"
+            className="mw-ui-visually-hidden"
+          >
+            {filteredEntries.length} log entries
+          </div>
+          <div
             data-slot="log-console-entries"
             role="log"
-            aria-live="polite"
+            aria-live="off"
             className={
               displayMode === 'terminal'
                 ? 'max-h-[26rem] overflow-y-auto border-2 border-ink bg-night p-3 font-mono text-xs text-paper'

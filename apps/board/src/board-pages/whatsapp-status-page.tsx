@@ -175,7 +175,10 @@ export function WhatsAppStatusPage() {
         </section>
       )}
       {accountQuery.isError && (
-        <section role="alert" className="border-2 border-red-700 bg-paper p-4 text-red-800">
+        <section
+          role="alert"
+          className="border-2 border-[color:var(--mw-error)] bg-paper p-4 text-[color:var(--mw-error)]"
+        >
           WhatsApp account status could not be loaded. Refresh this page and try again.
         </section>
       )}
@@ -233,7 +236,7 @@ export function WhatsAppStatusPage() {
             Allow resharing this Status
           </label>
           {localError && (
-            <p role="alert" className="text-sm text-red-800">
+            <p role="alert" className="text-sm text-[color:var(--mw-error)]">
               {localError}
             </p>
           )}
@@ -256,7 +259,7 @@ export function WhatsAppStatusPage() {
           </h2>
           {statusesQuery.isLoading ? <p className="mt-3 text-sm">Loading Status history…</p> : null}
           {statusesQuery.isError ? (
-            <p role="alert" className="mt-3 text-sm text-red-800">
+            <p role="alert" className="mt-3 text-sm text-[color:var(--mw-error)]">
               Status history could not be loaded.
             </p>
           ) : null}
@@ -282,10 +285,10 @@ export function WhatsAppStatusPage() {
                   <p className="text-sm text-ink-faint">{item.media_file_name}</p>
                 )}
                 {item.status === 'failed' && item.last_error && (
-                  <p className="text-sm text-red-800">{item.last_error}</p>
+                  <p className="text-sm text-[color:var(--mw-error)]">{item.last_error}</p>
                 )}
                 {item.status === 'unknown' && (
-                  <p className="text-sm text-amber-800">
+                  <p className="text-sm text-[color:var(--mw-warning-readable)]">
                     Check WhatsApp before trying again to avoid duplicate publication.
                   </p>
                 )}

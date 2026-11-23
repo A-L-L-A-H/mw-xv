@@ -24,13 +24,13 @@ function formatValue(value: number | null | undefined) {
   return value === null || value === undefined ? '' : String(value);
 }
 
-function parseNumber(rawValue: string, integer: boolean) {
+export function parseNumber(rawValue: string, integer: boolean): number | null {
   if (!rawValue) return null;
   const normalized = rawValue.replace(',', '.');
-  if (!/^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(normalized)) return Number.NaN;
+  if (!/^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(normalized)) return null;
   const parsed = Number(normalized);
-  if (Number.isNaN(parsed)) return parsed;
-  if (integer && !Number.isInteger(parsed)) return Number.NaN;
+  if (!Number.isFinite(parsed)) return null;
+  if (integer && !Number.isInteger(parsed)) return null;
   return parsed;
 }
 

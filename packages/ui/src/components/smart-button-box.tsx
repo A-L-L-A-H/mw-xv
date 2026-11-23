@@ -3,6 +3,12 @@
 import * as React from 'react';
 import { cn } from '../lib/cn.js';
 import { Button } from './button.js';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu.js';
 import { ChevronRightIcon as ChevronDownIcon } from '../icons/chevron-right.js';
 
 export interface SmartButtonAction {
@@ -74,9 +80,12 @@ export function SmartButtonBox({
   gap = 2,
 }: SmartButtonBoxProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
-  const isControlled = controlledOpen !== undefined;
+  const isControlled = controlledOpen !== undefined && typeof onOpenChange === 'function';
   const open = isControlled ? controlledOpen : uncontrolledOpen;
-  const setOpen = isControlled ? onOpenChange : setUncontrolledOpen;
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!isControlled) setUncontrolledOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+  };
 
   const resolvedPrimaryActions: SmartButtonAction[] =
     primaryActions ??
@@ -105,6 +114,7 @@ export function SmartButtonBox({
       role="group"
       aria-label={ariaLabel ?? 'Actions'}
       aria-busy={pending ? 'true' : undefined}
+      style={{ gap: `${gap * 0.25}rem` }}
     >
       <div className="mw-ui-smart-button-box-primary">
         {resolvedPrimaryActions.map((action) => (
@@ -139,33 +149,26 @@ export function SmartButtonBox({
 
       {hasSecondaryActions && (
         <div className="mw-ui-smart-button-box-secondary">
-          <Button
-            type="button"
-            variant="outline"
-            size="default"
-            onClick={() => setOpen?.(!open)}
-            aria-expanded={open}
-            aria-haspopup="menu"
-            aria-label="More actions"
-            className="mw-ui-smart-button"
-          >
-            <span className="mw-ui-smart-button-label">More</span>
-            <ChevronDownIcon aria-hidden="true" />
-          </Button>
-
-          {open && (
-            <div className="mw-ui-smart-button-box-dropdown" role="menu">
+          <DropdownMenu open={open} onOpenChange={handleOpenChange}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="default"
+                aria-label="More actions"
+                className="mw-ui-smart-button"
+              >
+                <span className="mw-ui-smart-button-label">More</span>
+                <ChevronDownIcon aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="mw-ui-smart-button-box-dropdown">
               {secondaryActions.map((action) => (
-                <button
+                <DropdownMenuItem
                   key={action.id}
-                  type="button"
-                  role="menuitem"
-                  tabIndex={-1}
                   disabled={action.disabled}
-                  onClick={() => {
-                    action.onClick?.();
-                    setOpen?.(false);
-                  }}
+                  aria-label={action.ariaLabel}
+                  onSelect={() => action.onClick?.()}
                   className="mw-ui-smart-button"
                 >
                   {action.icon && <span aria-hidden="true">{action.icon}</span>}
@@ -178,10 +181,10 @@ export function SmartButtonBox({
                   {action.description && (
                     <span className="mw-ui-smart-button-description">{action.description}</span>
                   )}
-                </button>
+                </DropdownMenuItem>
               ))}
-            </div>
-          )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
     </div>

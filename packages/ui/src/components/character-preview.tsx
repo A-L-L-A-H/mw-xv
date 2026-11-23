@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from './button.js';
 import { StatusBar } from './status-bar.js';
 import { SpritePlayer, type SpriteClipMetadata } from './sprite-player.js';
@@ -13,21 +13,37 @@ export type CharacterPreviewProps = {
   durationMs?: number;
 };
 
-export function CharacterPreview({ clipId, fallbackAsset, frames = [fallbackAsset], durationMs = 1200 }: CharacterPreviewProps) {
+export function CharacterPreview({
+  clipId,
+  fallbackAsset,
+  frames = [fallbackAsset],
+  durationMs = 1200,
+}: CharacterPreviewProps) {
   const [playing, setPlaying] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(query.matches);
+    const onChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
+
+  const clip = useMemo<SpriteClipMetadata>(
+    () => ({
+      id: clipId,
+      frames,
+      durationMs,
+      loop: true,
+      pingPong: true,
+      fallbackAsset,
+      width: 1024,
+      height: 1024,
+    }),
+    [clipId, frames, durationMs, fallbackAsset]
   );
-  const clip = useMemo<SpriteClipMetadata>(() => ({
-    id: clipId,
-    frames,
-    durationMs,
-    loop: true,
-    pingPong: true,
-    fallbackAsset,
-    width: 1024,
-    height: 1024,
-  }), [clipId, frames, durationMs, fallbackAsset]);
 
   const reset = useCallback(() => {
     setPlaying(false);
@@ -44,7 +60,9 @@ export function CharacterPreview({ clipId, fallbackAsset, frames = [fallbackAsse
 
   return (
     <div className="character-preview">
-      <StatusBar steps={[{ id: 'playback', label: 'playback', state: playing ? 'active' : 'disabled' }]} />
+      <StatusBar
+        steps={[{ id: 'playback', label: 'playback', state: playing ? 'active' : 'disabled' }]}
+      />
       <div className="character-preview-surface">
         <SpritePlayer
           clip={clip}
@@ -61,7 +79,11 @@ export function CharacterPreview({ clipId, fallbackAsset, frames = [fallbackAsse
         <Button variant="default" onClick={reset}>
           Reset
         </Button>
-        <Button variant="default" onClick={() => setReducedMotion((value) => !value)} aria-pressed={reducedMotion}>
+        <Button
+          variant="default"
+          onClick={() => setReducedMotion((value) => !value)}
+          aria-pressed={reducedMotion}
+        >
           {reducedMotion ? 'Reduced motion on' : 'Reduced motion off'}
         </Button>
       </div>

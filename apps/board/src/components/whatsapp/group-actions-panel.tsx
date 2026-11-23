@@ -289,7 +289,7 @@ export function GroupActionsPanel({
           <p
             role="status"
             aria-live="polite"
-            className={`text-xs ${phoneCheck.is_on_whatsapp ? 'text-green-800' : 'text-ink-faint'}`}
+            className={`text-xs ${phoneCheck.is_on_whatsapp ? 'text-[color:var(--mw-success-readable)]' : 'text-ink-faint'}`}
           >
             {phoneCheck.is_on_whatsapp
               ? `${phoneCheck.phone} is on WhatsApp`
@@ -394,7 +394,7 @@ export function GroupActionsPanel({
           )}
           <p className="text-xs text-ink-faint">{groupParticipants.length} of 100 participants</p>
           {groupCreationError && (
-            <p role="alert" className="text-sm text-red-800">
+            <p role="alert" className="text-sm text-[color:var(--mw-error)]">
               {groupCreationError}
             </p>
           )}

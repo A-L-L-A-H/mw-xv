@@ -213,12 +213,12 @@
   background:
     linear-gradient(
       90deg,
-      rgb(13 13 13 / 96%) 0%,
-      rgb(13 13 13 / 82%) 30%,
-      rgb(13 13 13 / 20%) 61%,
+      color-mix(in srgb, var(--mw-ink-black) 96%, transparent) 0%,
+      color-mix(in srgb, var(--mw-ink-black) 82%, transparent) 30%,
+      color-mix(in srgb, var(--mw-ink-black) 20%, transparent) 61%,
       transparent 100%
     ),
-    linear-gradient(0deg, rgb(13 13 13 / 72%), transparent 42%);
+    linear-gradient(0deg, color-mix(in srgb, var(--mw-ink-black) 72%, transparent), transparent 42%);
 }
 .home-hero:has(.home-hero-fallback) .home-hero-shade {
   background: linear-gradient(
@@ -422,10 +422,10 @@
   pointer-events: none;
   background: var(--mw-paper-cream);
   opacity: 0.82;
-  -webkit-mask-image: var(--global-chalk-mask);
+  -webkit-mask-image: var(--mw-chalk-mask);
   -webkit-mask-size: 100% 100%;
   -webkit-mask-repeat: no-repeat;
-  mask-image: var(--global-chalk-mask);
+  mask-image: var(--mw-chalk-mask);
   mask-size: 100% 100%;
   mask-repeat: no-repeat;
 }
@@ -538,7 +538,12 @@
 .home-connection::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 10%, rgb(13 13 13 / 20%) 42%, var(--mw-night) 72%);
+  background: linear-gradient(
+    90deg,
+    transparent 10%,
+    color-mix(in srgb, var(--mw-ink-black) 20%, transparent) 42%,
+    var(--mw-night) 72%
+  );
   content: '';
   pointer-events: none;
 }
@@ -722,7 +727,7 @@
   line-height: 1.25;
 }
 .home-footer-brand small {
-  font-size: 0.58rem;
+  font-size: var(--mw-font-size-2xs);
 }
 .home-footer-actions {
   display: flex;
@@ -802,9 +807,9 @@
   .home-hero-shade {
     background: linear-gradient(
       180deg,
-      rgb(13 13 13 / 88%) 0%,
-      rgb(13 13 13 / 62%) 45%,
-      rgb(13 13 13 / 10%) 100%
+      color-mix(in srgb, var(--mw-ink-black) 88%, transparent) 0%,
+      color-mix(in srgb, var(--mw-ink-black) 62%, transparent) 45%,
+      color-mix(in srgb, var(--mw-ink-black) 10%, transparent) 100%
     );
   }
   .home-hero-copy {
@@ -856,7 +861,7 @@
     background: linear-gradient(
       180deg,
       transparent 0%,
-      rgb(13 13 13 / 15%) 35%,
+      color-mix(in srgb, var(--mw-ink-black) 15%, transparent) 35%,
       var(--mw-night) 72%
     );
   }
@@ -913,6 +918,9 @@
 .auth-shadow {
   --auth-ink: var(--mw-ink-black);
   --auth-paper: var(--mw-paper-cream);
+  --auth-input-border: var(--auth-input-border);
+  --auth-input-surface: var(--auth-input-surface);
+  --auth-input-placeholder: var(--auth-input-placeholder);
   position: relative;
   display: grid;
   min-height: 100dvh;
@@ -932,7 +940,12 @@
   border-bottom: 2px solid var(--mw-paper-muted);
   padding: 0.65rem clamp(0.75rem, 3vw, 3rem);
   background:
-    radial-gradient(circle at 8% 0, rgb(0 184 240 / 14%), transparent 13rem), var(--mw-night);
+    radial-gradient(
+      circle at 8% 0,
+      color-mix(in srgb, var(--mw-signal-blue) 14%, transparent),
+      transparent 13rem
+    ),
+    var(--mw-night);
 }
 .auth-shadow-home {
   display: inline-flex;
@@ -977,8 +990,12 @@
   justify-content: center;
   padding: clamp(1.25rem, 4vw, 4rem);
   background:
-    radial-gradient(ellipse at 8% 22%, rgb(0 184 240 / 8%), transparent 22rem),
-    linear-gradient(145deg, #0d0d0d, #121216 70%, #17171a);
+    radial-gradient(
+      ellipse at 8% 22%,
+      color-mix(in srgb, var(--mw-signal-blue) 8%, transparent),
+      transparent 22rem
+    ),
+    linear-gradient(145deg, var(--mw-night), var(--mw-night-soft) 70%, var(--mw-night-raised));
 }
 .auth-shadow-card {
   position: relative;
@@ -989,14 +1006,21 @@
   color: var(--auth-paper) !important;
   background-color: var(--mw-night-raised) !important;
   background-image:
-    radial-gradient(rgb(243 239 228 / 10%) 1px, transparent 1.2px),
-    repeating-linear-gradient(-24deg, transparent 0 14px, rgb(243 239 228 / 4%) 14px 15px) !important;
+    radial-gradient(
+      color-mix(in srgb, var(--mw-paper-cream) 10%, transparent) 1px,
+      transparent 1.2px
+    ),
+    repeating-linear-gradient(
+      -24deg,
+      transparent 0 14px,
+      color-mix(in srgb, var(--mw-paper-cream) 4%, transparent) 14px 15px
+    ) !important;
   background-size:
     7px 7px,
     auto !important;
   clip-path: none !important;
   box-shadow:
-    7px 7px 0 rgb(0 0 0 / 72%),
+    7px 7px 0 color-mix(in srgb, var(--mw-signal-blue) 72%, transparent),
     10px 10px 0 color-mix(in srgb, var(--mw-magenta) 70%, transparent) !important;
   --mw-surface: var(--mw-night-raised);
   --mw-foreground: var(--auth-paper);
@@ -1029,7 +1053,7 @@
   flex: 0 0 auto;
   transform: rotate(45deg);
   background: var(--mw-cyan);
-  box-shadow: 0 0 0 3px rgb(0 184 240 / 17%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mw-signal-blue) 17%, transparent);
 }
 .auth-shadow-title {
   margin: 1.15rem 0 0;
@@ -1094,14 +1118,14 @@
 }
 .auth-shadow-input.mw-ui-input {
   min-height: 3.15rem;
-  border: 1px solid #728090;
+  border: 1px solid var(--auth-input-border);
   padding: 0.65rem 0.8rem 0.65rem 2.85rem;
   color: var(--auth-paper);
-  background: #0d0d0f;
+  background: var(--auth-input-surface);
   font: 400 0.9rem/1.3 var(--mw-font-sans);
 }
 .auth-shadow-input.mw-ui-input::placeholder {
-  color: #9ca9b8;
+  color: var(--auth-input-placeholder);
   opacity: 1;
 }
 .auth-shadow-input.mw-ui-input:focus-visible {
@@ -1137,7 +1161,7 @@
   border-left: 4px solid var(--mw-error);
   padding: 0.7rem 0.8rem;
   color: var(--auth-paper);
-  background: rgb(180 35 24 / 22%);
+  background: color-mix(in srgb, var(--mw-error) 22%, transparent);
   font: 500 0.84rem/1.45 var(--mw-font-sans);
 }
 .auth-shadow-submit.mw-ui-button {
@@ -1190,7 +1214,7 @@
   min-height: 32rem;
   overflow: hidden;
   border-left: 2px solid var(--mw-paper);
-  background: #092c49;
+  background: var(--mw-night-blue);
 }
 .auth-shadow-picture,
 .auth-shadow-picture img {
@@ -1207,7 +1231,12 @@
 .auth-shadow-art-shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(13 13 13 / 18%), transparent 32%, rgb(13 13 13 / 15%));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--mw-ink-black) 18%, transparent),
+    transparent 32%,
+    color-mix(in srgb, var(--mw-ink-black) 15%, transparent)
+  );
   pointer-events: none;
 }
 .auth-shadow-art-copy {
@@ -1228,7 +1257,7 @@
   border: 2px solid var(--mw-paper-cream);
   padding: 0.45rem 0.75rem;
   color: var(--mw-paper-cream);
-  background: rgb(13 13 13 / 86%);
+  background: color-mix(in srgb, var(--mw-ink-black) 86%, transparent);
   clip-path: var(--mw-grunge-clip-tape);
   filter: drop-shadow(3px 3px 0 var(--mw-magenta));
   transform: rotate(-2deg);
@@ -1274,7 +1303,11 @@
     object-position: center 42%;
   }
   .auth-shadow-art-shade {
-    background: linear-gradient(90deg, rgb(13 13 13 / 28%), transparent 72%);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--mw-ink-black) 28%, transparent),
+      transparent 72%
+    );
   }
   .auth-shadow-art-copy {
     top: 0.85rem;

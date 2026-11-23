@@ -139,7 +139,7 @@ export function PairingPanel({ account, status, connected, canManage }: PairingP
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="whatsapp-disconnect-title"
-            className="w-full max-w-md border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_#171717]"
+            className="w-full max-w-md border-2 border-ink bg-cream p-5 shadow-[6px_6px_0_var(--mw-ink-black)]"
           >
             <h2 id="whatsapp-disconnect-title" className="font-display text-xl uppercase">
               {disconnectConfirmKind === 'disconnect'
@@ -189,9 +189,14 @@ export function PairingPanel({ account, status, connected, canManage }: PairingP
             />
             {account?.phone_number && <span className="font-mono">+{account.phone_number}</span>}
           </p>
-          {account?.last_error && <p className="mt-2 text-sm text-red-700">{account.last_error}</p>}
+          {account?.last_error && (
+            <p className="mt-2 text-sm text-[color:var(--mw-error)]">{account.last_error}</p>
+          )}
           {connected && account?.webhook_configured === false && (
-            <p role="status" className="mt-2 max-w-2xl text-sm text-amber-900 dark:text-amber-300">
+            <p
+              role="status"
+              className="mt-2 max-w-2xl text-sm text-[color:var(--mw-warning-readable)] "
+            >
               Live callbacks are not configured. Inbound messages update through periodic refresh.
               Configure WHATSAPP_WEBHOOK_URL and WHATSAPP_WEBHOOK_SECRET on the API deployment to
               enable GoWA callbacks.
@@ -239,7 +244,7 @@ export function PairingPanel({ account, status, connected, canManage }: PairingP
         )}
       </header>
       {status === 'qr' && (
-        <section className="flex flex-col items-center border-2 border-ink bg-white p-6 text-center shadow-[4px_4px_0_0_var(--ink)]">
+        <section className="flex flex-col items-center border-2 border-ink bg-[var(--mw-highlight)] p-6 text-center shadow-[4px_4px_0_0_var(--ink)]">
           <h2 className="font-display text-xl uppercase">Scan with WhatsApp</h2>
           <p className="mt-1 text-sm">Open Linked devices on your phone and scan this code.</p>
           {qrImage ? (
@@ -268,7 +273,7 @@ export function PairingPanel({ account, status, connected, canManage }: PairingP
               scan the new code. If linking fails, update WhatsApp and remove an old linked device
               if your account has reached its device limit.
             </p>
-            <p className="mt-2 text-sm font-semibold text-red-800">
+            <p className="mt-2 text-sm font-semibold text-[color:var(--mw-error)]">
               Keep this QR code private. Anyone who scans it can link a device to your WhatsApp
               account.
             </p>

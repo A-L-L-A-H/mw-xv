@@ -115,7 +115,8 @@ const M15_PILLARS: readonly M15PillarTelemetry[] = [
     pillar: 'Semantic Resonance Bus',
     modulePath: 'semantic-bus.ts',
     readiness: 'VERIFIED',
-    summary: 'EasyTier private-mesh cosine + lexical routing with company & budget fail-closed filter',
+    summary:
+      'EasyTier private-mesh cosine + lexical routing with company & budget fail-closed filter',
     constitutionalInvariant: 'isPrivateMeshHost enforced',
   },
   {
@@ -123,7 +124,8 @@ const M15_PILLARS: readonly M15PillarTelemetry[] = [
     pillar: 'Causal Time-Machine Replay',
     modulePath: 'causal-replay.ts',
     readiness: 'VERIFIED',
-    summary: 'Exact earliest checkpoint divergence attribution and deterministic counterfactual fork plan',
+    summary:
+      'Exact earliest checkpoint divergence attribution and deterministic counterfactual fork plan',
     constitutionalInvariant: 'automatedSelfAccept: false',
   },
   {
@@ -131,7 +133,8 @@ const M15_PILLARS: readonly M15PillarTelemetry[] = [
     pillar: 'Epistemic Calibration Ledger',
     modulePath: 'epistemic-calibration.ts',
     readiness: 'VERIFIED',
-    summary: 'Exact Brier Score, ECE across bins, and dynamic autonomy bounded strictly within R0-R3',
+    summary:
+      'Exact Brier Score, ECE across bins, and dynamic autonomy bounded strictly within R0-R3',
     constitutionalInvariant: 'R4 never relaxed',
   },
   {
@@ -155,7 +158,8 @@ const M15_PILLARS: readonly M15PillarTelemetry[] = [
     pillar: 'RFC 6962 Merkle Audit Ledger',
     modulePath: 'merkle-ledger.ts',
     readiness: 'VERIFIED',
-    summary: 'Domain-separated 0x00/0x01 SHA-256 Merkle tree with O(log N) inclusion & consistency proofs',
+    summary:
+      'Domain-separated 0x00/0x01 SHA-256 Merkle tree with O(log N) inclusion & consistency proofs',
     constitutionalInvariant: 'RFC 6962 0x00/0x01 enforced',
   },
   {
@@ -163,10 +167,13 @@ const M15_PILLARS: readonly M15PillarTelemetry[] = [
     pillar: 'Adversarial Red-Team Arena',
     modulePath: 'redteam-arena.ts',
     readiness: 'GUARDED',
-    summary: 'In-memory Red-Team vs Blue-Team self-play synthesizing candidate regression invariants',
+    summary:
+      'In-memory Red-Team vs Blue-Team self-play synthesizing candidate regression invariants',
     constitutionalInvariant: 'DX-only · automatedSelfAccept: false',
   },
 ] as const;
+
+const cockpitTimestamp = () => new Date().toISOString().slice(11, 19);
 
 export function AgiTelemetryPanel() {
   const [viewMode, setViewMode] = useState<'all' | 'guarded'>('all');
@@ -180,7 +187,7 @@ export function AgiTelemetryPanel() {
 
   const triggerCockpitAction = async (action: CockpitActionConfig) => {
     setRunningAction(action.id);
-    const timestamp = new Date().toISOString().slice(11, 19);
+    const timestamp = cockpitTimestamp();
     try {
       const response = await fetch(action.endpoint, {
         method: 'POST',
@@ -216,7 +223,9 @@ export function AgiTelemetryPanel() {
       const detail =
         payload.message ??
         (payload.rootHash ? `Merkle root ${payload.rootHash.slice(0, 16)}...` : null) ??
-        (payload.status ? `Status: ${payload.status}` : 'Completed with constitutional gates intact.');
+        (payload.status
+          ? `Status: ${payload.status}`
+          : 'Completed with constitutional gates intact.');
 
       setFeedback({
         actionId: action.id,
@@ -336,7 +345,10 @@ export function AgiTelemetryPanel() {
             ) : null}
           </div>
 
-          <Table scrollLabel="M15 and M16 Sovereign Dreaming AGI-OS pillar readiness" density="compact">
+          <Table
+            scrollLabel="M15 and M16 Sovereign Dreaming AGI-OS pillar readiness"
+            density="compact"
+          >
             <TableHead>
               <TableRow>
                 <TableHeader>ID</TableHeader>
@@ -354,8 +366,12 @@ export function AgiTelemetryPanel() {
                     <div className="font-bold text-ink">{pillar.pillar}</div>
                     <div className="text-ink-faint">{pillar.modulePath}</div>
                   </TableCell>
-                  <TableCell className="font-mono text-xs text-ink-soft">{pillar.summary}</TableCell>
-                  <TableCell className="font-mono text-xs">{pillar.constitutionalInvariant}</TableCell>
+                  <TableCell className="font-mono text-xs text-ink-soft">
+                    {pillar.summary}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {pillar.constitutionalInvariant}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={pillar.readiness === 'VERIFIED' ? 'primary' : 'cyan'}>
                       {pillar.readiness}

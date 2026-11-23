@@ -4,8 +4,6 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const desktopSourceRoot = path.join(root, 'apps/desktop/src');
-const boardSourceRoot = path.join(root, 'apps/board/src');
 
 const BANNED_DESKTOP_SOURCE_PATTERNS = [
   {
@@ -86,14 +84,23 @@ async function sourceFiles(directory) {
   return files;
 }
 
-async function main() {
+/** Keep the CLI and preflight on the same repository-relative path contract. */
+export async function collectDesktopNonOverlapViolations(workspaceRoot = root) {
   const violations = [];
-  for (const file of await sourceFiles(desktopSourceRoot)) {
-    violations.push(...findDesktopNonOverlapViolations(await readFile(file, 'utf8'), file));
+  for (const [directory, check] of [
+    ['apps/desktop/src', findDesktopNonOverlapViolations],
+    ['apps/board/src', findBoardRuntimeImportViolations],
+  ]) {
+    for (const file of await sourceFiles(path.join(workspaceRoot, directory))) {
+      const relative = path.relative(workspaceRoot, file).split(path.sep).join('/');
+      violations.push(...check(await readFile(file, 'utf8'), relative));
+    }
   }
-  for (const file of await sourceFiles(boardSourceRoot)) {
-    violations.push(...findBoardRuntimeImportViolations(await readFile(file, 'utf8'), file));
-  }
+  return violations;
+}
+
+async function main() {
+  const violations = await collectDesktopNonOverlapViolations();
 
   if (violations.length > 0) {
     console.error(`Desktop non-overlap check failed with ${violations.length} violation(s):`);

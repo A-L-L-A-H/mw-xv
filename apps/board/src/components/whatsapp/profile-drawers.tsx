@@ -267,7 +267,7 @@ export function GroupProfileSummary({
         <div
           className="mt-2 border-2 border-ink bg-magenta/20 p-2"
           role="alertdialog"
-          aria-modal="true"
+          aria-label="Confirm profile setting change"
         >
           <p>
             {confirmSetting === 'announce'
@@ -504,7 +504,7 @@ export function GroupProfileSummary({
             </div>
           )}
           {actionError && (
-            <p role="alert" className="text-red-800">
+            <p role="alert" className="text-[color:var(--mw-error)]">
               {actionError}
             </p>
           )}

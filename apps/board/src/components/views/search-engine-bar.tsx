@@ -17,17 +17,7 @@ export interface SearchState {
   view: string;
 }
 
-export function parseSearchState(searchParams: URLSearchParams): SearchState {
-  const number = searchParams.get('filter');
-  return {
-    query: searchParams.get('q') ?? '',
-    filterIndex: number === null ? null : Number(number),
-    groupBy: searchParams.get('group'),
-    view: searchParams.get('view') ?? 'list',
-  };
-}
-
-export function searchStateToParams(state: SearchState): URLSearchParams {
+function searchStateToParams(state: SearchState): URLSearchParams {
   const params = new URLSearchParams();
   if (state.query) params.set('q', state.query);
   if (state.filterIndex !== null) params.set('filter', String(state.filterIndex));
@@ -36,20 +26,7 @@ export function searchStateToParams(state: SearchState): URLSearchParams {
   return params;
 }
 
-export function useSearchStateSync(views: ResolvedViews): SearchState {
-  const params = new URLSearchParams(window.location.search);
-  const state = parseSearchState(params);
-  const validViews = [
-    'list',
-    ...(views.kanban ? ['kanban'] : []),
-    ...(views.calendar ? ['calendar'] : []),
-    ...(views.graph ? ['graph'] : []),
-    ...(views.pivot ? ['pivot'] : []),
-  ];
-  return { ...state, view: validViews.includes(state.view) ? state.view : 'list' };
-}
-
-export function setSearchState(next: SearchState) {
+function setSearchState(next: SearchState) {
   const url = new URL(window.location.href);
   url.search = searchStateToParams(next).toString();
   window.history.replaceState(null, '', url);

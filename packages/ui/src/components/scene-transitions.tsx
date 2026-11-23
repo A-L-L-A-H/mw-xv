@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { cn } from '../lib/cn.js';
 
 export type ComicTransitionVariant = 'ink-wipe' | 'panel-reveal' | 'cut-impact' | 'soft';
@@ -31,6 +38,11 @@ export function ComicSceneTransition({
     reducedMotion || !active ? 'entered' : 'entering'
   );
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   const cancel = useCallback(() => {
     if (timerRef.current !== null) {
@@ -43,22 +55,25 @@ export function ComicSceneTransition({
   useEffect(() => {
     if (reducedMotion || !active || durationMs <= 0) {
       setState('entered');
-      onComplete?.();
+      onCompleteRef.current?.();
       return;
     }
     setState('entering');
-    timerRef.current = setTimeout(() => {
-      timerRef.current = null;
-      setState('entered');
-      onComplete?.();
-    }, Math.min(durationMs, 1500));
+    timerRef.current = setTimeout(
+      () => {
+        timerRef.current = null;
+        setState('entered');
+        onCompleteRef.current?.();
+      },
+      Math.min(durationMs, 1500)
+    );
     return () => {
       if (timerRef.current !== null) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
     };
-  }, [active, durationMs, reducedMotion, onComplete]);
+  }, [active, durationMs, reducedMotion]);
 
   return (
     <div

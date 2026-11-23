@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export const SUPPORTED_LTS_MAJORS = new Set([24, 26]);
+export const SUPPORTED_LTS_MAJORS = new Set([24]);
 
 export function parseMajorVersion(versionString) {
   const match = /^v?(\d+)/u.exec(String(versionString ?? '').trim());
@@ -34,7 +34,7 @@ export function checkNodeParity({ currentVersion, expectedRange, nvmrcVersion })
     !isSupportedLtsMajor(currentMajor)
   ) {
     warnings.push(
-      `Local Node ${currentVersion} is not an active supported LTS release (pin: "${expectedRange}", supported LTS: 24.x, 26.x). Native modules (better-sqlite3) require an active even-numbered Node LTS line.`
+      `Local Node ${currentVersion} is not an active supported LTS release (pin: "${expectedRange}", supported LTS: 24.x). Native modules (better-sqlite3) require an active even-numbered Node LTS line.`
     );
   }
   return {

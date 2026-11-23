@@ -1,32 +1,12 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
-import type { ColorMode, SkinDensity, SkinId, SkinMetadata } from '@moonwitness/types';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import type { ColorMode, SkinDensity, SkinId } from '@moonwitness/types';
 import { DEFAULT_SKIN_ID, themeRegistry } from '@moonwitness/ui/themes';
+import { SkinContext, type SkinContextValue } from './skin-context';
 import { applySkinToDocument, readPreferences, savePreferences } from '@/lib/preferences';
 
 export const SKIN_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem('mw-board-preferences');var p=s?JSON.parse(s):null;var k=p&&typeof p.skin==='string'?p.skin:'${DEFAULT_SKIN_ID}';var allowed=['moonwitness-ink','moonwitness-compact','moonwitness-high-contrast'];if(allowed.indexOf(k)===-1)k='${DEFAULT_SKIN_ID}';var d=p&&p.density==='compact'?'compact':'comfortable';var m=(p&&(p.theme==='dark'||p.theme==='light'))?p.theme:(localStorage.getItem('mw-theme')==='dark'?'dark':'light');var r=document.documentElement;r.dataset.skin=k;r.dataset.density=d;r.classList.toggle('dark',m==='dark');}catch(e){}})();`;
-
-interface SkinContextValue {
-  skin: SkinId;
-  mode: ColorMode;
-  density: SkinDensity;
-  skins: readonly SkinMetadata[];
-  setSkin: (skin: SkinId) => void;
-  setMode: (mode: ColorMode) => void;
-  setDensity: (density: SkinDensity) => void;
-  resetSkin: () => void;
-}
-
-const SkinContext = createContext<SkinContextValue | null>(null);
 
 export function SkinProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<{ skin: SkinId; mode: ColorMode; density: SkinDensity }>(
@@ -88,12 +68,4 @@ export function SkinProvider({ children }: { children: ReactNode }) {
   );
 
   return <SkinContext.Provider value={value}>{children}</SkinContext.Provider>;
-}
-
-export function useSkin(): SkinContextValue {
-  const context = useContext(SkinContext);
-  if (!context) {
-    throw new Error('useSkin must be used within a SkinProvider');
-  }
-  return context;
 }

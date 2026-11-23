@@ -113,10 +113,7 @@ function buildWorkspaceOfflineReply(
       trimmed.length > 0
         ? `Searched your workspace knowledge for "${trimmed}". Relevant notes and guides are listed below.`
         : 'Enter a topic or keyword to search across your workspace notes and guides.',
-    highlights: [
-      'Workspace Onboarding & Team Handbook',
-      'Project Planning & Weekly Review Guide',
-    ],
+    highlights: ['Workspace Onboarding & Team Handbook', 'Project Planning & Weekly Review Guide'],
   };
 }
 
@@ -240,9 +237,14 @@ export function WorkspaceAssistantDrawer({
   }, []);
 
   useEffect(() => {
-    if (open && isDeveloperMode) {
-      void loadDiscoveredModels();
-    }
+    if (!open || !isDeveloperMode) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void loadDiscoveredModels();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [open, isDeveloperMode, loadDiscoveredModels]);
 
   const handleRunWorkspaceAssistant = async (actionOverride?: WorkspaceQuickAction) => {
@@ -365,11 +367,7 @@ export function WorkspaceAssistantDrawer({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          {isDeveloperMode ? (
-            <CodeIcon className="h-4 w-4" />
-          ) : (
-            <SparkleIcon className="h-4 w-4" />
-          )}
+          {isDeveloperMode ? <CodeIcon className="h-4 w-4" /> : <SparkleIcon className="h-4 w-4" />}
           <span>{isDeveloperMode ? 'Autonomous Agent Runner' : 'MoonWitness Assistant'}</span>
         </Button>
       </SheetTrigger>
@@ -383,9 +381,7 @@ export function WorkspaceAssistantDrawer({
               ) : (
                 <SparkleIcon className="h-4 w-4" />
               )}
-              <span>
-                {isDeveloperMode ? 'Autonomous Agent Runner' : 'MoonWitness Assistant'}
-              </span>
+              <span>{isDeveloperMode ? 'Autonomous Agent Runner' : 'MoonWitness Assistant'}</span>
             </SheetTitle>
             <Badge variant={isDeveloperMode ? 'primary' : 'default'}>
               {isDeveloperMode ? 'DX Mode' : 'Workspace'}
@@ -592,10 +588,7 @@ export function WorkspaceAssistantDrawer({
                 </div>
                 <div className="space-y-2 border-t pt-3">
                   {dxSummary.proofGateChecklist.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-start justify-between gap-2 text-xs"
-                    >
+                    <div key={item.id} className="flex items-start justify-between gap-2 text-xs">
                       <div className="flex items-start gap-1.5">
                         {item.status === 'failed' ? (
                           <WarningIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />

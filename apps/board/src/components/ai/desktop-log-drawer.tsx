@@ -153,11 +153,14 @@ export function DesktopLogDrawer() {
 
   useEffect(() => {
     if (!isDeveloperMode || !open) return;
-    void fetchLogs();
-    const timer = window.setInterval(() => {
-      void fetchLogs();
-    }, 2500);
+    let cancelled = false;
+    const run = () => {
+      if (!cancelled) void fetchLogs();
+    };
+    queueMicrotask(run);
+    const timer = window.setInterval(run, 2500);
     return () => {
+      cancelled = true;
       window.clearInterval(timer);
     };
   }, [isDeveloperMode, open, fetchLogs]);

@@ -186,7 +186,13 @@ export function MeshTopologyPanel({ apiBase = '/api/desktop/paas' }: MeshTopolog
   }, [normalizedBase]);
 
   useEffect(() => {
-    void refreshTopology();
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void refreshTopology();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [refreshTopology]);
 
   const healthyPeersCount = snapshot.peers.filter((peer) => peer.health === 'healthy').length;

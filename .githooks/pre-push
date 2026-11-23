@@ -1,7 +1,8 @@
 #!/bin/sh
 set -eu
 
-echo "Running Board shared UI, API addon boundary, and typecheck gates before push..."
-pnpm board:ui:check
+echo "Running shared UI design, desktop, lint, API addon boundary, and typecheck gates before push..."
+pnpm ui:check
+pnpm lint:ui
 pnpm api:addon:check
 pnpm --filter @moonwitness/board typecheck
