@@ -73,6 +73,135 @@ The `ARCH-IDEA-*` values below are stable cross-reference labels assigned for th
 | `ARCH-IDEA-ART-007` | Burial/preservation regulation infographic concept; corporate/ISP mission visual; RGB light-source infographic | `LIBRARY-OBSERVED` captions only. Any regulation, health, legal or operational claims are `UNVERIFIED`. | Research/legal review before use; image data and decorative metrics are not evidence. |
 | `ARCH-IDEA-ART-008` | Shinchan / Master Roshi / “Lagu Cinta dan Ibadah” fan-art concepts and a copyrighted-song-inspired image | `LIBRARY-OBSERVED`; third-party IP/lyrics constraints apply. | Preserve as a private creative reference only; do not copy, publish or create derivative production art from protected character/lyric material without rights review. |
 
+## 3A. Story, character and canon records from primary repository sources
+
+The following entries come from source YAML/Markdown/TypeScript files, not the V10 public editorial synopsis. Each repository is a distinct historical strand. **Do not merge character IDs, eras, episodes, or story universes across II, XII and XV just because the labels overlap.**
+
+### MoonWitness II — canon levels and first story model
+
+Source repository: [bjo163/moonwitness-II](https://github.com/bjo163/moonwitness-II), branch `main`.
+
+- `docs/CANON.md` (blob `227e2529bbd0a6deebffc1e5dc8e6e7032bf0b5f`) defines four levels: `CANON`, `LORE`, `INTERPRETATION`, and `UNKNOWN`.
+- Its explicit rules: interpretation does not automatically become canon; lore may evolve into canon; unresolved may remain unresolved; a name/alias does not automatically prove a distinct or identical person; a witness record does not establish objective truth; narrative roles describe story context.
+- Original principle: **“Keep the universe open. Keep the structure clear.”**
+- `docs/MASTER_BLUEPRINT.md` (blob `d413d100aa1ab328783a322765785a066a53f40b`) describes MoonWitness as **Story & Witness Platform · Living Archive · Interactive Narrative Experience**, with core theme `END OF AN ERA`; original motto **“When The Moon Witness, We Share A Message.”**; experience descriptors `Cinematic · Electric · Mysterious · Emotional · Raw · Gen-Z · Grunge`; and “Lines — Visual Effect Mansa.”
+- The platform action chain is `CAPTURE → CONNECT → WITNESS → UNDERSTAND → PRESERVE → PROMOTE → MOVE FORWARD`.
+- The first narrative loop is `THE MOON → WITNESS → EVENT → MESSAGE → SEDUCTION → FAULT LINE → EXPOSURE → PAST PRESENCE → AUDIT → EVALUATION → BALANCING → PROMOTING → CONFLICT → SANITY'S LAST BREATH → CHANGE → NEXT ERA`.
+- Thirteen named functions: `Storytelling`, `Exposure`, `Change Advisory Board`, `Chasing Heart`, `Lovestruck`, `Breath Electric`, `Seduction`, `Fault Lines`, `Villain of the Story`, `Witness Archive`, `Sanity's Last Breath`, `Past Presence`, and `Promoting`. Preserve these as narrative/product function labels, not automatically as 13 software modules.
+- Key source distinctions are explicit: `EVENT ≠ WITNESS`, `WITNESS ≠ TRUTH`, `OBSERVATION ≠ INTERPRETATION`. “Promoting” means “What deserves to continue?”, not advertising.
+- The model has a constellation of Friendship, Love, Conflict, Memory, Influence, Witness, Exposure, Seduction, Betrayal and Change; its lifecycle includes `UNSEEN → DISCOVERED → WITNESSED → EXPOSED → UNDER REVIEW → ARCHIVED`, with `FORGOTTEN`, `REOPENED`, and `PROMOTED` as additional states.
+
+### MoonWitness II — character registry (all remain LORE / review)
+
+Source: `data/characters.yaml`, blob `406ddf616d98926f0edd91116814e85f36df8faf`. The nine listed character records all have `canon_level: lore`, `source: USER_INPUT`, provenance “MoonWitness creative bible”, `visibility: public`, and `status: review`. **They are not CANON-locked by this dataset.**
+
+| Source ID | Name | Source-listed aliases / role / note |
+|---|---|---|
+| `char_the_shadow` | `THE SHADOW` | Aliases `R`, `163`, `Dancer`, `Runaway`, `Not Untouched`, `Actor`; alternate identity `THE DREAMER`; Dreamer aliases `Runaway`, `The Unremembered`, `The Chosen One`, `Dancer`, `The Exposer`; birth wording `Sebelum Ada Cahaya`; skill `TOO GOOD`. The YAML keeps alternate identity/aliases in one character record; do not infer a second person. |
+| `char_a_lah` | `A LAH` | Role `THE BOSS`; alias `LiAlH₄`; nickname `THE BATTERY`; witness phrase `Lesgo. JUST DO IT!!!`. |
+| `char_dogs_from_universe` | `DOGS FROM UNIVERSE` | Aliases `MOH571`, `THE STARS`, `YOUJIZZ`, `THE DREAMER`; skills `PURA-PURA MATI`, `BUCIN`, `TIME TRAVEL`, `INVISIBLE`, `IMMORTAL`, `LUPA`, `ACTOR`, `EMBALAP`; ultimate skill `WOE IS ME`. |
+| `char_blue_witch` | `THE BLUE WITCH` | Aliases `MANSA MUSA`, `BLUE EYES`; witness phrase `Lambreta!!`. |
+| `char_dj_david` | `DJ DAVID` | Alias `David`. |
+| `char_walter_white` | `WALTER WHITE` | Skill `DOKTER BEDAH`. |
+| `char_electric_forest` | `ELECTRIC FOREST` | Alias `Cassade Pope`. |
+| `char_indestructible` | `INDESTRUCTIBLE` | Aliases `THE FATHER`, `THE RED FIRE`. |
+| `char_jhnny_depp` | `JHNNY DEPP` | Alias `Pirate of Carebean`. |
+
+Source: `data/eras.yaml`, blob `e55b6b308620bac0d2b6d2fb518af2f826c51122`. All eight entries are `canon_level: lore`, source `USER_INPUT`, provenance “MoonWitness master blueprint”:
+
+| ID / order | Era | Source status |
+|---|---|---|
+| `era_00` / 0 | `BEFORE LIGHT` | `published` |
+| `era_01` / 1 | `THE ARRIVAL` | `draft` |
+| `era_02` / 2 | `THE WITNESS` | `draft` |
+| `era_03` / 3 | `THE RUNAWAYS` | `draft` |
+| `era_04` / 4 | `THE EXPOSURE` | `draft` |
+| `era_05` / 5 | `THE CHANGE` | `draft` |
+| `era_06` / 6 | `END OF AN ERA` | `draft` |
+| `era_07` / 7 | `NEXT PHASE` | `draft` |
+
+Source: `data/stories.yaml`, blob `465011cb842ec4c6e7ebca11b2fd70de5e7c7d2b`. Two story seeds are present; both are `canon_level: lore`, source `USER_INPUT`, status `review`:
+- `story_001 — When The Moon Witness`, theme `END OF AN ERA`; premise begins “A signal is noticed. A witness records it. A message travels.” The ending is “The era closes. The witness remains.”
+- `story_002 — THE RUNAWAY TRACE`, theme `IDENTITY · MEMORY · MOVEMENT`; its premise states that presence arrives, names move, and the trace survives identities placed around it. The ending is “The name can change. The trace can remain.”
+- `data/relationships.yaml` records relationships/links among these stories, characters, events, witnesses, messages and eras, but the inspected relationship rows are `draft`; do not treat graph edges as locked continuity.
+- `data/villains.yaml` describes `THE FORCE AGAINST THE STORY` as a narrative force, not automatically a specific person. It is LORE/review.
+- `data/witnesses.yaml` retains observations as records without asserting why a signal happened or what it means. These source objects remain LORE/review.
+- The repository contains dedicated datasets for events, witnesses, messages, seductions, fault lines, exposures, past presence, promoting, conflicts, changes, relationships, graph, and the named story functions. This is the source model; do not compress them into one generic character/story table.
+
+### MoonWitness XII — character canon V3 and shipment boundaries
+
+Source: [bjo163/moonwitness-xii-season-global-championships](https://github.com/bjo163/moonwitness-xii-season-global-championships), branch `main`.
+
+- `docs/CHARACTER_CANON_V3_AND_ROADMAP.md` (blob `4e06daf4884055f3e855bc691c30851c727b377a`, dated 2026-10-15) labels the product a working product, **not** a feature-complete world platform.
+- Visual language is Funky Gen-Z street comic / urban punk / bold typography / halftone; faces hidden by silhouettes; roles are communicated by outfit and palette.
+- The document explicitly says characters are fictional design motifs, not images claiming real angels; spiritual testimony is stored as user report, not externally verified or divinely approved fact.
+- Main cast:
+  1. `ROCKSOUL` — Main Witness; hoodie and backward cap. Green cap symbolizes mercy/hope/growth; black symbolizes resolve/endurance. The color change is symbolic storytelling, not a literal supernatural transformation.
+  2. `ISROCKFEEL` — Action Mentor / Punk-Rock Driver; visual themes of Israfil/awakening are artistic inspiration, not a depiction of Israfil.
+  3. `WALTERWHITE` — Wild Idea Engineer; visual themes linked to Jibril are artistic inspiration, not a portrayal of Jibril.
+  4. `4-LAH / THE BATTERIES` — Signal Queen / Command Center; adult character with violet/pink cyber-streetwear.
+- Supporting fictional motifs: `MIKAIL` (emerald field-gardener/environmental stewardship), `FINAL KEEPER` (silver-black time watcher), `QUESTION DUO`, `RECORD TWINS`, `MALIK`, and `RIDWAN`. The source itself warns that Raqib and Atid in Qur'an 50:18 should not automatically be treated as personal names, and says Ridwan is a name used in later tradition, not named in the Qur'an. These are stylized original concepts, not depictions of metaphysical reality.
+- The same roadmap reports a shipped React/Vite site, four main SVG designs, six supporting SVG portraits, 15 indexed episodes and 63 editorial summary pages. This is **not** proof that every feature is production-complete.
+- The source marks the story pages as editorial reconstructions from recovered conversation outlines, not verbatim original scripts. Direct parsing of `src/data/episodeManuscripts.js` found 15 episode entries and 63 pages; all 63 pages have `sourceType: editorial_reconstruction` and `verification: original_text_pending`. The source archive's 15 entries all say full original text is not yet recovered and original poster art is awaited.
+- Episode slugs to preserve: `digimon-jogress`, `kalautidaksalah`, `buraq-mode-balap`, `simpleplan-jetlag`, `beat-it`, `dreams-dragon-fire`, `droplets`, `the-blow`, `tick-tock`, `family-sky`, `karma`, `allah-promise`, `tutorial-mahdi`, `ronin-47`, and `future-now`.
+- The roadmap also reports 105 champion entries and attribution/video links needing validation; it does not claim they are verified.
+- Its local-first Command Center includes a simulation of 100 challenge levels, 10 guild concepts and 48 event ideas. The source says ALP/1 protocol remains conceptual and no real community governance service runs. Do not confuse the 100 simulated levels with `33` championship slots or `33` stages in Memory Summary.
+
+#### MoonWitness XII — exact 33-slot register and provenance
+
+Source: `docs/MASTER_33_SLOT_EVIDENCE_AUDIT.md`, blob `e7aa142dc8dc77d059643c72369f8d3243d71262`, audit date 2026-10-21. This is a structural/provenance audit of repository records, not authentication of historical claims.
+
+| Slot | Exact title | Status | Evidence / limit |
+|---|---|---|---|
+| 001 | `AEGIS PROTECTION` | `registered` | Earlier conversation summary; full primary text not recovered |
+| 002 | `NEVERMORE` | `registered` | Earlier conversation summary; full primary text not recovered |
+| 003 | `DIPINGIT MODE ON` | `registered` | Earlier conversation summary; full primary text not recovered |
+| 004 | `PINK NOISE` | `registered` | Earlier conversation summary; full primary text not recovered |
+| 005 | `WINDWALKER` | `registered` | Earlier conversation summary; full primary text not recovered |
+| 006 | `PATCH QIBLAT UTARA — THE NORTHBOUND PARADOX` | `registered` | Earlier conversation summary; full primary text not recovered |
+| 007 | `MAROON 5` | `registered` | Earlier conversation summary; full primary text not recovered |
+| 008 | `FUTURE IS NOW — AFTERLIFE MERCY` | `registered` | Earlier conversation summary; full primary text not recovered |
+| 009 | `WE ARE SAVAGES` | `recovered_draft` | Outline only; full submission not verified |
+| 010 | `HAVE A NICE DAY` | `recovered_draft` | Outline only; full submission not verified |
+| 011 | `KARMA — THE BUG IS ME` | `recovered_draft` | Outline only; full submission not verified |
+| 012 | `THE PRIME DIRECTIVE` | `recovered_draft` | Outline only; full submission not verified |
+| 013 | `SAFE FROM DAY ONE` | `recovered_draft` | Outline only; full submission not verified |
+| 014 | `FAMILY WITHOUT FEAR` | `number_conflict` | Conflict with `THE WRONG WAY / HELLROAD`; remains unresolved |
+| 015 | `FAIR WORK, FAIR LIFE` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 016 | `BREAK THE DEBT LOOP` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 017 | `THE SECOND CHANCE` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 018 | `JUSTICE FOR EVERYONE` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 019 | `THE HONEST WITNESS` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 020 | `NO ONE DIES ALONE` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 021 | `THE MERCY NETWORK` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 022 | `CLEAN WATER FOR ALL` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 023 | `NO ONE GOES HUNGRY` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 024 | `HEALTH WITHOUT BARRIERS` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 025 | `LEARN FOR LIFE` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 026 | `NO ONE LEFT BEHIND` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 027 | `CRISIS READY` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 028 | `EARTH STEWARDSHIP` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 029 | `SAFE DIGITAL WORLD` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 030 | `FAIR GOVERNANCE` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 031 | `PEACE BUILDER` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 032 | `A SAFE PLACE TO LIVE` | `proposed` | Assistant-drafted editorial proposal; not a verified submission |
+| 033 | `KOPIHITAM - SIACENG` | `user_submitted_in_chat` | User explicitly requested it in chat; external delivery and approval unverified |
+
+Rules from that audit: #014 must remain unresolved; #033 must retain exact spelling; #015–#032 cannot be reclassified as submissions; do not add `SYAFAAT` as slot #034 because its separate related-concept ID is `MWX-CON-013`; a slot is not proof of real-world impact. The source confirms structural checks for all 33 entries (sequential unique IDs and mandatory metadata), but primary text, scripture reference validation and approval evidence remain open.
+
+### MoonWitness XV / Empire of the Light — four separate story records
+
+Source: [bjo163/moonwitnessxv](https://github.com/bjo163/moonwitnessxv), branch `main`.
+
+- `apps/empire-web/src/lib/story-universe.ts` (blob `692c7eb57f473e380041aaa6a8119019259f86ed`) defines exactly four story records; all are preview-only and draft/proposed:
+  1. `manusia-pulpen` — `MANUSIA PULPEN`, origin story, draft.
+  2. `angelwithshotgun` — `ANGELWITHSHOTGUN`, guardian story, draft.
+  3. `ggs-full-moon-school` — `GGS FULL MOON SCHOOL`, learning story in MYLUFT's fiction, draft.
+  4. `empire-of-the-light` — `EMPIRE OF THE LIGHT`, universe story, proposed.
+- `apps/empire-web/docs/story-universe/CLAIMS.md` (blob `89915371f2b965c8df047b380314c60410cdef41`) states that the mock-up slogan `50+ STORIES & IDEAS` is an unsupported metric (owner accepted it as mockup text); the catalogue in that source contains **four** story concepts. Do not count mockup copy as an actual story tally.
+- The same register lists `ROCKSOUL`, `MYLUFT`, `GGS`, `MANUSIA PULPEN`, and `EMPIRE OF THE LIGHT` as fictional labels. The GGS dates/times in mockups are fictional story-time, not actual scheduled events; scripture content was withheld pending verified text/translation rights.
+- Its separate `VISUAL_BIBLE.md` is a draft visual-reference specification, not a current target approval or release authorization. It requires back-facing/silhouette handling for ROCKSOUL/AngelWithShotgun and says MYLUFT is not a divine figure. The target repository's 2026-11-22 approved MoonWitness XV Visual Bible remains the current target direction and has its own separate character/hero-asset approval gates.
+
 ## 4. Memory-summary-only terms — preserve, do not canonize
 
 The following terms appeared in the account Memory Summary available to this session, but their first source conversation, exact original wording, full definitions and intended relationship were not recovered during this pass. These are `MEMORY-SUMMARY / UNRESOLVED`, **not** verified canon, accepted architecture or approved implementation:
