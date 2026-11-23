@@ -884,74 +884,6 @@
       ]
     },
     {
-      "id": "W1-009",
-      "phase": "W1",
-      "title": "Define core UI framework and shell architecture",
-      "status": "done",
-      "priority": "P1",
-      "role": "ui-designer",
-      "parallel_group": "serial",
-      "depends_on": ["W1-008"],
-      "objective": "Establish the main application shell, layout system, and UI foundation that implements the visual grammar across all experience tiers. Define core layout patterns, viewport handling, and the structural framework that hosts all visual domains.",
-      "scope_hints": [
-        "UI framework specification",
-        "layout system",
-        "viewport and responsive breakpoints",
-        "structural component patterns"
-      ],
-      "deliverables": [
-        "UI framework document with layout rules",
-        "Shell architecture blueprint",
-        "Responsive breakpoint definitions",
-        "Component pattern inventory"
-      ],
-      "acceptance_criteria": [
-        "UI framework documentation is approved by lead designer",
-        "Shell architecture defines all experience tiers",
-        "Responsive breakpoints cover mobile, tablet, desktop",
-        "Component patterns are consistent with visual grammar"
-      ],
-      "verification": [
-        "Review UI framework document",
-        "Verify shell architecture covers all tiers",
-        "Test responsive layout at breakpoints"
-      ],
-      "risk": "low",
-      "human_approval_required": false,
-      "notes": "UI framework document created at evidence/W1-009-ui-framework.md with layout rules, shell architecture blueprint (all 4 experience tiers), 5 responsive breakpoints (sm/md/lg/xl/2xl), and 35+ component pattern inventory mapped to the visual grammar. Verified against W1-002 grammar and W1-008 bible.",
-      "evidence": [
-        {
-          "artifact": "evidence/W1-009-ui-framework.md",
-          "exit_code": 0,
-          "command": "Write W1-009-ui-framework.md with UI framework, shell blueprint, responsive breakpoints, and component inventory"
-        }
-      ],
-      "commit": "pending",
-      "legacyCardNotes": null,
-      "acceptance_criteria_state": [
-        {
-          "id": "W1-009-ac-1",
-          "text": "UI framework documentation is approved by lead designer",
-          "done": true
-        },
-        {
-          "id": "W1-009-ac-2",
-          "text": "Shell architecture defines all experience tiers",
-          "done": true
-        },
-        {
-          "id": "W1-009-ac-3",
-          "text": "Responsive breakpoints cover mobile, tablet, desktop",
-          "done": true
-        },
-        {
-          "id": "W1-009-ac-4",
-          "text": "Component patterns are consistent with visual grammar",
-          "done": true
-        }
-      ]
-    },
-    {
       "id": "W2-001",
       "phase": "W2",
       "title": "Design backward-compatible asset manifest extension",
@@ -5853,7 +5785,7 @@
       "id": "W9-005",
       "phase": "W9",
       "title": "Integrate Crew and Story visual compositions",
-      "status": "done",
+      "status": "blocked",
       "priority": "P0",
       "role": "implementer",
       "parallel_group": "serial",
@@ -5869,19 +5801,13 @@
       "verification": ["pnpm test:e2e:visual", "pnpm test:ui-catalog"],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Story editorial composition and catalog-only crew sample verified with the shared visual gate now green: ui-catalog suite 41/41 and the full three-browser visual matrix 42/42. Real users remain API-backed data or neutral avatars; fictional crew content stays confined to the marked catalog specimen; no fictional crew metrics or maps exist in production.",
+      "notes": "Story editorial composition and catalog-only crew sample are verified, but the required shared visual E2E gate remains red on snapshot and locator drift. Resume after W9-006 visual baseline/gate is repaired; do not add fictional crew data or assets to production.",
       "evidence": [
         {
           "command": "pnpm test:e2e:visual:matrix",
-          "exit_code": 0,
+          "exit_code": 1,
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md",
-          "notes": "42 passed (8.5m); story workbench, homepage composition and workbench empty/unavailable states pass in all browsers."
-        },
-        {
-          "command": "pnpm test:ui-catalog",
-          "exit_code": 0,
-          "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md",
-          "notes": "41/41 catalog tests pass, including the fictional-specimen marking."
+          "notes": "Shared visual gate has screenshot, locator, and browser-install failures."
         }
       ],
       "commit": "a3fa6da",
@@ -5890,17 +5816,17 @@
         {
           "id": "W9-005-ac-1",
           "text": "Real users remain real data or neutral avatars.",
-          "done": true
+          "done": false
         },
         {
           "id": "W9-005-ac-2",
           "text": "Fictional character examples are visibly marked as examples in catalog.",
-          "done": true
+          "done": false
         },
         {
           "id": "W9-005-ac-3",
           "text": "No fictional crew metrics or maps in production.",
-          "done": true
+          "done": false
         }
       ]
     },
@@ -5908,7 +5834,7 @@
       "id": "W9-006",
       "phase": "W9",
       "title": "Preserve operational Board visual tier",
-      "status": "done",
+      "status": "blocked",
       "priority": "P0",
       "role": "qa",
       "parallel_group": "serial",
@@ -5924,13 +5850,13 @@
       "verification": ["pnpm board:ui:check", "pnpm test:e2e:visual:matrix"],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Board boundary checks, typecheck, UI budget, bundle budget and the full three-browser visual matrix all pass. Baselines refreshed to the intentional grunge rollout and made deterministic: dashboard KPI capture clipped to the stable masthead/KPI region with volatile counters masked; catalog artifacts written by chromium only with transient Windows write retries; model navigation sheet Escape moves focus into the Radix layer; ordinary-user fixture login scoped per browser project with 409 tolerance and a 90s cold-compile timeout.",
+      "notes": "Board boundary, typecheck, lint, responsive overflow and bundle budgets pass, but visual matrix fails: Chromium baseline/write/locator issues and missing Firefox/WebKit executables. No snapshots were updated. Resume after reviewing current UI against expected baselines and restoring the browser matrix.",
       "evidence": [
         {
           "command": "pnpm test:e2e:visual:matrix",
-          "exit_code": 0,
+          "exit_code": 1,
           "artifact": "MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/W9-005-W9-006-operational-coverage.md",
-          "notes": "42 passed (8.5m) across Chromium/Firefox/WebKit; board:ui:check, typecheck, ui-budget and board:budget also exit 0."
+          "notes": "5 passed, 37 failed; Chromium visual drift/write/locator failures; Firefox and WebKit executables absent."
         }
       ],
       "commit": "3d04f0f",
@@ -5939,17 +5865,17 @@
         {
           "id": "W9-006-ac-1",
           "text": "Existing Board light/dark themes, skins and density remain intact.",
-          "done": true
+          "done": false
         },
         {
           "id": "W9-006-ac-2",
           "text": "Operational screens use restrained motion and valid focus boundaries.",
-          "done": true
+          "done": false
         },
         {
           "id": "W9-006-ac-3",
           "text": "No measurable layout shift/regression.",
-          "done": true
+          "done": false
         }
       ]
     },
@@ -6477,5 +6403,5 @@
       ]
     }
   ],
-  "task_count": 110
+  "task_count": 109
 }

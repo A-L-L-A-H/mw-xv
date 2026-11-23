@@ -2,10 +2,14 @@ import fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import prettier from 'prettier';
 import { validateTaskRegistryData } from './validate-tasks.mjs';
 import { AUDIT_TASKS } from './sources/audit-tasks.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const prettierConfig = await prettier.resolveConfig(fileURLToPath(import.meta.url), {
+  editorconfig: true,
+});
 
 export function mapEvolutionStatus(sourceStatus) {
   if (sourceStatus === 'completed') return 'done';
@@ -781,11 +785,14 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
         ].join('\n')
       );
     }
-    const output = `${JSON.stringify(result, null, 2)}\n`;
+    const output = await prettier.format(`${JSON.stringify(result, null, 2)}\n`, {
+      ...prettierConfig,
+      parser: 'json',
+    });
 
     if (checkOnly) {
       const currentRaw = await fs.readFile(targetFile, 'utf8');
-      if (currentRaw !== output) {
+      if (currentRaw.replace(/\r\n/g, '\n') !== output) {
         throw new Error(
           'TaskOS registry differs from deterministic source projection. Review the source inventory before writing.'
         );
