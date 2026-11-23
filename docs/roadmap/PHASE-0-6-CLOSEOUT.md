@@ -46,6 +46,8 @@ The source-backed migration design contains **627 records**:
 
 Expected candidate state distribution: **468 done, 49 doing, 89 todo, 21 blocked**.
 
+A complete identity check has already reconciled the 861 legacy rows whose `sourceRef.file` was the root `todo.md`: all 854 legacy `done` IDs match the 854 checked entries in the archived checklist, and all 7 legacy `todo` IDs match the 7 unchecked archive entries, with zero missing/extra IDs. The seven retained open IDs are `MW-CFG-003.3`, `MW-CICD-002`, `MW-CICD-002.3`, `MW-CICD-004`, `MW-CICD-004.2`, `MW-CICD-004.3`, and `MW-DOC-004.3`; they map to `blocked` pending re-triage. Legacy blob SHA: `d56499936761dcc062704d06588ee2679fd1aae2`; archive blob SHA: `f29ec364530195484f668287c5616bf91984554f`. A regression test for this exact mapping is now committed, pending hosted execution.
+
 The 731-record difference is a reconciliation problem, not permission to delete. Do not:
 - replace `docs/tasks/tasks.json` with the 627-record candidate without a complete diff review and preserved legacy copy;
 - run the one-time importer with `--write`;
