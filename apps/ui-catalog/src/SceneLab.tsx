@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@moonwitness/ui/components/button';
-import { LayeredScene, type SceneLayerDescriptor } from '@moonwitness/ui/components/layered-scene';
+import { LayeredScene, type SceneLayerDescriptor, type SceneBreakpointDescriptor } from '@moonwitness/ui/components/layered-scene';
 import { SpritePlayer, type SpriteClipMetadata } from '@moonwitness/ui/components/sprite-player';
 import { createSceneTimeline, type TimelineStatus } from '@moonwitness/ui/lib/scene-timeline';
 import { getActiveSceneHarness } from '@moonwitness/ui/lib/scene-test-harness';
@@ -17,39 +17,66 @@ import idleFrame1 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-
 import idleFrame2 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
 import fallbackHeroDesktop from '@moonwitness/assets/illustrations/home-hero-desktop.webp';
 import fallbackHeroMobile from '@moonwitness/assets/illustrations/home-hero-mobile.webp';
+import moonCitySceneBundle from '@moonwitness/assets/scenes/moon-city-scene.json';
 
-const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = [
-  { id: 'sky', src: skyUrl, mediaKind: 'vector', zOrder: 0, opacity: 1, pivot: { x: 0.5, y: 0.5 }, parallax: { x: 0, y: 0 }, alt: 'Moon City sky' },
-  { id: 'moon', src: moonUrl, mediaKind: 'vector', zOrder: 10, opacity: 1, pivot: { x: 0.72, y: 0.24 }, parallax: { x: 0.04, y: 0.03 }, alt: 'Moon disc' },
-  { id: 'clouds-far', src: cloudsFarUrl, mediaKind: 'vector', zOrder: 20, opacity: 0.85, pivot: { x: 0.5, y: 0.28 }, parallax: { x: 0.08, y: 0.04 }, alt: 'Far clouds' },
-  { id: 'skyline-far', src: skylineFarUrl, mediaKind: 'vector', zOrder: 30, opacity: 1, pivot: { x: 0.5, y: 0.75 }, parallax: { x: 0.14, y: 0.06 }, alt: 'Far skyline' },
-  { id: 'clouds-near', src: cloudsNearUrl, mediaKind: 'vector', zOrder: 40, opacity: 0.9, pivot: { x: 0.5, y: 0.34 }, parallax: { x: 0.22, y: 0.08 }, alt: 'Near clouds' },
-  { id: 'skyline-mid', src: skylineMidUrl, mediaKind: 'vector', zOrder: 50, opacity: 1, pivot: { x: 0.5, y: 0.8 }, parallax: { x: 0.32, y: 0.12 }, alt: 'Midground city' },
-  { id: 'foreground', src: foregroundUrl, mediaKind: 'vector', zOrder: 70, opacity: 1, pivot: { x: 0.5, y: 0.92 }, parallax: { x: 0.55, y: 0.18 }, alt: 'Rooftop foreground' },
-  { id: 'prop-railing', src: railingUrl, mediaKind: 'vector', zOrder: 80, opacity: 1, pivot: { x: 0.5, y: 0.95 }, parallax: { x: 0.65, y: 0.22 }, alt: 'Safety railing' },
-  { id: 'prop-wires', src: wiresUrl, mediaKind: 'vector', zOrder: 85, opacity: 0.92, pivot: { x: 0.5, y: 0.12 }, parallax: { x: 0.72, y: 0.24 }, alt: 'Overhead wires' },
-];
+const HERO_SCENE = moonCitySceneBundle.scenes.find((scene) => scene.id === 'moon-city-hero');
+if (!HERO_SCENE) throw new Error('Canonical Moon City hero scene is missing');
 
-const SCENE_BREAKPOINTS = [
-  {
-    name: 'mobile',
-    minWidth: 0,
-    maxWidth: 767,
-    layerOverrides: [
-      { layerId: 'moon', pivot: { x: 0.52, y: 0.2 }, parallax: { x: 0.02, y: 0.02 } },
-      { layerId: 'prop-wires', opacity: 0.45, parallax: { x: 0.18, y: 0.08 } },
-    ],
-  },
-  { name: 'desktop', minWidth: 768 },
-] as const;
+const SCENE_LAYER_SOURCES: Record<string, string> = {
+  'environments/moon-city-sky.svg': skyUrl,
+  'environments/moon-city-moon.svg': moonUrl,
+  'environments/moon-city-clouds-far.svg': cloudsFarUrl,
+  'environments/moon-city-skyline-far.svg': skylineFarUrl,
+  'environments/moon-city-clouds-near.svg': cloudsNearUrl,
+  'environments/moon-city-skyline-mid.svg': skylineMidUrl,
+  'environments/moon-city-foreground.svg': foregroundUrl,
+  'environments/moon-city-prop-railing.svg': railingUrl,
+  'environments/moon-city-prop-wires.svg': wiresUrl,
+};
+
+const SCENE_FALLBACK_SOURCES: Record<string, string> = {
+  'illustrations/home-hero-desktop.webp': fallbackHeroDesktop,
+  'illustrations/home-hero-mobile.webp': fallbackHeroMobile,
+};
+
+const SCENE_FRAME_SOURCES: Record<string, string> = {
+  'animation/crew-01-idle/crew-01-idle-frame-01.svg': idleFrame1,
+  'animation/crew-01-idle/crew-01-idle-frame-02.svg': idleFrame2,
+};
+
+const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = HERO_SCENE.layers.map((layer) => ({
+  id: layer.id,
+  src: SCENE_LAYER_SOURCES[layer.asset],
+  mediaKind: 'vector',
+  zOrder: layer.order,
+  opacity: layer.opacity,
+  pivot: layer.pivot ?? layer.position,
+  parallax: layer.parallax,
+  alt: `Moon City ${layer.id.replaceAll('-', ' ')}`,
+}));
+
+const SCENE_BREAKPOINTS: readonly SceneBreakpointDescriptor[] = HERO_SCENE.breakpoints.map((breakpoint) => ({
+  name: breakpoint.name,
+  minWidth: breakpoint.minWidth,
+  maxWidth: breakpoint.maxWidth,
+  layerOverrides: breakpoint.layerOverrides?.map((override) => ({
+    layerId: override.layerId,
+    opacity: override.opacity,
+    pivot: override.position,
+    parallax: override.parallax,
+  })),
+}));
+
+const IDLE_CLIP_DEFINITION = moonCitySceneBundle.clips.find((clip) => clip.id === 'crew-01-idle');
+if (!IDLE_CLIP_DEFINITION) throw new Error('Canonical crew-01-idle clip is missing');
 
 const IDLE_CLIP: SpriteClipMetadata = {
-  id: 'crew-01-idle',
-  frames: [idleFrame1, idleFrame2],
-  durationMs: 1800,
-  loop: true,
-  pingPong: true,
-  fallbackAsset: idleFrame1,
+  id: IDLE_CLIP_DEFINITION.id,
+  frames: IDLE_CLIP_DEFINITION.frames.map((frame) => SCENE_FRAME_SOURCES[frame.asset]),
+  durationMs: IDLE_CLIP_DEFINITION.frames.reduce((total, frame) => total + frame.durationMs, 0),
+  loop: IDLE_CLIP_DEFINITION.loop,
+  pingPong: IDLE_CLIP_DEFINITION.direction === 'ping-pong',
+  fallbackAsset: SCENE_FRAME_SOURCES[IDLE_CLIP_DEFINITION.frames[0].asset],
   width: 160,
   height: 160,
 };
@@ -175,13 +202,13 @@ export function SceneLab() {
         data-composition={composition}
       >
         <LayeredScene
-          sceneId="moon-city-hero"
+          sceneId={HERO_SCENE.id}
           label="Moon City layered environment preview"
           layers={displayedLayers}
           breakpoints={SCENE_BREAKPOINTS}
           viewportWidth={viewportWidth}
-          staticFallback={composition === 'mobile' ? fallbackHeroMobile : fallbackHeroDesktop}
-          accessibilityFallback={fallbackHeroMobile}
+          staticFallback={SCENE_FALLBACK_SOURCES[HERO_SCENE.staticFallback]}
+          accessibilityFallback={SCENE_FALLBACK_SOURCES[HERO_SCENE.accessibilityFallback]}
           forceStatic={staticMode}
           enableKeyboardCamera={!staticMode}
           enablePointerParallax={!staticMode}
