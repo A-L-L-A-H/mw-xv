@@ -1,15 +1,16 @@
 # Jalur rilis aktif
 
-## Current checkpoint — 2026-11-23 (stabilization; not released)
+## Current checkpoint — 2026-11-23 (Phase 0–6 stabilization; not released)
 
-- **Stable branch:** `main` remains at `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`; no main write, merge, release or deployment was performed.
-- **Development branch:** current candidate `7efba2c6766e5d5acde6c7e42e8f0a207ccb3400`; 163 commits ahead of main. Continue dev-first with expected-head updates.
-- **Promotion PR #37:** [open promotion PR](https://github.com/A-L-L-A-H/mw-xv/pull/37) remains unmerged and still requires maintainer/CODEOWNER approval.
-- **CI:** exact-head run on `9a4d99479b44670282d4cb2ac7f27a3c75a4d0ed` failed the isolated-candidate regression test (29/30 TaskOS tests passed) because the output newline was double-escaped. Commit `7efba2c` fixed the artifact upload path; current head `7efba2c` has fresh CI pending. The next patch corrects JSON serialization.
-- **TaskOS:** the canonical file contains 1,358 legacy records; 861 still cite root `todo.md`, now a pointer. The proposed source-backed candidate contains 627 records (468 done, 49 doing, 89 todo, 21 blocked). The existing registry remains untouched pending full reconciliation.
-- **Candidate workflow:** export to `RUNNER_TEMP`, validate, upload and review; never write the candidate to the canonical registry in CI.
-- **Visual Universe:** 109 source tasks and all original card snapshots are preserved; scoped boards remain projections, not lifecycle authorities.
-- **Release gate:** M13.09–M13.12 implementation is present on dev, but full current CI and promotion approval are outstanding. M12.14 stable-release approval remains a separate human gate. Promotion is not deployment.
+- **Stable branch:** `main` tetap pada `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`; tidak ada perubahan pada `main`, merge, stable release, atau deployment.
+- **Development branch:** baseline implementasi `62e5ef656d58be11350e8a1d228da2205c5108eb`; 169 commits ahead of main, 0 behind pada perbandingan terakhir. Pemeriksaan CI harus mengacu pada SHA terbaru, bukan memakai hasil run lama.
+- **Toolchain:** Corepack di Docker dikunci ke pnpm `11.17.0`; pemeriksaan drift kini memindai Dockerfile serta workflow; regression test ditambahkan.
+- **CI:** [run 45086573530](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45086573530) adalah kandidat CI baru setelah perbaikan. Hasilnya belum boleh disebut green sebelum semua job selesai pada SHA yang sama. Run sebelumnya di `3375056…` lulus pada knowledge-gate, PostgreSQL integration, quality/build dan DX; unit safety tests + unit build lulus, tetapi langkah kandidat recovery belum selesai.
+- **TaskOS:** registry legacy valid berisi 1.358 records; 861 source reference masih menunjuk root `todo.md` yang kini hanya pointer. Kandidat sumber terverifikasi berisi 627 records (468 done, 49 doing, 89 todo, 21 blocked); belum dimigrasikan. Kandidat harus di-review dan snapshot lama dipertahankan.
+- **M13 / ROCKSOUL FLOW:** implementasi M13.09–M13.12 dan evidence tersedia; acceptance untuk keseluruhan journey Desktop/Board masih membutuhkan uji lokal dari Repo Radar sampai Review/Sync.
+- **Promotion PR #37:** tetap terbuka dan membutuhkan CODEOWNER review serta M12.14 approval terpisah. Promotion tidak sama dengan deployment.
+- **Phase closeout dan handoff lokal:** [PHASE-0-6-CLOSEOUT.md](PHASE-0-6-CLOSEOUT.md).
+
 
 
 ## Checkpoint historis — 2026-10-23
