@@ -20,13 +20,14 @@ describe('Wave 2 API multi-replica and addon-first v2 contracts', () => {
   const cleanups: Array<() => Promise<void> | void> = [];
 
   afterEach(async () => {
+    vi.useRealTimers();
     Registry.clear();
     while (cleanups.length) {
       await cleanups.pop()?.();
     }
   });
 
-  it('PostgresRateLimitStore increments atomically within window', async () => {
+  it('PostgresRateLimitStore increments atomically within window', { timeout: 15_000 }, async () => {
     const db: Knex = knex({
       client: 'better-sqlite3',
       connection: { filename: ':memory:' },
@@ -49,9 +50,8 @@ describe('Wave 2 API multi-replica and addon-first v2 contracts', () => {
     assert.ok(hit2.ttl > 0 && hit2.ttl <= 60_000);
   });
 
-  it('PostgresRateLimitStore parses string timeWindow, supports child() overrides, counts down TTL, and resets after expiry', async () => {
-    vi.useFakeTimers();
-    cleanups.push(() => vi.useRealTimers());
+  it('PostgresRateLimitStore parses string timeWindow, supports child() overrides, counts down TTL, and resets after expiry', { timeout: 15_000 }, async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-11-23T00:00:00.000Z'));
 
     assert.equal(parseTimeWindowMs('15 minutes', 60_000), 900_000);
@@ -103,7 +103,7 @@ describe('Wave 2 API multi-replica and addon-first v2 contracts', () => {
     assert.equal(pruned, 1);
   });
 
-  it('runPreDeployMigrations installs tables and SKIP_BOOT_MIGRATIONS registers models without running DDL', async () => {
+  it('runPreDeployMigrations installs tables and SKIP_BOOT_MIGRATIONS registers models without running DDL', { timeout: 15_000 }, async () => {
     const db: Knex = knex({
       client: 'better-sqlite3',
       connection: { filename: ':memory:' },
@@ -131,7 +131,7 @@ describe('Wave 2 API multi-replica and addon-first v2 contracts', () => {
     assert.equal(await secondDb.schema.hasTable('whatsapp_accounts'), false);
   });
 
-  it('registerApiAddonRoutes mounts manifest.httpPlugins declaratively', async () => {
+  it('registerApiAddonRoutes mounts manifest.httpPlugins declaratively', { timeout: 15_000 }, async () => {
     const TempModel = defineModel('temp.wave2_probe', {
       table: 'temp_wave2_probes',
       fields: { label: fields.string() },

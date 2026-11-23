@@ -53,23 +53,20 @@ jobs:
           pnpm assets:check:bounds
           pnpm test:ui
           node scripts/check-docs.mjs
-      - name: Enforce M15, M16, and M17 Constitutional Invariants and Issue Planner Gates
+      - name: Enforce M15, M16, M17, and M18 Constitutional Invariants and Issue Planner Gates
         run: |
-          node --test scripts/check-m15-invariants.test.mjs scripts/check-m16-invariants.test.mjs
-          if [ -f scripts/check-m17-invariants.test.mjs ]; then
-            node --test scripts/check-m17-invariants.test.mjs
-          fi
+          node --test scripts/check-m15-invariants.test.mjs scripts/check-m16-invariants.test.mjs scripts/check-m17-invariants.test.mjs scripts/check-m18-invariants.test.mjs
           node scripts/check-m15-invariants.mjs --json
           node scripts/check-m16-invariants.mjs --json
-          if [ -f scripts/check-m17-invariants.mjs ]; then
-            node scripts/check-m17-invariants.mjs --json
-          fi
+          node scripts/check-m17-invariants.mjs --json
+          node scripts/check-m18-invariants.mjs --json
           node --test scripts/roadmap-issue-planner.test.mjs
       - name: Build workspace and verify budgets
         id: build-workspace
         run: |
           set -euo pipefail
           pnpm build
+          node scripts/run-agi-benchmark.mjs --json
           pnpm orm:check:seeds
           pnpm --filter @moonwitness/desktop build
           pnpm --filter @moonwitness/desktop typecheck

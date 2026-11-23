@@ -65,6 +65,7 @@ import { SoundToggle } from '@moonwitness/ui/components/audio';
 import { DesktopHarnessDrawer } from '@/components/ai/desktop-harness-drawer';
 import { DesktopLogDrawer } from '@/components/ai/desktop-log-drawer';
 import { WorkspaceAssistantDrawer } from '@/components/ai/workspace-assistant-drawer';
+import { QuickCaptureModal } from '@/components/desktop/quick-capture-modal';
 import { AI_MISSION_CONTROL_ROUTES } from '@/components/ai/ai-api';
 import { UpdateBanner, type UpdateBannerStatus } from '@moonwitness/ui/components/update-banner';
 import { ModePicker } from '@moonwitness/ui/components/mode-picker';
@@ -151,6 +152,7 @@ function ModelNavigation({
         icon={CompanyIcon}
         onNavigate={onNavigate}
       />
+      <NavItem to="/board/studio" label="Studio" icon={SparkleIcon} onNavigate={onNavigate} />
       {!isWorkspaceDesktop && (
         <>
           <NavItem to="/board/cloud" label="Cloud & ISP" icon={GlobeIcon} onNavigate={onNavigate} />
@@ -791,6 +793,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Centralized Desktop Log Console / Copy Diagnostics */}
       {isDesktop && <DesktopLogDrawer />}
+
+      {/* Desktop Quick-Capture Modal & Offline Sync Indicator */}
+      {isDesktop && <QuickCaptureModal />}
     </div>
   );
 }

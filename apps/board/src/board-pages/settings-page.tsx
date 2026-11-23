@@ -17,6 +17,8 @@ import {
 import { toast } from '@moonwitness/ui/components/toast';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { NotificationPreferences } from '@/components/settings/notification-preferences';
+import { DesktopDoctorCard } from '@/components/desktop/desktop-doctor-card';
+import { LocalRagSearchPanel } from '@/components/ai/local-rag-search-panel';
 import { useDesktopBridge } from '@/lib/desktop-bridge';
 import { useDesktopMode } from '@/lib/desktop-mode';
 import { Badge } from '@moonwitness/ui/components/badge';
@@ -564,6 +566,10 @@ export function SettingsPage() {
           </div>
         </section>
       )}
+
+      {isDesktop && <DesktopDoctorCard />}
+
+      {isDesktop && <LocalRagSearchPanel />}
 
       {isDesktop && (
         <Panel className="space-y-6">
