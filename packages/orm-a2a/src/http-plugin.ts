@@ -45,13 +45,14 @@ interface A2AAuditChanges extends Record<string, unknown> {
   readonly issuedAt: number;
   readonly expiresAt: number;
   readonly receivedAt: string;
+  readonly sourcePeerAddress: string;
   readonly dataClassification: string;
   readonly delegationDepth: number;
   readonly payloadSha256: string;
   readonly payload: Record<string, unknown>;
 }
 
-type A2AEnvelope = SignedA2AEnvelope<Record<string, unknown>> & { readonly sourceEndpoint: string };
+type A2AEnvelope = SignedA2AEnvelope<Record<string, unknown>>;
 
 function readA2AApiConfig(env: NodeJS.ProcessEnv = process.env): A2AApiConfig {
   const rawEnabled = env.MW_A2A_API_ENABLED?.trim().toLowerCase();
@@ -137,7 +138,9 @@ function normalizeIpAddress(value: string | undefined | null): string | null {
 
 function parseMeshEndpoint(value: string): { readonly host: string; readonly origin: string } | null {
   try {
-    const parsed = new URL(value);
+    const trimmed = value.trim();
+    const normalized = trimmed.includes('://') ? trimmed : `http://${trimmed}`;
+    const parsed = new URL(normalized);
     if (!['http:', 'https:'].includes(parsed.protocol)) return null;
     if (parsed.username || parsed.password || !isPrivateMeshHost(parsed.toString())) return null;
     const host = normalizeIpAddress(parsed.hostname);
@@ -164,8 +167,8 @@ function parseEnvelope(value: unknown): A2AEnvelope | null {
     if (typeof value[key] !== 'string' || !value[key].trim()) return null;
   }
   if (
-    typeof value.sourceEndpoint !== 'string' ||
-    !value.sourceEndpoint.trim() ||
+    (value.sourceEndpoint !== undefined &&
+      (typeof value.sourceEndpoint !== 'string' || !value.sourceEndpoint.trim())) ||
     !Number.isSafeInteger(value.companyId) ||
     !Number.isSafeInteger(value.delegationDepth) ||
     !Number.isSafeInteger(value.fencingToken) ||
@@ -239,7 +242,8 @@ function sendReject(reply: AddonHttpReply, error: A2AReject) {
 async function persistA2AReceipt(
   envelope: A2AEnvelope,
   config: Extract<A2AApiConfig, { readonly enabled: true; readonly valid: true }>,
-  nowMs: number
+  nowMs: number,
+  sourcePeerAddress: string
 ): Promise<
   | { readonly ok: true; readonly receivedAt: string }
   | { readonly ok: false; readonly error: A2AReject }
@@ -416,6 +420,7 @@ async function persistA2AReceipt(
         fencingToken: envelope.fencingToken,
         messageId: envelope.messageId,
         receivedAt,
+        sourcePeerAddress,
       }),
     });
 
@@ -436,6 +441,7 @@ async function persistA2AReceipt(
         issuedAt: envelope.issuedAt,
         expiresAt: envelope.expiresAt,
         receivedAt,
+        sourcePeerAddress,
         payloadSha256,
         payload: safePayload,
         status: 'queued',
@@ -490,9 +496,10 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
       });
     }
 
-    const sourceEndpoint = parseMeshEndpoint(envelope.sourceEndpoint);
+    const sourceEndpoint =
+      envelope.sourceEndpoint === undefined ? undefined : parseMeshEndpoint(envelope.sourceEndpoint);
     const targetEndpoint = parseMeshEndpoint(envelope.targetEndpoint);
-    if (!sourceEndpoint || sourceEndpoint.host !== remoteAddress) {
+    if (envelope.sourceEndpoint !== undefined && (!sourceEndpoint || sourceEndpoint.host !== remoteAddress)) {
       return reply.code(403).send({
         success: false,
         error: 'A2A sourceEndpoint must match the direct private mesh peer address',
@@ -518,7 +525,7 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
       );
     }
 
-    const persisted = await persistA2AReceipt(envelope, config, Date.now());
+    const persisted = await persistA2AReceipt(envelope, config, Date.now(), remoteAddress);
     if (!persisted.ok) return sendReject(reply, persisted.error);
 
     return reply.code(202).send({

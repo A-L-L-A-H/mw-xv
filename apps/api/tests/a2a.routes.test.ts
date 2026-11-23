@@ -132,6 +132,7 @@ describe('A2A API durable mesh inbox', () => {
       readonly nonce?: string;
       readonly sourceEndpoint?: string;
       readonly targetEndpoint?: string;
+      readonly omitSourceEndpoint?: boolean;
     } = {}
   ) {
     return createSignedA2AEnvelope(
@@ -139,7 +140,9 @@ describe('A2A API durable mesh inbox', () => {
         messageId,
         sourceAgentId: sourceAgent.code,
         targetAgentId: targetAgent.code,
-        sourceEndpoint: overrides.sourceEndpoint ?? 'http://100.64.0.10:3003',
+        ...(overrides.omitSourceEndpoint === true
+          ? {}
+          : { sourceEndpoint: overrides.sourceEndpoint ?? 'http://100.64.0.10:3003' }),
         targetEndpoint: overrides.targetEndpoint ?? process.env.MW_A2A_API_ENDPOINT!,
         companyId: operator.company.id,
         delegationDepth: 1,
@@ -195,9 +198,34 @@ describe('A2A API durable mesh inbox', () => {
       sourceAgentId: 'peer_source',
       targetAgentId: 'peer_target',
       fencingToken: 1,
+      sourcePeerAddress: '100.64.0.10',
       status: 'queued',
     });
     expect(JSON.stringify(inbox.json())).not.toContain(A2A_SECRET);
+  });
+
+  it('accepts an omitted sourceEndpoint and a bare private mesh target address', async () => {
+    process.env.MW_A2A_API_ENDPOINT = 'http://100.64.0.20';
+    const response = await postEnvelope(
+      signedEnvelope('optional-source-endpoint', 1, {
+        omitSourceEndpoint: true,
+        targetEndpoint: '100.64.0.20',
+      })
+    );
+    expect(response.statusCode).toBe(202);
+    expect(response.json()).toMatchObject({
+      status: 'queued',
+      messageId: 'optional-source-endpoint',
+    });
+
+    const inbox = await app.inject({
+      method: 'GET',
+      url: '/api/ai/a2a/inbox',
+      headers: operator.headers,
+    });
+    expect(inbox.json().data[0]).toMatchObject({
+      sourcePeerAddress: '100.64.0.10',
+    });
   });
 
   it('rejects nonce replay and duplicate message IDs', async () => {

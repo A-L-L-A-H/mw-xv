@@ -81,7 +81,7 @@ For a durable API receipt, the sender's `targetEndpoint` must be the private-mes
 The API receiver enforces:
 
 - HMAC-SHA256 envelope verification using the company-scoped secret, the `a2a.v1` protocol version, bounded TTL, and the ADR 0009 private mesh address ranges.
-- A direct socket peer check: `sourceEndpoint` must match the remote IP observed by the API. Forwarded headers are not used as peer identity.
+- A direct socket peer check: the raw remote IP must be a private mesh address; when optional `sourceEndpoint` is supplied, its host must match that IP. Forwarded headers are never used as peer identity.
 - Exact configured-company scope and active source/target `ai.agent` records; no cross-company delegation.
 - Persistent replay protection for live nonce windows, message-ID de-duplication, and monotonic fencing per source agent. The receipt and fence advance are written transactionally to the append-only `base.audit_log`.
 - Redaction of the stored payload and no storage of the envelope signature or signing secret.

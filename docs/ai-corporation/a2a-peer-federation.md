@@ -31,7 +31,7 @@ MW_A2A_API_ENDPOINT=http://100.64.0.20:3000
 
 The endpoint must be an HTTP(S) origin on an allowed private mesh IP; do not use a public DNS name, public IP, loopback, link-local address, URL credentials, or a path/query. Configure the same company-scoped signing secret on the sending peer. Never commit the secret.
 
-The sender's `targetEndpoint` must identify this API origin. The API derives the source IP from the raw socket and requires it to match the host in the signed `sourceEndpoint`. Forwarded headers are deliberately ignored; terminate any reverse proxy outside this trust boundary or provide a direct private-mesh listener.
+The sender's `targetEndpoint` must identify this API origin; a bare private IP is normalized to `http://` for the default HTTP port. The API derives the source IP from the raw socket and requires it to be private. If the optional signed `sourceEndpoint` is supplied, its host must match that observed IP. Forwarded headers are deliberately ignored; terminate any reverse proxy outside this trust boundary or provide a direct private-mesh listener.
 
 ## Persistence and validation
 
