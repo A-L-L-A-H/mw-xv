@@ -53,7 +53,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
 
   // Reconcile every old root-todo record by stable code against the archived checklist.
   // The checked items remain historical evidence; only the seven unchecked items are re-imported as blocked.
-  const legacyRegistry = JSON.parse(await readFile('docs/tasks/tasks.json', 'utf8'));
+  const legacyRegistry = JSON.parse(await readFile('docs/tasks/archives/tasks-legacy-1358-2026-11-23.json', 'utf8'));
   const archivedTodoText = await readFile('docs/archive/todos/todo.md', 'utf8');
   const archivedRows = archivedTodoText
     .split(/\r?\n/)
