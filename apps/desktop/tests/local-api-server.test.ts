@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -255,5 +255,161 @@ describe('LocalApiServer & Desktop Importer', () => {
     } finally {
       sidecar.close();
     }
+  });
+
+  it('enforces desktop experience mode locking in workspace mode and unlocks in developer mode', async () => {
+    const tempHome = makeTempDir('mw-desktop-mode-');
+    const sqlitePath = path.join(tempHome, 'local.db');
+    const modeFilePath = path.join(tempHome, 'mode.json');
+
+    // Pre-seed mode.json as 'workspace' to verify startup persistence loading
+    writeFileSync(modeFilePath, JSON.stringify({ mode: 'workspace' }), 'utf8');
+
+    const daemon = await startDesktopSidecarDaemon({
+      repoRoot: process.cwd(),
+      desktopHomeDir: tempHome,
+      sqlitePath,
+      boardOrigin: 'http://127.0.0.1:5173',
+      apiBaseUrl: 'http://127.0.0.1:4242',
+      healthPort: 0,
+      apiPort: 0,
+      offlineMode: true,
+      installAddonsOnStart: true,
+    });
+    handles.push(daemon);
+
+    const loginRes = await fetch(`${daemon.apiUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ login: 'local', password: 'local-offline-session' }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginBody = (await loginRes.json()) as {
+      success: boolean;
+      data: { access_token: string };
+    };
+    const authHeaders = {
+      authorization: `Bearer ${loginBody.data.access_token}`,
+      'content-type': 'application/json',
+    };
+    const rpcHeaders = {
+      'content-type': 'application/json',
+      'x-mw-desktop-token': daemon.rpcToken,
+    };
+
+    // 1. GET /api/desktop/mode reports workspace mode with restrictedCapabilities
+    const modeRes = await fetch(`${daemon.apiUrl}/api/desktop/mode`, { headers: authHeaders });
+    expect(modeRes.status).toBe(200);
+    const modeBody = (await modeRes.json()) as {
+      success: boolean;
+      data: { mode: string; restrictedCapabilities: string[] };
+    };
+    expect(modeBody.success).toBe(true);
+    expect(modeBody.data.mode).toBe('workspace');
+    expect(modeBody.data.restrictedCapabilities).toEqual([
+      'pty.*',
+      'worktree.*',
+      'mcp.invoke',
+      'mesh.bootstrap',
+      'projects.import_taskos',
+    ]);
+
+    // 2. Invalid mode rejected with 400
+    const badModeRes = await fetch(`${daemon.apiUrl}/api/desktop/mode`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ mode: 'godmode' }),
+    });
+    expect(badModeRes.status).toBe(400);
+
+    // 3. /_desktop/rpc allows getStatus & sidecar.getState in workspace mode
+    for (const allowedCommand of ['getStatus', 'sidecar.getState']) {
+      const okRpc = await fetch(`${daemon.apiUrl}/_desktop/rpc`, {
+        method: 'POST',
+        headers: rpcHeaders,
+        body: JSON.stringify({ command: allowedCommand }),
+      });
+      expect(okRpc.status).toBe(200);
+    }
+
+    // 4. /_desktop/rpc rejects pty.*, worktree.*, mcp.*, risk.* with 403 WORKSPACE_MODE_RESTRICTED
+    for (const blockedCommand of [
+      'pty.listSessions',
+      'worktree.list',
+      'mcp.listServers',
+      'risk.evaluate',
+    ]) {
+      const blockedRpc = await fetch(`${daemon.apiUrl}/_desktop/rpc`, {
+        method: 'POST',
+        headers: rpcHeaders,
+        body: JSON.stringify({ command: blockedCommand }),
+      });
+      expect(blockedRpc.status).toBe(403);
+      const blockedBody = (await blockedRpc.json()) as {
+        success: boolean;
+        code: string;
+        error: string;
+      };
+      expect(blockedBody.success).toBe(false);
+      expect(blockedBody.code).toBe('WORKSPACE_MODE_RESTRICTED');
+    }
+
+    // 5. /api/desktop/mesh/bootstrap and /api/desktop/projects/import-taskos return 403 in workspace mode
+    const meshBootstrapBlocked = await fetch(`${daemon.apiUrl}/api/desktop/mesh/bootstrap`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({}),
+    });
+    expect(meshBootstrapBlocked.status).toBe(403);
+    const meshBlockedBody = (await meshBootstrapBlocked.json()) as { code: string };
+    expect(meshBlockedBody.code).toBe('WORKSPACE_MODE_RESTRICTED');
+
+    const importBlocked = await fetch(`${daemon.apiUrl}/api/desktop/projects/import-taskos`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({}),
+    });
+    expect(importBlocked.status).toBe(403);
+    const importBlockedBody = (await importBlocked.json()) as { code: string };
+    expect(importBlockedBody.code).toBe('WORKSPACE_MODE_RESTRICTED');
+
+    // 6. Normal workspace routes remain functional in workspace mode
+    const bootRes = await fetch(`${daemon.apiUrl}/api/app/bootstrap`, { headers: authHeaders });
+    expect(bootRes.status).toBe(200);
+    const boardRes = await fetch(`${daemon.apiUrl}/api/projects/1/board`, { headers: authHeaders });
+    expect(boardRes.status).toBe(200);
+
+    // 7. Switch to developer mode via POST /api/desktop/mode and verify persistence + unlock
+    const switchRes = await fetch(`${daemon.apiUrl}/api/desktop/mode`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ mode: 'developer' }),
+    });
+    expect(switchRes.status).toBe(200);
+    const switchBody = (await switchRes.json()) as {
+      success: boolean;
+      data: { mode: string; restrictedCapabilities: string[] };
+    };
+    expect(switchBody.success).toBe(true);
+    expect(switchBody.data.mode).toBe('developer');
+    expect(switchBody.data.restrictedCapabilities).toEqual([]);
+
+    const persisted = JSON.parse(readFileSync(modeFilePath, 'utf8')) as { mode: string };
+    expect(persisted.mode).toBe('developer');
+
+    // 8. Engineering harness capabilities unlocked in developer mode
+    const mcpRpc = await fetch(`${daemon.apiUrl}/_desktop/rpc`, {
+      method: 'POST',
+      headers: rpcHeaders,
+      body: JSON.stringify({ command: 'mcp.listServers' }),
+    });
+    expect(mcpRpc.status).toBe(200);
+
+    const meshBootstrapAllowed = await fetch(`${daemon.apiUrl}/api/desktop/mesh/bootstrap`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({}),
+    });
+    expect(meshBootstrapAllowed.status).toBe(200);
   });
 });

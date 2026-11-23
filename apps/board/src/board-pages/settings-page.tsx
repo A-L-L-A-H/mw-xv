@@ -3,10 +3,12 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckIcon, MoonIcon, SettingsIcon, SunIcon } from '@moonwitness/ui/icons';
+import { CheckIcon, CodeIcon, ColumnsIcon, MoonIcon, SettingsIcon, SunIcon } from '@moonwitness/ui/icons';
 import { toast } from '@moonwitness/ui/components/toast';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { NotificationPreferences } from '@/components/settings/notification-preferences';
+import { useDesktopBridge } from '@/lib/desktop-bridge';
+import { useDesktopMode } from '@/lib/desktop-mode';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { Label } from '@moonwitness/ui/components/label';
@@ -98,6 +100,8 @@ const TIMEZONES = [
 export function SettingsPage() {
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'superadmin' || user?.role === 'system';
+  const { isDesktop } = useDesktopBridge();
+  const { mode: desktopMode, setMode: setDesktopMode } = useDesktopMode();
   const { skin, mode, density, skins, setSkin, setMode, setDensity } = useSkin();
   const router = useRouter();
   const [storedPreferences] = useState<BoardPreferences>(readPreferences);
@@ -406,6 +410,78 @@ export function SettingsPage() {
         <h1 className="ink-title mt-2 text-4xl sm:text-5xl">Settings</h1>
         <p className="mt-2 text-ink-soft">Personal display and regional preferences.</p>
       </header>
+
+      {isDesktop && (
+        <section className="ink-panel space-y-5 bg-card p-5 sm:p-8">
+          <div className="flex items-start gap-3">
+            <span className="grid size-10 shrink-0 place-items-center border-2 border-ink bg-primary text-primary-foreground shadow-ink-sm">
+              {desktopMode === 'workspace' ? (
+                <ColumnsIcon className="size-5" />
+              ) : (
+                <CodeIcon className="size-5" />
+              )}
+            </span>
+            <div>
+              <h2 className="font-display text-xl uppercase tracking-wide">
+                Desktop Experience Mode
+              </h2>
+              <p className="text-sm text-ink-soft">
+                Switch between clean Workspace productivity and full DX / Developer agent harness.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                {
+                  id: 'workspace',
+                  label: 'Workspace',
+                  description:
+                    'Tasks & Kanban, Knowledge, Stories, Notes — offline-first, zero technical clutter.',
+                  icon: ColumnsIcon,
+                },
+                {
+                  id: 'developer',
+                  label: 'DX / Developer',
+                  description:
+                    'Full AI Mission Control, Git Worktrees, Bounded PTY, MCP Server, and Model Explorer.',
+                  icon: CodeIcon,
+                },
+              ] as const
+            ).map((option) => {
+              const Icon = option.icon;
+              const selected = desktopMode === option.id;
+              return (
+                <Button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => {
+                    setDesktopMode(option.id);
+                    toast.success(
+                      `Switched Desktop Experience Mode to ${option.label}.`
+                    );
+                  }}
+                  className={`flex h-auto flex-col items-start gap-2 border-2 p-4 text-left transition-colors ${
+                    selected
+                      ? 'border-ink bg-primary/30 shadow-ink-sm'
+                      : 'border-ink/30 hover:border-ink'
+                  }`}
+                >
+                  <div className="flex w-full items-center gap-2">
+                    <Icon className="size-5 shrink-0" />
+                    <span className="font-display uppercase">{option.label}</span>
+                    {selected && <CheckIcon className="ml-auto size-4 shrink-0" />}
+                  </div>
+                  <span className="text-xs font-normal normal-case text-ink-soft">
+                    {option.description}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="ink-panel space-y-6 bg-card p-5 sm:p-8">
         <div className="flex items-start gap-3">

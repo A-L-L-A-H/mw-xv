@@ -241,6 +241,10 @@
     "./components/update-banner": {
       "types": "./dist/components/update-banner.d.ts",
       "import": "./dist/components/update-banner.js"
+    },
+    "./components/mode-picker": {
+      "types": "./dist/components/mode-picker.d.ts",
+      "import": "./dist/components/mode-picker.js"
     }
   },
   "scripts": {

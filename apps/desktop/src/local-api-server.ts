@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
@@ -51,6 +51,8 @@ export interface LocalWorkspaceBootstrapResult {
   readonly stageIds: Readonly<Record<string, number>>;
 }
 
+export type DesktopExperienceMode = 'workspace' | 'developer';
+
 export interface LocalApiServerOptions {
   readonly sidecar?: LocalSidecarController;
   readonly db?: Knex;
@@ -58,6 +60,8 @@ export interface LocalApiServerOptions {
   readonly host?: string;
   readonly port?: number;
   readonly rpcToken?: string;
+  readonly desktopHomeDir?: string;
+  readonly initialMode?: DesktopExperienceMode;
 }
 
 export interface LocalApiServerHandle {
@@ -96,6 +100,91 @@ const DEFAULT_STAGES: readonly {
   { code: 'review', name: 'Review', sequence: 30, isClosed: false },
   { code: 'done', name: 'Done', sequence: 40, isClosed: true },
 ];
+
+const WORKSPACE_RESTRICTED_CAPABILITIES: readonly string[] = Object.freeze([
+  'pty.*',
+  'worktree.*',
+  'mcp.invoke',
+  'mesh.bootstrap',
+  'projects.import_taskos',
+]);
+
+const WORKSPACE_ALLOWED_RPC_COMMANDS: ReadonlySet<string> = new Set([
+  'getStatus',
+  'sidecar.getState',
+]);
+
+const WORKSPACE_MODE_RESTRICTED_BODY = Object.freeze({
+  success: false,
+  code: 'WORKSPACE_MODE_RESTRICTED',
+  error: 'Switch to DX / Developer mode to use engineering harness capabilities',
+});
+
+function isDesktopExperienceMode(value: unknown): value is DesktopExperienceMode {
+  return value === 'workspace' || value === 'developer';
+}
+
+function resolveDesktopHomeDirForMode(options: LocalApiServerOptions): string | null {
+  if (options.desktopHomeDir && options.desktopHomeDir.trim().length > 0) {
+    return options.desktopHomeDir.trim();
+  }
+  const sqlitePath =
+    options.sidecar?.getState().sqlitePath ?? options.bridge.sidecar.getState().sqlitePath;
+  if (!sqlitePath || sqlitePath === ':memory:') {
+    return ':memory:';
+  }
+  return path.dirname(sqlitePath);
+}
+
+function loadInitialDesktopMode(
+  options: LocalApiServerOptions,
+  desktopHomeDir: string | null
+): DesktopExperienceMode {
+  const envMode = process.env.MW_DESKTOP_MODE?.trim();
+  if (isDesktopExperienceMode(envMode)) {
+    return envMode;
+  }
+  if (options.initialMode && isDesktopExperienceMode(options.initialMode)) {
+    return options.initialMode;
+  }
+  if (desktopHomeDir && desktopHomeDir !== ':memory:') {
+    const modeFilePath = path.join(desktopHomeDir, 'mode.json');
+    if (existsSync(modeFilePath)) {
+      try {
+        const parsed: unknown = JSON.parse(readFileSync(modeFilePath, 'utf8'));
+        if (isRecord(parsed) && isDesktopExperienceMode(parsed.mode)) {
+          return parsed.mode;
+        }
+      } catch {
+        // Ignore malformed mode.json and fall back to default
+      }
+    }
+  }
+  return 'developer';
+}
+
+function persistDesktopMode(desktopHomeDir: string | null, mode: DesktopExperienceMode): void {
+  if (!desktopHomeDir || desktopHomeDir === ':memory:') {
+    return;
+  }
+  mkdirSync(desktopHomeDir, { recursive: true });
+  const modeFilePath = path.join(desktopHomeDir, 'mode.json');
+  writeFileSync(
+    modeFilePath,
+    JSON.stringify({ mode, updatedAt: new Date().toISOString() }, null, 2),
+    'utf8'
+  );
+}
+
+function buildDesktopModePayload(mode: DesktopExperienceMode): {
+  readonly mode: DesktopExperienceMode;
+  readonly restrictedCapabilities: readonly string[];
+} {
+  return {
+    mode,
+    restrictedCapabilities: mode === 'workspace' ? [...WORKSPACE_RESTRICTED_CAPABILITIES] : [],
+  };
+}
 
 function isAllowedCorsOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
@@ -365,6 +454,8 @@ export async function startLocalApiServer(
   const host = options.host ?? '127.0.0.1';
   const port = options.port ?? 4242;
   const rpcToken = options.rpcToken ?? randomBytes(32).toString('hex');
+  const desktopHomeDir = resolveDesktopHomeDirForMode(options);
+  let currentMode: DesktopExperienceMode = loadInitialDesktopMode(options, desktopHomeDir);
 
   let db: Knex | null = options.db ?? options.sidecar?.getOrmKnex() ?? null;
   if (!db) {
@@ -991,6 +1082,30 @@ export async function startLocalApiServer(
     };
   };
 
+  app.get('/api/desktop/mode', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    return { success: true, data: buildDesktopModePayload(currentMode) };
+  });
+
+  app.post('/api/desktop/mode', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    if (!isDesktopExperienceMode(body.mode)) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_DESKTOP_MODE',
+        error: "mode must be 'workspace' or 'developer'",
+      });
+    }
+    currentMode = body.mode;
+    persistDesktopMode(desktopHomeDir, currentMode);
+    return { success: true, data: buildDesktopModePayload(currentMode) };
+  });
+
   app.get('/api/desktop/mesh/status', async (req, reply) => {
     if (!req.auth) {
       return reply.code(401).send({ success: false, error: 'Authentication required' });
@@ -1002,12 +1117,18 @@ export async function startLocalApiServer(
     if (!req.auth) {
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
     return { success: true, data: buildRedactedMeshPayload() };
   });
 
   app.post('/api/desktop/projects/import-taskos', async (req, reply) => {
     if (!req.auth) {
       return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
     }
     const body = isRecord(req.body) ? req.body : {};
     const requestedPath =
@@ -1060,6 +1181,10 @@ export async function startLocalApiServer(
         error: 'Missing RPC command',
         code: 'INVALID_RPC_REQUEST',
       });
+    }
+
+    if (currentMode === 'workspace' && !WORKSPACE_ALLOWED_RPC_COMMANDS.has(command)) {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
     }
 
     const result = await dispatchDesktopRpcCommand(options.bridge, command, body.payload);

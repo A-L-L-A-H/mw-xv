@@ -25,6 +25,7 @@ import {
   useDesktopBridge,
   type DesktopGitWorktreeLease,
 } from '@/lib/desktop-bridge';
+import { useDesktopMode } from '@/lib/desktop-mode';
 import { scopedQueryKey } from '@/lib/query-scope';
 
 interface ProjectSummary {
@@ -105,6 +106,8 @@ function priorityVariant(
 export function ProjectsPage() {
   const queryClient = useQueryClient();
   const { isDesktop, bridge, snapshot, refreshSnapshot } = useDesktopBridge();
+  const { mode: desktopMode } = useDesktopMode();
+  const isWorkspaceDesktop = isDesktop && desktopMode === 'workspace';
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [todoCode, setTodoCode] = useState('TASK-0880');
   const [todoTitle, setTodoTitle] = useState('');
@@ -495,7 +498,7 @@ export function ProjectsPage() {
                 {project.name}
               </Button>
             ))}
-            {isDesktop ? (
+            {isDesktop && !isWorkspaceDesktop ? (
               <Button
                 size="sm"
                 variant="outline"
@@ -739,41 +742,45 @@ export function ProjectsPage() {
                                 Move -&gt; {nextStage.name}
                               </Button>
                             ) : null}
-                            <Button
-                              size="sm"
-                              variant="default"
-                              disabled={dispatchContractMutation.isPending}
-                              onClick={() => dispatchContractMutation.mutate(task)}
-                            >
-                              <SparkleIcon className="mr-1 size-3.5" />
-                              Dispatch AI
-                            </Button>
-                            {node?.is_ready ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={bindingTaskId === task.id}
-                                onClick={() => void handleBindDesktopWorktree(task)}
-                              >
-                                <CodeIcon className="mr-1 size-3.5" />
-                                {bindingTaskId === task.id
-                                  ? 'Binding…'
-                                  : taskLease
-                                    ? 'Open FLOW'
-                                    : isDesktop
-                                      ? 'Bind Worktree'
-                                      : 'Desktop Worktree'}
-                              </Button>
+                            {!isWorkspaceDesktop ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  disabled={dispatchContractMutation.isPending}
+                                  onClick={() => dispatchContractMutation.mutate(task)}
+                                >
+                                  <SparkleIcon className="mr-1 size-3.5" />
+                                  Dispatch AI
+                                </Button>
+                                {node?.is_ready ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={bindingTaskId === task.id}
+                                    onClick={() => void handleBindDesktopWorktree(task)}
+                                  >
+                                    <CodeIcon className="mr-1 size-3.5" />
+                                    {bindingTaskId === task.id
+                                      ? 'Binding…'
+                                      : taskLease
+                                        ? 'Open FLOW'
+                                        : isDesktop
+                                          ? 'Bind Worktree'
+                                          : 'Desktop Worktree'}
+                                  </Button>
+                                ) : null}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={syncStageMutation.isPending}
+                                  onClick={() => syncStageMutation.mutate(task)}
+                                >
+                                  <RefreshIcon className="mr-1 size-3.5" />
+                                  Sync AI Stage
+                                </Button>
+                              </>
                             ) : null}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={syncStageMutation.isPending}
-                              onClick={() => syncStageMutation.mutate(task)}
-                            >
-                              <RefreshIcon className="mr-1 size-3.5" />
-                              Sync AI Stage
-                            </Button>
                           </div>
                         </article>
                       );
