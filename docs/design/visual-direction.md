@@ -40,7 +40,7 @@ The baseline was captured from the running Board with synthetic E2E seed data. T
 
 ![Desktop baseline of login, dashboard, partner list/form, profile, and settings in light/dark themes](assets/board-contact-sheet.png)
 
-The Playwright audit covers login and protected dashboard, list, form, profile, and settings at 375×812, 768×1024, and 1440×1000. Protected pages are captured in both themes. The login is intentionally a split dark/paper brand composition. The run generated 33 screenshots, reported no document-level horizontal overflow, passed axe on login at all three sizes, and passed axe on protected desktop screens in both themes. Automated axe coverage does not currently include protected mobile/tablet screens.
+The Playwright audit (`apps/board/e2e/visual-audit.spec.ts`) covers login (`320×800`, `390×844`, `768×1024`, `1440×900`, `1672×941`) and protected dashboard, list, form, profile, and settings screens at `375×812`, `768×1024`, and `1440×1000` in both light and dark themes. The login is intentionally a split dark/paper brand composition. Across the suite, Playwright verifies no document-level horizontal overflow, captures responsive screenshots, and runs automated WCAG 2.1 A/AA axe checks (`expectNoA11yViolations`) on login across all tested viewports, homepage (`390×844`, `768×1024`, `1440×900`, `1672×941`), story workbench (`390×844`, `1440×1000`, and `1024×900` populated), mobile (`375×812`) navigation/command-palette/user-menu overlays, and protected dashboard, list, form, profile, and settings screens in both light and dark themes at `375×812` (mobile) and `1440×1000` (desktop). Automated axe checks are not yet run for protected screens at `768×1024` (tablet) in the responsive matrix loop.
 
 ### Findings to carry into implementation
 
@@ -49,7 +49,7 @@ The Playwright audit covers login and protected dashboard, list, form, profile, 
 - **Keep country data legible:** the committed desktop partner baseline shows the complete “United States [US]” value wrapped across two lines in a narrow column. Preserve wrapping/readability and test the value itself; document any minimum-width change against the table's horizontal-scroll behavior.
 - **Tune density:** the desktop partner form is long but grouped into understandable sections. Preserve those groups and test long translated labels and narrow viewports before tightening fields or removing information.
 - **Use decoration with intent:** speed lines and halftone communicate brand strongly on login/dashboard. Keep them as focal backgrounds and avoid combining them with several competing patterns on record-focused pages.
-- **Track accessibility scope:** protected-page axe currently runs only at desktop. M5.17 should extend meaningful interaction/a11y checks to mobile/tablet and include keyboard/focus states for list, form, settings, and navigation.
+- **Track accessibility scope:** protected-page axe currently runs on dashboard, list, form, profile, and settings in both light and dark themes at mobile (`375×812`) and desktop (`1440×1000`), plus mobile (`375×812`) model-navigation, command-palette, and user-menu overlays, whereas `768×1024` tablet protected views check horizontal overflow and screenshots without running `expectNoA11yViolations`. Automated axe scans do not replace manual review or full keyboard, focus, and touch interaction checks across list, form, profile, settings, and navigation states.
 
 ## Migration guardrails
 
