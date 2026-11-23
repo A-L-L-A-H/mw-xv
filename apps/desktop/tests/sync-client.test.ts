@@ -40,8 +40,8 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
 
   it('maps pullRemoteDeltas request and response correctly', async () => {
     const captured: { url: string; init: RequestInit }[] = [];
-    const mockFetch = vi.fn(async (url: string, init?: RequestInit) => {
-      captured.push({ url, init: init! });
+    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      captured.push({ url: String(input), init: init! });
       return new Response(
         JSON.stringify({
           deltas: [
@@ -117,7 +117,7 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('detects local_wins conflict (local clock higher)', async () => {
-    const mockFetch = vi.fn(async () =>
+    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
       new Response(
         JSON.stringify({
           deltas: [
@@ -165,7 +165,7 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('detects remote_wins conflict (remote clock higher)', async () => {
-    const mockFetch = vi.fn(async () =>
+    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
       new Response(
         JSON.stringify({
           deltas: [
@@ -211,7 +211,7 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('detects merged_fields conflict (disjoint field updates)', async () => {
-    const mockFetch = vi.fn(async () =>
+    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
       new Response(
         JSON.stringify({
           deltas: [
@@ -261,7 +261,7 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('handles tombstone vs upsert conflict (strict LWW)', async () => {
-    const mockFetch = vi.fn(async () =>
+    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
       new Response(
         JSON.stringify({
           deltas: [
@@ -307,7 +307,7 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('handles tombstone vs tombstone conflict', async () => {
-    const mockFetch = vi.fn(async () =>
+    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
       new Response(
         JSON.stringify({
           deltas: [
@@ -395,7 +395,7 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('redacts known secrets in error messages', async () => {
-    const mockFetch = vi.fn(async () =>
+    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
       new Response('Unauthorized: sk-secret-123', { status: 401 })
     );
 
@@ -404,7 +404,7 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('does not redact unknown strings', async () => {
-    const mockFetch = vi.fn(async () =>
+    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
       new Response('Error: some-random-value', { status: 400 })
     );
 
@@ -417,7 +417,7 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('returns empty deltas and conflicts when server returns no deltas', async () => {
-    const mockFetch = vi.fn(async () =>
+    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
       new Response(
         JSON.stringify({ deltas: [], nextCursor: 'empty', serverClock: 0 }),
         { status: 200, headers: { 'content-type': 'application/json' } }
