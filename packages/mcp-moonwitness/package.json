@@ -1,0 +1,39 @@
+{
+  "name": "@moonwitness/mcp-moonwitness",
+  "version": "1.0.0-rc.1",
+  "private": true,
+  "description": "Read-only MoonWitness MCP server exposing static model enumeration, safe queries, task summary, and API health over hand-rolled stdio JSON-RPC",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "mcp-moonwitness": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
+    "test": "tsc -p tsconfig.check.json && vitest run"
+  },
+  "dependencies": {
+    "@moonwitness/orm": "workspace:*",
+    "@moonwitness/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "5.0.3",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}
