@@ -60,7 +60,7 @@ function parseCronDayOfWeek(field: string): number {
   if (dayMap[lower] !== undefined) return dayMap[lower];
   const value = parseInt(field, 10);
   if (!Number.isInteger(value) || value < 0 || value > 6) {
-    throw new Error(`Invalid day of week: ${field}`);
+    throw new Error(`Cron field value out of range [0-6]: ${field}`);
   }
   return value;
 }

@@ -35,13 +35,12 @@ export async function loadCompanyQuota(companyId: number, trx?: Transaction): Pr
   const company = await Company.query(trx).findById(companyId);
   if (!company) return getDefaultQuota(companyId);
 
-  const metadata = (company.metadata as Record<string, unknown>) ?? {};
   const quota: ConcurrencyQuota = {
     companyId,
-    maxConcurrentJobs: (metadata.maxConcurrentJobs as number) ?? 10,
-    maxJobsPerMinute: (metadata.maxJobsPerMinute as number) ?? 60,
-    tokenBucketCapacity: (metadata.tokenBucketCapacity as number) ?? 100,
-    tokenBucketRefillRate: (metadata.tokenBucketRefillRate as number) ?? 10,
+    maxConcurrentJobs: 10,
+    maxJobsPerMinute: 60,
+    tokenBucketCapacity: 100,
+    tokenBucketRefillRate: 10,
   };
 
   quotaCache.set(companyId, quota);
@@ -71,17 +70,21 @@ export function consumeTokens(companyId: number, tokens: number, quota: Concurre
     tokenBucketCache.set(companyId, state);
   }
 
-  state = refillTokenBucket(state, quota.tokenBucketRefillRate, quota.tokenBucketCapacity, now);
+  const before = refillTokenBucket(state, quota.tokenBucketRefillRate, quota.tokenBucketCapacity, now);
 
-  if (state.tokens >= tokens) {
-    state.tokens -= tokens;
-    return true;
+  if (before.tokens < tokens) {
+    state.tokens = before.tokens;
+    state.lastRefill = before.lastRefill;
+    return false;
   }
-  return false;
+  state.tokens = before.tokens - tokens;
+  state.lastRefill = before.lastRefill;
+  return true;
 }
 
 export async function getActiveJobCount(companyId: number, trx?: Transaction): Promise<number> {
-  return Job.query(trx).where({ company_id: companyId, status: 'running' }).count('id as count').first().then((r) => Number(r?.count ?? 0));
+  const result = await Job.query(trx).where({ company_id: companyId, status: 'running' }).count('id as cnt').first() as { cnt: number } | undefined;
+  return Number(result?.cnt ?? 0);
 }
 
 export async function canAcquireJobSlot(
