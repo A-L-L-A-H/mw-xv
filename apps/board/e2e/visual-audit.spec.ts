@@ -425,7 +425,8 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await writeCatalogScreenshot(page, testInfo, 'board-activity-bell-icons-desktop-1440.png', {    animations: 'disabled',
+  await writeCatalogScreenshot(page, testInfo, 'board-activity-bell-icons-desktop-1440.png', {
+    animations: 'disabled',
   });
   await expectNoHorizontalOverflow(page, 'activity-bell/icons/desktop-1440');
 
@@ -451,7 +452,8 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await writeCatalogScreenshot(page, testInfo, 'board-notification-bell-icons-desktop-1440.png', {    animations: 'disabled',
+  await writeCatalogScreenshot(page, testInfo, 'board-notification-bell-icons-desktop-1440.png', {
+    animations: 'disabled',
   });
 
   await page.keyboard.press('Escape');
@@ -463,12 +465,14 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await writeCatalogScreenshot(page, testInfo, 'board-cron-panel-icons-desktop-1440.png', {    fullPage: true,
+  await writeCatalogScreenshot(page, testInfo, 'board-cron-panel-icons-desktop-1440.png', {
+    fullPage: true,
     animations: 'disabled',
   });
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await writeCatalogScreenshot(page, testInfo, 'board-cron-panel-icons-mobile-390.png', {    fullPage: true,
+  await writeCatalogScreenshot(page, testInfo, 'board-cron-panel-icons-mobile-390.png', {
+    fullPage: true,
     animations: 'disabled',
   });
   await expectNoHorizontalOverflow(page, 'cron-panel/icons/mobile-390');
@@ -497,7 +501,8 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await writeCatalogScreenshot(page, testInfo, 'board-activity-bell-icons-mobile-390.png', {    animations: 'disabled',
+  await writeCatalogScreenshot(page, testInfo, 'board-activity-bell-icons-mobile-390.png', {
+    animations: 'disabled',
   });
   await expectNoHorizontalOverflow(page, 'activity-bell/icons/mobile-390');
 
@@ -507,7 +512,8 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await page.locator('nextjs-portal').evaluateAll((elements) => {
     elements.forEach((element) => element.remove());
   });
-  await writeCatalogScreenshot(page, testInfo, 'board-notification-bell-icons-mobile-390.png', {    animations: 'disabled',
+  await writeCatalogScreenshot(page, testInfo, 'board-notification-bell-icons-mobile-390.png', {
+    animations: 'disabled',
   });
   await expectNoHorizontalOverflow(page, 'notification-bell/icons/mobile-390');
   expect(browserErrors).toEqual([]);
@@ -640,7 +646,8 @@ test('mobile overlays keep accessible names, keyboard dismissal, focus return, a
     path: path.join(auditDirectory, 'command-palette-mobile-375.png'),
     fullPage: false,
   });
-  await writeCatalogScreenshot(page, testInfo, 'command-palette-motion-mobile-375.png', {    fullPage: false,
+  await writeCatalogScreenshot(page, testInfo, 'command-palette-motion-mobile-375.png', {
+    fullPage: false,
   });
   await page.keyboard.press('Escape');
   await expect(commandPalette).toBeHidden();
