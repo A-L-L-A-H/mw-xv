@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { isIP } from 'node:net';
-import type { FastifyPluginAsync, FastifyReply } from 'fastify';
+import type { AddonHttpHostContext, AddonHttpPlugin, AddonHttpReply } from '@moonwitness/orm';
 import {
   DEFAULT_A2A_CLOCK_SKEW_MS,
   MAX_A2A_TTL_MS,
@@ -12,7 +12,6 @@ import {
 import { Agent } from '@moonwitness/orm-ai';
 import { AuditLog, Company } from '@moonwitness/orm-base';
 import { isRecord } from '@moonwitness/types';
-import { requireAiCompanyContext } from '../ai-corporation/route-helpers.js';
 
 const A2A_MESSAGE_MODEL = 'ai.a2a_message';
 const A2A_FENCING_MODEL = 'ai.a2a_fencing';
@@ -52,7 +51,7 @@ interface A2AAuditChanges extends Record<string, unknown> {
   readonly payload: Record<string, unknown>;
 }
 
-type A2AEnvelope = SignedA2AEnvelope<Record<string, unknown>>;
+type A2AEnvelope = SignedA2AEnvelope<Record<string, unknown>> & { readonly sourceEndpoint: string };
 
 function readA2AApiConfig(env: NodeJS.ProcessEnv = process.env): A2AApiConfig {
   const rawEnabled = env.MW_A2A_API_ENABLED?.trim().toLowerCase();
@@ -191,7 +190,7 @@ function parseEnvelope(value: unknown): A2AEnvelope | null {
   ) {
     return null;
   }
-  return value as A2AEnvelope;
+  return value as unknown as A2AEnvelope;
 }
 
 function parseAuditChanges(value: unknown): Record<string, unknown> | null {
@@ -229,7 +228,7 @@ function verificationReject(reasonCode: string | undefined, reason: string | und
   };
 }
 
-function sendReject(reply: FastifyReply, error: A2AReject) {
+function sendReject(reply: AddonHttpReply, error: A2AReject) {
   return reply.code(error.statusCode).send({
     success: false,
     error: error.error,
@@ -447,7 +446,7 @@ async function persistA2AReceipt(
   });
 }
 
-export const a2aApiRoutes: FastifyPluginAsync = async (fastify) => {
+export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpHostContext) => {
   fastify.post('/a2a/delegate', { config: { public: true } }, async (request, reply) => {
     const config = readA2AApiConfig();
     if (!config.enabled) {
@@ -464,7 +463,8 @@ export const a2aApiRoutes: FastifyPluginAsync = async (fastify) => {
       });
     }
 
-    const remoteAddress = normalizeIpAddress(request.raw.socket.remoteAddress);
+    const rawRequest = request as unknown as { raw?: { socket?: { remoteAddress?: string | null } } };
+    const remoteAddress = normalizeIpAddress(rawRequest.raw?.socket?.remoteAddress);
     if (!remoteAddress || !isPrivateMeshHost(remoteAddress)) {
       return reply.code(403).send({
         success: false,
@@ -531,43 +531,63 @@ export const a2aApiRoutes: FastifyPluginAsync = async (fastify) => {
     });
   });
 
-  fastify.get('/api/ai/a2a/inbox', async (request, reply) => {
-    const context = await requireAiCompanyContext(request, reply);
-    if (!context) return;
+  fastify.get<{ Querystring: { limit?: string } }>(
+    '/api/ai/a2a/inbox',
+    async (request, reply) => {
+      reply.header('Cache-Control', 'private, no-store');
+      const auth = request.auth;
+      if (!auth) {
+        return reply.code(401).send({ success: false, error: 'Authentication required' });
+      }
+      if (!auth.companyId) {
+        return reply.code(403).send({ success: false, error: 'Active company context required' });
+      }
 
-    const config = readA2AApiConfig();
-    if (!config.enabled || !config.valid || !('companyId' in config)) {
-      return reply.code(404).send({ success: false, error: 'A2A API receiver is disabled' });
-    }
-    if (context.companyId !== config.companyId) {
-      return reply.code(403).send({ success: false, error: 'A2A inbox is outside the configured company' });
-    }
-    if (context.role !== 'system' && context.role !== 'superadmin') {
-      return reply.code(403).send({ success: false, error: 'A2A inbox access requires an administrator' });
-    }
+      const role = auth.role === 'system' || auth.role === 'superadmin' ? auth.role : 'user';
+      if (!options.hasCompanyAccess) {
+        return reply.code(503).send({ success: false, error: 'Company access validation unavailable' });
+      }
+      const hasAccess = await options.hasCompanyAccess(auth.userId, auth.companyId, role);
+      if (!hasAccess) {
+        return reply.code(403).send({ success: false, error: 'Company access denied' });
+      }
+      if (role !== 'system' && role !== 'superadmin') {
+        return reply.code(403).send({ success: false, error: 'A2A inbox access requires an administrator' });
+      }
 
-    const query = isRecord(request.query) ? request.query : {};
-    const requestedLimit = query.limit === undefined ? 50 : Number(query.limit);
-    if (!Number.isSafeInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > 200) {
-      return reply.code(400).send({ success: false, error: 'limit must be an integer from 1 to 200' });
+      const config = readA2AApiConfig();
+      if (!config.enabled) {
+        return reply.code(404).send({ success: false, error: 'A2A API receiver is disabled' });
+      }
+      if (!config.valid) {
+        return reply.code(503).send({ success: false, error: config.error });
+      }
+      if (auth.companyId !== config.companyId) {
+        return reply.code(403).send({ success: false, error: 'A2A inbox is outside the configured company' });
+      }
+
+      const requestedLimit = request.query.limit === undefined ? 50 : Number(request.query.limit);
+      if (!Number.isSafeInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > 200) {
+        return reply.code(400).send({ success: false, error: 'limit must be an integer from 1 to 200' });
+      }
+
+      const rows = await AuditLog.query()
+        .where({
+          model: A2A_MESSAGE_MODEL,
+          record_id: auth.companyId,
+          operation: 'received',
+        })
+        .orderBy('id', 'desc')
+        .limit(requestedLimit);
+
+      return {
+        success: true,
+        data: rows.map((row) => ({
+          id: row.id,
+          ...(parseAuditChanges(row.changes) ?? { integrityError: true }),
+          createdAt: row.create_date,
+        })),
+      };
     }
-
-    const rows = await AuditLog.query()
-      .where({
-        model: A2A_MESSAGE_MODEL,
-        record_id: context.companyId,
-        operation: 'received',
-      })
-      .orderBy('id', 'desc')
-      .limit(requestedLimit);
-
-    return {
-      success: true,
-      data: rows.map((row) => ({
-        id: row.id,
-        ...(parseAuditChanges(row.changes) ?? { integrityError: true }),
-        createdAt: row.create_date,
-      })),
-    };
-  });
+  );
 };

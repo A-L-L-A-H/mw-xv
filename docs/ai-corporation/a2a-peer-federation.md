@@ -7,7 +7,7 @@
 
 ## Purpose
 
-The API receiver accepts a signed A2A envelope from a private EasyTier mesh peer and persists an inbox receipt under the configured MoonWitness company. It is intentionally an inbox boundary, not an execution engine.
+The addon-first `@moonwitness/orm-a2a` package exposes the API receiver. It accepts a signed A2A envelope from a private EasyTier mesh peer and persists an inbox receipt under the configured MoonWitness company. It is intentionally an inbox boundary, not an execution engine.
 
 The endpoint matches the current Desktop client wire contract:
 

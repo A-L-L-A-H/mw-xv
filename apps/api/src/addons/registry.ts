@@ -50,7 +50,7 @@ import {
   ensureAiJobHandlersRegistered,
 } from '../routes/ai-corporation.routes.js';
 import { aiDesktopSyncRoutes } from '../routes/ai-desktop-sync.routes.js';
-import { a2aApiRoutes } from '../routes/a2a.routes.js';
+import { manifest as a2aAddon } from '@moonwitness/orm-a2a';
 
 export interface ApiAddonRuntimeContext {
   jwtSecret: string;
@@ -228,10 +228,8 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
     },
   },
   {
-    name: 'a2a-api-inbox',
-    async registerRoutes(app) {
-      await app.register(a2aApiRoutes);
-    },
+    name: 'a2a',
+    manifest: a2aAddon,
   },
 ];
 

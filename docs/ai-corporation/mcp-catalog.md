@@ -74,7 +74,7 @@ For `apps/desktop` (`LocalMcpServerConfig` in [`apps/desktop/src/types.ts`](../.
 
 ### 4.1 Current architecture and enablement boundary
 
-[ADR 0009](../decisions/0009-a2a-mesh-federation.md) is accepted. The protocol foundation lives in `@moonwitness/ai-runtime`; `apps/desktop` contains the outbound `A2AMeshClient`; and `apps/control-plane` exposes a private-mesh `POST /a2a/delegate` handler. The API has a separate durable inbox receiver at `POST /a2a/delegate`, disabled by default.
+[ADR 0009](../decisions/0009-a2a-mesh-federation.md) is accepted. The protocol foundation lives in `@moonwitness/ai-runtime`; `apps/desktop` contains the outbound `A2AMeshClient`; and `apps/control-plane` exposes a private-mesh `POST /a2a/delegate` handler. The API has a separate durable inbox receiver at `POST /a2a/delegate`, provided by the addon-first workspace package `@moonwitness/orm-a2a` and disabled by default.
 
 For a durable API receipt, the sender's `targetEndpoint` must be the private-mesh origin of the **API receiver**, not the Control Plane listener. The desktop client appends `/a2a/delegate` when the target URL has no path. Configure the API receiver using `MW_A2A_API_ENABLED`, `MW_A2A_SIGNING_SECRET`, `MW_A2A_COMPANY_ID`, and `MW_A2A_API_ENDPOINT`; see [A2A Peer Federation Operations](a2a-peer-federation.md).
 
