@@ -15,6 +15,39 @@ Source: `bjo163/moonwitness-II/docs/MASTER_BLUEPRINT.md` (blob `d413d100aa1ab328
 - The website is an interface to the platform; the content graph and narrative contracts are the source layer.
 - The visual should support memory, witness, signals, fault lines, change and next-phase storytelling.
 
+### MoonWitness / GOD PROMISE — Cosmic Spirituality & Game Poster DNA
+
+**Source:** available account Memory Summary of the owner's “Official Creative Director of the MoonWitness Universe” brief (dated 30 July 2026), plus later visual corrections. The exact original prompt and complete image-prompt revision chain are not attached to this archive snapshot. Treat this as a source-qualified owner direction, not as proof every output has been approved.
+
+**Format and quality bar**
+- Default poster canvas: **vertical 9:16**.
+- High-detail, high-resolution, premium illustration; strong professional typography, cinematic lighting and social-media legibility.
+- Target feel: high-budget game / anime-film key art, not a generic low-detail cartoon. Preserve negative space and text-safe hierarchy when typography is present.
+
+**Visual DNA**
+- Cosmic Spirituality; Future Civilization; Divine Wisdom; Gaming Culture; Sci-Fi; Anime Energy; Emotional Storytelling.
+- Mood range: Epic, Funny, Hopeful, Emotional, Mysterious and Inspirational.
+- Lighting language: Bloom, Volumetric Lighting, Neon, God Rays and High Contrast.
+- Broad quality references named in the brief: AAA game key art, premium comic, streaming-series poster and anime opening. These are quality / composition references only, not permission to copy protected characters, logos, layouts or a living creator's distinctive style.
+
+**Output-mode variation**
+- Cinematic Game Poster.
+- Manga / comic-panel narrative.
+- RPG Game UI (e.g. status bars, inventory and dialogue panels).
+- Holographic infographic.
+- Rare / collectible trading-card composition.
+
+The variation rule is to avoid repeating the prior poster's layout; choose a new composition/theme for each episode rather than applying one fixed template. This is an art-direction preference, not a requirement to turn every concept into a game UI.
+
+**Character and sacred-subject boundaries**
+- The owner repeatedly requested hidden faces: hoodies, masks, back-facing poses or silhouettes. Face concealment is a design rule for the relevant series, not a character identity clue.
+- ROCKSOUL's red outfit is a recurring visual cue. “Muthenroshi-like mentor” and “Arale-like chaos catalyst” are inspiration-language from the creative brief only; production artwork must use original, rights-cleared characters and must not reproduce protected character designs.
+- Do not depict Allah as a person, character, body, object or located figure. Do not visually portray prophets or sacred figures as identifiable characters. Prefer text, architecture, light, landscape, objects and non-identifying symbols.
+- A remembered green / maroon / blue palette association for Rasulullah / Isa (Jesus) / Moses is an **owner-created symbolic palette cue only**. It is not a theological classification and does not authorize depicting those figures; keep the actual figures absent.
+- Respectful symbolic composition takes precedence over spectacle whenever a sacred reference is present.
+
+**Status and source boundary:** `USER-REPORTED / MEMORY-SUMMARY`; exact original prompt retrieval remains open. Per-poster briefs, approved artwork masters, image prompt histories and third-party rights must be recorded separately. The broader source recovery and private asset inventory are tracked in [#183](https://github.com/A-L-L-A-H/mw-xv/issues/183) and [#185](https://github.com/A-L-L-A-H/mw-xv/issues/185).
+
 ### MoonWitness XII — funky street-comic
 
 Source: `bjo163/moonwitness-xii-season-global-championships/docs/CHARACTER_CANON_V3_AND_ROADMAP.md` (blob `4e06daf4884055f3e855bc691c30851c727b377a`).
