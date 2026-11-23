@@ -737,7 +737,8 @@ export const AUDIT_TASKS = [
       legacyId: 'AUD-015'
     },
     url: '',
-    comments: []
+    comments: [],
+    metadata: { parentIssue: 53 }
   },
 {
     code: 'AUD-016',
@@ -814,7 +815,8 @@ export const AUDIT_TASKS = [
       legacyId: 'AUD-016'
     },
     url: '',
-    comments: []
+    comments: [],
+    metadata: { parentIssue: 53 }
   },
 {
     code: 'AUD-017',
@@ -891,7 +893,8 @@ export const AUDIT_TASKS = [
       legacyId: 'AUD-017'
     },
     url: '',
-    comments: []
+    comments: [],
+    metadata: { parentIssue: 53 }
   },
 {
     code: 'AUD-018',
@@ -969,7 +972,8 @@ export const AUDIT_TASKS = [
       legacyId: 'AUD-018'
     },
     url: '',
-    comments: []
+    comments: [],
+    metadata: { parentIssue: 53 }
   },
 {
     code: 'AUD-019',
@@ -1053,13 +1057,13 @@ export const AUDIT_TASKS = [
       'packages/assets/licenses.json'
     ],
     blockedReason: 'Canonical SceneLab integration is already owned by existing GitHub issue #53; retain this record for traceability only and do not execute independently. Issue #53 must wait for issue #52.',
-    metadata: { supersededByIssue: 53, executionAllowed: false, externalPrerequisiteIssue: 52 },
     sourceRef: {
       file: 'scripts/tasks/sources/audit-tasks.mjs',
       legacyId: 'AUD-019'
     },
     url: '',
-    comments: []
+    comments: [],
+    metadata: { supersededByIssue: 53, executionAllowed: false, externalPrerequisiteIssue: 52 }
   },
 {
     code: 'AUD-020',
@@ -1129,13 +1133,13 @@ export const AUDIT_TASKS = [
       'apps/ui-catalog/tests/scene-harness.spec.ts'
     ],
     blockedReason: 'The SceneLab status and missing-metadata tests are already included in existing GitHub issue #53; retain this record for traceability only and do not execute a duplicate task.',
-    metadata: { supersededByIssue: 53, executionAllowed: false },
     sourceRef: {
       file: 'scripts/tasks/sources/audit-tasks.mjs',
       legacyId: 'AUD-020'
     },
     url: '',
-    comments: []
+    comments: [],
+    metadata: { supersededByIssue: 53, executionAllowed: false }
   },
 {
     code: 'AUD-021',
@@ -1210,7 +1214,7 @@ export const AUDIT_TASKS = [
       'apps/board/src/components/home/horizontal-filmstrip.tsx',
       'apps/board/e2e/public-home.spec.ts'
     ],
-    blockedReason: 'Maintainer re-triage required: current source evidence does not support the proposed documentation change. Do not edit the document until this finding is replaced or retired.',
+    blockedReason: null,
     sourceRef: {
       file: 'scripts/tasks/sources/audit-tasks.mjs',
       legacyId: 'AUD-021'
@@ -1288,7 +1292,7 @@ export const AUDIT_TASKS = [
       'apps/board/e2e/visual-audit.spec.ts',
       'docs/design/visual-direction.md'
     ],
-    blockedReason: null,
+    blockedReason: 'Maintainer re-triage required: current source evidence does not support the proposed documentation change. Do not edit the document until this finding is replaced or retired.',
     sourceRef: {
       file: 'scripts/tasks/sources/audit-tasks.mjs',
       legacyId: 'AUD-022'
