@@ -561,6 +561,7 @@
       "orm:inspect": "node scripts/orm-inspect.mjs",
       "platform:audit": "node scripts/platform-audit.mjs",
       "preflight:fast": "node scripts/preflight-fast.mjs",
+      "prepare": "node -e \"import('node:fs').then(({existsSync})=>{if(existsSync('.git')&&existsSync('scripts/setup-git-hooks.mjs')){return import('./scripts/setup-git-hooks.mjs')}})\"",
       "promotion:approval-check": "node scripts/check-promotion-approval.mjs",
       "promotion:risk": "node scripts/check-promotion-risk.mjs",
       "radius:build": "pnpm --filter @moonwitness/isp cargo:build",
@@ -9698,5 +9699,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "670cca68f99098dad8dde4c2a74b4180f4f7cdc0473e4e1cd87256e9a1f06e34"
+  "generatedFromSha256": "bcaa3fe92ad86a870f660728aa43f52bc353ab29cced71a4b6acebe6eea54d77"
 }
