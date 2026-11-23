@@ -344,7 +344,11 @@ function resolveInsertedId(inserted: readonly unknown[], context: string): numbe
 }
 
 function parseCount(value: unknown): number {
-  return Number(typeof value === 'object' && value !== null && 'count' in value ? (value as any).count : value) || 0;
+  return Number(
+    typeof value === 'object' && value !== null && 'count' in value
+      ? (value as { count: unknown }).count
+      : value
+  ) || 0;
 }
 
 export async function seedCrmInitialData(

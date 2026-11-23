@@ -5,13 +5,14 @@ import { fileURLToPath } from 'url';
 import { dirname, resolve, join } from 'path';
 import { existsSync, readdirSync } from 'fs';
 import { createRequire } from 'module';
+import type { Knex } from 'knex';
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 interface SeedContext {
-  db: any;
+  db: Knex;
   companyId?: number;
   ownerId?: number;
 }
@@ -108,7 +109,7 @@ function topologicalSort(addons: DiscoveredAddon[]): DiscoveredAddon[] {
   return result;
 }
 
-async function runSeeds(db: any, verifyOnly: boolean): Promise<{ totalInserted: number; totalUpdated: number; totalSkipped: number; coverage: number }> {
+async function runSeeds(db: Knex, verifyOnly: boolean): Promise<{ totalInserted: number; totalUpdated: number; totalSkipped: number; coverage: number }> {
   const addons = discoverAddons();
   
   if (addons.length === 0) {

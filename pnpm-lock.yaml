@@ -876,6 +876,28 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(jsdom@31.0.1)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
+  packages/orm-cli:
+    dependencies:
+      '@moonwitness/orm-base':
+        specifier: workspace:*
+        version: link:../orm-base
+      commander:
+        specifier: ^12.0.0
+        version: 12.1.0
+      knex:
+        specifier: ^3.1.0
+        version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)(supports-color@7.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.5
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.15
+      typescript:
+        specifier: ~5.7.3
+        version: 5.7.3
+
   packages/orm-cloud:
     dependencies:
       '@moonwitness/jobs':
@@ -937,6 +959,34 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(jsdom@31.0.1)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
+  packages/orm-compliance:
+    dependencies:
+      '@moonwitness/orm':
+        specifier: workspace:*
+        version: link:../orm
+      '@moonwitness/orm-base':
+        specifier: workspace:*
+        version: link:../orm-base
+      knex:
+        specifier: ^3.3.0
+        version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)(supports-color@7.2.0)
+      objection:
+        specifier: ^3.1.5
+        version: 3.1.5(knex@3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)(supports-color@7.2.0))
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: 5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      typescript:
+        specifier: ~5.7.3
+        version: 5.7.3
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(jsdom@31.0.1)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
   packages/orm-crm:
     dependencies:
       '@moonwitness/orm':
@@ -945,6 +995,40 @@ importers:
       '@moonwitness/orm-base':
         specifier: workspace:*
         version: link:../orm-base
+      knex:
+        specifier: ^3.3.0
+        version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)(supports-color@7.2.0)
+      objection:
+        specifier: ^3.1.5
+        version: 3.1.5(knex@3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)(supports-color@7.2.0))
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: 5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      typescript:
+        specifier: ~5.7.3
+        version: 5.7.3
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(jsdom@31.0.1)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/orm-helpdesk:
+    dependencies:
+      '@moonwitness/orm':
+        specifier: workspace:*
+        version: link:../orm
+      '@moonwitness/orm-base':
+        specifier: workspace:*
+        version: link:../orm-base
+      '@moonwitness/orm-crm':
+        specifier: workspace:*
+        version: link:../orm-crm
+      '@moonwitness/orm-knowledge':
+        specifier: workspace:*
+        version: link:../orm-knowledge
       knex:
         specifier: ^3.3.0
         version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)(supports-color@7.2.0)
@@ -1284,6 +1368,34 @@ importers:
       fastify:
         specifier: ^5.12.6
         version: 5.12.7
+      typescript:
+        specifier: ~5.7.3
+        version: 5.7.3
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@26.6.4)(@vitest/coverage-v8@5.0.3)(jsdom@31.0.1)(vite@8.3.5(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/orm-sharia:
+    dependencies:
+      '@moonwitness/orm':
+        specifier: workspace:*
+        version: link:../orm
+      '@moonwitness/orm-base':
+        specifier: workspace:*
+        version: link:../orm-base
+      knex:
+        specifier: ^3.3.0
+        version: 3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)(supports-color@7.2.0)
+      objection:
+        specifier: ^3.1.5
+        version: 3.1.5(knex@3.3.0(better-sqlite3@13.0.3)(pg@8.23.1)(supports-color@7.2.0))
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: 5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
       typescript:
         specifier: ~5.7.3
         version: 5.7.3
@@ -3627,6 +3739,9 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
+  '@types/node@22.20.5':
+    resolution: {integrity: sha512-U2+DNr+wSjpsTS/wZGYHq7GcwfuSmKiKvoPvK22zwTlRhU91yOniN4qRR5KhIjvif7ysw/dz/hKmfDH0Ris4aA==}
+
   '@types/node@26.6.4':
     resolution: {integrity: sha512-ldVPDCzj7fsaGZrLB0NuHuTvJcsNasysBAqMolr/cgxrLd1xbqxIr3XJiPnHHJUCxj5sNF1vnRj9aWnrVh5Jcg==}
 
@@ -3972,6 +4087,10 @@ packages:
   commander@10.0.1:
     resolution: {integrity: sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==}
     engines: {node: '>=14'}
+
+  commander@12.1.0:
+    resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
+    engines: {node: '>=18'}
 
   commander@14.0.3:
     resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
@@ -5717,6 +5836,9 @@ packages:
   unbash@2.2.0:
     resolution: {integrity: sha512-X2wH19RAPZE3+ldGicOkoj/SIA83OIxcJ6Cuaw23hf8Xc6fQpvZXY0SftE2JgS0QhYLUG4uwodSI3R53keyh7w==}
     engines: {node: '>=14'}
+
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
@@ -7978,6 +8100,10 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
+  '@types/node@22.20.5':
+    dependencies:
+      undici-types: 6.21.0
+
   '@types/node@26.6.4':
     dependencies:
       undici-types: 8.9.0
@@ -8345,6 +8471,8 @@ snapshots:
   comma-separated-tokens@2.0.3: {}
 
   commander@10.0.1: {}
+
+  commander@12.1.0: {}
 
   commander@14.0.3: {}
 
@@ -10380,6 +10508,8 @@ snapshots:
   typescript@5.7.3: {}
 
   unbash@2.2.0: {}
+
+  undici-types@6.21.0: {}
 
   undici-types@8.9.0: {}
 

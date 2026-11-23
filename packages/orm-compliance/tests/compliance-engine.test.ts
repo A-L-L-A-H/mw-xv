@@ -7,6 +7,7 @@ import {
   assessComplianceMaturity,
   trackRemediations,
 } from '../src/index.js';
+import type { RemediationTrackingResult } from '../src/compliance-engine.js';
 import type { Knex } from 'knex';
 
 const DB_MOCK = {} as unknown as Knex;
@@ -305,7 +306,11 @@ describe('Compliance Engine', () => {
       });
 
       expect(result.staleRemediations).toBeDefined();
-      expect(result.staleRemediations.every((r: any) => r.daysOverdue > 60)).toBe(true);
+      expect(
+        (result.staleRemediations ?? []).every(
+          (r: RemediationTrackingResult['staleRemediations'] extends (infer T)[] | undefined ? T : never) => r.daysOverdue > 60
+        )
+      ).toBe(true);
     });
   });
 });

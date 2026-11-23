@@ -1,5 +1,7 @@
+import type { Knex } from 'knex';
+
 export interface SeedContext {
-  db: any;
+  db: Knex;
   companyId?: number;
   ownerId?: number;
 }
