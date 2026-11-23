@@ -318,7 +318,7 @@ jobs:
         run: node scripts/write-docs-metadata.mjs apps/docs/dist
       - name: Upload development preview artifact
         if: github.ref == 'refs/heads/dev' || (github.event_name == 'workflow_dispatch' && inputs.publish != true)
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docs-preview-${{ steps.source_sha.outputs.sha }}
           path: apps/docs/dist
@@ -326,7 +326,7 @@ jobs:
           retention-days: 7
       - name: Upload current documentation snapshot
         if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.publish == true)
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docs-current-${{ steps.source_sha.outputs.sha }}
           path: apps/docs/dist
@@ -339,7 +339,7 @@ jobs:
           node scripts/docs/versioned-site.mjs package --site apps/docs/dist --tag '${{ steps.site.outputs.source_ref }}' --output 'versioned-docs/docs-site-${{ steps.site.outputs.source_ref }}.tar.gz'
       - name: Upload stable documentation archive
         if: steps.site.outputs.kind == 'stable'
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docs-stable-${{ steps.site.outputs.source_ref }}
           path: versioned-docs/*.tar.gz
@@ -363,7 +363,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: docs-stable-${{ needs.build.outputs.selected_ref }}
           path: versioned-docs
@@ -410,7 +410,7 @@ jobs:
           pnpm-version: '11.17.0'
       - name: Install frozen workspace dependencies
         run: pnpm install --frozen-lockfile --no-runtime
-      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: docs-current-${{ needs.build.outputs.source_sha }}
           path: current-site
@@ -440,8 +440,8 @@ jobs:
           set -euo pipefail
           node scripts/docs/versioned-site.mjs compose --site current-site --kind "$SITE_KIND" --source-ref "$SOURCE_REF" --releases release-inventory.json --archives versioned-docs --output composed-site --base-path "$BASE_PATH" --retention 5
           node scripts/check-docs-publication.mjs composed-site
-      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
-      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: composed-site
 
@@ -464,7 +464,7 @@ jobs:
     steps:
       - name: Deploy verified Pages artifact
         id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
   report-failure:
     name: Report documentation publication failure
