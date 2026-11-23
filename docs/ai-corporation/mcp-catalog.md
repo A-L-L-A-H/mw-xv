@@ -70,21 +70,37 @@ For `apps/desktop` (`LocalMcpServerConfig` in [`apps/desktop/src/types.ts`](../.
 
 ---
 
-## 4. A2A (Agent-to-Agent) Protocol Decision & ADR Reconciliation (`AI5.30`–`AI5.33`, `DSK-0.11`)
+## 4. A2A (Agent-to-Agent) Peer Federation
 
-### 4.1 Architectural Determination (`AI5.30`–`AI5.32`)
+### 4.1 Current architecture and enablement boundary
 
-Per [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (D9 & §6.6):
+[ADR 0009](../decisions/0009-a2a-mesh-federation.md) is accepted. The protocol foundation lives in `@moonwitness/ai-runtime`; `apps/desktop` contains the outbound `A2AMeshClient`; and `apps/control-plane` exposes a private-mesh `POST /a2a/delegate` handler. The API has a separate durable inbox receiver at `POST /a2a/delegate`, disabled by default.
 
-1. **Internal Orchestration Uses `@moonwitness/orm-ai` + `@moonwitness/jobs`:** Within a MoonWitness company, multi-agent planning, parent/child `ai.work_contract` delegation, `ai.taskforce` / `ai.workforce_assignment`, and independent review are coordinated authoritatively through PostgreSQL / SQLite ORM transactions and `@moonwitness/jobs`—not peer-to-peer HTTP agent mesh calls.
-2. **External Peer-Agent A2A Is Deferred & Disabled by Default in v1:** Cross-organization or external third-party agent delegation via the horizontal A2A protocol is **not** enabled in v1. Enabling external A2A delegation requires:
-   - Mutually authenticated agent identity cards and cryptographic key pinning;
-   - Cross-domain data-classification negotiation (`local_only` and `restricted` payloads must never cross external A2A peers);
-   - Signed PCW evidence exchange (`sha256` artifact manifests + independent local verification before acceptance);
-   - Spoofed-agent, replay, and cancellation-propagation conformance tests (`AI5.33`).
+For a durable API receipt, the sender's `targetEndpoint` must be the private-mesh origin of the **API receiver**, not the Control Plane listener. The desktop client appends `/a2a/delegate` when the target URL has no path. Configure the API receiver using `MW_A2A_API_ENABLED`, `MW_A2A_SIGNING_SECRET`, `MW_A2A_COMPANY_ID`, and `MW_A2A_API_ENDPOINT`; see [A2A Peer Federation Operations](a2a-peer-federation.md).
 
-### 4.2 ADR Numbering Reconciliation (`DSK-0.11`)
+The API receiver enforces:
 
-- **`docs/decisions/0001`–`0007`:** Canonical platform and AI Corporation ADRs (`0007` = [ADR 0007: AI Corporation Addon-First Architecture](../decisions/0007-ai-corporation-addon-first-architecture.md)).
-- **`docs/architecture/adr/0008-local-first-desktop-agent-harness.md`:** Authoritative ADR `0008` for the Local-First Desktop Agent Harness (`apps/desktop`).
-- **A2A Protocol ADR Slot:** Recorded as a deferred decision in [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) §6.6 and Section 4.1 above; if external A2A federation is proposed in a future release, it will be assigned the next sequential ADR number (`0009`) in [`docs/decisions/README.md`](../decisions/README.md).
+- HMAC-SHA256 envelope verification using the company-scoped secret, the `a2a.v1` protocol version, bounded TTL, and the ADR 0009 private mesh address ranges.
+- A direct socket peer check: `sourceEndpoint` must match the remote IP observed by the API. Forwarded headers are not used as peer identity.
+- Exact configured-company scope and active source/target `ai.agent` records; no cross-company delegation.
+- Persistent replay protection for live nonce windows, message-ID de-duplication, and monotonic fencing per source agent. The receipt and fence advance are written transactionally to the append-only `base.audit_log`.
+- Redaction of the stored payload and no storage of the envelope signature or signing secret.
+
+### 4.2 What a successful receipt means
+
+HTTP `202` with status `queued` means **the signed message was durably recorded in the API inbox**. It does not mean a worker executed it, an `ai.work_contract` was created, artifacts were verified, or work was accepted. The company-scoped inbox read endpoint is `GET /api/ai/a2a/inbox` and requires a company superadmin/system role.
+
+The current Control Plane endpoint still has its own in-memory replay/fencing cache and returns a local queued receipt. It is not yet a durable forwarding adapter to the API inbox. A sender targeting the Control Plane port therefore must not interpret that acknowledgement as an API-persisted inbox item.
+
+### 4.3 Security limitations and release gate
+
+- `MW_A2A_API_ENABLED=false` is the default and must remain so until operators configure a direct private-mesh API listener, a company-specific secret, and the expected company/endpoint values.
+- The current A2A signature uses a shared HMAC secret. It is a trust boundary for peers holding that secret, not per-agent cryptographic attestation or a substitute for mTLS/key pinning.
+- The API receiver persists proposals only. It does not dispatch peer work, accept artifacts, or change a work contract to `accepted`. Server-side PCW verification and independent workflow approval remain authoritative.
+- Multi-organization federation, public endpoints, and live autonomous dispatch remain disabled until per-peer identity/attestation, mTLS or key pinning, cancellation propagation, and a durable dispatch/consumer path have separate acceptance evidence.
+
+### 4.4 ADR and desktop-harness references
+
+- **ADR 0007:** [AI Corporation Addon-First Architecture](../decisions/0007-ai-corporation-addon-first-architecture.md) remains authoritative for domain ownership, tenant isolation, and server-only acceptance.
+- **ADR 0008:** [Local-First Desktop Agent Harness](../architecture/adr/0008-local-first-desktop-agent-harness.md) governs local execution and synchronization.
+- **ADR 0009:** [Stateless A2A Agent Federation over Private EasyTier P2P Mesh](../decisions/0009-a2a-mesh-federation.md) governs the peer protocol and transport boundary.

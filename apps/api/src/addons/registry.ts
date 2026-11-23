@@ -50,6 +50,7 @@ import {
   ensureAiJobHandlersRegistered,
 } from '../routes/ai-corporation.routes.js';
 import { aiDesktopSyncRoutes } from '../routes/ai-desktop-sync.routes.js';
+import { a2aApiRoutes } from '../routes/a2a.routes.js';
 
 export interface ApiAddonRuntimeContext {
   jwtSecret: string;
@@ -224,6 +225,12 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
       await app.register(aiDesktopSyncRoutes, {
         attachmentStorage: ctx.attachmentStorage,
       });
+    },
+  },
+  {
+    name: 'a2a-api-inbox',
+    async registerRoutes(app) {
+      await app.register(a2aApiRoutes);
     },
   },
 ];

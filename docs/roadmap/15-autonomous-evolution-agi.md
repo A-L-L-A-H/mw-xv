@@ -92,6 +92,7 @@ Turn accepted deliverables into persistent, living invariants by pairing `ai.obl
 ## M14.03 — Decentralized Multi-Node Agent Swarm (`A2A` over EasyTier P2P Mesh)
 
 - **Status:** foundation implemented ([ADR 0009](../decisions/0009-a2a-mesh-federation.md), `packages/ai-runtime/src/a2a-protocol.ts`)
+- **API receiver implementation:** the experimental `apps/api` durable inbox adapter is implemented on the parallel backend branch. It accepts signed proposals and persists replay/fencing receipts; it does not dispatch work or enable peer self-acceptance. Keep `MW_A2A_API_ENABLED=false` until direct private-mesh routing and the remaining peer identity/dispatch gates are verified.
 - **Prerequisites:** M14.01, M14.02, [ADR 0009](../decisions/0009-a2a-mesh-federation.md), [ADR 0001](../decisions/0001-platform-contracts.md) alignment.
 - **Governing decisions:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (D1, D6, D8, D9, D11, D12), [ADR 0009](../decisions/0009-a2a-mesh-federation.md).
 - **Canonical owners:** `@moonwitness/ai-runtime` (`DataClassificationRouter`, `pcw-verifier`), `@moonwitness/orm-ai`, `@moonwitness/jobs`, `apps/control-plane`, and a future stateless A2A adapter package.
