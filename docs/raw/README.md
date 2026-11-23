@@ -14,6 +14,7 @@ Lapisan **Raw** adalah gerbang tangkapan cepat (*quick capture / inbox*) untuk i
 ## Total Idea Archive intake
 
 - [2026-11-23 — Total Idea Archive Initial Intake](2026-11-23-total-idea-archive-intake.md).
+- [2026-11-23 — Master Prompt: Total Idea Archive & Unified Project Consolidation (verbatim, 775 lines)](2026-11-23-master-prompt-total-idea-archive.md).
 - Hasil sintesis: [Initial Idea Relationship Map](../brain/2026-11-23-initial-idea-relationship-map.md).
 - Indeks konsolidasi: [Total Idea Archive — Master Index](../knowledge/idea-archive/README.md).
 
