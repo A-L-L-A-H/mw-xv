@@ -5,3 +5,5 @@ apps/ui-catalog/tests/catalog.spec.ts-snapshots/*.txt text eol=lf
 corpus/** -text
 # The docs generator emits LF and its checker compares raw bytes, so these must check out as LF everywhere.
 docs/guide/reference/** text eol=lf
+# TaskOS sweep-and-consolidate --check compares raw bytes against an LF projection.
+docs/tasks/tasks.json text eol=lf
