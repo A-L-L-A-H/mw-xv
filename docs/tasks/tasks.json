@@ -1,7 +1,7 @@
 {
   "schemaVersion": "2.0.0",
   "format": "moonwitness-tasks/v2",
-  "generatedAt": "2026-11-23T00:45:36.000Z",
+  "generatedAt": "2026-11-23T08:11:02.155Z",
   "projects": [
     {
       "slug": "moonwitness",
@@ -17034,6 +17034,744 @@
       "sourceRef": {
         "file": "scripts/tasks/sources/audit-tasks.mjs",
         "legacyId": "AUD-014"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "AUD-015",
+      "project": "moonwitness",
+      "series": "AUD",
+      "milestone": "AUDIT-NEXT",
+      "horizon": "next",
+      "title": "Extract a canonical asset review-status resolver for the UI Catalog",
+      "summary": "Use one fail-closed resolver for manifest status and license provenance instead of inline status checks.",
+      "problem": "AssetBrowser derives blocked status inline from a subset of licenses.json fields. SceneLab has no reusable resolver, so review/blocked/unknown semantics can drift.",
+      "proposedSolution": "Create a pure resolver in apps/ui-catalog/src/asset-review-status.ts and route AssetBrowser's existing status presentation through it. Return approved, review, blocked or unverified; missing or conflicting metadata must never default to approved.",
+      "category": "architecture",
+      "type": "refactor",
+      "priority": "p1",
+      "status": "todo",
+      "human": false,
+      "owner": "ui-catalog",
+      "assignee": null,
+      "risk": "low",
+      "effort": "s",
+      "scores": null,
+      "dependsOn": [],
+      "blocks": [
+        "AUD-016",
+        "AUD-017",
+        "AUD-018"
+      ],
+      "tags": [
+        "ui-catalog",
+        "assets",
+        "provenance",
+        "review-status"
+      ],
+      "scope": {
+        "packages": [
+          "@moonwitness/ui-catalog",
+          "@moonwitness/assets"
+        ],
+        "files": [
+          "apps/ui-catalog/src/asset-review-status.ts",
+          "apps/ui-catalog/src/AssetBrowser.tsx"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AUD-015-ac-1",
+          "text": "One pure function maps manifest and license metadata to approved/review/blocked/unverified.",
+          "done": false
+        },
+        {
+          "id": "AUD-015-ac-2",
+          "text": "Blocked and unverified provenance can never be presented as approved.",
+          "done": false
+        },
+        {
+          "id": "AUD-015-ac-3",
+          "text": "AssetBrowser uses the helper instead of maintaining a second inline status rule.",
+          "done": false
+        },
+        {
+          "id": "AUD-015-ac-4",
+          "text": "Missing provenance is represented as unverified, not approved.",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ui-catalog build"
+        ],
+        "expected": "UI Catalog builds with one shared asset review-status resolver."
+      },
+      "evidence": {
+        "paths": [],
+        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "commitSha": null
+      },
+      "references": [
+        "packages/assets/manifest.json",
+        "packages/assets/licenses.json",
+        "apps/ui-catalog/src/AssetBrowser.tsx"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "legacyId": "AUD-015"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "AUD-016",
+      "project": "moonwitness",
+      "series": "AUD",
+      "milestone": "AUDIT-NEXT",
+      "horizon": "next",
+      "title": "Add focused tests for asset review-status mapping",
+      "summary": "Lock approved, review, blocked and fail-closed unknown cases in one test file.",
+      "problem": "The review-status decision will be shared by AssetBrowser and SceneLab and needs regression coverage before new UI consumers are wired to it.",
+      "proposedSolution": "Add one UI Catalog test file importing the pure resolver and covering approved metadata, review-only assets, blocked/unverified licenses, missing provenance and conflicting status.",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p1",
+      "status": "todo",
+      "human": false,
+      "owner": "ui-catalog",
+      "assignee": null,
+      "risk": "low",
+      "effort": "xs",
+      "scores": null,
+      "dependsOn": [
+        "AUD-015"
+      ],
+      "blocks": [
+        "AUD-019"
+      ],
+      "tags": [
+        "ui-catalog",
+        "assets",
+        "unit-tests"
+      ],
+      "scope": {
+        "packages": [
+          "@moonwitness/ui-catalog"
+        ],
+        "files": [
+          "apps/ui-catalog/tests/asset-review-status.spec.ts"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AUD-016-ac-1",
+          "text": "Tests cover approved, review, blocked, unverified and conflicting metadata.",
+          "done": false
+        },
+        {
+          "id": "AUD-016-ac-2",
+          "text": "Missing provenance never resolves to approved.",
+          "done": false
+        },
+        {
+          "id": "AUD-016-ac-3",
+          "text": "The focused test runs without adding dependencies or a second application.",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ui-catalog test -- tests/asset-review-status.spec.ts"
+        ],
+        "expected": "Focused asset review-status tests pass."
+      },
+      "evidence": {
+        "paths": [],
+        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "commitSha": null
+      },
+      "references": [
+        "apps/ui-catalog/src/asset-review-status.ts",
+        "packages/assets/licenses.json"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "legacyId": "AUD-016"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "AUD-017",
+      "project": "moonwitness",
+      "series": "AUD",
+      "milestone": "AUDIT-NEXT",
+      "horizon": "next",
+      "title": "Create a reusable SceneLab asset review badge",
+      "summary": "Render canonical review state with readable text and non-color-only status cues.",
+      "problem": "AssetBrowser has an inline status label, but SceneLab's layer inspector does not expose whether an asset is approved, review-only, blocked or unverified.",
+      "proposedSolution": "Create AssetReviewBadge.tsx using the shared resolver output. Keep it presentational: no fetching, manifest parsing or second status mapping.",
+      "category": "product",
+      "type": "feature",
+      "priority": "p1",
+      "status": "todo",
+      "human": false,
+      "owner": "ui-catalog",
+      "assignee": null,
+      "risk": "low",
+      "effort": "xs",
+      "scores": null,
+      "dependsOn": [
+        "AUD-015"
+      ],
+      "blocks": [
+        "AUD-019"
+      ],
+      "tags": [
+        "ui-catalog",
+        "scene-lab",
+        "accessibility"
+      ],
+      "scope": {
+        "packages": [
+          "@moonwitness/ui-catalog"
+        ],
+        "files": [
+          "apps/ui-catalog/src/AssetReviewBadge.tsx"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AUD-017-ac-1",
+          "text": "The component renders a distinct text label for approved, review, blocked and unverified.",
+          "done": false
+        },
+        {
+          "id": "AUD-017-ac-2",
+          "text": "Status is understandable without relying on color alone.",
+          "done": false
+        },
+        {
+          "id": "AUD-017-ac-3",
+          "text": "The component accepts resolved state as props and owns no metadata I/O.",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ui-catalog build"
+        ],
+        "expected": "UI Catalog builds with the reusable review badge."
+      },
+      "evidence": {
+        "paths": [],
+        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "commitSha": null
+      },
+      "references": [
+        "apps/ui-catalog/src/AssetBrowser.tsx",
+        "packages/ui/README.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "legacyId": "AUD-017"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "AUD-018",
+      "project": "moonwitness",
+      "series": "AUD",
+      "milestone": "AUDIT-NEXT",
+      "horizon": "next",
+      "title": "Create a read-only asset provenance details component",
+      "summary": "Display creator, source, license, terms and review notes without making approval assumptions.",
+      "problem": "licenses.json contains source, creator, license, generated date, terms and distribution notes, but SceneLab's inspector currently only shows layer geometry.",
+      "proposedSolution": "Create AssetProvenanceDetails.tsx as a presentational component receiving a resolved provenance record. Display available fields and label missing fields as unknown; never synthesize license or approval decisions.",
+      "category": "product",
+      "type": "feature",
+      "priority": "p2",
+      "status": "todo",
+      "human": false,
+      "owner": "ui-catalog",
+      "assignee": null,
+      "risk": "low",
+      "effort": "xs",
+      "scores": null,
+      "dependsOn": [
+        "AUD-015"
+      ],
+      "blocks": [
+        "AUD-019"
+      ],
+      "tags": [
+        "ui-catalog",
+        "scene-lab",
+        "provenance"
+      ],
+      "scope": {
+        "packages": [
+          "@moonwitness/ui-catalog",
+          "@moonwitness/assets"
+        ],
+        "files": [
+          "apps/ui-catalog/src/AssetProvenanceDetails.tsx"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AUD-018-ac-1",
+          "text": "Available creator/source/license/terms/generatedOn/distribution fields are rendered.",
+          "done": false
+        },
+        {
+          "id": "AUD-018-ac-2",
+          "text": "Missing fields display an explicit unknown/not-recorded state.",
+          "done": false
+        },
+        {
+          "id": "AUD-018-ac-3",
+          "text": "The component is read-only and performs no network request or metadata mutation.",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ui-catalog build"
+        ],
+        "expected": "UI Catalog builds with the read-only provenance component."
+      },
+      "evidence": {
+        "paths": [],
+        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "commitSha": null
+      },
+      "references": [
+        "packages/assets/licenses.json",
+        "apps/ui-catalog/src/AssetBrowser.tsx"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "legacyId": "AUD-018"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "AUD-019",
+      "project": "moonwitness",
+      "series": "AUD",
+      "milestone": "AUDIT-NEXT",
+      "horizon": "next",
+      "title": "Wire review status and provenance into the SceneLab inspector",
+      "summary": "Show canonical asset review state and source provenance beside every scene layer.",
+      "problem": "SceneLab currently shows layer ID, z-order, pivot and parallax, while AssetBrowser already consumes manifest/license metadata. Users cannot inspect source/distribution status in the scene layer list.",
+      "proposedSolution": "After the active canonical-scene work in GitHub issue #52 is complete, resolve each SceneLab layer to existing manifest/license records and render AssetReviewBadge plus AssetProvenanceDetails. Keep hidden/reorder/scrub controls local; do not create a second metadata registry.",
+      "category": "product",
+      "type": "feature",
+      "priority": "p1",
+      "status": "todo",
+      "human": false,
+      "owner": "ui-catalog",
+      "assignee": null,
+      "risk": "medium",
+      "effort": "s",
+      "scores": null,
+      "dependsOn": [
+        "AUD-016",
+        "AUD-017",
+        "AUD-018"
+      ],
+      "blocks": [
+        "AUD-020"
+      ],
+      "tags": [
+        "ui-catalog",
+        "scene-lab",
+        "asset-provenance"
+      ],
+      "scope": {
+        "packages": [
+          "@moonwitness/ui-catalog",
+          "@moonwitness/assets"
+        ],
+        "files": [
+          "apps/ui-catalog/src/SceneLab.tsx"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AUD-019-ac-1",
+          "text": "Each displayed Moon City layer resolves to the matching canonical manifest and license record.",
+          "done": false
+        },
+        {
+          "id": "AUD-019-ac-2",
+          "text": "Every layer shows a review badge and available provenance details.",
+          "done": false
+        },
+        {
+          "id": "AUD-019-ac-3",
+          "text": "Missing mappings are displayed as unverified/unknown and never approved.",
+          "done": false
+        },
+        {
+          "id": "AUD-019-ac-4",
+          "text": "Existing preview, reorder, hide/show, timeline and mobile controls continue to work.",
+          "done": false
+        },
+        {
+          "id": "AUD-019-ac-5",
+          "text": "Do not edit SceneLab until issue #52 is complete; this task owns the inspector integration after that handoff.",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ui-catalog build",
+          "pnpm --filter @moonwitness/ui-catalog test -- tests/scene-harness.spec.ts"
+        ],
+        "expected": "SceneLab builds and existing scene harness tests pass."
+      },
+      "evidence": {
+        "paths": [],
+        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "commitSha": null
+      },
+      "references": [
+        "apps/ui-catalog/src/SceneLab.tsx",
+        "packages/assets/scenes/moon-city-scene.json",
+        "packages/assets/manifest.json",
+        "packages/assets/licenses.json"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "legacyId": "AUD-019"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "AUD-020",
+      "project": "moonwitness",
+      "series": "AUD",
+      "milestone": "AUDIT-NEXT",
+      "horizon": "next",
+      "title": "Add SceneLab review-status and provenance regression coverage",
+      "summary": "Verify all review states and missing provenance are visible in the scene inspector.",
+      "problem": "SceneLab needs a focused regression test proving review status and provenance render correctly after the inspector integration.",
+      "proposedSolution": "Add one isolated UI Catalog Playwright spec that loads SceneLab and checks representative approved/review/blocked/unverified layer metadata plus the unknown fallback.",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p2",
+      "status": "todo",
+      "human": false,
+      "owner": "ui-catalog",
+      "assignee": null,
+      "risk": "low",
+      "effort": "s",
+      "scores": null,
+      "dependsOn": [
+        "AUD-019"
+      ],
+      "blocks": [],
+      "tags": [
+        "ui-catalog",
+        "scene-lab",
+        "e2e"
+      ],
+      "scope": {
+        "packages": [
+          "@moonwitness/ui-catalog"
+        ],
+        "files": [
+          "apps/ui-catalog/tests/scene-asset-review.spec.ts"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AUD-020-ac-1",
+          "text": "Spec verifies an approved, review, blocked and unverified/unknown layer state.",
+          "done": false
+        },
+        {
+          "id": "AUD-020-ac-2",
+          "text": "Spec verifies available source/license detail and missing-metadata fallback.",
+          "done": false
+        },
+        {
+          "id": "AUD-020-ac-3",
+          "text": "Existing SceneLab scene-harness tests remain unchanged and pass.",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/ui-catalog test -- tests/scene-asset-review.spec.ts"
+        ],
+        "expected": "Focused SceneLab asset-review test passes."
+      },
+      "evidence": {
+        "paths": [],
+        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "commitSha": null
+      },
+      "references": [
+        "apps/ui-catalog/src/SceneLab.tsx",
+        "apps/ui-catalog/tests/scene-harness.spec.ts"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "legacyId": "AUD-020"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "AUD-021",
+      "project": "moonwitness",
+      "series": "AUD",
+      "milestone": "AUDIT-NEXT",
+      "horizon": "next",
+      "title": "Cover backward and end-boundary keyboard navigation in the homepage filmstrip",
+      "summary": "Add focused keyboard assertions for ArrowLeft and End without changing the existing filmstrip implementation.",
+      "problem": "The current public-home test verifies ArrowRight and Home for the horizontal filmstrip, but does not assert the matching backward and end-boundary keys implemented by the component.",
+      "proposedSolution": "Add a separate Playwright spec for the existing named filmstrip region. Verify ArrowLeft and End in addition to ArrowRight and Home, without editing the component or existing public-home spec.",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p2",
+      "status": "todo",
+      "human": false,
+      "owner": "board-ui",
+      "assignee": null,
+      "risk": "low",
+      "effort": "xs",
+      "scores": null,
+      "dependsOn": [],
+      "blocks": [],
+      "tags": [
+        "board",
+        "homepage",
+        "keyboard",
+        "accessibility"
+      ],
+      "scope": {
+        "packages": [
+          "@moonwitness/board"
+        ],
+        "files": [
+          "apps/board/e2e/home-filmstrip-keyboard.spec.ts"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AUD-021-ac-1",
+          "text": "ArrowLeft moves the filmstrip back from a non-zero scroll position.",
+          "done": false
+        },
+        {
+          "id": "AUD-021-ac-2",
+          "text": "End moves to the last scroll position and Home returns to the first.",
+          "done": false
+        },
+        {
+          "id": "AUD-021-ac-3",
+          "text": "The filmstrip region retains keyboard focus after key handling.",
+          "done": false
+        },
+        {
+          "id": "AUD-021-ac-4",
+          "text": "No production component or existing E2E spec is modified.",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/board exec playwright test e2e/home-filmstrip-keyboard.spec.ts --config playwright.config.ts"
+        ],
+        "expected": "The focused filmstrip keyboard test passes in Chromium."
+      },
+      "evidence": {
+        "paths": [],
+        "detailFile": "apps/board/src/components/home/horizontal-filmstrip.tsx",
+        "commitSha": null
+      },
+      "references": [
+        "apps/board/src/components/home/horizontal-filmstrip.tsx",
+        "apps/board/e2e/public-home.spec.ts"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "legacyId": "AUD-021"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "AUD-022",
+      "project": "moonwitness",
+      "series": "AUD",
+      "milestone": "AUDIT-NOW",
+      "horizon": "now",
+      "title": "Correct the outdated responsive accessibility coverage note in visual-direction.md",
+      "summary": "Align visual-audit documentation with the current Axe checks in visual-audit.spec.ts.",
+      "problem": "docs/design/visual-direction.md still says protected mobile/tablet screens are not included in automated Axe coverage, while the current protected-screen loop runs Axe across mobile, tablet and desktop sizes in light and dark themes.",
+      "proposedSolution": "Update only the Visual audit coverage paragraph and stale accessibility finding. Record exact route/viewport/theme coverage from the current test; do not imply that automated Axe replaces keyboard or manual review.",
+      "category": "documentation",
+      "type": "documentation",
+      "priority": "p1",
+      "status": "todo",
+      "human": false,
+      "owner": "docs",
+      "assignee": null,
+      "risk": "low",
+      "effort": "xs",
+      "scores": null,
+      "dependsOn": [],
+      "blocks": [],
+      "tags": [
+        "documentation",
+        "accessibility",
+        "visual-audit"
+      ],
+      "scope": {
+        "packages": [],
+        "files": [
+          "docs/design/visual-direction.md"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AUD-022-ac-1",
+          "text": "The document accurately lists protected dashboard/list/form/profile/settings Axe coverage at 375×812, 768×1024 and 1440×1000.",
+          "done": false
+        },
+        {
+          "id": "AUD-022-ac-2",
+          "text": "The document accurately records light/dark theme coverage.",
+          "done": false
+        },
+        {
+          "id": "AUD-022-ac-3",
+          "text": "The document does not claim automated Axe replaces keyboard, focus, touch or manual review.",
+          "done": false
+        },
+        {
+          "id": "AUD-022-ac-4",
+          "text": "Only docs/design/visual-direction.md is modified.",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm test:ui-design-check"
+        ],
+        "expected": "UI design checks pass and the stated coverage matches the current test source."
+      },
+      "evidence": {
+        "paths": [],
+        "detailFile": "apps/board/e2e/visual-audit.spec.ts",
+        "commitSha": null
+      },
+      "references": [
+        "apps/board/e2e/visual-audit.spec.ts",
+        "docs/design/visual-direction.md"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "legacyId": "AUD-022"
+      },
+      "url": "",
+      "comments": []
+    },
+    {
+      "code": "AUD-023",
+      "project": "moonwitness",
+      "series": "AUD",
+      "milestone": "AUDIT-NEXT",
+      "horizon": "next",
+      "title": "Verify desktop and mobile source selection for the homepage hero picture",
+      "summary": "Add a focused responsive-image contract test for the existing HomeHeroArt picture element.",
+      "problem": "The current public-home tests cover hero fallback and reveal, but do not explicitly assert that the picture source switches between mobile and desktop artwork at the declared 600px breakpoint.",
+      "proposedSolution": "Add one Playwright spec that checks currentSrc selects home-hero-mobile.webp at 390px and home-hero-desktop.webp at 1440px. Keep the media rule and production component unchanged.",
+      "category": "architecture",
+      "type": "feature",
+      "priority": "p2",
+      "status": "todo",
+      "human": false,
+      "owner": "board-ui",
+      "assignee": null,
+      "risk": "low",
+      "effort": "xs",
+      "scores": null,
+      "dependsOn": [],
+      "blocks": [],
+      "tags": [
+        "board",
+        "homepage",
+        "responsive-images",
+        "e2e"
+      ],
+      "scope": {
+        "packages": [
+          "@moonwitness/board"
+        ],
+        "files": [
+          "apps/board/e2e/home-hero-picture.spec.ts"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AUD-023-ac-1",
+          "text": "At 390px, hero image currentSrc resolves to /illustrations/home-hero-mobile.webp.",
+          "done": false
+        },
+        {
+          "id": "AUD-023-ac-2",
+          "text": "At 1440px, hero image currentSrc resolves to /illustrations/home-hero-desktop.webp.",
+          "done": false
+        },
+        {
+          "id": "AUD-023-ac-3",
+          "text": "The test waits for successful image decode and changes no production files.",
+          "done": false
+        },
+        {
+          "id": "AUD-023-ac-4",
+          "text": "No duplicate fallback or hero animation test is introduced.",
+          "done": false
+        }
+      ],
+      "validation": {
+        "commands": [
+          "pnpm --filter @moonwitness/board exec playwright test e2e/home-hero-picture.spec.ts --config playwright.config.ts"
+        ],
+        "expected": "The focused responsive image source test passes in Chromium."
+      },
+      "evidence": {
+        "paths": [],
+        "detailFile": "apps/board/src/components/home/home-hero-art.tsx",
+        "commitSha": null
+      },
+      "references": [
+        "apps/board/src/components/home/home-hero-art.tsx",
+        "apps/board/e2e/public-home.spec.ts"
+      ],
+      "blockedReason": null,
+      "sourceRef": {
+        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "legacyId": "AUD-023"
       },
       "url": "",
       "comments": []

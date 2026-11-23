@@ -1,17 +1,17 @@
 # MoonWitness TaskOS — Centralized Work Registry (`docs/tasks/`)
 
-> **Canonical status (2026-11-23): migrated and owner-approved.** `docs/tasks/tasks.json` is now the canonical `moonwitness-tasks/v2` registry with **627 records**. The former 1,358-record registry is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json` for rollback and historical audit.
+> **Canonical status (2026-11-23): migrated and owner-approved.** `docs/tasks/tasks.json` is now the canonical `moonwitness-tasks/v2` registry with **636 records**. The former 1,358-record registry is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json` for rollback and historical audit.
 
 ## Current registry
 
-- Canonical registry: 627 unique task codes; schema version `2.0.0`.
-- Lifecycle distribution: 468 `done`, 49 `doing`, 89 `todo`, 21 `blocked`.
-- Source groups: roadmap 239, WhatsApp 112, Desktop 128, archived open MW 7, AI Corporation PR lifecycle 14, Evolution 4, audit 14, Visual Universe 109.
-- Canonical Git blob: `8216b6503d154d635112be96c41939a9efd38390`.
+- Canonical registry: 636 unique task codes; schema version `2.0.0`.
+- Lifecycle distribution: 468 `done`, 49 `doing`, 98 `todo`, 21 `blocked`.
+- Source groups: roadmap 239, WhatsApp 112, Desktop 128, archived open MW 7, AI Corporation PR lifecycle 14, Evolution 4, audit 23, Visual Universe 109.
 - Exact previous registry backup blob: `d56499936761dcc062704d06588ee2679fd1aae2`, retained at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`.
-- Candidate JSON SHA-256 before commit: `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`.
 
 The owner approved the one-time migration in chat on 2026-11-23. The full 1,358-to-627 task-code reconciliation is recorded in `RECOVERY-INVENTORY.md`. The 854 completed legacy rows removed from the active set remain in the preserved registry snapshot and archived checklist; the seven still-open legacy rows remain present as `blocked` pending re-triage. No legacy record was silently discarded.
+
+- Canonical registry now contains 636 records; the nine new audit follow-ups remain `todo` until implementation evidence is recorded.
 
 ## Authority rules
 
@@ -55,6 +55,6 @@ The `--candidate` mode remains non-mutating and writes only outside the reposito
 - Owner approval: 2026-11-23.
 - Migration parent: `dev` SHA `0e90a59688386a6635c46f209b09d05296393148`.
 - Previous registry blob: `d56499936761dcc062704d06588ee2679fd1aae2` (1,358 records).
-- New canonical registry blob: `8216b6503d154d635112be96c41939a9efd38390` (627 records).
+- New audit follow-up tasks `AUD-015`–`AUD-023` cover asset review status, SceneLab provenance, homepage boundary tests and visual-audit documentation.
 - Candidate JSON SHA-256: `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`.
 - CI must continue to run TaskOS safety tests, canonical validation, deterministic source comparison, roadmap parity and Visual Universe projection validation on every candidate SHA.
