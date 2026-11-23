@@ -723,7 +723,7 @@ export const AUDIT_TASKS = [
     },
     evidence: {
       paths: [],
-      detailFile: 'docs/design/moon-city-artwork-review.md',
+      detailFile: 'packages/assets/licenses.json',
       commitSha: null
     },
     references: [
@@ -803,7 +803,7 @@ export const AUDIT_TASKS = [
     },
     evidence: {
       paths: [],
-      detailFile: 'docs/design/moon-city-artwork-review.md',
+      detailFile: 'packages/assets/licenses.json',
       commitSha: null
     },
     references: [
@@ -882,7 +882,7 @@ export const AUDIT_TASKS = [
     },
     evidence: {
       paths: [],
-      detailFile: 'docs/design/moon-city-artwork-review.md',
+      detailFile: 'packages/assets/licenses.json',
       commitSha: null
     },
     references: [
@@ -962,7 +962,7 @@ export const AUDIT_TASKS = [
     },
     evidence: {
       paths: [],
-      detailFile: 'docs/design/moon-city-artwork-review.md',
+      detailFile: 'packages/assets/licenses.json',
       commitSha: null
     },
     references: [
@@ -1055,7 +1055,7 @@ export const AUDIT_TASKS = [
     },
     evidence: {
       paths: [],
-      detailFile: 'docs/design/moon-city-artwork-review.md',
+      detailFile: 'apps/ui-catalog/src/SceneLab.tsx',
       commitSha: null
     },
     references: [
@@ -1134,7 +1134,7 @@ export const AUDIT_TASKS = [
     },
     evidence: {
       paths: [],
-      detailFile: 'docs/design/moon-city-artwork-review.md',
+      detailFile: 'apps/ui-catalog/tests/scene-harness.spec.ts',
       commitSha: null
     },
     references: [

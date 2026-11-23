@@ -1,7 +1,7 @@
 {
   "schemaVersion": "2.0.0",
   "format": "moonwitness-tasks/v2",
-  "generatedAt": "2026-11-23T08:12:04.765Z",
+  "generatedAt": "2026-11-23T08:22:53.599Z",
   "projects": [
     {
       "slug": "moonwitness",
@@ -17110,7 +17110,7 @@
       },
       "evidence": {
         "paths": [],
-        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "detailFile": "packages/assets/licenses.json",
         "commitSha": null
       },
       "references": [
@@ -17190,7 +17190,7 @@
       },
       "evidence": {
         "paths": [],
-        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "detailFile": "packages/assets/licenses.json",
         "commitSha": null
       },
       "references": [
@@ -17269,7 +17269,7 @@
       },
       "evidence": {
         "paths": [],
-        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "detailFile": "packages/assets/licenses.json",
         "commitSha": null
       },
       "references": [
@@ -17349,7 +17349,7 @@
       },
       "evidence": {
         "paths": [],
-        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "detailFile": "packages/assets/licenses.json",
         "commitSha": null
       },
       "references": [
@@ -17442,7 +17442,7 @@
       },
       "evidence": {
         "paths": [],
-        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "detailFile": "apps/ui-catalog/src/SceneLab.tsx",
         "commitSha": null
       },
       "references": [
@@ -17521,7 +17521,7 @@
       },
       "evidence": {
         "paths": [],
-        "detailFile": "docs/design/moon-city-artwork-review.md",
+        "detailFile": "apps/ui-catalog/tests/scene-harness.spec.ts",
         "commitSha": null
       },
       "references": [
