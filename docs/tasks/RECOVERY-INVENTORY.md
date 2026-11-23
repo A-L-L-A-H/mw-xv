@@ -1,7 +1,27 @@
 # TaskOS Recovery Inventory
 
+## Live follow-up audit — 2026-11-23 (supersedes the 627-record live count)
+
+This follow-up was performed against the exact Git blobs after the original 627-record migration. The earlier sections below remain the historical migration audit and are not rewritten.
+
+- **Audited `dev` registry:** `docs/tasks/tasks.json`, blob `210f91e853a7241b6b3249ed65c1ca79b98274b3`; 636 records, 636 unique task codes, zero duplicate IDs. Status counts: **468 done, 49 doing, 97 todo, 22 blocked**.
+- **Audited `main` registry:** blob `8216b6503d154d635112be96c41939a9efd38390`; 627 unique task codes. Status counts: **468 done, 49 doing, 89 todo, 21 blocked**.
+- **Reconciliation:** all 627 main task IDs are present on dev. The only nine additional dev IDs are `AUD-015` through `AUD-023`; no main task IDs are missing from dev.
+- **Additional source:** the audit source `scripts/tasks/sources/audit-tasks.mjs` now contributes 23 records (rather than the 14 in the original migration snapshot). These nine later additions are:
+  - `AUD-015` — extract a canonical asset review-status resolver for the UI Catalog;
+  - `AUD-016` — focused tests for asset review-status mapping;
+  - `AUD-017` — reusable SceneLab asset review badge;
+  - `AUD-018` — read-only asset provenance details component;
+  - `AUD-019` — wire review status and provenance into SceneLab (blocked on #52);
+  - `AUD-020` — SceneLab review-status/provenance regression coverage;
+  - `AUD-021` — backward/end-boundary keyboard navigation for the homepage filmstrip;
+  - `AUD-022` — correct the responsive accessibility coverage note;
+  - `AUD-023` — verify desktop/mobile homepage hero source selection.
+- **Interpretation:** the 627-record import and the 1,358-record archive reconciliation remain valid for the migration checkpoint. The live `dev` source later evolved to 636 records; do not describe 627 as the current dev total.
+- **Safety:** no TaskOS record was edited by this archive audit. The issue-sync contract remains authoritative; generated issue projections must not be manually backfilled outside the bounded planner/apply flow.
+
 **Historical source snapshot:** pre-migration `dev` SHA `0e90a59688386a6635c46f209b09d05296393148`, audited on 2026-11-23.
-**Current registry status:** `docs/tasks/tasks.json` is the owner-approved 627-record canonical registry. The prior 1,358-record registry is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json` (Git blob `d56499936761dcc062704d06588ee2679fd1aae2`).
+**Registry status at the original 2026-11-23 migration checkpoint:** `docs/tasks/tasks.json` is the owner-approved 627-record canonical registry. The prior 1,358-record registry is preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json` (Git blob `d56499936761dcc062704d06588ee2679fd1aae2`).
 **Migration:** applied on 2026-11-23 after explicit owner approval. Candidate JSON SHA-256 `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776`; canonical Git blob `8216b6503d154d635112be96c41939a9efd38390`.
 **Purpose:** source inventory, complete identity reconciliation, migration evidence and ongoing TaskOS validation contract.
 
