@@ -23,7 +23,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   );
   assert.equal(candidateValidation.taskCount, 636);
 
-  // Source inventory: 239 roadmap + 14 audit + 112 WhatsApp + 7 legacy MW
+  // Source inventory: 239 roadmap + 23 audit + 112 WhatsApp + 7 legacy MW
   // + 14 promotion lifecycle + 128 desktop + 4 evolution + 109 Visual Universe records.
   assert.equal(result.tasks.length, 636, `Expected 636 source-backed tasks, got ${result.tasks.length}`);
   const statusCounts = Object.fromEntries(
@@ -45,7 +45,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
     'docs/roadmap/tasks.json': 239,
     'evolution/backlog.json': 4,
     'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md': 14,
-    'scripts/tasks/sources/audit-tasks.mjs': 14,
+    'scripts/tasks/sources/audit-tasks.mjs': 23,
     'todo-desktop.md': 128,
     'todo-wa.md': 112,
   });
