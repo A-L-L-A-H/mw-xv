@@ -11,7 +11,7 @@ module.exports = {
     {
       name: "no-circular",
       comment: "Avoid circular dependencies inside packages",
-      severity: "warn",
+      severity: "error",
       from: { path: "^packages/[^/]+/src/" },
       to: { circular: true }
     }

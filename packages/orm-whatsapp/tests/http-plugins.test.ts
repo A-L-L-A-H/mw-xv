@@ -16,7 +16,7 @@ const stubStorage: AttachmentStorage = {
     return;
   },
   async *list() {
-    return;
+    for await (const _unused of [] as AsyncIterable<unknown>) yield _unused;
   },
 };
 

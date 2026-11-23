@@ -73,7 +73,7 @@ export function evaluateNextTick(expression: string, from: Date, timezone: strin
     });
     return parser.next().toDate();
   } catch (error) {
-    throw new Error(`Failed to evaluate next tick for expression "${expression}": ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`Failed to evaluate next tick for expression "${expression}": ${error instanceof Error ? error.message : String(error)}`, { cause: error });
   }
 }
 
@@ -89,7 +89,7 @@ export function evaluateNextTicks(expression: string, from: Date, timezone: stri
     }
     return results;
   } catch (error) {
-    throw new Error(`Failed to evaluate next ticks for expression "${expression}": ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`Failed to evaluate next ticks for expression "${expression}": ${error instanceof Error ? error.message : String(error)}`, { cause: error });
   }
 }
 
@@ -130,7 +130,7 @@ export async function dispatchDueCrons(
     if (occurrences.length === 0) continue;
 
     const policy = locked.misfire_policy;
-    let selected: Date[] = [];
+    let selected: Date[];
     if (policy === 'skip') {
       selected = [];
     } else if (policy === 'coalesce') {

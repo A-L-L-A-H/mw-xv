@@ -184,21 +184,24 @@ export function signRefundPayload(request: RefundRequest, gateway: Gateway, secr
     amount: request.amount,
     reason: request.reason,
     metadata: request.metadata,
-    timestamp: Date.now(),
   });
 
   switch (gateway) {
-    case 'stripe':
+    case 'stripe': {
       return createHmac('sha256', secret).update(payload).digest('hex');
-    case 'xendit':
+    }
+    case 'xendit': {
       return createHmac('sha256', secret).update(payload).digest('hex');
-    case 'midtrans':
+    }
+    case 'midtrans': {
       const sign = createSign('SHA256');
       sign.update(payload);
       sign.end();
       return sign.sign(secret, 'base64');
-    default:
+    }
+    default: {
       throw new Error(`Unsupported gateway for refund signing: ${gateway}`);
+    }
   }
 }
 
@@ -209,9 +212,18 @@ export function verifyRefundSignature(
   signature: string
 ): boolean {
   const expected = signRefundPayload(request, gateway, secret);
-  const expectedBuffer = Buffer.from(expected);
-  const suppliedBuffer = Buffer.from(signature);
-
+  
+  if (gateway === 'midtrans') {
+    // Midtrans uses base64 encoded signatures
+    const expectedBuffer = Buffer.from(expected, 'base64');
+    const suppliedBuffer = Buffer.from(signature, 'base64');
+    if (expectedBuffer.length !== suppliedBuffer.length) return false;
+    return timingSafeEqual(expectedBuffer, suppliedBuffer);
+  }
+  
+  // Stripe and Xendit use hex encoded signatures
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  const suppliedBuffer = Buffer.from(signature, 'hex');
   if (expectedBuffer.length !== suppliedBuffer.length) return false;
   return timingSafeEqual(expectedBuffer, suppliedBuffer);
 }

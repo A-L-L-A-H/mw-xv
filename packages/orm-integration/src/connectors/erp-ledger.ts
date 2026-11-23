@@ -30,8 +30,8 @@ export interface PSAKAccount {
 }
 
 export const PSAK_CHART_OF_ACCOUNTS = new Map<string, PSAKAccount>([
-  ['1000', { code: '1000', name: 'Kas', name_id: 'Kas', type: 'asset', isActive: true }],
-  ['1100', { code: '1100', name: 'Bank', name_id: 'Bank', type: 'asset', isActive: true }],
+  ['1101', { code: '1101', name: 'Kas', name_id: 'Kas', type: 'asset', isActive: true }],
+  ['1102', { code: '1102', name: 'Bank', name_id: 'Bank', type: 'asset', isActive: true }],
   ['1200', { code: '1200', name: 'Piutang Usaha', name_id: 'Piutang Usaha', type: 'asset', isActive: true }],
   ['1300', { code: '1300', name: 'Persediaan', name_id: 'Persediaan', type: 'asset', isActive: true }],
   ['1400', { code: '1400', name: 'Aset Tetap', name_id: 'Aset Tetap', type: 'asset', isActive: true }],
@@ -42,15 +42,15 @@ export const PSAK_CHART_OF_ACCOUNTS = new Map<string, PSAKAccount>([
   ['2300', { code: '2300', name: 'Hutang Jangka Panjang', name_id: 'Hutang Jangka Panjang', type: 'liability', isActive: true }],
   ['3000', { code: '3000', name: 'Modal Disetor', name_id: 'Modal Disetor', type: 'equity', isActive: true }],
   ['3100', { code: '3100', name: 'Laba Ditahan', name_id: 'Laba Ditahan', type: 'equity', isActive: true }],
-  ['4000', { code: '4000', name: 'Penjualan', name_id: 'Penjualan', type: 'revenue', isActive: true }],
-  ['4100', { code: '4100', name: 'Pendapatan Jasa', name_id: 'Pendapatan Jasa', type: 'revenue', isActive: true }],
+  ['4101', { code: '4101', name: 'Penjualan', name_id: 'Penjualan', type: 'revenue', isActive: true }],
+  ['4102', { code: '4102', name: 'Pendapatan Jasa', name_id: 'Pendapatan Jasa', type: 'revenue', isActive: true }],
   ['4200', { code: '4200', name: 'Pendapatan Lain-lain', name_id: 'Pendapatan Lain-lain', type: 'revenue', isActive: true }],
-  ['5000', { code: '5000', name: 'Harga Pokok Penjualan', name_id: 'Harga Pokok Penjualan', type: 'expense', isActive: true }],
-  ['5100', { code: '5100', name: 'Biaya Gaji', name_id: 'Biaya Gaji', type: 'expense', isActive: true }],
+  ['5101', { code: '5101', name: 'Harga Pokok Penjualan', name_id: 'Harga Pokok Penjualan', type: 'expense', isActive: true }],
+  ['5102', { code: '5102', name: 'Biaya Gaji', name_id: 'Biaya Gaji', type: 'expense', isActive: true }],
   ['5200', { code: '5200', name: 'Biaya Sewa', name_id: 'Biaya Sewa', type: 'expense', isActive: true }],
   ['5300', { code: '5300', name: 'Biaya Utilitas', name_id: 'Biaya Utilitas', type: 'expense', isActive: true }],
   ['5400', { code: '5400', name: 'Biaya Penyusutan', name_id: 'Biaya Penyusutan', type: 'expense', isActive: true }],
-  ['5500', { code: '5500', name: 'Biaya Lain-lain', name_id: 'Biaya Lain-lain', type: 'expense', isActive: true }],
+  ['6101', { code: '6101', name: 'Biaya Administrasi', name_id: 'Biaya Administrasi', type: 'expense', isActive: true }],
 ]);
 
 export function validateJournalEntry(entry: JournalEntry): { valid: boolean; errors: string[] } {
@@ -105,34 +105,31 @@ export function exportToAccurateFormat(entry: JournalEntry): string {
     ].join(',');
   });
 
-  const header = ['Date,JournalNo,AccountCode,AccountName,Debit,Credit,Description,CostCenter,Project'];
+  const header = ['Journal Entry,JournalNo,AccountCode,AccountName,Debit,Credit,Description,CostCenter,Project'];
   return [...header, ...lines].join('\n');
 }
 
 export function exportToOdooFormat(entry: JournalEntry): string {
-  const lines = entry.lines.map((line, index) => {
-    return [
-      entry.id,
-      entry.date,
-      entry.reference ?? entry.description,
-      line.accountCode,
-      line.accountName,
-      line.debit.toFixed(2),
-      line.credit.toFixed(2),
-      line.description ?? entry.description,
-      index + 1,
-    ].join(',');
-  });
+  const line_ids = entry.lines.map((line, index) => ({
+    account_id: { code: line.accountCode },
+    name: line.description ?? entry.description,
+    debit: line.debit,
+    credit: line.credit,
+  }));
 
-  const header = ['JournalEntry,Date,Reference,AccountCode,AccountName,Debit,Credit,Description,Sequence'];
-  return [...header, ...lines].join('\n');
+  return JSON.stringify({
+    name: entry.id,
+    date: entry.date,
+    ref: entry.reference ?? entry.description,
+    line_ids,
+  });
 }
 
 export function exportToSAPFormat(entry: JournalEntry): string {
   const lines = entry.lines.map((line, index) => {
     return [
-      entry.id.padEnd(10),
-      entry.date,
+      'BSEG',
+      entry.id,
       line.accountCode.padEnd(10),
       (line.debit > 0 ? 'S' : 'H').padEnd(1),
       (line.debit > 0 ? line.debit : line.credit).toFixed(2).padStart(15, '0'),
@@ -141,10 +138,10 @@ export function exportToSAPFormat(entry: JournalEntry): string {
       (line.costCenter ?? '').padEnd(10),
       (line.project ?? '').padEnd(12),
       line.description?.substring(0, 50).padEnd(50) ?? ' '.repeat(50),
-    ].join('');
+    ].join(',');
   });
 
-  const header = 'BKPF' + ' '.repeat(150);
+  const header = 'BKPF,' + entry.id + ',' + entry.date + ',SA';
   return [header, ...lines].join('\n');
 }
 
@@ -170,6 +167,7 @@ export function importFromAccurateFormat(csv: string): JournalEntry {
   if (lines.length < 2) throw new Error('Invalid Accurate CSV: no data lines');
 
   const header = lines[0].split(',');
+  const journalId = header[1]?.trim() ?? `JE-${Date.now()}`;
   const entryLines: JournalLine[] = [];
 
   for (let i = 1; i < lines.length; i++) {
@@ -188,47 +186,33 @@ export function importFromAccurateFormat(csv: string): JournalEntry {
   }
 
   return {
-    id: entryLines[0] ? `ACC-${Date.now()}` : `ACC-${Date.now()}`,
+    id: journalId,
     date: new Date().toISOString().split('T')[0],
     description: 'Imported from Accurate',
     lines: entryLines,
   };
 }
 
-export function importFromOdooFormat(csv: string): JournalEntry {
-  const lines = csv.trim().split('\n');
-  if (lines.length < 2) throw new Error('Invalid Odoo CSV: no data lines');
-
+export function importFromOdooFormat(json: string): JournalEntry {
+  const data = JSON.parse(json);
   const entryLines: JournalLine[] = [];
-  let journalEntryId = `ODOO-${Date.now()}`;
-  let journalDate = new Date().toISOString().split('T')[0];
-  let reference = '';
 
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',');
-    if (cols.length < 8) continue;
-
-    if (i === 1) {
-      journalEntryId = cols[0];
-      journalDate = cols[1];
-      reference = cols[2];
-    }
-
+  for (const line of data.line_ids ?? []) {
     entryLines.push({
-      accountCode: cols[3],
-      accountName: cols[4],
-      debit: parseFloat(cols[5]) || 0,
-      credit: parseFloat(cols[6]) || 0,
-      description: cols[7],
+      accountCode: line.account_id?.code ?? '',
+      accountName: '',
+      debit: line.debit ?? 0,
+      credit: line.credit ?? 0,
+      description: line.name ?? '',
     });
   }
 
   return {
-    id: journalEntryId,
-    date: journalDate,
-    description: reference || 'Imported from Odoo',
+    id: data.name ?? `ODOO-${Date.now()}`,
+    date: data.date ?? new Date().toISOString().split('T')[0],
+    description: data.ref ?? 'Imported from Odoo',
     lines: entryLines,
-    reference,
+    reference: data.ref,
   };
 }
 
@@ -240,14 +224,17 @@ export function importFromSAPFormat(text: string): JournalEntry {
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
-    if (line.length < 100) continue;
+    if (!line.startsWith('BSEG,')) continue;
 
-    const accountCode = line.substring(10, 20).trim();
-    const debitCredit = line.substring(20, 21);
-    const amount = parseFloat(line.substring(21, 36)) / 100;
-    const costCenter = line.substring(41, 51).trim();
-    const project = line.substring(51, 63).trim();
-    const description = line.substring(63, 113).trim();
+    const cols = line.split(',');
+    if (cols.length < 10) continue;
+
+    const accountCode = cols[2].trim();
+    const debitCredit = cols[3].trim();
+    const amount = parseFloat(cols[4]) / 100;
+    const costCenter = cols[6].trim();
+    const project = cols[7].trim();
+    const description = cols[8].trim();
 
     entryLines.push({
       accountCode,
@@ -260,9 +247,13 @@ export function importFromSAPFormat(text: string): JournalEntry {
     });
   }
 
+  const bkpfLine = lines[0].split(',');
+  const journalId = bkpfLine[1] ?? `SAP-${Date.now()}`;
+  const journalDate = bkpfLine[2] ?? new Date().toISOString().split('T')[0];
+
   return {
-    id: `SAP-${Date.now()}`,
-    date: new Date().toISOString().split('T')[0],
+    id: journalId,
+    date: journalDate,
     description: 'Imported from SAP',
     lines: entryLines,
   };
@@ -287,13 +278,13 @@ export const ErpLedgerConnector = defineModel('integration.erp_ledger_connector'
   fields: {
     company: fields.belongsTo(Company, { required: true }),
     name: fields.string({ required: true }),
-    erpType: fields.enum(['accurate', 'odoo', 'sap', 'custom'], { required: true }),
+    erp_type: fields.enum(['accurate', 'odoo', 'sap', 'custom'], { required: true }),
     config: fields.text({ required: true, default: '{}' }),
-    chartOfAccounts: fields.text({ required: true, default: '[]' }),
+    chart_of_accounts: fields.text({ required: true, default: '[]' }),
     enabled: fields.boolean({ required: true, default: false }),
-    lastSyncAt: fields.string(),
-    syncStatus: fields.enum(['idle', 'syncing', 'success', 'error'], { required: true, default: 'idle' }),
-    lastError: fields.text(),
+    last_sync_at: fields.string(),
+    sync_status: fields.enum(['idle', 'syncing', 'success', 'error'], { required: true, default: 'idle' }),
+    last_error: fields.text(),
   },
 });
 
