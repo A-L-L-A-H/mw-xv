@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://pnpm.io"><img alt="pnpm 11.17" src="https://img.shields.io/badge/pnpm-11.17.0-F69220?logo=pnpm&logoColor=white" /></a>
-  <a href="https://nodejs.org"><img alt="Node.js 24" src="https://img.shields.io/badge/Node.js-22-5FA04E?logo=nodedotjs&logoColor=white" /></a>
+  <a href="https://nodejs.org"><img alt="Node.js 24" src="https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img alt="TypeScript strict" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" /></a>
   <a href="https://www.postgresql.org"><img alt="PostgreSQL 16" src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" /></a>
   <a href="https://fastify.dev"><img alt="Fastify 5" src="https://img.shields.io/badge/Fastify-5-000000?logo=fastify&logoColor=white" /></a>
