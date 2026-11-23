@@ -20,7 +20,9 @@ import { Panel } from '@moonwitness/ui/components/panel';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { toast } from '@moonwitness/ui/components/toast';
 import { client } from '@/lib/client';
+import { useDesktopMode } from '@/lib/desktop-mode';
 import { scopedQueryKey } from '@/lib/query-scope';
+import { VpsOnboardingCard } from './vps-onboarding-card';
 
 export interface MeshRemoteContainer {
   id: string;
@@ -68,6 +70,7 @@ function getNodeStatusBadgeVariant(
 
 export function MeshFleetDrawer() {
   const queryClient = useQueryClient();
+  const { mode: desktopMode } = useDesktopMode();
   const [copiedJoin, setCopiedJoin] = useState(false);
 
   const meshStatusQuery = useQuery({
@@ -289,6 +292,7 @@ export function MeshFleetDrawer() {
           </div>
         )}
       </div>
+      {desktopMode === 'developer' ? <VpsOnboardingCard /> : null}
     </Panel>
   );
 }

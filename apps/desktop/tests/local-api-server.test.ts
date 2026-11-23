@@ -412,4 +412,120 @@ describe('LocalApiServer & Desktop Importer', () => {
     });
     expect(meshBootstrapAllowed.status).toBe(200);
   });
+
+  it('serves local AI discovery and SQLite backups in both modes, while gating VPS onboarding to developer mode', async () => {
+    const tempHome = makeTempDir('mw-desktop-ai-backup-vps-');
+    const sqlitePath = path.join(tempHome, 'local.db');
+    writeFileSync(path.join(tempHome, 'mode.json'), JSON.stringify({ mode: 'workspace' }), 'utf8');
+
+    const daemon = await startDesktopSidecarDaemon({
+      repoRoot: process.cwd(),
+      desktopHomeDir: tempHome,
+      sqlitePath,
+      boardOrigin: 'http://127.0.0.1:5173',
+      apiBaseUrl: 'http://127.0.0.1:4242',
+      healthPort: 0,
+      apiPort: 0,
+      offlineMode: true,
+      installAddonsOnStart: true,
+    });
+    handles.push(daemon);
+
+    const loginRes = await fetch(`${daemon.apiUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ login: 'local', password: 'local-offline-session' }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginBody = (await loginRes.json()) as { data: { access_token: string } };
+    const authHeaders = {
+      authorization: `Bearer ${loginBody.data.access_token}`,
+      'content-type': 'application/json',
+    };
+
+    // 1. Local AI discovery works in workspace mode
+    const aiRes = await fetch(`${daemon.apiUrl}/api/desktop/ai/models`, { headers: authHeaders });
+    expect(aiRes.status).toBe(200);
+    const aiBody = (await aiRes.json()) as {
+      success: boolean;
+      data: { onlineCount: number; providers: unknown[]; models: unknown[] };
+    };
+    expect(aiBody.success).toBe(true);
+    expect(Array.isArray(aiBody.data.providers)).toBe(true);
+
+    // 2. Local SQLite backup create/list/restore works in workspace mode
+    const createBackupRes = await fetch(`${daemon.apiUrl}/api/desktop/backups`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({}),
+    });
+    expect(createBackupRes.status).toBe(201);
+    const createdBackup = (await createBackupRes.json()) as {
+      success: boolean;
+      data: { fileName: string; sha256: string; verified: boolean };
+    };
+    expect(createdBackup.success).toBe(true);
+    expect(createdBackup.data.verified).toBe(true);
+
+    const listBackupsRes = await fetch(`${daemon.apiUrl}/api/desktop/backups`, {
+      headers: authHeaders,
+    });
+    expect(listBackupsRes.status).toBe(200);
+    const listBackupsBody = (await listBackupsRes.json()) as {
+      success: boolean;
+      data: { backups: Array<{ fileName: string; verified: boolean }> };
+    };
+    expect(listBackupsBody.data.backups.some((b) => b.fileName === createdBackup.data.fileName)).toBe(
+      true
+    );
+
+    // Restore rejects missing confirmation and path traversal
+    const restoreNoConfirm = await fetch(`${daemon.apiUrl}/api/desktop/backups/restore`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ fileName: createdBackup.data.fileName }),
+    });
+    expect(restoreNoConfirm.status).toBe(400);
+
+    const restoreTraversal = await fetch(`${daemon.apiUrl}/api/desktop/backups/restore`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ fileName: '../local.db', confirm: true }),
+    });
+    expect(restoreTraversal.status).toBe(400);
+
+    // 3. VPS status & onboarding are blocked with 403 WORKSPACE_MODE_RESTRICTED in workspace mode
+    const vpsStatusBlocked = await fetch(`${daemon.apiUrl}/api/desktop/vps/status`, {
+      headers: authHeaders,
+    });
+    expect(vpsStatusBlocked.status).toBe(403);
+    const vpsStatusBlockedBody = (await vpsStatusBlocked.json()) as { code: string };
+    expect(vpsStatusBlockedBody.code).toBe('WORKSPACE_MODE_RESTRICTED');
+
+    const vpsOnboardingBlocked = await fetch(`${daemon.apiUrl}/api/desktop/vps/onboarding`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ login: 'admin', password: 'test-password-1234' }),
+    });
+    expect(vpsOnboardingBlocked.status).toBe(403);
+
+    // 4. Switch to developer mode -> VPS status endpoint unlocks
+    const devSwitch = await fetch(`${daemon.apiUrl}/api/desktop/mode`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ mode: 'developer' }),
+    });
+    expect(devSwitch.status).toBe(200);
+
+    const vpsStatusDev = await fetch(`${daemon.apiUrl}/api/desktop/vps/status`, {
+      headers: authHeaders,
+    });
+    expect(vpsStatusDev.status).toBe(200);
+    const vpsStatusDevBody = (await vpsStatusDev.json()) as {
+      success: boolean;
+      data: { nodeId: string; apiHealth: string };
+    };
+    expect(vpsStatusDevBody.success).toBe(true);
+    expect(typeof vpsStatusDevBody.data.nodeId).toBe('string');
+  });
 });

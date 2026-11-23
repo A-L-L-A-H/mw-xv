@@ -26,6 +26,18 @@ import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moon
 import { DESKTOP_ADDONS, LocalSidecarController } from './local-sidecar.js';
 import { importDesktopTasks } from './importer.js';
 import { buildVpsJoinCommand, ensureMeshCredentials } from './mesh-autopilot.js';
+import { discoverLocalAiProviders } from './local-ai-discovery.js';
+import {
+  createLocalDbBackup,
+  listLocalDbBackups,
+  restoreLocalDbBackup,
+} from './backup.js';
+import { DesktopRiskGate, NativeHumanApprovalIssuer } from './risk-gate.js';
+import {
+  VpsOnboardingClient,
+  type VpsComposeAction,
+  type VpsOnboardingAuthContext,
+} from './vps-onboarding.js';
 import type { DesktopCapabilityBridge } from './types.js';
 
 export interface LocalAuthContext {
@@ -1160,6 +1172,306 @@ export async function startLocalApiServer(
     });
     return { success: true, data: summary };
   });
+
+  // Desktop loopback endpoints: Local AI Discovery (available in BOTH workspace & developer modes)
+  app.get('/api/desktop/ai/models', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const discovery = await discoverLocalAiProviders();
+    return { success: true, data: discovery };
+  });
+
+  // Desktop loopback endpoints: Local SQLite Backups (available in BOTH workspace & developer modes)
+  const resolveLocalBackupContext = (): {
+    sqlitePath: string | null;
+    backupsDir: string | null;
+  } => {
+    const sqlitePath =
+      options.sidecar?.getState().sqlitePath ?? options.bridge.sidecar.getState().sqlitePath ?? null;
+    if (!sqlitePath || sqlitePath === ':memory:') {
+      return { sqlitePath: ':memory:', backupsDir: null };
+    }
+    const baseDir =
+      desktopHomeDir && desktopHomeDir !== ':memory:' ? desktopHomeDir : path.dirname(sqlitePath);
+    return {
+      sqlitePath,
+      backupsDir: path.join(baseDir, 'backups'),
+    };
+  };
+
+  app.get('/api/desktop/backups', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const { sqlitePath, backupsDir } = resolveLocalBackupContext();
+    if (!backupsDir || !sqlitePath || sqlitePath === ':memory:') {
+      return {
+        success: true,
+        data: {
+          sqlitePath: ':memory:',
+          backupsDir: null,
+          backups: [],
+        },
+      };
+    }
+    const backups = await listLocalDbBackups(backupsDir);
+    return {
+      success: true,
+      data: {
+        sqlitePath,
+        backupsDir,
+        backups,
+      },
+    };
+  });
+
+  app.post('/api/desktop/backups', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const { sqlitePath, backupsDir } = resolveLocalBackupContext();
+    if (!backupsDir || !sqlitePath || sqlitePath === ':memory:') {
+      return reply.code(400).send({
+        success: false,
+        code: 'IN_MEMORY_DB_UNSUPPORTED',
+        error: 'Cannot back up an in-memory SQLite database',
+      });
+    }
+    const entry = await createLocalDbBackup(sqlitePath, backupsDir);
+    return reply.code(201).send({ success: true, data: entry });
+  });
+
+  app.post('/api/desktop/backups/restore', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const { sqlitePath, backupsDir } = resolveLocalBackupContext();
+    if (!backupsDir || !sqlitePath || sqlitePath === ':memory:') {
+      return reply.code(400).send({
+        success: false,
+        code: 'IN_MEMORY_DB_UNSUPPORTED',
+        error: 'Cannot restore into an in-memory SQLite database',
+      });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const fileName = typeof body.fileName === 'string' ? body.fileName.trim() : '';
+    if (!fileName) {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_BACKUP_FILENAME',
+        error: 'fileName is required',
+      });
+    }
+    if (body.confirm !== true) {
+      return reply.code(400).send({
+        success: false,
+        code: 'RESTORE_CONFIRMATION_REQUIRED',
+        error: 'Explicit confirm: true is required to restore local.db',
+      });
+    }
+    try {
+      const restored = await restoreLocalDbBackup(fileName, sqlitePath, backupsDir);
+      return { success: true, data: restored };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Backup restore failed';
+      return reply.code(400).send({
+        success: false,
+        code: 'BACKUP_RESTORE_FAILED',
+        error: message,
+      });
+    }
+  });
+
+  // Desktop loopback endpoints: Remote VPS Onboarding (DX / Developer mode ONLY)
+  const vpsApprovalIssuer = new NativeHumanApprovalIssuer();
+  const vpsRiskGate = new DesktopRiskGate({
+    approvalVerifier: (token) => vpsApprovalIssuer.verifyToken(token),
+    requireSignedApprovals: true,
+  });
+
+  const buildVpsAuthContext = (
+    tier: 'R0' | 'R2' | 'R3',
+    action?: 'upstream.sync_push' | 'service.local_start'
+  ): VpsOnboardingAuthContext => {
+    const runId = `desktop-vps-${randomUUID()}`;
+    const approval =
+      tier === 'R3' && action
+        ? vpsApprovalIssuer.issueToken({
+            approvedByUserId: workspace.userId,
+            action,
+            runId,
+          })
+        : undefined;
+    return {
+      runId,
+      companyId: workspace.companyId,
+      agentId: workspace.userId,
+      expectedPolicyVersion: 1,
+      dataClassification: 'cloud_eligible',
+      grant: {
+        grantId: `grant-desktop-vps-${tier}`,
+        companyId: workspace.companyId,
+        agentId: workspace.userId,
+        capability: 'vps.onboarding@v1',
+        allowedRiskTier: tier,
+        allowedClassification: 'cloud_eligible',
+        policyVersion: 1,
+        status: 'active',
+        expiresAt: new Date(Date.now() + 600_000).toISOString(),
+        maxCallsPerRun: 20,
+      },
+      ...(approval ? { humanApproval: approval } : {}),
+    };
+  };
+
+  const resolveVpsClient = (): {
+    client: VpsOnboardingClient | null;
+    nodeId: string;
+    meshIp: string;
+  } => {
+    const nodeId = process.env.MW_VPS_NODE_ID?.trim() || 'moonwitness-vps';
+    const controlPlaneUrl =
+      process.env.MW_VPS_CONTROL_PLANE_URL?.trim() || 'http://10.144.0.1:3003';
+    const remoteApiUrl = process.env.MW_VPS_REMOTE_API_URL?.trim() || undefined;
+    const adminToken = process.env.MW_VPS_ADMIN_TOKEN?.trim() || '';
+    let meshIp = '10.144.0.1';
+    try {
+      meshIp = new URL(controlPlaneUrl).hostname.replace(/^\[|\]$/gu, '');
+    } catch {
+      // Keep default meshIp
+    }
+    if (!adminToken) {
+      return { client: null, nodeId, meshIp };
+    }
+    const vpsClient = new VpsOnboardingClient(
+      {
+        nodeId,
+        controlPlaneUrl,
+        ...(remoteApiUrl ? { remoteApiUrl } : {}),
+        adminToken,
+      },
+      { riskGate: vpsRiskGate }
+    );
+    return { client: vpsClient, nodeId, meshIp };
+  };
+
+  const handleGetVpsStatus = async (req: FastifyRequest, reply: { code: (n: number) => { send: (body: unknown) => unknown } }) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const { client: vpsClient, nodeId, meshIp } = resolveVpsClient();
+    if (!vpsClient) {
+      return {
+        success: true,
+        data: {
+          nodeId,
+          meshIp,
+          apiHealth: 'offline' as const,
+          boardHealth: 'offline' as const,
+          controlPlaneHealth: 'offline' as const,
+          superadminBootstrapped: false,
+          composeServices: [] as string[],
+          redactedSummary: 'VPS admin token not configured (set MW_VPS_ADMIN_TOKEN).',
+        },
+      };
+    }
+    try {
+      const status = await vpsClient.getOnboardingStatus(buildVpsAuthContext('R0'));
+      return { success: true, data: status };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'VPS control plane unreachable';
+      return {
+        success: true,
+        data: {
+          nodeId,
+          meshIp,
+          apiHealth: 'offline' as const,
+          boardHealth: 'offline' as const,
+          controlPlaneHealth: 'offline' as const,
+          superadminBootstrapped: false,
+          composeServices: [] as string[],
+          redactedSummary: message,
+        },
+      };
+    }
+  };
+
+  app.get('/api/desktop/vps/status', handleGetVpsStatus);
+  app.get('/api/desktop/vps/onboarding/status', handleGetVpsStatus);
+
+  app.post('/api/desktop/vps/onboarding/compose', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const { client: vpsClient } = resolveVpsClient();
+    if (!vpsClient) {
+      return reply.code(400).send({
+        success: false,
+        code: 'VPS_NOT_CONFIGURED',
+        error: 'MW_VPS_ADMIN_TOKEN is not configured',
+      });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const action = body.action;
+    if (action !== 'up' && action !== 'restart' && action !== 'rebuild' && action !== 'down') {
+      return reply.code(400).send({
+        success: false,
+        code: 'INVALID_COMPOSE_ACTION',
+        error: "action must be 'up', 'restart', 'rebuild', or 'down'",
+      });
+    }
+    const services = Array.isArray(body.services)
+      ? body.services.filter((s): s is string => typeof s === 'string')
+      : undefined;
+    const isHighImpact = action === 'down' || action === 'rebuild';
+    const result = await vpsClient.controlComposeStack(
+      { action: action as VpsComposeAction, ...(services ? { services } : {}) },
+      buildVpsAuthContext(
+        isHighImpact ? 'R3' : 'R2',
+        isHighImpact ? 'upstream.sync_push' : 'service.local_start'
+      )
+    );
+    return { success: true, data: result };
+  });
+
+  const handleVpsSuperadminOnboarding = async (
+    req: FastifyRequest,
+    reply: { code: (n: number) => { send: (body: unknown) => unknown } }
+  ) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    if (currentMode === 'workspace') {
+      return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
+    }
+    const { client: vpsClient } = resolveVpsClient();
+    if (!vpsClient) {
+      return reply.code(400).send({
+        success: false,
+        code: 'VPS_NOT_CONFIGURED',
+        error: 'MW_VPS_ADMIN_TOKEN is not configured',
+      });
+    }
+    const body = isRecord(req.body) ? req.body : {};
+    const login = typeof body.login === 'string' ? body.login.trim() : '';
+    const password = typeof body.password === 'string' ? body.password : '';
+    const displayName = typeof body.displayName === 'string' ? body.displayName.trim() : undefined;
+    const result = await vpsClient.bootstrapSuperadmin(
+      { login, password, ...(displayName ? { displayName } : {}) },
+      buildVpsAuthContext('R3', 'upstream.sync_push')
+    );
+    return { success: true, data: result };
+  };
+
+  app.post('/api/desktop/vps/onboarding', handleVpsSuperadminOnboarding);
+  app.post('/api/desktop/vps/onboarding/superadmin', handleVpsSuperadminOnboarding);
 
   // POST /_desktop/rpc protected by ephemeral x-mw-desktop-token
   app.post('/_desktop/rpc', async (req, reply) => {
