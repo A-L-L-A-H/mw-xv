@@ -5,11 +5,11 @@ export const views = [
   defineView(SlaPolicy, {
     title: 'SLA Policies',
     list: {
-      columns: ['name', 'priority', 'first_response_minutes', 'resolution_minutes', 'business_hours_only', 'applies_to_queue', 'active'],
+      columns: ['name', 'priority', 'first_response_minutes', 'resolution_minutes', 'business_hours_only', 'applies_to_queue', 'is_active'],
       order: 'priority asc, id asc',
       decorations: [
-        { color: 'success', domain: [['active', '=', true]] },
-        { color: 'danger', domain: [['active', '=', false]] },
+        { color: 'success', domain: [['is_active', '=', true]] },
+        { color: 'danger', domain: [['is_active', '=', false]] },
       ],
     },
     form: {
@@ -17,7 +17,7 @@ export const views = [
         {
           title: 'Policy Details',
           columns: 2,
-          fields: ['name', 'priority', 'applies_to_queue', 'active'],
+          fields: ['name', 'priority', 'applies_to_queue', 'is_active'],
         },
         {
           title: 'SLA Targets',
@@ -29,8 +29,8 @@ export const views = [
     search: {
       fields: ['name'],
       filters: [
-        { label: 'Active', domain: [['active', '=', true]] },
-        { label: 'Inactive', domain: [['active', '=', false]] },
+        { label: 'is_active', domain: [['is_active', '=', true]] },
+        { label: 'Inactive', domain: [['is_active', '=', false]] },
         { label: 'P1', domain: [['priority', '=', 'P1']] },
         { label: 'P2', domain: [['priority', '=', 'P2']] },
         { label: 'P3', domain: [['priority', '=', 'P3']] },
@@ -39,7 +39,7 @@ export const views = [
       groupBy: [
         { label: 'Priority', field: 'priority' },
         { label: 'Queue', field: 'applies_to_queue' },
-        { label: 'Active', field: 'active' },
+        { label: 'is_active', field: 'is_active' },
       ],
     },
   }),
@@ -148,11 +148,11 @@ export const views = [
   defineView(EscalationRule, {
     title: 'Escalation Rules',
     list: {
-      columns: ['name', 'sla_policy', 'trigger', 'escalate_after_minutes', 'escalate_to', 'oncall_rotation', 'max_escalations', 'active'],
+      columns: ['name', 'sla_policy', 'trigger', 'escalate_after_minutes', 'escalate_to', 'oncall_rotation', 'max_escalations', 'is_active'],
       order: 'id asc',
       decorations: [
-        { color: 'success', domain: [['active', '=', true]] },
-        { color: 'danger', domain: [['active', '=', false]] },
+        { color: 'success', domain: [['is_active', '=', true]] },
+        { color: 'danger', domain: [['is_active', '=', false]] },
       ],
     },
     form: {
@@ -160,7 +160,7 @@ export const views = [
         {
           title: 'Rule Details',
           columns: 2,
-          fields: ['name', 'sla_policy', 'trigger', 'active'],
+          fields: ['name', 'sla_policy', 'trigger', 'is_active'],
         },
         {
           title: 'Escalation',
@@ -172,8 +172,8 @@ export const views = [
     search: {
       fields: ['name'],
       filters: [
-        { label: 'Active', domain: [['active', '=', true]] },
-        { label: 'Inactive', domain: [['active', '=', false]] },
+        { label: 'is_active', domain: [['is_active', '=', true]] },
+        { label: 'Inactive', domain: [['is_active', '=', false]] },
         { label: 'First Response Breach', domain: [['trigger', '=', 'first_response_breach']] },
         { label: 'Resolution Breach', domain: [['trigger', '=', 'resolution_breach']] },
         { label: 'Priority Change', domain: [['trigger', '=', 'priority_change']] },
@@ -187,7 +187,7 @@ export const views = [
         { label: 'Trigger', field: 'trigger' },
         { label: 'Escalate To', field: 'escalate_to' },
         { label: 'SLA Policy', field: 'sla_policy_id' },
-        { label: 'Active', field: 'active' },
+        { label: 'is_active', field: 'is_active' },
       ],
     },
   }),

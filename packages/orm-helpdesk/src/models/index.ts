@@ -28,7 +28,7 @@ export const SlaPolicy = defineModel('helpdesk.sla_policy', {
       values: ['technical', 'billing', 'general', 'enterprise', 'all'],
       label: 'Applies To Queue',
     }),
-    active: fields.boolean({ required: true, default: true, label: 'Active' }),
+    is_active: fields.boolean({ required: true, default: true, label: 'Active' }),
   },
 });
 
@@ -123,7 +123,7 @@ export const EscalationRule = defineModel('helpdesk.escalation_rule', {
     }),
     oncall_rotation: fields.string({ label: 'On-Call Rotation' }),
     max_escalations: fields.integer({ required: true, default: 2, label: 'Max Escalations' }),
-    active: fields.boolean({ required: true, default: true, label: 'Active' }),
+    is_active: fields.boolean({ required: true, default: true, label: 'Active' }),
   },
 });
 

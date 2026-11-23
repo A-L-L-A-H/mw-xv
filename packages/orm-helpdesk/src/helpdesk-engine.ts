@@ -9,7 +9,7 @@ export interface SlaPolicyLike {
   resolution_minutes: number;
   business_hours_only?: boolean;
   applies_to_queue: TicketQueue | 'all';
-  active?: boolean;
+  is_active?: boolean;
 }
 
 export interface SlaDeadlineResult {
@@ -55,7 +55,7 @@ export interface EscalationRuleLike {
   escalate_to: 'team_lead' | 'on_call' | 'manager' | 'vendor';
   oncall_rotation?: string | null;
   max_escalations: number;
-  active?: boolean;
+  is_active?: boolean;
 }
 
 export interface EscalationDecision {
@@ -107,7 +107,7 @@ function diffMinutes(fromIso: string, toIso: string): number {
 }
 
 export function resolveSlaDeadlines(input: SlaEvaluateInput): SlaDeadlineResult | null {
-  const active = input.policies.filter(p => p.active !== false);
+  const active = input.policies.filter(p => p.is_active !== false);
   const exact = active.find(
     p => p.priority === input.priority && p.applies_to_queue === input.queue,
   );
@@ -161,7 +161,7 @@ export function nextEscalation(
   nowIso: string,
 ): EscalationDecision {
   const level = ticket.escalation_level ?? 0;
-  if (rule.active === false) return { shouldEscalate: false, escalateTo: null, level };
+  if (rule.is_active === false) return { shouldEscalate: false, escalateTo: null, level };
   if (level >= rule.max_escalations) return { shouldEscalate: false, escalateTo: null, level };
 
   const state = evaluateSlaState(ticket, nowIso);

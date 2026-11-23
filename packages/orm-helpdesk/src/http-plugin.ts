@@ -49,7 +49,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function loadSlaPolicies(db: Knex, companyId: number): Promise<SlaPolicyLike[]> {
   return db('helpdesk_sla_policies')
     .where({ company_id: companyId })
-    .select('id', 'name', 'priority', 'first_response_minutes', 'resolution_minutes', 'business_hours_only', 'applies_to_queue', 'active');
+    .select('id', 'name', 'priority', 'first_response_minutes', 'resolution_minutes', 'business_hours_only', 'applies_to_queue', 'is_active');
 }
 
 function loadEscalationRules(db: Knex, companyId: number): Promise<EscalationRuleLike[]> {
@@ -65,7 +65,7 @@ function loadEscalationRules(db: Knex, companyId: number): Promise<EscalationRul
       'er.escalate_to',
       'er.oncall_rotation',
       'er.max_escalations',
-      'er.active',
+      'er.is_active',
     );
 }
 
@@ -277,7 +277,7 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
       }
 
       const rules = await loadEscalationRules(db, auth.companyId);
-      const applicable = rules.filter(r => r.sla_policy === ticket.sla_policy_id && r.active !== false);
+      const applicable = rules.filter(r => r.sla_policy === ticket.sla_policy_id && r.is_active !== false);
       const now = nowIso ?? new Date().toISOString();
 
       const ticketLike: TicketLike = {

@@ -15,21 +15,21 @@ import {
 
 describe('helpdesk-engine', () => {
   const mockPolicies: SlaPolicyLike[] = [
-    { id: 1, name: 'P1-All', priority: 'P1', first_response_minutes: 15, resolution_minutes: 240, business_hours_only: false, applies_to_queue: 'all', active: true },
-    { id: 2, name: 'P2-All', priority: 'P2', first_response_minutes: 60, resolution_minutes: 480, business_hours_only: false, applies_to_queue: 'all', active: true },
-    { id: 3, name: 'P3-All', priority: 'P3', first_response_minutes: 240, resolution_minutes: 1440, business_hours_only: true, applies_to_queue: 'all', active: true },
-    { id: 4, name: 'P4-All', priority: 'P4', first_response_minutes: 480, resolution_minutes: 2880, business_hours_only: true, applies_to_queue: 'all', active: true },
-    { id: 5, name: 'P1-Enterprise', priority: 'P1', first_response_minutes: 10, resolution_minutes: 120, business_hours_only: false, applies_to_queue: 'enterprise', active: true },
-    { id: 6, name: 'Inactive', priority: 'P1', first_response_minutes: 5, resolution_minutes: 60, business_hours_only: false, applies_to_queue: 'all', active: false },
+    { id: 1, name: 'P1-All', priority: 'P1', first_response_minutes: 15, resolution_minutes: 240, business_hours_only: false, applies_to_queue: 'all', is_active: true },
+    { id: 2, name: 'P2-All', priority: 'P2', first_response_minutes: 60, resolution_minutes: 480, business_hours_only: false, applies_to_queue: 'all', is_active: true },
+    { id: 3, name: 'P3-All', priority: 'P3', first_response_minutes: 240, resolution_minutes: 1440, business_hours_only: true, applies_to_queue: 'all', is_active: true },
+    { id: 4, name: 'P4-All', priority: 'P4', first_response_minutes: 480, resolution_minutes: 2880, business_hours_only: true, applies_to_queue: 'all', is_active: true },
+    { id: 5, name: 'P1-Enterprise', priority: 'P1', first_response_minutes: 10, resolution_minutes: 120, business_hours_only: false, applies_to_queue: 'enterprise', is_active: true },
+    { id: 6, name: 'Inactive', priority: 'P1', first_response_minutes: 5, resolution_minutes: 60, business_hours_only: false, applies_to_queue: 'all', is_active: false },
   ];
 
   const mockRules: EscalationRuleLike[] = [
-    { id: 1, name: 'P1 FR Breach', sla_policy: 1, trigger: 'first_response_breach', escalate_after_minutes: 30, escalate_to: 'team_lead', max_escalations: 2, active: true },
-    { id: 2, name: 'P1 Resolution Breach', sla_policy: 1, trigger: 'resolution_breach', escalate_after_minutes: 60, escalate_to: 'manager', max_escalations: 2, active: true },
-    { id: 3, name: 'P2 FR Breach', sla_policy: 2, trigger: 'first_response_breach', escalate_after_minutes: 60, escalate_to: 'team_lead', max_escalations: 2, active: true },
-    { id: 4, name: 'Priority Change', sla_policy: 1, trigger: 'priority_change', escalate_after_minutes: 0, escalate_to: 'on_call', oncall_rotation: 'primary', max_escalations: 1, active: true },
-    { id: 5, name: 'Reopen', sla_policy: 1, trigger: 'reopen', escalate_after_minutes: 0, escalate_to: 'team_lead', max_escalations: 1, active: true },
-    { id: 6, name: 'Inactive Rule', sla_policy: 1, trigger: 'first_response_breach', escalate_after_minutes: 30, escalate_to: 'team_lead', max_escalations: 2, active: false },
+    { id: 1, name: 'P1 FR Breach', sla_policy: 1, trigger: 'first_response_breach', escalate_after_minutes: 30, escalate_to: 'team_lead', max_escalations: 2, is_active: true },
+    { id: 2, name: 'P1 Resolution Breach', sla_policy: 1, trigger: 'resolution_breach', escalate_after_minutes: 60, escalate_to: 'manager', max_escalations: 2, is_active: true },
+    { id: 3, name: 'P2 FR Breach', sla_policy: 2, trigger: 'first_response_breach', escalate_after_minutes: 60, escalate_to: 'team_lead', max_escalations: 2, is_active: true },
+    { id: 4, name: 'Priority Change', sla_policy: 1, trigger: 'priority_change', escalate_after_minutes: 0, escalate_to: 'on_call', oncall_rotation: 'primary', max_escalations: 1, is_active: true },
+    { id: 5, name: 'Reopen', sla_policy: 1, trigger: 'reopen', escalate_after_minutes: 0, escalate_to: 'team_lead', max_escalations: 1, is_active: true },
+    { id: 6, name: 'Inactive Rule', sla_policy: 1, trigger: 'first_response_breach', escalate_after_minutes: 30, escalate_to: 'team_lead', max_escalations: 2, is_active: false },
   ];
 
   const now = '2026-01-15T10:00:00.000Z';

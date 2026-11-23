@@ -18,7 +18,7 @@ export const manifest = defineAddon({
       resolution_minutes: 240,
       business_hours_only: false,
       applies_to_queue: 'all',
-      active: true,
+      is_active: true,
     }),
     seed(SlaPolicy, 'helpdesk.sla_policy_p2_all', {
       name: 'P2 - All Queues',
@@ -27,7 +27,7 @@ export const manifest = defineAddon({
       resolution_minutes: 480,
       business_hours_only: false,
       applies_to_queue: 'all',
-      active: true,
+      is_active: true,
     }),
     seed(SlaPolicy, 'helpdesk.sla_policy_p3_all', {
       name: 'P3 - All Queues',
@@ -36,7 +36,7 @@ export const manifest = defineAddon({
       resolution_minutes: 1440,
       business_hours_only: true,
       applies_to_queue: 'all',
-      active: true,
+      is_active: true,
     }),
     seed(SlaPolicy, 'helpdesk.sla_policy_p4_all', {
       name: 'P4 - All Queues',
@@ -45,7 +45,7 @@ export const manifest = defineAddon({
       resolution_minutes: 2880,
       business_hours_only: true,
       applies_to_queue: 'all',
-      active: true,
+      is_active: true,
     }),
     seed(SlaPolicy, 'helpdesk.sla_policy_p1_enterprise', {
       name: 'P1 - Enterprise Queue',
@@ -54,7 +54,7 @@ export const manifest = defineAddon({
       resolution_minutes: 120,
       business_hours_only: false,
       applies_to_queue: 'enterprise',
-      active: true,
+      is_active: true,
     }),
     seed(SlaPolicy, 'helpdesk.sla_policy_p2_enterprise', {
       name: 'P2 - Enterprise Queue',
@@ -63,7 +63,7 @@ export const manifest = defineAddon({
       resolution_minutes: 240,
       business_hours_only: false,
       applies_to_queue: 'enterprise',
-      active: true,
+      is_active: true,
     }),
     seed(EscalationRule, 'helpdesk.escalation_rule_p1_first_response', {
       name: 'P1 First Response Breach',
@@ -72,7 +72,7 @@ export const manifest = defineAddon({
       escalate_after_minutes: 30,
       escalate_to: 'team_lead',
       max_escalations: 2,
-      active: true,
+      is_active: true,
     }),
     seed(EscalationRule, 'helpdesk.escalation_rule_p1_resolution', {
       name: 'P1 Resolution Breach',
@@ -81,7 +81,7 @@ export const manifest = defineAddon({
       escalate_after_minutes: 60,
       escalate_to: 'manager',
       max_escalations: 2,
-      active: true,
+      is_active: true,
     }),
     seed(EscalationRule, 'helpdesk.escalation_rule_p2_first_response', {
       name: 'P2 First Response Breach',
@@ -90,7 +90,7 @@ export const manifest = defineAddon({
       escalate_after_minutes: 60,
       escalate_to: 'team_lead',
       max_escalations: 2,
-      active: true,
+      is_active: true,
     }),
     seed(EscalationRule, 'helpdesk.escalation_rule_priority_change', {
       name: 'Priority Escalation',
@@ -100,7 +100,7 @@ export const manifest = defineAddon({
       escalate_to: 'on_call',
       oncall_rotation: 'primary',
       max_escalations: 1,
-      active: true,
+      is_active: true,
     }),
     seed(EscalationRule, 'helpdesk.escalation_rule_reopen', {
       name: 'Ticket Reopen',
@@ -109,7 +109,7 @@ export const manifest = defineAddon({
       escalate_after_minutes: 0,
       escalate_to: 'team_lead',
       max_escalations: 1,
-      active: true,
+      is_active: true,
     }),
     seed(ModelAccess, 'helpdesk.access_user_sla_read', {
       group: ref('base.group_user'),
