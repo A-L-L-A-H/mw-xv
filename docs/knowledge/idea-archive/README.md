@@ -7,7 +7,7 @@
 
 ## Purpose and authority
 
-This archive responds to the owner-provided 775-line prompt **“MASTER PROMPT — TOTAL IDEA ARCHIVE & UNIFIED PROJECT CONSOLIDATION”**. It records ideas, project identities, story/canon references, visual direction, religious/philosophical concepts, technology and source-repository relationships.
+This archive responds to the owner-provided 775-line prompt **“MASTER PROMPT — TOTAL IDEA ARCHIVE & UNIFIED PROJECT CONSOLIDATION”**. The original source is preserved verbatim at [the raw master prompt](../../raw/2026-11-23-master-prompt-total-idea-archive.md). It records ideas, project identities, story/canon references, visual direction, religious/philosophical concepts, technology and source-repository relationships.
 
 It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM, task tracker or approval authority.
 
@@ -44,7 +44,7 @@ It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM,
 
 ### Sources actually inspected
 
-1. The owner-provided `Pasted text(5).txt`: **775 lines**, read in full.
+1. The owner-provided `Pasted text.txt`: **775 lines**, read in full.
 2. Current conversation and available model memory summary: used as a discovery aid, not treated as a full transcript or a primary historical export.
 3. MW-XV: README, roadmap, TaskOS registry blob, source migration documents, issue pages, Issue #15–#22 and #27, current branch metadata and CI/PR metadata.
 4. Public `bjo163/*` repository discovery: **280 unique repository records** from three paginated searches (100 + 100 + 80): 148 public and 132 private.
