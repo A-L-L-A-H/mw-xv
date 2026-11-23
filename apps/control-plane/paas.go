@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
@@ -283,6 +284,9 @@ func (m *PaasManager) MountRoutes(mux *http.ServeMux, adminToken string) {
 	mux.HandleFunc("/paas/backups/postgres", requirePaasAuth(adminToken, m.handleBackupPostgres()))
 	mux.HandleFunc("/paas/backups", requirePaasAuth(adminToken, m.handleListBackups()))
 	mux.HandleFunc("/paas/backups/restore", requirePaasAuth(adminToken, m.handleRestoreBackup()))
+	mux.HandleFunc("/paas/cluster/nodes", requirePaasAuth(adminToken, m.handleClusterNodes()))
+	mux.HandleFunc("/paas/cluster/nodes/join", requirePaasAuth(adminToken, m.handleClusterJoin()))
+	mux.HandleFunc("/paas/cluster/ha/status", requirePaasAuth(adminToken, m.handleHAStatus()))
 }
 
 func (m *PaasManager) handleNodeMetrics() http.HandlerFunc {
@@ -762,4 +766,169 @@ func writePaasJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(payload)
+}
+
+// PaasClusterNode represents a mesh node in the cluster view.
+type PaasClusterNode struct {
+	Hostname       string `json:"hostname"`
+	IPv4           string `json:"ipv4,omitempty"`
+	ContainerState string `json:"containerState,omitempty"`
+	Status         string `json:"status,omitempty"`
+	IsLocal        bool   `json:"isLocal,omitempty"`
+}
+
+// handleClusterNodes handles GET /paas/cluster/nodes.
+func (m *PaasManager) handleClusterNodes() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		meshStatus := m.meshMgr.Status(ctx)
+		hostname, _ := os.Hostname()
+		if envHost := strings.TrimSpace(os.Getenv("MW_MESH_HOSTNAME")); envHost != "" {
+			hostname = envHost
+		}
+
+		var nodes []PaasClusterNode
+		// Local node first
+		nodes = append(nodes, PaasClusterNode{
+			Hostname:       hostname,
+			IPv4:           meshStatus.IPv4,
+			ContainerState: meshStatus.ContainerState,
+			Status:         meshStatus.Status,
+			IsLocal:        true,
+		})
+
+		// Peer nodes from mesh
+		for _, peer := range meshStatus.Peers {
+			nodes = append(nodes, PaasClusterNode{
+				Hostname: peer,
+				Status:   "peer",
+				IsLocal:  false,
+			})
+		}
+
+		writePaasJSON(w, http.StatusOK, map[string]interface{}{"nodes": nodes})
+	}
+}
+
+// ClusterJoinRequest is the payload for POST /paas/cluster/nodes/join.
+type ClusterJoinRequest struct {
+	Peer string `json:"peer"`
+}
+
+// handleClusterJoin handles POST /paas/cluster/nodes/join.
+func (m *PaasManager) handleClusterJoin() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+
+		var req ClusterJoinRequest
+		if err := json.NewDecoder(io.LimitReader(r.Body, 64*1024)).Decode(&req); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid json payload"})
+			return
+		}
+
+		peer := strings.TrimSpace(req.Peer)
+		if peer == "" {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "peer is required"})
+			return
+		}
+		if strings.HasPrefix(peer, "-") || strings.ContainsAny(peer, "\r\n\t \x00") {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid peer format"})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+		defer cancel()
+
+		meshStatus := m.meshMgr.Status(ctx)
+		if !meshStatus.Enabled {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "mesh not enabled"})
+			return
+		}
+		if meshStatus.NetworkSecret == "" && meshStatus.SecretConfigured {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": "network secret not available"})
+			return
+		}
+
+		// Build easytier join command args - no shell interpolation
+		args := []string{
+			"exec", meshStatus.ContainerID,
+			"easytier-cli", "join",
+			"--network-name", meshStatus.NetworkName,
+			"--network-secret", meshStatus.NetworkSecret,
+			"--peers", peer,
+		}
+
+		runner := m.runner
+		if runner == nil {
+			runner = runCmdOutput
+		}
+
+		_, err := runner(ctx, m.dockerBin, args...)
+		if err != nil {
+			redactedErr := RedactMeshSecret(err.Error(), meshStatus.NetworkSecret)
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": "join failed: " + redactedErr})
+			return
+		}
+
+		writePaasJSON(w, http.StatusOK, map[string]string{"status": "joined", "peer": peer})
+	}
+}
+
+// HAStatusResponse represents the HA cluster status payload.
+type HAStatusResponse struct {
+	Mesh      MeshStatus `json:"mesh"`
+	LocalNode struct {
+		Hostname string `json:"hostname"`
+		IPv4     string `json:"ipv4,omitempty"`
+		Role     string `json:"role"`
+	} `json:"localNode"`
+	PeerCount int `json:"peerCount"`
+}
+
+// handleHAStatus handles GET /paas/cluster/ha/status.
+func (m *PaasManager) handleHAStatus() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		meshStatus := m.meshMgr.Status(ctx)
+		hostname, _ := os.Hostname()
+		if envHost := strings.TrimSpace(os.Getenv("MW_MESH_HOSTNAME")); envHost != "" {
+			hostname = envHost
+		}
+
+		role := strings.ToLower(strings.TrimSpace(os.Getenv("MW_PAAS_HA_ROLE")))
+		if role == "" {
+			role = "unknown"
+		}
+
+		resp := HAStatusResponse{
+			Mesh:      meshStatus,
+			PeerCount: len(meshStatus.Peers),
+		}
+		resp.LocalNode.Hostname = hostname
+		resp.LocalNode.IPv4 = meshStatus.IPv4
+		resp.LocalNode.Role = role
+
+		// Redact mesh secret in the response
+		if resp.Mesh.SecretConfigured {
+			resp.Mesh.NetworkSecret = redactedPlaceholder
+		}
+
+		writePaasJSON(w, http.StatusOK, resp)
+	}
 }
