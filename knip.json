@@ -27,5 +27,5 @@
     "enumMembers": "warn",
     "duplicates": "warn"
   },
-  "ignoreDependencies": []
+  "ignoreDependencies": ["go"]
 }

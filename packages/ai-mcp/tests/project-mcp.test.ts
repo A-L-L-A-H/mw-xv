@@ -1,11 +1,6 @@
 import { PassThrough } from 'node:stream';
 import { describe, expect, it } from 'vitest';
-import {
-  AI_MCP_TOOLS,
-  createAiMcpServer,
-  handleAiMcpHttp,
-  serveAiMcpStdio,
-} from '../src/index.js';
+import { AI_MCP_TOOLS, createAiMcpServer, handleAiMcpHttp, serveAiMcpStdio } from '../src/index.js';
 
 interface MockDbTables {
   project_projects: Record<string, unknown>[];
@@ -34,9 +29,7 @@ function createMockKnex(initial?: Partial<MockDbTables>) {
     const filters: Record<string, unknown>[] = [];
 
     const matches = (row: Record<string, unknown>) =>
-      filters.every((filter) =>
-        Object.entries(filter).every(([k, v]) => row[k] === v)
-      );
+      filters.every((filter) => Object.entries(filter).every(([k, v]) => row[k] === v));
 
     const builder = {
       where(filter: Record<string, unknown>) {
@@ -173,7 +166,12 @@ describe('@moonwitness/ai-mcp project tools & transports', () => {
 
     // 1. project.list_projects — strictly tenant isolated
     const projectsRes = await server.handleRequest(
-      { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'project.list_projects', arguments: {} } },
+      {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/call',
+        params: { name: 'project.list_projects', arguments: {} },
+      },
       auth
     );
     expect(projectsRes.error).toBeUndefined();
@@ -194,7 +192,9 @@ describe('@moonwitness/ai-mcp project tools & transports', () => {
       auth
     );
     expect(readyTasksRes.error).toBeUndefined();
-    const readyCodes = (readyTasksRes.result?.tasks as Record<string, unknown>[]).map((t) => t.code);
+    const readyCodes = (readyTasksRes.result?.tasks as Record<string, unknown>[]).map(
+      (t) => t.code
+    );
     expect(readyCodes).toEqual(['T-102', 'T-103']);
     expect(readyTasksRes.result?.blocked_task_ids).toEqual([101]);
 

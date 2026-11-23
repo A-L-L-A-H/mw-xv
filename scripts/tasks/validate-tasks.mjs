@@ -17,7 +17,9 @@ export function parseTasksRegistry(raw) {
   try {
     return JSON.parse(raw);
   } catch (error) {
-    throw new Error(`TaskOS registry docs/tasks/tasks.json is invalid JSON: ${error.message}`, { cause: error });
+    throw new Error(`TaskOS registry docs/tasks/tasks.json is invalid JSON: ${error.message}`, {
+      cause: error,
+    });
   }
 }
 

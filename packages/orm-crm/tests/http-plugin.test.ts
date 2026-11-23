@@ -147,7 +147,11 @@ describe('crmHttpPlugin (INV-014 manifest.httpPlugins)', () => {
       { userId: 1, role: 'user', companyId: 1 }
     );
     expect(res.statusCode).toBe(200);
-    const body = res.payload as SuccessResponse<{ score: number; tier: string; breakdown: unknown }>;
+    const body = res.payload as SuccessResponse<{
+      score: number;
+      tier: string;
+      breakdown: unknown;
+    }>;
     expect(body.success).toBe(true);
     expect(body.data.score).toBeGreaterThan(0);
     expect(['hot', 'warm', 'cold']).toContain(body.data.tier);
@@ -184,7 +188,11 @@ describe('crmHttpPlugin (INV-014 manifest.httpPlugins)', () => {
       { userId: 1, role: 'user', companyId: 1 }
     );
     expect(res.statusCode).toBe(200);
-    const body = res.payload as SuccessResponse<{ totalDeals: number; totalGrossCents: number; totalWeightedCents: number }>;
+    const body = res.payload as SuccessResponse<{
+      totalDeals: number;
+      totalGrossCents: number;
+      totalWeightedCents: number;
+    }>;
     expect(body.success).toBe(true);
     expect(body.data.totalDeals).toBe(2);
     expect(body.data.totalGrossCents).toBe(300000);

@@ -9,19 +9,37 @@ const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 test('canonical moon-city-scene.json validates against manifest and scene-schema', async () => {
   const manifest = JSON.parse(await readFile(resolve(packageRoot, 'manifest.json'), 'utf8'));
-  const bundle = JSON.parse(await readFile(resolve(packageRoot, 'scenes/moon-city-scene.json'), 'utf8'));
-  const result = validateSceneBundle(bundle, manifest, 'packages/assets/scenes/moon-city-scene.json');
+  const bundle = JSON.parse(
+    await readFile(resolve(packageRoot, 'scenes/moon-city-scene.json'), 'utf8')
+  );
+  const result = validateSceneBundle(
+    bundle,
+    manifest,
+    'packages/assets/scenes/moon-city-scene.json'
+  );
   assert.equal(result.sceneCount, 1);
   assert.equal(result.clipCount, 3);
   const hero = bundle.scenes[0];
   assert.equal(hero.id, 'moon-city-hero');
-  assert.ok(hero.layers.length >= 8, 'scene separates sky, moon, clouds, skylines, foreground, and props');
-  assert.ok(hero.breakpoints.some((bp) => bp.name === 'mobile'), 'declares mobile composition breakpoint');
-  assert.ok(hero.breakpoints.some((bp) => bp.name === 'desktop'), 'declares desktop composition breakpoint');
+  assert.ok(
+    hero.layers.length >= 8,
+    'scene separates sky, moon, clouds, skylines, foreground, and props'
+  );
+  assert.ok(
+    hero.breakpoints.some((bp) => bp.name === 'mobile'),
+    'declares mobile composition breakpoint'
+  );
+  assert.ok(
+    hero.breakpoints.some((bp) => bp.name === 'desktop'),
+    'declares desktop composition breakpoint'
+  );
   for (const clip of bundle.clips) {
     assert.ok(clip.frames.length >= 1, `${clip.id} defines at least one frame`);
     for (const frame of clip.frames) {
-      assert.ok(frame.durationMs >= 100 && frame.durationMs <= 60000, `${clip.id} frame timing is bounded`);
+      assert.ok(
+        frame.durationMs >= 100 && frame.durationMs <= 60000,
+        `${clip.id} frame timing is bounded`
+      );
     }
   }
 });
@@ -44,15 +62,24 @@ test('environment-kit.json references canonical environment assets with zero emb
 });
 
 test('UI Catalog SceneLab consumes the canonical Moon City scene instead of maintaining duplicate layer and clip arrays', async () => {
-  const sceneLabSource = await readFile(resolve(packageRoot, '../../apps/ui-catalog/src/SceneLab.tsx'), 'utf8');
-  const bundle = JSON.parse(await readFile(resolve(packageRoot, 'scenes/moon-city-scene.json'), 'utf8'));
+  const sceneLabSource = await readFile(
+    resolve(packageRoot, '../../apps/ui-catalog/src/SceneLab.tsx'),
+    'utf8'
+  );
+  const bundle = JSON.parse(
+    await readFile(resolve(packageRoot, 'scenes/moon-city-scene.json'), 'utf8')
+  );
   const hero = bundle.scenes.find((scene) => scene.id === 'moon-city-hero');
   assert.match(sceneLabSource, /@moonwitness\/assets\/scenes\/moon-city-scene\.json/u);
   assert.match(sceneLabSource, /HERO_SCENE\.layers\.map/u);
   assert.match(sceneLabSource, /HERO_SCENE\.breakpoints\.map/u);
   assert.match(sceneLabSource, /IDLE_CLIP_DEFINITION\.frames\.map/u);
   assert.doesNotMatch(sceneLabSource, /const INITIAL_LAYERS[^=]*=\s*\[/u);
-  const sourceMap = sceneLabSource.match(/const SCENE_LAYER_SOURCES[^=]*=\s*\{([\s\S]*?)\n\};/u)?.[1] ?? '';
-  const mappedAssets = Array.from(sourceMap.matchAll(/'([^']+)'\s*:/gu), (match) => match[1]).sort();
+  const sourceMap =
+    sceneLabSource.match(/const SCENE_LAYER_SOURCES[^=]*=\s*\{([\s\S]*?)\n\};/u)?.[1] ?? '';
+  const mappedAssets = Array.from(
+    sourceMap.matchAll(/'([^']+)'\s*:/gu),
+    (match) => match[1]
+  ).sort();
   assert.deepEqual(mappedAssets, hero.layers.map((layer) => layer.asset).sort());
 });

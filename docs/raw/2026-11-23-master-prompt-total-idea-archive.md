@@ -1,4 +1,5 @@
 # MASTER PROMPT — TOTAL IDEA ARCHIVE & UNIFIED PROJECT CONSOLIDATION
+
 ## ChatGPT Memory + Entire Conversation History + All Creative Works + Canon & Stories + All GitHub Repositories → A-L-L-A-H/mw-xv
 
 Saya ingin kamu bertindak sebagai **Personal Knowledge Archivist, Principal Architect, Creative Director, Story & Canon Editor, Research Analyst, dan Technical Program Manager**.
@@ -46,6 +47,7 @@ Jangan hanya bergantung pada memory summary atau percakapan terakhir.
 Cari sumber asli apabila tersedia. Ide penting bisa saja tersembunyi dalam percakapan yang judulnya tidak berkaitan langsung dengan proyek tersebut.
 
 Perhatikan khususnya:
+
 - Nama dan identitas proyek.
 - Istilah orisinal.
 - Judul cerita dan episode.
@@ -89,6 +91,7 @@ Kumpulkan SELURUH ide tanpa terkecuali berdasarkan kategori berikut. Tambahkan k
 ### A. STORY, FICTION & WORLD BUILDING
 
 Inventarisasi seluruh:
+
 - Cerita, storyline, plot, chapter, episode, saga, dan arc.
 - Universe, multiverse, timeline, sejarah dunia, dan lore.
 - Karakter utama, protagonis, antagonis, mentor, hero, villain, dan cameo.
@@ -101,6 +104,7 @@ Setiap cerita harus memiliki identitas, premis, genre, tema, universe, karakter,
 ### B. CANON & CONTINUITY
 
 Kumpulkan semua ketentuan canon, termasuk:
+
 - Nomor dan urutan.
 - Nama dan ejaan.
 - Transliteration.
@@ -115,6 +119,7 @@ Kumpulkan semua ketentuan canon, termasuk:
 - Ketentuan yang sudah dikunci.
 
 Buat `CANON REGISTRY` dengan:
+
 - Canon ID.
 - Nama canon.
 - Nilai/ketentuan.
@@ -133,6 +138,7 @@ Pisahkan karya original, fan concept, crossover, inspirasi, dan canon resmi dari
 ### C. CHARACTER REGISTRY
 
 Kumpulkan seluruh karakter:
+
 - Nama dan alias.
 - Asal universe.
 - Peran.
@@ -149,6 +155,7 @@ Bedakan karakter yang benar-benar saya tetapkan dari karakter yang baru kamu usu
 ### D. VISUAL ART & CREATIVE DIRECTION
 
 Kumpulkan seluruh:
+
 - Poster, comic, manga, anime concept, dan visual storytelling.
 - Artwork, logo, typography, brand identity, dan cover.
 - Character design dan environment design.
@@ -164,6 +171,7 @@ Pertahankan identitas visual masing-masing proyek. Catat elemen wajib, elemen ya
 ### E. RELIGION, QUR'AN & ASMAUL HUSNA
 
 Kumpulkan seluruh:
+
 - Asmaul Husna dan konsep visualnya.
 - GOD PROMISE.
 - Qur'an, ayat, hadis, dan tafsir.
@@ -179,6 +187,7 @@ Kumpulkan seluruh:
 Pertahankan penomoran dan koreksi canon yang pernah saya tentukan.
 
 Pisahkan secara tegas:
+
 - Sumber Al-Qur'an.
 - Hadis.
 - Tafsir.
@@ -193,6 +202,7 @@ Jangan mengarang ayat, hadis, transliterasi, terjemahan, atau sumber ilmiah. Jan
 ### F. PHILOSOPHY, THEORY & ORIGINAL FRAMEWORKS
 
 Kumpulkan:
+
 - Filosofi dan teori.
 - Metafora.
 - Kerangka berpikir.
@@ -209,6 +219,7 @@ Pertahankan kata-kata orisinal saya. Bedakan metafora, hipotesis, teori pribadi,
 ### G. BRAND, PRODUCT & PLATFORM
 
 Kumpulkan:
+
 - Brand dan nama produk.
 - MoonWitness.
 - MoonWitness Radio.
@@ -225,6 +236,7 @@ Kumpulkan:
 ### H. PROGRAMMING, AI & ENGINEERING
 
 Audit:
+
 - Software architecture.
 - Backend dan frontend.
 - UI/UX.
@@ -243,6 +255,7 @@ Audit:
 ### I. MISCELLANEOUS
 
 Jangan membuang ide yang tidak masuk kategori:
+
 - Ide spontan.
 - Potongan tulisan.
 - Dialog.
@@ -265,6 +278,7 @@ Gunakan `UNCLASSIFIED` bila kategorinya belum diketahui.
 Jangan hanya menyimpan versi terbaru.
 
 Untuk setiap ide penting, rekam:
+
 - First known appearance.
 - Original wording.
 - Subsequent revisions.
@@ -293,6 +307,7 @@ Inventarisasi seluruh repository dalam namespace `bjo163/*` yang dapat diakses.
 Gunakan pagination dan periksa akses privat maupun publik sesuai izin yang tersedia.
 
 Untuk setiap repository, periksa:
+
 - Fungsi dan identitas.
 - README dan dokumentasi.
 - Source tree.
@@ -308,7 +323,7 @@ Untuk setiap repository, periksa:
 Buat matriks:
 
 | Repository | Tujuan | Kondisi Aktual | Teknologi | Hubungan | Gap | Rekomendasi |
-|---|---|---|---|---|---|---|
+| ---------- | ------ | -------------- | --------- | -------- | --- | ----------- |
 
 Identifikasi kode yang bisa digunakan kembali, fitur duplikat, modul yang perlu dipisahkan, proyek yang masih relevan, dan sumber yang layak dimigrasikan.
 
@@ -323,6 +338,7 @@ Gunakan issue dan dokumen migrasi yang sudah ada sebagai titik awal, tetapi teta
 Setelah seluruh sumber dan repository dipahami, hubungkan semua gagasan.
 
 Buat `IDEA RELATIONSHIP MAP` untuk:
+
 - Same project.
 - Shared universe.
 - Shared character.
@@ -336,6 +352,7 @@ Buat `IDEA RELATIONSHIP MAP` untuk:
 - Future opportunity.
 
 Cari:
+
 - Gagasan yang berulang.
 - Proyek yang sebenarnya saling berkaitan.
 - Filosofi yang mendasari banyak karya.
@@ -345,6 +362,7 @@ Cari:
 - Ide yang berpotensi lebih besar daripada bentuk awalnya.
 
 Lakukan brainstorming kritis:
+
 1. Apa inti gagasan?
 2. Apa identitas uniknya?
 3. Apa yang sudah matang?
@@ -386,6 +404,7 @@ Minimal siapkan sistem dokumentasi berikut:
 14. `EXECUTION ROADMAP` — pekerjaan yang siap dikembangkan.
 
 Gunakan stable ID untuk:
+
 - Project.
 - Idea.
 - Canon.
@@ -406,6 +425,7 @@ Jika akses atau kemampuan penulisan repository tersedia, implementasikan dokumen
 # PHASE 6 — CONSISTENCY & CANON AUDIT
 
 Periksa:
+
 - Nomor dan urutan canon.
 - Penamaan dan ejaan.
 - Identitas karakter.
@@ -445,6 +465,7 @@ Susun satu proposal induk yang mencakup:
 15. Recommended Project Roadmap.
 
 Setiap proposal harus menjelaskan:
+
 - Masalah.
 - Bukti sumber.
 - Original intent.
@@ -471,6 +492,7 @@ Semua GitHub Issues baru yang dihasilkan dari konsolidasi ini harus dibuat di re
 **JANGAN LANGSUNG MEMBUAT ISSUE SEBELUM MENGAUDIT ISSUE EXISTING.**
 
 Periksa seluruh open dan closed issues, termasuk:
+
 - #15 — MW-XV expansion proposal.
 - #16 — MoonWitness product vision.
 - #17 — GOD PROMISE & ROCKSOUL.
@@ -486,6 +508,7 @@ Periksa seluruh open dan closed issues, termasuk:
 Nomor di atas adalah referensi awal, bukan batas audit. Verifikasi kondisi aktual setiap issue dan cari issue lain yang berkaitan.
 
 Periksa:
+
 - Judul dan isi.
 - Stable task ID.
 - Marker.
@@ -505,6 +528,7 @@ Pertahankan issue yang sudah benar. Update atau pecah hanya apabila diperlukan. 
 Gunakan kategori sesuai kebutuhan:
 
 **CREATIVE**
+
 - `[STORY]`
 - `[CANON]`
 - `[LORE]`
@@ -516,12 +540,14 @@ Gunakan kategori sesuai kebutuhan:
 - `[BRAND]`
 
 **KNOWLEDGE & RESEARCH**
+
 - `[RESEARCH]`
 - `[REFERENCE]`
 - `[PHILOSOPHY]`
 - `[DOCUMENTATION]`
 
 **PRODUCT & ENGINEERING**
+
 - `[PRODUCT]`
 - `[ARCH]`
 - `[BACKEND]`
@@ -545,6 +571,7 @@ Prinsip wajib:
 Pecah pekerjaan besar menjadi task kecil yang bisa diberikan kepada AI lokal.
 
 Contoh:
+
 - Verifikasi satu nomor canon.
 - Dokumentasikan satu story arc.
 - Konsolidasikan satu character roster.
@@ -556,6 +583,7 @@ Contoh:
 - Perbaiki satu API contract.
 
 Jangan membuat task terlalu besar seperti:
+
 - Complete all stories.
 - Fix entire application.
 - Build whole universe.
@@ -628,6 +656,7 @@ Tentukan mana yang serial dan mana yang paralel.
 Pastikan ownership jelas.
 
 Tandai pekerjaan yang:
+
 - Siap dijalankan.
 - Menunggu dependency.
 - Menunggu keputusan.
@@ -671,39 +700,51 @@ Jangan menyatakan selesai sebelum hasil yang dapat diverifikasi benar-benar dipe
 Saya ingin memperoleh:
 
 ### 1. TOTAL IDEA ARCHIVE
+
 Seluruh ide, termasuk yang belum matang.
 
 ### 2. MASTER PROJECT REGISTRY
+
 Daftar semua proyek dan statusnya.
 
 ### 3. STORY & CANON BIBLE
+
 Seluruh cerita, lore, timeline, universe, dan aturan canon.
 
 ### 4. CHARACTER REGISTRY
+
 Seluruh karakter dan relasinya.
 
 ### 5. CREATIVE & VISUAL ARCHIVE
+
 Seluruh poster, artwork, prompt, logo, dan art direction.
 
 ### 6. RELIGION & PHILOSOPHY ARCHIVE
+
 Seluruh konsep spiritual, referensi, teori, metafora, dan framework.
 
 ### 7. REPOSITORY CONSOLIDATION REPORT
+
 Pemetaan seluruh `bjo163/*` dan hubungan dengan MW-XV.
 
 ### 8. UNIFIED MASTER PROPOSAL
+
 Visi dan arah pengembangan seluruh ekosistem.
 
 ### 9. GITHUB ISSUE INDEX
+
 Nomor dan URL semua issue yang benar-benar berhasil dibuat atau diperbarui.
 
 ### 10. EXECUTION ROADMAP
+
 Urutan kerja untuk LOCAL AI, CLOUD AI, dan HUMAN REVIEW.
 
 ### 11. UNRESOLVED DECISIONS
+
 Seluruh konflik, ketidakjelasan, dan hal yang memerlukan persetujuan saya.
 
 Berikan statistik yang jujur dan pisahkan:
+
 - Raw ideas.
 - Unique ideas.
 - Projects.
@@ -749,6 +790,7 @@ Jangan menghitung ide yang berulang sebagai ide unik tanpa penjelasan.
 Saya ingin seluruh gagasan saya terkumpul dalam satu ekosistem pengetahuan yang utuh.
 
 Saya tidak ingin kehilangan:
+
 - Ide yang pernah saya pikirkan.
 - Cerita yang pernah saya rancang.
 - Canon yang pernah saya tetapkan.

@@ -18,9 +18,11 @@ Historical projects become domain experiences inside one platform, not competing
 ## Product layers
 
 ### Foundation
+
 One canonical data and operations layer: ORM, addon registry, identity/access, tenant boundaries, storage metadata, audit, jobs, workflow, outbox, integration and notifications.
 
 ### Domains
+
 - **Corpus:** source artifacts, works, editions, passages and ingestion recipes.
 - **Knowledge:** claims, evidence, provenance, concepts and research records.
 - **Research:** review, comparison, uncertainty, witness handling and explainable relations.
@@ -32,6 +34,7 @@ One canonical data and operations layer: ORM, addon registry, identity/access, t
 Domain boundaries define responsibility; they do not require a new package for each concept.
 
 ### Experiences
+
 - **Board:** administration, projects, research, review and content management.
 - **Desktop:** local-first engineering and AI workbench.
 - **Public Web:** discovery and reading.
@@ -61,15 +64,15 @@ Domain boundaries define responsibility; they do not require a new package for e
 
 ## Product families
 
-| Family | Examples | Canonical treatment |
-|---|---|---|
-| Knowledge | RGBL, Key Witness, source corpus | One corpus/knowledge/research pipeline |
-| Creative collections | GOD PROMISE, ROCKSOUL, MoonWitness Radio | Collections/projects within Creation |
-| Evidence domains | Story, Event, Person, Law, Perspective, Relationship | Typed records and relations in Research/Knowledge |
-| Collaboration | Community, contributions, discussions | Participation workflow, separate from research truth |
-| Engineering | ROCKSOUL FLOW, Repo Radar, Plan Forge, Proof Gate | Capabilities in existing Desktop / AI Runtime |
-| Communications | MOONSKY, Telegram/WhatsApp | Existing integration/notification/channel capabilities first |
-| Time research | Antikythera / M-Time | Optional bounded research module; preserve authority boundaries |
+| Family               | Examples                                             | Canonical treatment                                             |
+| -------------------- | ---------------------------------------------------- | --------------------------------------------------------------- |
+| Knowledge            | RGBL, Key Witness, source corpus                     | One corpus/knowledge/research pipeline                          |
+| Creative collections | GOD PROMISE, ROCKSOUL, MoonWitness Radio             | Collections/projects within Creation                            |
+| Evidence domains     | Story, Event, Person, Law, Perspective, Relationship | Typed records and relations in Research/Knowledge               |
+| Collaboration        | Community, contributions, discussions                | Participation workflow, separate from research truth            |
+| Engineering          | ROCKSOUL FLOW, Repo Radar, Plan Forge, Proof Gate    | Capabilities in existing Desktop / AI Runtime                   |
+| Communications       | MOONSKY, Telegram/WhatsApp                           | Existing integration/notification/channel capabilities first    |
+| Time research        | Antikythera / M-Time                                 | Optional bounded research module; preserve authority boundaries |
 
 ## Success criteria
 

@@ -42,25 +42,35 @@ const FILTER_FIELDS = Object.freeze({
 });
 
 export function queryAssetInventory(manifest, filters = {}, licenses = {}) {
-  const sourceProvenance = new Map((licenses.sourceAssets ?? []).map((entry) => [entry.path, entry]));
+  const sourceProvenance = new Map(
+    (licenses.sourceAssets ?? []).map((entry) => [entry.path, entry])
+  );
   return manifest.assets
-    .filter((asset) => Object.entries(FILTER_FIELDS).every(([filter, field]) => {
-      const expected = filters[filter];
-      return expected === undefined || asset[field] === expected;
-    }))
+    .filter((asset) =>
+      Object.entries(FILTER_FIELDS).every(([filter, field]) => {
+        const expected = filters[filter];
+        return expected === undefined || asset[field] === expected;
+      })
+    )
     .map((asset) => {
       const provenance = sourceProvenance.get(asset.path);
       return {
         ...asset,
-        distribution: provenance?.status === 'blocked' || provenance?.license === 'unverified'
-          ? 'blocked'
-          : asset.kind === 'source' ? 'source-only' : 'runtime',
+        distribution:
+          provenance?.status === 'blocked' || provenance?.license === 'unverified'
+            ? 'blocked'
+            : asset.kind === 'source'
+              ? 'source-only'
+              : 'runtime',
       };
     });
 }
 
 export function auditAssetInventory(manifest, packageFiles) {
-  const inventory = compareAssetInventory(manifest.assets.map(({ path }) => path), packageFiles);
+  const inventory = compareAssetInventory(
+    manifest.assets.map(({ path }) => path),
+    packageFiles
+  );
   const assetPaths = new Set(manifest.assets.map(({ path }) => path));
   const brokenReferences = [];
   for (const asset of manifest.assets) {
@@ -92,9 +102,16 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const filters = parseFilters(process.argv.slice(2));
   const entries = queryAssetInventory(manifest, filters, licenses);
   const files = await listInventoryMedia(packageRoot, [
-    'brand', 'fonts', 'icons', 'illustrations', 'materials', 'sounds', 'source',
+    'brand',
+    'fonts',
+    'icons',
+    'illustrations',
+    'materials',
+    'sounds',
+    'source',
   ]);
   const audit = auditAssetInventory(manifest, files);
   process.stdout.write(`${JSON.stringify({ entries, audit }, null, 2)}\n`);
-  if (audit.unlistedFiles.length || audit.missingFiles.length || audit.brokenReferences.length) process.exitCode = 1;
+  if (audit.unlistedFiles.length || audit.missingFiles.length || audit.brokenReferences.length)
+    process.exitCode = 1;
 }

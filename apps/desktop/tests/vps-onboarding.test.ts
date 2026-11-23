@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { AccessDeniedError, ValidationError } from '@moonwitness/types';
-import {
-  DesktopRiskGate,
-  NativeHumanApprovalIssuer,
-} from '../src/risk-gate.js';
+import { DesktopRiskGate, NativeHumanApprovalIssuer } from '../src/risk-gate.js';
 import {
   VpsOnboardingClient,
   assertVpsMeshEndpoint,
@@ -83,7 +80,9 @@ describe('isAllowedVpsMeshHost & assertVpsMeshEndpoint', () => {
     }
     expect(() => assertVpsMeshEndpoint('http://8.8.8.8:3003')).toThrow(AccessDeniedError);
     expect(() => assertVpsMeshEndpoint('ftp://10.144.0.1:3003')).toThrow(AccessDeniedError);
-    expect(() => assertVpsMeshEndpoint('http://user:pass@10.144.0.1:3003')).toThrow(AccessDeniedError);
+    expect(() => assertVpsMeshEndpoint('http://user:pass@10.144.0.1:3003')).toThrow(
+      AccessDeniedError
+    );
     expect(() => assertVpsMeshEndpoint('http://10.144.0.1:3003/#frag')).toThrow(AccessDeniedError);
     expect(() => assertVpsMeshEndpoint('not-a-url')).toThrow(ValidationError);
   });
@@ -93,19 +92,20 @@ describe('VpsOnboardingClient', () => {
   it('reads onboarding status at R0 and redacts sensitive fields', async () => {
     const riskGate = new DesktopRiskGate();
     const adminToken = 'mw_admin_secret_token_987654321';
-    const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          meshIp: '10.144.0.1',
-          apiHealth: 'healthy',
-          boardHealth: 'healthy',
-          controlPlaneHealth: 'healthy',
-          superadminBootstrapped: false,
-          composeServices: ['postgres', 'api', 'board'],
-          redactedSummary: `Control plane active with token=${adminToken}`,
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      )
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            meshIp: '10.144.0.1',
+            apiHealth: 'healthy',
+            boardHealth: 'healthy',
+            controlPlaneHealth: 'healthy',
+            superadminBootstrapped: false,
+            composeServices: ['postgres', 'api', 'board'],
+            redactedSummary: `Control plane active with token=${adminToken}`,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
     );
 
     const client = new VpsOnboardingClient(
@@ -138,14 +138,15 @@ describe('VpsOnboardingClient', () => {
     const adminToken = 'mw_admin_secret_token_987654321';
     const superPass = 'UltraSecretSuperadminPass!2026';
 
-    const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          bootstrapped: true,
-          message: `Created admin with password=${superPass} and Bearer ${adminToken}`,
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      )
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            bootstrapped: true,
+            message: `Created admin with password=${superPass} and Bearer ${adminToken}`,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
     );
 
     const client = new VpsOnboardingClient(
@@ -159,10 +160,7 @@ describe('VpsOnboardingClient', () => {
     );
 
     await expect(
-      client.bootstrapSuperadmin(
-        { login: 'admin', password: superPass },
-        makeAuth('R3')
-      )
+      client.bootstrapSuperadmin({ login: 'admin', password: superPass }, makeAuth('R3'))
     ).rejects.toThrow(AccessDeniedError);
 
     const approval = issuer.issueToken({
@@ -192,14 +190,15 @@ describe('VpsOnboardingClient', () => {
     });
     const adminToken = 'mw_admin_secret_token_987654321';
 
-    const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          status: 'ok',
-          output: `compose executed with token=${adminToken}`,
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      )
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            status: 'ok',
+            output: `compose executed with token=${adminToken}`,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
     );
 
     const client = new VpsOnboardingClient(
@@ -212,9 +211,9 @@ describe('VpsOnboardingClient', () => {
     );
 
     // R0 grant cannot run R2 compose restart
-    await expect(
-      client.controlComposeStack({ action: 'restart' }, makeAuth('R0'))
-    ).rejects.toThrow(AccessDeniedError);
+    await expect(client.controlComposeStack({ action: 'restart' }, makeAuth('R0'))).rejects.toThrow(
+      AccessDeniedError
+    );
 
     // R2 grant can run restart
     const restartRes = await client.controlComposeStack(
@@ -227,9 +226,9 @@ describe('VpsOnboardingClient', () => {
     expect(restartRes.decision.resolvedTier).toBe('R2');
 
     // R2 grant cannot run R3 rebuild
-    await expect(
-      client.controlComposeStack({ action: 'rebuild' }, makeAuth('R2'))
-    ).rejects.toThrow(AccessDeniedError);
+    await expect(client.controlComposeStack({ action: 'rebuild' }, makeAuth('R2'))).rejects.toThrow(
+      AccessDeniedError
+    );
 
     // R3 grant + human approval can run rebuild
     const approval = issuer.issueToken({

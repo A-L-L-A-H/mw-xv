@@ -170,7 +170,7 @@ describe('notificationHttpPlugin /api/notifications/route (INV-014 manifest.http
           channelsBySeverity: { low: ['desktop'] },
           quietHours: {
             startMinuteOfDay: 22 * 60, // 22:00
-            endMinuteOfDay: 7 * 60,   // 07:00
+            endMinuteOfDay: 7 * 60, // 07:00
             timezoneOffsetMinutes: 0,
           },
         },

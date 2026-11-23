@@ -49,36 +49,28 @@ describe('desired schema state', () => {
       canServeTraffic: false,
     });
 
-    expect(
-      compareSchemaStates(desired, { version: 2, digest: '0000000000000000' })
-    ).toEqual({
+    expect(compareSchemaStates(desired, { version: 2, digest: '0000000000000000' })).toEqual({
       kind: 'outdated',
       reason: 'version_behind',
       requiresMigration: true,
       canServeTraffic: false,
     });
 
-    expect(
-      compareSchemaStates(desired, { version: 3, digest: desired.digest })
-    ).toEqual({
+    expect(compareSchemaStates(desired, { version: 3, digest: desired.digest })).toEqual({
       kind: 'current',
       reason: 'matched',
       requiresMigration: false,
       canServeTraffic: true,
     });
 
-    expect(
-      compareSchemaStates(desired, { version: 3, digest: 'ffffffffffffffff' })
-    ).toEqual({
+    expect(compareSchemaStates(desired, { version: 3, digest: 'ffffffffffffffff' })).toEqual({
       kind: 'drifted',
       reason: 'digest_mismatch',
       requiresMigration: true,
       canServeTraffic: false,
     });
 
-    expect(
-      compareSchemaStates(desired, { version: 4, digest: 'ffffffffffffffff' })
-    ).toEqual({
+    expect(compareSchemaStates(desired, { version: 4, digest: 'ffffffffffffffff' })).toEqual({
       kind: 'ahead',
       reason: 'version_ahead',
       requiresMigration: false,

@@ -102,7 +102,11 @@ describe('ispHardeningHttpPlugin (INV-014 addon HTTP plugin)', () => {
     const res1 = await harness.invokePost('/api/isp/coa/plan', {}, { userId: 1, role: 'user' });
     expect(res1.statusCode).toBe(403);
 
-    const res2 = await harness.invokePost('/api/isp/accounting/aggregate', {}, { userId: 1, role: 'user' });
+    const res2 = await harness.invokePost(
+      '/api/isp/accounting/aggregate',
+      {},
+      { userId: 1, role: 'user' }
+    );
     expect(res2.statusCode).toBe(403);
   });
 

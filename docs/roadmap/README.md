@@ -19,27 +19,27 @@ Roadmap ini terdiri dari 167 kartu M-series dan 65 kartu K-series (232 task). Ch
 
 ## Kartu kerja
 
-| File                                                 | ID            | Fokus                                                                            |
-| ---------------------------------------------------- | ------------- | -------------------------------------------------------------------------------- |
-| [Baseline](00-baseline.md)                           | M0.01–M0.08   | Inventarisasi, baseline, kontrak dan jumlah seed                                 |
-| [Governance](01-governance.md)                       | M1.01–M1.12   | Dua branch, promosi, rulesets dan sinkronisasi                                   |
-| [CI](02-ci.md)                                       | M2.01–M2.13   | Reusable verification, script root, gate dan artifacts                           |
-| [Board](03-board.md)                                 | M3.01–M3.11   | Browser E2E, visual, aksesibilitas dan data flows                                |
-| [Backend](04-backend.md)                             | M4.01–M4.16   | ORM, auth, akses, jobs/outbox, restore dan performa                              |
-| [Design system](05-design-system.md)                 | M5.01–M5.17   | Asset original, UI, grafik, katalog dan migrasi Board                            |
-| [Dokumentasi](06-documentation.md)                   | M6.01–M6.11   | Generated docs, README, portal dan Pages                                         |
-| [Release](07-release.md)                             | M7.01–M7.16   | Version/changelog, SHA, publication, recovery                                    |
-| [Security/maintenance](08-security-maintenance.md)   | M8.01–M8.11   | Least privilege, updater, scheduled jobs dan incident                            |
-| [Addon](09-addons.md)                                | M9.01–M9.08   | Notification, storage, workflow, integration, organization                       |
-| [Acceptance](10-acceptance.md)                       | M10.01–M10.10 | Bukti satu siklus nyata dan handoff                                              |
-| [Local AI knowledge rebuild](12-local-ai-rebuild.md) | K0-001–K9-007 | Domain ownership, rights, privacy, local AI, migration and acceptance            |
-| [AI Corporation](13-ai-corporation.md)               | M12.01–M12.14 | Audit baseline, ADR 0007, ORM-AI, runtime, MCP, PCW, workforce, memory, UI, eval |
-| [Desktop Engineering](14-desktop-engineering.md)     | M13.01–M13.05 | ROCKSOUL FLOW audit, Repo Radar, Overlap, Prompt Forge, Task Deck dependency gate |
-| [Autonomous Evolution & Mesh](15-autonomous-evolution-agi.md) | M14.01–M14.07 | A2A mesh federation, PaaS quota, gitbuilder, and hybrid evolution jobs |
-| [Constitutional AGI OS](16-constitutional-agi-os.md)  | M15.01–M15.07 | 7 constitutional AGI-OS pillars, invariant synthesizer, and eval-lab |
-| [Sovereign Dreaming AGI](17-sovereign-dreaming-agi.md)| M16.01–M16.04 | Non-REM memory consolidation, Active Inference EFE, and Merkle ledger |
-| [Verifiable Mesh Consensus](18-verifiable-mesh-agi-consensus.md) | M17.01–M17.04 | Verifiable A2A consensus, policy fuzzer, sandbox runner, and self-healing |
-| [Autonomous Eval Benchmark](19-autonomous-eval-benchmark-suite.md) | M18.01–M18.03 | Deterministic world-model simulator, adversarial suite, and 8-axis AGI benchmark |
+| File                                                               | ID            | Fokus                                                                             |
+| ------------------------------------------------------------------ | ------------- | --------------------------------------------------------------------------------- |
+| [Baseline](00-baseline.md)                                         | M0.01–M0.08   | Inventarisasi, baseline, kontrak dan jumlah seed                                  |
+| [Governance](01-governance.md)                                     | M1.01–M1.12   | Dua branch, promosi, rulesets dan sinkronisasi                                    |
+| [CI](02-ci.md)                                                     | M2.01–M2.13   | Reusable verification, script root, gate dan artifacts                            |
+| [Board](03-board.md)                                               | M3.01–M3.11   | Browser E2E, visual, aksesibilitas dan data flows                                 |
+| [Backend](04-backend.md)                                           | M4.01–M4.16   | ORM, auth, akses, jobs/outbox, restore dan performa                               |
+| [Design system](05-design-system.md)                               | M5.01–M5.17   | Asset original, UI, grafik, katalog dan migrasi Board                             |
+| [Dokumentasi](06-documentation.md)                                 | M6.01–M6.11   | Generated docs, README, portal dan Pages                                          |
+| [Release](07-release.md)                                           | M7.01–M7.16   | Version/changelog, SHA, publication, recovery                                     |
+| [Security/maintenance](08-security-maintenance.md)                 | M8.01–M8.11   | Least privilege, updater, scheduled jobs dan incident                             |
+| [Addon](09-addons.md)                                              | M9.01–M9.08   | Notification, storage, workflow, integration, organization                        |
+| [Acceptance](10-acceptance.md)                                     | M10.01–M10.10 | Bukti satu siklus nyata dan handoff                                               |
+| [Local AI knowledge rebuild](12-local-ai-rebuild.md)               | K0-001–K9-007 | Domain ownership, rights, privacy, local AI, migration and acceptance             |
+| [AI Corporation](13-ai-corporation.md)                             | M12.01–M12.14 | Audit baseline, ADR 0007, ORM-AI, runtime, MCP, PCW, workforce, memory, UI, eval  |
+| [Desktop Engineering](14-desktop-engineering.md)                   | M13.01–M13.05 | ROCKSOUL FLOW audit, Repo Radar, Overlap, Prompt Forge, Task Deck dependency gate |
+| [Autonomous Evolution & Mesh](15-autonomous-evolution-agi.md)      | M14.01–M14.07 | A2A mesh federation, PaaS quota, gitbuilder, and hybrid evolution jobs            |
+| [Constitutional AGI OS](16-constitutional-agi-os.md)               | M15.01–M15.07 | 7 constitutional AGI-OS pillars, invariant synthesizer, and eval-lab              |
+| [Sovereign Dreaming AGI](17-sovereign-dreaming-agi.md)             | M16.01–M16.04 | Non-REM memory consolidation, Active Inference EFE, and Merkle ledger             |
+| [Verifiable Mesh Consensus](18-verifiable-mesh-agi-consensus.md)   | M17.01–M17.04 | Verifiable A2A consensus, policy fuzzer, sandbox runner, and self-healing         |
+| [Autonomous Eval Benchmark](19-autonomous-eval-benchmark-suite.md) | M18.01–M18.03 | Deterministic world-model simulator, adversarial suite, and 8-axis AGI benchmark  |
 
 Lihat juga [Issues dan delivery — M11.01–M11.15](11-issues-delivery.md): issue sync, lifecycle, commit/push, auto-PR/merge dan recovery.
 

@@ -31,9 +31,17 @@ test('isLayerDefinition validates well-formed layer descriptors', () => {
     true
   );
   assert.equal(
-    isLayerDefinition({ id: 'sky', asset: 'source/sky.svg', order: 0, position: { x: 0.5, y: 0.5 } }),
+    isLayerDefinition({
+      id: 'sky',
+      asset: 'source/sky.svg',
+      order: 0,
+      position: { x: 0.5, y: 0.5 },
+    }),
     true
   );
-  assert.equal(isLayerDefinition({ id: '', asset: 'source/sky.svg', order: 0, position: { x: 0.5, y: 0.5 } }), false);
+  assert.equal(
+    isLayerDefinition({ id: '', asset: 'source/sky.svg', order: 0, position: { x: 0.5, y: 0.5 } }),
+    false
+  );
   assert.equal(isLayerDefinition(null), false);
 });

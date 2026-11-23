@@ -53,8 +53,20 @@ function parseCronField(field: string, min: number, max: number): number {
 function parseCronDayOfWeek(field: string): number {
   if (field === '*') return 0;
   const dayMap: Record<string, number> = {
-    sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6,
-    sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
+    sun: 0,
+    mon: 1,
+    tue: 2,
+    wed: 3,
+    thu: 4,
+    fri: 5,
+    sat: 6,
+    sunday: 0,
+    monday: 1,
+    tuesday: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6,
   };
   const lower = field.toLowerCase();
   if (dayMap[lower] !== undefined) return dayMap[lower];
@@ -73,11 +85,19 @@ export function evaluateNextTick(expression: string, from: Date, timezone: strin
     });
     return parser.next().toDate();
   } catch (error) {
-    throw new Error(`Failed to evaluate next tick for expression "${expression}": ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+    throw new Error(
+      `Failed to evaluate next tick for expression "${expression}": ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error }
+    );
   }
 }
 
-export function evaluateNextTicks(expression: string, from: Date, timezone: string, count: number): Date[] {
+export function evaluateNextTicks(
+  expression: string,
+  from: Date,
+  timezone: string,
+  count: number
+): Date[] {
   const results: Date[] = [];
   try {
     const parser = CronExpressionParser.parse(expression, {
@@ -89,7 +109,10 @@ export function evaluateNextTicks(expression: string, from: Date, timezone: stri
     }
     return results;
   } catch (error) {
-    throw new Error(`Failed to evaluate next ticks for expression "${expression}": ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+    throw new Error(
+      `Failed to evaluate next ticks for expression "${expression}": ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error }
+    );
   }
 }
 
@@ -111,7 +134,12 @@ export async function dispatchDueCrons(
 
   for (const cron of due) {
     const locked = await Cron.query(trx).findById(cron.id).forUpdate();
-    if (!locked || !locked.enabled || locked.active === false || locked.next_run_at > now.toISOString()) {
+    if (
+      !locked ||
+      !locked.enabled ||
+      locked.active === false ||
+      locked.next_run_at > now.toISOString()
+    ) {
       continue;
     }
 
@@ -143,8 +171,7 @@ export async function dispatchDueCrons(
       .where({ cron_id: locked.id, status: 'running' })
       .first();
 
-    const queued = await Job.query(trx)
-      .where({ cron_id: locked.id, status: 'queued' });
+    const queued = await Job.query(trx).where({ cron_id: locked.id, status: 'queued' });
 
     if (locked.concurrency_policy === 'forbid' && (currentlyRunning || queued.length > 0)) {
       continue;

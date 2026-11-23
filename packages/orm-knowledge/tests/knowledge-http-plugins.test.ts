@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { AddonHttpApp, AddonHttpReply, AddonHttpRequestBase, AddonHttpRouteHandler } from '@moonwitness/orm';
+import type {
+  AddonHttpApp,
+  AddonHttpReply,
+  AddonHttpRequestBase,
+  AddonHttpRouteHandler,
+} from '@moonwitness/orm';
 import type { Knex } from 'knex';
 import {
   corpusHttpPlugin,
@@ -27,19 +32,18 @@ function createFakeApp(db: Knex = {} as Knex): {
   readonly routes: RegisteredRoute[];
 } {
   const routes: RegisteredRoute[] = [];
-  const register = (method: string) =>
-    (path: string, arg2: unknown, arg3?: unknown) => {
-      if (typeof arg2 === 'function') {
-        routes.push({ method, path, handler: arg2 as AddonHttpRouteHandler });
-      } else {
-        routes.push({
-          method,
-          path,
-          options: arg2 as Readonly<Record<string, unknown>>,
-          handler: arg3 as AddonHttpRouteHandler,
-        });
-      }
-    };
+  const register = (method: string) => (path: string, arg2: unknown, arg3?: unknown) => {
+    if (typeof arg2 === 'function') {
+      routes.push({ method, path, handler: arg2 as AddonHttpRouteHandler });
+    } else {
+      routes.push({
+        method,
+        path,
+        options: arg2 as Readonly<Record<string, unknown>>,
+        handler: arg3 as AddonHttpRouteHandler,
+      });
+    }
+  };
 
   const app = {
     db,
@@ -57,7 +61,11 @@ function createFakeReply(): {
   readonly reply: AddonHttpReply;
   readonly state: { statusCode: number; headers: Record<string, string>; payload: unknown };
 } {
-  const state = { statusCode: 200, headers: {} as Record<string, string>, payload: undefined as unknown };
+  const state = {
+    statusCode: 200,
+    headers: {} as Record<string, string>,
+    payload: undefined as unknown,
+  };
   const reply: AddonHttpReply = {
     code(statusCode: number) {
       state.statusCode = statusCode;
@@ -145,7 +153,11 @@ describe('orm-knowledge Wave B.8/B.9/B.10 HTTP plugins', () => {
     const sourceRoute = routes.find((r) => r.path === '/api/corpus/sources/:sourceId')!;
     const sourceReply = createFakeReply();
     await sourceRoute.handler(
-      { params: { sourceId: 'mw:source:unknown' }, query: {}, body: undefined } as AddonHttpRequestBase,
+      {
+        params: { sourceId: 'mw:source:unknown' },
+        query: {},
+        body: undefined,
+      } as AddonHttpRequestBase,
       sourceReply.reply
     );
     expect(sourceReply.state.statusCode).toBe(404);
@@ -178,10 +190,7 @@ describe('orm-knowledge Wave B.8/B.9/B.10 HTTP plugins', () => {
 
     for (const route of routes) {
       const { reply, state } = createFakeReply();
-      await route.handler(
-        { params: {}, query: {}, body: {} } as AddonHttpRequestBase,
-        reply
-      );
+      await route.handler({ params: {}, query: {}, body: {} } as AddonHttpRequestBase, reply);
       expect(state.statusCode, `${route.method} ${route.path}`).toBe(401);
       expect(state.headers['cache-control']).toBe('private, no-store');
     }

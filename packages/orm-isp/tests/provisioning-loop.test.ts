@@ -1,10 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import knex, { type Knex } from 'knex';
-import {
-  assertAddonDefaultDataPolicy,
-  installAddons,
-} from '@moonwitness/orm';
+import { assertAddonDefaultDataPolicy, installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { jobsManifest } from '@moonwitness/jobs';
 import { manifest as notificationManifest } from '@moonwitness/orm-notification';
@@ -18,12 +15,7 @@ import {
   SubscriptionInvoiceLine,
   manifest as subscriptionManifest,
 } from '@moonwitness/orm-subscription';
-import {
-  ISPRadiusOutbox,
-  ISPRadiusSession,
-  ISPSubscriber,
-  manifest,
-} from '../src/index.js';
+import { ISPRadiusOutbox, ISPRadiusSession, ISPSubscriber, manifest } from '../src/index.js';
 import {
   buildInitialIspSeedBundle,
   enforceOverdueSubscriberSuspensions,
@@ -70,11 +62,7 @@ describe('orm-isp provisioning loop', () => {
   it('builds a deterministic production-grade initial ISP seed bundle', () => {
     const bundle = buildInitialIspSeedBundle();
     expect(bundle).toEqual(buildInitialIspSeedBundle());
-    expect(bundle.types.map((entry) => entry.code)).toEqual([
-      'pppoe',
-      'hotspot',
-      'static',
-    ]);
+    expect(bundle.types.map((entry) => entry.code)).toEqual(['pppoe', 'hotspot', 'static']);
     expect(bundle.bandwidthProfiles.map((entry) => entry.name)).toEqual([
       'Nusantara FTTx 30M',
       'Nusantara FTTx 100M',
@@ -110,9 +98,7 @@ describe('orm-isp provisioning loop', () => {
     for (const subscriber of bundle.subscribers) {
       expect(subscriber.projectKey).toBe('project.nusantara_access_network');
       expect(subscriber.partnerKey).toBe('base.partner_nusantara_fttx');
-      expect(subscriber.subscriptionKey).toBe(
-        'subscription.nusantara_fttx_001'
-      );
+      expect(subscriber.subscriptionKey).toBe('subscription.nusantara_fttx_001');
     }
     for (const rule of bundle.accessRules) {
       expect(rule.companyKey).toBe('base.company_nusantara');
@@ -178,10 +164,7 @@ describe('orm-isp provisioning loop', () => {
           return new Response('{}', { status: 200 });
         }
         if (String(url).includes('/api/sessions/disconnect')) {
-          const body = JSON.parse(String(init?.body ?? '{}')) as Record<
-            string,
-            string
-          >;
+          const body = JSON.parse(String(init?.body ?? '{}')) as Record<string, string>;
           disconnectBodies.push(body);
         }
         return new Response('{}', { status: 200 });
@@ -217,21 +200,17 @@ describe('orm-isp provisioning loop', () => {
         acct_session_id: 'sess-provisioning-001',
         framed_ip: '100.64.0.10',
       });
-      expect(
-        await ISPSubscriber.query().findById(subscriber.id).select('status')
-      ).toMatchObject({ status: 'suspended' });
-      expect(
-        await ISPRadiusOutbox.query().where({ company_id: 1 }).orderBy('id')
-      ).toHaveLength(1);
+      expect(await ISPSubscriber.query().findById(subscriber.id).select('status')).toMatchObject({
+        status: 'suspended',
+      });
+      expect(await ISPRadiusOutbox.query().where({ company_id: 1 }).orderBy('id')).toHaveLength(1);
       expect(await ISPRadiusOutbox.query().first()).toMatchObject({
         status: 'sent',
         type: 'disconnect',
         username: 'nusantara-fttx-001',
         nas_ip: '10.10.0.1',
       });
-      expect(
-        (await ISPRadiusOutbox.query().first())?.response
-      ).not.toContain('radius-secret');
+      expect((await ISPRadiusOutbox.query().first())?.response).not.toContain('radius-secret');
 
       const second = await enforceOverdueSubscriberSuspensions({
         asOfDate: '2026-11-23',

@@ -1,11 +1,6 @@
 const SUBSCRIBER_SECRET = 'fttx-001-radius-secret';
 import { Subscription, SubscriptionInvoiceLine } from '@moonwitness/orm-subscription';
-import {
-  ISPNAS,
-  ISPRadiusOutbox,
-  ISPRadiusSession,
-  ISPSubscriber,
-} from './models/index.js';
+import { ISPNAS, ISPRadiusOutbox, ISPRadiusSession, ISPSubscriber } from './models/index.js';
 import { resolveIspAdminToken, type IspAdminTokenOptions } from './auth.js';
 import { dispatchIspDisconnect } from './reconcile.js';
 
@@ -321,13 +316,9 @@ export function buildInitialIspSeedBundle(
     subscribers: (bundle.subscribers ?? base.subscribers).map((subscriber) => ({
       ...subscriber,
       projectKey:
-        subscriber.projectKey === DEFAULT_PROJECT_KEY
-          ? projectKey
-          : subscriber.projectKey,
+        subscriber.projectKey === DEFAULT_PROJECT_KEY ? projectKey : subscriber.projectKey,
       partnerKey:
-        subscriber.partnerKey === DEFAULT_PARTNER_KEY
-          ? partnerKey
-          : subscriber.partnerKey,
+        subscriber.partnerKey === DEFAULT_PARTNER_KEY ? partnerKey : subscriber.partnerKey,
       subscriptionKey:
         subscriber.subscriptionKey === DEFAULT_SUBSCRIPTION_KEY
           ? subscriptionKey
@@ -471,9 +462,7 @@ async function loadCandidates(
 ): Promise<readonly SuspensionCandidate[]> {
   if (options.input) {
     return options.input
-      .filter(
-        (entry) => !options.companyId || entry.companyId === options.companyId
-      )
+      .filter((entry) => !options.companyId || entry.companyId === options.companyId)
       .map(toInputCandidate)
       .filter((candidate): candidate is SuspensionCandidate => candidate !== null);
   }
@@ -491,7 +480,9 @@ async function loadCandidates(
     if (!subscriber.subscription_id) {
       continue;
     }
-    const subscription = await Subscription.query().findById(subscriber.subscription_id).whereIn('state', Array.from(ACTIVE_SUBSCRIPTION_STATES));
+    const subscription = await Subscription.query()
+      .findById(subscriber.subscription_id)
+      .whereIn('state', Array.from(ACTIVE_SUBSCRIPTION_STATES));
     if (!subscription || !ACTIVE_SUBSCRIPTION_STATES.has(subscription.state)) {
       continue;
     }
@@ -553,9 +544,7 @@ function advanceMonthly(day: string, months: number): string {
   const [year, month] = day.split('-').map(Number);
   const shifted = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1 + months, 1));
   const targetMonth = shifted.getUTCMonth();
-  const lastDay = new Date(
-    Date.UTC(shifted.getUTCFullYear(), targetMonth + 1, 0)
-  ).getUTCDate();
+  const lastDay = new Date(Date.UTC(shifted.getUTCFullYear(), targetMonth + 1, 0)).getUTCDate();
   const dayOfMonth = Number(day.slice(8, 10));
   const resolvedDay = Math.min(dayOfMonth, lastDay);
   return `${shifted.getUTCFullYear().toString().padStart(4, '0')}-${(targetMonth + 1)
@@ -632,10 +621,12 @@ export async function enforceOverdueSubscriberSuspensions(
         });
         dispatched += 1;
       } else {
-        await ISPRadiusOutbox.query().findById(outbox.id).patch({
-          status: 'failed',
-          error_message: result.errorMessage ?? 'Overdue suspension disconnect failed',
-        });
+        await ISPRadiusOutbox.query()
+          .findById(outbox.id)
+          .patch({
+            status: 'failed',
+            error_message: result.errorMessage ?? 'Overdue suspension disconnect failed',
+          });
         dispatchFailures += 1;
       }
     }

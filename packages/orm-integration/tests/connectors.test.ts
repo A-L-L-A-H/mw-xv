@@ -36,6 +36,108 @@ import {
   buildJournalEntryFromRefund,
 } from '../src/connectors/payment-gateways.js';
 
+import {
+  buildIntegrationSeedBundle,
+  seedIntegrationData,
+  type IntegrationSeedBundle,
+  type IntegrationSeedExecutionResult,
+  INTEGRATION_SEED_VERSION,
+} from '../src/seed.js';
+
+import type { Knex } from 'knex';
+import { mock } from 'vitest-mock-extended';
+
+describe('Integration Seed', () => {
+  describe('buildIntegrationSeedBundle', () => {
+    it('returns correct version and all seed arrays', () => {
+      const bundle: IntegrationSeedBundle = buildIntegrationSeedBundle();
+      expect(bundle.version).toBe(INTEGRATION_SEED_VERSION);
+      expect(bundle.erpLedgerConnectors.length).toBe(3);
+      expect(bundle.paymentGatewayConnectors.length).toBe(3);
+      expect(bundle.webhookEndpoints.length).toBe(4);
+    });
+
+    it('ERP connectors have required fields', () => {
+      const bundle = buildIntegrationSeedBundle();
+      for (const connector of bundle.erpLedgerConnectors) {
+        expect(connector.name).toBeDefined();
+        expect(['accurate', 'odoo', 'sap', 'custom']).toContain(connector.erpType);
+        expect(typeof connector.config).toBe('object');
+        expect(typeof connector.enabled).toBe('boolean');
+      }
+    });
+
+    it('payment gateways cover Stripe, Xendit, Midtrans', () => {
+      const bundle = buildIntegrationSeedBundle();
+      const gateways = bundle.paymentGatewayConnectors.map((g) => g.gateway).sort();
+      expect(gateways).toEqual(['midtrans', 'stripe', 'xendit']);
+      const defaultGateway = bundle.paymentGatewayConnectors.find((g) => g.isDefault);
+      expect(defaultGateway?.gateway).toBe('stripe');
+    });
+
+    it('webhook endpoints have valid secret refs', () => {
+      const bundle = buildIntegrationSeedBundle();
+      const secretPattern = /^MW_WEBHOOK_SECRET_C[1-9][0-9]*_[A-Z0-9_]{1,100}$/;
+      for (const endpoint of bundle.webhookEndpoints) {
+        expect(endpoint.name).toBeDefined();
+        expect(endpoint.url).toMatch(/^https?:\/\//);
+        expect(Array.isArray(endpoint.eventTypes)).toBe(true);
+        expect(endpoint.secretRef).toMatch(secretPattern);
+        expect(typeof endpoint.enabled).toBe('boolean');
+      }
+    });
+  });
+
+  describe('seedIntegrationData', () => {
+    let mockDb: Knex;
+    beforeEach(() => {
+      mockDb = mock<Knex>();
+      mockDb.transaction.mockImplementation(async (cb) => cb(mockDb));
+    });
+
+    it('throws when secret ref pattern invalid', async () => {
+      const bundle = buildIntegrationSeedBundle();
+      bundle.webhookEndpoints[0].secretRef = 'INVALID_SECRET';
+      const { buildIntegrationSeedBundle: _, seedIntegrationData: seedFn } = await import('../src/seed.js');
+      await expect(seedFn(mockDb, { companyId: 1 })).rejects.toThrow(/Invalid webhook secret ref/);
+    });
+
+    it('resolves companyId from options or first company', async () => {
+      const bundle = buildIntegrationSeedBundle();
+      mockDb.mockImplementation(() =>
+        Promise.resolve([{ id: 42 }])
+      );
+      mockDb.select.mockResolvedValue([{ id: 42 }]);
+      mockDb.first.mockResolvedValue({ id: 42 });
+      mockDb.where.mockReturnValue(mockDb);
+      mockDb.orderBy.mockReturnValue(mockDb);
+      mockDb.schema.hasTable.mockResolvedValue(true);
+
+      const { seedIntegrationData } = await import('../src/seed.js');
+      const result = await seedIntegrationData(mockDb, { companyId: 99 });
+      expect(result.companyId).toBe(99);
+    });
+
+    it('returns correct counts and inserts nothing when all exist', async () => {
+      mockDb.select.mockResolvedValue([]);
+      mockDb.first.mockResolvedValue({ id: 1 });
+      mockDb.where.mockReturnValue(mockDb);
+      mockDb.orderBy.mockReturnValue(mockDb);
+      mockDb.schema.hasTable.mockResolvedValue(true);
+      mockDb.insert.mockResolvedValue([{ id: 1 }]);
+
+      const { seedIntegrationData } = await import('../src/seed.js');
+      const result = await seedIntegrationData(mockDb, { companyId: 1 });
+      expect(result.erpConnectorsTotal).toBe(3);
+      expect(result.gatewayConnectorsTotal).toBe(3);
+      expect(result.webhookEndpointsTotal).toBe(4);
+      expect(result.insertedErpConnectors).toBe(0);
+      expect(result.insertedGatewayConnectors).toBe(0);
+      expect(result.insertedWebhookEndpoints).toBe(0);
+    });
+  });
+});
+
 describe('ERP Ledger Connector', () => {
   describe('PSAK Chart of Accounts', () => {
     it('contains 21 standard Indonesian accounts', () => {
@@ -63,8 +165,20 @@ describe('ERP Ledger Connector', () => {
       date: '2024-01-15',
       description: 'Test entry',
       lines: [
-        { accountCode: '1101', accountName: 'Kas', debit: 1000000, credit: 0, description: 'Cash received' },
-        { accountCode: '4101', accountName: 'Pendapatan Jasa', debit: 0, credit: 1000000, description: 'Revenue' },
+        {
+          accountCode: '1101',
+          accountName: 'Kas',
+          debit: 1000000,
+          credit: 0,
+          description: 'Cash received',
+        },
+        {
+          accountCode: '4101',
+          accountName: 'Pendapatan Jasa',
+          debit: 0,
+          credit: 1000000,
+          description: 'Revenue',
+        },
       ],
     };
 
@@ -80,13 +194,25 @@ describe('ERP Ledger Connector', () => {
         date: '2024-01-15',
         description: 'Test entry',
         lines: [
-          { accountCode: '1101', accountName: 'Kas', debit: 1000000, credit: 0, description: 'Cash' },
-          { accountCode: '4101', accountName: 'Pendapatan Jasa', debit: 0, credit: 500000, description: 'Revenue' },
+          {
+            accountCode: '1101',
+            accountName: 'Kas',
+            debit: 1000000,
+            credit: 0,
+            description: 'Cash',
+          },
+          {
+            accountCode: '4101',
+            accountName: 'Pendapatan Jasa',
+            debit: 0,
+            credit: 500000,
+            description: 'Revenue',
+          },
         ],
       };
       const result = validateJournalEntry(unbalanced);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('debit') && e.includes('credit'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('debit') && e.includes('credit'))).toBe(true);
     });
 
     it('rejects unknown account codes', () => {
@@ -95,13 +221,25 @@ describe('ERP Ledger Connector', () => {
         date: '2024-01-15',
         description: 'Test entry',
         lines: [
-          { accountCode: '9999', accountName: 'Unknown', debit: 1000, credit: 0, description: 'Unknown' },
-          { accountCode: '4101', accountName: 'Pendapatan Jasa', debit: 0, credit: 1000, description: 'Revenue' },
+          {
+            accountCode: '9999',
+            accountName: 'Unknown',
+            debit: 1000,
+            credit: 0,
+            description: 'Unknown',
+          },
+          {
+            accountCode: '4101',
+            accountName: 'Pendapatan Jasa',
+            debit: 0,
+            credit: 1000,
+            description: 'Revenue',
+          },
         ],
       };
       const result = validateJournalEntry(unknown);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('Unknown account'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('Unknown account'))).toBe(true);
     });
 
     it('rejects lines with both debit and credit', () => {
@@ -111,12 +249,18 @@ describe('ERP Ledger Connector', () => {
         description: 'Test entry',
         lines: [
           { accountCode: '1101', accountName: 'Kas', debit: 100, credit: 100, description: 'Both' },
-          { accountCode: '4101', accountName: 'Pendapatan Jasa', debit: 0, credit: 200, description: 'Revenue' },
+          {
+            accountCode: '4101',
+            accountName: 'Pendapatan Jasa',
+            debit: 0,
+            credit: 200,
+            description: 'Revenue',
+          },
         ],
       };
       const result = validateJournalEntry(both);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('both debit and credit'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('both debit and credit'))).toBe(true);
     });
 
     it('rejects lines with zero amounts on both sides', () => {
@@ -126,12 +270,18 @@ describe('ERP Ledger Connector', () => {
         description: 'Test entry',
         lines: [
           { accountCode: '1101', accountName: 'Kas', debit: 0, credit: 0, description: 'Zero' },
-          { accountCode: '4101', accountName: 'Pendapatan Jasa', debit: 0, credit: 0, description: 'Revenue' },
+          {
+            accountCode: '4101',
+            accountName: 'Pendapatan Jasa',
+            debit: 0,
+            credit: 0,
+            description: 'Revenue',
+          },
         ],
       };
       const result = validateJournalEntry(zero);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('zero amount'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('zero amount'))).toBe(true);
     });
   });
 
@@ -154,8 +304,20 @@ describe('ERP Ledger Connector', () => {
       description: 'Test entry',
       reference: 'INV-001',
       lines: [
-        { accountCode: '1101', accountName: 'Kas', debit: 1000000, credit: 0, description: 'Cash received' },
-        { accountCode: '4101', accountName: 'Pendapatan Jasa', debit: 0, credit: 1000000, description: 'Revenue' },
+        {
+          accountCode: '1101',
+          accountName: 'Kas',
+          debit: 1000000,
+          credit: 0,
+          description: 'Cash received',
+        },
+        {
+          accountCode: '4101',
+          accountName: 'Pendapatan Jasa',
+          debit: 0,
+          credit: 1000000,
+          description: 'Revenue',
+        },
       ],
     };
 
@@ -239,7 +401,7 @@ BSEG,JE-004,S,3000000,S,4101,,,,,`;
       const sapCsv = `BKPF,JE-004,2024.01.18,SA
 BSEG,JE-004,S,3000000,H,1101,,,,,
 BSEG,JE-004,S,3000000,S,4101,,,,,`;
-      
+
       expect(importJournalEntry(accurateCsv, 'accurate').id).toBeDefined();
       expect(importJournalEntry(odooJson, 'odoo').id).toBeDefined();
       expect(importJournalEntry(sapCsv, 'sap').id).toBeDefined();
@@ -256,11 +418,19 @@ BSEG,JE-004,S,3000000,S,4101,,,,,`;
 
   describe('buildJournalEntryFromTransaction', () => {
     it('creates balanced journal entry for payment', () => {
-      const tx = { id: '1', date: '2024-01-15', description: 'Invoice payment', amount: 500000, debitAccount: '1101', creditAccount: '4101', companyId: 1 };
+      const tx = {
+        id: '1',
+        date: '2024-01-15',
+        description: 'Invoice payment',
+        amount: 500000,
+        debitAccount: '1101',
+        creditAccount: '4101',
+        companyId: 1,
+      };
       const result = buildJournalEntryFromTransaction(tx);
-      
-      const debits = result.lines.filter(l => l.debit > 0).reduce((a, l) => a + l.debit, 0);
-      const credits = result.lines.filter(l => l.credit > 0).reduce((a, l) => a + l.credit, 0);
+
+      const debits = result.lines.filter((l) => l.debit > 0).reduce((a, l) => a + l.debit, 0);
+      const credits = result.lines.filter((l) => l.credit > 0).reduce((a, l) => a + l.credit, 0);
       expect(debits).toBe(credits);
     });
   });
@@ -323,12 +493,15 @@ describe('Payment Gateways Connector', () => {
     it('buildPaymentIntent routes to correct builder', () => {
       expect(buildPaymentIntent(baseRequest, 'stripe', mockStripeConfig).gateway).toBe('stripe');
       expect(buildPaymentIntent(baseRequest, 'xendit', mockXenditConfig).gateway).toBe('xendit');
-      expect(buildPaymentIntent(baseRequest, 'midtrans', mockMidtransConfig).gateway).toBe('midtrans');
+      expect(buildPaymentIntent(baseRequest, 'midtrans', mockMidtransConfig).gateway).toBe(
+        'midtrans'
+      );
     });
 
     it('throws on unsupported gateway', () => {
-      expect(() => buildPaymentIntent(baseRequest, 'unknown' as never, mockStripeConfig))
-        .toThrow('Unsupported gateway');
+      expect(() => buildPaymentIntent(baseRequest, 'unknown' as never, mockStripeConfig)).toThrow(
+        'Unsupported gateway'
+      );
     });
   });
 
@@ -395,15 +568,16 @@ A5whnhkzTnzXMDRGFa3df6R/bwkPK/OcE5e7UUGzdPCrfHoYf1eVXg==
     });
 
     it('throws on unsupported gateway for signing', () => {
-      expect(() => signRefundPayload(refundRequest, 'unknown' as never, 'secret'))
-        .toThrow('Unsupported gateway for refund signing');
+      expect(() => signRefundPayload(refundRequest, 'unknown' as never, 'secret')).toThrow(
+        'Unsupported gateway for refund signing'
+      );
     });
   });
 
   describe('Refund Dispatch', () => {
     it('dispatches refund for all gateways', () => {
       const request = { paymentIntentId: 'pi_123', amount: 1000, reason: 'duplicate' as const };
-      
+
       expect(dispatchRefund(request, 'stripe', mockStripeConfig).gateway).toBe('stripe');
       expect(dispatchRefund(request, 'xendit', mockXenditConfig).gateway).toBe('xendit');
       expect(dispatchRefund(request, 'midtrans', mockMidtransConfig).gateway).toBe('midtrans');
@@ -423,9 +597,27 @@ A5whnhkzTnzXMDRGFa3df6R/bwkPK/OcE5e7UUGzdPCrfHoYf1eVXg==
 
   describe('Payout Reconciliation', () => {
     const gatewayRecords = [
-      { id: 'po_1', amount: 100000, currency: 'IDR', status: 'paid' as const, gateway: 'stripe' as const },
-      { id: 'po_2', amount: 200000, currency: 'IDR', status: 'paid' as const, gateway: 'stripe' as const },
-      { id: 'po_3', amount: 300000, currency: 'IDR', status: 'failed' as const, gateway: 'stripe' as const },
+      {
+        id: 'po_1',
+        amount: 100000,
+        currency: 'IDR',
+        status: 'paid' as const,
+        gateway: 'stripe' as const,
+      },
+      {
+        id: 'po_2',
+        amount: 200000,
+        currency: 'IDR',
+        status: 'paid' as const,
+        gateway: 'stripe' as const,
+      },
+      {
+        id: 'po_3',
+        amount: 300000,
+        currency: 'IDR',
+        status: 'failed' as const,
+        gateway: 'stripe' as const,
+      },
     ];
 
     const localRecords = [
@@ -445,9 +637,13 @@ A5whnhkzTnzXMDRGFa3df6R/bwkPK/OcE5e7UUGzdPCrfHoYf1eVXg==
     it('Xendit and Midtrans use same logic', () => {
       const xenditResult = reconcileXenditPayouts(gatewayRecords, localRecords);
       const midtransResult = reconcileMidtransPayouts(gatewayRecords, localRecords);
-      
-      expect(xenditResult.matched).toBe(reconcileStripePayouts(gatewayRecords, localRecords).matched);
-      expect(midtransResult.matched).toBe(reconcileStripePayouts(gatewayRecords, localRecords).matched);
+
+      expect(xenditResult.matched).toBe(
+        reconcileStripePayouts(gatewayRecords, localRecords).matched
+      );
+      expect(midtransResult.matched).toBe(
+        reconcileStripePayouts(gatewayRecords, localRecords).matched
+      );
     });
 
     it('reconcilePayouts routes to correct gateway', () => {
@@ -487,14 +683,14 @@ A5whnhkzTnzXMDRGFa3df6R/bwkPK/OcE5e7UUGzdPCrfHoYf1eVXg==
 
     it('builds journal entry from payment intent', () => {
       const result = buildJournalEntryFromPaymentIntent(mockPaymentIntent, 2900);
-      
-      const debits = result.lines.filter(l => l.debit > 0).reduce((a, l) => a + l.debit, 0);
-      const credits = result.lines.filter(l => l.credit > 0).reduce((a, l) => a + l.credit, 0);
+
+      const debits = result.lines.filter((l) => l.debit > 0).reduce((a, l) => a + l.debit, 0);
+      const credits = result.lines.filter((l) => l.credit > 0).reduce((a, l) => a + l.credit, 0);
       expect(debits).toBe(credits);
       expect(result.total).toBe(100000);
-      expect(result.lines.some(l => l.account_code === '1101')).toBe(true);
-      expect(result.lines.some(l => l.account_code === '4101')).toBe(true);
-      expect(result.lines.some(l => l.account_code === '6101')).toBe(true); // fee
+      expect(result.lines.some((l) => l.account_code === '1101')).toBe(true);
+      expect(result.lines.some((l) => l.account_code === '4101')).toBe(true);
+      expect(result.lines.some((l) => l.account_code === '6101')).toBe(true); // fee
     });
 
     it('builds journal entry from refund', () => {
@@ -504,13 +700,13 @@ A5whnhkzTnzXMDRGFa3df6R/bwkPK/OcE5e7UUGzdPCrfHoYf1eVXg==
       } as InstanceType<typeof RefundRecord>;
 
       const result = buildJournalEntryFromRefund(mockRefund, 100000);
-      
-      const debits = result.lines.filter(l => l.debit > 0).reduce((a, l) => a + l.debit, 0);
-      const credits = result.lines.filter(l => l.credit > 0).reduce((a, l) => a + l.credit, 0);
+
+      const debits = result.lines.filter((l) => l.debit > 0).reduce((a, l) => a + l.debit, 0);
+      const credits = result.lines.filter((l) => l.credit > 0).reduce((a, l) => a + l.credit, 0);
       expect(debits).toBe(credits);
       expect(result.total).toBe(50000);
-      expect(result.lines.some(l => l.account_code === '4101')).toBe(true); // revenue reversal
-      expect(result.lines.some(l => l.account_code === '1101')).toBe(true); // cash outflow
+      expect(result.lines.some((l) => l.account_code === '4101')).toBe(true); // revenue reversal
+      expect(result.lines.some((l) => l.account_code === '1101')).toBe(true); // cash outflow
     });
   });
 });

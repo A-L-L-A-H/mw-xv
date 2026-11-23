@@ -50,7 +50,9 @@ describe('node-provisioner (Wave C.14)', () => {
       'verify-health-probe',
     ]);
     expect(reportA.steps.every((s) => s.idempotent)).toBe(true);
-    expect(reportA.systemdUnitPreview).toContain('Environment=MW_CONTROL_PLANE_AUTOSTART_LEGACY=false');
+    expect(reportA.systemdUnitPreview).toContain(
+      'Environment=MW_CONTROL_PLANE_AUTOSTART_LEGACY=false'
+    );
     expect(reportA.redactedSummary).not.toContain(BASE_REQUEST.meshNetworkSecret);
     for (const step of reportA.steps) {
       expect(step.redactedCommand).not.toContain(BASE_REQUEST.meshNetworkSecret);

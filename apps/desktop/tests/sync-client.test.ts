@@ -5,7 +5,11 @@ import {
   type PullRemoteDeltasResponse,
   type RemoteDelta,
 } from '../src/sync-client.js';
-import { resolveSyncConflict, type SyncRecordVersion, type SyncConflictRecord } from '../src/sync-engine.js';
+import {
+  resolveSyncConflict,
+  type SyncRecordVersion,
+  type SyncConflictRecord,
+} from '../src/sync-engine.js';
 import { ValidationError, AccessDeniedError } from '@moonwitness/types';
 
 function makeClient(
@@ -25,10 +29,18 @@ function makeClient(
 
 describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   it('rejects invalid baseUrl on construction', () => {
-    expect(() => new DesktopUpstreamSyncClient({ apiBaseUrl: 'not-a-url' })).toThrow(ValidationError);
-    expect(() => new DesktopUpstreamSyncClient({ apiBaseUrl: 'ftp://example.com' })).toThrow(ValidationError);
-    expect(() => new DesktopUpstreamSyncClient({ apiBaseUrl: 'https://user:pass@example.com' })).toThrow(ValidationError);
-    expect(() => new DesktopUpstreamSyncClient({ apiBaseUrl: 'https://example.com#hash' })).toThrow(ValidationError);
+    expect(() => new DesktopUpstreamSyncClient({ apiBaseUrl: 'not-a-url' })).toThrow(
+      ValidationError
+    );
+    expect(() => new DesktopUpstreamSyncClient({ apiBaseUrl: 'ftp://example.com' })).toThrow(
+      ValidationError
+    );
+    expect(
+      () => new DesktopUpstreamSyncClient({ apiBaseUrl: 'https://user:pass@example.com' })
+    ).toThrow(ValidationError);
+    expect(() => new DesktopUpstreamSyncClient({ apiBaseUrl: 'https://example.com#hash' })).toThrow(
+      ValidationError
+    );
   });
 
   it('validates companyId is positive integer', async () => {
@@ -117,26 +129,27 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('detects local_wins conflict (local clock higher)', async () => {
-    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
-      new Response(
-        JSON.stringify({
-          deltas: [
-            {
-              entityType: 'project.task',
-              entityId: 'task-conflict',
-              operation: 'upsert',
-              lamportClock: 3,
-              nodeId: 'cloud-1',
-              updatedAt: '2026-11-23T01:00:00.000Z',
-              fields: { name: 'Remote Title' },
-              tombstone: false,
-            },
-          ],
-          nextCursor: 'next',
-          serverClock: 5,
-        }),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      )
+    const mockFetch = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) =>
+        new Response(
+          JSON.stringify({
+            deltas: [
+              {
+                entityType: 'project.task',
+                entityId: 'task-conflict',
+                operation: 'upsert',
+                lamportClock: 3,
+                nodeId: 'cloud-1',
+                updatedAt: '2026-11-23T01:00:00.000Z',
+                fields: { name: 'Remote Title' },
+                tombstone: false,
+              },
+            ],
+            nextCursor: 'next',
+            serverClock: 5,
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
     );
 
     const client = makeClient(mockFetch);
@@ -165,26 +178,27 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('detects remote_wins conflict (remote clock higher)', async () => {
-    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
-      new Response(
-        JSON.stringify({
-          deltas: [
-            {
-              entityType: 'project.task',
-              entityId: 'task-conflict',
-              operation: 'upsert',
-              lamportClock: 7,
-              nodeId: 'cloud-1',
-              updatedAt: '2026-11-23T01:00:00.000Z',
-              fields: { name: 'Remote Title' },
-              tombstone: false,
-            },
-          ],
-          nextCursor: 'next',
-          serverClock: 10,
-        }),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      )
+    const mockFetch = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) =>
+        new Response(
+          JSON.stringify({
+            deltas: [
+              {
+                entityType: 'project.task',
+                entityId: 'task-conflict',
+                operation: 'upsert',
+                lamportClock: 7,
+                nodeId: 'cloud-1',
+                updatedAt: '2026-11-23T01:00:00.000Z',
+                fields: { name: 'Remote Title' },
+                tombstone: false,
+              },
+            ],
+            nextCursor: 'next',
+            serverClock: 10,
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
     );
 
     const client = makeClient(mockFetch);
@@ -211,26 +225,27 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('detects merged_fields conflict (disjoint field updates)', async () => {
-    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
-      new Response(
-        JSON.stringify({
-          deltas: [
-            {
-              entityType: 'project.task',
-              entityId: 'task-merge',
-              operation: 'upsert',
-              lamportClock: 5,
-              nodeId: 'cloud-1',
-              updatedAt: '2026-11-23T01:00:00.000Z',
-              fields: { name: 'Remote Title', description: 'Added remotely' },
-              tombstone: false,
-            },
-          ],
-          nextCursor: 'next',
-          serverClock: 10,
-        }),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      )
+    const mockFetch = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) =>
+        new Response(
+          JSON.stringify({
+            deltas: [
+              {
+                entityType: 'project.task',
+                entityId: 'task-merge',
+                operation: 'upsert',
+                lamportClock: 5,
+                nodeId: 'cloud-1',
+                updatedAt: '2026-11-23T01:00:00.000Z',
+                fields: { name: 'Remote Title', description: 'Added remotely' },
+                tombstone: false,
+              },
+            ],
+            nextCursor: 'next',
+            serverClock: 10,
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
     );
 
     const client = makeClient(mockFetch);
@@ -261,26 +276,27 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('handles tombstone vs upsert conflict (strict LWW)', async () => {
-    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
-      new Response(
-        JSON.stringify({
-          deltas: [
-            {
-              entityType: 'project.task',
-              entityId: 'task-deleted',
-              operation: 'upsert',
-              lamportClock: 1,
-              nodeId: 'cloud-1',
-              updatedAt: '2026-11-23T00:00:00.000Z',
-              fields: { name: 'Stale resurrect' },
-              tombstone: false,
-            },
-          ],
-          nextCursor: 'next',
-          serverClock: 5,
-        }),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      )
+    const mockFetch = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) =>
+        new Response(
+          JSON.stringify({
+            deltas: [
+              {
+                entityType: 'project.task',
+                entityId: 'task-deleted',
+                operation: 'upsert',
+                lamportClock: 1,
+                nodeId: 'cloud-1',
+                updatedAt: '2026-11-23T00:00:00.000Z',
+                fields: { name: 'Stale resurrect' },
+                tombstone: false,
+              },
+            ],
+            nextCursor: 'next',
+            serverClock: 5,
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
     );
 
     const client = makeClient(mockFetch);
@@ -307,26 +323,27 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('handles tombstone vs tombstone conflict', async () => {
-    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
-      new Response(
-        JSON.stringify({
-          deltas: [
-            {
-              entityType: 'project.task',
-              entityId: 'task-double-delete',
-              operation: 'delete',
-              lamportClock: 5,
-              nodeId: 'cloud-1',
-              updatedAt: '2026-11-23T01:00:00.000Z',
-              fields: {},
-              tombstone: true,
-            },
-          ],
-          nextCursor: 'next',
-          serverClock: 10,
-        }),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      )
+    const mockFetch = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) =>
+        new Response(
+          JSON.stringify({
+            deltas: [
+              {
+                entityType: 'project.task',
+                entityId: 'task-double-delete',
+                operation: 'delete',
+                lamportClock: 5,
+                nodeId: 'cloud-1',
+                updatedAt: '2026-11-23T01:00:00.000Z',
+                fields: {},
+                tombstone: true,
+              },
+            ],
+            nextCursor: 'next',
+            serverClock: 10,
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
     );
 
     const client = makeClient(mockFetch);
@@ -358,10 +375,10 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
       if (calls.length < 3) {
         return new Response('Too Many Requests', { status: 429 });
       }
-      return new Response(
-        JSON.stringify({ deltas: [], nextCursor: 'done', serverClock: 1 }),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ deltas: [], nextCursor: 'done', serverClock: 1 }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
     });
 
     const sleepCalls: number[] = [];
@@ -383,10 +400,10 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
       .fn()
       .mockRejectedValueOnce(new Error('Network error'))
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ deltas: [], nextCursor: 'done', serverClock: 1 }),
-          { status: 200, headers: { 'content-type': 'application/json' } }
-        )
+        new Response(JSON.stringify({ deltas: [], nextCursor: 'done', serverClock: 1 }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        })
       );
 
     const client = makeClient(mockFetch);
@@ -395,8 +412,9 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('redacts known secrets in error messages', async () => {
-    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
-      new Response('Unauthorized: sk-secret-123', { status: 401 })
+    const mockFetch = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) =>
+        new Response('Unauthorized: sk-secret-123', { status: 401 })
     );
 
     const client = makeClient(mockFetch);
@@ -404,8 +422,9 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('does not redact unknown strings', async () => {
-    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
-      new Response('Error: some-random-value', { status: 400 })
+    const mockFetch = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) =>
+        new Response('Error: some-random-value', { status: 400 })
     );
 
     const client = makeClient(mockFetch);
@@ -417,11 +436,12 @@ describe('DesktopUpstreamSyncClient (pullRemoteDeltas)', () => {
   });
 
   it('returns empty deltas and conflicts when server returns no deltas', async () => {
-    const mockFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
-      new Response(
-        JSON.stringify({ deltas: [], nextCursor: 'empty', serverClock: 0 }),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      )
+    const mockFetch = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) =>
+        new Response(JSON.stringify({ deltas: [], nextCursor: 'empty', serverClock: 0 }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        })
     );
 
     const client = makeClient(mockFetch);

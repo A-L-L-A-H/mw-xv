@@ -25,7 +25,11 @@ describe('API worker bootstrap', () => {
   });
 
   it('registers metadata without writing database schema', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
 
     await bootstrapApiWorker(db, {
       addons: [addon],

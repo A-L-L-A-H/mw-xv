@@ -19,15 +19,15 @@ The archive has been expanded into a structured knowledge layer covering creativ
 
 ## Audit coverage by source
 
-| Source | Coverage achieved | Remaining limitation |
-|---|---|---|
-| Current user prompt | 775 lines read and copied verbatim to `docs/raw/` | One prompt only; not the full account export |
-| Model Memory Summary / recent context | Used as discovery aid and explicitly labelled secondary | Cannot establish original wording or full chronology |
-| ChatGPT Library | Fully paginated inventory: 279 root entries (278 files + 1 folder) and 319 recursive entries (300 files + 19 folders); 203 PNGs; `/MoonWitness` subtree has 22 files | Inventory counts are metadata-only. Image prompts, revisions, rights and all nested file contents are not fully reviewed; one older 439-line personal note remains private-withheld |
-| MW-XV target | README, roadmap, TaskOS blob, migration/ownership docs, 161 issues, 26 PRs, branches, workflows, run jobs/logs, CI fixes and archive file tree inspected | No local full checkout/build in this session; current CI result and PR approval still separate |
-| Public `bjo163/*` sources | 148 public metadata rows; 30 selected README/root-tree review; key II/XII/XV, corpus and ROCKSOUL research sources read | 118 public metadata-only; no full source/test/license/branch/deployment audit of all 148 |
-| Private `bjo163/*` sources | 132 private metadata records counted; selected README snippets inspected via authorized connection | No private source-code or full artifact audit; identifiers/details excluded from public docs |
-| GitHub issues and PRs | Full current target issue/PR lists indexed; stable IDs/markers/duplicates classified | No automatic merge, issue closure, deletion or duplicate cleanup performed |
+| Source                                | Coverage achieved                                                                                                                                                    | Remaining limitation                                                                                                                                                                |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Current user prompt                   | 775 lines read and copied verbatim to `docs/raw/`                                                                                                                    | One prompt only; not the full account export                                                                                                                                        |
+| Model Memory Summary / recent context | Used as discovery aid and explicitly labelled secondary                                                                                                              | Cannot establish original wording or full chronology                                                                                                                                |
+| ChatGPT Library                       | Fully paginated inventory: 279 root entries (278 files + 1 folder) and 319 recursive entries (300 files + 19 folders); 203 PNGs; `/MoonWitness` subtree has 22 files | Inventory counts are metadata-only. Image prompts, revisions, rights and all nested file contents are not fully reviewed; one older 439-line personal note remains private-withheld |
+| MW-XV target                          | README, roadmap, TaskOS blob, migration/ownership docs, 161 issues, 26 PRs, branches, workflows, run jobs/logs, CI fixes and archive file tree inspected             | No local full checkout/build in this session; current CI result and PR approval still separate                                                                                      |
+| Public `bjo163/*` sources             | 148 public metadata rows; 30 selected README/root-tree review; key II/XII/XV, corpus and ROCKSOUL research sources read                                              | 118 public metadata-only; no full source/test/license/branch/deployment audit of all 148                                                                                            |
+| Private `bjo163/*` sources            | 132 private metadata records counted; selected README snippets inspected via authorized connection                                                                   | No private source-code or full artifact audit; identifiers/details excluded from public docs                                                                                        |
+| GitHub issues and PRs                 | Full current target issue/PR lists indexed; stable IDs/markers/duplicates classified                                                                                 | No automatic merge, issue closure, deletion or duplicate cleanup performed                                                                                                          |
 
 ## Target issue / PR findings
 
@@ -68,12 +68,11 @@ This documentation and audit pass is substantially consolidated, but **all audit
 
 - `dev` HEAD at this snapshot: `3cbe3dab434652e661cac5005715d71fab44fdb4`; `main`: `5dd3da3389cdd4b55ef1a538f0dc46c13918f108`.
 - The exact TaskOS blob was parsed: 636 unique task codes; 468 done, 49 doing, 96 todo, 23 blocked; zero duplicate IDs; zero dangling dependencies; zero missing acceptance criteria; zero missing source references.
-- Roadmap issue sync succeeded on the snapshot (run `45144270287`). 
+- Roadmap issue sync succeeded on the snapshot (run `45144270287`).
 - CI run `45144276594` was still in progress: secret scan and dependency audit succeeded, while quality/build, unit, PostgreSQL integration, knowledge, DX and static-analysis jobs remained in progress. Documentation Pages remained pending.
 - The earlier markdown-link failure was traced to one wrong relative path in the repository consolidation report and corrected in commit `65ab52e6e65e8af68253f25f748c065578b8ee94`. The newer exact-SHA quality/build job must confirm that fix.
 - PR #81 remains open and has no approving review. Its current head was `3cbe3d`; it contains 158 changed files, and `main` is 2 commits ahead of the comparison base. The visible PR review state was `COMMENTED`; one CodeQL comment thread remains open. Promotion is not approved.
 - The archive README now indexes the new framework, Library-source and audit-status registers; the Raw README links the verbatim 775-line master prompt; the Creative Visual Bible includes 11 Library-observed caption-only concept leads. No image bytes or private personal note content was copied.
-
 
 ## Latest follow-up — 2026-11-23 (post-archive issue and Library reconciliation)
 
