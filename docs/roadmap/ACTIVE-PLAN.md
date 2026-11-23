@@ -1,5 +1,16 @@
 # Jalur rilis aktif
 
+## Latest archive audit checkpoint — 2026-11-23 09:08 UTC (not released)
+
+- **Current audited `dev` HEAD:** `3cbe3dab434652e661cac5005715d71fab44fdb4`.
+- **Current `main` HEAD:** `5dd3da3389cdd4b55ef1a538f0dc46c13918f108`.
+- **Branch divergence:** `dev` is 81 commits ahead and 2 behind `main`. PR [#81](https://github.com/A-L-L-A-H/mw-xv/pull/81) is open and mergeable at the API level, but has 158 changed files, 13,723 additions and 1,467 deletions. It has no approving review; the visible review is `COMMENTED`, and one CodeQL review thread remains unresolved.
+- **TaskOS at the audited registry blob:** `0cf7a159842761866ff2e247bffdcdce822ac712`, 1,673,366 bytes, 636 unique task IDs: 468 done, 49 doing, 96 todo, 23 blocked. No duplicate IDs, dangling dependencies, missing acceptance criteria or missing source refs were found. The nine IDs beyond the historical 627-record main checkpoint are `AUD-015`–`AUD-023`.
+- **Issue sync:** [run 45144270287](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45144270287) completed successfully on this SHA. No manually-created duplicate task issue was added by the archive work.
+- **CI at snapshot:** [run 45144276594](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45144276594) was still in progress. `secret-scan` and `dependency-audit` had completed successfully; quality/build, unit tests, PostgreSQL integration, knowledge gate, DX and both CodeQL lanes had not yet reached final conclusions. Documentation Pages was pending. The prior documented broken CSV link in `REPOSITORY-CONSOLIDATION-REPORT.md` was fixed in commit `65ab52e6e65e8af68253f25f748c065578b8ee94`; this newer run must prove the link check is now green.
+- **Promotion:** the `Promote dev to main` run for this snapshot was cancelled. No merge, release or deployment is claimed. Do not bypass required checks, the unresolved CodeQL thread, review or the 2-commit main divergence.
+- **Archive:** master index now links separate idea, project, canon, character, story, creative/visual, brand/product, religion/philosophy, framework, source, issue, execution and unresolved registries. Library caption-only visual concepts have been indexed without asserting their captions are original prompts.
+
 ## Current verified audit checkpoint — 2026-11-23 (pre-archive docs baseline; not released)
 
 The following exact state was verified from GitHub before this documentation-only archive batch. Later commits on `dev` change the branch head; this block identifies the audited baseline, not a claim about subsequent CI.
