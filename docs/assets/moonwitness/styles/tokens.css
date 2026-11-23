@@ -11,12 +11,15 @@
   --mw-ink: #0d0d0d;
   --mw-ink-soft: #3a3a36;
   --mw-ink-faint: #6b695f;
+  --mw-color-ink-muted: var(--mw-ink-faint);
   --mw-signal-blue: #00b8f0;
+  --mw-cyan: var(--mw-signal-blue);
   --mw-night: #0d0d0d;
+  --mw-night-soft: #121216;
   --mw-night-raised: #17171a;
   --mw-night-blue: #092c49;
   --mw-night-magenta: #421027;
-  --mw-night-outline: color-mix(in srgb, var(--mw-paper) 22%, transparent);
+  --mw-night-outline: color-mix(in srgb, var(--mw-paper-cream) 22%, transparent);
   --mw-paper-highlight: #e3dfd4;
   --mw-paper-muted: #cbc7bd;
   --mw-moon: #b6cad7;
@@ -33,6 +36,7 @@
   --mw-halftone-dot: rgb(13 13 13 / 13%);
 
   /* Semantic colors */
+  --mw-highlight: #ffffff;
   --mw-background: var(--mw-paper);
   --mw-foreground: var(--mw-ink);
   --mw-surface: var(--mw-paper-raised);
@@ -52,6 +56,8 @@
   --mw-destructive: var(--mw-error);
   --mw-destructive-foreground: var(--mw-on-error);
   --mw-border: var(--mw-ink);
+  --mw-border-strong: var(--mw-ink);
+  --mw-border-subtle: color-mix(in srgb, var(--mw-ink) 35%, var(--mw-paper));
   --mw-input: var(--mw-ink);
   --mw-focus: var(--mw-ink);
   --mw-backdrop: rgb(13 13 13 / 50%);
@@ -59,6 +65,8 @@
   --mw-on-success: #fffdf6;
   --mw-warning: #facc15;
   --mw-on-warning: #0d0d0d;
+  --mw-warning-readable: #705900;
+  --mw-success-readable: #166534;
   --mw-info: #175cd3;
   --mw-on-info: #fffdf6;
 
@@ -72,9 +80,11 @@
   /* Typography: applications may self-host fonts and override these stacks. */
   --mw-font-display: 'MoonWitness Grunge', 'Anton', Impact, 'Arial Narrow', sans-serif;
   --mw-font-grunge: 'MoonWitness Grunge', 'Road Rage', Impact, 'Arial Narrow', sans-serif;
+  --mw-font-condensed: var(--mw-font-grunge);
   --mw-font-brush: 'MoonWitness Grunge', 'Road Rage', Impact, 'Arial Narrow', sans-serif;
   --mw-font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --mw-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --mw-font-size-2xs: 0.75rem;
   --mw-font-size-xs: 0.75rem;
   --mw-font-size-sm: 0.875rem;
   --mw-font-size-md: 1rem;
@@ -85,6 +95,7 @@
   --mw-line-height-normal: 1.5;
 
   /* Spacing, shape, depth and motion */
+  --mw-avatar-size: 2.5rem;
   --mw-space-1: 0.25rem;
   --mw-space-2: 0.5rem;
   --mw-space-3: 0.75rem;
@@ -229,6 +240,7 @@
     4% 62%,
     0% 36%
   );
+  --mw-chalk-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='none'%3E%3Cpath d='M1 2L28 0 58 3 92 0 128 3 166 0 199 2 197 26 200 54 197 80 199 99 164 97 126 100 88 97 48 100 14 97 1 99 3 70 0 40 3 14Z' fill='none' stroke='%23000' stroke-width='4.2' stroke-dasharray='26 3 10 2 34 4'/%3E%3Cpath d='M4 6L52 4M78 3L128 5M154 4L194 6M6 94L62 96M100 95L148 97M172 95L196 93M5 22L4 56M196 28L195 66' stroke='%23000' stroke-width='2' stroke-dasharray='9 4 4 5'/%3E%3Ccircle cx='7' cy='8' r='2' fill='%23000'/%3E%3Ccircle cx='193' cy='9' r='1.7' fill='%23000'/%3E%3Ccircle cx='192' cy='92' r='2.1' fill='%23000'/%3E%3Ccircle cx='8' cy='91' r='1.6' fill='%23000'/%3E%3C/svg%3E");
   --mw-grunge-clip-notched: polygon(
     0.6% 0%,
     99.4% 0%,
@@ -246,6 +258,8 @@
   --mw-layer-raised: 10;
   --mw-layer-sticky: 20;
   --mw-layer-overlay: 40;
+  --mw-layer-dialog: 50;
+  --mw-layer-popover: 55;
   --mw-layer-toast: 60;
 }
 
@@ -264,6 +278,8 @@
   --mw-muted: #232327;
   --mw-error: #fda29b;
   --mw-on-error: #0d0d0d;
+  --mw-warning-readable: var(--mw-warning);
+  --mw-success-readable: #86efac;
 }
 
 /* Skin: moonwitness-compact (dense operational) */
