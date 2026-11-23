@@ -26,10 +26,17 @@ This timeline records only dates and windows supported by the supplied prompt, a
 | 24 Oct 2026 | V10 public research pack and expanded narrative companion published in XIV | V10 docs / progress ledger | Public research pack is not the original V10 manuscript and does not authorize private-source import |
 | 26 Oct 2026 | Moonframe M13 readiness snapshot | Moonframe README | Automated checks and component inventory do not replace human visual review |
 | 22 Nov 2026 | MW-XV issues #15–#22 and #27 opened as product/source-consolidation proposals | GitHub issue metadata | Proposal issue creation does not prove feature implementation or final approval |
-| 23 Nov 2026 | Owner supplied the 775-line Total Idea Archive master prompt | Current conversation attachment `Pasted text(5).txt` | Exact source inspected; this is not a full ChatGPT account export |
+| 23 Nov 2026 | Owner supplied the 775-line Total Idea Archive master prompt | Current conversation attachment `Pasted text.txt` | Exact source inspected; this is not a full ChatGPT account export |
 | 23 Nov 2026 | Initial raw intake and brain relationship map added to MW-XV | GitHub commits / docs | Initial navigation layer, not complete historical recovery |
 | 23 Nov 2026 | Paginated `bjo163` repository search and public inventory snapshot | GitHub search, migration report and CSV | 280 accessible metadata results; no exhaustive code/rights/deployment audit |
 | 23 Nov 2026 | Knowledge archive expansion and TaskOS README correction | MW-XV `dev` commits | Documentation-only changes; CI/PR verification must be checked at the exact current SHA |
+
+## Additional Library source evidence (2026-11-23)
+
+- The current 775-line master prompt is archived verbatim at `docs/raw/2026-11-23-master-prompt-total-idea-archive.md`.
+- A separate older 439-line Library note named `Pasted text.txt` was inspected as a source but is personal/private and is not reproduced in this public archive.
+- `Omniscience_Method_RGBL_AI_Ready_Research_Paper.md` is a separate 437-line Library paper, version 1.0 dated 17 August 2026; the method is summarized in `FRAMEWORK-REGISTRY.md`.
+- Twenty-one image files were enumerated in the Library root. Original prompts, revision history and publication rights are not recovered for every image; see `LIBRARY-SOURCE-REGISTER.md`.
 
 ## Version and correction policy
 
