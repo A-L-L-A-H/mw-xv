@@ -242,6 +242,6 @@ describe('MeshFleetClient', () => {
       ],
     });
 
-    await expect(client.listNodeServices('vps-us-01', makeAuth('R0'))).rejects.toThrow('[REDACTED_SECRET]');
+    await expect(client.listNodeServices('vps-us-01', makeAuth('R0'))).rejects.toThrow('[REDACTED]');
   });
 });
