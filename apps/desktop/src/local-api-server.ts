@@ -47,7 +47,7 @@ import {
 import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moonwitness/types';
 import { A2AMeshClient } from './a2a-client.js';
 import { searchHybridLocalMemory, type HybridMemoryRecord } from './hybrid-memory.js';
-import { DESKTOP_ADDONS, LocalSidecarController } from './local-sidecar.js';
+import { DESKTOP_ADDONS, type LocalSidecarController } from './local-sidecar.js';
 import { importDesktopTasks } from './importer.js';
 import { buildVpsJoinCommand, ensureMeshCredentials } from './mesh-autopilot.js';
 import { MeshClientController } from './mesh-client.js';
