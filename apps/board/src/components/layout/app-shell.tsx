@@ -63,6 +63,7 @@ import { NotificationBell } from './notification-bell';
 import { Sheet, SheetContent, SheetTrigger } from '@moonwitness/ui/components/sheet';
 import { SoundToggle } from '@moonwitness/ui/components/audio';
 import { DesktopHarnessDrawer } from '@/components/ai/desktop-harness-drawer';
+import { DesktopLogDrawer } from '@/components/ai/desktop-log-drawer';
 import { WorkspaceAssistantDrawer } from '@/components/ai/workspace-assistant-drawer';
 import { AI_MISSION_CONTROL_ROUTES } from '@/components/ai/ai-api';
 import { UpdateBanner, type UpdateBannerStatus } from '@moonwitness/ui/components/update-banner';
@@ -787,6 +788,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* First-Launch Desktop Experience Mode Picker */}
       {isDesktop && !desktopModeChosen && <ModePicker onSelect={setDesktopMode} />}
+
+      {/* Centralized Desktop Log Console / Copy Diagnostics */}
+      {isDesktop && <DesktopLogDrawer />}
     </div>
   );
 }

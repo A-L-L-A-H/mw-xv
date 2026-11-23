@@ -359,6 +359,36 @@ fn build_bridge_init_script(api_url: &str, rpc_token: &str) -> String {
     )
 }
 
+fn open_sidecar_stderr_stdio() -> Stdio {
+    let base_dir = env::var("MW_DESKTOP_HOME")
+        .ok()
+        .filter(|val| !val.trim().is_empty())
+        .map(PathBuf::from)
+        .or_else(|| {
+            env::var("USERPROFILE")
+                .or_else(|_| env::var("HOME"))
+                .ok()
+                .filter(|val| !val.trim().is_empty())
+                .map(|home| PathBuf::from(home).join(".moonwitness").join("desktop"))
+        });
+
+    if let Some(desktop_home) = base_dir {
+        let logs_dir = desktop_home.join("logs");
+        if std::fs::create_dir_all(&logs_dir).is_ok() {
+            let stderr_path = logs_dir.join("sidecar-stderr.log");
+            if let Ok(file) = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(stderr_path)
+            {
+                return Stdio::from(file);
+            }
+        }
+    }
+
+    Stdio::null()
+}
+
 fn resolve_bundled_sidecar_paths(exe_dir: &std::path::Path) -> Option<(String, String)> {
     let sidecar_dir = exe_dir.join("resources").join("sidecar");
     #[cfg(windows)]
@@ -469,7 +499,7 @@ impl SidecarProcessState {
             )
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
-            .stderr(Stdio::null());
+            .stderr(open_sidecar_stderr_stdio());
 
         for key in [
             "SystemRoot",

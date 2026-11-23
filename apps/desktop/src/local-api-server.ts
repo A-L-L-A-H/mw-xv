@@ -68,6 +68,11 @@ import {
 } from './backup.js';
 import { DesktopRiskGate, NativeHumanApprovalIssuer } from './risk-gate.js';
 import {
+  DesktopLogHub,
+  type DesktopLogLevel,
+  type DesktopLogSource,
+} from './log-hub.js';
+import {
   VpsOnboardingClient,
   type VpsComposeAction,
   type VpsOnboardingAuthContext,
@@ -564,6 +569,30 @@ export async function startLocalApiServer(
     bodyLimit: 2 * 1024 * 1024,
     logger: false,
     genReqId: () => randomUUID(),
+  });
+
+  const logHub = new DesktopLogHub({
+    ...(desktopHomeDir && desktopHomeDir !== ':memory:' ? { desktopHomeDir } : {}),
+    knownSecrets: [rpcToken],
+  });
+
+  app.addHook('onError', async (req, _reply, err) => {
+    logHub.ingest({
+      level: 'error',
+      source: 'sidecar',
+      message: `${req.method} ${req.url} failed: ${err.message}`,
+      ...(err.stack ? { detail: err.stack } : {}),
+    });
+  });
+
+  app.addHook('onResponse', async (req, reply) => {
+    if (reply.statusCode >= 400 && !req.url.startsWith('/api/desktop/logs')) {
+      logHub.ingest({
+        level: reply.statusCode >= 500 ? 'error' : 'warn',
+        source: 'sidecar',
+        message: `${req.method} ${req.url} -> HTTP ${reply.statusCode}`,
+      });
+    }
   });
 
   await app.register(cors, {
@@ -2148,6 +2177,92 @@ export async function startLocalApiServer(
     }));
 
     return { success: true, data: report };
+  });
+
+  const isDesktopLogLevel = (value: unknown): value is DesktopLogLevel =>
+    value === 'info' || value === 'warn' || value === 'error';
+
+  const isDesktopLogSource = (value: unknown): value is DesktopLogSource =>
+    value === 'rust' ||
+    value === 'sidecar' ||
+    value === 'webview' ||
+    value === 'mcp' ||
+    value === 'mesh';
+
+  // Centralized Desktop Logs (active in BOTH Workspace & DX modes)
+  app.get('/api/desktop/logs', async (req) => {
+    const query = isRecord(req.query) ? req.query : {};
+    const level =
+      query.level === 'all' || isDesktopLogLevel(query.level) ? query.level : undefined;
+    const source =
+      query.source === 'all' || isDesktopLogSource(query.source) ? query.source : undefined;
+    const search = typeof query.search === 'string' ? query.search : undefined;
+    const parsedLimit =
+      typeof query.limit === 'string' && query.limit.trim().length > 0
+        ? Number.parseInt(query.limit, 10)
+        : undefined;
+    const limit =
+      typeof parsedLimit === 'number' && Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? parsedLimit
+        : undefined;
+
+    const entries = logHub.list({
+      ...(level !== undefined ? { level } : {}),
+      ...(source !== undefined ? { source } : {}),
+      ...(search !== undefined ? { search } : {}),
+      ...(limit !== undefined ? { limit } : {}),
+    });
+
+    return {
+      success: true,
+      entries,
+      total: logHub.getEntryCount(),
+    };
+  });
+
+  app.post('/api/desktop/logs/ingest', async (req, reply) => {
+    const body = isRecord(req.body) ? req.body : {};
+    const message = typeof body.message === 'string' ? body.message.trim() : '';
+    if (!message) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Log message is required',
+      });
+    }
+    const level: DesktopLogLevel = isDesktopLogLevel(body.level) ? body.level : 'info';
+    const source: DesktopLogSource = isDesktopLogSource(body.source) ? body.source : 'webview';
+    const detail = typeof body.detail === 'string' ? body.detail : undefined;
+    const timestamp = typeof body.timestamp === 'string' ? body.timestamp : undefined;
+
+    const entry = logHub.ingest({
+      level,
+      source,
+      message,
+      ...(detail !== undefined ? { detail } : {}),
+      ...(timestamp !== undefined ? { timestamp } : {}),
+    });
+
+    return { success: true, entry };
+  });
+
+  app.post('/api/desktop/logs/clear', async () => {
+    logHub.clear();
+    return { success: true, cleared: true };
+  });
+
+  app.get('/api/desktop/logs/bundle', async () => {
+    const markdown = logHub.formatBundle({
+      appVersion: '1.0.0-rc.1',
+      platform: process.platform,
+      mode: currentMode,
+      sidecarUrl: `http://${host}:${port}`,
+    });
+    return {
+      success: true,
+      markdown,
+      bundle: markdown,
+      entryCount: logHub.getEntryCount(),
+    };
   });
 
   // POST /_desktop/rpc protected by ephemeral x-mw-desktop-token

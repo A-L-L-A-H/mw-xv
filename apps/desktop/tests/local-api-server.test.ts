@@ -885,4 +885,85 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(redteamDevBody.data.defensePassRateBps).toBe(10000);
     expect(redteamDevBody.data.automatedSelfAccept).toBe(false);
   });
+
+  it('exposes centralized desktop logs endpoints in both workspace and developer modes and captures >=400 responses', async () => {
+    const tempHome = mkdtempSync(path.join(os.tmpdir(), 'mw-desktop-logs-'));
+    tempDirs.push(tempHome);
+    const sqlitePath = path.join(tempHome, 'local.db');
+    const daemon = await startDesktopSidecarDaemon({
+      repoRoot: process.cwd(),
+      desktopHomeDir: tempHome,
+      sqlitePath,
+      boardOrigin: 'http://127.0.0.1:5173',
+      apiBaseUrl: 'http://127.0.0.1:4242',
+      healthPort: 0,
+      apiPort: 0,
+      offlineMode: true,
+      installAddonsOnStart: true,
+    });
+    handles.push(daemon);
+
+    // Trigger a >=400 response to verify onResponse hook captures statusCode >= 400
+    const missingRes = await fetch(`${daemon.apiUrl}/api/non-existent-route-for-log-test`);
+    expect(missingRes.status).toBeGreaterThanOrEqual(400);
+
+    // Ingest a webview error in workspace mode
+    const ingestRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/ingest`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        level: 'error',
+        source: 'webview',
+        message: 'Uncaught ReferenceError: foo is not defined Bearer secret-token-123',
+        detail: 'at main.tsx:10:2',
+      }),
+    });
+    expect(ingestRes.status).toBe(200);
+    const ingestBody = (await ingestRes.json()) as {
+      success: boolean;
+      entry: { message: string; source: string; level: string };
+    };
+    expect(ingestBody.success).toBe(true);
+    expect(ingestBody.entry.message).toContain('Bearer [REDACTED]');
+    expect(ingestBody.entry.source).toBe('webview');
+
+    // List logs in workspace mode
+    const listRes = await fetch(`${daemon.apiUrl}/api/desktop/logs?level=all&source=all`);
+    expect(listRes.status).toBe(200);
+    const listBody = (await listRes.json()) as {
+      success: boolean;
+      entries: Array<{ source: string; message: string }>;
+      total: number;
+    };
+    expect(listBody.success).toBe(true);
+    expect(listBody.total).toBeGreaterThanOrEqual(2);
+    expect(listBody.entries.some((e) => e.source === 'webview')).toBe(true);
+    expect(
+      listBody.entries.some(
+        (e) => e.source === 'sidecar' && e.message.includes(`HTTP ${missingRes.status}`)
+      )
+    ).toBe(true);
+
+    // Fetch diagnostic bundle in workspace mode
+    const bundleRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/bundle`);
+    expect(bundleRes.status).toBe(200);
+    const bundleBody = (await bundleRes.json()) as {
+      success: boolean;
+      markdown: string;
+      entryCount: number;
+    };
+    expect(bundleBody.success).toBe(true);
+    expect(bundleBody.markdown).toContain('# MoonWitness Desktop Diagnostic Bundle');
+    expect(bundleBody.entryCount).toBeGreaterThanOrEqual(2);
+
+    // Clear logs in workspace mode
+    const clearRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/clear`, { method: 'POST' });
+    expect(clearRes.status).toBe(200);
+    const afterClear = (await (await fetch(`${daemon.apiUrl}/api/desktop/logs`)).json()) as {
+      entries: unknown[];
+      total: number;
+    };
+    expect(afterClear.total).toBe(0);
+    expect(afterClear.entries).toHaveLength(0);
+  });
 });

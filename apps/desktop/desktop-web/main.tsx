@@ -25,6 +25,19 @@ import AiGovernancePage from '@/app/board/ai/governance/page';
 import AiEvalLabPage from '@/app/board/ai/eval-lab/page';
 import AiProvidersPage from '@/app/board/ai/providers/page';
 import { usePathname } from './shims/next-navigation';
+import { DesktopErrorBoundary, installWebviewErrorTelemetry } from './error-telemetry';
+
+interface DesktopApiWindow extends Window {
+  __MW_DESKTOP_API_URL__?: string;
+}
+
+function getDesktopApiUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  const raw = (window as DesktopApiWindow).__MW_DESKTOP_API_URL__;
+  return typeof raw === 'string' && raw.trim().length > 0 ? raw : null;
+}
+
+installWebviewErrorTelemetry(getDesktopApiUrl);
 
 function DesktopRouteSwitch() {
   const pathname = usePathname();
@@ -134,7 +147,9 @@ const rootEl = document.getElementById('root');
 if (rootEl) {
   createRoot(rootEl).render(
     <StrictMode>
-      <DesktopBoardApp />
+      <DesktopErrorBoundary getApiUrl={getDesktopApiUrl}>
+        <DesktopBoardApp />
+      </DesktopErrorBoundary>
     </StrictMode>
   );
 }

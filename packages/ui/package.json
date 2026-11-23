@@ -245,6 +245,10 @@
     "./components/mode-picker": {
       "types": "./dist/components/mode-picker.d.ts",
       "import": "./dist/components/mode-picker.js"
+    },
+    "./components/log-console": {
+      "types": "./dist/components/log-console.d.ts",
+      "import": "./dist/components/log-console.js"
     }
   },
   "scripts": {
