@@ -1,14 +1,14 @@
-# Current stabilization checkpoint — 2026-11-23 (exact dev audit)
+# Current stabilization checkpoint — 2026-11-23 (Phase 0–6 closeout)
 
-- **Stable branch (`main`):** `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`.
-- **Development branch (`dev`):** current candidate `7efba2c6766e5d5acde6c7e42e8f0a207ccb3400`, 163 commits ahead of `main`; no force push or history rewrite.
-- **Promotion PR #37:** [open promotion PR](https://github.com/A-L-L-A-H/mw-xv/pull/37) remains unmerged and targets `main`. Its report classifies the batch as release-surface risk and requires maintainer/CODEOWNER approval.
-- **CI:** the previous exact-head run on `9a4d99479b44670282d4cb2ac7f27a3c75a4d0ed` failed the new isolated-candidate test (29/30 TaskOS tests passed). Root cause: the JSON output suffix was escaped as a literal backslash plus `n`, making the candidate invalid JSON. Commit `7efba2c6766e5d5acde6c7e42e8f0a207ccb3400` adjusted the uploaded artifact path; a fresh exact-head CI run is pending verification.
-- **TaskOS actual state:** `docs/tasks/tasks.json` is a valid legacy registry of 1,358 records, not zero-byte. It contains 861 old entries pointing to root `todo.md`, now a pointer. The proposed current-source projection is 627 records (468 done, 49 doing, 89 todo, 21 blocked); it is not yet applied.
-- **Recovery safety:** CI now generates a candidate in `RUNNER_TEMP` via `pnpm tasks:sweep --candidate`; the importer refuses paths inside the repository and preserves the canonical registry. The candidate must pass schema/provenance/graph validation before upload.
-- **Next gate:** fix the JSON newline serialization regression, get all exact-SHA jobs green, inspect the candidate artifact, reconcile every difference against the legacy 1,358 records, and preserve the old snapshot before any deliberate migration.
-- **Visual Universe:** immutable 109-task source and all 109 original task cards are preserved; the pack remains a projection target until canonical migration.
-- **M13 / release:** M13.09–M13.12 implementation/evidence exists on dev, but the current full CI and promotion approval remain gates. M12.14 stable-release approval is separate and unresolved. Promotion is not deployment.
+- **Stable branch (`main`):** `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`; no main write, merge, force push, release or deployment.
+- **Development branch (`dev`):** implementation batch baseline `62e5ef656d58be11350e8a1d228da2205c5108eb`, 169 commits ahead of main and 0 behind at the last branch comparison. This checkpoint is source-SHA-bound; later documentation-only closeout commits may advance the branch.
+- **Promotion PR #37:** remains open, mergeable, and directed to `main`; CODEOWNER review by `bjo163` and separate M12.14 stable-release approval remain required. Promotion is not deployment.
+- **Toolchain correction in the implementation batch:** Docker Corepack now pins `pnpm@11.17.0`; `scripts/check-action-pins.mjs` includes Dockerfile in the pnpm drift check; a regression test covers the Docker pin. CI's candidate step now exports once in non-mutating `--candidate` mode and relies on the artifact rather than duplicating the projection or printing its Base64 payload.
+- **Current exact-SHA CI:** run [45086573530](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45086573530) is the new CI candidate for the implementation batch; its checks must be re-fetched before claiming completion. On previous exact SHA `33750563145315fabeb902c565a0a9075e85ea0f`, knowledge-gate, PostgreSQL integration, quality/build and DX jobs passed; TaskOS safety tests and the unit-test build passed, but the recovery candidate step had not completed before the next push superseded the run. These older successes are not a green result for the new SHA.
+- **TaskOS source of truth:** the tracked `docs/tasks/tasks.json` is a valid 1,358-record legacy snapshot, not an empty file. 861 records still cite root `todo.md`, now a navigation pointer. The proposed source-backed projection is 627 records (468 done, 49 doing, 89 todo, 21 blocked). It has **not** been applied; 731 records of difference require a reviewed reconciliation and preserved backup.
+- **Recovery safety:** only export a candidate outside the worktree, review it, and retain the legacy snapshot. Do not run `--write`, TaskOS sync, or Visual Universe projection generation until migration is approved and validated.
+- **M13 / FLOW:** M13.09–M13.12 implementation and evidence exist. Full CI PostgreSQL integration passed on the earlier SHA; the new current-SHA CI is pending. The complete local Desktop journey still needs execution and evidence.
+- **Full phase closeout record:** [PHASE-0-6-CLOSEOUT.md](PHASE-0-6-CLOSEOUT.md) distinguishes verified remote work from local acceptance and human release gates.
 
 # MW-XV Stabilization & Source-of-Truth Recovery Plan
 
