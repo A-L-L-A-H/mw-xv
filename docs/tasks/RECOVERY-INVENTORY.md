@@ -36,6 +36,38 @@ A direct blob read plus a line-by-line parse of the archived checklist proves th
 
 This resolves the old root-pointer provenance for that 861-record subset: 854 completed entries remain in the archived historical checklist; seven open entries are retained as blocked work. This does not delete the legacy snapshot and does not itself approve the canonical migration. A regression assertion covering this exact identity mapping has been added to `scripts/tasks/sweep-and-consolidate.test.mjs`; its final exact-SHA hosted execution is still pending.
 
+## Full legacy-to-candidate ID reconciliation — 2026-11-23
+
+The uploaded candidate was compared by task code against the complete legacy registry blob, not only by total record count.
+
+**Source identities:**
+- Legacy registry `docs/tasks/tasks.json`: blob SHA `d56499936761dcc062704d06588ee2679fd1aae2`; 1,358 unique task codes.
+- Candidate source tree: synthetic PR merge commit `0ac65eb3df98a3c8a9d416dfcd9696e1410ad6da` (PR head `c433aad30da0e2593245ae375b532859f3b1f851` merged with base `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`).
+- Candidate JSON SHA-256: `46b3a89d31ed2079da598f12844d918d21a98bcc0f47a1912cd807b1e462f388`; artifact ID `14779558473`.
+
+**Exact task-code set comparison:**
+
+| Classification | Count | Treatment |
+| --- | ---: | --- |
+| Legacy codes present in candidate | 504 | Retain stable task identities |
+| Legacy codes absent from candidate | 854 | All 854 are `done` and cite root `todo.md`; retain as historical checklist evidence |
+| Candidate codes absent from legacy | 123 | Add 14 AI Corporation PR lifecycle IDs and 109 Visual Universe task IDs |
+| Candidate duplicate codes | 0 | None |
+| Candidate total | 627 | 504 retained + 123 new |
+
+The 854 removed codes are exactly the completed subset of the 861 root-`todo.md` records. The remaining seven open IDs are included in the candidate under `docs/archive/todos/todo.md` and are mapped from legacy `todo` to TaskOS `blocked` pending re-triage. The 854 completed checklist entries remain in the immutable archive and in the untouched legacy registry snapshot until an explicit owner-approved migration.
+
+Arithmetic: **1,358 - 854 + 123 = 627**. This accounts for the full net change of 731 records; it is not an unexplained deletion. The 497 other legacy records (roadmap, audit, WhatsApp, Desktop and Evolution source groups) plus the seven archived open MW items account for the 504 retained identities.
+
+**Candidate validations:**
+- 627 unique codes, 2 declared projects, every project reference resolves, every record has repository-relative source provenance.
+- Exact source counts: roadmap 239, audit 14, WhatsApp 112, archived open MW 7, AI Corporation PR 14, Desktop 128, Evolution 4, Visual Universe 109.
+- Status counts: done 468, doing 49, todo 89, blocked 21.
+- Independent artifact inspection found no missing dependency or block IDs, non-reciprocal dependency edges, or dependency cycles.
+- Hosted CI run [45087443105](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45087443105) completed all five jobs successfully and uploaded the validated candidate artifact. The artifact itself remains a review candidate, not the canonical registry.
+
+**Migration decision:** Do not apply yet. The owner must accept the reviewed candidate and a byte-for-byte backup/rollback plan. The current 1,358-record canonical registry remains unchanged.
+
 ## Canonical ownership target
 
 After the initial, reviewed migration, `docs/tasks/tasks.json` is the only canonical task lifecycle registry for this repository.
