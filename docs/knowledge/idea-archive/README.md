@@ -11,12 +11,12 @@ This archive responds to the owner-provided 775-line prompt **“MASTER PROMPT �
 
 It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM, task tracker or approval authority.
 
-- Raw original wording and incoming source notes: [`docs/raw/`](../raw/README.md).
-- Initial current-turn intake: [Total Idea Archive — Initial Intake](../raw/2026-11-23-total-idea-archive-intake.md).
-- Associative synthesis: [Initial Idea Relationship Map](../brain/2026-11-23-initial-idea-relationship-map.md).
-- Task identity/lifecycle: [TaskOS](../tasks/README.md) and [Issue Sync Contract](../roadmap/ISSUE-SYNC-CONTRACT.md).
+- Raw original wording and incoming source notes: [`docs/raw/`](../../raw/README.md).
+- Initial current-turn intake: [Total Idea Archive — Initial Intake](../../raw/2026-11-23-total-idea-archive-intake.md).
+- Associative synthesis: [Initial Idea Relationship Map](../../brain/2026-11-23-initial-idea-relationship-map.md).
+- Task identity/lifecycle: [TaskOS](../../tasks/README.md) and [Issue Sync Contract](../../roadmap/ISSUE-SYNC-CONTRACT.md).
 - Existing narrative source archive: [Narrative V10 index](../narratives/INDEX.md).
-- Legacy-source preservation gate: [Migration Acceptance](../migration/MIGRATION-ACCEPTANCE.md) and [Issue #27](https://github.com/A-L-L-A-H/mw-xv/issues/27).
+- Legacy-source preservation gate: [Migration Acceptance](../../migration/MIGRATION-ACCEPTANCE.md) and [Issue #27](https://github.com/A-L-L-A-H/mw-xv/issues/27).
 
 ## Archive contents
 
@@ -25,16 +25,20 @@ It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM,
 | 1. Master index | This file | Navigation, source scope and truth rules |
 | 2. Total idea catalog | [IDEA-CATALOG.md](IDEA-CATALOG.md) | Stable IDs for named ideas and source-backed concept seeds |
 | 3. Master project registry | [PROJECT-REGISTRY.md](PROJECT-REGISTRY.md) | Project identity, home, maturity and relationship |
-| 4. Story / canon / character bible | [STORY-CANON-CHARACTER-BIBLE.md](STORY-CANON-CHARACTER-BIBLE.md) | Story records, eras, world rules, character source records and continuity |
-| 5. Creative / visual bible | [CREATIVE-VISUAL-BIBLE.md](CREATIVE-VISUAL-BIBLE.md) | Art directions, poster briefs, asset and rights boundaries |
-| 6. Religion / philosophy archive | [RELIGION-PHILOSOPHY-ARCHIVE.md](RELIGION-PHILOSOPHY-ARCHIVE.md) | Scripture-reference methods, personal frameworks and editorial safeguards |
-| 7. Idea history | [IDEA-HISTORY.md](IDEA-HISTORY.md) | Evidence-qualified timeline and version history |
-| 8. Cross-project map | [CROSS-PROJECT-MAP.md](CROSS-PROJECT-MAP.md) | Domain ownership, relationships, non-duplication decisions |
-| 9. Product / technology map | [PRODUCT-TECHNOLOGY-MAP.md](PRODUCT-TECHNOLOGY-MAP.md) | MW-XV target architecture and related product/engineering work |
-| 10. Repository consolidation | [REPOSITORY-CONSOLIDATION-REPORT.md](REPOSITORY-CONSOLIDATION-REPORT.md) | 280-repository metadata census and selected deeper reviews |
-| 11. Unified master proposal | [UNIFIED-MASTER-PROPOSAL.md](UNIFIED-MASTER-PROPOSAL.md) | Consolidated vision, target boundaries and alternatives |
-| 12. Execution roadmap | [EXECUTION-ROADMAP.md](EXECUTION-ROADMAP.md) | Sequencing and LOCAL AI / CLOUD AI / HUMAN REVIEW responsibilities |
-| 13. Unresolved register | [UNRESOLVED-DECISIONS.md](UNRESOLVED-DECISIONS.md) | Conflicts, evidence, options and owner decisions still required |
+| 4. Canon registry | [CANON-REGISTRY.md](CANON-REGISTRY.md) | Owner rules and version-specific status |
+| 5. Story Bible | [STORY-CANON-CHARACTER-BIBLE.md](STORY-CANON-CHARACTER-BIBLE.md) | Story records, eras, world rules and source continuity |
+| 6. Character registry | [CHARACTER-REGISTRY.md](CHARACTER-REGISTRY.md) | Source-based character identities and aliases |
+| 7. Creative / visual bible | [CREATIVE-VISUAL-BIBLE.md](CREATIVE-VISUAL-BIBLE.md) | Art directions, poster briefs, asset and rights boundaries |
+| 8. Brand & product bible | [BRAND-PRODUCT-BIBLE.md](BRAND-PRODUCT-BIBLE.md) | Brand wording, product identity, tagline and experience decisions |
+| 9. Religion / philosophy archive | [RELIGION-PHILOSOPHY-ARCHIVE.md](RELIGION-PHILOSOPHY-ARCHIVE.md) | Scripture-reference methods, personal frameworks and editorial safeguards |
+| 10. Idea history | [IDEA-HISTORY.md](IDEA-HISTORY.md) | Evidence-qualified timeline and version history |
+| 11. Cross-project map | [CROSS-PROJECT-MAP.md](CROSS-PROJECT-MAP.md) | Domain ownership, relationships, non-duplication decisions |
+| 12. Product / technology map | [PRODUCT-TECHNOLOGY-MAP.md](PRODUCT-TECHNOLOGY-MAP.md) | MW-XV target architecture and related product/engineering work |
+| 13. Repository consolidation | [REPOSITORY-CONSOLIDATION-REPORT.md](REPOSITORY-CONSOLIDATION-REPORT.md) | 280-repository metadata census and selected deeper reviews |
+| 14. Unified master proposal | [UNIFIED-MASTER-PROPOSAL.md](UNIFIED-MASTER-PROPOSAL.md) | Consolidated vision, target boundaries and alternatives |
+| 15. Execution roadmap | [EXECUTION-ROADMAP.md](EXECUTION-ROADMAP.md) | Sequencing and LOCAL AI / CLOUD AI / HUMAN REVIEW responsibilities |
+| 16. Unresolved register | [UNRESOLVED-DECISIONS.md](UNRESOLVED-DECISIONS.md) | Conflicts, evidence, options and owner decisions still required |
+| 17. GitHub issue index | [ISSUE-INDEX.md](ISSUE-INDEX.md) | Existing issue and PR inventory; no duplicate issue creation |
 
 ## Source coverage and honest statistics
 
