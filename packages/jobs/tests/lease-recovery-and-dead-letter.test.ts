@@ -8,6 +8,8 @@ import {
   registerJobHandler,
   registerOutboxConsumer,
   runOneJob,
+  runWorkerLoop,
+  runOutboxLoop,
   dispatchOneOutboxEvent,
   LeaseLostError,
 } from '../src/runtime.js';
@@ -335,5 +337,47 @@ describe('lease recovery and dead-letter adversarial cases (CF-015)', () => {
     } finally {
       unregister();
     }
+  });
+
+  it('worker loop survives a transient lease loss instead of terminating', async () => {
+    const controller = new AbortController();
+    let calls = 0;
+    const seen: string[] = [];
+    await runWorkerLoop(
+      { workerId: 'loop-worker' },
+      controller.signal,
+      0,
+      {},
+      {
+        runJob: async () => {
+          calls += 1;
+          if (calls === 1) throw new LeaseLostError();
+          seen.push('continued');
+          controller.abort();
+          return true;
+        },
+        onLeaseLost: (kind) => seen.push(kind),
+      }
+    );
+    expect(calls).toBe(2);
+    expect(seen).toEqual(['job', 'continued']);
+  });
+
+  it('outbox loop survives a transient lease loss instead of terminating', async () => {
+    const controller = new AbortController();
+    let calls = 0;
+    const seen: string[] = [];
+    await runOutboxLoop('outbox-loop-worker', controller.signal, 0, {
+      dispatchEvent: async () => {
+        calls += 1;
+        if (calls === 1) throw new LeaseLostError();
+        seen.push('continued');
+        controller.abort();
+        return true;
+      },
+      onLeaseLost: (kind) => seen.push(kind),
+    });
+    expect(calls).toBe(2);
+    expect(seen).toEqual(['outbox', 'continued']);
   });
 });

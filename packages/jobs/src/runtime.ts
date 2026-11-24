@@ -527,11 +527,19 @@ export interface WorkerDrainOptions {
   onDrainComplete?: (outcome: DrainOutcome) => void;
 }
 
+/** Optional hooks for the worker loops. `runJob`/`dispatchEvent` default to the real runners. */
+export interface WorkerLoopHooks {
+  runJob?: (options: WorkerOptions, execution: JobExecutionOptions) => Promise<boolean>;
+  dispatchEvent?: (workerId: string) => Promise<boolean>;
+  onLeaseLost?: (kind: 'job' | 'outbox') => void;
+}
+
 export async function runWorkerLoop(
   options: WorkerOptions,
   signal: AbortSignal,
   idleDelayMs = 1000,
-  drain: WorkerDrainOptions = {}
+  drain: WorkerDrainOptions = {},
+  hooks: WorkerLoopHooks = {}
 ): Promise<void> {
   const coordinator = createGracefulDrainController({
     workerId: options.workerId,
@@ -544,13 +552,22 @@ export async function runWorkerLoop(
   if (signal.aborted) beginDrain();
   else signal.addEventListener('abort', beginDrain, { once: true });
   try {
+    const runJob = hooks.runJob ?? runOneJob;
     while (!signal.aborted) {
-      const processed = await runOneJob(options, {
-        signal: coordinator.executionSignal,
-        onClaimed: () => coordinator.enterJob(),
-        onSettled: (settled) => coordinator.exitJob(settled),
-      });
-      if (!processed) await waitFor(idleDelayMs, signal);
+      try {
+        const processed = await runJob(options, {
+          signal: coordinator.executionSignal,
+          onClaimed: () => coordinator.enterJob(),
+          onSettled: (settled) => coordinator.exitJob(settled),
+        });
+        if (!processed) await waitFor(idleDelayMs, signal);
+      } catch (error) {
+        if (!(error instanceof LeaseLostError)) throw error;
+        // A lost lease is transient: another worker owns the claim now. Do not
+        // commit a result for it, and never let it terminate the whole process.
+        hooks.onLeaseLost?.('job');
+        await waitFor(idleDelayMs, signal);
+      }
     }
   } finally {
     signal.removeEventListener('abort', beginDrain);
@@ -879,11 +896,19 @@ export async function dispatchOneOutboxEvent(
 export async function runOutboxLoop(
   workerId: string,
   signal: AbortSignal,
-  idleDelayMs = 1000
+  idleDelayMs = 1000,
+  hooks: WorkerLoopHooks = {}
 ): Promise<void> {
+  const dispatchEvent = hooks.dispatchEvent ?? dispatchOneOutboxEvent;
   while (!signal.aborted) {
-    const processed = await dispatchOneOutboxEvent(workerId);
-    if (!processed) await waitFor(idleDelayMs, signal);
+    try {
+      const processed = await dispatchEvent(workerId);
+      if (!processed) await waitFor(idleDelayMs, signal);
+    } catch (error) {
+      if (!(error instanceof LeaseLostError)) throw error;
+      hooks.onLeaseLost?.('outbox');
+      await waitFor(idleDelayMs, signal);
+    }
   }
 }
 
