@@ -20,7 +20,14 @@ if (buildFilter && buildFilter !== '@moonwitness/api...') {
   process.exit(2);
 }
 
-const buildArgs = buildFilter ? ['--filter', buildFilter, 'build'] : ['-r', 'build'];
+const isBun = packageManager.command.toLowerCase().includes('bun');
+const buildArgs = buildFilter
+  ? isBun
+    ? ['run', '--filter', buildFilter, 'build']
+    : ['--filter', buildFilter, 'build']
+  : isBun
+    ? ['run', '--filter', '*', 'build']
+    : ['-r', 'build'];
 const result = spawnSync(packageManager.command, [...packageManager.prefixArgs, ...buildArgs], {
   encoding: 'utf8',
   maxBuffer: 10 * 1024 * 1024,
