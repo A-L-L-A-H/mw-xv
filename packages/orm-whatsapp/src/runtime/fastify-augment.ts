@@ -1,4 +1,4 @@
-import type { Multipart } from '@fastify/multipart';
+import '@fastify/multipart';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { Knex } from 'knex';
 
@@ -27,8 +27,6 @@ declare module 'fastify' {
 
   interface FastifyRequest {
     auth: WhatsappAuthContext | null;
-    isMultipart: () => boolean;
-    parts: (options?: Record<string, unknown>) => AsyncIterableIterator<Multipart>;
   }
 
   interface FastifyContextConfig {
