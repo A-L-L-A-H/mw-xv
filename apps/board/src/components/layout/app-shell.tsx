@@ -91,7 +91,7 @@ function NavItem({
       onClick={onNavigate}
       title={label}
       className={cn(
-        'board-nav-item group relative flex min-h-10 min-w-0 items-center gap-3 border-l-4 border-transparent px-2 py-2 font-display text-base uppercase tracking-wide text-ink/75 hover:bg-ink/10 hover:text-ink',
+        'board-nav-item group relative flex min-h-10 min-w-0 items-center gap-3 border-l-4 border-transparent px-2 py-2 font-sans text-sm font-semibold tracking-normal text-ink/75 hover:bg-ink/10 hover:text-ink',
         active &&
           'board-nav-item-active border-magenta bg-magenta text-on-magenta hover:bg-magenta hover:text-on-magenta'
       )}

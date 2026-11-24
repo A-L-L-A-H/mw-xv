@@ -68,6 +68,68 @@ test('resolveSceneLayersForWidth sorts layers by zOrder and applies breakpoint o
   assert.equal(mobile[0].opacity, 0.7);
 });
 
+test('resolveSceneLayersForWidth places crew-01 (zOrder 82) between rooftop foreground and prop wires and applies the mobile position override', () => {
+  // Manifest layer.position is surfaced to the scene component as descriptor.pivot.
+  const crewSceneLayers = [
+    {
+      id: 'rooftop-foreground',
+      mediaKind: 'image',
+      src: '/assets/moon-city-foreground.svg',
+      zOrder: 70,
+    },
+    {
+      id: 'crew-01',
+      mediaKind: 'image',
+      src: '/assets/crew-01-idle-frame-01.svg',
+      zOrder: 82,
+      pivot: { x: 0.5, y: 0.9 },
+    },
+    {
+      id: 'prop-wires',
+      mediaKind: 'image',
+      src: '/assets/moon-city-prop-wires.svg',
+      zOrder: 85,
+    },
+  ];
+  const crewBreakpoints = [
+    {
+      name: 'mobile',
+      minWidth: 0,
+      maxWidth: 767,
+      layerOverrides: [{ layerId: 'crew-01', pivot: { x: 0.52, y: 0.9 } }],
+    },
+  ];
+
+  const desktop = resolveSceneLayersForWidth(crewSceneLayers, crewBreakpoints, 1280);
+  assert.deepEqual(
+    desktop.map((layer) => layer.id),
+    ['rooftop-foreground', 'crew-01', 'prop-wires']
+  );
+  assert.deepEqual(desktop[1].pivot, { x: 0.5, y: 0.9 });
+
+  const mobile = resolveSceneLayersForWidth(crewSceneLayers, crewBreakpoints, 480);
+  assert.deepEqual(
+    mobile.map((layer) => layer.id),
+    ['rooftop-foreground', 'crew-01', 'prop-wires']
+  );
+  assert.deepEqual(mobile[1].pivot, { x: 0.52, y: 0.9 });
+
+  const mobileHtml = renderToStaticMarkup(
+    React.createElement(LayeredScene, {
+      sceneId: 'moon-city-hero',
+      label: 'Moon City hero',
+      layers: crewSceneLayers,
+      staticFallback: '/assets/hero-static.png',
+      breakpoints: crewBreakpoints,
+      viewportWidth: 480,
+    })
+  );
+  const rooftopPos = mobileHtml.indexOf('data-layer-id="rooftop-foreground"');
+  const crewPos = mobileHtml.indexOf('data-layer-id="crew-01"');
+  const wiresPos = mobileHtml.indexOf('data-layer-id="prop-wires"');
+  assert.ok(rooftopPos > 0 && crewPos > rooftopPos && wiresPos > crewPos);
+});
+
 test('LayeredScene renders sorted layers with accessible attributes and static fallback for reduced motion', () => {
   resetSceneHarness();
 

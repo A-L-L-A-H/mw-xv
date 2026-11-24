@@ -1,4 +1,5 @@
 import '../../board/src/app/global.css';
+import './desktop.css';
 import { StrictMode, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@moonwitness/ui/components/button';
 import { Panel } from '@moonwitness/ui/components/panel';
@@ -114,6 +115,24 @@ type BootstrapState =
   | { readonly status: 'ready' }
   | { readonly status: 'error'; readonly message: string };
 
+function DesktopChrome() {
+  return (
+    <div className="desktop-chrome" aria-hidden="true">
+      <span className="desktop-chrome-mark" />
+      <span className="desktop-chrome-title">MoonWitness Desktop</span>
+      <span className="desktop-chrome-badge">Local workspace</span>
+    </div>
+  );
+}
+
+function DesktopBoot({ label }: { readonly label: string }) {
+  return (
+    <main className="desktop-boot-art" aria-busy="true">
+      <Skeleton label={label} className="h-12 w-64" />
+    </main>
+  );
+}
+
 function DesktopRoutes() {
   const pathname = usePathname();
   const normalized = pathname.replace(/\/+$/u, '') || '/';
@@ -177,15 +196,18 @@ function DesktopBoardApp() {
 
   if (bootstrap.status === 'loading') {
     return (
-      <main className="min-h-dvh p-8" aria-busy="true">
-        <Skeleton label="Starting local workspace" className="h-12 w-48" />
-      </main>
+      <>
+        <DesktopChrome />
+        <DesktopBoot label="Starting local workspace" />
+      </>
     );
   }
 
   if (bootstrap.status === 'error') {
     return (
-      <main className="grid min-h-dvh place-items-center p-6">
+      <>
+        <DesktopChrome />
+        <main className="grid min-h-dvh place-items-center p-6">
         <Panel
           surface="paper"
           frame="torn"
@@ -203,25 +225,23 @@ function DesktopBoardApp() {
           </div>
         </Panel>
       </main>
+      </>
     );
   }
 
   return (
-    <SkinProvider>
-      <SoundProvider>
-        <Suspense
-          fallback={
-            <main className="min-h-dvh p-8" aria-busy="true">
-              <Skeleton label="Loading workspace" className="h-12 w-48" />
-            </main>
-          }
-        >
-          <BoardProviders>
-            <DesktopRoutes />
-          </BoardProviders>
-        </Suspense>
-      </SoundProvider>
-    </SkinProvider>
+    <>
+      <DesktopChrome />
+      <SkinProvider>
+        <SoundProvider>
+          <Suspense fallback={<DesktopBoot label="Loading workspace" />}>
+            <BoardProviders>
+              <DesktopRoutes />
+            </BoardProviders>
+          </Suspense>
+        </SoundProvider>
+      </SkinProvider>
+    </>
   );
 }
 

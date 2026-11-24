@@ -1593,6 +1593,35 @@ a:focus-visible {
 .scene-lab-stage-mobile {
   max-width: 24rem;
 }
+/* Crew-01 lives inside the scene composition: between the rooftop/railing (70/80) and the
+   foreground wires (85). The square sprite is keyed out of its cream plate so it sits on the
+   night skyline instead of reading as a separate specimen. */
+.scene-lab-crew-layer {
+  position: absolute;
+  left: 62%;
+  bottom: 12%;
+  width: auto;
+  height: 24%;
+  aspect-ratio: 1 / 1;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.scene-lab-stage-mobile .scene-lab-crew-layer {
+  left: 58%;
+  bottom: 16%;
+  height: 22%;
+}
+.scene-lab-crew-layer .mw-ui-sprite-player {
+  width: auto !important;
+  height: 100% !important;
+  max-width: none !important;
+  aspect-ratio: 1 / 1 !important;
+}
+/* SVG colour-key defined in CSS so no filter markup or JS is shipped with the lazy scene chunk.
+   It zeroes the baked-in cream (#f3efe4) plate while preserving the crew's colours. */
+.scene-lab-crew-layer .mw-ui-sprite-player-frame {
+  filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='k' color-interpolation-filters='sRGB'%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -3 -3 -3 8.35 0'/%3E%3C/filter%3E%3C/svg%3E#k");
+}
 .scene-lab-guides {
   position: absolute;
   inset: 0;
