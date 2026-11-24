@@ -549,6 +549,24 @@ describe('MoonWitnessClient', () => {
     expect(client.currentUser?.login).toBe('alice');
   });
 
+  it('notifies listeners when an async storage restores a session after construction', async () => {
+    const backing = new MemoryStorage();
+    backing.setItem('moonwitness_auth', JSON.stringify(tokens('stored').data));
+    const client = new MoonWitnessClient({
+      baseUrl: 'http://api.test',
+      fetch: vi.fn() as unknown as typeof fetch,
+      storage: {
+        getItem: async (k) => backing.getItem(k),
+        setItem: async (k, v) => backing.setItem(k, v),
+        removeItem: async (k) => backing.removeItem(k),
+      },
+    });
+    const events: (string | null)[] = [];
+    client.onSessionChange((user) => events.push(user?.login ?? null));
+    await client.ready();
+    expect(events).toEqual(['alice']);
+  });
+
   it('maps HTTP status codes to typed errors', async () => {
     const { client } = makeClient((url) => json({ error: 'x' }, Number(url.pathname.slice(1))));
     await expect(client.request('/400')).rejects.toBeInstanceOf(ValidationError);

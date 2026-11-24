@@ -126,6 +126,10 @@ export class MoonWitnessClient implements HttpClient {
       } catch {
         this.tokens = null;
       }
+      // Async storages (e.g. cookie-backed BFF sessions) resolve after the
+      // first render. Notify subscribers so the UI learns about the restored
+      // session without waiting for a login/refresh event.
+      if (this.tokens) for (const listener of this.listeners) listener(this.tokens.user);
     };
     const raw = this.storage.getItem(this.storageKey);
     if (raw instanceof Promise) return raw.then(apply, () => apply(null));
