@@ -123,7 +123,7 @@ export async function applyFleetAction(store, adapter, options) {
 }
 
 async function ghApi(repository, method, path, body) {
-  const args = ['api', '--silent', '--show-error', '-X', method];
+  const args = ['api', '--silent', '-X', method];
   let directory;
   try {
     if (body !== undefined) {
