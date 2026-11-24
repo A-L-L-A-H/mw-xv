@@ -91,10 +91,14 @@ describe('evolutionHttpPlugin (INV-014 addon HTTP plugin)', () => {
     const unauth = await harness.invokePost('/ai/evolution/synthesize', {});
     expect(unauth.statusCode).toBe(401);
 
-    const noCompany = await harness.invokePost('/ai/evolution/synthesize', {}, {
-      userId: 1,
-      role: 'user',
-    });
+    const noCompany = await harness.invokePost(
+      '/ai/evolution/synthesize',
+      {},
+      {
+        userId: 1,
+        role: 'user',
+      }
+    );
     expect(noCompany.statusCode).toBe(403);
   });
 

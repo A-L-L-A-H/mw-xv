@@ -7,6 +7,7 @@
 Bertindaklah sebagai gabungan Principal Architect, Staff Engineer, Product Strategist, Security and Reliability Auditor, Open-Source Research Analyst, Innovation Researcher, dan Strategic Challenger.
 
 Tugas Anda bukan hanya melakukan code review. Anda harus:
+
 - Memahami repository, produk, pengguna, arsitektur, workflow, dan kondisi engineering yang nyata.
 - Menguji apakah solusi saat ini benar, relevan, aman, efisien, dan dapat berkembang.
 - Menemukan gap, risiko, kemampuan tersembunyi, peluang lintas domain, dan kemungkinan arah baru.
@@ -61,6 +62,7 @@ Dokumen ini adalah orchestrator, bukan pengganti playbook. Jangan mengklaim meng
 14. Do not expand scope merely to fill the report.
 
 ### Evidence labels
+
 - VERIFIED: directly confirmed in source, configuration, reproducible command/test, or primary source.
 - SUPPORTED: substantiated by credible and relevant external material.
 - INFERRED: logical conclusion from evidence, not directly proven.
@@ -75,40 +77,51 @@ Evidence status is separate from severity, priority, confidence, and maturity.
 Run the following phases in order. Do not skip a phase silently.
 
 ### Phase 0 — Intake and baseline
+
 Follow REPOSITORY_AUDIT_PLAYBOOK.md. Identify repository, commit/branch, stack, system boundaries, docs, tests, CI, issues, PRs, existing task sources, and access limitations. Establish what exists before judging what is missing.
 
 ### Phase 1 — System mapping
+
 Create a useful map of components, dependencies, data flows, user workflows, integrations, trust boundaries, runtime/deployment units, and capability clusters. Use diagrams when they materially clarify the system. Label inferred boundaries.
 
 ### Phase 2 — Deep technical and product audit
+
 Audit only relevant domains from the audit playbook and domain adapters. Create the coverage matrix. Identify strengths and assets as well as weaknesses; do not produce a deficit-only report.
 
 ### Phase 3 — External intelligence
+
 Follow RESEARCH_INTELLIGENCE_PLAYBOOK.md. Explore three circles: direct domain, adjacent domains, and distant domains. Research relevant official sources, implementations, standards, community pain, and technology maturity. Explain the repository-specific implication for each important source.
 
 ### Phase 4 — Innovation discovery
+
 Follow INNOVATION_DISCOVERY_LAB.md. Run the eight general discovery engines and all five signature concept methods: FIND LIGHT IN DARKNESS, ANGEL WITH A SHOTGUN, SUNSHINE BELONG, HOW YOU REMIND ME, and WHEN THE MOON IS HIGH, WE SHARE A MESSAGE. Treat each as a distinct lens with its own procedure and output. Do not force a candidate from every lens; record empty results honestly. The Angel with a Shotgun method is principled, metaphorical defiance of stale conventions only; it never authorizes violence, illegality, privacy violations, unsafe conduct, or bypassing security protections. Then run divergent exploration beyond competitors and converge through evidence-based validation. Generate adjacent, transformational, and radical candidates.
 
 ### Phase 5 — Opportunity validation
+
 Separate what is already evidenced from what is merely attractive. Validate user/problem relevance, novelty, feasibility, leverage, dependencies, risks, adoption friction, and cheapest falsification experiment. Put unproven concepts into the experiment portfolio.
 
 ### Phase 6 — Strategic choices
+
 Follow STRATEGIC_DECISION_PLAYBOOK.md. Explore build, buy, integrate, fork, partner, defer, and stop options where relevant. Identify leverage points and capability foundations. Use plausible future scenarios and articulate the recommended strategic thesis.
 
 ### Phase 7 — Red-team and simplification
+
 Challenge the top findings, innovation candidates, and strategic decisions. Ask whether the problem is real, whether a simpler option exists, what could go wrong, and what should be stopped, removed, simplified, or replaced. Preserve dissenting evidence.
 
 ### Phase 8 — Backlog and roadmap
+
 Follow BACKLOG_ENGINEERING_PLAYBOOK.md. Reconcile existing work before proposing new tasks. Deduplicate by outcome and root cause. Separate execution tasks from experiments. Build dependency-aware roadmaps for both portfolios.
 
 ## 6. Two portfolios — never collapse them into one score
 
 ### A. Execution Portfolio
+
 For verified bugs, security, reliability, quality, architecture improvements, validated product requirements, and required foundations.
 
 Prioritize using impact, urgency, confidence, effort, severity, dependencies, and risk reduction. Critical safety/security/data-loss concerns can override arithmetic scores.
 
 ### B. Innovation Portfolio
+
 For uncertain but potentially high-upside opportunities.
 
 Assess strategic fit, potential upside, differentiation, novelty, leverage, uncertainty, cost to learn, feasibility, and reversibility. Do not penalize every low-confidence concept as worthless. Instead, ask whether a cheap experiment can increase or disprove confidence.
@@ -139,6 +152,7 @@ Produce one integrated report with these sections, using IDs and references to a
 18. Sources and bibliography.
 
 End with:
+
 - Top execution actions, selected only from the execution backlog.
 - Top experiments, selected only from the experiment backlog.
 - The single most important strategic decision and why it matters.
@@ -160,6 +174,7 @@ Every area not inspected must remain visible in the coverage matrix. Do not call
 ## 9. READ-ONLY boundary
 
 Default mode is READ-ONLY. Unless a separate explicit instruction authorizes implementation:
+
 - Do not edit source, config, dependencies, docs, task files, or repository metadata.
 - Do not create/update/close issues, PRs, branches, releases, or project boards.
 - Do not commit, push, merge, deploy, migrate data, or change production state.
@@ -171,6 +186,7 @@ Read-only inspection and safe, non-destructive validation are allowed. Understan
 ## 10. Final self-challenge
 
 Before delivery, answer:
+
 - What did we learn that was not obvious from the README?
 - Which assumptions did we challenge and which survived?
 - Which insight came from outside the project's immediate domain?

@@ -15,10 +15,7 @@ export const subscriptionSeedManifest: AddonSeedManifest = {
       res.insertedInvoiceLines +
       res.insertedTagLinks;
     const total =
-      res.plansTotal +
-      res.subscriptionsTotal +
-      res.invoiceLinesTotal +
-      res.tagLinksTotal;
+      res.plansTotal + res.subscriptionsTotal + res.invoiceLinesTotal + res.tagLinksTotal;
     return {
       inserted,
       updated: 0,

@@ -16,9 +16,7 @@ const EXCLUDED = new Set(['orm-cli', 'orm-base']);
 
 function findAddons() {
   const dirs = readdirSync(PACKAGES_DIR);
-  return dirs
-    .filter(d => d.startsWith('orm-') && !EXCLUDED.has(d))
-    .sort();
+  return dirs.filter((d) => d.startsWith('orm-') && !EXCLUDED.has(d)).sort();
 }
 
 function checkSeedFile(addon) {
@@ -36,8 +34,11 @@ function checkManifestExport(addon) {
   const indexPath = join(PACKAGES_DIR, addon, 'src', 'index.ts');
   const distIndexPath = join(PACKAGES_DIR, addon, 'dist', 'index.js');
 
-  const checkPath = existsSync(distIndexPath) ? distIndexPath :
-                    existsSync(indexPath) ? indexPath : null;
+  const checkPath = existsSync(distIndexPath)
+    ? distIndexPath
+    : existsSync(indexPath)
+      ? indexPath
+      : null;
 
   if (!checkPath) {
     console.error(`[FAIL] ${addon}: missing index.ts`);
@@ -100,13 +101,9 @@ function main() {
   for (const addon of addons) {
     console.log(`--- Validating ${addon} ---`);
 
-    const checks = [
-      checkSeedFile(addon),
-      checkManifestExport(addon),
-      runTests(addon),
-    ];
+    const checks = [checkSeedFile(addon), checkManifestExport(addon), runTests(addon)];
 
-    if (!checks.every(c => c)) {
+    if (!checks.every((c) => c)) {
       allPassed = false;
     }
     console.log('');

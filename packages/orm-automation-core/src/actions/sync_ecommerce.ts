@@ -26,7 +26,8 @@ export async function run(
     return { ok: false, error: 'sync_ecommerce direction must be pull|push' };
   }
 
-  const inserted = await ctx.db('marketplace_sync_jobs')
+  const inserted = await ctx
+    .db('marketplace_sync_jobs')
     .insert({
       company_id: ctx.companyId,
       marketplace,

@@ -45,14 +45,14 @@ function discoverAddons(): DiscoveredAddon[] {
   }
 
   const dirs = readdirSync(packagesDir);
-  
+
   for (const dir of dirs) {
     if (!dir.startsWith('orm-') || dir === 'orm-cli' || dir === 'orm-isp') continue;
-    
+
     const seedPath = join(packagesDir, dir, 'src', 'seed.ts');
     const distSeedPath = join(packagesDir, dir, 'dist', 'seed.js');
     const hasSeed = existsSync(seedPath) || existsSync(distSeedPath);
-    
+
     if (!hasSeed) {
       console.warn(`[warn] ${dir}: no seed.ts found, skipping`);
       continue;
@@ -62,12 +62,12 @@ function discoverAddons(): DiscoveredAddon[] {
       const modulePath = existsSync(distSeedPath) ? distSeedPath : seedPath;
       const mod = require(modulePath);
       const manifest = mod.manifest as AddonSeedManifest;
-      
+
       if (!manifest || typeof manifest.seed !== 'function') {
         console.warn(`[warn] ${dir}: missing or invalid manifest, skipping`);
         continue;
       }
-      
+
       addons.push({ name: dir, path: modulePath, manifest });
     } catch (e) {
       console.error(`[error] ${dir}: failed to load seed: ${e}`);
@@ -79,7 +79,7 @@ function discoverAddons(): DiscoveredAddon[] {
 }
 
 function topologicalSort(addons: DiscoveredAddon[]): DiscoveredAddon[] {
-  const map = new Map(addons.map(a => [a.name, a]));
+  const map = new Map(addons.map((a) => [a.name, a]));
   const visited = new Set<string>();
   const temp = new Set<string>();
   const result: DiscoveredAddon[] = [];
@@ -89,7 +89,7 @@ function topologicalSort(addons: DiscoveredAddon[]): DiscoveredAddon[] {
       throw new Error(`Dependency cycle detected involving: ${name}`);
     }
     if (visited.has(name)) return;
-    
+
     temp.add(name);
     const addon = map.get(name);
     if (addon) {
@@ -109,18 +109,26 @@ function topologicalSort(addons: DiscoveredAddon[]): DiscoveredAddon[] {
   return result;
 }
 
-async function runSeeds(db: Knex, verifyOnly: boolean): Promise<{ totalInserted: number; totalUpdated: number; totalSkipped: number; coverage: number }> {
+async function runSeeds(
+  db: Knex,
+  verifyOnly: boolean
+): Promise<{
+  totalInserted: number;
+  totalUpdated: number;
+  totalSkipped: number;
+  coverage: number;
+}> {
   const addons = discoverAddons();
-  
+
   if (addons.length === 0) {
     console.error('No addons with valid seeds found');
     process.exit(1);
   }
 
   console.log(`Discovered ${addons.length} addon(s) with seeds`);
-  
+
   const sorted = topologicalSort(addons);
-  console.log('Execution order:', sorted.map(a => a.name).join(' -> '));
+  console.log('Execution order:', sorted.map((a) => a.name).join(' -> '));
 
   let totalInserted = 0;
   let totalUpdated = 0;
@@ -129,19 +137,21 @@ async function runSeeds(db: Knex, verifyOnly: boolean): Promise<{ totalInserted:
 
   for (const addon of sorted) {
     console.log(`\n[${addon.name}] Running seed v${addon.manifest.seedVersion}...`);
-    
+
     const trx = await db.transaction();
     try {
       const ctx: SeedContext = { db: trx };
       const result = await addon.manifest.seed(ctx);
-      
+
       totalInserted += result.inserted;
       totalUpdated += result.updated;
       totalSkipped += result.skipped;
       seededCount++;
-      
-      console.log(`  inserted: ${result.inserted}, updated: ${result.updated}, skipped: ${result.skipped}`);
-      
+
+      console.log(
+        `  inserted: ${result.inserted}, updated: ${result.updated}, skipped: ${result.skipped}`
+      );
+
       if (verifyOnly) {
         await trx.rollback();
         console.log('  [verify-only] rolled back');
@@ -162,7 +172,7 @@ async function runSeeds(db: Knex, verifyOnly: boolean): Promise<{ totalInserted:
 async function createKnex() {
   const knex = require('knex');
   const pg = require('pg');
-  
+
   const config = {
     client: 'pg',
     connection: {
@@ -185,20 +195,20 @@ program
   .action(async (opts) => {
     console.log('Starting seed runner...');
     console.log('Mode:', opts.verifyOnly ? 'VERIFY ONLY' : 'APPLY');
-    
+
     const db = await createKnex();
     try {
       await db.raw('SELECT 1');
       console.log('Database connected');
-      
+
       const result = await runSeeds(db, opts.verifyOnly);
-      
+
       console.log('\n=== SUMMARY ===');
       console.log(`Total inserted: ${result.totalInserted}`);
       console.log(`Total updated: ${result.totalUpdated}`);
       console.log(`Total skipped: ${result.totalSkipped}`);
       console.log(`Coverage: ${result.coverage.toFixed(1)}%`);
-      
+
       if (opts.verifyOnly) {
         if (result.coverage < 100) {
           console.error('VERIFY FAILED: Not all addons seeded');
@@ -206,7 +216,7 @@ program
         }
         console.log('VERIFY PASSED: 100% addon coverage');
       }
-      
+
       process.exit(0);
     } catch (e) {
       console.error('Fatal error:', e);

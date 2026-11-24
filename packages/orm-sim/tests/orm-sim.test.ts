@@ -48,15 +48,16 @@ describe('@moonwitness/orm-sim models, addon manifest, and domain helpers', () =
     expect(computeRunChecksum(reorderedSnapshot)).toBe(checksum);
 
     const nestedSnapshot = { outer: { first: 1, entries: [{ west: 2, east: 3 }] }, top: true };
-    const reorderedNestedSnapshot = { top: true, outer: { entries: [{ east: 3, west: 2 }], first: 1 } };
+    const reorderedNestedSnapshot = {
+      top: true,
+      outer: { entries: [{ east: 3, west: 2 }], first: 1 },
+    };
     expect(computeRunChecksum(nestedSnapshot)).toBe(computeRunChecksum(reorderedNestedSnapshot));
 
-    expect(
-      estimateRunSteps({ max_steps: 1000, tolerance: 1e-6 })
-    ).toBe(1000);
-    expect(
-      estimateRunSteps({ max_steps: 1000, tolerance: 1e-6 }, { element_count: 4000 })
-    ).toBe(2000);
+    expect(estimateRunSteps({ max_steps: 1000, tolerance: 1e-6 })).toBe(1000);
+    expect(estimateRunSteps({ max_steps: 1000, tolerance: 1e-6 }, { element_count: 4000 })).toBe(
+      2000
+    );
 
     expect(isRunFinished({ status: 'succeeded' })).toBe(true);
     expect(isRunFinished({ status: 'running' })).toBe(false);

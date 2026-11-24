@@ -64,7 +64,10 @@ export function buildContactSheetGroups(manifest) {
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([name, items]) => ({
       name,
-      slug: name.replace(/[^a-z0-9]+/giu, '-').replace(/^-|-$/gu, '').toLowerCase(),
+      slug: name
+        .replace(/[^a-z0-9]+/giu, '-')
+        .replace(/^-|-$/gu, '')
+        .toLowerCase(),
       count: items.length,
       items: [...items].sort((left, right) => left.id.localeCompare(right.id)),
     }));
@@ -154,7 +157,9 @@ export async function generateContactSheets({
         await page.setContent(html);
         await page
           .locator('main img')
-          .evaluateAll((images) => Promise.all(images.map((image) => image.decode().catch(() => {}))));
+          .evaluateAll((images) =>
+            Promise.all(images.map((image) => image.decode().catch(() => {})))
+          );
         const states = await page.locator('main img').evaluateAll((images) =>
           images.map((image) => ({
             loaded: image.complete && image.naturalWidth > 0,
@@ -162,7 +167,9 @@ export async function generateContactSheets({
           }))
         );
         if (states.some((state) => !state.loaded)) {
-          throw new Error(`Contact sheet ${group.name} has unloaded assets: ${JSON.stringify(states)}`);
+          throw new Error(
+            `Contact sheet ${group.name} has unloaded assets: ${JSON.stringify(states)}`
+          );
         }
         const fileName = `pack-${group.slug}-contact-sheet.png`;
         const outPath = resolve(outputDir, fileName);

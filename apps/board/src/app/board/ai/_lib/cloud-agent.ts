@@ -80,7 +80,9 @@ export async function selectGatewayModel(
 }
 
 export async function fetchCloudRun(runId: number): Promise<CloudRunDto> {
-  const response = unwrap<CloudRunDto>(await client.request(`/api/ai/runs/${runId}`, { method: 'GET' }));
+  const response = unwrap<CloudRunDto>(
+    await client.request(`/api/ai/runs/${runId}`, { method: 'GET' })
+  );
   return response.data;
 }
 

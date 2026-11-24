@@ -12,16 +12,16 @@ Dokumen ini adalah pintu masuk untuk kerangka audit, riset, inovasi, dan evolusi
 
 ## Dokumen
 
-| Dokumen | Fungsi |
-|---|---|
-| [MASTER_INTELLIGENCE_PROMPT_V3.md](MASTER_INTELLIGENCE_PROMPT_V3.md) | Instruksi utama, urutan fase, orkestrasi, dan output kontrak |
-| [REPOSITORY_AUDIT_PLAYBOOK.md](REPOSITORY_AUDIT_PLAYBOOK.md) | Baseline, system mapping, technical/product audit, dan coverage |
-| [RESEARCH_INTELLIGENCE_PLAYBOOK.md](RESEARCH_INTELLIGENCE_PLAYBOOK.md) | Riset teknologi, open-source, kompetitor, sumber, dan technology radar |
-| [INNOVATION_DISCOVERY_LAB.md](INNOVATION_DISCOVERY_LAB.md) | Eight discovery engines, five signature concept methods, cross-domain discovery, ide out-of-the-box, dan eksperimen |
-| [STRATEGIC_DECISION_PLAYBOOK.md](STRATEGIC_DECISION_PLAYBOOK.md) | Pilihan strategis, leverage points, scenario planning, dan keputusan arsitektur/produk |
-| [BACKLOG_ENGINEERING_PLAYBOOK.md](BACKLOG_ENGINEERING_PLAYBOOK.md) | Rekonsiliasi task, anti-overlap, agent-ready task, prioritas, dan roadmap |
-| [DOMAIN_SPECIFIC_ADAPTERS.md](DOMAIN_SPECIFIC_ADAPTERS.md) | Modul khusus sesuai tipe sistem dan domain proyek |
-| [REPOSITORY_INTELLIGENCE_AUDIT_PROMPT_V2.md](REPOSITORY_INTELLIGENCE_AUDIT_PROMPT_V2.md) | Versi sebelumnya; dipertahankan sebagai arsip dan baseline historis |
+| Dokumen                                                                                  | Fungsi                                                                                                              |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [MASTER_INTELLIGENCE_PROMPT_V3.md](MASTER_INTELLIGENCE_PROMPT_V3.md)                     | Instruksi utama, urutan fase, orkestrasi, dan output kontrak                                                        |
+| [REPOSITORY_AUDIT_PLAYBOOK.md](REPOSITORY_AUDIT_PLAYBOOK.md)                             | Baseline, system mapping, technical/product audit, dan coverage                                                     |
+| [RESEARCH_INTELLIGENCE_PLAYBOOK.md](RESEARCH_INTELLIGENCE_PLAYBOOK.md)                   | Riset teknologi, open-source, kompetitor, sumber, dan technology radar                                              |
+| [INNOVATION_DISCOVERY_LAB.md](INNOVATION_DISCOVERY_LAB.md)                               | Eight discovery engines, five signature concept methods, cross-domain discovery, ide out-of-the-box, dan eksperimen |
+| [STRATEGIC_DECISION_PLAYBOOK.md](STRATEGIC_DECISION_PLAYBOOK.md)                         | Pilihan strategis, leverage points, scenario planning, dan keputusan arsitektur/produk                              |
+| [BACKLOG_ENGINEERING_PLAYBOOK.md](BACKLOG_ENGINEERING_PLAYBOOK.md)                       | Rekonsiliasi task, anti-overlap, agent-ready task, prioritas, dan roadmap                                           |
+| [DOMAIN_SPECIFIC_ADAPTERS.md](DOMAIN_SPECIFIC_ADAPTERS.md)                               | Modul khusus sesuai tipe sistem dan domain proyek                                                                   |
+| [REPOSITORY_INTELLIGENCE_AUDIT_PROMPT_V2.md](REPOSITORY_INTELLIGENCE_AUDIT_PROMPT_V2.md) | Versi sebelumnya; dipertahankan sebagai arsip dan baseline historis                                                 |
 
 ## Prinsip penggunaan
 

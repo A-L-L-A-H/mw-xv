@@ -77,11 +77,7 @@ export function calendarRecordDay(value: unknown): string | null {
   return Number.isNaN(timestamp.getTime()) ? null : formatLocalDate(timestamp);
 }
 
-export function navigateCalendar(
-  cursor: Date,
-  direction: -1 | 1,
-  mode: CalendarMode
-): Date {
+export function navigateCalendar(cursor: Date, direction: -1 | 1, mode: CalendarMode): Date {
   return mode === 'month' ? addLocalMonths(cursor, direction) : addLocalDays(cursor, direction * 7);
 }
 
@@ -93,9 +89,7 @@ export function buildCalendarRange(cursor: Date, mode: CalendarMode): CalendarRa
 
   if (mode === 'month') {
     rangeStart.setDate(1);
-    rangeEnd = endOfLocalDay(
-      new Date(rangeStart.getFullYear(), rangeStart.getMonth() + 1, 0)
-    );
+    rangeEnd = endOfLocalDay(new Date(rangeStart.getFullYear(), rangeStart.getMonth() + 1, 0));
     gridStart = addLocalDays(rangeStart, -rangeStart.getDay());
     dayCount = 42;
   } else {

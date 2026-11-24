@@ -48,11 +48,7 @@ export function FormView(props: FormViewProps) {
 
   if (isEdit && isLoading) {
     return (
-      <div
-        role="status"
-        aria-label="Loading record"
-        className="ink-panel p-8 space-y-6 bg-card"
-      >
+      <div role="status" aria-label="Loading record" className="ink-panel p-8 space-y-6 bg-card">
         <Skeleton className="h-10 w-full bg-ink/10" />
         <Skeleton className="h-10 w-full bg-ink/10" />
         <Skeleton className="h-10 w-2/3 bg-ink/10" />

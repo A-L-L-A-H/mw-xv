@@ -14,45 +14,113 @@ const licenses = JSON.parse(await readFile(resolve(packageRoot, 'licenses.json')
 const byPath = new Map(manifest.assets.map((asset) => [asset.path, asset]));
 
 const EXPRESSIONS = [
-  'happy', 'excited', 'laughing', 'angry', 'confused', 'thinking', 'surprised', 'sad',
-  'crying', 'sleepy', 'curious', 'celebrating', 'embarrassed', 'determined', 'victory', 'disappointed',
+  'happy',
+  'excited',
+  'laughing',
+  'angry',
+  'confused',
+  'thinking',
+  'surprised',
+  'sad',
+  'crying',
+  'sleepy',
+  'curious',
+  'celebrating',
+  'embarrassed',
+  'determined',
+  'victory',
+  'disappointed',
 ];
 const POSES = [
-  'standing', 'sitting', 'walking', 'running', 'jumping', 'waving',
-  'pointing', 'reading', 'gaming', 'working', 'holding-objects', 'celebrating',
+  'standing',
+  'sitting',
+  'walking',
+  'running',
+  'jumping',
+  'waving',
+  'pointing',
+  'reading',
+  'gaming',
+  'working',
+  'holding-objects',
+  'celebrating',
 ];
 const STATES = [
-  'empty-dashboard', 'no-search-results', 'no-notifications', 'empty-collection',
-  'no-favorites', 'no-messages', 'no-activity', 'first-time',
-  'loading', 'success', 'error', 'offline', 'network-disconnected',
-  'maintenance', 'access-denied', 'not-found', 'unexpected-failure',
-  'welcome', 'onboarding', 'discover', 'explore', 'profile', 'achievement', 'completion', 'celebration',
+  'empty-dashboard',
+  'no-search-results',
+  'no-notifications',
+  'empty-collection',
+  'no-favorites',
+  'no-messages',
+  'no-activity',
+  'first-time',
+  'loading',
+  'success',
+  'error',
+  'offline',
+  'network-disconnected',
+  'maintenance',
+  'access-denied',
+  'not-found',
+  'unexpected-failure',
+  'welcome',
+  'onboarding',
+  'discover',
+  'explore',
+  'profile',
+  'achievement',
+  'completion',
+  'celebration',
 ];
 const BACKGROUNDS = [
-  'riot-street-alley', 'riot-arcade-workbench', 'halftone-paper-light', 'halftone-ink-dark',
+  'riot-street-alley',
+  'riot-arcade-workbench',
+  'halftone-paper-light',
+  'halftone-ink-dark',
 ];
 const STICKERS = [
-  'speech-bubble-shout', 'speech-bubble-thought', 'comic-boom', 'lightning-bolt',
-  'riot-star', 'street-flame', 'pixel-heart', 'hand-arrow',
-  'paint-splash', 'motion-burst', 'torn-tape-x', 'graffiti-crown',
+  'speech-bubble-shout',
+  'speech-bubble-thought',
+  'comic-boom',
+  'lightning-bolt',
+  'riot-star',
+  'street-flame',
+  'pixel-heart',
+  'hand-arrow',
+  'paint-splash',
+  'motion-burst',
+  'torn-tape-x',
+  'graffiti-crown',
 ];
 const GAME_ASSETS = [
-  'avatar-kuro', 'avatar-vesper', 'avatar-frame-riot',
-  'badge-signal-scout', 'badge-archive-keeper', 'badge-story-architect', 'badge-zero-drift',
-  'rank-rookie', 'rank-vanguard', 'rank-legend',
-  'quest-banner', 'reward-crate', 'level-up-burst',
+  'avatar-kuro',
+  'avatar-vesper',
+  'avatar-frame-riot',
+  'badge-signal-scout',
+  'badge-archive-keeper',
+  'badge-story-architect',
+  'badge-zero-drift',
+  'rank-rookie',
+  'rank-vanguard',
+  'rank-legend',
+  'quest-banner',
+  'reward-crate',
+  'level-up-burst',
 ];
 const CLIPS = ['idle', 'blink', 'wave', 'celebrate', 'think', 'loading', 'success', 'error'];
 
 async function assertAlphaCutout(relPath, expectedWidth, expectedHeight) {
   const fullPath = resolve(packageRoot, relPath);
-  const { data, info } = await sharp(fullPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(fullPath)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   assert.equal(info.width, expectedWidth, `${relPath} width`);
   assert.equal(info.height, expectedHeight, `${relPath} height`);
   const corners = [
     0,
     (info.width - 1) * 4,
-    ((info.height - 1) * info.width) * 4,
+    (info.height - 1) * info.width * 4,
     ((info.height - 1) * info.width + (info.width - 1)) * 4,
   ];
   for (const offset of corners) {
@@ -61,14 +129,24 @@ async function assertAlphaCutout(relPath, expectedWidth, expectedHeight) {
   const cx = Math.floor(info.width / 2);
   const cy = Math.floor(info.height / 2);
   const centerOffset = (cy * info.width + cx) * 4;
-  assert.equal(data[centerOffset + 3], 255, `${relPath} center interior pixel must stay opaque (255)`);
+  assert.equal(
+    data[centerOffset + 3],
+    255,
+    `${relPath} center interior pixel must stay opaque (255)`
+  );
 }
 
 test('riot-universe manifest and source provenance validate cleanly', () => {
   validateAssetManifest(manifest);
   validateSourceProvenance(manifest, licenses);
-  const riotSources = manifest.assets.filter((a) => a.kind === 'source' && a.pack === 'riot-universe');
-  assert.equal(riotSources.length, 14, '12 direct AI masters + 2 procedural halftone masters tracked');
+  const riotSources = manifest.assets.filter(
+    (a) => a.kind === 'source' && a.pack === 'riot-universe'
+  );
+  assert.equal(
+    riotSources.length,
+    14,
+    '12 direct AI masters + 2 procedural halftone masters tracked'
+  );
   for (const src of riotSources) {
     const prov = licenses.sourceAssets.find((p) => p.path === src.path);
     assert.ok(prov, `missing source provenance for ${src.path}`);
@@ -153,8 +231,14 @@ test('5-layer riot-alley-scene.json and SVG layers validate against scene-schema
     assert.ok(byPath.has(svgRel), `${svgRel} registered`);
     validateSvg(await readFile(resolve(packageRoot, svgRel), 'utf8'), svgRel);
   }
-  const bundle = JSON.parse(await readFile(resolve(packageRoot, 'scenes/riot-alley-scene.json'), 'utf8'));
-  const result = validateSceneBundle(bundle, manifest, 'packages/assets/scenes/riot-alley-scene.json');
+  const bundle = JSON.parse(
+    await readFile(resolve(packageRoot, 'scenes/riot-alley-scene.json'), 'utf8')
+  );
+  const result = validateSceneBundle(
+    bundle,
+    manifest,
+    'packages/assets/scenes/riot-alley-scene.json'
+  );
   assert.equal(result.sceneCount, 1);
   assert.equal(result.clipCount, 2);
   assert.equal(bundle.scenes[0].layers.length, 5);

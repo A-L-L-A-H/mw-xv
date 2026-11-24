@@ -134,9 +134,7 @@ export function countPassedGates(
   };
 }
 
-export function totalSafetyRegressions(
-  gates: readonly CapabilityGateView[]
-): number | null {
+export function totalSafetyRegressions(gates: readonly CapabilityGateView[]): number | null {
   if (gates.length === 0 || gates.some((gate) => gate.safetyRegressions === null)) return null;
   return gates.reduce((total, gate) => total + (gate.safetyRegressions ?? 0), 0);
 }

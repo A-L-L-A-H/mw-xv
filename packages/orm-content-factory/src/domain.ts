@@ -31,7 +31,11 @@ export function extractTemplateVariables(structure: unknown): string[] {
 }
 
 export function isTemplateStructure(structure: unknown): structure is TemplateStructure {
-  if (typeof structure !== 'object' || structure === null || !Array.isArray((structure as TemplateStructure).sections)) {
+  if (
+    typeof structure !== 'object' ||
+    structure === null ||
+    !Array.isArray((structure as TemplateStructure).sections)
+  ) {
     return false;
   }
   return (structure as TemplateStructure).sections.every(
@@ -43,7 +47,10 @@ export function isTemplateStructure(structure: unknown): structure is TemplateSt
   );
 }
 
-export function validateVariables(schema: unknown, provided: Record<string, unknown>): { valid: boolean; missing: string[] } {
+export function validateVariables(
+  schema: unknown,
+  provided: Record<string, unknown>
+): { valid: boolean; missing: string[] } {
   if (typeof schema !== 'object' || schema === null) {
     return { valid: true, missing: [] };
   }
@@ -52,9 +59,13 @@ export function validateVariables(schema: unknown, provided: Record<string, unkn
     return { valid: true, missing: [] };
   }
   const required = Array.isArray((schema as { required?: unknown }).required)
-    ? ((schema as { required: unknown[] }).required as unknown[]).filter((v): v is string => typeof v === 'string')
+    ? ((schema as { required: unknown[] }).required as unknown[]).filter(
+        (v): v is string => typeof v === 'string'
+      )
     : [];
-  const missing = required.filter((name) => provided[name] === undefined || provided[name] === null);
+  const missing = required.filter(
+    (name) => provided[name] === undefined || provided[name] === null
+  );
   return { valid: missing.length === 0, missing };
 }
 

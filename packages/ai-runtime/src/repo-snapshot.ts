@@ -103,7 +103,6 @@ const MANIFEST_BASENAMES: Readonly<Record<string, RepoManifestKind>> = {
 const ENTRY_POINT_PATTERN = /(?:^|\/)src\/(?:index|main|server|cli)\.[^/]+$/u;
 const MARKDOWN_HEADING_PATTERN = /^(#{1,6})\s+(.+?)\s*#*$/u;
 
-
 function getPosixBasename(posixPath: string): string {
   const slashIndex = posixPath.lastIndexOf('/');
   return slashIndex === -1 ? posixPath : posixPath.slice(slashIndex + 1);

@@ -100,7 +100,9 @@ export async function floodFillCutout(input, extractRect = null) {
     }
   }
 
-  return sharp(data, { raw: { width, height, channels: 4 } }).png().toBuffer();
+  return sharp(data, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer();
 }
 
 function wrapSvg(filePath, width, height, title, body) {
@@ -136,7 +138,9 @@ function halftoneDots(cols, rows, startX, startY, step, radius, color, opacity =
     for (let col = 0; col < cols; col += 1) {
       const cx = startX + col * step + (row % 2 === 1 ? step / 2 : 0);
       const cy = startY + row * step;
-      dots.push(`<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${color}" fill-opacity="${opacity}"/>`);
+      dots.push(
+        `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${color}" fill-opacity="${opacity}"/>`
+      );
     }
   }
   return dots.join('');
@@ -500,31 +504,228 @@ const POSES = [
 ];
 
 const UI_STATES = [
-  { slug: 'empty-dashboard', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: CYAN, actor: 'kuro', glyph: '<rect x="260" y="138" width="120" height="86" rx="8" fill="#17171a" stroke="#0d0d0d" stroke-width="5"/><path d="M278 168h84M278 190h56" stroke="#00b8f0" stroke-width="5" stroke-linecap="round"/>' },
-  { slug: 'no-search-results', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: YELLOW, actor: 'vesper', glyph: '<circle cx="312" cy="176" r="40" fill="#17171a" stroke="#ffe031" stroke-width="6"/><path d="M342 206l32 32M296 160l32 32M328 160l-32 32" stroke="#ffe031" stroke-width="6" stroke-linecap="round"/>' },
-  { slug: 'no-notifications', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: VIOLET, actor: 'kuro', glyph: '<path d="M320 132c-22 0-36 16-36 38v22l-12 16h96l-12-16v-22c0-22-14-38-36-38Z" fill="#17171a" stroke="#c084fc" stroke-width="5"/><path d="M274 134l92 84" stroke="#ff2e88" stroke-width="6" stroke-linecap="round"/>' },
-  { slug: 'empty-collection', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'vesper', glyph: '<path d="M258 154h44l14 16h66v58H258Z" fill="#17171a" stroke="#ff2e88" stroke-width="5" stroke-linejoin="round"/><path d="M276 196h88" stroke="#f3efe4" stroke-width="4" stroke-dasharray="6 8"/>' },
-  { slug: 'no-favorites', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'kuro', glyph: `<path d="${starPath(320, 182, 46, 20, 5)}" fill="#17171a" stroke="#ff2e88" stroke-width="5.5"/>` },
-  { slug: 'no-messages', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: CYAN, actor: 'kuro', glyph: '<rect x="258" y="144" width="124" height="82" rx="8" fill="#17171a" stroke="#00b8f0" stroke-width="5"/><path d="M262 148l58 44 58-44" fill="none" stroke="#00b8f0" stroke-width="5"/>' },
-  { slug: 'no-activity', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: YELLOW, actor: 'vesper', glyph: '<path d="M248 188h36l16-34 22 64 18-30h52" fill="none" stroke="#ffe031" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>' },
-  { slug: 'first-time', master: 'scene-onboarding-welcome-master.png', expr: 'excited', accent: YELLOW, actor: 'both', glyph: `<path d="${starPath(320, 176, 42, 14, 4)}" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/>` },
-  { slug: 'loading', master: 'bg-riot-arcade-workbench-master.png', expr: 'thinking', accent: CYAN, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="42" fill="none" stroke="#17171a" stroke-width="10"/><path d="M320 138a42 42 0 0 1 42 42" fill="none" stroke="#00b8f0" stroke-width="10" stroke-linecap="round"/><circle cx="320" cy="180" r="14" fill="#ffe031"/>' },
-  { slug: 'success', master: 'scene-quest-victory-master.png', expr: 'celebrating', accent: YELLOW, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="44" fill="#ffe031" stroke="#0d0d0d" stroke-width="6"/><path d="M298 180l16 16 32-36" fill="none" stroke="#0d0d0d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>' },
-  { slug: 'error', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'kuro', glyph: '<polygon points="320,132 370,222 270,222" fill="#ff2e88" stroke="#0d0d0d" stroke-width="6" stroke-linejoin="round"/><path d="M320 162v28" stroke="#0d0d0d" stroke-width="7" stroke-linecap="round"/><circle cx="320" cy="204" r="4.5" fill="#0d0d0d"/>' },
-  { slug: 'offline', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: CYAN, actor: 'kuro', glyph: '<path d="M266 168a76 76 0 0 1 108 0M284 190a50 50 0 0 1 72 0" fill="none" stroke="#00b8f0" stroke-width="6" stroke-linecap="round"/><path d="M276 138l88 86" stroke="#ff2e88" stroke-width="7" stroke-linecap="round"/>' },
-  { slug: 'network-disconnected', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'vesper', glyph: '<path d="M256 184h42m44 0h42" stroke="#00b8f0" stroke-width="7" stroke-linecap="round"/><rect x="294" y="164" width="16" height="40" rx="3" fill="#ff2e88" stroke="#0d0d0d" stroke-width="4"/><rect x="330" y="164" width="16" height="40" rx="3" fill="#ffe031" stroke="#0d0d0d" stroke-width="4"/>' },
-  { slug: 'maintenance', master: 'bg-riot-arcade-workbench-master.png', expr: 'thinking', accent: YELLOW, actor: 'vesper', glyph: '<circle cx="320" cy="180" r="36" fill="#17171a" stroke="#ffe031" stroke-width="7" stroke-dasharray="14 8"/><circle cx="320" cy="180" r="14" fill="#ffe031" stroke="#0d0d0d" stroke-width="4"/>' },
-  { slug: 'access-denied', master: 'bg-riot-street-alley-master.png', expr: 'thinking', accent: MAGENTA, actor: 'vesper', glyph: '<rect x="282" y="168" width="76" height="58" rx="8" fill="#17171a" stroke="#ff2e88" stroke-width="6"/><path d="M298 168v-18a22 22 0 0 1 44 0v18" fill="none" stroke="#ff2e88" stroke-width="6"/>' },
-  { slug: 'not-found', master: 'bg-riot-street-alley-master.png', expr: 'thinking', accent: VIOLET, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="44" fill="#17171a" stroke="#c084fc" stroke-width="6" stroke-dasharray="16 8"/><path d="M298 158l44 44M342 158l-44 44" stroke="#ffe031" stroke-width="7" stroke-linecap="round"/>' },
-  { slug: 'unexpected-failure', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'kuro', glyph: '<path d="M326 128l-34 52h32l-12 46 38-58h-32Z" fill="#ff2e88" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>' },
-  { slug: 'welcome', master: 'scene-onboarding-welcome-master.png', expr: 'excited', accent: YELLOW, actor: 'both', glyph: '<path d="M276 218v-72l44-24 44 24v72Z" fill="#17171a" stroke="#ffe031" stroke-width="5"/><circle cx="344" cy="184" r="5" fill="#ffe031"/>' },
-  { slug: 'onboarding', master: 'scene-onboarding-welcome-master.png', expr: 'excited', accent: CYAN, actor: 'both', glyph: '<circle cx="320" cy="180" r="42" fill="#17171a" stroke="#00b8f0" stroke-width="6"/><polygon points="320,146 334,180 320,214 306,180" fill="#ffe031" stroke="#0d0d0d" stroke-width="3.5"/>' },
-  { slug: 'discover', master: 'scene-onboarding-welcome-master.png', expr: 'excited', accent: CYAN, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="42" fill="#17171a" stroke="#00b8f0" stroke-width="5"/><circle cx="320" cy="180" r="22" fill="none" stroke="#ff2e88" stroke-width="4"/><circle cx="320" cy="180" r="7" fill="#ffe031"/>' },
-  { slug: 'explore', master: 'scene-onboarding-welcome-master.png', expr: 'happy', accent: VIOLET, actor: 'vesper', glyph: '<polygon points="274,218 302,146 368,142 340,214" fill="#17171a" stroke="#c084fc" stroke-width="5"/><circle cx="320" cy="180" r="12" fill="#00b8f0"/>' },
-  { slug: 'profile', master: 'scene-onboarding-welcome-master.png', expr: 'happy', accent: YELLOW, actor: 'kuro', glyph: '<rect x="266" y="138" width="108" height="84" rx="10" fill="#17171a" stroke="#ffe031" stroke-width="5"/><circle cx="320" cy="168" r="14" fill="#ff2e88"/><path d="M294 206c6-16 46-16 52 0" fill="#00b8f0"/>' },
-  { slug: 'achievement', master: 'scene-quest-victory-master.png', expr: 'celebrating', accent: YELLOW, actor: 'kuro', glyph: '<path d="M286 142h68v34c0 22-16 34-34 38-18-4-34-16-34-38Z" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/><path d="M302 224h36" stroke="#ffe031" stroke-width="8" stroke-linecap="round"/>' },
-  { slug: 'completion', master: 'scene-quest-victory-master.png', expr: 'celebrating', accent: CYAN, actor: 'both', glyph: '<path d="M284 136v96M284 138l72 18-72 24Z" fill="#00b8f0" stroke="#00b8f0" stroke-width="6" stroke-linejoin="round"/>' },
-  { slug: 'celebration', master: 'scene-quest-victory-master.png', expr: 'celebrating', accent: MAGENTA, actor: 'both', glyph: `<path d="${starPath(320, 178, 44, 16, 5)}" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/><path d="${starPath(260, 142, 16, 6, 4)}" fill="#ff2e88"/><path d="${starPath(380, 146, 16, 6, 4)}" fill="#00b8f0"/>` },
+  {
+    slug: 'empty-dashboard',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: CYAN,
+    actor: 'kuro',
+    glyph:
+      '<rect x="260" y="138" width="120" height="86" rx="8" fill="#17171a" stroke="#0d0d0d" stroke-width="5"/><path d="M278 168h84M278 190h56" stroke="#00b8f0" stroke-width="5" stroke-linecap="round"/>',
+  },
+  {
+    slug: 'no-search-results',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: YELLOW,
+    actor: 'vesper',
+    glyph:
+      '<circle cx="312" cy="176" r="40" fill="#17171a" stroke="#ffe031" stroke-width="6"/><path d="M342 206l32 32M296 160l32 32M328 160l-32 32" stroke="#ffe031" stroke-width="6" stroke-linecap="round"/>',
+  },
+  {
+    slug: 'no-notifications',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: VIOLET,
+    actor: 'kuro',
+    glyph:
+      '<path d="M320 132c-22 0-36 16-36 38v22l-12 16h96l-12-16v-22c0-22-14-38-36-38Z" fill="#17171a" stroke="#c084fc" stroke-width="5"/><path d="M274 134l92 84" stroke="#ff2e88" stroke-width="6" stroke-linecap="round"/>',
+  },
+  {
+    slug: 'empty-collection',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: MAGENTA,
+    actor: 'vesper',
+    glyph:
+      '<path d="M258 154h44l14 16h66v58H258Z" fill="#17171a" stroke="#ff2e88" stroke-width="5" stroke-linejoin="round"/><path d="M276 196h88" stroke="#f3efe4" stroke-width="4" stroke-dasharray="6 8"/>',
+  },
+  {
+    slug: 'no-favorites',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: MAGENTA,
+    actor: 'kuro',
+    glyph: `<path d="${starPath(320, 182, 46, 20, 5)}" fill="#17171a" stroke="#ff2e88" stroke-width="5.5"/>`,
+  },
+  {
+    slug: 'no-messages',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: CYAN,
+    actor: 'kuro',
+    glyph:
+      '<rect x="258" y="144" width="124" height="82" rx="8" fill="#17171a" stroke="#00b8f0" stroke-width="5"/><path d="M262 148l58 44 58-44" fill="none" stroke="#00b8f0" stroke-width="5"/>',
+  },
+  {
+    slug: 'no-activity',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: YELLOW,
+    actor: 'vesper',
+    glyph:
+      '<path d="M248 188h36l16-34 22 64 18-30h52" fill="none" stroke="#ffe031" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>',
+  },
+  {
+    slug: 'first-time',
+    master: 'scene-onboarding-welcome-master.png',
+    expr: 'excited',
+    accent: YELLOW,
+    actor: 'both',
+    glyph: `<path d="${starPath(320, 176, 42, 14, 4)}" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/>`,
+  },
+  {
+    slug: 'loading',
+    master: 'bg-riot-arcade-workbench-master.png',
+    expr: 'thinking',
+    accent: CYAN,
+    actor: 'kuro',
+    glyph:
+      '<circle cx="320" cy="180" r="42" fill="none" stroke="#17171a" stroke-width="10"/><path d="M320 138a42 42 0 0 1 42 42" fill="none" stroke="#00b8f0" stroke-width="10" stroke-linecap="round"/><circle cx="320" cy="180" r="14" fill="#ffe031"/>',
+  },
+  {
+    slug: 'success',
+    master: 'scene-quest-victory-master.png',
+    expr: 'celebrating',
+    accent: YELLOW,
+    actor: 'kuro',
+    glyph:
+      '<circle cx="320" cy="180" r="44" fill="#ffe031" stroke="#0d0d0d" stroke-width="6"/><path d="M298 180l16 16 32-36" fill="none" stroke="#0d0d0d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>',
+  },
+  {
+    slug: 'error',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: MAGENTA,
+    actor: 'kuro',
+    glyph:
+      '<polygon points="320,132 370,222 270,222" fill="#ff2e88" stroke="#0d0d0d" stroke-width="6" stroke-linejoin="round"/><path d="M320 162v28" stroke="#0d0d0d" stroke-width="7" stroke-linecap="round"/><circle cx="320" cy="204" r="4.5" fill="#0d0d0d"/>',
+  },
+  {
+    slug: 'offline',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: CYAN,
+    actor: 'kuro',
+    glyph:
+      '<path d="M266 168a76 76 0 0 1 108 0M284 190a50 50 0 0 1 72 0" fill="none" stroke="#00b8f0" stroke-width="6" stroke-linecap="round"/><path d="M276 138l88 86" stroke="#ff2e88" stroke-width="7" stroke-linecap="round"/>',
+  },
+  {
+    slug: 'network-disconnected',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: MAGENTA,
+    actor: 'vesper',
+    glyph:
+      '<path d="M256 184h42m44 0h42" stroke="#00b8f0" stroke-width="7" stroke-linecap="round"/><rect x="294" y="164" width="16" height="40" rx="3" fill="#ff2e88" stroke="#0d0d0d" stroke-width="4"/><rect x="330" y="164" width="16" height="40" rx="3" fill="#ffe031" stroke="#0d0d0d" stroke-width="4"/>',
+  },
+  {
+    slug: 'maintenance',
+    master: 'bg-riot-arcade-workbench-master.png',
+    expr: 'thinking',
+    accent: YELLOW,
+    actor: 'vesper',
+    glyph:
+      '<circle cx="320" cy="180" r="36" fill="#17171a" stroke="#ffe031" stroke-width="7" stroke-dasharray="14 8"/><circle cx="320" cy="180" r="14" fill="#ffe031" stroke="#0d0d0d" stroke-width="4"/>',
+  },
+  {
+    slug: 'access-denied',
+    master: 'bg-riot-street-alley-master.png',
+    expr: 'thinking',
+    accent: MAGENTA,
+    actor: 'vesper',
+    glyph:
+      '<rect x="282" y="168" width="76" height="58" rx="8" fill="#17171a" stroke="#ff2e88" stroke-width="6"/><path d="M298 168v-18a22 22 0 0 1 44 0v18" fill="none" stroke="#ff2e88" stroke-width="6"/>',
+  },
+  {
+    slug: 'not-found',
+    master: 'bg-riot-street-alley-master.png',
+    expr: 'thinking',
+    accent: VIOLET,
+    actor: 'kuro',
+    glyph:
+      '<circle cx="320" cy="180" r="44" fill="#17171a" stroke="#c084fc" stroke-width="6" stroke-dasharray="16 8"/><path d="M298 158l44 44M342 158l-44 44" stroke="#ffe031" stroke-width="7" stroke-linecap="round"/>',
+  },
+  {
+    slug: 'unexpected-failure',
+    master: 'scene-empty-signal-static-master.png',
+    expr: 'thinking',
+    accent: MAGENTA,
+    actor: 'kuro',
+    glyph:
+      '<path d="M326 128l-34 52h32l-12 46 38-58h-32Z" fill="#ff2e88" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>',
+  },
+  {
+    slug: 'welcome',
+    master: 'scene-onboarding-welcome-master.png',
+    expr: 'excited',
+    accent: YELLOW,
+    actor: 'both',
+    glyph:
+      '<path d="M276 218v-72l44-24 44 24v72Z" fill="#17171a" stroke="#ffe031" stroke-width="5"/><circle cx="344" cy="184" r="5" fill="#ffe031"/>',
+  },
+  {
+    slug: 'onboarding',
+    master: 'scene-onboarding-welcome-master.png',
+    expr: 'excited',
+    accent: CYAN,
+    actor: 'both',
+    glyph:
+      '<circle cx="320" cy="180" r="42" fill="#17171a" stroke="#00b8f0" stroke-width="6"/><polygon points="320,146 334,180 320,214 306,180" fill="#ffe031" stroke="#0d0d0d" stroke-width="3.5"/>',
+  },
+  {
+    slug: 'discover',
+    master: 'scene-onboarding-welcome-master.png',
+    expr: 'excited',
+    accent: CYAN,
+    actor: 'kuro',
+    glyph:
+      '<circle cx="320" cy="180" r="42" fill="#17171a" stroke="#00b8f0" stroke-width="5"/><circle cx="320" cy="180" r="22" fill="none" stroke="#ff2e88" stroke-width="4"/><circle cx="320" cy="180" r="7" fill="#ffe031"/>',
+  },
+  {
+    slug: 'explore',
+    master: 'scene-onboarding-welcome-master.png',
+    expr: 'happy',
+    accent: VIOLET,
+    actor: 'vesper',
+    glyph:
+      '<polygon points="274,218 302,146 368,142 340,214" fill="#17171a" stroke="#c084fc" stroke-width="5"/><circle cx="320" cy="180" r="12" fill="#00b8f0"/>',
+  },
+  {
+    slug: 'profile',
+    master: 'scene-onboarding-welcome-master.png',
+    expr: 'happy',
+    accent: YELLOW,
+    actor: 'kuro',
+    glyph:
+      '<rect x="266" y="138" width="108" height="84" rx="10" fill="#17171a" stroke="#ffe031" stroke-width="5"/><circle cx="320" cy="168" r="14" fill="#ff2e88"/><path d="M294 206c6-16 46-16 52 0" fill="#00b8f0"/>',
+  },
+  {
+    slug: 'achievement',
+    master: 'scene-quest-victory-master.png',
+    expr: 'celebrating',
+    accent: YELLOW,
+    actor: 'kuro',
+    glyph:
+      '<path d="M286 142h68v34c0 22-16 34-34 38-18-4-34-16-34-38Z" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/><path d="M302 224h36" stroke="#ffe031" stroke-width="8" stroke-linecap="round"/>',
+  },
+  {
+    slug: 'completion',
+    master: 'scene-quest-victory-master.png',
+    expr: 'celebrating',
+    accent: CYAN,
+    actor: 'both',
+    glyph:
+      '<path d="M284 136v96M284 138l72 18-72 24Z" fill="#00b8f0" stroke="#00b8f0" stroke-width="6" stroke-linejoin="round"/>',
+  },
+  {
+    slug: 'celebration',
+    master: 'scene-quest-victory-master.png',
+    expr: 'celebrating',
+    accent: MAGENTA,
+    actor: 'both',
+    glyph: `<path d="${starPath(320, 178, 44, 16, 5)}" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/><path d="${starPath(260, 142, 16, 6, 4)}" fill="#ff2e88"/><path d="${starPath(380, 146, 16, 6, 4)}" fill="#00b8f0"/>`,
+  },
 ];
 
 const STICKERS = [
@@ -687,14 +888,88 @@ const GAME_ASSETS = [
 ];
 
 const ANIMATION_CLIPS = [
-  { id: 'idle', masterKey: 'happy', durationMs: 260, direction: 'ping-pong', bob: [0, -6, -3, 0], tilt: [0, -1, 1, 0], fx: (i) => `<circle cx="386" cy="94" r="${8 + i * 2}" fill="${CYAN}" fill-opacity="${0.4 + i * 0.15}" stroke="${INK}" stroke-width="3"/>` },
-  { id: 'blink', masterKey: 'happy', durationMs: 180, direction: 'forward', bob: [0, 2, 3, 0], tilt: [0, 0.5, 0, 0], fx: (i) => i === 1 || i === 2 ? `<path d="M 206 206 Q 232 218 254 206 M 280 206 Q 304 218 324 206" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><circle cx="404" cy="108" r="${7 + i * 2}" fill="${YELLOW}" stroke="${INK}" stroke-width="3"/>` : `<path d="${starPath(406, 108, 12 + i * 2, 4, 4)}" fill="${YELLOW}" stroke="${INK}" stroke-width="3"/>` },
-  { id: 'wave', masterKey: 'excited', durationMs: 200, direction: 'ping-pong', bob: [0, -8, -4, 0], tilt: [-3, 3, -2, 0], fx: (i) => `<path d="M ${84 - i * 4} 174 Q 64 136 ${88 + i * 4} 108" fill="none" stroke="${YELLOW}" stroke-width="6" stroke-linecap="round"/><path d="M ${66 - i * 4} 188 Q 42 138 ${70 + i * 4} 96" fill="none" stroke="${MAGENTA}" stroke-width="5" stroke-linecap="round"/>` },
-  { id: 'celebrate', masterKey: 'celebrating', durationMs: 180, direction: 'forward', bob: [0, -16, -24, -8], tilt: [-3, 2, 4, -1], fx: (i) => `<path d="${starPath(94 + i * 6, 108 - i * 4, 22, 8, 5)}" fill="${YELLOW}" stroke="${INK}" stroke-width="4"/><path d="${starPath(422 - i * 6, 114 - i * 4, 22, 8, 5)}" fill="${MAGENTA}" stroke="${INK}" stroke-width="4"/>` },
-  { id: 'think', masterKey: 'thinking', durationMs: 280, direction: 'ping-pong', bob: [0, -3, -5, -2], tilt: [-4, -6, -5, -3], fx: (i) => `<circle cx="386" cy="168" r="${6 + i}" fill="${PAPER}" stroke="${INK}" stroke-width="3.5"/><circle cx="412" cy="136" r="${10 + i * 2}" fill="${PAPER}" stroke="${INK}" stroke-width="4"/><circle cx="436" cy="100" r="${14 + i * 2}" fill="${CYAN}" stroke="${INK}" stroke-width="4"/>` },
-  { id: 'loading', masterKey: 'thinking', durationMs: 180, direction: 'forward', bob: [0, -4, 0, 4], tilt: [0, 1, 0, -1], fx: (i) => `<g transform="rotate(${i * 90} 418 122)"><circle cx="418" cy="122" r="24" fill="none" stroke="${INK}" stroke-width="7"/><path d="M 418 98 A 24 24 0 0 1 442 122" fill="none" stroke="${CYAN}" stroke-width="7" stroke-linecap="round"/></g>` },
-  { id: 'success', masterKey: 'celebrating', durationMs: 200, direction: 'forward', bob: [0, -10, -14, -4], tilt: [0, 2, 3, 1], fx: (i) => `<circle cx="414" cy="126" r="${22 + i * 3}" fill="${YELLOW}" stroke="${INK}" stroke-width="4.5"/><path d="M 402 126 L 412 136 L 428 114" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>` },
-  { id: 'error', masterKey: 'happy', durationMs: 160, direction: 'ping-pong', bob: [0, 4, -4, 2], tilt: [-4, 4, -3, 2], fx: (i) => `<polygon points="414,${86 + i * 2} 444,${144 + i * 2} 384,${144 + i * 2}" fill="${MAGENTA}" stroke="${INK}" stroke-width="4.5"/><path d="M 414 ${106 + i * 2} V ${124 + i * 2}" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><circle cx="414" cy="${134 + i * 2}" r="3" fill="${INK}"/>` },
+  {
+    id: 'idle',
+    masterKey: 'happy',
+    durationMs: 260,
+    direction: 'ping-pong',
+    bob: [0, -6, -3, 0],
+    tilt: [0, -1, 1, 0],
+    fx: (i) =>
+      `<circle cx="386" cy="94" r="${8 + i * 2}" fill="${CYAN}" fill-opacity="${0.4 + i * 0.15}" stroke="${INK}" stroke-width="3"/>`,
+  },
+  {
+    id: 'blink',
+    masterKey: 'happy',
+    durationMs: 180,
+    direction: 'forward',
+    bob: [0, 2, 3, 0],
+    tilt: [0, 0.5, 0, 0],
+    fx: (i) =>
+      i === 1 || i === 2
+        ? `<path d="M 206 206 Q 232 218 254 206 M 280 206 Q 304 218 324 206" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><circle cx="404" cy="108" r="${7 + i * 2}" fill="${YELLOW}" stroke="${INK}" stroke-width="3"/>`
+        : `<path d="${starPath(406, 108, 12 + i * 2, 4, 4)}" fill="${YELLOW}" stroke="${INK}" stroke-width="3"/>`,
+  },
+  {
+    id: 'wave',
+    masterKey: 'excited',
+    durationMs: 200,
+    direction: 'ping-pong',
+    bob: [0, -8, -4, 0],
+    tilt: [-3, 3, -2, 0],
+    fx: (i) =>
+      `<path d="M ${84 - i * 4} 174 Q 64 136 ${88 + i * 4} 108" fill="none" stroke="${YELLOW}" stroke-width="6" stroke-linecap="round"/><path d="M ${66 - i * 4} 188 Q 42 138 ${70 + i * 4} 96" fill="none" stroke="${MAGENTA}" stroke-width="5" stroke-linecap="round"/>`,
+  },
+  {
+    id: 'celebrate',
+    masterKey: 'celebrating',
+    durationMs: 180,
+    direction: 'forward',
+    bob: [0, -16, -24, -8],
+    tilt: [-3, 2, 4, -1],
+    fx: (i) =>
+      `<path d="${starPath(94 + i * 6, 108 - i * 4, 22, 8, 5)}" fill="${YELLOW}" stroke="${INK}" stroke-width="4"/><path d="${starPath(422 - i * 6, 114 - i * 4, 22, 8, 5)}" fill="${MAGENTA}" stroke="${INK}" stroke-width="4"/>`,
+  },
+  {
+    id: 'think',
+    masterKey: 'thinking',
+    durationMs: 280,
+    direction: 'ping-pong',
+    bob: [0, -3, -5, -2],
+    tilt: [-4, -6, -5, -3],
+    fx: (i) =>
+      `<circle cx="386" cy="168" r="${6 + i}" fill="${PAPER}" stroke="${INK}" stroke-width="3.5"/><circle cx="412" cy="136" r="${10 + i * 2}" fill="${PAPER}" stroke="${INK}" stroke-width="4"/><circle cx="436" cy="100" r="${14 + i * 2}" fill="${CYAN}" stroke="${INK}" stroke-width="4"/>`,
+  },
+  {
+    id: 'loading',
+    masterKey: 'thinking',
+    durationMs: 180,
+    direction: 'forward',
+    bob: [0, -4, 0, 4],
+    tilt: [0, 1, 0, -1],
+    fx: (i) =>
+      `<g transform="rotate(${i * 90} 418 122)"><circle cx="418" cy="122" r="24" fill="none" stroke="${INK}" stroke-width="7"/><path d="M 418 98 A 24 24 0 0 1 442 122" fill="none" stroke="${CYAN}" stroke-width="7" stroke-linecap="round"/></g>`,
+  },
+  {
+    id: 'success',
+    masterKey: 'celebrating',
+    durationMs: 200,
+    direction: 'forward',
+    bob: [0, -10, -14, -4],
+    tilt: [0, 2, 3, 1],
+    fx: (i) =>
+      `<circle cx="414" cy="126" r="${22 + i * 3}" fill="${YELLOW}" stroke="${INK}" stroke-width="4.5"/><path d="M 402 126 L 412 136 L 428 114" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  },
+  {
+    id: 'error',
+    masterKey: 'happy',
+    durationMs: 160,
+    direction: 'ping-pong',
+    bob: [0, 4, -4, 2],
+    tilt: [-4, 4, -3, 2],
+    fx: (i) =>
+      `<polygon points="414,${86 + i * 2} 444,${144 + i * 2} 384,${144 + i * 2}" fill="${MAGENTA}" stroke="${INK}" stroke-width="4.5"/><path d="M 414 ${106 + i * 2} V ${124 + i * 2}" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><circle cx="414" cy="${134 + i * 2}" r="3" fill="${INK}"/>`,
+  },
 ];
 
 async function placeOnCanvas(width, height, fgBuf, offsetY = 0) {
@@ -706,7 +981,12 @@ async function placeOnCanvas(width, height, fgBuf, offsetY = 0) {
   const extractLeft = Math.round((canvasW - width) / 2);
   const extractTop = Math.round((canvasH - height) / 2);
   return sharp({
-    create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    create: {
+      width: canvasW,
+      height: canvasH,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
   })
     .composite([{ input: fgBuf, left, top }])
     .extract({ left: extractLeft, top: extractTop, width, height })
@@ -714,7 +994,18 @@ async function placeOnCanvas(width, height, fgBuf, offsetY = 0) {
     .toBuffer();
 }
 
-async function buildCompositePortrait(cutoutBuf, { size = 512, tilt = 0, scale = 1, offsetY = 0, tint = null, overlaySvg = '', background = { r: 0, g: 0, b: 0, alpha: 0 } }) {
+async function buildCompositePortrait(
+  cutoutBuf,
+  {
+    size = 512,
+    tilt = 0,
+    scale = 1,
+    offsetY = 0,
+    tint = null,
+    overlaySvg = '',
+    background = { r: 0, g: 0, b: 0, alpha: 0 },
+  }
+) {
   const innerSize = Math.round(size * 0.84 * scale);
   let fg = sharp(cutoutBuf).resize(innerSize, innerSize, {
     fit: 'contain',
@@ -810,42 +1101,54 @@ async function main() {
       path: 'source/artwork/riot-universe/kuro-signal-model-sheet-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
       source: 'Direct AI master generation on solid white sheet for Signal Riot character pipeline',
-      modifications: 'Unaltered 3-view character turnaround master (front, side, 3/4) for kuro-signal.',
+      modifications:
+        'Unaltered 3-view character turnaround master (front, side, 3/4) for kuro-signal.',
     },
     {
       path: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
-      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
-      modifications: 'Direct AI happy bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
+      source:
+        'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      modifications:
+        'Direct AI happy bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
     },
     {
       path: 'source/artwork/riot-universe/kuro-signal-portrait-excited-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
-      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
-      modifications: 'Direct AI excited bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
+      source:
+        'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      modifications:
+        'Direct AI excited bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
     },
     {
       path: 'source/artwork/riot-universe/kuro-signal-portrait-thinking-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
-      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
-      modifications: 'Direct AI thinking bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
+      source:
+        'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      modifications:
+        'Direct AI thinking bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
     },
     {
       path: 'source/artwork/riot-universe/kuro-signal-portrait-celebrating-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
-      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
-      modifications: 'Direct AI celebrating bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
+      source:
+        'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      modifications:
+        'Direct AI celebrating bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
     },
     {
       path: 'source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
-      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
-      modifications: 'Direct AI full-body standing master for kuro-signal (normalized 1024x1536 RGB contain on #ffffff).',
+      source:
+        'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      modifications:
+        'Direct AI full-body standing master for kuro-signal (normalized 1024x1536 RGB contain on #ffffff).',
     },
     {
       path: 'source/artwork/riot-universe/vesper-ink-portrait-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
-      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      source:
+        'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
       modifications: 'Direct AI bust portrait master for vesper-ink.',
     },
     {
@@ -858,7 +1161,8 @@ async function main() {
       path: 'source/artwork/riot-universe/bg-riot-arcade-workbench-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
       source: 'Direct AI master generation for Signal Riot arcade studio workbench environment',
-      modifications: 'Direct AI 1376x768 landscape master for Signal Riot arcade workbench backdrop.',
+      modifications:
+        'Direct AI 1376x768 landscape master for Signal Riot arcade workbench backdrop.',
     },
     {
       path: 'source/artwork/riot-universe/scene-empty-signal-static-master.png',
@@ -937,7 +1241,8 @@ async function main() {
   const proceduralBgSpecs = [
     {
       slug: 'halftone-paper-light',
-      notes: 'Procedural warm newsprint zine texture (#f3efe4) with Ben-Day halftone dots and corner registration marks.',
+      notes:
+        'Procedural warm newsprint zine texture (#f3efe4) with Ben-Day halftone dots and corner registration marks.',
       baseColor: { r: 243, g: 239, b: 228, alpha: 1 },
       overlay: `
         ${halftoneDots(44, 24, 16, 16, 32, 2.2, INK, 0.08)}
@@ -947,7 +1252,8 @@ async function main() {
     },
     {
       slug: 'halftone-ink-dark',
-      notes: 'Procedural charcoal zine backdrop (#0e0e10) with subtle halftone grid and cyan/magenta rim vignette.',
+      notes:
+        'Procedural charcoal zine backdrop (#0e0e10) with subtle halftone grid and cyan/magenta rim vignette.',
       baseColor: { r: 14, g: 14, b: 16, alpha: 1 },
       overlay: `
         ${halftoneDots(44, 24, 16, 16, 32, 2.2, PAPER, 0.07)}
@@ -961,7 +1267,9 @@ async function main() {
     const masterRel = `source/artwork/riot-universe/bg-${bg.slug}-master.png`;
     const webpRel = `illustrations/riot-universe/backgrounds/bg-${bg.slug}.webp`;
     const overlayBuf = await svgBuffer(1376, 768, bg.overlay);
-    const masterBuf = await sharp({ create: { width: 1376, height: 768, channels: 4, background: bg.baseColor } })
+    const masterBuf = await sharp({
+      create: { width: 1376, height: 768, channels: 4, background: bg.baseColor },
+    })
       .composite([{ input: overlayBuf, left: 0, top: 0 }])
       .png({ compressionLevel: 9 })
       .toBuffer();
@@ -1025,12 +1333,17 @@ async function main() {
       tint: expr.tint,
       overlaySvg: expr.overlay,
     });
-    const webpBuf = await sharp(pngBuf).webp({ quality: 86, alphaQuality: 96, effort: 6 }).toBuffer();
+    const webpBuf = await sharp(pngBuf)
+      .webp({ quality: 86, alphaQuality: 96, effort: 6 })
+      .toBuffer();
     const pngRel = `illustrations/riot-universe/characters/kuro-signal-expression-${expr.slug}.png`;
     const webpRel = `illustrations/riot-universe/characters/kuro-signal-expression-${expr.slug}.webp`;
     await atomicWrite(resolve(packageRoot, pngRel), pngBuf);
     await atomicWrite(resolve(packageRoot, webpRel), webpBuf);
-    for (const [path, format] of [[pngRel, 'png'], [webpRel, 'webp']]) {
+    for (const [path, format] of [
+      [pngRel, 'png'],
+      [webpRel, 'webp'],
+    ]) {
       generated.push({
         path,
         kind: 'character-sprite',
@@ -1064,9 +1377,11 @@ async function main() {
     if (pose.tilt !== 0) fg = fg.rotate(pose.tilt, { background: { r: 0, g: 0, b: 0, alpha: 0 } });
     const positionedFg = await placeOnCanvas(512, 768, await fg.png().toBuffer(), pose.offsetY);
     const composites = [];
-    if (pose.backFx) composites.push({ input: await svgBuffer(512, 768, pose.backFx), left: 0, top: 0 });
+    if (pose.backFx)
+      composites.push({ input: await svgBuffer(512, 768, pose.backFx), left: 0, top: 0 });
     composites.push({ input: positionedFg, left: 0, top: 0 });
-    if (pose.frontFx) composites.push({ input: await svgBuffer(512, 768, pose.frontFx), left: 0, top: 0 });
+    if (pose.frontFx)
+      composites.push({ input: await svgBuffer(512, 768, pose.frontFx), left: 0, top: 0 });
 
     const pngBuf = await sharp({
       create: { width: 512, height: 768, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
@@ -1074,13 +1389,18 @@ async function main() {
       .composite(composites)
       .png({ compressionLevel: 9, palette: true, quality: 90, effort: 10 })
       .toBuffer();
-    const webpBuf = await sharp(pngBuf).webp({ quality: 86, alphaQuality: 96, effort: 6 }).toBuffer();
+    const webpBuf = await sharp(pngBuf)
+      .webp({ quality: 86, alphaQuality: 96, effort: 6 })
+      .toBuffer();
 
     const pngRel = `illustrations/riot-universe/characters/kuro-signal-pose-${pose.slug}.png`;
     const webpRel = `illustrations/riot-universe/characters/kuro-signal-pose-${pose.slug}.webp`;
     await atomicWrite(resolve(packageRoot, pngRel), pngBuf);
     await atomicWrite(resolve(packageRoot, webpRel), webpBuf);
-    for (const [path, format] of [[pngRel, 'png'], [webpRel, 'webp']]) {
+    for (const [path, format] of [
+      [pngRel, 'png'],
+      [webpRel, 'webp'],
+    ]) {
       generated.push({
         path,
         kind: 'character-sprite',
@@ -1101,13 +1421,22 @@ async function main() {
 
   // 5. Vesper portrait (512x512 PNG + WebP)
   {
-    const pngBuf = await buildCompositePortrait(vesperPortraitCutout, { size: 512, scale: 1.06, offsetY: 16 });
-    const webpBuf = await sharp(pngBuf).webp({ quality: 86, alphaQuality: 96, effort: 6 }).toBuffer();
+    const pngBuf = await buildCompositePortrait(vesperPortraitCutout, {
+      size: 512,
+      scale: 1.06,
+      offsetY: 16,
+    });
+    const webpBuf = await sharp(pngBuf)
+      .webp({ quality: 86, alphaQuality: 96, effort: 6 })
+      .toBuffer();
     const pngRel = 'illustrations/riot-universe/characters/vesper-ink-portrait.png';
     const webpRel = 'illustrations/riot-universe/characters/vesper-ink-portrait.webp';
     await atomicWrite(resolve(packageRoot, pngRel), pngBuf);
     await atomicWrite(resolve(packageRoot, webpRel), webpBuf);
-    for (const [path, format] of [[pngRel, 'png'], [webpRel, 'webp']]) {
+    for (const [path, format] of [
+      [pngRel, 'png'],
+      [webpRel, 'webp'],
+    ]) {
       generated.push({
         path,
         kind: 'character-sprite',
@@ -1142,11 +1471,17 @@ async function main() {
     const composites = [{ input: await svgBuffer(640, 480, overlaySvg), left: 0, top: 0 }];
     if (state.actor === 'kuro' || state.actor === 'both') {
       const kuroCutout = expressionCutouts[state.expr];
-      const kBuf = await sharp(kuroCutout).resize(240, 240, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+      const kBuf = await sharp(kuroCutout)
+        .resize(240, 240, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .png()
+        .toBuffer();
       composites.push({ input: kBuf, left: state.actor === 'both' ? 40 : 28, top: 218 });
     }
     if (state.actor === 'vesper' || state.actor === 'both') {
-      const vBuf = await sharp(vesperPortraitCutout).resize(230, 230, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+      const vBuf = await sharp(vesperPortraitCutout)
+        .resize(230, 230, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .png()
+        .toBuffer();
       composites.push({ input: vBuf, left: state.actor === 'both' ? 378 : 386, top: 226 });
     }
     const masterAbs = resolve(packageRoot, masterRel);
@@ -1182,7 +1517,10 @@ async function main() {
     const pngRel = `illustrations/riot-universe/stickers/sticker-${sticker.slug}.png`;
     const svgText = wrapSvg(svgRel, 256, 256, sticker.title, sticker.body);
     await atomicWrite(resolve(packageRoot, svgRel), svgText);
-    const pngBuf = await sharp(Buffer.from(svgText, 'utf8')).resize(256, 256).png({ compressionLevel: 9, palette: true, quality: 92 }).toBuffer();
+    const pngBuf = await sharp(Buffer.from(svgText, 'utf8'))
+      .resize(256, 256)
+      .png({ compressionLevel: 9, palette: true, quality: 92 })
+      .toBuffer();
     await atomicWrite(resolve(packageRoot, pngRel), pngBuf);
     generated.push(
       {
@@ -1227,10 +1565,18 @@ async function main() {
     if (item.avatarKey) {
       const portrait = item.avatarKey === 'kuro' ? kuroPortraitHappyCutout : vesperPortraitCutout;
       const ringSvg = `<circle cx="128" cy="128" r="112" fill="${CHARCOAL}" stroke="${INK}" stroke-width="10"/><circle cx="128" cy="128" r="98" fill="${item.avatarKey === 'kuro' ? CYAN : VIOLET}" fill-opacity="0.22" stroke="${item.avatarKey === 'kuro' ? YELLOW : VIOLET}" stroke-width="6"/>`;
-      const faceBuf = await sharp(portrait).resize(184, 184, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+      const faceBuf = await sharp(portrait)
+        .resize(184, 184, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .png()
+        .toBuffer();
       const frontRing = `<circle cx="128" cy="128" r="108" fill="none" stroke="${INK}" stroke-width="8"/><circle cx="128" cy="128" r="100" fill="none" stroke="${item.avatarKey === 'kuro' ? YELLOW : VIOLET}" stroke-width="4"/>`;
       pngBuf = await sharp({
-        create: { width: 256, height: 256, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+        create: {
+          width: 256,
+          height: 256,
+          channels: 4,
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+        },
       })
         .composite([
           { input: await svgBuffer(256, 256, ringSvg), left: 0, top: 0 },
@@ -1240,7 +1586,10 @@ async function main() {
         .png({ compressionLevel: 9, palette: true, quality: 92 })
         .toBuffer();
     } else {
-      pngBuf = await sharp(Buffer.from(svgText, 'utf8')).resize(item.w, item.h).png({ compressionLevel: 9, palette: true, quality: 92 }).toBuffer();
+      pngBuf = await sharp(Buffer.from(svgText, 'utf8'))
+        .resize(item.w, item.h)
+        .png({ compressionLevel: 9, palette: true, quality: 92 })
+        .toBuffer();
     }
 
     await atomicWrite(resolve(packageRoot, pngRel), pngBuf);
@@ -1317,7 +1666,12 @@ async function main() {
     }
 
     const sheetBuf = await sharp({
-      create: { width: 1024, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+      create: {
+        width: 1024,
+        height: 1024,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      },
     })
       .composite([
         { input: frameBuffers[0], left: 0, top: 0 },
@@ -1549,7 +1903,10 @@ async function main() {
       };
     }),
   };
-  await atomicWrite(resolve(packageRoot, riotScenePath), `${JSON.stringify(riotSceneBundle, null, 2)}\n`);
+  await atomicWrite(
+    resolve(packageRoot, riotScenePath),
+    `${JSON.stringify(riotSceneBundle, null, 2)}\n`
+  );
   generated.push({
     path: riotScenePath,
     kind: 'scene',
@@ -1568,7 +1925,9 @@ async function main() {
   await atomicWrite(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
   // Update licenses.json sourceAssets for every kind === 'source' && pack === 'riot-universe'
-  const retainedProvenance = (licenses.sourceAssets ?? []).filter((entry) => !ownedPaths.has(entry.path));
+  const retainedProvenance = (licenses.sourceAssets ?? []).filter(
+    (entry) => !ownedPaths.has(entry.path)
+  );
   licenses.sourceAssets = [...retainedProvenance, ...sourceProvenance].sort((a, b) =>
     a.path.localeCompare(b.path)
   );

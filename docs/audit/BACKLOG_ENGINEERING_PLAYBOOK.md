@@ -7,9 +7,11 @@ Panduan untuk mengubah temuan audit dan inovasi menjadi task yang ringkas, disti
 Jangan mencampur dua portfolio:
 
 ### Execution backlog
+
 Bug, security, reliability, debt, validated product changes, required foundations, and approved strategic decisions.
 
 ### Experiment backlog
+
 Hypotheses, prototypes, research spikes, benchmarks, technical feasibility checks, and user/problem validation.
 
 Experiment yang sukses dapat menghasilkan execution task. Experiment yang gagal harus menghasilkan keputusan stop/revise, bukan implementasi paksa.
@@ -17,6 +19,7 @@ Experiment yang sukses dapat menghasilkan execution task. Experiment yang gagal 
 ## 2. Reconcile existing work before creating
 
 Inventarisasi:
+
 - GitHub Issues, PRs, Discussions, milestones, and project boards.
 - Markdown/JSON/YAML task lists and roadmap.
 - TODO/FIXME/HACK comments.
@@ -32,20 +35,25 @@ Completion hanya boleh dinyatakan jika acceptance criteria dan implementasi tela
 Deduplicate pada empat dimensi:
 
 ### A. Outcome
+
 Apakah dua task bertujuan menghasilkan outcome yang sama? Jika ya, merge atau tetapkan parent-child yang batasnya tidak tumpang tindih.
 
 ### B. Root cause
+
 Apakah beberapa gejala berasal dari penyebab yang sama dan bisa diperbaiki oleh satu perubahan kohesif? Konsolidasikan. Jika penyebab atau solusi berbeda, pertahankan terpisah.
 
 ### C. Scope and ownership
+
 Catat package, files, APIs, schemas, components, and owner/agent area. Shared files bukan bukti duplikasi. Tetapkan interface dan batas perubahan agar pekerjaan paralel tidak konflik.
 
 ### D. Validation
+
 Apakah dua task memakai acceptance criteria/test yang sama dan dapat dianggap selesai oleh perubahan yang sama? Jika ya, cek apakah keduanya sebenarnya satu outcome.
 
 Overlap matrix:
+
 | Candidate A | Candidate B | Relation | Decision | Boundary/rationale |
-|---|---|---|---|---|
+| ----------- | ----------- | -------- | -------- | ------------------ |
 
 Relations: DUPLICATE / OVERLAP / DEPENDENCY / SHARED AREA / CONFLICT RISK / NONE.
 
@@ -91,6 +99,7 @@ Setiap task harus memuat:
 - Agent handoff: context needed, constraints, relevant commands, and files to inspect first, without prescribing unverified implementation internals.
 
 Hypothesis tasks additionally need:
+
 - Experiment question and hypothesis.
 - Cheapest experiment.
 - Success signal.
@@ -101,6 +110,7 @@ Hypothesis tasks additionally need:
 ## 6. Agent-ready task test
 
 Task is ready only when another engineer or coding agent can understand:
+
 1. Why this task exists.
 2. What outcome is expected.
 3. Where to begin inspecting.
@@ -115,12 +125,14 @@ Avoid requiring the agent to repeat the entire audit. Include the minimum releva
 ## 7. Dependencies and concurrency
 
 Build a dependency graph:
+
 - BLOCKS / BLOCKED BY for hard prerequisites.
 - RELATES TO for non-blocking context.
 - SHARED AREA for potential file conflicts.
 - CONFLICT RISK for concurrent changes needing sequencing.
 
 Identify:
+
 - Critical path.
 - Tasks safe to execute in parallel.
 - Tasks requiring shared contracts first.
@@ -132,7 +144,9 @@ A common file does not automatically require serial work; define ownership and c
 ## 8. Priority models
 
 ### Execution scoring
+
 Use 1–5 ratings:
+
 - Impact.
 - Urgency.
 - Confidence.
@@ -141,7 +155,9 @@ Use 1–5 ratings:
 A rough ranking aid is (Impact × Urgency × Confidence) ÷ Effort. It is not objective truth. Critical security, data-loss, or production reliability items can override the numeric score.
 
 ### Experiment scoring
+
 Assess:
+
 - Potential upside.
 - Strategic fit.
 - Differentiation.
@@ -155,6 +171,7 @@ Prefer high-information, low-cost experiments. Do not punish uncertainty without
 ## 9. Parent/child and epic rules
 
 Create an epic only when there are multiple coherent deliverables or milestones. Child tasks must have independent acceptance criteria where possible. Define:
+
 - Epic outcome and non-goals.
 - Child task ownership and dependency.
 - Shared contracts.

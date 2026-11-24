@@ -51,15 +51,13 @@ async function seedEcommerceSync(ctx: SeedContext): Promise<SeedResult> {
     const credentialsJson = JSON.stringify(mp.credentials);
 
     if (existing) {
-      await db('marketplace_connections')
-        .where({ id: existing.id })
-        .update({
-          name: mp.name,
-          config: configJson,
-          credentials: credentialsJson,
-          status: 'pending',
-          write_date: now,
-        });
+      await db('marketplace_connections').where({ id: existing.id }).update({
+        name: mp.name,
+        config: configJson,
+        credentials: credentialsJson,
+        status: 'pending',
+        write_date: now,
+      });
       updated++;
     } else {
       await db('marketplace_connections').insert({

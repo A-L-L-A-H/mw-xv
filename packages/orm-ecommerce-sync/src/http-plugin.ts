@@ -23,7 +23,13 @@ export const ecommerceSyncHttpPlugin: AddonHttpPlugin = async (app) => {
     const auth = requireAuth(req, reply);
     if (!auth) return;
 
-    const { status, marketplace, direction, limit = '50', offset = '0' } = req.query as Record<string, string>;
+    const {
+      status,
+      marketplace,
+      direction,
+      limit = '50',
+      offset = '0',
+    } = req.query as Record<string, string>;
 
     let query = db(MarketplaceSyncJob.tableName)
       .where({ company_id: auth.companyId })
@@ -49,7 +55,11 @@ export const ecommerceSyncHttpPlugin: AddonHttpPlugin = async (app) => {
     return reply.code(200).send({
       success: true,
       data: jobs,
-      pagination: { total: Number(total?.count ?? 0), limit: parseInt(limit, 10), offset: parseInt(offset, 10) },
+      pagination: {
+        total: Number(total?.count ?? 0),
+        limit: parseInt(limit, 10),
+        offset: parseInt(offset, 10),
+      },
     });
   });
 
@@ -58,7 +68,9 @@ export const ecommerceSyncHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { marketplace, direction = 'pull', payload = {}, source_rule_id, dedupe_key } = req.body;
@@ -130,7 +142,9 @@ export const ecommerceSyncHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { marketplace, name, config, credentials } = req.body;
@@ -182,14 +196,17 @@ export const ecommerceSyncHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { name, status, config, credentials } = req.body;
     const updates: Record<string, unknown> = {};
 
     if (typeof name === 'string' && name.trim() !== '') updates.name = name.trim();
-    if (typeof status === 'string' && ['active', 'inactive', 'error', 'pending'].includes(status)) updates.status = status;
+    if (typeof status === 'string' && ['active', 'inactive', 'error', 'pending'].includes(status))
+      updates.status = status;
     if (isRecord(config)) updates.config = config;
     if (credentials !== undefined) updates.credentials = credentials;
 
@@ -210,7 +227,14 @@ export const ecommerceSyncHttpPlugin: AddonHttpPlugin = async (app) => {
     const auth = requireAuth(req, reply);
     if (!auth) return;
 
-    const { marketplace, direction, date_from, date_to, limit = '100', offset = '0' } = req.query as Record<string, string>;
+    const {
+      marketplace,
+      direction,
+      date_from,
+      date_to,
+      limit = '100',
+      offset = '0',
+    } = req.query as Record<string, string>;
 
     let query = db(SyncMetric.tableName)
       .where({ company_id: auth.companyId })
@@ -238,7 +262,11 @@ export const ecommerceSyncHttpPlugin: AddonHttpPlugin = async (app) => {
     return reply.code(200).send({
       success: true,
       data: metrics,
-      pagination: { total: Number(total?.count ?? 0), limit: parseInt(limit, 10), offset: parseInt(offset, 10) },
+      pagination: {
+        total: Number(total?.count ?? 0),
+        limit: parseInt(limit, 10),
+        offset: parseInt(offset, 10),
+      },
     });
   });
 };

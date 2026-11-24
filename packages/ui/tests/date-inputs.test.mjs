@@ -7,10 +7,9 @@ import { DatePicker } from '../dist/components/date-picker.js';
 import { NumberInput, parseNumber } from '../dist/components/number-input.js';
 import { TagInput } from '../dist/components/tag-input.js';
 
-const dom = new JSDOM(
-  '<!doctype html><html><body><div id="root"></div></body></html>',
-  { url: 'http://localhost/' }
-);
+const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', {
+  url: 'http://localhost/',
+});
 globalThis.window = dom.window;
 globalThis.document = dom.window.document;
 globalThis.HTMLElement = dom.window.HTMLElement;
@@ -253,7 +252,9 @@ test('tag input enforces committed-tag required validity without accepting a pen
 test('tag input ignores commit keys during IME composition', async () => {
   const changes = [];
   await act(async () => {
-    root.render(createElement(TagsHarness, { initialValue: ['base'], onChange: (v) => changes.push(v) }));
+    root.render(
+      createElement(TagsHarness, { initialValue: ['base'], onChange: (v) => changes.push(v) })
+    );
   });
   const input = container.querySelector('input[type="text"]');
   await act(async () => {

@@ -96,12 +96,12 @@ export default function AiEvalLabPage() {
       <div className="mt-4 border border-ink/20 bg-paper-raised p-4 font-mono text-xs text-ink-soft">
         {hasLiveSummary ? (
           <p>
-            Source: <code>/api/ai/eval-summary</code>. This page only renders the summary returned by
-            the API; it does not run the corpus. The summary carries a report SHA-256 and
-            provenance, but the offline gate is marked synthetic (<code>realModelUsed: false</code>),
-            so these numbers are not proof of a production evaluation. Verify the offline
-            gate with <code>pnpm --filter @moonwitness/ai-evaluation check:gates</code> and consult
-            the operator runbook before treating them as release evidence.
+            Source: <code>/api/ai/eval-summary</code>. This page only renders the summary returned
+            by the API; it does not run the corpus. The summary carries a report SHA-256 and
+            provenance, but the offline gate is marked synthetic (<code>realModelUsed: false</code>
+            ), so these numbers are not proof of a production evaluation. Verify the offline gate
+            with <code>pnpm --filter @moonwitness/ai-evaluation check:gates</code> and consult the
+            operator runbook before treating them as release evidence.
           </p>
         ) : (
           <p>
@@ -120,7 +120,9 @@ export default function AiEvalLabPage() {
         <MetricTile
           label="Capability Gates Passed"
           value={
-            gateCount === null ? NO_DATA : `${formatCount(gateCount.passed)} / ${formatCount(gateCount.total)}`
+            gateCount === null
+              ? NO_DATA
+              : `${formatCount(gateCount.passed)} / ${formatCount(gateCount.total)}`
           }
           detail={
             hasLiveSummary

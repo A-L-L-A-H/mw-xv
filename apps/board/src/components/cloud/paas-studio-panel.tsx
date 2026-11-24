@@ -302,9 +302,8 @@ export function PaasStudioPanel({
         return;
       }
       const payload = (await response.json().catch(() => null)) as unknown;
-      const created = isRecord(payload) && payload.success === true
-        ? parsePostgresBackup(payload.data)
-        : null;
+      const created =
+        isRecord(payload) && payload.success === true ? parsePostgresBackup(payload.data) : null;
       if (!created) {
         setBackupError(
           'Snapshot response did not include complete live backup metadata; no fixture was created.'
@@ -346,13 +345,12 @@ export function PaasStudioPanel({
           return;
         }
         const payload = (await response.json().catch(() => null)) as unknown;
-        const result = isRecord(payload) && payload.success === true && isRecord(payload.data)
-          ? payload.data
-          : null;
+        const result =
+          isRecord(payload) && payload.success === true && isRecord(payload.data)
+            ? payload.data
+            : null;
         if (!result || (result.verified !== true && result.ok !== true)) {
-          setBackupError(
-            `Dry-run response did not confirm verification for ${backup.filename}.`
-          );
+          setBackupError(`Dry-run response did not confirm verification for ${backup.filename}.`);
           setBackupFeedback(null);
           return;
         }
@@ -403,9 +401,7 @@ export function PaasStudioPanel({
           ? parseNodeMetrics(metricsPayload.data)
           : null;
       const appsData =
-        isRecord(appsPayload) && appsPayload.success === true
-          ? parseApps(appsPayload.data)
-          : null;
+        isRecord(appsPayload) && appsPayload.success === true ? parseApps(appsPayload.data) : null;
       if (!metricsData || !appsData) {
         setDesktopModeAvailable(false);
         setMetrics(null);
@@ -526,9 +522,10 @@ export function PaasStudioPanel({
       }
 
       const payload = (await response.json().catch(() => null)) as unknown;
-      const result = isRecord(payload) && payload.success === true && isRecord(payload.data)
-        ? payload.data
-        : null;
+      const result =
+        isRecord(payload) && payload.success === true && isRecord(payload.data)
+          ? payload.data
+          : null;
       if (!result || result.ok === false) {
         setErrorMessage(`Action "${action}" returned no successful result for ${app.slug}.`);
         return;
@@ -579,7 +576,11 @@ export function PaasStudioPanel({
         }
       >
         {loading ? (
-          <div role="status" aria-label="Loading PaaS telemetry" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            role="status"
+            aria-label="Loading PaaS telemetry"
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          >
             <Skeleton className="h-28" />
             <Skeleton className="h-28" />
             <Skeleton className="h-28" />
@@ -734,7 +735,11 @@ export function PaasStudioPanel({
         description="Inspect container status, stream logs, or control lifecycle."
       >
         {loading ? (
-          <div role="status" aria-label="Loading deployed apps" className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div
+            role="status"
+            aria-label="Loading deployed apps"
+            className="grid grid-cols-1 gap-4 md:grid-cols-2"
+          >
             <Skeleton className="h-40" />
             <Skeleton className="h-40" />
           </div>
@@ -1011,12 +1016,18 @@ export function PaasStudioPanel({
             </div>
 
             {backupError ? (
-              <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+              <div
+                role="alert"
+                className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive"
+              >
                 {backupError}
               </div>
             ) : null}
             {backupFeedback ? (
-              <div role="status" className="rounded-md border border-ink/15 bg-ink/5 px-3 py-2 font-mono text-xs">
+              <div
+                role="status"
+                className="rounded-md border border-ink/15 bg-ink/5 px-3 py-2 font-mono text-xs"
+              >
                 {backupFeedback}
               </div>
             ) : null}
@@ -1032,42 +1043,42 @@ export function PaasStudioPanel({
                 }
               />
             ) : (
-            <div className="space-y-2">
-              {backups.map((backup) => (
-                <div
-                  key={backup.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3"
-                >
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs font-bold">{backup.filename}</span>
-                      <Badge variant={backup.verified ? 'primary' : 'magenta'}>
-                        {backup.verified ? (
-                          <CheckIcon className="mr-1 h-3 w-3" />
-                        ) : (
-                          <WarningIcon className="mr-1 h-3 w-3" />
-                        )}
-                        {backup.verified ? 'Verified · ' : 'Unverified · '}
-                        SHA-256: {backup.sha256.slice(0, 12)}...
-                      </Badge>
-                    </div>
-                    <p className="font-mono text-[11px] opacity-75">
-                      {backup.createdAt} · {backup.sizeMb} MB
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    size="xs"
-                    variant="outline"
-                    disabled={backupBusy}
-                    onClick={() => void handleVerifyRestore(backup)}
+              <div className="space-y-2">
+                {backups.map((backup) => (
+                  <div
+                    key={backup.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3"
                   >
-                    <SecurityIcon className="h-3.5 w-3.5" />
-                    Dry-Run Verify Restore
-                  </Button>
-                </div>
-              ))}
-            </div>
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-bold">{backup.filename}</span>
+                        <Badge variant={backup.verified ? 'primary' : 'magenta'}>
+                          {backup.verified ? (
+                            <CheckIcon className="mr-1 h-3 w-3" />
+                          ) : (
+                            <WarningIcon className="mr-1 h-3 w-3" />
+                          )}
+                          {backup.verified ? 'Verified · ' : 'Unverified · '}
+                          SHA-256: {backup.sha256.slice(0, 12)}...
+                        </Badge>
+                      </div>
+                      <p className="font-mono text-[11px] opacity-75">
+                        {backup.createdAt} · {backup.sizeMb} MB
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="xs"
+                      variant="outline"
+                      disabled={backupBusy}
+                      onClick={() => void handleVerifyRestore(backup)}
+                    >
+                      <SecurityIcon className="h-3.5 w-3.5" />
+                      Dry-Run Verify Restore
+                    </Button>
+                  </div>
+                ))}
+              </div>
             )}
           </TabsContent>
         </Tabs>

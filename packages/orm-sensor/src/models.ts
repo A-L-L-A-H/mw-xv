@@ -96,7 +96,11 @@ export const SensorUnitConversion = defineModel('sensor.unit_conversion', {
       required: true,
       label: 'To Unit',
     }),
-    formula: fields.string({ required: true, label: 'Conversion Formula', help: 'Expression in x (linear form: a * x + b)' }),
+    formula: fields.string({
+      required: true,
+      label: 'Conversion Formula',
+      help: 'Expression in x (linear form: a * x + b)',
+    }),
     category: fields.enum(Object.values(SensorUnitCategory) as [string, ...string[]], {
       required: true,
       label: 'Unit Category',

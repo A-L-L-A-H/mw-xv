@@ -28,8 +28,7 @@ export interface AutomationDslGroup {
 export type AutomationDslNode = AutomationDslComparison | AutomationDslGroup;
 
 export type AutomationEvaluationResult =
-  | { readonly matched: true }
-  | { readonly matched: false; readonly reason: string };
+  { readonly matched: true } | { readonly matched: false; readonly reason: string };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -60,29 +59,13 @@ function compare(op: AutomationDslOp, actual: unknown, expected: unknown): boole
     case 'ne':
       return actual !== expected;
     case 'gt':
-      return (
-        typeof actual === 'number' &&
-        typeof expected === 'number' &&
-        actual > expected
-      );
+      return typeof actual === 'number' && typeof expected === 'number' && actual > expected;
     case 'gte':
-      return (
-        typeof actual === 'number' &&
-        typeof expected === 'number' &&
-        actual >= expected
-      );
+      return typeof actual === 'number' && typeof expected === 'number' && actual >= expected;
     case 'lt':
-      return (
-        typeof actual === 'number' &&
-        typeof expected === 'number' &&
-        actual < expected
-      );
+      return typeof actual === 'number' && typeof expected === 'number' && actual < expected;
     case 'lte':
-      return (
-        typeof actual === 'number' &&
-        typeof expected === 'number' &&
-        actual <= expected
-      );
+      return typeof actual === 'number' && typeof expected === 'number' && actual <= expected;
     case 'in':
       return Array.isArray(expected) && (expected as unknown[]).includes(actual);
     case 'nin':
@@ -120,10 +103,7 @@ function assertComparable(node: AutomationDslComparison): void {
  * Evaluates a pure DSL condition tree against a payload root. Throws on
  * malformed nodes so callers can distinguish "not matched" from "invalid".
  */
-export function evaluateDsl(
-  condition: unknown,
-  payload: unknown
-): AutomationEvaluationResult {
+export function evaluateDsl(condition: unknown, payload: unknown): AutomationEvaluationResult {
   if (condition === undefined || condition === null) {
     return { matched: true };
   }

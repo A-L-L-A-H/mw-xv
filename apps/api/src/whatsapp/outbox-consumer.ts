@@ -233,7 +233,13 @@ export async function dispatchQueuedWhatsAppStatus(
           ? sent.id
           : `gowa-${randomUUID()}`;
     const publishedAt = new Date().toISOString();
-    await persistProviderAcknowledgementForStatus(eventId, companyId, statusId, externalId, publishedAt);
+    await persistProviderAcknowledgementForStatus(
+      eventId,
+      companyId,
+      statusId,
+      externalId,
+      publishedAt
+    );
     await WhatsappStatus.query()
       .where({ id: statusId, company_id: companyId })
       .patch({
@@ -301,7 +307,8 @@ async function persistProviderAcknowledgementForStatus(
         provider_ack: acknowledgement,
       }),
     });
-  if (Number(updated) !== 1) throw new Error('WhatsApp Status provider acknowledgement was not persisted');
+  if (Number(updated) !== 1)
+    throw new Error('WhatsApp Status provider acknowledgement was not persisted');
 }
 
 async function persistProviderAcknowledgement(

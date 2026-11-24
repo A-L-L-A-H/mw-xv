@@ -21,7 +21,8 @@ export async function run(
     return { ok: false, error: 'enqueue_job payload must be an object' };
   }
 
-  const inserted = await ctx.db('jobs')
+  const inserted = await ctx
+    .db('jobs')
     .insert({
       handler,
       handler_version: typeof config.handlerVersion === 'number' ? config.handlerVersion : 1,

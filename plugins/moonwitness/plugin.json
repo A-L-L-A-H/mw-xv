@@ -3,11 +3,7 @@
   "displayName": "MoonWitness Agent Plugin",
   "version": "1.0.0",
   "description": "Antigravity plugin for MoonWitness addon development: read-only MCP tooling, addon boundaries, and TaskOS conventions.",
-  "skills": [
-    "skills/mw-addon-dev",
-    "skills/mw-boundaries",
-    "skills/mw-taskos"
-  ],
+  "skills": ["skills/mw-addon-dev", "skills/mw-boundaries", "skills/mw-taskos"],
   "mcpServers": {
     "moonwitness": {
       "command": "node",

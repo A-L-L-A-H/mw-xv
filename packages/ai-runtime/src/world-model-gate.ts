@@ -112,7 +112,6 @@ function normalizePath(filePath: string): string {
   return filePath.replace(/\\/gu, '/').replace(/^\.\//u, '').trim();
 }
 
-
 export function evaluateWorldModelConsistency(
   prediction: WorldModelPrediction,
   observation: WorldModelObservation,

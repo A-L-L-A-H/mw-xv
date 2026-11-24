@@ -55,13 +55,11 @@ export async function seedWorkflowDefinitions(ctx: SeedContext): Promise<SeedRes
     ) {
       skipped++;
     } else {
-      await db('workflow_definitions')
-        .where({ id: existing.id })
-        .update({
-          name: definition.name,
-          config: definition.config,
-          enabled: definition.enabled,
-        });
+      await db('workflow_definitions').where({ id: existing.id }).update({
+        name: definition.name,
+        config: definition.config,
+        enabled: definition.enabled,
+      });
       updated++;
     }
   } else {

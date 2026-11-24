@@ -24,17 +24,30 @@ export class GoogleTrendsAdapter implements SignalAdapter {
   readonly kind = 'google_trends';
 
   async fetch(ctx: SignalAdapterContext): Promise<SignalObservationDraft[]> {
-    const rssUrl = typeof ctx.config.rssUrl === 'string' && ctx.config.rssUrl.length > 0 ? ctx.config.rssUrl : DEFAULT_RSS_URL;
+    const rssUrl =
+      typeof ctx.config.rssUrl === 'string' && ctx.config.rssUrl.length > 0
+        ? ctx.config.rssUrl
+        : DEFAULT_RSS_URL;
     const maxItems = typeof ctx.config.maxItems === 'number' ? ctx.config.maxItems : 20;
     const fetchImpl = ctx.fetchImpl ?? fetch;
 
-    const response = await fetchImpl(rssUrl, { headers: { accept: 'application/rss+xml, application/xml, text/xml, */*' } });
+    const response = await fetchImpl(rssUrl, {
+      headers: { accept: 'application/rss+xml, application/xml, text/xml, */*' },
+    });
     if (!response.ok) return [];
     const xml = await response.text();
     const doc = XMLParser.parse(xml);
-    const channel = doc.rss && typeof doc.rss === 'object' ? (doc.rss as { channel?: unknown }).channel : undefined;
-    const rawItems = channel && typeof channel === 'object' ? (channel as { item?: unknown }).item : undefined;
-    const entries: TrendsEntry[] = Array.isArray(rawItems) ? (rawItems as TrendsEntry[]) : rawItems ? [rawItems as TrendsEntry] : [];
+    const channel =
+      doc.rss && typeof doc.rss === 'object'
+        ? (doc.rss as { channel?: unknown }).channel
+        : undefined;
+    const rawItems =
+      channel && typeof channel === 'object' ? (channel as { item?: unknown }).item : undefined;
+    const entries: TrendsEntry[] = Array.isArray(rawItems)
+      ? (rawItems as TrendsEntry[])
+      : rawItems
+        ? [rawItems as TrendsEntry]
+        : [];
 
     const drafts: SignalObservationDraft[] = [];
     for (const entry of entries.slice(0, maxItems)) {

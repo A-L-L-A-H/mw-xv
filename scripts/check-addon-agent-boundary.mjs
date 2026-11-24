@@ -20,7 +20,10 @@ const LEGACY_WRITE_ALLOWLIST = new Set();
 
 const WRITE_SQL_PATTERN = /\b(INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b/iu;
 
-export function findAgentBoundaryViolations(source, file = 'packages/mcp-moonwitness/src/fixture.ts') {
+export function findAgentBoundaryViolations(
+  source,
+  file = 'packages/mcp-moonwitness/src/fixture.ts'
+) {
   const normalized = file.replaceAll('\\', '/');
   const violations = [];
   const parsed = ts.createSourceFile(normalized, source, ts.ScriptTarget.Latest, true);
@@ -47,10 +50,12 @@ export function findAgentBoundaryViolations(source, file = 'packages/mcp-moonwit
       }
     }
 
-    if (ts.isTemplateExpression(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isStringLiteral(node)) {
-      const literalText = ts.isTemplateExpression(node)
-        ? node.getText(parsed)
-        : node.text;
+    if (
+      ts.isTemplateExpression(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isStringLiteral(node)
+    ) {
+      const literalText = ts.isTemplateExpression(node) ? node.getText(parsed) : node.text;
       if (WRITE_SQL_PATTERN.test(literalText) && !LEGACY_WRITE_ALLOWLIST.has(normalized)) {
         report(
           node,
@@ -98,7 +103,9 @@ async function main() {
       if (/\.[jt]sx?$/u.test(file)) {
         violations.push(...findAgentBoundaryViolations(source, relative));
       } else if (WRITE_SQL_PATTERN.test(source)) {
-        violations.push(`${relative}:1: Database write SQL is forbidden in agent-owned surfaces (read-only SELECT queries only)`);
+        violations.push(
+          `${relative}:1: Database write SQL is forbidden in agent-owned surfaces (read-only SELECT queries only)`
+        );
       }
     }
   }

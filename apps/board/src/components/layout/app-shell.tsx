@@ -324,8 +324,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     queryFn: async () => {
       const q = paletteQuery.trim();
       if (!q) return { items: [], failedScopes: [] as string[] };
-      const [partnersResult, usersResult, compsResult, activitiesResult] =
-        await Promise.allSettled([
+      const [partnersResult, usersResult, compsResult, activitiesResult] = await Promise.allSettled(
+        [
           client.model<{ id: number; name: string }>('base.partner').searchRead({
             domain: [['name', 'ilike', `%${q}%`]],
             limit: 5,
@@ -350,7 +350,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               domain: [['summary', 'ilike', `%${q}%`]],
               limit: 5,
             }),
-        ]);
+        ]
+      );
 
       const scopeEntries = [
         ['Partners', partnersResult],

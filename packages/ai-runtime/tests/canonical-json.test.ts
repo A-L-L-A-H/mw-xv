@@ -13,7 +13,16 @@ describe('canonical-json cross-call-site consistency', () => {
     { name: 'undefined in object', input: { a: 1, b: undefined, c: 3 } },
     { name: 'empty object', input: {} },
     { name: 'empty array', input: [] },
-    { name: 'complex nested', input: { users: [{ id: 1, tags: ['b', 'a'] }, { id: 2, tags: [] }], meta: { version: 2, created: '2024-01-01' } } },
+    {
+      name: 'complex nested',
+      input: {
+        users: [
+          { id: 1, tags: ['b', 'a'] },
+          { id: 2, tags: [] },
+        ],
+        meta: { version: 2, created: '2024-01-01' },
+      },
+    },
     { name: 'unicode', input: { 你好: '世界', emoji: '🚀🌟' } },
     { name: 'special numbers', input: { nan: NaN, inf: Infinity, negInf: -Infinity, zero: 0 } },
     { name: 'deep nesting', input: { a: { b: { c: { d: { e: { f: 1 } } } } } } },

@@ -59,7 +59,11 @@ function isAvailable(element: HTMLElement): boolean {
     }
     const style = element.ownerDocument.defaultView?.getComputedStyle(current);
     if (!style) return false;
-    if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') {
+    if (
+      style.display === 'none' ||
+      style.visibility === 'hidden' ||
+      style.visibility === 'collapse'
+    ) {
       return false;
     }
     current = current.parentElement;
@@ -136,7 +140,8 @@ function registerModal(document: Document, entry: ModalEntry): ModalState {
   }
 
   const ancestorIndex = state.entries.findIndex(
-    (candidate) => candidate.container !== entry.container && candidate.container.contains(entry.container)
+    (candidate) =>
+      candidate.container !== entry.container && candidate.container.contains(entry.container)
   );
   if (ancestorIndex >= 0) {
     state.entries.splice(ancestorIndex + 1, 0, entry);
@@ -219,7 +224,9 @@ export function useModalFocus<T extends HTMLElement = HTMLDivElement>(onDismiss?
 
       const active = document.activeElement;
       const activeWasInModal =
-        active === document.body || !active?.isConnected || (active instanceof Node && container.contains(active));
+        active === document.body ||
+        !active?.isConnected ||
+        (active instanceof Node && container.contains(active));
       if (!activeWasInModal) return;
 
       const nextModal = state.entries[state.entries.length - 1];
@@ -229,7 +236,7 @@ export function useModalFocus<T extends HTMLElement = HTMLDivElement>(onDismiss?
           : previouslyFocused && isAvailable(previouslyFocused)
             ? previouslyFocused
             : nextModal
-              ? focusableItems(nextModal.container)[0] ?? nextModal.container
+              ? (focusableItems(nextModal.container)[0] ?? nextModal.container)
               : null;
       focusElement(restoreTarget);
     };

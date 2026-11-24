@@ -17,7 +17,12 @@ const fullShaPattern = /^[a-f0-9]{40}$/u;
  * @param {string} repository
  * @param {string[]} allowedEvents
  */
-export function selectExactCiRun(runs, sha, repository, allowedEvents = ['workflow_dispatch', 'push']) {
+export function selectExactCiRun(
+  runs,
+  sha,
+  repository,
+  allowedEvents = ['workflow_dispatch', 'push']
+) {
   if (!fullShaPattern.test(sha)) return undefined;
   return (Array.isArray(runs) ? runs : [])
     .filter(
@@ -45,7 +50,8 @@ export function verifyExactCheckRuns(checkRuns, sha, requiredChecks) {
   for (const check of Array.isArray(checkRuns) ? checkRuns : []) {
     if (check?.head_sha && check.head_sha !== sha) continue;
     const current = byName.get(check?.name);
-    if (!current || Number(check?.id ?? 0) > Number(current.id ?? 0)) byName.set(check?.name, check);
+    if (!current || Number(check?.id ?? 0) > Number(current.id ?? 0))
+      byName.set(check?.name, check);
   }
   const missing = requiredChecks.filter((name) => {
     const check = byName.get(name);
@@ -70,7 +76,10 @@ export function evaluateAwaitEvidence(evidence, options) {
   );
   if (!run) return { done: false, reason: 'no completed exact-SHA CI run' };
   if (run.conclusion !== 'success')
-    return { done: false, reason: `exact-SHA CI run ${run.id} concluded ${run.conclusion ?? 'unknown'}` };
+    return {
+      done: false,
+      reason: `exact-SHA CI run ${run.id} concluded ${run.conclusion ?? 'unknown'}`,
+    };
   const checks = verifyExactCheckRuns(evidence.checkRuns, options.sha, options.requiredChecks);
   if (!checks.passed) return { done: false, reason: checks.reason };
   return { done: true, runId: run.id };
@@ -96,7 +105,9 @@ export async function awaitExactCi(options, io) {
     if (verdict.done) return verdict;
     lastReason = verdict.reason;
     if (Date.now() >= deadline) throw new Error(`Timed out awaiting exact-SHA CI: ${lastReason}`);
-    await (io.sleep ?? ((ms) => new Promise((done) => setTimeout(done, ms))))(options.intervalSeconds * 1000);
+    await (io.sleep ?? ((ms) => new Promise((done) => setTimeout(done, ms))))(
+      options.intervalSeconds * 1000
+    );
   }
 }
 
@@ -117,12 +128,26 @@ export function createGithubReader(repository, sha, env = {}) {
             'per_page=100',
           ],
           env
-        ).then((pages) => (Array.isArray(pages) ? pages : [pages]).flatMap((page) => page?.workflow_runs ?? page ?? []));
+        ).then((pages) =>
+          (Array.isArray(pages) ? pages : [pages]).flatMap(
+            (page) => page?.workflow_runs ?? page ?? []
+          )
+        );
       if (kind === 'checkRuns')
         return ghJson(
-          [`repos/${repository}/commits/${sha}/check-runs`, '--paginate', '--slurp', '-X', 'GET', '-F', 'per_page=100'],
+          [
+            `repos/${repository}/commits/${sha}/check-runs`,
+            '--paginate',
+            '--slurp',
+            '-X',
+            'GET',
+            '-F',
+            'per_page=100',
+          ],
           env
-        ).then((pages) => (Array.isArray(pages) ? pages : [pages]).flatMap((page) => page?.check_runs ?? page ?? []));
+        ).then((pages) =>
+          (Array.isArray(pages) ? pages : [pages]).flatMap((page) => page?.check_runs ?? page ?? [])
+        );
       throw new Error(`Unknown evidence kind: ${kind}`);
     },
   };

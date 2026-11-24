@@ -124,7 +124,9 @@ describe('seed-manifest: contentFactorySeedManifest', () => {
   it('upserts default templates by slug (insert then update)', async () => {
     const db = await createDb();
     try {
-      const ctx = { db, companyId: 7 } as unknown as Parameters<typeof contentFactorySeedManifest.seed>[0];
+      const ctx = { db, companyId: 7 } as unknown as Parameters<
+        typeof contentFactorySeedManifest.seed
+      >[0];
 
       const first = await contentFactorySeedManifest.seed(ctx);
       expect(first.inserted).toBe(4);
@@ -140,7 +142,9 @@ describe('seed-manifest: contentFactorySeedManifest', () => {
       ]);
       expect(rows.every((r) => r.company_id === 7)).toBe(true);
 
-      await db('content_templates').where({ slug: 'article-default' }).update({ name: 'Stale Name' });
+      await db('content_templates')
+        .where({ slug: 'article-default' })
+        .update({ name: 'Stale Name' });
       const second = await contentFactorySeedManifest.seed(ctx);
       expect(second.inserted).toBe(0);
       expect(second.updated).toBe(4);
@@ -165,11 +169,15 @@ describe('seed-manifest: idempotent re-run preserves count', () => {
   });
 
   it('never duplicates rows across runs', async () => {
-    const ctx = { db, companyId: 1 } as unknown as Parameters<typeof contentFactorySeedManifest.seed>[0];
+    const ctx = { db, companyId: 1 } as unknown as Parameters<
+      typeof contentFactorySeedManifest.seed
+    >[0];
     await contentFactorySeedManifest.seed(ctx);
     await contentFactorySeedManifest.seed(ctx);
     await contentFactorySeedManifest.seed(ctx);
-    const count = await db('content_templates').count<{ count: number | string }[]>('* as count').first();
+    const count = await db('content_templates')
+      .count<{ count: number | string }[]>('* as count')
+      .first();
     expect(Number(count?.count ?? 0)).toBe(4);
   });
 });

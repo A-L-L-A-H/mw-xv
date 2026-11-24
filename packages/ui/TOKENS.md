@@ -26,13 +26,13 @@ Normal text pairs meet WCAG AA at 4.5:1. Non-text control boundaries and focus i
 
 ## Typography
 
-| Token               | Stack                                                   | Use                                     |
-| ------------------- | ------------------------------------------------------- | --------------------------------------- |
-| `--mw-font-grunge`  | MoonWitness Grunge, Road Rage, Impact fallback          | Proprietary grunge/funky Gen-Z display  |
-| `--mw-font-brush`   | Road Rage, MoonWitness Grunge, Impact fallback          | Short expressive headings and ribbons   |
-| `--mw-font-display` | Anton, MoonWitness Grunge, Impact fallback              | Metrics, section titles, compact labels |
-| `--mw-font-sans`    | Space Grotesk, system fallback                          | Body, navigation, controls, tables      |
-| `--mw-font-mono`    | JetBrains Mono, monospace fallback                      | Technical IDs, timestamps, code         |
+| Token               | Stack                                          | Use                                     |
+| ------------------- | ---------------------------------------------- | --------------------------------------- |
+| `--mw-font-grunge`  | MoonWitness Grunge, Road Rage, Impact fallback | Proprietary grunge/funky Gen-Z display  |
+| `--mw-font-brush`   | Road Rage, MoonWitness Grunge, Impact fallback | Short expressive headings and ribbons   |
+| `--mw-font-display` | Anton, MoonWitness Grunge, Impact fallback     | Metrics, section titles, compact labels |
+| `--mw-font-sans`    | Space Grotesk, system fallback                 | Body, navigation, controls, tables      |
+| `--mw-font-mono`    | JetBrains Mono, monospace fallback             | Technical IDs, timestamps, code         |
 
 Fonts are self-hosted by the consuming app from `@moonwitness/assets/fonts.css`; no remote font request belongs in this stylesheet. Road Rage is subsetted for short editorial headings. Do not fake unavailable font weights. Keep meaningful text readable if a font fails or loads late.
 

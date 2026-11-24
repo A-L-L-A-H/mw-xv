@@ -13,11 +13,18 @@ export const views = [
   defineView(Patient, {
     title: 'Patients',
     list: {
-      columns: ['mrn', 'given_name', 'family_name', 'gender', 'birth_date', 'company', 'active', 'external_ref'],
-      order: 'create_date desc, id desc',
-      decorations: [
-        { color: 'muted', domain: [['active', '=', false]] },
+      columns: [
+        'mrn',
+        'given_name',
+        'family_name',
+        'gender',
+        'birth_date',
+        'company',
+        'active',
+        'external_ref',
       ],
+      order: 'create_date desc, id desc',
+      decorations: [{ color: 'muted', domain: [['active', '=', false]] }],
     },
     form: {
       sections: [
@@ -46,7 +53,15 @@ export const views = [
   defineView(Encounter, {
     title: 'Encounters',
     list: {
-      columns: ['encounter_no', 'patient', 'status', 'class', 'started_at', 'ended_at', 'clinician'],
+      columns: [
+        'encounter_no',
+        'patient',
+        'status',
+        'class',
+        'started_at',
+        'ended_at',
+        'clinician',
+      ],
       order: 'started_at desc, id desc',
       decorations: [
         { color: 'info', domain: [['status', '=', 'in_progress']] },
@@ -86,7 +101,15 @@ export const views = [
   defineView(Diagnosis, {
     title: 'Diagnoses',
     list: {
-      columns: ['encounter', 'code_system', 'code', 'diagnosis_name', 'status', 'recorded_at', 'recorder'],
+      columns: [
+        'encounter',
+        'code_system',
+        'code',
+        'diagnosis_name',
+        'status',
+        'recorded_at',
+        'recorder',
+      ],
       order: 'recorded_at desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'confirmed']] },
@@ -99,7 +122,17 @@ export const views = [
         {
           title: 'Diagnosis',
           columns: 2,
-          fields: ['encounter', 'code_system', 'code', 'diagnosis_name', 'status', 'recorder', 'recorded_at', 'note', 'external_ref'],
+          fields: [
+            'encounter',
+            'code_system',
+            'code',
+            'diagnosis_name',
+            'status',
+            'recorder',
+            'recorded_at',
+            'note',
+            'external_ref',
+          ],
         },
       ],
     },
@@ -117,7 +150,15 @@ export const views = [
   defineView(Procedure, {
     title: 'Procedures',
     list: {
-      columns: ['encounter', 'code_system', 'code', 'procedure_name', 'status', 'performed_at', 'performer'],
+      columns: [
+        'encounter',
+        'code_system',
+        'code',
+        'procedure_name',
+        'status',
+        'performed_at',
+        'performer',
+      ],
       order: 'performed_at desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'completed']] },
@@ -130,7 +171,17 @@ export const views = [
         {
           title: 'Procedure',
           columns: 2,
-          fields: ['encounter', 'code_system', 'code', 'procedure_name', 'status', 'performer', 'performed_at', 'outcome_note', 'external_ref'],
+          fields: [
+            'encounter',
+            'code_system',
+            'code',
+            'procedure_name',
+            'status',
+            'performer',
+            'performed_at',
+            'outcome_note',
+            'external_ref',
+          ],
         },
       ],
     },
@@ -148,7 +199,17 @@ export const views = [
   defineView(MedicationOrder, {
     title: 'Medication Orders',
     list: {
-      columns: ['encounter', 'medication_name', 'dose_amount', 'dose_unit', 'route', 'frequency', 'status', 'ordered_at', 'prescriber'],
+      columns: [
+        'encounter',
+        'medication_name',
+        'dose_amount',
+        'dose_unit',
+        'route',
+        'frequency',
+        'status',
+        'ordered_at',
+        'prescriber',
+      ],
       order: 'ordered_at desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'active']] },
@@ -161,7 +222,16 @@ export const views = [
         {
           title: 'Order',
           columns: 2,
-          fields: ['encounter', 'medication_name', 'dose_amount', 'dose_unit', 'route', 'frequency', 'status', 'prescriber'],
+          fields: [
+            'encounter',
+            'medication_name',
+            'dose_amount',
+            'dose_unit',
+            'route',
+            'frequency',
+            'status',
+            'prescriber',
+          ],
         },
         {
           title: 'Details',
@@ -189,7 +259,18 @@ export const views = [
   defineView(LabResult, {
     title: 'Lab Results',
     list: {
-      columns: ['encounter', 'panel_code', 'analyte_code', 'analyte_name', 'value_numeric', 'value_unit', 'reference_low', 'reference_high', 'status', 'collected_at'],
+      columns: [
+        'encounter',
+        'panel_code',
+        'analyte_code',
+        'analyte_name',
+        'value_numeric',
+        'value_unit',
+        'reference_low',
+        'reference_high',
+        'status',
+        'collected_at',
+      ],
       order: 'collected_at desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'final']] },
@@ -202,12 +283,27 @@ export const views = [
         {
           title: 'Result',
           columns: 2,
-          fields: ['encounter', 'panel_code', 'analyte_code', 'analyte_name', 'value_numeric', 'value_unit', 'value_text', 'status'],
+          fields: [
+            'encounter',
+            'panel_code',
+            'analyte_code',
+            'analyte_name',
+            'value_numeric',
+            'value_unit',
+            'value_text',
+            'status',
+          ],
         },
         {
           title: 'Reference & Timing',
           columns: 2,
-          fields: ['reference_low', 'reference_high', 'collected_at', 'resulted_at', 'external_ref'],
+          fields: [
+            'reference_low',
+            'reference_high',
+            'collected_at',
+            'resulted_at',
+            'external_ref',
+          ],
         },
       ],
     },
@@ -225,7 +321,15 @@ export const views = [
   defineView(VitalObservation, {
     title: 'Vital Observations',
     list: {
-      columns: ['encounter', 'vital_type', 'value', 'unit', 'observed_at', 'observer', 'device_ref'],
+      columns: [
+        'encounter',
+        'vital_type',
+        'value',
+        'unit',
+        'observed_at',
+        'observer',
+        'device_ref',
+      ],
       order: 'observed_at desc, id desc',
     },
     form: {
@@ -233,7 +337,16 @@ export const views = [
         {
           title: 'Observation',
           columns: 2,
-          fields: ['encounter', 'vital_type', 'value', 'unit', 'observed_at', 'observer', 'device_ref', 'external_ref'],
+          fields: [
+            'encounter',
+            'vital_type',
+            'value',
+            'unit',
+            'observed_at',
+            'observer',
+            'device_ref',
+            'external_ref',
+          ],
         },
       ],
     },
@@ -242,7 +355,10 @@ export const views = [
       filters: [
         { label: 'Temperature', domain: [['vital_type', '=', 'temperature']] },
         { label: 'Heart Rate', domain: [['vital_type', '=', 'heart_rate']] },
-        { label: 'Blood Pressure', domain: [['vital_type', 'in', ['systolic_bp', 'diastolic_bp']]] },
+        {
+          label: 'Blood Pressure',
+          domain: [['vital_type', 'in', ['systolic_bp', 'diastolic_bp']]],
+        },
         { label: 'Oxygen Saturation', domain: [['vital_type', '=', 'oxygen_saturation']] },
       ],
       groupBy: [{ label: 'Vital Type', field: 'vital_type' }],

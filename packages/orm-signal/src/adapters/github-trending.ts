@@ -11,7 +11,8 @@ interface ParsedRepo {
   readonly starsToday: string;
 }
 
-const REPO_ANCHOR_RE = /<a[^>]*class="[^"]*repo-name[^"]*"[^>]*href="\/([^"/]+)\/([^"/?#]+)"|<a[^>]*href="\/([^"/]+)\/([^"/?#]+)"[^>]*class="[^"]*repo-name[^"]*"/g;
+const REPO_ANCHOR_RE =
+  /<a[^>]*class="[^"]*repo-name[^"]*"[^>]*href="\/([^"/]+)\/([^"/?#]+)"|<a[^>]*href="\/([^"/]+)\/([^"/?#]+)"[^>]*class="[^"]*repo-name[^"]*"/g;
 
 const HTML_ENTITIES: Record<string, string> = {
   '&amp;': '&',
@@ -60,24 +61,32 @@ export class GithubTrendingAdapter implements SignalAdapter {
   readonly kind = 'github_trending';
 
   async fetch(ctx: SignalAdapterContext): Promise<SignalObservationDraft[]> {
-    const language = typeof ctx.config.language === 'string' && ctx.config.language !== 'any' ? `/${ctx.config.language}` : '';
+    const language =
+      typeof ctx.config.language === 'string' && ctx.config.language !== 'any'
+        ? `/${ctx.config.language}`
+        : '';
     const since = typeof ctx.config.since === 'string' ? ctx.config.since : 'daily';
     const maxItems = typeof ctx.config.maxItems === 'number' ? ctx.config.maxItems : 25;
     const fetchImpl = ctx.fetchImpl ?? fetch;
 
-    const response = await fetchImpl(`${GITHUB_TRENDING_URL}${language}?since=${encodeURIComponent(since)}`, {
-      headers: { accept: 'text/html', 'user-agent': 'MoonWitness-SignalBot/1.0' },
-    });
+    const response = await fetchImpl(
+      `${GITHUB_TRENDING_URL}${language}?since=${encodeURIComponent(since)}`,
+      {
+        headers: { accept: 'text/html', 'user-agent': 'MoonWitness-SignalBot/1.0' },
+      }
+    );
     if (!response.ok) return [];
     const html = await response.text();
-    return parseTrendingHtml(html).slice(0, maxItems).map((repo) => ({
-      title: `${repo.owner}/${repo.repo}`,
-      summary: repo.description || undefined,
-      url: `https://github.com/${repo.owner}/${repo.repo}`,
-      publishedAt: ctx.now,
-      tags: [repo.language, 'github-trending'].filter((tag) => tag.length > 0),
-      sourceRef: `${repo.owner}/${repo.repo}`,
-      raw: repo,
-    }));
+    return parseTrendingHtml(html)
+      .slice(0, maxItems)
+      .map((repo) => ({
+        title: `${repo.owner}/${repo.repo}`,
+        summary: repo.description || undefined,
+        url: `https://github.com/${repo.owner}/${repo.repo}`,
+        publishedAt: ctx.now,
+        tags: [repo.language, 'github-trending'].filter((tag) => tag.length > 0),
+        sourceRef: `${repo.owner}/${repo.repo}`,
+        raw: repo,
+      }));
   }
 }

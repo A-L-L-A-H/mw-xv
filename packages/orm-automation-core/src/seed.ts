@@ -113,7 +113,10 @@ export interface AutomationSeedResult {
   readonly rulesUpdated: number;
 }
 
-export async function seedAutomationCore(ctx: { db: Knex; companyId?: number }): Promise<AutomationSeedResult> {
+export async function seedAutomationCore(ctx: {
+  db: Knex;
+  companyId?: number;
+}): Promise<AutomationSeedResult> {
   const db = ctx.db;
   const companyId = ctx.companyId ?? 1;
 

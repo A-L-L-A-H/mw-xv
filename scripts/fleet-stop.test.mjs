@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {
-  buildTreeEntries,
-  applyFleetAction,
-  createFleetStore,
-  verifyCas,
-} from './fleet-stop.mjs';
+import { buildTreeEntries, applyFleetAction, createFleetStore, verifyCas } from './fleet-stop.mjs';
 import {
   FLEET_STATE_FILE,
   FLEET_STATE_REF,
@@ -28,14 +23,20 @@ function mockAdapter({ refExists = false, activeRuns = [] } = {}) {
   const blobs = new Map();
   return {
     calls,
-    get ref() { return ref; },
+    get ref() {
+      return ref;
+    },
     async readRef() {
       calls.push('readRef');
       return ref ? { sha: ref } : null;
     },
     async readCommit() {
       calls.push('readCommit');
-      return { fileSha: 'c'.repeat(40), treeEntries: [{ path: 'README.md', sha: 'd'.repeat(40) }], treeSha: 'e'.repeat(40) };
+      return {
+        fileSha: 'c'.repeat(40),
+        treeEntries: [{ path: 'README.md', sha: 'd'.repeat(40) }],
+        treeSha: 'e'.repeat(40),
+      };
     },
     async readBlob() {
       calls.push('readBlob');
@@ -80,11 +81,17 @@ function mockAdapter({ refExists = false, activeRuns = [] } = {}) {
 
 test('tree entries preserve other files and replace only the state file', () => {
   const entries = buildTreeEntries(
-    [{ path: 'README.md', sha: 'a'.repeat(40) }, { path: FLEET_STATE_FILE, sha: 'b'.repeat(40) }],
+    [
+      { path: 'README.md', sha: 'a'.repeat(40) },
+      { path: FLEET_STATE_FILE, sha: 'b'.repeat(40) },
+    ],
     FLEET_STATE_FILE,
     'c'.repeat(40)
   );
-  assert.deepEqual(entries.map((entry) => entry.path), [FLEET_STATE_FILE, 'README.md']);
+  assert.deepEqual(
+    entries.map((entry) => entry.path),
+    [FLEET_STATE_FILE, 'README.md']
+  );
   assert.equal(entries.find((entry) => entry.path === FLEET_STATE_FILE).sha, 'c'.repeat(40));
   assert.equal(entries.find((entry) => entry.path === 'README.md').sha, 'a'.repeat(40));
 });
@@ -132,9 +139,13 @@ test('a repeated pause is a no-op and resume is not attempted without a paused s
 test('epoch expectation mismatch fails before any write', async () => {
   const adapter = mockAdapter();
   await assert.rejects(
-    () => applyFleetAction(createFleetStore(adapter), adapter, {
-      action: 'pause', actor: 'bjo163', reason: 'incident stop fleet', expectEpoch: 9,
-    }),
+    () =>
+      applyFleetAction(createFleetStore(adapter), adapter, {
+        action: 'pause',
+        actor: 'bjo163',
+        reason: 'incident stop fleet',
+        expectEpoch: 9,
+      }),
     /Expected fleet epoch/u
   );
   assert.equal(adapter.calls.includes('createCommit'), false);

@@ -47,7 +47,10 @@ export interface ThresholdBounds {
   criticalMax: number | null;
 }
 
-export function validateThresholds(bounds: ThresholdBounds): { valid: boolean; reason: string | null } {
+export function validateThresholds(bounds: ThresholdBounds): {
+  valid: boolean;
+  reason: string | null;
+} {
   const { warningMin, warningMax, criticalMin, criticalMax } = bounds;
   if (warningMin !== null && warningMax !== null && warningMin >= warningMax) {
     return { valid: false, reason: 'warning_min must be below warning_max' };
@@ -99,7 +102,10 @@ export function convertUnit(value: number, fromUnit: string, toUnit: string): Un
   }
   const conversion = UNIT_CONVERSIONS[`${fromUnit}>${toUnit}`];
   if (!conversion) {
-    return { value: Number.NaN, error: `no conversion registered from '${fromUnit}' to '${toUnit}'` };
+    return {
+      value: Number.NaN,
+      error: `no conversion registered from '${fromUnit}' to '${toUnit}'`,
+    };
   }
   return { value: conversion.slope * value + conversion.intercept, error: null };
 }

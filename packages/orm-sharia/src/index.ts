@@ -1,5 +1,11 @@
 export { manifest } from './manifest.js';
-export { ShariaContract, ProfitSharingDistribution, ZakatAssessment, WaqfAsset, HalalComplianceAudit } from './models/index.js';
+export {
+  ShariaContract,
+  ProfitSharingDistribution,
+  ZakatAssessment,
+  WaqfAsset,
+  HalalComplianceAudit,
+} from './models/index.js';
 export type { ShariaContractType, ShariaContractStatus } from './models/index.js';
 export { views } from './views.js';
 export { httpPlugin } from './http-plugin.js';

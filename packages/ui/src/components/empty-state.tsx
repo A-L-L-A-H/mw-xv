@@ -17,9 +17,7 @@ export type EmptyStateProps = Omit<ComponentProps<'section'>, 'children' | 'titl
 };
 
 function isStateIllustrationSlug(value: unknown): value is StateIllustrationSlug {
-  return (
-    typeof value === 'string' && (STATE_ILLUSTRATIONS as readonly string[]).includes(value)
-  );
+  return typeof value === 'string' && (STATE_ILLUSTRATIONS as readonly string[]).includes(value);
 }
 
 export function EmptyState({

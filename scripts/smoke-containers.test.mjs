@@ -125,7 +125,10 @@ test('requires the Docker smoke network to deny external connectivity before sta
 });
 
 test('declares the smoke Compose default network internal', async () => {
-  const compose = await readFile(new URL('../deploy/compose/docker-compose.smoke.yml', import.meta.url), 'utf8');
+  const compose = await readFile(
+    new URL('../deploy/compose/docker-compose.smoke.yml', import.meta.url),
+    'utf8'
+  );
   assert.match(compose, /networks:\s+default:\s+internal:\s+true/u);
 });
 

@@ -4,9 +4,14 @@ import { IncomeEntry, IncomeStream } from '../models.js';
 export async function createEntryFromAds(
   ctx: Context,
   platform: string,
-  fetcher: { fetchRevenue(periodStart: Date, periodEnd: Date): Promise<{ revenue_minor: number; currency: string; external_ref?: string }> },
+  fetcher: {
+    fetchRevenue(
+      periodStart: Date,
+      periodEnd: Date
+    ): Promise<{ revenue_minor: number; currency: string; external_ref?: string }>;
+  },
   periodStart: Date,
-  periodEnd: Date,
+  periodEnd: Date
 ): Promise<void> {
   const stream = await ctx
     .query(IncomeStream)
@@ -16,7 +21,10 @@ export async function createEntryFromAds(
 
   if (!stream) return;
 
-  const { revenue_minor, currency, external_ref } = await fetcher.fetchRevenue(periodStart, periodEnd);
+  const { revenue_minor, currency, external_ref } = await fetcher.fetchRevenue(
+    periodStart,
+    periodEnd
+  );
 
   await ctx.query(IncomeEntry).insert({
     stream_id: stream.id,

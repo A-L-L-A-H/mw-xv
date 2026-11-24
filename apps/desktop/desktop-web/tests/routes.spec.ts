@@ -133,7 +133,11 @@ async function mockSidecar(page: Page, loginStatus = 200): Promise<void> {
 
 async function configureDesktop(
   page: Page,
-  options: { authenticated?: boolean; loginStatus?: number; desktopMode?: 'workspace' | 'developer' | null } = {}
+  options: {
+    authenticated?: boolean;
+    loginStatus?: number;
+    desktopMode?: 'workspace' | 'developer' | null;
+  } = {}
 ): Promise<void> {
   await mockSidecar(page, options.loginStatus);
   await page.addInitScript(
@@ -269,7 +273,9 @@ test('moonwitness-riot skin toggling in Settings persists across navigation', as
   await expect(page.locator('html')).toHaveAttribute('data-skin', 'moonwitness-riot');
 });
 
-test('/board/studio renders Signal Riot progression and Asmaul Husna explorer', async ({ page }) => {
+test('/board/studio renders Signal Riot progression and Asmaul Husna explorer', async ({
+  page,
+}) => {
   await configureDesktop(page, { authenticated: true });
   await page.goto('/board/studio');
   await expect(
@@ -286,7 +292,9 @@ test('/board/studio renders Signal Riot progression and Asmaul Husna explorer', 
   await page.getByRole('tab', { name: /Asmaul Husna Concept Explorer/i }).click();
   await expect(page.getByText('Ar-Rahman')).toBeVisible();
   await page.getByLabel('Search Asmaul Husna concepts').fill('zzzz-no-match');
-  await expect(page.getByText('No Asmaul Husna concept entries match', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('No Asmaul Husna concept entries match', { exact: true })
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Reset Filters' }).last().click();
   await expect(page.getByText('Ar-Rahman')).toBeVisible();
 });

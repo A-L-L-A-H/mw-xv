@@ -67,7 +67,12 @@ describe('@moonwitness/orm-subscription initial seed module', () => {
     expect(new Set(planCodes).size).toBe(planCodes.length);
     expect(new Set(planNames).size).toBe(planNames.length);
     expect(new Set(subscriptionNames).size).toBe(subscriptionNames.length);
-    expect(planCodes).toEqual(['basic-monthly', 'pro-monthly', 'business-quarterly', 'enterprise-yearly']);
+    expect(planCodes).toEqual([
+      'basic-monthly',
+      'pro-monthly',
+      'business-quarterly',
+      'enterprise-yearly',
+    ]);
     expect(subscriptionNames).toEqual([
       'SUB-2026-0001',
       'SUB-2026-0002',
@@ -93,11 +98,15 @@ describe('@moonwitness/orm-subscription initial seed module', () => {
       expect(subscription.nextInvoiceDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(subscription.amountMinor).toBeGreaterThan(0);
       expect(subscription.currency).toMatch(/^[A-Z]{3}$/);
-      expect(['draft', 'pending', 'active', 'paused', 'cancelled', 'expired']).toContain(subscription.state);
+      expect(['draft', 'pending', 'active', 'paused', 'cancelled', 'expired']).toContain(
+        subscription.state
+      );
       expect(['system', 'superadmin']).toContain(subscription.assignedToLogin);
     }
 
-    const lineKeys = firstBundle.invoiceLines.map((line) => `${line.subscriptionName}:${line.sequence}`);
+    const lineKeys = firstBundle.invoiceLines.map(
+      (line) => `${line.subscriptionName}:${line.sequence}`
+    );
     expect(new Set(lineKeys).size).toBe(lineKeys.length);
     for (const line of firstBundle.invoiceLines) {
       expect(subscriptionNames).toContain(line.subscriptionName);
@@ -152,10 +161,20 @@ describe('@moonwitness/orm-subscription initial seed module', () => {
     expect(secondRun.insertedInvoiceLines).toBe(0);
     expect(secondRun.insertedTagLinks).toBe(0);
 
-    expect(countValue(await db(SubscriptionPlan.tableName).count<CountRow>({ count: '*' }).first())).toBe(4);
-    expect(countValue(await db(Subscription.tableName).count<CountRow>({ count: '*' }).first())).toBe(4);
-    expect(countValue(await db(SubscriptionInvoiceLine.tableName).count<CountRow>({ count: '*' }).first())).toBe(6);
-    expect(countValue(await db(SubscriptionTagLink.tableName).count<CountRow>({ count: '*' }).first())).toBe(2);
+    expect(
+      countValue(await db(SubscriptionPlan.tableName).count<CountRow>({ count: '*' }).first())
+    ).toBe(4);
+    expect(
+      countValue(await db(Subscription.tableName).count<CountRow>({ count: '*' }).first())
+    ).toBe(4);
+    expect(
+      countValue(
+        await db(SubscriptionInvoiceLine.tableName).count<CountRow>({ count: '*' }).first()
+      )
+    ).toBe(6);
+    expect(
+      countValue(await db(SubscriptionTagLink.tableName).count<CountRow>({ count: '*' }).first())
+    ).toBe(2);
 
     const bundle = buildSubscriptionInitialSeed();
     const planRows = await db(SubscriptionPlan.tableName).select<IdRow[]>('id', 'code');
@@ -169,7 +188,9 @@ describe('@moonwitness/orm-subscription initial seed module', () => {
     const userRows = await db('users').select<IdRow[]>('id', 'login');
     const userIdByLogin = new Map(userRows.map((row) => [String(row.login), Number(row.id)]));
     const saleOrderRows = await db('sale_orders').select<IdRow[]>('id', 'name');
-    const saleOrderIdByName = new Map(saleOrderRows.map((row) => [String(row.name), Number(row.id)]));
+    const saleOrderIdByName = new Map(
+      saleOrderRows.map((row) => [String(row.name), Number(row.id)])
+    );
     const tagRows = await db('tags').select<IdRow[]>('id', 'name');
     const tagIdByName = new Map(tagRows.map((row) => [String(row.name), Number(row.id)]));
 
@@ -191,9 +212,7 @@ describe('@moonwitness/orm-subscription initial seed module', () => {
       expect(Number(row?.plan_id)).toBe(planIdByCode.get(subscription.planCode));
       expect(Number(row?.assigned_to_id)).toBe(userIdByLogin.get(subscription.assignedToLogin));
       expect(
-        subscription.saleOrderName === null
-          ? row?.sale_order_id
-          : Number(row?.sale_order_id)
+        subscription.saleOrderName === null ? row?.sale_order_id : Number(row?.sale_order_id)
       ).toBe(
         subscription.saleOrderName === null
           ? null
@@ -212,7 +231,9 @@ describe('@moonwitness/orm-subscription initial seed module', () => {
       expect(parentId).toBeDefined();
       expect(
         invoiceLineRows.some(
-          (row) => Number(row.subscription_id) === Number(parentId) && Number(row.sequence) === line.sequence
+          (row) =>
+            Number(row.subscription_id) === Number(parentId) &&
+            Number(row.sequence) === line.sequence
         )
       ).toBe(true);
     }

@@ -25,7 +25,8 @@ export function useAnimationVisibility<T extends Element>(externalRef?: Ref<T>) 
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(Boolean(entry && entry.isIntersecting && entry.intersectionRatio > 0)),
+      ([entry]) =>
+        setIsVisible(Boolean(entry && entry.isIntersecting && entry.intersectionRatio > 0)),
       { threshold: 0 }
     );
     observer.observe(element);

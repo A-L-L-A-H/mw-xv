@@ -20,17 +20,21 @@ async function seedIncomeLedger(ctx: SeedContext): Promise<SeedResult> {
   ];
 
   for (const stream of streams) {
-    const existing = await db('income_stream').where({ kind: stream.kind, platform: stream.platform }).first();
+    const existing = await db('income_stream')
+      .where({ kind: stream.kind, platform: stream.platform })
+      .first();
 
     if (existing) {
-      await db('income_stream').where({ id: existing.id }).update({
-        status: 'idea',
-        goal_monthly_minor: stream.goal_monthly_minor,
-        currency: 'USD',
-        tags: JSON.stringify({}),
-        company_id: companyId,
-        updated_at: new Date().toISOString(),
-      });
+      await db('income_stream')
+        .where({ id: existing.id })
+        .update({
+          status: 'idea',
+          goal_monthly_minor: stream.goal_monthly_minor,
+          currency: 'USD',
+          tags: JSON.stringify({}),
+          company_id: companyId,
+          updated_at: new Date().toISOString(),
+        });
       updated++;
     } else {
       await db('income_stream').insert({

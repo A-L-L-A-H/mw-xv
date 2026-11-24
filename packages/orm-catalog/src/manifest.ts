@@ -42,8 +42,7 @@ export const manifest = defineAddon({
       company: ref('base.company_default'),
       sku: 'DIG-COURSE-0001',
       name: 'Query Planning Masterclass Video Course',
-      description:
-        'Recorded course with hands-on query planner walkthroughs and indexing labs.',
+      description: 'Recorded course with hands-on query planner walkthroughs and indexing labs.',
       kind: 'digital',
       price_minor: 12900,
       currency: 'USD',

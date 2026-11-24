@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildMerkleAuditTree,
-  generateMerkleInclusionProof,
-} from '../src/merkle-ledger.js';
+import { buildMerkleAuditTree, generateMerkleInclusionProof } from '../src/merkle-ledger.js';
 import { computeEpistemicCalibration } from '../src/epistemic-calibration.js';
 import {
   evaluateA2AConsensus,

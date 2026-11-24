@@ -12,7 +12,10 @@ export function canTransitionHypothesis(transition: { from: string; to: string }
   return HYPOTHESIS_TRANSITIONS.has(`${transition.from}>${transition.to}`);
 }
 
-export function validateTrl(prototypeTrl: number | null): { valid: boolean; reason: string | null } {
+export function validateTrl(prototypeTrl: number | null): {
+  valid: boolean;
+  reason: string | null;
+} {
   if (prototypeTrl === null || !Number.isInteger(prototypeTrl)) {
     return { valid: false, reason: 'TRL must be an integer between 1 and 9' };
   }

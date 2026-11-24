@@ -3,7 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { CapabilityGateway, type ToolEffectAcknowledgement } from '../src/capability-gateway.js';
 import { buildEphemeralSandboxManifest } from '../src/sandbox-runner.js';
 import type { WorkspaceSandboxClient } from '../src/workspace-contract.js';
-import { WORKSPACE_TOOL_MATRIX, buildWorkspaceEvidence, isWorkspaceToolAllowed, registerWorkspaceTools } from '../src/workspace-tools.js';
+import {
+  WORKSPACE_TOOL_MATRIX,
+  buildWorkspaceEvidence,
+  isWorkspaceToolAllowed,
+  registerWorkspaceTools,
+} from '../src/workspace-tools.js';
 
 const manifest = buildEphemeralSandboxManifest({
   runId: 'run-1',
@@ -14,10 +19,16 @@ const manifest = buildEphemeralSandboxManifest({
   timeoutMs: 10_000,
 });
 
-function fakeClient(opts: { readonly exitCode?: number; readonly outsideScope?: boolean } = {}): WorkspaceSandboxClient {
+function fakeClient(
+  opts: { readonly exitCode?: number; readonly outsideScope?: boolean } = {}
+): WorkspaceSandboxClient {
   const base = {
-    createWorkspace: async () => { throw new Error('unused'); },
-    snapshotWorkspace: async () => { throw new Error('unused'); },
+    createWorkspace: async () => {
+      throw new Error('unused');
+    },
+    snapshotWorkspace: async () => {
+      throw new Error('unused');
+    },
     executeCheck: async () => ({
       runId: 'run-1',
       check: 'node-test' as const,
@@ -32,8 +43,18 @@ function fakeClient(opts: { readonly exitCode?: number; readonly outsideScope?: 
       stderrBytes: 0,
       totalOutputBytes: 2,
     }),
-    listWorkspace: async () => ({ runId: 'run-1', paths: ['src/app.ts'], truncated: false as const }),
-    readWorkspaceFile: async () => ({ runId: 'run-1', path: 'src/app.ts', content: 'x', sizeBytes: 1, truncated: false }),
+    listWorkspace: async () => ({
+      runId: 'run-1',
+      paths: ['src/app.ts'],
+      truncated: false as const,
+    }),
+    readWorkspaceFile: async () => ({
+      runId: 'run-1',
+      path: 'src/app.ts',
+      content: 'x',
+      sizeBytes: 1,
+      truncated: false,
+    }),
     applyWorkspacePatch: async () => ({ runId: 'run-1', files: ['src/app.ts'] }),
     diffWorkspace: async () => ({
       runId: 'run-1',
@@ -46,12 +67,31 @@ function fakeClient(opts: { readonly exitCode?: number; readonly outsideScope?: 
       sizeBytes: 40,
       truncated: false as const,
     }),
-    commitLocal: async () => ({ runId: 'run-1', commitSha: 'd'.repeat(40), branch: 'local-work', files: [], message: 'm', pushed: false as const }),
-    rollbackWorkspace: async () => { throw new Error('unused'); },
-    cancelWorkspace: async () => { throw new Error('unused'); },
-    destroyWorkspace: async () => { throw new Error('unused'); },
-    getWorkspace: async () => { throw new Error('unused'); },
-    reconcileWorkspaces: async () => ({ removedWorkspaceIds: [], removedContainerIds: [], retainedWorkspaceIds: [] }),
+    commitLocal: async () => ({
+      runId: 'run-1',
+      commitSha: 'd'.repeat(40),
+      branch: 'local-work',
+      files: [],
+      message: 'm',
+      pushed: false as const,
+    }),
+    rollbackWorkspace: async () => {
+      throw new Error('unused');
+    },
+    cancelWorkspace: async () => {
+      throw new Error('unused');
+    },
+    destroyWorkspace: async () => {
+      throw new Error('unused');
+    },
+    getWorkspace: async () => {
+      throw new Error('unused');
+    },
+    reconcileWorkspaces: async () => ({
+      removedWorkspaceIds: [],
+      removedContainerIds: [],
+      retainedWorkspaceIds: [],
+    }),
   };
   return base;
 }
@@ -59,7 +99,9 @@ function fakeClient(opts: { readonly exitCode?: number; readonly outsideScope?: 
 describe('typed workspace tools', () => {
   it('exposes an explicit R0-R3 matrix with publication disabled and R4 absent', () => {
     expect(WORKSPACE_TOOL_MATRIX.some((t) => t.tier === 'R4')).toBe(false);
-    expect(WORKSPACE_TOOL_MATRIX.find((t) => t.name === 'workspace.request_publish')?.enabled).toBe(false);
+    expect(WORKSPACE_TOOL_MATRIX.find((t) => t.name === 'workspace.request_publish')?.enabled).toBe(
+      false
+    );
     expect(isWorkspaceToolAllowed('workspace.apply_patch')).toBe(true);
     expect(isWorkspaceToolAllowed('workspace.request_publish')).toBe(false);
     expect(isWorkspaceToolAllowed('shell.exec')).toBe(false);
@@ -78,8 +120,18 @@ describe('typed workspace tools', () => {
   });
 
   it('produces deterministic evidence and fails on a failing check', async () => {
-    const passing = await buildWorkspaceEvidence({ client: fakeClient(), manifest, runId: 'run-1', check: 'node-test' });
-    const again = await buildWorkspaceEvidence({ client: fakeClient(), manifest, runId: 'run-1', check: 'node-test' });
+    const passing = await buildWorkspaceEvidence({
+      client: fakeClient(),
+      manifest,
+      runId: 'run-1',
+      check: 'node-test',
+    });
+    const again = await buildWorkspaceEvidence({
+      client: fakeClient(),
+      manifest,
+      runId: 'run-1',
+      check: 'node-test',
+    });
     expect(passing).toEqual(again);
     expect(passing.passed).toBe(true);
     expect(passing.automatedPromotionAllowed).toBe(false);
@@ -98,9 +150,15 @@ describe('typed workspace tools', () => {
     const gateway = new CapabilityGateway({
       effectStore: {
         find: (key) => acknowledgements.get(key) ?? null,
-        acknowledge: (record) => { acknowledgements.set(record.key, record); },
+        acknowledge: (record) => {
+          acknowledgements.set(record.key, record);
+        },
       },
-      auditSink: { record: (entry) => { auditEntries.push(entry); } },
+      auditSink: {
+        record: (entry) => {
+          auditEntries.push(entry);
+        },
+      },
       quotaStore: {
         getRunUsage: () => 0,
         incrementRunUsage: () => 1,

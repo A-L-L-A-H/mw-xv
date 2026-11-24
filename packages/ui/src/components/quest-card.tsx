@@ -109,7 +109,9 @@ export const QuestCard = forwardRef<HTMLElement, QuestCardProps>(function QuestC
             {description ? <p className="mw-ui-quest-card-desc">{description}</p> : null}
           </div>
         </div>
-        <span className="mw-ui-comic-panel-kicker mw-ui-quest-card-status">{STATUS_LABELS[status]}</span>
+        <span className="mw-ui-comic-panel-kicker mw-ui-quest-card-status">
+          {STATUS_LABELS[status]}
+        </span>
       </header>
       <StepBar
         wrapClass="mw-ui-quest-card-progress"
@@ -124,7 +126,9 @@ export const QuestCard = forwardRef<HTMLElement, QuestCardProps>(function QuestC
         <span className="mw-ui-comic-panel-kicker mw-ui-quest-card-steps">
           {safeCompleted}/{safeTotal} steps ({percent}%)
         </span>
-        {rewardLabel ? <span className="mw-ui-comic-panel-kicker mw-ui-quest-card-reward">{rewardLabel}</span> : null}
+        {rewardLabel ? (
+          <span className="mw-ui-comic-panel-kicker mw-ui-quest-card-reward">{rewardLabel}</span>
+        ) : null}
         {action ? <div className="mw-ui-quest-card-action">{action}</div> : null}
       </footer>
     </article>
@@ -141,7 +145,10 @@ export type AchievementBadgeProps = Omit<ComponentPropsWithoutRef<'div'>, 'child
 
 /** Achievement badge item displaying canonical game artwork alongside explicit lock state text. */
 export const AchievementBadge = forwardRef<HTMLDivElement, AchievementBadgeProps>(
-  function AchievementBadge({ badgeId, title, unlocked = false, rank, basePath = '', className, ...props }, ref) {
+  function AchievementBadge(
+    { badgeId, title, unlocked = false, rank, basePath = '', className, ...props },
+    ref
+  ) {
     return (
       <div
         ref={ref}
@@ -205,7 +212,8 @@ export const RewardPanel = forwardRef<HTMLElement, RewardPanelProps>(function Re
 ) {
   const Heading = `h${headingLevel}` as const;
   const { safeCompleted, safeTotal, percent } = clampStepProgress(completedCount, totalCount);
-  const resolvedUnlocked = unlockedCount ?? badges.filter((entry) => Boolean(entry.unlocked)).length;
+  const resolvedUnlocked =
+    unlockedCount ?? badges.filter((entry) => Boolean(entry.unlocked)).length;
 
   return (
     <section

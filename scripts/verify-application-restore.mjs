@@ -218,9 +218,7 @@ function runPostgresTool(command, args, options = {}) {
 
 function run(command, args, options = {}) {
   const resolved =
-    command === 'bun'
-      ? resolvePackageManager()
-      : { command, prefixArgs: [], shell: false };
+    command === 'bun' ? resolvePackageManager() : { command, prefixArgs: [], shell: false };
   if (!resolved) throw new Error(`Could not resolve executable: ${command}`);
   const result = spawnSync(resolved.command, [...resolved.prefixArgs, ...args], {
     encoding: 'utf8',

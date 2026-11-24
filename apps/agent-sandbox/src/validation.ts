@@ -106,9 +106,10 @@ export function normalizeWorkspacePath(value: unknown, label = 'path'): string {
   const segments = raw.split('/');
   if (
     segments.some(
-      (segment) => segment === '' || segment === '.' || segment === '..' || segment.length > 255)
-    ) {
-      forbidden(`${label} contains an unsafe path segment`);
+      (segment) => segment === '' || segment === '.' || segment === '..' || segment.length > 255
+    )
+  ) {
+    forbidden(`${label} contains an unsafe path segment`);
   }
   const normalized = segments.join('/');
   if (isSensitiveWorkspacePath(normalized)) {
@@ -125,10 +126,7 @@ export function validateAllowedPaths(value: unknown): readonly string[] {
   return [...new Set(paths)].sort();
 }
 
-export function assertPathAllowed(
-  relativePath: string,
-  allowedPaths: readonly string[]
-): void {
+export function assertPathAllowed(relativePath: string, allowedPaths: readonly string[]): void {
   const normalized = normalizeWorkspacePath(relativePath);
   if (
     !allowedPaths.some(
@@ -167,13 +165,7 @@ export function validateResources(value: Record<string, unknown>): {
     memoryMb: boundedNumber(value.memoryMb, 'memoryMb', 128, 4096, true),
     pidsLimit: boundedNumber(value.pidsLimit, 'pidsLimit', 16, 256, true),
     timeoutMs: boundedNumber(value.timeoutMs, 'timeoutMs', 1_000, 120_000, true),
-    maxOutputBytes: boundedNumber(
-      value.maxOutputBytes,
-      'maxOutputBytes',
-      1_024,
-      1_048_576,
-      true
-    ),
+    maxOutputBytes: boundedNumber(value.maxOutputBytes, 'maxOutputBytes', 1_024, 1_048_576, true),
   };
 }
 
@@ -181,7 +173,14 @@ export function validateCreateParams(value: unknown): WorkspaceCreateParams {
   assertRecord(
     value,
     'params',
-    ['runId', 'snapshotId', 'imageRef', 'baseCommit', 'allowedPaths', ...Object.keys(validateResourceKeys())],
+    [
+      'runId',
+      'snapshotId',
+      'imageRef',
+      'baseCommit',
+      'allowedPaths',
+      ...Object.keys(validateResourceKeys()),
+    ],
     []
   );
   return {
@@ -209,9 +208,10 @@ export function validateRunParams(value: unknown): { readonly runId: string } {
   return { runId: validateRunId(value.runId) };
 }
 
-export function validateSnapshotParams(
-  value: unknown
-): { readonly runId: string; readonly label?: string } {
+export function validateSnapshotParams(value: unknown): {
+  readonly runId: string;
+  readonly label?: string;
+} {
   assertRecord(value, 'params', ['runId'], ['label']);
   return { runId: validateRunId(value.runId), ...validateLabelOptional(value.label) };
 }
@@ -301,11 +301,19 @@ export function validateReadParams(value: unknown): {
 
 export function validatePatchParams(value: unknown): {
   readonly runId: string;
-  readonly operations: readonly { readonly type: 'write' | 'append'; readonly path: string; readonly content: string }[];
+  readonly operations: readonly {
+    readonly type: 'write' | 'append';
+    readonly path: string;
+    readonly content: string;
+  }[];
 } {
   assertRecord(value, 'params', ['runId', 'operations'], []);
   const runId = validateRunId(value.runId);
-  if (!Array.isArray(value.operations) || value.operations.length === 0 || value.operations.length > 64) {
+  if (
+    !Array.isArray(value.operations) ||
+    value.operations.length === 0 ||
+    value.operations.length > 64
+  ) {
     invalid('operations must contain 1..64 typed patch operations');
   }
   const operations = value.operations.map((raw) => {
@@ -336,7 +344,10 @@ export function validateDiffParams(value: unknown): {
   };
 }
 
-export function validateCommitParams(value: unknown): { readonly runId: string; readonly message: string } {
+export function validateCommitParams(value: unknown): {
+  readonly runId: string;
+  readonly message: string;
+} {
   assertRecord(value, 'params', ['runId', 'message']);
   const message = requiredString(value.message, 'message', WORKSPACE_LIMITS.commitMessageBytes);
   if (hasControlCharacter(message.replaceAll('\n', '').replaceAll('\t', ''))) {

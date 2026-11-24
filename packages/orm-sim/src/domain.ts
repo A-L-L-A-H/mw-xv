@@ -29,9 +29,10 @@ export function computeRunChecksum(inputSnapshot: object): string {
   return createHash('sha256').update(canonicalRunSnapshot(inputSnapshot)).digest('hex');
 }
 
-export function isRunFinished(
-  run: { status: string; finished_at?: string | Date | null }
-): boolean {
+export function isRunFinished(run: {
+  status: string;
+  finished_at?: string | Date | null;
+}): boolean {
   if (run.status === 'succeeded' || run.status === 'failed' || run.status === 'cancelled') {
     return true;
   }

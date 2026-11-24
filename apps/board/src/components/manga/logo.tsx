@@ -19,10 +19,7 @@ export function Logo({
       tone={surface}
       decorative={decorative}
       alt={decorative ? '' : 'MoonWitness'}
-      className={cn(
-        compact ? 'size-8' : 'h-8 w-[12.5rem] object-contain object-left',
-        className
-      )}
+      className={cn(compact ? 'size-8' : 'h-8 w-[12.5rem] object-contain object-left', className)}
     />
   );
 }

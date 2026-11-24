@@ -1,6 +1,12 @@
 import crypto from 'node:crypto';
 import type { Knex } from 'knex';
-import { ComplianceFramework, ComplianceControl, ComplianceAssessment, ComplianceEvidence, ComplianceRemediation } from './models/index.js';
+import {
+  ComplianceFramework,
+  ComplianceControl,
+  ComplianceAssessment,
+  ComplianceEvidence,
+  ComplianceRemediation,
+} from './models/index.js';
 
 export type RiskSeverity = 'critical' | 'high' | 'medium' | 'low' | 'informational';
 export type RiskLikelihood = 'almost_certain' | 'likely' | 'possible' | 'unlikely' | 'rare';
@@ -185,9 +191,27 @@ export interface RemediationTrackingResult {
   staleRemediations?: Array<{ remediationId: string; daysOverdue: number }>;
 }
 
-const SEVERITY_WEIGHTS: Record<RiskSeverity, number> = { critical: 5, high: 4, medium: 3, low: 2, informational: 1 };
-const LIKELIHOOD_WEIGHTS: Record<RiskLikelihood, number> = { almost_certain: 5, likely: 4, possible: 3, unlikely: 2, rare: 1 };
-const IMPACT_WEIGHTS: Record<RiskImpact, number> = { catastrophic: 5, major: 4, moderate: 3, minor: 2, negligible: 1 };
+const SEVERITY_WEIGHTS: Record<RiskSeverity, number> = {
+  critical: 5,
+  high: 4,
+  medium: 3,
+  low: 2,
+  informational: 1,
+};
+const LIKELIHOOD_WEIGHTS: Record<RiskLikelihood, number> = {
+  almost_certain: 5,
+  likely: 4,
+  possible: 3,
+  unlikely: 2,
+  rare: 1,
+};
+const IMPACT_WEIGHTS: Record<RiskImpact, number> = {
+  catastrophic: 5,
+  major: 4,
+  moderate: 3,
+  minor: 2,
+  negligible: 1,
+};
 
 const CONTROL_EVIDENCE_REQUIREMENTS: Record<string, string[]> = {
   'ISO27001-A.5.1': ['document', 'approval_record'],
@@ -197,12 +221,35 @@ const CONTROL_EVIDENCE_REQUIREMENTS: Record<string, string[]> = {
   'ESG-INTERNAL-ENV1': ['document', 'log'],
 };
 
-const FRAMEWORK_REGISTRY: Record<string, { name: string; controlCount: number; domains: string[] }> = {
-  'ISO-27001': { name: 'ISO/IEC 27001:2022', controlCount: 93, domains: ['access_control', 'cryptography', 'operations_security', 'governance'] },
-  'SOC2': { name: 'SOC 2 Type II', controlCount: 64, domains: ['access_control', 'monitoring', 'change_management', 'governance'] },
-  'GDPR': { name: 'EU General Data Protection Regulation', controlCount: 42, domains: ['data_protection', 'privacy', 'breach_notification'] },
-  'PCI-DSS': { name: 'PCI DSS v4.0', controlCount: 78, domains: ['access_control', 'cryptography', 'monitoring', 'network_security'] },
-  'ESG-INTERNAL': { name: 'Internal ESG Framework', controlCount: 36, domains: ['sustainability', 'governance', 'social_responsibility'] },
+const FRAMEWORK_REGISTRY: Record<
+  string,
+  { name: string; controlCount: number; domains: string[] }
+> = {
+  'ISO-27001': {
+    name: 'ISO/IEC 27001:2022',
+    controlCount: 93,
+    domains: ['access_control', 'cryptography', 'operations_security', 'governance'],
+  },
+  SOC2: {
+    name: 'SOC 2 Type II',
+    controlCount: 64,
+    domains: ['access_control', 'monitoring', 'change_management', 'governance'],
+  },
+  GDPR: {
+    name: 'EU General Data Protection Regulation',
+    controlCount: 42,
+    domains: ['data_protection', 'privacy', 'breach_notification'],
+  },
+  'PCI-DSS': {
+    name: 'PCI DSS v4.0',
+    controlCount: 78,
+    domains: ['access_control', 'cryptography', 'monitoring', 'network_security'],
+  },
+  'ESG-INTERNAL': {
+    name: 'Internal ESG Framework',
+    controlCount: 36,
+    domains: ['sustainability', 'governance', 'social_responsibility'],
+  },
 };
 
 const REMEDIATION_STATUSES = ['pending', 'in_progress', 'completed', 'verified', 'rejected'];
@@ -215,7 +262,10 @@ function isLiveDb(db: Knex): boolean {
   return typeof db === 'function';
 }
 
-export async function mapFrameworks(db: Knex, input: FrameworkMappingInput): Promise<FrameworkMappingResult> {
+export async function mapFrameworks(
+  db: Knex,
+  input: FrameworkMappingInput
+): Promise<FrameworkMappingResult> {
   const frameworkIds = input.frameworkIds ?? [];
   if (frameworkIds.length === 0) {
     return {
@@ -233,19 +283,25 @@ export async function mapFrameworks(db: Knex, input: FrameworkMappingInput): Pro
       const framework = await db(ComplianceFramework.tableName)
         .where({ code: frameworkId, company_id: input.companyId })
         .first();
-      const controlRows = await db(ComplianceControl.tableName)
-        .where({ framework_id: framework?.id, company_id: input.companyId });
+      const controlRows = await db(ComplianceControl.tableName).where({
+        framework_id: framework?.id,
+        company_id: input.companyId,
+      });
       registry[frameworkId] = {
         name: framework?.name ?? frameworkId,
         controlCount: controlRows.length,
-        domains: [...new Set(controlRows.map(c => c.risk_category).filter(Boolean))] as string[],
+        domains: [...new Set(controlRows.map((c) => c.risk_category).filter(Boolean))] as string[],
       };
     } else {
-      registry[frameworkId] = FRAMEWORK_REGISTRY[frameworkId] ?? { name: frameworkId, controlCount: 0, domains: [] };
+      registry[frameworkId] = FRAMEWORK_REGISTRY[frameworkId] ?? {
+        name: frameworkId,
+        controlCount: 0,
+        domains: [],
+      };
     }
   }
 
-  const mappedFrameworks: FrameworkMapping[] = frameworkIds.map(frameworkId => {
+  const mappedFrameworks: FrameworkMapping[] = frameworkIds.map((frameworkId) => {
     const entry = registry[frameworkId];
     return {
       frameworkId,
@@ -253,7 +309,7 @@ export async function mapFrameworks(db: Knex, input: FrameworkMappingInput): Pro
       controlCount: entry.controlCount,
       ...(input.includeControls
         ? {
-            controls: entry.domains.map(domain => ({
+            controls: entry.domains.map((domain) => ({
               controlId: `${frameworkId}-${domain.toUpperCase()}`,
               title: `${domain.replace(/_/g, ' ')} control domain`,
               domain,
@@ -265,8 +321,8 @@ export async function mapFrameworks(db: Knex, input: FrameworkMappingInput): Pro
 
   const gaps: FrameworkGap[] = input.includeGaps
     ? mappedFrameworks
-        .filter(f => f.controlCount > 0)
-        .map(f => {
+        .filter((f) => f.controlCount > 0)
+        .map((f) => {
           const pendingControls = Math.ceil(f.controlCount * 0.1);
           return {
             frameworkId: f.frameworkId,
@@ -279,12 +335,17 @@ export async function mapFrameworks(db: Knex, input: FrameworkMappingInput): Pro
 
   const coverageMap: Record<string, CoverageEntry> = {};
   for (const framework of mappedFrameworks) {
-    const mappedControls = input.includeControls ? framework.controls?.length ?? 0 : framework.controlCount;
+    const mappedControls = input.includeControls
+      ? (framework.controls?.length ?? 0)
+      : framework.controlCount;
     coverageMap[framework.frameworkId] = {
       frameworkId: framework.frameworkId,
       controlCount: framework.controlCount,
       mappedControls,
-      coveragePct: framework.controlCount === 0 ? 0 : Math.round((mappedControls / framework.controlCount) * 100),
+      coveragePct:
+        framework.controlCount === 0
+          ? 0
+          : Math.round((mappedControls / framework.controlCount) * 100),
     };
   }
 
@@ -301,7 +362,7 @@ export async function mapFrameworks(db: Knex, input: FrameworkMappingInput): Pro
     }
     for (const [domain, frameworks] of domainOwners) {
       if (frameworks.length < 2) continue;
-      const counts = frameworks.map(id => registry[id].controlCount).filter(count => count > 0);
+      const counts = frameworks.map((id) => registry[id].controlCount).filter((count) => count > 0);
       overlappingControls.push({
         domain,
         frameworks,
@@ -335,10 +396,10 @@ export async function testControl(db: Knex, input: ControlTestInput): Promise<Co
     }
   }
 
-  const providedTypes = new Set(input.evidence.map(evidence => evidence.type));
-  const missingEvidence = requirements.filter(type => !providedTypes.has(type));
+  const providedTypes = new Set(input.evidence.map((evidence) => evidence.type));
+  const missingEvidence = requirements.filter((type) => !providedTypes.has(type));
 
-  const findings: ControlTestFinding[] = missingEvidence.map(type => ({
+  const findings: ControlTestFinding[] = missingEvidence.map((type) => ({
     controlId: input.controlId,
     severity: 'high',
     category: 'missing_evidence',
@@ -347,7 +408,7 @@ export async function testControl(db: Knex, input: ControlTestInput): Promise<Co
 
   const automated =
     input.automationLevel === 'fully_automated' ||
-    (input.evidence.length > 0 && input.evidence.every(evidence => evidence.automated === true));
+    (input.evidence.length > 0 && input.evidence.every((evidence) => evidence.automated === true));
 
   return {
     controlId: input.controlId,
@@ -356,19 +417,40 @@ export async function testControl(db: Knex, input: ControlTestInput): Promise<Co
     findings,
     ...(missingEvidence.length > 0 ? { missingEvidence } : {}),
     ...(automated ? { automated } : {}),
-    ...(input.automationLevel === 'fully_automated' && automated ? { continuousMonitoring: true } : {}),
+    ...(input.automationLevel === 'fully_automated' && automated
+      ? { continuousMonitoring: true }
+      : {}),
   };
 }
 
 export function calculateRiskScore(input: RiskScoreInput): RiskScoreResult {
   const score =
-    SEVERITY_WEIGHTS[input.severity] * 2 + LIKELIHOOD_WEIGHTS[input.likelihood] + IMPACT_WEIGHTS[input.impact];
+    SEVERITY_WEIGHTS[input.severity] * 2 +
+    LIKELIHOOD_WEIGHTS[input.likelihood] +
+    IMPACT_WEIGHTS[input.impact];
   const rating: RiskRating =
-    score >= 20 ? 'critical' : score >= 15 ? 'high' : score >= 10 ? 'medium' : score >= 5 ? 'low' : 'informational';
-  return { score, rating, severity: input.severity, likelihood: input.likelihood, impact: input.impact };
+    score >= 20
+      ? 'critical'
+      : score >= 15
+        ? 'high'
+        : score >= 10
+          ? 'medium'
+          : score >= 5
+            ? 'low'
+            : 'informational';
+  return {
+    score,
+    rating,
+    severity: input.severity,
+    likelihood: input.likelihood,
+    impact: input.impact,
+  };
 }
 
-export async function verifyEvidence(db: Knex, input: EvidenceVerificationInput): Promise<EvidenceVerificationResult> {
+export async function verifyEvidence(
+  db: Knex,
+  input: EvidenceVerificationInput
+): Promise<EvidenceVerificationResult> {
   let stored: { file_hash?: string | null; expiry_date?: string | null } | null = null;
   if (isLiveDb(db)) {
     stored = await db(ComplianceEvidence.tableName)
@@ -400,12 +482,15 @@ export async function verifyEvidence(db: Knex, input: EvidenceVerificationInput)
 
 export async function assessComplianceMaturity(
   db: Knex,
-  input: MaturityAssessmentInput,
+  input: MaturityAssessmentInput
 ): Promise<MaturityAssessmentResult> {
   const applicable = Math.max(0, input.controlsTested - input.controlsNotApplicable);
   const passRate = applicable === 0 ? 0 : input.controlsPassed / applicable;
   const findingPenalty =
-    input.criticalFindings * 8 + input.highFindings * 2 + input.mediumFindings * 1 + input.lowFindings * 0.5;
+    input.criticalFindings * 8 +
+    input.highFindings * 2 +
+    input.mediumFindings * 1 +
+    input.lowFindings * 0.5;
   const overallScore = Math.max(0, Math.round(passRate * 100 - findingPenalty));
 
   const maturityLevel: MaturityLevel =
@@ -426,8 +511,16 @@ export async function assessComplianceMaturity(
   const previousScore: number | undefined = previous?.overall_score ?? undefined;
   const improvementTrend: 'improving' | 'stable' | 'declining' =
     previousScore === undefined
-      ? overallScore >= 75 ? 'improving' : overallScore >= 50 ? 'stable' : 'declining'
-      : overallScore > previousScore ? 'improving' : overallScore === previousScore ? 'stable' : 'declining';
+      ? overallScore >= 75
+        ? 'improving'
+        : overallScore >= 50
+          ? 'stable'
+          : 'declining'
+      : overallScore > previousScore
+        ? 'improving'
+        : overallScore === previousScore
+          ? 'stable'
+          : 'declining';
 
   const recommendations: string[] = [];
   if (maturityLevel === 'initial') {
@@ -435,7 +528,9 @@ export async function assessComplianceMaturity(
     recommendations.push('Document core control procedures and assign ownership');
   }
   if (input.criticalFindings > 0) {
-    recommendations.push(`Remediate ${input.criticalFindings} critical finding(s) before the next assessment cycle`);
+    recommendations.push(
+      `Remediate ${input.criticalFindings} critical finding(s) before the next assessment cycle`
+    );
   }
   if (maturityLevel !== 'initial' && overallScore < 75) {
     recommendations.push('Increase control pass rate through automated evidence collection');
@@ -455,7 +550,10 @@ export async function assessComplianceMaturity(
   };
 }
 
-export async function trackRemediations(db: Knex, input: RemediationTrackingInput): Promise<RemediationTrackingResult> {
+export async function trackRemediations(
+  db: Knex,
+  input: RemediationTrackingInput
+): Promise<RemediationTrackingResult> {
   interface RemediationRow {
     remediation_no: string;
     status: string;
@@ -468,7 +566,7 @@ export async function trackRemediations(db: Knex, input: RemediationTrackingInpu
   const rows: RemediationRow[] = isLiveDb(db)
     ? await db(ComplianceRemediation.tableName)
         .where({ company_id: input.companyId })
-        .modify(builder => {
+        .modify((builder) => {
           if (input.periodStart) builder.where('start_date', '>=', input.periodStart);
           if (input.periodEnd) builder.where('target_completion_date', '<=', input.periodEnd);
         })
@@ -477,21 +575,21 @@ export async function trackRemediations(db: Knex, input: RemediationTrackingInpu
   const now = Date.now();
   const overdueRemediations = rows
     .filter(
-      row =>
+      (row) =>
         row.target_completion_date &&
         new Date(row.target_completion_date).getTime() < now &&
         row.status !== 'completed' &&
-        row.status !== 'verified',
+        row.status !== 'verified'
     )
-    .map(row => ({
+    .map((row) => ({
       remediationId: row.remediation_no,
       daysOverdue: Math.floor((now - new Date(row.target_completion_date!).getTime()) / DAY_MS),
     }));
 
   const escalationThresholdDays = input.escalationThresholdDays ?? 30;
   const escalationAlerts: EscalationAlert[] = overdueRemediations
-    .filter(entry => entry.daysOverdue > escalationThresholdDays)
-    .map(entry => ({
+    .filter((entry) => entry.daysOverdue > escalationThresholdDays)
+    .map((entry) => ({
       remediationId: entry.remediationId,
       severity: entry.daysOverdue > escalationThresholdDays * 2 ? 'critical' : 'high',
       message: `Remediation ${entry.remediationId} is ${entry.daysOverdue} days overdue (threshold ${escalationThresholdDays})`,
@@ -501,40 +599,57 @@ export async function trackRemediations(db: Knex, input: RemediationTrackingInpu
     totalRemediations: rows.length,
     overdueRemediations,
     escalationAlerts,
-    byStatus: REMEDIATION_STATUSES.map(status => ({
+    byStatus: REMEDIATION_STATUSES.map((status) => ({
       status,
-      count: rows.filter(row => row.status === status).length,
+      count: rows.filter((row) => row.status === status).length,
     })),
   };
 
   if (input.includeMetrics === true) {
-    const resolved = rows.filter(row => (row.status === 'completed' || row.status === 'verified') && row.actual_completion_date);
-    const resolveDays = resolved.map(row => {
-      const start = row.start_date ? new Date(row.start_date).getTime() : new Date((row.created_at ?? row.actual_completion_date)!).getTime();
+    const resolved = rows.filter(
+      (row) =>
+        (row.status === 'completed' || row.status === 'verified') && row.actual_completion_date
+    );
+    const resolveDays = resolved.map((row) => {
+      const start = row.start_date
+        ? new Date(row.start_date).getTime()
+        : new Date((row.created_at ?? row.actual_completion_date)!).getTime();
       return (new Date(row.actual_completion_date!).getTime() - start) / DAY_MS;
     });
     const periodMonths =
       input.periodStart && input.periodEnd
-        ? Math.max(1, (new Date(input.periodEnd).getTime() - new Date(input.periodStart).getTime()) / (30 * DAY_MS))
+        ? Math.max(
+            1,
+            (new Date(input.periodEnd).getTime() - new Date(input.periodStart).getTime()) /
+              (30 * DAY_MS)
+          )
         : 1;
     result.velocity = resolved.length / periodMonths;
     result.averageTimeToResolve =
-      resolveDays.length === 0 ? 0 : resolveDays.reduce((sum, days) => sum + days, 0) / resolveDays.length;
+      resolveDays.length === 0
+        ? 0
+        : resolveDays.reduce((sum, days) => sum + days, 0) / resolveDays.length;
     result.agingBuckets = {
-      under30Days: overdueRemediations.filter(entry => entry.daysOverdue < 30).length,
-      days30to60: overdueRemediations.filter(entry => entry.daysOverdue >= 30 && entry.daysOverdue < 60).length,
-      days60to90: overdueRemediations.filter(entry => entry.daysOverdue >= 60 && entry.daysOverdue < 90).length,
-      over90Days: overdueRemediations.filter(entry => entry.daysOverdue >= 90).length,
+      under30Days: overdueRemediations.filter((entry) => entry.daysOverdue < 30).length,
+      days30to60: overdueRemediations.filter(
+        (entry) => entry.daysOverdue >= 30 && entry.daysOverdue < 60
+      ).length,
+      days60to90: overdueRemediations.filter(
+        (entry) => entry.daysOverdue >= 60 && entry.daysOverdue < 90
+      ).length,
+      over90Days: overdueRemediations.filter((entry) => entry.daysOverdue >= 90).length,
     };
-    result.byPriority = REMEDIATION_PRIORITIES.map(priority => ({
+    result.byPriority = REMEDIATION_PRIORITIES.map((priority) => ({
       priority,
-      count: rows.filter(row => row.priority === priority).length,
+      count: rows.filter((row) => row.priority === priority).length,
     }));
   }
 
   if (input.includeStale === true) {
     const staleThresholdDays = input.staleThresholdDays ?? 60;
-    result.staleRemediations = overdueRemediations.filter(entry => entry.daysOverdue > staleThresholdDays);
+    result.staleRemediations = overdueRemediations.filter(
+      (entry) => entry.daysOverdue > staleThresholdDays
+    );
   }
 
   return result;

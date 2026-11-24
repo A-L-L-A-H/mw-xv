@@ -26,7 +26,8 @@ export async function run(
     return { ok: false, error: 'post_social requires a non-empty body' };
   }
 
-  const inserted = await ctx.db('post_queue')
+  const inserted = await ctx
+    .db('post_queue')
     .insert({
       company_id: ctx.companyId,
       account_id: accountId,

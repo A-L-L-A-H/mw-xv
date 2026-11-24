@@ -52,7 +52,17 @@ describe('evaluateDsl comparisons', () => {
 
   it('supports every registered op', () => {
     expect(AUTOMATION_DSL_OPS).toEqual([
-      'eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'nin', 'contains', 'exists', 'regex',
+      'eq',
+      'ne',
+      'gt',
+      'gte',
+      'lt',
+      'lte',
+      'in',
+      'nin',
+      'contains',
+      'exists',
+      'regex',
     ]);
   });
 
@@ -75,7 +85,9 @@ describe('evaluateDsl comparisons', () => {
   });
 
   it('in / nin require array values', () => {
-    expect(evaluateDsl({ op: 'in', path: 'tier', value: ['hot', 'warm'] }, payload).matched).toBe(true);
+    expect(evaluateDsl({ op: 'in', path: 'tier', value: ['hot', 'warm'] }, payload).matched).toBe(
+      true
+    );
     expect(evaluateDsl({ op: 'nin', path: 'tier', value: ['cold'] }, payload).matched).toBe(true);
     expect(evaluateDsl({ op: 'in', path: 'tier', value: ['cold'] }, payload).matched).toBe(false);
     expect(evaluateDsl({ op: 'in', path: 'tier', value: 'hot' }, payload).matched).toBe(false);
@@ -85,13 +97,19 @@ describe('evaluateDsl comparisons', () => {
   it('contains works on strings and arrays', () => {
     expect(evaluateDsl({ op: 'contains', path: 'tier', value: 'ot' }, payload).matched).toBe(true);
     expect(evaluateDsl({ op: 'contains', path: 'tags', value: 'vip' }, payload).matched).toBe(true);
-    expect(evaluateDsl({ op: 'contains', path: 'tags', value: 'missing' }, payload).matched).toBe(false);
+    expect(evaluateDsl({ op: 'contains', path: 'tags', value: 'missing' }, payload).matched).toBe(
+      false
+    );
   });
 
   it('exists honours expected flag including null values', () => {
     expect(evaluateDsl({ op: 'exists', path: 'tier', value: true }, payload).matched).toBe(true);
-    expect(evaluateDsl({ op: 'exists', path: 'missing', value: true }, payload).matched).toBe(false);
-    expect(evaluateDsl({ op: 'exists', path: 'missing', value: false }, payload).matched).toBe(true);
+    expect(evaluateDsl({ op: 'exists', path: 'missing', value: true }, payload).matched).toBe(
+      false
+    );
+    expect(evaluateDsl({ op: 'exists', path: 'missing', value: false }, payload).matched).toBe(
+      true
+    );
     expect(evaluateDsl({ op: 'exists', path: 'owner', value: true }, payload).matched).toBe(true);
   });
 

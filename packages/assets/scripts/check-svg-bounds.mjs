@@ -34,8 +34,7 @@ const intentionalBleed = new Map([
     'environments/moon-city-prop-wires.svg',
     {
       elements: ['mw-environments-moon-city-prop-wires-cables'],
-      reason:
-        'overhead utility cable curves intentionally anchor past the horizontal canvas edges',
+      reason: 'overhead utility cable curves intentionally anchor past the horizontal canvas edges',
     },
   ],
   [

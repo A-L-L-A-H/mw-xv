@@ -106,7 +106,6 @@ export function validateResearchSuggestionEnvelope(value: unknown) {
   return validateSchema(value);
 }
 
-
 /**
  * Validate model output and re-resolve every cited source span and duplicate link against trusted
  * local state. This contract does not authorize sources: route-level allowlists remain mandatory.

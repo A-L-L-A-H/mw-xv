@@ -425,7 +425,10 @@ export function DashboardPage() {
             {isAdmin ? (
               auditsLoading ? (
                 <div className="space-y-2">
-                  <Skeleton label="Loading recent audit records" className="h-12 border-2 border-ink/20 bg-card" />
+                  <Skeleton
+                    label="Loading recent audit records"
+                    className="h-12 border-2 border-ink/20 bg-card"
+                  />
                   <Skeleton className="h-12 border-2 border-ink/20 bg-card" />
                 </div>
               ) : !recentAudits?.records || recentAudits.records.length === 0 ? (
@@ -496,7 +499,10 @@ export function DashboardPage() {
                 </div>
               )
             ) : activitiesLoading ? (
-              <Skeleton label="Loading planned activities" className="h-12 border-2 border-ink/20 bg-card" />
+              <Skeleton
+                label="Loading planned activities"
+                className="h-12 border-2 border-ink/20 bg-card"
+              />
             ) : !recentActivities?.records || recentActivities.records.length === 0 ? (
               <EmptyState
                 illustration="no-activity"
@@ -695,7 +701,10 @@ export function DashboardPage() {
                 </div>
 
                 {cronsState === 'loading' ? (
-                  <Skeleton label="Loading scheduled crons" className="h-14 border-2 border-ink/20 bg-card" />
+                  <Skeleton
+                    label="Loading scheduled crons"
+                    className="h-14 border-2 border-ink/20 bg-card"
+                  />
                 ) : cronsState === 'error' || cronsState === 'unavailable' ? (
                   <div
                     role="alert"

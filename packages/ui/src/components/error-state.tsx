@@ -49,9 +49,7 @@ export function ErrorState({
       <div className="mw-ui-error-state-illustration" aria-hidden="true">
         <img src={illustration.src} alt="" decoding="async" />
       </div>
-      {code !== undefined && code !== '' ? (
-        <p className="mw-ui-error-state-code">{code}</p>
-      ) : null}
+      {code !== undefined && code !== '' ? <p className="mw-ui-error-state-code">{code}</p> : null}
       <Heading className="mw-ui-error-state-title">{title}</Heading>
       {description ? <p className="mw-ui-error-state-description">{description}</p> : null}
       {primaryAction || onRetry || secondaryAction ? (

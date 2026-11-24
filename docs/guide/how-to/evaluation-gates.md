@@ -19,14 +19,14 @@ pnpm --filter @moonwitness/ai-evaluation check:gates
 
 The JSON report carries these honesty markers:
 
-| Field | Meaning |
-| --- | --- |
-| `mode: "offline-mock"` | Fixture-driven execution only. |
-| `realModelUsed: false` | No model was called; latency, cost and success are synthetic. |
-| `syntheticFixture: true` | Numbers describe the fixture harness, not a real deployment. |
-| `ok` | All checks passed. A failure means the gate evaluator is broken, not that the product regressed. |
-| `checks[].id` | `corpus-provenance`, `fixture-coverage`, `report-digest-shape`, `deterministic-metrics`, `gate-coverage`, `non-agi-claim`, `gate-verdict-consistency`, `deterministic-verdicts`, `ablation-coverage`. |
-| `corpus.reportSha256`, `gates.reportSha256`, `ablation.reportSha256` | SHA-256 of the report body, which embeds a generation timestamp. Compare their **shape**, not their value, across runs. Compare metrics and verdicts for determinism. |
+| Field                                                                | Meaning                                                                                                                                                                                               |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode: "offline-mock"`                                               | Fixture-driven execution only.                                                                                                                                                                        |
+| `realModelUsed: false`                                               | No model was called; latency, cost and success are synthetic.                                                                                                                                         |
+| `syntheticFixture: true`                                             | Numbers describe the fixture harness, not a real deployment.                                                                                                                                          |
+| `ok`                                                                 | All checks passed. A failure means the gate evaluator is broken, not that the product regressed.                                                                                                      |
+| `checks[].id`                                                        | `corpus-provenance`, `fixture-coverage`, `report-digest-shape`, `deterministic-metrics`, `gate-coverage`, `non-agi-claim`, `gate-verdict-consistency`, `deterministic-verdicts`, `ablation-coverage`. |
+| `corpus.reportSha256`, `gates.reportSha256`, `ablation.reportSha256` | SHA-256 of the report body, which embeds a generation timestamp. Compare their **shape**, not their value, across runs. Compare metrics and verdicts for determinism.                                 |
 
 `validateEvaluationReport` is the fail-closed provenance check. It rejects a report with no `sourceSha`, no `fixtureHash`, an empty run set, or `droppedFailedRuns: true`. Keep failed fixtures in the corpus; a baseline that silently drops them is not a baseline.
 
@@ -49,13 +49,13 @@ The Research & Evaluation Lab at `/board/ai/eval-lab` is a read-only view. It ne
 
 `.env.production.example` documents non-secret placeholders only. Never commit filled values. The cloud coding-agent stack requires:
 
-| Variable | Consumer | Purpose |
-| --- | --- | --- |
-| `MW_AI_FREELLM_KEY` | `api`, `jobs-worker` | Unified inference key injected from the FreeLLMAPI encrypted volume. |
-| `ENCRYPTION_KEY` | `freellmapi` | Existing gateway encryption key; never regenerate during migration. |
-| `AGENT_SANDBOX_TOKEN` | `jobs-worker`, `agent-sandbox` | Private RPC authentication. |
-| `FREELLMAPI_DEFAULT_MODEL` | `api`, `jobs-worker` | Operator-selected model discovered from the gateway. |
-| `AI_FREELLMAPI_ORIGIN` | `api`, `jobs-worker` | Origin only, default `http://freellmapi:3001`; no `/v1`, credentials or query. |
+| Variable                   | Consumer                       | Purpose                                                                        |
+| -------------------------- | ------------------------------ | ------------------------------------------------------------------------------ |
+| `MW_AI_FREELLM_KEY`        | `api`, `jobs-worker`           | Unified inference key injected from the FreeLLMAPI encrypted volume.           |
+| `ENCRYPTION_KEY`           | `freellmapi`                   | Existing gateway encryption key; never regenerate during migration.            |
+| `AGENT_SANDBOX_TOKEN`      | `jobs-worker`, `agent-sandbox` | Private RPC authentication.                                                    |
+| `FREELLMAPI_DEFAULT_MODEL` | `api`, `jobs-worker`           | Operator-selected model discovered from the gateway.                           |
+| `AI_FREELLMAPI_ORIGIN`     | `api`, `jobs-worker`           | Origin only, default `http://freellmapi:3001`; no `/v1`, credentials or query. |
 
 The Board service receives none of these. `api`, `jobs-worker`, and `freellmapi` are the only consumers.
 
@@ -107,11 +107,11 @@ This is a read-only static gate (9 checks at the time of writing) covering vendo
 
 ## 4. Interpretation checklist
 
-| Question | Authoritative evidence |
-| --- | --- |
-| Did the gate evaluator run correctly? | `pnpm --filter @moonwitness/ai-evaluation check:gates` exits 0 with `ok: true`. |
-| Did a real model succeed on a task? | A live provider-backed eval run with recorded provenance; **not** the offline gate or Board defaults. |
-| Is production Compose safe to render? | `docker compose -f deploy/compose/docker-compose.production.yml config` with placeholder env, plus the invariant gate. |
-| Are the Board numbers real results? | Only if the summary endpoint supplies provenance and the offline/live run is recorded in an evidence note. Currently: unverified. |
+| Question                              | Authoritative evidence                                                                                                            |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Did the gate evaluator run correctly? | `pnpm --filter @moonwitness/ai-evaluation check:gates` exits 0 with `ok: true`.                                                   |
+| Did a real model succeed on a task?   | A live provider-backed eval run with recorded provenance; **not** the offline gate or Board defaults.                             |
+| Is production Compose safe to render? | `docker compose -f deploy/compose/docker-compose.production.yml config` with placeholder env, plus the invariant gate.            |
+| Are the Board numbers real results?   | Only if the summary endpoint supplies provenance and the offline/live run is recorded in an evidence note. Currently: unverified. |
 
 Escalate to the coordinator when the summary endpoint is static, when Compose contexts resolve under `deploy/compose/`, or when a gate is skipped. Record the exact command and output in `docs/roadmap/evidence/` rather than asserting a PASS from memory.

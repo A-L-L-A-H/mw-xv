@@ -4,10 +4,7 @@
       "id": "riot-alley-hero",
       "staticFallback": "illustrations/riot-universe/backgrounds/bg-riot-street-alley.webp",
       "accessibilityFallback": "illustrations/riot-universe/states/state-welcome.webp",
-      "clips": [
-        "kuro-signal-idle",
-        "kuro-signal-wave"
-      ],
+      "clips": ["kuro-signal-idle", "kuro-signal-wave"],
       "layers": [
         {
           "id": "sky-backdrop",

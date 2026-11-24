@@ -82,12 +82,20 @@ describe('renderDedupeKey', () => {
   });
 
   it('renders unresolvable tokens as empty strings', () => {
-    expect(renderDedupeKey('x:{payload.missing.deep}', {
-      payload: {}, triggerKind: 'manual', triggerRef: 'r',
-    })).toBe('x:');
-    expect(renderDedupeKey('p:{payload}', {
-      payload: { a: 1 }, triggerKind: 'manual', triggerRef: 'r',
-    })).toBe('p:{"a":1}');
+    expect(
+      renderDedupeKey('x:{payload.missing.deep}', {
+        payload: {},
+        triggerKind: 'manual',
+        triggerRef: 'r',
+      })
+    ).toBe('x:');
+    expect(
+      renderDedupeKey('p:{payload}', {
+        payload: { a: 1 },
+        triggerKind: 'manual',
+        triggerRef: 'r',
+      })
+    ).toBe('p:{"a":1}');
   });
 
   it('preserves unmatched braces, empty tokens, and nested opening braces', () => {
@@ -101,9 +109,13 @@ describe('renderDedupeKey', () => {
 
   it('handles adversarially long unmatched brace runs', () => {
     const template = `prefix:${'{'.repeat(50_000)}`;
-    expect(renderDedupeKey(template, {
-      payload: {}, triggerKind: 'manual', triggerRef: 'r',
-    })).toBe(template);
+    expect(
+      renderDedupeKey(template, {
+        payload: {},
+        triggerKind: 'manual',
+        triggerRef: 'r',
+      })
+    ).toBe(template);
   });
 });
 
@@ -204,7 +216,10 @@ describe('fireTrigger', () => {
     });
 
     const report = await fireTrigger(
-      'signal.scored', 'broken-dsl', { score: 1 }, { db, companyId: 7 }
+      'signal.scored',
+      'broken-dsl',
+      { score: 1 },
+      { db, companyId: 7 }
     );
     expect(report.outcomes[0]?.status).toBe('skipped');
     expect(report.outcomes[0]?.error).toContain('Unknown DSL op');
@@ -232,7 +247,9 @@ describe('fireTrigger', () => {
     expect(second.outcomes[0]?.error).toContain('dedupe');
 
     const third = await fireTrigger('signal.scored', 'cooldown', payload, {
-      db, companyId: 7, limit: 5,
+      db,
+      companyId: 7,
+      limit: 5,
     });
     expect(third.outcomes[0]?.status).toBe('skipped');
   });
@@ -248,9 +265,7 @@ describe('fireTrigger', () => {
       is_active: true,
     });
 
-    const report = await fireTrigger(
-      'signal.scored', 'unknown-action', {}, { db, companyId: 7 }
-    );
+    const report = await fireTrigger('signal.scored', 'unknown-action', {}, { db, companyId: 7 });
     expect(report.outcomes[0]?.status).toBe('failed');
     expect(report.outcomes[0]?.error).toContain('unknown action kind');
 
@@ -280,7 +295,10 @@ describe('fireTrigger', () => {
     ]);
 
     const report = await fireTrigger(
-      'signal.scored', 'tenant-scope', { recipientId: 3 }, { db, companyId: 7 }
+      'signal.scored',
+      'tenant-scope',
+      { recipientId: 3 },
+      { db, companyId: 7 }
     );
     expect(report.matchedRules).toBe(0);
   });

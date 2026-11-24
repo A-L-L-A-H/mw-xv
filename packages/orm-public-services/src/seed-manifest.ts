@@ -16,7 +16,8 @@ async function seedPublicServices(ctx: SeedContext): Promise<SeedResult> {
     {
       slug: 'trend-radar',
       name: 'Trend Radar',
-      description: 'Real-time signal detection for emerging technology trends. Query with ?topic=ai to get top 10 signals.',
+      description:
+        'Real-time signal detection for emerging technology trends. Query with ?topic=ai to get top 10 signals.',
       kind: 'api' as const,
       handler: 'trend-radar',
       rate_limit: 60,
@@ -38,7 +39,8 @@ async function seedPublicServices(ctx: SeedContext): Promise<SeedResult> {
     {
       slug: 'content-ideas',
       name: 'Content Ideas Generator',
-      description: 'Generates 20 viral-ready content concepts from trend data. Query with ?niche=tech.',
+      description:
+        'Generates 20 viral-ready content concepts from trend data. Query with ?niche=tech.',
       kind: 'api' as const,
       handler: 'content-ideas',
       rate_limit: 20,
@@ -49,7 +51,8 @@ async function seedPublicServices(ctx: SeedContext): Promise<SeedResult> {
     {
       slug: 'hashtags',
       name: 'Hashtag Generator',
-      description: 'Platform-optimized hashtags for maximum reach. Query with ?platform=instagram&topic=design.',
+      description:
+        'Platform-optimized hashtags for maximum reach. Query with ?platform=instagram&topic=design.',
       kind: 'api' as const,
       handler: 'hashtags',
       rate_limit: 50,
@@ -60,7 +63,8 @@ async function seedPublicServices(ctx: SeedContext): Promise<SeedResult> {
     {
       slug: 'portfolio',
       name: 'Portfolio Showcase',
-      description: 'Auto-generated portfolio from factory content assets and income stream highlights.',
+      description:
+        'Auto-generated portfolio from factory content assets and income stream highlights.',
       kind: 'page' as const,
       handler: 'portfolio',
       rate_limit: 100,
@@ -74,11 +78,13 @@ async function seedPublicServices(ctx: SeedContext): Promise<SeedResult> {
     const existing = await db('public_tools').where({ slug: tool.slug }).first();
 
     if (existing) {
-      await db('public_tools').where({ id: existing.id }).update({
-        ...tool,
-        company_id: companyId,
-        updated_at: new Date(),
-      });
+      await db('public_tools')
+        .where({ id: existing.id })
+        .update({
+          ...tool,
+          company_id: companyId,
+          updated_at: new Date(),
+        });
       updated++;
     } else {
       await db('public_tools').insert({

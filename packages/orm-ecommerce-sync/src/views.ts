@@ -33,7 +33,14 @@ export const views = [
         {
           title: 'Payload & Timing',
           columns: 2,
-          fields: ['payload', 'requested_at', 'started_at', 'completed_at', 'retry_count', 'error_message'],
+          fields: [
+            'payload',
+            'requested_at',
+            'started_at',
+            'completed_at',
+            'retry_count',
+            'error_message',
+          ],
         },
       ],
     },
@@ -112,7 +119,17 @@ export const views = [
   defineView(SyncMetric, {
     title: 'Sync Metrics',
     list: {
-      columns: ['date', 'marketplace', 'direction', 'jobs_queued', 'jobs_completed', 'jobs_failed', 'items_processed', 'duration_ms_sum', 'company'],
+      columns: [
+        'date',
+        'marketplace',
+        'direction',
+        'jobs_queued',
+        'jobs_completed',
+        'jobs_failed',
+        'items_processed',
+        'duration_ms_sum',
+        'company',
+      ],
       order: 'date desc, id desc',
     },
     form: {
@@ -120,7 +137,17 @@ export const views = [
         {
           title: 'Daily Metric',
           columns: 2,
-          fields: ['date', 'marketplace', 'direction', 'company', 'jobs_queued', 'jobs_completed', 'jobs_failed', 'items_processed', 'duration_ms_sum'],
+          fields: [
+            'date',
+            'marketplace',
+            'direction',
+            'company',
+            'jobs_queued',
+            'jobs_completed',
+            'jobs_failed',
+            'items_processed',
+            'duration_ms_sum',
+          ],
         },
       ],
     },

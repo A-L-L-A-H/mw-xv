@@ -147,7 +147,11 @@ describe('signalHttpPlugin (manifest.httpPlugins)', () => {
     const harness = createHarness();
     await harness.init();
 
-    const res = await harness.invokePost('/api/signal/score', [1, 2, 3], { userId: 1, role: 'user', companyId: 1 });
+    const res = await harness.invokePost('/api/signal/score', [1, 2, 3], {
+      userId: 1,
+      role: 'user',
+      companyId: 1,
+    });
     expect(res.statusCode).toBe(400);
   });
 
@@ -172,7 +176,13 @@ describe('signalHttpPlugin (manifest.httpPlugins)', () => {
 
     const bad = await harness.invokePost(
       '/api/signal/score',
-      { keywordWeight: 1, recencyDecay: 0, sourceAuthority: 0, velocity: 0, weights: { keywordWeight: 'big' } },
+      {
+        keywordWeight: 1,
+        recencyDecay: 0,
+        sourceAuthority: 0,
+        velocity: 0,
+        weights: { keywordWeight: 'big' },
+      },
       { userId: 1, role: 'user', companyId: 1 }
     );
     expect(bad.statusCode).toBe(400);

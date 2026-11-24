@@ -70,21 +70,30 @@ describe('notify action', () => {
     const row = firstInsertFor(inserts, 'outbox_events');
     expect(row.event_type).toBe('notification.deliver');
     expect(row.company_id).toBe(7);
-    expect(JSON.parse(String(row.payload))).toMatchObject({ recipientId: 5, templateCode: 'lead.hot' });
+    expect(JSON.parse(String(row.payload))).toMatchObject({
+      recipientId: 5,
+      templateCode: 'lead.hot',
+    });
   });
 
   it('rejects missing recipient and template', async () => {
     const { db } = createDb();
     const noRecipient = await AUTOMATION_ACTIONS.notify(
-      createContext(db), { templateCode: 'x' }, makeInput({})
+      createContext(db),
+      { templateCode: 'x' },
+      makeInput({})
     );
     expect(noRecipient.ok).toBe(false);
     const noTemplate = await AUTOMATION_ACTIONS.notify(
-      createContext(db), {}, makeInput({ recipientId: 5 })
+      createContext(db),
+      {},
+      makeInput({ recipientId: 5 })
     );
     expect(noTemplate.ok).toBe(false);
     const badSeverity = await AUTOMATION_ACTIONS.notify(
-      createContext(db), { templateCode: 'x', severity: 'loud' }, makeInput({ recipientId: 5 })
+      createContext(db),
+      { templateCode: 'x', severity: 'loud' },
+      makeInput({ recipientId: 5 })
     );
     expect(badSeverity.ok).toBe(false);
   });
@@ -111,11 +120,15 @@ describe('enqueue_job action', () => {
   it('rejects invalid handler and non-object payload', async () => {
     const { db } = createDb();
     const badHandler = await AUTOMATION_ACTIONS.enqueue_job(
-      createContext(db), { handler: 'BAD HANDLER!' }, makeInput({})
+      createContext(db),
+      { handler: 'BAD HANDLER!' },
+      makeInput({})
     );
     expect(badHandler.ok).toBe(false);
     const badPayload = await AUTOMATION_ACTIONS.enqueue_job(
-      createContext(db), { handler: 'report.build', payload: 'scalar' }, makeInput({})
+      createContext(db),
+      { handler: 'report.build', payload: 'scalar' },
+      makeInput({})
     );
     expect(badPayload.ok).toBe(false);
   });
@@ -142,11 +155,51 @@ describe('create_task action', () => {
   it('rejects invalid project/stage/title/code/priority', async () => {
     const { db } = createDb();
     const base = { projectId: 1, stageId: 2, title: 't', code: 'T1' };
-    expect((await AUTOMATION_ACTIONS.create_task(createContext(db), { ...base, projectId: 0 }, makeInput({}))).ok).toBe(false);
-    expect((await AUTOMATION_ACTIONS.create_task(createContext(db), { ...base, stageId: -1 }, makeInput({}))).ok).toBe(false);
-    expect((await AUTOMATION_ACTIONS.create_task(createContext(db), { ...base, title: '  ' }, makeInput({}))).ok).toBe(false);
-    expect((await AUTOMATION_ACTIONS.create_task(createContext(db), { ...base, code: '1 bad' }, makeInput({}))).ok).toBe(false);
-    expect((await AUTOMATION_ACTIONS.create_task(createContext(db), { ...base, priority: 'asap' }, makeInput({}))).ok).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.create_task(
+          createContext(db),
+          { ...base, projectId: 0 },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.create_task(
+          createContext(db),
+          { ...base, stageId: -1 },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.create_task(
+          createContext(db),
+          { ...base, title: '  ' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.create_task(
+          createContext(db),
+          { ...base, code: '1 bad' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.create_task(
+          createContext(db),
+          { ...base, priority: 'asap' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
   });
 });
 
@@ -171,8 +224,24 @@ describe('record_income action', () => {
 
   it('rejects non-positive amounts and malformed currency', async () => {
     const { db } = createDb();
-    expect((await AUTOMATION_ACTIONS.record_income(createContext(db), { amountMinor: 0, currency: 'IDR' }, makeInput({}))).ok).toBe(false);
-    expect((await AUTOMATION_ACTIONS.record_income(createContext(db), { amountMinor: 10, currency: 'idr' }, makeInput({}))).ok).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.record_income(
+          createContext(db),
+          { amountMinor: 0, currency: 'IDR' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.record_income(
+          createContext(db),
+          { amountMinor: 10, currency: 'idr' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
   });
 });
 
@@ -195,8 +264,24 @@ describe('publish_content action', () => {
 
   it('rejects invalid contentId and channel', async () => {
     const { db } = createDb();
-    expect((await AUTOMATION_ACTIONS.publish_content(createContext(db), { contentId: 0, channel: 'x' }, makeInput({}))).ok).toBe(false);
-    expect((await AUTOMATION_ACTIONS.publish_content(createContext(db), { contentId: 9, channel: '  ' }, makeInput({}))).ok).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.publish_content(
+          createContext(db),
+          { contentId: 0, channel: 'x' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.publish_content(
+          createContext(db),
+          { contentId: 9, channel: '  ' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
   });
 });
 
@@ -218,8 +303,24 @@ describe('post_social action', () => {
 
   it('rejects invalid accountId and empty body', async () => {
     const { db } = createDb();
-    expect((await AUTOMATION_ACTIONS.post_social(createContext(db), { accountId: 0, body: 'x' }, makeInput({}))).ok).toBe(false);
-    expect((await AUTOMATION_ACTIONS.post_social(createContext(db), { accountId: 3, body: '' }, makeInput({}))).ok).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.post_social(
+          createContext(db),
+          { accountId: 0, body: 'x' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.post_social(
+          createContext(db),
+          { accountId: 3, body: '' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
   });
 });
 
@@ -239,7 +340,9 @@ describe('run_bot action', () => {
 
   it('rejects invalid botId', async () => {
     const { db } = createDb();
-    expect((await AUTOMATION_ACTIONS.run_bot(createContext(db), { botId: 'x' }, makeInput({}))).ok).toBe(false);
+    expect(
+      (await AUTOMATION_ACTIONS.run_bot(createContext(db), { botId: 'x' }, makeInput({}))).ok
+    ).toBe(false);
   });
 });
 
@@ -259,8 +362,24 @@ describe('sync_ecommerce action', () => {
 
   it('rejects invalid marketplace and direction', async () => {
     const { db } = createDb();
-    expect((await AUTOMATION_ACTIONS.sync_ecommerce(createContext(db), { marketplace: '' }, makeInput({}))).ok).toBe(false);
-    expect((await AUTOMATION_ACTIONS.sync_ecommerce(createContext(db), { marketplace: 'x', direction: 'sideways' }, makeInput({}))).ok).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.sync_ecommerce(
+          createContext(db),
+          { marketplace: '' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.sync_ecommerce(
+          createContext(db),
+          { marketplace: 'x', direction: 'sideways' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
   });
 });
 
@@ -274,13 +393,25 @@ describe('run_public_tool action', () => {
     );
     expect(result.ok).toBe(true);
     const row = firstInsertFor(inserts, 'public_tool_invocations');
-    expect(row).toMatchObject({ tool_name: 'weather.lookup', status: 'queued', source_rule_id: 42 });
+    expect(row).toMatchObject({
+      tool_name: 'weather.lookup',
+      status: 'queued',
+      source_rule_id: 42,
+    });
     expect(JSON.parse(String(row.payload))).toEqual({ city: 'Jakarta' });
   });
 
   it('rejects invalid tool names', async () => {
     const { db } = createDb();
-    expect((await AUTOMATION_ACTIONS.run_public_tool(createContext(db), { tool: 'BAD NAME' }, makeInput({}))).ok).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.run_public_tool(
+          createContext(db),
+          { tool: 'BAD NAME' },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
   });
 });
 
@@ -305,7 +436,17 @@ describe('run_agent action', () => {
 
   it('rejects invalid agentId and workContractId', async () => {
     const { db } = createDb();
-    expect((await AUTOMATION_ACTIONS.run_agent(createContext(db), { agentId: 0, workContractId: 1 }, makeInput({}))).ok).toBe(false);
-    expect((await AUTOMATION_ACTIONS.run_agent(createContext(db), { agentId: 1 }, makeInput({}))).ok).toBe(false);
+    expect(
+      (
+        await AUTOMATION_ACTIONS.run_agent(
+          createContext(db),
+          { agentId: 0, workContractId: 1 },
+          makeInput({})
+        )
+      ).ok
+    ).toBe(false);
+    expect(
+      (await AUTOMATION_ACTIONS.run_agent(createContext(db), { agentId: 1 }, makeInput({}))).ok
+    ).toBe(false);
   });
 });

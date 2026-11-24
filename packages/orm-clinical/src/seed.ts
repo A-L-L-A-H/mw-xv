@@ -52,7 +52,9 @@ export const clinicalSeedManifest: AddonSeedManifest & { options?: ClinicalSeedO
     if (existingPatient) updated += 1;
     else inserted += 1;
 
-    const existingEncounter = await Encounter.query(ctx.db).findOne({ encounter_no: 'ENC-SEED-0001' });
+    const existingEncounter = await Encounter.query(ctx.db).findOne({
+      encounter_no: 'ENC-SEED-0001',
+    });
     const encounter =
       existingEncounter ??
       (await Encounter.query(ctx.db).insertAndFetch({
@@ -73,7 +75,8 @@ export const clinicalSeedManifest: AddonSeedManifest & { options?: ClinicalSeedO
         code_system: 'ICD-10',
         code: 'E11.9',
         diagnosis_name: 'Type 2 diabetes mellitus without complications',
-        status: 'confirmed',        recorded_at: '2026-01-01T08:30:00.000Z',
+        status: 'confirmed',
+        recorded_at: '2026-01-01T08:30:00.000Z',
       });
       await MedicationOrder.query(ctx.db).insert({
         encounter_id: encounter.id,

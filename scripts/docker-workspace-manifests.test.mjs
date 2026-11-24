@@ -80,10 +80,7 @@ test('API deployment has an isolated stage so it cannot mutate the Board build w
   const boardBuildStage = dockerfile.slice(dockerfile.indexOf('\nFROM build AS board-build'));
 
   assert.doesNotMatch(buildStage, /\/deploy\/api/u);
-  assert.match(
-    apiDeployStage,
-    /FROM build AS api-deploy[\s\S]*\/deploy\/api/u
-  );
+  assert.match(apiDeployStage, /FROM build AS api-deploy[\s\S]*\/deploy\/api/u);
   assert.match(dockerfile, /COPY --from=api-deploy --chown=node:node \/deploy\/api/u);
   assert.match(boardBuildStage, /FROM build AS board-build/u);
   assert.match(apiDeployStage, /node scripts\/prepare-api-runtime-assets\.mjs \/deploy\/api/u);

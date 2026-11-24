@@ -7,7 +7,10 @@ export const requestSeedManifest: AddonSeedManifest = {
   seed: async (ctx: SeedContext): Promise<SeedResult> => {
     const result = await seedRequestInitialData(ctx.db);
     return {
-      inserted: (result.insertedCurrencies ?? 0) + (result.insertedDefinitions ?? 0) + (result.insertedRequests ?? 0),
+      inserted:
+        (result.insertedCurrencies ?? 0) +
+        (result.insertedDefinitions ?? 0) +
+        (result.insertedRequests ?? 0),
       updated: 0,
       skipped: 0,
     };

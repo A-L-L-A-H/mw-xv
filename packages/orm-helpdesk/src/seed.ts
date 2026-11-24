@@ -180,15 +180,17 @@ export async function seedHelpdesk(ctx: SeedContext): Promise<SeedResult> {
       .first<{ id: number }>();
 
     if (existing) {
-      await db('helpdesk_escalation_rules').where({ id: existing.id }).update({
-        sla_policy_id: slaPolicyId,
-        escalate_after_minutes: rule.escalate_after_minutes,
-        escalate_to: rule.escalate_to,
-        oncall_rotation: rule.oncall_rotation ?? null,
-        max_escalations: rule.max_escalations,
-        is_active: rule.is_active,
-        write_date: new Date(),
-      });
+      await db('helpdesk_escalation_rules')
+        .where({ id: existing.id })
+        .update({
+          sla_policy_id: slaPolicyId,
+          escalate_after_minutes: rule.escalate_after_minutes,
+          escalate_to: rule.escalate_to,
+          oncall_rotation: rule.oncall_rotation ?? null,
+          max_escalations: rule.max_escalations,
+          is_active: rule.is_active,
+          write_date: new Date(),
+        });
       updated++;
     } else {
       await db('helpdesk_escalation_rules').insert({

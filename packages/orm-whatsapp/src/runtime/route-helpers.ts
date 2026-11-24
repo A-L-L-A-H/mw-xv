@@ -90,7 +90,10 @@ export async function parseOutgoingUpload(
 ): Promise<OutgoingUpload> {
   const multipartReq = req as MultipartCapableRequest;
   const fields: Record<string, string> = {};
-  if (multipartReq.isMultipart?.() === false && req.headers['content-type']?.includes('application/json')) {
+  if (
+    multipartReq.isMultipart?.() === false &&
+    req.headers['content-type']?.includes('application/json')
+  ) {
     const body = isRecord(req.body) ? req.body : null;
     if (
       !body ||
@@ -139,7 +142,9 @@ export async function parseOutgoingUpload(
     if (!multipartReq.parts) {
       throw Object.assign(new Error('Multipart parser is not registered'), { statusCode: 500 });
     }
-    for await (const part of multipartReq.parts({ limits: { fileSize: MAX_ATTACHMENT_BYTES, files: 1 } })) {
+    for await (const part of multipartReq.parts({
+      limits: { fileSize: MAX_ATTACHMENT_BYTES, files: 1 },
+    })) {
       if (part.type === 'field') {
         if (
           !['content', 'reply_to_message_id', ...extraFields].includes(part.fieldname) ||

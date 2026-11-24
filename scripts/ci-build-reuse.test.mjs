@@ -86,10 +86,7 @@ test('CI reuses the validated workspace build only inside its quality job', () =
 
 test('docs portal browser tests build the portal once in Playwright webServer', () => {
   assert.equal(rootManifest.scripts['test:docs-portal'], 'bun --filter @moonwitness/docs test');
-  assert.match(
-    docsPlaywrightConfig,
-    /portal:build && bunx --cwd apps\/docs vite preview/u
-  );
+  assert.match(docsPlaywrightConfig, /portal:build && bunx --cwd apps\/docs vite preview/u);
   assert.match(
     rootManifest.scripts['docs:build:built'],
     /docs:check:built[\s\S]*portal:build:built/u
@@ -129,8 +126,14 @@ test('built variants consume existing package output without invoking package bu
   const releaseVerification =
     releaseWorkflow.split('  verify:\n')[1]?.split('\n  publish:\n')[0] ?? '';
   assert.match(releaseVerification, /run: bun run typecheck[\s\S]*run: bun run docs:check:built/u);
-  assert.match(releaseVerification, /run: bun run docs:check:built[\s\S]*run: bun run test:unit:built/u);
-  assert.match(releaseVerification, /run: bun run typecheck[\s\S]*run: bun run test:integration:built/u);
+  assert.match(
+    releaseVerification,
+    /run: bun run docs:check:built[\s\S]*run: bun run test:unit:built/u
+  );
+  assert.match(
+    releaseVerification,
+    /run: bun run typecheck[\s\S]*run: bun run test:integration:built/u
+  );
 });
 
 test('built PostgreSQL mode is recognized and still requires an explicit test database', () => {

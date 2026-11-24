@@ -1,8 +1,4 @@
-import type {
-  AddonSeedManifest,
-  SeedContext,
-  SeedResult,
-} from '@moonwitness/orm-base';
+import type { AddonSeedManifest, SeedContext, SeedResult } from '@moonwitness/orm-base';
 import { Product } from './models/index.js';
 
 export const CATALOG_SEED_VERSION = '1.0.0';
@@ -34,8 +30,7 @@ export const SEED_PRODUCTS = [
     key: 'catalog.product_orm_video_course',
     sku: 'DIG-COURSE-0001',
     name: 'Query Planning Masterclass Video Course',
-    description:
-      'Recorded course with hands-on query planner walkthroughs and indexing labs.',
+    description: 'Recorded course with hands-on query planner walkthroughs and indexing labs.',
     kind: 'digital',
     price_minor: 12900,
     currency: 'USD',

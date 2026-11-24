@@ -8,7 +8,11 @@ export class SandboxError extends Error {
   constructor(
     code: WorkspaceRpcErrorCode,
     message: string,
-    options: { readonly retryable?: boolean; readonly statusCode?: number; readonly cause?: unknown } = {}
+    options: {
+      readonly retryable?: boolean;
+      readonly statusCode?: number;
+      readonly cause?: unknown;
+    } = {}
   ) {
     super(message, options.cause === undefined ? undefined : { cause: options.cause });
     this.name = 'SandboxError';

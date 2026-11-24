@@ -17,7 +17,13 @@ export const INCOME_STREAM_STATUSES = ['idea', 'building', 'live', 'paused', 'de
 
 export const INCOME_ENTRY_KINDS = ['revenue', 'cost', 'payout', 'refund', 'fee', 'tax'] as const;
 
-export const INCOME_ALLOCATION_TARGETS = ['reinvest', 'savings', 'charity', 'personal', 'tax'] as const;
+export const INCOME_ALLOCATION_TARGETS = [
+  'reinvest',
+  'savings',
+  'charity',
+  'personal',
+  'tax',
+] as const;
 
 export type IncomeStreamKind = (typeof INCOME_STREAM_KINDS)[number];
 export type IncomeStreamStatus = (typeof INCOME_STREAM_STATUSES)[number];
@@ -30,9 +36,23 @@ export const IncomeStream = defineModel('income.stream', {
   fields: {
     kind: fields.enum(INCOME_STREAM_KINDS, { required: true, label: 'Stream Kind' }),
     platform: fields.string({ label: 'Platform' }),
-    status: fields.enum(INCOME_STREAM_STATUSES, { required: true, default: 'idea', label: 'Status' }),
-    goal_monthly_minor: fields.integer({ required: true, default: 0, label: 'Monthly Goal (minor units)' }),
-    currency: fields.string({ required: true, default: 'USD', minLength: 3, maxLength: 3, label: 'Currency' }),
+    status: fields.enum(INCOME_STREAM_STATUSES, {
+      required: true,
+      default: 'idea',
+      label: 'Status',
+    }),
+    goal_monthly_minor: fields.integer({
+      required: true,
+      default: 0,
+      label: 'Monthly Goal (minor units)',
+    }),
+    currency: fields.string({
+      required: true,
+      default: 'USD',
+      minLength: 3,
+      maxLength: 3,
+      label: 'Currency',
+    }),
     tags: fields.json({ default: {} }),
     company: fields.belongsTo(Company, { required: true, label: 'Company' }),
     created_at: fields.datetime(),
@@ -63,7 +83,11 @@ export const IncomeMetric = defineModel('income.metric', {
   order: 'period desc',
   fields: {
     stream: fields.belongsTo(IncomeStream, { required: true, label: 'Income Stream' }),
-    period: fields.string({ required: true, pattern: '^\\d{4}-\\d{2}$', label: 'Period (YYYY-MM)' }),
+    period: fields.string({
+      required: true,
+      pattern: '^\\d{4}-\\d{2}$',
+      label: 'Period (YYYY-MM)',
+    }),
     revenue_minor: fields.integer({ required: true, default: 0, label: 'Revenue (minor units)' }),
     cost_minor: fields.integer({ required: true, default: 0, label: 'Cost (minor units)' }),
     net_minor: fields.integer({ required: true, default: 0, label: 'Net (minor units)' }),
@@ -84,7 +108,11 @@ export const IncomeExperiment = defineModel('income.experiment', {
     stream: fields.belongsTo(IncomeStream, { required: true, label: 'Income Stream' }),
     hypothesis: fields.text({ required: true, label: 'Hypothesis' }),
     variant_config: fields.json({ required: true, label: 'Variant Configuration' }),
-    status: fields.enum(['running', 'won', 'lost', 'dropped'], { required: true, default: 'running', label: 'Status' }),
+    status: fields.enum(['running', 'won', 'lost', 'dropped'], {
+      required: true,
+      default: 'running',
+      label: 'Status',
+    }),
     success_metric: fields.string({ required: true, label: 'Success Metric' }),
     result_note: fields.text({ label: 'Result Note' }),
     concluded_at: fields.datetime({ label: 'Concluded At' }),

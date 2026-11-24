@@ -45,7 +45,15 @@ export const views = [
         {
           title: 'Device',
           columns: 2,
-          fields: ['device_id', 'device_type', 'name', 'status', 'location', 'provisioned_at', 'external_ref'],
+          fields: [
+            'device_id',
+            'device_type',
+            'name',
+            'status',
+            'location',
+            'provisioned_at',
+            'external_ref',
+          ],
         },
       ],
     },
@@ -66,7 +74,15 @@ export const views = [
         {
           title: 'Sensor',
           columns: 2,
-          fields: ['sensor_key', 'device', 'name', 'data_type', 'unit', 'unit_category', 'external_ref'],
+          fields: [
+            'sensor_key',
+            'device',
+            'name',
+            'data_type',
+            'unit',
+            'unit_category',
+            'external_ref',
+          ],
         },
         {
           title: 'Thresholds',
@@ -151,7 +167,14 @@ export const views = [
   defineView(Calibration, {
     title: 'Calibrations',
     list: {
-      columns: ['calibration_id', 'sensor', 'device', 'calibration_date', 'next_calibration_date', 'status'],
+      columns: [
+        'calibration_id',
+        'sensor',
+        'device',
+        'calibration_date',
+        'next_calibration_date',
+        'status',
+      ],
       order: 'calibration_date desc, id desc',
     },
     form: {
@@ -191,7 +214,15 @@ export const views = [
         {
           title: 'Firmware',
           columns: 2,
-          fields: ['firmware_id', 'device_type', 'version', 'release_date', 'status', 'changelog', 'external_ref'],
+          fields: [
+            'firmware_id',
+            'device_type',
+            'version',
+            'release_date',
+            'status',
+            'changelog',
+            'external_ref',
+          ],
         },
       ],
     },
@@ -233,7 +264,16 @@ export const views = [
         {
           title: 'Rule',
           columns: 2,
-          fields: ['rule_id', 'sensor', 'device', 'name', 'condition', 'severity', 'enabled', 'external_ref'],
+          fields: [
+            'rule_id',
+            'sensor',
+            'device',
+            'name',
+            'condition',
+            'severity',
+            'enabled',
+            'external_ref',
+          ],
         },
       ],
     },

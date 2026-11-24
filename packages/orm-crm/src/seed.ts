@@ -1,6 +1,11 @@
 import type { Knex } from 'knex';
 import { Lead, LeadStage, LeadTagLink, Opportunity } from './models/index.js';
-import { resolveInsertedId, type AddonSeedManifest, type SeedContext, type SeedResult } from '@moonwitness/orm-base';
+import {
+  resolveInsertedId,
+  type AddonSeedManifest,
+  type SeedContext,
+  type SeedResult,
+} from '@moonwitness/orm-base';
 
 export const CRM_SEED_VERSION = '1.0.0';
 
@@ -71,12 +76,54 @@ export interface SeedCrmInitialDataOptions {
 }
 
 const CRM_STAGES: readonly CrmStageSeed[] = [
-  { id: 'crm-stage-new', name: 'New Prospect', sequence: 10, is_won: false, is_lost: false, color: '#64748B' },
-  { id: 'crm-stage-qualified', name: 'Qualified Account', sequence: 20, is_won: false, is_lost: false, color: '#3B82F6' },
-  { id: 'crm-stage-proposal', name: 'Proposal Submitted', sequence: 30, is_won: false, is_lost: false, color: '#0EA5E9' },
-  { id: 'crm-stage-negotiation', name: 'Contract Negotiation', sequence: 40, is_won: false, is_lost: false, color: '#F59E0B' },
-  { id: 'crm-stage-won', name: 'Closed Won', sequence: 90, is_won: true, is_lost: false, color: '#22C55E' },
-  { id: 'crm-stage-lost', name: 'Closed Lost', sequence: 100, is_won: false, is_lost: true, color: '#EF4444' },
+  {
+    id: 'crm-stage-new',
+    name: 'New Prospect',
+    sequence: 10,
+    is_won: false,
+    is_lost: false,
+    color: '#64748B',
+  },
+  {
+    id: 'crm-stage-qualified',
+    name: 'Qualified Account',
+    sequence: 20,
+    is_won: false,
+    is_lost: false,
+    color: '#3B82F6',
+  },
+  {
+    id: 'crm-stage-proposal',
+    name: 'Proposal Submitted',
+    sequence: 30,
+    is_won: false,
+    is_lost: false,
+    color: '#0EA5E9',
+  },
+  {
+    id: 'crm-stage-negotiation',
+    name: 'Contract Negotiation',
+    sequence: 40,
+    is_won: false,
+    is_lost: false,
+    color: '#F59E0B',
+  },
+  {
+    id: 'crm-stage-won',
+    name: 'Closed Won',
+    sequence: 90,
+    is_won: true,
+    is_lost: false,
+    color: '#22C55E',
+  },
+  {
+    id: 'crm-stage-lost',
+    name: 'Closed Lost',
+    sequence: 100,
+    is_won: false,
+    is_lost: true,
+    color: '#EF4444',
+  },
 ];
 
 const CRM_LEADS: readonly CrmLeadSeed[] = [
@@ -90,7 +137,8 @@ const CRM_LEADS: readonly CrmLeadSeed[] = [
     probability: 15,
     expectedRevenueMinor: 15000000000,
     currency: 'IDR',
-    description: 'Inquiry for multi-region cloud infrastructure migration across Jakarta and Surabaya data centers.',
+    description:
+      'Inquiry for multi-region cloud infrastructure migration across Jakarta and Surabaya data centers.',
     source: 'Executive Referral',
     deadline: '2026-12-15',
     tagNames: ['Customer'],
@@ -105,7 +153,8 @@ const CRM_LEADS: readonly CrmLeadSeed[] = [
     probability: 35,
     expectedRevenueMinor: 28000000000,
     currency: 'IDR',
-    description: 'IoT fleet tracking and automated customs clearance workflow for 120 cargo vessels.',
+    description:
+      'IoT fleet tracking and automated customs clearance workflow for 120 cargo vessels.',
     source: 'Industry Summit',
     deadline: '2026-12-20',
     tagNames: ['Customer'],
@@ -120,7 +169,8 @@ const CRM_LEADS: readonly CrmLeadSeed[] = [
     probability: 60,
     expectedRevenueMinor: 42000000000,
     currency: 'IDR',
-    description: 'Real-time SCADA integration and predictive maintenance AI for East Kalimantan power grid.',
+    description:
+      'Real-time SCADA integration and predictive maintenance AI for East Kalimantan power grid.',
     source: 'Direct Enterprise Sales',
     deadline: '2027-01-10',
     tagNames: ['Customer'],
@@ -167,7 +217,8 @@ const CRM_OPPORTUNITIES: readonly CrmOpportunitySeed[] = [
     probability: 85,
     expectedRevenueMinor: 85000000000,
     currency: 'IDR',
-    description: 'Sovereign AI fraud detection and real-time credit scoring engine for 12M retail banking users.',
+    description:
+      'Sovereign AI fraud detection and real-time credit scoring engine for 12M retail banking users.',
     deadline: '2026-12-05',
     wonDate: null,
     lostDate: null,
@@ -183,7 +234,8 @@ const CRM_OPPORTUNITIES: readonly CrmOpportunitySeed[] = [
     probability: 65,
     expectedRevenueMinor: 34000000000,
     currency: 'IDR',
-    description: 'Hospital Information System integration across 28 regional hospitals with encrypted patient records.',
+    description:
+      'Hospital Information System integration across 28 regional hospitals with encrypted patient records.',
     deadline: '2026-12-22',
     wonDate: null,
     lostDate: null,
@@ -199,7 +251,8 @@ const CRM_OPPORTUNITIES: readonly CrmOpportunitySeed[] = [
     probability: 100,
     expectedRevenueMinor: 52000000000,
     currency: 'IDR',
-    description: 'Automated quality control vision system and MES rollout for Cikarang automotive plants.',
+    description:
+      'Automated quality control vision system and MES rollout for Cikarang automotive plants.',
     deadline: '2026-11-10',
     wonDate: '2026-11-08',
     lostDate: null,
@@ -231,7 +284,8 @@ const CRM_OPPORTUNITIES: readonly CrmOpportunitySeed[] = [
     probability: 100,
     expectedRevenueMinor: 48000000000,
     currency: 'IDR',
-    description: 'Unified POS, inventory synchronization, and WhatsApp commerce engine for 1,400 outlets.',
+    description:
+      'Unified POS, inventory synchronization, and WhatsApp commerce engine for 1,400 outlets.',
     deadline: '2026-11-01',
     wonDate: '2026-10-29',
     lostDate: null,
@@ -247,7 +301,8 @@ const CRM_OPPORTUNITIES: readonly CrmOpportunitySeed[] = [
     probability: 55,
     expectedRevenueMinor: 92000000000,
     currency: 'IDR',
-    description: 'Private 5G mesh network and autonomous dump truck telemetry in Papua mining site.',
+    description:
+      'Private 5G mesh network and autonomous dump truck telemetry in Papua mining site.',
     deadline: '2027-02-01',
     wonDate: null,
     lostDate: null,
@@ -263,7 +318,8 @@ const CRM_OPPORTUNITIES: readonly CrmOpportunitySeed[] = [
     probability: 75,
     expectedRevenueMinor: 16500000000,
     currency: 'IDR',
-    description: 'AI concierge, automated check-in, and energy management across 18 luxury resorts.',
+    description:
+      'AI concierge, automated check-in, and energy management across 18 luxury resorts.',
     deadline: '2026-12-12',
     wonDate: null,
     lostDate: null,
@@ -330,11 +386,13 @@ export function buildCrmInitialSeed(): CrmInitialSeedBundle {
 }
 
 function parseCount(value: unknown): number {
-  return Number(
-    typeof value === 'object' && value !== null && 'count' in value
-      ? (value as { count: unknown }).count
-      : value
-  ) || 0;
+  return (
+    Number(
+      typeof value === 'object' && value !== null && 'count' in value
+        ? (value as { count: unknown }).count
+        : value
+    ) || 0
+  );
 }
 
 export async function seedCrmInitialData(
@@ -420,7 +478,9 @@ export async function seedCrmInitialData(
     for (const tagName of lead.tagNames) {
       let tagRow = await db('tags').where({ name: tagName }).first('id');
       if (!tagRow) {
-        const insTag = (await db('tags').insert({ name: tagName, color: '#3B82F6' }).returning('id')) as unknown[];
+        const insTag = (await db('tags')
+          .insert({ name: tagName, color: '#3B82F6' })
+          .returning('id')) as unknown[];
         tagRow = { id: resolveInsertedId(insTag, `tag ${tagName}`) };
       }
       const linkFilter = {
@@ -517,8 +577,12 @@ export const seedManifest: AddonSeedManifest = {
   seedVersion: CRM_SEED_VERSION,
   dependencies: ['orm-base'],
   async seed(ctx: SeedContext): Promise<SeedResult> {
-    const res = await seedCrmInitialData(ctx.db, { companyId: ctx.companyId, ownerId: ctx.ownerId });
-    const inserted = res.insertedStages + res.insertedLeads + res.insertedOpportunities + res.insertedTagLinks;
+    const res = await seedCrmInitialData(ctx.db, {
+      companyId: ctx.companyId,
+      ownerId: ctx.ownerId,
+    });
+    const inserted =
+      res.insertedStages + res.insertedLeads + res.insertedOpportunities + res.insertedTagLinks;
     const total = res.stagesTotal + res.leadsTotal + res.opportunitiesTotal + res.tagLinksTotal;
     return {
       inserted,

@@ -28,7 +28,10 @@ export async function run(
 
   const severity = config.severity;
   if (severity !== undefined && !VALID_SEVERITIES.has(String(severity))) {
-    return { ok: false, error: `notify severity must be one of ${[...VALID_SEVERITIES].join('|')}` };
+    return {
+      ok: false,
+      error: `notify severity must be one of ${[...VALID_SEVERITIES].join('|')}`,
+    };
   }
 
   await ctx.db('outbox_events').insert({

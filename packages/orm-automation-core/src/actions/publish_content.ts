@@ -27,7 +27,8 @@ export async function run(
     return { ok: false, error: 'publish_content requires a channel string' };
   }
 
-  const inserted = await ctx.db('content_publish_jobs')
+  const inserted = await ctx
+    .db('content_publish_jobs')
     .insert({
       company_id: ctx.companyId,
       content_id: contentId,

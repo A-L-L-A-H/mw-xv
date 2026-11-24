@@ -1,6 +1,12 @@
 import { defineAddon, ref, seed } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
-import { ShariaContract, ProfitSharingDistribution, ZakatAssessment, WaqfAsset, HalalComplianceAudit } from './models/index.js';
+import {
+  ShariaContract,
+  ProfitSharingDistribution,
+  ZakatAssessment,
+  WaqfAsset,
+  HalalComplianceAudit,
+} from './models/index.js';
 import { views } from './views.js';
 import { httpPlugin } from './http-plugin.js';
 
@@ -8,7 +14,13 @@ export const manifest = defineAddon({
   name: 'sharia',
   version: '1.0.0',
   depends: ['base', 'crm'],
-  models: [ShariaContract, ProfitSharingDistribution, ZakatAssessment, WaqfAsset, HalalComplianceAudit],
+  models: [
+    ShariaContract,
+    ProfitSharingDistribution,
+    ZakatAssessment,
+    WaqfAsset,
+    HalalComplianceAudit,
+  ],
   httpPlugins: [httpPlugin],
   data: [
     seed(ShariaContract, 'sharia.contract_status_draft', {

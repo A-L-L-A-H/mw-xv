@@ -21,9 +21,7 @@ export function GraphView({ model, views }: { model: string; views: ResolvedView
         headingLevel={2}
         title={`Could not load ${views.title} chart`}
         description={
-          query.error instanceof Error
-            ? query.error.message
-            : 'Unable to load grouped chart data.'
+          query.error instanceof Error ? query.error.message : 'Unable to load grouped chart data.'
         }
         retrying={query.isFetching}
         onRetry={() => void query.refetch()}

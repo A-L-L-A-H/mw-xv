@@ -1,5 +1,9 @@
 import type { AddonSeedManifest } from '@moonwitness/orm-base';
-import { seedBotOrchestrator, countBotOrchestratorRows, BOT_ORCHESTRATOR_SEED_VERSION } from './seed.js';
+import {
+  seedBotOrchestrator,
+  countBotOrchestratorRows,
+  BOT_ORCHESTRATOR_SEED_VERSION,
+} from './seed.js';
 
 export const botOrchestratorSeedManifest: AddonSeedManifest = {
   seedVersion: BOT_ORCHESTRATOR_SEED_VERSION,

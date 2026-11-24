@@ -113,32 +113,14 @@
       "visual_domain": "Agents, profiles, models, providers, contracts, runs, taskforces, skills and memory"
     }
   ],
-  "phase_order": [
-    "W0",
-    "W1",
-    "W2",
-    "W3",
-    "W4",
-    "W5",
-    "W6",
-    "W7",
-    "W8",
-    "W9",
-    "W10"
-  ],
+  "phase_order": ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10"],
   "execution_policy": {
     "mode": "autonomous_incremental",
     "max_parallel_agents": 4,
     "max_parallel_tasks_per_shared_area": 1,
     "max_attempts_per_task": 2,
     "max_retries_per_gate": 1,
-    "task_states": [
-      "todo",
-      "in_progress",
-      "blocked",
-      "done",
-      "skipped"
-    ],
+    "task_states": ["todo", "in_progress", "blocked", "done", "skipped"],
     "completion_rule": "A task is done only when all acceptance criteria pass and concrete evidence is recorded. A commit alone is not proof.",
     "stop_conditions": [
       "stop after two failed attempts on the same task and mark blocked with logs",

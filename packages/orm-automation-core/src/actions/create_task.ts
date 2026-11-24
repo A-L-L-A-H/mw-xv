@@ -33,7 +33,8 @@ export async function run(
     return { ok: false, error: 'create_task priority must be low|normal|high|urgent' };
   }
 
-  const inserted = await ctx.db('project_tasks')
+  const inserted = await ctx
+    .db('project_tasks')
     .insert({
       company_id: ctx.companyId,
       project_id: projectId,

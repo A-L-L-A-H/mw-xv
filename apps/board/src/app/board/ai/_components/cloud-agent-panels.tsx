@@ -86,14 +86,22 @@ export function CloudProviderDefaultPanel({
               {gateway.enabled ? 'enabled' : 'default-off gate'}
             </Badge>
             <Badge>{gateway.data_classification}</Badge>
-            <span className="text-ink-faint">origin-only endpoint: {gateway.endpoint_url ?? 'configured'}</span>
+            <span className="text-ink-faint">
+              origin-only endpoint: {gateway.endpoint_url ?? 'configured'}
+            </span>
           </div>
           <p aria-label="masked inference key reference">
-            Unified inference key reference: {maskedReference(gateway.secret_ref)} — value never leaves the
-            gateway volume or Board DOM.
+            Unified inference key reference: {maskedReference(gateway.secret_ref)} — value never
+            leaves the gateway volume or Board DOM.
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => void runDiscovery()}>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={busy}
+              onClick={() => void runDiscovery()}
+            >
               Discover real gateway models
             </Button>
             <label className="sr-only" htmlFor="freellm-model-select">
@@ -111,7 +119,12 @@ export function CloudProviderDefaultPanel({
                 </option>
               ))}
             </SelectField>
-            <Button type="button" size="sm" disabled={busy || selectedId === null} onClick={() => void selectModel()}>
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy || selectedId === null}
+              onClick={() => void selectModel()}
+            >
               Set as coding-agent default
             </Button>
           </div>
@@ -141,7 +154,9 @@ export function RunScopePanel({ contract }: { readonly contract: AiWorkContractD
       description="Classification, risk tier and curated paths are validated before any run is dispatched."
     >
       {contract === null ? (
-        <p className="font-mono text-xs text-ink-soft">Select a work contract to inspect its scope.</p>
+        <p className="font-mono text-xs text-ink-soft">
+          Select a work contract to inspect its scope.
+        </p>
       ) : (
         <div className="space-y-2 font-mono text-xs">
           <p>
@@ -176,7 +191,10 @@ export function RunApprovalPanel({
   const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   const pending = runs.filter(
-    (run) => run.approval_workflow_id !== null && run.approval_workflow_id !== undefined && run.status === 'pending'
+    (run) =>
+      run.approval_workflow_id !== null &&
+      run.approval_workflow_id !== undefined &&
+      run.status === 'pending'
   );
 
   const decide = async (run: RunWithCloudFields, action: 'approve' | 'reject'): Promise<void> => {
@@ -200,7 +218,9 @@ export function RunApprovalPanel({
       description="A different active human reviewer must approve the exact immutable fingerprint before dispatch."
     >
       {pending.length === 0 ? (
-        <p className="font-mono text-xs text-ink-soft">No cloud egress runs are awaiting approval.</p>
+        <p className="font-mono text-xs text-ink-soft">
+          No cloud egress runs are awaiting approval.
+        </p>
       ) : (
         <ul className="space-y-3">
           {pending.map((run) => (
@@ -232,7 +252,11 @@ export function RunApprovalPanel({
           ))}
         </ul>
       )}
-      {notice !== null ? <p role="status" className="mt-2 font-mono text-xs">{notice}</p> : null}
+      {notice !== null ? (
+        <p role="status" className="mt-2 font-mono text-xs">
+          {notice}
+        </p>
+      ) : null}
     </Panel>
   );
 }
@@ -266,7 +290,9 @@ export function RunEvidencePanel({
       description="Immutable fingerprint, job lease, terminal error and operator cancellation. Diffs and PCW evidence remain redacted artifacts."
     >
       {cloudRuns.length === 0 ? (
-        <p className="font-mono text-xs text-ink-soft">No executed cloud coding runs for this company.</p>
+        <p className="font-mono text-xs text-ink-soft">
+          No executed cloud coding runs for this company.
+        </p>
       ) : (
         <ul className="space-y-2 font-mono text-xs">
           {cloudRuns.slice(0, 20).map((run) => (
@@ -288,7 +314,11 @@ export function RunEvidencePanel({
           ))}
         </ul>
       )}
-      {notice !== null ? <p role="status" className="mt-2 font-mono text-xs">{notice}</p> : null}
+      {notice !== null ? (
+        <p role="status" className="mt-2 font-mono text-xs">
+          {notice}
+        </p>
+      ) : null}
     </Panel>
   );
 }

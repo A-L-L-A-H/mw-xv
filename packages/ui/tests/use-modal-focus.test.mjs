@@ -176,9 +176,7 @@ test('nested modals dismiss only the top modal and share a reference-counted bod
   assert.equal(document.body.style.overflow, 'hidden');
   document.getElementById('second').focus();
 
-  await act(async () =>
-    root.render(React.createElement(React.Fragment, null, outer, inner))
-  );
+  await act(async () => root.render(React.createElement(React.Fragment, null, outer, inner)));
   assert.equal(document.activeElement.id, 'inner-first');
   assert.equal(document.body.style.overflow, 'hidden');
 
@@ -206,9 +204,7 @@ test('a non-dismissible top modal blocks Escape from reaching the modal below it
   });
   const inner = React.createElement(Modal, { key: 'inner' }, []);
 
-  await act(async () =>
-    root.render(React.createElement(React.Fragment, null, outer, inner))
-  );
+  await act(async () => root.render(React.createElement(React.Fragment, null, outer, inner)));
   await act(async () => {
     const event = pressKey('Escape');
     assert.equal(event.defaultPrevented, true);
@@ -222,16 +218,24 @@ test('focus trapping excludes disabled, hidden, inert, closed-details, and negat
     React.createElement('button', { id: 'disabled', disabled: true, key: 'disabled' }, 'Disabled'),
     React.createElement('button', { id: 'negative', tabIndex: -1, key: 'negative' }, 'Negative'),
     React.createElement('button', { id: 'hidden', hidden: true, key: 'hidden' }, 'Hidden'),
-    React.createElement('button', {
-      id: 'display-none',
-      style: { display: 'none' },
-      key: 'display-none',
-    }, 'Display none'),
-    React.createElement('button', {
-      id: 'visibility-hidden',
-      style: { visibility: 'hidden' },
-      key: 'visibility-hidden',
-    }, 'Visibility hidden'),
+    React.createElement(
+      'button',
+      {
+        id: 'display-none',
+        style: { display: 'none' },
+        key: 'display-none',
+      },
+      'Display none'
+    ),
+    React.createElement(
+      'button',
+      {
+        id: 'visibility-hidden',
+        style: { visibility: 'hidden' },
+        key: 'visibility-hidden',
+      },
+      'Visibility hidden'
+    ),
     React.createElement(
       'div',
       { id: 'inert-parent', inert: true, key: 'inert-parent' },

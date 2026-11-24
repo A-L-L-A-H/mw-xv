@@ -117,7 +117,8 @@ export function workflowInstallsFrozenWorkspaceAfterSetup(source, path) {
       inPlanJob = ciPlanOnly && lines[index].trim() === 'plan:';
     }
     if (inPlanJob) continue;
-    if (!/^\s*- uses: \.\/\.github\/actions\/setup-(?:bun|pnpm)\s*$/u.test(lines[index] ?? '')) continue;
+    if (!/^\s*- uses: \.\/\.github\/actions\/setup-(?:bun|pnpm)\s*$/u.test(lines[index] ?? ''))
+      continue;
     const setupIndent = (lines[index]?.match(/^\s*/u)?.[0] ?? '').length;
     const nextStep = lines.findIndex(
       (line, lineIndex) => lineIndex > index && /^\s*-\s/u.test(line)
@@ -132,7 +133,9 @@ export function workflowInstallsFrozenWorkspaceAfterSetup(source, path) {
     const stepLines = lines.slice(nextStep, followingStep < 0 ? undefined : followingStep);
     if (
       !stepLines.some((line) =>
-        /run:\s*(?:bun install --frozen-lockfile|pnpm install --frozen-lockfile --no-runtime)\s*$/u.test(line)
+        /run:\s*(?:bun install --frozen-lockfile|pnpm install --frozen-lockfile --no-runtime)\s*$/u.test(
+          line
+        )
       )
     )
       return false;
@@ -141,7 +144,8 @@ export function workflowInstallsFrozenWorkspaceAfterSetup(source, path) {
 }
 
 export function findPnpmVersionDrift(sources, packageManager) {
-  const expected = /^(?:bun|pnpm)@(?<version>\d+\.\d+\.\d+)$/u.exec(packageManager)?.groups?.version;
+  const expected = /^(?:bun|pnpm)@(?<version>\d+\.\d+\.\d+)$/u.exec(packageManager)?.groups
+    ?.version;
   if (!expected) {
     return [
       {

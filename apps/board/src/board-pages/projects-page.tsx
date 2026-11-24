@@ -632,7 +632,9 @@ export function ProjectsPage() {
                   completedSteps={questStatus === 'completed' ? 1 : doneTasksCount}
                   totalSteps={questStatus === 'completed' ? 1 : Math.max(1, totalTasksCount)}
                   status={questStatus}
-                  badgeId={questStatus === 'completed' ? 'badge-zero-drift' : 'badge-archive-keeper'}
+                  badgeId={
+                    questStatus === 'completed' ? 'badge-zero-drift' : 'badge-archive-keeper'
+                  }
                   rewardLabel={`Status: ${milestone.status}`}
                 />
               );

@@ -102,17 +102,18 @@ function addMinutes(iso: string, minutes: number): string {
 function diffMinutes(fromIso: string, toIso: string): number {
   const from = new Date(fromIso).getTime();
   const to = new Date(toIso).getTime();
-  if (Number.isNaN(from) || Number.isNaN(to)) throw new Error('Invalid ISO timestamp in SLA computation');
+  if (Number.isNaN(from) || Number.isNaN(to))
+    throw new Error('Invalid ISO timestamp in SLA computation');
   return Math.floor((from - to) / 60_000);
 }
 
 export function resolveSlaDeadlines(input: SlaEvaluateInput): SlaDeadlineResult | null {
-  const active = input.policies.filter(p => p.is_active !== false);
+  const active = input.policies.filter((p) => p.is_active !== false);
   const exact = active.find(
-    p => p.priority === input.priority && p.applies_to_queue === input.queue,
+    (p) => p.priority === input.priority && p.applies_to_queue === input.queue
   );
   const fallback = active.find(
-    p => p.priority === input.priority && p.applies_to_queue === 'all',
+    (p) => p.priority === input.priority && p.applies_to_queue === 'all'
   );
   const policy = exact ?? fallback;
   if (!policy) return null;
@@ -144,32 +145,44 @@ export function evaluateSlaState(ticket: TicketLike, nowIso: string): SlaState {
     Boolean(ticket.resolution_due_at) &&
     diffMinutes(nowIso, ticket.resolution_due_at as string) > 0;
 
-  const minutesRemainingToFirstResponse = firstResponded || !ticket.first_response_due_at
-    ? 0
-    : Math.max(0, diffMinutes(ticket.first_response_due_at as string, nowIso));
+  const minutesRemainingToFirstResponse =
+    firstResponded || !ticket.first_response_due_at
+      ? 0
+      : Math.max(0, diffMinutes(ticket.first_response_due_at as string, nowIso));
 
-  const minutesRemainingToResolution = resolved || !ticket.resolution_due_at
-    ? 0
-    : Math.max(0, diffMinutes(ticket.resolution_due_at as string, nowIso));
+  const minutesRemainingToResolution =
+    resolved || !ticket.resolution_due_at
+      ? 0
+      : Math.max(0, diffMinutes(ticket.resolution_due_at as string, nowIso));
 
-  return { firstResponseBreached, resolutionBreached, minutesRemainingToFirstResponse, minutesRemainingToResolution };
+  return {
+    firstResponseBreached,
+    resolutionBreached,
+    minutesRemainingToFirstResponse,
+    minutesRemainingToResolution,
+  };
 }
 
 export function nextEscalation(
   rule: EscalationRuleLike,
   ticket: TicketLike,
-  nowIso: string,
+  nowIso: string
 ): EscalationDecision {
   const level = ticket.escalation_level ?? 0;
   if (rule.is_active === false) return { shouldEscalate: false, escalateTo: null, level };
   if (level >= rule.max_escalations) return { shouldEscalate: false, escalateTo: null, level };
 
   const state = evaluateSlaState(ticket, nowIso);
-  const breachedAt = rule.trigger === 'first_response_breach'
-    ? (state.firstResponseBreached ? ticket.first_response_due_at : null)
-    : rule.trigger === 'resolution_breach'
-      ? (state.resolutionBreached ? ticket.resolution_due_at : null)
-      : null;
+  const breachedAt =
+    rule.trigger === 'first_response_breach'
+      ? state.firstResponseBreached
+        ? ticket.first_response_due_at
+        : null
+      : rule.trigger === 'resolution_breach'
+        ? state.resolutionBreached
+          ? ticket.resolution_due_at
+          : null
+        : null;
 
   if (!breachedAt) return { shouldEscalate: false, escalateTo: null, level };
 
@@ -185,12 +198,12 @@ function tokenize(text: string): string[] {
   return text
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .filter(token => token.length > 1);
+    .filter((token) => token.length > 1);
 }
 
 export function suggestAutoReply(
   question: string,
-  articles: KnowledgeArticleLike[],
+  articles: KnowledgeArticleLike[]
 ): AutoReplySuggestion | null {
   const tokens = new Set(tokenize(question));
   if (tokens.size === 0) return null;
@@ -219,7 +232,7 @@ export function suggestAutoReply(
 }
 
 export function computeCsatSummary(surveys: CsatSurveyLike[]): CsatSummary {
-  const respondedSurveys = surveys.filter(s => s.responded && typeof s.rating === 'number');
+  const respondedSurveys = surveys.filter((s) => s.responded && typeof s.rating === 'number');
   const responded = respondedSurveys.length;
   if (responded === 0) {
     return { responded: 0, average: 0, promoters: 0, passives: 0, detractors: 0, nps: 0 };
@@ -227,9 +240,9 @@ export function computeCsatSummary(surveys: CsatSurveyLike[]): CsatSummary {
 
   const total = respondedSurveys.reduce((sum, s) => sum + (s.rating as number), 0);
   const average = Math.round((total / responded) * 100) / 100;
-  const promoters = respondedSurveys.filter(s => (s.rating as number) >= 5).length;
-  const passives = respondedSurveys.filter(s => (s.rating as number) === 4).length;
-  const detractors = respondedSurveys.filter(s => (s.rating as number) <= 3).length;
+  const promoters = respondedSurveys.filter((s) => (s.rating as number) >= 5).length;
+  const passives = respondedSurveys.filter((s) => (s.rating as number) === 4).length;
+  const detractors = respondedSurveys.filter((s) => (s.rating as number) <= 3).length;
   const nps = Math.round(((promoters - detractors) / responded) * 100);
 
   return { responded, average, promoters, passives, detractors, nps };

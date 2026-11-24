@@ -17,7 +17,10 @@ for (const scene of scenes) {
   try {
     validateSceneBundle(descriptor, manifest, scene.path);
   } catch (error) {
-    sceneErrors.push({ path: scene.path, message: error instanceof Error ? error.message : String(error) });
+    sceneErrors.push({
+      path: scene.path,
+      message: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -48,5 +51,7 @@ if (!assetQa.ok || sceneErrors.length > 0) {
   process.stderr.write(`Asset diagnostics failed; report written to ${outputPath}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write(`Validated ${assetQa.summary.totalManifestAssets} assets and ${scenes.length} scene bundle(s); report: ${outputPath}\n`);
+  process.stdout.write(
+    `Validated ${assetQa.summary.totalManifestAssets} assets and ${scenes.length} scene bundle(s); report: ${outputPath}\n`
+  );
 }

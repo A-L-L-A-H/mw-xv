@@ -31,11 +31,7 @@ export {
   type AutomationRunStatus,
 } from './models.js';
 
-export {
-  AUTOMATION_ACTIONS,
-  resolveAction,
-  type AutomationAction,
-} from './actions/index.js';
+export { AUTOMATION_ACTIONS, resolveAction, type AutomationAction } from './actions/index.js';
 export type {
   ActionResult,
   AutomationActionContext,

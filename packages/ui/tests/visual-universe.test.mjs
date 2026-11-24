@@ -28,7 +28,10 @@ import { CharacterDisplay, CharacterReaction } from '../dist/components/characte
 import { AchievementBadge, QuestCard, RewardPanel } from '../dist/components/quest-card.js';
 
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-const componentCss = await readFile(new URL('../src/styles/components.css', import.meta.url), 'utf8');
+const componentCss = await readFile(
+  new URL('../src/styles/components.css', import.meta.url),
+  'utf8'
+);
 
 test('package exports all visual universe subpaths', () => {
   for (const subpath of [
@@ -103,14 +106,8 @@ test('asset-registry resolves canonical universe paths with optional basePath', 
 
   const clip = getCharacterClip('wave', { basePath: '/sub' });
   assert.equal(clip.frames.length, 4);
-  assert.equal(
-    clip.frames[0],
-    '/sub/animation/kuro-signal-wave/kuro-signal-wave-frame-01.png'
-  );
-  assert.equal(
-    clip.frames[3],
-    '/sub/animation/kuro-signal-wave/kuro-signal-wave-frame-04.png'
-  );
+  assert.equal(clip.frames[0], '/sub/animation/kuro-signal-wave/kuro-signal-wave-frame-01.png');
+  assert.equal(clip.frames[3], '/sub/animation/kuro-signal-wave/kuro-signal-wave-frame-04.png');
 });
 
 test('ComicPanel, MangaFrame, SpeechBubble, and StickerBadge render expected markup and attributes', () => {
@@ -230,7 +227,10 @@ test('QuestCard, AchievementBadge, and RewardPanel render accessible progressbar
     )
   );
 
-  assert.match(html, /class="mw-ui-comic-panel mw-ui-panel mw-ui-quest-card" data-status="active"/u);
+  assert.match(
+    html,
+    /class="mw-ui-comic-panel mw-ui-panel mw-ui-quest-card" data-status="active"/u
+  );
   assert.match(html, /role="progressbar"/u);
   assert.match(html, /aria-valuenow="2"/u);
   assert.match(html, /aria-valuemax="4"/u);
@@ -260,7 +260,11 @@ test('visual universe components forward DOM refs cleanly', async () => {
   globalThis.window = dom.window;
   globalThis.document = dom.window.document;
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  dom.window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+  dom.window.matchMedia = () => ({
+    matches: false,
+    addEventListener() {},
+    removeEventListener() {},
+  });
 
   try {
     const { act } = await import('react');

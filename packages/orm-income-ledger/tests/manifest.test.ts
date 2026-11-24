@@ -33,7 +33,9 @@ describe('income ledger manifest', () => {
     expect(manifest.depends).toEqual(['base']);
     expect(manifest.models).toHaveLength(5);
     const ownModels = new Set(manifest.models.map((model) => model.modelName));
-    expect((manifest.data ?? []).some((record) => ownModels.has(record.model.modelName))).toBe(true);
+    expect((manifest.data ?? []).some((record) => ownModels.has(record.model.modelName))).toBe(
+      true
+    );
   });
 
   it('declares the seed manifest shape', () => {
@@ -52,7 +54,7 @@ describe('computeAllocationSplit', () => {
         { target: 'savings', percentage: 30, isActive: true },
         { target: 'charity', percentage: 10, isActive: false },
         { target: 'tax', percentage: 20, isActive: true },
-      ],
+      ]
     );
 
     expect(split).toEqual({ reinvest: 40, savings: 30, charity: 0, personal: 0, tax: 20 });
@@ -61,7 +63,7 @@ describe('computeAllocationSplit', () => {
   it('returns zeros when no allocations are active', () => {
     const split = computeAllocationSplit(
       { id: 'stream-1', kind: 'ads', status: 'idea', goalMonthlyMinor: 0 },
-      [{ target: 'personal', percentage: 100, isActive: false }],
+      [{ target: 'personal', percentage: 100, isActive: false }]
     );
 
     expect(split).toEqual({ reinvest: 0, savings: 0, charity: 0, personal: 0, tax: 0 });
@@ -97,7 +99,9 @@ describe('seed upsert logic', () => {
       const count = await seedDb('income_stream').count({ count: '*' });
       expect(Number(count[0].count)).toBe(8);
 
-      const saas = await seedDb('income_stream').where({ kind: 'saas', platform: 'subscription' }).first();
+      const saas = await seedDb('income_stream')
+        .where({ kind: 'saas', platform: 'subscription' })
+        .first();
       expect(saas.status).toBe('idea');
       expect(saas.goal_monthly_minor).toBe(500_000);
 
@@ -128,7 +132,9 @@ describe('recomputeMetrics', () => {
 
     await recomputeMetrics(ctx, '2026-01');
 
-    const metrics = await db('income_metric').where({ stream_id: stream.id, period: '2026-01' }).first();
+    const metrics = await db('income_metric')
+      .where({ stream_id: stream.id, period: '2026-01' })
+      .first();
     expect(metrics).toBeDefined();
     expect(Number(metrics.revenue_minor)).toBe(0);
     expect(Number(metrics.mrr_minor)).toBe(500_000);

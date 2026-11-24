@@ -66,7 +66,8 @@ async function createConsumer(name, dependencies) {
   // exist. Point overrides at the same local archives supplied to the consumer.
   const localOverrides = Object.fromEntries(
     Object.entries(dependencies).filter(
-      ([dependencyName, version]) => dependencyName === '@moonwitness/types' && version.startsWith('file:')
+      ([dependencyName, version]) =>
+        dependencyName === '@moonwitness/types' && version.startsWith('file:')
     )
   );
   await writeFile(
@@ -94,14 +95,7 @@ async function createConsumer(name, dependencies) {
     );
   verificationPhase = 'install isolated consumer dependencies';
   await runNpm(
-    [
-      'install',
-      '--prefer-offline',
-      '--save-exact',
-      '--no-audit',
-      '--no-fund',
-      ...installTargets,
-    ],
+    ['install', '--prefer-offline', '--save-exact', '--no-audit', '--no-fund', ...installTargets],
     { cwd: consumerRoot }
   );
 
@@ -350,7 +344,10 @@ try {
   for (const optionalPeer of ['cmdk', 'sonner']) {
     assert.equal(packageJson.peerDependenciesMeta[optionalPeer]?.optional, true);
   }
-  assert.ok(packageJson.dependencies['@moonwitness/types'], '@moonwitness/types must remain declared');
+  assert.ok(
+    packageJson.dependencies['@moonwitness/types'],
+    '@moonwitness/types must remain declared'
+  );
 
   verificationPhase = 'validate public stylesheet exports';
   for (const stylesheet of ['./components.css', './styles/tokens.css']) {

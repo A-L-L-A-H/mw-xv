@@ -135,7 +135,16 @@ export const views = [
   defineView(BotSchedule, {
     title: 'Bot Schedules',
     list: {
-      columns: ['name', 'flow', 'kind', 'cron_expression', 'interval_seconds', 'next_run_at', 'last_run_at', 'status'],
+      columns: [
+        'name',
+        'flow',
+        'kind',
+        'cron_expression',
+        'interval_seconds',
+        'next_run_at',
+        'last_run_at',
+        'status',
+      ],
       order: 'next_run_at asc, id asc',
     },
     form: {

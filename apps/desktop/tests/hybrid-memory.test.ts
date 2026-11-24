@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  searchHybridLocalMemory,
-  type HybridMemoryRecord,
-} from '../src/hybrid-memory.js';
+import { searchHybridLocalMemory, type HybridMemoryRecord } from '../src/hybrid-memory.js';
 
 const SAMPLE_RECORDS: readonly HybridMemoryRecord[] = [
   {

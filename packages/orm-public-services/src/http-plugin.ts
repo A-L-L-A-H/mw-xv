@@ -9,7 +9,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 const SALT = 'mw-public-services-2026';
 
 export function hashIp(ip: string): string {
-  return createHash('sha256').update(ip + SALT).digest('hex');
+  return createHash('sha256')
+    .update(ip + SALT)
+    .digest('hex');
 }
 
 function getClientIp(req: AddonHttpRequestBase): string {
@@ -18,10 +20,15 @@ function getClientIp(req: AddonHttpRequestBase): string {
     const ips = (Array.isArray(forwarded) ? forwarded[0] : forwarded).split(',');
     return ips[0].trim();
   }
-  return req.headers?.['x-real-ip'] as string ?? '127.0.0.1';
+  return (req.headers?.['x-real-ip'] as string) ?? '127.0.0.1';
 }
 
-export function checkRateLimit(db: Knex, toolId: number, userIdentifier: string, limit: number): Promise<boolean> {
+export function checkRateLimit(
+  db: Knex,
+  toolId: number,
+  userIdentifier: string,
+  limit: number
+): Promise<boolean> {
   const windowStart = new Date(Date.now() - 60_000);
   return db('public_usages')
     .where({ tool_id: toolId, user_identifier: userIdentifier })
@@ -61,23 +68,19 @@ export async function rollupMetric(
   latencyMs: number,
   isError: boolean
 ): Promise<void> {
-  const existing = await db('public_metrics')
-    .where({ tool_id: toolId, date })
-    .first();
+  const existing = await db('public_metrics').where({ tool_id: toolId, date }).first();
 
   if (existing) {
     const newCalls = existing.calls + 1;
     const newErrors = existing.errors + (isError ? 1 : 0);
     const newAvgLatency = (existing.avg_latency * existing.calls + latencyMs) / newCalls;
 
-    await db('public_metrics')
-      .where({ tool_id: toolId, date })
-      .update({
-        calls: newCalls,
-        errors: newErrors,
-        avg_latency: newAvgLatency,
-        updated_at: new Date(),
-      });
+    await db('public_metrics').where({ tool_id: toolId, date }).update({
+      calls: newCalls,
+      errors: newErrors,
+      avg_latency: newAvgLatency,
+      updated_at: new Date(),
+    });
   } else {
     await db('public_metrics').insert({
       tool_id: toolId,
@@ -109,10 +112,16 @@ async function invokeTrendRadar(topic: string): Promise<{ signals: string[] }> {
   return { signals };
 }
 
-async function invokeIncomeCalculator(input: { mrr: number; churn: number; months: number }): Promise<{ runwayMonths: number; projectedMrr: number[] }> {
+async function invokeIncomeCalculator(input: {
+  mrr: number;
+  churn: number;
+  months: number;
+}): Promise<{ runwayMonths: number; projectedMrr: number[] }> {
   const { mrr, churn, months } = input;
   const monthlyChurnRate = churn / 100;
-  const projectedMrr = Array.from({ length: months }, (_, i) => Math.round(mrr * Math.pow(1 - monthlyChurnRate, i + 1)));
+  const projectedMrr = Array.from({ length: months }, (_, i) =>
+    Math.round(mrr * Math.pow(1 - monthlyChurnRate, i + 1))
+  );
   const runwayMonths = projectedMrr.findIndex((m) => m < 1000);
   return { runwayMonths: runwayMonths === -1 ? months : runwayMonths, projectedMrr };
 }
@@ -146,23 +155,85 @@ async function invokeContentIdeas(niche: string): Promise<{ ideas: string[] }> {
 async function invokeHashtags(platform: string, topic: string): Promise<{ hashtags: string[] }> {
   const base = topic.toLowerCase().replace(/\s+/g, '');
   const platformTags = {
-    instagram: ['reels', 'explore', 'viral', 'aesthetic', 'inspo', 'community', 'creator', 'smallbusiness', 'entrepreneur', 'mindset'],
-    twitter: ['thread', 'buildinpublic', 'indiehackers', 'saas', 'startup', 'tech', 'ai', 'coding', 'productivity', 'growth'],
-    linkedin: ['leadership', 'innovation', 'career', 'networking', 'strategy', 'digitaltransformation', 'futureofwork', 'personalgrowth', 'entrepreneurship', 'business'],
-    tiktok: ['fyp', 'viral', 'learnontiktok', 'smallbusiness', 'entrepreneur', 'aesthetic', 'trending', 'tips', 'hacks', 'motivation'],
+    instagram: [
+      'reels',
+      'explore',
+      'viral',
+      'aesthetic',
+      'inspo',
+      'community',
+      'creator',
+      'smallbusiness',
+      'entrepreneur',
+      'mindset',
+    ],
+    twitter: [
+      'thread',
+      'buildinpublic',
+      'indiehackers',
+      'saas',
+      'startup',
+      'tech',
+      'ai',
+      'coding',
+      'productivity',
+      'growth',
+    ],
+    linkedin: [
+      'leadership',
+      'innovation',
+      'career',
+      'networking',
+      'strategy',
+      'digitaltransformation',
+      'futureofwork',
+      'personalgrowth',
+      'entrepreneurship',
+      'business',
+    ],
+    tiktok: [
+      'fyp',
+      'viral',
+      'learnontiktok',
+      'smallbusiness',
+      'entrepreneur',
+      'aesthetic',
+      'trending',
+      'tips',
+      'hacks',
+      'motivation',
+    ],
   };
   const tags = platformTags[platform as keyof typeof platformTags] ?? platformTags.instagram;
   const hashtags = tags.map((t) => `#${base}${t.charAt(0).toUpperCase() + t.slice(1)}`);
   return { hashtags };
 }
 
-async function invokePortfolio(): Promise<{ projects: Array<{ name: string; description: string; metrics: Record<string, unknown> }> }> {
+async function invokePortfolio(): Promise<{
+  projects: Array<{ name: string; description: string; metrics: Record<string, unknown> }>;
+}> {
   return {
     projects: [
-      { name: 'Trend Radar', description: 'Real-time signal detection for emerging tech', metrics: { signals: 10, latency: '45ms' } },
-      { name: 'Income Calculator', description: 'MRR/runway estimator with churn modeling', metrics: { scenarios: 50, accuracy: '92%' } },
-      { name: 'Content Ideas', description: '20 viral-ready concepts from trend data', metrics: { niches: 100, ideas: 2000 } },
-      { name: 'Hashtag Generator', description: 'Platform-optimized tags for maximum reach', metrics: { platforms: 4, tags: 5000 } },
+      {
+        name: 'Trend Radar',
+        description: 'Real-time signal detection for emerging tech',
+        metrics: { signals: 10, latency: '45ms' },
+      },
+      {
+        name: 'Income Calculator',
+        description: 'MRR/runway estimator with churn modeling',
+        metrics: { scenarios: 50, accuracy: '92%' },
+      },
+      {
+        name: 'Content Ideas',
+        description: '20 viral-ready concepts from trend data',
+        metrics: { niches: 100, ideas: 2000 },
+      },
+      {
+        name: 'Hashtag Generator',
+        description: 'Platform-optimized tags for maximum reach',
+        metrics: { platforms: 4, tags: 5000 },
+      },
     ],
   };
 }
@@ -184,21 +255,21 @@ const HANDLERS: Record<string, (input: unknown) => Promise<unknown>> = {
     const { niche } = (input ?? {}) as { niche?: unknown };
     return invokeContentIdeas(typeof niche === 'string' && niche.length > 0 ? niche : 'tech');
   },
-  'hashtags': (input) => {
+  hashtags: (input) => {
     const { platform, topic } = (input ?? {}) as Record<string, unknown>;
     return invokeHashtags(
       typeof platform === 'string' && platform.length > 0 ? platform : 'instagram',
       typeof topic === 'string' && topic.length > 0 ? topic : 'design'
     );
   },
-  'portfolio': () => invokePortfolio(),
+  portfolio: () => invokePortfolio(),
 };
 
 export const publicHttpPlugin: AddonHttpPlugin = async (app) => {
   app.post('/api/public/tools/:slug/invoke', async (req, reply) => {
     const startTime = Date.now();
     const { slug } = req.params as { slug: string };
-    const body = req.body as Record<string, unknown> ?? {};
+    const body = (req.body as Record<string, unknown>) ?? {};
 
     const db = app.db;
     if (!db) {
@@ -214,7 +285,9 @@ export const publicHttpPlugin: AddonHttpPlugin = async (app) => {
 
     const allowed = await checkRateLimit(db, tool.id, userIdentifier, tool.rate_limit);
     if (!allowed) {
-      return reply.code(429).send({ success: false, error: 'Rate limit exceeded', retry_after: 60 });
+      return reply
+        .code(429)
+        .send({ success: false, error: 'Rate limit exceeded', retry_after: 60 });
     }
 
     const inputHash = createHash('sha256').update(JSON.stringify(body)).digest('hex').slice(0, 32);
@@ -236,7 +309,10 @@ export const publicHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     const latencyMs = Date.now() - startTime;
-    const outputHash = createHash('sha256').update(JSON.stringify(output)).digest('hex').slice(0, 32);
+    const outputHash = createHash('sha256')
+      .update(JSON.stringify(output))
+      .digest('hex')
+      .slice(0, 32);
 
     await recordUsage(db, tool.id, userIdentifier, inputHash, outputHash, latencyMs, status);
 
@@ -254,7 +330,9 @@ export const publicHttpPlugin: AddonHttpPlugin = async (app) => {
       return reply.code(status).send({ success: false, error });
     }
 
-    return reply.code(200).send({ success: true, data: output, meta: { tool: tool.slug, latency_ms: latencyMs } });
+    return reply
+      .code(200)
+      .send({ success: true, data: output, meta: { tool: tool.slug, latency_ms: latencyMs } });
   });
 
   app.get('/api/public/metrics/summary', async (req, reply) => {

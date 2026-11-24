@@ -21,12 +21,14 @@ const COMPLIANCE_FRAMEWORK_REFERENCE_ROWS = [
     name: 'SOC 2 Type II',
     version: '2017',
     category: 'industry',
-    description: 'Service Organization Control 2 for security, availability, processing integrity, confidentiality, privacy',
+    description:
+      'Service Organization Control 2 for security, availability, processing integrity, confidentiality, privacy',
     status: 'active',
     issuer: 'AICPA',
     effective_date: '2017-01-01',
     expiry_date: '2027-01-01',
-    reference_url: 'https://www.aicpa.org/interestareas/frc/assurance/downloadabledocuments/soc-2-guide.pdf',
+    reference_url:
+      'https://www.aicpa.org/interestareas/frc/assurance/downloadabledocuments/soc-2-guide.pdf',
     tags: '["security", "availability", "confidentiality"]',
     notes: 'Required for SaaS vendors',
   },
@@ -93,10 +95,12 @@ export async function seedComplianceReferenceData(ctx: SeedContext): Promise<See
     };
 
     if (existing) {
-      await db('compliance_frameworks').where({ id: existing.id }).update({
-        ...rowValues,
-        updated_at: new Date(),
-      });
+      await db('compliance_frameworks')
+        .where({ id: existing.id })
+        .update({
+          ...rowValues,
+          updated_at: new Date(),
+        });
       updated++;
     } else {
       await db('compliance_frameworks').insert({

@@ -14,7 +14,7 @@ import {
 import { composeRefs } from '../lib/compose-refs.js';
 
 export type ButtonVariant =
-  | 'default' | 'magenta' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  'default' | 'magenta' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 export type ButtonSize =
   'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
 export type ButtonTreatment = 'solid' | 'brush';

@@ -20,15 +20,7 @@ describe('offline deployment evaluation gate', () => {
     expect(first.gates.agiClaimed).toBe(false);
     expect(first.gates.passed).toBe(first.gates.highestSatisfiedGate === 'G6');
     expect(first.gates.gateIds).toEqual([...first.gates.gateIds].sort());
-    expect(first.gates.gateIds).toEqual([
-      'G0',
-      'G1',
-      'G2',
-      'G3',
-      'G4',
-      'G5',
-      'G6',
-    ]);
+    expect(first.gates.gateIds).toEqual(['G0', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6']);
 
     expect(second.ok).toBe(true);
     // Raw report digests embed a generation timestamp, so compare the
@@ -84,9 +76,7 @@ describe('offline deployment evaluation gate', () => {
       metrics: withFailures.metrics,
       ablationReport: undefined,
     });
-    expect(suite.gates.map((gate) => gate.passed)).toEqual(
-      replay.gates.map((gate) => gate.passed)
-    );
+    expect(suite.gates.map((gate) => gate.passed)).toEqual(replay.gates.map((gate) => gate.passed));
     expect(suite.agiClaimed).toBe(false);
     expect(suite.disclaimer.length).toBeGreaterThan(0);
   });

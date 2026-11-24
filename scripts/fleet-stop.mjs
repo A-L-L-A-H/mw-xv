@@ -36,7 +36,8 @@ export function buildTreeEntries(entries, path, blobSha) {
 
 /** A compare-and-swap ref update must report the exact expected old value. */
 export function verifyCas(commitSha, expectedOldSha, result) {
-  if (!/^[a-f0-9]{40}$/u.test(commitSha ?? '')) return { applied: false, reason: 'invalid commit SHA' };
+  if (!/^[a-f0-9]{40}$/u.test(commitSha ?? ''))
+    return { applied: false, reason: 'invalid commit SHA' };
   if (expectedOldSha === ZERO_SHA && result?.created !== true)
     return { applied: false, reason: 'ref creation did not succeed' };
   if (expectedOldSha !== ZERO_SHA && result?.updated !== true)
@@ -53,7 +54,12 @@ export function createFleetStore(adapter) {
     async read() {
       const reference = await adapter.readRef(FLEET_STATE_REF);
       if (!reference?.sha)
-        return { state: createGenesisFleetState(), commitSha: ZERO_SHA, treeEntries: [], treeSha: null };
+        return {
+          state: createGenesisFleetState(),
+          commitSha: ZERO_SHA,
+          treeEntries: [],
+          treeSha: null,
+        };
       const commit = await adapter.readCommit(reference.sha);
       const content = await adapter.readBlob(commit.fileSha);
       if (content === null) throw new Error('Fleet state file is missing from the protected ref.');
@@ -110,7 +116,9 @@ export async function applyFleetAction(store, adapter, options) {
   const confirmed = await store.read();
   const post = verifyFleetTransition(current.state, confirmed.state, options.action);
   if (!post.valid || confirmed.commitSha !== commitSha)
-    throw new Error(`Fleet state did not converge after write: ${post.reason ?? 'commit mismatch'}`);
+    throw new Error(
+      `Fleet state did not converge after write: ${post.reason ?? 'commit mismatch'}`
+    );
 
   let cancelled = [];
   if (options.action === 'pause' && adapter.listActiveRuns) {
@@ -150,7 +158,8 @@ export function createGithubFleetAdapter(repository) {
         const result = await ghApi(repository, 'GET', path);
         return { sha: result?.object?.sha };
       } catch (error) {
-        if (/Could not resolve|Not Found|404/u.test(error?.stderr ?? error?.message ?? '')) return null;
+        if (/Could not resolve|Not Found|404/u.test(error?.stderr ?? error?.message ?? ''))
+          return null;
         throw error;
       }
     },
@@ -180,7 +189,11 @@ export function createGithubFleetAdapter(repository) {
       return result.sha;
     },
     async createCommit({ treeSha, parents, message }) {
-      const result = await ghApi(repository, 'POST', 'git/commits', { tree: treeSha, parents, message });
+      const result = await ghApi(repository, 'POST', 'git/commits', {
+        tree: treeSha,
+        parents,
+        message,
+      });
       return result.sha;
     },
     async updateRef(ref, newSha, oldSha) {
@@ -195,7 +208,8 @@ export function createGithubFleetAdapter(repository) {
         });
         return { updated: true };
       } catch (error) {
-        if (/422|conflict|stale/u.test(error?.stderr ?? error?.message ?? '')) return { updated: false };
+        if (/422|conflict|stale/u.test(error?.stderr ?? error?.message ?? ''))
+          return { updated: false };
         throw error;
       }
     },
@@ -216,13 +230,19 @@ if (isDirectExecution) {
   const positional = process.argv.slice(2);
   const command = positional[0];
   const flags = Object.fromEntries(
-    (['probe', 'check'].includes(command) ? positional.slice(1) : positional).map((arg, index, all) =>
-      arg.startsWith('--') ? [arg.slice(2), all[index + 1]?.startsWith('--') ? 'true' : all[index + 1]] : null
-    ).filter(Boolean)
+    (['probe', 'check'].includes(command) ? positional.slice(1) : positional)
+      .map((arg, index, all) =>
+        arg.startsWith('--')
+          ? [arg.slice(2), all[index + 1]?.startsWith('--') ? 'true' : all[index + 1]]
+          : null
+      )
+      .filter(Boolean)
   );
   try {
     if (!['probe', 'check', 'apply'].includes(command)) {
-      throw new Error('Usage: node scripts/fleet-stop.mjs probe --repo <owner/repo> | check --repo <owner/repo> --epoch <n> | apply --repo <owner/repo> --action pause|resume --actor <name> --reason <text>');
+      throw new Error(
+        'Usage: node scripts/fleet-stop.mjs probe --repo <owner/repo> | check --repo <owner/repo> --epoch <n> | apply --repo <owner/repo> --action pause|resume --actor <name> --reason <text>'
+      );
     }
     if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(flags.repo ?? ''))
       throw new Error('--repo must be owner/repo.');
@@ -231,24 +251,30 @@ if (isDirectExecution) {
       const current = await createFleetStore(adapter).read();
       const verdict = verifyFleetState(current.state);
       const allowed = verdict.valid && !current.state.paused;
-      process.stdout.write(`${JSON.stringify({ allowed, epoch: current.state.epoch, paused: current.state.paused, stateValid: verdict.valid })}\n`);
+      process.stdout.write(
+        `${JSON.stringify({ allowed, epoch: current.state.epoch, paused: current.state.paused, stateValid: verdict.valid })}\n`
+      );
       if (!allowed) process.exitCode = 1;
     } else if (command === 'check') {
       const epoch = Number(flags.epoch);
-      if (!Number.isSafeInteger(epoch) || epoch < 1) throw new Error('--epoch must be a positive integer.');
+      if (!Number.isSafeInteger(epoch) || epoch < 1)
+        throw new Error('--epoch must be a positive integer.');
       const current = await createFleetStore(adapter).read();
       const verdict = isMutationAllowed(current.state, { fleetEpoch: epoch });
-      process.stdout.write(`${JSON.stringify({ ...verdict, currentEpoch: current.state.epoch, paused: current.state.paused })}\n`);
+      process.stdout.write(
+        `${JSON.stringify({ ...verdict, currentEpoch: current.state.epoch, paused: current.state.paused })}\n`
+      );
       if (!verdict.allowed) process.exitCode = 1;
     } else if (command === 'apply') {
-      if (!['pause', 'resume'].includes(flags.action)) throw new Error('--action must be pause or resume.');
+      if (!['pause', 'resume'].includes(flags.action))
+        throw new Error('--action must be pause or resume.');
       const result = await applyFleetAction(createFleetStore(adapter), adapter, {
-      action: flags.action,
-      actor: flags.actor,
-      reason: flags.reason,
-      expectEpoch: flags['expect-epoch'] ? Number(flags['expect-epoch']) : undefined,
-      dryRun: flags['dry-run'] === 'true',
-    });
+        action: flags.action,
+        actor: flags.actor,
+        reason: flags.reason,
+        expectEpoch: flags['expect-epoch'] ? Number(flags['expect-epoch']) : undefined,
+        dryRun: flags['dry-run'] === 'true',
+      });
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     }
   } catch (error) {

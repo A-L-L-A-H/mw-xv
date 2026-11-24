@@ -34,9 +34,9 @@ test('every shared-configuration entry names something that is in the repository
   const rootEntries = await readdir(repositoryRoot, { withFileTypes: true });
   const present = new Set(rootEntries.map((entry) => entry.name));
   deepEqual(
-    [...fullScopeFiles].filter(
-      (entry) => !present.has(entry) && !existsSync(join(repositoryRoot, entry))
-    ).sort(),
+    [...fullScopeFiles]
+      .filter((entry) => !present.has(entry) && !existsSync(join(repositoryRoot, entry)))
+      .sort(),
     []
   );
 });

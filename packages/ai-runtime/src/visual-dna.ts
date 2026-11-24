@@ -192,7 +192,6 @@ const DEFAULT_MOONWITNESS_SURFACES: DesignSurfaceTokens = Object.freeze({
   shadowMd: '4px 4px 0 #0d0d0d',
 });
 
-
 function sha256Hex(value: string): string {
   return createHash('sha256').update(value, 'utf8').digest('hex');
 }

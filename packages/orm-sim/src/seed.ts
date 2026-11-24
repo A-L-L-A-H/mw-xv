@@ -28,9 +28,7 @@ export interface SimSeedOptions {
   readonly enabled: boolean;
 }
 
-export function isSimSeedEnabled(
-  options: Partial<SimSeedOptions> | undefined
-): boolean {
+export function isSimSeedEnabled(options: Partial<SimSeedOptions> | undefined): boolean {
   return options?.enabled === true;
 }
 
@@ -49,8 +47,7 @@ export const seedManifest: AddonSeedManifest = {
   seedVersion: SIM_SEED_VERSION,
   dependencies: ['orm-base'],
   async seed(ctx: SeedContext): Promise<SeedResult> {
-    const options = (ctx as SeedContext & { options?: Partial<SimSeedOptions> })
-      .options;
+    const options = (ctx as SeedContext & { options?: Partial<SimSeedOptions> }).options;
     if (!isSimSeedEnabled(options)) {
       return { inserted: 0, updated: 0, skipped: 0 };
     }

@@ -58,24 +58,44 @@ export class RssAdapter implements SignalAdapter {
 
   async fetch(ctx: SignalAdapterContext): Promise<SignalObservationDraft[]> {
     const feedUrls = Array.isArray(ctx.config.feeds) ? ctx.config.feeds : [];
-    const maxItems = typeof ctx.config.maxItemsPerFeed === 'number' ? ctx.config.maxItemsPerFeed : 50;
+    const maxItems =
+      typeof ctx.config.maxItemsPerFeed === 'number' ? ctx.config.maxItemsPerFeed : 50;
     const fetchImpl = ctx.fetchImpl ?? fetch;
     const drafts: SignalObservationDraft[] = [];
 
     for (const feedUrl of feedUrls) {
       if (typeof feedUrl !== 'string' || feedUrl.length === 0) continue;
-      const response = await fetchImpl(feedUrl, { headers: { accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*' } });
+      const response = await fetchImpl(feedUrl, {
+        headers: {
+          accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+        },
+      });
       if (!response.ok) continue;
       const xml = await response.text();
       const doc = XMLParser.parse(xml);
-      const channel = doc.rss && typeof doc.rss === 'object' ? (doc.rss as { channel?: unknown }).channel : undefined;
+      const channel =
+        doc.rss && typeof doc.rss === 'object'
+          ? (doc.rss as { channel?: unknown }).channel
+          : undefined;
       const channelEntries: unknown[] =
-        channel && typeof channel === 'object' && Array.isArray((channel as { item?: unknown }).item)
+        channel &&
+        typeof channel === 'object' &&
+        Array.isArray((channel as { item?: unknown }).item)
           ? (channel as { item: unknown[] }).item
           : [];
-      const atomRoot = doc.feed && typeof doc.feed === 'object' ? (doc.feed as { entry?: unknown }).entry : undefined;
-      const atomEntries: unknown[] = Array.isArray(atomRoot) ? atomRoot : atomRoot ? [atomRoot] : [];
-      const entries: FeedEntry[] = [...channelEntries, ...atomEntries].slice(0, maxItems) as FeedEntry[];
+      const atomRoot =
+        doc.feed && typeof doc.feed === 'object'
+          ? (doc.feed as { entry?: unknown }).entry
+          : undefined;
+      const atomEntries: unknown[] = Array.isArray(atomRoot)
+        ? atomRoot
+        : atomRoot
+          ? [atomRoot]
+          : [];
+      const entries: FeedEntry[] = [...channelEntries, ...atomEntries].slice(
+        0,
+        maxItems
+      ) as FeedEntry[];
 
       for (const entry of entries) {
         const title = textOf(entry.title);
@@ -84,7 +104,8 @@ export class RssAdapter implements SignalAdapter {
           title,
           summary: textOf(entry.summary) ?? textOf(entry.description),
           url: firstLink(entry.link),
-          publishedAt: parseDate(entry.published) ?? parseDate(entry.updated) ?? parseDate(entry.pubDate),
+          publishedAt:
+            parseDate(entry.published) ?? parseDate(entry.updated) ?? parseDate(entry.pubDate),
           tags: categoriesOf(entry.category),
           sourceRef: textOf(entry.id) ?? textOf(entry.guid),
           raw: entry,

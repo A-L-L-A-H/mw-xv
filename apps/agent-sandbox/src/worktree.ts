@@ -1,11 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import type {
-  WorkspaceInfo,
-  WorkspaceResourceLimits,
-  WorkspaceSnapshotInfo,
-} from './contract.js';
+import type { WorkspaceInfo, WorkspaceResourceLimits, WorkspaceSnapshotInfo } from './contract.js';
 import { forbidden, invalid, notFound } from './errors.js';
 import {
   copyBoundedTree,
@@ -58,11 +54,7 @@ export async function resolveSandboxPaths(dataDir: string): Promise<SandboxPaths
     workspacesRoot: path.join(root, 'workspaces'),
     metadataRoot: path.join(root, 'metadata'),
   };
-  for (const directory of [
-    paths.snapshotsRoot,
-    paths.workspacesRoot,
-    paths.metadataRoot,
-  ]) {
+  for (const directory of [paths.snapshotsRoot, paths.workspacesRoot, paths.metadataRoot]) {
     await mkdir(directory, { recursive: true, mode: 0o700 });
   }
   return paths;
@@ -80,14 +72,19 @@ export function validateWorkspaceId(value: string): string {
 }
 
 export function workspaceDirectory(paths: SandboxPaths, workspaceId: string): string {
-  const directory = path.join(paths.workspacesRoot, `${WORKSPACE_PREFIX}${validateWorkspaceId(workspaceId)}`);
-  if (!isWithinRoot(paths.workspacesRoot, directory)) forbidden('Workspace path escapes its private root');
+  const directory = path.join(
+    paths.workspacesRoot,
+    `${WORKSPACE_PREFIX}${validateWorkspaceId(workspaceId)}`
+  );
+  if (!isWithinRoot(paths.workspacesRoot, directory))
+    forbidden('Workspace path escapes its private root');
   return directory;
 }
 
 export function snapshotDirectory(paths: SandboxPaths, snapshotId: string): string {
   const directory = path.join(paths.snapshotsRoot, validateSnapshotId(snapshotId));
-  if (!isWithinRoot(paths.snapshotsRoot, directory)) forbidden('Snapshot path escapes its private root');
+  if (!isWithinRoot(paths.snapshotsRoot, directory))
+    forbidden('Snapshot path escapes its private root');
   return directory;
 }
 
@@ -225,7 +222,8 @@ export async function writeWorkspaceRecord(
   record: WorkspaceRecord
 ): Promise<void> {
   const target = path.join(paths.metadataRoot, `${record.info.workspaceId}.json`);
-  if (!isWithinRoot(paths.metadataRoot, target)) forbidden('Workspace metadata path escapes its root');
+  if (!isWithinRoot(paths.metadataRoot, target))
+    forbidden('Workspace metadata path escapes its root');
   await writeMetadata(paths.metadataRoot, `${record.info.workspaceId}.json`, record);
 }
 
@@ -274,8 +272,12 @@ export async function listWorkspaceRecords(paths: SandboxPaths): Promise<Workspa
   return records;
 }
 
-export async function deleteWorkspaceRecord(paths: SandboxPaths, workspaceId: string): Promise<void> {
+export async function deleteWorkspaceRecord(
+  paths: SandboxPaths,
+  workspaceId: string
+): Promise<void> {
   const target = path.join(paths.metadataRoot, `${validateWorkspaceId(workspaceId)}.json`);
-  if (!isWithinRoot(paths.metadataRoot, target)) forbidden('Workspace metadata path escapes its root');
+  if (!isWithinRoot(paths.metadataRoot, target))
+    forbidden('Workspace metadata path escapes its root');
   await removeBoundedTree(paths.metadataRoot, target);
 }

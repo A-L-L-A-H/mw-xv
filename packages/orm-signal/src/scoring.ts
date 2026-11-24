@@ -45,7 +45,8 @@ export function computeSignalFinalScore(
     sourceAuthority: weights.sourceAuthority ?? DEFAULT_SIGNAL_SCORE_WEIGHTS.sourceAuthority,
     velocity: weights.velocity ?? DEFAULT_SIGNAL_SCORE_WEIGHTS.velocity,
   };
-  const weightSum = resolved.keywordWeight + resolved.recencyDecay + resolved.sourceAuthority + resolved.velocity;
+  const weightSum =
+    resolved.keywordWeight + resolved.recencyDecay + resolved.sourceAuthority + resolved.velocity;
   if (weightSum <= 0) throw new Error('Signal score weights must sum to a positive value');
 
   const finalScore =
@@ -60,6 +61,9 @@ export function computeSignalFinalScore(
 
 export const SIGNAL_ALERT_DEFAULT_THRESHOLD = 0.75;
 
-export function shouldFireAlert(finalScore: number, threshold: number = SIGNAL_ALERT_DEFAULT_THRESHOLD): boolean {
+export function shouldFireAlert(
+  finalScore: number,
+  threshold: number = SIGNAL_ALERT_DEFAULT_THRESHOLD
+): boolean {
   return Number.isFinite(finalScore) && finalScore >= threshold;
 }

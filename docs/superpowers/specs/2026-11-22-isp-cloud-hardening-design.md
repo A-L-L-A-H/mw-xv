@@ -19,16 +19,19 @@ Users never manually invent or enter internal service tokens.
 ### Token Resolution Contract (Identical across Node.js, Rust, Go)
 
 Domain labels:
+
 - ISP service: `moonwitness-isp-admin-v1`
 - Control Plane: `moonwitness-control-plane-admin-v1`
 
 Precedence:
+
 1. Explicit service override (`MW_ISP_ADMIN_TOKEN` / `MW_CONTROL_PLANE_TOKEN`, trimmed non-empty).
 2. Derived HMAC-SHA256 hex token from shared secret (`MW_INTERNAL_SECRET` or `JWT_SECRET`):
    `hex(HMAC_SHA256(secret, domain_label))` (64 lowercase hex characters).
 3. Standalone fallback (runtimes only): auto-generate 32 CSPRNG bytes -> 64 hex chars, persist to `<dir(db_path)>/.admin-token` (`0600` on Unix) so standalone single-node restarts preserve the token without manual input.
 
 Runtime enforcement:
+
 - `GET /health` remains unauthenticated for container/orchestrator liveness probes.
 - All other HTTP endpoints require `Authorization: Bearer <token>` verified via constant-time comparison; missing/invalid credentials fail closed with `401 Unauthorized`.
 - Default HTTP bind addresses use `127.0.0.1` (`127.0.0.1:3000` in `apps/isp`, `127.0.0.1:3003` in `apps/control-plane`). In `deploy/compose/docker-compose.yml`, host port mappings bind `127.0.0.1:3002:3000` and `127.0.0.1:3003:3003` while RADIUS UDP (`1812/udp`, `1813/udp`) remains reachable for NAS routers.

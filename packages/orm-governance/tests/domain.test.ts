@@ -56,7 +56,9 @@ describe('mandate activity window', () => {
   });
 
   it('is inactive for non-active statuses regardless of dates', () => {
-    expect(isMandateActive({ status: 'revoked', starts_on: null, ends_on: null }, '2026-06-15')).toBe(false);
+    expect(
+      isMandateActive({ status: 'revoked', starts_on: null, ends_on: null }, '2026-06-15')
+    ).toBe(false);
   });
 });
 

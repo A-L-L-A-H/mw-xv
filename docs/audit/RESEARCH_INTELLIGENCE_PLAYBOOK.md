@@ -9,17 +9,21 @@ Riset bukan lomba mengumpulkan link. Setiap pencarian harus menjawab pertanyaan 
 ## 2. Three-circle research model
 
 ### Circle 1 — Direct domain
+
 Cari produk, library, framework, standar, dan implementasi yang menyelesaikan problem yang sama.
 
 ### Circle 2 — Adjacent domain
+
 Cari sistem yang menghadapi constraint serupa meski kategorinya berbeda: workflow, scale, trust, collaboration, offline use, extensibility, cost, or automation.
 
 ### Circle 3 — Distant domain
+
 Cari prinsip dari domain yang tidak berhubungan langsung, seperti game systems, logistics, biology, compilers, distributed systems, knowledge graphs, robotics, manufacturing, or marketplaces. Transfer prinsip, bukan fitur permukaan. Uji apakah analoginya valid.
 
 ## 3. Source hierarchy
 
 Prioritaskan:
+
 1. Official specifications, standards, RFCs, security advisories, vendor/framework docs, and source code.
 2. Release notes, maintainers' issue trackers, design proposals, technical talks by implementers, and engineering postmortems.
 3. Peer-reviewed research and credible academic preprints.
@@ -45,6 +49,7 @@ For current or fast-changing claims, verify recent dates and current official do
 ## 5. Open-source intelligence
 
 Assess a reference project by:
+
 - Maintainer and release activity.
 - Open and closed issue patterns, contribution responsiveness, and project governance.
 - License and compatibility.
@@ -59,9 +64,10 @@ Stars, downloads, forks, and trending status are weak signals, not quality verdi
 ## 6. Research comparison matrix
 
 | Reference | Domain circle | Mechanism/capability | Evidence | Maturity | Strength | Limitation | Repository implication |
-|---|---|---|---|---|---|---|---|
+| --------- | ------------- | -------------------- | -------- | -------- | -------- | ---------- | ---------------------- |
 
 Classify a technology's maturity as:
+
 - Production-proven in relevant use cases.
 - Established but context-dependent.
 - Emerging with limited field evidence.
@@ -73,6 +79,7 @@ Do not use a paper's research result as proof of production readiness. Distingui
 ## 7. Technology radar
 
 For important technologies, record:
+
 - Name and role.
 - Current project usage: adopted / trial / assessed / not used.
 - Maturity and evidence.
@@ -86,6 +93,7 @@ A radar entry is not automatically a task. Create an experiment or implementatio
 ## 8. Pain-point and unmet-need research
 
 Where public evidence exists, inspect:
+
 - Repeated issues and feature requests.
 - Workarounds in discussions.
 - User complaints and workflow friction.
@@ -98,6 +106,7 @@ Separate repeated observations from isolated anecdotes. Do not claim user demand
 ## 9. Cross-domain pattern transfer
 
 For each imported pattern:
+
 - Original domain and problem.
 - Mechanism that makes it work.
 - Preconditions and constraints.

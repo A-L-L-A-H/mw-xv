@@ -21,16 +21,7 @@ const outputFile = path.join(archiveDir, 'INDEX.json');
 const checkOnly = process.argv.includes('--check');
 
 const ID_PATTERN = /^((?:IDEA|PRJ|CAN|CHR|FRM|UNR|SRC-LIB|MW-STORY-LEAD)-\d{4})$/;
-const NAMESPACE_ORDER = [
-  'IDEA',
-  'PRJ',
-  'CAN',
-  'MW-STORY-LEAD',
-  'CHR',
-  'FRM',
-  'SRC-LIB',
-  'UNR',
-];
+const NAMESPACE_ORDER = ['IDEA', 'PRJ', 'CAN', 'MW-STORY-LEAD', 'CHR', 'FRM', 'SRC-LIB', 'UNR'];
 
 function plain(text) {
   return text
@@ -43,7 +34,10 @@ function plain(text) {
 
 function parseRow(line) {
   if (!line.startsWith('|')) return null;
-  const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
+  const cells = line
+    .split('|')
+    .slice(1, -1)
+    .map((cell) => cell.trim());
   if (cells.length < 3) return null;
   const id = plain(cells[0]).replace(/^\*\*|\*\*$/g, '');
   if (!ID_PATTERN.test(id)) return null;
@@ -61,9 +55,7 @@ function namespaceOf(id) {
 }
 
 async function build() {
-  const files = (await readdir(archiveDir))
-    .filter((name) => name.endsWith('.md'))
-    .sort();
+  const files = (await readdir(archiveDir)).filter((name) => name.endsWith('.md')).sort();
   const byId = new Map();
 
   function add(record, name) {
@@ -92,13 +84,22 @@ async function build() {
 
     // Section-style definitions, e.g. "## FRM-0015 — CRAYON Framework v1.3".
     for (let i = 0; i < lines.length; i += 1) {
-      const heading = /^##\s+((?:IDEA|PRJ|CAN|CHR|FRM|UNR|SRC-LIB|MW-STORY-LEAD)-\d{4})\s+[—-]\s*(.+)$/.exec(lines[i]);
+      const heading =
+        /^##\s+((?:IDEA|PRJ|CAN|CHR|FRM|UNR|SRC-LIB|MW-STORY-LEAD)-\d{4})\s+[—-]\s*(.+)$/.exec(
+          lines[i]
+        );
       if (!heading) continue;
       const section = [];
-      for (let j = i + 1; j < lines.length && !/^##\s/.test(lines[j]); j += 1) section.push(lines[j]);
+      for (let j = i + 1; j < lines.length && !/^##\s/.test(lines[j]); j += 1)
+        section.push(lines[j]);
       const sourceLine = section.find((line) => /^\*\*Source:\*\*/.test(line)) ?? '';
       const statusLine = section.find((line) => /^- Status:/.test(line)) ?? '';
-      const issues = [...section.slice(0, 6).join('\n').matchAll(/#(\d+)\b/g)].map((m) => Number(m[1]));
+      const issues = [
+        ...section
+          .slice(0, 6)
+          .join('\n')
+          .matchAll(/#(\d+)\b/g),
+      ].map((m) => Number(m[1]));
       add(
         {
           id: heading[1],
@@ -151,5 +152,7 @@ if (checkOnly) {
   process.stdout.write(`Idea archive index is current (${index.entries.length} records).\n`);
 } else {
   await writeFile(outputFile, serialized, 'utf8');
-  process.stdout.write(`Wrote ${path.relative(root, outputFile)} (${index.entries.length} records).\n`);
+  process.stdout.write(
+    `Wrote ${path.relative(root, outputFile)} (${index.entries.length} records).\n`
+  );
 }

@@ -32,7 +32,9 @@ async function insertIfMissing(db: Knex, rows: readonly SeedRow[]): Promise<numb
   let inserted = 0;
   for (const row of rows) {
     const externalRef = row.values[EXTERNAL_REF_COLUMN];
-    const existing = await db(row.tableName).where({ [EXTERNAL_REF_COLUMN]: externalRef }).first('id');
+    const existing = await db(row.tableName)
+      .where({ [EXTERNAL_REF_COLUMN]: externalRef })
+      .first('id');
     if (existing) continue;
     await db(row.tableName).insert(row.values);
     inserted += 1;
@@ -112,7 +114,8 @@ export async function seedGovernanceData(
         institution_id: null,
         status: 'in_force',
         current_version: '1.0.0',
-        summary: 'Framework constraining deficit levels and mandating transparency in budget execution.',
+        summary:
+          'Framework constraining deficit levels and mandating transparency in budget execution.',
         stakeholder_ids: JSON.stringify({ ids: ['governance:institution:ibo'] }),
         is_active: true,
         external_ref: 'governance:policy:fiscal-discipline',

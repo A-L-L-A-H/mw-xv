@@ -40,13 +40,17 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { frameworkIds, includeControls, includeGaps, includeOverlaps } = req.body;
 
-    if (!Array.isArray(frameworkIds) || frameworkIds.some(id => typeof id !== 'string')) {
-      return reply.code(400).send({ success: false, error: 'frameworkIds must be an array of framework code strings' });
+    if (!Array.isArray(frameworkIds) || frameworkIds.some((id) => typeof id !== 'string')) {
+      return reply
+        .code(400)
+        .send({ success: false, error: 'frameworkIds must be an array of framework code strings' });
     }
 
     try {
@@ -68,7 +72,9 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { controlId, evidence, testProcedure, automationLevel } = req.body;
@@ -77,18 +83,23 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
       return reply.code(400).send({ success: false, error: 'controlId is required' });
     }
     if (!Array.isArray(evidence) || evidence.length === 0) {
-      return reply.code(400).send({ success: false, error: 'evidence array with at least one entry is required' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'evidence array with at least one entry is required' });
     }
     const validAutomation = ['manual', 'semi_automated', 'fully_automated'];
     if (automationLevel !== undefined && !validAutomation.includes(automationLevel as string)) {
-      return reply.code(400).send({ success: false, error: `Invalid automationLevel. Must be one of: ${validAutomation.join(', ')}` });
+      return reply.code(400).send({
+        success: false,
+        error: `Invalid automationLevel. Must be one of: ${validAutomation.join(', ')}`,
+      });
     }
 
     try {
       const input: ControlTestInput = {
         companyId: auth.companyId,
         controlId,
-        evidence: (evidence as Array<Record<string, unknown>>).map(entry => ({
+        evidence: (evidence as Array<Record<string, unknown>>).map((entry) => ({
           type: String(entry.type),
           reference: String(entry.reference),
           hash: String(entry.hash),
@@ -111,19 +122,30 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { severity, likelihood, impact } = req.body;
 
     if (!VALID_SEVERITIES.includes(severity as string)) {
-      return reply.code(400).send({ success: false, error: `Invalid severity. Must be one of: ${VALID_SEVERITIES.join(', ')}` });
+      return reply.code(400).send({
+        success: false,
+        error: `Invalid severity. Must be one of: ${VALID_SEVERITIES.join(', ')}`,
+      });
     }
     if (!VALID_LIKELIHOODS.includes(likelihood as string)) {
-      return reply.code(400).send({ success: false, error: `Invalid likelihood. Must be one of: ${VALID_LIKELIHOODS.join(', ')}` });
+      return reply.code(400).send({
+        success: false,
+        error: `Invalid likelihood. Must be one of: ${VALID_LIKELIHOODS.join(', ')}`,
+      });
     }
     if (!VALID_IMPACTS.includes(impact as string)) {
-      return reply.code(400).send({ success: false, error: `Invalid impact. Must be one of: ${VALID_IMPACTS.join(', ')}` });
+      return reply.code(400).send({
+        success: false,
+        error: `Invalid impact. Must be one of: ${VALID_IMPACTS.join(', ')}`,
+      });
     }
 
     try {
@@ -144,13 +166,17 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { evidenceId, expectedHash, verifyExpiry } = req.body;
 
     if (typeof evidenceId !== 'string' || !evidenceId || typeof expectedHash !== 'string') {
-      return reply.code(400).send({ success: false, error: 'evidenceId and expectedHash are required' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'evidenceId and expectedHash are required' });
     }
 
     try {
@@ -173,7 +199,9 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const {
@@ -190,7 +218,9 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
     } = req.body;
 
     if (typeof frameworkId !== 'string' || !frameworkId || typeof assessmentDate !== 'string') {
-      return reply.code(400).send({ success: false, error: 'frameworkId and assessmentDate are required' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'frameworkId and assessmentDate are required' });
     }
 
     try {
@@ -220,7 +250,9 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const {
@@ -241,8 +273,10 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
         includePending: includePending === true,
         includeMetrics: includeMetrics === true,
         includeStale: includeStale === true,
-        escalationThresholdDays: escalationThresholdDays !== undefined ? Number(escalationThresholdDays) : undefined,
-        staleThresholdDays: staleThresholdDays !== undefined ? Number(staleThresholdDays) : undefined,
+        escalationThresholdDays:
+          escalationThresholdDays !== undefined ? Number(escalationThresholdDays) : undefined,
+        staleThresholdDays:
+          staleThresholdDays !== undefined ? Number(staleThresholdDays) : undefined,
         periodStart: typeof periodStart === 'string' ? periodStart : undefined,
         periodEnd: typeof periodEnd === 'string' ? periodEnd : undefined,
       });

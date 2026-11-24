@@ -130,7 +130,9 @@ export function KnowledgePage() {
     setSourceId(id);
     setRequestedLocator(selectedLocator);
     if (typeof document !== 'undefined') {
-      document.getElementById('source-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document
+        .getElementById('source-heading')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -240,13 +242,13 @@ export function KnowledgePage() {
         {citation &&
           (citation.availablePassages as readonly string[]).length === 0 &&
           !citationQuery.isLoading && (
-          <EmptyState
-            headingLevel={3}
-            icon={<StateArtwork slug="empty-collection" />}
-            title="No pinned passages"
-            description="The selected source edition has no pinned passage locators available."
-          />
-        )}
+            <EmptyState
+              headingLevel={3}
+              icon={<StateArtwork slug="empty-collection" />}
+              title="No pinned passages"
+              description="The selected source edition has no pinned passage locators available."
+            />
+          )}
         {citation && passageQuery.data && (
           <SourceCard citation={citation} passage={passageQuery.data} />
         )}

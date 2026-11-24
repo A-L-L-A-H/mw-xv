@@ -165,7 +165,6 @@ const DEFAULT_MIN_CONFIDENCE_BPS = 3000;
 const DEFAULT_MAX_SUMMARY_ITEMS_PER_TOPIC = 5;
 const DEFAULT_FEEDBACK_WEIGHT_BPS = 1000;
 
-
 function parseIsoMs(iso: string | undefined): number {
   if (!iso) {
     return 0;

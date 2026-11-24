@@ -26,7 +26,8 @@ export async function run(
   }
 
   const entryPayload = isRecord(input.payload) ? input.payload : {};
-  const jobId = await ctx.db('jobs')
+  const jobId = await ctx
+    .db('jobs')
     .insert({
       handler,
       handler_version: 1,

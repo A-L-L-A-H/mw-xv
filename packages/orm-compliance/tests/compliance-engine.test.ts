@@ -57,10 +57,21 @@ describe('Compliance Engine', () => {
         companyId: 1,
         controlId: 'ISO27001-A.5.1',
         evidence: [
-          { type: 'document', reference: 'POL-INFOSEC-001', hash: 'abc123', collectedDate: '2026-03-10' },
-          { type: 'approval_record', reference: 'APPROVAL-2025-12-15', hash: 'def456', collectedDate: '2025-12-15' },
+          {
+            type: 'document',
+            reference: 'POL-INFOSEC-001',
+            hash: 'abc123',
+            collectedDate: '2026-03-10',
+          },
+          {
+            type: 'approval_record',
+            reference: 'APPROVAL-2025-12-15',
+            hash: 'def456',
+            collectedDate: '2025-12-15',
+          },
         ],
-        testProcedure: 'Review policy documentation, verify management approval, confirm publication and communication to staff',
+        testProcedure:
+          'Review policy documentation, verify management approval, confirm publication and communication to staff',
       });
 
       expect(result.passed).toBe(true);
@@ -73,9 +84,15 @@ describe('Compliance Engine', () => {
         companyId: 1,
         controlId: 'SOC2-CC6.1',
         evidence: [
-          { type: 'access_control_matrix', reference: 'ACM-2026-Q1', hash: 'abc123', collectedDate: '2026-03-15' },
+          {
+            type: 'access_control_matrix',
+            reference: 'ACM-2026-Q1',
+            hash: 'abc123',
+            collectedDate: '2026-03-15',
+          },
         ],
-        testProcedure: 'Review access control lists, test authentication mechanisms, verify logging and monitoring',
+        testProcedure:
+          'Review access control lists, test authentication mechanisms, verify logging and monitoring',
       });
 
       expect(result.passed).toBe(false);
@@ -89,10 +106,23 @@ describe('Compliance Engine', () => {
         companyId: 1,
         controlId: 'GDPR-ART32',
         evidence: [
-          { type: 'log', reference: 'encryption_scan_20260315', hash: 'enc123', collectedDate: '2026-03-15', automated: true },
-          { type: 'log', reference: 'access_review_20260315', hash: 'acc456', collectedDate: '2026-03-15', automated: true },
+          {
+            type: 'log',
+            reference: 'encryption_scan_20260315',
+            hash: 'enc123',
+            collectedDate: '2026-03-15',
+            automated: true,
+          },
+          {
+            type: 'log',
+            reference: 'access_review_20260315',
+            hash: 'acc456',
+            collectedDate: '2026-03-15',
+            automated: true,
+          },
         ],
-        testProcedure: 'Review encryption, pseudonymisation, access controls, incident response procedures',
+        testProcedure:
+          'Review encryption, pseudonymisation, access controls, incident response procedures',
         automationLevel: 'fully_automated',
       });
 
@@ -308,7 +338,11 @@ describe('Compliance Engine', () => {
       expect(result.staleRemediations).toBeDefined();
       expect(
         (result.staleRemediations ?? []).every(
-          (r: RemediationTrackingResult['staleRemediations'] extends (infer T)[] | undefined ? T : never) => r.daysOverdue > 60
+          (
+            r: RemediationTrackingResult['staleRemediations'] extends (infer T)[] | undefined
+              ? T
+              : never
+          ) => r.daysOverdue > 60
         )
       ).toBe(true);
     });

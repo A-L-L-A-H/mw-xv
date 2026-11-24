@@ -14,7 +14,10 @@ const shaPattern = /^[a-f0-9]{40}$/u;
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   if (value && typeof value === 'object' && !Array.isArray(value))
-    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`)
+      .join(',')}}`;
   return JSON.stringify(value ?? null);
 }
 
@@ -61,7 +64,8 @@ export function verifyFleetState(state) {
     return { valid: false, reason: 'updatedAt must be an ISO timestamp' };
   if (!shaPattern.test(state.previousCommit ?? ''))
     return { valid: false, reason: 'previousCommit must be a full SHA' };
-  if (state.hash !== fleetStateHash(state)) return { valid: false, reason: 'fleet state hash mismatch' };
+  if (state.hash !== fleetStateHash(state))
+    return { valid: false, reason: 'fleet state hash mismatch' };
   return { valid: true, epoch: state.epoch, paused: state.paused };
 }
 
@@ -73,7 +77,8 @@ export function buildNextFleetState(state, action, { actor, reason, nowMs = Date
   const verdict = verifyFleetState(state);
   if (!verdict.valid) throw new Error(`Refusing transition from invalid state: ${verdict.reason}`);
   if (!FLEET_ACTIONS.includes(action)) throw new Error(`Unknown fleet action: ${action}`);
-  if (typeof actor !== 'string' || !boundedPattern.test(actor)) throw new Error('A bounded actor is required.');
+  if (typeof actor !== 'string' || !boundedPattern.test(actor))
+    throw new Error('A bounded actor is required.');
   if (typeof reason !== 'string' || reason.length < 8 || !boundedPattern.test(reason))
     throw new Error('A bounded reason of at least 8 characters is required.');
   const next = {
@@ -133,7 +138,9 @@ if (isDirectExecution) {
     } else if (command === 'next') {
       const [action, actor, reason] = rest;
       const state = parseFleetState(await readFile(filePath, 'utf8'));
-      process.stdout.write(`${JSON.stringify(buildNextFleetState(state, action, { actor, reason }), null, 2)}\n`);
+      process.stdout.write(
+        `${JSON.stringify(buildNextFleetState(state, action, { actor, reason }), null, 2)}\n`
+      );
     } else {
       throw new Error('Usage: node scripts/fleet-state.mjs check|verify|next <state.json> [args]');
     }

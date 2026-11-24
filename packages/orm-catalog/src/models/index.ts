@@ -41,7 +41,11 @@ export const ProductVariant = defineModel('catalog.product_variant', {
     product: fields.belongsTo(Product, { required: true, label: 'Product' }),
     sku: fields.string({ required: true, unique: true, label: 'Variant SKU' }),
     attributes: fields.json({ label: 'Attributes' }),
-    price_adjustment_minor: fields.integer({ required: true, default: 0, label: 'Price Adjustment (minor units)' }),
+    price_adjustment_minor: fields.integer({
+      required: true,
+      default: 0,
+      label: 'Price Adjustment (minor units)',
+    }),
     stock_qty: fields.integer({ required: true, default: 0, label: 'Stock Quantity' }),
     company: fields.belongsTo(Company, { label: 'Company' }),
   },

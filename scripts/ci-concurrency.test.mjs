@@ -18,9 +18,11 @@ test('CI cancels stale runs within the same workflow, event, branch or PR', () =
   // Push and PR runs for the same commit are distinct concurrency groups: neither
   // cancels the other, while newer commits on the same branch or PR cancel stale
   // runs that would otherwise starve the runner queue.
-  const group = (workflowName, eventName, scope) =>
-    `ci-${workflowName}-${eventName}-${scope}`;
-  assert.notEqual(group('CI', 'push', 'refs/heads/dev'), group('CI', 'pull_request', 'refs/heads/dev'));
+  const group = (workflowName, eventName, scope) => `ci-${workflowName}-${eventName}-${scope}`;
+  assert.notEqual(
+    group('CI', 'push', 'refs/heads/dev'),
+    group('CI', 'pull_request', 'refs/heads/dev')
+  );
   assert.notEqual(group('CI', 'push', 'refs/heads/dev'), group('CI', 'pull_request', '218'));
   assert.notEqual(group('CI', 'pull_request', '218'), group('CI', 'pull_request', '219'));
   assert.equal(group('CI', 'push', 'refs/heads/dev'), group('CI', 'push', 'refs/heads/dev'));

@@ -49,15 +49,21 @@ function isNameStart(code: number, attribute: boolean): boolean {
 }
 
 function isNameChar(code: number, attribute: boolean): boolean {
-  return isAsciiLetter(code)
-    || (code >= 48 && code <= 57)
-    || code === 58
-    || code === 95
-    || code === 45
-    || (attribute && code === 46);
+  return (
+    isAsciiLetter(code) ||
+    (code >= 48 && code <= 57) ||
+    code === 58 ||
+    code === 95 ||
+    code === 45 ||
+    (attribute && code === 46)
+  );
 }
 
-function readName(xml: string, index: number, attribute: boolean): { name: string; end: number } | undefined {
+function readName(
+  xml: string,
+  index: number,
+  attribute: boolean
+): { name: string; end: number } | undefined {
   if (!isNameStart(xml.charCodeAt(index), attribute)) return undefined;
   let cursor = index + 1;
   while (isNameChar(xml.charCodeAt(cursor), attribute)) cursor += 1;
@@ -116,9 +122,7 @@ function parseTag(xml: string, start: number): ParsedTag | undefined {
   }
 }
 
-type XmlNode =
-  | { _text: string }
-  | ({ _name: string } & Record<string, unknown>);
+type XmlNode = { _text: string } | ({ _name: string } & Record<string, unknown>);
 
 interface StackEntry {
   name: string;

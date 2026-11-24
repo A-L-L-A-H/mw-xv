@@ -20,7 +20,12 @@ export const views = [
       filters: [{ label: 'Active Only', domain: [['is_active', '=', true]] }],
       groupBy: [{ label: 'Kind', field: 'kind' }],
     },
-    kanban: { groupBy: 'kind', cardTitle: 'name', cardFields: ['code', 'is_active'], badgeField: 'kind' },
+    kanban: {
+      groupBy: 'kind',
+      cardTitle: 'name',
+      cardFields: ['code', 'is_active'],
+      badgeField: 'kind',
+    },
   }),
   defineView(SignalObservation, {
     title: 'Signal Observations',
@@ -30,7 +35,11 @@ export const views = [
     },
     form: {
       sections: [
-        { title: 'Observation', columns: 2, fields: ['title', 'source', 'url', 'published_at', 'source_ref', 'company'] },
+        {
+          title: 'Observation',
+          columns: 2,
+          fields: ['title', 'source', 'url', 'published_at', 'source_ref', 'company'],
+        },
         { title: 'Content', fields: ['summary', 'tags', 'raw', 'content_hash'] },
       ],
     },
@@ -41,12 +50,25 @@ export const views = [
         { label: 'Company', field: 'company_id' },
       ],
     },
-    kanban: { groupBy: 'source_id', cardTitle: 'title', cardFields: ['published_at', 'source_ref'], badgeField: 'source_ref' },
+    kanban: {
+      groupBy: 'source_id',
+      cardTitle: 'title',
+      cardFields: ['published_at', 'source_ref'],
+      badgeField: 'source_ref',
+    },
   }),
   defineView(SignalScore, {
     title: 'Signal Scores',
     list: {
-      columns: ['observation', 'keyword_weight', 'recency_decay', 'source_authority', 'velocity', 'final_score', 'scored_at'],
+      columns: [
+        'observation',
+        'keyword_weight',
+        'recency_decay',
+        'source_authority',
+        'velocity',
+        'final_score',
+        'scored_at',
+      ],
       order: 'final_score desc, id desc',
       decorations: [
         { color: 'success', domain: [['final_score', '>=', 0.75]] },
@@ -58,7 +80,15 @@ export const views = [
         {
           title: 'Score Breakdown',
           columns: 2,
-          fields: ['observation', 'scored_at', 'keyword_weight', 'recency_decay', 'source_authority', 'velocity', 'final_score'],
+          fields: [
+            'observation',
+            'scored_at',
+            'keyword_weight',
+            'recency_decay',
+            'source_authority',
+            'velocity',
+            'final_score',
+          ],
         },
       ],
     },
@@ -79,7 +109,11 @@ export const views = [
     },
     form: {
       sections: [
-        { title: 'Alert', columns: 2, fields: ['observation', 'status', 'threshold', 'fired_at', 'score_ref'] },
+        {
+          title: 'Alert',
+          columns: 2,
+          fields: ['observation', 'status', 'threshold', 'fired_at', 'score_ref'],
+        },
       ],
     },
     search: {
@@ -87,6 +121,11 @@ export const views = [
       filters: [{ label: 'Open Alerts', domain: [['status', '=', 'open']] }],
       groupBy: [{ label: 'Status', field: 'status' }],
     },
-    kanban: { groupBy: 'status', cardTitle: 'observation', cardFields: ['threshold', 'fired_at'], badgeField: 'status' },
+    kanban: {
+      groupBy: 'status',
+      cardTitle: 'observation',
+      cardFields: ['threshold', 'fired_at'],
+      badgeField: 'status',
+    },
   }),
 ];

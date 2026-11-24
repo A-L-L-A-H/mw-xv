@@ -19,7 +19,10 @@ import {
 } from './models.js';
 import { AgentRunEffect } from './models/runs.js';
 import { isAgentOperational, isActiveCapabilityGrant } from './validation.js';
-import { sha256Canonical, toCanonicalJson as canonical } from '@moonwitness/ai-runtime/canonical-json.js';
+import {
+  sha256Canonical,
+  toCanonicalJson as canonical,
+} from '@moonwitness/ai-runtime/canonical-json.js';
 
 export const EXECUTION_FINGERPRINT_VERSION = 1 as const;
 export const AGENT_RUN_APPROVAL_WORKFLOW = 'ai.agent_run_approval' as const;

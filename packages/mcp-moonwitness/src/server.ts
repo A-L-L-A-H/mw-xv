@@ -50,7 +50,9 @@ export const MOONWITNESS_MCP_TOOLS: readonly McpToolDescriptor[] = [
     requiredCapability: 'mw.catalog.read@v1',
     inputSchema: {
       type: 'object',
-      properties: { model: { type: 'string', description: "Dot-notation model name, e.g. 'base.user'" } },
+      properties: {
+        model: { type: 'string', description: "Dot-notation model name, e.g. 'base.user'" },
+      },
       required: ['model'],
     },
   },
@@ -158,7 +160,10 @@ export class MoonWitnessMcpServer {
     try {
       if (request.method === 'initialize') {
         const params = isRecord(request.params) ? request.params : {};
-        const requested = typeof params.protocolVersion === 'string' ? params.protocolVersion : SUPPORTED_PROTOCOL_VERSION;
+        const requested =
+          typeof params.protocolVersion === 'string'
+            ? params.protocolVersion
+            : SUPPORTED_PROTOCOL_VERSION;
         return {
           jsonrpc: '2.0',
           id,
@@ -260,7 +265,9 @@ export class MoonWitnessMcpServer {
           };
         }
         const fields = Array.isArray(args['fields'])
-          ? (args['fields'] as unknown[]).filter((field): field is string => typeof field === 'string')
+          ? (args['fields'] as unknown[]).filter(
+              (field): field is string => typeof field === 'string'
+            )
           : undefined;
         const outcome = await queryMoonWitnessModel(model, {
           limit: typeof args['limit'] === 'number' ? args['limit'] : undefined,
@@ -282,7 +289,8 @@ export class MoonWitnessMcpServer {
         return { jsonrpc: '2.0', id, result: text({ model, total }) };
       }
       case 'mw_taskos_summary': {
-        const overridePath = typeof args['path'] === 'string' ? args['path'] : this.context.taskosPath;
+        const overridePath =
+          typeof args['path'] === 'string' ? args['path'] : this.context.taskosPath;
         return { jsonrpc: '2.0', id, result: text(await summarizeTaskos(overridePath)) };
       }
       case 'mw_api_health': {

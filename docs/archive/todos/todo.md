@@ -1496,12 +1496,12 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
 
 ## 27 — Final Audit & Cleanup
 
-| ID             | Prioritas | Layer          | Dependensi                                                 | Lokasi Target                            |
-| :------------- | :-------- | :------------- | :--------------------------------------------------------- | :--------------------------------------- |
-| `MW-AUDIT-001` | P1        | Shared         | `MW-BACK-002`, `MW-PKG-002`, `MW-WIDGET-007`, `MW-ACT-007` | Seluruh repository                       |
-| `MW-AUDIT-002` | P1        | QA             | `MW-AUDIT-001`                                             | `apps/*`, `packages/*`                   |
-| `MW-AUDIT-003` | P2        | Infrastructure | `MW-DOC-001`, `MW-AUDIT-001`                               | `docs/`, `README.md`, `packages/assets/` |
-| `MW-AUDIT-004` | P2        | Infrastructure | `MW-E2E-016`, `MW-AUDIT-003`                               | `docs/tasks/sources/todo.md`, `ROADMAP.md`, `todo-*.md`     |
+| ID             | Prioritas | Layer          | Dependensi                                                 | Lokasi Target                                           |
+| :------------- | :-------- | :------------- | :--------------------------------------------------------- | :------------------------------------------------------ |
+| `MW-AUDIT-001` | P1        | Shared         | `MW-BACK-002`, `MW-PKG-002`, `MW-WIDGET-007`, `MW-ACT-007` | Seluruh repository                                      |
+| `MW-AUDIT-002` | P1        | QA             | `MW-AUDIT-001`                                             | `apps/*`, `packages/*`                                  |
+| `MW-AUDIT-003` | P2        | Infrastructure | `MW-DOC-001`, `MW-AUDIT-001`                               | `docs/`, `README.md`, `packages/assets/`                |
+| `MW-AUDIT-004` | P2        | Infrastructure | `MW-E2E-016`, `MW-AUDIT-003`                               | `docs/tasks/sources/todo.md`, `ROADMAP.md`, `todo-*.md` |
 
 - [x] **MW-AUDIT-001** Pastikan seluruh shim legacy (`apps/api/src/whatsapp/manifest.ts`), kontrak duplikat (`packages/client/src/types.ts`, evaluator `domain.ts`), dan switch-case model hardcoded bersih dari repository
   - [x] **MW-AUDIT-001.1** Periksa output `pnpm audit:workspace` memiliki nol runtime cycles, nol local file cycles, dan nol workspace cycles

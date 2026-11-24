@@ -25,18 +25,18 @@ The MoonWitness layout system uses a **token-driven CSS Grid and Flexbox hybrid*
 :root {
   /* Spacing scale */
   --mw-space-0: 0;
-  --mw-space-1: 0.25rem;   /* 4px */
-  --mw-space-2: 0.5rem;    /* 8px */
-  --mw-space-3: 0.75rem;   /* 12px */
-  --mw-space-4: 1rem;      /* 16px */
-  --mw-space-5: 1.25rem;   /* 20px */
-  --mw-space-6: 1.5rem;    /* 24px */
-  --mw-space-8: 2rem;      /* 32px */
-  --mw-space-10: 2.5rem;   /* 40px */
-  --mw-space-12: 3rem;     /* 48px */
-  --mw-space-16: 4rem;     /* 64px */
-  --mw-space-20: 5rem;     /* 80px */
-  --mw-space-24: 6rem;     /* 96px */
+  --mw-space-1: 0.25rem; /* 4px */
+  --mw-space-2: 0.5rem; /* 8px */
+  --mw-space-3: 0.75rem; /* 12px */
+  --mw-space-4: 1rem; /* 16px */
+  --mw-space-5: 1.25rem; /* 20px */
+  --mw-space-6: 1.5rem; /* 24px */
+  --mw-space-8: 2rem; /* 32px */
+  --mw-space-10: 2.5rem; /* 40px */
+  --mw-space-12: 3rem; /* 48px */
+  --mw-space-16: 4rem; /* 64px */
+  --mw-space-20: 5rem; /* 80px */
+  --mw-space-24: 6rem; /* 96px */
 
   /* Panel gaps */
   --mw-panel-gap-compact: var(--mw-space-2);
@@ -87,8 +87,10 @@ The `AppShell` is the canonical shell implementation for the **Product Chrome** 
 ```tsx
 <div className="grid min-h-dvh grid-cols-1 lg:grid-cols-[13rem_minmax(0,1fr)]">
   {/* Sidebar */}
-  <aside className="board-sidebar dark sticky top-0 hidden h-dvh flex-col 
-                     border-r-4 border-ink bg-night text-ink lg:flex">
+  <aside
+    className="board-sidebar dark sticky top-0 hidden h-dvh flex-col 
+                     border-r-4 border-ink bg-night text-ink lg:flex"
+  >
     {/* Logo + Navigation */}
   </aside>
 
@@ -150,18 +152,18 @@ Breakpoints are defined as Tailwind config values and mirrored in CSS custom pro
 ```css
 /* Breakpoint tokens (mirrored from tailwind.config.js) */
 :root {
-  --mw-bp-sm: 40rem;   /* 640px — mobile landscape / small tablet */
-  --mw-bp-md: 48rem;   /* 768px — tablet portrait */
-  --mw-bp-lg: 64rem;   /* 1024px — tablet landscape / small desktop */
-  --mw-bp-xl: 80rem;   /* 1280px — desktop */
-  --mw-bp-2xl: 96rem;  /* 1536px — wide desktop */
+  --mw-bp-sm: 40rem; /* 640px — mobile landscape / small tablet */
+  --mw-bp-md: 48rem; /* 768px — tablet portrait */
+  --mw-bp-lg: 64rem; /* 1024px — tablet landscape / small desktop */
+  --mw-bp-xl: 80rem; /* 1280px — desktop */
+  --mw-bp-2xl: 96rem; /* 1536px — wide desktop */
 
   /* Container max-widths */
-  --mw-container-sm: 38rem;   /* 608px */
-  --mw-container-md: 44rem;   /* 704px */
-  --mw-container-lg: 56rem;   /* 896px */
-  --mw-container-xl: 72rem;   /* 1152px */
-  --mw-container-2xl: 80rem;  /* 1280px */
+  --mw-container-sm: 38rem; /* 608px */
+  --mw-container-md: 44rem; /* 704px */
+  --mw-container-lg: 56rem; /* 896px */
+  --mw-container-xl: 72rem; /* 1152px */
+  --mw-container-2xl: 80rem; /* 1280px */
 }
 ```
 
@@ -181,12 +183,12 @@ Breakpoints are defined as Tailwind config values and mirrored in CSS custom pro
 .responsive-shell {
   /* Mobile: full width, stacked */
   padding: var(--mw-space-4);
-  
+
   /* Tablet: increased padding */
   @media (min-width: 48rem) {
     padding: var(--mw-space-6);
   }
-  
+
   /* Desktop: max-width centered, generous padding */
   @media (min-width: 64rem) {
     max-width: var(--mw-container-xl);
@@ -197,14 +199,16 @@ Breakpoints are defined as Tailwind config values and mirrored in CSS custom pro
 
 /* Sidebar behavior */
 .board-sidebar {
-  @media (max-width: 63.9375rem) { /* < lg */
+  @media (max-width: 63.9375rem) {
+    /* < lg */
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 40;
     transform: translateX(-100%);
     transition: transform var(--mw-motion-normal) var(--mw-motion-ease);
   }
-  @media (min-width: 64rem) { /* ≥ lg */
+  @media (min-width: 64rem) {
+    /* ≥ lg */
     position: sticky;
     top: 0;
     height: 100dvh;
@@ -219,8 +223,8 @@ Breakpoints are defined as Tailwind config values and mirrored in CSS custom pro
 
 ### 4.1 Foundation Layer (Tokens & Primitives)
 
-| Pattern                        | Location                                  | Status     | Description                                           |       |         |                     |
-| ------------------------------ | ----------------------------------------- | ---------- | ----------------------------------------------------- | ----- | ------- | ------------------- |
+| Pattern                        | Location                                  | Status      | Description                                           |       |         |                     |
+| ------------------------------ | ----------------------------------------- | ----------- | ----------------------------------------------------- | ----- | ------- | ------------------- |
 | **Color Tokens**               | `packages/ui/styles/tokens.css`           | ✅ Complete | Semantic palette, fixed brand tokens, theme mappings  |       |         |                     |
 | **Typography Tokens**          | `packages/ui/styles/tokens.css`           | ✅ Complete | Font stacks, display/sans/mono/brush/grunge roles     |       |         |                     |
 | **Spacing Tokens**             | `packages/ui/styles/tokens.css`           | ✅ Complete | Space scale, panel gaps, frame width, torn inset      |       |         |                     |
@@ -233,8 +237,8 @@ Breakpoints are defined as Tailwind config values and mirrored in CSS custom pro
 
 ### 4.2 Composition Layer (Reusable Arrangements)
 
-| Pattern                      | Location                                       | Status     | Key Props                                      |
-| ---------------------------- | ---------------------------------------------- | ---------- | ---------------------------------------------- |
+| Pattern                      | Location                                       | Status      | Key Props                                      |
+| ---------------------------- | ---------------------------------------------- | ----------- | ---------------------------------------------- |
 | **Panel**                    | `packages/ui/src/components/panel.tsx`         | ✅ Complete | `surface`, `frame`, `density`, `headingLevel`  |
 | **Field**                    | `packages/ui/src/components/field.tsx`         | ✅ Complete | Label, error, helper, required, description    |
 | **Toolbar**                  | `packages/ui/src/components/toolbar.tsx`       | ✅ Complete | Grouped actions, overflow menu                 |
@@ -245,11 +249,10 @@ Breakpoints are defined as Tailwind config values and mirrored in CSS custom pro
 | **DropdownMenu / Command**   | `packages/ui/src/components/dropdown-menu.tsx` | ✅ Complete | Keyboard nav, groups, search                   |
 | **EmptyState**               | `packages/ui/src/components/empty-state.tsx`   | ✅ Complete | `headingLevel`, illustration, action           |
 
-
 ### 4.3 Pattern/Effect Layer (Editorial Frames & Decorative)
 
-| Pattern                         | Location                                        | Status     | Description                        |           |                        |            |             |              |
-| ------------------------------- | ----------------------------------------------- | ---------- | ---------------------------------- | --------- | ---------------------- | ---------- | ----------- | ------------ |
+| Pattern                         | Location                                        | Status      | Description                        |           |                        |            |             |              |
+| ------------------------------- | ----------------------------------------------- | ----------- | ---------------------------------- | --------- | ---------------------- | ---------- | ----------- | ------------ |
 | **SectionRibbon**               | `packages/ui/src/components/section-ribbon.tsx` | ✅ Complete | `surface`, `frame`, accent number  |           |                        |            |             |              |
 | **PaperNote**                   | `packages/ui/src/components/paper-note.tsx`     | ✅ Complete | Torn paper scrap, handwritten feel |           |                        |            |             |              |
 | **ArtworkFrame**                | `packages/ui/src/components/artwork-frame.tsx`  | ✅ Complete | \`frame="line                      | torn      | scuffed"\`, focal crop |            |             |              |
@@ -262,8 +265,8 @@ Breakpoints are defined as Tailwind config values and mirrored in CSS custom pro
 
 ### 4.4 Shell-Specific Components (Board)
 
-| Pattern              | Location                                                 | Status     | Description                               |
-| -------------------- | -------------------------------------------------------- | ---------- | ----------------------------------------- |
+| Pattern              | Location                                                 | Status      | Description                               |
+| -------------------- | -------------------------------------------------------- | ----------- | ----------------------------------------- |
 | **AppShell**         | `apps/board/src/components/layout/app-shell.tsx`         | ✅ Complete | Main shell with sidebar, topbar, overlays |
 | **ModelNavigation**  | `apps/board/src/components/layout/app-shell.tsx`         | ✅ Complete | Dynamic model groups, permissions         |
 | **ActivityBell**     | `apps/board/src/components/layout/activity-bell.tsx`     | ✅ Complete | Real-time activity notifications          |
@@ -271,8 +274,6 @@ Breakpoints are defined as Tailwind config values and mirrored in CSS custom pro
 | **SkinProvider**     | `apps/board/src/components/providers/skin-provider.tsx`  | ✅ Complete | Theme/skin persistence, init script       |
 | **ModePicker**       | `packages/ui/src/components/mode-picker.tsx`             | ✅ Complete | Desktop experience mode selection         |
 | **UpdateBanner**     | `packages/ui/src/components/update-banner.tsx`           | ✅ Complete | Desktop update checking                   |
-
-
 
 ---
 
@@ -344,8 +345,8 @@ type SkinDensity = 'comfortable' | 'compact';
 
 ## 7. Deliverables Checklist
 
-| Deliverable                             | Status     | Location                                                     |
-| --------------------------------------- | ---------- | ------------------------------------------------------------ |
+| Deliverable                             | Status      | Location                                                     |
+| --------------------------------------- | ----------- | ------------------------------------------------------------ |
 | UI Framework Document with Layout Rules | ✅ Complete | This document (`W1-009-ui-framework.md`)                     |
 | Shell Architecture Blueprint            | ✅ Complete | Section 2 + `apps/board/src/components/layout/app-shell.tsx` |
 | Responsive Breakpoint Definitions       | ✅ Complete | Section 3 + `tokens.css` breakpoint tokens                   |
@@ -355,8 +356,8 @@ type SkinDensity = 'comfortable' | 'compact';
 
 ## 8. Acceptance Criteria Verification
 
-| Criterion                                            | Status     | Evidence                                              |
-| ---------------------------------------------------- | ---------- | ----------------------------------------------------- |
+| Criterion                                            | Status      | Evidence                                              |
+| ---------------------------------------------------- | ----------- | ----------------------------------------------------- |
 | UI framework documentation approved by lead designer | ✅ Complete | This document serves as the canonical reference       |
 | Shell architecture defines all experience tiers      | ✅ Complete | Section 2.2 documents all four tiers with variants    |
 | Responsive breakpoints cover mobile, tablet, desktop | ✅ Complete | Section 3.1–3.3 with 5 breakpoints + container widths |

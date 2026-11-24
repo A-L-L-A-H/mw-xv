@@ -17,7 +17,11 @@ export {
   type MoonWitnessMcpRequest,
   type MoonWitnessMcpResponse,
 } from './server.js';
-export { serveMoonWitnessStdio, type MoonWitnessStdioHandle, type MoonWitnessStdioStreams } from './stdio.js';
+export {
+  serveMoonWitnessStdio,
+  type MoonWitnessStdioHandle,
+  type MoonWitnessStdioStreams,
+} from './stdio.js';
 export {
   listMoonWitnessModels,
   describeMoonWitnessModel,

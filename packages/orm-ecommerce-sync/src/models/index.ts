@@ -10,8 +10,16 @@ export const MarketplaceSyncJob = defineModel('ecommerce.sync_job', {
   order: 'requested_at desc, id desc',
   fields: {
     marketplace: fields.string({ required: true, label: 'Marketplace' }),
-    direction: fields.enum(['pull', 'push'], { required: true, default: 'pull', label: 'Sync Direction' }),
-    status: fields.enum(['queued', 'running', 'done', 'failed'], { required: true, default: 'queued', label: 'Job Status' }),
+    direction: fields.enum(['pull', 'push'], {
+      required: true,
+      default: 'pull',
+      label: 'Sync Direction',
+    }),
+    status: fields.enum(['queued', 'running', 'done', 'failed'], {
+      required: true,
+      default: 'queued',
+      label: 'Job Status',
+    }),
     payload: fields.json({ label: 'Sync Payload' }),
     source_rule_id: fields.string({ label: 'Source Rule ID' }),
     dedupe_key: fields.string({ label: 'Deduplication Key' }),
@@ -30,7 +38,11 @@ export const MarketplaceConnection = defineModel('ecommerce.connection', {
   fields: {
     marketplace: fields.string({ required: true, label: 'Marketplace' }),
     name: fields.string({ required: true, label: 'Connection Name' }),
-    status: fields.enum(['active', 'inactive', 'error', 'pending'], { required: true, default: 'pending', label: 'Connection Status' }),
+    status: fields.enum(['active', 'inactive', 'error', 'pending'], {
+      required: true,
+      default: 'pending',
+      label: 'Connection Status',
+    }),
     config: fields.json({ required: true, label: 'Connection Configuration' }),
     credentials: fields.json({ label: 'Encrypted Credentials' }),
     last_sync_at: fields.datetime({ label: 'Last Sync At' }),

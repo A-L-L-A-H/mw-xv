@@ -27,7 +27,8 @@ export async function run(
     return { ok: false, error: 'run_agent requires a positive numeric workContractId' };
   }
 
-  const inserted = await ctx.db('jobs')
+  const inserted = await ctx
+    .db('jobs')
     .insert({
       handler,
       handler_version: 1,

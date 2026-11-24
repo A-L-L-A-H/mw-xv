@@ -88,7 +88,8 @@ export function validateConfig(config) {
     if (!declaredChecks.has(name)) throw new Error(`Undeclared required check: ${name}.`);
   }
   const main = config.rulesets.find(
-    (ruleset) => ruleset.target === 'branch' && ruleset.conditions.ref_name.include.includes('refs/heads/main')
+    (ruleset) =>
+      ruleset.target === 'branch' && ruleset.conditions.ref_name.include.includes('refs/heads/main')
   );
   if (!main || !main.rules.some((rule) => rule.type === 'pull_request'))
     throw new Error('The main ruleset must require a pull request.');
@@ -152,7 +153,9 @@ export function compareRulesets(desired, actual) {
       drift.push({ name, kind: 'missing' });
       continue;
     }
-    if (canonical(normalizeRuleset(ruleset)) !== canonical(normalizeRuleset(actualByName.get(name))))
+    if (
+      canonical(normalizeRuleset(ruleset)) !== canonical(normalizeRuleset(actualByName.get(name)))
+    )
       drift.push({ name, kind: 'drift', id: actualByName.get(name).id });
   }
   for (const name of actualByName.keys()) {
@@ -166,8 +169,13 @@ export function buildPlan(desired, actual) {
   const byName = new Map(actual.map((ruleset) => [ruleset.name, ruleset]));
   return drift.map((entry) => {
     if (entry.kind === 'missing')
-      return { op: 'create', name: entry.name, ruleset: normalizeRuleset(desired.rulesets.find((r) => r.name === entry.name)) };
-    if (entry.kind === 'unmanaged') return { op: 'delete', name: entry.name, id: byName.get(entry.name).id };
+      return {
+        op: 'create',
+        name: entry.name,
+        ruleset: normalizeRuleset(desired.rulesets.find((r) => r.name === entry.name)),
+      };
+    if (entry.kind === 'unmanaged')
+      return { op: 'delete', name: entry.name, id: byName.get(entry.name).id };
     return {
       op: 'update',
       name: entry.name,
@@ -208,7 +216,7 @@ export function createGithubAdapter(repository) {
       const all = [];
       for (let page = 1; ; page += 1) {
         const response = await ghJson([`${base}?per_page=100&page=${page}`]);
-        const rulesets = Array.isArray(response) ? response : response?.rulesets ?? [];
+        const rulesets = Array.isArray(response) ? response : (response?.rulesets ?? []);
         all.push(...(Array.isArray(rulesets) ? rulesets : [rulesets]));
         if (!Array.isArray(response) || response.length < 100) break;
       }
@@ -256,18 +264,23 @@ export async function main(args = process.argv.slice(2), io = {}) {
   const stdout = io.stdout ?? ((text) => process.stdout.write(text));
   const stderr = io.stderr ?? ((text) => process.stderr.write(text));
   const flags = parseFlags(args);
-  const configText =
-    (await io.readConfig?.()) ?? (await readFile(GOVERNANCE_CONFIG, 'utf8'));
+  const configText = (await io.readConfig?.()) ?? (await readFile(GOVERNANCE_CONFIG, 'utf8'));
   const config = parseConfig(configText);
   const adapter = io.adapter ?? createGithubAdapter(config.repository);
 
-  if (flags.mode === 'apply' && flags.expectConfigSha256 && flags.expectConfigSha256 !== hashConfig(config))
+  if (
+    flags.mode === 'apply' &&
+    flags.expectConfigSha256 &&
+    flags.expectConfigSha256 !== hashConfig(config)
+  )
     throw new Error('Governance config hash does not match the break-glass expectation.');
   if (flags.mode === 'apply') assertBreakGlass(env, config);
 
   const readActual = async () => {
     if (flags.snapshot) {
-      const snapshot = JSON.parse(await (io.readSnapshot?.(flags.snapshot) ?? readFile(flags.snapshot, 'utf8')));
+      const snapshot = JSON.parse(
+        await (io.readSnapshot?.(flags.snapshot) ?? readFile(flags.snapshot, 'utf8'))
+      );
       if (!Array.isArray(snapshot)) throw new Error('Rule snapshot must be an array.');
       return snapshot;
     }
@@ -277,7 +290,10 @@ export async function main(args = process.argv.slice(2), io = {}) {
   let actual = await readActual();
   const plan = buildPlan(config, actual);
   if (flags.mode !== 'apply') {
-    const payload = flags.mode === 'plan' ? { configSha256: hashConfig(config), plan } : { configSha256: hashConfig(config), drift: compareRulesets(config, actual) };
+    const payload =
+      flags.mode === 'plan'
+        ? { configSha256: hashConfig(config), plan }
+        : { configSha256: hashConfig(config), drift: compareRulesets(config, actual) };
     stdout(`${JSON.stringify(payload, null, 2)}\n`);
     return { exitCode: plan.length === 0 ? 0 : 1, plan };
   }
@@ -302,10 +318,14 @@ export async function main(args = process.argv.slice(2), io = {}) {
       writeFile(flags.snapshotAfter, `${JSON.stringify(after, null, 2)}\n`, 'utf8'));
   const remaining = compareRulesets(config, after);
   if (remaining.length > 0) {
-    stderr(`Governance drift remains after apply: ${remaining.map((entry) => entry.name).join(', ')}\n`);
+    stderr(
+      `Governance drift remains after apply: ${remaining.map((entry) => entry.name).join(', ')}\n`
+    );
     return { exitCode: 1, plan, remaining };
   }
-  stdout(`${JSON.stringify({ applied: plan.length, configSha256: hashConfig(config) }, null, 2)}\n`);
+  stdout(
+    `${JSON.stringify({ applied: plan.length, configSha256: hashConfig(config) }, null, 2)}\n`
+  );
   return { exitCode: 0, plan, remaining };
 }
 

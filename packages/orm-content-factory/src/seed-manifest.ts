@@ -154,10 +154,12 @@ async function seedContentFactory(ctx: SeedContext): Promise<SeedResult> {
     const existing = await db('content_templates').where({ slug: template.slug }).first();
 
     if (existing) {
-      await db('content_templates').where({ id: existing.id }).update({
-        ...toRow(template, companyId),
-        updated_at: new Date(),
-      });
+      await db('content_templates')
+        .where({ id: existing.id })
+        .update({
+          ...toRow(template, companyId),
+          updated_at: new Date(),
+        });
       updated++;
     } else {
       await db('content_templates').insert({

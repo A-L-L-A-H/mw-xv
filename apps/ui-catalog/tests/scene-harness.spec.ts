@@ -27,7 +27,9 @@ test('environment depth inspector toggles and reorders planes and reflows on mob
 
   // Narrow viewport usability check (390px)
   await page.setViewportSize({ width: 390, height: 844 });
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth
+  );
   expect(overflow).toBeLessThanOrEqual(2);
 });
 
@@ -61,7 +63,9 @@ test('scene runtime supports static fallback, timeline controls, keyboard camera
   await expect(sprite).toHaveAttribute('data-sprite-state', 'static');
 });
 
-test('environment inspector resets layer visibility, z-order and composition to the canonical baseline (W7-004)', async ({ page }) => {
+test('environment inspector resets layer visibility, z-order and composition to the canonical baseline (W7-004)', async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#scene-environment-inspector');
   const lab = page.getByTestId('scene-lab');
@@ -74,14 +78,18 @@ test('environment inspector resets layer visibility, z-order and composition to 
   await expect(lab.locator('.scene-lab-stage')).toHaveAttribute('data-composition', 'desktop');
 });
 
-test('character studio plays, pauses and resets imported clip frames when motion is allowed (W7-003)', async ({ page }) => {
+test('character studio plays, pauses and resets imported clip frames when motion is allowed (W7-003)', async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#character-preview');
   await expect(
     page.getByText(/Catalog-only fictional example\. crew-01 is not a real crew member/u)
   ).toBeVisible();
   const specimen = page.getByTestId('character-preview-specimen');
-  const player = specimen.locator('[data-sprite-clip="animation/crew-01-idle/crew-01-idle-clip.json"]');
+  const player = specimen.locator(
+    '[data-sprite-clip="animation/crew-01-idle/crew-01-idle-clip.json"]'
+  );
   await expect(player).toHaveAttribute('data-sprite-state', 'paused');
   await specimen.getByRole('button', { name: 'Play' }).first().click();
   await expect(player).toHaveAttribute('data-sprite-state', 'playing');
@@ -91,22 +99,33 @@ test('character studio plays, pauses and resets imported clip frames when motion
   await expect(specimen.getByRole('button', { name: 'Play' }).first()).toBeVisible();
 });
 
-test('character studio starts static for reduced motion and offers explicit preview playback (W7-003)', async ({ page }) => {
+test('character studio starts static for reduced motion and offers explicit preview playback (W7-003)', async ({
+  page,
+}) => {
   await page.goto('./#character-preview');
   const specimen = page.getByTestId('character-preview-specimen');
-  const player = specimen.locator('[data-sprite-clip="animation/crew-01-idle/crew-01-idle-clip.json"]');
+  const player = specimen.locator(
+    '[data-sprite-clip="animation/crew-01-idle/crew-01-idle-clip.json"]'
+  );
   await expect(player).toHaveAttribute('data-sprite-state', 'static');
-  await expect(specimen.getByRole('button', { name: 'Reduced motion on' }).first()).toHaveAttribute('aria-pressed', 'true');
+  await expect(specimen.getByRole('button', { name: 'Reduced motion on' }).first()).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  );
   await specimen.getByRole('button', { name: 'Play' }).first().click();
   await expect(player).toHaveAttribute('data-sprite-state', 'playing');
 });
 
-test('asset diagnostics loads and exports the build-time validator report (W7-007)', async ({ page }) => {
+test('asset diagnostics loads and exports the build-time validator report (W7-007)', async ({
+  page,
+}) => {
   await page.goto('./#asset-diagnostics');
   const panel = page.getByTestId('asset-diagnostics');
   await expect(panel.getByRole('button', { name: 'Export report' })).toBeDisabled();
   await panel.getByRole('button', { name: 'Load build diagnostics' }).click();
-  await expect(panel.getByText('Build diagnostics: passed; scene validation: passed.')).toBeVisible();
+  await expect(
+    panel.getByText('Build diagnostics: passed; scene validation: passed.')
+  ).toBeVisible();
   await expect(panel.locator('.auth-coverage-facts')).toContainText('Asset QA errors0');
   await expect(panel.locator('.auth-coverage-facts')).toContainText('Scene validation errors0');
   const downloadPromise = page.waitForEvent('download');
@@ -115,7 +134,9 @@ test('asset diagnostics loads and exports the build-time validator report (W7-00
   expect(download.suggestedFilename()).toBe('moonwitness-asset-diagnostics.json');
 });
 
-test('scene inspector captures desktop/mobile compositions and reduced-motion fallback (W7-006)', async ({ page }, testInfo) => {
+test('scene inspector captures desktop/mobile compositions and reduced-motion fallback (W7-006)', async ({
+  page,
+}, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#scene-environment-inspector');
   const lab = page.getByTestId('scene-lab');
@@ -124,7 +145,9 @@ test('scene inspector captures desktop/mobile compositions and reduced-motion fa
   await expect(stage).toHaveAttribute('data-composition', 'desktop');
   const desktopMoon = desktopScene.locator('[data-layer-id="moon"]');
   const desktopPivotRatio = await desktopMoon.evaluate((layer) => {
-    const [originX, originY] = getComputedStyle(layer).transformOrigin.split(' ').map(Number.parseFloat);
+    const [originX, originY] = getComputedStyle(layer)
+      .transformOrigin.split(' ')
+      .map(Number.parseFloat);
     const bounds = layer.getBoundingClientRect();
     return [originX / bounds.width, originY / bounds.height];
   });
@@ -157,7 +180,9 @@ test('scene inspector captures desktop/mobile compositions and reduced-motion fa
   await expect(stage).toHaveAttribute('data-composition', 'mobile');
   const mobileMoon = desktopScene.locator('[data-layer-id="moon"]');
   const mobilePivotRatio = await mobileMoon.evaluate((layer) => {
-    const [originX, originY] = getComputedStyle(layer).transformOrigin.split(' ').map(Number.parseFloat);
+    const [originX, originY] = getComputedStyle(layer)
+      .transformOrigin.split(' ')
+      .map(Number.parseFloat);
     const bounds = layer.getBoundingClientRect();
     return [originX / bounds.width, originY / bounds.height];
   });
@@ -187,7 +212,10 @@ test('scene inspector captures desktop/mobile compositions and reduced-motion fa
   // resolves to a static frame 01 instead of continuing to animate.
   await expect(crew).toBeVisible();
   await expect(crew.locator('[data-sprite-clip]')).toHaveAttribute('data-sprite-state', 'static');
-  await expect(crew.locator('img')).toHaveAttribute('src', /crew-01-idle-frame-01(?:-[A-Za-z0-9_-]+)?\.svg/);
+  await expect(crew.locator('img')).toHaveAttribute(
+    'src',
+    /crew-01-idle-frame-01(?:-[A-Za-z0-9_-]+)?\.svg/
+  );
 });
 
 test('in-scene crew-01 stays static under the reduced-motion harness and media query', async ({
@@ -197,7 +225,10 @@ test('in-scene crew-01 stays static under the reduced-motion harness and media q
   const crew = page.getByTestId('scene-lab').locator('[data-layer-id="crew-01"]');
   await expect(crew).toBeVisible();
   await expect(crew.locator('[data-sprite-clip]')).toHaveAttribute('data-sprite-state', 'static');
-  await expect(crew.locator('img')).toHaveAttribute('src', /crew-01-idle-frame-01(?:-[A-Za-z0-9_-]+)?\.svg/);
+  await expect(crew.locator('img')).toHaveAttribute(
+    'src',
+    /crew-01-idle-frame-01(?:-[A-Za-z0-9_-]+)?\.svg/
+  );
 
   // prefers-reduced-motion alone is enough, even without the URL harness.
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -208,5 +239,8 @@ test('in-scene crew-01 stays static under the reduced-motion harness and media q
     'data-sprite-state',
     'static'
   );
-  await expect(mediaCrew.locator('img')).toHaveAttribute('src', /crew-01-idle-frame-01(?:-[A-Za-z0-9_-]+)?\.svg/);
+  await expect(mediaCrew.locator('img')).toHaveAttribute(
+    'src',
+    /crew-01-idle-frame-01(?:-[A-Za-z0-9_-]+)?\.svg/
+  );
 });

@@ -17,7 +17,15 @@ export const views = [
   defineView(ResearchProgram, {
     title: 'Research Programs',
     list: {
-      columns: ['code', 'name', 'status', 'funding_source', 'budget_minor', 'start_date', 'end_date'],
+      columns: [
+        'code',
+        'name',
+        'status',
+        'funding_source',
+        'budget_minor',
+        'start_date',
+        'end_date',
+      ],
       order: 'create_date desc, id desc',
     },
     form: {
@@ -192,7 +200,15 @@ export const views = [
         {
           title: 'Reagent',
           columns: 2,
-          fields: ['name', 'catalog_no', 'lot_no', 'quantity', 'unit', 'expiry_date', 'external_ref'],
+          fields: [
+            'name',
+            'catalog_no',
+            'lot_no',
+            'quantity',
+            'unit',
+            'expiry_date',
+            'external_ref',
+          ],
         },
       ],
     },

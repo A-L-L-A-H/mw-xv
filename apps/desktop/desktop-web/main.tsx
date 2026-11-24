@@ -34,10 +34,7 @@ import AiProvidersPage from '@/app/board/ai/providers/page';
 import { navigate, usePathname } from './shims/next-navigation';
 import { DesktopErrorBoundary, installWebviewErrorTelemetry } from './error-telemetry';
 
-import type {
-  DesktopBridgeSnapshot,
-  DesktopCapabilityBridge,
-} from '@/lib/desktop-bridge';
+import type { DesktopBridgeSnapshot, DesktopCapabilityBridge } from '@/lib/desktop-bridge';
 
 const DESKTOP_APP_VERSION = '1.0.0-rc.1';
 const UPDATER_IPC_TIMEOUT_MS = 4000;
@@ -81,8 +78,7 @@ function getDesktopApiUrl(): string | null {
 }
 
 function resolveTauriInvoke():
-  | (<T = unknown>(command: string, args?: Record<string, unknown>) => Promise<T>)
-  | null {
+  (<T = unknown>(command: string, args?: Record<string, unknown>) => Promise<T>) | null {
   if (typeof window === 'undefined') return null;
   const win = window as DesktopApiWindow;
   if (typeof win.__TAURI_INTERNALS__?.invoke === 'function') {
@@ -432,23 +428,23 @@ function DesktopBoardApp() {
       <>
         <DesktopChrome />
         <main className="grid min-h-dvh place-items-center p-6">
-        <Panel
-          surface="paper"
-          frame="torn"
-          className="max-w-xl p-8"
-          title="Local workspace unavailable"
-          description={bootstrap.message}
-        >
-          <div className="flex flex-wrap gap-3">
-            <Button type="button" onClick={retry}>
-              Retry
-            </Button>
-            <Button type="button" variant="outline" onClick={openSignIn}>
-              Sign in manually
-            </Button>
-          </div>
-        </Panel>
-      </main>
+          <Panel
+            surface="paper"
+            frame="torn"
+            className="max-w-xl p-8"
+            title="Local workspace unavailable"
+            description={bootstrap.message}
+          >
+            <div className="flex flex-wrap gap-3">
+              <Button type="button" onClick={retry}>
+                Retry
+              </Button>
+              <Button type="button" variant="outline" onClick={openSignIn}>
+                Sign in manually
+              </Button>
+            </div>
+          </Panel>
+        </main>
       </>
     );
   }

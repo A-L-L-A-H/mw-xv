@@ -4,11 +4,7 @@
       "id": "moon-city-hero",
       "staticFallback": "illustrations/home-hero-desktop.webp",
       "accessibilityFallback": "illustrations/home-hero-mobile.webp",
-      "clips": [
-        "moon-city-cloud-drift-far",
-        "moon-city-cloud-drift-near",
-        "crew-01-idle"
-      ],
+      "clips": ["moon-city-cloud-drift-far", "moon-city-cloud-drift-near", "crew-01-idle"],
       "layers": [
         {
           "id": "sky",

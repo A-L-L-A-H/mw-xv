@@ -183,7 +183,8 @@ export function ModelPage() {
     <Tabs
       value={activeView}
       onValueChange={(nextView) => {
-        if (supportedViews.includes(nextView as BoardViewName)) switchView(nextView as BoardViewName);
+        if (supportedViews.includes(nextView as BoardViewName))
+          switchView(nextView as BoardViewName);
       }}
       className="space-y-6"
     >

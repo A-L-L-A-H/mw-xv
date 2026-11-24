@@ -49,25 +49,33 @@ test('selects only the newest terminal exact-SHA run from the same repository', 
     12
   );
   assert.equal(selectExactCiRun([run({ head_sha: 'b'.repeat(40) })], sha, repo), undefined);
-  assert.equal(selectExactCiRun([run({ head_repository: { full_name: 'evil/fork' } })], sha, repo), undefined);
+  assert.equal(
+    selectExactCiRun([run({ head_repository: { full_name: 'evil/fork' } })], sha, repo),
+    undefined
+  );
   assert.equal(selectExactCiRun([run({ event: 'pull_request' })], sha, repo), undefined);
   assert.equal(selectExactCiRun([run()], 'short', repo), undefined);
 });
 
 test('requires both governance checks on the exact SHA', () => {
   assert.equal(
-    verifyExactCheckRuns([check('ci-gate'), check('policy-gate')], sha, options.requiredChecks).passed,
+    verifyExactCheckRuns([check('ci-gate'), check('policy-gate')], sha, options.requiredChecks)
+      .passed,
     true
   );
   assert.equal(verifyExactCheckRuns([check('ci-gate')], sha, options.requiredChecks).passed, false);
   assert.equal(
-    verifyExactCheckRuns([check('ci-gate'), check('policy-gate', 'failure')], sha, options.requiredChecks)
-      .passed,
+    verifyExactCheckRuns(
+      [check('ci-gate'), check('policy-gate', 'failure')],
+      sha,
+      options.requiredChecks
+    ).passed,
     false
   );
   assert.equal(
-    verifyExactCheckRuns([check('ci-gate', 'success', { head_sha: 'b'.repeat(40) })], sha, ['ci-gate'])
-      .passed,
+    verifyExactCheckRuns([check('ci-gate', 'success', { head_sha: 'b'.repeat(40) })], sha, [
+      'ci-gate',
+    ]).passed,
     false
   );
 });

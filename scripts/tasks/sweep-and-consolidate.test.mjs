@@ -8,7 +8,11 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   const generatedAt = '2026-11-23T00:00:00.000Z';
   const result = await sweepAndConsolidate({ generatedAt });
   const secondProjection = await sweepAndConsolidate({ generatedAt });
-  assert.deepEqual(secondProjection, result, 'Same source snapshot and timestamp must produce identical output.');
+  assert.deepEqual(
+    secondProjection,
+    result,
+    'Same source snapshot and timestamp must produce identical output.'
+  );
   assert.ok(result);
   assert.equal(result.schemaVersion, '2.0.0');
   assert.equal(result.format, 'moonwitness-tasks/v2');
@@ -16,16 +20,16 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.ok(Array.isArray(result.tasks));
 
   const candidateValidation = await validateTaskRegistryData(result);
-  assert.equal(
-    candidateValidation.valid,
-    true,
-    candidateValidation.errors.join('\n')
-  );
+  assert.equal(candidateValidation.valid, true, candidateValidation.errors.join('\n'));
   assert.equal(candidateValidation.taskCount, 637);
 
   // Source inventory: 239 roadmap + 24 audit + 112 WhatsApp + 7 legacy MW
   // + 14 promotion lifecycle + 128 desktop + 4 evolution + 109 Visual Universe records.
-  assert.equal(result.tasks.length, 637, `Expected 637 source-backed tasks, got ${result.tasks.length}`);
+  assert.equal(
+    result.tasks.length,
+    637,
+    `Expected 637 source-backed tasks, got ${result.tasks.length}`
+  );
   const statusCounts = Object.fromEntries(
     ['done', 'doing', 'todo', 'blocked'].map((status) => [
       status,
@@ -37,7 +41,10 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   const sourceCounts = Object.fromEntries(
     [...new Set(result.tasks.map((task) => task.sourceRef.file))]
       .sort()
-      .map((source) => [source, result.tasks.filter((task) => task.sourceRef.file === source).length])
+      .map((source) => [
+        source,
+        result.tasks.filter((task) => task.sourceRef.file === source).length,
+      ])
   );
   assert.deepEqual(sourceCounts, {
     'docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json': 109,
@@ -50,20 +57,33 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
     'docs/tasks/sources/todo-wa.md': 112,
   });
 
-
   // Reconcile every old root-todo record by stable code against the archived checklist.
   // The checked items remain historical evidence; only the seven unchecked items are re-imported as blocked.
-  const legacyRegistry = JSON.parse(await readFile('docs/tasks/archives/tasks-legacy-1358-2026-11-23.json', 'utf8'));
+  const legacyRegistry = JSON.parse(
+    await readFile('docs/tasks/archives/tasks-legacy-1358-2026-11-23.json', 'utf8')
+  );
   const archivedTodoText = await readFile('docs/archive/todos/todo.md', 'utf8');
   const archivedRows = archivedTodoText
     .split(/\r?\n/)
     .map((line) => /^\s*-\s*\[([ xX])\]\s+\*\*(MW-[A-Za-z0-9_.-]+)\*\*/.exec(line))
     .filter(Boolean);
   const legacyRootTodo = legacyRegistry.tasks.filter((task) => task.sourceRef?.file === 'todo.md');
-  const legacyDoneCodes = legacyRootTodo.filter((task) => task.status === 'done').map((task) => task.code).sort();
-  const legacyOpenCodes = legacyRootTodo.filter((task) => task.status === 'todo').map((task) => task.code).sort();
-  const archivedCheckedCodes = archivedRows.filter((row) => row[1].toLowerCase() === 'x').map((row) => row[2]).sort();
-  const archivedOpenCodes = archivedRows.filter((row) => row[1] === ' ').map((row) => row[2]).sort();
+  const legacyDoneCodes = legacyRootTodo
+    .filter((task) => task.status === 'done')
+    .map((task) => task.code)
+    .sort();
+  const legacyOpenCodes = legacyRootTodo
+    .filter((task) => task.status === 'todo')
+    .map((task) => task.code)
+    .sort();
+  const archivedCheckedCodes = archivedRows
+    .filter((row) => row[1].toLowerCase() === 'x')
+    .map((row) => row[2])
+    .sort();
+  const archivedOpenCodes = archivedRows
+    .filter((row) => row[1] === ' ')
+    .map((row) => row[2])
+    .sort();
 
   assert.equal(legacyRootTodo.length, 861);
   assert.equal(legacyDoneCodes.length, 854);
@@ -92,7 +112,10 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.ok(taskByCode.has('WA-P0-01'), 'Must include WA-P0-01');
   assert.ok(taskByCode.has('EVO-002'), 'Must include EVO-002');
   assert.ok(taskByCode.has('DSK-0.12'), 'Must include DSK-0.12');
-  assert.ok(taskByCode.has('MW-CFG-003.3'), 'Must include MW-CFG-003.3 from the archived legacy checklist.');
+  assert.ok(
+    taskByCode.has('MW-CFG-003.3'),
+    'Must include MW-CFG-003.3 from the archived legacy checklist.'
+  );
   assert.ok(taskByCode.has('PR.14'), 'Must include the explicit human promotion approval gate.');
   assert.ok(taskByCode.has('W0-001'), 'Must include delegated Visual Universe work.');
 
@@ -171,7 +194,6 @@ test('registry integrity validation can run before roadmap projection repair', a
   assert.ok(fullValidation.errors.some((error) => error.includes('Checkbox mismatch on "M0.01"')));
 });
 
-
 test('isolated recovery candidate mode writes validated output without touching the canonical registry', async () => {
   const { mkdtemp, readFile, rm, stat } = await import('node:fs/promises');
   const { tmpdir } = await import('node:os');
@@ -189,7 +211,11 @@ test('isolated recovery candidate mode writes validated output without touching 
     const result = spawnSync(
       process.execPath,
       ['scripts/tasks/sweep-and-consolidate.mjs', '--candidate', candidatePath],
-      { cwd: repositoryRoot, encoding: 'utf8', env: { ...process.env, SOURCE_DATE_EPOCH: '1795392000' } }
+      {
+        cwd: repositoryRoot,
+        encoding: 'utf8',
+        env: { ...process.env, SOURCE_DATE_EPOCH: '1795392000' },
+      }
     );
     assert.equal(result.status, 0, result.stderr || result.stdout);
     const candidate = JSON.parse(await readFile(candidatePath, 'utf8'));

@@ -418,7 +418,9 @@ export function createWorkspaceHttpClient(options: {
     url.hash ||
     (url.pathname !== '' && url.pathname !== '/')
   ) {
-    throw new Error('agent-sandbox origin must be an exact origin without path, query or credentials');
+    throw new Error(
+      'agent-sandbox origin must be an exact origin without path, query or credentials'
+    );
   }
   const rpcUrl = new URL('/rpc', url).toString();
   const fetchFn = options.fetch ?? globalThis.fetch;
@@ -441,7 +443,10 @@ export function createWorkspaceHttpClient(options: {
       redirect: 'error',
       signal: AbortSignal.timeout(130_000),
     } as Parameters<FetchLike>[1]);
-    const raw = await readBoundedRpcBody(response as unknown as { body?: unknown }, maxResponseBytes);
+    const raw = await readBoundedRpcBody(
+      response as unknown as { body?: unknown },
+      maxResponseBytes
+    );
     let decoded: { ok?: unknown; result?: unknown; error?: WorkspaceRpcError };
     try {
       decoded = JSON.parse(raw) as typeof decoded;
@@ -495,7 +500,8 @@ async function readBoundedRpcBody(
       const { done, value } = await reader.read();
       if (done) break;
       total += value?.byteLength ?? 0;
-      if (total > maxResponseBytes) throw new Error('agent-sandbox RPC response exceeded its byte limit');
+      if (total > maxResponseBytes)
+        throw new Error('agent-sandbox RPC response exceeded its byte limit');
       if (value) chunks.push(value);
     }
     const merged = new Uint8Array(total);

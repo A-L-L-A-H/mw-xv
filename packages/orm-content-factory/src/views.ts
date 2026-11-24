@@ -132,10 +132,16 @@ export const views = [
     search: {
       fields: [],
       filters: [
-        { label: 'Last 7 Days', domain: [['date', '>=', new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)]] },
-        { label: 'Last 30 Days', domain: [['date', '>=', new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)]] },
+        {
+          label: 'Last 7 Days',
+          domain: [['date', '>=', new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)]],
+        },
+        {
+          label: 'Last 30 Days',
+          domain: [['date', '>=', new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)]],
+        },
         { label: 'Has Revenue', domain: [['revenue_minor', '>', 0]] },
-{ label: 'Has Conversions', domain: [['conversions', '>', 0]] },
+        { label: 'Has Conversions', domain: [['conversions', '>', 0]] },
       ],
       groupBy: [
         { label: 'Asset', field: 'asset_id' },

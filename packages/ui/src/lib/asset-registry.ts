@@ -227,7 +227,11 @@ export function getStateIllustration(
   state: StateIllustrationSlug,
   opts: UniverseAssetLookupOptions = {}
 ): ResolvedUniverseImage {
-  return buildImage(`${RIOT_DIR}/states/state-${state}.webp`, `${WORDS(state)} state illustration`, opts.basePath);
+  return buildImage(
+    `${RIOT_DIR}/states/state-${state}.webp`,
+    `${WORDS(state)} state illustration`,
+    opts.basePath
+  );
 }
 
 /** Resolve a sticker asset (.png). */
@@ -235,7 +239,11 @@ export function getStickerAsset(
   sticker: StickerSlug,
   opts: UniverseAssetLookupOptions = {}
 ): ResolvedUniverseImage {
-  return buildImage(`${RIOT_DIR}/stickers/sticker-${sticker}.png`, `${WORDS(sticker)} sticker`, opts.basePath);
+  return buildImage(
+    `${RIOT_DIR}/stickers/sticker-${sticker}.png`,
+    `${WORDS(sticker)} sticker`,
+    opts.basePath
+  );
 }
 
 /** Resolve a game badge, rank, avatar, or reward asset (.png). */
@@ -251,7 +259,11 @@ export function getBackgroundAsset(
   bg: BackgroundSlug,
   opts: UniverseAssetLookupOptions = {}
 ): ResolvedUniverseImage {
-  return buildImage(`${RIOT_DIR}/backgrounds/bg-${bg}.webp`, `${WORDS(bg)} background`, opts.basePath);
+  return buildImage(
+    `${RIOT_DIR}/backgrounds/bg-${bg}.webp`,
+    `${WORDS(bg)} background`,
+    opts.basePath
+  );
 }
 
 /** Resolve a canonical MoonWitness brand mark (.svg). */

@@ -229,7 +229,13 @@ export class WorkspaceService implements WorkspaceOperations {
       const maxBytes = params.maxBytes ?? WORKSPACE_READ_LIMITS.maxBytes;
       const length = Math.min(maxBytes, stat.size - offset);
       if (length <= 0) {
-        return { runId: params.runId, path: params.path, content: '', sizeBytes: stat.size, truncated: false };
+        return {
+          runId: params.runId,
+          path: params.path,
+          content: '',
+          sizeBytes: stat.size,
+          truncated: false,
+        };
       }
       const buffer = Buffer.alloc(length);
       const { bytesRead } = await handle.read(buffer, 0, length, offset);
@@ -270,9 +276,13 @@ export class WorkspaceService implements WorkspaceOperations {
     const paths = await this.pathsPromise;
     const record = await this.requireActiveRecord(paths, params.runId);
     const maxOutputBytes = params.maxOutputBytes ?? record.limits.maxOutputBytes;
-    const status = await this.runCommand(record, ['git', 'status', '--porcelain=v1', '-z', '--untracked-files=all'], {
-      maxOutputBytes,
-    });
+    const status = await this.runCommand(
+      record,
+      ['git', 'status', '--porcelain=v1', '-z', '--untracked-files=all'],
+      {
+        maxOutputBytes,
+      }
+    );
     const diff = await this.runCommand(
       record,
       ['git', 'diff', '--no-color', '--no-ext-diff', 'HEAD', '--'],
@@ -285,7 +295,10 @@ export class WorkspaceService implements WorkspaceOperations {
     for (const entry of status.stdout.split('\0')) {
       if (entry.length < 4) continue;
       const state = entry.slice(0, 2);
-      const rawPath = entry.slice(3).split('\t')[0].replace(/ -> .*$/u, '');
+      const rawPath = entry
+        .slice(3)
+        .split('\t')[0]
+        .replace(/ -> .*$/u, '');
       const relativePath = await this.validateChangedPath(paths, workspaceDir, record, rawPath);
       if (files.length >= MAX_DIFF_FILES) outputLimit('Workspace diff exceeded its file bound');
       files.push({ path: relativePath, status: state.trim() || 'M' });
@@ -315,9 +328,13 @@ export class WorkspaceService implements WorkspaceOperations {
       maxOutputBytes: record.limits.maxOutputBytes,
     });
     if (stage.truncated) outputLimit('Workspace staging output exceeded its bound');
-    const commit = await this.runCommand(record, ['git', 'commit', '--no-verify', '-m', params.message], {
-      maxOutputBytes: record.limits.maxOutputBytes,
-    });
+    const commit = await this.runCommand(
+      record,
+      ['git', 'commit', '--no-verify', '-m', params.message],
+      {
+        maxOutputBytes: record.limits.maxOutputBytes,
+      }
+    );
     if (commit.truncated) outputLimit('Workspace commit output exceeded its bound');
     if (commit.exitCode !== 0) forbidden('Local commit failed inside the sandbox');
     const head = await this.runCommand(record, ['git', 'rev-parse', 'HEAD'], {
@@ -466,18 +483,17 @@ export class WorkspaceService implements WorkspaceOperations {
     await this.cancelAll();
   }
 
-  private async activeWorkspace(
-    runId: string
-  ): Promise<{ readonly paths: SandboxPaths; readonly record: WorkspaceRecord; readonly directory: string }> {
+  private async activeWorkspace(runId: string): Promise<{
+    readonly paths: SandboxPaths;
+    readonly record: WorkspaceRecord;
+    readonly directory: string;
+  }> {
     const paths = await this.pathsPromise;
     const record = await this.requireActiveRecord(paths, runId);
     return { paths, record, directory: workspaceDirectory(paths, record.info.workspaceId) };
   }
 
-  private async requireActiveRecord(
-    paths: SandboxPaths,
-    runId: string
-  ): Promise<WorkspaceRecord> {
+  private async requireActiveRecord(paths: SandboxPaths, runId: string): Promise<WorkspaceRecord> {
     const record = await findRecordByRunId(paths, runId);
     if (!record) notFound('No workspace exists for this run');
     if (record.info.status === 'destroyed') conflict('Workspace is already destroyed');
@@ -562,7 +578,12 @@ export class WorkspaceService implements WorkspaceOperations {
     runId: string,
     imageRef: string,
     pidsLimit: number,
-    limits: { readonly cpuCores: number; readonly memoryMb: number; readonly timeoutMs: number; readonly maxOutputBytes: number }
+    limits: {
+      readonly cpuCores: number;
+      readonly memoryMb: number;
+      readonly timeoutMs: number;
+      readonly maxOutputBytes: number;
+    }
   ): SandboxContainerSpec {
     return {
       runId,
@@ -587,7 +608,10 @@ export class WorkspaceService implements WorkspaceOperations {
 }
 
 /** Exported for host-side verification that a workspace directory exists. */
-export async function workspaceDirectoryExists(paths: SandboxPaths, workspaceId: string): Promise<boolean> {
+export async function workspaceDirectoryExists(
+  paths: SandboxPaths,
+  workspaceId: string
+): Promise<boolean> {
   try {
     return (await stat(workspaceDirectory(paths, workspaceId))).isDirectory();
   } catch {

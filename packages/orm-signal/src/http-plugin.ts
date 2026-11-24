@@ -5,7 +5,11 @@
   type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
-import { computeSignalFinalScore, type SignalScoreInput, type SignalScoreWeights } from './scoring.js';
+import {
+  computeSignalFinalScore,
+  type SignalScoreInput,
+  type SignalScoreWeights,
+} from './scoring.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -29,7 +33,9 @@ export const signalHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { keywordWeight, recencyDecay, sourceAuthority, velocity, weights } = req.body;

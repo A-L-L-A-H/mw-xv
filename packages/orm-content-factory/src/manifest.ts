@@ -14,7 +14,14 @@ export const manifest = defineAddon({
   name: 'content-factory',
   version: '1.0.0',
   depends: ['base'],
-  models: [ContentTemplate, ContentAsset, ContentCampaign, ContentPublishTarget, ContentPublication, ContentAnalytics],
+  models: [
+    ContentTemplate,
+    ContentAsset,
+    ContentCampaign,
+    ContentPublishTarget,
+    ContentPublication,
+    ContentAnalytics,
+  ],
   httpPlugins: [contentFactoryHttpPlugin],
   data: [
     seed(ContentTemplate, 'content.template.article_default', {
@@ -130,11 +137,42 @@ export const manifest = defineAddon({
   ],
   views,
   menus: [
-    { model: ContentTemplate.modelName, label: 'Content Templates', group: 'Content Factory', sequence: 10 },
-    { model: ContentAsset.modelName, label: 'Content Assets', group: 'Content Factory', sequence: 20 },
-    { model: ContentCampaign.modelName, label: 'Campaigns', group: 'Content Factory', sequence: 30 },
-    { model: ContentPublishTarget.modelName, label: 'Publish Targets', group: 'Content Factory', sequence: 40 },
-    { model: ContentPublication.modelName, label: 'Publications', group: 'Content Factory', sequence: 50, developmentOnly: true },
-    { model: ContentAnalytics.modelName, label: 'Content Analytics', group: 'Content Factory', sequence: 60 },
+    {
+      model: ContentTemplate.modelName,
+      label: 'Content Templates',
+      group: 'Content Factory',
+      sequence: 10,
+    },
+    {
+      model: ContentAsset.modelName,
+      label: 'Content Assets',
+      group: 'Content Factory',
+      sequence: 20,
+    },
+    {
+      model: ContentCampaign.modelName,
+      label: 'Campaigns',
+      group: 'Content Factory',
+      sequence: 30,
+    },
+    {
+      model: ContentPublishTarget.modelName,
+      label: 'Publish Targets',
+      group: 'Content Factory',
+      sequence: 40,
+    },
+    {
+      model: ContentPublication.modelName,
+      label: 'Publications',
+      group: 'Content Factory',
+      sequence: 50,
+      developmentOnly: true,
+    },
+    {
+      model: ContentAnalytics.modelName,
+      label: 'Content Analytics',
+      group: 'Content Factory',
+      sequence: 60,
+    },
   ],
 });

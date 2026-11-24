@@ -91,9 +91,9 @@ describe('Weighted Pipeline Revenue Forecast', () => {
   });
 
   it('rejects non-integer or negative deal amounts', () => {
-    expect(() =>
-      forecastPipelineRevenue([{ id: 'bad', stage: 'new', amountCents: 12.5 }]),
-    ).toThrow(/non-negative integer/);
+    expect(() => forecastPipelineRevenue([{ id: 'bad', stage: 'new', amountCents: 12.5 }])).toThrow(
+      /non-negative integer/
+    );
   });
 });
 
@@ -101,11 +101,39 @@ describe('Stale-Deal Escalation Detector', () => {
   it('detects warning, critical, and executive escalations sorted by severity and ignores closed stages', () => {
     const asOf = '2026-06-30T00:00:00Z';
     const deals: PipelineDeal[] = [
-      { id: 'fresh', stage: 'qualified', amountCents: 50_000, lastActivityAt: '2026-06-28T00:00:00Z' },
-      { id: 'warn-1', stage: 'qualified', amountCents: 80_000, lastActivityAt: '2026-06-20T00:00:00Z', ownerId: 'rep-1' },
-      { id: 'crit-1', stage: 'proposal', amountCents: 150_000, lastActivityAt: '2026-06-10T00:00:00Z', ownerId: 'rep-2' },
-      { id: 'exec-1', stage: 'negotiation', amountCents: 500_000, lastActivityAt: '2026-05-20T00:00:00Z', ownerId: 'rep-3' },
-      { id: 'closed-won', stage: 'won', amountCents: 900_000, lastActivityAt: '2026-01-01T00:00:00Z' },
+      {
+        id: 'fresh',
+        stage: 'qualified',
+        amountCents: 50_000,
+        lastActivityAt: '2026-06-28T00:00:00Z',
+      },
+      {
+        id: 'warn-1',
+        stage: 'qualified',
+        amountCents: 80_000,
+        lastActivityAt: '2026-06-20T00:00:00Z',
+        ownerId: 'rep-1',
+      },
+      {
+        id: 'crit-1',
+        stage: 'proposal',
+        amountCents: 150_000,
+        lastActivityAt: '2026-06-10T00:00:00Z',
+        ownerId: 'rep-2',
+      },
+      {
+        id: 'exec-1',
+        stage: 'negotiation',
+        amountCents: 500_000,
+        lastActivityAt: '2026-05-20T00:00:00Z',
+        ownerId: 'rep-3',
+      },
+      {
+        id: 'closed-won',
+        stage: 'won',
+        amountCents: 900_000,
+        lastActivityAt: '2026-01-01T00:00:00Z',
+      },
     ];
 
     const escalations = detectStaleDeals(deals, asOf);

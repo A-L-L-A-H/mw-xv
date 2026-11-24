@@ -549,7 +549,9 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
         const ctx = await requireAiCompanyContext(req, reply);
         if (!ctx) return;
         if (ctx.role !== 'superadmin') {
-          return reply.code(403).send({ success: false, error: 'Operator role required for gateway discovery' });
+          return reply
+            .code(403)
+            .send({ success: false, error: 'Operator role required for gateway discovery' });
         }
         const id = Number(req.params.id);
         if (!Number.isSafeInteger(id) || id < 1) {
@@ -579,7 +581,9 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
           };
         } catch (error) {
           if (error instanceof DiscoveryError) {
-            return reply.code(error.statusCode).send({ success: false, code: error.code, error: error.message });
+            return reply
+              .code(error.statusCode)
+              .send({ success: false, code: error.code, error: error.message });
           }
           throw error;
         }
@@ -592,7 +596,9 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
         const ctx = await requireAiCompanyContext(req, reply);
         if (!ctx) return;
         if (ctx.role !== 'superadmin') {
-          return reply.code(403).send({ success: false, error: 'Operator role required to select a gateway model' });
+          return reply
+            .code(403)
+            .send({ success: false, error: 'Operator role required to select a gateway model' });
         }
         const id = Number(req.params.id);
         if (!Number.isSafeInteger(id) || id < 1) {
@@ -608,11 +614,19 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
             providerId: id,
             modelId: body.model_id.trim(),
           });
-          await recordAiAudit(ctx.userId, ProviderProfile.modelName, id, 'select_default_model', selected);
+          await recordAiAudit(
+            ctx.userId,
+            ProviderProfile.modelName,
+            id,
+            'select_default_model',
+            selected
+          );
           return { success: true, data: selected };
         } catch (error) {
           if (error instanceof DiscoveryError) {
-            return reply.code(error.statusCode).send({ success: false, code: error.code, error: error.message });
+            return reply
+              .code(error.statusCode)
+              .send({ success: false, code: error.code, error: error.message });
           }
           throw error;
         }
@@ -1268,7 +1282,9 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
             typeof rawExecutionPacket === 'object' && rawExecutionPacket !== null
               ? String(rawExecutionPacket.contentSha256 ?? '')
               : undefined,
-          allowedPaths: toStringArray(rawWorktreeLease?.allowedPaths ?? rawWorktreeLease?.allowed_paths),
+          allowedPaths: toStringArray(
+            rawWorktreeLease?.allowedPaths ?? rawWorktreeLease?.allowed_paths
+          ),
         },
         classification: String(contract.data_classification ?? 'local_only'),
         limits: {

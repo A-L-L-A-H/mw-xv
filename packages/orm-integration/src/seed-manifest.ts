@@ -12,9 +12,7 @@ export const integrationSeedManifest: AddonSeedManifest = {
       result.insertedGatewayConnectors +
       result.insertedWebhookEndpoints;
     const total =
-      result.erpConnectorsTotal +
-      result.gatewayConnectorsTotal +
-      result.webhookEndpointsTotal;
+      result.erpConnectorsTotal + result.gatewayConnectorsTotal + result.webhookEndpointsTotal;
     return {
       inserted,
       updated: 0,

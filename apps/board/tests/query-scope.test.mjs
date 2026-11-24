@@ -58,11 +58,7 @@ test('isCurrentScopeQueryKey rejects stale company, identity and generation scop
 });
 
 test('settings and profile factories keep their unscoped base paths', () => {
-  assert.deepEqual(settingsUserKey(undefined, scopeA).slice(0, 3), [
-    'settings',
-    'user',
-    null,
-  ]);
+  assert.deepEqual(settingsUserKey(undefined, scopeA).slice(0, 3), ['settings', 'user', null]);
   assert.deepEqual(settingsLanguagesKey(scopeA).slice(0, 2), ['settings', 'languages']);
   assert.deepEqual(settingsConfigParametersKey(scopeA).slice(0, 2), [
     'settings',

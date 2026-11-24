@@ -7,7 +7,8 @@ import { resolve } from 'node:path';
 const GENESIS = '0'.repeat(64);
 const fullShaPattern = /^[a-f0-9]{40}$/u;
 const hashPattern = /^[a-f0-9]{64}$/u;
-const secretKeyPattern = /pass(word)?|secret|token|api[_-]?key|credential|authorization|cookie|private[_-]?key/iu;
+const secretKeyPattern =
+  /pass(word)?|secret|token|api[_-]?key|credential|authorization|cookie|private[_-]?key/iu;
 
 export const AUDIT_STAGES = [
   'task',
@@ -24,7 +25,10 @@ export const AUDIT_STAGES = [
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   if (value && typeof value === 'object' && !Array.isArray(value))
-    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`)
+      .join(',')}}`;
   return JSON.stringify(value ?? null);
 }
 
@@ -44,7 +48,11 @@ export function redactEvent(event) {
   const clean = {};
   for (const [key, value] of Object.entries(event)) {
     if (secretKeyPattern.test(key)) continue;
-    if (typeof value === 'string' && value.length > 0 && /bearer\s+\S+|ghp_[A-Za-z0-9]+/iu.test(value)) {
+    if (
+      typeof value === 'string' &&
+      value.length > 0 &&
+      /bearer\s+\S+|ghp_[A-Za-z0-9]+/iu.test(value)
+    ) {
       clean[key] = '[redacted]';
     } else if (value && typeof value === 'object' && !Array.isArray(value)) {
       clean[key] = redactEvent(value);
@@ -87,17 +95,21 @@ export function verifyChain(checkpoint) {
   const seen = new Set();
   for (const [index, record] of checkpoint.events.entries()) {
     if (record.sequence !== index + 1) return { valid: false, reason: `sequence gap at ${index}` };
-    if (record.previousHash !== expectedHash) return { valid: false, reason: `hash gap at ${record.sequence}` };
-    if (!hashPattern.test(record.hash ?? '')) return { valid: false, reason: `invalid hash at ${record.sequence}` };
+    if (record.previousHash !== expectedHash)
+      return { valid: false, reason: `hash gap at ${record.sequence}` };
+    if (!hashPattern.test(record.hash ?? ''))
+      return { valid: false, reason: `invalid hash at ${record.sequence}` };
     const recomputed = hashEvent({
       sequence: record.sequence,
       previousHash: record.previousHash,
       event: record.event,
     });
-    if (recomputed !== record.hash) return { valid: false, reason: `event tampered at ${record.sequence}` };
+    if (recomputed !== record.hash)
+      return { valid: false, reason: `event tampered at ${record.sequence}` };
     try {
       const identity = canonical(record.event);
-      if (seen.has(identity)) return { valid: false, reason: `duplicate event at ${record.sequence}` };
+      if (seen.has(identity))
+        return { valid: false, reason: `duplicate event at ${record.sequence}` };
       seen.add(identity);
     } catch {
       return { valid: false, reason: `unserializable event at ${record.sequence}` };
@@ -135,7 +147,8 @@ export function projectCorrelation(events) {
   const seen = new Map();
   for (const record of Array.isArray(events) ? events : []) {
     const stage = record?.event?.stage ?? record?.stage;
-    if (AUDIT_STAGES.includes(stage)) seen.set(stage, { sequence: record?.sequence, ref: record?.event?.ref });
+    if (AUDIT_STAGES.includes(stage))
+      seen.set(stage, { sequence: record?.sequence, ref: record?.event?.ref });
   }
   const stages = AUDIT_STAGES.map((stage) => ({
     stage,
@@ -153,10 +166,15 @@ export function projectCorrelation(events) {
 export function verifyEventLinkage(event) {
   const payload = event?.event ?? event;
   const required = ['taskId', 'agentId', 'agentRunId', 'traceId'];
-  const missing = required.filter((key) => typeof payload?.[key] !== 'string' || payload[key].length === 0);
+  const missing = required.filter(
+    (key) => typeof payload?.[key] !== 'string' || payload[key].length === 0
+  );
   const commitSha = payload?.commitSha ?? payload?.ref;
-  if (payload?.stage === 'commit' && !fullShaPattern.test(commitSha ?? '')) missing.push('commitSha');
-  return missing.length === 0 ? { valid: true } : { valid: false, reason: `missing linkage: ${missing.join(', ')}` };
+  if (payload?.stage === 'commit' && !fullShaPattern.test(commitSha ?? ''))
+    missing.push('commitSha');
+  return missing.length === 0
+    ? { valid: true }
+    : { valid: false, reason: `missing linkage: ${missing.join(', ')}` };
 }
 
 const isDirectExecution =
@@ -165,10 +183,13 @@ const isDirectExecution =
 if (isDirectExecution) {
   try {
     const [command, filePath] = process.argv.slice(2);
-    if (command !== 'verify' || !filePath) throw new Error('Usage: node scripts/audit-chain.mjs verify <checkpoint.json>');
+    if (command !== 'verify' || !filePath)
+      throw new Error('Usage: node scripts/audit-chain.mjs verify <checkpoint.json>');
     const checkpoint = JSON.parse(await readFile(filePath, 'utf8'));
     const verdict = verifyChain(checkpoint);
-    process.stdout.write(`${JSON.stringify({ ...verdict, correlation: projectCorrelation(checkpoint.events) }, null, 2)}\n`);
+    process.stdout.write(
+      `${JSON.stringify({ ...verdict, correlation: projectCorrelation(checkpoint.events) }, null, 2)}\n`
+    );
     if (!verdict.valid) process.exitCode = 1;
   } catch (error) {
     process.stderr.write(`${error.message}\n`);

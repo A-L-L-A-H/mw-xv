@@ -38,7 +38,9 @@ export const signalAdapters: Readonly<Record<SignalSourceKind, SignalAdapter>> =
 export function adapterForKind(kind: SignalSourceKind): SignalAdapter {
   const adapter = signalAdapters[kind];
   if (!adapter) {
-    throw new Error(`No signal adapter registered for kind ${kind}; known kinds: ${SIGNAL_SOURCE_KINDS.join(', ')}`);
+    throw new Error(
+      `No signal adapter registered for kind ${kind}; known kinds: ${SIGNAL_SOURCE_KINDS.join(', ')}`
+    );
   }
   return adapter;
 }

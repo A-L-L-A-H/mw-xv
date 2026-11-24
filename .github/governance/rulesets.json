@@ -16,11 +16,7 @@
           "exclude": ["refs/heads/governance/**"]
         }
       },
-      "rules": [
-        { "type": "creation" },
-        { "type": "deletion" },
-        { "type": "non_fast_forward" }
-      ],
+      "rules": [{ "type": "creation" }, { "type": "deletion" }, { "type": "non_fast_forward" }],
       "bypass_actors": []
     },
     {
@@ -51,10 +47,7 @@
           "parameters": {
             "strict_required_status_checks_policy": true,
             "do_not_enforce_on_create": false,
-            "required_status_checks": [
-              { "context": "ci-gate" },
-              { "context": "policy-gate" }
-            ]
+            "required_status_checks": [{ "context": "ci-gate" }, { "context": "policy-gate" }]
           }
         },
         {
@@ -82,10 +75,7 @@
           "exclude": []
         }
       },
-      "rules": [
-        { "type": "deletion" },
-        { "type": "non_fast_forward" }
-      ],
+      "rules": [{ "type": "deletion" }, { "type": "non_fast_forward" }],
       "bypass_actors": []
     }
   ]

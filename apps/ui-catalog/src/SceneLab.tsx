@@ -95,7 +95,10 @@ export function SceneLab() {
   const [showGuides, setShowGuides] = useState(true);
   const [staticMode, setStaticMode] = useState(Boolean(harness.reducedMotion));
   const [prefersReducedMotion] = useState(() =>
-    Boolean(typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)
+    Boolean(
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    )
   );
   const [spritePlaying, setSpritePlaying] = useState(!harness.paused && !harness.reducedMotion);
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>('idle');

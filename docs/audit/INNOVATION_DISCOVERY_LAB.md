@@ -14,9 +14,11 @@ Mesin eksplorasi untuk menemukan peluang yang tidak akan muncul dari checklist a
 ## 2. Discovery engines
 
 ### Engine 1 — First principles and assumption destruction
+
 Inventarisasi asumsi tersembunyi: arsitektur, workflow, UI, storage, deployment, ownership, pricing, integration, and user behavior.
 
 Untuk setiap asumsi material:
+
 - Mengapa asumsi ini ada?
 - Apa bukti yang mendukungnya?
 - Apakah asumsi berasal dari kebutuhan nyata, batasan historis, atau kebiasaan?
@@ -26,7 +28,9 @@ Untuk setiap asumsi material:
 Gunakan pertanyaan seperti: jika memulai ulang dengan kemampuan dan constraint hari ini, apa yang akan didesain berbeda? Jangan menganggap rewrite sebagai jawaban default.
 
 ### Engine 2 — Cross-domain intelligence
+
 Pindahkan prinsip dari domain berbeda. Pertimbangkan:
+
 - Game systems: state, progression, feedback, simulation, emergent behavior.
 - Operating systems: process, scheduling, permissions, resource management.
 - Biology: adaptation, resilience, feedback, self-organization.
@@ -40,7 +44,9 @@ Pindahkan prinsip dari domain berbeda. Pertimbangkan:
 Untuk setiap analogi, jelaskan mekanisme, preconditions, target problem, adaptasi, dan alasan analogi mungkin gagal. Jangan sekadar menyarankan gamification atau menambahkan istilah dari domain lain.
 
 ### Engine 3 — Negative-space discovery
+
 Cari ruang kosong antara kebutuhan dan kemampuan:
+
 - Pekerjaan manual, workaround, handoff, atau data yang dipindahkan antar-tools.
 - Pengguna, use case, atau workflow yang belum terlayani.
 - Capability yang sudah dimungkinkan data/arsitektur tetapi belum diekspos.
@@ -51,7 +57,9 @@ Cari ruang kosong antara kebutuhan dan kemampuan:
 Gunakan issue trackers, discussions, docs, scripts, tests, and user research bila tersedia. Bedakan bukti dari dugaan tentang kebutuhan.
 
 ### Engine 4 — Inversion and constraint breaking
+
 Balik asumsi secara sistematis:
+
 - Centralized ↔ distributed/hybrid.
 - Online-first ↔ offline-capable.
 - Manual ↔ automated with human approval.
@@ -64,7 +72,9 @@ Balik asumsi secara sistematis:
 Untuk setiap pembalikan, cek apakah constraint nyata membatasi opsi. Jangan memaksakan arsitektur alternatif yang lebih kompleks daripada manfaatnya.
 
 ### Engine 5 — Extreme future simulation
+
 Bangun 2–4 skenario yang relevan, bukan fiksi tanpa batas:
+
 - Adoption/workload meningkat tajam.
 - Budget, compute, bandwidth, or staff sangat terbatas.
 - Koneksi tidak stabil atau sistem harus berjalan offline.
@@ -76,7 +86,9 @@ Bangun 2–4 skenario yang relevan, bukan fiksi tanpa batas:
 Lakukan backward reasoning: kapabilitas dan keputusan apa yang perlu ada lebih awal? Tandai skenario sebagai plausible, stress test, atau speculative. Jangan menyajikannya sebagai prediksi.
 
 ### Engine 6 — Leverage-point discovery
+
 Cari satu perubahan fondasional yang dapat membuka beberapa kemampuan:
+
 - Stable event/contract model.
 - Reusable identity and permission model.
 - Extension/plugin interface.
@@ -89,7 +101,9 @@ Cari satu perubahan fondasional yang dapat membuka beberapa kemampuan:
 Buat capability graph: foundation → enabled capabilities → user/system outcomes. Tunjukkan dependency dan biaya agar leverage tidak diklaim berlebihan. Satu fondasi yang membuka lima fitur bukan otomatis bernilai jika tidak ada kebutuhan untuk fitur-fitur itu.
 
 ### Engine 7 — Contrarian and red-team
+
 Ambil posisi menentang ide sendiri:
+
 - Mengapa ide ini bisa salah?
 - Apakah masalahnya cukup penting?
 - Apakah solusi sederhana sudah tersedia?
@@ -101,7 +115,9 @@ Ambil posisi menentang ide sendiri:
 Wajib catat strongest counterargument untuk kandidat strategis.
 
 ### Engine 8 — Future-back innovation
+
 Bayangkan kondisi 2–3 tahun ke depan sebagai skenario, bukan prediksi pasti:
+
 - Produk apa yang mungkin menjadi?
 - Kemampuan berbeda apa yang memberi alasan untuk dipilih?
 - Fondasi teknis dan operasional apa yang dibutuhkan?
@@ -110,18 +126,18 @@ Bayangkan kondisi 2–3 tahun ke depan sebagai skenario, bukan prediksi pasti:
 
 Tarik mundur menjadi capability milestones. Jangan menulis roadmap tiga tahun dengan tanggal palsu atau kepastian yang tidak ada.
 
-
-
 ## 3. Five signature concept methods
 
 Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovation Discovery Lab aktif. Gunakan sebagai cara membingkai masalah dan peluang, bukan slogan dekoratif. Satu metode boleh menghasilkan nol kandidat jika tidak ada evidence atau hubungan yang masuk akal. Catat hasilnya tanpa mengarang.
 
 ### Method 1 — FIND LIGHT IN DARKNESS
+
 **Nama kerja:** Adversity-to-Opportunity / Shadow Signal Mining.
 
 **Prinsip:** Masalah, kegagalan, keterbatasan, dan situasi yang paling tidak nyaman kadang menyimpan sinyal tentang kebutuhan yang belum terpenuhi. Jangan hanya menghilangkan gejala; cari kemampuan baru atau desain yang dapat lahir dari pemahaman akar masalah.
 
 **Prosedur:**
+
 1. Kumpulkan “dark signals”: bug berulang, incident, bottleneck, workaround, user frustration, unsupported environment, biaya tinggi, dan proses yang sering gagal.
 2. Pisahkan gejala, root cause, constraint, dan konsekuensi bagi pengguna.
 3. Tanyakan kebutuhan apa yang tersembunyi di balik setiap sinyal.
@@ -130,6 +146,7 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 6. Uji apakah peluang itu benar-benar dibutuhkan; jangan mengubah setiap bug menjadi fitur.
 
 **Pertanyaan pemicu:**
+
 - Sinyal apa yang selama ini dianggap gangguan tetapi sebenarnya mengungkap kebutuhan penting?
 - Siapa yang paling dirugikan oleh kondisi gelap ini dan apa yang mereka butuhkan?
 - Jika masalah ini tidak bisa dihilangkan, bagaimana sistem bisa tetap memberi nilai?
@@ -141,6 +158,7 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 **Guardrail:** Jangan meromantisasi kegagalan, penderitaan, insiden keamanan, atau kerugian pengguna. Prioritaskan perlindungan dan pemulihan sebelum eksplorasi peluang.
 
 ### Method 2 — ANGEL WITH A SHOTGUN
+
 **Nama kerja:** Principled Defiance / Guardian's Challenge.
 
 **Creative anchor:** “Sometimes to win you have to sin, but don't mind, I'm not a believer.” Gunakan sebagai metafora untuk berani menantang konvensi, bukan izin untuk melakukan pelanggaran.
@@ -148,6 +166,7 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 **Prinsip:** Beberapa asumsi, kebiasaan industri, legacy constraints, dan aturan internal mungkin bukan hukum alam. Tantang hal-hal tersebut secara berani untuk menemukan jalan yang lebih efektif. Namun, bedakan konvensi yang boleh ditantang dari batas etika dan keselamatan yang tidak boleh dilanggar.
 
 **Prosedur:**
+
 1. Daftar aturan, kebiasaan, pola arsitektur, workflow, atau dogma produk yang dianggap “selalu harus begitu”.
 2. Untuk masing-masing, klasifikasikan: hard boundary, external contract, safety/security requirement, legal/privacy obligation, compatibility constraint, atau convention yang dapat diuji.
 3. Tanyakan siapa atau apa yang dilindungi oleh aturan tersebut. Jangan menghapus perlindungan sebelum memahami alasan keberadaannya.
@@ -157,6 +176,7 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 7. Minta red-team menguji dampak buruk, abuse case, serta siapa yang dapat dirugikan.
 
 **Pertanyaan pemicu:**
+
 - “Kita harus melakukan ini” — siapa yang menetapkan, kapan, dan berdasarkan bukti apa?
 - Apakah aturan ini melindungi sesuatu yang nyata atau hanya mempertahankan kebiasaan?
 - Apa versi paling berani yang tetap aman, legal, adil, dan dapat dibatalkan?
@@ -168,11 +188,13 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 **Guardrail mutlak:** “Angel with a Shotgun” adalah simbol keberanian, perlindungan, dan perlawanan terhadap asumsi usang — bukan instruksi, glorifikasi, atau pembenaran kekerasan. Jangan merekomendasikan pelanggaran hukum, perusakan, manipulasi, eksploitasi, pelanggaran privasi, bypass kontrol keamanan, atau tindakan yang membahayakan orang. “Sin” di sini hanya metafora untuk melanggar konvensi yang tidak sakral, bukan melanggar batas etika atau keselamatan.
 
 ### Method 3 — SUNSHINE BELONG
+
 **Nama kerja:** Emergence / Exit Toward the Light.
 
 **Prinsip:** Kemampuan atau pengetahuan yang bernilai tidak seharusnya terperangkap dalam silo, workflow gelap, interface tersembunyi, atau hanya dapat diakses oleh segelintir ahli. Cari jalan agar kemampuan itu “keluar menuju cahaya”: dapat ditemukan, dipahami, diakses, digunakan, dan memberi manfaat pada konteks yang lebih luas.
 
 **Prosedur:**
+
 1. Temukan kemampuan, data, dokumentasi, atau workflow yang ada tetapi tersembunyi, sulit ditemukan, atau hanya diketahui maintainer.
 2. Petakan penghalang: permission, UX, jargon, setup, format tertutup, integrasi, biaya, accessibility, atau kurangnya dokumentasi.
 3. Tentukan siapa yang seharusnya dapat memanfaatkan kemampuan tersebut.
@@ -181,6 +203,7 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 6. Ukur keberhasilan dengan kemampuan pengguna menyelesaikan pekerjaan, bukan sekadar jumlah menu atau fitur yang ditampilkan.
 
 **Pertanyaan pemicu:**
+
 - Kemampuan apa yang ada tetapi tidak terlihat oleh pengguna yang tepat?
 - Apa yang harus keluar dari silo agar dapat memberi nilai lebih besar?
 - Apakah sistem dapat menjadi lebih mudah dimasuki tanpa menjadi kurang aman?
@@ -192,11 +215,13 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 **Guardrail:** “Terbuka” bukan berarti public-by-default. Pertahankan least privilege, consent, data ownership, privacy, accessibility, dan kontrol pengguna.
 
 ### Method 4 — HOW YOU REMIND ME
+
 **Nama kerja:** Reflective Memory / Pattern-to-Learning.
 
 **Prinsip:** Sistem dan tim sering mengulangi masalah karena pengalaman sebelumnya hilang, tidak terhubung, atau tidak berubah menjadi guardrail. Gunakan sejarah proyek sebagai memori operasional untuk menemukan pola, belajar, dan mencegah pengulangan — bukan untuk menyalahkan individu.
 
 **Prosedur:**
+
 1. Kumpulkan jejak yang tersedia: issue, incident, PR, commit, test regression, support feedback, decision record, changelog, dan TODO lama.
 2. Cari pola pengulangan: bug sejenis, keputusan yang dibatalkan, workaround berulang, regressions, pertanyaan onboarding, dan dependency yang sering bermasalah.
 3. Rekonstruksi konteks: apa yang diketahui pada waktu itu, alasan keputusan, constraint, dan dampaknya.
@@ -206,6 +231,7 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 7. Periksa apakah mekanisme baru benar-benar mencegah pengulangan tanpa menciptakan noise atau beban berlebih.
 
 **Pertanyaan pemicu:**
+
 - Masalah apa yang sudah pernah kita selesaikan tetapi muncul kembali?
 - Keputusan mana yang tidak diingat oleh developer atau coding agent berikutnya?
 - Apa yang gagal dipelajari dari incident, PR review, atau regression?
@@ -217,6 +243,7 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 **Guardrail:** Gunakan data secara proporsional. Jangan menyimpan secret, data pribadi yang tidak perlu, atau membuat profil sensitif. Hormati retention, consent, access control, dan konteks historis. Jangan menyimpulkan kesalahan individu dari artefak teknis yang tidak lengkap.
 
 ### Method 5 — WHEN THE MOON IS HIGH, WE SHARE A MESSAGE
+
 **Nama kerja:** Shared Moment / Context-Aware Signal Synchronization.
 
 **Creative anchor:** MoonWitness — “When the moon is high, we share a message.”
@@ -224,6 +251,7 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 **Prinsip:** Komunikasi bernilai bukan hanya tentang mengirim pesan secepat mungkin. Kadang pesan menjadi bermakna ketika aktor, konteks, kesiapan, dan kesempatan bertemu pada waktu atau kondisi yang tepat. Cari mekanisme untuk menghubungkan orang, sistem, agen, atau data melalui shared context dan meaningful signals — termasuk pola asynchronous dan distributed.
 
 **Prosedur:**
+
 1. Petakan siapa yang perlu berbagi informasi: users, teams, services, agents, devices, atau communities.
 2. Temukan momen atau kondisi ketika suatu pesan benar-benar berguna: event, state transition, availability, milestone, deadline, request, atau shared activity.
 3. Bedakan message transport dari message meaning: payload, context, audience, provenance, urgency, expiry, and expected action.
@@ -234,6 +262,7 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 8. Definisikan kapan pesan kedaluwarsa, kapan perlu diteruskan, dan kapan tidak perlu dikirim.
 
 **Pertanyaan pemicu:**
+
 - Siapa yang perlu mengetahui apa, dalam konteks apa, dan untuk melakukan tindakan apa?
 - Apa “moon high moment” dalam domain ini — kondisi bersama yang menandakan waktu tepat untuk bertukar sinyal?
 - Bisakah pesan menunggu sampai konteksnya siap tanpa kehilangan nilai?
@@ -249,19 +278,20 @@ Kelima metode ini adalah lensa kreatif khas yang harus dijalankan saat Innovatio
 
 Gunakan kelimanya secara komplementer, bukan sebagai lima nama untuk ide yang sama:
 
-| Method | Discovery question | Typical result |
-|---|---|---|
-| Find Light in Darkness | Apa peluang yang tersembunyi di balik kegagalan/constraint? | Resilience, recovery, unmet need |
-| Angel with a Shotgun | Konvensi apa yang aman untuk ditantang demi melindungi nilai yang penting? | Principled alternative, simplification |
-| Sunshine Belong | Apa yang perlu keluar dari silo agar dapat memberi manfaat? | Discoverability, access, interoperability |
-| How You Remind Me | Pelajaran apa yang terus hilang atau diulang? | Durable memory, regression prevention |
-| When the Moon Is High | Kapan dan bagaimana aktor berbagi sinyal dalam konteks yang tepat? | Event/message model, asynchronous coordination |
+| Method                 | Discovery question                                                         | Typical result                                 |
+| ---------------------- | -------------------------------------------------------------------------- | ---------------------------------------------- |
+| Find Light in Darkness | Apa peluang yang tersembunyi di balik kegagalan/constraint?                | Resilience, recovery, unmet need               |
+| Angel with a Shotgun   | Konvensi apa yang aman untuk ditantang demi melindungi nilai yang penting? | Principled alternative, simplification         |
+| Sunshine Belong        | Apa yang perlu keluar dari silo agar dapat memberi manfaat?                | Discoverability, access, interoperability      |
+| How You Remind Me      | Pelajaran apa yang terus hilang atau diulang?                              | Durable memory, regression prevention          |
+| When the Moon Is High  | Kapan dan bagaimana aktor berbagi sinyal dalam konteks yang tepat?         | Event/message model, asynchronous coordination |
 
 Untuk tiap kandidat, catat method yang memunculkannya. Jika beberapa metode menemukan ide serupa, deduplicate dan catat multi-lens origin. Jangan menilai kualitas ide dari jumlah metode yang mendukungnya.
 
 ## 4. Supporting ideation methods
 
 Gunakan metode ini bila relevan:
+
 - Jobs-to-be-Done: progress yang ingin dicapai pengguna dan hambatannya.
 - SCAMPER: substitute, combine, adapt, modify, put to another use, eliminate, reverse.
 - Morphological matrix: kombinasikan alternatif untuk dimensi sistem yang berbeda.
@@ -278,12 +308,15 @@ Metode adalah lensa, bukan kewajiban untuk menyebut semua istilah di laporan.
 Lakukan eksplorasi dalam tiga horizon:
 
 ### A. Adjacent innovation
+
 Peningkatan atau kombinasi kemampuan dekat dengan produk dan aset saat ini. Potensial diuji lebih cepat.
 
 ### B. Transformational innovation
+
 Mengubah cara user menyelesaikan pekerjaan, cara komponen bekerja sama, model interaksi, atau batas produk.
 
 ### C. Radical exploration
+
 Kemungkinan paradigma, kategori use case, atau model teknis yang sangat berbeda. Tetap harus terkait dengan kemampuan, masalah, atau aset proyek; jika tidak, labeli sebagai speculative dan jangan prioritaskan tinggi.
 
 Bangun candidate pool yang cukup beragam, tetapi jangan mengejar jumlah ide. Variasikan sumber inspirasi dan problem framing. Deduplicate ide yang sebenarnya sama dengan nama berbeda.
@@ -292,30 +325,31 @@ Bangun candidate pool yang cukup beragam, tetapi jangan mengejar jumlah ide. Var
 
 Setiap kandidat yang lolos screening wajib memiliki:
 
-| Field | Isi |
-|---|---|
-| Innovation ID | ID stabil, misalnya INN-001 |
-| Concept | Nama dan gambaran ide |
-| Horizon | Adjacent / Transformational / Radical |
-| Discovery engines | Lensa yang memunculkan ide |
-| Source analogy | Domain/pola asal dan mekanismenya |
-| User/problem | Siapa terdampak dan problem apa |
-| Current limitation | Bukti kondisi repository |
-| Novelty | Apa yang benar-benar baru/different |
-| Strategic fit | Hubungan dengan tujuan produk |
-| Enablers | Capability, data, API, architecture, or ecosystem needed |
-| Leverage | Dampak turunan dan dependency graph |
-| Feasibility | Alasan dan maturity |
-| Unknowns | Hal yang belum diketahui |
-| Risks/trade-offs | Security, privacy, cost, UX, operations, lock-in |
-| Cheapest experiment | Cara termurah menguji |
-| Success signal | Hasil yang mendukung hipotesis |
-| Kill criteria | Bukti/kondisi untuk menghentikan |
-| Decision | Experiment / Adopt / Defer / Reject |
+| Field               | Isi                                                      |
+| ------------------- | -------------------------------------------------------- |
+| Innovation ID       | ID stabil, misalnya INN-001                              |
+| Concept             | Nama dan gambaran ide                                    |
+| Horizon             | Adjacent / Transformational / Radical                    |
+| Discovery engines   | Lensa yang memunculkan ide                               |
+| Source analogy      | Domain/pola asal dan mekanismenya                        |
+| User/problem        | Siapa terdampak dan problem apa                          |
+| Current limitation  | Bukti kondisi repository                                 |
+| Novelty             | Apa yang benar-benar baru/different                      |
+| Strategic fit       | Hubungan dengan tujuan produk                            |
+| Enablers            | Capability, data, API, architecture, or ecosystem needed |
+| Leverage            | Dampak turunan dan dependency graph                      |
+| Feasibility         | Alasan dan maturity                                      |
+| Unknowns            | Hal yang belum diketahui                                 |
+| Risks/trade-offs    | Security, privacy, cost, UX, operations, lock-in         |
+| Cheapest experiment | Cara termurah menguji                                    |
+| Success signal      | Hasil yang mendukung hipotesis                           |
+| Kill criteria       | Bukti/kondisi untuk menghentikan                         |
+| Decision            | Experiment / Adopt / Defer / Reject                      |
 
 ## 7. Novelty and value test
 
 Jangan menyebut ide “first”, “unique”, atau “revolutionary” tanpa pencarian dan bukti yang memadai. Gunakan istilah yang terukur:
+
 - New to this repository.
 - Uncommon in the reviewed reference set.
 - Adaptation of an established pattern.
@@ -323,6 +357,7 @@ Jangan menyebut ide “first”, “unique”, atau “revolutionary” tanpa pe
 - Novelty unknown.
 
 Tanyakan:
+
 - Apakah ini hanya fitur standar dengan nama baru?
 - Apakah perbedaan utamanya bermakna bagi user?
 - Apakah ada produk/proyek yang telah melakukan hal serupa?
@@ -333,7 +368,9 @@ Tanyakan:
 ## 8. Explore vs exploit portfolios
 
 ### Experiment / Innovation Portfolio
+
 Untuk ide high-upside dan uncertain. Nilai:
+
 - Potential upside.
 - Strategic fit.
 - Differentiation potential.
@@ -345,6 +382,7 @@ Untuk ide high-upside dan uncertain. Nilai:
 Gunakan experiment untuk mengurangi ketidakpastian, bukan membuat estimasi benefit palsu. Prioritaskan eksperimen yang memberi informasi terbesar dengan biaya terkecil.
 
 ### Execution Portfolio
+
 Hanya untuk pekerjaan yang cukup terbukti atau keputusan strategis yang secara sadar disetujui. Gunakan backlog playbook terpisah.
 
 Jangan membandingkan kedua portfolio hanya dengan satu angka. Risiko keamanan kritis dan bug tidak menunggu innovation scoring.
@@ -352,6 +390,7 @@ Jangan membandingkan kedua portfolio hanya dengan satu angka. Risiko keamanan kr
 ## 9. Experiment design
 
 Setiap experiment harus menjelaskan:
+
 - Hypothesis.
 - User/problem/context.
 - Smallest testable artifact or investigation.

@@ -27,7 +27,7 @@ export function createIncomeLedgerAddon() {
 
 export function computeAllocationSplit(
   stream: { id: string; kind: string; status: string; goalMonthlyMinor: number },
-  allocations: { target: string; percentage: number; isActive: boolean }[],
+  allocations: { target: string; percentage: number; isActive: boolean }[]
 ): Record<string, number> {
   const result = {
     reinvest: 0,

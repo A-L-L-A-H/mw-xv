@@ -86,7 +86,10 @@ export const AgentRunEffect = defineModel('ai.agent_run_effect', {
       modelRef(() => Company),
       { required: true }
     ),
-    agent_run: fields.belongsTo(modelRef(() => AgentRun), { required: true }),
+    agent_run: fields.belongsTo(
+      modelRef(() => AgentRun),
+      { required: true }
+    ),
     effect_key: fields.string({ required: true }),
     args_sha256: fields.string({ required: true, pattern: SHA256_PATTERN }),
     output_json: fields.text({ required: true, default: 'null' }),

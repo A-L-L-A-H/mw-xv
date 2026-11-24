@@ -18,7 +18,6 @@ const maximumApplyBatchSize = 5;
  * @typedef {{ taskId: string, operation: 'create'|'update'|'noop'|'conflict', issueNumber?: number, reason?: string, title: string, body: string, labels?: string[], assignees?: string[], managedLabels?: string[], managedAssignees?: string[], milestoneTitle?: string, expectedTitle?: string, expectedManagedBlock?: string, expectedMilestoneTitle?: string, expectedIssueState?: 'open'|'closed', closeIssue?: true }} IssueOperation
  */
 
-
 function replaceManagedBlock(body, block) {
   const currentBlock = readManagedBlock(body);
   if (currentBlock === undefined) return body.length > 0 ? `${block}\n\n${body}` : block;

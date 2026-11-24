@@ -13,7 +13,16 @@ export const views = [
         {
           title: 'Tool Configuration',
           columns: 2,
-          fields: ['slug', 'name', 'kind', 'handler', 'rate_limit', 'is_active', 'charity_mode', 'company'],
+          fields: [
+            'slug',
+            'name',
+            'kind',
+            'handler',
+            'rate_limit',
+            'is_active',
+            'charity_mode',
+            'company',
+          ],
         },
         {
           title: 'Descriptions',
@@ -47,7 +56,15 @@ export const views = [
   defineView(PublicMetric, {
     title: 'Public Daily Metrics',
     list: {
-      columns: ['tool', 'date', 'calls', 'unique_users', 'avg_latency', 'errors', 'charity_attribution_minor'],
+      columns: [
+        'tool',
+        'date',
+        'calls',
+        'unique_users',
+        'avg_latency',
+        'errors',
+        'charity_attribution_minor',
+      ],
       order: 'date desc, id desc',
     },
     form: {
@@ -55,15 +72,29 @@ export const views = [
         {
           title: 'Metric',
           columns: 2,
-          fields: ['tool', 'date', 'calls', 'unique_users', 'avg_latency', 'errors', 'charity_attribution_minor'],
+          fields: [
+            'tool',
+            'date',
+            'calls',
+            'unique_users',
+            'avg_latency',
+            'errors',
+            'charity_attribution_minor',
+          ],
         },
       ],
     },
     search: {
       fields: [],
       filters: [
-        { label: 'Last 7 Days', domain: [['date', '>=', new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)]] },
-        { label: 'Last 30 Days', domain: [['date', '>=', new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)]] },
+        {
+          label: 'Last 7 Days',
+          domain: [['date', '>=', new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)]],
+        },
+        {
+          label: 'Last 30 Days',
+          domain: [['date', '>=', new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)]],
+        },
         { label: 'Has Errors', domain: [['errors', '>', 0]] },
         { label: 'Charity Active', domain: [['charity_attribution_minor', '>', 0]] },
       ],

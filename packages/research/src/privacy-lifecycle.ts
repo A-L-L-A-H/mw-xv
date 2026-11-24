@@ -209,7 +209,6 @@ export interface PrivacyRevocationPlan {
   };
 }
 
-
 /** Build a sanitized revocation plan; persistence adapters must apply every invalidation. */
 export function createPrivacyRevocationPlan(input: {
   subjectRef: string;

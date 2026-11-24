@@ -22,16 +22,14 @@ export const SimSweepStrategy = {
   LATIN_HYPERCUBE: 'latin_hypercube',
   RANDOM: 'random',
 } as const;
-export type SimSweepStrategy =
-  (typeof SimSweepStrategy)[keyof typeof SimSweepStrategy];
+export type SimSweepStrategy = (typeof SimSweepStrategy)[keyof typeof SimSweepStrategy];
 
 export const SimValidationStatus = {
   DRAFT: 'draft',
   PASSED: 'passed',
   FAILED: 'failed',
 } as const;
-export type SimValidationStatus =
-  (typeof SimValidationStatus)[keyof typeof SimValidationStatus];
+export type SimValidationStatus = (typeof SimValidationStatus)[keyof typeof SimValidationStatus];
 
 export const SimulationModel = defineModel('sim.simulation_model', {
   table: 'sim_models',

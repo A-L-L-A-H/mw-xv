@@ -263,7 +263,10 @@ export interface SandboxExecutor {
 export interface WorkspaceOperations {
   createWorkspace(params: WorkspaceCreateParams): Promise<WorkspaceInfo>;
   snapshotWorkspace(params: WorkspaceSnapshotParams): Promise<WorkspaceSnapshotInfo>;
-  executeCheck(params: WorkspaceExecuteCheckParams, signal?: AbortSignal): Promise<WorkspaceCheckResult>;
+  executeCheck(
+    params: WorkspaceExecuteCheckParams,
+    signal?: AbortSignal
+  ): Promise<WorkspaceCheckResult>;
   listWorkspace(params: WorkspaceListParams): Promise<WorkspaceListResult>;
   readWorkspaceFile(params: WorkspaceReadParams): Promise<WorkspaceReadResult>;
   applyWorkspacePatch(params: WorkspaceApplyPatchParams): Promise<WorkspaceApplyPatchResult>;

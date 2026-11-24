@@ -85,8 +85,12 @@ describe('orm-rnd addon', () => {
       expect(await connection.schema.hasColumn(table, 'external_ref')).toBe(true);
     }
 
-    expect(await connection('rnd_programs').count({ count: '*' }).first()).toMatchObject({ count: 0 });
-    expect(await connection('rnd_experiments').count({ count: '*' }).first()).toMatchObject({ count: 0 });
+    expect(await connection('rnd_programs').count({ count: '*' }).first()).toMatchObject({
+      count: 0,
+    });
+    expect(await connection('rnd_experiments').count({ count: '*' }).first()).toMatchObject({
+      count: 0,
+    });
   });
 
   it('persists the full R&D graph with hypotheses, experiments, protocols, runs, instruments, reagents, samples, publications, patents, IPR', async () => {
@@ -193,10 +197,22 @@ describe('orm-rnd addon', () => {
     expect(validateTrl(1)).toEqual({ valid: true, reason: null });
     expect(validateTrl(9)).toEqual({ valid: true, reason: null });
     expect(validateTrl(5)).toEqual({ valid: true, reason: null });
-    expect(validateTrl(0)).toEqual({ valid: false, reason: 'TRL must be an integer between 1 and 9' });
-    expect(validateTrl(10)).toEqual({ valid: false, reason: 'TRL must be an integer between 1 and 9' });
-    expect(validateTrl(null)).toEqual({ valid: false, reason: 'TRL must be an integer between 1 and 9' });
-    expect(validateTrl(1.5)).toEqual({ valid: false, reason: 'TRL must be an integer between 1 and 9' });
+    expect(validateTrl(0)).toEqual({
+      valid: false,
+      reason: 'TRL must be an integer between 1 and 9',
+    });
+    expect(validateTrl(10)).toEqual({
+      valid: false,
+      reason: 'TRL must be an integer between 1 and 9',
+    });
+    expect(validateTrl(null)).toEqual({
+      valid: false,
+      reason: 'TRL must be an integer between 1 and 9',
+    });
+    expect(validateTrl(1.5)).toEqual({
+      valid: false,
+      reason: 'TRL must be an integer between 1 and 9',
+    });
   });
 
   it('rnd seed manifest writes nothing unless explicitly enabled', async () => {
@@ -205,14 +221,24 @@ describe('orm-rnd addon', () => {
 
     const disabled = await rndSeedManifest.seed({ db: connection, options: {} });
     expect(disabled).toEqual({ inserted: 0, updated: 0, skipped: 0 });
-    expect(await connection('rnd_programs').count({ count: '*' }).first()).toMatchObject({ count: 0 });
+    expect(await connection('rnd_programs').count({ count: '*' }).first()).toMatchObject({
+      count: 0,
+    });
 
-    const enabled = await rndSeedManifest.seed({ db: connection, options: { enabled: true, companyId: 1 } });
+    const enabled = await rndSeedManifest.seed({
+      db: connection,
+      options: { enabled: true, companyId: 1 },
+    });
     expect(enabled.inserted).toBeGreaterThan(0);
     expect(await connection('rnd_programs').where({ code: 'RND-CORE-001' })).toHaveLength(1);
-    expect(await connection('rnd_experiments').where({ name: 'Baseline capability evaluation' })).toHaveLength(1);
+    expect(
+      await connection('rnd_experiments').where({ name: 'Baseline capability evaluation' })
+    ).toHaveLength(1);
 
-    const repeat = await rndSeedManifest.seed({ db: connection, options: { enabled: true, companyId: 1 } });
+    const repeat = await rndSeedManifest.seed({
+      db: connection,
+      options: { enabled: true, companyId: 1 },
+    });
     expect(repeat.inserted).toBe(0);
     expect(repeat.updated).toBeGreaterThan(0);
     expect(repeat.skipped).toBe(0);

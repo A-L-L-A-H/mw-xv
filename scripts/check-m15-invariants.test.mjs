@@ -120,7 +120,10 @@ export function digest(value: unknown): string {
   return sha256Canonical(redact(value as Record<string, unknown>));
 }
 `;
-  const violations = checkM15ModuleSource('packages/ai-runtime/src/speculative-tree.ts', goodSource);
+  const violations = checkM15ModuleSource(
+    'packages/ai-runtime/src/speculative-tree.ts',
+    goodSource
+  );
   const shaViolations = violations.filter((v) => v.code === 'MISSING_SHA256_DIGEST');
 
   assert.equal(shaViolations.length, 0);

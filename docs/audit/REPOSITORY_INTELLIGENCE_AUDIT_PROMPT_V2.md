@@ -124,18 +124,22 @@ Lakukan riset setelah memahami domain, stack, dan kondisi repository. Mulailah d
 Pilih sumber sesuai kebutuhan. Tidak semua kategori wajib dipakai jika tidak relevan.
 
 **Primary technical sources**
+
 - Official documentation, specifications, RFCs, release notes, changelogs, security advisories, issue trackers, dan engineering blogs dari pengembang teknologi terkait.
 
 **Open-source intelligence**
+
 - GitHub repositories, releases, Issues, Discussions, Pull Requests, examples, forks, dan implementation code.
 - Proyek flagship dan proyek kecil yang memiliki pendekatan teknis berbeda.
 - GitHub Trending atau indikator popularitas hanya sebagai discovery signal, bukan bukti kualitas.
 
 **Research and academic sources**
+
 - arXiv, Google Scholar, Semantic Scholar, ACM, IEEE, universitas, dan lembaga riset.
 - Gunakan paper hanya jika ada hubungan yang jelas dengan masalah, kemampuan, atau arah teknis proyek.
 
 **Engineering and community signals**
+
 - Hacker News, Reddit engineering communities, konferensi, technical talks, dan studi kasus industri.
 - Perlakukan opini komunitas sebagai sinyal untuk diteliti lebih lanjut, bukan fakta teknis.
 
@@ -191,35 +195,41 @@ Gunakan domain audit berikut sebagai coverage framework. Kedalaman pemeriksaan h
 ### 6.1 Domain audit
 
 **A. Product, scope, and user workflows**
+
 - Kesesuaian implementasi dengan visi dan use case.
 - Core user journey dan workflow utama.
 - Feature completeness, usability, product friction, dan konsistensi pengalaman.
 - Integrasi dan use case yang belum didukung tetapi relevan.
 
 **B. Architecture and boundaries**
+
 - System architecture, separation of concerns, modularity, coupling, cohesion, dan dependency direction.
 - Internal API, contract consistency, abstraction, extensibility, dan reusability.
 - Service/package boundaries, data flow, bottleneck, serta risiko perubahan.
 - Apakah kompleksitas arsitektur sebanding dengan kebutuhan produk.
 
 **C. Code and implementation quality**
+
 - Duplicated logic, dead/abandoned code, incomplete implementation, dan unnecessary complexity.
 - Type safety, error handling, resource lifecycle, concurrency, memory, CPU, dan edge cases.
 - Consistency of conventions, code organization, and maintainability.
 
 **D. Data, persistence, and migration**
+
 - Data model, schema integrity, constraints, indexing, query patterns, and transaction boundaries.
 - Migration ordering, rollback safety, compatibility, and versioning.
 - Backup/restore strategy, retention, disaster recovery, and data-loss risks.
 - Data validation, ownership, lifecycle, and privacy implications.
 
 **E. API, protocol, and integration**
+
 - API contracts, schemas, validation, authentication, authorization, and rate limiting.
 - Versioning, backwards/forwards compatibility, idempotency, retries, timeouts, and pagination.
 - Webhooks, event delivery, integration failure modes, and external dependency contracts.
 - Generated clients/SDKs and API documentation consistency where relevant.
 
 **F. Security and software supply chain**
+
 - Authentication, authorization, access boundaries, input validation, and injection risks.
 - Secrets handling, session management, cryptography usage, and sensitive data exposure.
 - Dependency vulnerabilities, transitive dependencies, provenance, build integrity, and update policy.
@@ -227,36 +237,42 @@ Gunakan domain audit berikut sebagai coverage framework. Kedalaman pemeriksaan h
 - License compliance and obligations for third-party/open-source components.
 
 **G. Performance and resource efficiency**
+
 - Startup/build/runtime performance, latency, throughput, and resource utilization.
 - Database/network bottlenecks, caching, concurrency, and backpressure.
 - Bundle size, rendering performance, memory/CPU usage, and workload scaling where relevant.
 - Cost efficiency and opportunities to reduce infrastructure or operational expense.
 
 **H. Reliability and operations**
+
 - Failure handling, retries, timeouts, circuit breakers, graceful degradation, and recovery.
 - Logging, metrics, tracing, health checks, alerting, and diagnostic quality.
 - Queue/job behavior, scheduling, persistence, and duplicate processing.
 - Deployment, rollback, backup restore, incident response, and operational runbooks.
 
 **I. Testing and quality assurance**
+
 - Unit, integration, contract, end-to-end, regression, security, and performance tests.
 - Test isolation, determinism, fixtures, mocking, and flaky tests.
 - Coverage of critical paths and failure scenarios; do not equate line coverage with quality.
 - Test data, environment parity, and CI test reliability.
 
 **J. CI/CD, release, and developer workflow**
+
 - Build reproducibility, pipeline correctness, caching, parallelism, and required checks.
 - Lint, type-check, test, security scanning, artifact signing, and release automation.
 - Versioning, changelog, release notes, rollback, and deployment gates.
 - Local setup, onboarding, debugging, contribution workflow, and documentation.
 
 **K. UI, accessibility, and client experience** — jika proyek memiliki antarmuka pengguna:
+
 - Responsive behavior, accessibility, keyboard support, semantic structure, and screen-reader considerations.
 - Loading, empty, error, offline, and degraded states.
 - Internationalization/localization, formatting, and timezone handling.
 - Visual consistency, component reuse, interaction feedback, and UX friction.
 
 **L. Compatibility and portability**
+
 - Supported operating systems, browser/runtime versions, architectures, and deployment targets.
 - Environment/configuration drift and reproducibility.
 - External service/vendor lock-in and migration options.
@@ -281,7 +297,7 @@ Jangan menjalankan benchmark atau mengklaim peningkatan performa tanpa baseline,
 Wajib buat matrix dengan kolom:
 
 | Domain | Relevance | Inspection Status | Evidence | Findings | Limitation / Next Check |
-|---|---|---|---|---|---|
+| ------ | --------- | ----------------- | -------- | -------- | ----------------------- |
 
 Gunakan status inspeksi:
 
@@ -409,16 +425,19 @@ Jangan mengubah issue/task tracker dalam mode read-only. Ini hanya rekomendasi r
 Lakukan deduplikasi di tiga tingkat:
 
 **A. Outcome overlap**
+
 - Apakah dua task menghasilkan perubahan atau outcome yang sama?
 - Apakah satu task sebenarnya sudah mencakup acceptance criteria task lain?
 - Jika ya, gabungkan atau tetapkan parent/child dengan batas yang jelas.
 
 **B. Root-cause overlap**
+
 - Apakah beberapa gejala berasal dari root cause yang sama?
 - Jika root cause sama dan perbaikannya satu perubahan terpadu, konsolidasikan.
 - Jika root cause berbeda, pisahkan walau file atau package yang disentuh sama.
 
 **C. Scope and file overlap**
+
 - Catat file/package/API/schema yang terdampak.
 - Shared file tidak otomatis berarti task duplikat.
 - Bila dua task menyentuh area yang sama, jelaskan boundary perubahan, urutan, dan cara menghindari konflik.
@@ -426,7 +445,7 @@ Lakukan deduplikasi di tiga tingkat:
 Buat **Overlap Matrix**:
 
 | Task A | Task B | Relationship | Decision | Rationale |
-|---|---|---|---|---|
+| ------ | ------ | ------------ | -------- | --------- |
 
 Relationship: `DUPLICATE / OVERLAP / DEPENDENCY / SHARED AREA / NONE`.
 
@@ -437,6 +456,7 @@ Setiap task harus mempunyai satu primary outcome yang jelas. Pecah task bila mem
 Task harus cukup kecil agar coding agent atau engineer bisa mengerjakannya dengan konteks terbatas.
 
 Ukuran:
+
 - **XS** — perubahan sangat kecil dan terisolasi.
 - **S** — satu outcome sederhana, sedikit file atau satu area.
 - **M** — beberapa file/komponen tetapi satu outcome kohesif.
@@ -613,21 +633,25 @@ Output audit adalah rekomendasi dan backlog usulan. Implementasi dan pembuatan i
 Sebelum menyerahkan laporan, lakukan self-review:
 
 ### Repository understanding
+
 - Apakah identitas, stack, struktur, dan kondisi Git diketahui atau keterbatasannya dinyatakan?
 - Apakah klaim dokumentasi sudah dibandingkan dengan implementasi?
 - Apakah pekerjaan yang sudah ada telah direkonsiliasi?
 
 ### Research integrity
+
 - Apakah setiap sumber nyata, relevan, dan cukup baru untuk konteksnya?
 - Apakah referensi primer diprioritaskan?
 - Apakah fakta eksternal dipisahkan dari interpretasi dan hipotesis?
 
 ### Audit coverage
+
 - Apakah domain yang relevan sudah diperiksa?
 - Apakah `NOT CHECKED`, `PARTIAL`, `BLOCKED`, dan `NOT APPLICABLE` dinyatakan dengan jujur?
 - Apakah setiap temuan penting memiliki bukti repository yang spesifik?
 
 ### Backlog quality
+
 - Apakah temuan yang memiliki root cause sama sudah dikonsolidasikan?
 - Apakah duplikasi dengan issue/TODO/roadmap sudah diperiksa?
 - Apakah setiap task memiliki scope, acceptance criteria, validation, dan dependency?
@@ -635,6 +659,7 @@ Sebelum menyerahkan laporan, lakukan self-review:
 - Apakah task spekulatif dipisahkan dari implementasi yang tervalidasi?
 
 ### Prioritization
+
 - Apakah P0/P1 memiliki alasan yang kuat?
 - Apakah effort dan confidence dinyatakan secara realistis?
 - Apakah urutan roadmap memperhitungkan dependency dan risiko rework?

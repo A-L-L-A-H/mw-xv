@@ -15,7 +15,7 @@ function periodBounds(period: string): { start: Date; end: Date } {
 async function computeStreamMetrics(
   ctx: Context,
   stream: InstanceType<typeof IncomeStream>,
-  period: string,
+  period: string
 ): Promise<{
   revenue_minor: number;
   cost_minor: number;
@@ -32,13 +32,21 @@ async function computeStreamMetrics(
     .andWhere('occurred_at', '<', end);
 
   const revenueResult = await entries.clone().andWhere('kind', 'revenue').sum('net_minor as total');
-  const costResult = await entries.clone().whereIn('kind', ['cost', 'fee', 'tax']).sum('amount_minor as total');
+  const costResult = await entries
+    .clone()
+    .whereIn('kind', ['cost', 'fee', 'tax'])
+    .sum('amount_minor as total');
 
-  const rev = Number((revenueResult[0] as unknown as Record<string, unknown> | undefined)?.total ?? 0);
-  const cost = Number((costResult[0] as unknown as Record<string, unknown> | undefined)?.total ?? 0);
+  const rev = Number(
+    (revenueResult[0] as unknown as Record<string, unknown> | undefined)?.total ?? 0
+  );
+  const cost = Number(
+    (costResult[0] as unknown as Record<string, unknown> | undefined)?.total ?? 0
+  );
   const net_minor = rev - cost;
 
-  const mrr_minor = stream.kind === 'saas' && stream.status === 'live' ? stream.goal_monthly_minor : 0;
+  const mrr_minor =
+    stream.kind === 'saas' && stream.status === 'live' ? stream.goal_monthly_minor : 0;
   const arr_minor = mrr_minor * 12;
 
   let runway_months: number | null = null;

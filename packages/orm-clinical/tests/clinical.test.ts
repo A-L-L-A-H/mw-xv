@@ -74,10 +74,18 @@ describe('orm-clinical addon', () => {
       expect(await connection.schema.hasColumn(table, 'external_ref')).toBe(true);
     }
 
-    expect(await connection('clinical_patients').count({ count: '*' }).first()).toMatchObject({ count: 1 });
-    expect(await connection('clinical_encounters').count({ count: '*' }).first()).toMatchObject({ count: 1 });
-    expect(await connection('clinical_diagnoses').count({ count: '*' }).first()).toMatchObject({ count: 0 });
-    expect(await connection('clinical_medication_orders').count({ count: '*' }).first()).toMatchObject({ count: 0 });
+    expect(await connection('clinical_patients').count({ count: '*' }).first()).toMatchObject({
+      count: 1,
+    });
+    expect(await connection('clinical_encounters').count({ count: '*' }).first()).toMatchObject({
+      count: 1,
+    });
+    expect(await connection('clinical_diagnoses').count({ count: '*' }).first()).toMatchObject({
+      count: 0,
+    });
+    expect(
+      await connection('clinical_medication_orders').count({ count: '*' }).first()
+    ).toMatchObject({ count: 0 });
   });
 
   it('persists the full clinical graph with unit conversion helpers', async () => {
@@ -153,7 +161,9 @@ describe('orm-clinical addon', () => {
     expect(lab.encounter_id).toBe(encounter.id);
     expect(vital.encounter_id).toBe(encounter.id);
 
-    const fetchedPatient = await Patient.query(connection).findById(patient.id).withGraphFetched('encounters');
+    const fetchedPatient = await Patient.query(connection)
+      .findById(patient.id)
+      .withGraphFetched('encounters');
     expect(fetchedPatient).not.toBeNull();
   });
 
@@ -163,18 +173,32 @@ describe('orm-clinical addon', () => {
 
     const disabled = await clinicalSeedManifest.seed({ db: connection, options: {} });
     expect(disabled).toEqual({ inserted: 0, updated: 0, skipped: 0 });
-    expect(await connection('clinical_patients').count({ count: '*' }).first()).toMatchObject({ count: 1 });
+    expect(await connection('clinical_patients').count({ count: '*' }).first()).toMatchObject({
+      count: 1,
+    });
 
-    const enabled = await clinicalSeedManifest.seed({ db: connection, options: { enabled: true, companyId: 1 } });
+    const enabled = await clinicalSeedManifest.seed({
+      db: connection,
+      options: { enabled: true, companyId: 1 },
+    });
     expect(enabled.inserted).toBeGreaterThan(0);
     expect(await connection('clinical_patients').where({ mrn: 'MRN-SEED-0001' })).toHaveLength(1);
 
-    const repeat = await clinicalSeedManifest.seed({ db: connection, options: { enabled: true, companyId: 1 } });
+    const repeat = await clinicalSeedManifest.seed({
+      db: connection,
+      options: { enabled: true, companyId: 1 },
+    });
     expect(repeat.inserted).toBe(0);
     expect(repeat.updated).toBeGreaterThan(0);
-    expect(await connection('clinical_patients').count({ count: '*' }).first()).toMatchObject({ count: 2 });
-    expect(await connection('clinical_diagnoses').count({ count: '*' }).first()).toMatchObject({ count: 1 });
-    expect(await connection('clinical_medication_orders').count({ count: '*' }).first()).toMatchObject({ count: 1 });
+    expect(await connection('clinical_patients').count({ count: '*' }).first()).toMatchObject({
+      count: 2,
+    });
+    expect(await connection('clinical_diagnoses').count({ count: '*' }).first()).toMatchObject({
+      count: 1,
+    });
+    expect(
+      await connection('clinical_medication_orders').count({ count: '*' }).first()
+    ).toMatchObject({ count: 1 });
   });
 
   it('exposes a seed manifest compatible with AddonSeedManifest', () => {

@@ -109,73 +109,73 @@ export function DashboardKpiGrid({ accessibleModels }: DashboardKpiGridProps) {
         />
       ) : null}
       <div className="dashboard-metrics">
-      {canReadPartners && (
-        <Link href="/board/m/base.partner" className="dashboard-metric-link">
-          <MetricTile
-            label="Partners & contacts"
-            value={partnerStats && !partnerError ? partnerStats.total : '—'}
-            detail={partnerError ? 'Read failed' : 'View directory'}
-            icon={<Users className="size-4" />}
-            accent="magenta"
-            surface="paper"
-            frame="torn"
-            size="hero"
-            interactive
-            className="mw-ui-interactive-surface"
-          />
-        </Link>
-      )}
+        {canReadPartners && (
+          <Link href="/board/m/base.partner" className="dashboard-metric-link">
+            <MetricTile
+              label="Partners & contacts"
+              value={partnerStats && !partnerError ? partnerStats.total : '—'}
+              detail={partnerError ? 'Read failed' : 'View directory'}
+              icon={<Users className="size-4" />}
+              accent="magenta"
+              surface="paper"
+              frame="torn"
+              size="hero"
+              interactive
+              className="mw-ui-interactive-surface"
+            />
+          </Link>
+        )}
 
-      {canReadUsers && (
-        <Link href="/board/m/base.user" className="dashboard-metric-link">
-          <MetricTile
-            label="Active users"
-            value={userStats && !userError ? userStats.total : '—'}
-            detail={userError ? 'Read failed' : 'System accounts'}
-            icon={<UserPlus className="size-4" />}
-            accent="cyan"
-            surface="paper"
-            frame="torn"
-            size="hero"
-            interactive
-            className="mw-ui-interactive-surface"
-          />
-        </Link>
-      )}
+        {canReadUsers && (
+          <Link href="/board/m/base.user" className="dashboard-metric-link">
+            <MetricTile
+              label="Active users"
+              value={userStats && !userError ? userStats.total : '—'}
+              detail={userError ? 'Read failed' : 'System accounts'}
+              icon={<UserPlus className="size-4" />}
+              accent="cyan"
+              surface="paper"
+              frame="torn"
+              size="hero"
+              interactive
+              className="mw-ui-interactive-surface"
+            />
+          </Link>
+        )}
 
-      {canReadCompanies && (
-        <Link href="/board/m/base.company" className="dashboard-metric-link">
-          <MetricTile
-            label="Companies"
-            value={companyStats && !companyError ? companyStats.total : '—'}
-            detail={companyError ? 'Read failed' : 'Tenant scopes'}
-            icon={<Building2 className="size-4" />}
-            accent="yellow"
-            surface="paper"
-            frame="torn"
-            size="hero"
-            interactive
-            className="mw-ui-interactive-surface"
-          />
-        </Link>
-      )}
+        {canReadCompanies && (
+          <Link href="/board/m/base.company" className="dashboard-metric-link">
+            <MetricTile
+              label="Companies"
+              value={companyStats && !companyError ? companyStats.total : '—'}
+              detail={companyError ? 'Read failed' : 'Tenant scopes'}
+              icon={<Building2 className="size-4" />}
+              accent="yellow"
+              surface="paper"
+              frame="torn"
+              size="hero"
+              interactive
+              className="mw-ui-interactive-surface"
+            />
+          </Link>
+        )}
 
-      {canReadActivities && (
-        <Link href="/board/m/base.activity" className="dashboard-metric-link">
-          <MetricTile
-            label="Planned activities"
-            value={activityStats && !activityError ? activityStats.total : '—'}
-            detail={activityError ? 'Read failed' : 'Active reminders'}
-            icon={<CheckCircle2 className="size-4" />}
-            accent="violet"
-            surface="paper"
-            frame="torn"
-            size="hero"
-            interactive
-            className="mw-ui-interactive-surface"
-          />
-        </Link>
-      )}
+        {canReadActivities && (
+          <Link href="/board/m/base.activity" className="dashboard-metric-link">
+            <MetricTile
+              label="Planned activities"
+              value={activityStats && !activityError ? activityStats.total : '—'}
+              detail={activityError ? 'Read failed' : 'Active reminders'}
+              icon={<CheckCircle2 className="size-4" />}
+              accent="violet"
+              surface="paper"
+              frame="torn"
+              size="hero"
+              interactive
+              className="mw-ui-interactive-surface"
+            />
+          </Link>
+        )}
       </div>
     </div>
   );

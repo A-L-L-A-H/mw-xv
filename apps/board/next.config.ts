@@ -19,7 +19,9 @@ const proxyPrefixes = [
 ];
 
 const isDev = process.env.NODE_ENV === 'development';
-const scriptSrc = isDev ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" : "script-src 'self' 'unsafe-inline'";
+const scriptSrc = isDev
+  ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+  : "script-src 'self' 'unsafe-inline'";
 
 const nextConfig: NextConfig = {
   distDir: process.env.MW_BOARD_DIST_DIR ?? '.next',

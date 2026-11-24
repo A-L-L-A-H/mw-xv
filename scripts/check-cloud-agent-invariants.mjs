@@ -238,8 +238,8 @@ function workspaceIncludesVendor(source) {
         : Array.isArray(manifest?.workspaces?.packages)
           ? manifest.workspaces.packages
           : [];
-      return rawWorkspaces.some((pattern) =>
-        typeof pattern === 'string' && workspacePatternIncludesVendor(pattern.trim())
+      return rawWorkspaces.some(
+        (pattern) => typeof pattern === 'string' && workspacePatternIncludesVendor(pattern.trim())
       );
     } catch {
       return false;
@@ -277,9 +277,7 @@ function workspacePatternIncludesVendor(pattern) {
 
 export function checkWorkspaceExclusion(source) {
   if (source === null || source === undefined) {
-    return [
-      finding('MISSING_WORKSPACE_FILE', 'package.json', 'package.json is required.'),
-    ];
+    return [finding('MISSING_WORKSPACE_FILE', 'package.json', 'package.json is required.')];
   }
   if (!workspaceIncludesVendor(source)) return [];
   return [

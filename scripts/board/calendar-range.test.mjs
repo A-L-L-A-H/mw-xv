@@ -52,10 +52,7 @@ test('month navigation clamps short months and never drifts by thirty days', () 
   assert.equal(formatLocalDate(addLocalMonths(localDate(2023, 1, 31), 1)), '2023-02-28');
   assert.equal(formatLocalDate(addLocalMonths(localDate(2024, 3, 31), -1)), '2024-02-29');
   assert.equal(formatLocalDate(addLocalMonths(localDate(2024, 12, 31), 1)), '2025-01-31');
-  assert.equal(
-    formatLocalDate(navigateCalendar(localDate(2024, 3, 31), 1, 'month')),
-    '2024-04-30'
-  );
+  assert.equal(formatLocalDate(navigateCalendar(localDate(2024, 3, 31), 1, 'month')), '2024-04-30');
   assert.equal(
     formatLocalDate(navigateCalendar(localDate(2024, 4, 15), -1, 'month')),
     '2024-03-15'
@@ -69,23 +66,17 @@ test('week navigation and ranges remain seven local days across DST and year bou
     assert.equal(formatLocalDate(range.start), '2024-03-10');
     assert.equal(formatLocalDate(range.end), '2024-03-16');
     assert.equal(range.days.length, 7);
-    assert.deepEqual(
-      range.days.map(formatLocalDate),
-      [
-        '2024-03-10',
-        '2024-03-11',
-        '2024-03-12',
-        '2024-03-13',
-        '2024-03-14',
-        '2024-03-15',
-        '2024-03-16',
-      ]
-    );
+    assert.deepEqual(range.days.map(formatLocalDate), [
+      '2024-03-10',
+      '2024-03-11',
+      '2024-03-12',
+      '2024-03-13',
+      '2024-03-14',
+      '2024-03-15',
+      '2024-03-16',
+    ]);
     assert.equal(range.days[1].getHours(), 0);
-    assert.equal(
-      Math.round((range.days[1].getTime() - range.days[0].getTime()) / 3_600_000),
-      23
-    );
+    assert.equal(Math.round((range.days[1].getTime() - range.days[0].getTime()) / 3_600_000), 23);
     assert.equal(
       formatLocalDate(navigateCalendar(localDate(2024, 12, 31), 1, 'week')),
       '2025-01-07'

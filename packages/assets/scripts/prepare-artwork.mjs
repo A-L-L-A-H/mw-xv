@@ -237,7 +237,8 @@ const artworkProvenance = generated.map(({ path, source, focalPoint, alt, decora
       sourceFile: source,
       creator: 'MoonWitness contributors',
       source: 'Derivative of existing raw_arts/art illustration in this repository',
-      terms: 'Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).',
+      terms:
+        'Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).',
       generatedOn: '2026-11-24',
       focalPoint,
       alt,

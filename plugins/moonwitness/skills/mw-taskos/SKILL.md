@@ -13,18 +13,18 @@ description: Query and summarize MoonWitness TaskOS — docs/tasks/tasks.json (f
 
 ## Task fields
 
-| Field | Meaning |
-| --- | --- |
-| `code` | Stable task ID (e.g. `M0.01`) |
-| `project` | Project slug (e.g. `moonwitness`, `visual-universe`) |
-| `series` | Series letter the task belongs to |
-| `milestone` | Milestone ID (e.g. `M0`) |
-| `horizon` | Planning horizon |
-| `status` | One of `backlog`, `todo`, `doing`, `review`, `blocked`, `done` |
-| `priority` | Ordering weight within its series |
-| `dependsOn` | Task codes this task depends on |
-| `blocks` | Task codes this task unblocks |
-| `acceptanceCriteria` | Conditions that must hold before `done` |
+| Field                | Meaning                                                        |
+| -------------------- | -------------------------------------------------------------- |
+| `code`               | Stable task ID (e.g. `M0.01`)                                  |
+| `project`            | Project slug (e.g. `moonwitness`, `visual-universe`)           |
+| `series`             | Series letter the task belongs to                              |
+| `milestone`          | Milestone ID (e.g. `M0`)                                       |
+| `horizon`            | Planning horizon                                               |
+| `status`             | One of `backlog`, `todo`, `doing`, `review`, `blocked`, `done` |
+| `priority`           | Ordering weight within its series                              |
+| `dependsOn`          | Task codes this task depends on                                |
+| `blocks`             | Task codes this task unblocks                                  |
+| `acceptanceCriteria` | Conditions that must hold before `done`                        |
 
 ## Querying rules
 

@@ -54,7 +54,8 @@ export async function assertNoSymlinkPath(root: string, relativePath: string): P
   if (!isWithinRoot(realRoot, candidate)) forbidden('Path escapes the workspace root');
   try {
     const realCandidate = await realpath(candidate);
-    if (!isWithinRoot(realRoot, realCandidate)) forbidden('Resolved path escapes the workspace root');
+    if (!isWithinRoot(realRoot, realCandidate))
+      forbidden('Resolved path escapes the workspace root');
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
   }
@@ -169,7 +170,8 @@ export async function readBoundedMetadata(
   const handle = await open(absolute, constants.O_RDONLY | constants.O_NOFOLLOW);
   try {
     const stat = await handle.stat();
-    if (!stat.isFile() || stat.size > maxBytes) invalid('Metadata file is not a bounded regular file');
+    if (!stat.isFile() || stat.size > maxBytes)
+      invalid('Metadata file is not a bounded regular file');
     const bytes = await handle.readFile();
     let parsed: unknown;
     try {

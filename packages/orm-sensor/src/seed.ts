@@ -29,7 +29,13 @@ export function isSensorSeedEnabled(options: SensorSeedOptions | undefined): boo
   return options?.enabled === true;
 }
 
-export async function countSensorRows(db: AddonSeedManifest['seed'] extends (ctx: infer C) => unknown ? C extends { db: infer D } ? D : never : never): Promise<Record<string, number>> {
+export async function countSensorRows(
+  db: AddonSeedManifest['seed'] extends (ctx: infer C) => unknown
+    ? C extends { db: infer D }
+      ? D
+      : never
+    : never
+): Promise<Record<string, number>> {
   const counts: Record<string, number> = {};
   await Promise.all(
     SENSOR_TABLES.map(async (table) => {

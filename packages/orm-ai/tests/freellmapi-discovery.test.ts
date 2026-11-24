@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  DiscoveryError,
-  discoverGatewayModels,
-} from '../src/freellmapi-discovery.js';
+import { DiscoveryError, discoverGatewayModels } from '../src/freellmapi-discovery.js';
 
 function gatewayResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -27,7 +24,7 @@ describe('FreeLLMAPI model discovery', () => {
         data: [
           { id: 'provider/real-model-1', owned_by: 'upstream', context_window: 128000 },
           { id: 'real-model-2', supports_tools: true },
-          { id: 'bad id', },
+          { id: 'bad id' },
         ],
       });
     });
@@ -43,7 +40,11 @@ describe('FreeLLMAPI model discovery', () => {
 
   it('fails closed on a missing key, unsafe origin and gateway errors', async () => {
     await expect(
-      discoverGatewayModels({ secretRef: 'MW_AI_FREELLM_KEY', env: {}, fetch: (async () => gatewayResponse({})) as never })
+      discoverGatewayModels({
+        secretRef: 'MW_AI_FREELLM_KEY',
+        env: {},
+        fetch: (async () => gatewayResponse({})) as never,
+      })
     ).rejects.toMatchObject({ code: 'SECRET_UNAVAILABLE' });
 
     await expect(

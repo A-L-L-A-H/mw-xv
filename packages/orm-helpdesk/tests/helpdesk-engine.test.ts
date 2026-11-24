@@ -15,28 +15,142 @@ import {
 
 describe('helpdesk-engine', () => {
   const mockPolicies: SlaPolicyLike[] = [
-    { id: 1, name: 'P1-All', priority: 'P1', first_response_minutes: 15, resolution_minutes: 240, business_hours_only: false, applies_to_queue: 'all', is_active: true },
-    { id: 2, name: 'P2-All', priority: 'P2', first_response_minutes: 60, resolution_minutes: 480, business_hours_only: false, applies_to_queue: 'all', is_active: true },
-    { id: 3, name: 'P3-All', priority: 'P3', first_response_minutes: 240, resolution_minutes: 1440, business_hours_only: true, applies_to_queue: 'all', is_active: true },
-    { id: 4, name: 'P4-All', priority: 'P4', first_response_minutes: 480, resolution_minutes: 2880, business_hours_only: true, applies_to_queue: 'all', is_active: true },
-    { id: 5, name: 'P1-Enterprise', priority: 'P1', first_response_minutes: 10, resolution_minutes: 120, business_hours_only: false, applies_to_queue: 'enterprise', is_active: true },
-    { id: 6, name: 'Inactive', priority: 'P1', first_response_minutes: 5, resolution_minutes: 60, business_hours_only: false, applies_to_queue: 'all', is_active: false },
+    {
+      id: 1,
+      name: 'P1-All',
+      priority: 'P1',
+      first_response_minutes: 15,
+      resolution_minutes: 240,
+      business_hours_only: false,
+      applies_to_queue: 'all',
+      is_active: true,
+    },
+    {
+      id: 2,
+      name: 'P2-All',
+      priority: 'P2',
+      first_response_minutes: 60,
+      resolution_minutes: 480,
+      business_hours_only: false,
+      applies_to_queue: 'all',
+      is_active: true,
+    },
+    {
+      id: 3,
+      name: 'P3-All',
+      priority: 'P3',
+      first_response_minutes: 240,
+      resolution_minutes: 1440,
+      business_hours_only: true,
+      applies_to_queue: 'all',
+      is_active: true,
+    },
+    {
+      id: 4,
+      name: 'P4-All',
+      priority: 'P4',
+      first_response_minutes: 480,
+      resolution_minutes: 2880,
+      business_hours_only: true,
+      applies_to_queue: 'all',
+      is_active: true,
+    },
+    {
+      id: 5,
+      name: 'P1-Enterprise',
+      priority: 'P1',
+      first_response_minutes: 10,
+      resolution_minutes: 120,
+      business_hours_only: false,
+      applies_to_queue: 'enterprise',
+      is_active: true,
+    },
+    {
+      id: 6,
+      name: 'Inactive',
+      priority: 'P1',
+      first_response_minutes: 5,
+      resolution_minutes: 60,
+      business_hours_only: false,
+      applies_to_queue: 'all',
+      is_active: false,
+    },
   ];
 
   const mockRules: EscalationRuleLike[] = [
-    { id: 1, name: 'P1 FR Breach', sla_policy: 1, trigger: 'first_response_breach', escalate_after_minutes: 30, escalate_to: 'team_lead', max_escalations: 2, is_active: true },
-    { id: 2, name: 'P1 Resolution Breach', sla_policy: 1, trigger: 'resolution_breach', escalate_after_minutes: 60, escalate_to: 'manager', max_escalations: 2, is_active: true },
-    { id: 3, name: 'P2 FR Breach', sla_policy: 2, trigger: 'first_response_breach', escalate_after_minutes: 60, escalate_to: 'team_lead', max_escalations: 2, is_active: true },
-    { id: 4, name: 'Priority Change', sla_policy: 1, trigger: 'priority_change', escalate_after_minutes: 0, escalate_to: 'on_call', oncall_rotation: 'primary', max_escalations: 1, is_active: true },
-    { id: 5, name: 'Reopen', sla_policy: 1, trigger: 'reopen', escalate_after_minutes: 0, escalate_to: 'team_lead', max_escalations: 1, is_active: true },
-    { id: 6, name: 'Inactive Rule', sla_policy: 1, trigger: 'first_response_breach', escalate_after_minutes: 30, escalate_to: 'team_lead', max_escalations: 2, is_active: false },
+    {
+      id: 1,
+      name: 'P1 FR Breach',
+      sla_policy: 1,
+      trigger: 'first_response_breach',
+      escalate_after_minutes: 30,
+      escalate_to: 'team_lead',
+      max_escalations: 2,
+      is_active: true,
+    },
+    {
+      id: 2,
+      name: 'P1 Resolution Breach',
+      sla_policy: 1,
+      trigger: 'resolution_breach',
+      escalate_after_minutes: 60,
+      escalate_to: 'manager',
+      max_escalations: 2,
+      is_active: true,
+    },
+    {
+      id: 3,
+      name: 'P2 FR Breach',
+      sla_policy: 2,
+      trigger: 'first_response_breach',
+      escalate_after_minutes: 60,
+      escalate_to: 'team_lead',
+      max_escalations: 2,
+      is_active: true,
+    },
+    {
+      id: 4,
+      name: 'Priority Change',
+      sla_policy: 1,
+      trigger: 'priority_change',
+      escalate_after_minutes: 0,
+      escalate_to: 'on_call',
+      oncall_rotation: 'primary',
+      max_escalations: 1,
+      is_active: true,
+    },
+    {
+      id: 5,
+      name: 'Reopen',
+      sla_policy: 1,
+      trigger: 'reopen',
+      escalate_after_minutes: 0,
+      escalate_to: 'team_lead',
+      max_escalations: 1,
+      is_active: true,
+    },
+    {
+      id: 6,
+      name: 'Inactive Rule',
+      sla_policy: 1,
+      trigger: 'first_response_breach',
+      escalate_after_minutes: 30,
+      escalate_to: 'team_lead',
+      max_escalations: 2,
+      is_active: false,
+    },
   ];
 
   const now = '2026-01-15T10:00:00.000Z';
 
   describe('resolveSlaDeadlines', () => {
     it('returns exact match for priority and queue', () => {
-      const input: SlaEvaluateInput = { priority: 'P1', queue: 'enterprise', policies: mockPolicies, nowIso: now };
+      const input: SlaEvaluateInput = {
+        priority: 'P1',
+        queue: 'enterprise',
+        policies: mockPolicies,
+        nowIso: now,
+      };
       const result = resolveSlaDeadlines(input);
       expect(result).not.toBeNull();
       expect(result!.policyId).toBe(5);
@@ -44,7 +158,12 @@ describe('helpdesk-engine', () => {
     });
 
     it('falls back to queue=all when no exact match', () => {
-      const input: SlaEvaluateInput = { priority: 'P2', queue: 'technical', policies: mockPolicies, nowIso: now };
+      const input: SlaEvaluateInput = {
+        priority: 'P2',
+        queue: 'technical',
+        policies: mockPolicies,
+        nowIso: now,
+      };
       const result = resolveSlaDeadlines(input);
       expect(result).not.toBeNull();
       expect(result!.policyId).toBe(2);
@@ -52,7 +171,12 @@ describe('helpdesk-engine', () => {
     });
 
     it('ignores inactive policies', () => {
-      const input: SlaEvaluateInput = { priority: 'P1', queue: 'all', policies: mockPolicies, nowIso: now };
+      const input: SlaEvaluateInput = {
+        priority: 'P1',
+        queue: 'all',
+        policies: mockPolicies,
+        nowIso: now,
+      };
       const result = resolveSlaDeadlines(input);
       expect(result).not.toBeNull();
       expect(result!.policyId).toBe(1);
@@ -66,7 +190,12 @@ describe('helpdesk-engine', () => {
     });
 
     it('calculates correct deadline timestamps', () => {
-      const input: SlaEvaluateInput = { priority: 'P1', queue: 'enterprise', policies: mockPolicies, nowIso: now };
+      const input: SlaEvaluateInput = {
+        priority: 'P1',
+        queue: 'enterprise',
+        policies: mockPolicies,
+        nowIso: now,
+      };
       const result = resolveSlaDeadlines(input);
       expect(result).not.toBeNull();
       const frDue = new Date(result!.firstResponseDue).getTime();
@@ -77,7 +206,12 @@ describe('helpdesk-engine', () => {
     });
 
     it('throws on invalid nowIso', () => {
-      const input: SlaEvaluateInput = { priority: 'P1', queue: 'all', policies: mockPolicies, nowIso: 'invalid' };
+      const input: SlaEvaluateInput = {
+        priority: 'P1',
+        queue: 'all',
+        policies: mockPolicies,
+        nowIso: 'invalid',
+      };
       expect(() => resolveSlaDeadlines(input)).toThrow('Invalid ISO timestamp');
     });
   });
@@ -215,7 +349,11 @@ describe('helpdesk-engine', () => {
     });
 
     it('escalates on resolution breach', () => {
-      const ticket = { ...baseTicket, first_responded_at: '2026-01-15T09:40:00.000Z', resolution_due_at: '2026-01-15T09:00:00.000Z' };
+      const ticket = {
+        ...baseTicket,
+        first_responded_at: '2026-01-15T09:40:00.000Z',
+        resolution_due_at: '2026-01-15T09:00:00.000Z',
+      };
       const decision = nextEscalation(mockRules[1], ticket, '2026-01-15T10:05:00.000Z');
       expect(decision.shouldEscalate).toBe(true);
       expect(decision.escalateTo).toBe('manager');
@@ -231,9 +369,24 @@ describe('helpdesk-engine', () => {
 
   describe('suggestAutoReply', () => {
     const articles: KnowledgeArticleLike[] = [
-      { ref: 'KB-001', title: 'How to reset password', snippet: 'To reset your password, go to the login page and click forgot password. Enter your email and follow the link.' },
-      { ref: 'KB-002', title: 'Billing FAQ', snippet: 'Your invoice is generated monthly. Payment is due within 30 days. Contact billing for disputes.' },
-      { ref: 'KB-003', title: 'API Integration', snippet: 'Use the REST API with your API key. Rate limits are 1000 requests per hour. Webhook support available.' },
+      {
+        ref: 'KB-001',
+        title: 'How to reset password',
+        snippet:
+          'To reset your password, go to the login page and click forgot password. Enter your email and follow the link.',
+      },
+      {
+        ref: 'KB-002',
+        title: 'Billing FAQ',
+        snippet:
+          'Your invoice is generated monthly. Payment is due within 30 days. Contact billing for disputes.',
+      },
+      {
+        ref: 'KB-003',
+        title: 'API Integration',
+        snippet:
+          'Use the REST API with your API key. Rate limits are 1000 requests per hour. Webhook support available.',
+      },
     ];
 
     it('returns best matching article with confidence', () => {

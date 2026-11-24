@@ -54,9 +54,23 @@ test('pause and resume always advance the epoch, even resume', () => {
 });
 
 test('transitions reject unsafe actors and empty reasons', () => {
-  assert.throws(() => buildNextFleetState(genesis, 'pause', { actor: 'agent-1; rm', reason: 'a valid reason here' }), /actor/u);
-  assert.throws(() => buildNextFleetState(genesis, 'pause', { actor: 'bjo163', reason: 'short' }), /reason/u);
-  assert.throws(() => buildNextFleetState(genesis, 'delete', { actor: 'bjo163', reason: 'a valid reason here' }), /Unknown/u);
+  assert.throws(
+    () =>
+      buildNextFleetState(genesis, 'pause', {
+        actor: 'agent-1; rm',
+        reason: 'a valid reason here',
+      }),
+    /actor/u
+  );
+  assert.throws(
+    () => buildNextFleetState(genesis, 'pause', { actor: 'bjo163', reason: 'short' }),
+    /reason/u
+  );
+  assert.throws(
+    () =>
+      buildNextFleetState(genesis, 'delete', { actor: 'bjo163', reason: 'a valid reason here' }),
+    /Unknown/u
+  );
 });
 
 test('kill switch blocks every mutation and stale epochs can never revive', () => {
@@ -64,11 +78,15 @@ test('kill switch blocks every mutation and stale epochs can never revive', () =
   assert.match(isMutationAllowed(genesis, { fleetEpoch: 2 }).reason, /stale/u);
   assert.match(isMutationAllowed(genesis, null).reason, /stale/u);
   const paused = buildNextFleetState(genesis, 'pause', {
-    actor: 'bjo163', reason: 'incident stop for audit', nowMs: now + 1000,
+    actor: 'bjo163',
+    reason: 'incident stop for audit',
+    nowMs: now + 1000,
   });
   assert.match(isMutationAllowed(paused, { fleetEpoch: 2 }).reason, /paused/u);
   const resumed = buildNextFleetState(paused, 'resume', {
-    actor: 'bjo163', reason: 'incident recovery done', nowMs: now + 2000,
+    actor: 'bjo163',
+    reason: 'incident recovery done',
+    nowMs: now + 2000,
   });
   assert.match(isMutationAllowed(resumed, { fleetEpoch: 2 }).reason, /stale/u);
   assert.equal(isMutationAllowed(resumed, { fleetEpoch: 3 }).allowed, true);

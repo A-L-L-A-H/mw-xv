@@ -70,10 +70,7 @@ export const views = {
       columns: ['name', 'model', 'create_date'],
     },
     form: {
-      sections: [
-        { fields: ['name', 'model'] },
-        { fields: ['values', 'notes', 'external_ref'] },
-      ],
+      sections: [{ fields: ['name', 'model'] }, { fields: ['values', 'notes', 'external_ref'] }],
     },
     search: { fields: ['name'] },
   }),
@@ -83,10 +80,7 @@ export const views = {
       columns: ['run', 'checksum', 'create_date'],
     },
     form: {
-      sections: [
-        { fields: ['run'] },
-        { fields: ['summary', 'data', 'checksum', 'external_ref'] },
-      ],
+      sections: [{ fields: ['run'] }, { fields: ['summary', 'data', 'checksum', 'external_ref'] }],
     },
     search: { fields: ['checksum'] },
   }),

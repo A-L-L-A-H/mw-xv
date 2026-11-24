@@ -17,9 +17,19 @@ export const manifest = defineAddon({
   version: '1.0.0',
   displayName: 'Governance / Statecraft',
   category: 'statecraft',
-  summary: 'Institutions, officials, mandates, policies, regulations, programs, and budget allocations.',
+  summary:
+    'Institutions, officials, mandates, policies, regulations, programs, and budget allocations.',
   depends: ['base'],
-  models: [Institution, Official, Mandate, Policy, PolicyVersion, Regulation, PublicProgram, BudgetAllocation],
+  models: [
+    Institution,
+    Official,
+    Mandate,
+    Policy,
+    PolicyVersion,
+    Regulation,
+    PublicProgram,
+    BudgetAllocation,
+  ],
   data: [
     seed(Institution, 'governance.institution_state_chancellery', {
       name: 'State Chancellery',
@@ -71,7 +81,9 @@ export const manifest = defineAddon({
       starts_on: '2024-01-01',
       ends_on: '2029-01-01',
       scope: 'executive',
-      responsibilities: { items: ['cabinet coordination', 'budget sign-off', 'treaty ratification'] },
+      responsibilities: {
+        items: ['cabinet coordination', 'budget sign-off', 'treaty ratification'],
+      },
       is_active: true,
       external_ref: 'governance:mandate:chancellor-term',
     }),
@@ -81,7 +93,8 @@ export const manifest = defineAddon({
       institution: ref('governance.institution_state_chancellery'),
       status: 'in_force',
       current_version: '1.0.0',
-      summary: 'Framework constraining deficit levels and mandating transparency in budget execution.',
+      summary:
+        'Framework constraining deficit levels and mandating transparency in budget execution.',
       stakeholder_ids: { ids: ['governance:institution:ibo'] },
       is_active: true,
       external_ref: 'governance:policy:fiscal-discipline',
@@ -130,7 +143,12 @@ export const manifest = defineAddon({
       fiscal_year: 2025,
       amount_minor: 5000000000,
       currency: 'IDR',
-      line_items: { items: [{ label: 'platform', amount_minor: 3500000000 }, { label: 'operations', amount_minor: 1500000000 }] },
+      line_items: {
+        items: [
+          { label: 'platform', amount_minor: 3500000000 },
+          { label: 'operations', amount_minor: 1500000000 },
+        ],
+      },
       approved_by: ref('governance.official_chancellor'),
       is_active: true,
       external_ref: 'governance:allocation:tbp-fy2025',
@@ -169,6 +187,11 @@ export const manifest = defineAddon({
     { model: PolicyVersion.modelName, label: 'Policy Versions', group: 'Governance', sequence: 50 },
     { model: Regulation.modelName, label: 'Regulations', group: 'Governance', sequence: 60 },
     { model: PublicProgram.modelName, label: 'Public Programs', group: 'Governance', sequence: 70 },
-    { model: BudgetAllocation.modelName, label: 'Budget Allocations', group: 'Governance', sequence: 80 },
+    {
+      model: BudgetAllocation.modelName,
+      label: 'Budget Allocations',
+      group: 'Governance',
+      sequence: 80,
+    },
   ],
 });

@@ -5,15 +5,7 @@ export const views = [
   defineView(Product, {
     title: 'Products',
     list: {
-      columns: [
-        'sku',
-        'name',
-        'kind',
-        'price_minor',
-        'currency',
-        'is_active',
-        'company',
-      ],
+      columns: ['sku', 'name', 'kind', 'price_minor', 'currency', 'is_active', 'company'],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['is_active', '=', true]] },
@@ -25,7 +17,17 @@ export const views = [
         {
           title: 'Product Overview',
           columns: 2,
-          fields: ['name', 'sku', 'kind', 'company', 'price_minor', 'currency', 'cost_minor', 'is_active', 'parent'],
+          fields: [
+            'name',
+            'sku',
+            'kind',
+            'company',
+            'price_minor',
+            'currency',
+            'cost_minor',
+            'is_active',
+            'parent',
+          ],
         },
         {
           title: 'Logistics',
@@ -59,13 +61,7 @@ export const views = [
   defineView(ProductVariant, {
     title: 'Product Variants',
     list: {
-      columns: [
-        'product',
-        'sku',
-        'price_adjustment_minor',
-        'stock_qty',
-        'company',
-      ],
+      columns: ['product', 'sku', 'price_adjustment_minor', 'stock_qty', 'company'],
       order: 'id asc',
     },
     form: {
@@ -73,7 +69,14 @@ export const views = [
         {
           title: 'Variant',
           columns: 2,
-          fields: ['product', 'sku', 'attributes', 'price_adjustment_minor', 'stock_qty', 'company'],
+          fields: [
+            'product',
+            'sku',
+            'attributes',
+            'price_adjustment_minor',
+            'stock_qty',
+            'company',
+          ],
         },
       ],
     },
@@ -85,13 +88,7 @@ export const views = [
   defineView(ProductChannel, {
     title: 'Product Channels',
     list: {
-      columns: [
-        'product',
-        'marketplace_ref',
-        'platform_listing_id',
-        'status',
-        'company',
-      ],
+      columns: ['product', 'marketplace_ref', 'platform_listing_id', 'status', 'company'],
       order: 'id asc',
       decorations: [{ color: 'success', domain: [['status', '=', 'active']] }],
     },

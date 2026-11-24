@@ -20,7 +20,10 @@ const rows = [];
 
 for (const line of lines) {
   if (!line.startsWith('| CAN-')) continue;
-  const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
+  const cells = line
+    .split('|')
+    .slice(1, -1)
+    .map((cell) => cell.trim());
   if (cells.length < 5) {
     errors.push(`Malformed canon row: ${line.slice(0, 60)}`);
     continue;
@@ -46,7 +49,9 @@ for (const row of rows) {
 const numbers = rows.map((row) => Number(row.id.replace('CAN-', '')));
 for (let i = 0; i < numbers.length; i += 1) {
   if (numbers[i] !== i + 1) {
-    errors.push(`Canon numbering gap or disorder: expected CAN-${String(i + 1).padStart(4, '0')}, got ${rows[i].id}`);
+    errors.push(
+      `Canon numbering gap or disorder: expected CAN-${String(i + 1).padStart(4, '0')}, got ${rows[i].id}`
+    );
     break;
   }
 }
@@ -57,7 +62,9 @@ if (!text.includes('[Unresolved Decisions](UNRESOLVED-DECISIONS.md)')) {
 if (!text.includes('RETIRED')) errors.push('Status vocabulary is incomplete (RETIRED missing).');
 
 if (errors.length > 0) {
-  process.stderr.write(`Canon registry invariant failures:\n${errors.map((e) => `- ${e}`).join('\n')}\n`);
+  process.stderr.write(
+    `Canon registry invariant failures:\n${errors.map((e) => `- ${e}`).join('\n')}\n`
+  );
   process.exit(1);
 }
 process.stdout.write(

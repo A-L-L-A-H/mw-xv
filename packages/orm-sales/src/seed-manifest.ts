@@ -12,7 +12,11 @@ export const salesSeedManifest: AddonSeedManifest = {
       companyId: ctx.companyId,
       ownerId: ctx.ownerId,
     });
-    const inserted = result.insertedStates + result.insertedOrders + result.insertedLines + result.insertedTagLinks;
+    const inserted =
+      result.insertedStates +
+      result.insertedOrders +
+      result.insertedLines +
+      result.insertedTagLinks;
     return { inserted, updated: 0, skipped: 0 };
   },
 };

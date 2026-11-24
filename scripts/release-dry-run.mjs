@@ -104,7 +104,12 @@ export function requiredGates(sourceSha, version) {
     { id: 'lint', phase: 'verify', status: 'not-run', command: 'bun run lint' },
     { id: 'format', phase: 'verify', status: 'not-run', command: 'bun run format:check' },
     { id: 'typecheck', phase: 'verify', status: 'not-run', command: 'bun run typecheck' },
-    { id: 'generated-docs', phase: 'verify', status: 'not-run', command: 'bun run docs:check:built' },
+    {
+      id: 'generated-docs',
+      phase: 'verify',
+      status: 'not-run',
+      command: 'bun run docs:check:built',
+    },
     {
       id: 'board-lint',
       phase: 'verify',

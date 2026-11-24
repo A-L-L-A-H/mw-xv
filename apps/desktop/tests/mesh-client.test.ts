@@ -93,12 +93,7 @@ describe('mesh-client', () => {
       '--network-secret',
       'shortsec',
     ]);
-    expect(redacted).toEqual([
-      '--network-name',
-      'mw-mesh-test',
-      '--network-secret',
-      '[REDACTED]',
-    ]);
+    expect(redacted).toEqual(['--network-name', 'mw-mesh-test', '--network-secret', '[REDACTED]']);
   });
 
   it('enforces private-IP-only for explicit ipv4 and controlPlaneMeshIp', () => {
@@ -108,7 +103,7 @@ describe('mesh-client', () => {
         networkSecret: 'superSecretMeshToken1234567890',
         dhcp: false,
         ipv4: '8.8.8.8',
-      }),
+      })
     ).toThrow(AccessDeniedError);
 
     expect(() =>
@@ -117,7 +112,7 @@ describe('mesh-client', () => {
         networkSecret: 'superSecretMeshToken1234567890',
         dhcp: false,
         ipv4: '127.0.0.1',
-      }),
+      })
     ).toThrow(AccessDeniedError);
 
     expect(() =>
@@ -125,7 +120,7 @@ describe('mesh-client', () => {
         networkName: 'mw-mesh-test',
         networkSecret: 'superSecretMeshToken1234567890',
         controlPlaneMeshIp: 'apps.mycocolink.com',
-      }),
+      })
     ).toThrow(AccessDeniedError);
   });
 
@@ -134,14 +129,14 @@ describe('mesh-client', () => {
       buildEasyTierClientArgs({
         networkName: '--malicious',
         networkSecret: 'superSecretMeshToken1234567890',
-      }),
+      })
     ).toThrow(ValidationError);
 
     expect(() =>
       buildEasyTierClientArgs({
         networkName: 'mw-mesh-test',
         networkSecret: 'secret with spaces',
-      }),
+      })
     ).toThrow(ValidationError);
   });
 

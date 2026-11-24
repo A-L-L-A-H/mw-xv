@@ -49,10 +49,20 @@ describe('computeSignalFinalScore', () => {
 
   it('treats non-finite components as invalid', () => {
     expect(() =>
-      computeSignalFinalScore({ keywordWeight: Number.NaN, recencyDecay: 0, sourceAuthority: 0, velocity: 0 })
+      computeSignalFinalScore({
+        keywordWeight: Number.NaN,
+        recencyDecay: 0,
+        sourceAuthority: 0,
+        velocity: 0,
+      })
     ).toThrow(/finite number/);
     expect(() =>
-      computeSignalFinalScore({ keywordWeight: 0, recencyDecay: 0, sourceAuthority: 0, velocity: Number.POSITIVE_INFINITY })
+      computeSignalFinalScore({
+        keywordWeight: 0,
+        recencyDecay: 0,
+        sourceAuthority: 0,
+        velocity: Number.POSITIVE_INFINITY,
+      })
     ).toThrow(/finite number/);
   });
 

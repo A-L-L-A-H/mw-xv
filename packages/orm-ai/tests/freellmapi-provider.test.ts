@@ -32,18 +32,26 @@ describe('FreeLLMAPI provider taxonomy and routing', () => {
   });
 
   it('treats freellmapi as cloud egress for classification', () => {
-    expect(isAllowedClassificationRoute('cloud_eligible', 'freellmapi', 'cloud_eligible')).toBe(true);
-    expect(isAllowedClassificationRoute('local_only', 'freellmapi', 'cloud_eligible', true)).toBe(false);
-    expect(isAllowedClassificationRoute('restricted', 'freellmapi', 'cloud_eligible', true)).toBe(false);
+    expect(isAllowedClassificationRoute('cloud_eligible', 'freellmapi', 'cloud_eligible')).toBe(
+      true
+    );
+    expect(isAllowedClassificationRoute('local_only', 'freellmapi', 'cloud_eligible', true)).toBe(
+      false
+    );
+    expect(isAllowedClassificationRoute('restricted', 'freellmapi', 'cloud_eligible', true)).toBe(
+      false
+    );
     expect(isAllowedClassificationRoute('cloud_eligible', 'freellmapi', 'local_only')).toBe(false);
   });
 
   it('seeds a default-off, secret-reference-only provider', () => {
     const provider = AI_AGENT_WORKFORCE_SEED.find(
       (entry: { id?: string }) => entry.id === 'ai.provider_freellmapi_default'
-    ) as unknown as {
-      values?: Record<string, unknown>;
-    } | undefined;
+    ) as unknown as
+      | {
+          values?: Record<string, unknown>;
+        }
+      | undefined;
     expect(provider).toBeDefined();
     const data = provider?.values ?? {};
     expect(data.code).toBe('freellmapi_default');

@@ -176,7 +176,9 @@ export function SettingsPage() {
   const { user, logout } = useAuth();
   const activeScope = getQueryScope();
   const scopeKey = `${activeScope.userId ?? ''}:${activeScope.companyId ?? ''}`;
-  return <SettingsPageContent key={scopeKey} activeScope={activeScope} user={user} logout={logout} />;
+  return (
+    <SettingsPageContent key={scopeKey} activeScope={activeScope} user={user} logout={logout} />
+  );
 }
 
 function SettingsPageContent({
@@ -526,9 +528,7 @@ function SettingsPageContent({
   const save = async () => {
     if (!user || !regionalReadSucceeded || savingPreferences) return;
     const mutationKey = settingsQueryKeys.user(user.id);
-    const selectedLanguage = languages.find(
-      (language) => language.code === preferences.language
-    );
+    const selectedLanguage = languages.find((language) => language.code === preferences.language);
     try {
       setSavingPreferences(true);
       await client.request('/auth/me/preferences', {
@@ -757,7 +757,9 @@ function SettingsPageContent({
             />
             <MetricTile
               label="Verified Local Backups"
-              value={localBackupsQuery.isSuccess ? String(localBackupsQuery.data.backups.length) : '—'}
+              value={
+                localBackupsQuery.isSuccess ? String(localBackupsQuery.data.backups.length) : '—'
+              }
               icon={<SecurityIcon className="size-4 text-primary" />}
             />
           </div>
@@ -1222,92 +1224,96 @@ function SettingsPageContent({
                 <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
                   Add Parameter
                 </p>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="new-param-key">Key</Label>
-                  <Input
-                    id="new-param-key"
-                    placeholder="e.g. app.max_upload_mb"
-                    value={newParamKey}
-                    onChange={(event) => setNewParamKey(event.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="new-param-type">Value Type</Label>
-                  <Select
-                    value={newParamType}
-                    onValueChange={(value) => {
-                      const nextType = value as ConfigValueType;
-                      setNewParamType(nextType);
-                      if (nextType === 'boolean') {
-                        setNewParamValue('false');
-                      }
-                    }}
-                  >
-                    <SelectTrigger id="new-param-type" className="w-full">
-                      <SelectValue placeholder="Select value type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="string">string</SelectItem>
-                      <SelectItem value="integer">integer</SelectItem>
-                      <SelectItem value="boolean">boolean</SelectItem>
-                      <SelectItem value="json">json</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="new-param-value">Value</Label>
-                  {newParamType === 'boolean' ? (
-                    <div className="flex h-10 items-center gap-2">
-                      <Switch
-                        id="new-param-value"
-                        checked={newParamValue === 'true'}
-                        onCheckedChange={(checked) => setNewParamValue(checked ? 'true' : 'false')}
-                      />
-                      <span className="font-mono text-xs">
-                        {newParamValue === 'true' ? 'true' : 'false'}
-                      </span>
-                    </div>
-                  ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-param-key">Key</Label>
                     <Input
-                      id="new-param-value"
-                      type={newParamSecret ? 'password' : 'text'}
-                      placeholder={
-                        newParamType === 'integer'
-                          ? '42'
-                          : newParamType === 'json'
-                            ? '{"enabled":true}'
-                            : 'value'
-                      }
-                      value={newParamValue}
-                      onChange={(event) => setNewParamValue(event.target.value)}
+                      id="new-param-key"
+                      placeholder="e.g. app.max_upload_mb"
+                      value={newParamKey}
+                      onChange={(event) => setNewParamKey(event.target.value)}
+                      required
                     />
-                  )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-param-type">Value Type</Label>
+                    <Select
+                      value={newParamType}
+                      onValueChange={(value) => {
+                        const nextType = value as ConfigValueType;
+                        setNewParamType(nextType);
+                        if (nextType === 'boolean') {
+                          setNewParamValue('false');
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="new-param-type" className="w-full">
+                        <SelectValue placeholder="Select value type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="string">string</SelectItem>
+                        <SelectItem value="integer">integer</SelectItem>
+                        <SelectItem value="boolean">boolean</SelectItem>
+                        <SelectItem value="json">json</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-param-value">Value</Label>
+                    {newParamType === 'boolean' ? (
+                      <div className="flex h-10 items-center gap-2">
+                        <Switch
+                          id="new-param-value"
+                          checked={newParamValue === 'true'}
+                          onCheckedChange={(checked) =>
+                            setNewParamValue(checked ? 'true' : 'false')
+                          }
+                        />
+                        <span className="font-mono text-xs">
+                          {newParamValue === 'true' ? 'true' : 'false'}
+                        </span>
+                      </div>
+                    ) : (
+                      <Input
+                        id="new-param-value"
+                        type={newParamSecret ? 'password' : 'text'}
+                        placeholder={
+                          newParamType === 'integer'
+                            ? '42'
+                            : newParamType === 'json'
+                              ? '{"enabled":true}'
+                              : 'value'
+                        }
+                        value={newParamValue}
+                        onChange={(event) => setNewParamValue(event.target.value)}
+                      />
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-param-description">Description</Label>
+                    <Input
+                      id="new-param-description"
+                      placeholder="Optional description"
+                      value={newParamDescription}
+                      onChange={(event) => setNewParamDescription(event.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="new-param-description">Description</Label>
-                  <Input
-                    id="new-param-description"
-                    placeholder="Optional description"
-                    value={newParamDescription}
-                    onChange={(event) => setNewParamDescription(event.target.value)}
-                  />
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="new-param-secret"
+                      checked={newParamSecret}
+                      onCheckedChange={setNewParamSecret}
+                    />
+                    <Label htmlFor="new-param-secret">
+                      Mark as secret (redacted in audit logs)
+                    </Label>
+                  </div>
+                  <Button type="submit" size="sm" disabled={creatingParam}>
+                    {creatingParam ? 'Creating…' : 'Create Parameter'}
+                  </Button>
                 </div>
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="new-param-secret"
-                    checked={newParamSecret}
-                    onCheckedChange={setNewParamSecret}
-                  />
-                  <Label htmlFor="new-param-secret">Mark as secret (redacted in audit logs)</Label>
-                </div>
-                <Button type="submit" size="sm" disabled={creatingParam}>
-                  {creatingParam ? 'Creating…' : 'Create Parameter'}
-                </Button>
-              </div>
               </form>
             )}
           </section>
@@ -1415,49 +1421,49 @@ function SettingsPageContent({
                 <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
                   Add Feature Flag
                 </p>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="new-flag-key">Key</Label>
-                  <Input
-                    id="new-flag-key"
-                    placeholder="e.g. board.beta_view"
-                    value={newFlagKey}
-                    onChange={(event) => setNewFlagKey(event.target.value)}
-                    required
-                  />
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-flag-key">Key</Label>
+                    <Input
+                      id="new-flag-key"
+                      placeholder="e.g. board.beta_view"
+                      value={newFlagKey}
+                      onChange={(event) => setNewFlagKey(event.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-flag-name">Name</Label>
+                    <Input
+                      id="new-flag-name"
+                      placeholder="Beta View"
+                      value={newFlagName}
+                      onChange={(event) => setNewFlagName(event.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-flag-rollout">Rollout % (0–100)</Label>
+                    <Input
+                      id="new-flag-rollout"
+                      value={newFlagRollout}
+                      onChange={(event) => setNewFlagRollout(event.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="new-flag-name">Name</Label>
-                  <Input
-                    id="new-flag-name"
-                    placeholder="Beta View"
-                    value={newFlagName}
-                    onChange={(event) => setNewFlagName(event.target.value)}
-                    required
-                  />
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="new-flag-enabled"
+                      checked={newFlagEnabled}
+                      onCheckedChange={setNewFlagEnabled}
+                    />
+                    <Label htmlFor="new-flag-enabled">Enabled immediately</Label>
+                  </div>
+                  <Button type="submit" size="sm" disabled={creatingFlag}>
+                    {creatingFlag ? 'Creating…' : 'Create Flag'}
+                  </Button>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="new-flag-rollout">Rollout % (0–100)</Label>
-                  <Input
-                    id="new-flag-rollout"
-                    value={newFlagRollout}
-                    onChange={(event) => setNewFlagRollout(event.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="new-flag-enabled"
-                    checked={newFlagEnabled}
-                    onCheckedChange={setNewFlagEnabled}
-                  />
-                  <Label htmlFor="new-flag-enabled">Enabled immediately</Label>
-                </div>
-                <Button type="submit" size="sm" disabled={creatingFlag}>
-                  {creatingFlag ? 'Creating…' : 'Create Flag'}
-                </Button>
-              </div>
               </form>
             )}
           </section>

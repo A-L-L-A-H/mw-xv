@@ -22,24 +22,21 @@ The operating principle is to reuse existing domain owners. A new package or ser
 
 ## 2. Exact target baseline and current governance
 
-
 > **Superseding live-state correction — 2026-11-23:** The registry is not empty. The earlier zero-byte statement came from an incomplete large-file read and is withdrawn. Direct Git-blob inspection confirms a populated TaskOS registry. At the audit baseline, `dev` (`08e7e3cbdcdfdfa2214196b5622da9b6184d4918`) contains **636 unique task records** (468 done, 49 doing, 97 todo, 22 blocked; blob `210f91e853a7241b6b3249ed65c1ca79b98274b3`); `main` (`5dd3da3389cdd4b55ef1a538f0dc46c13918f108`) contains **627** (468 done, 49 doing, 89 todo, 21 blocked; blob `8216b6503d154d635112be96c41939a9efd38390`). All main IDs exist on dev; dev has nine additional audit records, `AUD-015`–`AUD-023`. The earlier 627-record owner-approved migration remains a valid historical checkpoint, not the current dev total. PR [#81](https://github.com/A-L-L-A-H/mw-xv/pull/81) is still open and not release-ready: exact-SHA CI has TaskOS test, generated docs asset and Gitleaks failures; PostgreSQL integration and JS/TS CodeQL were cancelled. See [ACTIVE-PLAN.md](../../roadmap/ACTIVE-PLAN.md) and [TaskOS Recovery Inventory](../../tasks/RECOVERY-INVENTORY.md) for the verified detail. The following original planning-baseline subsections are retained as historical snapshots, not current status.
-
-
 
 ### 2.2 Original repository state checked (historical; superseded by the live-state correction)
 
-| Item | Observed state |
-|---|---|
-| Target repository | `A-L-L-A-H/mw-xv` |
-| Default branch | `main`; engineering work is performed on `dev` |
-| `dev` at first source audit | `7871a592db5488eafbaeeb0bfbbdc079a4231cfe` |
-| `dev` immediately before this consolidation commit | `a58a43327fbc9267a9840bb65b0ad2735b069907` |
-| `main` at the current stabilization baseline | `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d` |
-| Common ancestor at checkpoint | `a6cd74a6f189e7ea053b046e94a06ea2d36530fc` |
-| Branch relationship | `dev` is ahead of `main`; exact count and current SHA are maintained in [Active Plan](../../roadmap/ACTIVE-PLAN.md) |
-| Release status | M12.14 remains `in_progress`; its evidence still lists PR.14 as awaiting maintainer/CODEOWNER approval |
-| Desktop / FLOW status | M13.01–M13.12 are recorded complete on `dev`; M13.09–M13.12 still need exact-current-SHA CI and promotion review |
+| Item                                               | Observed state                                                                                                      |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Target repository                                  | `A-L-L-A-H/mw-xv`                                                                                                   |
+| Default branch                                     | `main`; engineering work is performed on `dev`                                                                      |
+| `dev` at first source audit                        | `7871a592db5488eafbaeeb0bfbbdc079a4231cfe`                                                                          |
+| `dev` immediately before this consolidation commit | `a58a43327fbc9267a9840bb65b0ad2735b069907`                                                                          |
+| `main` at the current stabilization baseline       | `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`                                                                          |
+| Common ancestor at checkpoint                      | `a6cd74a6f189e7ea053b046e94a06ea2d36530fc`                                                                          |
+| Branch relationship                                | `dev` is ahead of `main`; exact count and current SHA are maintained in [Active Plan](../../roadmap/ACTIVE-PLAN.md) |
+| Release status                                     | M12.14 remains `in_progress`; its evidence still lists PR.14 as awaiting maintainer/CODEOWNER approval              |
+| Desktop / FLOW status                              | M13.01–M13.12 are recorded complete on `dev`; M13.09–M13.12 still need exact-current-SHA CI and promotion review    |
 
 PR #30 merged the older `dev` head `a6cd74a` into `main`. That does not mean the current `dev` head was promoted. Before another promotion, reconcile the 17 main-only commits and 2 dev-only commits using the accepted main→dev synchronization process (M1.09), review the full diff, and rerun the relevant acceptance gates. Do not solve divergence with force-push, blind rebase, or a third branch.
 
@@ -71,12 +68,12 @@ The existing foundation remains authoritative:
 
 ### 3.2 Experience planes
 
-| Experience | Responsibility | Must not become |
-|---|---|---|
-| **Board — Control Plane** | Project administration, task planning, research, review, approval, operations and evidence inspection | A local shell/PTY host or second domain database |
-| **Desktop — Local Execution Plane** | Tauri v2 shell, local sidecar, isolated Git worktrees, bounded PTY, allowlisted file inspection, stdio/loopback MCP and offline evidence queue | A second Board UI, ORM, identity system or self-approving agent |
-| **Public Web — Publication Plane** | Discover and read only approved, rights-cleared, revisioned content | A direct view of private drafts, unreviewed testimony or candidate AI data |
-| **Radio / Messaging** | Approved channel adapters, inboxes, delivery state and publishing | A second user identity or independent message authority |
+| Experience                          | Responsibility                                                                                                                                 | Must not become                                                            |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Board — Control Plane**           | Project administration, task planning, research, review, approval, operations and evidence inspection                                          | A local shell/PTY host or second domain database                           |
+| **Desktop — Local Execution Plane** | Tauri v2 shell, local sidecar, isolated Git worktrees, bounded PTY, allowlisted file inspection, stdio/loopback MCP and offline evidence queue | A second Board UI, ORM, identity system or self-approving agent            |
+| **Public Web — Publication Plane**  | Discover and read only approved, rights-cleared, revisioned content                                                                            | A direct view of private drafts, unreviewed testimony or candidate AI data |
+| **Radio / Messaging**               | Approved channel adapters, inboxes, delivery state and publishing                                                                              | A second user identity or independent message authority                    |
 
 Board remains the source of operational intent and approvals. Desktop executes scoped work locally. Server-side MoonWitness state and independent review determine accepted completion.
 
@@ -90,16 +87,16 @@ Board remains the source of operational intent and approvals. Desktop executes s
 
 ## 4. Product-domain consolidation
 
-| Domain | Canonical responsibility | Product families / history mapped here |
-|---|---|---|
-| Corpus | Exact source artifact, work, expression, edition, language, passage, rights and ingestion provenance | RGBL, Qur'an/hadith and other source-text references, Key Witness source records |
-| Knowledge | Scoped concepts, claims/assertions, evidence refs, relations and provenance | Research vocabularies, concepts, source-aware references |
-| Research | Counter-evidence, comparison, uncertainty, source-scoped people/witnesses, event reconstruction and explainable relations | Story × Event × Person, MFTL/Legend/Superhero/Correlation requirements |
-| Creation | Briefs, series, entries, revisions, original/derived assets and publication workflow | GOD PROMISE, ROCKSOUL creative collections, MoonWitness Radio, posters, comics, visual stories |
-| Project & Workflow | Task, milestone, DAG dependency, WorkContract, review and delivery | ROCKSOUL FLOW, Task Deck, Plan Forge and project management |
-| Community | Participation, discussion, contribution, moderation and proposals | ROCKSOUL Community requirements |
-| Communication | Channel operators, messages, inbox, delivery events and notifications | MOONSKY / Telegram / WhatsApp requirements, implemented through existing integration addons |
-| AI Workforce | Agents, team/taskforce, grants, budgets, durable runs, memory candidates, evaluation and obligations | AI Corporation / local desktop agent harness |
+| Domain             | Canonical responsibility                                                                                                  | Product families / history mapped here                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Corpus             | Exact source artifact, work, expression, edition, language, passage, rights and ingestion provenance                      | RGBL, Qur'an/hadith and other source-text references, Key Witness source records               |
+| Knowledge          | Scoped concepts, claims/assertions, evidence refs, relations and provenance                                               | Research vocabularies, concepts, source-aware references                                       |
+| Research           | Counter-evidence, comparison, uncertainty, source-scoped people/witnesses, event reconstruction and explainable relations | Story × Event × Person, MFTL/Legend/Superhero/Correlation requirements                         |
+| Creation           | Briefs, series, entries, revisions, original/derived assets and publication workflow                                      | GOD PROMISE, ROCKSOUL creative collections, MoonWitness Radio, posters, comics, visual stories |
+| Project & Workflow | Task, milestone, DAG dependency, WorkContract, review and delivery                                                        | ROCKSOUL FLOW, Task Deck, Plan Forge and project management                                    |
+| Community          | Participation, discussion, contribution, moderation and proposals                                                         | ROCKSOUL Community requirements                                                                |
+| Communication      | Channel operators, messages, inbox, delivery events and notifications                                                     | MOONSKY / Telegram / WhatsApp requirements, implemented through existing integration addons    |
+| AI Workforce       | Agents, team/taskforce, grants, budgets, durable runs, memory candidates, evaluation and obligations                      | AI Corporation / local desktop agent harness                                                   |
 
 Product names are collections or experiences, not automatic package boundaries. A new addon is proposed only after checking the existing canonical owner and proving a durable responsibility gap.
 
@@ -107,17 +104,17 @@ Product names are collections or experiences, not automatic package boundaries. 
 
 The M13.01 reuse audit was performed against target source and tests at its recorded SHA, and the following implementation cards have since been completed:
 
-| Capability | Actual status in target | Existing owner / implementation | Remaining gap or caution |
-|---|---|---|---|
-| Repo Radar | **Implemented foundation** (M13.02) | `@moonwitness/ai-runtime` `buildRepoSnapshot`; Desktop `WorktreeSandbox.inspectRepoSnapshot`; SHA-pinned Git revision, manifests/docs, digests and incomplete-scan markers | Keep read-only; refresh/large-workspace ergonomics require a later measured task |
-| Overlap Detector | **Implemented foundation** (M13.03) | `detectCapabilityOverlap`, six advisory states and offline benchmark in `@moonwitness/ai-runtime` / `@moonwitness/ai-evaluation` | Advisory only; do not auto-delete tasks, migrate data or suppress requirements |
-| Prompt Forge | **Implemented foundation** (M13.04) | `compileExecutionPacket` and Desktop bridge; redaction, scope validation, locked criteria and verification commands | Packet creation is not task approval or permission to execute |
-| Plan Forge | **Partial** | `orm-project` task/milestone/dependency DAG, `orm-ai` WorkContract/criteria, `ai-runtime` workforce planner and `orm-workflow` approvals | Versioned Markdown plan projection/import reconciliation and goal-to-plan drafting are not yet proven complete |
-| Task Deck | **Partial; next priority** | Project DAG, WorkContract, jobs/leases/fencing, cancellation, worktree isolation and Board Project Command | Existing WorkContract creation route does not check the computed DAG readiness before new creation; queued project task to local Desktop run is also not fully bound |
-| Proof Gate | **Partial** | `pcw-verifier`, SHA-256 artifacts, server-side accepted transition, independent review and obligation continuity | Explicit pass/fail/skipped/not_applicable/not_run matrix and automatic changed-file vs WorkContract scope finding are not yet covered by the reuse contract |
-| Memory Ledger | **Partial** | `orm-ai` candidate memories / skill versions, evaluator, ablation, independent promotion and revocation | No approved-memory deduplication against repository agent rules with a human-reviewed documentation patch proposal |
-| Visual DNA Lab | **Partial** | `packages/assets` provenance/rights registry, `packages/ui`, UI Catalog, AssetBrowser, SceneLab and FXLab | Per-project/external-repository Design Profile brief exporter is still a candidate gap |
-| Workspace Orbit | **Not yet audited / unregistered** | Existing repository/workspace inspection may provide some primitives | Do not assume it is missing or build a multi-repo executor before a separate read-only gap audit |
+| Capability       | Actual status in target             | Existing owner / implementation                                                                                                                                            | Remaining gap or caution                                                                                                                                             |
+| ---------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repo Radar       | **Implemented foundation** (M13.02) | `@moonwitness/ai-runtime` `buildRepoSnapshot`; Desktop `WorktreeSandbox.inspectRepoSnapshot`; SHA-pinned Git revision, manifests/docs, digests and incomplete-scan markers | Keep read-only; refresh/large-workspace ergonomics require a later measured task                                                                                     |
+| Overlap Detector | **Implemented foundation** (M13.03) | `detectCapabilityOverlap`, six advisory states and offline benchmark in `@moonwitness/ai-runtime` / `@moonwitness/ai-evaluation`                                           | Advisory only; do not auto-delete tasks, migrate data or suppress requirements                                                                                       |
+| Prompt Forge     | **Implemented foundation** (M13.04) | `compileExecutionPacket` and Desktop bridge; redaction, scope validation, locked criteria and verification commands                                                        | Packet creation is not task approval or permission to execute                                                                                                        |
+| Plan Forge       | **Partial**                         | `orm-project` task/milestone/dependency DAG, `orm-ai` WorkContract/criteria, `ai-runtime` workforce planner and `orm-workflow` approvals                                   | Versioned Markdown plan projection/import reconciliation and goal-to-plan drafting are not yet proven complete                                                       |
+| Task Deck        | **Partial; next priority**          | Project DAG, WorkContract, jobs/leases/fencing, cancellation, worktree isolation and Board Project Command                                                                 | Existing WorkContract creation route does not check the computed DAG readiness before new creation; queued project task to local Desktop run is also not fully bound |
+| Proof Gate       | **Partial**                         | `pcw-verifier`, SHA-256 artifacts, server-side accepted transition, independent review and obligation continuity                                                           | Explicit pass/fail/skipped/not_applicable/not_run matrix and automatic changed-file vs WorkContract scope finding are not yet covered by the reuse contract          |
+| Memory Ledger    | **Partial**                         | `orm-ai` candidate memories / skill versions, evaluator, ablation, independent promotion and revocation                                                                    | No approved-memory deduplication against repository agent rules with a human-reviewed documentation patch proposal                                                   |
+| Visual DNA Lab   | **Partial**                         | `packages/assets` provenance/rights registry, `packages/ui`, UI Catalog, AssetBrowser, SceneLab and FXLab                                                                  | Per-project/external-repository Design Profile brief exporter is still a candidate gap                                                                               |
+| Workspace Orbit  | **Not yet audited / unregistered**  | Existing repository/workspace inspection may provide some primitives                                                                                                       | Do not assume it is missing or build a multi-repo executor before a separate read-only gap audit                                                                     |
 
 The audit describes what was inspected; package folders or README claims alone are not proof of completeness. Test entries in M13.01 identify existing coverage. The M13.02–M13.04 evidence records later focused test executions for those implementation slices.
 
@@ -155,16 +152,16 @@ K0-006 evidence records the owner decision dated 2026-10-15: the chosen product 
 
 Selected source refs most relevant to the plan were checked as follows on 2026-11-23:
 
-| Legacy repository | Observed source ref | What is useful as requirement/history | Current disposition |
-|---|---|---|---|
-| `bjo163/rocksouldx` | `dev @ fa54486799b34a4e9304691d7e61b6822c4bdd1f` | FLOW lifecycle and product blueprint. README identifies it as OpenCode-derived; root LICENSE is MIT with OpenCode copyright/notice. | Clean-room requirement reference only; no code, prompts, patches, fixtures or assets imported |
-| `bjo163/moonwitness-corpus` | `main @ 534a21893728de64b5f28f27ea600e8609d7b8c4` | RGBL source/edition/passage/assertion/evidence/provenance concepts | Reference only; no corpus bytes, passages or old IDs imported. A dataset README's CC0 statement is scoped to that dataset description, not a blanket repository grant |
-| `bjo163/rocksoul-assets` | `main @ fd6a545160312bfe4b3419d846961abbcd7bfabd` | Asset taxonomy, SVG/raster/motion/audio registries and visual language | Reference only; asset, font, media and trademark rights are not blanket-cleared |
-| `bjo163/moonframe` | `main @ f6ffc03b38e0f272ed18bd3ae977c0f9586e3571` | Component/skin/template and visual grammar ideas | Reference only; use target `packages/ui` and UI Catalog |
-| `bjo163/moonsky` | `main @ 1f9884bcffc9daa2fa69595278bf8b41f2c0e0b2` | Inbox, channel adapter and delivery lifecycle requirements | Clean-room requirements only; use existing integration/WhatsApp/notification addons |
-| `bjo163/moonwitness-memory` | `main @ e4cc8b9ab43b089ec1b957dac4855f3e2c079b9a` (repository archived) | Historical archive-intake ideas | Do not import private conversations or archive content; preserve privacy, consent and retention boundaries |
-| `bjo163/rocksoul-world` | `main` (Apache-2.0 metadata) | Local-first world/operator experience ideas | Reference only; no second Rust runtime |
-| `bjo163/rocksoul-mind` | fork of `jingyaogong/minimind` | Small-model research history | Do not import/port without independent upstream and rights review; no model installation is authorized by this plan |
+| Legacy repository           | Observed source ref                                                     | What is useful as requirement/history                                                                                               | Current disposition                                                                                                                                                   |
+| --------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bjo163/rocksouldx`         | `dev @ fa54486799b34a4e9304691d7e61b6822c4bdd1f`                        | FLOW lifecycle and product blueprint. README identifies it as OpenCode-derived; root LICENSE is MIT with OpenCode copyright/notice. | Clean-room requirement reference only; no code, prompts, patches, fixtures or assets imported                                                                         |
+| `bjo163/moonwitness-corpus` | `main @ 534a21893728de64b5f28f27ea600e8609d7b8c4`                       | RGBL source/edition/passage/assertion/evidence/provenance concepts                                                                  | Reference only; no corpus bytes, passages or old IDs imported. A dataset README's CC0 statement is scoped to that dataset description, not a blanket repository grant |
+| `bjo163/rocksoul-assets`    | `main @ fd6a545160312bfe4b3419d846961abbcd7bfabd`                       | Asset taxonomy, SVG/raster/motion/audio registries and visual language                                                              | Reference only; asset, font, media and trademark rights are not blanket-cleared                                                                                       |
+| `bjo163/moonframe`          | `main @ f6ffc03b38e0f272ed18bd3ae977c0f9586e3571`                       | Component/skin/template and visual grammar ideas                                                                                    | Reference only; use target `packages/ui` and UI Catalog                                                                                                               |
+| `bjo163/moonsky`            | `main @ 1f9884bcffc9daa2fa69595278bf8b41f2c0e0b2`                       | Inbox, channel adapter and delivery lifecycle requirements                                                                          | Clean-room requirements only; use existing integration/WhatsApp/notification addons                                                                                   |
+| `bjo163/moonwitness-memory` | `main @ e4cc8b9ab43b089ec1b957dac4855f3e2c079b9a` (repository archived) | Historical archive-intake ideas                                                                                                     | Do not import private conversations or archive content; preserve privacy, consent and retention boundaries                                                            |
+| `bjo163/rocksoul-world`     | `main` (Apache-2.0 metadata)                                            | Local-first world/operator experience ideas                                                                                         | Reference only; no second Rust runtime                                                                                                                                |
+| `bjo163/rocksoul-mind`      | fork of `jingyaogong/minimind`                                          | Small-model research history                                                                                                        | Do not import/port without independent upstream and rights review; no model installation is authorized by this plan                                                   |
 
 The public inventory contains 148 repositories from the 2026-11-22 owner search. That is a metadata inventory, not a full source, private-resource, deployment, license or privacy audit. The deeper review covers only selected repositories and paths. Do not claim all 148 were audited line-by-line.
 

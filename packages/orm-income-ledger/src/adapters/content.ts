@@ -10,7 +10,7 @@ export async function createEntryFromContentRoyalty(
     currency: string;
     publishedAt: Date;
     external_ref?: string;
-  },
+  }
 ): Promise<void> {
   const stream = await ctx
     .query(IncomeStream)

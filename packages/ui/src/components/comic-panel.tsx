@@ -1,4 +1,10 @@
-import { createElement, forwardRef, type ComponentPropsWithoutRef, type ReactNode, type Ref } from 'react';
+import {
+  createElement,
+  forwardRef,
+  type ComponentPropsWithoutRef,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { cn } from '../lib/cn.js';
 
 export type ComicSurface = 'paper' | 'ink' | 'default';
@@ -60,7 +66,10 @@ function renderComicShell(
 ) {
   const Heading = `h${headingLevel}` as const;
   const hasHeader =
-    panelNumber !== undefined || kicker !== undefined || title !== undefined || actions !== undefined;
+    panelNumber !== undefined ||
+    kicker !== undefined ||
+    title !== undefined ||
+    actions !== undefined;
 
   return createElement(
     tag,
@@ -76,11 +85,17 @@ function renderComicShell(
     hasHeader ? (
       <header className="mw-ui-panel-header mw-ui-comic-panel-header">
         <div className="mw-ui-comic-panel-meta">
-          {panelNumber !== undefined ? <span className="mw-ui-comic-panel-num">{panelNumber}</span> : null}
+          {panelNumber !== undefined ? (
+            <span className="mw-ui-comic-panel-num">{panelNumber}</span>
+          ) : null}
           {kicker ? <span className="mw-ui-comic-panel-kicker">{kicker}</span> : null}
-          {title ? <Heading className="mw-ui-panel-title mw-ui-comic-panel-title">{title}</Heading> : null}
+          {title ? (
+            <Heading className="mw-ui-panel-title mw-ui-comic-panel-title">{title}</Heading>
+          ) : null}
         </div>
-        {actions ? <div className="mw-ui-panel-actions mw-ui-comic-panel-actions">{actions}</div> : null}
+        {actions ? (
+          <div className="mw-ui-panel-actions mw-ui-comic-panel-actions">{actions}</div>
+        ) : null}
       </header>
     ) : null,
     <div className="mw-ui-comic-panel-body">{children}</div>
@@ -99,7 +114,12 @@ export const ComicPanel = forwardRef<HTMLElement, ComicPanelProps>(function Comi
   },
   ref
 ) {
-  return renderComicShell('section', undefined, { surface, frame, accent, halftone, headingLevel, ...rest }, ref);
+  return renderComicShell(
+    'section',
+    undefined,
+    { surface, frame, accent, halftone, headingLevel, ...rest },
+    ref
+  );
 });
 
 /** High-contrast manga frame container with ink-heavy accent offset and comic header slots. */
@@ -117,7 +137,17 @@ export const MangaFrame = forwardRef<HTMLDivElement, MangaFrameProps>(function M
   return renderComicShell(
     'div',
     'mw-ui-manga-frame',
-    { ...(rest as Omit<PanelShellProps, 'surface' | 'frame' | 'accent' | 'halftone' | 'headingLevel'>), surface, frame, accent, halftone, headingLevel },
+    {
+      ...(rest as Omit<
+        PanelShellProps,
+        'surface' | 'frame' | 'accent' | 'halftone' | 'headingLevel'
+      >),
+      surface,
+      frame,
+      accent,
+      halftone,
+      headingLevel,
+    },
     ref
   );
 });

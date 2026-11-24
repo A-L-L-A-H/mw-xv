@@ -48,7 +48,6 @@ export class PrivacyRevocationError extends Error {
   }
 }
 
-
 /** Stable tenant-scoped subject identity used to link a synthetic witness to withdrawal. */
 export function syntheticWitnessSubjectRefSha256(companyId: number, externalKey: string): string {
   if (!Number.isSafeInteger(companyId) || companyId < 1 || !externalKey.trim()) {

@@ -4,7 +4,11 @@
  * supports both NDJSON and Content-Length framing — here we implement
  * both for host compatibility).
  */
-import { MoonWitnessMcpServer, type MoonWitnessMcpRequest, type MoonWitnessMcpResponse } from './server.js';
+import {
+  MoonWitnessMcpServer,
+  type MoonWitnessMcpRequest,
+  type MoonWitnessMcpResponse,
+} from './server.js';
 
 export interface MoonWitnessStdioStreams {
   readonly input?: NodeJS.ReadableStream;
@@ -30,7 +34,10 @@ export function serveMoonWitnessStdio(
   let closed = false;
   let pending: Promise<void> = Promise.resolve();
 
-  const writeResponse = (response: MoonWitnessMcpResponse, framing: 'content-length' | 'ndjson'): void => {
+  const writeResponse = (
+    response: MoonWitnessMcpResponse,
+    framing: 'content-length' | 'ndjson'
+  ): void => {
     const payload = JSON.stringify(response);
     if (framing === 'content-length') {
       const byteLen = Buffer.byteLength(payload, 'utf8');
@@ -40,7 +47,10 @@ export function serveMoonWitnessStdio(
     }
   };
 
-  const dispatchMessage = async (raw: string, framing: 'content-length' | 'ndjson'): Promise<void> => {
+  const dispatchMessage = async (
+    raw: string,
+    framing: 'content-length' | 'ndjson'
+  ): Promise<void> => {
     const trimmed = raw.trim();
     if (!trimmed) return;
     let parsed: unknown;
@@ -63,7 +73,8 @@ export function serveMoonWitnessStdio(
         {
           jsonrpc: '2.0',
           id:
-            isRecord(parsed) && (typeof parsed['id'] === 'string' || typeof parsed['id'] === 'number')
+            isRecord(parsed) &&
+            (typeof parsed['id'] === 'string' || typeof parsed['id'] === 'number')
               ? (parsed['id'] as string | number)
               : null,
           error: { code: -32600, message: 'Invalid Request' },

@@ -14,7 +14,8 @@ export const manifest = defineAddon({
       company: ref('base.company_default'),
       slug: 'trend-radar',
       name: 'Trend Radar',
-      description: 'Real-time signal detection for emerging technology trends. Query with ?topic=ai to get top 10 signals.',
+      description:
+        'Real-time signal detection for emerging technology trends. Query with ?topic=ai to get top 10 signals.',
       kind: 'api',
       handler: 'trend-radar',
       rate_limit: 60,
@@ -38,7 +39,8 @@ export const manifest = defineAddon({
       company: ref('base.company_default'),
       slug: 'content-ideas',
       name: 'Content Ideas Generator',
-      description: 'Generates 20 viral-ready content concepts from trend data. Query with ?niche=tech.',
+      description:
+        'Generates 20 viral-ready content concepts from trend data. Query with ?niche=tech.',
       kind: 'api',
       handler: 'content-ideas',
       rate_limit: 20,
@@ -50,7 +52,8 @@ export const manifest = defineAddon({
       company: ref('base.company_default'),
       slug: 'hashtags',
       name: 'Hashtag Generator',
-      description: 'Platform-optimized hashtags for maximum reach. Query with ?platform=instagram&topic=design.',
+      description:
+        'Platform-optimized hashtags for maximum reach. Query with ?platform=instagram&topic=design.',
       kind: 'api',
       handler: 'hashtags',
       rate_limit: 50,
@@ -62,7 +65,8 @@ export const manifest = defineAddon({
       company: ref('base.company_default'),
       slug: 'portfolio',
       name: 'Portfolio Showcase',
-      description: 'Auto-generated portfolio from factory content assets and income stream highlights.',
+      description:
+        'Auto-generated portfolio from factory content assets and income stream highlights.',
       kind: 'page',
       handler: 'portfolio',
       rate_limit: 100,
@@ -74,8 +78,19 @@ export const manifest = defineAddon({
   views,
   menus: [
     { model: PublicTool.modelName, label: 'Public Tools', group: 'Public Services', sequence: 10 },
-    { model: PublicUsage.modelName, label: 'Usage Logs', group: 'Public Services', sequence: 20, developmentOnly: true },
-    { model: PublicMetric.modelName, label: 'Daily Metrics', group: 'Public Services', sequence: 30 },
+    {
+      model: PublicUsage.modelName,
+      label: 'Usage Logs',
+      group: 'Public Services',
+      sequence: 20,
+      developmentOnly: true,
+    },
+    {
+      model: PublicMetric.modelName,
+      label: 'Daily Metrics',
+      group: 'Public Services',
+      sequence: 30,
+    },
     { model: PublicFeedback.modelName, label: 'Feedback', group: 'Public Services', sequence: 40 },
   ],
 });

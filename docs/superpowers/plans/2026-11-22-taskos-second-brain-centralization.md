@@ -2,7 +2,6 @@
 
 > **Historical planning artifact — not a current status report or active backlog.** The original 1,346-task estimate was not verified. On 2026-11-23, `docs/tasks/tasks.json` was confirmed zero-byte; the verified source inventory contains 627 candidate IDs, not a restored registry. No task records may be inferred from this plan or its original checklist. Current status and approval gates are maintained in `docs/tasks/README.md`, `docs/tasks/RECOVERY-INVENTORY.md`, and `docs/roadmap/STABILIZATION-PLAN.md`. Do not resume execution from this historical plan until TaskOS recovery is validated.
 
-
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Centralize all project work items, documentation backlog, and governance into a unified Smart TaskOS + Second Brain (`raw/`, `brain/`, `wiki/`), Release Manager, Changelog Engine, and Blueprint Registry powered by `apps/todo` (`moonwitness-dx`: Rust 2024 + SQLite + React 19 + MCP) with a canonical lossless JSON v2 contract (`docs/tasks/tasks.json`).
@@ -25,15 +24,18 @@
 ### Task 1: Canonical JSON Schema Specification (`docs/tasks/tasks.schema.json`)
 
 **Files:**
+
 - Create: `docs/tasks/tasks.schema.json`
 - Test: `scripts/tasks/validate-tasks.test.mjs`
 
 **Interfaces:**
+
 - Produces: JSON Schema Draft-07 validator for `moonwitness-tasks/v2` defining projects, tasks, acceptance criteria, scope, evidence, and documents.
 
 - [ ] **Step 1: Write the failing test for schema validation**
 
 Create `scripts/tasks/validate-tasks.test.mjs`:
+
 ```js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -58,8 +60,8 @@ test('tasks.schema.json is a valid Draft-07 JSON Schema and accepts valid v2 tas
         name: 'MoonWitness Platform',
         repos: ['A-L-L-A-H/mw-xv'],
         color: 'blue',
-        statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done']
-      }
+        statuses: ['backlog', 'todo', 'doing', 'review', 'blocked', 'done'],
+      },
     ],
     tasks: [
       {
@@ -87,27 +89,27 @@ test('tasks.schema.json is a valid Draft-07 JSON Schema and accepts valid v2 tas
         tags: ['ci', 'ai', 'conformance'],
         scope: {
           packages: ['@moonwitness/orm-ai'],
-          files: ['package.json']
+          files: ['package.json'],
         },
         acceptanceCriteria: [
-          { id: 'ac-1', text: 'All packages run in test:unit:built', done: false }
+          { id: 'ac-1', text: 'All packages run in test:unit:built', done: false },
         ],
         validation: {
           commands: ['pnpm verify'],
-          expected: 'Pass 100%'
+          expected: 'Pass 100%',
         },
         evidence: {
           paths: [],
           detailFile: null,
-          commitSha: null
+          commitSha: null,
         },
         references: [],
         blockedReason: null,
         sourceRef: { file: 'audit', legacyId: null },
         url: '',
-        comments: []
-      }
-    ]
+        comments: [],
+      },
+    ],
   };
 
   const valid = validate(sample);
@@ -141,11 +143,13 @@ git commit -m "feat(tasks): define canonical moonwitness-tasks/v2 JSON Schema"
 ### Task 2: Sweep & Consolidation Engine (`scripts/tasks/sweep-and-consolidate.mjs`)
 
 **Files:**
+
 - Create: `scripts/tasks/sweep-and-consolidate.mjs`
 - Test: `scripts/tasks/sweep-and-consolidate.test.mjs`
 - Target Output: `docs/tasks/tasks.json`
 
 **Interfaces:**
+
 - Consumes: `docs/roadmap/tasks.json`, `ROADMAP.md`, `docs/tasks/sources/todo-wa.md`, `docs/tasks/sources/todo.md`, `docs/tasks/sources/todo-desktop.md`, `docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md`, `evolution/backlog.json`, Audit tasks (`AUD-001`..`AUD-014`).
 - Produces: Consolidated, deduplicated, schema-valid `docs/tasks/tasks.json`.
 
@@ -153,6 +157,7 @@ git commit -m "feat(tasks): define canonical moonwitness-tasks/v2 JSON Schema"
 
 Create `scripts/tasks/sweep-and-consolidate.test.mjs`:
 Verifies that:
+
 1. All 227 roadmap tasks (`M0.01`–`M12.14`, `K0-001`–`K9-007`) are imported with preserved status, dependencies, and evidence.
 2. WhatsApp checklist items (`P0-*`–`P3-*`) are ingested with `series: "WA"`, preserving checked/unchecked state.
 3. Root `docs/tasks/sources/todo.md` open item `MW-CFG-003.3` is ingested as `series: "MW"`.
@@ -193,12 +198,14 @@ git commit -m "feat(tasks): sweep and consolidate all workspace task sources int
 ### Task 3: Zero-Drift Roadmap Synchronizer & Validator (`scripts/tasks/validate-tasks.mjs` & `sync-roadmap.mjs`)
 
 **Files:**
+
 - Create: `scripts/tasks/validate-tasks.mjs`
 - Create: `scripts/tasks/sync-roadmap.mjs`
 - Modify: `package.json:620-630` (add root npm scripts `tasks:validate` and `tasks:sync`)
 - Test: `scripts/tasks/roadmap-parity.test.mjs`
 
 **Interfaces:**
+
 - Consumes: `docs/tasks/tasks.json`
 - Produces: Verifies schema validity, DAG cycle freedom, and exact 1:1 status parity with `ROADMAP.md` and `docs/roadmap/tasks.json`.
 
@@ -233,6 +240,7 @@ git commit -m "feat(tasks): add zero-drift validation and roadmap synchronizatio
 ### Task 4: Second Brain Directory Hierarchy & Archive Consolidation
 
 **Files:**
+
 - Create: `docs/second-brain/raw/README.md`
 - Create: `docs/second-brain/brain/README.md`
 - Create: `docs/second-brain/wiki/README.md`
@@ -273,11 +281,13 @@ git commit -m "docs(governance): establish Second Brain hierarchy and archive le
 ### Task 5: Upgrade `apps/todo` SQLite Engine (`store.rs` & `schema.sql`)
 
 **Files:**
+
 - Modify: `apps/todo/src/schema.sql`
 - Modify: `apps/todo/src/store.rs`
 - Test: `apps/todo/tests/store_v2_test.rs` (or inline Rust test in `store.rs`)
 
 **Interfaces:**
+
 - Produces: SQLite migration 9 & 10 adding:
   - `tasks` columns: `code`, `series`, `milestone`, `horizon`, `category`, `task_type`, `priority`, `risk`, `effort`, `owner`, `assignee`, `summary`, `problem`, `proposed_solution`, `scope_json`, `acceptance_criteria_json`, `validation_json`, `evidence_json`, `references_json`, `scores_json`, `source_ref_json`, `blocked_reason`, `human_gate`.
   - `documents` table (`id`, `slug`, `layer`, `title`, `body`, `tags`, `project_id`, `created_at`, `updated_at`).
@@ -315,12 +325,14 @@ git commit -m "feat(todo): add v2 rich task schema, documents, and FTS5 search t
 ### Task 6: Implement Lossless CLI Importer & Exporter (`apps/todo/src/import.rs` & `export.rs`)
 
 **Files:**
+
 - Create: `apps/todo/src/import.rs`
 - Modify: `apps/todo/src/export.rs`
 - Modify: `apps/todo/src/main.rs`
 - Test: `apps/todo/src/import.rs` test module
 
 **Interfaces:**
+
 - Produces: CLI commands `moonwitness-dx import <FILE>` and `moonwitness-dx export --format tasks-json`.
 
 - [ ] **Step 1: Write test for JSON v2 import and round-trip export**
@@ -358,11 +370,13 @@ git commit -m "feat(todo): add lossless import and export for moonwitness-tasks/
 ### Task 7: Extend REST API & MCP Server (`apps/todo/src/web.rs` & `mcp.rs`)
 
 **Files:**
+
 - Modify: `apps/todo/src/web.rs`
 - Modify: `apps/todo/src/mcp.rs`
 - Test: `apps/todo/src/mcp.rs` test module
 
 **Interfaces:**
+
 - Produces:
   - REST routes: `GET/POST /api/documents`, `GET/PATCH/DELETE /api/documents/{id}`, `POST /api/import`, `GET /api/export`.
   - MCP Tools: `task_claim`, `task_checklist_toggle`, `task_submit_review`, `brain_quick_capture`, `wiki_lookup`, `global_search`.
@@ -397,12 +411,14 @@ git commit -m "feat(todo): add document REST endpoints and rich MCP tools for Ta
 ### Task 8: Enhance Web Frontend with Smart Kanban & Second Brain (`apps/todo/web`)
 
 **Files:**
+
 - Modify: `apps/todo/web/src/types.ts`
 - Modify: `apps/todo/web/src/api.ts`
 - Modify: `apps/todo/web/src/App.tsx`
 - Modify: `apps/todo/web/src/app.css`
 
 **Interfaces:**
+
 - Consumes: `/api/board`, `/api/tasks`, `/api/documents`, `/api/search`
 - Produces: Enhanced React 19 Kanban board with rich task badges, drawer for Acceptance Criteria & Scope, and Second Brain Document/Wiki viewer.
 
@@ -438,6 +454,7 @@ git commit -m "feat(todo-web): add smart Kanban badges, AC drawer, and Second Br
 ### Task 9: Full Monorepo Parity & End-to-End Verification
 
 **Files:**
+
 - Test: Run all workspace test suites, roadmap validation, and verification gates.
 
 - [ ] **Step 1: Run tasks validator and roadmap checker**

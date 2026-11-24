@@ -10,7 +10,7 @@ export async function upsertMrrFromSubscription(
     status: string;
     periodStart: Date;
     periodEnd: Date;
-  },
+  }
 ): Promise<void> {
   const stream = await ctx
     .query(IncomeStream)

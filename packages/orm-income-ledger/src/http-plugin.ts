@@ -23,7 +23,20 @@ export const incomeHttpPlugin: AddonHttpPlugin = async (app) => {
           type: 'object',
           required: ['kind', 'status', 'goal_monthly_minor', 'currency'],
           properties: {
-            kind: { type: 'string', enum: ['saas', 'marketplace', 'ads', 'affiliate', 'content_royalty', 'digital_product', 'service', 'donation', 'other'] },
+            kind: {
+              type: 'string',
+              enum: [
+                'saas',
+                'marketplace',
+                'ads',
+                'affiliate',
+                'content_royalty',
+                'digital_product',
+                'service',
+                'donation',
+                'other',
+              ],
+            },
             platform: { type: ['string', 'null'] },
             status: { type: 'string', enum: ['idea', 'building', 'live', 'paused', 'dead'] },
             goal_monthly_minor: { type: 'integer', minimum: 0 },
@@ -59,7 +72,16 @@ export const incomeHttpPlugin: AddonHttpPlugin = async (app) => {
       schema: {
         body: {
           type: 'object',
-          required: ['streamId', 'occurred_at', 'amount_minor', 'currency', 'kind', 'source_model', 'source_id', 'net_minor'],
+          required: [
+            'streamId',
+            'occurred_at',
+            'amount_minor',
+            'currency',
+            'kind',
+            'source_model',
+            'source_id',
+            'net_minor',
+          ],
           properties: {
             streamId: { type: 'string', format: 'uuid' },
             occurred_at: { type: 'string', format: 'date-time' },

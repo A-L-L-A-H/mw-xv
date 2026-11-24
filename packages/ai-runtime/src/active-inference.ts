@@ -62,7 +62,6 @@ const DEFAULT_IRREVERSIBLE_RISK_PENALTY_BPS = 2000;
 const DEFAULT_UNCERTAINTY_THRESHOLD_BPS = 4000;
 const DEFAULT_HUMAN_INTERRUPTION_COST_BPS = 1500;
 
-
 function canonicalizeValue(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map((entry) => canonicalizeValue(entry));

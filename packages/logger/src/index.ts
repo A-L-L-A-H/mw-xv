@@ -1,6 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import pino, { type Logger, type LoggerOptions, type TransportTargetOptions, type DestinationStream } from 'pino';
+import pino, {
+  type Logger,
+  type LoggerOptions,
+  type TransportTargetOptions,
+  type DestinationStream,
+} from 'pino';
 import pretty from 'pino-pretty';
 
 export type LogLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace' | 'silent';
@@ -74,7 +79,9 @@ function isSecretKey(key: string): boolean {
   if (SECRET_KEY_PATTERNS.some((pattern) => pattern.test(key))) {
     return true;
   }
-  return WILDCARD_SECRET_SUFFIXES.some((suffix) => key.toLowerCase().endsWith(suffix.toLowerCase()));
+  return WILDCARD_SECRET_SUFFIXES.some((suffix) =>
+    key.toLowerCase().endsWith(suffix.toLowerCase())
+  );
 }
 
 function redactDeep(value: unknown, depth = 0): unknown {
@@ -130,10 +137,12 @@ function wrapLoggerMethods<L extends Logger>(log: L): L {
   const origDebug = log.debug.bind(log);
   const origFatal = log.fatal.bind(log);
   const origTrace = log.trace.bind(log);
-  const wrap = (fn: (obj: unknown, msg?: string, ...args: unknown[]) => void) => (obj: unknown, msg?: string, ...args: unknown[]) => {
-    const redacted = typeof obj === 'object' && obj !== null ? redactDeep(obj) : obj;
-    return fn(redacted, msg, ...args);
-  };
+  const wrap =
+    (fn: (obj: unknown, msg?: string, ...args: unknown[]) => void) =>
+    (obj: unknown, msg?: string, ...args: unknown[]) => {
+      const redacted = typeof obj === 'object' && obj !== null ? redactDeep(obj) : obj;
+      return fn(redacted, msg, ...args);
+    };
   log.info = wrap(origInfo);
   log.warn = wrap(origWarn);
   log.error = wrap(origError);
@@ -143,7 +152,10 @@ function wrapLoggerMethods<L extends Logger>(log: L): L {
   return log;
 }
 
-function attachFlushMethods<L extends Logger>(log: L, destination: DestinationStream | undefined): L {
+function attachFlushMethods<L extends Logger>(
+  log: L,
+  destination: DestinationStream | undefined
+): L {
   if (!destination) return log;
   const dest = toFlushableDestination(destination);
   const flushable = log as FlushableLogger;
@@ -258,7 +270,8 @@ export function createLogger(options: CreateLoggerOptions = {}): Logger {
     mixin: () => ({}),
   };
 
-  const logger = streams.length > 0 ? pino(pinoOptions, pino.multistream(streams)) : pino(pinoOptions);
+  const logger =
+    streams.length > 0 ? pino(pinoOptions, pino.multistream(streams)) : pino(pinoOptions);
 
   // Wrap child method
   (logger as unknown as { child: ChildFn }).child = createChildWrapper(logger.child.bind(logger));
@@ -342,10 +355,13 @@ export function getLogger(): Logger {
       mixin: () => ({}),
     };
 
-    rootLogger = streams.length > 0 ? pino(pinoOptions, pino.multistream(streams)) : pino(pinoOptions);
+    rootLogger =
+      streams.length > 0 ? pino(pinoOptions, pino.multistream(streams)) : pino(pinoOptions);
 
     // Wrap child method
-    (rootLogger as unknown as { child: ChildFn }).child = createChildWrapper(rootLogger.child.bind(rootLogger));
+    (rootLogger as unknown as { child: ChildFn }).child = createChildWrapper(
+      rootLogger.child.bind(rootLogger)
+    );
 
     // Wrap root logger methods for deep redaction
     wrapLoggerMethods(rootLogger);

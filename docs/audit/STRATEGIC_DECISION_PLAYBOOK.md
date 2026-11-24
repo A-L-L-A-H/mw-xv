@@ -5,6 +5,7 @@ Gunakan playbook ini untuk mengubah temuan dan ide menjadi pilihan strategis yan
 ## 1. Strategic framing
 
 Mulailah dengan menjawab:
+
 - Siapa pengguna/aktor yang dilayani? Apa yang mereka coba capai?
 - Problem mana yang paling bernilai untuk diselesaikan?
 - Apa keunggulan atau aset unik yang sudah dimiliki repository?
@@ -30,6 +31,7 @@ Thesis adalah hipotesis strategi, bukan fakta.
 ## 3. Capability and leverage mapping
 
 Petakan:
+
 - Existing capabilities and maturity.
 - Shared primitives and reusable foundations.
 - Missing enablers.
@@ -43,21 +45,22 @@ Gunakan hubungan foundation → capability → outcome. Bedakan direct leverage 
 
 Untuk setiap kebutuhan penting, bandingkan opsi:
 
-| Option | Meaning | Evaluate |
-|---|---|---|
-| Build | Implementasi sendiri | Control, fit, cost, maintenance, differentiation |
-| Buy | Menggunakan layanan/produk komersial | Total cost, vendor lock-in, data, availability, portability |
-| Integrate | Memakai proyek/library yang ada | API fit, maturity, security, license, upgrade path |
-| Fork | Memodifikasi proyek open-source | Upstream divergence, merge burden, license, ownership |
-| Partner | Integrasi atau kolaborasi | Dependency, governance, continuity, incentives |
-| Defer | Menunda sampai ada bukti/trigger | Cost of waiting, opportunity loss, option value |
-| Stop | Tidak mengerjakan atau menghapus | Sunk cost, alternatives, user impact, migration |
+| Option    | Meaning                              | Evaluate                                                    |
+| --------- | ------------------------------------ | ----------------------------------------------------------- |
+| Build     | Implementasi sendiri                 | Control, fit, cost, maintenance, differentiation            |
+| Buy       | Menggunakan layanan/produk komersial | Total cost, vendor lock-in, data, availability, portability |
+| Integrate | Memakai proyek/library yang ada      | API fit, maturity, security, license, upgrade path          |
+| Fork      | Memodifikasi proyek open-source      | Upstream divergence, merge burden, license, ownership       |
+| Partner   | Integrasi atau kolaborasi            | Dependency, governance, continuity, incentives              |
+| Defer     | Menunda sampai ada bukti/trigger     | Cost of waiting, opportunity loss, option value             |
+| Stop      | Tidak mengerjakan atau menghapus     | Sunk cost, alternatives, user impact, migration             |
 
 Jangan menganggap build selalu lebih baik atau buy selalu lebih murah. Hitung total cost of ownership secara kualitatif bila angka tidak tersedia.
 
 ## 5. Architecture and product evolution choices
 
 Untuk keputusan utama:
+
 1. Rumuskan keputusan dan constraint.
 2. Buat 2–4 opsi nyata, termasuk status quo dan opsi sederhana.
 3. Cari bukti implementasi dan compatibility.
@@ -72,12 +75,14 @@ Jangan membuat pilihan teknologi hanya karena sedang trending atau familiar bagi
 ## 6. Scenario planning
 
 Buat 2–4 skenario yang relevan, misalnya:
+
 - Continuity: kebutuhan dan constraint berkembang bertahap.
 - Growth/stress: volume, pengguna, integrations, or complexity bertambah.
 - Constraint shock: budget, staff, bandwidth, vendor, or infrastructure terbatas.
 - Technology/ecosystem shift: dependency, standard, platform, or user expectations berubah.
 
 Untuk setiap skenario:
+
 - Apa yang berubah?
 - Apa dampak pada produk dan arsitektur?
 - Apa yang menjadi bottleneck?
@@ -91,6 +96,7 @@ Skenario adalah stress tests, bukan prediksi. Gunakan horizon yang relevan dan h
 ## 7. Future-back roadmap
 
 Dari strategic outcome yang diinginkan:
+
 1. Tentukan capabilities yang dibutuhkan.
 2. Uraikan prerequisite dan dependency.
 3. Identifikasi keputusan yang bersifat irreversible atau mahal.
@@ -103,6 +109,7 @@ Roadmap harus berbasis dependency dan learning gates, bukan tanggal kalender fik
 ## 8. Stop / remove / simplify / replace
 
 Untuk setiap kandidat yang diusulkan untuk dihentikan:
+
 - Apa yang ada sekarang?
 - Siapa/apa yang bergantung padanya?
 - Apakah masih digunakan?
@@ -119,6 +126,7 @@ Jangan hapus fitur atau dependency hanya karena tampak tidak digunakan dari satu
 Gunakan template:
 
 ### DEC-XXX — Decision title
+
 - Status: Proposed / Accepted / Rejected / Superseded.
 - Context:
 - Problem:
@@ -139,6 +147,7 @@ Keputusan besar tidak boleh hanya berupa kalimat “gunakan teknologi X”. Cata
 ## 10. Decision quality gate
 
 Sebelum merekomendasikan keputusan:
+
 - Apakah problem nyata dan penting?
 - Apakah status quo atau solusi yang lebih sederhana sudah dibandingkan?
 - Apakah evidence sesuai dengan versi dan konteks repository?

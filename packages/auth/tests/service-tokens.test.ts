@@ -173,7 +173,9 @@ describe('ServiceTokenAuthority & RBAC', () => {
     ).toBe(false);
 
     // Expired
-    expect(auth.verifyApiKey(issued.rawKey, issued.record, { nowMs: BASE_MS + 61_000 }).valid).toBe(false);
+    expect(auth.verifyApiKey(issued.rawKey, issued.record, { nowMs: BASE_MS + 61_000 }).valid).toBe(
+      false
+    );
 
     // Constant-time helpers
     expect(constantTimeEqualStrings('abc', 'abc')).toBe(true);

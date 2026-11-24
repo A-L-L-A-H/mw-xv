@@ -82,7 +82,12 @@ export function ExtendedControlsLab() {
             <BrandMark variant="lockup" tone="dark" basePath={import.meta.env.BASE_URL} />
           </div>
           <SectionRibbon title="Contoh desain · Small ribbon" size="sm" number="01" accent="cyan" />
-          <SectionRibbon title="Contoh desain · Large ribbon" size="lg" number="02" accent="magenta" />
+          <SectionRibbon
+            title="Contoh desain · Large ribbon"
+            size="lg"
+            number="02"
+            accent="magenta"
+          />
         </div>
       </article>
 

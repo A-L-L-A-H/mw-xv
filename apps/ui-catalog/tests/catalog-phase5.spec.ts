@@ -27,7 +27,11 @@ const heavySections = [
   { id: 'asset-diagnostics', source: 'src/AssetDiagnostics.tsx', testId: 'asset-diagnostics' },
   { id: 'scene-environment-inspector', source: 'src/SceneLab.tsx', testId: 'scene-lab' },
   { id: 'fx-lab', source: 'src/FXLab.tsx', testId: 'fx-lab' },
-  { id: 'extended-controls', source: 'src/ExtendedControlsLab.tsx', testId: 'extended-controls-lab' },
+  {
+    id: 'extended-controls',
+    source: 'src/ExtendedControlsLab.tsx',
+    testId: 'extended-controls-lab',
+  },
 ] as const;
 
 function dynamicChunk(source: string): string {

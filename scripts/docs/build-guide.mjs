@@ -28,7 +28,9 @@ export function createGuideBundle(navigation, pageContents, sourceFingerprint) {
         !allowedPagePrefixes.some((prefix) => item.path.startsWith(prefix)) ||
         item.path.includes('\\')
       ) {
-        throw new Error(`Documentation page must stay under ${allowedPagePrefixes.join(' or ')}: ${String(item.path)}`);
+        throw new Error(
+          `Documentation page must stay under ${allowedPagePrefixes.join(' or ')}: ${String(item.path)}`
+        );
       }
       const segments = item.path.split('/');
       if (segments.some((segment) => segment === '..' || segment === '.' || segment.length === 0)) {

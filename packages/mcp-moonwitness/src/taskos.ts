@@ -41,7 +41,10 @@ interface RawTasksFile {
   readonly tasks?: unknown;
 }
 
-function tally(tasks: readonly RawTask[], key: 'status' | 'project' | 'priority'): Record<string, number> {
+function tally(
+  tasks: readonly RawTask[],
+  key: 'status' | 'project' | 'priority'
+): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const task of tasks) {
     const value = task[key];

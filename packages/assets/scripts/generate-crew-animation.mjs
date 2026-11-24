@@ -120,28 +120,252 @@ function buildFrame({ label, bob, sway, angle, legs, arms, badge }) {
 /* Four distinct keyframes per clip. Limb coordinates are the animation. */
 const FRAMES = {
   idle: [
-    { label: 'crew-01 idle frame 1 - neutral stance', bob: 0, sway: -3, angle: 0, badge: [470, 596], legs: [[468, 452, 442, 936], [556, 572, 590, 936]], arms: [[356, 306, 296, 824], [668, 718, 728, 824]] },
-    { label: 'crew-01 idle frame 2 - inhale', bob: 6, sway: 9, angle: 0, badge: [472, 602], legs: [[468, 452, 442, 936], [556, 572, 590, 936]], arms: [[352, 302, 292, 820], [672, 722, 732, 820]] },
-    { label: 'crew-01 idle frame 3 - exhale', bob: 2, sway: 14, angle: 1, badge: [473, 605], legs: [[468, 452, 442, 936], [556, 572, 590, 936]], arms: [[354, 304, 294, 822], [670, 720, 730, 822]] },
-    { label: 'crew-01 idle frame 4 - settle', bob: 0, sway: 2, angle: 0, badge: [470, 596], legs: [[468, 452, 442, 936], [556, 572, 590, 936]], arms: [[356, 306, 296, 824], [668, 718, 728, 824]] },
+    {
+      label: 'crew-01 idle frame 1 - neutral stance',
+      bob: 0,
+      sway: -3,
+      angle: 0,
+      badge: [470, 596],
+      legs: [
+        [468, 452, 442, 936],
+        [556, 572, 590, 936],
+      ],
+      arms: [
+        [356, 306, 296, 824],
+        [668, 718, 728, 824],
+      ],
+    },
+    {
+      label: 'crew-01 idle frame 2 - inhale',
+      bob: 6,
+      sway: 9,
+      angle: 0,
+      badge: [472, 602],
+      legs: [
+        [468, 452, 442, 936],
+        [556, 572, 590, 936],
+      ],
+      arms: [
+        [352, 302, 292, 820],
+        [672, 722, 732, 820],
+      ],
+    },
+    {
+      label: 'crew-01 idle frame 3 - exhale',
+      bob: 2,
+      sway: 14,
+      angle: 1,
+      badge: [473, 605],
+      legs: [
+        [468, 452, 442, 936],
+        [556, 572, 590, 936],
+      ],
+      arms: [
+        [354, 304, 294, 822],
+        [670, 720, 730, 822],
+      ],
+    },
+    {
+      label: 'crew-01 idle frame 4 - settle',
+      bob: 0,
+      sway: 2,
+      angle: 0,
+      badge: [470, 596],
+      legs: [
+        [468, 452, 442, 936],
+        [556, 572, 590, 936],
+      ],
+      arms: [
+        [356, 306, 296, 824],
+        [668, 718, 728, 824],
+      ],
+    },
   ],
   walk: [
-    { label: 'crew-01 walk frame 1 - left foot contact', bob: 0, sway: 16, angle: -2, badge: [466, 592], legs: [[468, 424, 396, 940], [556, 596, 616, 896]], arms: [[356, 372, 336, 792], [668, 654, 692, 856]] },
-    { label: 'crew-01 walk frame 2 - passing pose', bob: 7, sway: 5, angle: -1, badge: [471, 600], legs: [[468, 452, 470, 904], [556, 558, 554, 922]], arms: [[356, 318, 300, 824], [668, 706, 724, 828]] },
-    { label: 'crew-01 walk frame 3 - right foot contact', bob: 0, sway: -16, angle: 2, badge: [474, 592], legs: [[468, 596, 408, 896], [556, 470, 628, 940]], arms: [[356, 654, 332, 856], [668, 372, 688, 792]] },
-    { label: 'crew-01 walk frame 4 - passing pose', bob: 7, sway: -5, angle: 1, badge: [471, 600], legs: [[468, 558, 466, 922], [556, 450, 558, 904]], arms: [[356, 706, 300, 828], [668, 318, 724, 824]] },
+    {
+      label: 'crew-01 walk frame 1 - left foot contact',
+      bob: 0,
+      sway: 16,
+      angle: -2,
+      badge: [466, 592],
+      legs: [
+        [468, 424, 396, 940],
+        [556, 596, 616, 896],
+      ],
+      arms: [
+        [356, 372, 336, 792],
+        [668, 654, 692, 856],
+      ],
+    },
+    {
+      label: 'crew-01 walk frame 2 - passing pose',
+      bob: 7,
+      sway: 5,
+      angle: -1,
+      badge: [471, 600],
+      legs: [
+        [468, 452, 470, 904],
+        [556, 558, 554, 922],
+      ],
+      arms: [
+        [356, 318, 300, 824],
+        [668, 706, 724, 828],
+      ],
+    },
+    {
+      label: 'crew-01 walk frame 3 - right foot contact',
+      bob: 0,
+      sway: -16,
+      angle: 2,
+      badge: [474, 592],
+      legs: [
+        [468, 596, 408, 896],
+        [556, 470, 628, 940],
+      ],
+      arms: [
+        [356, 654, 332, 856],
+        [668, 372, 688, 792],
+      ],
+    },
+    {
+      label: 'crew-01 walk frame 4 - passing pose',
+      bob: 7,
+      sway: -5,
+      angle: 1,
+      badge: [471, 600],
+      legs: [
+        [468, 558, 466, 922],
+        [556, 450, 558, 904],
+      ],
+      arms: [
+        [356, 706, 300, 828],
+        [668, 318, 724, 824],
+      ],
+    },
   ],
   turn: [
-    { label: 'crew-01 turn frame 1 - facing forward', bob: 0, sway: -3, angle: 0, badge: [470, 596], legs: [[468, 452, 442, 936], [556, 572, 590, 936]], arms: [[356, 306, 296, 824], [668, 718, 728, 824]] },
-    { label: 'crew-01 turn frame 2 - quarter turn', bob: 2, sway: 10, angle: 9, badge: [472, 600], legs: [[468, 446, 436, 934], [556, 578, 596, 934]], arms: [[360, 312, 302, 822], [664, 712, 722, 822]] },
-    { label: 'crew-01 turn frame 3 - half profile', bob: 4, sway: 20, angle: 18, badge: [474, 603], legs: [[468, 438, 430, 932], [556, 584, 602, 932]], arms: [[366, 318, 310, 820], [658, 706, 716, 820]] },
-    { label: 'crew-01 turn frame 4 - return', bob: 1, sway: 4, angle: 6, badge: [471, 598], legs: [[468, 448, 438, 935], [556, 576, 594, 935]], arms: [[358, 308, 298, 823], [666, 716, 726, 823]] },
+    {
+      label: 'crew-01 turn frame 1 - facing forward',
+      bob: 0,
+      sway: -3,
+      angle: 0,
+      badge: [470, 596],
+      legs: [
+        [468, 452, 442, 936],
+        [556, 572, 590, 936],
+      ],
+      arms: [
+        [356, 306, 296, 824],
+        [668, 718, 728, 824],
+      ],
+    },
+    {
+      label: 'crew-01 turn frame 2 - quarter turn',
+      bob: 2,
+      sway: 10,
+      angle: 9,
+      badge: [472, 600],
+      legs: [
+        [468, 446, 436, 934],
+        [556, 578, 596, 934],
+      ],
+      arms: [
+        [360, 312, 302, 822],
+        [664, 712, 722, 822],
+      ],
+    },
+    {
+      label: 'crew-01 turn frame 3 - half profile',
+      bob: 4,
+      sway: 20,
+      angle: 18,
+      badge: [474, 603],
+      legs: [
+        [468, 438, 430, 932],
+        [556, 584, 602, 932],
+      ],
+      arms: [
+        [366, 318, 310, 820],
+        [658, 706, 716, 820],
+      ],
+    },
+    {
+      label: 'crew-01 turn frame 4 - return',
+      bob: 1,
+      sway: 4,
+      angle: 6,
+      badge: [471, 598],
+      legs: [
+        [468, 448, 438, 935],
+        [556, 576, 594, 935],
+      ],
+      arms: [
+        [358, 308, 298, 823],
+        [666, 716, 726, 823],
+      ],
+    },
   ],
   hair: [
-    { label: 'crew-01 hair frame 1 - neutral', bob: 0, sway: -8, angle: 0, badge: [470, 596], legs: [[468, 452, 442, 936], [556, 572, 590, 936]], arms: [[356, 306, 296, 824], [668, 718, 728, 824]] },
-    { label: 'crew-01 hair frame 2 - wind from left', bob: 0, sway: 30, angle: 0, badge: [470, 596], legs: [[468, 452, 442, 936], [556, 572, 590, 936]], arms: [[356, 306, 296, 824], [668, 718, 728, 824]] },
-    { label: 'crew-01 hair frame 3 - settle right', bob: 0, sway: -24, angle: 0, badge: [470, 596], legs: [[468, 452, 442, 936], [556, 572, 590, 936]], arms: [[356, 306, 296, 824], [668, 718, 728, 824]] },
-    { label: 'crew-01 hair frame 4 - calm', bob: 0, sway: 2, angle: 0, badge: [470, 596], legs: [[468, 452, 442, 936], [556, 572, 590, 936]], arms: [[356, 306, 296, 824], [668, 718, 728, 824]] },
+    {
+      label: 'crew-01 hair frame 1 - neutral',
+      bob: 0,
+      sway: -8,
+      angle: 0,
+      badge: [470, 596],
+      legs: [
+        [468, 452, 442, 936],
+        [556, 572, 590, 936],
+      ],
+      arms: [
+        [356, 306, 296, 824],
+        [668, 718, 728, 824],
+      ],
+    },
+    {
+      label: 'crew-01 hair frame 2 - wind from left',
+      bob: 0,
+      sway: 30,
+      angle: 0,
+      badge: [470, 596],
+      legs: [
+        [468, 452, 442, 936],
+        [556, 572, 590, 936],
+      ],
+      arms: [
+        [356, 306, 296, 824],
+        [668, 718, 728, 824],
+      ],
+    },
+    {
+      label: 'crew-01 hair frame 3 - settle right',
+      bob: 0,
+      sway: -24,
+      angle: 0,
+      badge: [470, 596],
+      legs: [
+        [468, 452, 442, 936],
+        [556, 572, 590, 936],
+      ],
+      arms: [
+        [356, 306, 296, 824],
+        [668, 718, 728, 824],
+      ],
+    },
+    {
+      label: 'crew-01 hair frame 4 - calm',
+      bob: 0,
+      sway: 2,
+      angle: 0,
+      badge: [470, 596],
+      legs: [
+        [468, 452, 442, 936],
+        [556, 572, 590, 936],
+      ],
+      arms: [
+        [356, 306, 296, 824],
+        [668, 718, 728, 824],
+      ],
+    },
   ],
 };
 
@@ -269,7 +493,9 @@ const licenses = JSON.parse(await readFile(licensesPath, 'utf8'));
 const provenance = generated.map(({ path, variant }) => ({
   path,
   creator: 'MoonWitness contributors',
-  source: variant.includes('clip') ? 'Original manually authored JSON' : 'Original manually authored SVG',
+  source: variant.includes('clip')
+    ? 'Original manually authored JSON'
+    : 'Original manually authored SVG',
   license: 'ISC',
   modifications:
     'Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.',

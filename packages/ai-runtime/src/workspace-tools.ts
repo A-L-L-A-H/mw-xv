@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 import type { JsonObject, JsonValue } from '@moonwitness/types';
-import { CapabilityGateway, type RelaxedToolRegistration, type ToolSideEffectKind } from './capability-gateway.js';
+import {
+  CapabilityGateway,
+  type RelaxedToolRegistration,
+  type ToolSideEffectKind,
+} from './capability-gateway.js';
 import type { RiskTier } from './risk-policy.js';
 import { validateDiffScope } from './pcw-verifier.js';
 import type { EphemeralSandboxManifest } from './sandbox-runner.js';
@@ -24,15 +28,69 @@ export interface WorkspaceToolSpec {
 
 /** Explicit matrix. R4 is always denied; R3 publication is disabled in this milestone. */
 export const WORKSPACE_TOOL_MATRIX: readonly WorkspaceToolSpec[] = Object.freeze([
-  { name: 'workspace.list', tier: 'R0', sideEffect: 'read_only', enabled: true, capability: 'workspace.read@v1' },
-  { name: 'workspace.read', tier: 'R0', sideEffect: 'read_only', enabled: true, capability: 'workspace.read@v1' },
-  { name: 'workspace.search', tier: 'R0', sideEffect: 'read_only', enabled: true, capability: 'workspace.read@v1' },
-  { name: 'workspace.diff', tier: 'R0', sideEffect: 'read_only', enabled: true, capability: 'workspace.read@v1' },
-  { name: 'workspace.apply_patch', tier: 'R1', sideEffect: 'reversible_write', enabled: true, capability: 'workspace.patch@v1' },
-  { name: 'workspace.run_check', tier: 'R1', sideEffect: 'reversible_write', enabled: true, capability: 'workspace.check@v1' },
-  { name: 'workspace.rollback', tier: 'R1', sideEffect: 'reversible_write', enabled: true, capability: 'workspace.patch@v1' },
-  { name: 'workspace.commit_local', tier: 'R2', sideEffect: 'reversible_write', enabled: true, capability: 'workspace.commit@v1' },
-  { name: 'workspace.request_publish', tier: 'R3', sideEffect: 'external_effect', enabled: false, capability: 'workspace.publish@v1' },
+  {
+    name: 'workspace.list',
+    tier: 'R0',
+    sideEffect: 'read_only',
+    enabled: true,
+    capability: 'workspace.read@v1',
+  },
+  {
+    name: 'workspace.read',
+    tier: 'R0',
+    sideEffect: 'read_only',
+    enabled: true,
+    capability: 'workspace.read@v1',
+  },
+  {
+    name: 'workspace.search',
+    tier: 'R0',
+    sideEffect: 'read_only',
+    enabled: true,
+    capability: 'workspace.read@v1',
+  },
+  {
+    name: 'workspace.diff',
+    tier: 'R0',
+    sideEffect: 'read_only',
+    enabled: true,
+    capability: 'workspace.read@v1',
+  },
+  {
+    name: 'workspace.apply_patch',
+    tier: 'R1',
+    sideEffect: 'reversible_write',
+    enabled: true,
+    capability: 'workspace.patch@v1',
+  },
+  {
+    name: 'workspace.run_check',
+    tier: 'R1',
+    sideEffect: 'reversible_write',
+    enabled: true,
+    capability: 'workspace.check@v1',
+  },
+  {
+    name: 'workspace.rollback',
+    tier: 'R1',
+    sideEffect: 'reversible_write',
+    enabled: true,
+    capability: 'workspace.patch@v1',
+  },
+  {
+    name: 'workspace.commit_local',
+    tier: 'R2',
+    sideEffect: 'reversible_write',
+    enabled: true,
+    capability: 'workspace.commit@v1',
+  },
+  {
+    name: 'workspace.request_publish',
+    tier: 'R3',
+    sideEffect: 'external_effect',
+    enabled: false,
+    capability: 'workspace.publish@v1',
+  },
 ]);
 
 const DISABLED_TIERS: ReadonlySet<RiskTier> = new Set(['R3', 'R4']);
@@ -218,7 +276,11 @@ export function registerWorkspaceTools(options: WorkspaceToolSetOptions): readon
     dataClassification: 'cloud_eligible',
     description: 'Bounded literal search across approved worktree files.',
     inputSchema: objectSchema(
-      { runId: RUN_ID_PROPERTY, query: { type: 'string', minLength: 1, maxLength: 256 }, path: PATH_PROPERTY },
+      {
+        runId: RUN_ID_PROPERTY,
+        query: { type: 'string', minLength: 1, maxLength: 256 },
+        path: PATH_PROPERTY,
+      },
       ['runId', 'query']
     ),
     execute: async (args) => {
@@ -306,7 +368,15 @@ export function registerWorkspaceTools(options: WorkspaceToolSetOptions): readon
         runId: RUN_ID_PROPERTY,
         check: {
           type: 'string',
-          enum: ['node-test', 'pnpm-test', 'pnpm-typecheck', 'pnpm-lint', 'pnpm-build', 'vitest-run', 'tsc-noemit'],
+          enum: [
+            'node-test',
+            'pnpm-test',
+            'pnpm-typecheck',
+            'pnpm-lint',
+            'pnpm-build',
+            'vitest-run',
+            'tsc-noemit',
+          ],
         },
         cwd: PATH_PROPERTY,
       },

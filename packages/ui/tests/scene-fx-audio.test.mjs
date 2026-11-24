@@ -168,9 +168,7 @@ test('scene FX and preview components subscribe to OS prefers-reduced-motion and
       width: 128,
       height: 128,
     };
-    const sampleLayers = [
-      { id: 'bg', mediaKind: 'image', src: '/bg.png', zOrder: 1 },
-    ];
+    const sampleLayers = [{ id: 'bg', mediaKind: 'image', src: '/bg.png', zOrder: 1 }];
 
     await act(async () => {
       root.render(
@@ -195,10 +193,22 @@ test('scene FX and preview components subscribe to OS prefers-reduced-motion and
       );
     });
 
-    assert.equal(container.querySelector('.mw-ui-scene-particles')?.getAttribute('data-particle-state'), 'active');
-    assert.equal(container.querySelector('.mw-ui-comic-transition')?.getAttribute('data-reduced-motion'), 'false');
-    assert.equal(container.querySelector('.mw-ui-sprite-player')?.getAttribute('data-sprite-state'), 'playing');
-    assert.equal(container.querySelector('.mw-ui-layered-scene')?.getAttribute('data-scene-state'), 'idle');
+    assert.equal(
+      container.querySelector('.mw-ui-scene-particles')?.getAttribute('data-particle-state'),
+      'active'
+    );
+    assert.equal(
+      container.querySelector('.mw-ui-comic-transition')?.getAttribute('data-reduced-motion'),
+      'false'
+    );
+    assert.equal(
+      container.querySelector('.mw-ui-sprite-player')?.getAttribute('data-sprite-state'),
+      'playing'
+    );
+    assert.equal(
+      container.querySelector('.mw-ui-layered-scene')?.getAttribute('data-scene-state'),
+      'idle'
+    );
 
     // Simulate OS reduced-motion toggle
     mediaMatches = true;
@@ -206,10 +216,22 @@ test('scene FX and preview components subscribe to OS prefers-reduced-motion and
       for (const fn of listeners) fn({ matches: true });
     });
 
-    assert.equal(container.querySelector('.mw-ui-scene-particles')?.getAttribute('data-particle-state'), 'static');
-    assert.equal(container.querySelector('.mw-ui-comic-transition')?.getAttribute('data-reduced-motion'), 'true');
-    assert.equal(container.querySelector('.mw-ui-sprite-player')?.getAttribute('data-sprite-state'), 'static');
-    assert.equal(container.querySelector('.mw-ui-layered-scene')?.getAttribute('data-scene-state'), 'static');
+    assert.equal(
+      container.querySelector('.mw-ui-scene-particles')?.getAttribute('data-particle-state'),
+      'static'
+    );
+    assert.equal(
+      container.querySelector('.mw-ui-comic-transition')?.getAttribute('data-reduced-motion'),
+      'true'
+    );
+    assert.equal(
+      container.querySelector('.mw-ui-sprite-player')?.getAttribute('data-sprite-state'),
+      'static'
+    );
+    assert.equal(
+      container.querySelector('.mw-ui-layered-scene')?.getAttribute('data-scene-state'),
+      'static'
+    );
     assert.ok(container.querySelector('button[aria-pressed="true"]'));
 
     // Scene harness reducedMotion=false overrides OS reduced-motion
@@ -233,10 +255,22 @@ test('scene FX and preview components subscribe to OS prefers-reduced-motion and
       );
     });
 
-    assert.equal(container.querySelector('.mw-ui-scene-particles')?.getAttribute('data-particle-state'), 'static');
-    assert.equal(container.querySelector('.mw-ui-comic-transition')?.getAttribute('data-reduced-motion'), 'true');
-    assert.equal(container.querySelector('.mw-ui-sprite-player')?.getAttribute('data-sprite-state'), 'static');
-    assert.equal(container.querySelector('.mw-ui-layered-scene')?.getAttribute('data-scene-state'), 'static');
+    assert.equal(
+      container.querySelector('.mw-ui-scene-particles')?.getAttribute('data-particle-state'),
+      'static'
+    );
+    assert.equal(
+      container.querySelector('.mw-ui-comic-transition')?.getAttribute('data-reduced-motion'),
+      'true'
+    );
+    assert.equal(
+      container.querySelector('.mw-ui-sprite-player')?.getAttribute('data-sprite-state'),
+      'static'
+    );
+    assert.equal(
+      container.querySelector('.mw-ui-layered-scene')?.getAttribute('data-scene-state'),
+      'static'
+    );
 
     await act(async () => root.unmount());
   } finally {

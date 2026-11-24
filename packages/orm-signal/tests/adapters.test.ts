@@ -62,10 +62,7 @@ describe('XMLParser', () => {
         label: "it's > fine",
         message: { _text: '<' },
         raw: { _text: '<raw> &amp; ' },
-        item: [
-          { _name: 'item', id: '<id>', count: '2' },
-          { id: 'second' },
-        ],
+        item: [{ _name: 'item', id: '<id>', count: '2' }, { id: 'second' }],
       },
     });
   });
@@ -115,7 +112,10 @@ describe('RssAdapter', () => {
         fetchImpl: async () => {
           call += 1;
           if (call === 1) return new Response('nope', { status: 500 });
-          return new Response('<rss><channel><item><description>no title</description></item></channel></rss>', { status: 200 });
+          return new Response(
+            '<rss><channel><item><description>no title</description></item></channel></rss>',
+            { status: 200 }
+          );
         },
       })
     );
@@ -127,7 +127,9 @@ describe('hashObservationContent', () => {
   it('is stable for identical drafts and differs on content change', () => {
     const draft = { title: 'T', url: 'https://e.com', summary: 'S' };
     expect(hashObservationContent(draft)).toBe(hashObservationContent({ ...draft }));
-    expect(hashObservationContent(draft)).not.toBe(hashObservationContent({ ...draft, title: 'T2' }));
+    expect(hashObservationContent(draft)).not.toBe(
+      hashObservationContent({ ...draft, title: 'T2' })
+    );
     expect(hashObservationContent(draft)).toMatch(/^[0-9a-f]{64}$/);
   });
 });
@@ -137,7 +139,9 @@ describe('adapter registry', () => {
     for (const kind of Object.keys(signalAdapters)) {
       expect(adapterForKind(kind as keyof typeof signalAdapters).kind).toBe(kind);
     }
-    expect(() => adapterForKind('nonexistent' as keyof typeof signalAdapters)).toThrow(/No signal adapter/);
+    expect(() => adapterForKind('nonexistent' as keyof typeof signalAdapters)).toThrow(
+      /No signal adapter/
+    );
   });
 });
 
@@ -150,7 +154,7 @@ describe('GoogleTrendsAdapter', () => {
     expect(drafts.length).toBe(1);
     expect(drafts[0].title).toBe('quantum computing');
     expect(drafts[0].sourceRef).toBe('quantum computing');
-                         });
+  });
 });
 
 describe('GithubTrendingAdapter', () => {
@@ -169,7 +173,9 @@ describe('GithubTrendingAdapter', () => {
     const drafts = await new GithubTrendingAdapter().fetch(
       makeCtx({ fetchImpl: async () => new Response(html, { status: 200 }) })
     );
-    expect(drafts[0].summary).toBe("Tom & Jerry <3 > \"quoted\" 'single' &lt;tag&gt; &amp; tools today");
+    expect(drafts[0].summary).toBe(
+      'Tom & Jerry <3 > "quoted" \'single\' &lt;tag&gt; &amp; tools today'
+    );
   });
 });
 
@@ -184,7 +190,11 @@ describe('HackerNewsAdapter', () => {
           const url = String(input);
           calls.push(url);
           if (url.endsWith('topstories.json')) return new Response('[1,2,3]', { status: 200 });
-          if (url.endsWith('1.json')) return new Response('{"id":1,"title":"Story One","url":"https://e.com/1","score":100,"time":1735689600}', { status: 200 });
+          if (url.endsWith('1.json'))
+            return new Response(
+              '{"id":1,"title":"Story One","url":"https://e.com/1","score":100,"time":1735689600}',
+              { status: 200 }
+            );
           return new Response('{"id":2,"title":"Low Score","score":1}', { status: 200 });
         },
       })
@@ -199,7 +209,19 @@ describe('HackerNewsAdapter', () => {
 describe('RedditAdapter', () => {
   it('extracts posts from public JSON listings', async () => {
     const body = JSON.stringify({
-      data: { children: [{ data: { title: 'Post A', permalink: '/r/tech/comments/abc/post_a/', score: 42, created_utc: 1735689600, id: 'abc' } }] },
+      data: {
+        children: [
+          {
+            data: {
+              title: 'Post A',
+              permalink: '/r/tech/comments/abc/post_a/',
+              score: 42,
+              created_utc: 1735689600,
+              id: 'abc',
+            },
+          },
+        ],
+      },
     });
     const drafts = await new RedditAdapter().fetch(
       makeCtx({
@@ -220,10 +242,22 @@ describe('YoutubeTrendingAdapter', () => {
     expect(noKey).toEqual([]);
 
     const body = JSON.stringify({
-      items: [{ id: 'vid1', snippet: { title: 'Cool Video', publishedAt: '2025-12-01T00:00:00Z', channelTitle: 'Chan' } }],
+      items: [
+        {
+          id: 'vid1',
+          snippet: {
+            title: 'Cool Video',
+            publishedAt: '2025-12-01T00:00:00Z',
+            channelTitle: 'Chan',
+          },
+        },
+      ],
     });
     const drafts = await new YoutubeTrendingAdapter().fetch(
-      makeCtx({ config: { apiKey: 'k' }, fetchImpl: async () => new Response(body, { status: 200 }) })
+      makeCtx({
+        config: { apiKey: 'k' },
+        fetchImpl: async () => new Response(body, { status: 200 }),
+      })
     );
     expect(drafts.length).toBe(1);
     expect(drafts[0].url).toBe('https://www.youtube.com/watch?v=vid1');
@@ -233,11 +267,26 @@ describe('YoutubeTrendingAdapter', () => {
 describe('CoinGeckoAdapter', () => {
   it('maps market rows into observations and filters by change', async () => {
     const body = JSON.stringify([
-      { id: 'bitcoin', name: 'Bitcoin', symbol: 'btc', current_price: 100000, price_change_percentage_24h: 5.5 },
-      { id: 'stable', name: 'Stable', symbol: 'st', current_price: 1, price_change_percentage_24h: 0.01 },
+      {
+        id: 'bitcoin',
+        name: 'Bitcoin',
+        symbol: 'btc',
+        current_price: 100000,
+        price_change_percentage_24h: 5.5,
+      },
+      {
+        id: 'stable',
+        name: 'Stable',
+        symbol: 'st',
+        current_price: 1,
+        price_change_percentage_24h: 0.01,
+      },
     ]);
     const drafts = await new CoinGeckoAdapter().fetch(
-      makeCtx({ config: { minAbsChangePct: 1 }, fetchImpl: async () => new Response(body, { status: 200 }) })
+      makeCtx({
+        config: { minAbsChangePct: 1 },
+        fetchImpl: async () => new Response(body, { status: 200 }),
+      })
     );
     expect(drafts.length).toBe(1);
     expect(drafts[0].title).toContain('Bitcoin');
@@ -249,18 +298,33 @@ describe('WebDiffAdapter', () => {
   it('reports first snapshot and change, skips unchanged pages', async () => {
     const adapter = new WebDiffAdapter();
     const first = await adapter.fetch(
-      makeCtx({ config: { urls: ['https://e.com/page'], previousStates: {} }, fetchImpl: async () => new Response('<html>one</html>', { status: 200 }) })
+      makeCtx({
+        config: { urls: ['https://e.com/page'], previousStates: {} },
+        fetchImpl: async () => new Response('<html>one</html>', { status: 200 }),
+      })
     );
     expect(first.length).toBe(1);
     expect(first[0].raw).toMatchObject({ previousHash: null });
 
     const unchanged = await adapter.fetch(
-      makeCtx({ config: { urls: ['https://e.com/page'], previousStates: { 'https://e.com/page': first[0].sourceRef! } }, fetchImpl: async () => new Response('<html>one</html>', { status: 200 }) })
+      makeCtx({
+        config: {
+          urls: ['https://e.com/page'],
+          previousStates: { 'https://e.com/page': first[0].sourceRef! },
+        },
+        fetchImpl: async () => new Response('<html>one</html>', { status: 200 }),
+      })
     );
     expect(unchanged).toEqual([]);
 
     const changed = await adapter.fetch(
-      makeCtx({ config: { urls: ['https://e.com/page'], previousStates: { 'https://e.com/page': first[0].sourceRef! } }, fetchImpl: async () => new Response('<html>two</html>', { status: 200 }) })
+      makeCtx({
+        config: {
+          urls: ['https://e.com/page'],
+          previousStates: { 'https://e.com/page': first[0].sourceRef! },
+        },
+        fetchImpl: async () => new Response('<html>two</html>', { status: 200 }),
+      })
     );
     expect(changed.length).toBe(1);
     expect(changed[0].title).toContain('Content changed');

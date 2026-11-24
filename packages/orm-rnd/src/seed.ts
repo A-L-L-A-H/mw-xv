@@ -1,9 +1,6 @@
 import type { Knex } from 'knex';
 import type { SeedResult } from '@moonwitness/orm-base';
-import {
-  Experiment,
-  ResearchProgram,
-} from './models.js';
+import { Experiment, ResearchProgram } from './models.js';
 
 export const RND_SEED_VERSION = '1.0.0';
 export const RND_DEPENDENCIES = ['orm-base'] as const;
@@ -57,14 +54,12 @@ export async function seedRnd(ctx: { db: Knex; options?: RndSeedOptions }): Prom
 
   let programId: number;
   if (existingProgram) {
-    await db(ResearchProgram.tableName)
-      .where({ id: existingProgram.id })
-      .update({
-        name: 'Core Technology Development',
-        status: 'active',
-        funding_source: 'Internal R&D Budget',
-        updated_at: new Date(),
-      });
+    await db(ResearchProgram.tableName).where({ id: existingProgram.id }).update({
+      name: 'Core Technology Development',
+      status: 'active',
+      funding_source: 'Internal R&D Budget',
+      updated_at: new Date(),
+    });
     programId = existingProgram.id;
     updated += 1;
   } else {
@@ -88,12 +83,10 @@ export async function seedRnd(ctx: { db: Knex; options?: RndSeedOptions }): Prom
     .first();
 
   if (existingExperiment) {
-    await db(Experiment.tableName)
-      .where({ id: existingExperiment.id })
-      .update({
-        status: 'draft',
-        updated_at: new Date(),
-      });
+    await db(Experiment.tableName).where({ id: existingExperiment.id }).update({
+      status: 'draft',
+      updated_at: new Date(),
+    });
     updated += 1;
   } else {
     await db(Experiment.tableName).insert({

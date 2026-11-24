@@ -54,9 +54,17 @@ test('package exposes explicit stylesheet and tree-shakeable typed icon entries'
   assert.equal(packageJson.exports['./components.css'], './src/styles/components.css');
   assert.deepEqual(packageJson.dependencies, { '@moonwitness/types': 'workspace:*' });
   assert.equal(packageJson.peerDependencies.react, '>=18');
-  assert.notEqual(packageJson.peerDependenciesMeta.react?.optional, true, 'react must be a required peer');
+  assert.notEqual(
+    packageJson.peerDependenciesMeta.react?.optional,
+    true,
+    'react must be a required peer'
+  );
   assert.equal(packageJson.peerDependencies['radix-ui'], '>=1.6.7');
-  assert.notEqual(packageJson.peerDependenciesMeta['radix-ui']?.optional, true, 'radix-ui must be a required peer');
+  assert.notEqual(
+    packageJson.peerDependenciesMeta['radix-ui']?.optional,
+    true,
+    'radix-ui must be a required peer'
+  );
   assert.equal(packageJson.peerDependencies.cmdk, '>=1.1.1');
   assert.equal(packageJson.peerDependenciesMeta.cmdk.optional, true);
   assert.equal(packageJson.peerDependencies.sonner, '>=2');
@@ -175,9 +183,7 @@ test('brush variants pair semantic foregrounds with their brush backgrounds', as
     new URL('../src/styles/components.css', import.meta.url),
     'utf8'
   );
-  const baseBrush = componentCss.match(
-    /\.mw-ui-button\[data-treatment='brush'\]\s*\{([^}]+)\}/u
-  );
+  const baseBrush = componentCss.match(/\.mw-ui-button\[data-treatment='brush'\]\s*\{([^}]+)\}/u);
   assert.ok(baseBrush);
   assert.match(baseBrush[1], /color:\s*var\(--mw-primary-foreground\)/u);
   const rules = [
@@ -239,10 +245,7 @@ test('overlay surfaces bound viewport height and contain internal scrolling', as
     );
     assert.match(
       componentCss,
-      new RegExp(
-        `\\.mw-ui-${surface}-body\\s*\\{[^}]*overscroll-behavior:\\s*contain[^}]*\\}`,
-        'u'
-      )
+      new RegExp(`\\.mw-ui-${surface}-body\\s*\\{[^}]*overscroll-behavior:\\s*contain[^}]*\\}`, 'u')
     );
   }
   assert.match(
@@ -399,7 +402,10 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
   for (const motionToken of ['delay', 'draw', 'effect', 'pulse', 'progress', 'spin']) {
     assert.match(
       css,
-      new RegExp(`prefers-reduced-motion:\\s*reduce[\\s\\S]*--mw-motion-${motionToken}:\\s*0ms`, 'u'),
+      new RegExp(
+        `prefers-reduced-motion:\\s*reduce[\\s\\S]*--mw-motion-${motionToken}:\\s*0ms`,
+        'u'
+      ),
       `Expected --mw-motion-${motionToken} to zero under prefers-reduced-motion: reduce`
     );
   }

@@ -89,9 +89,7 @@ export function CalendarView({ model, views, onOpenRecord }: CalendarViewProps) 
           headingLevel={2}
           title="Could not load calendar records"
           description={
-            query.error instanceof Error
-              ? query.error.message
-              : 'Unable to fetch calendar records.'
+            query.error instanceof Error ? query.error.message : 'Unable to fetch calendar records.'
           }
           retrying={query.isFetching}
           onRetry={() => void query.refetch()}

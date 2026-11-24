@@ -15,7 +15,10 @@ export type MassUnit = 'kg' | 'lb' | 'g';
 export type ConcentrationUnit = 'mmol_L' | 'mg_dL' | 'mEq_L' | 'u_mol_L';
 
 export const TEMPERATURE_UNIT_CONVERSIONS: Readonly<
-  Record<TemperatureUnit, { readonly base: 'celsius'; readonly factor: number; readonly offset: number }>
+  Record<
+    TemperatureUnit,
+    { readonly base: 'celsius'; readonly factor: number; readonly offset: number }
+  >
 > = {
   celsius: { base: 'celsius', factor: 1, offset: 0 },
   fahrenheit: { base: 'celsius', factor: 5 / 9, offset: -32 * (5 / 9) },
@@ -47,9 +50,11 @@ export const CONCENTRATION_UNIT_CONVERSIONS: Readonly<
 };
 
 export function convertUnit<M extends string>(
-  conversions: Readonly<Record<M, { readonly base: string; readonly factor: number; readonly offset?: number }>>,
+  conversions: Readonly<
+    Record<M, { readonly base: string; readonly factor: number; readonly offset?: number }>
+  >,
   from: M,
-  value: number,
+  value: number
 ): number {
   const conversion = conversions[from];
   if (!conversion) throw new Error(`Unknown unit '${from}'`);
@@ -91,11 +96,14 @@ export const Encounter = defineModel('clinical.encounter', {
       default: 'planned',
       label: 'Status',
     }),
-    class: fields.enum(['ambulatory', 'emergency', 'inpatient', 'virtual', 'home_health'] as const, {
-      required: true,
-      default: 'ambulatory',
-      label: 'Class',
-    }),
+    class: fields.enum(
+      ['ambulatory', 'emergency', 'inpatient', 'virtual', 'home_health'] as const,
+      {
+        required: true,
+        default: 'ambulatory',
+        label: 'Class',
+      }
+    ),
     started_at: fields.datetime({ required: true, label: 'Started At' }),
     ended_at: fields.datetime({ label: 'Ended At' }),
     clinician: fields.belongsTo(User, { label: 'Attending Clinician' }),
@@ -206,13 +214,37 @@ export const VitalObservation = defineModel('clinical.vital_observation', {
     encounter: fields.belongsTo(Encounter, { required: true, label: 'Encounter' }),
     vital_type: fields.string({
       required: true,
-      values: ['temperature', 'heart_rate', 'systolic_bp', 'diastolic_bp', 'respiratory_rate', 'oxygen_saturation', 'height', 'weight', 'bmi'],
+      values: [
+        'temperature',
+        'heart_rate',
+        'systolic_bp',
+        'diastolic_bp',
+        'respiratory_rate',
+        'oxygen_saturation',
+        'height',
+        'weight',
+        'bmi',
+      ],
       label: 'Vital Type',
     }),
     value: fields.float({ required: true, label: 'Value' }),
     unit: fields.string({
       required: true,
-      values: ['celsius', 'fahrenheit', 'bpm', 'mmHg', 'breaths_per_min', 'percent', 'cm', 'in', 'm', 'kg', 'lb', 'g', 'kg_m2'],
+      values: [
+        'celsius',
+        'fahrenheit',
+        'bpm',
+        'mmHg',
+        'breaths_per_min',
+        'percent',
+        'cm',
+        'in',
+        'm',
+        'kg',
+        'lb',
+        'g',
+        'kg_m2',
+      ],
       label: 'Unit',
     }),
     observed_at: fields.datetime({ required: true, label: 'Observed At' }),

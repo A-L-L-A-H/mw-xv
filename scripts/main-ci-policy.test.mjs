@@ -53,7 +53,10 @@ test('requires the exact main push run and a successful ci-gate job', () => {
     runId: 10,
     runAttempt: 1,
   });
-  assert.equal(verifyMainPushCiGate(mainSuccess, [gate({ conclusion: 'failure' })], sourceSha).passed, false);
+  assert.equal(
+    verifyMainPushCiGate(mainSuccess, [gate({ conclusion: 'failure' })], sourceSha).passed,
+    false
+  );
   assert.equal(
     verifyMainPushCiGate({ ...mainSuccess, event: 'pull_request' }, [gate()], sourceSha).passed,
     false

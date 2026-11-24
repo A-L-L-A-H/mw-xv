@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import knex, { type Knex } from 'knex';
 import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
-import { manifest, ecommerceSyncSeedManifest, MarketplaceSyncJob, MarketplaceConnection, SyncMetric } from '../src/index.js';
+import {
+  manifest,
+  ecommerceSyncSeedManifest,
+  MarketplaceSyncJob,
+  MarketplaceConnection,
+  SyncMetric,
+} from '../src/index.js';
 
 describe('ecommerce_sync addon', () => {
   let db: Knex;

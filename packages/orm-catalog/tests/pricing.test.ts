@@ -89,12 +89,16 @@ describe('pricing: applyRepricing', () => {
 
   it('throws on negative base price', () => {
     const rule: RepricingRule = { discountPercent: 10 };
-    expect(() => applyRepricing(-1, null, rule)).toThrow('basePriceMinor must be a non-negative finite number');
+    expect(() => applyRepricing(-1, null, rule)).toThrow(
+      'basePriceMinor must be a non-negative finite number'
+    );
   });
 
   it('throws on invalid discount percent', () => {
     const rule: RepricingRule = { discountPercent: 150 };
-    expect(() => applyRepricing(1000, null, rule)).toThrow('discountPercent must be a number between 0 and 100');
+    expect(() => applyRepricing(1000, null, rule)).toThrow(
+      'discountPercent must be a number between 0 and 100'
+    );
   });
 });
 
@@ -135,24 +139,39 @@ describe('pricing: resolveVariantPrice', () => {
 
   it('clamps final price to zero if adjustment pushes below zero', () => {
     const cheapVariants: readonly VariantSelection[] = [
-      { id: 201, product: 2, sku: 'CHEAP-001', attributes: {}, priceAdjustmentMinor: -5000, stockQty: 10 },
+      {
+        id: 201,
+        product: 2,
+        sku: 'CHEAP-001',
+        attributes: {},
+        priceAdjustmentMinor: -5000,
+        stockQty: 10,
+      },
     ];
     const result = resolveVariantPrice(1000, cheapVariants, 'CHEAP-001');
     expect(result.finalPriceMinor).toBe(0);
   });
 
   it('throws when variant SKU not found', () => {
-    expect(() => resolveVariantPrice(10000, sampleVariants, 'NOT-EXIST')).toThrow('Variant SKU not found: NOT-EXIST');
+    expect(() => resolveVariantPrice(10000, sampleVariants, 'NOT-EXIST')).toThrow(
+      'Variant SKU not found: NOT-EXIST'
+    );
   });
 
   it('throws on negative product price', () => {
-    expect(() => resolveVariantPrice(-100, sampleVariants, 'DIG-EBOOK-0001-STD')).toThrow('productPriceMinor must be a non-negative finite number');
+    expect(() => resolveVariantPrice(-100, sampleVariants, 'DIG-EBOOK-0001-STD')).toThrow(
+      'productPriceMinor must be a non-negative finite number'
+    );
   });
 });
 
 describe('pricing: parseRepricingRule', () => {
   it('parses complete rule object', () => {
-    const rule = parseRepricingRule({ discountPercent: 15, markdownMinor: 250, respectCostFloor: true });
+    const rule = parseRepricingRule({
+      discountPercent: 15,
+      markdownMinor: 250,
+      respectCostFloor: true,
+    });
     expect(rule.discountPercent).toBe(15);
     expect(rule.markdownMinor).toBe(250);
     expect(rule.respectCostFloor).toBe(true);
@@ -172,14 +191,20 @@ describe('pricing: parseRepricingRule', () => {
   });
 
   it('throws on invalid discountPercent type', () => {
-    expect(() => parseRepricingRule({ discountPercent: '10%' })).toThrow('discountPercent must be a number');
+    expect(() => parseRepricingRule({ discountPercent: '10%' })).toThrow(
+      'discountPercent must be a number'
+    );
   });
 
   it('throws on invalid markdownMinor type', () => {
-    expect(() => parseRepricingRule({ markdownMinor: '500' })).toThrow('markdownMinor must be a number');
+    expect(() => parseRepricingRule({ markdownMinor: '500' })).toThrow(
+      'markdownMinor must be a number'
+    );
   });
 
   it('throws on invalid respectCostFloor type', () => {
-    expect(() => parseRepricingRule({ respectCostFloor: 'true' })).toThrow('respectCostFloor must be a boolean');
+    expect(() => parseRepricingRule({ respectCostFloor: 'true' })).toThrow(
+      'respectCostFloor must be a boolean'
+    );
   });
 });

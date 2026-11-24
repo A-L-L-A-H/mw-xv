@@ -1,11 +1,29 @@
 import { defineView } from '@moonwitness/orm';
-import { ComplianceFramework, ComplianceControl, ComplianceAssessment, ComplianceFinding, ComplianceRemediation, CompliancePolicy, ComplianceEvidence } from './models/index.js';
+import {
+  ComplianceFramework,
+  ComplianceControl,
+  ComplianceAssessment,
+  ComplianceFinding,
+  ComplianceRemediation,
+  CompliancePolicy,
+  ComplianceEvidence,
+} from './models/index.js';
 
 export const views = [
   defineView(ComplianceFramework, {
     title: 'Compliance Frameworks',
     list: {
-      columns: ['code', 'name', 'version', 'category', 'status', 'company', 'owner', 'effective_date', 'expiry_date'],
+      columns: [
+        'code',
+        'name',
+        'version',
+        'category',
+        'status',
+        'company',
+        'owner',
+        'effective_date',
+        'expiry_date',
+      ],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'active']] },
@@ -54,7 +72,17 @@ export const views = [
   defineView(ComplianceControl, {
     title: 'Compliance Controls',
     list: {
-      columns: ['control_id', 'framework', 'name', 'control_type', 'status', 'company', 'owner', 'frequency', 'automation_level'],
+      columns: [
+        'control_id',
+        'framework',
+        'name',
+        'control_type',
+        'status',
+        'company',
+        'owner',
+        'frequency',
+        'automation_level',
+      ],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'active']] },
@@ -68,7 +96,16 @@ export const views = [
         {
           title: 'Control Details',
           columns: 2,
-          fields: ['control_id', 'framework', 'company', 'name', 'control_type', 'status', 'owner', 'reviewer'],
+          fields: [
+            'control_id',
+            'framework',
+            'company',
+            'name',
+            'control_type',
+            'status',
+            'owner',
+            'reviewer',
+          ],
         },
         {
           title: 'Risk & Objective',
@@ -87,7 +124,14 @@ export const views = [
       ],
     },
     search: {
-      fields: ['control_id', 'name', 'description', 'risk_category', 'control_objective', 'testing_procedure'],
+      fields: [
+        'control_id',
+        'name',
+        'description',
+        'risk_category',
+        'control_objective',
+        'testing_procedure',
+      ],
       filters: [
         { label: 'Active', domain: [['status', '=', 'active']] },
         { label: 'Draft', domain: [['status', '=', 'draft']] },
@@ -110,7 +154,18 @@ export const views = [
   defineView(ComplianceAssessment, {
     title: 'Compliance Assessments',
     list: {
-      columns: ['assessment_no', 'framework', 'company', 'assessment_date', 'status', 'overall_score', 'maturity_level', 'controls_tested', 'controls_passed', 'controls_failed'],
+      columns: [
+        'assessment_no',
+        'framework',
+        'company',
+        'assessment_date',
+        'status',
+        'overall_score',
+        'maturity_level',
+        'controls_tested',
+        'controls_passed',
+        'controls_failed',
+      ],
       order: 'assessment_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'completed']] },
@@ -124,12 +179,30 @@ export const views = [
         {
           title: 'Assessment',
           columns: 2,
-          fields: ['assessment_no', 'framework', 'company', 'assessment_date', 'period_start', 'period_end', 'status', 'assessor', 'reviewer'],
+          fields: [
+            'assessment_no',
+            'framework',
+            'company',
+            'assessment_date',
+            'period_start',
+            'period_end',
+            'status',
+            'assessor',
+            'reviewer',
+          ],
         },
         {
           title: 'Scope & Results',
           columns: 2,
-          fields: ['scope', 'overall_score', 'maturity_level', 'controls_tested', 'controls_passed', 'controls_failed', 'controls_not_applicable'],
+          fields: [
+            'scope',
+            'overall_score',
+            'maturity_level',
+            'controls_tested',
+            'controls_passed',
+            'controls_failed',
+            'controls_not_applicable',
+          ],
         },
         {
           title: 'Findings Summary',
@@ -153,7 +226,10 @@ export const views = [
         { label: 'Initial', domain: [['maturity_level', '=', 'initial']] },
         { label: 'Managed', domain: [['maturity_level', '=', 'managed']] },
         { label: 'Defined', domain: [['maturity_level', '=', 'defined']] },
-        { label: 'Quantitatively Managed', domain: [['maturity_level', '=', 'quantitatively_managed']] },
+        {
+          label: 'Quantitatively Managed',
+          domain: [['maturity_level', '=', 'quantitatively_managed']],
+        },
         { label: 'Optimizing', domain: [['maturity_level', '=', 'optimizing']] },
       ],
       groupBy: [
@@ -169,7 +245,18 @@ export const views = [
   defineView(ComplianceFinding, {
     title: 'Compliance Findings',
     list: {
-      columns: ['finding_no', 'assessment', 'control', 'title', 'severity', 'status', 'company', 'reported_by', 'assigned_to', 'target_resolution_date'],
+      columns: [
+        'finding_no',
+        'assessment',
+        'control',
+        'title',
+        'severity',
+        'status',
+        'company',
+        'reported_by',
+        'assigned_to',
+        'target_resolution_date',
+      ],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'danger', domain: [['severity', '=', 'critical']] },
@@ -185,7 +272,17 @@ export const views = [
         {
           title: 'Finding Details',
           columns: 2,
-          fields: ['finding_no', 'assessment', 'control', 'company', 'title', 'severity', 'status', 'reported_by', 'assigned_to'],
+          fields: [
+            'finding_no',
+            'assessment',
+            'control',
+            'company',
+            'title',
+            'severity',
+            'status',
+            'reported_by',
+            'assigned_to',
+          ],
         },
         {
           title: 'Description & Impact',
@@ -194,7 +291,14 @@ export const views = [
         {
           title: 'Risk & Resolution',
           columns: 2,
-          fields: ['risk_rating', 'target_resolution_date', 'actual_resolution_date', 'risk_acceptance_rationale', 'risk_accepted_by', 'risk_accepted_date'],
+          fields: [
+            'risk_rating',
+            'target_resolution_date',
+            'actual_resolution_date',
+            'risk_acceptance_rationale',
+            'risk_accepted_by',
+            'risk_accepted_date',
+          ],
         },
         {
           title: 'Tags & Notes',
@@ -227,7 +331,18 @@ export const views = [
   defineView(ComplianceRemediation, {
     title: 'Compliance Remediations',
     list: {
-      columns: ['remediation_no', 'finding', 'title', 'status', 'priority', 'company', 'owner', 'verifier', 'target_completion_date', 'verification_date'],
+      columns: [
+        'remediation_no',
+        'finding',
+        'title',
+        'status',
+        'priority',
+        'company',
+        'owner',
+        'verifier',
+        'target_completion_date',
+        'verification_date',
+      ],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'danger', domain: [['priority', '=', 'critical']] },
@@ -245,17 +360,38 @@ export const views = [
         {
           title: 'Remediation Details',
           columns: 2,
-          fields: ['remediation_no', 'finding', 'company', 'title', 'status', 'priority', 'owner', 'verifier'],
+          fields: [
+            'remediation_no',
+            'finding',
+            'company',
+            'title',
+            'status',
+            'priority',
+            'owner',
+            'verifier',
+          ],
         },
         {
           title: 'Plan & Progress',
           columns: 2,
-          fields: ['description', 'action_plan', 'start_date', 'target_completion_date', 'actual_completion_date'],
+          fields: [
+            'description',
+            'action_plan',
+            'start_date',
+            'target_completion_date',
+            'actual_completion_date',
+          ],
         },
         {
           title: 'Verification & Costs',
           columns: 2,
-          fields: ['verification_date', 'verification_notes', 'evidence_references', 'cost_estimate_minor', 'actual_cost_minor'],
+          fields: [
+            'verification_date',
+            'verification_notes',
+            'evidence_references',
+            'cost_estimate_minor',
+            'actual_cost_minor',
+          ],
         },
         {
           title: 'Tags & Notes',
@@ -289,7 +425,18 @@ export const views = [
   defineView(CompliancePolicy, {
     title: 'Compliance Policies',
     list: {
-      columns: ['policy_no', 'title', 'framework', 'status', 'version', 'company', 'owner', 'approver', 'effective_date', 'review_date'],
+      columns: [
+        'policy_no',
+        'title',
+        'framework',
+        'status',
+        'version',
+        'company',
+        'owner',
+        'approver',
+        'effective_date',
+        'review_date',
+      ],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'published']] },
@@ -304,7 +451,16 @@ export const views = [
         {
           title: 'Policy Details',
           columns: 2,
-          fields: ['policy_no', 'framework', 'company', 'title', 'status', 'version', 'owner', 'approver'],
+          fields: [
+            'policy_no',
+            'framework',
+            'company',
+            'title',
+            'status',
+            'version',
+            'owner',
+            'approver',
+          ],
         },
         {
           title: 'Content & Applicability',
@@ -342,7 +498,19 @@ export const views = [
   defineView(ComplianceEvidence, {
     title: 'Compliance Evidence',
     list: {
-      columns: ['evidence_no', 'title', 'evidence_type', 'status', 'company', 'assessment', 'control', 'finding', 'remediation', 'collected_date', 'expiry_date'],
+      columns: [
+        'evidence_no',
+        'title',
+        'evidence_type',
+        'status',
+        'company',
+        'assessment',
+        'control',
+        'finding',
+        'remediation',
+        'collected_date',
+        'expiry_date',
+      ],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'accepted']] },
@@ -357,12 +525,29 @@ export const views = [
         {
           title: 'Evidence Details',
           columns: 2,
-          fields: ['evidence_no', 'assessment', 'control', 'finding', 'remediation', 'company', 'title', 'evidence_type', 'status'],
+          fields: [
+            'evidence_no',
+            'assessment',
+            'control',
+            'finding',
+            'remediation',
+            'company',
+            'title',
+            'evidence_type',
+            'status',
+          ],
         },
         {
           title: 'File Information',
           columns: 2,
-          fields: ['file_path', 'file_hash', 'file_size', 'mime_type', 'collected_date', 'expiry_date'],
+          fields: [
+            'file_path',
+            'file_hash',
+            'file_size',
+            'mime_type',
+            'collected_date',
+            'expiry_date',
+          ],
         },
         {
           title: 'Collection & Review',

@@ -36,9 +36,17 @@ export function normalizePathScope(paths) {
 
 /** @param {string} path @param {string[]} prefixes */
 export function pathInScope(path, prefixes) {
-  if (typeof path !== 'string' || path.includes('\\') || path.startsWith('/') || path.split('/').includes('..'))
+  if (
+    typeof path !== 'string' ||
+    path.includes('\\') ||
+    path.startsWith('/') ||
+    path.split('/').includes('..')
+  )
     return false;
-  const normalized = path.split('/').filter((segment) => segment.length > 0 && segment !== '.').join('/');
+  const normalized = path
+    .split('/')
+    .filter((segment) => segment.length > 0 && segment !== '.')
+    .join('/');
   return prefixes.some((prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`));
 }
 
@@ -53,7 +61,9 @@ export function detectScopeViolation(changedPaths, prefixes) {
 
 /** @param {string[]} left @param {string[]} right */
 export function scopesOverlap(left, right) {
-  return left.some((a) => right.some((b) => a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`)));
+  return left.some((a) =>
+    right.some((b) => a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`))
+  );
 }
 
 /**
@@ -64,7 +74,8 @@ export function scopesOverlap(left, right) {
  * @param {{claimId:string,pathScope:string[]}} requested
  */
 export function resolvePathLock(activeClaims, requested) {
-  if (!Array.isArray(activeClaims) || !requested?.claimId) return { granted: false, reason: 'invalid lock request' };
+  if (!Array.isArray(activeClaims) || !requested?.claimId)
+    return { granted: false, reason: 'invalid lock request' };
   const scope = normalizePathScope(requested.pathScope);
   const blockedBy = activeClaims
     .filter((claim) => claim?.claimId && claim.claimId !== requested.claimId)
@@ -77,13 +88,17 @@ export function resolvePathLock(activeClaims, requested) {
     })
     .map((claim) => claim.claimId)
     .sort();
-  if (blockedBy.length === 0) return { granted: true, claimId: requested.claimId, pathScope: scope };
+  if (blockedBy.length === 0)
+    return { granted: true, claimId: requested.claimId, pathScope: scope };
   const winner = [requested.claimId, ...blockedBy].sort()[0];
   return {
     granted: winner === requested.claimId,
     winner,
     blockedBy,
-    reason: winner === requested.claimId ? 'lowest claim id wins the overlapping scope' : 'overlapping path scope is already claimed',
+    reason:
+      winner === requested.claimId
+        ? 'lowest claim id wins the overlapping scope'
+        : 'overlapping path scope is already claimed',
   };
 }
 
@@ -171,16 +186,31 @@ export function authorizeCredentialMint(presentation, authoritative, policy, now
   if (!Array.isArray(policy.scopes) || policy.scopes.length === 0)
     return { allowed: false, reason: 'credential scopes are missing' };
   const unknown = policy.scopes.filter((scope) => !ALLOWED_CREDENTIAL_SCOPES.includes(scope));
-  if (unknown.length > 0) return { allowed: false, reason: `disallowed credential scope: ${unknown.join(', ')}` };
-  if (!Number.isSafeInteger(policy.ttlSeconds) || policy.ttlSeconds < 1 || policy.ttlSeconds > MAX_CREDENTIAL_TTL_SECONDS)
-    return { allowed: false, reason: `credential TTL must be 1-${MAX_CREDENTIAL_TTL_SECONDS} seconds` };
-  return { allowed: true, repository: policy.repository, scopes: [...policy.scopes], ttlSeconds: policy.ttlSeconds };
+  if (unknown.length > 0)
+    return { allowed: false, reason: `disallowed credential scope: ${unknown.join(', ')}` };
+  if (
+    !Number.isSafeInteger(policy.ttlSeconds) ||
+    policy.ttlSeconds < 1 ||
+    policy.ttlSeconds > MAX_CREDENTIAL_TTL_SECONDS
+  )
+    return {
+      allowed: false,
+      reason: `credential TTL must be 1-${MAX_CREDENTIAL_TTL_SECONDS} seconds`,
+    };
+  return {
+    allowed: true,
+    repository: policy.repository,
+    scopes: [...policy.scopes],
+    ttlSeconds: policy.ttlSeconds,
+  };
 }
 
 /** Parse Git trailers without trusting arbitrary header-like lines. */
 export function extractTrailers(message) {
   const trailers = {};
-  const lines = String(message ?? '').split(/\r?\n/u).reverse();
+  const lines = String(message ?? '')
+    .split(/\r?\n/u)
+    .reverse();
   for (const line of lines) {
     if (line.trim() === '') break;
     const match = /^([A-Za-z][A-Za-z-]{1,31}):\s*(.+?)\s*$/u.exec(line);
@@ -201,7 +231,9 @@ export function verifyCommitTrailers(message, presentation) {
     'trace-id': presentation?.traceId,
     'base-sha': presentation?.baseSha,
   };
-  const mismatches = Object.entries(expected).filter(([key, value]) => trailers[key] !== value).map(([key]) => key);
+  const mismatches = Object.entries(expected)
+    .filter(([key, value]) => trailers[key] !== value)
+    .map(([key]) => key);
   return mismatches.length === 0
     ? { valid: true }
     : { valid: false, reason: `missing or mismatched trailers: ${mismatches.join(', ')}` };

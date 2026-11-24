@@ -47,9 +47,7 @@ export function TagInput({
   const draftRef = useRef<HTMLInputElement>(null);
   const composingRef = useRef(false);
   const instructionsId = `${id}-instructions`;
-  const describedBy = [descriptionId, errorId, limitId, instructionsId]
-    .filter(Boolean)
-    .join(' ');
+  const describedBy = [descriptionId, errorId, limitId, instructionsId].filter(Boolean).join(' ');
 
   useEffect(() => {
     const draftInput = draftRef.current;
@@ -87,7 +85,13 @@ export function TagInput({
       </label>
       <div className="mw-ui-tag-input">
         {value.map((tag, index) => (
-          <input key={`${tag}-${index}`} disabled={disabled} name={name} type="hidden" value={tag} />
+          <input
+            key={`${tag}-${index}`}
+            disabled={disabled}
+            name={name}
+            type="hidden"
+            value={tag}
+          />
         ))}
         <ul className="mw-ui-tag-list">
           {value.map((tag, index) => (

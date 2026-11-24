@@ -44,11 +44,15 @@ async function loadAiEvaluationModule(workspaceRoot = defaultRoot) {
       throw new Error('Could not resolve package manager (bun) to build AI evaluation packages.');
     }
     for (const pkg of ['@moonwitness/ai-runtime', '@moonwitness/ai-evaluation']) {
-      execFileSync(packageManager.command, [...packageManager.prefixArgs, '--filter', pkg, 'build'], {
-        cwd: workspaceRoot,
-        stdio: 'ignore',
-        ...(packageManager.shell ? { shell: true } : {}),
-      });
+      execFileSync(
+        packageManager.command,
+        [...packageManager.prefixArgs, '--filter', pkg, 'build'],
+        {
+          cwd: workspaceRoot,
+          stdio: 'ignore',
+          ...(packageManager.shell ? { shell: true } : {}),
+        }
+      );
     }
   }
 

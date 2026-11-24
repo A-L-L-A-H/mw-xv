@@ -192,7 +192,9 @@ export async function sweepAndConsolidate({
   const rootTodoPath = path.join(rootDir, 'docs/tasks/sources/todo.md');
   const rootTodoText = await fs.readFile(rootTodoPath, 'utf8');
   if (!rootTodoText.includes('docs/tasks/tasks.json')) {
-    throw new Error('Root docs/tasks/sources/todo.md must remain a pointer to the canonical TaskOS registry.');
+    throw new Error(
+      'Root docs/tasks/sources/todo.md must remain a pointer to the canonical TaskOS registry.'
+    );
   }
 
   // Import only unchecked records from the archived MW checklist. They remain blocked until re-triaged.
@@ -332,7 +334,10 @@ export async function sweepAndConsolidate({
 
   // 5. Ingest docs/tasks/sources/todo-desktop.md
   try {
-    const dskText = await fs.readFile(path.join(rootDir, 'docs/tasks/sources/todo-desktop.md'), 'utf8');
+    const dskText = await fs.readFile(
+      path.join(rootDir, 'docs/tasks/sources/todo-desktop.md'),
+      'utf8'
+    );
     for (const line of dskText.split(/\r?\n/)) {
       const match = /^\s*-\s*\[([ xX])\]\s+\*\*(DSK-[0-9.]+)\*\*\s+(.*)$/.exec(line);
       if (match) {
@@ -365,7 +370,11 @@ export async function sweepAndConsolidate({
           scope: { packages: ['@moonwitness/desktop'], files: [] },
           acceptanceCriteria: [{ id: `${code}-ac-1`, text: title, done: isDone }],
           validation: { commands: ['pnpm --filter @moonwitness/desktop test'], expected: 'Pass' },
-          evidence: { paths: [], detailFile: 'docs/tasks/sources/todo-desktop.md', commitSha: null },
+          evidence: {
+            paths: [],
+            detailFile: 'docs/tasks/sources/todo-desktop.md',
+            commitSha: null,
+          },
           references: [],
           blockedReason: null,
           sourceRef: { file: 'docs/tasks/sources/todo-desktop.md', legacyId: code },

@@ -2,13 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "MoonWitness Visual Universe Task Plan",
   "type": "object",
-  "required": [
-    "schema_version",
-    "project_id",
-    "repository",
-    "tasks",
-    "execution_policy"
-  ],
+  "required": ["schema_version", "project_id", "repository", "tasks", "execution_policy"],
   "properties": {
     "schema_version": {
       "type": "string"
@@ -82,20 +76,10 @@
           "type": "string"
         },
         "status": {
-          "enum": [
-            "todo",
-            "in_progress",
-            "blocked",
-            "done",
-            "skipped"
-          ]
+          "enum": ["todo", "in_progress", "blocked", "done", "skipped"]
         },
         "priority": {
-          "enum": [
-            "P0",
-            "P1",
-            "P2"
-          ]
+          "enum": ["P0", "P1", "P2"]
         },
         "role": {
           "type": "string"
@@ -149,21 +133,14 @@
           "type": "array"
         },
         "commit": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "acceptance_criteria_state": {
           "type": "array",
           "description": "Canonical TaskOS acceptance criterion state; this is the source for checkbox state in generated task cards.",
           "items": {
             "type": "object",
-            "required": [
-              "id",
-              "text",
-              "done"
-            ],
+            "required": ["id", "text", "done"],
             "additionalProperties": false,
             "properties": {
               "id": {

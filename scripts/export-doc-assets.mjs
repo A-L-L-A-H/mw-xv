@@ -17,7 +17,6 @@ const generatedManifestName = 'asset-map.json';
 // fingerprint that was only reproducible on the machine that generated it.
 const portableTextPattern = /\.(?:svg|css|json|js|mjs|ts|html|txt|xml|csv|md)$/iu;
 
-
 function isPortableText(filePath) {
   return portableTextPattern.test(filePath);
 }

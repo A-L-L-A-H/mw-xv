@@ -9,14 +9,30 @@ describe('evaluateWorldModelConsistency', () => {
         companyId: 7,
         runId: 'run-100',
         actionSummary: 'Update billing service',
-        expectedChangedFiles: ['packages/api/src/billing.ts', './packages/api/tests/billing.test.ts'],
-        expectedHttpHealth: [{ endpoint: 'https://api.example.test/health', expectedHealthy: true, expectedStatusCode: 200 }],
-        expectedContainerHealth: [{ containerName: 'mw-api', expectedHealthy: true, expectedState: 'running' }],
+        expectedChangedFiles: [
+          'packages/api/src/billing.ts',
+          './packages/api/tests/billing.test.ts',
+        ],
+        expectedHttpHealth: [
+          {
+            endpoint: 'https://api.example.test/health',
+            expectedHealthy: true,
+            expectedStatusCode: 200,
+          },
+        ],
+        expectedContainerHealth: [
+          { containerName: 'mw-api', expectedHealthy: true, expectedState: 'running' },
+        ],
         expectedInvariants: [{ id: 'inv-no-5xx', expectedPass: true, expectedValue: '0' }],
       },
       {
-        observedChangedFiles: ['packages\\api\\src\\billing.ts', 'packages/api/tests/billing.test.ts'],
-        observedHttpHealth: [{ endpoint: 'https://api.example.test/health', healthy: true, statusCode: 200 }],
+        observedChangedFiles: [
+          'packages\\api\\src\\billing.ts',
+          'packages/api/tests/billing.test.ts',
+        ],
+        observedHttpHealth: [
+          { endpoint: 'https://api.example.test/health', healthy: true, statusCode: 200 },
+        ],
         observedContainerHealth: [{ containerName: 'mw-api', healthy: true, state: 'running' }],
         observedInvariants: [{ id: 'inv-no-5xx', passed: true, observedValue: '0' }],
       }
@@ -38,13 +54,23 @@ describe('evaluateWorldModelConsistency', () => {
         runId: 'run-202',
         actionSummary: 'Migrate auth handler',
         expectedChangedFiles: ['packages/api/src/auth.ts'],
-        expectedHttpHealth: [{ endpoint: 'https://api.example.test/health', expectedHealthy: true, expectedStatusCode: 200 }],
-        expectedContainerHealth: [{ containerName: 'mw-api', expectedHealthy: true, expectedState: 'running' }],
+        expectedHttpHealth: [
+          {
+            endpoint: 'https://api.example.test/health',
+            expectedHealthy: true,
+            expectedStatusCode: 200,
+          },
+        ],
+        expectedContainerHealth: [
+          { containerName: 'mw-api', expectedHealthy: true, expectedState: 'running' },
+        ],
         expectedInvariants: [{ id: 'inv-tenant-isolation', expectedPass: true }],
       },
       {
         observedChangedFiles: ['packages/api/src/unexpected-file.ts'],
-        observedHttpHealth: [{ endpoint: 'https://api.example.test/health', healthy: false, statusCode: 503 }],
+        observedHttpHealth: [
+          { endpoint: 'https://api.example.test/health', healthy: false, statusCode: 503 },
+        ],
         observedContainerHealth: [
           { containerName: 'mw-api', healthy: true, state: 'running' },
           { containerName: 'mw-worker', healthy: false, state: 'restarting' },
@@ -93,7 +119,9 @@ describe('evaluateWorldModelConsistency', () => {
 
     const inputPrediction = {
       actionSummary: `Deploy with ${secret}`,
-      expectedHttpHealth: [{ endpoint: `https://api.example.test/health?api_key=${secret}`, expectedHealthy: true }],
+      expectedHttpHealth: [
+        { endpoint: `https://api.example.test/health?api_key=${secret}`, expectedHealthy: true },
+      ],
     };
     const inputObservation = {
       observedHttpHealth: [

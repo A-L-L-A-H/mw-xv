@@ -42,10 +42,12 @@ export async function seed(ctx: SeedContext): Promise<SeedResult> {
     const existing = await db('isp_isp_types').where({ code: ispType.code }).first('id');
 
     if (existing) {
-      await db('isp_isp_types').where({ id: existing.id }).update({
-        ...ispType,
-        company_id: companyId,
-      });
+      await db('isp_isp_types')
+        .where({ id: existing.id })
+        .update({
+          ...ispType,
+          company_id: companyId,
+        });
       updated += 1;
     } else {
       await db('isp_isp_types').insert({

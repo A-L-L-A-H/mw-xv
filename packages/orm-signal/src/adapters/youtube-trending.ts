@@ -21,7 +21,8 @@ export class YoutubeTrendingAdapter implements SignalAdapter {
     }
     const regionCode = typeof ctx.config.regionCode === 'string' ? ctx.config.regionCode : 'US';
     const chart = typeof ctx.config.chart === 'string' ? ctx.config.chart : 'mostPopular';
-    const maxResults = typeof ctx.config.maxResults === 'number' ? Math.min(50, ctx.config.maxResults) : 25;
+    const maxResults =
+      typeof ctx.config.maxResults === 'number' ? Math.min(50, ctx.config.maxResults) : 25;
     const fetchImpl = ctx.fetchImpl ?? fetch;
 
     const url = new URL('https://www.googleapis.com/youtube/v3/videos');

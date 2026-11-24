@@ -13,11 +13,7 @@ import {
   type AddonHttpHostContext,
   type Domain,
 } from '@moonwitness/orm';
-import {
-  createAiMcpServer,
-  handleAiMcpHttp,
-  type AiMcpAuthContext,
-} from '@moonwitness/ai-mcp';
+import { createAiMcpServer, handleAiMcpHttp, type AiMcpAuthContext } from '@moonwitness/ai-mcp';
 import { Model } from 'objection';
 import { Company, CompanyMembership, Partner, User } from '@moonwitness/orm-base';
 import { projectHttpPlugin } from '@moonwitness/orm-project';
@@ -68,17 +64,9 @@ import {
   runWorkspaceAssistant,
   type WorkspaceAssistantAction,
 } from './ai-assistant.js';
-import {
-  createLocalDbBackup,
-  listLocalDbBackups,
-  restoreLocalDbBackup,
-} from './backup.js';
+import { createLocalDbBackup, listLocalDbBackups, restoreLocalDbBackup } from './backup.js';
 import { DesktopRiskGate, NativeHumanApprovalIssuer } from './risk-gate.js';
-import {
-  DesktopLogHub,
-  type DesktopLogLevel,
-  type DesktopLogSource,
-} from './log-hub.js';
+import { DesktopLogHub, type DesktopLogLevel, type DesktopLogSource } from './log-hub.js';
 import {
   DesktopSyncEngine,
   type RecordLocalMutationInput,
@@ -145,11 +133,7 @@ export interface LocalApiServerHandle {
   stop(): Promise<void>;
 }
 
-const INTERNAL_PREFIXES: readonly string[] = Object.freeze([
-  'ai.',
-  'knowledge.',
-  'workflow.',
-]);
+const INTERNAL_PREFIXES: readonly string[] = Object.freeze(['ai.', 'knowledge.', 'workflow.']);
 
 const STATIC_ALLOWED_CORS_ORIGINS: ReadonlySet<string> = new Set([
   'tauri://localhost',
@@ -196,9 +180,7 @@ function isDesktopExperienceMode(value: unknown): value is DesktopExperienceMode
 
 const DEFAULT_ISP_API_URL = 'http://127.0.0.1:8091';
 
-type IspProxyUpstreamResult =
-  | { status: number; body: unknown }
-  | null;
+type IspProxyUpstreamResult = { status: number; body: unknown } | null;
 
 /**
  * Deterministic offline ISP state used when the ISP service is unreachable.
@@ -247,8 +229,7 @@ const ISP_FALLBACK_SUBSCRIBERS: readonly {
 const ISP_FALLBACK_STATS = Object.freeze({
   totalSubscribers: ISP_FALLBACK_SUBSCRIBERS.length,
   activeSubscribers: ISP_FALLBACK_SUBSCRIBERS.filter((s) => s.status === 'active').length,
-  suspendedSubscribers: ISP_FALLBACK_SUBSCRIBERS.filter((s) => s.status === 'suspended')
-    .length,
+  suspendedSubscribers: ISP_FALLBACK_SUBSCRIBERS.filter((s) => s.status === 'suspended').length,
   totalQuotaBytes: ISP_FALLBACK_SUBSCRIBERS.reduce((sum, s) => sum + s.monthlyQuotaBytes, 0),
   usedQuotaBytes: ISP_FALLBACK_SUBSCRIBERS.reduce((sum, s) => sum + s.quotaUsedBytes, 0),
   onlineSessions: 2,
@@ -283,7 +264,7 @@ async function forwardToIspService(
   ispApiUrl: string,
   method: 'GET' | 'POST',
   routePath: string,
-  payload: unknown,
+  payload: unknown
 ): Promise<IspProxyUpstreamResult> {
   const controller = new AbortController();
   const upstreamTimeout = setTimeout(() => controller.abort(), 2000);
@@ -291,9 +272,7 @@ async function forwardToIspService(
     const response = await fetch(`${ispApiUrl}${routePath}`, {
       method,
       headers: { 'content-type': 'application/json' },
-      ...(method === 'POST' && payload !== undefined
-        ? { body: JSON.stringify(payload) }
-        : {}),
+      ...(method === 'POST' && payload !== undefined ? { body: JSON.stringify(payload) } : {}),
       signal: controller.signal,
     });
     const body: unknown = await response.json().catch(() => null);
@@ -432,8 +411,7 @@ export async function ensureLocalWorkspaceBootstrap(
     .first()) as { id: number } | undefined;
   if (!company) {
     company = (await db(Company.tableName).orderBy('id', 'asc').first()) as
-      | { id: number }
-      | undefined;
+      { id: number } | undefined;
   }
   const companyId = company
     ? company.id
@@ -451,8 +429,7 @@ export async function ensureLocalWorkspaceBootstrap(
 
   // 2. Local operator Partner & User
   let partner = (await db(Partner.tableName).where({ name: 'Local Operator' }).first()) as
-    | { id: number }
-    | undefined;
+    { id: number } | undefined;
   if (!partner) {
     const partnerIdInserted = await insertAndGetId(
       db,
@@ -470,8 +447,7 @@ export async function ensureLocalWorkspaceBootstrap(
   }
 
   const user = (await db(User.tableName).where({ login: 'local' }).first()) as
-    | { id: number; partner_id?: number | null }
-    | undefined;
+    { id: number; partner_id?: number | null } | undefined;
   const userId = user
     ? user.id
     : await insertAndGetId(
@@ -580,7 +556,9 @@ async function dispatchDesktopRpcCommand(
     case 'worktree.listLeases':
       return bridge.worktree.listLeases();
     case 'worktree.acquire':
-      return bridge.worktree.acquire(args as unknown as Parameters<typeof bridge.worktree.acquire>[0]);
+      return bridge.worktree.acquire(
+        args as unknown as Parameters<typeof bridge.worktree.acquire>[0]
+      );
     case 'worktree.readFile':
       return bridge.worktree.readFile(String(args.runId ?? ''), String(args.relativePath ?? ''));
     case 'worktree.diff':
@@ -722,7 +700,7 @@ export async function startLocalApiServer(
   const corsPlugin = cors as unknown as (
     instance: FastifyInstance,
     options: Parameters<typeof cors>[1],
-    done: Parameters<typeof cors>[2],
+    done: Parameters<typeof cors>[2]
   ) => void;
 
   await app.register(corsPlugin, {
@@ -1105,47 +1083,53 @@ export async function startLocalApiServer(
     hasCompanyAccess: async (_userId, companyId) => companyId === workspace.companyId,
   };
   await app.register(async (instance) => {
-    await projectHttpPlugin(instance as unknown as Parameters<typeof projectHttpPlugin>[0], addonHostContext);
-    await workflowHttpPlugin(instance as unknown as Parameters<typeof workflowHttpPlugin>[0], addonHostContext);
+    await projectHttpPlugin(
+      instance as unknown as Parameters<typeof projectHttpPlugin>[0],
+      addonHostContext
+    );
+    await workflowHttpPlugin(
+      instance as unknown as Parameters<typeof workflowHttpPlugin>[0],
+      addonHostContext
+    );
   });
 
   // Generic CRUD /api/:model and /api/:model/:id
-  app.get<{ Params: { model: string }; Querystring: { domain?: string; limit?: string; offset?: string } }>(
-    '/api/:model',
-    async (req, reply) => {
-      if (!req.auth) {
-        return reply.code(401).send({ success: false, error: 'Authentication required' });
-      }
-      const modelName = req.params.model;
-      if (isInternalModel(modelName)) {
-        return reply.code(403).send({
-          success: false,
-          error: `Model '${modelName}' is restricted to domain routes`,
-        });
-      }
-      if (!Registry.has(modelName)) {
-        return reply.code(404).send({ success: false, error: `Model '${modelName}' not found` });
-      }
-      const ModelClass = req.env.get(modelName);
-      let domain: Domain = [];
-      if (req.query.domain) {
-        try {
-          domain = validateDomain(
-            JSON.parse(req.query.domain) as unknown,
-            new Set(Object.keys(ModelClass.jsonSchema.properties ?? {}))
-          );
-        } catch {
-          return reply.code(400).send({ success: false, error: 'Invalid domain filter' });
-        }
-      }
-      const limit = Math.min(500, Math.max(1, Number.parseInt(req.query.limit ?? '100', 10) || 100));
-      const offset = Math.max(0, Number.parseInt(req.query.offset ?? '0', 10) || 0);
-      const qb = ModelClass.query();
-      applyDomain(qb, domain);
-      const rows = await qb.limit(limit).offset(offset);
-      return { success: true, data: rows, count: rows.length };
+  app.get<{
+    Params: { model: string };
+    Querystring: { domain?: string; limit?: string; offset?: string };
+  }>('/api/:model', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
     }
-  );
+    const modelName = req.params.model;
+    if (isInternalModel(modelName)) {
+      return reply.code(403).send({
+        success: false,
+        error: `Model '${modelName}' is restricted to domain routes`,
+      });
+    }
+    if (!Registry.has(modelName)) {
+      return reply.code(404).send({ success: false, error: `Model '${modelName}' not found` });
+    }
+    const ModelClass = req.env.get(modelName);
+    let domain: Domain = [];
+    if (req.query.domain) {
+      try {
+        domain = validateDomain(
+          JSON.parse(req.query.domain) as unknown,
+          new Set(Object.keys(ModelClass.jsonSchema.properties ?? {}))
+        );
+      } catch {
+        return reply.code(400).send({ success: false, error: 'Invalid domain filter' });
+      }
+    }
+    const limit = Math.min(500, Math.max(1, Number.parseInt(req.query.limit ?? '100', 10) || 100));
+    const offset = Math.max(0, Number.parseInt(req.query.offset ?? '0', 10) || 0);
+    const qb = ModelClass.query();
+    applyDomain(qb, domain);
+    const rows = await qb.limit(limit).offset(offset);
+    return { success: true, data: rows, count: rows.length };
+  });
 
   app.get<{ Params: { model: string; id: string } }>('/api/:model/:id', async (req, reply) => {
     if (!req.auth) {
@@ -1474,7 +1458,9 @@ export async function startLocalApiServer(
     backupsDir: string | null;
   } => {
     const sqlitePath =
-      options.sidecar?.getState().sqlitePath ?? options.bridge.sidecar.getState().sqlitePath ?? null;
+      options.sidecar?.getState().sqlitePath ??
+      options.bridge.sidecar.getState().sqlitePath ??
+      null;
     if (!sqlitePath || sqlitePath === ':memory:') {
       return { sqlitePath: ':memory:', backupsDir: null };
     }
@@ -1642,7 +1628,10 @@ export async function startLocalApiServer(
     return { client: vpsClient, nodeId, meshIp };
   };
 
-  const handleGetVpsStatus = async (req: FastifyRequest, reply: { code: (n: number) => { send: (body: unknown) => unknown } }) => {
+  const handleGetVpsStatus = async (
+    req: FastifyRequest,
+    reply: { code: (n: number) => { send: (body: unknown) => unknown } }
+  ) => {
     if (!req.auth) {
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     }
@@ -1771,12 +1760,7 @@ export async function startLocalApiServer(
     if (!req.auth) {
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     }
-    const upstream = await forwardToIspService(
-      ispApiUrl,
-      'GET',
-      '/api/isp/subscribers',
-      undefined,
-    );
+    const upstream = await forwardToIspService(ispApiUrl, 'GET', '/api/isp/subscribers', undefined);
     if (upstream) {
       return reply.code(upstream.status).send(upstream.body);
     }
@@ -1791,12 +1775,7 @@ export async function startLocalApiServer(
       return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
     }
     const body = isRecord(req.body) ? req.body : {};
-    const upstream = await forwardToIspService(
-      ispApiUrl,
-      'POST',
-      '/api/isp/subscribers',
-      body,
-    );
+    const upstream = await forwardToIspService(ispApiUrl, 'POST', '/api/isp/subscribers', body);
     if (upstream) {
       return reply.code(upstream.status).send(upstream.body);
     }
@@ -1848,12 +1827,7 @@ export async function startLocalApiServer(
       return reply.code(403).send(WORKSPACE_MODE_RESTRICTED_BODY);
     }
     const body = isRecord(req.body) ? req.body : {};
-    const upstream = await forwardToIspService(
-      ispApiUrl,
-      'POST',
-      '/api/isp/disconnect',
-      body,
-    );
+    const upstream = await forwardToIspService(ispApiUrl, 'POST', '/api/isp/disconnect', body);
     if (upstream) {
       return reply.code(upstream.status).send(upstream.body);
     }
@@ -1870,7 +1844,7 @@ export async function startLocalApiServer(
     const matched = ISP_FALLBACK_SESSIONS.find(
       (session) =>
         (username.length > 0 && session.username === username) ||
-        (sessionId.length > 0 && session.sessionId === sessionId),
+        (sessionId.length > 0 && session.sessionId === sessionId)
     );
     if (!matched) {
       return reply.code(404).send({
@@ -2004,12 +1978,9 @@ export async function startLocalApiServer(
 
   // Desktop MoonWitness Mesh PaaS Studio routes (DX mode only)
   const resolveMeshPaasConfig = (): { endpoint: string; token: string } => {
-    const endpoint =
-      process.env.MW_VPS_CONTROL_PLANE_URL?.trim() || 'http://10.144.0.1:3003';
+    const endpoint = process.env.MW_VPS_CONTROL_PLANE_URL?.trim() || 'http://10.144.0.1:3003';
     const token =
-      process.env.MW_VPS_ADMIN_TOKEN?.trim() ||
-      process.env.CONTROL_PLANE_TOKEN?.trim() ||
-      '';
+      process.env.MW_VPS_ADMIN_TOKEN?.trim() || process.env.CONTROL_PLANE_TOKEN?.trim() || '';
     return { endpoint, token };
   };
 
@@ -2026,7 +1997,9 @@ export async function startLocalApiServer(
       return { success: true, data: metrics };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Mesh PaaS node unreachable';
-      return reply.code(502).send({ success: false, code: 'MESH_PAAS_UNREACHABLE', error: message });
+      return reply
+        .code(502)
+        .send({ success: false, code: 'MESH_PAAS_UNREACHABLE', error: message });
     }
   });
 
@@ -2043,7 +2016,9 @@ export async function startLocalApiServer(
       return { success: true, data: apps };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Mesh PaaS node unreachable';
-      return reply.code(502).send({ success: false, code: 'MESH_PAAS_UNREACHABLE', error: message });
+      return reply
+        .code(502)
+        .send({ success: false, code: 'MESH_PAAS_UNREACHABLE', error: message });
     }
   });
 
@@ -2065,11 +2040,14 @@ export async function startLocalApiServer(
       });
     }
     const domain = typeof body.domain === 'string' ? body.domain.trim() : undefined;
-    const port = typeof body.port === 'number' && Number.isInteger(body.port) ? body.port : undefined;
+    const port =
+      typeof body.port === 'number' && Number.isInteger(body.port) ? body.port : undefined;
     const tenant = typeof body.tenant === 'string' ? body.tenant.trim() : undefined;
     const env = isRecord(body.env)
       ? Object.fromEntries(
-          Object.entries(body.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+          Object.entries(body.env).filter(
+            (entry): entry is [string, string] => typeof entry[1] === 'string'
+          )
         )
       : undefined;
 
@@ -2088,7 +2066,9 @@ export async function startLocalApiServer(
       return { success: true, data: result };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Mesh PaaS deploy failed';
-      return reply.code(502).send({ success: false, code: 'MESH_PAAS_DEPLOY_FAILED', error: message });
+      return reply
+        .code(502)
+        .send({ success: false, code: 'MESH_PAAS_DEPLOY_FAILED', error: message });
     }
   });
 
@@ -2123,7 +2103,9 @@ export async function startLocalApiServer(
         return { success: true, data: result };
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Mesh PaaS action failed';
-        return reply.code(502).send({ success: false, code: 'MESH_PAAS_ACTION_FAILED', error: message });
+        return reply
+          .code(502)
+          .send({ success: false, code: 'MESH_PAAS_ACTION_FAILED', error: message });
       }
     }
   );
@@ -2139,8 +2121,7 @@ export async function startLocalApiServer(
     const body = isRecord(req.body) ? req.body : {};
     const targetEndpoint =
       typeof body.targetEndpoint === 'string' ? body.targetEndpoint.trim() : '';
-    const targetAgentId =
-      typeof body.targetAgentId === 'string' ? body.targetAgentId.trim() : '';
+    const targetAgentId = typeof body.targetAgentId === 'string' ? body.targetAgentId.trim() : '';
     const sourceAgentId =
       typeof body.sourceAgentId === 'string' && body.sourceAgentId.trim().length > 0
         ? body.sourceAgentId.trim()
@@ -2520,8 +2501,7 @@ export async function startLocalApiServer(
       return reply.code(401).send({ success: false, error: 'Authentication required' });
     }
     const query = isRecord(req.query) ? req.query : {};
-    const level =
-      query.level === 'all' || isDesktopLogLevel(query.level) ? query.level : undefined;
+    const level = query.level === 'all' || isDesktopLogLevel(query.level) ? query.level : undefined;
     const source =
       query.source === 'all' || isDesktopLogSource(query.source) ? query.source : undefined;
     const search = typeof query.search === 'string' ? query.search : undefined;
@@ -2622,8 +2602,10 @@ export async function startLocalApiServer(
     if (Array.isArray(body.localMutations)) {
       for (const rawMutation of body.localMutations) {
         if (!isRecord(rawMutation)) continue;
-        const entityType = typeof rawMutation.entityType === 'string' ? rawMutation.entityType.trim() : '';
-        const entityId = typeof rawMutation.entityId === 'string' ? rawMutation.entityId.trim() : '';
+        const entityType =
+          typeof rawMutation.entityType === 'string' ? rawMutation.entityType.trim() : '';
+        const entityId =
+          typeof rawMutation.entityId === 'string' ? rawMutation.entityId.trim() : '';
         const operation = rawMutation.operation === 'delete' ? 'delete' : 'upsert';
         if (!entityType || !entityId) continue;
         const mutationInput: RecordLocalMutationInput = {
@@ -2656,7 +2638,8 @@ export async function startLocalApiServer(
       });
     }
     const description = typeof body.description === 'string' ? body.description.trim() : '';
-    const source = typeof body.source === 'string' && body.source.trim() ? body.source.trim() : 'quick_capture';
+    const source =
+      typeof body.source === 'string' && body.source.trim() ? body.source.trim() : 'quick_capture';
     const stageId = workspace.stageIds.backlog ?? Object.values(workspace.stageIds)[0];
     const nowIso = new Date().toISOString();
 
@@ -2727,7 +2710,7 @@ export async function startLocalApiServer(
         : 20;
     const kinds = Array.isArray(body.kinds)
       ? body.kinds.filter(
-          (k): k is LocalRagDocumentKind => k === 'task' || k === 'doc' || k === 'log',
+          (k): k is LocalRagDocumentKind => k === 'task' || k === 'doc' || k === 'log'
         )
       : undefined;
 
@@ -2853,11 +2836,7 @@ export async function startLocalApiServer(
     userId: workspace.userId,
     actorRole: 'superadmin',
     role: 'superadmin',
-    grants: [
-      'agent.registry_read@v1',
-      'project.read@v1',
-      'project.write@v1',
-    ],
+    grants: ['agent.registry_read@v1', 'project.read@v1', 'project.write@v1'],
   };
 
   app.post('/mcp', async (req, reply) => {

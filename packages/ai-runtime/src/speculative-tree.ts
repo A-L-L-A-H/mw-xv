@@ -130,7 +130,6 @@ function buildRedactor(secrets?: readonly string[]): RedactionContext {
   return redactor;
 }
 
-
 function toCostUsdMicros(costUsd: number): number {
   if (!Number.isFinite(costUsd) || costUsd < 0) {
     return Number.MAX_SAFE_INTEGER;

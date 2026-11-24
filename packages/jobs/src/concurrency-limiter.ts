@@ -28,7 +28,10 @@ export function getDefaultQuota(companyId: number): ConcurrencyQuota {
   };
 }
 
-export async function loadCompanyQuota(companyId: number, trx?: Transaction): Promise<ConcurrencyQuota> {
+export async function loadCompanyQuota(
+  companyId: number,
+  trx?: Transaction
+): Promise<ConcurrencyQuota> {
   const cached = quotaCache.get(companyId);
   if (cached) return cached;
 
@@ -57,20 +60,35 @@ export function clearQuotaCache(companyId?: number): void {
   }
 }
 
-export function refillTokenBucket(state: TokenBucketState, refillRate: number, capacity: number, now: number): TokenBucketState {
+export function refillTokenBucket(
+  state: TokenBucketState,
+  refillRate: number,
+  capacity: number,
+  now: number
+): TokenBucketState {
   const elapsedSeconds = (now - state.lastRefill) / 1000;
   const newTokens = Math.min(capacity, state.tokens + elapsedSeconds * refillRate);
   return { tokens: newTokens, lastRefill: now };
 }
 
-export function consumeTokens(companyId: number, tokens: number, quota: ConcurrencyQuota, now: number): boolean {
+export function consumeTokens(
+  companyId: number,
+  tokens: number,
+  quota: ConcurrencyQuota,
+  now: number
+): boolean {
   let state = tokenBucketCache.get(companyId);
   if (!state) {
     state = { tokens: quota.tokenBucketCapacity, lastRefill: now };
     tokenBucketCache.set(companyId, state);
   }
 
-  const before = refillTokenBucket(state, quota.tokenBucketRefillRate, quota.tokenBucketCapacity, now);
+  const before = refillTokenBucket(
+    state,
+    quota.tokenBucketRefillRate,
+    quota.tokenBucketCapacity,
+    now
+  );
 
   if (before.tokens < tokens) {
     state.tokens = before.tokens;
@@ -83,7 +101,10 @@ export function consumeTokens(companyId: number, tokens: number, quota: Concurre
 }
 
 export async function getActiveJobCount(companyId: number, trx?: Transaction): Promise<number> {
-  const result = await Job.query(trx).where({ company_id: companyId, status: 'running' }).count('id as cnt').first() as { cnt: number } | undefined;
+  const result = (await Job.query(trx)
+    .where({ company_id: companyId, status: 'running' })
+    .count('id as cnt')
+    .first()) as { cnt: number } | undefined;
   return Number(result?.cnt ?? 0);
 }
 
@@ -106,7 +127,11 @@ export async function canAcquireJobSlot(
     if (state) {
       const tokensNeeded = requiredTokens - state.tokens;
       const secondsToRefill = tokensNeeded / quota.tokenBucketRefillRate;
-      return { allowed: false, reason: 'RATE_LIMIT_EXCEEDED', retryAfterMs: Math.ceil(secondsToRefill * 1000) };
+      return {
+        allowed: false,
+        reason: 'RATE_LIMIT_EXCEEDED',
+        retryAfterMs: Math.ceil(secondsToRefill * 1000),
+      };
     }
     return { allowed: false, reason: 'RATE_LIMIT_EXCEEDED', retryAfterMs: 1000 };
   }
@@ -114,8 +139,7 @@ export async function canAcquireJobSlot(
   return { allowed: true };
 }
 
-export async function releaseJobSlot(companyId: number): Promise<void> {
-}
+export async function releaseJobSlot(companyId: number): Promise<void> {}
 
 export interface FairShareContext {
   companyId: number;
@@ -190,7 +214,11 @@ export class FairShareLimiter {
     if (bucket.tokens < 1) {
       const tokensNeeded = 1 - bucket.tokens;
       const secondsToRefill = tokensNeeded / quota.tokenBucketRefillRate;
-      return { allowed: false, reason: 'RATE_LIMIT_EXCEEDED', retryAfterMs: Math.ceil(secondsToRefill * 1000) };
+      return {
+        allowed: false,
+        reason: 'RATE_LIMIT_EXCEEDED',
+        retryAfterMs: Math.ceil(secondsToRefill * 1000),
+      };
     }
 
     bucket.tokens -= 1;

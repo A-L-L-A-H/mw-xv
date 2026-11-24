@@ -23,15 +23,33 @@ const event = (overrides = {}) => ({
 });
 
 function chain(stages = AUDIT_STAGES) {
-  return stages.reduce((checkpoint, stage) => appendEvent(checkpoint, event({ stage })), createGenesisCheckpoint());
+  return stages.reduce(
+    (checkpoint, stage) => appendEvent(checkpoint, event({ stage })),
+    createGenesisCheckpoint()
+  );
 }
 
 test('hash chain is deterministic and detects edits, duplicates and reordering', () => {
-  assert.deepEqual(createGenesisCheckpoint(), { schemaVersion: 1, headHash: '0'.repeat(64), sequence: 0, events: [] });
+  assert.deepEqual(createGenesisCheckpoint(), {
+    schemaVersion: 1,
+    headHash: '0'.repeat(64),
+    sequence: 0,
+    events: [],
+  });
   const first = appendEvent(createGenesisCheckpoint(), event({ stage: 'task' }));
   const again = appendEvent(createGenesisCheckpoint(), event({ stage: 'task' }));
   assert.equal(first.headHash, again.headHash);
-  assert.equal(hashEvent(event()), hashEvent({ traceId: 'trace-abc', stage: 'task', taskId: 'MW-123', agentId: 'codex-1', agentRunId: 'run-9', ref: 'MW-123' }));
+  assert.equal(
+    hashEvent(event()),
+    hashEvent({
+      traceId: 'trace-abc',
+      stage: 'task',
+      taskId: 'MW-123',
+      agentId: 'codex-1',
+      agentRunId: 'run-9',
+      ref: 'MW-123',
+    })
+  );
   assert.equal(verifyChain(first).valid, true);
 
   const tampered = structuredClone(first);
@@ -48,12 +66,22 @@ test('hash chain is deterministic and detects edits, duplicates and reordering',
 });
 
 test('secret-bearing fields are redacted before hashing', () => {
-  const clean = redactEvent({ taskId: 'MW-1', apiKey: 'super-secret', nested: { token: 'abc', keep: 'yes' }, note: 'Bearer ghp_abcdefghijklmnopqrstuvwxyz' });
+  const clean = redactEvent({
+    taskId: 'MW-1',
+    apiKey: 'super-secret',
+    nested: { token: 'abc', keep: 'yes' },
+    note: 'Bearer ghp_abcdefghijklmnopqrstuvwxyz',
+  });
   assert.equal('apiKey' in clean, false);
   assert.equal('token' in clean.nested, false);
   assert.equal(clean.nested.keep, 'yes');
   assert.equal(clean.note, '[redacted]');
-  assert.equal(JSON.stringify(appendEvent(createGenesisCheckpoint(), event({ password: 'x' }))).includes('password'), false);
+  assert.equal(
+    JSON.stringify(appendEvent(createGenesisCheckpoint(), event({ password: 'x' }))).includes(
+      'password'
+    ),
+    false
+  );
   assert.throws(() => redactEvent(null), /must be an object/u);
 });
 
@@ -64,7 +92,10 @@ test('merge requires a shared prefix and fails closed on a fork', () => {
   assert.equal(verifyChain(mergeCheckpoints(left, base)).valid, true);
   assert.equal(mergeCheckpoints(left, base).sequence, 3);
   assert.throws(() => mergeCheckpoints(left, right), /Audit fork/u);
-  assert.throws(() => mergeCheckpoints(left, { schemaVersion: 2, events: [] }), /invalid checkpoint/u);
+  assert.throws(
+    () => mergeCheckpoints(left, { schemaVersion: 2, events: [] }),
+    /invalid checkpoint/u
+  );
 });
 
 test('correlation projection reports missing stages without inventing them', () => {

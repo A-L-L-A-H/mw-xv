@@ -73,9 +73,17 @@ export function verifyChangedPaths(changedFiles, { breakGlass = false } = {}) {
     throw new Error('Policy gate requires a non-empty exact diff scope.');
   const violations = [];
   for (const path of changedFiles) {
-    if (typeof path !== 'string' || path.startsWith('/') || path.includes('\\') || path.split('/').includes('..'))
+    if (
+      typeof path !== 'string' ||
+      path.startsWith('/') ||
+      path.includes('\\') ||
+      path.split('/').includes('..')
+    )
       violations.push(`unsafe path: ${String(path)}`);
-    if (!breakGlass && GOVERNANCE_PATHS.some((prefix) => path === prefix.slice(0, -1) || path.startsWith(prefix)))
+    if (
+      !breakGlass &&
+      GOVERNANCE_PATHS.some((prefix) => path === prefix.slice(0, -1) || path.startsWith(prefix))
+    )
       violations.push(`governance plane change requires break-glass: ${path}`);
   }
   if (violations.length > 0) throw new Error(violations.join('\n'));

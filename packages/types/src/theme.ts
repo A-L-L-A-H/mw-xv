@@ -3,10 +3,7 @@ export type ColorMode = 'light' | 'dark';
 export type SkinDensity = 'comfortable' | 'compact';
 
 export type BuiltinSkinId =
-  | 'moonwitness-ink'
-  | 'moonwitness-compact'
-  | 'moonwitness-high-contrast'
-  | 'moonwitness-riot';
+  'moonwitness-ink' | 'moonwitness-compact' | 'moonwitness-high-contrast' | 'moonwitness-riot';
 
 export type SkinId = BuiltinSkinId | (string & {});
 

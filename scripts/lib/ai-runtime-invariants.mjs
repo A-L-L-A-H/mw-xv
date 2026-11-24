@@ -20,8 +20,7 @@ export const SELF_MERGE_TRUE_REGEX = /\bautomatedSelfMerge\s*:\s*true\b/u;
 export const SELF_PROMOTE_TRUE_REGEX = /\bautomatedPromotionAllowed\s*:\s*true\b/u;
 export const CREATE_REDACTOR_REGEX = /\bcreateRedactor\b/u;
 export const SHA256_REGEX = /createHash\s*\(\s*['"]sha256['"]\s*\)/u;
-export const SHA256_CANONICAL_IMPORT_REGEX =
-  /\bsha256(?:Hex|Canonical)\s*(?:,|\})/u;
+export const SHA256_CANONICAL_IMPORT_REGEX = /\bsha256(?:Hex|Canonical)\s*(?:,|\})/u;
 
 export function createForbiddenImportPatterns(
   packageLabel,
@@ -139,7 +138,7 @@ export function checkCommonMilestoneRules(
       code: 'MISSING_SHA256_DIGEST',
       message:
         `${milestone} module must compute SHA-256 digests via \`createHash('sha256')\` ` +
-        "or import the centralized `sha256Hex`/`sha256Canonical` from canonical-json.",
+        'or import the centralized `sha256Hex`/`sha256Canonical` from canonical-json.',
     });
   }
 

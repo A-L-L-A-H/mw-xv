@@ -18,7 +18,10 @@ export class HackerNewsAdapter implements SignalAdapter {
   readonly kind = 'hackernews';
 
   async fetch(ctx: SignalAdapterContext): Promise<SignalObservationDraft[]> {
-    const firebaseApi = typeof ctx.config.firebaseApi === 'string' && ctx.config.firebaseApi.length > 0 ? ctx.config.firebaseApi : DEFAULT_FIREBASE_API;
+    const firebaseApi =
+      typeof ctx.config.firebaseApi === 'string' && ctx.config.firebaseApi.length > 0
+        ? ctx.config.firebaseApi
+        : DEFAULT_FIREBASE_API;
     const topItems = typeof ctx.config.topItems === 'number' ? ctx.config.topItems : 30;
     const minScore = typeof ctx.config.minScore === 'number' ? ctx.config.minScore : 0;
     const fetchImpl = ctx.fetchImpl ?? fetch;
@@ -56,5 +59,8 @@ export class HackerNewsAdapter implements SignalAdapter {
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }

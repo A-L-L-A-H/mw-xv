@@ -119,7 +119,10 @@ export function validateCloudOrEndpointUrl(
   if (options.allowLoopbackHttp && isLoopbackHostname(url.hostname)) {
     return validateLoopbackEndpointUrl(url, options.providerId, correlationId);
   }
-  if (options.approvedPrivateOrigins?.length && matchesApprovedPrivateOrigin(url, options.approvedPrivateOrigins)) {
+  if (
+    options.approvedPrivateOrigins?.length &&
+    matchesApprovedPrivateOrigin(url, options.approvedPrivateOrigins)
+  ) {
     return url;
   }
 

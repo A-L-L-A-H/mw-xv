@@ -26,12 +26,6 @@ export {
 } from './models.js';
 export { views } from './views.js';
 export { manifest } from './manifest.js';
-export {
-  clinicalSeedManifest,
-} from './seed-manifest.js';
-export {
-  seed,
-  CLINICAL_SEED_VERSION,
-  type ClinicalSeedOptions,
-} from './seed.js';
+export { clinicalSeedManifest } from './seed-manifest.js';
+export { seed, CLINICAL_SEED_VERSION, type ClinicalSeedOptions } from './seed.js';
 export type { AddonSeedManifest } from '@moonwitness/orm-base';

@@ -49,7 +49,11 @@ describe('MoonWitnessMcpServer protocol', () => {
   it('lists exactly the six read-only tools with R0 annotations', async () => {
     const server = new MoonWitnessMcpServer();
     const response = await server.handleRequest({ jsonrpc: '2.0', id: 3, method: 'tools/list' });
-    const tools = (response.result as { tools: Array<{ name: string; annotations: { readOnly: boolean; riskTier: string } }> }).tools;
+    const tools = (
+      response.result as {
+        tools: Array<{ name: string; annotations: { readOnly: boolean; riskTier: string } }>;
+      }
+    ).tools;
     expect(tools.map((tool) => tool.name)).toEqual([
       'mw_list_models',
       'mw_describe_model',
@@ -66,7 +70,11 @@ describe('MoonWitnessMcpServer protocol', () => {
 
   it('returns -32601 for unknown methods and tools', async () => {
     const server = new MoonWitnessMcpServer();
-    const badMethod = await server.handleRequest({ jsonrpc: '2.0', id: 4, method: 'resources/list' });
+    const badMethod = await server.handleRequest({
+      jsonrpc: '2.0',
+      id: 4,
+      method: 'resources/list',
+    });
     expect(badMethod.error?.code).toBe(-32601);
     const badTool = await server.handleRequest({
       jsonrpc: '2.0',
@@ -135,7 +143,9 @@ describe('catalog enumeration', () => {
   it('statically enumerates manifests without ORM registration', () => {
     registerMoonWitnessManifest(fakeManifest('fake-addon', ['fake.alpha', 'fake.beta']));
     const models = listMoonWitnessModels();
-    const names = models.filter((entry) => entry.addonName === 'fake-addon').map((entry) => entry.modelName);
+    const names = models
+      .filter((entry) => entry.addonName === 'fake-addon')
+      .map((entry) => entry.modelName);
     expect(names).toEqual(['fake.alpha', 'fake.beta']);
   });
 });
@@ -149,7 +159,14 @@ describe('query redaction', () => {
   });
 
   it('redacts secret-named keys from rows', () => {
-    const row = { id: 1, name: 'x', password: 'hunter2', secret_key: 's', token: 't', label: 'keep' };
+    const row = {
+      id: 1,
+      name: 'x',
+      password: 'hunter2',
+      secret_key: 's',
+      token: 't',
+      label: 'keep',
+    };
     expect(redactRow('fake.alpha', row)).toEqual({
       id: 1,
       name: 'x',

@@ -15,9 +15,15 @@ export class CustomAdapter implements SignalAdapter {
         title: record.title,
         summary: typeof record.summary === 'string' ? record.summary : undefined,
         url: typeof record.url === 'string' ? record.url : undefined,
-        publishedAt: typeof record.publishedAt === 'string' ? parseDateOrNow(record.publishedAt, ctx.now) : ctx.now,
-        tags: Array.isArray(record.tags) ? record.tags.filter((t): t is string => typeof t === 'string') : undefined,
-        sourceRef: typeof record.sourceRef === 'string' ? record.sourceRef : contentFingerprint(record),
+        publishedAt:
+          typeof record.publishedAt === 'string'
+            ? parseDateOrNow(record.publishedAt, ctx.now)
+            : ctx.now,
+        tags: Array.isArray(record.tags)
+          ? record.tags.filter((t): t is string => typeof t === 'string')
+          : undefined,
+        sourceRef:
+          typeof record.sourceRef === 'string' ? record.sourceRef : contentFingerprint(record),
         raw: record,
       });
     }

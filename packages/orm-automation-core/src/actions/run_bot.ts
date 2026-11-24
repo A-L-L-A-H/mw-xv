@@ -22,7 +22,8 @@ export async function run(
     return { ok: false, error: 'run_bot requires a sessionKind string' };
   }
 
-  const inserted = await ctx.db('bot_sessions')
+  const inserted = await ctx
+    .db('bot_sessions')
     .insert({
       company_id: ctx.companyId,
       bot_id: botId,

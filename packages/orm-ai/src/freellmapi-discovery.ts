@@ -45,7 +45,11 @@ function assertExactOrigin(origin: string, allowedOrigins: readonly string[]): U
     throw new DiscoveryError('INVALID_ORIGIN', 'Gateway origin must be an exact origin', 400);
   }
   if (!allowedOrigins.includes(`${url.protocol}//${url.host}`)) {
-    throw new DiscoveryError('ORIGIN_NOT_APPROVED', 'Gateway origin is not on the approved list', 403);
+    throw new DiscoveryError(
+      'ORIGIN_NOT_APPROVED',
+      'Gateway origin is not on the approved list',
+      403
+    );
   }
   return url;
 }
@@ -60,7 +64,8 @@ function resolveSecret(env: NodeJS.ProcessEnv, secretRef: string): string {
 }
 
 async function readBounded(response: Response): Promise<string> {
-  if (!response.body) throw new DiscoveryError('EMPTY_DISCOVERY_RESPONSE', 'Gateway returned no body');
+  if (!response.body)
+    throw new DiscoveryError('EMPTY_DISCOVERY_RESPONSE', 'Gateway returned no body');
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
@@ -69,7 +74,10 @@ async function readBounded(response: Response): Promise<string> {
     if (done) break;
     total += value?.byteLength ?? 0;
     if (total > MAX_DISCOVERY_BYTES) {
-      throw new DiscoveryError('DISCOVERY_RESPONSE_TOO_LARGE', 'Gateway model list exceeded its byte limit');
+      throw new DiscoveryError(
+        'DISCOVERY_RESPONSE_TOO_LARGE',
+        'Gateway model list exceeded its byte limit'
+      );
     }
     if (value) chunks.push(value);
   }
@@ -119,8 +127,15 @@ export async function discoverGatewayModels(params: {
     if (error instanceof DiscoveryError) throw error;
     throw new DiscoveryError('INVALID_DISCOVERY_RESPONSE', 'Gateway returned malformed JSON');
   }
-  if (parsed === null || typeof parsed !== 'object' || !Array.isArray((parsed as { data?: unknown }).data)) {
-    throw new DiscoveryError('INVALID_DISCOVERY_RESPONSE', 'Gateway response must contain a data array');
+  if (
+    parsed === null ||
+    typeof parsed !== 'object' ||
+    !Array.isArray((parsed as { data?: unknown }).data)
+  ) {
+    throw new DiscoveryError(
+      'INVALID_DISCOVERY_RESPONSE',
+      'Gateway response must contain a data array'
+    );
   }
   const models: DiscoveredGatewayModel[] = [];
   const seen = new Set<string>();
@@ -138,11 +153,20 @@ export async function discoverGatewayModels(params: {
       ...(typeof record.owned_by === 'string' ? { ownedBy: record.owned_by.slice(0, 128) } : {}),
       ...(boundedNumber(record.context_window ?? record.contextWindow, 2_000_000) === undefined
         ? {}
-        : { contextWindow: boundedNumber(record.context_window ?? record.contextWindow, 2_000_000) }),
+        : {
+            contextWindow: boundedNumber(record.context_window ?? record.contextWindow, 2_000_000),
+          }),
       ...(boundedNumber(record.max_output_tokens ?? record.maxOutputTokens, 1_000_000) === undefined
         ? {}
-        : { maxOutputTokens: boundedNumber(record.max_output_tokens ?? record.maxOutputTokens, 1_000_000) }),
-      ...(typeof record.supports_tools === 'boolean' ? { supportsTools: record.supports_tools } : {}),
+        : {
+            maxOutputTokens: boundedNumber(
+              record.max_output_tokens ?? record.maxOutputTokens,
+              1_000_000
+            ),
+          }),
+      ...(typeof record.supports_tools === 'boolean'
+        ? { supportsTools: record.supports_tools }
+        : {}),
       ...(typeof record.supports_streaming === 'boolean'
         ? { supportsStreaming: record.supports_streaming }
         : {}),
@@ -150,7 +174,11 @@ export async function discoverGatewayModels(params: {
     if (models.length >= 500) break;
   }
   if (models.length === 0) {
-    throw new DiscoveryError('NO_MODELS_DISCOVERED', 'Gateway did not expose any usable model ids', 404);
+    throw new DiscoveryError(
+      'NO_MODELS_DISCOVERED',
+      'Gateway did not expose any usable model ids',
+      404
+    );
   }
   return models;
 }
@@ -170,7 +198,9 @@ export async function upsertDiscoveredModels(params: {
   readonly companyId: number;
   readonly providerId: number;
   readonly models: readonly DiscoveredGatewayModel[];
-}): Promise<readonly { readonly id: number; readonly modelId: string; readonly created: boolean }[]> {
+}): Promise<
+  readonly { readonly id: number; readonly modelId: string; readonly created: boolean }[]
+> {
   const provider = await ProviderProfile.query().findOne({
     id: params.providerId,
     company_id: params.companyId,
@@ -185,14 +215,16 @@ export async function upsertDiscoveredModels(params: {
       model_id: model.modelId,
     });
     if (existing) {
-      await ModelProfile.query().findById(existing.id).patch({
-        name: model.modelId,
-        code,
-        context_window: model.contextWindow ?? existing.context_window,
-        max_output_tokens: model.maxOutputTokens ?? existing.max_output_tokens,
-        supports_tools: model.supportsTools ?? existing.supports_tools,
-        supports_streaming: model.supportsStreaming ?? existing.supports_streaming,
-      });
+      await ModelProfile.query()
+        .findById(existing.id)
+        .patch({
+          name: model.modelId,
+          code,
+          context_window: model.contextWindow ?? existing.context_window,
+          max_output_tokens: model.maxOutputTokens ?? existing.max_output_tokens,
+          supports_tools: model.supportsTools ?? existing.supports_tools,
+          supports_streaming: model.supportsStreaming ?? existing.supports_streaming,
+        });
       results.push({ id: existing.id, modelId: model.modelId, created: false });
       continue;
     }
@@ -229,7 +261,8 @@ export async function selectCodingAgentModel(params: {
     provider_profile_id: params.providerId,
     model_id: params.modelId,
   });
-  if (!model) throw new DiscoveryError('MODEL_NOT_DISCOVERED', 'Model has not been discovered', 404);
+  if (!model)
+    throw new DiscoveryError('MODEL_NOT_DISCOVERED', 'Model has not been discovered', 404);
   await ModelProfile.query()
     .where({ company_id: params.companyId, provider_profile_id: params.providerId })
     .patch({ enabled: false });

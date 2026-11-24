@@ -9,8 +9,13 @@ export class WebDiffAdapter implements SignalAdapter {
   readonly kind = 'web_diff';
 
   async fetch(ctx: SignalAdapterContext): Promise<SignalObservationDraft[]> {
-    const urls = Array.isArray(ctx.config.urls) ? ctx.config.urls.filter((u): u is string => typeof u === 'string' && u.length > 0) : [];
-    const algorithm = typeof ctx.config.hashAlgorithm === 'string' && ctx.config.hashAlgorithm.length > 0 ? ctx.config.hashAlgorithm : 'sha256';
+    const urls = Array.isArray(ctx.config.urls)
+      ? ctx.config.urls.filter((u): u is string => typeof u === 'string' && u.length > 0)
+      : [];
+    const algorithm =
+      typeof ctx.config.hashAlgorithm === 'string' && ctx.config.hashAlgorithm.length > 0
+        ? ctx.config.hashAlgorithm
+        : 'sha256';
     const fetchImpl = ctx.fetchImpl ?? fetch;
     const previousStates = readPreviousStates(ctx.config.previousStates);
 

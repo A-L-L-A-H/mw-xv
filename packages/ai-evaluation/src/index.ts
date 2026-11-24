@@ -785,10 +785,7 @@ function check(id: string, passed: boolean, detail: string): EvaluationGateCheck
   return { id, passed, detail };
 }
 
-function hasExpectedIds(
-  actual: readonly string[],
-  expected: readonly string[]
-): boolean {
+function hasExpectedIds(actual: readonly string[], expected: readonly string[]): boolean {
   return expected.every((id) => actual.includes(id));
 }
 
@@ -866,9 +863,7 @@ export async function runOfflineEvaluationGates(): Promise<OfflineEvaluationGate
   const gateIds = suite.gates.map((gate) => gate.gateId);
   const replayGateIds = suiteReplay.gates.map((gate) => gate.gateId);
   const verdicts = suite.gates.map((gate) => `${gate.gateId}:${gate.passed}`).join(',');
-  const replayVerdicts = suiteReplay.gates
-    .map((gate) => `${gate.gateId}:${gate.passed}`)
-    .join(',');
+  const replayVerdicts = suiteReplay.gates.map((gate) => `${gate.gateId}:${gate.passed}`).join(',');
   const arms = summarizeAblation(ablation).arms;
   const replayArms = summarizeAblation(ablationReplay).arms;
 
@@ -877,8 +872,7 @@ export async function runOfflineEvaluationGates(): Promise<OfflineEvaluationGate
     check('corpus-provenance', provenanceValid, provenanceDetail),
     check(
       'fixture-coverage',
-      corpus.runs.length === expectedRunCount &&
-        corpusReplay.runs.length === expectedRunCount,
+      corpus.runs.length === expectedRunCount && corpusReplay.runs.length === expectedRunCount,
       `${corpus.runs.length} mock runs across ${DEFAULT_BENCHMARK_FIXTURES.length} fixtures (single_agent for all, multi_agent for decomposable only)`
     ),
     check(
@@ -905,13 +899,13 @@ export async function runOfflineEvaluationGates(): Promise<OfflineEvaluationGate
     ),
     check(
       'deterministic-verdicts',
-      verdicts === replayVerdicts && suite.highestSatisfiedGate === suiteReplay.highestSatisfiedGate,
+      verdicts === replayVerdicts &&
+        suite.highestSatisfiedGate === suiteReplay.highestSatisfiedGate,
       'G0-G6 verdicts and highest satisfied gate are identical across two offline runs'
     ),
     check(
       'ablation-coverage',
-      hasExpectedIds(arms, EXPECTED_ABLATION_ARMS) &&
-        arms.join(',') === replayArms.join(','),
+      hasExpectedIds(arms, EXPECTED_ABLATION_ARMS) && arms.join(',') === replayArms.join(','),
       `ablation arms: ${arms.join(', ')}`
     ),
   ];

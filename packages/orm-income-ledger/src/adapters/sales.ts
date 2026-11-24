@@ -10,7 +10,7 @@ export async function createEntryFromSale(
     platformFeeMinor: number;
     occurred_at: Date;
     external_ref?: string;
-  },
+  }
 ): Promise<void> {
   const stream = await ctx
     .query(IncomeStream)

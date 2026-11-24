@@ -46,20 +46,16 @@ export async function seedBotOrchestrator(ctx: {
   let updated = 0;
 
   // Seed BotFlow - upsert by code
-  const existingFlow = await db(BotFlow.tableName)
-    .where({ code: 'BOT-CORE-001' })
-    .first();
+  const existingFlow = await db(BotFlow.tableName).where({ code: 'BOT-CORE-001' }).first();
 
   let flowId: number;
   if (existingFlow) {
-    await db(BotFlow.tableName)
-      .where({ id: existingFlow.id })
-      .update({
-        name: 'Core Bot Flow',
-        status: 'active',
-        version: '1.0.0',
-        updated_at: new Date(),
-      });
+    await db(BotFlow.tableName).where({ id: existingFlow.id }).update({
+      name: 'Core Bot Flow',
+      status: 'active',
+      version: '1.0.0',
+      updated_at: new Date(),
+    });
     flowId = existingFlow.id;
     updated += 1;
   } else {
@@ -80,9 +76,31 @@ export async function seedBotOrchestrator(ctx: {
   // Seed BotFlowSteps for the core flow - upsert by (flow_id, sequence)
   const steps = [
     { flow_id: flowId, sequence: 10, name: 'Start', kind: 'start', handler: 'start' },
-    { flow_id: flowId, sequence: 20, name: 'Process', kind: 'action', handler: 'process', next_step: 30 },
-    { flow_id: flowId, sequence: 30, name: 'Decision', kind: 'condition', handler: 'decide', next_step: 40, error_step: 50 },
-    { flow_id: flowId, sequence: 40, name: 'Success', kind: 'action', handler: 'success', next_step: 50 },
+    {
+      flow_id: flowId,
+      sequence: 20,
+      name: 'Process',
+      kind: 'action',
+      handler: 'process',
+      next_step: 30,
+    },
+    {
+      flow_id: flowId,
+      sequence: 30,
+      name: 'Decision',
+      kind: 'condition',
+      handler: 'decide',
+      next_step: 40,
+      error_step: 50,
+    },
+    {
+      flow_id: flowId,
+      sequence: 40,
+      name: 'Success',
+      kind: 'action',
+      handler: 'success',
+      next_step: 50,
+    },
     { flow_id: flowId, sequence: 50, name: 'End', kind: 'end', handler: 'end' },
   ];
 
@@ -97,7 +115,11 @@ export async function seedBotOrchestrator(ctx: {
         .update({ ...step, updated_at: new Date() });
       updated += 1;
     } else {
-      await db(BotFlowStep.tableName).insert({ ...step, created_at: new Date(), updated_at: new Date() });
+      await db(BotFlowStep.tableName).insert({
+        ...step,
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
       inserted += 1;
     }
   }

@@ -227,7 +227,8 @@ describe('evaluateObligationDrift', () => {
               appId: 'app-api',
               healthy: false,
               status: 'failed',
-              detail: 'failed with api_key=sk-proj-1234567890abcdef and top-secret-vps-token-987654',
+              detail:
+                'failed with api_key=sk-proj-1234567890abcdef and top-secret-vps-token-987654',
             },
           ],
         },

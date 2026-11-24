@@ -78,15 +78,11 @@ test('ModePicker marks the active mode and dismisses through its accessible clos
   });
 
   assert.equal(
-    document
-      .querySelector('[data-mode-option="workspace"]')
-      .getAttribute('data-selected'),
+    document.querySelector('[data-mode-option="workspace"]').getAttribute('data-selected'),
     'true'
   );
   assert.equal(
-    document
-      .querySelector('[data-mode-option="developer"]')
-      .getAttribute('data-selected'),
+    document.querySelector('[data-mode-option="developer"]').getAttribute('data-selected'),
     'false'
   );
   const activeButton = [...document.querySelectorAll('button')].find((button) =>
@@ -115,7 +111,10 @@ test('ModePicker keeps separate instances free of hardcoded title and descriptio
 
   const dialogs = [...document.querySelectorAll('[data-slot="mode-picker"]')];
   assert.equal(dialogs.length, 2);
-  assert.notEqual(dialogs[0].getAttribute('aria-labelledby'), dialogs[1].getAttribute('aria-labelledby'));
+  assert.notEqual(
+    dialogs[0].getAttribute('aria-labelledby'),
+    dialogs[1].getAttribute('aria-labelledby')
+  );
   assert.notEqual(
     dialogs[0].getAttribute('aria-describedby'),
     dialogs[1].getAttribute('aria-describedby')

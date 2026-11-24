@@ -106,7 +106,9 @@ describe('@moonwitness/orm-catalog addon', () => {
     await installAddons(db, [manifest, baseManifest]);
     // This test confirms the schema supports variant resolution logic
     // The resolver itself is pure-logic tested in pricing.test.ts
-    const product = await db(Product.tableName).where({ sku: 'DIG-EBOOK-0001' }).first('price_minor');
+    const product = await db(Product.tableName)
+      .where({ sku: 'DIG-EBOOK-0001' })
+      .first('price_minor');
     expect(product?.price_minor).toBe(2400);
   });
 });

@@ -38,12 +38,14 @@ Object.assign(globalThis, {
 const React = await import('react');
 const { act } = React;
 const { createRoot } = await import('react-dom/client');
-const { EditorialStudioPanel } = await import(
-  '../src/components/creative/editorial-studio-panel.tsx'
-);
+const { EditorialStudioPanel } =
+  await import('../src/components/creative/editorial-studio-panel.tsx');
 
 function setInputValue(input: HTMLInputElement, value: string) {
-  const setter = Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value')?.set;
+  const setter = Object.getOwnPropertyDescriptor(
+    dom.window.HTMLInputElement.prototype,
+    'value'
+  )?.set;
   assert.ok(setter, 'Expected HTMLInputElement value setter');
   setter.call(input, value);
   input.dispatchEvent(new dom.window.Event('input', { bubbles: true }));

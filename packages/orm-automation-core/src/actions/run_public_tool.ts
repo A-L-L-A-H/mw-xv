@@ -20,7 +20,8 @@ export async function run(
 
   const toolPayload = isRecord(input.payload) ? input.payload : {};
 
-  const inserted = await ctx.db('public_tool_invocations')
+  const inserted = await ctx
+    .db('public_tool_invocations')
     .insert({
       company_id: ctx.companyId,
       tool_name: toolName,

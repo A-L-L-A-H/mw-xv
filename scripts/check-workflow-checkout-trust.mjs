@@ -308,8 +308,7 @@ export function inspectTrustedCheckoutPolicies({
     const dispatchesPromotion =
       dependencyCandidate.includes(
         'gh workflow run promote.yml --repo "$GITHUB_REPOSITORY" --ref dev'
-      ) ||
-      dependencyCandidate.includes('gh workflow run promote.yml --repo "$GH_REPO" --ref dev');
+      ) || dependencyCandidate.includes('gh workflow run promote.yml --repo "$GH_REPO" --ref dev');
     if (!dispatchesPromotion)
       findings.push(
         'Dependency candidate must explicitly dispatch promotion after its GITHUB_TOKEN push.'

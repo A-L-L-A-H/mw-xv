@@ -272,13 +272,11 @@ export async function fireTrigger(
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      await db('automation_runs')
-        .where({ id: runId })
-        .update({
-          status: 'failed',
-          error: message,
-          finished_at: new Date().toISOString(),
-        });
+      await db('automation_runs').where({ id: runId }).update({
+        status: 'failed',
+        error: message,
+        finished_at: new Date().toISOString(),
+      });
       outcomes.push({ ruleId: Number(rule.id), runId, status: 'failed', error: message });
       continue;
     }

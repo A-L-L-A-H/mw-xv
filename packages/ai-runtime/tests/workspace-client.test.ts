@@ -4,8 +4,12 @@ import { createWorkspaceHttpClient } from '../src/workspace-contract.js';
 
 describe('workspace sandbox HTTP client', () => {
   it('requires an exact origin and a credential', () => {
-    expect(() => createWorkspaceHttpClient({ origin: 'http://agent-sandbox:3020/v1', token: 't' })).toThrow();
-    expect(() => createWorkspaceHttpClient({ origin: 'http://agent-sandbox:3020?x=1', token: 't' })).toThrow();
+    expect(() =>
+      createWorkspaceHttpClient({ origin: 'http://agent-sandbox:3020/v1', token: 't' })
+    ).toThrow();
+    expect(() =>
+      createWorkspaceHttpClient({ origin: 'http://agent-sandbox:3020?x=1', token: 't' })
+    ).toThrow();
     expect(() =>
       createWorkspaceHttpClient({ origin: 'http://user:pass@agent-sandbox:3020', token: 't' })
     ).toThrow();
@@ -34,14 +38,15 @@ describe('workspace sandbox HTTP client', () => {
     expect(await client.getWorkspace({ runId: 'run-1' })).toEqual({ runId: 'run-1' });
     expect(fetchMock).toHaveBeenCalledOnce();
 
-    const failingFetch = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          ok: false,
-          error: { code: 'FORBIDDEN', message: 'denied', retryable: false },
-        }),
-        { status: 403, headers: { 'content-type': 'application/json' } }
-      )
+    const failingFetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            ok: false,
+            error: { code: 'FORBIDDEN', message: 'denied', retryable: false },
+          }),
+          { status: 403, headers: { 'content-type': 'application/json' } }
+        )
     );
     const failingClient = createWorkspaceHttpClient({
       origin: 'http://agent-sandbox:3020',

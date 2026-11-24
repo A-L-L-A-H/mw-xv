@@ -17,7 +17,8 @@ export const manifest = defineAddon({
   version: '1.0.0',
   displayName: 'Clinical / Medicine / Health',
   category: 'health',
-  summary: 'Patients, encounters, diagnoses, procedures, medication orders, lab results and vital observations.',
+  summary:
+    'Patients, encounters, diagnoses, procedures, medication orders, lab results and vital observations.',
   depends: ['base'],
   models: [Patient, Encounter, Diagnosis, Procedure, MedicationOrder, LabResult, VitalObservation],
   data: [
@@ -58,9 +59,19 @@ export const manifest = defineAddon({
     { model: Encounter.modelName, label: 'Encounters', group: 'Clinical', sequence: 20 },
     { model: Diagnosis.modelName, label: 'Diagnoses', group: 'Clinical', sequence: 30 },
     { model: Procedure.modelName, label: 'Procedures', group: 'Clinical', sequence: 40 },
-    { model: MedicationOrder.modelName, label: 'Medication Orders', group: 'Clinical', sequence: 50 },
+    {
+      model: MedicationOrder.modelName,
+      label: 'Medication Orders',
+      group: 'Clinical',
+      sequence: 50,
+    },
     { model: LabResult.modelName, label: 'Lab Results', group: 'Clinical', sequence: 60 },
-    { model: VitalObservation.modelName, label: 'Vital Observations', group: 'Clinical', sequence: 70 },
+    {
+      model: VitalObservation.modelName,
+      label: 'Vital Observations',
+      group: 'Clinical',
+      sequence: 70,
+    },
   ],
 });
 

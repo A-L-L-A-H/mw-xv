@@ -151,7 +151,13 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(jobsHealthRes.status).toBe(200);
     const jobsHealthBody = (await jobsHealthRes.json()) as {
       success: boolean;
-      data: { queued: number; running: number; dead: number; outboxPending: number; outboxDead: number };
+      data: {
+        queued: number;
+        running: number;
+        dead: number;
+        outboxPending: number;
+        outboxDead: number;
+      };
     };
     expect(jobsHealthBody.success).toBe(true);
     expect(typeof jobsHealthBody.data.queued).toBe('number');
@@ -570,9 +576,9 @@ describe('LocalApiServer & Desktop Importer', () => {
       success: boolean;
       data: { backups: Array<{ fileName: string; verified: boolean }> };
     };
-    expect(listBackupsBody.data.backups.some((b) => b.fileName === createdBackup.data.fileName)).toBe(
-      true
-    );
+    expect(
+      listBackupsBody.data.backups.some((b) => b.fileName === createdBackup.data.fileName)
+    ).toBe(true);
 
     // Restore rejects missing confirmation and path traversal
     const restoreNoConfirm = await fetch(`${daemon.apiUrl}/api/desktop/backups/restore`, {
@@ -1024,7 +1030,9 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(ingestBody.entry.source).toBe('webview');
 
     // List logs in workspace mode
-    const listRes = await fetch(`${daemon.apiUrl}/api/desktop/logs?level=all&source=all`, { headers: authHeaders });
+    const listRes = await fetch(`${daemon.apiUrl}/api/desktop/logs?level=all&source=all`, {
+      headers: authHeaders,
+    });
     expect(listRes.status).toBe(200);
     const listBody = (await listRes.json()) as {
       success: boolean;
@@ -1041,7 +1049,9 @@ describe('LocalApiServer & Desktop Importer', () => {
     ).toBe(true);
 
     // Fetch diagnostic bundle in workspace mode
-    const bundleRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/bundle`, { headers: authHeaders });
+    const bundleRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/bundle`, {
+      headers: authHeaders,
+    });
     expect(bundleRes.status).toBe(200);
     const bundleBody = (await bundleRes.json()) as {
       success: boolean;
@@ -1053,9 +1063,14 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(bundleBody.entryCount).toBeGreaterThanOrEqual(2);
 
     // Clear logs in workspace mode
-    const clearRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/clear`, { method: 'POST', headers: authHeaders });
+    const clearRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/clear`, {
+      method: 'POST',
+      headers: authHeaders,
+    });
     expect(clearRes.status).toBe(200);
-    const afterClear = (await (await fetch(`${daemon.apiUrl}/api/desktop/logs`, { headers: authHeaders })).json()) as {
+    const afterClear = (await (
+      await fetch(`${daemon.apiUrl}/api/desktop/logs`, { headers: authHeaders })
+    ).json()) as {
       entries: unknown[];
       total: number;
     };

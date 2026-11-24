@@ -64,7 +64,11 @@ export function InboxPopover({
   children,
 }: InboxPopoverProps) {
   const badgeText =
-    unreadCount !== undefined && unreadCount > 0 ? (unreadCount > 9 ? '9+' : String(unreadCount)) : null;
+    unreadCount !== undefined && unreadCount > 0
+      ? unreadCount > 9
+        ? '9+'
+        : String(unreadCount)
+      : null;
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>

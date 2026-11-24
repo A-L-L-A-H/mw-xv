@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  dispatchTaskAgentRun,
-  runWorkspaceAssistant,
-} from '../src/ai-assistant.js';
+import { dispatchTaskAgentRun, runWorkspaceAssistant } from '../src/ai-assistant.js';
 import { DesktopRiskGate } from '../src/risk-gate.js';
 import type { DesktopActionAuthContext, GitWorktreeLease } from '../src/types.js';
 import type { WorktreeSandbox } from '../src/worktree-sandbox.js';
@@ -215,9 +212,9 @@ describe('ai-assistant', () => {
     expect(first.allowed).toBe(true);
     expect(first.status).toBe('preview');
     expect(first.digest).toBe(second.digest);
-    expect(first.proofGateChecklist.some((item) => item.id === 'risk-gate' && item.status === 'passed')).toBe(
-      true
-    );
+    expect(
+      first.proofGateChecklist.some((item) => item.id === 'risk-gate' && item.status === 'passed')
+    ).toBe(true);
   });
 
   it('dispatches task agent run and acquires isolated worktree in DX mode', async () => {

@@ -52,22 +52,54 @@ test('inventory comparison reports unlisted files and missing manifest files sep
 });
 
 test('queries canonical records by pack/category/domain/format/status and classifies sources', () => {
-  const manifest = { assets: [
-    { path: 'source/moon.svg', kind: 'source', pack: 'moon-city', domain: 'homepage', format: 'svg', status: 'review' },
-    { path: 'illustrations/card.webp', kind: 'artwork', pack: 'moon-city', domain: 'board', format: 'webp', status: 'approved' },
-  ] };
-  const result = queryAssetInventory(manifest, { pack: 'moon-city', category: 'source', format: 'svg' }, {
-    sourceAssets: [{ path: 'source/moon.svg', license: 'unverified', status: 'blocked' }],
-  });
+  const manifest = {
+    assets: [
+      {
+        path: 'source/moon.svg',
+        kind: 'source',
+        pack: 'moon-city',
+        domain: 'homepage',
+        format: 'svg',
+        status: 'review',
+      },
+      {
+        path: 'illustrations/card.webp',
+        kind: 'artwork',
+        pack: 'moon-city',
+        domain: 'board',
+        format: 'webp',
+        status: 'approved',
+      },
+    ],
+  };
+  const result = queryAssetInventory(
+    manifest,
+    { pack: 'moon-city', category: 'source', format: 'svg' },
+    {
+      sourceAssets: [{ path: 'source/moon.svg', license: 'unverified', status: 'blocked' }],
+    }
+  );
   assert.equal(result.length, 1);
   assert.equal(result[0].distribution, 'blocked');
-  assert.equal(queryAssetInventory(manifest, { domain: 'board' })[0].path, 'illustrations/card.webp');
+  assert.equal(
+    queryAssetInventory(manifest, { domain: 'board' })[0].path,
+    'illustrations/card.webp'
+  );
 });
 
 test('inventory audit reports orphans and broken canonical references', () => {
-  const audit = auditAssetInventory({ assets: [
-    { path: 'illustrations/one.webp', sourceAsset: 'source/missing.png', variants: ['illustrations/absent.webp'] },
-  ] }, ['illustrations/one.webp', 'source/orphan.png']);
+  const audit = auditAssetInventory(
+    {
+      assets: [
+        {
+          path: 'illustrations/one.webp',
+          sourceAsset: 'source/missing.png',
+          variants: ['illustrations/absent.webp'],
+        },
+      ],
+    },
+    ['illustrations/one.webp', 'source/orphan.png']
+  );
   assert.deepEqual(audit, {
     unlistedFiles: ['source/orphan.png'],
     missingFiles: [],

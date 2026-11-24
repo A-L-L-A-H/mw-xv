@@ -3330,14 +3330,14 @@
       "output": "docs/assets/moonwitness/scenes/moon-city-scene.json",
       "kind": "scene",
       "format": "json",
-      "sha256": "b74d88ab2110d44bab2786b76873659163cdfb77bf091304b3d8454fbbb140ee"
+      "sha256": "73ab064262c98030df6a672a154e47614a8e65408404204b7ed0e20be79df44c"
     },
     {
       "source": "packages/assets/scenes/riot-alley-scene.json",
       "output": "docs/assets/moonwitness/scenes/riot-alley-scene.json",
       "kind": "scene",
       "format": "json",
-      "sha256": "d79847e7ab31703db7d6cb45add6a157aa3074bc2b9a9b1613f70d583f6c11ae"
+      "sha256": "4e47774aa17fd5ae2acbeeae04d9ae87c28a1f63c1a4bcd301d00e4b7d137b49"
     },
     {
       "source": "packages/assets/sounds/ambience-archive-quiet.wav",

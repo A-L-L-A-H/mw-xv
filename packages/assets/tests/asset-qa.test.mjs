@@ -21,7 +21,8 @@ test('asset QA flags duplicates, oversized runtime assets, wrong folders, and or
   try {
     await mkdir(join(dir, 'icons'), { recursive: true });
     await mkdir(join(dir, 'source', 'artwork'), { recursive: true });
-    const tinySvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="a"><title>a</title></svg>';
+    const tinySvg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="a"><title>a</title></svg>';
     await writeFile(join(dir, 'icons/dup-a.svg'), tinySvg);
     await writeFile(join(dir, 'icons/dup-b.svg'), tinySvg);
     await writeFile(join(dir, 'icons/oversized.svg'), 'x'.repeat(20 * 1024));

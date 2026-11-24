@@ -180,12 +180,7 @@ export function isValidProviderEndpoint(
   approvedFreellmOrigins: readonly string[] = [FREELMAPI_COMPOSE_ORIGIN]
 ): boolean {
   if (endpointUrl === undefined || endpointUrl === null || endpointUrl === '') {
-    return (
-      kind === 'mock' ||
-      kind === 'openai' ||
-      kind === 'anthropic' ||
-      kind === 'freellmapi'
-    );
+    return kind === 'mock' || kind === 'openai' || kind === 'anthropic' || kind === 'freellmapi';
   }
   if (typeof endpointUrl !== 'string' || endpointUrl.length > 2048) return false;
   if (kind === 'freellmapi') return isApprovedFreellmOrigin(endpointUrl, approvedFreellmOrigins);
@@ -231,11 +226,7 @@ export function isAllowedClassificationRoute(
   // cloud_eligible. FreeLLMAPI is cloud egress even though its Compose origin is
   // private, so it is subject to the same classification rules as public clouds.
   if (isLocalProvider) return true;
-  if (
-    providerKind === 'openai' ||
-    providerKind === 'anthropic' ||
-    providerKind === 'freellmapi'
-  ) {
+  if (providerKind === 'openai' || providerKind === 'anthropic' || providerKind === 'freellmapi') {
     return providerClassification === 'cloud_eligible';
   }
   return false;

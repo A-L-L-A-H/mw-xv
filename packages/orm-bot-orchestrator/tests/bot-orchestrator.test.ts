@@ -211,13 +211,34 @@ describe('orm-bot-orchestrator addon', () => {
     expect(validateCronExpression('0 2 * * *')).toEqual({ valid: true, reason: null });
     expect(validateCronExpression('*/5 * * * *')).toEqual({ valid: true, reason: null });
     expect(validateCronExpression('30 12 1 1 0')).toEqual({ valid: true, reason: null });
-    expect(validateCronExpression('60 2 * * *')).toEqual({ valid: false, reason: 'minute out of range (0-59)' });
-    expect(validateCronExpression('0 24 * * *')).toEqual({ valid: false, reason: 'hour out of range (0-23)' });
-    expect(validateCronExpression('0 2 32 * *')).toEqual({ valid: false, reason: 'day of month out of range (1-31)' });
-    expect(validateCronExpression('0 2 * 13 *')).toEqual({ valid: false, reason: 'month out of range (1-12)' });
-    expect(validateCronExpression('0 2 * * 7')).toEqual({ valid: false, reason: 'day of week out of range (0-6)' });
-    expect(validateCronExpression('0 2 * *')).toEqual({ valid: false, reason: 'Cron expression must have 5 fields (minute hour day month weekday)' });
-    expect(validateCronExpression('invalid')).toEqual({ valid: false, reason: 'Invalid minute field: invalid' });
+    expect(validateCronExpression('60 2 * * *')).toEqual({
+      valid: false,
+      reason: 'minute out of range (0-59)',
+    });
+    expect(validateCronExpression('0 24 * * *')).toEqual({
+      valid: false,
+      reason: 'hour out of range (0-23)',
+    });
+    expect(validateCronExpression('0 2 32 * *')).toEqual({
+      valid: false,
+      reason: 'day of month out of range (1-31)',
+    });
+    expect(validateCronExpression('0 2 * 13 *')).toEqual({
+      valid: false,
+      reason: 'month out of range (1-12)',
+    });
+    expect(validateCronExpression('0 2 * * 7')).toEqual({
+      valid: false,
+      reason: 'day of week out of range (0-6)',
+    });
+    expect(validateCronExpression('0 2 * *')).toEqual({
+      valid: false,
+      reason: 'Cron expression must have 5 fields (minute hour day month weekday)',
+    });
+    expect(validateCronExpression('invalid')).toEqual({
+      valid: false,
+      reason: 'Invalid minute field: invalid',
+    });
   });
 
   it('bot seed manifest writes nothing unless explicitly enabled', async () => {
@@ -228,13 +249,21 @@ describe('orm-bot-orchestrator addon', () => {
     expect(disabled).toEqual({ inserted: 0, updated: 0, skipped: 0 });
     expect(await connection('bot_flows').count({ count: '*' }).first()).toMatchObject({ count: 0 });
 
-    const enabled = await seedBotOrchestrator({ db: connection, options: { enabled: true, companyId: 1 } });
+    const enabled = await seedBotOrchestrator({
+      db: connection,
+      options: { enabled: true, companyId: 1 },
+    });
     expect(enabled.inserted).toBeGreaterThan(0);
     expect(await connection('bot_flows').where({ code: 'BOT-CORE-001' })).toHaveLength(1);
-    expect(await connection('bot_flow_steps').where({ flow_id: enabled.inserted > 0 ? 1 : 0 })).toHaveLength(5);
+    expect(
+      await connection('bot_flow_steps').where({ flow_id: enabled.inserted > 0 ? 1 : 0 })
+    ).toHaveLength(5);
     expect(await connection('bot_schedules').where({ name: 'Daily Run' })).toHaveLength(1);
 
-    const repeat = await seedBotOrchestrator({ db: connection, options: { enabled: true, companyId: 1 } });
+    const repeat = await seedBotOrchestrator({
+      db: connection,
+      options: { enabled: true, companyId: 1 },
+    });
     expect(repeat.inserted).toBe(0);
     expect(repeat.updated).toBeGreaterThan(0);
     expect(repeat.skipped).toBe(0);

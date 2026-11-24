@@ -51,7 +51,6 @@ const sourceDefinitions = [
   },
 ];
 
-
 function compareText(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
@@ -113,7 +112,11 @@ async function readIndex(rootDirectory, indexPath) {
   const bytes = await readFile(path.join(rootDirectory, indexPath));
   const value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
   if (!value || !Array.isArray(value.entries)) throw new TypeError(`Invalid index: ${indexPath}`);
-  return { bytes, entries: value.entries, sourceIndex: { path: indexPath, sha256: sha256Hex(bytes) } };
+  return {
+    bytes,
+    entries: value.entries,
+    sourceIndex: { path: indexPath, sha256: sha256Hex(bytes) },
+  };
 }
 
 async function materializeSource(rootDirectory, outputDirectory, definition, entry) {

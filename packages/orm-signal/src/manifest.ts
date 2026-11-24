@@ -121,7 +121,13 @@ export const manifest = defineAddon({
   menus: [
     { model: SignalObservation.modelName, label: 'Signal Feed', group: 'Signals', sequence: 10 },
     { model: SignalSource.modelName, label: 'Signal Sources', group: 'Signals', sequence: 20 },
-    { model: SignalScore.modelName, label: 'Signal Scores', group: 'Signals', sequence: 30, developmentOnly: true },
+    {
+      model: SignalScore.modelName,
+      label: 'Signal Scores',
+      group: 'Signals',
+      sequence: 30,
+      developmentOnly: true,
+    },
     { model: SignalAlert.modelName, label: 'Signal Alerts', group: 'Signals', sequence: 40 },
   ],
 });

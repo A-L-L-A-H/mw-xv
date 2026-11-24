@@ -101,7 +101,8 @@ export class DockerHttpTransport implements DockerTransport {
       return Promise.reject(options.signal.reason ?? new Error('Docker request aborted'));
     }
 
-    const payload = options.body === undefined ? undefined : Buffer.from(JSON.stringify(options.body));
+    const payload =
+      options.body === undefined ? undefined : Buffer.from(JSON.stringify(options.body));
     const timeoutMs = options.timeoutMs ?? DEFAULT_API_TIMEOUT_MS;
     const maxResponseBytes = options.maxResponseBytes ?? DEFAULT_API_RESPONSE_BYTES;
 

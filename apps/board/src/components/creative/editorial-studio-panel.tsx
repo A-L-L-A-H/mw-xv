@@ -57,13 +57,7 @@ import { client } from '@/lib/client';
 type ImprintKey = 'GOD PROMISE' | 'ROCKSOUL';
 
 type AsmaulCluster =
-  | 'All'
-  | 'Mercy'
-  | 'Sovereignty'
-  | 'Knowledge'
-  | 'Creation'
-  | 'Justice'
-  | 'Guidance';
+  'All' | 'Mercy' | 'Sovereignty' | 'Knowledge' | 'Creation' | 'Justice' | 'Guidance';
 
 interface AsmaulConceptEntry {
   readonly id: number;
@@ -202,7 +196,10 @@ interface KuroCompanionState {
   readonly dialogue: string;
 }
 
-function resolveKuroCompanionState(completedCount: number, imprint: ImprintKey): KuroCompanionState {
+function resolveKuroCompanionState(
+  completedCount: number,
+  imprint: ImprintKey
+): KuroCompanionState {
   if (completedCount <= 0) {
     return {
       expression: 'thinking',
@@ -560,9 +557,7 @@ export function EditorialStudioPanel() {
 
       const blob = new Blob([content], {
         type:
-          format === 'json'
-            ? 'application/json;charset=utf-8;'
-            : 'text/markdown;charset=utf-8;',
+          format === 'json' ? 'application/json;charset=utf-8;' : 'text/markdown;charset=utf-8;',
       });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -647,9 +642,7 @@ export function EditorialStudioPanel() {
             <SelectField
               aria-label="Studio ambient soundscape track"
               value={ambienceScene}
-              onChange={(event) =>
-                handleAmbienceSceneChange(event.target.value as SceneAmbienceId)
-              }
+              onChange={(event) => handleAmbienceSceneChange(event.target.value as SceneAmbienceId)}
               className="h-8 text-xs"
             >
               <option value="archive-quiet">Archive Quiet</option>
@@ -800,7 +793,10 @@ export function EditorialStudioPanel() {
                 </div>
               ) : null}
               {draftNotice && !draftError ? (
-                <p role="status" className="mb-4 border border-ink/20 bg-paper p-2.5 font-mono text-xs text-ink">
+                <p
+                  role="status"
+                  className="mb-4 border border-ink/20 bg-paper p-2.5 font-mono text-xs text-ink"
+                >
                   {draftNotice}
                 </p>
               ) : null}
@@ -938,12 +934,7 @@ export function EditorialStudioPanel() {
                 <StickerBadge tone="yellow" tilt="right">
                   {filteredConcepts.length} SHOWN
                 </StickerBadge>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={resetAsmaulFilters}
-                >
+                <Button type="button" variant="outline" size="sm" onClick={resetAsmaulFilters}>
                   Reset Filters
                 </Button>
               </div>

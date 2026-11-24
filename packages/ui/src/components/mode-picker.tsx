@@ -94,9 +94,7 @@ export function ModePicker({
               <DialogTitle className="font-display text-2xl uppercase tracking-wide text-ink">
                 {title}
               </DialogTitle>
-              <DialogDescription className="text-sm text-ink-soft">
-                {description}
-              </DialogDescription>
+              <DialogDescription className="text-sm text-ink-soft">{description}</DialogDescription>
             </div>
             {onDismiss ? (
               <DialogClose asChild>
@@ -151,7 +149,10 @@ export function ModePicker({
                               aria-hidden="true"
                             />
                           ) : (
-                            <SparkleIcon className="size-3.5 shrink-0 text-ink" aria-hidden="true" />
+                            <SparkleIcon
+                              className="size-3.5 shrink-0 text-ink"
+                              aria-hidden="true"
+                            />
                           )}
                           <span>{item}</span>
                         </li>

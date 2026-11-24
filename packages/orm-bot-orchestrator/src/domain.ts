@@ -63,7 +63,10 @@ export function validateCronExpression(expr: string): { valid: boolean; reason: 
   ];
   for (let i = 0; i < 5; i++) {
     if (i >= parts.length) {
-      return { valid: false, reason: 'Cron expression must have 5 fields (minute hour day month weekday)' };
+      return {
+        valid: false,
+        reason: 'Cron expression must have 5 fields (minute hour day month weekday)',
+      };
     }
     const part = parts[i];
     const { min, max, name } = ranges[i];
@@ -92,7 +95,10 @@ export function validateCronExpression(expr: string): { valid: boolean; reason: 
     return { valid: false, reason: `Invalid ${name} field: ${part}` };
   }
   if (parts.length > 5) {
-    return { valid: false, reason: 'Cron expression must have 5 fields (minute hour day month weekday)' };
+    return {
+      valid: false,
+      reason: 'Cron expression must have 5 fields (minute hour day month weekday)',
+    };
   }
   return { valid: true, reason: null };
 }

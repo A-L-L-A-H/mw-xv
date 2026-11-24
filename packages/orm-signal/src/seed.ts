@@ -1,6 +1,11 @@
 ﻿import type { Knex } from 'knex';
 import { SignalSource, type SignalSourceKind } from './models.js';
-import { resolveInsertedId, type AddonSeedManifest, type SeedContext, type SeedResult } from '@moonwitness/orm-base';
+import {
+  resolveInsertedId,
+  type AddonSeedManifest,
+  type SeedContext,
+  type SeedResult,
+} from '@moonwitness/orm-base';
 
 export const SIGNAL_SEED_VERSION = '1.0.0';
 
@@ -81,11 +86,13 @@ export const SIGNAL_SOURCE_SEEDS: readonly SignalSourceSeed[] = [
 export const SIGNAL_SOURCE_SEED_COUNT = SIGNAL_SOURCE_SEEDS.length;
 
 function parseCount(value: unknown): number {
-  return Number(
-    typeof value === 'object' && value !== null && 'count' in value
-      ? (value as { count: unknown }).count
-      : value
-  ) || 0;
+  return (
+    Number(
+      typeof value === 'object' && value !== null && 'count' in value
+        ? (value as { count: unknown }).count
+        : value
+    ) || 0
+  );
 }
 
 export async function seedSignalSources(

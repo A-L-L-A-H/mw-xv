@@ -137,7 +137,9 @@ test('KanbanBoard supports ArrowLeft and ArrowRight keyboard card moves', async 
   const card = document.body.querySelector('[data-slot="kanban-card"]');
   assert.ok(card);
   await React.act(async () => {
-    card.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    card.dispatchEvent(
+      new dom.window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })
+    );
   });
   assert.deepEqual(moves, [['c1', 'todo', 'done']]);
 });

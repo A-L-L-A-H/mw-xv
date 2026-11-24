@@ -41,7 +41,9 @@ async function createDb(): Promise<SqliteKnex> {
 
 describe('hashIp (user_identifier)', () => {
   it('produces sha256 of ip+salt', () => {
-    const expected = createHash('sha256').update('1.2.3.4' + SALT).digest('hex');
+    const expected = createHash('sha256')
+      .update('1.2.3.4' + SALT)
+      .digest('hex');
     expect(hashIp('1.2.3.4')).toBe(expected);
   });
 
@@ -67,7 +69,11 @@ describe('checkRateLimit (window)', () => {
     await db.destroy();
   });
 
-  async function insertUsage(toolId: number, userIdentifier: string, minutesAgo: number): Promise<void> {
+  async function insertUsage(
+    toolId: number,
+    userIdentifier: string,
+    minutesAgo: number
+  ): Promise<void> {
     await db('public_usages').insert({
       tool_id: toolId,
       user_identifier: userIdentifier,
