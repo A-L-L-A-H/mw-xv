@@ -30,7 +30,13 @@ export async function upsertDailyAnalytics(
   assetId: number,
   companyId: number,
   date: string,
-  deltas: { views?: number; clicks?: number; shares?: number; conversions?: number; revenue_minor?: number }
+  deltas: {
+    views?: number;
+    clicks?: number;
+    shares?: number;
+    conversions?: number;
+    revenue_minor?: number;
+  }
 ): Promise<void> {
   const existing = await db('content_analytics').where({ asset_id: assetId, date }).first();
 
@@ -77,12 +83,20 @@ export const contentFactoryHttpPlugin: AddonHttpPlugin = async (app) => {
       return reply.code(404).send({ success: false, error: 'Template not found' });
     }
     if (template.status !== 'approved' && template.status !== 'review') {
-      return reply.code(409).send({ success: false, error: `Template is ${template.status}; only review/approved templates can render` });
+      return reply.code(409).send({
+        success: false,
+        error: `Template is ${template.status}; only review/approved templates can render`,
+      });
     }
 
-    const supportedLocales = Array.isArray(template.supported_locales) ? template.supported_locales : [template.default_locale];
+    const supportedLocales = Array.isArray(template.supported_locales)
+      ? template.supported_locales
+      : [template.default_locale];
     if (!supportedLocales.includes(locale)) {
-      return reply.code(400).send({ success: false, error: `Locale ${locale} not supported; supported: ${supportedLocales.join(', ')}` });
+      return reply.code(400).send({
+        success: false,
+        error: `Locale ${locale} not supported; supported: ${supportedLocales.join(', ')}`,
+      });
     }
 
     const structure = parseStructure(template.structure);
@@ -93,7 +107,9 @@ export const contentFactoryHttpPlugin: AddonHttpPlugin = async (app) => {
     const variables = asRecord(body.variables) ?? {};
     const validation = validateVariables(template.variables, variables);
     if (!validation.valid) {
-      return reply.code(400).send({ success: false, error: 'Missing required variables', missing: validation.missing });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Missing required variables', missing: validation.missing });
     }
 
     const rendered = renderTemplate(structure, variables);
@@ -127,20 +143,30 @@ export const contentFactoryHttpPlugin: AddonHttpPlugin = async (app) => {
       return reply.code(404).send({ success: false, error: 'Asset not found' });
     }
     if (!canTransitionAssetStatus(asset.status, 'processing')) {
-      return reply.code(409).send({ success: false, error: `Asset in status ${asset.status} cannot be published` });
+      return reply
+        .code(409)
+        .send({ success: false, error: `Asset in status ${asset.status} cannot be published` });
     }
 
-    const target = await db('content_publish_targets').where({ id: targetId, is_active: true }).first();
+    const target = await db('content_publish_targets')
+      .where({ id: targetId, is_active: true })
+      .first();
     if (!target) {
-      return reply.code(404).send({ success: false, error: 'Publish target not found or inactive' });
+      return reply
+        .code(404)
+        .send({ success: false, error: 'Publish target not found or inactive' });
     }
 
     const content = asRecord(asset.content) as AuthoredContent | null;
     if (!content || !Array.isArray(content.sections) || content.sections.length === 0) {
-      return reply.code(409).send({ success: false, error: 'Asset content has no rendered sections' });
+      return reply
+        .code(409)
+        .send({ success: false, error: 'Asset content has no rendered sections' });
     }
 
-    await db('content_assets').where({ id: asset.id }).update({ status: 'processing', updated_at: new Date() });
+    await db('content_assets')
+      .where({ id: asset.id })
+      .update({ status: 'processing', updated_at: new Date() });
 
     const now = new Date();
     const [publicationId] = await db('content_publications').insert({
@@ -156,11 +182,18 @@ export const contentFactoryHttpPlugin: AddonHttpPlugin = async (app) => {
       updated_at: now,
     });
 
-    await db('content_assets').where({ id: asset.id }).update({ status: 'ready', updated_at: new Date() });
+    await db('content_assets')
+      .where({ id: asset.id })
+      .update({ status: 'ready', updated_at: new Date() });
 
     return reply.code(200).send({
       success: true,
-      data: { publication_id: publicationId, asset_slug: asset.slug, platform: target.platform, status: 'published' },
+      data: {
+        publication_id: publicationId,
+        asset_slug: asset.slug,
+        platform: target.platform,
+        status: 'published',
+      },
     });
   });
 

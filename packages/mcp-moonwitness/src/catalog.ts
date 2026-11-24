@@ -55,9 +55,11 @@ export function listMoonWitnessModels(): readonly ModelCatalogEntry[] {
 }
 
 /** Read-only field-kind inspection for a single model, or null when unknown. */
-export function describeMoonWitnessModel(
-  modelName: string
-): { readonly modelName: string; readonly addonName: string; readonly fields: readonly string[] } | null {
+export function describeMoonWitnessModel(modelName: string): {
+  readonly modelName: string;
+  readonly addonName: string;
+  readonly fields: readonly string[];
+} | null {
   for (const { name, manifest } of registeredManifests) {
     const model = manifest.models.find((candidate) => candidate.modelName === modelName);
     if (model) {

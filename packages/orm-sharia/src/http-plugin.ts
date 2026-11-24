@@ -6,7 +6,13 @@ import {
   type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
-import { ShariaContract, ZakatAssessment, ProfitSharingDistribution, WaqfAsset, HalalComplianceAudit } from './models/index.js';
+import {
+  ShariaContract,
+  ZakatAssessment,
+  ProfitSharingDistribution,
+  WaqfAsset,
+  HalalComplianceAudit,
+} from './models/index.js';
 import { Company, Partner, User, ConfigParameter } from '@moonwitness/orm-base';
 import {
   calculateZakat,
@@ -41,7 +47,9 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const {
@@ -55,17 +63,51 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
       zakatRateBps,
     } = req.body;
 
-    if (!assessmentDate || !hijriYear || !zakatType || !assetCategory || grossAssetsMinor === undefined || deductibleLiabilitiesMinor === undefined) {
-      return reply.code(400).send({ success: false, error: 'assessmentDate, hijriYear, zakatType, assetCategory, grossAssetsMinor, deductibleLiabilitiesMinor are required' });
+    if (
+      !assessmentDate ||
+      !hijriYear ||
+      !zakatType ||
+      !assetCategory ||
+      grossAssetsMinor === undefined ||
+      deductibleLiabilitiesMinor === undefined
+    ) {
+      return reply.code(400).send({
+        success: false,
+        error:
+          'assessmentDate, hijriYear, zakatType, assetCategory, grossAssetsMinor, deductibleLiabilitiesMinor are required',
+      });
     }
 
-    const validTypes = ['maal', 'fitrah', 'profession', 'trade', 'agriculture', 'livestock', 'rikaz'];
-    const validCategories = ['gold', 'silver', 'cash', 'receivables', 'inventory', 'investment', 'property', 'other'];
+    const validTypes = [
+      'maal',
+      'fitrah',
+      'profession',
+      'trade',
+      'agriculture',
+      'livestock',
+      'rikaz',
+    ];
+    const validCategories = [
+      'gold',
+      'silver',
+      'cash',
+      'receivables',
+      'inventory',
+      'investment',
+      'property',
+      'other',
+    ];
     if (!validTypes.includes(zakatType as string)) {
-      return reply.code(400).send({ success: false, error: `Invalid zakatType. Must be one of: ${validTypes.join(', ')}` });
+      return reply.code(400).send({
+        success: false,
+        error: `Invalid zakatType. Must be one of: ${validTypes.join(', ')}`,
+      });
     }
     if (!validCategories.includes(assetCategory as string)) {
-      return reply.code(400).send({ success: false, error: `Invalid assetCategory. Must be one of: ${validCategories.join(', ')}` });
+      return reply.code(400).send({
+        success: false,
+        error: `Invalid assetCategory. Must be one of: ${validCategories.join(', ')}`,
+      });
     }
 
     try {
@@ -77,7 +119,8 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
         assetCategory: assetCategory as ZakatCalculationInput['assetCategory'],
         grossAssetsMinor: Number(grossAssetsMinor),
         deductibleLiabilitiesMinor: Number(deductibleLiabilitiesMinor),
-        nisabGoldPricePerGramMinor: nisabGoldPricePerGramMinor !== undefined ? Number(nisabGoldPricePerGramMinor) : undefined,
+        nisabGoldPricePerGramMinor:
+          nisabGoldPricePerGramMinor !== undefined ? Number(nisabGoldPricePerGramMinor) : undefined,
         zakatRateBps: zakatRateBps !== undefined ? Number(zakatRateBps) : undefined,
       };
 
@@ -93,18 +136,42 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
-    const { type, assetValueMinor, profitMarginMinor, profitSharingRatio, financingAmountMinor, tenorMonths, dsnMuiReference, ribaFreeConfirmed, ghararFreeConfirmed } = req.body;
+    const {
+      type,
+      assetValueMinor,
+      profitMarginMinor,
+      profitSharingRatio,
+      financingAmountMinor,
+      tenorMonths,
+      dsnMuiReference,
+      ribaFreeConfirmed,
+      ghararFreeConfirmed,
+    } = req.body;
 
-    if (!type || assetValueMinor === undefined || !dsnMuiReference || ribaFreeConfirmed === undefined || ghararFreeConfirmed === undefined) {
-      return reply.code(400).send({ success: false, error: 'type, assetValueMinor, dsnMuiReference, ribaFreeConfirmed, ghararFreeConfirmed are required' });
+    if (
+      !type ||
+      assetValueMinor === undefined ||
+      !dsnMuiReference ||
+      ribaFreeConfirmed === undefined ||
+      ghararFreeConfirmed === undefined
+    ) {
+      return reply.code(400).send({
+        success: false,
+        error:
+          'type, assetValueMinor, dsnMuiReference, ribaFreeConfirmed, ghararFreeConfirmed are required',
+      });
     }
 
     const validTypes = ['murabahah', 'mudharabah', 'musyarakah', 'ijarah'];
     if (!validTypes.includes(type as string)) {
-      return reply.code(400).send({ success: false, error: `Invalid type. Must be one of: ${validTypes.join(', ')}` });
+      return reply
+        .code(400)
+        .send({ success: false, error: `Invalid type. Must be one of: ${validTypes.join(', ')}` });
     }
 
     try {
@@ -113,7 +180,8 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
         assetValueMinor: Number(assetValueMinor),
         profitMarginMinor: profitMarginMinor !== undefined ? Number(profitMarginMinor) : undefined,
         profitSharingRatio: profitSharingRatio as string | undefined,
-        financingAmountMinor: financingAmountMinor !== undefined ? Number(financingAmountMinor) : undefined,
+        financingAmountMinor:
+          financingAmountMinor !== undefined ? Number(financingAmountMinor) : undefined,
         tenorMonths: tenorMonths !== undefined ? Number(tenorMonths) : undefined,
         dsnMuiReference: dsnMuiReference as string,
         ribaFreeConfirmed: Boolean(ribaFreeConfirmed),
@@ -132,13 +200,34 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
-    const { contractId, periodStart, periodEnd, grossProfitMinor, operatingExpensesMinor, distributionDate, notes } = req.body;
+    const {
+      contractId,
+      periodStart,
+      periodEnd,
+      grossProfitMinor,
+      operatingExpensesMinor,
+      distributionDate,
+      notes,
+    } = req.body;
 
-    if (!contractId || !periodStart || !periodEnd || grossProfitMinor === undefined || operatingExpensesMinor === undefined || !distributionDate) {
-      return reply.code(400).send({ success: false, error: 'contractId, periodStart, periodEnd, grossProfitMinor, operatingExpensesMinor, distributionDate are required' });
+    if (
+      !contractId ||
+      !periodStart ||
+      !periodEnd ||
+      grossProfitMinor === undefined ||
+      operatingExpensesMinor === undefined ||
+      !distributionDate
+    ) {
+      return reply.code(400).send({
+        success: false,
+        error:
+          'contractId, periodStart, periodEnd, grossProfitMinor, operatingExpensesMinor, distributionDate are required',
+      });
     }
 
     try {
@@ -165,13 +254,17 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { assetId, trail } = req.body;
 
     if (!assetId || !Array.isArray(trail)) {
-      return reply.code(400).send({ success: false, error: 'assetId and trail array are required' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'assetId and trail array are required' });
     }
 
     try {
@@ -192,18 +285,32 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { assetId, event, timestamp, valueMinor, description } = req.body;
 
     if (!assetId || !event || !timestamp || valueMinor === undefined || !description) {
-      return reply.code(400).send({ success: false, error: 'assetId, event, timestamp, valueMinor, description are required' });
+      return reply.code(400).send({
+        success: false,
+        error: 'assetId, event, timestamp, valueMinor, description are required',
+      });
     }
 
-    const validEvents = ['acquisition', 'valuation', 'yield_distribution', 'transfer', 'disbursement'];
+    const validEvents = [
+      'acquisition',
+      'valuation',
+      'yield_distribution',
+      'transfer',
+      'disbursement',
+    ];
     if (!validEvents.includes(event as string)) {
-      return reply.code(400).send({ success: false, error: `Invalid event. Must be one of: ${validEvents.join(', ')}` });
+      return reply.code(400).send({
+        success: false,
+        error: `Invalid event. Must be one of: ${validEvents.join(', ')}`,
+      });
     }
 
     try {

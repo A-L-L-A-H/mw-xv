@@ -6,7 +6,14 @@ import {
   type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
-import { SlaPolicy, SupportTicket, TicketMessage, EscalationRule, KnowledgeDeflection, CsatSurvey } from './models/index.js';
+import {
+  SlaPolicy,
+  SupportTicket,
+  TicketMessage,
+  EscalationRule,
+  KnowledgeDeflection,
+  CsatSurvey,
+} from './models/index.js';
 import { Company, Partner, User } from '@moonwitness/orm-base';
 import {
   resolveSlaDeadlines,
@@ -36,7 +43,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function loadSlaPolicies(db: Knex, companyId: number): Promise<SlaPolicyLike[]> {
   return db('helpdesk_sla_policies')
     .where({ company_id: companyId })
-    .select('id', 'name', 'priority', 'first_response_minutes', 'resolution_minutes', 'business_hours_only', 'applies_to_queue', 'is_active');
+    .select(
+      'id',
+      'name',
+      'priority',
+      'first_response_minutes',
+      'resolution_minutes',
+      'business_hours_only',
+      'applies_to_queue',
+      'is_active'
+    );
 }
 
 function loadEscalationRules(db: Knex, companyId: number): Promise<EscalationRuleLike[]> {
@@ -52,7 +68,7 @@ function loadEscalationRules(db: Knex, companyId: number): Promise<EscalationRul
       'er.escalate_to',
       'er.oncall_rotation',
       'er.max_escalations',
-      'er.is_active',
+      'er.is_active'
     );
 }
 
@@ -62,13 +78,18 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
-    const { subject, priority, channel, queue, customerId, companyId, sourceRef, tags, notes } = req.body;
+    const { subject, priority, channel, queue, customerId, companyId, sourceRef, tags, notes } =
+      req.body;
 
     if (!subject || !customerId || !companyId) {
-      return reply.code(400).send({ success: false, error: 'subject, customerId, companyId are required' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'subject, customerId, companyId are required' });
     }
 
     try {
@@ -85,26 +106,28 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
       const deadlineResult = resolveSlaDeadlines(deadlineInput);
 
       const ticketNo = `HD-${Date.now().toString(36).toUpperCase()}`;
-      const [ticketId] = await db('helpdesk_support_tickets').insert({
-        ticket_no: ticketNo,
-        subject: subject as string,
-        status: 'new',
-        priority: (priority as string) ?? 'P4',
-        channel: (channel as string) ?? 'web',
-        queue: (queue as string) ?? 'general',
-        customer_id: Number(customerId),
-        company_id: Number(companyId),
-        sla_policy_id: deadlineResult?.policyId ?? null,
-        first_response_due_at: deadlineResult?.firstResponseDue ?? null,
-        resolution_due_at: deadlineResult?.resolutionDue ?? null,
-        sla_breached: false,
-        escalation_level: 0,
-        source_ref: sourceRef as string | undefined,
-        tags: tags as string | undefined,
-        notes: notes as string | undefined,
-        create_date: now,
-        write_date: now,
-      }).returning('id');
+      const [ticketId] = await db('helpdesk_support_tickets')
+        .insert({
+          ticket_no: ticketNo,
+          subject: subject as string,
+          status: 'new',
+          priority: (priority as string) ?? 'P4',
+          channel: (channel as string) ?? 'web',
+          queue: (queue as string) ?? 'general',
+          customer_id: Number(customerId),
+          company_id: Number(companyId),
+          sla_policy_id: deadlineResult?.policyId ?? null,
+          first_response_due_at: deadlineResult?.firstResponseDue ?? null,
+          resolution_due_at: deadlineResult?.resolutionDue ?? null,
+          sla_breached: false,
+          escalation_level: 0,
+          source_ref: sourceRef as string | undefined,
+          tags: tags as string | undefined,
+          notes: notes as string | undefined,
+          create_date: now,
+          write_date: now,
+        })
+        .returning('id');
 
       const ticket = await db('helpdesk_support_tickets').where({ id: ticketId }).first();
       return reply.code(201).send({ success: true, data: ticket, sla: deadlineResult });
@@ -118,7 +141,9 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const ticketId = Number(req.params.id);
@@ -137,14 +162,16 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
         return reply.code(404).send({ success: false, error: 'Ticket not found' });
       }
 
-      const [messageId] = await db('helpdesk_ticket_messages').insert({
-        ticket_id: ticketId,
-        direction: direction as string,
-        author_id: authorId ? Number(authorId) : null,
-        body: body as string,
-        created_via: (createdVia as string) ?? 'agent',
-        created_at: now,
-      }).returning('id');
+      const [messageId] = await db('helpdesk_ticket_messages')
+        .insert({
+          ticket_id: ticketId,
+          direction: direction as string,
+          author_id: authorId ? Number(authorId) : null,
+          body: body as string,
+          created_via: (createdVia as string) ?? 'agent',
+          created_at: now,
+        })
+        .returning('id');
 
       const message = await db('helpdesk_ticket_messages').where({ id: messageId }).first();
 
@@ -167,7 +194,9 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const ticketId = Number(req.params.id);
@@ -179,7 +208,10 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
 
     const validStatuses = ['new', 'open', 'pending', 'on_hold', 'resolved', 'closed'];
     if (!validStatuses.includes(status as string)) {
-      return reply.code(400).send({ success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+      return reply.code(400).send({
+        success: false,
+        error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
+      });
     }
 
     try {
@@ -213,10 +245,16 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
-    const { priority, queue, nowIso } = req.body as { priority: string; queue: string; nowIso?: string };
+    const { priority, queue, nowIso } = req.body as {
+      priority: string;
+      queue: string;
+      nowIso?: string;
+    };
 
     if (!priority || !queue) {
       return reply.code(400).send({ success: false, error: 'priority and queue are required' });
@@ -243,7 +281,9 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { ticketId, nowIso } = req.body as { ticketId: number; nowIso?: string };
@@ -254,17 +294,29 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
 
     try {
       const db = requireDb(req);
-      const ticket = await db('helpdesk_support_tickets').where({ id: Number(ticketId) }).first();
+      const ticket = await db('helpdesk_support_tickets')
+        .where({ id: Number(ticketId) })
+        .first();
       if (!ticket) {
         return reply.code(404).send({ success: false, error: 'Ticket not found' });
       }
 
       if (!ticket.sla_policy_id) {
-        return reply.code(200).send({ success: true, data: { shouldEscalate: false, escalateTo: null, level: ticket.escalation_level ?? 0, reason: 'No SLA policy attached' } });
+        return reply.code(200).send({
+          success: true,
+          data: {
+            shouldEscalate: false,
+            escalateTo: null,
+            level: ticket.escalation_level ?? 0,
+            reason: 'No SLA policy attached',
+          },
+        });
       }
 
       const rules = await loadEscalationRules(db, auth.companyId);
-      const applicable = rules.filter(r => r.sla_policy === ticket.sla_policy_id && r.is_active !== false);
+      const applicable = rules.filter(
+        (r) => r.sla_policy === ticket.sla_policy_id && r.is_active !== false
+      );
       const now = nowIso ?? new Date().toISOString();
 
       const ticketLike: TicketLike = {
@@ -286,11 +338,21 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
             escalation_level: decision.level,
             write_date: now,
           });
-          return reply.code(200).send({ success: true, data: { ...decision, ruleId: rule.id, ruleName: rule.name } });
+          return reply
+            .code(200)
+            .send({ success: true, data: { ...decision, ruleId: rule.id, ruleName: rule.name } });
         }
       }
 
-      return reply.code(200).send({ success: true, data: { shouldEscalate: false, escalateTo: null, level: ticket.escalation_level ?? 0, reason: 'No escalation triggered' } });
+      return reply.code(200).send({
+        success: true,
+        data: {
+          shouldEscalate: false,
+          escalateTo: null,
+          level: ticket.escalation_level ?? 0,
+          reason: 'No escalation triggered',
+        },
+      });
     } catch (err: unknown) {
       return reply.code(400).send({ success: false, error: (err as Error).message });
     }
@@ -301,7 +363,9 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { question, articles } = req.body;
@@ -324,7 +388,9 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     if (!isRecord(req.body)) {
-      return reply.code(400).send({ success: false, error: 'Invalid payload: body must be an object' });
+      return reply
+        .code(400)
+        .send({ success: false, error: 'Invalid payload: body must be an object' });
     }
 
     const { ticketId, rating, comment } = req.body;
@@ -341,21 +407,25 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
       const db = requireDb(req);
       const now = new Date().toISOString();
 
-      const ticket = await db('helpdesk_support_tickets').where({ id: Number(ticketId) }).first();
+      const ticket = await db('helpdesk_support_tickets')
+        .where({ id: Number(ticketId) })
+        .first();
       if (!ticket) {
         return reply.code(404).send({ success: false, error: 'Ticket not found' });
       }
 
       const npsCategory = rating >= 5 ? 'promoter' : rating === 4 ? 'passive' : 'detractor';
 
-      const [surveyId] = await db('helpdesk_csat_surveys').insert({
-        ticket_id: Number(ticketId),
-        rating,
-        comment: comment as string | undefined,
-        surveyed_at: now,
-        responded: true,
-        nps_category: npsCategory,
-      }).returning('id');
+      const [surveyId] = await db('helpdesk_csat_surveys')
+        .insert({
+          ticket_id: Number(ticketId),
+          rating,
+          comment: comment as string | undefined,
+          surveyed_at: now,
+          responded: true,
+          nps_category: npsCategory,
+        })
+        .returning('id');
 
       const survey = await db('helpdesk_csat_surveys').where({ id: surveyId }).first();
       return reply.code(201).send({ success: true, data: survey });
