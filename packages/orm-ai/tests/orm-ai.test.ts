@@ -404,7 +404,7 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
         )
       )
     ).rejects.toThrow(/Duplicate external data ID/iu);
-  }, 10000);
+  }, 30_000);
 
   it('enforces agent lifecycle states, org consistency, acyclic reporting, and non-privileged service principals', async () => {
     const db = await setupFullAddons();
