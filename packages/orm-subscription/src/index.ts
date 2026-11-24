@@ -46,3 +46,4 @@ export {
   type SubscriptionSeedExecutionResult,
   type SeedSubscriptionInitialDataOptions,
 } from './seed.js';
+export { subscriptionSeedManifest, type AddonSeedManifest } from './seed-manifest.js';

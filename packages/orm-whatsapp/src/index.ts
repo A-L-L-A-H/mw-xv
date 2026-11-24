@@ -62,5 +62,7 @@ export {
 export { GowaError, gowaRequest, gowaBinary, gowaOriginPath } from './runtime/gowa-client.js';
 export { whatsappLogErrorContext } from './runtime/log-redaction.js';
 export { WHATSAPP_SEND_EVENT, WHATSAPP_STATUS_PUBLISH_EVENT } from './runtime/events.js';
+export { whatsappSeedManifest } from './seed-manifest.js';
+export { type AddonSeedManifest } from '@moonwitness/orm-base';
 export * from './seed.js';
 export * from './helpdesk-routing.js';

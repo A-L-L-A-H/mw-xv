@@ -7,6 +7,7 @@ export {
   PROJECT_SEED_ENUMS,
   type ProjectInitialSeedBundle,
 } from './seed.js';
+export { projectSeedManifest, type AddonSeedManifest } from './seed-manifest.js';
 export {
   MILESTONE_STATUSES,
   PROJECT_STATUSES,

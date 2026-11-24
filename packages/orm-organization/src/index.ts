@@ -1,4 +1,5 @@
 export { manifest } from './manifest.js';
+export { organizationSeedManifest } from './seed-manifest.js';
 export {
   OrganizationDepartment,
   OrganizationMembership,

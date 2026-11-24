@@ -11,3 +11,4 @@ export {
   type ResolvedVariantPrice,
 } from './pricing.js';
 export { seedProducts, CATALOG_SEED_VERSION } from './seed.js';
+export { catalogSeedManifest } from './seed-manifest.js';

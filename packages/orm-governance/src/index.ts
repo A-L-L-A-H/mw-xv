@@ -25,3 +25,4 @@ export {
   type GovernanceSeedOptions,
 } from './seed.js';
 export { manifest } from './manifest.js';
+export { governanceSeedManifest } from './seed-manifest.js';

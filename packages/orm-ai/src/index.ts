@@ -47,6 +47,8 @@ export {
 export * from './models.js';
 export * from './cognitive-trace-store.js';
 export * from './seed.js';
+export { aiSeedManifest } from './seed-manifest.js';
+export type { AddonSeedManifest } from '@moonwitness/orm-base';
 export {
   assertAcyclicAgentHierarchy,
   assertAcyclicWorkContractHierarchy,
