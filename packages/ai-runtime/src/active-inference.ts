@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { clampBps } from './sort-utils.js';
 import { createRedactor } from './redaction.js';
 
 export type ActiveInferenceActionKind =
@@ -61,12 +62,6 @@ const DEFAULT_IRREVERSIBLE_RISK_PENALTY_BPS = 2000;
 const DEFAULT_UNCERTAINTY_THRESHOLD_BPS = 4000;
 const DEFAULT_HUMAN_INTERRUPTION_COST_BPS = 1500;
 
-function clampBps(value: number): number {
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(10_000, Math.round(value)));
-}
 
 function canonicalizeValue(value: unknown): unknown {
   if (Array.isArray(value)) {

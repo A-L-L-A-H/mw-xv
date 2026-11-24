@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { clampBps } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 
 export type SpeculativeBranchDisqualificationReason =
@@ -129,12 +130,6 @@ function buildRedactor(secrets?: readonly string[]): RedactionContext {
   return redactor;
 }
 
-function clampBps(value: number): number {
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(10_000, Math.round(value)));
-}
 
 function toCostUsdMicros(costUsd: number): number {
   if (!Number.isFinite(costUsd) || costUsd < 0) {

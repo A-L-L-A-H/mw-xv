@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { compareAscii } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 import { DEFAULT_DENIED_PATH_PATTERNS } from './repo-inspector.js';
 import type { RepoGitRevision, RepoSnapshot } from './repo-snapshot.js';
@@ -100,11 +101,6 @@ function policyError(reasonCode: string, message: string): ProviderError {
   });
 }
 
-function compareAscii(a: string, b: string): number {
-  if (a < b) return -1;
-  if (a > b) return 1;
-  return 0;
-}
 
 function sha256Hex(value: string): string {
   return createHash('sha256').update(value, 'utf8').digest('hex');
