@@ -1,7 +1,8 @@
 import knex from 'knex';
 import { afterEach, describe, expect, it } from 'vitest';
 import { defineAddon, defineModel, fields, Registry } from '@moonwitness/orm';
-import { bootstrapApiWorker } from '../src/addons/registry.js';
+import { registerJobHandler } from '@moonwitness/jobs';
+import { API_ADDONS, bootstrapApiWorker } from '../src/addons/registry.js';
 
 const Widget = defineModel('test.worker-widget', {
   table: 'test_worker_widgets',
@@ -25,7 +26,11 @@ describe('API worker bootstrap', () => {
   });
 
   it('registers metadata without writing database schema', async () => {
-    db = knex({ client: 'better-sqlite3', connection: { filename: ':memory:' }, useNullAsDefault: true });
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
 
     await bootstrapApiWorker(db, {
       addons: [addon],
@@ -35,5 +40,29 @@ describe('API worker bootstrap', () => {
     expect(Registry.get('test.worker-widget')).toBe(Widget);
     expect(await db.schema.hasTable('_orm_addons')).toBe(false);
     expect(await db.schema.hasTable('test_worker_widgets')).toBe(false);
+  });
+
+  it('registers AI agent-run job handlers on the worker path', async () => {
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+
+    await bootstrapApiWorker(db, {
+      addons: API_ADDONS,
+      waitForSchema: async () => {},
+    });
+
+    for (const name of ['ai.agent_run.execute', 'ai.agent_run.inspect']) {
+      expect(() =>
+        registerJobHandler({
+          name,
+          version: 1,
+          parse: (payload: unknown) => payload,
+          run: async () => ({ ok: true }),
+        })
+      ).toThrow(/already registered/iu);
+    }
   });
 });
