@@ -2,12 +2,12 @@
 set -eu
 
 echo "Running shared UI design, desktop, lint, API addon boundary, and typecheck gates before push..."
-pnpm ui:check
-pnpm lint:ui
-pnpm api:addon:check
-pnpm agent:boundary:check
-pnpm --filter @moonwitness/board typecheck
-pnpm --filter @moonwitness/desktop typecheck:web
+bun run ui:check
+bun run lint:ui
+bun run api:addon:check
+bun run agent:boundary:check
+bun --filter @moonwitness/board typecheck
+bun --filter @moonwitness/desktop typecheck:web
 
 echo "Running fast CI-parity checks before push..."
 node scripts/check-action-pins.mjs

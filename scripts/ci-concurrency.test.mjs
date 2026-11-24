@@ -37,9 +37,9 @@ test('CI runs quality-and-build, unit-tests, knowledge-gate, and postgres-integr
   ]) {
     assert.match(workflow, new RegExp(`^ {2}${jobName}:`, 'mu'));
   }
-  assert.match(workflow, /pnpm docs:check:built/u);
-  assert.match(workflow, /pnpm api:addon:check/u);
-  assert.match(workflow, /pnpm test:integration:built/u);
+  assert.match(workflow, /bun run docs:check:built/u);
+  assert.match(workflow, /bun run api:addon:check/u);
+  assert.match(workflow, /bun run test:integration:built/u);
   assert.match(workflow, /node scripts\/knowledge\/run-k-gate\.mjs --json/u);
 
   if (existsSync('.github/workflows/codeql.yml') && existsSync('.github/workflows/gitleaks.yml')) {
@@ -95,7 +95,7 @@ test('integration job supplies isolated PostgreSQL test credentials', () => {
 test('Pages portal tests build and serve the publication site only once', () => {
   assert.doesNotMatch(pagesWorkflow, /name: Build documentation portal site/u);
   assert.match(pagesWorkflow, /name: Test documentation portal\s+id: docs_portal_tests/u);
-  assert.match(pagesWorkflow, /run: pnpm --filter @moonwitness\/docs test/u);
+  assert.match(pagesWorkflow, /run: bun --filter @moonwitness\/docs test/u);
 });
 
 test('every caller of the production Compose stack supplies each variable it requires', () => {

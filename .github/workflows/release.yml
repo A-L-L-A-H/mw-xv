@@ -67,12 +67,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.3.4'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - name: Verify workspace release version
         id: version
         env:
@@ -80,22 +80,22 @@ jobs:
         run: |
           version="$RELEASE_VERSION"
           if [[ "$version" != v* ]]; then version="v$version"; fi
-          pnpm release:check "$version"
+          bun run release:check "$version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm lint
+        run: bun run lint
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm format:check
+        run: bun run format:check
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm typecheck
+        run: bun run typecheck
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm docs:check:built
+        run: bun run docs:check:built
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm --filter @moonwitness/board lint
+        run: bun --filter @moonwitness/board lint
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm test:unit:built
+        run: bun run test:unit:built
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm test:integration:built
+        run: bun run test:integration:built
       - name: Build the release images once with immutable source metadata
         env:
           RELEASE_VERSION: ${{ steps.version.outputs.version }}

@@ -22,8 +22,8 @@ on:
       - 'packages/ui/**'
       - '.github/workflows/pages.yml'
       - 'package.json'
-      - 'pnpm-workspace.yaml'
-      - 'pnpm-lock.yaml'
+      - 'bun.lock'
+      - 'bun.lock'
   workflow_dispatch:
     inputs:
       source_ref:
@@ -73,7 +73,7 @@ jobs:
           docs_changed=false
           while IFS= read -r changed_file; do
             case "$changed_file" in
-              apps/docs/*|apps/api/*|packages/*|docs/*|README.md|ROADMAP.md|scripts/docs/*|.github/workflows/pages.yml|package.json|pnpm-workspace.yaml|pnpm-lock.yaml)
+              apps/docs/*|apps/api/*|packages/*|docs/*|README.md|ROADMAP.md|scripts/docs/*|.github/workflows/pages.yml|package.json|bun.lock|bun.lock)
                 docs_changed=true
                 break
                 ;;
@@ -220,12 +220,12 @@ jobs:
             source_ref="$SOURCE_SHA"
           fi
           printf 'kind=%s\nbase_path=%s\nsource_ref=%s\nchannel=%s\n' "$kind" "$base_path" "$source_ref" "$channel" >> "$GITHUB_OUTPUT"
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.3.4'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - name: Export docs channel metadata
         env:
           BASE_PATH: ${{ steps.site.outputs.base_path }}
@@ -238,15 +238,15 @@ jobs:
             echo "MW_DOCS_CHANNEL=$CHANNEL"
           } >> "$GITHUB_ENV"
       - name: Install Chromium for portal browser tests
-        run: pnpm exec playwright install --with-deps chromium
+        run: bunx playwright install --with-deps chromium
       - name: Build documentation package types
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/types
       - name: Build documentation package core knowledge contracts
-        run: pnpm --filter @moonwitness/knowledge build
+        run: bun --filter @moonwitness/knowledge build
       - name: Build documentation package corpus
-        run: pnpm --filter @moonwitness/corpus build
+        run: bun --filter @moonwitness/corpus build
       - name: Build documentation package research
-        run: pnpm --filter @moonwitness/research build
+        run: bun --filter @moonwitness/research build
       - name: Build documentation package ORM
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm
       - name: Build documentation package base addon
@@ -272,7 +272,7 @@ jobs:
       - name: Build documentation package whatsapp
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-whatsapp
       - name: Build documentation package local AI runtime contract
-        run: pnpm --filter @moonwitness/local-ai build
+        run: bun --filter @moonwitness/local-ai build
       - name: Build documentation package knowledge
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-knowledge
       - name: Build documentation package observability
@@ -284,14 +284,14 @@ jobs:
       - name: Verify generated README
         run: node scripts/docs/update-readme.mjs --check
       - name: Check documentation links
-        run: pnpm docs:links
+        run: bun run docs:links
       - name: Check documentation example types
-        run: pnpm exec tsc --noEmit -p packages/orm/examples/tsconfig.json
+        run: bunx tsc --noEmit -p packages/orm/examples/tsconfig.json
       - name: Test documented addon examples
-        run: pnpm --filter @moonwitness/orm exec vitest run tests/addon.test.ts
+        run: bunx --cwd packages/orm vitest run tests/addon.test.ts
       - name: Test documentation portal
         id: docs_portal_tests
-        run: pnpm --filter @moonwitness/docs test
+        run: bun --filter @moonwitness/docs test
       - name: Annotate failed documentation portal testcases
         if: always() && steps.docs_portal_tests.outcome == 'failure'
         continue-on-error: true
@@ -307,7 +307,7 @@ jobs:
             exit 1
           fi
       - name: Test publication safety contracts
-        run: pnpm test:docs-publication
+        run: bun run test:docs-publication
       - name: Scan public output for secrets and unsafe files
         run: node scripts/check-docs-publication.mjs apps/docs/dist
       - name: Write source metadata
@@ -406,12 +406,12 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.3.4'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           name: docs-current-${{ needs.build.outputs.source_sha }}

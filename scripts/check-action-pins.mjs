@@ -53,6 +53,11 @@ export function findUnpinnedActions(sources) {
 }
 
 export function pnpmSetupOrderValid(actionSource) {
+  if (actionSource.includes('uses: oven-sh/setup-bun@')) {
+    const nodeSetup = actionSource.indexOf('uses: actions/setup-node@');
+    const bunSetup = actionSource.indexOf('uses: oven-sh/setup-bun@');
+    return nodeSetup >= 0 && bunSetup > nodeSetup;
+  }
   if (actionSource.includes('uses: pnpm/setup@')) {
     return (
       /runtime:\s*node@\$\{\{\s*inputs\.node-version\s*\}\}/u.test(actionSource) &&
@@ -80,7 +85,7 @@ export function workflowInstallsFrozenWorkspaceAfterSetup(source, path = '') {
       inPlanJob = ciPlanOnly && lines[index].trim() === 'plan:';
     }
     if (inPlanJob) continue;
-    if (!/^\s*- uses: \.\/\.github\/actions\/setup-pnpm\s*$/u.test(lines[index] ?? '')) continue;
+    if (!/^\s*- uses: \.\/\.github\/actions\/setup-(?:bun|pnpm)\s*$/u.test(lines[index] ?? '')) continue;
     const setupIndent = (lines[index]?.match(/^\s*/u)?.[0] ?? '').length;
     const nextStep = lines.findIndex(
       (line, lineIndex) => lineIndex > index && /^\s*-\s/u.test(line)
@@ -95,7 +100,7 @@ export function workflowInstallsFrozenWorkspaceAfterSetup(source, path = '') {
     const stepLines = lines.slice(nextStep, followingStep < 0 ? undefined : followingStep);
     if (
       !stepLines.some((line) =>
-        /run:\s*pnpm install --frozen-lockfile --no-runtime\s*$/u.test(line)
+        /run:\s*(?:bun install --frozen-lockfile|pnpm install --frozen-lockfile --no-runtime)\s*$/u.test(line)
       )
     )
       return false;
@@ -104,14 +109,14 @@ export function workflowInstallsFrozenWorkspaceAfterSetup(source, path = '') {
 }
 
 export function findPnpmVersionDrift(sources, packageManager) {
-  const expected = /^pnpm@(?<version>\d+\.\d+\.\d+)$/u.exec(packageManager)?.groups?.version;
+  const expected = /^(?:bun|pnpm)@(?<version>\d+\.\d+\.\d+)$/u.exec(packageManager)?.groups?.version;
   if (!expected) {
     return [
       {
         path: 'package.json',
         line: 1,
         reference: packageManager,
-        reason: 'must pin pnpm with an exact version',
+        reason: 'must pin bun with an exact version',
       },
     ];
   }
@@ -120,8 +125,8 @@ export function findPnpmVersionDrift(sources, packageManager) {
     const lines = source.content.split(/\r?\n/u);
     for (let index = 0; index < lines.length; index += 1) {
       const references = [
-        ...lines[index].matchAll(/pnpm-version:\s*['"]([^'"]+)['"]/gu),
-        ...lines[index].matchAll(/corepack prepare pnpm@([^\s]+)\s/gu),
+        ...lines[index].matchAll(/(?:bun|pnpm)-version:\s*['"]([^'"]+)['"]/gu),
+        ...lines[index].matchAll(/bun\.sh\/install \| bash -s "bun-v([^"]+)"/gu),
         ...lines[index].matchAll(/default:\s*['"](\d+\.\d+\.\d+)['"]/gu),
       ];
       for (const match of references) {
@@ -131,7 +136,7 @@ export function findPnpmVersionDrift(sources, packageManager) {
             path: source.path,
             line: index + 1,
             reference: actual,
-            reason: `must match the root packageManager pnpm@${expected}`,
+            reason: `must match the root packageManager ${packageManager}`,
           });
         }
       }
@@ -195,13 +200,14 @@ async function main() {
   for (const source of sources) {
     if (
       source.path.startsWith('.github/workflows/') &&
-      source.content.includes('uses: ./.github/actions/setup-pnpm') &&
+      (source.content.includes('uses: ./.github/actions/setup-bun') ||
+        source.content.includes('uses: ./.github/actions/setup-pnpm')) &&
       !workflowInstallsFrozenWorkspaceAfterSetup(source.content, source.path)
     ) {
       findings.push({
         path: source.path,
         line: 1,
-        reference: 'setup-pnpm',
+        reference: 'setup-bun',
         reason: 'must install frozen workspace dependencies in a separate visible step',
       });
     }
@@ -213,15 +219,17 @@ async function main() {
   ];
   findings.push(...findPnpmVersionDrift(toolchainSources, packageManifest.packageManager ?? ''));
   findings.push(...findNodeVersionDrift(toolchainSources, packageManifest.engines?.node));
-  const pnpmSetup = sources.find(
-    (source) => source.path === '.github/actions/setup-pnpm/action.yml'
+  const toolchainSetup = sources.find(
+    (source) =>
+      source.path === '.github/actions/setup-bun/action.yml' ||
+      source.path === '.github/actions/setup-pnpm/action.yml'
   );
-  if (pnpmSetup && !pnpmSetupOrderValid(pnpmSetup.content)) {
+  if (toolchainSetup && !pnpmSetupOrderValid(toolchainSetup.content)) {
     findings.push({
-      path: pnpmSetup.path,
+      path: toolchainSetup.path,
       line: 15,
-      reference: 'pnpm/action-setup',
-      reason: 'Node must be selected before pnpm 11 is installed',
+      reference: 'setup-bun',
+      reason: 'Node must be selected before Bun is installed',
     });
   }
   if (findings.length > 0) {

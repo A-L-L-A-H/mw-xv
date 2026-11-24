@@ -17,7 +17,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      'pnpm --filter @moonwitness/docs portal:build && pnpm --filter @moonwitness/docs exec vite preview --host 127.0.0.1 --port 4178 --strictPort',
+      'bun --filter @moonwitness/docs portal:build && bunx --cwd apps/docs vite preview --host 127.0.0.1 --port 4178 --strictPort',
     url: baseUrl,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

@@ -17,5 +17,5 @@
 /Dockerfile @bjo163
 /deploy/compose/docker-compose.production.yml @bjo163
 /package.json @bjo163
-/pnpm-lock.yaml @bjo163
+/bun.lock @bjo163
 /scripts/ @bjo163

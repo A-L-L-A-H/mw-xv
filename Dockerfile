@@ -1,12 +1,13 @@
 FROM node:24-bookworm-slim AS build
 
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends python3 make g++ \
+    && apt-get install --yes --no-install-recommends python3 make g++ curl unzip ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
-    && corepack enable \
-    && corepack prepare pnpm@11.17.0 --activate
+    && curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.4" \
+    && ln -s /root/.bun/bin/bun /usr/local/bin/bun \
+    && ln -s /root/.bun/bin/bunx /usr/local/bin/bunx
 WORKDIR /workspace
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json bun.lock ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/board/package.json ./apps/board/package.json
 COPY apps/control-plane/package.json ./apps/control-plane/package.json
@@ -27,9 +28,14 @@ COPY packages/knowledge/package.json ./packages/knowledge/package.json
 COPY packages/local-ai/package.json ./packages/local-ai/package.json
 COPY packages/logger/package.json ./packages/logger/package.json
 COPY packages/orm-ai/package.json ./packages/orm-ai/package.json
+COPY packages/orm-a2a/package.json ./packages/orm-a2a/package.json
 COPY packages/orm-base/package.json ./packages/orm-base/package.json
+COPY packages/orm-cli/package.json ./packages/orm-cli/package.json
 COPY packages/orm-cloud/package.json ./packages/orm-cloud/package.json
+COPY packages/orm-compliance/package.json ./packages/orm-compliance/package.json
 COPY packages/orm-crm/package.json ./packages/orm-crm/package.json
+COPY packages/orm-governance/package.json ./packages/orm-governance/package.json
+COPY packages/orm-helpdesk/package.json ./packages/orm-helpdesk/package.json
 COPY packages/orm-integration/package.json ./packages/orm-integration/package.json
 COPY packages/orm-isp/package.json ./packages/orm-isp/package.json
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json
@@ -39,6 +45,7 @@ COPY packages/orm-project/package.json ./packages/orm-project/package.json
 COPY packages/orm/package.json ./packages/orm/package.json
 COPY packages/orm-request/package.json ./packages/orm-request/package.json
 COPY packages/orm-sales/package.json ./packages/orm-sales/package.json
+COPY packages/orm-sharia/package.json ./packages/orm-sharia/package.json
 COPY packages/orm-storage/package.json ./packages/orm-storage/package.json
 COPY packages/orm-subscription/package.json ./packages/orm-subscription/package.json
 COPY packages/orm-whatsapp/package.json ./packages/orm-whatsapp/package.json
@@ -46,13 +53,21 @@ COPY packages/research/package.json ./packages/research/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/orm-workflow/package.json ./packages/orm-workflow/package.json
-RUN --mount=type=cache,id=moonwitness-pnpm-store,target=/root/.local/share/pnpm/store/v11 \
-    pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=moonwitness-bun-cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile
 COPY . .
-RUN pnpm build
+RUN bun run build
 
 FROM build AS api-deploy
-RUN pnpm --filter @moonwitness/api deploy --prod --legacy /deploy/api \
+RUN mkdir -p /deploy/api/node_modules/@moonwitness \
+    && cp -R apps/api/package.json apps/api/dist /deploy/api/ \
+    && cp -R node_modules/. /deploy/api/node_modules/ \
+    && for pkg in packages/*; do \
+         name=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$pkg/package.json','utf8')).name)"); \
+         rm -rf "/deploy/api/node_modules/$name"; \
+         mkdir -p "/deploy/api/node_modules/$(dirname "$name")"; \
+         cp -R "$pkg" "/deploy/api/node_modules/$name"; \
+       done \
     && node scripts/prepare-api-runtime-assets.mjs /deploy/api
 
 FROM node:24-bookworm-slim AS runtime
@@ -80,8 +95,8 @@ FROM build AS board-build
 ARG NEXT_PUBLIC_SITE_URL
 ENV BOARD_API_TARGET=http://api:3000 \
     NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
-RUN pnpm --filter @moonwitness/board build \
-    && pnpm board:budget
+RUN bun --filter @moonwitness/board build \
+    && bun run board:budget
 
 FROM node:24-bookworm-slim AS board-runtime
 ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=8080
