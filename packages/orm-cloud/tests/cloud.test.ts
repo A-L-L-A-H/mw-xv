@@ -469,12 +469,12 @@ describe('@moonwitness/orm-cloud addon', () => {
     expect(result.probed).toBe(3);
     expect(result.healthy).toBe(1);
     expect(result.offline).toBe(2);
-    expect((await CloudDeploymentTarget.query().findById(offlineTarget.id)).health_status).toBe(
-      'offline'
-    );
-    expect((await CloudDeploymentTarget.query().findById(healthyTarget.id)).health_status).toBe(
-      'healthy'
-    );
+    const offlineTargetRow = await CloudDeploymentTarget.query().findById(offlineTarget.id);
+    const healthyTargetRow = await CloudDeploymentTarget.query().findById(healthyTarget.id);
+    expect(offlineTargetRow).toBeDefined();
+    expect(healthyTargetRow).toBeDefined();
+    expect(offlineTargetRow?.health_status).toBe('offline');
+    expect(healthyTargetRow?.health_status).toBe('healthy');
 
     const selected = selectHealthyDeploymentTarget([
       {

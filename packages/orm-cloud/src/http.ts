@@ -17,7 +17,7 @@ import {
   reconcileDeploymentOutcome,
   type CloudDeploymentState,
 } from './providers/coolify.js';
-import { PaasQuotaReservationLedger } from './quota.js';
+import type { PaasQuotaReservationLedger } from './quota.js';
 import { exportCloudTerraformHcl } from './terraform.js';
 import { probeCloudTargetsHealth, assertProbeTarget, readBoundedResponseBody } from './probe.js';
 import {
@@ -433,11 +433,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       return true;
     };
 
-    async function controlPlaneFetch(
-      input: string,
-      init?: RequestInit,
-      secrets: readonly (string | undefined)[] = []
-    ): Promise<Response> {
+    async function controlPlaneFetch(input: string, init?: RequestInit): Promise<Response> {
       assertProbeTarget(input, requestPolicy);
       try {
         const response = await fetchImpl(input, {

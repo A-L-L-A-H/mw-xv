@@ -153,10 +153,6 @@ function weeklyBucketStartMs(timestamp: string, anchorDay: number): number {
   return dayStart - daysSinceAnchor * 86_400_000;
 }
 
-function canonicalString(value: string): string {
-  return JSON.stringify(value);
-}
-
 function canonicalPolicySha256(policy: BackupRetentionPolicy): string {
   const canonical = JSON.stringify({
     hourlyCount: policy.hourlyCount,

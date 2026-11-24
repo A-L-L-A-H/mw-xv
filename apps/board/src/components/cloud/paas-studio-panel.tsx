@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { isRecord } from '@moonwitness/types';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { EmptyState } from '@moonwitness/ui/components/empty-state';
@@ -68,10 +69,6 @@ interface PostgresBackupRecord {
 }
 
 const DEFAULT_TENANTS = ['default', 'production', 'staging'] as const;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);

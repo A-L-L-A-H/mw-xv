@@ -1,6 +1,5 @@
 import type { Knex } from 'knex';
 import { registerJobHandler } from '@moonwitness/jobs';
-import { resolveControlPlaneToken } from './auth.js';
 import { probeCloudTargetsHealth } from './probe.js';
 
 export const CLOUD_TARGETS_PROBE_JOB = 'cloud.targets.probe';
