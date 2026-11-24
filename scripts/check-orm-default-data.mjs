@@ -80,6 +80,8 @@ async function main() {
   // Sensor and sim tables intentionally stay empty until their seed manifests are explicitly enabled.
   // bot-orchestrator/ecommerce_sync/rnd are infrastructure/research addons whose
   // records are created by operators at runtime; they have no safe demo records.
+  // observability stores runtime telemetry (spans/logs/metrics); seeded rows
+  // would fabricate operational signal, so its tables stay empty by design.
   const exemptAddons = new Set([
     ...DEFAULT_DATA_EXEMPT_ADDONS,
     'sensor',
@@ -87,6 +89,7 @@ async function main() {
     'bot-orchestrator',
     'ecommerce_sync',
     'rnd',
+    'observability',
   ]);
   assertAddonDefaultDataPolicy(
     inspected.map((entry) => entry.manifest),
