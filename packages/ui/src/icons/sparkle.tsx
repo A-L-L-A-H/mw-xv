@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type SparkleIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function SparkleIcon({ size = 24, title, ...props }: SparkleIconProps) {
+const SparkleIcon = forwardRef<SVGSVGElement, SparkleIconProps>(function SparkleIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function SparkleIcon({ size = 24, title, ...props }: SparkleIconProps) {
       <path d="m19 14 1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3Z" />
     </svg>
   );
-}
+});
+
+SparkleIcon.displayName = 'SparkleIcon';
+
+export { SparkleIcon };

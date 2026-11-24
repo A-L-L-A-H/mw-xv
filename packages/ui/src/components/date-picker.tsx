@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { cn } from '../lib/cn.js';
 
 export type DatePickerValue = {
@@ -49,6 +49,14 @@ export function DatePicker({
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined;
   const invalidState = invalid || Boolean(error);
+  const [uncontrolledValue, setUncontrolledValue] = useState<DatePickerValue | null>(null);
+  const isControlled = value !== undefined;
+  const currentValue = isControlled ? value : uncontrolledValue;
+
+  const updateValue = (nextValue: DatePickerValue | null) => {
+    if (!isControlled) setUncontrolledValue(nextValue);
+    onValueChange?.(nextValue);
+  };
 
   return (
     <div className={cn('mw-ui-field', className)} data-slot="date-picker">
@@ -69,11 +77,11 @@ export function DatePicker({
           min={min}
           name={name ? `${name}-date` : undefined}
           onChange={(event) =>
-            onValueChange?.(event.target.value ? { ...value, date: event.target.value } : null)
+            updateValue(event.target.value ? { ...currentValue, date: event.target.value } : null)
           }
           required={required}
           type="date"
-          value={value?.date ?? ''}
+          value={currentValue?.date ?? ''}
         />
         {includeTime ? (
           <input
@@ -87,13 +95,15 @@ export function DatePicker({
             min={min?.slice(11)}
             name={name ? `${name}-time` : undefined}
             onChange={(event) =>
-              onValueChange?.(
-                value?.date ? { ...value, time: event.target.value || undefined } : null
+              updateValue(
+                currentValue?.date
+                  ? { ...currentValue, time: event.target.value || undefined }
+                  : null
               )
             }
             required={required}
             type="time"
-            value={value?.time ?? ''}
+            value={currentValue?.time ?? ''}
           />
         ) : null}
       </div>

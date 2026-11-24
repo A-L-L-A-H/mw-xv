@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ImageIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ImageIcon({ size = 24, title, ...props }: ImageIconProps) {
+const ImageIcon = forwardRef<SVGSVGElement, ImageIconProps>(function ImageIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -28,4 +32,8 @@ export function ImageIcon({ size = 24, title, ...props }: ImageIconProps) {
       <path d="m5 17 5-5 3.5 3 2.5-2 3 4" />
     </svg>
   );
-}
+});
+
+ImageIcon.displayName = 'ImageIcon';
+
+export { ImageIcon };

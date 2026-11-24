@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type CheckSquareIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function CheckSquareIcon({ size = 24, title, ...props }: CheckSquareIconProps) {
+const CheckSquareIcon = forwardRef<SVGSVGElement, CheckSquareIconProps>(function CheckSquareIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function CheckSquareIcon({ size = 24, title, ...props }: CheckSquareIconP
       <path d="m7.5 12.5 3 3 6-7" />
     </svg>
   );
-}
+});
+
+CheckSquareIcon.displayName = 'CheckSquareIcon';
+
+export { CheckSquareIcon };

@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type CheckCircleIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function CheckCircleIcon({ size = 24, title, ...props }: CheckCircleIconProps) {
+const CheckCircleIcon = forwardRef<SVGSVGElement, CheckCircleIconProps>(function CheckCircleIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function CheckCircleIcon({ size = 24, title, ...props }: CheckCircleIconP
       <path d="m8.5 12 2.5 2.5 4.5-5" />
     </svg>
   );
-}
+});
+
+CheckCircleIcon.displayName = 'CheckCircleIcon';
+
+export { CheckCircleIcon };

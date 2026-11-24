@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type MoonIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function MoonIcon({ size = 24, title, ...props }: MoonIconProps) {
+const MoonIcon = forwardRef<SVGSVGElement, MoonIconProps>(function MoonIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function MoonIcon({ size = 24, title, ...props }: MoonIconProps) {
       <path d="M19.5 15.5A8.5 8.5 0 0 1 8.5 4.5a8.5 8.5 0 1 0 11 11Z" />
     </svg>
   );
-}
+});
+
+MoonIcon.displayName = 'MoonIcon';
+
+export { MoonIcon };

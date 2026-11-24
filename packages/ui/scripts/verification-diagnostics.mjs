@@ -4,6 +4,9 @@ const verificationPhases = new Set([
   'read locked consumer dependency versions',
   'install isolated consumer dependencies',
   'run consumer import smoke test',
+  'run consumer typecheck',
+  'validate optional peer isolation',
+  'validate package peer metadata',
   'validate public stylesheet exports',
 ]);
 

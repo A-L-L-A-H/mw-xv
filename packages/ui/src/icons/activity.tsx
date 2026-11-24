@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ActivityIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ActivityIcon({ size = 24, title, ...props }: ActivityIconProps) {
+const ActivityIcon = forwardRef<SVGSVGElement, ActivityIconProps>(function ActivityIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function ActivityIcon({ size = 24, title, ...props }: ActivityIconProps) 
       <path d="M12 7v5l3.5 2m-11-9 2-1.5m13 1.5-2-1.5" />
     </svg>
   );
-}
+});
+
+ActivityIcon.displayName = 'ActivityIcon';
+
+export { ActivityIcon };

@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type DeleteIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function DeleteIcon({ size = 24, title, ...props }: DeleteIconProps) {
+const DeleteIcon = forwardRef<SVGSVGElement, DeleteIconProps>(function DeleteIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function DeleteIcon({ size = 24, title, ...props }: DeleteIconProps) {
       <path d="M4 7h16m-10-3h4m-8 3 1 13h10l1-13m-8 3v7m4-7v7" />
     </svg>
   );
-}
+});
+
+DeleteIcon.displayName = 'DeleteIcon';
+
+export { DeleteIcon };

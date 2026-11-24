@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type SortDescendingIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function SortDescendingIcon({ size = 24, title, ...props }: SortDescendingIconProps) {
+const SortDescendingIcon = forwardRef<SVGSVGElement, SortDescendingIconProps>(function SortDescendingIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function SortDescendingIcon({ size = 24, title, ...props }: SortDescendin
       <path d="M12 5v14m-6-6 6 6 6-6" />
     </svg>
   );
-}
+});
+
+SortDescendingIcon.displayName = 'SortDescendingIcon';
+
+export { SortDescendingIcon };

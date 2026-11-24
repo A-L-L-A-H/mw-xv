@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type CreditCardIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function CreditCardIcon({ size = 24, title, ...props }: CreditCardIconProps) {
+const CreditCardIcon = forwardRef<SVGSVGElement, CreditCardIconProps>(function CreditCardIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function CreditCardIcon({ size = 24, title, ...props }: CreditCardIconPro
       <path d="M3 9h18m-15 6h4m-4 2h2" />
     </svg>
   );
-}
+});
+
+CreditCardIcon.displayName = 'CreditCardIcon';
+
+export { CreditCardIcon };

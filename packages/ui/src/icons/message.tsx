@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type MessageIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function MessageIcon({ size = 24, title, ...props }: MessageIconProps) {
+const MessageIcon = forwardRef<SVGSVGElement, MessageIconProps>(function MessageIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function MessageIcon({ size = 24, title, ...props }: MessageIconProps) {
       <path d="M8.5 12h.01m3.5 0h.01m3.5 0h.01" />
     </svg>
   );
-}
+});
+
+MessageIcon.displayName = 'MessageIcon';
+
+export { MessageIcon };

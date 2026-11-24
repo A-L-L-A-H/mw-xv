@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type CalendarIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function CalendarIcon({ size = 24, title, ...props }: CalendarIconProps) {
+const CalendarIcon = forwardRef<SVGSVGElement, CalendarIconProps>(function CalendarIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function CalendarIcon({ size = 24, title, ...props }: CalendarIconProps) 
       <path d="M7.5 3v4m9-4v4m-13 2h17m-12 4h.1m4.9 0h.1m-5.1 4h.1m4.9 0h.1" />
     </svg>
   );
-}
+});
+
+CalendarIcon.displayName = 'CalendarIcon';
+
+export { CalendarIcon };

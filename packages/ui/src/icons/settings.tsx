@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type SettingsIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function SettingsIcon({ size = 24, title, ...props }: SettingsIconProps) {
+const SettingsIcon = forwardRef<SVGSVGElement, SettingsIconProps>(function SettingsIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -28,4 +32,8 @@ export function SettingsIcon({ size = 24, title, ...props }: SettingsIconProps) 
       <circle cx="12" cy="12" r="2" />
     </svg>
   );
-}
+});
+
+SettingsIcon.displayName = 'SettingsIcon';
+
+export { SettingsIcon };

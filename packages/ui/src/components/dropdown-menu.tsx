@@ -9,8 +9,14 @@ const panel =
 const item =
   'mw-ui-menu-item relative flex cursor-default items-center gap-2 rounded-none px-2.5 py-1.5 text-sm outline-hidden select-none focus:bg-[var(--mw-primary)] focus:text-[var(--mw-primary-foreground)] focus:font-bold data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 data-[variant=destructive]:text-[var(--mw-destructive)] data-[variant=destructive]:focus:bg-[var(--mw-destructive)] data-[variant=destructive]:focus:text-[var(--mw-destructive-foreground)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink-soft data-[variant=destructive]:*:[svg]:text-[var(--mw-destructive)] data-[variant=destructive]:focus:*:[svg]:text-[var(--mw-destructive-foreground)]';
 
-export function DropdownMenu(props: React.ComponentProps<typeof Primitive.Root>) {
-  return <Primitive.Root data-slot="dropdown-menu" {...props} />;
+export function DropdownMenu({
+  modal = false,
+  ...props
+}: React.ComponentProps<typeof Primitive.Root>) {
+  // Non-modal menus keep background content focusable, so Radix does not apply
+  // aria-hidden to it (which would leave focusable descendants behind a hidden
+  // subtree). Consumers can still opt into modal behavior explicitly.
+  return <Primitive.Root data-slot="dropdown-menu" modal={modal} {...props} />;
 }
 export function DropdownMenuPortal(props: React.ComponentProps<typeof Primitive.Portal>) {
   return <Primitive.Portal data-slot="dropdown-menu-portal" {...props} />;
@@ -168,10 +174,12 @@ export function DropdownMenuSubContent({
   ...props
 }: React.ComponentProps<typeof Primitive.SubContent>) {
   return (
-    <Primitive.SubContent
-      data-slot="dropdown-menu-sub-content"
-      className={cn(panel, className)}
-      {...props}
-    />
+    <Primitive.Portal>
+      <Primitive.SubContent
+        data-slot="dropdown-menu-sub-content"
+        className={cn(panel, className)}
+        {...props}
+      />
+    </Primitive.Portal>
   );
 }

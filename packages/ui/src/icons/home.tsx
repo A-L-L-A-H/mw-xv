@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type HomeIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function HomeIcon({ size = 24, title, ...props }: HomeIconProps) {
+const HomeIcon = forwardRef<SVGSVGElement, HomeIconProps>(function HomeIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function HomeIcon({ size = 24, title, ...props }: HomeIconProps) {
       <path d="m3 11 9-7 9 7v9h-6v-6H9v6H3v-9Z" />
     </svg>
   );
-}
+});
+
+HomeIcon.displayName = 'HomeIcon';
+
+export { HomeIcon };

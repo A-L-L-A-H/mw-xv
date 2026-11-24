@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type InboxIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function InboxIcon({ size = 24, title, ...props }: InboxIconProps) {
+const InboxIcon = forwardRef<SVGSVGElement, InboxIconProps>(function InboxIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function InboxIcon({ size = 24, title, ...props }: InboxIconProps) {
       <path d="M2.5 14h5l1.7 3h5.6l1.7-3h5" />
     </svg>
   );
-}
+});
+
+InboxIcon.displayName = 'InboxIcon';
+
+export { InboxIcon };

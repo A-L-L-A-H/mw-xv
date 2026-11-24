@@ -1,46 +1,24 @@
-export type ColorMode = 'light' | 'dark';
+import {
+  isSkinMetadata,
+  type BuiltinSkinId,
+  type ColorMode,
+  type SkinDensity,
+  type SkinId,
+  type SkinMetadata,
+  type ThemeRegistry,
+  type UserThemePreferences,
+} from '@moonwitness/types';
 
-export type SkinDensity = 'comfortable' | 'compact';
-
-export type BuiltinSkinId = 'moonwitness-ink' | 'moonwitness-compact' | 'moonwitness-high-contrast';
-
-export type SkinId = BuiltinSkinId | (string & {});
-
-export interface SkinSwatchPreview {
-  readonly background: string;
-  readonly surface: string;
-  readonly foreground: string;
-  readonly accent: string;
-}
-
-export interface SkinMetadata {
-  readonly id: SkinId;
-  readonly label: string;
-  readonly description: string;
-  readonly supportedModes: readonly ColorMode[];
-  readonly supportedDensities: readonly SkinDensity[];
-  readonly defaultMode: ColorMode;
-  readonly defaultDensity: SkinDensity;
-  readonly swatch: SkinSwatchPreview;
-}
-
-export interface UserThemePreferences {
-  readonly skin: SkinId;
-  readonly theme_mode: ColorMode;
-  readonly density: SkinDensity;
-}
-
-export interface ThemeRegistry {
-  readonly defaultSkinId: SkinId;
-  register(skin: SkinMetadata): void;
-  get(id: string): SkinMetadata | undefined;
-  resolve(id?: string | null): SkinMetadata;
-  list(): readonly SkinMetadata[];
-  has(id: string): boolean;
-  isModeSupported(skinId: string, mode: ColorMode): boolean;
-  isDensitySupported(skinId: string, density: SkinDensity): boolean;
-  normalizePreferences(preferences?: Partial<UserThemePreferences> | null): UserThemePreferences;
-}
+export type {
+  BuiltinSkinId,
+  ColorMode,
+  SkinDensity,
+  SkinId,
+  SkinMetadata,
+  SkinSwatchPreview,
+  ThemeRegistry,
+  UserThemePreferences,
+} from '@moonwitness/types';
 
 export const DEFAULT_SKIN_ID: BuiltinSkinId = 'moonwitness-ink';
 
@@ -92,30 +70,9 @@ export const BUILTIN_SKINS: readonly SkinMetadata[] = Object.freeze([
   }),
 ]);
 
-const SKIN_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
 function validateSkinMetadata(skin: SkinMetadata): void {
-  if (!skin || typeof skin.id !== 'string' || !SKIN_ID_PATTERN.test(skin.id)) {
-    throw new Error(`Invalid skin id "${String(skin?.id)}": expected lowercase kebab-case slug.`);
-  }
-  if (typeof skin.label !== 'string' || skin.label.trim().length === 0) {
-    throw new Error(`Skin "${skin.id}" must declare a non-empty label.`);
-  }
-  if (!Array.isArray(skin.supportedModes) || skin.supportedModes.length === 0) {
-    throw new Error(`Skin "${skin.id}" must support at least one color mode.`);
-  }
-  if (!skin.supportedModes.includes(skin.defaultMode)) {
-    throw new Error(
-      `Skin "${skin.id}" defaultMode "${skin.defaultMode}" is not in supportedModes.`
-    );
-  }
-  if (!Array.isArray(skin.supportedDensities) || skin.supportedDensities.length === 0) {
-    throw new Error(`Skin "${skin.id}" must support at least one density.`);
-  }
-  if (!skin.supportedDensities.includes(skin.defaultDensity)) {
-    throw new Error(
-      `Skin "${skin.id}" defaultDensity "${skin.defaultDensity}" is not in supportedDensities.`
-    );
+  if (!isSkinMetadata(skin)) {
+    throw new Error('Invalid skin metadata.');
   }
 }
 
@@ -193,3 +150,8 @@ export function createThemeRegistry(
 }
 
 export const themeRegistry: ThemeRegistry = createThemeRegistry(BUILTIN_SKINS, DEFAULT_SKIN_ID);
+
+export function createSkinInitScript(): string {
+  const skinIds = JSON.stringify(themeRegistry.list().map((skin) => skin.id));
+  return `(function(){try{var s=localStorage.getItem('mw-board-preferences');var p=s?JSON.parse(s):null;var k=p&&typeof p.skin==='string'?p.skin:'${DEFAULT_SKIN_ID}';var allowed=${skinIds};if(allowed.indexOf(k)===-1)k='${DEFAULT_SKIN_ID}';var d=p&&p.density==='compact'?'compact':'comfortable';var m=(p&&(p.theme==='dark'||p.theme==='light'))?p.theme:(localStorage.getItem('mw-theme')==='dark'?'dark':'light');var r=document.documentElement;r.dataset.skin=k;r.dataset.density=d;r.classList.toggle('dark',m==='dark');}catch(e){}})();`;
+}

@@ -1,15 +1,17 @@
 @layer components {
   /* Sonner ships 400ms motion by default; keep toast feedback in the shared motion scale. */
-  .mw-ui-toast-host[data-sonner-toaster] {
-    --normal-bg: var(--mw-surface);
-    --normal-border: var(--mw-border);
-    --normal-text: var(--mw-foreground);
-    --success-bg: var(--mw-success);
-    --success-border: var(--mw-success);
-    --success-text: var(--mw-on-success);
-    --error-bg: var(--mw-error);
-    --error-border: var(--mw-error);
-    --error-text: var(--mw-on-error);
+  /* Sonner injects its theme variables at runtime with the same specificity,
+     so bind the shared tokens to both the host and theme attribute to win. */
+  .mw-ui-toast-host[data-sonner-toaster][data-sonner-theme] {
+    --normal-bg: var(--mw-surface) !important;
+    --normal-border: var(--mw-border) !important;
+    --normal-text: var(--mw-foreground) !important;
+    --success-bg: var(--mw-success) !important;
+    --success-border: var(--mw-success) !important;
+    --success-text: var(--mw-on-success) !important;
+    --error-bg: var(--mw-error) !important;
+    --error-border: var(--mw-error) !important;
+    --error-text: var(--mw-on-error) !important;
     transition-duration: var(--mw-motion-normal) !important;
     transition-timing-function: var(--mw-motion-ease) !important;
   }
@@ -158,7 +160,7 @@
     position: relative;
     isolation: isolate;
     border-color: transparent;
-    color: var(--mw-on-accent);
+    color: var(--mw-primary-foreground);
     background: transparent;
     box-shadow: none;
   }
@@ -178,14 +180,31 @@
   .mw-ui-button[data-treatment='brush'][data-variant='magenta']::before {
     background: var(--mw-magenta);
   }
+  .mw-ui-button[data-treatment='brush'][data-variant='secondary'] {
+    color: var(--mw-secondary-foreground);
+  }
   .mw-ui-button[data-treatment='brush'][data-variant='secondary']::before {
     background: var(--mw-secondary);
   }
+  .mw-ui-button[data-treatment='brush'][data-variant='outline'] {
+    color: var(--mw-surface-foreground);
+  }
   .mw-ui-button[data-treatment='brush'][data-variant='outline']::before {
-    background: var(--mw-paper);
+    background: var(--mw-surface);
+  }
+  .mw-ui-button[data-treatment='brush'][data-variant='destructive'] {
+    color: var(--mw-destructive-foreground);
   }
   .mw-ui-button[data-treatment='brush'][data-variant='destructive']::before {
     background: var(--mw-destructive);
+  }
+  .mw-ui-button[data-treatment='brush'][data-variant='ghost'],
+  .mw-ui-button[data-treatment='brush'][data-variant='link'] {
+    color: var(--mw-surface-foreground);
+  }
+  .mw-ui-button[data-treatment='brush'][data-variant='ghost']::before,
+  .mw-ui-button[data-treatment='brush'][data-variant='link']::before {
+    background: var(--mw-surface);
   }
   .mw-ui-button[data-treatment='brush']:hover:not(:disabled) {
     box-shadow: none;
@@ -809,6 +828,10 @@
     border-radius: var(--mw-grunge-radius-hand);
     box-shadow: 2px 2px 0 var(--mw-ink);
   }
+  .mw-ui-switch:focus-visible {
+    outline: 3px solid var(--mw-focus);
+    outline-offset: 2px;
+  }
   .mw-ui-switch-thumb {
     border-radius: var(--mw-grunge-radius-hand);
     transition: transform var(--mw-motion-fast) var(--mw-motion-ease-emphasis);
@@ -1283,6 +1306,11 @@
   .mw-ui-table-wrap {
     width: 100%;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+  .mw-ui-table-wrap:focus-visible {
+    outline: 3px solid var(--mw-focus);
+    outline-offset: 2px;
   }
   .mw-ui-table {
     width: 100%;
@@ -1686,6 +1714,36 @@
     color: var(--mw-foreground);
     background: var(--mw-surface);
     box-shadow: 6px 6px 0 var(--mw-ink);
+    max-height: calc(100dvh - 2rem);
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+  .mw-ui-dialog-body {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .mw-ui-sheet-content {
+    max-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+  .mw-ui-sheet-content[data-side='top'],
+  .mw-ui-sheet-content[data-side='bottom'] {
+    max-height: calc(100dvh - 2rem);
+  }
+  .mw-ui-sheet-body {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
   .mw-ui-dialog-close {
     position: absolute;

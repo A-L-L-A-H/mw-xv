@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ColumnsIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ColumnsIcon({ size = 24, title, ...props }: ColumnsIconProps) {
+const ColumnsIcon = forwardRef<SVGSVGElement, ColumnsIconProps>(function ColumnsIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function ColumnsIcon({ size = 24, title, ...props }: ColumnsIconProps) {
       <path d="M9 4v16m6-16v16" />
     </svg>
   );
-}
+});
+
+ColumnsIcon.displayName = 'ColumnsIcon';
+
+export { ColumnsIcon };

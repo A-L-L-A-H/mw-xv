@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type LockIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function LockIcon({ size = 24, title, ...props }: LockIconProps) {
+const LockIcon = forwardRef<SVGSVGElement, LockIconProps>(function LockIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function LockIcon({ size = 24, title, ...props }: LockIconProps) {
       <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3" />
     </svg>
   );
-}
+});
+
+LockIcon.displayName = 'LockIcon';
+
+export { LockIcon };

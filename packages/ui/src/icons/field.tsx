@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type FieldIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function FieldIcon({ size = 24, title, ...props }: FieldIconProps) {
+const FieldIcon = forwardRef<SVGSVGElement, FieldIconProps>(function FieldIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function FieldIcon({ size = 24, title, ...props }: FieldIconProps) {
       <circle cx="18" cy="9" r="1" />
     </svg>
   );
-}
+});
+
+FieldIcon.displayName = 'FieldIcon';
+
+export { FieldIcon };

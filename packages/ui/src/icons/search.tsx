@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type SearchIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function SearchIcon({ size = 24, title, ...props }: SearchIconProps) {
+const SearchIcon = forwardRef<SVGSVGElement, SearchIconProps>(function SearchIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function SearchIcon({ size = 24, title, ...props }: SearchIconProps) {
       <path d="m15.5 15.5 5 5" />
     </svg>
   );
-}
+});
+
+SearchIcon.displayName = 'SearchIcon';
+
+export { SearchIcon };

@@ -132,7 +132,7 @@ test('createThemeRegistry supports custom registration and rejects duplicate or 
         defaultDensity: 'comfortable',
         swatch: { background: '#fff', surface: '#fff', foreground: '#000', accent: '#ff0' },
       }),
-    /Invalid skin id/
+    /Invalid skin metadata/
   );
 });
 
@@ -156,6 +156,14 @@ test('all built-in skins meet WCAG AA contrast across light and dark modes', () 
     'violet-readable',
   ];
 
+  const brushPairs = [
+    ['primary-foreground', 'primary'],
+    ['on-magenta', 'magenta'],
+    ['secondary-foreground', 'secondary'],
+    ['surface-foreground', 'surface'],
+    ['destructive-foreground', 'destructive'],
+  ];
+
   for (const skin of themeRegistry.list()) {
     for (const mode of skin.supportedModes) {
       const selectors = [':root'];
@@ -171,6 +179,15 @@ test('all built-in skins meet WCAG AA contrast across light and dark modes', () 
         assert.ok(
           contrast(fg, bg) >= 4.5,
           `${skin.id} (${mode}): ${fgName} (${fg}) on ${bgName} (${bg}) is below 4.5:1`
+        );
+      }
+
+      for (const [fgName, bgName] of brushPairs) {
+        const fg = resolveToken(fgName, selectors);
+        const bg = resolveToken(bgName, selectors);
+        assert.ok(
+          contrast(fg, bg) >= 4.5,
+          `${skin.id} (${mode}): brush ${fgName} (${fg}) on ${bgName} (${bg}) is below 4.5:1`
         );
       }
 

@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type MapPinIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function MapPinIcon({ size = 24, title, ...props }: MapPinIconProps) {
+const MapPinIcon = forwardRef<SVGSVGElement, MapPinIconProps>(function MapPinIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function MapPinIcon({ size = 24, title, ...props }: MapPinIconProps) {
       <circle cx="12" cy="10" r="2.5" />
     </svg>
   );
-}
+});
+
+MapPinIcon.displayName = 'MapPinIcon';
+
+export { MapPinIcon };

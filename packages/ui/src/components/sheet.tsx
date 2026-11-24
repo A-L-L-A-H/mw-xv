@@ -49,8 +49,9 @@ function SheetContent({
       <SheetOverlay />
       <SheetPrimitive.Content
         data-slot="sheet-content"
+        data-side={side}
         className={cn(
-          'mw-ui-sheet-content fixed flex flex-col gap-4 border-ink bg-paper p-6 shadow-ink-lg transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500',
+          'mw-ui-sheet-content fixed flex max-h-[100dvh] flex-col gap-4 overflow-hidden border-ink bg-paper p-6 shadow-ink-lg transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500',
           side === 'right' &&
             'inset-y-0 right-0 h-full w-3/4 border-l-4 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm',
           side === 'left' &&
@@ -63,9 +64,13 @@ function SheetContent({
         )}
         {...props}
       >
-        {children}
+        <div className="mw-ui-sheet-body min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          {children}
+        </div>
         {showCloseButton && (
-          <SheetPrimitive.Close className="absolute top-4 right-4 border-2 border-ink bg-paper p-1 text-ink transition-transform hover:-translate-y-0.5 hover:bg-[var(--mw-magenta)] hover:text-[var(--mw-on-magenta)] shadow-[2px_2px_0_0_var(--ink)] disabled:pointer-events-none [&_svg]:size-4">
+          <SheetPrimitive.Close
+            data-slot="sheet-close"
+            className="absolute top-4 right-4 border-2 border-ink bg-paper p-1 text-ink transition-transform hover:-translate-y-0.5 hover:bg-[var(--mw-magenta)] hover:text-[var(--mw-on-magenta)] shadow-[2px_2px_0_0_var(--ink)] disabled:pointer-events-none [&_svg]:size-4">
             <span aria-hidden="true">×</span>
             <span className="sr-only">Close</span>
           </SheetPrimitive.Close>

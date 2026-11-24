@@ -52,11 +52,13 @@ test('package exposes explicit stylesheet and tree-shakeable typed icon entries'
   assert.equal(packageJson.exports['./icons'].import, './dist/icons/index.js');
   assert.equal(packageJson.exports['./components/button'].import, './dist/components/button.js');
   assert.equal(packageJson.exports['./components.css'], './src/styles/components.css');
-  assert.equal(packageJson.dependencies, undefined);
+  assert.deepEqual(packageJson.dependencies, { '@moonwitness/types': 'workspace:*' });
   assert.equal(packageJson.peerDependencies.react, '>=18');
-  assert.equal(packageJson.peerDependenciesMeta.react.optional, true);
+  assert.notEqual(packageJson.peerDependenciesMeta.react?.optional, true, 'react must be a required peer');
   assert.equal(packageJson.peerDependencies['radix-ui'], '>=1.6.7');
-  assert.equal(packageJson.peerDependenciesMeta['radix-ui'].optional, true);
+  assert.notEqual(packageJson.peerDependenciesMeta['radix-ui']?.optional, true, 'radix-ui must be a required peer');
+  assert.equal(packageJson.peerDependencies.cmdk, '>=1.1.1');
+  assert.equal(packageJson.peerDependenciesMeta.cmdk.optional, true);
   assert.equal(packageJson.peerDependencies.sonner, '>=2');
   assert.equal(packageJson.peerDependenciesMeta.sonner.optional, true);
   assert.deepEqual(packageJson.sideEffects, ['**/*.css']);
@@ -147,6 +149,8 @@ test('semantic text pairs meet WCAG AA in both theme mappings', () => {
     ['on-success', 'success'],
     ['on-warning', 'warning'],
     ['on-info', 'info'],
+    ['on-magenta', 'magenta'],
+    ['secondary-foreground', 'secondary'],
   ];
 
   for (const selector of [':root', '\\.dark']) {
@@ -164,6 +168,87 @@ test('semantic text pairs meet WCAG AA in both theme mappings', () => {
   assert.equal(resolvedValue('background', ':root'), '#f3efe4');
   assert.equal(resolvedValue('foreground', '\\.dark'), '#f3efe4');
   assert.equal(resolvedValue('background', '\\.dark'), '#0e0e10');
+});
+
+test('brush variants pair semantic foregrounds with their brush backgrounds', async () => {
+  const componentCss = await readFile(
+    new URL('../src/styles/components.css', import.meta.url),
+    'utf8'
+  );
+  const baseBrush = componentCss.match(
+    /\.mw-ui-button\[data-treatment='brush'\]\s*\{([^}]+)\}/u
+  );
+  assert.ok(baseBrush);
+  assert.match(baseBrush[1], /color:\s*var\(--mw-primary-foreground\)/u);
+  const rules = [
+    ['magenta', 'on-magenta'],
+    ['secondary', 'secondary-foreground'],
+    ['outline', 'surface-foreground'],
+    ['destructive', 'destructive-foreground'],
+    ['ghost', 'surface-foreground'],
+    ['link', 'surface-foreground'],
+  ];
+  for (const [variant, foreground] of rules) {
+    const selector =
+      variant === 'ghost' || variant === 'link'
+        ? ".mw-ui-button[data-treatment='brush'][data-variant='ghost'], .mw-ui-button[data-treatment='brush'][data-variant='link']"
+        : `.mw-ui-button[data-treatment='brush'][data-variant='${variant}']`;
+    const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replaceAll(' ', '\\s+');
+    const block = componentCss.match(new RegExp(`${escapedSelector}\\s*\\{([^}]+)\\}`, 'u'));
+    assert.ok(block, `Missing brush rule for ${variant}`);
+    assert.match(
+      block[1],
+      new RegExp(`color:\\s*var\\(--mw-${foreground}\\)`, 'u'),
+      `Missing semantic brush foreground for ${variant}`
+    );
+  }
+  assert.match(
+    componentCss,
+    /\.mw-ui-switch:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--mw-focus\)/u
+  );
+});
+
+test('overlay surfaces bound viewport height and contain internal scrolling', async () => {
+  const componentCss = await readFile(
+    new URL('../src/styles/components.css', import.meta.url),
+    'utf8'
+  );
+  for (const surface of ['dialog', 'sheet']) {
+    assert.match(
+      componentCss,
+      new RegExp(
+        `\\.mw-ui-${surface}-content\\s*\\{[^}]*max-height:\\s*(?:calc\\()?100dvh[^}]*\\}`,
+        'u'
+      ),
+      `Missing bounded ${surface} content`
+    );
+    assert.match(
+      componentCss,
+      new RegExp(`\\.mw-ui-${surface}-content\\s*\\{[^}]*overflow:\\s*hidden[^}]*\\}`, 'u')
+    );
+    assert.match(
+      componentCss,
+      new RegExp(
+        `\\.mw-ui-${surface}-content\\s*\\{[^}]*overscroll-behavior:\\s*contain[^}]*\\}`,
+        'u'
+      )
+    );
+    assert.match(
+      componentCss,
+      new RegExp(`\\.mw-ui-${surface}-body\\s*\\{[^}]*overflow-y:\\s*auto[^}]*\\}`, 'u')
+    );
+    assert.match(
+      componentCss,
+      new RegExp(
+        `\\.mw-ui-${surface}-body\\s*\\{[^}]*overscroll-behavior:\\s*contain[^}]*\\}`,
+        'u'
+      )
+    );
+  }
+  assert.match(
+    componentCss,
+    /\.mw-ui-table-wrap:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--mw-focus\)/u
+  );
 });
 
 test('control boundaries and focus indicators meet the 3:1 non-text target', () => {

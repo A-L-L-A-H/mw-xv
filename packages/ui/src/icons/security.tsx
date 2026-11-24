@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type SecurityIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function SecurityIcon({ size = 24, title, ...props }: SecurityIconProps) {
+const SecurityIcon = forwardRef<SVGSVGElement, SecurityIconProps>(function SecurityIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function SecurityIcon({ size = 24, title, ...props }: SecurityIconProps) 
       <path d="m8.5 12 2.3 2.3 4.8-5" />
     </svg>
   );
-}
+});
+
+SecurityIcon.displayName = 'SecurityIcon';
+
+export { SecurityIcon };

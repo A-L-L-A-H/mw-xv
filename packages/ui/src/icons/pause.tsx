@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type PauseIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function PauseIcon({ size = 24, title, ...props }: PauseIconProps) {
+const PauseIcon = forwardRef<SVGSVGElement, PauseIconProps>(function PauseIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function PauseIcon({ size = 24, title, ...props }: PauseIconProps) {
       <path d="M8 5h3v14H8zm5 0h3v14h-3z" />
     </svg>
   );
-}
+});
+
+PauseIcon.displayName = 'PauseIcon';
+
+export { PauseIcon };

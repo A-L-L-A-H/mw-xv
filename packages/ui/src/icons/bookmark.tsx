@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type BookmarkIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function BookmarkIcon({ size = 24, title, ...props }: BookmarkIconProps) {
+const BookmarkIcon = forwardRef<SVGSVGElement, BookmarkIconProps>(function BookmarkIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function BookmarkIcon({ size = 24, title, ...props }: BookmarkIconProps) 
       <path d="M6 3.5h12v17l-6-4-6 4v-17Z" />
     </svg>
   );
-}
+});
+
+BookmarkIcon.displayName = 'BookmarkIcon';
+
+export { BookmarkIcon };

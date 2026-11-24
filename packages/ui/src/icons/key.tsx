@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type KeyIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function KeyIcon({ size = 24, title, ...props }: KeyIconProps) {
+const KeyIcon = forwardRef<SVGSVGElement, KeyIconProps>(function KeyIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function KeyIcon({ size = 24, title, ...props }: KeyIconProps) {
       <path d="m11.2 12.3 9.3-9.3m-3.5 3.5 2.5 2.5m-5-0 2.5 2.5" />
     </svg>
   );
-}
+});
+
+KeyIcon.displayName = 'KeyIcon';
+
+export { KeyIcon };

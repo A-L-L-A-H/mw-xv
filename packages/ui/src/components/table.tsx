@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import { useId, type ComponentProps } from 'react';
 
 export type TableProps = ComponentProps<'table'> & {
   scrollLabel?: string;
@@ -19,12 +19,14 @@ export type TableSummaryCellProps = ComponentProps<'td'> & {
 };
 
 export function Table({ className, scrollLabel, density = 'comfortable', ...props }: TableProps) {
+  const instructionsId = useId();
   return (
     <div
       className="mw-ui-table-wrap"
       data-slot="table-wrap"
       role={scrollLabel ? 'region' : undefined}
       aria-label={scrollLabel}
+      aria-describedby={scrollLabel ? instructionsId : undefined}
       tabIndex={scrollLabel ? 0 : undefined}
       onKeyDown={
         scrollLabel
@@ -50,6 +52,12 @@ export function Table({ className, scrollLabel, density = 'comfortable', ...prop
           : undefined
       }
     >
+      {scrollLabel ? (
+        <span className="mw-ui-visually-hidden" id={instructionsId}>
+          Use Left and Right Arrow to scroll horizontally, or Home and End to jump to the start or
+          end.
+        </span>
+      ) : null}
       <table
         data-density={density}
         className={['mw-ui-table', className].filter(Boolean).join(' ')}

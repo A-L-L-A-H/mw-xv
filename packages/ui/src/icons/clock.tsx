@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ClockIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ClockIcon({ size = 24, title, ...props }: ClockIconProps) {
+const ClockIcon = forwardRef<SVGSVGElement, ClockIconProps>(function ClockIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function ClockIcon({ size = 24, title, ...props }: ClockIconProps) {
       <path d="M12 7v5l3 2" />
     </svg>
   );
-}
+});
+
+ClockIcon.displayName = 'ClockIcon';
+
+export { ClockIcon };

@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type CurrencyIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function CurrencyIcon({ size = 24, title, ...props }: CurrencyIconProps) {
+const CurrencyIcon = forwardRef<SVGSVGElement, CurrencyIconProps>(function CurrencyIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function CurrencyIcon({ size = 24, title, ...props }: CurrencyIconProps) 
       <path d="M15.5 8.5c-.7-.7-1.8-1-3-1-1.8 0-3 .9-3 2.2 0 3.2 5.8 1.2 5.8 4.4 0 1.3-1.2 2.4-3.2 2.4-1.2 0-2.5-.4-3.4-1.3M12 6v12" />
     </svg>
   );
-}
+});
+
+CurrencyIcon.displayName = 'CurrencyIcon';
+
+export { CurrencyIcon };

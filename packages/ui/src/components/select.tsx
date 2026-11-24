@@ -17,14 +17,13 @@ export function SelectGroup(props: React.ComponentProps<typeof Primitive.Group>)
 export function SelectValue(props: React.ComponentProps<typeof Primitive.Value>) {
   return <Primitive.Value data-slot="select-value" {...props} />;
 }
-export function SelectTrigger({
-  className,
-  size = 'default',
-  children,
-  ...props
-}: React.ComponentProps<typeof Primitive.Trigger> & { size?: 'sm' | 'default' }) {
+export const SelectTrigger = React.forwardRef<
+  React.ElementRef<typeof Primitive.Trigger>,
+  React.ComponentProps<typeof Primitive.Trigger> & { size?: 'sm' | 'default' }
+>(function SelectTrigger({ className, size = 'default', children, ...props }, ref) {
   return (
     <Primitive.Trigger
+      ref={ref}
       data-slot="select-trigger"
       data-size={size}
       className={cn(
@@ -37,7 +36,7 @@ export function SelectTrigger({
       <Primitive.Icon asChild>{down}</Primitive.Icon>
     </Primitive.Trigger>
   );
-}
+});
 export function SelectContent({
   className,
   children,

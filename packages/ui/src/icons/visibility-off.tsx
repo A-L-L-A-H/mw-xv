@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type VisibilityOffIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function VisibilityOffIcon({ size = 24, title, ...props }: VisibilityOffIconProps) {
+const VisibilityOffIcon = forwardRef<SVGSVGElement, VisibilityOffIconProps>(function VisibilityOffIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function VisibilityOffIcon({ size = 24, title, ...props }: VisibilityOffI
       <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
     </svg>
   );
-}
+});
+
+VisibilityOffIcon.displayName = 'VisibilityOffIcon';
+
+export { VisibilityOffIcon };

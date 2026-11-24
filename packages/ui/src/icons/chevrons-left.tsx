@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ChevronsLeftIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ChevronsLeftIcon({ size = 24, title, ...props }: ChevronsLeftIconProps) {
+const ChevronsLeftIcon = forwardRef<SVGSVGElement, ChevronsLeftIconProps>(function ChevronsLeftIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function ChevronsLeftIcon({ size = 24, title, ...props }: ChevronsLeftIco
       <path d="m17 5-7 7 7 7M9 5l-7 7 7 7" />
     </svg>
   );
-}
+});
+
+ChevronsLeftIcon.displayName = 'ChevronsLeftIcon';
+
+export { ChevronsLeftIcon };

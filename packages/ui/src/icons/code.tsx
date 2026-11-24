@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type CodeIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function CodeIcon({ size = 24, title, ...props }: CodeIconProps) {
+const CodeIcon = forwardRef<SVGSVGElement, CodeIconProps>(function CodeIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function CodeIcon({ size = 24, title, ...props }: CodeIconProps) {
       <path d="m8 6-6 6 6 6m8-12 6 6-6 6m-2-15-4 18" />
     </svg>
   );
-}
+});
+
+CodeIcon.displayName = 'CodeIcon';
+
+export { CodeIcon };

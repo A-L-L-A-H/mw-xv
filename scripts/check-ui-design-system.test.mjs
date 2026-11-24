@@ -139,7 +139,19 @@ test('workspace audit includes app desktop-web UI sources', async () => {
     );
     await writeFile(join(root, 'apps/desktop/desktop-web/panel.css'), '.panel { color: #123456; }');
 
-    const report = await auditWorkspaceUi(root);
+    const policy = {
+      version: 1,
+      apps: {
+        'apps/desktop': {
+          packageName: '@moonwitness/desktop',
+          classification: 'product-adopter',
+          browser: false,
+          sourceRoots: ['desktop-web'],
+          aliases: {},
+        },
+      },
+    };
+    const report = await auditWorkspaceUi(root, { policy });
 
     assert.ok(
       report.findings.some(

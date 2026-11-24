@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type RelationIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function RelationIcon({ size = 24, title, ...props }: RelationIconProps) {
+const RelationIcon = forwardRef<SVGSVGElement, RelationIconProps>(function RelationIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -29,4 +33,8 @@ export function RelationIcon({ size = 24, title, ...props }: RelationIconProps) 
       <path d="m7.4 11 9.2-4m-9.2 6 9.2 4" />
     </svg>
   );
-}
+});
+
+RelationIcon.displayName = 'RelationIcon';
+
+export { RelationIcon };

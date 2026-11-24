@@ -2,15 +2,19 @@ import { Slot } from 'radix-ui';
 import {
   Children,
   cloneElement,
+  forwardRef,
   isValidElement,
   type ComponentProps,
+  type ForwardedRef,
   type KeyboardEvent,
   type MouseEvent,
   type ReactElement,
+  type Ref,
 } from 'react';
+import { composeRefs } from '../lib/compose-refs.js';
 
 export type ButtonVariant =
-  'default' | 'magenta' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  | 'default' | 'magenta' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 export type ButtonSize =
   'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
 export type ButtonTreatment = 'solid' | 'brush';
@@ -22,18 +26,23 @@ export type ButtonProps = ComponentProps<'button'> & {
   treatment?: ButtonTreatment;
 };
 
-export function Button({
-  asChild = false,
-  className,
-  children,
-  disabled = false,
-  onClick,
-  onKeyDown,
-  size = 'default',
-  variant = 'default',
-  treatment = 'solid',
-  ...props
-}: ButtonProps) {
+type ButtonChildProps = Record<string, unknown> & { ref?: Ref<HTMLButtonElement> };
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  {
+    asChild = false,
+    className,
+    children,
+    disabled = false,
+    onClick,
+    onKeyDown,
+    size = 'default',
+    variant = 'default',
+    treatment = 'solid',
+    ...props
+  },
+  ref: ForwardedRef<HTMLButtonElement>
+) {
   const Component = asChild ? Slot.Root : 'button';
   const classes = ['mw-ui-button', className].filter(Boolean).join(' ');
 
@@ -44,8 +53,10 @@ export function Button({
     }
 
     const childProps = child.props as { className?: string };
-    return cloneElement(child as ReactElement<Record<string, unknown>>, {
+    const childRef = (child as unknown as { ref?: Ref<HTMLButtonElement> }).ref;
+    const cloneProps: ButtonChildProps = {
       ...props,
+      ref: composeRefs(ref, childRef),
       'aria-disabled': true,
       onClick: (event: MouseEvent<HTMLElement>) => {
         event.preventDefault();
@@ -62,11 +73,13 @@ export function Button({
       'data-size': size,
       'data-treatment': treatment,
       'data-variant': variant,
-    });
+    };
+    return cloneElement(child as ReactElement<ButtonChildProps>, cloneProps);
   }
 
   return (
     <Component
+      ref={ref}
       data-slot="button"
       data-size={size}
       data-treatment={treatment}
@@ -80,4 +93,4 @@ export function Button({
       {children}
     </Component>
   );
-}
+});

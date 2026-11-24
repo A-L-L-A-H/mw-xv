@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type HashIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function HashIcon({ size = 24, title, ...props }: HashIconProps) {
+const HashIcon = forwardRef<SVGSVGElement, HashIconProps>(function HashIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function HashIcon({ size = 24, title, ...props }: HashIconProps) {
       <path d="M9 3 6.5 21M17.5 3 15 21M4 9h16M3 15h16" />
     </svg>
   );
-}
+});
+
+HashIcon.displayName = 'HashIcon';
+
+export { HashIcon };

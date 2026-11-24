@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ModelIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ModelIcon({ size = 24, title, ...props }: ModelIconProps) {
+const ModelIcon = forwardRef<SVGSVGElement, ModelIconProps>(function ModelIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function ModelIcon({ size = 24, title, ...props }: ModelIconProps) {
       <path d="M3.5 9h17M9 9v11m6-11v11M3.5 14.5h17" />
     </svg>
   );
-}
+});
+
+ModelIcon.displayName = 'ModelIcon';
+
+export { ModelIcon };

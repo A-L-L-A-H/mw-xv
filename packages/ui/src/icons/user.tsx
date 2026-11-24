@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type UserIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function UserIcon({ size = 24, title, ...props }: UserIconProps) {
+const UserIcon = forwardRef<SVGSVGElement, UserIconProps>(function UserIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function UserIcon({ size = 24, title, ...props }: UserIconProps) {
       <path d="M4.5 20c.7-3.4 3.4-5.5 7.5-5.5s6.8 2.1 7.5 5.5" />
     </svg>
   );
-}
+});
+
+UserIcon.displayName = 'UserIcon';
+
+export { UserIcon };

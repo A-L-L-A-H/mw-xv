@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type WarningIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function WarningIcon({ size = 24, title, ...props }: WarningIconProps) {
+const WarningIcon = forwardRef<SVGSVGElement, WarningIconProps>(function WarningIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function WarningIcon({ size = 24, title, ...props }: WarningIconProps) {
       <path d="M12 9v5m0 3h.01" />
     </svg>
   );
-}
+});
+
+WarningIcon.displayName = 'WarningIcon';
+
+export { WarningIcon };

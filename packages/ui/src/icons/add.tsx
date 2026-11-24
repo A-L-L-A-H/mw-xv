@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type AddIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function AddIcon({ size = 24, title, ...props }: AddIconProps) {
+const AddIcon = forwardRef<SVGSVGElement, AddIconProps>(function AddIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function AddIcon({ size = 24, title, ...props }: AddIconProps) {
       <path d="M12 7v10m-5-5h10" />
     </svg>
   );
-}
+});
+
+AddIcon.displayName = 'AddIcon';
+
+export { AddIcon };

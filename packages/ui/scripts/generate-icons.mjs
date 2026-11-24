@@ -40,17 +40,21 @@ for (const file of files) {
 
   await writeFile(
     resolve(output, `${name}.tsx`),
-    `import { useId, type SVGProps } from 'react';
+    `import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ${component}Props = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ${component}({ size = 24, title, ...props }: ${component}Props) {
+const ${component} = forwardRef<SVGSVGElement, ${component}Props>(function ${component}(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -64,7 +68,11 @@ export function ${component}({ size = 24, title, ...props }: ${component}Props) 
       ${children}
     </svg>
   );
-}
+});
+
+${component}.displayName = '${component}';
+
+export { ${component} };
 `
   );
 }
