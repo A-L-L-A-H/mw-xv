@@ -387,8 +387,12 @@ export interface AddonDefaultDataPolicyOptions {
   readonly exemptAddons?: ReadonlySet<string>;
 }
 
-/** Addons that intentionally hold zero demo data for security/provider-only boundaries. */
-export const DEFAULT_DATA_EXEMPT_ADDONS: ReadonlySet<string> = new Set(['auth', 'orm-storage']);
+/** Addons that intentionally hold zero demo data for security, provider, or runtime boundaries. */
+export const DEFAULT_DATA_EXEMPT_ADDONS: ReadonlySet<string> = new Set([
+  'auth',
+  'orm-storage',
+  'observability',
+]);
 
 /**
  * Enforces that every model-owning addon declares non-empty default seed data (`manifest.data`)

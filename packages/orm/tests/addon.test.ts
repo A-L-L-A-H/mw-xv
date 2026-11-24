@@ -282,9 +282,19 @@ describe('programmatic addon installer', () => {
       version: '1.0.0',
       models: [Child],
     });
+    const runtimeTelemetryAddon = defineAddon({
+      name: 'observability',
+      version: '1.0.0',
+      models: [Child],
+    });
 
     expect(() =>
-      assertAddonDefaultDataPolicy([compliantAddon, providerOnlyAddon, authExemptAddon])
+      assertAddonDefaultDataPolicy([
+        compliantAddon,
+        providerOnlyAddon,
+        authExemptAddon,
+        runtimeTelemetryAddon,
+      ])
     ).not.toThrow();
   });
 });

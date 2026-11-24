@@ -127,6 +127,7 @@ export class QoderTelemetryBridge {
   private readonly tools = new Map<string, ToolState>();
   private readonly subagents = new Map<string, SubagentState>();
   private readonly counters = new Map<string, number>();
+  private queue: Promise<void> = Promise.resolve();
 
   constructor(private readonly options: { store: TelemetryStore; now?: () => number }) {
     this.store = options.store;
@@ -136,18 +137,27 @@ export class QoderTelemetryBridge {
   private readonly store: TelemetryStore;
   private readonly now: () => number;
 
-  handle(input: unknown): boolean {
+  handle(input: unknown): Promise<boolean> {
+    const receivedAt = this.now();
+    const handled = this.queue.then(() => this.process(input, receivedAt));
+    this.queue = handled.then(
+      () => undefined,
+      () => undefined
+    );
+    return handled;
+  }
+
+  private async process(input: unknown, now: number): Promise<boolean> {
     const event = asRecord(input);
     const eventName = readText(event?.hook_event_name, 128);
     const sessionId = readText(event?.session_id, 256);
     if (!event || !eventName || !sessionId || !QODER_EVENTS.has(eventName)) return false;
 
-    const now = this.now();
     this.pruneState(now);
 
     switch (eventName) {
       case 'SessionStart':
-        this.writeLog({
+        await this.writeLog({
           timestampMs: now,
           severity: 'INFO',
           body: `Qoder session started (${readText(event.source, 64) ?? 'unknown'})`,
@@ -156,8 +166,8 @@ export class QoderTelemetryBridge {
         });
         return true;
       case 'SessionEnd':
-        this.finishPrompt(this.prompts.get(sessionId), now, 'ok');
-        this.writeLog({
+        await this.finishPrompt(this.prompts.get(sessionId), now, 'ok');
+        await this.writeLog({
           timestampMs: now,
           severity: 'INFO',
           body: `Qoder session ended (${readText(event.reason, 64) ?? 'unknown'})`,
@@ -166,7 +176,7 @@ export class QoderTelemetryBridge {
         });
         return true;
       case 'UserPromptSubmit':
-        this.startPrompt(event, sessionId, now);
+        await this.startPrompt(event, sessionId, now);
         return true;
       case 'PreToolUse':
         return this.startTool(event, sessionId, now);
@@ -175,16 +185,16 @@ export class QoderTelemetryBridge {
       case 'PostToolUseFailure':
         return this.finishTool(event, sessionId, now, true);
       case 'PermissionRequest':
-        this.writePermissionLog(event, sessionId, now, 'requested');
+        await this.writePermissionLog(event, sessionId, now, 'requested');
         return true;
       case 'PermissionDenied':
-        this.writePermissionLog(event, sessionId, now, 'denied');
+        await this.writePermissionLog(event, sessionId, now, 'denied');
         return true;
       case 'Stop': {
         const prompt = this.prompts.get(sessionId);
         if (!prompt) return true;
-        this.finishPrompt(prompt, now, 'ok', textLength(event.last_assistant_message));
-        this.writeLog({
+        await this.finishPrompt(prompt, now, 'ok', textLength(event.last_assistant_message));
+        await this.writeLog({
           timestampMs: now,
           severity: 'INFO',
           body: 'Qoder turn completed',
@@ -199,15 +209,15 @@ export class QoderTelemetryBridge {
       case 'StopFailure': {
         const prompt = this.prompts.get(sessionId);
         const errorType = readText(event.error_type, 128) ?? 'unknown';
-        this.finishPrompt(
+        await this.finishPrompt(
           prompt,
           now,
           'error',
           textLength(event.last_assistant_message),
           errorType
         );
-        this.incrementCounter('qoder.error.count', now);
-        this.writeLog({
+        await this.incrementCounter('qoder.error.count', now);
+        await this.writeLog({
           timestampMs: now,
           severity: 'ERROR',
           body: `Qoder turn failed (${errorType})`,
@@ -224,7 +234,7 @@ export class QoderTelemetryBridge {
         return this.finishSubagent(event, sessionId, now);
       case 'PreCompact':
       case 'PostCompact':
-        this.writeLog({
+        await this.writeLog({
           timestampMs: now,
           severity: 'INFO',
           body: `Qoder context compaction (${readText(event.trigger, 64) ?? 'unknown'})`,
@@ -236,7 +246,7 @@ export class QoderTelemetryBridge {
         });
         return true;
       case 'Notification':
-        this.writeLog({
+        await this.writeLog({
           timestampMs: now,
           severity: readText(event.notification_type, 64) === 'permission_prompt' ? 'WARN' : 'INFO',
           body: `Qoder notification (${readText(event.notification_type, 64) ?? 'unknown'})`,
@@ -252,8 +262,12 @@ export class QoderTelemetryBridge {
     }
   }
 
-  private startPrompt(event: Record<string, unknown>, sessionId: string, now: number): void {
-    this.finishPrompt(this.prompts.get(sessionId), now, 'ok');
+  private async startPrompt(
+    event: Record<string, unknown>,
+    sessionId: string,
+    now: number
+  ): Promise<void> {
+    await this.finishPrompt(this.prompts.get(sessionId), now, 'ok');
     const prompt: PromptState = {
       sessionId,
       traceId: randomHex(16),
@@ -297,25 +311,27 @@ export class QoderTelemetryBridge {
     });
   }
 
-  private finishPrompt(
+  private async finishPrompt(
     prompt: PromptState | undefined,
     now: number,
     status: SpanStatus,
     responseChars = 0,
     errorType?: string
-  ): void {
+  ): Promise<void> {
     if (!prompt) return;
     if (this.prompts.get(prompt.sessionId) === prompt) this.prompts.delete(prompt.sessionId);
     const endTimeMs = Math.max(now, prompt.startTimeMs);
-    this.store.ingestSpans([this.promptSpan(prompt, endTimeMs, status, responseChars, errorType)]);
-    if (!prompt.synthetic) this.incrementCounter('qoder.prompt.count', endTimeMs);
+    await this.store.ingestSpans([
+      this.promptSpan(prompt, endTimeMs, status, responseChars, errorType),
+    ]);
+    if (!prompt.synthetic) await this.incrementCounter('qoder.prompt.count', endTimeMs);
   }
 
-  private ensureSyntheticPrompt(
+  private async ensureSyntheticPrompt(
     event: Record<string, unknown>,
     sessionId: string,
     now: number
-  ): PromptState {
+  ): Promise<PromptState> {
     const existing = this.prompts.get(sessionId);
     if (existing) return existing;
     const prompt: PromptState = {
@@ -328,33 +344,37 @@ export class QoderTelemetryBridge {
       synthetic: true,
     };
     this.prompts.set(sessionId, prompt);
-    this.store.ingestSpans([this.promptSpan(prompt, now, 'ok')]);
+    await this.store.ingestSpans([this.promptSpan(prompt, now, 'ok')]);
     return prompt;
   }
 
-  private startTool(event: Record<string, unknown>, sessionId: string, now: number): boolean {
+  private async startTool(
+    event: Record<string, unknown>,
+    sessionId: string,
+    now: number
+  ): Promise<boolean> {
     const toolName = readText(event.tool_name, 256);
     const toolUseId = readText(event.tool_use_id, 256);
     if (!toolName || !toolUseId) return false;
-    const prompt = this.ensureSyntheticPrompt(event, sessionId, now);
+    const prompt = await this.ensureSyntheticPrompt(event, sessionId, now);
     this.tools.set(`${sessionId}\u0000${toolUseId}`, {
       sessionId,
-      traceId: prompt?.traceId ?? randomHex(16),
+      traceId: prompt.traceId,
       spanId: randomHex(8),
-      ...(prompt ? { parentSpanId: prompt.spanId } : {}),
-      agentName: readText(event.agent_type, 128) ?? prompt?.agentName ?? 'qoder',
+      parentSpanId: prompt.spanId,
+      agentName: readText(event.agent_type, 128) ?? prompt.agentName,
       toolName,
       startTimeMs: now,
     });
     return true;
   }
 
-  private finishTool(
+  private async finishTool(
     event: Record<string, unknown>,
     sessionId: string,
     now: number,
     failed: boolean
-  ): boolean {
+  ): Promise<boolean> {
     const toolName = readText(event.tool_name, 256);
     const toolUseId = readText(event.tool_use_id, 256);
     if (!toolName || !toolUseId) return false;
@@ -363,7 +383,7 @@ export class QoderTelemetryBridge {
     this.tools.delete(key);
     const prompt =
       this.prompts.get(sessionId) ??
-      (pending ? undefined : this.ensureSyntheticPrompt(event, sessionId, now));
+      (pending ? undefined : await this.ensureSyntheticPrompt(event, sessionId, now));
     const state: ToolState = pending ?? {
       sessionId,
       traceId: prompt?.traceId ?? randomHex(16),
@@ -375,7 +395,7 @@ export class QoderTelemetryBridge {
     };
     const endTimeMs = Math.max(now, state.startTimeMs);
     const errorType = readText(event.error_type, 128);
-    this.store.ingestSpans([
+    await this.store.ingestSpans([
       createSpan({
         traceId: state.traceId,
         spanId: state.spanId,
@@ -404,10 +424,10 @@ export class QoderTelemetryBridge {
         },
       }),
     ]);
-    this.incrementCounter('qoder.tool.count', endTimeMs);
+    await this.incrementCounter('qoder.tool.count', endTimeMs);
     if (failed) {
-      this.incrementCounter('qoder.error.count', endTimeMs);
-      this.writeLog({
+      await this.incrementCounter('qoder.error.count', endTimeMs);
+      await this.writeLog({
         timestampMs: endTimeMs,
         severity: 'ERROR',
         body: `Qoder tool ${state.toolName} failed${errorType ? ` (${errorType})` : ''}`,
@@ -425,22 +445,30 @@ export class QoderTelemetryBridge {
     return true;
   }
 
-  private startSubagent(event: Record<string, unknown>, sessionId: string, now: number): boolean {
+  private async startSubagent(
+    event: Record<string, unknown>,
+    sessionId: string,
+    now: number
+  ): Promise<boolean> {
     const agentId = readText(event.agent_id, 256);
     if (!agentId) return false;
-    const prompt = this.ensureSyntheticPrompt(event, sessionId, now);
+    const prompt = await this.ensureSyntheticPrompt(event, sessionId, now);
     this.subagents.set(`${sessionId}\u0000${agentId}`, {
       sessionId,
-      traceId: prompt?.traceId ?? randomHex(16),
+      traceId: prompt.traceId,
       spanId: randomHex(8),
-      ...(prompt ? { parentSpanId: prompt.spanId } : {}),
+      parentSpanId: prompt.spanId,
       agentName: readText(event.agent_type, 128) ?? 'subagent',
       startTimeMs: now,
     });
     return true;
   }
 
-  private finishSubagent(event: Record<string, unknown>, sessionId: string, now: number): boolean {
+  private async finishSubagent(
+    event: Record<string, unknown>,
+    sessionId: string,
+    now: number
+  ): Promise<boolean> {
     const agentId = readText(event.agent_id, 256);
     if (!agentId) return false;
     const key = `${sessionId}\u0000${agentId}`;
@@ -448,7 +476,7 @@ export class QoderTelemetryBridge {
     this.subagents.delete(key);
     const prompt =
       this.prompts.get(sessionId) ??
-      (pending ? undefined : this.ensureSyntheticPrompt(event, sessionId, now));
+      (pending ? undefined : await this.ensureSyntheticPrompt(event, sessionId, now));
     const state: SubagentState = pending ?? {
       sessionId,
       traceId: prompt?.traceId ?? randomHex(16),
@@ -458,7 +486,7 @@ export class QoderTelemetryBridge {
       startTimeMs: now,
     };
     const endTimeMs = Math.max(now, state.startTimeMs);
-    this.store.ingestSpans([
+    await this.store.ingestSpans([
       createSpan({
         traceId: state.traceId,
         spanId: state.spanId,
@@ -479,18 +507,18 @@ export class QoderTelemetryBridge {
         },
       }),
     ]);
-    this.incrementCounter('qoder.subagent.count', endTimeMs);
+    await this.incrementCounter('qoder.subagent.count', endTimeMs);
     return true;
   }
 
-  private writePermissionLog(
+  private async writePermissionLog(
     event: Record<string, unknown>,
     sessionId: string,
     now: number,
     action: 'requested' | 'denied'
-  ): void {
+  ): Promise<void> {
     const toolName = readText(event.tool_name, 256) ?? 'unknown';
-    this.writeLog({
+    await this.writeLog({
       timestampMs: now,
       severity: 'WARN',
       body: `Qoder permission ${action} for ${toolName}`,
@@ -502,7 +530,7 @@ export class QoderTelemetryBridge {
     });
   }
 
-  private writeLog(input: LogInput): void {
+  private async writeLog(input: LogInput): Promise<void> {
     const log: LogRecord = {
       id: randomHex(10),
       timestampMs: input.timestampMs,
@@ -518,10 +546,10 @@ export class QoderTelemetryBridge {
       attributes: { 'qoder.integration': 'hooks', ...input.attributes },
       resourceAttributes: { 'service.name': 'qoder' },
     };
-    this.store.ingestLogs([log]);
+    await this.store.ingestLogs([log]);
   }
 
-  private incrementCounter(name: string, timestampMs: number): void {
+  private async incrementCounter(name: string, timestampMs: number): Promise<void> {
     const value = (this.counters.get(name) ?? 0) + 1;
     this.counters.set(name, value);
     const series: MetricSeries = {
@@ -532,7 +560,7 @@ export class QoderTelemetryBridge {
       scopeName: 'qoder-hooks',
       points: [{ timestampMs, value, attributes: {} }],
     };
-    this.store.ingestMetrics([series]);
+    await this.store.ingestMetrics([series]);
   }
 
   private pruneState(now: number): void {

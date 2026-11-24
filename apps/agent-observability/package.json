@@ -41,6 +41,7 @@
     "@opentelemetry/sdk-logs": "3.1.1",
     "@opentelemetry/sdk-metrics": "3.1.1",
     "@opentelemetry/sdk-node": "0.301.2",
+    "@moonwitness/orm-observability": "workspace:*",
     "@opentelemetry/semantic-conventions": "1.45.0",
     "fastify": "5.12.8"
   },
