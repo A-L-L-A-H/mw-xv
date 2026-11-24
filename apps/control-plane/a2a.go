@@ -815,7 +815,7 @@ func (m *A2AManager) HandleDelegate() http.HandlerFunc {
 
 		receipt, fwdRej := m.forward(ctx, body, r.Header, env)
 		if fwdRej != nil {
-			log.Printf("a2a delegate forward failed reason=%s messageId=%s", fwdRej.reasonCode, RedactA2ASecret(env.MessageID, m.signingSecret))
+			log.Printf("a2a delegate forward failed reason=%s messageId=%s", fwdRej.reasonCode, SanitizeLogValue(RedactA2ASecret(env.MessageID, m.signingSecret)))
 			writeA2AError(w, fwdRej.status, fwdRej.reasonCode, fwdRej.message)
 			return
 		}

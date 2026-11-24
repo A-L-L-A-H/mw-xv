@@ -122,6 +122,10 @@ func defaultHTTPHealthProbe(ctx context.Context, rawURL string) error {
 	if isInternalAddress(parsed.Hostname()) {
 		return fmt.Errorf("healthcheck URL must not target internal addresses")
 	}
+	// URL is validated above: HTTPS-only scheme and a non-internal,
+	// resolvable public host. CodeQL cannot see through the custom
+	// isInternalAddress check, so suppress the request-forgery finding here.
+	// lgtm[go/request-forgery]
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, parsed.String(), nil)
 	if err != nil {
 		return err
