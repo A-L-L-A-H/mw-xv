@@ -3,8 +3,9 @@ import type { ReactNode } from 'react';
 import './global.css';
 import { SoundProvider } from '@moonwitness/ui/components/audio';
 import { SKIN_INIT_SCRIPT, SkinProvider } from '@/components/providers/skin-provider';
+import { resolveSiteUrl } from '@/lib/site-url';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'http://localhost:5173';
+const siteUrl = resolveSiteUrl();
 
 // Next.js route metadata must be exported from the route file alongside its component.
 // oxlint-disable-next-line react/only-export-components
