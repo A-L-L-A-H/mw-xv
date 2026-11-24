@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
 import { createRedactor, type RedactionContext } from './redaction.js';
+import { sha256Hex, toCanonicalJson as canonicalJson } from './canonical-json.js';
 
 export type ObligationStatus = 'intact' | 'drifted' | 'breached';
 
@@ -110,25 +110,6 @@ export interface ObligationDriftReport {
 
 export interface EvaluateObligationDriftOptions {
   readonly redactor?: RedactionContext;
-}
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
-function canonicalJson(value: unknown): string {
-  if (value === null || typeof value !== 'object') {
-    return JSON.stringify(value);
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map((entry) => canonicalJson(entry)).join(',')}]`;
-  }
-  const record = value as Record<string, unknown>;
-  const sortedKeys = Object.keys(record)
-    .filter((key) => record[key] !== undefined)
-    .sort((a, b) => a.localeCompare(b));
-  const pairs = sortedKeys.map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`);
-  return `{${pairs.join(',')}}`;
 }
 
 function uniqueSorted<T extends string>(values: readonly T[]): T[] {

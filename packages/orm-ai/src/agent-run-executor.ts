@@ -19,29 +19,13 @@ import {
 } from './models.js';
 import { AgentRunEffect } from './models/runs.js';
 import { isAgentOperational, isActiveCapabilityGrant } from './validation.js';
+import { sha256Canonical, toCanonicalJson as canonical } from '@moonwitness/ai-runtime/canonical-json.js';
 
 export const EXECUTION_FINGERPRINT_VERSION = 1 as const;
 export const AGENT_RUN_APPROVAL_WORKFLOW = 'ai.agent_run_approval' as const;
 
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
 const FINGERPRINT_PATTERN = /^[a-f0-9]{64}$/u;
-
-function canonical(value: unknown): string {
-  if (value === null || value === undefined) return 'null';
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  if (typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    return `{${Object.keys(record)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-export function sha256Canonical(value: unknown): string {
-  return createHash('sha256').update(canonical(value), 'utf8').digest('hex');
-}
 
 export interface ExecutionFingerprintInput {
   readonly contract: { readonly id: number; readonly code: string; readonly revision?: number };

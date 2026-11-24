@@ -64,3 +64,4 @@ export * from './sandbox-runner.js';
 export * from './workspace-contract.js';
 export * from './workspace-tools.js';
 export * from './incident-healer.js';
+export * from './canonical-json.js';

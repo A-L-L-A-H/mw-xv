@@ -16,8 +16,8 @@ import {
   computeExecutionFingerprint,
   loadTrustedRunSnapshot,
   runDurableAgentRun,
-  sha256Canonical,
 } from '../src/agent-run-executor.js';
+import { sha256Canonical } from '@moonwitness/ai-runtime/canonical-json.js';
 import { setCloudAgentEffect } from '../src/cloud-agent-effect-factory.js';
 import { ensureAiJobHandlersRegistered } from '../src/ai-http-helpers.js';
 

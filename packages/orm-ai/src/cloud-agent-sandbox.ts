@@ -12,7 +12,7 @@ import {
   type WorkspaceSandboxClient,
 } from '@moonwitness/ai-runtime';
 import type { AttachmentStorage } from '@moonwitness/orm-storage';
-import { sha256Canonical } from './agent-run-executor.js';
+import { sha256Canonical, toCanonicalJson } from '@moonwitness/ai-runtime/canonical-json.js';
 import {
   EVIDENCE_VERIFICATION_STATUS as CLOUD_AGENT_EVIDENCE_VERIFICATION_STATUS,
   CLOUD_AGENT_MANIFEST_COMMAND,
@@ -37,23 +37,6 @@ export interface CloudAgentSandboxSetup {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, Number.isFinite(value) ? value : min));
-}
-
-/**
- * Produces the byte-exact payload persisted for an evidence bundle.
- *
- * Hashing is centralized in `sha256Canonical`; this serializer only reproduces
- * the canonical byte sequence that digest covers, so a verifier that hashes the
- * raw stored artifact (as the HTTP layer does) recomputes the same digest.
- */
-function toCanonicalJson(value: unknown): string {
-  if (value === null || typeof value !== 'object') {
-    return value === undefined ? 'null' : JSON.stringify(value);
-  }
-  if (Array.isArray(value)) return `[${value.map(toCanonicalJson).join(',')}]`;
-  const record = value as Record<string, unknown>;
-  const keys = Object.keys(record).sort();
-  return `{${keys.map((key) => `${JSON.stringify(key)}:${toCanonicalJson(record[key])}`).join(',')}}`;
 }
 
 export async function setupCloudAgentSandbox(options: {

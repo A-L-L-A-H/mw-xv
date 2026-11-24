@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
 import { createRedactor, type RedactionContext } from './redaction.js';
+import { sha256Hex, toCanonicalJson as canonicalJson } from './canonical-json.js';
 
 export type CausalRootCauseCategory =
   | 'prompt_ambiguity'
@@ -89,25 +89,6 @@ export interface CausalReplayOptions {
 
 const DEFAULT_SURPRISE_THRESHOLD_BPS = 2500;
 const MAX_BPS = 10_000;
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
-function canonicalJson(value: unknown): string {
-  if (value === null || typeof value !== 'object') {
-    return JSON.stringify(value);
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map((entry) => canonicalJson(entry)).join(',')}]`;
-  }
-  const record = value as Record<string, unknown>;
-  const keys = Object.keys(record)
-    .filter((key) => record[key] !== undefined)
-    .sort((left, right) => left.localeCompare(right));
-  const pairs = keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`);
-  return `{${pairs.join(',')}}`;
-}
 
 function clampBps(value: number): number {
   if (!Number.isFinite(value)) {

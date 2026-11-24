@@ -1,4 +1,4 @@
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createRedactor } from './redaction.js';
 import {
   verifyMerkleInclusionProof as verifyInclusionProof,
@@ -9,6 +9,7 @@ import {
   type EpistemicCalibrationReport,
   type EpistemicPredictionSample,
 } from './epistemic-calibration.js';
+import { sha256Canonical, toCanonicalJson } from './canonical-json.js';
 
 export type A2AConsensusVote = 'approve' | 'reject' | 'abstain';
 
@@ -84,32 +85,6 @@ const DEFAULT_QUORUM_THRESHOLD_BPS = 6667;
 const DEFAULT_MAX_BRIER_SCORE = 0.25;
 const DEFAULT_MAX_ECE = 0.15;
 const HEX_SHA256_REGEX = /^[0-9a-f]{64}$/iu;
-
-function canonicalizeValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  if (value !== null && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(record).sort()) {
-      const entry = record[key];
-      if (entry !== undefined) {
-        sorted[key] = canonicalizeValue(entry);
-      }
-    }
-    return sorted;
-  }
-  return value;
-}
-
-function toCanonicalJson(payload: unknown): string {
-  return JSON.stringify(canonicalizeValue(payload));
-}
-
-function sha256Canonical(payload: unknown): string {
-  return createHash('sha256').update(toCanonicalJson(payload), 'utf8').digest('hex');
-}
 
 export function signPeerAttestationPayload(
   proposalId: string,
