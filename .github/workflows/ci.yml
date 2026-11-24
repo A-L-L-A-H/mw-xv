@@ -364,3 +364,55 @@ jobs:
         run: bunx playwright install chromium
       - name: Run MoonWitness Desktop & MCP test suite (desktop:test)
         run: bun run desktop:build && bun run desktop:test
+
+  gate-failure-triage:
+    name: Gate failure triage
+    needs: [secret-scan, static-analysis, dependency-audit, quality-and-build, unit-tests, knowledge-gate, postgres-integration, dx-test]
+    if: always() && github.event_name != 'pull_request' && failure()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Collect failed job names
+        id: failed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          jobs_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs" --paginate)"
+          failed_jobs="$(echo "$jobs_json" | jq -r '[.jobs[] | select(.conclusion == "failure") | .name] | join(", ")')"
+          if [[ -z "$failed_jobs" ]]; then
+            echo "No failed jobs found; skipping triage."
+            echo "failed_jobs=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "failed_jobs=$failed_jobs" >> "$GITHUB_OUTPUT"
+          echo "Failed: $failed_jobs"
+      - name: Create or update gate-failure issue
+        if: steps.failed.outputs.failed_jobs != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED_JOBS: ${{ steps.failed.outputs.failed_jobs }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/roadmap/gate-failure-issue.mjs
+      - name: Request auto-fix via roadmap intake label
+        if: steps.failed.outputs.failed_jobs != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED_JOBS: ${{ steps.failed.outputs.failed_jobs }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          issue_number="$(cat dist/gate-failure/issue-number.txt)"
+          gh issue edit "$issue_number" --repo "$GITHUB_REPOSITORY" \
+            --add-label "gate-failure,auto-fix-requested" --add-assignee "A-L-L-A-H" || true
