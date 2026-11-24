@@ -130,8 +130,9 @@ function executeCommand(command, cwd) {
     ...process.env,
     AI_MODE: 'disabled',
   };
+  const bunArgs = ['--filter', ...command.args.slice(1)];
   const result = isBun
-    ? spawnSync('bun', command.args, {
+    ? spawnSync('bun', bunArgs, {
         cwd,
         encoding: 'utf8',
         shell: process.platform === 'win32',
