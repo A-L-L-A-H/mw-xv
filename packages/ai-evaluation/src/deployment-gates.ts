@@ -7,7 +7,7 @@ import {
   type CorpusEvaluationReport,
   type FullCapabilityGateSuiteResult,
   type MemoryAblationSuiteReport,
-} from './index.js';
+} from './evaluation-core.js';
 
 const EXPECTED_GATE_IDS = ['G0', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6'] as const;
 const EXPECTED_ABLATION_ARMS = ['no-memory', 'episodic-only', 'skill-only', 'combined'] as const;
