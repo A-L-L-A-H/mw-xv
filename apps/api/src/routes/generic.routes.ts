@@ -440,7 +440,7 @@ async function executeRpc(
         ...(kwargs as Parameters<typeof model.search_read>[1]),
         limit: kwargs.limit ?? RPC_MAX_PAGE_SIZE,
         ...(relationGraph ? { withGraphFetched: relationGraph } : {}),
-      })) as JsonValue;
+      } as Parameters<typeof model.search_read>[1])) as JsonValue;
     }
     case 'search':
       return (
