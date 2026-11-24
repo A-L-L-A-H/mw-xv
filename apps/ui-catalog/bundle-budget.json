@@ -3,15 +3,15 @@
   "groups": {
     "initial": {
       "javascript": { "maxRawBytes": 550000, "maxGzipBytes": 160000 },
-      "stylesheet": { "maxRawBytes": 155000, "maxGzipBytes": 28000 }
+      "stylesheet": { "maxRawBytes": 162000, "maxGzipBytes": 29000 }
     },
     "lazy": {
-      "javascript": { "maxRawBytes": 40000, "maxGzipBytes": 14000 },
+      "javascript": { "maxRawBytes": 82000, "maxGzipBytes": 26000 },
       "stylesheet": { "maxRawBytes": 1, "maxGzipBytes": 1 }
     },
     "total": {
-      "javascript": { "maxRawBytes": 590000, "maxGzipBytes": 172000 },
-      "stylesheet": { "maxRawBytes": 150000, "maxGzipBytes": 28000 }
+      "javascript": { "maxRawBytes": 630000, "maxGzipBytes": 186000 },
+      "stylesheet": { "maxRawBytes": 162000, "maxGzipBytes": 29000 }
     }
   },
   "sections": {
@@ -30,6 +30,10 @@
     "diagnostics": {
       "entry": "src/AssetDiagnostics.tsx",
       "javascript": { "maxRawBytes": 2500, "maxGzipBytes": 1000 }
+    },
+    "extended": {
+      "entry": "src/ExtendedControlsLab.tsx",
+      "javascript": { "maxRawBytes": 43000, "maxGzipBytes": 12000 }
     }
   }
 }

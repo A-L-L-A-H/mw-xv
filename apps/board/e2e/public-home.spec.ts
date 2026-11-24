@@ -289,7 +289,6 @@ test('legacy Board routes redirect to canonical paths and preserve query strings
   const cases = [
     ['/profile', '/board/profile'],
     ['/settings', '/board/settings'],
-    ['/knowledge', '/board/knowledge'],
     ['/stories/workbench', '/board/stories/workbench'],
     ['/m/base.partner', '/board/m/base.partner'],
     ['/m/base.partner/123', '/board/m/base.partner/123'],
@@ -301,6 +300,9 @@ test('legacy Board routes redirect to canonical paths and preserve query strings
     const location = response.headers().location;
     expect(location, `${source} redirect location`).toBe(`${destination}?view=compact`);
   }
+
+  const publicKnowledgeResponse = await request.get('/knowledge', { maxRedirects: 0 });
+  expect(publicKnowledgeResponse.status(), '/knowledge').toBe(200);
 });
 
 test('auth pages stay out of search and external login return paths are discarded', async ({

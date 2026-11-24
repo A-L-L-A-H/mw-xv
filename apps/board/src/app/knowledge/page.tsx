@@ -160,6 +160,12 @@ export default function PublicKnowledgeShellPage() {
             <Button asChild variant="secondary">
               <Link href="/">Workspace Home</Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link href="/login">Sign in</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/register">Create an account</Link>
+            </Button>
           </div>
         }
       />

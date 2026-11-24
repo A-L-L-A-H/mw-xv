@@ -11,12 +11,15 @@ import {
   SparkleIcon,
   WarningIcon,
 } from '@moonwitness/ui/icons';
+import { useSfx } from '@moonwitness/ui/components/audio';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
 import { Input } from '@moonwitness/ui/components/input';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { PageHeader } from '@moonwitness/ui/components/page-header';
 import { Panel } from '@moonwitness/ui/components/panel';
+import { QuestCard } from '@moonwitness/ui/components/quest-card';
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { toast } from '@moonwitness/ui/components/toast';
 import { client } from '@/lib/client';
@@ -105,6 +108,7 @@ function priorityVariant(
 
 export function ProjectsPage() {
   const queryClient = useQueryClient();
+  const { play } = useSfx();
   const { isDesktop, bridge, snapshot, refreshSnapshot } = useDesktopBridge();
   const { mode: desktopMode } = useDesktopMode();
   const isWorkspaceDesktop = isDesktop && desktopMode === 'workspace';
@@ -200,10 +204,12 @@ export function ProjectsPage() {
     mutationFn: async ({ taskId, stageId }: { taskId: number; stageId: number }) =>
       client.model('project.task').write(taskId, { stage_id: stageId }),
     onSuccess: async () => {
+      play('signal');
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('Task stage updated.');
     },
     onError: (err) => {
+      play('alert');
       toast.error(err instanceof Error ? err.message : 'Unable to move task stage.');
     },
   });
@@ -254,6 +260,7 @@ export function ProjectsPage() {
       return { taskCode: task.code, ...res.data };
     },
     onSuccess: async (result) => {
+      play('signal');
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success(
         result.advanced
@@ -262,6 +269,7 @@ export function ProjectsPage() {
       );
     },
     onError: (err) => {
+      play('alert');
       toast.error(err instanceof Error ? err.message : 'Failed to sync AI WorkContract stage.');
     },
   });
@@ -335,16 +343,20 @@ export function ProjectsPage() {
       return taskIds.length;
     },
     onSuccess: async (count) => {
+      play('signal');
       setSelectedTaskIds([]);
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success(`Moved ${count} task(s) to target stage.`);
     },
     onError: (err) => {
+      play('alert');
       toast.error(err instanceof Error ? err.message : 'Unable to batch move tasks.');
     },
   });
 
   const board = boardQuery.data;
+  const doneTasksCount = (board?.tasks ?? []).filter((task) => task.status === 'done').length;
+  const totalTasksCount = board?.tasks.length ?? 0;
   const activeDesktopLeases = useMemo(() => snapshot?.activeLeases ?? [], [snapshot?.activeLeases]);
   const dagNodeById = useMemo(
     () => new Map((board?.dag.nodes ?? []).map((node) => [node.id, node])),
@@ -520,36 +532,114 @@ export function ProjectsPage() {
         }
       />
 
+      {projectsQuery.isError ? (
+        <ErrorState
+          role="alert"
+          headingLevel={2}
+          title="Could not load projects"
+          description={
+            projectsQuery.error instanceof Error
+              ? projectsQuery.error.message
+              : 'Unable to load the project directory.'
+          }
+          retrying={projectsQuery.isFetching}
+          onRetry={() => void projectsQuery.refetch()}
+        />
+      ) : null}
+
+      {boardQuery.isError ? (
+        <ErrorState
+          role="alert"
+          headingLevel={2}
+          title="Could not load project board"
+          description={
+            boardQuery.error instanceof Error
+              ? boardQuery.error.message
+              : 'Unable to fetch project stages, milestones, and dependency DAG.'
+          }
+          retrying={boardQuery.isFetching}
+          onRetry={() => void boardQuery.refetch()}
+        />
+      ) : null}
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile
           frame="torn"
           accent="cyan"
           label="TOTAL TASKS"
-          value={board?.tasks.length ?? 0}
+          value={boardQuery.isError ? '—' : (board?.tasks.length ?? 0)}
           icon={<ColumnsIcon className="size-4" />}
         />
         <MetricTile
           frame="torn"
           accent="green"
           label="READY IN DAG"
-          value={board?.dag.ready_task_ids.length ?? 0}
+          value={boardQuery.isError ? '—' : (board?.dag.ready_task_ids.length ?? 0)}
           icon={<CheckCircleIcon className="size-4" />}
         />
         <MetricTile
           frame="torn"
           accent="magenta"
           label="BLOCKED IN DAG"
-          value={board?.dag.blocked_task_ids.length ?? 0}
+          value={boardQuery.isError ? '—' : (board?.dag.blocked_task_ids.length ?? 0)}
           icon={<WarningIcon className="size-4" />}
         />
         <MetricTile
           frame="torn"
           accent="yellow"
           label="MILESTONES"
-          value={board?.milestones.length ?? 0}
+          value={boardQuery.isError ? '—' : (board?.milestones.length ?? 0)}
           icon={<AddonIcon className="size-4" />}
         />
       </div>
+
+      {board && !boardQuery.isError ? (
+        <Panel
+          frame="scuffed"
+          density="compact"
+          title="Milestone Quest Progression"
+          description="Live milestone checkpoints and overall sprint delivery progress."
+        >
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <QuestCard
+              title={`${board.project.name} Delivery`}
+              description={`Project ${board.project.code} task completion across active Kanban stages.`}
+              completedSteps={doneTasksCount}
+              totalSteps={Math.max(1, totalTasksCount)}
+              status={
+                totalTasksCount > 0 && doneTasksCount >= totalTasksCount ? 'completed' : 'active'
+              }
+              badgeId="badge-signal-scout"
+              rewardLabel={
+                totalTasksCount > 0 && doneTasksCount >= totalTasksCount
+                  ? 'Sprint Complete'
+                  : `${doneTasksCount}/${totalTasksCount} tasks done`
+              }
+            />
+            {board.milestones.map((milestone) => {
+              const normalizedStatus = milestone.status.toLowerCase();
+              const questStatus =
+                normalizedStatus === 'done' || normalizedStatus === 'completed'
+                  ? 'completed'
+                  : normalizedStatus === 'locked' || normalizedStatus === 'cancelled'
+                    ? 'locked'
+                    : 'active';
+              return (
+                <QuestCard
+                  key={milestone.id}
+                  title={milestone.name}
+                  description={`${milestone.code}${milestone.due_date ? ` · Due ${milestone.due_date}` : ''}`}
+                  completedSteps={questStatus === 'completed' ? 1 : doneTasksCount}
+                  totalSteps={questStatus === 'completed' ? 1 : Math.max(1, totalTasksCount)}
+                  status={questStatus}
+                  badgeId={questStatus === 'completed' ? 'badge-zero-drift' : 'badge-archive-keeper'}
+                  rewardLabel={`Status: ${milestone.status}`}
+                />
+              );
+            })}
+          </div>
+        </Panel>
+      ) : null}
 
       {lastDispatchedContract && (
         <Panel

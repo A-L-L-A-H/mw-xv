@@ -270,6 +270,26 @@
       "types": "./dist/components/quest-card.d.ts",
       "import": "./dist/components/quest-card.js"
     },
+    "./components/confirm-dialog": {
+      "types": "./dist/components/confirm-dialog.d.ts",
+      "import": "./dist/components/confirm-dialog.js"
+    },
+    "./components/error-state": {
+      "types": "./dist/components/error-state.d.ts",
+      "import": "./dist/components/error-state.js"
+    },
+    "./components/breadcrumbs": {
+      "types": "./dist/components/breadcrumbs.d.ts",
+      "import": "./dist/components/breadcrumbs.js"
+    },
+    "./components/brand-mark": {
+      "types": "./dist/components/brand-mark.d.ts",
+      "import": "./dist/components/brand-mark.js"
+    },
+    "./components/inbox-popover": {
+      "types": "./dist/components/inbox-popover.d.ts",
+      "import": "./dist/components/inbox-popover.js"
+    },
     "./lib/asset-registry": {
       "types": "./dist/lib/asset-registry.d.ts",
       "import": "./dist/lib/asset-registry.js"

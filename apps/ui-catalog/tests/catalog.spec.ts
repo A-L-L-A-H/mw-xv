@@ -701,6 +701,7 @@ test('reduced motion removes decorative animation and keeps loading status visib
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#materials');
   const motionGrid = page.locator('.catalog-motion-grid');
+  await motionGrid.scrollIntoViewIfNeeded();
   const speedLines = motionGrid.locator('.mw-ui-speed-lines-pulse');
   const underline = motionGrid.locator('.mw-ui-ink-underline-path');
   const speechBubble = motionGrid.getByText('Story saved');

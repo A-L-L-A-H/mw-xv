@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AddonIcon, CodeIcon, GlobeIcon, KeyIcon, RefreshIcon } from '@moonwitness/ui/icons';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { PageHeader } from '@moonwitness/ui/components/page-header';
 import { Panel } from '@moonwitness/ui/components/panel';
@@ -305,24 +306,42 @@ export function CloudIspPage() {
         <MetricTile
           label="Docker Agent"
           value={
-            cloudHealthQuery.data?.controlPlane ?? (cloudHealthQuery.isLoading ? '...' : 'error')
+            cloudHealthQuery.isError
+              ? 'error'
+              : (cloudHealthQuery.data?.controlPlane ?? (cloudHealthQuery.isLoading ? '...' : '—'))
           }
           detail={`Docker: ${cloudHealthQuery.data?.docker ?? 'unknown'}`}
         />
         <MetricTile
           label="ISP RADIUS"
-          value={ispHealthQuery.data?.runtime ?? (ispHealthQuery.isLoading ? '...' : 'error')}
+          value={
+            ispHealthQuery.isError
+              ? 'error'
+              : (ispHealthQuery.data?.runtime ?? (ispHealthQuery.isLoading ? '...' : '—'))
+          }
           detail="Control API :3002"
         />
         <MetricTile
           label="NAS Devices"
-          value={String(ispHealthQuery.data?.nasCount ?? nasQuery.data?.length ?? 0)}
-          detail="Active gateways"
+          value={
+            ispHealthQuery.isError && nasQuery.isError
+              ? '—'
+              : String(ispHealthQuery.data?.nasCount ?? nasQuery.data?.length ?? 0)
+          }
+          detail={ispHealthQuery.isError && nasQuery.isError ? 'Load failed' : 'Active gateways'}
         />
         <MetricTile
           label="Live Sessions"
-          value={String(liveSessionsQuery.data?.runtimeSessions.length ?? 0)}
-          detail={`${ispHealthQuery.data?.subscriberCount ?? subscribersQuery.data?.length ?? 0} subscribers`}
+          value={
+            liveSessionsQuery.isError
+              ? '—'
+              : String(liveSessionsQuery.data?.runtimeSessions.length ?? 0)
+          }
+          detail={
+            ispHealthQuery.isError && subscribersQuery.isError
+              ? 'Load failed'
+              : `${ispHealthQuery.data?.subscriberCount ?? subscribersQuery.data?.length ?? 0} subscribers`
+          }
         />
       </div>
 
@@ -335,7 +354,18 @@ export function CloudIspPage() {
           {appsQuery.isLoading ? (
             <Skeleton className="h-24 bg-ink/10" />
           ) : appsQuery.isError ? (
-            <p className="text-sm text-destructive">Failed to load cloud applications.</p>
+            <ErrorState
+              role="alert"
+              headingLevel={3}
+              title="Could not load cloud applications"
+              description={
+                appsQuery.error instanceof Error
+                  ? appsQuery.error.message
+                  : 'Unable to fetch cloud applications.'
+              }
+              retrying={appsQuery.isFetching}
+              onRetry={() => void appsQuery.refetch()}
+            />
           ) : !appsQuery.data?.length ? (
             <p className="text-sm text-ink-faint">No cloud applications configured yet.</p>
           ) : (
@@ -370,7 +400,22 @@ export function CloudIspPage() {
             </div>
           )}
 
-          {deploymentsQuery.data && deploymentsQuery.data.length > 0 && (
+          {deploymentsQuery.isError ? (
+            <div className="mt-4 border-t-2 border-ink/15 pt-4">
+              <ErrorState
+                role="alert"
+                headingLevel={3}
+                title="Could not load deployments"
+                description={
+                  deploymentsQuery.error instanceof Error
+                    ? deploymentsQuery.error.message
+                    : 'Unable to fetch recent deployments.'
+                }
+                retrying={deploymentsQuery.isFetching}
+                onRetry={() => void deploymentsQuery.refetch()}
+              />
+            </div>
+          ) : deploymentsQuery.data && deploymentsQuery.data.length > 0 ? (
             <div className="mt-4 space-y-2 border-t-2 border-ink/15 pt-4">
               <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
                 Recent Deployments
@@ -395,7 +440,7 @@ export function CloudIspPage() {
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
 
           {selectedLog && (
             <pre className="mt-4 overflow-x-auto border-2 border-ink/20 bg-paper p-3 font-mono text-xs">
@@ -430,6 +475,19 @@ export function CloudIspPage() {
               </div>
               {nasQuery.isLoading ? (
                 <Skeleton className="h-20 bg-ink/10" />
+              ) : nasQuery.isError ? (
+                <ErrorState
+                  role="alert"
+                  headingLevel={3}
+                  title="Could not load NAS gateways"
+                  description={
+                    nasQuery.error instanceof Error
+                      ? nasQuery.error.message
+                      : 'Unable to fetch NAS gateways.'
+                  }
+                  retrying={nasQuery.isFetching}
+                  onRetry={() => void nasQuery.refetch()}
+                />
               ) : !nasQuery.data?.length ? (
                 <p className="text-sm text-ink-faint">No NAS devices configured.</p>
               ) : (
@@ -480,6 +538,19 @@ export function CloudIspPage() {
               </p>
               {subscribersQuery.isLoading ? (
                 <Skeleton className="h-20 bg-ink/10" />
+              ) : subscribersQuery.isError ? (
+                <ErrorState
+                  role="alert"
+                  headingLevel={3}
+                  title="Could not load subscribers"
+                  description={
+                    subscribersQuery.error instanceof Error
+                      ? subscribersQuery.error.message
+                      : 'Unable to fetch ISP subscribers.'
+                  }
+                  retrying={subscribersQuery.isFetching}
+                  onRetry={() => void subscribersQuery.refetch()}
+                />
               ) : !subscribersQuery.data?.length ? (
                 <p className="text-sm text-ink-faint">No ISP subscribers yet.</p>
               ) : (
@@ -526,7 +597,20 @@ export function CloudIspPage() {
               <p className="mb-2 font-mono text-xs uppercase tracking-wider text-ink-faint">
                 Live RADIUS Feed
               </p>
-              {!liveSessionsQuery.data?.runtimeSessions.length ? (
+              {liveSessionsQuery.isError ? (
+                <ErrorState
+                  role="alert"
+                  headingLevel={3}
+                  title="Could not load live RADIUS sessions"
+                  description={
+                    liveSessionsQuery.error instanceof Error
+                      ? liveSessionsQuery.error.message
+                      : 'Unable to fetch live RADIUS sessions.'
+                  }
+                  retrying={liveSessionsQuery.isFetching}
+                  onRetry={() => void liveSessionsQuery.refetch()}
+                />
+              ) : !liveSessionsQuery.data?.runtimeSessions.length ? (
                 <p className="text-xs text-ink-faint">No live RADIUS sessions reported.</p>
               ) : (
                 <div className="space-y-1">

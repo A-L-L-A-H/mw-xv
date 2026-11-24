@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpenIcon, RefreshIcon, RelationIcon, SearchIcon } from '@moonwitness/ui/icons';
+import { BookOpenIcon, RelationIcon, SearchIcon } from '@moonwitness/ui/icons';
 import type { CorpusPassage, ResearchGraphSearchResult, SourceCitation } from '@moonwitness/client';
 import { useAuth } from '@/hooks/use-auth-context';
 import { client } from '@/lib/client';
@@ -11,6 +11,7 @@ import { canReadResearch } from '@/lib/research-access';
 import { cn } from '@/lib/utils';
 import { Button } from '@moonwitness/ui/components/button';
 import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
 import { Input } from '@moonwitness/ui/components/input';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { getStateIllustration } from '@moonwitness/ui/lib/asset-registry';
@@ -128,6 +129,9 @@ export function KnowledgePage() {
   const selectSourcePassage = (id: SourceId, selectedLocator: string) => {
     setSourceId(id);
     setRequestedLocator(selectedLocator);
+    if (typeof document !== 'undefined') {
+      document.getElementById('source-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   if (!hasResearchAccess) {
@@ -181,50 +185,32 @@ export function KnowledgePage() {
           ))}
         </div>
         {citationQuery.isError && (
-          <div role="alert">
-            <EmptyState
-              headingLevel={3}
-              icon={<StateArtwork slug="offline" />}
-              title="Source metadata unavailable"
-              description={`Source metadata is unavailable: ${errorMessage(citationQuery.error)}`}
-              action={
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    void citationQuery.refetch();
-                  }}
-                >
-                  <RefreshIcon aria-hidden="true" className="size-4" />
-                  Retry source
-                </Button>
-              }
-            />
-          </div>
+          <ErrorState
+            role="alert"
+            stateSlug="offline"
+            headingLevel={3}
+            title="Source metadata unavailable"
+            description={`Source metadata is unavailable: ${errorMessage(citationQuery.error)}`}
+            retryLabel="Retry source"
+            retrying={citationQuery.isFetching}
+            onRetry={() => {
+              void citationQuery.refetch();
+            }}
+          />
         )}
         {passageQuery.isError && !requestedPassageUnavailable && (
-          <div role="alert">
-            <EmptyState
-              headingLevel={3}
-              icon={<StateArtwork slug="offline" />}
-              title="Passage verification unavailable"
-              description={`The exact passage could not be verified: ${errorMessage(passageQuery.error)}`}
-              action={
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    void passageQuery.refetch();
-                  }}
-                >
-                  <RefreshIcon aria-hidden="true" className="size-4" />
-                  Retry passage
-                </Button>
-              }
-            />
-          </div>
+          <ErrorState
+            role="alert"
+            stateSlug="offline"
+            headingLevel={3}
+            title="Passage verification unavailable"
+            description={`The exact passage could not be verified: ${errorMessage(passageQuery.error)}`}
+            retryLabel="Retry passage"
+            retrying={passageQuery.isFetching}
+            onRetry={() => {
+              void passageQuery.refetch();
+            }}
+          />
         )}
         {requestedPassageUnavailable && (
           <div role="alert">
@@ -300,27 +286,18 @@ export function KnowledgePage() {
           <Skeleton label="Searching research graph" className="h-36 w-full bg-ink/10" />
         )}
         {graphSearchQuery.isError && (
-          <div role="alert">
-            <EmptyState
-              headingLevel={3}
-              icon={<StateArtwork slug="offline" />}
-              title="Graph search unavailable"
-              description={`Graph search is unavailable: ${errorMessage(graphSearchQuery.error)}`}
-              action={
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    void graphSearchQuery.refetch();
-                  }}
-                >
-                  <RefreshIcon aria-hidden="true" className="size-4" />
-                  Retry search
-                </Button>
-              }
-            />
-          </div>
+          <ErrorState
+            role="alert"
+            stateSlug="offline"
+            headingLevel={3}
+            title="Graph search unavailable"
+            description={`Graph search is unavailable: ${errorMessage(graphSearchQuery.error)}`}
+            retryLabel="Retry search"
+            retrying={graphSearchQuery.isFetching}
+            onRetry={() => {
+              void graphSearchQuery.refetch();
+            }}
+          />
         )}
         {!graphSearchQuery.isLoading &&
           !graphSearchQuery.isError &&
@@ -389,27 +366,18 @@ export function KnowledgePage() {
           <Skeleton label="Loading relation explanation" className="h-48 w-full bg-ink/10" />
         )}
         {explanationQuery.isError && (
-          <div role="alert">
-            <EmptyState
-              headingLevel={3}
-              icon={<StateArtwork slug="offline" />}
-              title="Relation explanation unavailable"
-              description={`Research relation is unavailable: ${errorMessage(explanationQuery.error)}`}
-              action={
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    void explanationQuery.refetch();
-                  }}
-                >
-                  <RefreshIcon aria-hidden="true" className="size-4" />
-                  Retry relation
-                </Button>
-              }
-            />
-          </div>
+          <ErrorState
+            role="alert"
+            stateSlug="offline"
+            headingLevel={3}
+            title="Relation explanation unavailable"
+            description={`Research relation is unavailable: ${errorMessage(explanationQuery.error)}`}
+            retryLabel="Retry relation"
+            retrying={explanationQuery.isFetching}
+            onRetry={() => {
+              void explanationQuery.refetch();
+            }}
+          />
         )}
         {!explanationQuery.isLoading && !explanationQuery.isError && !explanationQuery.data && (
           <EmptyState

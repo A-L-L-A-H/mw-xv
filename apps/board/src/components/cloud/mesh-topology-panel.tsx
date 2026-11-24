@@ -15,6 +15,7 @@ import {
   SignalIcon,
   WarningIcon,
 } from '@moonwitness/ui/icons';
+import { MeshNodeCard } from './mesh-node-card';
 
 export type MeshPeerHealth = 'healthy' | 'degraded' | 'offline';
 export type MeshPeerRole = 'primary' | 'standby';
@@ -291,29 +292,27 @@ export function MeshTopologyPanel({ apiBase = '/api/desktop/paas' }: MeshTopolog
       >
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {snapshot.peers.map((peer) => (
-            <div
+            <MeshNodeCard
               key={peer.id}
-              className="flex flex-col justify-between gap-3 rounded-md border p-3"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-sm">{peer.tier}</span>
-                  <Badge variant={healthBadgeVariant(peer.health)}>{peer.health}</Badge>
-                </div>
-                <p className="font-mono text-xs opacity-80">Mesh IP: {peer.meshIp}</p>
-                <p className="font-mono text-[11px] opacity-70">Region: {peer.region}</p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="cyan">
-                  <ActivityIcon className="mr-1 h-3 w-3" />
-                  {peer.rttMs} ms RTT
-                </Badge>
-                <Badge variant={peer.role === 'primary' ? 'primary' : 'default'}>
-                  HA {peer.role.toUpperCase()}
-                </Badge>
-              </div>
-            </div>
+              title={peer.tier}
+              metaLines={[`Mesh IP: ${peer.meshIp}`, `Region: ${peer.region}`]}
+              statusLabel={peer.health}
+              statusVariant={healthBadgeVariant(peer.health)}
+              className="rounded-md bg-transparent p-3"
+              footerBadges={[
+                {
+                  key: 'rtt',
+                  label: `${peer.rttMs} ms RTT`,
+                  variant: 'cyan',
+                  icon: <ActivityIcon className="mr-1 h-3 w-3" />,
+                },
+                {
+                  key: 'role',
+                  label: `HA ${peer.role.toUpperCase()}`,
+                  variant: peer.role === 'primary' ? 'primary' : 'default',
+                },
+              ]}
+            />
           ))}
         </div>
       </Panel>

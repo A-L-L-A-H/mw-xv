@@ -281,7 +281,7 @@ export function CronSchedulerPanel({ onOpenFailureTriage }: CronSchedulerPanelPr
                   </TableCell>
                   <TableCell className="p-3 border-r border-ink/20">
                     {cron.enabled ? (
-                      <span className="border-2 border-ink bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-[1px_1px_0_0_var(--ink)]">
+                      <span className="border-2 border-ink bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-[1px_1px_0_0_var(--mw-ink)]">
                         Active
                       </span>
                     ) : (

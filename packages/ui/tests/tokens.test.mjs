@@ -384,7 +384,9 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
   ]) {
     assert.ok(tokenValue(name).length > 0, `Expected --mw-${name}`);
   }
+  assert.match(tokenValue('font-display'), /'Anton'/u);
   assert.match(tokenValue('font-display'), /'MoonWitness Grunge'/u);
+  assert.match(tokenValue('font-brush'), /'Road Rage'/u);
   assert.match(tokenValue('font-brush'), /'MoonWitness Grunge'/u);
   assert.match(tokenValue('font-grunge'), /'MoonWitness Grunge'/u);
   assert.equal(tokenValue('paper-cream'), '#f3efe4');
@@ -394,6 +396,15 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /--mw-motion-normal:\s*0ms/);
   assert.match(css, /--mw-motion-pop:\s*0ms/);
+  for (const motionToken of ['delay', 'draw', 'effect', 'pulse', 'progress', 'spin']) {
+    assert.match(
+      css,
+      new RegExp(`prefers-reduced-motion:\\s*reduce[\\s\\S]*--mw-motion-${motionToken}:\\s*0ms`, 'u'),
+      `Expected --mw-motion-${motionToken} to zero under prefers-reduced-motion: reduce`
+    );
+  }
+  assert.match(tokenValue('chalk-mask'), /non-scaling-stroke/u);
+  assert.doesNotMatch(tokenValue('chalk-mask'), /%3Ccircle/iu);
   assert.match(css, /\[data-skin='moonwitness-riot'\]/);
   assert.match(css, /\[data-skin='moonwitness-riot'\]\.dark/);
 

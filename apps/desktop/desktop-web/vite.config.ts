@@ -8,7 +8,10 @@ import { createSkinInitScript } from '@moonwitness/ui/themes';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const boardRoot = path.resolve(__dirname, '../../board');
-const assetsFontsDir = path.resolve(__dirname, '../../../packages/assets/fonts');
+const assetsFontsDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.resolve('@moonwitness/assets/fonts.css'))),
+  'fonts'
+);
 const distBoardDir = path.resolve(__dirname, '../dist-board');
 
 function skinPrepaintPlugin(): Plugin {

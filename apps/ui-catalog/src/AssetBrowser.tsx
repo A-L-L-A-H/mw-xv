@@ -36,13 +36,13 @@ const previewByPath: Record<string, string> = {
   'illustrations/home-hero-mobile.webp': heroMobile,
   'illustrations/board-masthead.webp': boardMasthead,
 };
-const filters: { key: InventoryFilter; label: string }[] = [
-  { key: 'kind', label: 'Category' },
-  { key: 'pack', label: 'Pack' },
-  { key: 'subject', label: 'Subject' },
-  { key: 'domain', label: 'Domain' },
-  { key: 'variant', label: 'Variant' },
-  { key: 'status', label: 'Status' },
+const filters: { key: InventoryFilter; label: string; allLabel: string }[] = [
+  { key: 'kind', label: 'Category', allLabel: 'All categories' },
+  { key: 'pack', label: 'Pack', allLabel: 'All packs' },
+  { key: 'subject', label: 'Subject', allLabel: 'All subjects' },
+  { key: 'domain', label: 'Domain', allLabel: 'All domains' },
+  { key: 'variant', label: 'Variant', allLabel: 'All variants' },
+  { key: 'status', label: 'Status', allLabel: 'All statuses' },
 ];
 
 function valuesFor(key: InventoryFilter, assets: AssetRecord[]): string[] {
@@ -133,7 +133,7 @@ export function AssetBrowser() {
             placeholder="Search paths and tags"
           />
         </Field>
-        {filters.map(({ key, label }) => {
+        {filters.map(({ key, label, allLabel }) => {
           const values = valuesFor(key, assets);
           const id = `asset-filter-${key}`;
           return (
@@ -150,7 +150,7 @@ export function AssetBrowser() {
                 value={selected[key]}
                 onChange={(event) => updateFilter(key, event.currentTarget.value)}
               >
-                <option value="">All {label.toLocaleLowerCase()}s</option>
+                <option value="">{allLabel}</option>
                 {values.map((value) => (
                   <option key={value} value={value}>
                     {value}

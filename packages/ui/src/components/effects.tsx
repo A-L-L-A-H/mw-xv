@@ -137,7 +137,11 @@ export function SpeedLines({
       preserveAspectRatio="none"
       className={cn('mw-ui-speed-lines', motion.visibilityClass, className)}
     >
-      <g fill="currentColor" className={animate ? 'mw-ui-speed-lines-pulse' : undefined}>
+      <g
+        fill="currentColor"
+        className={animate ? 'mw-ui-speed-lines-pulse' : undefined}
+        data-pulse-active={animate && motion.isVisible ? 'true' : 'false'}
+      >
         {paths.map((d, i) => (
           <path key={i} d={d} />
         ))}

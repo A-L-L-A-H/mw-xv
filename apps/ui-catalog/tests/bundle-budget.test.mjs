@@ -224,11 +224,11 @@ test('schema v2 requires group and lazy-section limits and preserves total ceili
   );
   assert.equal(committed.schemaVersion, 2);
   assert.deepEqual(committed.groups.total.javascript, {
-    maxRawBytes: 590000,
-    maxGzipBytes: 172000,
+    maxRawBytes: 630000,
+    maxGzipBytes: 186000,
   });
   assert.deepEqual(committed.groups.total.stylesheet, {
-    maxRawBytes: 150000,
-    maxGzipBytes: 28000,
+    maxRawBytes: 162000,
+    maxGzipBytes: 29000,
   });
 });

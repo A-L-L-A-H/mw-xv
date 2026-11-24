@@ -19,6 +19,8 @@ import type {
   DesktopStreamEventKind,
   DesktopStreamSubscribeOptions,
   DesktopStreamSubscription,
+  DesktopUpdateCheckSummary,
+  DesktopUpdateInstallSummary,
   EnqueuePcwEnvelopeInput,
   GitWorktreeLease,
   LocalMcpServerConfig,
@@ -28,6 +30,7 @@ import type {
   RiskEvaluationRequest,
   UpstreamPcwSyncTransport,
 } from './types.js';
+import { DEFAULT_CURRENT_DESKTOP_VERSION } from './updater.js';
 import { WorktreeSandbox } from './worktree-sandbox.js';
 
 const SECRET_REF_REGEX = /^MW_AI_(?:C[1-9][0-9]*_)?[A-Z0-9_]{1,100}$/u;
@@ -366,6 +369,17 @@ export function createDesktopHarnessBridge(
         activeLeases: sandbox.listLeases().filter((lease) => lease.status === 'active'),
         sidecar: sidecar.getState(),
         mcpServers: mcpHost.listServers(),
+      };
+    },
+    async checkForUpdates(): Promise<DesktopUpdateCheckSummary> {
+      return {
+        status: 'up-to-date',
+        currentVersion: DEFAULT_CURRENT_DESKTOP_VERSION,
+      };
+    },
+    async installUpdate(): Promise<DesktopUpdateInstallSummary> {
+      return {
+        status: 'up-to-date',
       };
     },
     verifySenderOrigin(origin: string, windowLabel = 'main'): boolean {

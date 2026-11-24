@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshIcon } from '@moonwitness/ui/icons';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { PageHeader } from '@moonwitness/ui/components/page-header';
 import { Panel } from '@moonwitness/ui/components/panel';
@@ -211,18 +212,18 @@ export function CommercialPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile
           label="CRM Opportunities"
-          value={String(opportunities.length)}
-          detail="Pipeline candidates"
+          value={opportunitiesQuery.isError ? '—' : String(opportunities.length)}
+          detail={opportunitiesQuery.isError ? 'Load failed' : 'Pipeline candidates'}
         />
         <MetricTile
           label="Sales Orders"
-          value={String(orders.length)}
-          detail={`${confirmedOrdersCount} confirmed`}
+          value={ordersQuery.isError ? '—' : String(orders.length)}
+          detail={ordersQuery.isError ? 'Load failed' : `${confirmedOrdersCount} confirmed`}
         />
         <MetricTile
           label="Subscriptions"
-          value={String(subscriptions.length)}
-          detail={`${activeSubsCount} active billing`}
+          value={subscriptionsQuery.isError ? '—' : String(subscriptions.length)}
+          detail={subscriptionsQuery.isError ? 'Load failed' : `${activeSubsCount} active billing`}
         />
         <MetricTile label="Infrastructure" value="Cloud & ISP" detail="Provisioning targets" />
       </div>
@@ -232,6 +233,19 @@ export function CommercialPage() {
           <div className="space-y-3">
             {opportunitiesQuery.isLoading ? (
               <Skeleton className="h-28 w-full" />
+            ) : opportunitiesQuery.isError ? (
+              <ErrorState
+                role="alert"
+                headingLevel={3}
+                title="Could not load CRM opportunities"
+                description={
+                  opportunitiesQuery.error instanceof Error
+                    ? opportunitiesQuery.error.message
+                    : 'Unable to fetch CRM opportunities.'
+                }
+                retrying={opportunitiesQuery.isFetching}
+                onRetry={() => void opportunitiesQuery.refetch()}
+              />
             ) : opportunities.length === 0 ? (
               <p className="font-mono text-sm text-ink-muted">No opportunities recorded.</p>
             ) : (
@@ -265,6 +279,19 @@ export function CommercialPage() {
           <div className="space-y-3">
             {ordersQuery.isLoading ? (
               <Skeleton className="h-28 w-full" />
+            ) : ordersQuery.isError ? (
+              <ErrorState
+                role="alert"
+                headingLevel={3}
+                title="Could not load sales orders"
+                description={
+                  ordersQuery.error instanceof Error
+                    ? ordersQuery.error.message
+                    : 'Unable to fetch sales orders.'
+                }
+                retrying={ordersQuery.isFetching}
+                onRetry={() => void ordersQuery.refetch()}
+              />
             ) : orders.length === 0 ? (
               <p className="font-mono text-sm text-ink-muted">No sales orders found.</p>
             ) : (
@@ -317,6 +344,19 @@ export function CommercialPage() {
         <div className="space-y-3">
           {subscriptionsQuery.isLoading ? (
             <Skeleton className="h-28 w-full" />
+          ) : subscriptionsQuery.isError ? (
+            <ErrorState
+              role="alert"
+              headingLevel={3}
+              title="Could not load subscriptions"
+              description={
+                subscriptionsQuery.error instanceof Error
+                  ? subscriptionsQuery.error.message
+                  : 'Unable to fetch recurring subscriptions.'
+              }
+              retrying={subscriptionsQuery.isFetching}
+              onRetry={() => void subscriptionsQuery.refetch()}
+            />
           ) : subscriptions.length === 0 ? (
             <p className="font-mono text-sm text-ink-muted">No recurring subscriptions found.</p>
           ) : (

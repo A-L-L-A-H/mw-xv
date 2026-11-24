@@ -138,3 +138,18 @@ export {
   type AutonomousTaskExecutionOptions,
   type AutonomousTaskExecutionResult,
 } from './project-loop.js';
+export {
+  DEFAULT_CURRENT_DESKTOP_VERSION,
+  DEFAULT_DESKTOP_UPDATE_ENDPOINT,
+  checkForDesktopUpdate,
+  compareSemver,
+  isValidSha256Hex,
+  parseSemver,
+  validateUpdateEndpoint,
+  type CheckForDesktopUpdateOptions,
+  type DesktopUpdateCheckResult,
+  type DesktopUpdateCheckStatus,
+  type DesktopUpdateManifest,
+  type DesktopUpdatePlatformAsset,
+  type ParsedSemver,
+} from './updater.js';

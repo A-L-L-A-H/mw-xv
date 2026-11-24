@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import type { Domain, ResolvedViews } from '@moonwitness/client';
 import { Button } from '@moonwitness/ui/components/button';
 import { LoadingSpinner } from '@moonwitness/ui/components/effects';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
 import { client } from '@/lib/client';
 import { scopedQueryKey } from '@/lib/query-scope';
 import {
@@ -83,45 +84,91 @@ export function CalendarView({ model, views, onOpenRecord }: CalendarViewProps) 
       {query.isLoading ? (
         <LoadingSpinner className="size-6" />
       ) : query.isError ? (
-        <div role="alert" className="border-2 border-ink bg-destructive p-3">
-          Could not load calendar records.
-        </div>
-      ) : (
-        <div
-          className={
-            mode === 'month'
-              ? 'grid grid-cols-7 gap-1 border-2 border-ink bg-card'
-              : 'grid grid-cols-7 gap-2 border-2 border-ink bg-card'
+        <ErrorState
+          role="alert"
+          headingLevel={2}
+          title="Could not load calendar records"
+          description={
+            query.error instanceof Error
+              ? query.error.message
+              : 'Unable to fetch calendar records.'
           }
-        >
-          {range.days.map((day) => {
-            const key = formatLocalDate(day);
-            const items = recordsByDay.get(key) ?? [];
-            return (
-              <div
-                key={key}
-                className={
-                  mode === 'month'
-                    ? 'min-h-24 border border-ink/20 p-1'
-                    : 'min-h-48 border border-ink/20 p-2'
-                }
-              >
-                <p className="font-mono text-[10px] text-ink-faint">{key.slice(5)}</p>
-                {items.map((record) => (
-                  <Button
-                    key={record.id}
-                    variant="outline"
-                    size="xs"
-                    className="mt-1 w-full truncate border border-ink bg-paper-raised px-1 text-left font-mono text-[10px]"
-                    onClick={() => onOpenRecord(record.id)}
+          retrying={query.isFetching}
+          onRetry={() => void query.refetch()}
+        />
+      ) : (
+        <>
+          <div className="divide-y divide-ink/20 border-2 border-ink bg-card sm:hidden">
+            {range.days.map((day) => {
+              const key = formatLocalDate(day);
+              const items = recordsByDay.get(key) ?? [];
+              return (
+                <div key={key} className="space-y-1.5 p-3">
+                  <p className="font-mono text-xs font-bold text-ink-faint">{key}</p>
+                  {items.length === 0 ? (
+                    <p className="font-mono text-[11px] text-ink-faint">No scheduled records</p>
+                  ) : (
+                    <div className="space-y-1">
+                      {items.map((record) => (
+                        <Button
+                          key={record.id}
+                          variant="outline"
+                          size="xs"
+                          className="w-full justify-start truncate border border-ink bg-paper-raised px-2 text-left font-mono text-xs"
+                          onClick={() => onOpenRecord(record.id)}
+                        >
+                          {String(record[metadata.titleField ?? 'name'] ?? `#${record.id}`)}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div
+            role="region"
+            tabIndex={0}
+            aria-label={`${views.title} calendar horizontal scroll`}
+            className="hidden overflow-x-auto border-2 border-ink bg-card sm:block"
+          >
+            <div
+              className={
+                mode === 'month'
+                  ? 'grid min-w-[42rem] grid-cols-7 gap-1'
+                  : 'grid min-w-[42rem] grid-cols-7 gap-2'
+              }
+            >
+              {range.days.map((day) => {
+                const key = formatLocalDate(day);
+                const items = recordsByDay.get(key) ?? [];
+                return (
+                  <div
+                    key={key}
+                    className={
+                      mode === 'month'
+                        ? 'min-h-24 border border-ink/20 p-1'
+                        : 'min-h-48 border border-ink/20 p-2'
+                    }
                   >
-                    {String(record[metadata.titleField ?? 'name'] ?? `#${record.id}`)}
-                  </Button>
-                ))}
-              </div>
-            );
-          })}
-        </div>
+                    <p className="font-mono text-[10px] text-ink-faint">{key.slice(5)}</p>
+                    {items.map((record) => (
+                      <Button
+                        key={record.id}
+                        variant="outline"
+                        size="xs"
+                        className="mt-1 w-full truncate border border-ink bg-paper-raised px-1 text-left font-mono text-[10px]"
+                        onClick={() => onOpenRecord(record.id)}
+                      >
+                        {String(record[metadata.titleField ?? 'name'] ?? `#${record.id}`)}
+                      </Button>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
       )}
     </section>
   );

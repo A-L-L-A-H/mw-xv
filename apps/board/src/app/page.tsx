@@ -168,6 +168,7 @@ export default function HomePage() {
                 number={card.number}
                 surface="ink"
                 frame="grunge"
+                size="sm"
                 accent={card.number === '02' ? 'cyan' : 'magenta'}
               />
               <div className="home-card-art" aria-hidden="true">
@@ -186,7 +187,13 @@ export default function HomePage() {
                 <h2 className="mw-ui-interactive-title">{card.title}</h2>
                 <p>{card.body}</p>
                 <Link
-                  href={card.id === 'stories' ? '/login' : '/register'}
+                  href={
+                    card.id === 'knowledge'
+                      ? '/knowledge'
+                      : card.id === 'stories'
+                        ? '/login'
+                        : '/register'
+                  }
                   className="home-card-link"
                 >
                   Explore <ArrowRightIcon aria-hidden="true" />
@@ -232,6 +239,8 @@ export default function HomePage() {
           number="04"
           surface="ink"
           frame="grunge"
+          size="lg"
+          treatment="brush"
           accent="yellow"
         />
         <HorizontalFilmstrip
@@ -282,6 +291,7 @@ export default function HomePage() {
           </span>
         </div>
         <div className="home-footer-actions">
+          <Link href="/knowledge">Public knowledge</Link>
           <Link href="/login">Sign in</Link>
           <Link href="/register">Create an account</Link>
         </div>

@@ -119,6 +119,8 @@ export function DashboardKpiGrid({ accessibleModels }: DashboardKpiGridProps) {
             accent="magenta"
             surface="paper"
             frame="torn"
+            size="hero"
+            interactive
             className="mw-ui-interactive-surface"
           />
         </Link>
@@ -134,6 +136,8 @@ export function DashboardKpiGrid({ accessibleModels }: DashboardKpiGridProps) {
             accent="cyan"
             surface="paper"
             frame="torn"
+            size="hero"
+            interactive
             className="mw-ui-interactive-surface"
           />
         </Link>
@@ -149,6 +153,8 @@ export function DashboardKpiGrid({ accessibleModels }: DashboardKpiGridProps) {
             accent="yellow"
             surface="paper"
             frame="torn"
+            size="hero"
+            interactive
             className="mw-ui-interactive-surface"
           />
         </Link>
@@ -164,6 +170,8 @@ export function DashboardKpiGrid({ accessibleModels }: DashboardKpiGridProps) {
             accent="violet"
             surface="paper"
             frame="torn"
+            size="hero"
+            interactive
             className="mw-ui-interactive-surface"
           />
         </Link>

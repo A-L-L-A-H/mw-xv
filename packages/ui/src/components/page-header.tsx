@@ -8,6 +8,7 @@ export type PageHeaderProps = Omit<ComponentProps<'header'>, 'children' | 'title
   breadcrumbs?: ReactNode;
   actions?: ReactNode;
   treatment?: 'display' | 'brush';
+  scale?: 'default' | 'hero';
   headingLevel?: 1 | 2 | 3;
 };
 
@@ -19,6 +20,7 @@ export function PageHeader({
   breadcrumbs,
   actions,
   treatment = 'display',
+  scale = 'default',
   headingLevel = 1,
   className,
   ...props
@@ -28,6 +30,7 @@ export function PageHeader({
     <header
       className={['mw-ui-page-header', className].filter(Boolean).join(' ')}
       data-accent={accent}
+      data-scale={scale}
       data-treatment={treatment}
       {...props}
     >

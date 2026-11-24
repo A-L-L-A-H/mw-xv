@@ -7,6 +7,7 @@ import {
   type ScenePlaybackSnapshot,
 } from '../lib/scene-playback.js';
 import { getActiveSceneHarness } from '../lib/scene-test-harness.js';
+import { useReducedMotion } from '../lib/use-reduced-motion.js';
 
 export interface SpriteClipMetadata {
   readonly id: string;
@@ -102,7 +103,7 @@ export function SpritePlayer({
   onFrameChange,
 }: SpritePlayerProps) {
   const harness = getActiveSceneHarness();
-  const effectiveReducedMotion = Boolean(reducedMotion ?? harness?.reducedMotion ?? false);
+  const effectiveReducedMotion = useReducedMotion(reducedMotion);
   const effectivePinnedFrame = pinnedFrame ?? harness?.fixedFrame;
   const effectivePaused = Boolean(paused || harness?.paused === true);
   const fixedTimeMs = harness?.fixedTimeMs;

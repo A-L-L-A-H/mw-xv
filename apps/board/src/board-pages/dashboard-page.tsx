@@ -33,6 +33,8 @@ import {
   LiveIndicator,
 } from '@moonwitness/ui/components/effects';
 import { Button } from '@moonwitness/ui/components/button';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -148,6 +150,7 @@ export function DashboardPage() {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'crons'] });
     } catch (err) {
       console.error('Failed to toggle cron:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to toggle cron');
     } finally {
       setTogglingCronId(null);
     }
@@ -422,13 +425,15 @@ export function DashboardPage() {
             {isAdmin ? (
               auditsLoading ? (
                 <div className="space-y-2">
-                  <div className="h-12 border-2 border-ink/20 bg-card animate-pulse" />
-                  <div className="h-12 border-2 border-ink/20 bg-card animate-pulse" />
+                  <Skeleton label="Loading recent audit records" className="h-12 border-2 border-ink/20 bg-card" />
+                  <Skeleton className="h-12 border-2 border-ink/20 bg-card" />
                 </div>
               ) : !recentAudits?.records || recentAudits.records.length === 0 ? (
-                <p className="font-mono text-xs text-ink-faint py-4 text-center">
-                  No recent audit records available.
-                </p>
+                <EmptyState
+                  illustration="no-activity"
+                  headingLevel={3}
+                  title="No recent audit records available."
+                />
               ) : (
                 <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {recentAudits.records.map((audit) => {
@@ -491,11 +496,13 @@ export function DashboardPage() {
                 </div>
               )
             ) : activitiesLoading ? (
-              <div className="h-12 border-2 border-ink/20 bg-card animate-pulse" />
+              <Skeleton label="Loading planned activities" className="h-12 border-2 border-ink/20 bg-card" />
             ) : !recentActivities?.records || recentActivities.records.length === 0 ? (
-              <p className="font-mono text-xs text-ink-faint py-4 text-center">
-                No planned activities at this time.
-              </p>
+              <EmptyState
+                illustration="no-activity"
+                headingLevel={3}
+                title="No planned activities at this time."
+              />
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {recentActivities.records.map((act) => (
@@ -666,9 +673,9 @@ export function DashboardPage() {
                   className="border-2 border-ink bg-card p-4 font-mono"
                 />
               ) : jobsHealthState === 'loading' ? (
-                <div
-                  aria-label="Loading job telemetry"
-                  className="h-36 border-2 border-ink/20 bg-card animate-pulse"
+                <Skeleton
+                  label="Loading job telemetry"
+                  className="h-36 border-2 border-ink/20 bg-card"
                 />
               ) : null}
 
@@ -688,7 +695,7 @@ export function DashboardPage() {
                 </div>
 
                 {cronsState === 'loading' ? (
-                  <div className="h-14 border-2 border-ink/20 bg-card animate-pulse" />
+                  <Skeleton label="Loading scheduled crons" className="h-14 border-2 border-ink/20 bg-card" />
                 ) : cronsState === 'error' || cronsState === 'unavailable' ? (
                   <div
                     role="alert"
@@ -700,9 +707,11 @@ export function DashboardPage() {
                     </Button>
                   </div>
                 ) : cronsState === 'empty' ? (
-                  <p className="font-mono text-xs text-ink-faint py-3 text-center border-2 border-dashed border-ink/20">
-                    No cron jobs registered.
-                  </p>
+                  <EmptyState
+                    illustration="empty-collection"
+                    headingLevel={3}
+                    title="No cron jobs registered."
+                  />
                 ) : (
                   <div className="divide-y-2 divide-ink border-2 border-ink bg-card">
                     {adminCrons?.data?.map((cron) => (
@@ -774,10 +783,20 @@ export function DashboardPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {modelsLoading ? (
                 Array.from({ length: 6 }, (_, i) => (
-                  <div key={i} className="h-32 border-2 border-ink/20 bg-card p-6 animate-pulse" />
+                  <Skeleton
+                    key={i}
+                    label={i === 0 ? 'Loading workspace modules' : undefined}
+                    className="h-32 border-2 border-ink/20 bg-card p-6"
+                  />
                 ))
               ) : visibleModels?.length === 0 ? (
-                <p className="text-ink-faint">No accessible models found for your role.</p>
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <EmptyState
+                    illustration="empty-dashboard"
+                    headingLevel={3}
+                    title="No accessible models found for your role."
+                  />
+                </div>
               ) : (
                 visibleModels?.map((m) => {
                   const Icon = modelIcon(m.model);

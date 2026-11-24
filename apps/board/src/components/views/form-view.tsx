@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArchiveIcon, ArrowRightIcon, BoltIcon, DeleteIcon, SaveIcon } from '@moonwitness/ui/icons';
 import { LoadingSpinner } from '@moonwitness/ui/components/effects';
+import { useSfx } from '@moonwitness/ui/components/audio';
 import { toast } from '@moonwitness/ui/components/toast';
 import { ConflictError } from '@moonwitness/client';
 import { evalDomain, type FieldMeta, type ResolvedViews } from '@moonwitness/client';
@@ -113,6 +114,7 @@ function FormEditor({
   const canWrite = isCreate ? Boolean(views.permissions.create) : Boolean(views.permissions.write);
   const mutations = useRecordMutations(model);
   const queryClient = useQueryClient();
+  const { play } = useSfx();
 
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
     if (initialRecord) return { ...initialRecord };
@@ -193,6 +195,7 @@ function FormEditor({
           (formData[name] === undefined || formData[name] === null || formData[name] === '')
         ) {
           setError(`Field '${f.label}' is required.`);
+          play('alert');
           return;
         }
       }
@@ -228,12 +231,14 @@ function FormEditor({
               : undefined,
         });
         setDirty(false);
+        play('success');
         toast.success('Record saved successfully.');
 
         if (isCreate && saved?.id) {
           onSaved?.(saved.id);
         }
       } catch (err: unknown) {
+        play('alert');
         if (err instanceof ConflictError && recordId !== undefined) {
           try {
             const serverRecord = await queryClient.fetchQuery<RecordData>({
@@ -263,6 +268,7 @@ function FormEditor({
       onSaved,
       initialRecord,
       model,
+      play,
       queryClient,
     ]
   );
@@ -294,8 +300,10 @@ function FormEditor({
             : undefined,
       });
       toast.success(hard ? 'Record deleted.' : 'Record archived.');
+      play('signal');
       onBack();
     } catch (err: unknown) {
+      play('alert');
       toast.error(err instanceof Error ? err.message : 'Failed to archive record.');
     } finally {
       setConfirmAction(null);
@@ -311,8 +319,10 @@ function FormEditor({
     setError(null);
     try {
       await mutations.action.mutateAsync({ id: recordId, method });
+      play('signal');
       toast.success('Action executed successfully.');
     } catch (err) {
+      play('alert');
       setError(err instanceof Error ? err.message : 'Action failed to execute.');
     }
   }

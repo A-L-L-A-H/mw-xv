@@ -16,6 +16,7 @@ import {
 } from '@moonwitness/client';
 import { useAuth } from '@/hooks/use-auth-context';
 import { client } from '@/lib/client';
+import { useSfx } from '@moonwitness/ui/components/audio';
 import { Button } from '@moonwitness/ui/components/button';
 import { Doodle } from '@moonwitness/ui/components/effects';
 import { Panel } from '@moonwitness/ui/components/panel';
@@ -34,6 +35,7 @@ function messageOf(error: unknown): string {
 
 export function StoryWorkbenchPage() {
   const { user } = useAuth();
+  const { play } = useSfx();
   const [draft, setDraft] = useState<string | null>(null);
   const [pagesDraft, setPagesDraft] = useState<StoryPageDocument[] | null>(null);
   const [selectedPageId, setSelectedPageId] = useState(initialPage.page_id);
@@ -112,8 +114,10 @@ export function StoryWorkbenchPage() {
       setPagesDraft(null);
       setSelectedPageId(saved.story.pages[0]?.page_id ?? initialPage.page_id);
       setNotice(`Saved immutable revision ${saved.version} (${saved.digest.slice(0, 12)}…).`);
+      play('success');
       await storyQuery.refetch();
     } catch (saveError) {
+      play('alert');
       setError(messageOf(saveError));
     } finally {
       setSaving(false);

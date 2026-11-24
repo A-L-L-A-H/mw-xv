@@ -1,4 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createDesktopHarnessBridge } from '../src/bridge.js';
+import type { DesktopBridgeHostSurface } from '../src/types.js';
 import {
   DEFAULT_CURRENT_DESKTOP_VERSION,
   DEFAULT_DESKTOP_UPDATE_ENDPOINT,
@@ -7,6 +13,15 @@ import {
   isValidSha256Hex,
   validateUpdateEndpoint,
 } from '../src/updater.js';
+
+const tempDirs: string[] = [];
+
+afterEach(() => {
+  while (tempDirs.length > 0) {
+    const dir = tempDirs.pop();
+    if (dir) rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 const VALID_SHA256 = 'a'.repeat(64);
 
@@ -168,6 +183,40 @@ describe('desktop updater', () => {
       expect(result.status).toBe('invalid-endpoint');
       expect(result.updateAvailable).toBe(false);
       expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('desktop bridge updater parity', () => {
+    it('exposes bounded checkForUpdates() and installUpdate() on window.__MW_DESKTOP__', async () => {
+      const repoRoot = mkdtempSync(path.join(tmpdir(), 'mw-desktop-updater-repo-'));
+      const homeDir = mkdtempSync(path.join(tmpdir(), 'mw-desktop-updater-home-'));
+      tempDirs.push(repoRoot, homeDir);
+
+      execFileSync('git', ['init'], { cwd: repoRoot, stdio: 'ignore' });
+      const surface: DesktopBridgeHostSurface = {};
+      const bridge = createDesktopHarnessBridge(
+        {
+          repoRoot,
+          desktopHomeDir: homeDir,
+          sqlitePath: ':memory:',
+          boardOrigin: 'http://127.0.0.1:5173',
+          apiBaseUrl: 'http://127.0.0.1:3000',
+        },
+        { surface }
+      );
+
+      try {
+        expect(surface.__MW_DESKTOP__).toBe(bridge);
+        await expect(bridge.checkForUpdates?.()).resolves.toEqual({
+          status: 'up-to-date',
+          currentVersion: DEFAULT_CURRENT_DESKTOP_VERSION,
+        });
+        await expect(bridge.installUpdate?.()).resolves.toEqual({
+          status: 'up-to-date',
+        });
+      } finally {
+        bridge.dispose();
+      }
     });
   });
 });

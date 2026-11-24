@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CheckIcon,
   CodeIcon,
@@ -175,7 +175,7 @@ function SettingsQueryError({
 export function SettingsPage() {
   const { user, logout } = useAuth();
   const activeScope = getQueryScope();
-  const scopeKey = `${activeScope.userId ?? ''}:${activeScope.companyId ?? ''}:${activeScope.metadataGeneration ?? ''}`;
+  const scopeKey = `${activeScope.userId ?? ''}:${activeScope.companyId ?? ''}`;
   return <SettingsPageContent key={scopeKey} activeScope={activeScope} user={user} logout={logout} />;
 }
 
@@ -226,6 +226,7 @@ function SettingsPageContent({
       return response.data;
     },
     enabled: isDesktop,
+    placeholderData: keepPreviousData,
   });
   const localBackupsQuery = useQuery({
     queryKey: settingsQueryKeys.desktopBackups(activeScope),
@@ -237,6 +238,7 @@ function SettingsPageContent({
       return response.data;
     },
     enabled: isDesktop,
+    placeholderData: keepPreviousData,
   });
   const createBackupMutation = useMutation({
     mutationFn: async () => {
@@ -263,6 +265,7 @@ function SettingsPageContent({
     queryKey: settingsQueryKeys.user(user?.id, activeScope),
     queryFn: () => client.getMe(),
     enabled: Boolean(user),
+    placeholderData: keepPreviousData,
   });
   const languagesQuery = useQuery({
     queryKey: settingsQueryKeys.languages(activeScope),
@@ -273,6 +276,7 @@ function SettingsPageContent({
       });
       return result.records;
     },
+    placeholderData: keepPreviousData,
   });
   const configParamsQuery = useQuery({
     queryKey: settingsQueryKeys.configParameters(activeScope),
@@ -294,6 +298,7 @@ function SettingsPageContent({
       return result.records;
     },
     enabled: isAdmin,
+    placeholderData: keepPreviousData,
   });
   const featureFlagsQuery = useQuery({
     queryKey: settingsQueryKeys.featureFlags(activeScope),
@@ -316,6 +321,7 @@ function SettingsPageContent({
       return result.records;
     },
     enabled: isAdmin,
+    placeholderData: keepPreviousData,
   });
 
   const {
@@ -586,10 +592,17 @@ function SettingsPageContent({
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <Breadcrumbs items={[{ label: 'Settings' }]} />
-      <header>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-faint">Workspace</p>
-        <h1 className="ink-title mt-2 text-4xl sm:text-5xl">Settings</h1>
-        <p className="mt-2 text-ink-soft">Personal display and regional preferences.</p>
+      <header className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-faint">Workspace</p>
+          <h1 className="ink-title mt-2 text-4xl sm:text-5xl">Settings</h1>
+          <p className="mt-2 text-ink-soft">Personal display and regional preferences.</p>
+        </div>
+        {(userPreferencesQuery.isFetching || languagesQuery.isFetching) && regionalReadSucceeded ? (
+          <span role="status" className="font-mono text-xs text-ink-soft">
+            Syncing…
+          </span>
+        ) : null}
       </header>
 
       {isDesktop && (
@@ -636,6 +649,7 @@ function SettingsPageContent({
                 <Button
                   key={option.id}
                   type="button"
+                  variant={selected ? 'default' : 'outline'}
                   aria-pressed={selected}
                   onClick={() => {
                     setDesktopMode(option.id);
@@ -643,7 +657,7 @@ function SettingsPageContent({
                   }}
                   className={`flex h-auto flex-col items-start gap-2 border-2 p-4 text-left transition-colors ${
                     selected
-                      ? 'border-ink bg-primary/30 shadow-ink-sm'
+                      ? 'border-ink bg-primary text-[var(--mw-primary-foreground)] shadow-ink-sm'
                       : 'border-ink/30 hover:border-ink'
                   }`}
                 >
@@ -652,7 +666,11 @@ function SettingsPageContent({
                     <span className="font-display uppercase">{option.label}</span>
                     {selected && <CheckIcon className="ml-auto size-4 shrink-0" />}
                   </div>
-                  <span className="text-xs font-normal normal-case text-ink-soft">
+                  <span
+                    className={`text-xs font-normal normal-case ${
+                      selected ? 'text-[var(--mw-primary-foreground)]' : 'text-ink-soft'
+                    }`}
+                  >
                     {option.description}
                   </span>
                 </Button>
@@ -748,7 +766,7 @@ function SettingsPageContent({
             <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
               Local AI Models (Ollama / LM Studio / vLLM)
             </p>
-            {localAiQuery.isLoading ? (
+            {localAiQuery.isLoading && !localAiQuery.data ? (
               <Skeleton className="h-14 w-full" />
             ) : localAiQuery.isError ? (
               <SettingsQueryError
@@ -776,7 +794,7 @@ function SettingsPageContent({
             <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">
               Offline SQLite Backups
             </p>
-            {localBackupsQuery.isLoading ? (
+            {localBackupsQuery.isLoading && !localBackupsQuery.data ? (
               <Skeleton className="h-16 w-full" />
             ) : localBackupsQuery.isError ? (
               <SettingsQueryError
@@ -834,12 +852,17 @@ function SettingsPageContent({
                 <Button
                   key={theme}
                   type="button"
+                  variant={selected ? 'default' : 'outline'}
                   aria-pressed={selected}
                   onClick={() => {
                     setMode(theme);
                     updatePreference('theme', theme);
                   }}
-                  className={`flex items-center gap-3 border-2 p-4 text-left transition-colors ${selected ? 'border-ink bg-primary/30 shadow-ink-sm' : 'border-ink/30 hover:border-ink'}`}
+                  className={`flex items-center gap-3 border-2 p-4 text-left transition-colors ${
+                    selected
+                      ? 'border-ink bg-primary text-[var(--mw-primary-foreground)] shadow-ink-sm'
+                      : 'border-ink/30 hover:border-ink'
+                  }`}
                 >
                   <Icon className="size-5" />
                   <span className="font-display uppercase">{theme} theme</span>
@@ -851,25 +874,34 @@ function SettingsPageContent({
 
           <div className="space-y-2 border-t border-ink/20 pt-4">
             <p className="font-mono text-xs uppercase tracking-wider text-ink-faint">Skin</p>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {skins.map((skinOption) => {
                 const selected = preferences.skin === skinOption.id;
                 return (
                   <Button
                     key={skinOption.id}
                     type="button"
+                    variant={selected ? 'default' : 'outline'}
                     aria-pressed={selected}
                     onClick={() => {
                       setSkin(skinOption.id);
                       updatePreference('skin', skinOption.id);
                     }}
-                    className={`flex h-auto flex-col items-start gap-2 border-2 p-3 text-left transition-colors ${selected ? 'border-ink bg-primary/25 shadow-ink-sm' : 'border-ink/30 hover:border-ink'}`}
+                    className={`flex h-auto flex-col items-start gap-2 border-2 p-3 text-left transition-colors ${
+                      selected
+                        ? 'border-ink bg-primary text-[var(--mw-primary-foreground)] shadow-ink-sm'
+                        : 'border-ink/30 hover:border-ink'
+                    }`}
                   >
                     <div className="flex w-full items-center justify-between gap-2">
                       <span className="font-display text-sm uppercase">{skinOption.label}</span>
                       {selected && <CheckIcon className="size-4 shrink-0" />}
                     </div>
-                    <span className="text-xs font-normal normal-case text-ink-soft">
+                    <span
+                      className={`text-xs font-normal normal-case ${
+                        selected ? 'text-[var(--mw-primary-foreground)]' : 'text-ink-soft'
+                      }`}
+                    >
                       {skinOption.description}
                     </span>
                     <span className="mt-1 flex items-center gap-1.5" aria-hidden="true">
@@ -905,12 +937,17 @@ function SettingsPageContent({
                   <Button
                     key={densityOption}
                     type="button"
+                    variant={selected ? 'default' : 'outline'}
                     aria-pressed={selected}
                     onClick={() => {
                       setDensity(densityOption);
                       updatePreference('density', densityOption);
                     }}
-                    className={`flex items-center justify-between gap-3 border-2 p-3 text-left transition-colors ${selected ? 'border-ink bg-primary/30 shadow-ink-sm' : 'border-ink/30 hover:border-ink'}`}
+                    className={`flex items-center justify-between gap-3 border-2 p-3 text-left transition-colors ${
+                      selected
+                        ? 'border-ink bg-primary text-[var(--mw-primary-foreground)] shadow-ink-sm'
+                        : 'border-ink/30 hover:border-ink'
+                    }`}
                   >
                     <span className="font-display uppercase">{densityOption} density</span>
                     {selected && <CheckIcon className="size-4" />}
@@ -931,7 +968,7 @@ function SettingsPageContent({
             Regional preferences are saved to your user account.
           </p>
         </div>
-        {userLoading || languagesLoading ? (
+        {(userLoading && !userPreferences) || (languagesLoading && !languagesQuery.data) ? (
           <div className="grid gap-5 sm:grid-cols-2">
             <Skeleton className="h-16" />
             <Skeleton className="h-16" />
@@ -1088,7 +1125,7 @@ function SettingsPageContent({
               <Badge variant="primary">Admin Only</Badge>
             </div>
 
-            {configParamsLoading ? (
+            {configParamsLoading && !configParamsQuery.data ? (
               <div className="space-y-3">
                 <Skeleton className="h-14" />
                 <Skeleton className="h-14" />
@@ -1286,7 +1323,7 @@ function SettingsPageContent({
               <Badge variant="primary">Admin Only</Badge>
             </div>
 
-            {featureFlagsLoading ? (
+            {featureFlagsLoading && !featureFlagsQuery.data ? (
               <div className="space-y-3">
                 <Skeleton className="h-14" />
                 <Skeleton className="h-14" />

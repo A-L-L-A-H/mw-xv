@@ -14,7 +14,8 @@ import { client } from '@/lib/client';
 import { scopedQueryKey } from '@/lib/query-scope';
 import { useAuth } from '@/hooks/use-auth-context';
 import { Button } from '@moonwitness/ui/components/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@moonwitness/ui/components/popover';
+import { LoadingSpinner } from '@moonwitness/ui/components/effects';
+import { InboxPopover } from '@moonwitness/ui/components/inbox-popover';
 import { cn } from '@/lib/utils';
 
 export interface ActivityRecord {
@@ -45,8 +46,7 @@ export function ActivityBell() {
     return () => window.clearInterval(timer);
   }, []);
 
-  // Fetch pending activities
-  const { data: activities = [], isLoading } = useQuery<ActivityRecord[]>({
+  const activitiesQuery = useQuery<ActivityRecord[]>({
     queryKey: scopedQueryKey(['activities_bell', user?.id]),
     queryFn: async () => {
       const res = await client.model<ActivityRecord>('base.activity').searchRead({
@@ -56,10 +56,9 @@ export function ActivityBell() {
       });
       return res.records;
     },
-    refetchInterval: 30000, // Background poll every 30s
+    refetchInterval: 30000,
   });
 
-  // Mark done mutation
   const markDoneMutation = useMutation({
     mutationFn: async (activityId: number) => {
       await client.model('base.activity').write(activityId, { state: 'done' });
@@ -72,6 +71,7 @@ export function ActivityBell() {
     },
   });
 
+  const activities = activitiesQuery.data ?? [];
   const overdue = activities.filter((a) => a.deadline && a.deadline < todayStr);
   const dueToday = activities.filter((a) => a.deadline === todayStr);
   const upcoming = activities.filter((a) => !a.deadline || a.deadline > todayStr);
@@ -103,190 +103,195 @@ export function ActivityBell() {
     router.push(`/board/m/${resourceModel}/${resourceId}`);
   };
 
+  const bellCount = overdue.length > 0 ? overdue.length : activities.length;
+  const activitiesUnavailable = activitiesQuery.isError && !activitiesQuery.data;
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <InboxPopover
+      open={open}
+      onOpenChange={setOpen}
+      triggerId="activity-bell-btn"
+      triggerLabel="Pending activities"
+      triggerTitle="Pending activities"
+      triggerIcon={<CalendarClockIcon className="size-4" />}
+      unreadCount={bellCount > 0 ? bellCount : undefined}
+      unavailable={activitiesUnavailable}
+      title="Activities"
+      subtitle={
+        activitiesUnavailable
+          ? 'Reminders unavailable'
+          : `${activities.length} planned · ${todayStr}`
+      }
+      loading={activitiesQuery.isLoading && !activitiesQuery.data}
+      loadingLabel="Loading reminders..."
+      error={
+        activitiesQuery.isError
+          ? activitiesQuery.data
+            ? 'Showing the last loaded reminders; refresh is unavailable.'
+            : 'Pending activities could not be loaded.'
+          : undefined
+      }
+      onRetry={() => void activitiesQuery.refetch()}
+      isEmpty={Boolean(activitiesQuery.data && activities.length === 0)}
+      emptyTitle="No pending activities"
+      emptyDescription="Scheduled follow-ups and reminders will appear here."
+      emptyIcon={<CalendarClockIcon className="size-6" />}
+      headerAction={
+        activitiesQuery.isFetching ? <LoadingSpinner className="size-3.5 text-ink-soft" /> : null
+      }
+      footer={
         <Button
-          id="activity-bell-btn"
-          variant="outline"
-          size="icon"
-          className="relative"
-          aria-label="Pending activities"
-          title="Pending activities"
+          variant="ghost"
+          size="xs"
+          onClick={() => {
+            setOpen(false);
+            router.push('/board/m/base.activity');
+          }}
+          className="w-full font-mono text-xs text-ink-soft hover:bg-primary hover:text-primary-foreground"
         >
-          <CalendarClockIcon className="size-4" />
-          {overdue.length > 0 ? (
-            <span className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center border-2 border-ink bg-destructive text-[10px] font-bold text-destructive-foreground shadow-[1px_1px_0_0_var(--ink)] animate-pulse">
-              {overdue.length}
-            </span>
-          ) : activities.length > 0 ? (
-            <span className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center border-2 border-ink bg-primary text-[10px] font-bold text-primary-foreground shadow-[1px_1px_0_0_var(--ink)]">
-              {activities.length}
-            </span>
-          ) : null}
+          View All Activities Table →
         </Button>
-      </PopoverTrigger>
-
-      <PopoverContent align="end" className="w-80 p-0 font-sans shadow-ink-lg">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-ink bg-paper-raised px-4 py-2.5">
-          <div className="flex items-center gap-2">
-            <span className="font-display text-sm uppercase tracking-wider text-ink">
-              Activities
-            </span>
-            <span className="border border-ink bg-primary px-1.5 py-0.2 font-mono text-[10px] font-bold text-primary-foreground">
-              {activities.length}
-            </span>
+      }
+    >
+      {activitiesQuery.data && activities.length > 0 ? (
+        <>
+          <div className="flex border-b-2 border-ink bg-paper text-[11px] font-mono">
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={() => setActiveTab('all')}
+              className={cn(
+                'flex-1 rounded-none border-0 py-1.5 text-center font-bold shadow-none',
+                activeTab === 'all' ? 'bg-ink text-paper' : 'text-ink-soft hover:bg-paper-raised'
+              )}
+            >
+              All ({activities.length})
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={() => setActiveTab('overdue')}
+              className={cn(
+                'flex-1 rounded-none border-0 py-1.5 text-center font-bold shadow-none',
+                activeTab === 'overdue'
+                  ? 'bg-destructive text-destructive-foreground'
+                  : 'text-ink-soft hover:bg-paper-raised'
+              )}
+            >
+              Overdue ({overdue.length})
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={() => setActiveTab('today')}
+              className={cn(
+                'flex-1 rounded-none border-0 py-1.5 text-center font-bold shadow-none',
+                activeTab === 'today'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-ink-soft hover:bg-paper-raised'
+              )}
+            >
+              Today ({dueToday.length})
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={() => setActiveTab('upcoming')}
+              className={cn(
+                'flex-1 rounded-none border-0 py-1.5 text-center font-bold shadow-none',
+                activeTab === 'upcoming'
+                  ? 'border-b-2 border-primary font-black text-ink bg-paper-raised'
+                  : 'text-ink-soft hover:bg-paper-raised'
+              )}
+            >
+              Later ({upcoming.length})
+            </Button>
           </div>
-          <span className="font-mono text-[11px] text-ink-faint">{todayStr}</span>
-        </div>
+          <div className="divide-y divide-ink/15 bg-paper-raised">
+            {displayedList.length === 0 ? (
+              <div className="p-6 text-center font-mono text-xs text-ink-faint">
+                No pending activities in this view.
+              </div>
+            ) : (
+              displayedList.map((act) => {
+                const isOverdue = act.deadline && act.deadline < todayStr;
+                const isToday = act.deadline === todayStr;
 
-        {/* Filter Tabs */}
-        <div className="flex border-b-2 border-ink bg-paper text-[11px] font-mono">
-          <Button
-            type="button"
-            onClick={() => setActiveTab('all')}
-            className={cn(
-              'flex-1 py-1.5 text-center font-bold transition-colors',
-              activeTab === 'all' ? 'bg-ink text-paper' : 'text-ink-soft hover:bg-paper-raised'
-            )}
-          >
-            All ({activities.length})
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setActiveTab('overdue')}
-            className={cn(
-              'flex-1 py-1.5 text-center font-bold transition-colors',
-              activeTab === 'overdue'
-                ? 'bg-destructive text-destructive-foreground'
-                : 'text-ink-soft hover:bg-paper-raised'
-            )}
-          >
-            Overdue ({overdue.length})
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setActiveTab('today')}
-            className={cn(
-              'flex-1 py-1.5 text-center font-bold transition-colors',
-              activeTab === 'today'
-                ? 'bg-primary text-primary-foreground'
-                : 'text-ink-soft hover:bg-paper-raised'
-            )}
-          >
-            Today ({dueToday.length})
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setActiveTab('upcoming')}
-            className={cn(
-              'flex-1 py-1.5 text-center font-bold transition-colors',
-              activeTab === 'upcoming'
-                ? 'border-b-2 border-primary font-black text-ink bg-paper-raised'
-                : 'text-ink-soft hover:bg-paper-raised'
-            )}
-          >
-            Later ({upcoming.length})
-          </Button>
-        </div>
-
-        {/* Activity Items List */}
-        <div className="max-h-72 overflow-y-auto divide-y divide-ink/15 bg-paper-raised">
-          {isLoading ? (
-            <div className="p-6 text-center font-mono text-xs text-ink-faint">
-              Loading reminders...
-            </div>
-          ) : displayedList.length === 0 ? (
-            <div className="p-6 text-center font-mono text-xs text-ink-faint">
-              No pending activities in this view.
-            </div>
-          ) : (
-            displayedList.map((act) => {
-              const isOverdue = act.deadline && act.deadline < todayStr;
-              const isToday = act.deadline === todayStr;
-
-              return (
-                <div
-                  key={act.id}
-                  className="group flex items-start justify-between gap-3 p-3 transition-colors hover:bg-paper"
-                >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="h-auto min-h-0 flex-1 flex-col items-start justify-start gap-0 p-0 text-left font-normal normal-case hover:bg-transparent"
-                    onClick={() => handleOpenRecord(act.resource_model, act.resource_id)}
+                return (
+                  <div
+                    key={act.id}
+                    className="group flex items-start justify-between gap-3 p-3 transition-colors hover:bg-paper"
                   >
-                    <span className="flex w-full items-center gap-1.5 mb-1">
-                      {getActivityIcon(act.activity_type)}
-                      <span className="font-display text-xs uppercase tracking-wide text-ink line-clamp-1 group-hover:text-yellow-readable transition-colors">
-                        {act.summary}
-                      </span>
-                    </span>
-
-                    <span className="flex items-center gap-2 font-mono text-[10px]">
-                      <span className="text-ink-faint">
-                        {act.resource_model} #{act.resource_id}
-                      </span>
-                      {act.deadline && (
-                        <span
-                          className={cn(
-                            'border px-1 py-0.2 font-bold uppercase',
-                            isOverdue
-                              ? 'border-destructive bg-destructive/15 text-destructive'
-                              : isToday
-                                ? 'border-primary bg-primary/20 text-yellow-readable'
-                                : 'border-ink/20 text-ink-faint'
-                          )}
-                        >
-                          {act.deadline}
-                        </span>
-                      )}
-                    </span>
-                  </Button>
-
-                  <div className="flex items-center gap-1">
                     <Button
-                      variant="outline"
-                      size="icon-xs"
-                      title="Mark as Done"
-                      disabled={markDoneMutation.isPending}
-                      onClick={() => markDoneMutation.mutate(act.id)}
-                      className="size-6 hover:border-primary hover:bg-primary hover:text-primary-foreground"
-                    >
-                      <CheckIcon className="size-3" />
-                    </Button>
-                    <Button
+                      type="button"
                       variant="ghost"
-                      size="icon-xs"
-                      title="Open Record"
+                      className="h-auto min-h-0 flex-1 flex-col items-start justify-start gap-0 p-0 text-left font-normal normal-case hover:bg-transparent"
                       onClick={() => handleOpenRecord(act.resource_model, act.resource_id)}
-                      className="size-6 text-ink-faint hover:text-ink"
                     >
-                      <ExternalLinkIcon className="size-3" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                      <span className="mb-1 flex w-full items-center gap-1.5">
+                        {getActivityIcon(act.activity_type)}
+                        <span className="line-clamp-1 font-display text-xs uppercase tracking-wide text-ink transition-colors group-hover:text-yellow-readable">
+                          {act.summary}
+                        </span>
+                      </span>
 
-        {/* Footer */}
-        <div className="border-t-2 border-ink bg-paper p-2 text-center">
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => {
-              setOpen(false);
-              router.push('/board/m/base.activity');
-            }}
-            className="w-full font-mono text-xs text-ink-soft hover:bg-primary hover:text-primary-foreground"
-          >
-            View All Activities Table →
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+                      <span className="flex items-center gap-2 font-mono text-[10px]">
+                        <span className="text-ink-faint">
+                          {act.resource_model} #{act.resource_id}
+                        </span>
+                        {act.deadline && (
+                          <span
+                            className={cn(
+                              'border px-1 py-0.2 font-bold uppercase',
+                              isOverdue
+                                ? 'border-destructive bg-destructive/15 text-destructive'
+                                : isToday
+                                  ? 'border-primary bg-primary/20 text-yellow-readable'
+                                  : 'border-ink/20 text-ink-faint'
+                            )}
+                          >
+                            {act.deadline}
+                          </span>
+                        )}
+                      </span>
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon-xs"
+                        title="Mark as Done"
+                        disabled={markDoneMutation.isPending}
+                        onClick={() => markDoneMutation.mutate(act.id)}
+                        className="size-6 hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                      >
+                        {markDoneMutation.isPending ? (
+                          <LoadingSpinner className="size-3" />
+                        ) : (
+                          <CheckIcon className="size-3" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        title="Open Record"
+                        onClick={() => handleOpenRecord(act.resource_model, act.resource_id)}
+                        className="size-6 text-ink-faint hover:text-ink"
+                      >
+                        <ExternalLinkIcon className="size-3" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </>
+      ) : undefined}
+    </InboxPopover>
   );
 }

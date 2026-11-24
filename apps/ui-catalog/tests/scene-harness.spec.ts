@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 test('environment depth inspector toggles and reorders planes and reflows on mobile (W4-008, W1-006)', async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#scene-environment-inspector');
   const lab = page.getByTestId('scene-lab');
   await expect(lab).toBeVisible();
@@ -61,6 +62,7 @@ test('scene runtime supports static fallback, timeline controls, keyboard camera
 });
 
 test('environment inspector resets layer visibility, z-order and composition to the canonical baseline (W7-004)', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#scene-environment-inspector');
   const lab = page.getByTestId('scene-lab');
   await lab.locator('li[data-plane-id="prop-wires"] input[type="checkbox"]').uncheck();

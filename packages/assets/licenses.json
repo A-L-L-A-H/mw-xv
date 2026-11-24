@@ -93,7 +93,7 @@
     }
   ],
   "verifiedOn": "2026-10-16",
-  "notes": "Upstream SIL Open Font License 1.1 texts are included in fonts/OFL-Anton.txt, fonts/OFL-SpaceGrotesk.txt, fonts/OFL-JetBrainsMono.txt, and fonts/OFL-RoadRage.txt. Road Rage's upstream TTF is retained under source/fonts and subsetted to WOFF2 for display use; hashes are recorded above.",
+  "notes": "Upstream SIL Open Font License 1.1 texts are included in fonts/OFL-Anton.txt, fonts/OFL-SpaceGrotesk.txt, fonts/OFL-JetBrainsMono.txt, and fonts/OFL-RoadRage.txt. Road Rage's upstream TTF is retained under source/fonts and subsetted to WOFF2 for display use; hashes are recorded above. Unverified archival font binaries under raw_arts/fonts/ (cinzel-*, saksi-hand-*, saksi-marker-*, saksi-mono-*) are source-only and excluded from packages/assets/ distribution per ../../raw_arts/fonts/README.md and packages/assets/scripts/asset-schema.mjs.",
   "soundEffects": [
     {
       "path": "sounds/ambience-archive-quiet.wav",

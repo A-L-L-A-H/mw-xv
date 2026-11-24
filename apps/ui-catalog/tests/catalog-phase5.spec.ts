@@ -27,6 +27,7 @@ const heavySections = [
   { id: 'asset-diagnostics', source: 'src/AssetDiagnostics.tsx', testId: 'asset-diagnostics' },
   { id: 'scene-environment-inspector', source: 'src/SceneLab.tsx', testId: 'scene-lab' },
   { id: 'fx-lab', source: 'src/FXLab.tsx', testId: 'fx-lab' },
+  { id: 'extended-controls', source: 'src/ExtendedControlsLab.tsx', testId: 'extended-controls-lab' },
 ] as const;
 
 function dynamicChunk(source: string): string {
@@ -211,6 +212,8 @@ test('AssetBrowser and SceneLab use shared controls with one labeled native rang
   );
   await expect(browser.locator('select:not([data-slot="select"])')).toHaveCount(0);
   await expect(browser.locator('input:not([data-slot="input"])')).toHaveCount(0);
+  await expect(browser.getByLabel('Category')).toContainText('All categories');
+  await expect(browser.getByLabel('Status')).toContainText('All statuses');
 
   await page.goto('./#scene-environment-inspector');
   const scene = page.getByTestId('scene-lab');
@@ -368,6 +371,7 @@ const skins = [
   { id: 'moonwitness-ink', label: 'MoonWitness Ink' },
   { id: 'moonwitness-compact', label: 'MoonWitness Compact' },
   { id: 'moonwitness-high-contrast', label: 'MoonWitness High Contrast' },
+  { id: 'moonwitness-riot', label: 'MoonWitness Riot' },
 ] as const;
 
 for (const skin of skins) {
@@ -401,3 +405,37 @@ for (const skin of skins) {
     }
   }
 }
+
+test('topbar 4-skin switcher and ExtendedControlsLab pass interactive & accessibility checks', async ({
+  page,
+}) => {
+  test.setTimeout(45_000);
+  await page.goto('./#extended-controls');
+  for (const skin of skins) {
+    await page.getByRole('combobox', { name: 'Switch skin' }).click();
+    await page.getByRole('option', { name: skin.label }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-skin', skin.id);
+  }
+  const lab = page.getByTestId('extended-controls-lab');
+  await expect(lab).toBeVisible();
+  await expect(lab.locator('[data-slot="brand-mark"]').first()).toBeVisible();
+  await expect(lab.locator('[data-slot="breadcrumbs"]')).toBeVisible();
+  await expect(lab.locator('[data-slot="status-bar"]')).toBeVisible();
+  await expect(lab.locator('[data-slot="update-banner"]')).toBeVisible();
+  await expect(lab.locator('[data-slot="error-state"]')).toBeVisible();
+  await expect(lab.locator('[data-slot="log-console"]')).toBeVisible();
+  await expect(lab.locator('[data-slot="date-picker"]')).toBeVisible();
+  await expect(lab.locator('[data-slot="number-input"]')).toBeVisible();
+  await expect(lab.locator('[data-slot="tag-input"]')).toBeVisible();
+  await expect(lab.locator('[data-slot="smart-button-box"]')).toBeVisible();
+  await expect(lab.locator('[data-slot="inbox-popover-trigger"]')).toBeVisible();
+  await expectNoAccessibilityViolations(page, 'ExtendedControlsLab');
+
+  await lab.getByRole('button', { name: 'Open confirm dialog' }).click();
+  await expect(page.locator('[data-slot="confirm-dialog"]')).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  await lab.getByRole('button', { name: /Open mode picker/u }).click();
+  await expect(page.locator('[data-slot="mode-picker"]')).toBeVisible();
+  await page.keyboard.press('Escape');
+});

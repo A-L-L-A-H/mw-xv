@@ -3,6 +3,7 @@
 import { useMemo, type CSSProperties } from 'react';
 import { cn } from '../lib/cn.js';
 import { useAnimationVisibility } from '../lib/use-animation-visibility.js';
+import { useReducedMotion } from '../lib/use-reduced-motion.js';
 
 export type SceneParticlePreset = 'rain' | 'dust' | 'stars' | 'sparks';
 export type SceneParticleIntensity = 'subtle' | 'medium' | 'intense';
@@ -92,16 +93,17 @@ export function SceneParticles({
   count,
   seed,
   paused = false,
-  reducedMotion = false,
+  reducedMotion,
   className,
   style,
 }: SceneParticlesProps) {
   const motion = useAnimationVisibility<HTMLDivElement>();
+  const effectiveReducedMotion = useReducedMotion(reducedMotion);
   const particles = useMemo(
     () => generateSceneParticles(preset, { count, intensity, seed }),
     [preset, count, intensity, seed]
   );
-  const staticMode = reducedMotion || paused;
+  const staticMode = effectiveReducedMotion || paused;
   const shape = particleShape(preset);
 
   return (
@@ -117,6 +119,7 @@ export function SceneParticles({
       data-particle-intensity={intensity}
       data-particle-count={particles.length}
       data-particle-state={staticMode ? 'static' : 'active'}
+      data-reduced-motion={effectiveReducedMotion ? 'true' : 'false'}
       style={{
         position: 'relative',
         overflow: 'hidden',

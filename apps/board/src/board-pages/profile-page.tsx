@@ -1,18 +1,26 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CompanyIcon, MailIcon, PartnerIcon, SecurityIcon, UserIcon } from '@moonwitness/ui/icons';
 import { toast } from '@moonwitness/ui/components/toast';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import { Avatar } from '@moonwitness/ui/components/avatar';
 import { Button } from '@moonwitness/ui/components/button';
-import { Input } from '@moonwitness/ui/components/input';
-import { Label } from '@moonwitness/ui/components/label';
-import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { Field } from '@moonwitness/ui/components/field';
+import { Input } from '@moonwitness/ui/components/input';
+import { Panel } from '@moonwitness/ui/components/panel';
+import { AchievementBadge } from '@moonwitness/ui/components/quest-card';
+import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { useAuth } from '@/hooks/use-auth-context';
 import { client } from '@/lib/client';
-import { isCurrentScopeQueryKey, profileQueryKeys } from '@/lib/query-scope';
+import {
+  getQueryScope,
+  isCurrentScopeQueryKey,
+  profileQueryKeys,
+  type BoardQueryScope,
+} from '@/lib/query-scope';
 
 interface PartnerProfile {
   id: number;
@@ -33,10 +41,22 @@ function relationLabel(value: number | string | [number, string] | undefined): s
 
 export function ProfilePage() {
   const { user } = useAuth();
+  const activeScope = getQueryScope();
+  const scopeKey = `${activeScope.userId ?? ''}:${activeScope.companyId ?? ''}`;
+  return <ProfilePageContent key={scopeKey} activeScope={activeScope} user={user} />;
+}
+
+function ProfilePageContent({
+  activeScope,
+  user,
+}: {
+  activeScope: BoardQueryScope;
+  user: ReturnType<typeof useAuth>['user'];
+}) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
   const { data, isLoading, isFetching, isError, isSuccess, refetch } = useQuery({
-    queryKey: profileQueryKeys.contact(user?.id),
+    queryKey: profileQueryKeys.contact(user?.id, activeScope),
     queryFn: async () => {
       if (!user) return null;
       const currentUser = await client.getMe();
@@ -48,6 +68,7 @@ export function ProfilePage() {
       return result.records[0] ?? null;
     },
     enabled: Boolean(user),
+    placeholderData: keepPreviousData,
   });
 
   const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
@@ -79,23 +100,30 @@ export function ProfilePage() {
     }
   };
 
+  const displayName = data?.name ?? user?.login ?? 'Member';
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <Breadcrumbs items={[{ label: 'Profile' }]} />
-      <header>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-faint">My account</p>
-        <h1 className="ink-title mt-2 text-4xl sm:text-5xl">Profile</h1>
-        <p className="mt-2 text-ink-soft">Your user account and linked contact information.</p>
+      <header className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-faint">My account</p>
+          <h1 className="ink-title mt-2 text-4xl sm:text-5xl">Profile</h1>
+          <p className="mt-2 text-ink-soft">Your user account and linked contact information.</p>
+        </div>
+        {isFetching && data ? (
+          <span role="status" className="font-mono text-xs text-ink-soft">
+            Syncing…
+          </span>
+        ) : null}
       </header>
 
       <section className="ink-panel overflow-hidden bg-card">
         <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-4 border-b-2 border-ink bg-primary/20 p-6 sm:flex sm:flex-wrap sm:p-8">
-          <div className="grid size-16 place-items-center border-2 border-ink bg-primary text-primary-foreground shadow-ink-sm">
-            <UserIcon className="size-8" />
-          </div>
+          <Avatar name={displayName} className="size-16 text-lg" />
           <div className="min-w-0 flex-1">
             <h2 className="break-words font-display text-2xl uppercase sm:text-3xl">
-              {data?.name ?? user?.login}
+              {displayName}
             </h2>
             <p className="font-mono text-sm text-ink-soft">@{user?.login}</p>
           </div>
@@ -104,7 +132,7 @@ export function ProfilePage() {
           </span>
         </div>
 
-        {isLoading ? (
+        {isLoading && data === undefined ? (
           <div className="grid gap-4 p-6 sm:grid-cols-2 sm:p-8">
             <Skeleton className="h-16" />
             <Skeleton className="h-16" />
@@ -148,6 +176,40 @@ export function ProfilePage() {
           </dl>
         )}
       </section>
+
+      <Panel
+        surface="paper"
+        title="Signal Milestones"
+        description="Account readiness badges derived from your linked workspace profile."
+      >
+        <div className="flex flex-wrap gap-3">
+          <AchievementBadge
+            badgeId="badge-signal-scout"
+            title="Signal Scout"
+            unlocked={Boolean(user)}
+            rank={user?.role ?? 'Member'}
+          />
+          <AchievementBadge
+            badgeId="badge-archive-keeper"
+            title="Archive Keeper"
+            unlocked={Boolean(data)}
+            rank={data ? 'Linked' : 'Pending'}
+          />
+          <AchievementBadge
+            badgeId="badge-story-architect"
+            title="Story Architect"
+            unlocked={Boolean(data?.email && data?.job_title)}
+            rank="Profile"
+          />
+          <AchievementBadge
+            badgeId="badge-zero-drift"
+            title="Zero Drift"
+            unlocked={Boolean(data?.name && (data?.phone || data?.mobile))}
+            rank="Verified"
+          />
+        </div>
+      </Panel>
+
       {isSuccess && !isError && data && (
         <form
           key={`${data.id}-${data.name}`}
@@ -193,16 +255,9 @@ function ProfileInput({
   required?: boolean;
 }) {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={`profile-${name}`}>{label}</Label>
-      <Input
-        id={`profile-${name}`}
-        name={name}
-        type={type}
-        defaultValue={value ?? ''}
-        required={required}
-      />
-    </div>
+    <Field label={label} htmlFor={`profile-${name}`} required={required}>
+      <Input name={name} type={type} defaultValue={value ?? ''} required={required} />
+    </Field>
   );
 }
 

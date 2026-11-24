@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  forwardRef,
-  useEffect,
-  useMemo,
-  useState,
-  type ComponentPropsWithoutRef,
-  type ReactNode,
-} from 'react';
+import { forwardRef, useMemo, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 import {
   getCharacterClip,
   getCharacterPortrait,
@@ -18,7 +11,7 @@ import {
   type KuroPose,
 } from '../lib/asset-registry.js';
 import { cn } from '../lib/cn.js';
-import { getActiveSceneHarness } from '../lib/scene-test-harness.js';
+import { useReducedMotion } from '../lib/use-reduced-motion.js';
 import { SpeechBubble, type SpeechBubbleTail, type SpeechBubbleVariant } from './speech-bubble.js';
 import { SpritePlayer } from './sprite-player.js';
 
@@ -36,22 +29,6 @@ export type CharacterDisplayProps = Omit<ComponentPropsWithoutRef<'div'>, 'child
   decorative?: boolean;
   reducedMotion?: boolean;
 };
-
-function useSystemReducedMotion(explicit?: boolean): boolean {
-  const harness = getActiveSceneHarness();
-  const [systemReduced, setSystemReduced] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setSystemReduced(query.matches);
-    const onChange = (event: MediaQueryListEvent) => setSystemReduced(event.matches);
-    query.addEventListener('change', onChange);
-    return () => query.removeEventListener('change', onChange);
-  }, []);
-
-  return Boolean(explicit ?? harness?.reducedMotion ?? systemReduced);
-}
 
 /**
  * Displays a MoonWitness character portrait, full pose, or animated sprite clip.
@@ -75,7 +52,7 @@ export const CharacterDisplay = forwardRef<HTMLDivElement, CharacterDisplayProps
     },
     ref
   ) {
-    const isReducedMotion = useSystemReducedMotion(reducedMotion);
+    const isReducedMotion = useReducedMotion(reducedMotion);
     const shouldAnimate = animated && characterId === 'kuro-signal' && !isReducedMotion;
 
     const staticAsset = useMemo(

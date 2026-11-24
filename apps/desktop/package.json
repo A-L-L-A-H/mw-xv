@@ -58,6 +58,7 @@
     "objection": "^3.1.5"
   },
   "devDependencies": {
+    "@moonwitness/assets": "workspace:*",
     "@moonwitness/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/better-sqlite3": "^9.6.0",

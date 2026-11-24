@@ -78,10 +78,10 @@
   --mw-chart-5: #76519b;
 
   /* Typography: applications may self-host fonts and override these stacks. */
-  --mw-font-display: 'MoonWitness Grunge', 'Anton', Impact, 'Arial Narrow', sans-serif;
+  --mw-font-display: 'Anton', 'MoonWitness Grunge', Impact, 'Arial Narrow', sans-serif;
   --mw-font-grunge: 'MoonWitness Grunge', 'Road Rage', Impact, 'Arial Narrow', sans-serif;
   --mw-font-condensed: var(--mw-font-grunge);
-  --mw-font-brush: 'MoonWitness Grunge', 'Road Rage', Impact, 'Arial Narrow', sans-serif;
+  --mw-font-brush: 'Road Rage', 'MoonWitness Grunge', Impact, 'Arial Narrow', sans-serif;
   --mw-font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --mw-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   --mw-font-size-2xs: 0.75rem;
@@ -244,7 +244,7 @@
     4% 62%,
     0% 36%
   );
-  --mw-chalk-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='none'%3E%3Cpath d='M1 2L28 0 58 3 92 0 128 3 166 0 199 2 197 26 200 54 197 80 199 99 164 97 126 100 88 97 48 100 14 97 1 99 3 70 0 40 3 14Z' fill='none' stroke='%23000' stroke-width='4.2' stroke-dasharray='26 3 10 2 34 4'/%3E%3Cpath d='M4 6L52 4M78 3L128 5M154 4L194 6M6 94L62 96M100 95L148 97M172 95L196 93M5 22L4 56M196 28L195 66' stroke='%23000' stroke-width='2' stroke-dasharray='9 4 4 5'/%3E%3Ccircle cx='7' cy='8' r='2' fill='%23000'/%3E%3Ccircle cx='193' cy='9' r='1.7' fill='%23000'/%3E%3Ccircle cx='192' cy='92' r='2.1' fill='%23000'/%3E%3Ccircle cx='8' cy='91' r='1.6' fill='%23000'/%3E%3C/svg%3E");
+  --mw-chalk-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='none'%3E%3Cpath d='M0.5 0.5L28 0.2 58 0.8 92 0.2 128 0.8 166 0.2 199.5 0.5 199.2 26 199.8 54 199.2 80 199.5 99.5 164 99.2 126 99.8 88 99.2 48 99.8 14 99.2 0.5 99.5 0.8 70 0.2 40 0.8 14Z' fill='none' stroke='%23000' stroke-width='2.2' vector-effect='non-scaling-stroke' stroke-dasharray='26 3 10 2 34 4'/%3E%3Cpath d='M2 1.2L52 0.8M78 0.8L128 1.2M154 0.8L196 1.2M4 98.8L62 99.2M100 98.8L148 99.2M172 99.2L198 98.6M1.2 22L0.8 56M198.8 28L199.2 66' fill='none' stroke='%23000' stroke-width='2.2' vector-effect='non-scaling-stroke' stroke-dasharray='9 4 4 5'/%3E%3C/svg%3E");
   --mw-grunge-clip-notched: polygon(
     0.6% 0%,
     99.4% 0%,
@@ -427,6 +427,12 @@
     --mw-motion-normal: 0ms;
     --mw-motion-slow: 0ms;
     --mw-motion-pop: 0ms;
+    --mw-motion-delay: 0ms;
+    --mw-motion-draw: 0ms;
+    --mw-motion-effect: 0ms;
+    --mw-motion-pulse: 0ms;
+    --mw-motion-progress: 0ms;
+    --mw-motion-spin: 0ms;
     --mw-motion-anime-snap: 0ms;
     --mw-motion-anime-slash: 0ms;
     --mw-motion-anime-burst: 0ms;

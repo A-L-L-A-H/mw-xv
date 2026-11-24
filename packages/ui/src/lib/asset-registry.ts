@@ -114,6 +114,9 @@ export const BACKGROUND_ASSETS = [
 
 export type BackgroundSlug = (typeof BACKGROUND_ASSETS)[number];
 
+export type BrandMarkVariant = 'lockup' | 'symbol' | 'wordmark';
+export type BrandMarkTone = 'dark' | 'light' | 'mono-dark' | 'mono-light';
+
 export const KURO_CLIP_IDS = [
   'idle',
   'blink',
@@ -249,6 +252,17 @@ export function getBackgroundAsset(
   opts: UniverseAssetLookupOptions = {}
 ): ResolvedUniverseImage {
   return buildImage(`${RIOT_DIR}/backgrounds/bg-${bg}.webp`, `${WORDS(bg)} background`, opts.basePath);
+}
+
+/** Resolve a canonical MoonWitness brand mark (.svg). */
+export function getBrandMarkAsset(
+  variant: BrandMarkVariant = 'lockup',
+  tone: BrandMarkTone = 'dark',
+  opts: UniverseAssetLookupOptions = {}
+): ResolvedUniverseImage {
+  const path = `brand/moonwitness-${variant}-${tone}.svg`;
+  const alt = variant === 'symbol' ? 'MoonWitness crown symbol' : 'MoonWitness';
+  return buildImage(path, alt, opts.basePath);
 }
 
 /** Resolve a 4-frame sprite clip descriptor compatible with SpritePlayer. */

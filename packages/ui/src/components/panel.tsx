@@ -1,4 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react';
+import { cn } from '../lib/cn.js';
 
 export type PanelProps = Omit<ComponentProps<'section'>, 'children' | 'title'> & {
   title?: ReactNode;
@@ -7,7 +8,8 @@ export type PanelProps = Omit<ComponentProps<'section'>, 'children' | 'title'> &
   children: ReactNode;
   surface?: 'default' | 'ink' | 'paper';
   frame?: 'line' | 'torn' | 'scuffed' | 'grunge';
-  density?: 'comfortable' | 'compact';
+  density?: 'comfortable' | 'compact' | 'micro' | 'spacious';
+  contentClassName?: string;
   headingLevel?: 2 | 3 | 4;
 };
 
@@ -19,6 +21,7 @@ export function Panel({
   surface = 'default',
   frame = 'line',
   density = 'comfortable',
+  contentClassName,
   headingLevel = 2,
   className,
   ...props
@@ -26,7 +29,7 @@ export function Panel({
   const Heading = `h${headingLevel}` as const;
   return (
     <section
-      className={['mw-ui-panel', className].filter(Boolean).join(' ')}
+      className={cn('mw-ui-panel', className)}
       data-density={density}
       data-frame={frame}
       data-surface={surface}
@@ -41,7 +44,7 @@ export function Panel({
           {actions ? <div className="mw-ui-panel-actions">{actions}</div> : null}
         </header>
       ) : null}
-      <div className="mw-ui-panel-content">{children}</div>
+      <div className={cn('mw-ui-panel-content', contentClassName)}>{children}</div>
     </section>
   );
 }

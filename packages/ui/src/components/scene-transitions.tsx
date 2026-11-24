@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { cn } from '../lib/cn.js';
+import { useReducedMotion } from '../lib/use-reduced-motion.js';
 
 export type ComicTransitionVariant = 'ink-wipe' | 'panel-reveal' | 'cut-impact' | 'soft';
 export type ComicTransitionState = 'idle' | 'entering' | 'entered' | 'cancelled';
@@ -28,14 +29,15 @@ export function ComicSceneTransition({
   variant = 'panel-reveal',
   active = true,
   durationMs = 280,
-  reducedMotion = false,
+  reducedMotion,
   onComplete,
   children,
   className,
   style,
 }: SceneTransitionProps) {
+  const effectiveReducedMotion = useReducedMotion(reducedMotion);
   const [state, setState] = useState<ComicTransitionState>(
-    reducedMotion || !active ? 'entered' : 'entering'
+    effectiveReducedMotion || !active ? 'entered' : 'entering'
   );
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onCompleteRef = useRef(onComplete);
@@ -53,7 +55,7 @@ export function ComicSceneTransition({
   }, []);
 
   useEffect(() => {
-    if (reducedMotion || !active || durationMs <= 0) {
+    if (effectiveReducedMotion || !active || durationMs <= 0) {
       setState('entered');
       onCompleteRef.current?.();
       return;
@@ -73,20 +75,22 @@ export function ComicSceneTransition({
         timerRef.current = null;
       }
     };
-  }, [active, durationMs, reducedMotion]);
+  }, [active, durationMs, effectiveReducedMotion]);
 
   return (
     <div
       className={cn('mw-ui-comic-transition', className)}
       data-transition-variant={variant}
       data-transition-state={state}
-      data-reduced-motion={reducedMotion ? 'true' : 'false'}
+      data-reduced-motion={effectiveReducedMotion ? 'true' : 'false'}
       onPointerDown={state === 'entering' ? cancel : undefined}
       onKeyDown={state === 'entering' ? cancel : undefined}
       style={{
         opacity: 1,
         visibility: 'visible',
-        transition: reducedMotion ? 'none' : `transform ${Math.min(durationMs, 1500)}ms ease-out`,
+        transition: effectiveReducedMotion
+          ? 'none'
+          : `transform ${Math.min(durationMs, 1500)}ms ease-out`,
         ...style,
       }}
     >

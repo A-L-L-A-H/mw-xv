@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AttachmentIcon } from '@moonwitness/ui/icons';
 import { Button } from '@moonwitness/ui/components/button';
 import { Checkbox } from '@moonwitness/ui/components/checkbox';
+import { ConfirmDialog } from '@moonwitness/ui/components/confirm-dialog';
 import { Input } from '@moonwitness/ui/components/input';
 import { Textarea } from '@moonwitness/ui/components/textarea';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
@@ -78,6 +79,7 @@ export function WhatsAppStatusPage() {
   const [file, setFile] = useState<File | null>(null);
   const [allowReshare, setAllowReshare] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [confirmPublishOpen, setConfirmPublishOpen] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const accountQuery = useQuery({
     queryKey: scopedQueryKey(['whatsapp', 'account']),
@@ -95,7 +97,37 @@ export function WhatsAppStatusPage() {
   const connected = account?.status === 'connected';
   const codepoints = [...content].length;
 
-  const publish = async (event: FormEvent) => {
+  const executePublish = async () => {
+    const text = content.trim();
+    setPublishing(true);
+    setLocalError(null);
+    try {
+      const selectedFile = file;
+      const body = selectedFile ? new FormData() : { content: text, allow_reshare: allowReshare };
+      if (body instanceof FormData && selectedFile) {
+        body.set('content', text);
+        body.set('allow_reshare', String(allowReshare));
+        body.set('media', selectedFile, selectedFile.name);
+      }
+      await client.request('/whatsapp/statuses', {
+        method: 'POST',
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        body,
+      });
+      setContent('');
+      setFile(null);
+      setAllowReshare(false);
+      setConfirmPublishOpen(false);
+      await queryClient.invalidateQueries({ queryKey: scopedQueryKey(['whatsapp', 'statuses']) });
+    } catch (error) {
+      setConfirmPublishOpen(false);
+      setLocalError(error instanceof Error ? error.message : 'Status could not be queued.');
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const publish = (event: FormEvent) => {
     event.preventDefault();
     setLocalError(null);
     const text = content.trim();
@@ -126,32 +158,7 @@ export function WhatsAppStatusPage() {
       setLocalError('Choose a supported image or video file.');
       return;
     }
-    const confirmed = window.confirm('Publish this WhatsApp Status now?');
-    if (!confirmed) return;
-
-    setPublishing(true);
-    try {
-      const selectedFile = file;
-      const body = selectedFile ? new FormData() : { content: text, allow_reshare: allowReshare };
-      if (body instanceof FormData && selectedFile) {
-        body.set('content', text);
-        body.set('allow_reshare', String(allowReshare));
-        body.set('media', selectedFile, selectedFile.name);
-      }
-      await client.request('/whatsapp/statuses', {
-        method: 'POST',
-        headers: { 'Idempotency-Key': crypto.randomUUID() },
-        body,
-      });
-      setContent('');
-      setFile(null);
-      setAllowReshare(false);
-      await queryClient.invalidateQueries({ queryKey: scopedQueryKey(['whatsapp', 'statuses']) });
-    } catch (error) {
-      setLocalError(error instanceof Error ? error.message : 'Status could not be queued.');
-    } finally {
-      setPublishing(false);
-    }
+    setConfirmPublishOpen(true);
   };
 
   return (
@@ -186,7 +193,7 @@ export function WhatsAppStatusPage() {
 
       <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)]">
         <form
-          onSubmit={(event) => void publish(event)}
+          onSubmit={publish}
           className="space-y-4 border-2 border-ink bg-paper p-5 shadow-[4px_4px_0_0_var(--ink)]"
         >
           <label className="block font-display text-sm uppercase" htmlFor="whatsapp-status-text">
@@ -298,6 +305,16 @@ export function WhatsAppStatusPage() {
           </ul>
         </section>
       </section>
+      <ConfirmDialog
+        open={confirmPublishOpen}
+        onOpenChange={setConfirmPublishOpen}
+        title="Publish WhatsApp Status?"
+        description="Publish this WhatsApp Status now? It will be queued for your connected company account."
+        confirmLabel="Publish Status"
+        busy={publishing}
+        onConfirm={() => void executePublish()}
+        onCancel={() => setConfirmPublishOpen(false)}
+      />
     </main>
   );
 }

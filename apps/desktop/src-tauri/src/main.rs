@@ -357,6 +357,8 @@ fn build_bridge_init_script(api_url: &str, rpc_token: &str) -> String {
     sync: Object.freeze({{
       pull: (payload) => invokeRpc('sync.pull', payload || {{}}),
     }}),
+    checkForUpdates: () => Promise.resolve({{ status: 'up-to-date', currentVersion: '1.0.0-rc.1' }}),
+    installUpdate: () => Promise.resolve({{ status: 'up-to-date' }}),
   }});
 
   if (!Object.prototype.hasOwnProperty.call(window, '__MW_DESKTOP_API_URL__')) {{

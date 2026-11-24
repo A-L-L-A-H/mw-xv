@@ -34,8 +34,44 @@ import AiProvidersPage from '@/app/board/ai/providers/page';
 import { navigate, usePathname } from './shims/next-navigation';
 import { DesktopErrorBoundary, installWebviewErrorTelemetry } from './error-telemetry';
 
+import type {
+  DesktopBridgeSnapshot,
+  DesktopCapabilityBridge,
+} from '@/lib/desktop-bridge';
+
+const DESKTOP_APP_VERSION = '1.0.0-rc.1';
+const UPDATER_IPC_TIMEOUT_MS = 4000;
+
+export interface DesktopUpdateCheckSummary {
+  readonly status: 'up-to-date' | 'available' | 'error';
+  readonly currentVersion: string;
+  readonly availableVersion?: string;
+  readonly releaseUrl?: string;
+  readonly errorMessage?: string;
+}
+
+export interface DesktopUpdateInstallSummary {
+  readonly status: 'ready' | 'up-to-date' | 'error';
+  readonly availableVersion?: string;
+  readonly errorMessage?: string;
+}
+
+type WebDesktopBridgeWithUpdater = DesktopCapabilityBridge & {
+  checkForUpdates?: () => Promise<DesktopUpdateCheckSummary>;
+  installUpdate?: () => Promise<DesktopUpdateInstallSummary>;
+};
+
 interface DesktopApiWindow extends Window {
   __MW_DESKTOP_API_URL__?: string;
+  __MW_DESKTOP__?: WebDesktopBridgeWithUpdater;
+  __TAURI_INTERNALS__?: {
+    invoke?: <T = unknown>(command: string, args?: Record<string, unknown>) => Promise<T>;
+  };
+  __TAURI__?: {
+    core?: {
+      invoke?: <T = unknown>(command: string, args?: Record<string, unknown>) => Promise<T>;
+    };
+  };
 }
 
 function getDesktopApiUrl(): string | null {
@@ -44,6 +80,194 @@ function getDesktopApiUrl(): string | null {
   return typeof raw === 'string' && raw.trim().length > 0 ? raw : null;
 }
 
+function resolveTauriInvoke():
+  | (<T = unknown>(command: string, args?: Record<string, unknown>) => Promise<T>)
+  | null {
+  if (typeof window === 'undefined') return null;
+  const win = window as DesktopApiWindow;
+  if (typeof win.__TAURI_INTERNALS__?.invoke === 'function') {
+    return win.__TAURI_INTERNALS__.invoke.bind(win.__TAURI_INTERNALS__);
+  }
+  if (typeof win.__TAURI__?.core?.invoke === 'function') {
+    return win.__TAURI__.core.invoke.bind(win.__TAURI__.core);
+  }
+  return null;
+}
+
+async function runBoundedPromise<T>(
+  operation: Promise<T>,
+  timeoutMs: number,
+  fallback: T
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      operation,
+      new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), timeoutMs);
+      }),
+    ]);
+  } catch {
+    return fallback;
+  } finally {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
+  }
+}
+
+async function checkForDesktopUpdates(): Promise<DesktopUpdateCheckSummary> {
+  const fallback: DesktopUpdateCheckSummary = {
+    status: 'up-to-date',
+    currentVersion: DESKTOP_APP_VERSION,
+  };
+  const invoke = resolveTauriInvoke();
+  if (!invoke) return fallback;
+
+  const rawResult = await runBoundedPromise<unknown>(
+    invoke('plugin:updater|check'),
+    UPDATER_IPC_TIMEOUT_MS,
+    null
+  );
+  if (rawResult && typeof rawResult === 'object') {
+    const record = rawResult as {
+      available?: unknown;
+      version?: unknown;
+      releaseUrl?: unknown;
+    };
+    if (record.available === true && typeof record.version === 'string' && record.version.trim()) {
+      return {
+        status: 'available',
+        currentVersion: DESKTOP_APP_VERSION,
+        availableVersion: record.version.trim(),
+        ...(typeof record.releaseUrl === 'string' ? { releaseUrl: record.releaseUrl } : {}),
+      };
+    }
+  }
+  return fallback;
+}
+
+async function installDesktopUpdate(): Promise<DesktopUpdateInstallSummary> {
+  const fallback: DesktopUpdateInstallSummary = {
+    status: 'up-to-date',
+  };
+  const invoke = resolveTauriInvoke();
+  if (!invoke) return fallback;
+
+  const rawResult = await runBoundedPromise<unknown>(
+    invoke('plugin:updater|download_and_install'),
+    UPDATER_IPC_TIMEOUT_MS,
+    null
+  );
+  if (rawResult && typeof rawResult === 'object') {
+    const record = rawResult as { status?: unknown; version?: unknown };
+    if (record.status === 'ready') {
+      return {
+        status: 'ready',
+        ...(typeof record.version === 'string' ? { availableVersion: record.version } : {}),
+      };
+    }
+  }
+  return fallback;
+}
+
+function createWebFallbackBridge(): WebDesktopBridgeWithUpdater {
+  const offlineSidecarState = (offline: boolean) => ({
+    status: (offline ? 'offline' : 'ready') as 'offline' | 'ready',
+    sqlitePath: 'webview-fallback',
+    schemaVersion: 1,
+    offlineMode: offline,
+    registeredOrmModels: [] as readonly string[],
+    pendingOutboxCount: 0,
+    syncedOutboxCount: 0,
+    failedOutboxCount: 0,
+    conflictOutboxCount: 0,
+    activeRunCount: 0,
+    lastSyncAt: null,
+    lastSyncError: null,
+  });
+
+  const bridge: WebDesktopBridgeWithUpdater = {
+    protocolVersion: '1.0',
+    hostSurface: 'apps/board',
+    async getStatus(): Promise<DesktopBridgeSnapshot> {
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1';
+      return {
+        protocolVersion: '1.0',
+        hostSurface: 'apps/board',
+        boardOrigin: origin,
+        apiBaseUrl: getDesktopApiUrl() ?? origin,
+        localAiEndpoint: null,
+        activeLeases: [],
+        sidecar: offlineSidecarState(false),
+        mcpServers: [],
+      };
+    },
+    checkForUpdates: checkForDesktopUpdates,
+    installUpdate: installDesktopUpdate,
+    worktree: Object.freeze({
+      listLeases: async () => [],
+      diff: async (runId: string) => ({
+        runId,
+        leaseId: 'webview',
+        branchName: 'local',
+        headCommit: '',
+        clean: true,
+        files: [],
+        patch: '',
+        patchSha256: '',
+        outOfScopeFiles: [],
+        scopeClean: true,
+      }),
+      release: async (runId: string) => ({
+        leaseId: 'webview',
+        runId,
+        branchName: 'local',
+        worktreePath: '',
+        baseRef: '',
+        headCommit: '',
+        fencingToken: 0,
+        status: 'released' as const,
+        createdAt: new Date().toISOString(),
+        allowedPaths: [],
+      }),
+    }),
+    risk: Object.freeze({
+      getAuditLog: () => [],
+    }),
+    sidecar: Object.freeze({
+      getState: () => offlineSidecarState(false),
+      setOfflineMode: (offline: boolean) => offlineSidecarState(offline),
+      listEnvelopes: () => [],
+    }),
+    mcp: Object.freeze({
+      listServers: () => [],
+    }),
+    dispose: () => {},
+  };
+
+  return Object.freeze(bridge);
+}
+
+function ensureDesktopWindowBridge(): void {
+  if (typeof window === 'undefined') return;
+  const win = window as DesktopApiWindow;
+  const existing = win.__MW_DESKTOP__;
+  if (!existing) {
+    win.__MW_DESKTOP__ = createWebFallbackBridge();
+    return;
+  }
+  if (!Object.isFrozen(existing)) {
+    if (typeof existing.checkForUpdates !== 'function') {
+      existing.checkForUpdates = checkForDesktopUpdates;
+    }
+    if (typeof existing.installUpdate !== 'function') {
+      existing.installUpdate = installDesktopUpdate;
+    }
+  }
+}
+
+ensureDesktopWindowBridge();
 installWebviewErrorTelemetry(getDesktopApiUrl);
 
 function DesktopRouteSwitch() {

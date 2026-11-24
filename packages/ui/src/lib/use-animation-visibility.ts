@@ -1,37 +1,40 @@
-import { useCallback, useEffect, useRef, useState, type Ref } from 'react';
+import { useCallback, useEffect, useState, type Ref } from 'react';
 
 /** Pause decorative and pending-state CSS animations while their element is offscreen. */
 export function useAnimationVisibility<T extends Element>(externalRef?: Ref<T>) {
-  const elementRef = useRef<T | null>(null);
+  const [element, setElement] = useState<T | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   const ref = useCallback(
-    (element: T | null) => {
-      elementRef.current = element;
-      if (typeof externalRef === 'function') externalRef(element);
-      else if (externalRef) externalRef.current = element;
+    (node: T | null) => {
+      setElement(node);
+      if (typeof externalRef === 'function') externalRef(node);
+      else if (externalRef) externalRef.current = node;
     },
     [externalRef]
   );
 
   useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
+    if (!element) {
+      setIsVisible(false);
+      return;
+    }
     if (typeof IntersectionObserver === 'undefined') {
       setIsVisible(true);
       return;
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting && entry.intersectionRatio > 0),
+      ([entry]) => setIsVisible(Boolean(entry && entry.isIntersecting && entry.intersectionRatio > 0)),
       { threshold: 0 }
     );
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [element]);
 
   return {
     ref,
+    isVisible,
     visibilityClass: isVisible ? 'mw-ui-motion-visible' : 'mw-ui-motion-paused',
   };
 }
