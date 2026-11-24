@@ -10,6 +10,7 @@
 **MoonWitness Signal Riot** is an **indie underground zine, kinetic manga, and tactile cartoon workbench** set inside Moon City—a nocturnal, neon-splattered metropolis where signal couriers, archivists, and builders route knowledge and operations beneath a giant halftone moon.
 
 It rejects sterile enterprise SaaS gradients and generic rounded cards in favor of **assembled physical print craft**:
+
 - **Hand-inked linework** (`#0d0d0d` variable-weight contours) paired with **newsprint warmth** (`#f3efe4`) and **charcoal night ink** (`#09090b` / `#0d0d0d`).
 - **Four high-impact riot accents** (`#ffe031` signal yellow, `#ff2e88` riot magenta, `#00b8f0` signal cyan, `#c084fc` electric violet) strictly governed by paired dark-ink foregrounds and WCAG AA contrast ratios (`>= 4.5:1`).
 - **100% Original IP:** Zero third-party characters, borrowed mascots, franchise silhouettes, or trademarked logos. All characters, emblems, environments, and stickers belong exclusively to the MoonWitness universe (`crown` emblem, `crew-01`, `kuro-signal`, `vesper-ink`).
@@ -20,12 +21,12 @@ It rejects sterile enterprise SaaS gradients and generic rounded cards in favor 
 
 Cross-referencing [05-design-system.md](./05-design-system.md) and [09-visual-benchmark.md](./09-visual-benchmark.md), every skin and surface translates one unified universe across four complementary modes:
 
-| Pillar | Skin & Mode Binding | Primary Surface Polarity | Signature Materiality | Primary Consumer Surfaces |
-| --- | --- | --- | --- | --- |
-| **1. Funky Grunge Light** | `moonwitness-ink` (`light`) | Warm newsprint (`#f3efe4` / `#fff9eb`) + deep ink (`#0d0d0d`) | 7px ink halftone (`rgb(13 13 13 / 13%)`), crisp `2px` ink frames, offset shadows (`3px 3px 0`), yellow/magenta tape notes | Default `/board` light mode, Story Workbench reading view, editorial cards |
-| **2. Funky Grunge Dark** | `moonwitness-ink` (`dark`) | Charcoal ink (`#0e0e10` / `#17171a`) + warm cream ink (`#f3efe4`) | Inverted night zine: cream paper-scrap stickers, neon rim highlights, fixed `#0d0d0d` text on `#ffe031` CTAs | Public `/` landing hero, `/login`, `/board` dark mode |
-| **3. Riot / High Contrast** | `moonwitness-riot` (`light` / `dark`) + `moonwitness-high-contrast` | Stark `#f5efdf` / `#09090b` with `3px` ink borders & `4px`–`8px` hard shadows | Electric `#ff2e88` / `#ffe031` polarity swap, heavy comic gutters, zero ambiguity between expressive Riot (`moonwitness-riot`) and AAA accessibility (`moonwitness-high-contrast`) | Narrative hubs, Quest/Progression modals, opt-in Riot skin in Settings |
-| **4. Cartoon / Comic Experience** | Cross-skin semantic layer (`--mw-comic-*`) | Comic panel surfaces (`#fff9eb` light / `#17171c` dark) + `#ffe031` SFX tags | `ComicPanel`, `MangaFrame`, `SpeechBubble` with SVG tail, `StickerBadge`, `CharacterDisplay`, `QuestCard`, `AchievementBadge`, `RewardPanel` | Onboarding welcome, Empty/Error states, AI HQ companion cues, Studio milestones |
+| Pillar                            | Skin & Mode Binding                                                 | Primary Surface Polarity                                                      | Signature Materiality                                                                                                                                                              | Primary Consumer Surfaces                                                       |
+| --------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **1. Funky Grunge Light**         | `moonwitness-ink` (`light`)                                         | Warm newsprint (`#f3efe4` / `#fff9eb`) + deep ink (`#0d0d0d`)                 | 7px ink halftone (`rgb(13 13 13 / 13%)`), crisp `2px` ink frames, offset shadows (`3px 3px 0`), yellow/magenta tape notes                                                          | Default `/board` light mode, Story Workbench reading view, editorial cards      |
+| **2. Funky Grunge Dark**          | `moonwitness-ink` (`dark`)                                          | Charcoal ink (`#0e0e10` / `#17171a`) + warm cream ink (`#f3efe4`)             | Inverted night zine: cream paper-scrap stickers, neon rim highlights, fixed `#0d0d0d` text on `#ffe031` CTAs                                                                       | Public `/` landing hero, `/login`, `/board` dark mode                           |
+| **3. Riot / High Contrast**       | `moonwitness-riot` (`light` / `dark`) + `moonwitness-high-contrast` | Stark `#f5efdf` / `#09090b` with `3px` ink borders & `4px`–`8px` hard shadows | Electric `#ff2e88` / `#ffe031` polarity swap, heavy comic gutters, zero ambiguity between expressive Riot (`moonwitness-riot`) and AAA accessibility (`moonwitness-high-contrast`) | Narrative hubs, Quest/Progression modals, opt-in Riot skin in Settings          |
+| **4. Cartoon / Comic Experience** | Cross-skin semantic layer (`--mw-comic-*`)                          | Comic panel surfaces (`#fff9eb` light / `#17171c` dark) + `#ffe031` SFX tags  | `ComicPanel`, `MangaFrame`, `SpeechBubble` with SVG tail, `StickerBadge`, `CharacterDisplay`, `QuestCard`, `AchievementBadge`, `RewardPanel`                                       | Onboarding welcome, Empty/Error states, AI HQ companion cues, Studio milestones |
 
 > [!IMPORTANT]
 > **Operational Clarity Boundary (from [`packages/ui/README.md`](../../../packages/ui/README.md)):** Expressive tilt (`--mw-comic-sticker-tilt: -2.4deg`), halftone washes, and character reactions frame **entry moments, empty states, milestones, and section headers**. Dense data tables, forms, KPI figures, and multi-line prose remain unrotated, high-contrast, and strictly tabular.
@@ -38,15 +39,15 @@ Cross-referencing [05-design-system.md](./05-design-system.md) and [09-visual-be
 
 All artwork, UI skins, and character sheets derive from the canonical MoonWitness palette defined in [`packages/ui/TOKENS.md`](../../../packages/ui/TOKENS.md) and [05-design-system.md](./05-design-system.md):
 
-| Token Role | Hex | Usage in Artwork & UI | Paired Readable Foreground |
-| --- | --- | --- | --- |
-| **Ink Black** | `#0d0d0d` / `#0a0a0c` | Primary linework, hard offset shadows, deep night silhouettes, text on bright accents | `#f3efe4` / `#f5efdf` |
-| **Warm Paper** | `#f3efe4` / `#f5efdf` | Newsprint backdrops, torn paper scraps, speech bubble fills (light), moon glow | `#0d0d0d` |
-| **Night Charcoal** | `#121216` / `#17171a` | Dark mode raised panels, Kuro's charcoal hoodie base, nocturnal alley shadows | `#f5efdf` |
-| **Signal Yellow** | `#ffe031` | Primary CTAs, crown emblem pin, boot soles, SFX burst badges, active highlights | `#0a0a0c` (`15.03:1`) — **readable text on light:** `#6b5500` (`6.84:1`) |
-| **Riot Magenta** | `#ff2e88` | Riot primary (dark), hoodie splatter/lining, neon signage, active nav rail | `#0a0a0c` (`5.65:1` — **never white text**) — **readable text on light:** `#a60e4f` (`7.15:1`) |
-| **Signal Cyan** | `#00b8f0` | Headset antenna glow, CRT screen wash, skyline rim light, compact primary | `#0a0a0c` (`8.59:1`) — **readable text on light:** `#006e92` (`5.49:1`) |
-| **Electric Violet** | `#c084fc` | Vesper's hair streak, twilight sky gradient, secondary quest badges | `#0a0a0c` (`7.49:1`) — **readable text on light:** `#6322cf` (`7.52:1`) |
+| Token Role          | Hex                   | Usage in Artwork & UI                                                                 | Paired Readable Foreground                                                                     |
+| ------------------- | --------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Ink Black**       | `#0d0d0d` / `#0a0a0c` | Primary linework, hard offset shadows, deep night silhouettes, text on bright accents | `#f3efe4` / `#f5efdf`                                                                          |
+| **Warm Paper**      | `#f3efe4` / `#f5efdf` | Newsprint backdrops, torn paper scraps, speech bubble fills (light), moon glow        | `#0d0d0d`                                                                                      |
+| **Night Charcoal**  | `#121216` / `#17171a` | Dark mode raised panels, Kuro's charcoal hoodie base, nocturnal alley shadows         | `#f5efdf`                                                                                      |
+| **Signal Yellow**   | `#ffe031`             | Primary CTAs, crown emblem pin, boot soles, SFX burst badges, active highlights       | `#0a0a0c` (`15.03:1`) — **readable text on light:** `#6b5500` (`6.84:1`)                       |
+| **Riot Magenta**    | `#ff2e88`             | Riot primary (dark), hoodie splatter/lining, neon signage, active nav rail            | `#0a0a0c` (`5.65:1` — **never white text**) — **readable text on light:** `#a60e4f` (`7.15:1`) |
+| **Signal Cyan**     | `#00b8f0`             | Headset antenna glow, CRT screen wash, skyline rim light, compact primary             | `#0a0a0c` (`8.59:1`) — **readable text on light:** `#006e92` (`5.49:1`)                        |
+| **Electric Violet** | `#c084fc`             | Vesper's hair streak, twilight sky gradient, secondary quest badges                   | `#0a0a0c` (`7.49:1`) — **readable text on light:** `#6322cf` (`7.52:1`)                        |
 
 ### 3.2 Hard Color Rules
 
@@ -70,6 +71,7 @@ All new character and scene masters under `packages/assets/source/artwork/riot-u
 ### 4.2 Frame & Texture Engineering (P0 Mask Fix)
 
 Per [09-visual-benchmark.md](./09-visual-benchmark.md), stretched `--mw-chalk-mask` (`200x100` `preserveAspectRatio="none"`) overlays previously sliced across headers and table cells. Art direction requires:
+
 - **Edge-safe 9-slice or outer border frames** preserving `--mw-torn-safe-inset` (`0.75rem`) around all text and focus rings.
 - **Non-occluding textures:** Halftone dot grids (`--mw-comic-halftone-size: 6px`), grain, and tape strips live strictly on `pointer-events: none`, `aria-hidden="true"` layers behind foreground typography.
 - **Hard Ink Elevation:** `--mw-shadow-ink` (`4px 4px 0 #0a0a0c` in Riot) and `--mw-shadow-anime-impact` (`4px 4px 0 #0a0a0c, 8px 8px 0 #ff2e88`) replace soft drop shadows.
@@ -80,13 +82,13 @@ Per [09-visual-benchmark.md](./09-visual-benchmark.md), stretched `--mw-chalk-ma
 
 Aligned with the typography remediation in [05-design-system.md](./05-design-system.md):
 
-| Role | Token | Primary Face | Usage Rules |
-| --- | --- | --- | --- |
-| **Riot / Grunge Title** | `--mw-font-grunge` | `'MoonWitness Grunge'` | Hero headlines, punk mastheads, zine cover banners |
-| **Expressive Brush** | `--mw-font-brush` | `'Road Rage'` | Section ribbons, split-tone callouts, short comic SFX (`2–4` words max) |
-| **Display & Metrics** | `--mw-font-display` | `'Anton'` | KPI numerals, compact headers, quest counters, badge stamps |
-| **UI & Editorial Body** | `--mw-font-sans` | `'Space Grotesk'` | Controls, tables, speech bubble copy, form labels, prose |
-| **Technical Metadata** | `--mw-font-mono` | `'JetBrains Mono'` (`400`, `600`, `700`) | Route IDs, asset IDs, timestamps, coordinates, shortcuts |
+| Role                    | Token               | Primary Face                             | Usage Rules                                                             |
+| ----------------------- | ------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
+| **Riot / Grunge Title** | `--mw-font-grunge`  | `'MoonWitness Grunge'`                   | Hero headlines, punk mastheads, zine cover banners                      |
+| **Expressive Brush**    | `--mw-font-brush`   | `'Road Rage'`                            | Section ribbons, split-tone callouts, short comic SFX (`2–4` words max) |
+| **Display & Metrics**   | `--mw-font-display` | `'Anton'`                                | KPI numerals, compact headers, quest counters, badge stamps             |
+| **UI & Editorial Body** | `--mw-font-sans`    | `'Space Grotesk'`                        | Controls, tables, speech bubble copy, form labels, prose                |
+| **Technical Metadata**  | `--mw-font-mono`    | `'JetBrains Mono'` (`400`, `600`, `700`) | Route IDs, asset IDs, timestamps, coordinates, shortcuts                |
 
 ---
 
@@ -117,6 +119,7 @@ Grounded in [06-animation-audit.md](./06-animation-audit.md):
 ## 8. Master Artwork & Provenance Contract
 
 All 12 master files target `packages/assets/source/artwork/riot-universe/*.png`:
+
 - **Cutout Assets (7 files):** Character sheets, portraits, and full-body poses are generated on a **solid pure `#ffffff` backdrop** (or `#f3efe4`/`#ffffff` clean sheet backdrop for the turnaround) so Wave 3A asset-processing scripts (`sharp` alpha keying) can isolate clean transparent PNG/WebP sprites without color-fringe halos.
 - **Full-Bleed Scenes & Environments (5 files):** Generated at native 16:9 / 4:3 framing with **zero embedded text** and registered in [`packages/assets/manifest.json`](../../../packages/assets/manifest.json) and [`packages/assets/licenses.json`](../../../packages/assets/licenses.json) with full provenance before Wave 3B UI wiring.
 - **Character Specifications & Prompts:** Defined in [11-character-design-bible.md](./11-character-design-bible.md).

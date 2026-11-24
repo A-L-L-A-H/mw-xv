@@ -2030,7 +2030,7 @@ function CatalogContent() {
     'character-preview': {
       label: 'Character preview (crew-01)',
       title: 'Character preview (crew-01)',
-      description: 'Catalog-only fictional example using canonical crew-01 asset IDs.',
+      description: 'Catalog-only fictional example. crew-01 is not a real crew member.',
       loading: 'eager',
       renderer: () => (
         <div className="auth-coverage-grid" data-testid="character-preview-specimen">

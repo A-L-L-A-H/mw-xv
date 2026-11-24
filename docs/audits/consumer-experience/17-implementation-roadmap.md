@@ -8,20 +8,21 @@
 
 ## 1. Execution Workstreams Overview
 
-| Workstream | Focus | Issue Range | Primary Package / App Owners | Exit Gate |
-| :--- | :--- | :--- | :--- | :--- |
-| **A. Foundation, Tokens & `moonwitness-riot` Skin** | Fix `--mw-chalk-mask`, contrast bugs, font stacks, `moonwitness-riot` skin, comic/motion tokens | `CX-001` – `CX-007` | `@moonwitness/types`, `@moonwitness/assets`, `@moonwitness/ui`, `@moonwitness/board` | `pnpm --filter @moonwitness/ui test` + WCAG AA `>= 4.5:1` across 8 `(skin × mode)` matrices |
-| **B. Animation Lifecycle, FXLab CSS & Asset Registry** | Fix `useAnimationVisibility`, FXLab CSS rules, reduced-motion token parity, `@moonwitness/ui/lib/asset-registry`, `useSfx` wiring | `CX-008` – `CX-013` | `@moonwitness/ui`, `@moonwitness/assets`, `@moonwitness/board` | `FXLab` renders animated & reduced-motion states; `asset-registry` passes 100% `manifest.json` check |
-| **C. Shared Primitives, Consolidation & CSS Debt Burn-Down** | Promote `ConfirmDialog`, `ErrorState`, `Breadcrumbs`, adopt unused UI exports, retire all 23 frozen CSS child overrides + 41 `--ink` aliases | `CX-014` – `CX-020` | `@moonwitness/ui`, `@moonwitness/board`, `@moonwitness/ui-catalog` | `scripts/ui-governance-policy.json` `reviewedDebt = []` (`0` overrides), `pnpm ui:design:audit` passes |
-| **D. Visual Experience & Progression Components + Catalog Parity** | Build `ComicPanel`, `MangaFrame`, `StickerBadge`, upgraded `SpeechBubble`, `CharacterDisplay`/`Reaction`, `QuestCard`, `AchievementBadge`, `RewardPanel`; complete UI Catalog specimens | `CX-021` – `CX-027` | `@moonwitness/ui`, `@moonwitness/ui-catalog` | All 8 new components exported 1:1 in `packages/ui/package.json`; `pnpm test:ui-budget` passes |
-| **E. Consumer Surface Remediation & Real API Wiring** | Restore `/knowledge`, fix mobile/tablet clipping & Settings remount, fix false empty states (`isError` handling), enrich `/board`, `/board/studio`, `/board/ai/hq`, `/board/projects` | `CX-028` – `CX-034` | `@moonwitness/board`, `@moonwitness/client` | Playwright matrix across 4 viewports passes with 0 clipping, 0 contrast errors, 0 false empty states |
-| **F. Desktop Parity, Governance Alignment & Full Verification** | Fix `DesktopUpdateBannerMount`, align `ui-governance-policy.json` desktop test path, enforce `desktop:ui:check`, run full end-to-end verification | `CX-035` – `CX-038` | `@moonwitness/desktop`, `scripts/*` | `pnpm board:ui:check --all-product-apps`, `pnpm desktop:ui:check`, `pnpm desktop:test:web`, `pnpm test:e2e:visual:matrix` green |
+| Workstream                                                         | Focus                                                                                                                                                                                   | Issue Range         | Primary Package / App Owners                                                         | Exit Gate                                                                                                                       |
+| :----------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------ | :----------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| **A. Foundation, Tokens & `moonwitness-riot` Skin**                | Fix `--mw-chalk-mask`, contrast bugs, font stacks, `moonwitness-riot` skin, comic/motion tokens                                                                                         | `CX-001` – `CX-007` | `@moonwitness/types`, `@moonwitness/assets`, `@moonwitness/ui`, `@moonwitness/board` | `pnpm --filter @moonwitness/ui test` + WCAG AA `>= 4.5:1` across 8 `(skin × mode)` matrices                                     |
+| **B. Animation Lifecycle, FXLab CSS & Asset Registry**             | Fix `useAnimationVisibility`, FXLab CSS rules, reduced-motion token parity, `@moonwitness/ui/lib/asset-registry`, `useSfx` wiring                                                       | `CX-008` – `CX-013` | `@moonwitness/ui`, `@moonwitness/assets`, `@moonwitness/board`                       | `FXLab` renders animated & reduced-motion states; `asset-registry` passes 100% `manifest.json` check                            |
+| **C. Shared Primitives, Consolidation & CSS Debt Burn-Down**       | Promote `ConfirmDialog`, `ErrorState`, `Breadcrumbs`, adopt unused UI exports, retire all 23 frozen CSS child overrides + 41 `--ink` aliases                                            | `CX-014` – `CX-020` | `@moonwitness/ui`, `@moonwitness/board`, `@moonwitness/ui-catalog`                   | `scripts/ui-governance-policy.json` `reviewedDebt = []` (`0` overrides), `pnpm ui:design:audit` passes                          |
+| **D. Visual Experience & Progression Components + Catalog Parity** | Build `ComicPanel`, `MangaFrame`, `StickerBadge`, upgraded `SpeechBubble`, `CharacterDisplay`/`Reaction`, `QuestCard`, `AchievementBadge`, `RewardPanel`; complete UI Catalog specimens | `CX-021` – `CX-027` | `@moonwitness/ui`, `@moonwitness/ui-catalog`                                         | All 8 new components exported 1:1 in `packages/ui/package.json`; `pnpm test:ui-budget` passes                                   |
+| **E. Consumer Surface Remediation & Real API Wiring**              | Restore `/knowledge`, fix mobile/tablet clipping & Settings remount, fix false empty states (`isError` handling), enrich `/board`, `/board/studio`, `/board/ai/hq`, `/board/projects`   | `CX-028` – `CX-034` | `@moonwitness/board`, `@moonwitness/client`                                          | Playwright matrix across 4 viewports passes with 0 clipping, 0 contrast errors, 0 false empty states                            |
+| **F. Desktop Parity, Governance Alignment & Full Verification**    | Fix `DesktopUpdateBannerMount`, align `ui-governance-policy.json` desktop test path, enforce `desktop:ui:check`, run full end-to-end verification                                       | `CX-035` – `CX-038` | `@moonwitness/desktop`, `scripts/*`                                                  | `pnpm board:ui:check --all-product-apps`, `pnpm desktop:ui:check`, `pnpm desktop:test:web`, `pnpm test:e2e:visual:matrix` green |
 
 ---
 
 ## 2. Workstream A — Foundation, Design Tokens & `moonwitness-riot` Skin (`CX-001` – `CX-007`)
 
 ### `CX-001` — Replace stretched `--mw-chalk-mask` with non-occluding 9-slice / outer ink framing
+
 - **Priority:** `P0`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`
@@ -36,6 +37,7 @@
 - **Risk Level:** Medium (touches shared panel/dialog framing across all apps; mitigated by visual screenshot diff).
 
 ### `CX-002` — Fix dark-mode Settings button contrast (`~1.3:1` yellow/cream collision)
+
 - **Priority:** `P0`
 - **Application:** `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/board`
@@ -50,6 +52,7 @@
 - **Risk Level:** Low.
 
 ### `CX-003` — Disambiguate `--mw-font-display`, `--mw-font-brush`, `--mw-font-grunge` and add `JetBrains Mono` 700
+
 - **Priority:** `P0`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`, `apps/docs`
 - **Package Owner:** `@moonwitness/ui`, `@moonwitness/assets`
@@ -64,6 +67,7 @@
 - **Risk Level:** Low (minor metric width shifts checked against `390x844` layout).
 
 ### `CX-004` — Triage orphaned `raw_arts/fonts/saksi-*` and `cinzel-*` font binaries
+
 - **Priority:** `P2`
 - **Application:** All consumers
 - **Package Owner:** `@moonwitness/assets`
@@ -78,6 +82,7 @@
 - **Risk Level:** Low.
 
 ### `CX-005` — Add `BuiltinSkinId` `'moonwitness-riot'` to `@moonwitness/types` and `@moonwitness/ui/themes`
+
 - **Priority:** `P0`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/types`, `@moonwitness/ui`
@@ -92,6 +97,7 @@
 - **Risk Level:** Low.
 
 ### `CX-006` — Define `moonwitness-riot` light/dark CSS tokens and semantic comic tokens in `tokens.css`
+
 - **Priority:** `P0`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`
@@ -106,6 +112,7 @@
 - **Risk Level:** Low.
 
 ### `CX-007` — Update Settings Skin Grid & UI Catalog Skin Switcher for 4 Skins
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/board`, `@moonwitness/ui-catalog`
@@ -124,6 +131,7 @@
 ## 3. Workstream B — Animation Lifecycle, FXLab CSS & Asset Registry (`CX-008` – `CX-013`)
 
 ### `CX-008` — Fix `useAnimationVisibility` initial `opacity: 0` trap and callback-ref re-attachment
+
 - **Priority:** `P0`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`
@@ -138,6 +146,7 @@
 - **Risk Level:** Low.
 
 ### `CX-009` — Implement `SceneParticles` & `ComicSceneTransition` CSS keyframes and OS reduced-motion listeners
+
 - **Priority:** `P1`
 - **Application:** `apps/ui-catalog`, `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/ui`
@@ -152,6 +161,7 @@
 - **Risk Level:** Low.
 
 ### `CX-010` — Zero all remaining `--mw-motion-*` tokens under `prefers-reduced-motion: reduce` and fix SSR `SpritePlayer` / `LayeredScene`
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`, `@moonwitness/board`
@@ -166,6 +176,7 @@
 - **Risk Level:** Low.
 
 ### `CX-011` — Implement typed `@moonwitness/ui/lib/asset-registry` contract against `manifest.json`
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`, `apps/docs`
 - **Package Owner:** `@moonwitness/ui`, `@moonwitness/assets`
@@ -180,6 +191,7 @@
 - **Risk Level:** Low.
 
 ### `CX-012` — Wire `useSfx()` cues and `createSceneSoundscapeController` into product milestones
+
 - **Priority:** `P2`
 - **Application:** `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/board`, `@moonwitness/ui`
@@ -194,6 +206,7 @@
 - **Risk Level:** Low.
 
 ### `CX-013` — Wire `LayeredScene` into `/` Hero & `/login` Stage with Static Fallbacks
+
 - **Priority:** `P2`
 - **Application:** `apps/board`
 - **Package Owner:** `@moonwitness/board`, `@moonwitness/ui`
@@ -212,6 +225,7 @@
 ## 4. Workstream C — Shared Primitives, Consolidation & CSS Debt Burn-Down (`CX-014` – `CX-020`)
 
 ### `CX-014` — Promote `ConfirmDialog` to `@moonwitness/ui/components/confirm-dialog`
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`, `@moonwitness/board`
@@ -226,6 +240,7 @@
 - **Risk Level:** Low.
 
 ### `CX-015` — Create `@moonwitness/ui/components/error-state` and `@moonwitness/ui/components/breadcrumbs`
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/docs`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`, `@moonwitness/board`, `@moonwitness/desktop`
@@ -240,6 +255,7 @@
 - **Risk Level:** Low.
 
 ### `CX-016` — Extract `BrandMark` & `InboxPopover` shared shells
+
 - **Priority:** `P2`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`, `apps/docs`
 - **Package Owner:** `@moonwitness/ui`, `@moonwitness/board`
@@ -254,6 +270,7 @@
 - **Risk Level:** Low.
 
 ### `CX-017` — Adopt unused `@moonwitness/ui` primitives (`KanbanBoard`, `FilterFacetBar`, `Pagination`, `Field`) in `apps/board`
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/ui`, `@moonwitness/board`
@@ -268,6 +285,7 @@
 - **Risk Level:** Medium (requires preserving Knip-protected `KanbanBoard` & `FilterFacetBar` signatures).
 
 ### `CX-018` — Promote sizing/density variants to `SectionRibbon`, `Panel`, `MetricTile`, `PageHeader`, and `SelectTrigger`
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`
@@ -282,6 +300,7 @@
 - **Risk Level:** Low.
 
 ### `CX-019` — Retire all 23 frozen `.mw-ui-*` child-class overrides (`reviewedDebt -> []`)
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/board`, `@moonwitness/ui-catalog`, Governance (`scripts/`)
@@ -296,6 +315,7 @@
 - **Risk Level:** Medium (must verify visual parity across `/` home, `/login`, `/board`, and `ui-catalog`).
 
 ### `CX-020` — Canonicalize all 41 consumer `--ink*` CSS aliases to `--mw-*` and enforce error mode
+
 - **Priority:** `P2`
 - **Application:** `apps/board`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/board`, `@moonwitness/ui-catalog`, Governance (`scripts/`)
@@ -314,6 +334,7 @@
 ## 5. Workstream D — Visual Experience & Progression Components + UI Catalog Parity (`CX-021` – `CX-027`)
 
 ### `CX-021` — Build `ComicPanel` (+ `ComicStrip`) and `MangaFrame` in `@moonwitness/ui`
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`
@@ -328,6 +349,7 @@
 - **Risk Level:** Low.
 
 ### `CX-022` — Build `StickerBadge` and upgrade `SpeechBubble` with directional tail, variant & speaker
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`
@@ -342,6 +364,7 @@
 - **Risk Level:** Low.
 
 ### `CX-023` — Build `CharacterDisplay` & `CharacterReaction` bound to `character-adapter` & `asset-registry`
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`
@@ -356,6 +379,7 @@
 - **Risk Level:** Low.
 
 ### `CX-024` — Enhance `EmptyState` with character/illustration preset slots
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`
@@ -370,6 +394,7 @@
 - **Risk Level:** Low.
 
 ### `CX-025` — Build `QuestCard`, `AchievementBadge`, and `RewardPanel` progression primitives
+
 - **Priority:** `P2`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui`
@@ -384,6 +409,7 @@
 - **Risk Level:** Low.
 
 ### `CX-026` — Fix UI Catalog mobile header, `AssetBrowser` typos, and showcase all 9 missing existing + 8 new components
+
 - **Priority:** `P1`
 - **Application:** `apps/ui-catalog`
 - **Package Owner:** `@moonwitness/ui-catalog`
@@ -398,6 +424,7 @@
 - **Risk Level:** Medium (must stay under `apps/ui-catalog/bundle-budget.json` via dynamic lazy imports).
 
 ### `CX-027` — Adopt `CharacterReaction`, `ComicPanel`, `QuestCard`, `AchievementBadge`, `RewardPanel` across Board operational views
+
 - **Priority:** `P2`
 - **Application:** `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/board`
@@ -415,6 +442,7 @@
 ## 6. Workstream E — Consumer Surface Remediation & Real API Wiring (`CX-028` – `CX-034`)
 
 ### `CX-028` — Restore public `/knowledge` route and connect bidirectional discovery links
+
 - **Priority:** `P0`
 - **Application:** `apps/board`
 - **Package Owner:** `@moonwitness/board`
@@ -429,6 +457,7 @@
 - **Risk Level:** Low.
 
 ### `CX-029` — Fix mobile (`390x844`) hero clipping, tablet (`768px`) topbar search squeeze & sheet close collision
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/board`
@@ -443,6 +472,7 @@
 - **Risk Level:** Low.
 
 ### `CX-030` — Fix Settings/Profile volatile `key={scopeKey}` remounts & skeleton stability
+
 - **Priority:** `P0`
 - **Application:** `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/board`
@@ -457,6 +487,7 @@
 - **Risk Level:** Low.
 
 ### `CX-031` — Eliminate false empty/zero states on API error (`KanbanView`, `GraphView`, `ProjectsPage`, `CommercialPage`, `CloudIspPage`, `DashboardPage`, `AppShell`)
+
 - **Priority:** `P0`
 - **Application:** `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/board`
@@ -471,6 +502,7 @@
 - **Risk Level:** Low.
 
 ### `CX-032` — Fix `CalendarView` 390px mobile layout, `ListView` URL sub-mode sync, and `KnowledgePage` scroll-to-target
+
 - **Priority:** `P1`
 - **Application:** `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/board`
@@ -485,6 +517,7 @@
 - **Risk Level:** Low.
 
 ### `CX-033` — Normalize `EditorialStudioPanel` copy and wire persistent/exportable Studio drafts via `@moonwitness/client`
+
 - **Priority:** `P2`
 - **Application:** `apps/board`, `apps/desktop`
 - **Package Owner:** `@moonwitness/board`, `@moonwitness/client`
@@ -499,6 +532,7 @@
 - **Risk Level:** Low.
 
 ### `CX-034` — Eliminate Next.js dev CSP `eval()` console warnings and clean up dev ergonomics
+
 - **Priority:** `P2`
 - **Application:** `apps/board`
 - **Package Owner:** `@moonwitness/board`
@@ -517,6 +551,7 @@
 ## 7. Workstream F — Desktop Parity, Governance Policy Alignment & Verification (`CX-035` – `CX-038`)
 
 ### `CX-035` — Wire `DesktopUpdateBannerMount` to real Tauri updater status and fix stuck `'checking'` state
+
 - **Priority:** `P1`
 - **Application:** `apps/desktop`, `apps/board`
 - **Package Owner:** `@moonwitness/desktop`, `@moonwitness/board`
@@ -531,6 +566,7 @@
 - **Risk Level:** Low (`INV-009` compliant—only extends `window.__MW_DESKTOP__` interface in `board`).
 
 ### `CX-036` — Align `apps/desktop` governance policy path and explicit `@moonwitness/assets` dependency
+
 - **Priority:** `P1`
 - **Application:** `apps/desktop`
 - **Package Owner:** `@moonwitness/desktop`, Governance (`scripts/`)
@@ -545,6 +581,7 @@
 - **Risk Level:** Low.
 
 ### `CX-037` — Expand `apps/desktop/desktop-web/tests/routes.spec.ts` for `/knowledge`, `/board/studio`, skin switching & reduced motion
+
 - **Priority:** `P2`
 - **Application:** `apps/desktop`
 - **Package Owner:** `@moonwitness/desktop`
@@ -559,6 +596,7 @@
 - **Risk Level:** Low.
 
 ### `CX-038` — Execute final cross-workspace governance, budget, contrast, and visual matrix verification gate
+
 - **Priority:** `P0`
 - **Application:** `apps/board`, `apps/desktop`, `apps/ui-catalog`, `apps/docs`
 - **Package Owner:** All Consumer Experience Owners

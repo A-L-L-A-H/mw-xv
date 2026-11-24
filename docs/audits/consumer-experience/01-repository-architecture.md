@@ -26,17 +26,17 @@ MoonWitness XV is a bun workspace monorepo organized under two top-level workspa
 
 All workspace apps under `apps/*` must be classified in [`scripts/ui-governance-policy.json`](../../../scripts/ui-governance-policy.json) (enforced by [`scripts/check-board-shared-ui.mjs`](../../../scripts/check-board-shared-ui.mjs)).
 
-| App | Package | Classification | Browser | Source Roots | Shared Source Roots |
-| --- | --- | --- | --- | --- | --- |
-| [`apps/board`](../../../apps/board/package.json) | `@moonwitness/board` | `product-adopter` | `true` | `src` | `—` |
-| [`apps/desktop`](../../../apps/desktop/package.json) | `@moonwitness/desktop` | `product-adopter` | `true` | `desktop-web` | `apps/board/src` |
-| [`apps/ui-catalog`](../../../apps/ui-catalog/package.json) | `@moonwitness/ui-catalog` | `reference-consumer` | `true` | `src` | `—` |
-| [`apps/docs`](../../../apps/docs/package.json) | `@moonwitness/docs` | `publication-shell` | `true` | `src` | `—` |
-| [`apps/agent-observability`](../../../apps/agent-observability/package.json) | `@moonwitness/agent-observability` | `standalone-exempt` | `true` | `—` | `—` |
-| [`apps/api`](../../../apps/api/package.json) | `@moonwitness/api` | `non-ui` | `false` | `—` | `—` |
-| [`apps/agent-sandbox`](../../../apps/agent-sandbox/package.json) | `@moonwitness/agent-sandbox` | `non-ui` | `false` | `—` | `—` |
-| [`apps/isp`](../../../apps/isp/package.json) | `@moonwitness/isp` | `non-ui` | `false` | `—` | `—` |
-| [`apps/control-plane`](../../../apps/control-plane/package.json) | `@moonwitness/control-plane` | `non-ui` | `false` | `—` | `—` |
+| App                                                                          | Package                            | Classification       | Browser | Source Roots  | Shared Source Roots |
+| ---------------------------------------------------------------------------- | ---------------------------------- | -------------------- | ------- | ------------- | ------------------- |
+| [`apps/board`](../../../apps/board/package.json)                             | `@moonwitness/board`               | `product-adopter`    | `true`  | `src`         | `—`                 |
+| [`apps/desktop`](../../../apps/desktop/package.json)                         | `@moonwitness/desktop`             | `product-adopter`    | `true`  | `desktop-web` | `apps/board/src`    |
+| [`apps/ui-catalog`](../../../apps/ui-catalog/package.json)                   | `@moonwitness/ui-catalog`          | `reference-consumer` | `true`  | `src`         | `—`                 |
+| [`apps/docs`](../../../apps/docs/package.json)                               | `@moonwitness/docs`                | `publication-shell`  | `true`  | `src`         | `—`                 |
+| [`apps/agent-observability`](../../../apps/agent-observability/package.json) | `@moonwitness/agent-observability` | `standalone-exempt`  | `true`  | `—`           | `—`                 |
+| [`apps/api`](../../../apps/api/package.json)                                 | `@moonwitness/api`                 | `non-ui`             | `false` | `—`           | `—`                 |
+| [`apps/agent-sandbox`](../../../apps/agent-sandbox/package.json)             | `@moonwitness/agent-sandbox`       | `non-ui`             | `false` | `—`           | `—`                 |
+| [`apps/isp`](../../../apps/isp/package.json)                                 | `@moonwitness/isp`                 | `non-ui`             | `false` | `—`           | `—`                 |
+| [`apps/control-plane`](../../../apps/control-plane/package.json)             | `@moonwitness/control-plane`       | `non-ui`             | `false` | `—`           | `—`                 |
 
 > [!NOTE]
 > `product-adopter` apps are forbidden from using raw JSX `<button>`, `<input>`, `<select>`, `<textarea>`, `<svg>`, direct `lucide-react`/`@heroicons/react`/`react-icons`/`react-feather` imports, or internal `@moonwitness/ui/dist/*` imports.
@@ -55,12 +55,12 @@ All workspace apps under `apps/*` must be classified in [`scripts/ui-governance-
 
 ## 4. Consumer Application Inventory
 
-| App | Framework & Build | Entry & Route Roots | Runtime Evidence / Tests | Key Integration Pattern |
-| --- | --- | --- | --- | --- |
-| [`apps/board`](../../../apps/board/package.json) | Next.js `16.4.6` App Router (`output: 'standalone'`), React `19.2.8`, Tailwind v4, `motion ^13.5.0`, `@tanstack/react-query ^5.104.0` | `src/app/` (29 Next.js route entries covering `/`, `/login`, `/register`, `/knowledge`, `/board`, `/board/m/[model]`, `/board/m/[model]/[id]`, `/board/ai/*`, `/board/cloud`, `/board/commercial`, `/board/projects`, `/board/stories/workbench`, `/board/studio`, `/board/whatsapp`, `/board/profile`, `/board/settings`) | `apps/board/e2e/resilience.spec.ts` (`pnpm test:e2e`), `apps/board/e2e/visual-audit.spec.ts` (`pnpm test:e2e:visual:matrix`) | Same-origin BFF `/api/session` + `next.config.ts` rewrites to `BOARD_API_TARGET` (`127.0.0.1:3000`); progressive desktop bridge via `window.__MW_DESKTOP__` |
-| [`apps/desktop`](../../../apps/desktop/package.json) | Tauri v2 + Node ESM sidecar (`Fastify 5`, `better-sqlite3`) + Vite `7.0.0` webview (`desktop-web/vite.config.ts`) | [`apps/desktop/desktop-web/main.tsx`](../../../apps/desktop/desktop-web/main.tsx) + shims in `desktop-web/shims/` (`next/link`, `next/navigation`, `next/image`, `next/dynamic`) | [`apps/desktop/desktop-web/tests/routes.spec.ts`](../../../apps/desktop/desktop-web/tests/routes.spec.ts) (`pnpm desktop:test:web`; note policy path mismatch below) | Aliases `@` -> `apps/board/src`, renders `board-pages/*` + `app/board/ai/*` inside SPA `DesktopRouteSwitch`, auto-signs in via local sidecar (`local` / `local-offline-session`) |
-| [`apps/ui-catalog`](../../../apps/ui-catalog/package.json) | Vite `8.3.3`, React `19.2.8`, `@tailwindcss/vite ^4.3.3` | [`apps/ui-catalog/src/main.tsx`](../../../apps/ui-catalog/src/main.tsx) -> [`catalog.tsx`](../../../apps/ui-catalog/src/catalog.tsx) (lazy sections: `SceneLab`, `FXLab`, `AssetBrowser`, `AssetDiagnostics`) | `apps/ui-catalog/tests/catalog.spec.ts` (`pnpm test:ui-catalog`), `apps/ui-catalog/tests/bundle-budget.test.mjs` (`pnpm test:ui-budget`) | Static interactive specimen gallery & Playwright visual/axe/CLS regression harness |
-| [`apps/docs`](../../../apps/docs/package.json) | Vite `8.3.3`, React `19.2.8`, `react-router ^8.4.0`, `react-markdown ^10.1.0` | [`apps/docs/src/main.tsx`](../../../apps/docs/src/main.tsx) -> [`portal.tsx`](../../../apps/docs/src/portal.tsx) | `pnpm docs:publication:check`, `pnpm --filter @moonwitness/docs test` | Bundles `dist/docs/guide.bundle.json` and embeds built `@moonwitness/ui-catalog` under `/components/` |
+| App                                                        | Framework & Build                                                                                                                     | Entry & Route Roots                                                                                                                                                                                                                                                                                                        | Runtime Evidence / Tests                                                                                                                                             | Key Integration Pattern                                                                                                                                                          |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`apps/board`](../../../apps/board/package.json)           | Next.js `16.4.6` App Router (`output: 'standalone'`), React `19.2.8`, Tailwind v4, `motion ^13.5.0`, `@tanstack/react-query ^5.104.0` | `src/app/` (29 Next.js route entries covering `/`, `/login`, `/register`, `/knowledge`, `/board`, `/board/m/[model]`, `/board/m/[model]/[id]`, `/board/ai/*`, `/board/cloud`, `/board/commercial`, `/board/projects`, `/board/stories/workbench`, `/board/studio`, `/board/whatsapp`, `/board/profile`, `/board/settings`) | `apps/board/e2e/resilience.spec.ts` (`pnpm test:e2e`), `apps/board/e2e/visual-audit.spec.ts` (`pnpm test:e2e:visual:matrix`)                                         | Same-origin BFF `/api/session` + `next.config.ts` rewrites to `BOARD_API_TARGET` (`127.0.0.1:3000`); progressive desktop bridge via `window.__MW_DESKTOP__`                      |
+| [`apps/desktop`](../../../apps/desktop/package.json)       | Tauri v2 + Node ESM sidecar (`Fastify 5`, `better-sqlite3`) + Vite `7.0.0` webview (`desktop-web/vite.config.ts`)                     | [`apps/desktop/desktop-web/main.tsx`](../../../apps/desktop/desktop-web/main.tsx) + shims in `desktop-web/shims/` (`next/link`, `next/navigation`, `next/image`, `next/dynamic`)                                                                                                                                           | [`apps/desktop/desktop-web/tests/routes.spec.ts`](../../../apps/desktop/desktop-web/tests/routes.spec.ts) (`pnpm desktop:test:web`; note policy path mismatch below) | Aliases `@` -> `apps/board/src`, renders `board-pages/*` + `app/board/ai/*` inside SPA `DesktopRouteSwitch`, auto-signs in via local sidecar (`local` / `local-offline-session`) |
+| [`apps/ui-catalog`](../../../apps/ui-catalog/package.json) | Vite `8.3.3`, React `19.2.8`, `@tailwindcss/vite ^4.3.3`                                                                              | [`apps/ui-catalog/src/main.tsx`](../../../apps/ui-catalog/src/main.tsx) -> [`catalog.tsx`](../../../apps/ui-catalog/src/catalog.tsx) (lazy sections: `SceneLab`, `FXLab`, `AssetBrowser`, `AssetDiagnostics`)                                                                                                              | `apps/ui-catalog/tests/catalog.spec.ts` (`pnpm test:ui-catalog`), `apps/ui-catalog/tests/bundle-budget.test.mjs` (`pnpm test:ui-budget`)                             | Static interactive specimen gallery & Playwright visual/axe/CLS regression harness                                                                                               |
+| [`apps/docs`](../../../apps/docs/package.json)             | Vite `8.3.3`, React `19.2.8`, `react-router ^8.4.0`, `react-markdown ^10.1.0`                                                         | [`apps/docs/src/main.tsx`](../../../apps/docs/src/main.tsx) -> [`portal.tsx`](../../../apps/docs/src/portal.tsx)                                                                                                                                                                                                           | `pnpm docs:publication:check`, `pnpm --filter @moonwitness/docs test`                                                                                                | Bundles `dist/docs/guide.bundle.json` and embeds built `@moonwitness/ui-catalog` under `/components/`                                                                            |
 
 ---
 
@@ -68,14 +68,14 @@ All workspace apps under `apps/*` must be classified in [`scripts/ui-governance-
 
 Measured via `node scripts/check-board-shared-ui.mjs --all-product-apps` and `node scripts/check-ui-design-system.mjs --json`:
 
-| Metric | `apps/board` | `apps/desktop` | `apps/ui-catalog` | `apps/docs` |
-| --- | ---: | ---: | ---: | ---: |
-| `@moonwitness/ui/components/*` available | 48 | 48 | 48 | 48 |
-| Static component subpaths imported | 37 | 36 | 39 | 1 (`button`) |
-| Route-reachable named component usages | 37 | 36 | 39 | 1 |
-| Unused `@moonwitness/ui` components | 11 | 12 | 9 | 47 |
-| Reachable local files from route entries | 130 | 109 | — | — |
-| Policy violations (`raw-native-control`, `raw-svg`, etc.) | 0 | 0 | 0 | 0 |
+| Metric                                                    | `apps/board` | `apps/desktop` | `apps/ui-catalog` |  `apps/docs` |
+| --------------------------------------------------------- | -----------: | -------------: | ----------------: | -----------: |
+| `@moonwitness/ui/components/*` available                  |           48 |             48 |                48 |           48 |
+| Static component subpaths imported                        |           37 |             36 |                39 | 1 (`button`) |
+| Route-reachable named component usages                    |           37 |             36 |                39 |            1 |
+| Unused `@moonwitness/ui` components                       |           11 |             12 |                 9 |           47 |
+| Reachable local files from route entries                  |          130 |            109 |                 — |            — |
+| Policy violations (`raw-native-control`, `raw-svg`, etc.) |            0 |              0 |                 0 |            0 |
 
 - **Components unused in `apps/board` (11):** `artwork-frame`, `avatar`, `character-preview`, `field`, `filter-facet-bar`, `kanban-board`, `layered-scene`, `pagination`, `scene-particles`, `scene-transitions`, `sprite-player`.
 - **Components unused in `apps/desktop` (12):** Same 11 as `apps/board` plus `paper-note` (because `apps/desktop` does not mount the public marketing homepage `apps/board/src/app/page.tsx`).
@@ -112,25 +112,25 @@ Measured via `node scripts/check-board-shared-ui.mjs --all-product-apps` and `no
 3. **Desktop Non-Overlap Membrane ([`scripts/check-desktop-non-overlap.mjs`](../../../scripts/check-desktop-non-overlap.mjs)):** `pnpm desktop:ui:check`. Ensures `apps/desktop/src` never calls `defineModel`/`defineAddon` and `apps/board/src` never imports `@moonwitness/orm`, `tauri`, `better-sqlite3`, `node-pty`, or `node:*` runtime modules.
 4. **Board Bundle Budget ([`scripts/check-board-bundle.mjs`](../../../scripts/check-board-bundle.mjs) & [`apps/board/bundle-budget.json`](../../../apps/board/bundle-budget.json)):**
 
-| Route | JS Raw Max | JS Gzip Max | CSS Raw Max | CSS Gzip Max |
-| --- | ---: | ---: | ---: | ---: |
-| `homepage` (`/`) | 1,000,000 B | 300,000 B | 205,000 B | 40,000 B |
-| `board` (`/board`) | 1,800,000 B | 550,000 B | 250,000 B | 60,000 B |
-| `login` (`/login`) | 1,200,000 B | 360,000 B | 220,000 B | 50,000 B |
-| `model` (`/board/m/[model]`) | 1,800,000 B | 550,000 B | 250,000 B | 60,000 B |
-| Interface Audio (`ui` sounds) | 50,000 B combined | — | — | — |
+| Route                         |        JS Raw Max | JS Gzip Max | CSS Raw Max | CSS Gzip Max |
+| ----------------------------- | ----------------: | ----------: | ----------: | -----------: |
+| `homepage` (`/`)              |       1,000,000 B |   300,000 B |   205,000 B |     40,000 B |
+| `board` (`/board`)            |       1,800,000 B |   550,000 B |   250,000 B |     60,000 B |
+| `login` (`/login`)            |       1,200,000 B |   360,000 B |   220,000 B |     50,000 B |
+| `model` (`/board/m/[model]`)  |       1,800,000 B |   550,000 B |   250,000 B |     60,000 B |
+| Interface Audio (`ui` sounds) | 50,000 B combined |           — |           — |            — |
 
 5. **UI Catalog Bundle Budget ([`scripts/check-ui-catalog-budget.mjs`](../../../scripts/check-ui-catalog-budget.mjs) & [`apps/ui-catalog/bundle-budget.json`](../../../apps/ui-catalog/bundle-budget.json)):**
 
-| Group / Section | JS Raw Max | JS Gzip Max | CSS Raw Max | CSS Gzip Max |
-| --- | ---: | ---: | ---: | ---: |
-| `initial` | 540,000 B | 158,000 B | 150,000 B | 27,000 B |
-| `lazy` | 40,000 B | 14,000 B | 1 B | 1 B |
-| `total` | 570,000 B | 168,000 B | 143,360 B | 26,576 B |
-| `scene` (`SceneLab.tsx`) | 23,000 B | 7,800 B | — | — |
-| `assets` (`AssetBrowser.tsx`) | 5,000 B | 2,000 B | — | — |
-| `fxlab` (`FXLab.tsx`) | 10,000 B | 3,600 B | — | — |
-| `diagnostics` (`AssetDiagnostics.tsx`) | 2,500 B | 1,000 B | — | — |
+| Group / Section                        | JS Raw Max | JS Gzip Max | CSS Raw Max | CSS Gzip Max |
+| -------------------------------------- | ---------: | ----------: | ----------: | -----------: |
+| `initial`                              |  540,000 B |   158,000 B |   150,000 B |     27,000 B |
+| `lazy`                                 |   40,000 B |    14,000 B |         1 B |          1 B |
+| `total`                                |  570,000 B |   168,000 B |   143,360 B |     26,576 B |
+| `scene` (`SceneLab.tsx`)               |   23,000 B |     7,800 B |           — |            — |
+| `assets` (`AssetBrowser.tsx`)          |    5,000 B |     2,000 B |           — |            — |
+| `fxlab` (`FXLab.tsx`)                  |   10,000 B |     3,600 B |           — |            — |
+| `diagnostics` (`AssetDiagnostics.tsx`) |    2,500 B |     1,000 B |           — |            — |
 
 ---
 
@@ -138,28 +138,29 @@ Measured via `node scripts/check-board-shared-ui.mjs --all-product-apps` and `no
 
 All 18 persistent repository invariants from [`.agents/rules/learned-invariants.md`](../../../.agents/rules/learned-invariants.md) apply to any consumer-experience evolution:
 
-| ID | Invariant Summary | Relevance to Consumer Experience Work |
-| --- | --- | --- |
-| `INV-001` | PowerShell 5.1 chaining via `; if ($?) { ... }` | All Windows local validation scripts |
-| `INV-002` | `apps/api` Vitest `--maxWorkers=1 --no-file-parallelism` | Running local API server/tests during E2E audits |
-| `INV-003` | Pinned GitHub Actions SHAs (`automation:check:action-pins`) | CI workflow updates |
-| `INV-004` | Thin API addon boundary (`LEGACY_*_ALLOWLIST` empty) | Any backend endpoints supporting UI features |
-| `INV-005` | `engines.node` pinned to `"24.x"` everywhere | Manifest edits |
-| `INV-006` | Recursive route discovery + `docs:generate` / `architecture:generate` | Syncing docs/diagrams after package changes |
-| `INV-007` | `packages/ui/src/styles/components.css` integrity (`pnpm test:ui`) | Editing shared CSS layers |
-| `INV-008` | Hybrid swarm routing & disjoint file sharding | Multi-agent UI execution |
-| `INV-009` | Zero-overlap desktop harness membrane (`pnpm desktop:ui:check`) | Sharing UI between `board` and `desktop` |
-| `INV-010` | Diff-scoped preflight vs single-pass generator sync | Swarm landing hygiene |
-| `INV-011` | Static Fastify route string literals starting with `'/'` | API reference extraction |
-| `INV-012` | Inline `Command` `defaultValue='**none**'` to prevent scroll hijack/CLS | Catalog & inline command palettes |
-| `INV-013` | Package `build` scripts execute inside own package dir | Workspace builds |
-| `INV-014` | Addon custom routes must use `manifest.httpPlugins` | Any new API endpoints for consumer features |
-| `INV-015` | Explicit `30_000ms+` Vitest timeouts for full-addon `buildApp()` | API integration suites |
-| `INV-016` | Standalone web subpackage Playwright alignment & React dedup | Multi-consumer Vite builds |
-| `INV-017` | UI Catalog bundle budget & responsive `SpritePlayer` (`min(100%, width)` + `aspectRatio`) | New catalog specimens or FX components |
-| `INV-018` | `desktop:build` closure (`@moonwitness/desktop...`) & `testTimeout >= 30000` | Desktop build & test verification |
+| ID        | Invariant Summary                                                                         | Relevance to Consumer Experience Work            |
+| --------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `INV-001` | PowerShell 5.1 chaining via `; if ($?) { ... }`                                           | All Windows local validation scripts             |
+| `INV-002` | `apps/api` Vitest `--maxWorkers=1 --no-file-parallelism`                                  | Running local API server/tests during E2E audits |
+| `INV-003` | Pinned GitHub Actions SHAs (`automation:check:action-pins`)                               | CI workflow updates                              |
+| `INV-004` | Thin API addon boundary (`LEGACY_*_ALLOWLIST` empty)                                      | Any backend endpoints supporting UI features     |
+| `INV-005` | `engines.node` pinned to `"24.x"` everywhere                                              | Manifest edits                                   |
+| `INV-006` | Recursive route discovery + `docs:generate` / `architecture:generate`                     | Syncing docs/diagrams after package changes      |
+| `INV-007` | `packages/ui/src/styles/components.css` integrity (`pnpm test:ui`)                        | Editing shared CSS layers                        |
+| `INV-008` | Hybrid swarm routing & disjoint file sharding                                             | Multi-agent UI execution                         |
+| `INV-009` | Zero-overlap desktop harness membrane (`pnpm desktop:ui:check`)                           | Sharing UI between `board` and `desktop`         |
+| `INV-010` | Diff-scoped preflight vs single-pass generator sync                                       | Swarm landing hygiene                            |
+| `INV-011` | Static Fastify route string literals starting with `'/'`                                  | API reference extraction                         |
+| `INV-012` | Inline `Command` `defaultValue='**none**'` to prevent scroll hijack/CLS                   | Catalog & inline command palettes                |
+| `INV-013` | Package `build` scripts execute inside own package dir                                    | Workspace builds                                 |
+| `INV-014` | Addon custom routes must use `manifest.httpPlugins`                                       | Any new API endpoints for consumer features      |
+| `INV-015` | Explicit `30_000ms+` Vitest timeouts for full-addon `buildApp()`                          | API integration suites                           |
+| `INV-016` | Standalone web subpackage Playwright alignment & React dedup                              | Multi-consumer Vite builds                       |
+| `INV-017` | UI Catalog bundle budget & responsive `SpritePlayer` (`min(100%, width)` + `aspectRatio`) | New catalog specimens or FX components           |
+| `INV-018` | `desktop:build` closure (`@moonwitness/desktop...`) & `testTimeout >= 30000`              | Desktop build & test verification                |
 
 ### Observed Architectural Gaps
+
 1. **Desktop E2E policy path mismatch:** `scripts/ui-governance-policy.json` declares `apps/desktop/e2e/desktop-web.spec.ts` for `desktop-webview` runtime evidence, causing `check-ui-design-system.mjs` to report `missing test files`, whereas the actual test resides at [`apps/desktop/desktop-web/tests/routes.spec.ts`](../../../apps/desktop/desktop-web/tests/routes.spec.ts) (configured by `apps/desktop/playwright.web.config.ts`).
 2. **`apps/desktop` `@moonwitness/ui` dependency placement:** [`apps/desktop/package.json`](../../../apps/desktop/package.json) declares `@moonwitness/ui` in `devDependencies` (sufficient for Vite bundling, passes `hasUiDependency`), but lacks `@moonwitness/assets` as an explicit dependency—relying on `apps/board/public` as `publicDir`.
 3. **High `apps/board` unused visual-component ratio:** 11 of 48 `@moonwitness/ui` components (including `ArtworkFrame`, `CharacterPreview`, `LayeredScene`, `SceneParticles`, `SceneTransitions`, `SpritePlayer`, `KanbanBoard`, `FilterFacetBar`, `Pagination`, `Avatar`, `Field`) are unused in `apps/board`, concentrating the visual brand on `/` and `/login` while operational `/board/*` routes rely on flat CSS panels.
