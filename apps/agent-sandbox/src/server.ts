@@ -1,4 +1,8 @@
-import { createServer as createHttpServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import {
+  createServer as createHttpServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -8,7 +12,7 @@ import type {
   WorkspaceRpcRequest,
   WorkspaceRpcResponse,
 } from './contract.js';
-import { DockerExecutor } from './executor.js';
+import { DisabledSandboxExecutor, DockerExecutor } from './executor.js';
 import { DockerHttpTransport } from './docker-transport.js';
 import { SandboxError, asSandboxError } from './errors.js';
 import { WorkspaceService, type WorkspaceServiceOptions } from './workspace.js';
@@ -36,13 +40,15 @@ export interface SandboxServerConfig {
   readonly host: string;
   readonly port: number;
   readonly dataDir: string;
-  readonly dockerSocket: string;
+  readonly dockerSocket?: string;
 }
 
 export function loadSandboxConfig(env: NodeJS.ProcessEnv = process.env): SandboxServerConfig {
   const token = env.AGENT_SANDBOX_TOKEN;
   if (typeof token !== 'string' || token.trim().length < 32) {
-    throw new Error('AGENT_SANDBOX_TOKEN must be set to a high-entropy value of at least 32 characters');
+    throw new Error(
+      'AGENT_SANDBOX_TOKEN must be set to a high-entropy value of at least 32 characters'
+    );
   }
   const host = env.AGENT_SANDBOX_HOST ?? '127.0.0.1';
   if (!['127.0.0.1', '0.0.0.0', '::1'].includes(host)) {
@@ -53,11 +59,12 @@ export function loadSandboxConfig(env: NodeJS.ProcessEnv = process.env): Sandbox
     throw new Error('AGENT_SANDBOX_PORT must be a valid TCP port');
   }
   const dataDir = env.AGENT_SANDBOX_DATA_DIR ?? '/var/lib/agent-sandbox';
-  const dockerSocket = env.AGENT_SANDBOX_DOCKER_SOCKET;
-  if (typeof dockerSocket !== 'string' || dockerSocket.trim() === '') {
-    throw new Error('AGENT_SANDBOX_DOCKER_SOCKET must name a dedicated rootless daemon socket');
-  }
-  return { token, host, port, dataDir, dockerSocket };
+  const configuredSocket = env.AGENT_SANDBOX_DOCKER_SOCKET;
+  const dockerSocket =
+    typeof configuredSocket === 'string' && configuredSocket.trim() !== ''
+      ? configuredSocket
+      : undefined;
+  return { token, host, port, dataDir, ...(dockerSocket ? { dockerSocket } : {}) };
 }
 
 export function isAuthorized(header: string | undefined, token: string): boolean {
@@ -93,7 +100,9 @@ function readBoundedBody(request: IncomingMessage): Promise<Buffer> {
     });
     request.on('end', () => resolve(Buffer.concat(chunks, total)));
     request.on('error', reject);
-    request.on('aborted', () => reject(new SandboxError('INVALID_REQUEST', 'RPC request was aborted')));
+    request.on('aborted', () =>
+      reject(new SandboxError('INVALID_REQUEST', 'RPC request was aborted'))
+    );
   });
 }
 
@@ -183,7 +192,9 @@ export function createSandboxServer(options: WorkspaceServiceOptions & { readonl
 function rpcGuard(value: unknown): unknown {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return value;
   const entries = Object.entries(value as Record<string, unknown>);
-  if (entries.some(([key]) => key === '__proto__' || key === 'constructor' || key === 'prototype')) {
+  if (
+    entries.some(([key]) => key === '__proto__' || key === 'constructor' || key === 'prototype')
+  ) {
     throw new SandboxError('INVALID_REQUEST', 'RPC body contains forbidden keys');
   }
   return value;
@@ -227,7 +238,9 @@ async function dispatch(
 }
 
 export async function startSandboxServer(config: SandboxServerConfig): Promise<void> {
-  const executor = new DockerExecutor(new DockerHttpTransport(config.dockerSocket));
+  const executor = config.dockerSocket
+    ? new DockerExecutor(new DockerHttpTransport(config.dockerSocket))
+    : new DisabledSandboxExecutor();
   const server = createSandboxServer({
     token: config.token,
     dataDir: config.dataDir,
@@ -255,7 +268,9 @@ export async function startSandboxServer(config: SandboxServerConfig): Promise<v
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   void startSandboxServer(loadSandboxConfig()).catch((error: unknown) => {
-    process.stderr.write(`agent-sandbox failed to start: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.stderr.write(
+      `agent-sandbox failed to start: ${error instanceof Error ? error.message : String(error)}\n`
+    );
     process.exitCode = 1;
   });
 }

@@ -65,7 +65,9 @@ export function checkVendorProvenance(upstreamText, licenseText) {
   const licenseFile = `${VENDOR_ROOT}/LICENSE`;
 
   if (upstreamText === null || upstreamText === undefined) {
-    violations.push(finding('MISSING_UPSTREAM_METADATA', upstreamFile, 'UPSTREAM.json is required.'));
+    violations.push(
+      finding('MISSING_UPSTREAM_METADATA', upstreamFile, 'UPSTREAM.json is required.')
+    );
   } else {
     let metadata;
     try {
@@ -98,13 +100,19 @@ export function checkVendorProvenance(upstreamText, licenseText) {
   }
 
   if (licenseText === null || licenseText === undefined) {
-    violations.push(finding('MISSING_MIT_LICENSE', licenseFile, 'The upstream MIT LICENSE is required.'));
+    violations.push(
+      finding('MISSING_MIT_LICENSE', licenseFile, 'The upstream MIT LICENSE is required.')
+    );
   } else if (
     !/\bMIT License\b/iu.test(licenseText) ||
     !/Permission is hereby granted, free of charge/iu.test(licenseText)
   ) {
     violations.push(
-      finding('INVALID_MIT_LICENSE', licenseFile, 'LICENSE must contain the upstream MIT License text.')
+      finding(
+        'INVALID_MIT_LICENSE',
+        licenseFile,
+        'LICENSE must contain the upstream MIT License text.'
+      )
     );
   }
 
@@ -143,7 +151,13 @@ export function findForbiddenVendoredPaths(relativePaths) {
     const code = classifyForbiddenVendorPath(relativePath);
     if (!code) return [];
     const file = `${VENDOR_ROOT}/${normalizeRelativePath(relativePath)}`;
-    return [finding(code, file, `Forbidden vendored runtime/build path: ${normalizeRelativePath(relativePath)}.`)];
+    return [
+      finding(
+        code,
+        file,
+        `Forbidden vendored runtime/build path: ${normalizeRelativePath(relativePath)}.`
+      ),
+    ];
   });
 }
 
@@ -152,9 +166,7 @@ function expandBraces(pattern) {
   if (!match) return [pattern];
   const prefix = pattern.slice(0, match.index);
   const suffix = pattern.slice(match.index + match[0].length);
-  return match[1]
-    .split(',')
-    .flatMap((choice) => expandBraces(`${prefix}${choice}${suffix}`));
+  return match[1].split(',').flatMap((choice) => expandBraces(`${prefix}${choice}${suffix}`));
 }
 
 function globToRegExp(pattern) {
@@ -249,7 +261,9 @@ function workspacePatternIncludesVendor(pattern) {
 
 export function checkWorkspaceExclusion(source) {
   if (source === null || source === undefined) {
-    return [finding('MISSING_WORKSPACE_FILE', 'pnpm-workspace.yaml', 'pnpm-workspace.yaml is required.')];
+    return [
+      finding('MISSING_WORKSPACE_FILE', 'pnpm-workspace.yaml', 'pnpm-workspace.yaml is required.'),
+    ];
   }
   if (!workspaceIncludesVendor(source)) return [];
   return [
@@ -275,7 +289,9 @@ export function dockerIgnoreExcludesVendor(source) {
 
 export function checkDockerIgnore(source) {
   if (source === null || source === undefined) {
-    return [finding('MISSING_DOCKERIGNORE', '.dockerignore', 'The root .dockerignore is required.')];
+    return [
+      finding('MISSING_DOCKERIGNORE', '.dockerignore', 'The root .dockerignore is required.'),
+    ];
   }
   if (dockerIgnoreExcludesVendor(source)) return [];
   return [
@@ -418,7 +434,9 @@ function collectYamlAnchors(source) {
 function yamlAliasReferences(text) {
   const references = [];
   for (const line of text.split('\n')) {
-    for (const match of line.matchAll(/(?:^|[\s:[,{]+)\*([A-Za-z0-9_][A-Za-z0-9_.-]*)(?=$|[\s,\]}])/gmu)) {
+    for (const match of line.matchAll(
+      /(?:^|[\s:[,{]+)\*([A-Za-z0-9_][A-Za-z0-9_.-]*)(?=$|[\s,\]}])/gmu
+    )) {
       references.push(match[1]);
     }
   }
@@ -525,7 +543,10 @@ function parseVolumeItem({ rawLines, unresolved }) {
     const source = property('source');
     const target = property('target');
     return {
-      kind: type === 'bind' || (!type && source && isHostLikeSource(source)) ? 'bind' : type ?? 'volume',
+      kind:
+        type === 'bind' || (!type && source && isHostLikeSource(source))
+          ? 'bind'
+          : (type ?? 'volume'),
       source,
       target,
     };
@@ -575,7 +596,6 @@ function declaredVolumeNames(block) {
 }
 
 const ROOTLESS_SOCKET_PATH = /^\/run\/user\/(?:[0-9]+)\/docker\.sock$/u;
-const ROOT_EQUIVALENT_SOCKET = /^\/(?:var\/)?run\/docker\.sock$/u;
 
 /** Extract the default from `${VAR:-/default}` so an env reference can be reviewed. */
 function composeEnvDefault(value) {
@@ -588,11 +608,6 @@ function composeEnvDefault(value) {
 function isDedicatedRootlessSocket(value) {
   const candidate = composeEnvDefault(value);
   return candidate !== null && ROOTLESS_SOCKET_PATH.test(candidate);
-}
-
-function isRootEquivalentSocket(value) {
-  const candidate = composeEnvDefault(value);
-  return candidate !== null && ROOT_EQUIVALENT_SOCKET.test(candidate);
 }
 
 function checkComposeService(name, block, anchors, isGateway, volumeNames = new Map()) {
@@ -617,21 +632,13 @@ function checkComposeService(name, block, anchors, isGateway, volumeNames = new 
     );
   }
   if (/\bdocker\.sock\b/iu.test(expanded.text)) {
-    const rootEquivalent = expanded.text.split('\n').some((line) => isRootEquivalentSocket(line));
-    const dedicatedRootless =
-      !isGateway &&
-      expanded.text.split('\n').some((line) => isDedicatedRootlessSocket(line));
-    if (isGateway || rootEquivalent || !dedicatedRootless) {
-      violations.push(
-        finding(
-          'PRODUCTION_SERVICE_DOCKER_SOCKET',
-          'docker-compose.production.yml',
-          isGateway
-            ? `${name} must not mount or access the Docker socket.`
-            : `${name} may use only a dedicated rootless daemon socket under /run/user/<uid>/; root-equivalent Docker socket access is forbidden.`
-        )
-      );
-    }
+    violations.push(
+      finding(
+        'PRODUCTION_SERVICE_DOCKER_SOCKET',
+        'docker-compose.production.yml',
+        `${name} must not reference a Docker socket in the canonical production stack. Enable container execution explicitly with docker-compose.agent-sandbox-socket.yml and a dedicated rootless daemon.`
+      )
+    );
   }
 
   const mounts = volumeItems(expanded.text).map(parseVolumeItem);
@@ -723,10 +730,18 @@ export function checkProductionCompose(source) {
   }
 
   if (!Object.hasOwn(services, 'agent-sandbox')) {
-    skipped.push('agent-sandbox Compose block is absent; its isolation rules apply when it is added.');
+    skipped.push(
+      'agent-sandbox Compose block is absent; its isolation rules apply when it is added.'
+    );
   } else {
     violations.push(
-      ...checkComposeService('agent-sandbox', services['agent-sandbox'], anchors, false, volumeNames)
+      ...checkComposeService(
+        'agent-sandbox',
+        services['agent-sandbox'],
+        anchors,
+        false,
+        volumeNames
+      )
     );
   }
 
@@ -771,7 +786,8 @@ function staticString(node) {
 }
 
 function propertyName(node) {
-  if (ts.isIdentifier(node) || ts.isStringLiteral(node) || ts.isNumericLiteral(node)) return node.text;
+  if (ts.isIdentifier(node) || ts.isStringLiteral(node) || ts.isNumericLiteral(node))
+    return node.text;
   if (ts.isComputedPropertyName(node)) return staticString(node.expression);
   return null;
 }
@@ -779,7 +795,11 @@ function propertyName(node) {
 function isProcessEnvExpression(node) {
   if (ts.isParenthesizedExpression(node)) return isProcessEnvExpression(node.expression);
   if (ts.isPropertyAccessExpression(node)) {
-    return node.name.text === 'env' && ts.isIdentifier(node.expression) && node.expression.text === 'process';
+    return (
+      node.name.text === 'env' &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'process'
+    );
   }
   if (ts.isElementAccessExpression(node)) {
     return (
@@ -819,10 +839,15 @@ export function checkBoardSource(relativePath, source) {
     } else if (
       ts.isCallExpression(node) &&
       ((node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments[0]) ||
-        (ts.isIdentifier(node.expression) && node.expression.text === 'require' && node.arguments[0]))
+        (ts.isIdentifier(node.expression) &&
+          node.expression.text === 'require' &&
+          node.arguments[0]))
     ) {
       checkModule(node, node.arguments[0]);
-    } else if (ts.isImportEqualsDeclaration(node) && ts.isExternalModuleReference(node.moduleReference)) {
+    } else if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference)
+    ) {
       checkModule(node, node.moduleReference.expression);
     } else if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
       checkModule(node, node.argument.literal);
@@ -848,7 +873,11 @@ export function checkBoardSource(relativePath, source) {
       for (const element of node.name.elements) {
         const name = propertyName(element.propertyName ?? element.name);
         if (name?.startsWith('MW_AI_')) {
-          report(element, 'BOARD_MW_AI_ENV_ACCESS', `Board must not destructure process.env.${name}.`);
+          report(
+            element,
+            'BOARD_MW_AI_ENV_ACCESS',
+            `Board must not destructure process.env.${name}.`
+          );
         }
       }
     }
@@ -908,7 +937,9 @@ function statementContainsReturn(node) {
 export function checkCloudEgressClassification(source) {
   const file = 'packages/ai-runtime/src/classification-router.ts';
   if (source === null || source === undefined) {
-    return [finding('MISSING_CLASSIFICATION_ROUTER', file, 'The classification router is required.')];
+    return [
+      finding('MISSING_CLASSIFICATION_ROUTER', file, 'The classification router is required.'),
+    ];
   }
   const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   let target = null;
@@ -1002,7 +1033,9 @@ async function walkTree(rootDir, relativeRoot = '') {
       );
       return;
     }
-    directoryEntries.sort((left, right) => (left.name < right.name ? -1 : left.name > right.name ? 1 : 0));
+    directoryEntries.sort((left, right) =>
+      left.name < right.name ? -1 : left.name > right.name ? 1 : 0
+    );
     for (const entry of directoryEntries) {
       const relativePath = relativeDirectory ? `${relativeDirectory}/${entry.name}` : entry.name;
       entries.push({
@@ -1074,7 +1107,10 @@ export async function evaluateCloudAgentInvariants({ rootDir = defaultRoot } = {
   const provenanceViolations = [
     ...(upstream.error ? [readFinding(`${VENDOR_ROOT}/UPSTREAM.json`, upstream.error)] : []),
     ...(license.error ? [readFinding(`${VENDOR_ROOT}/LICENSE`, license.error)] : []),
-    ...checkVendorProvenance(upstream.error ? null : upstream.text, license.error ? null : license.text),
+    ...checkVendorProvenance(
+      upstream.error ? null : upstream.text,
+      license.error ? null : license.text
+    ),
   ];
   addCheck('vendor-provenance', provenanceViolations);
 
@@ -1090,13 +1126,17 @@ export async function evaluateCloudAgentInvariants({ rootDir = defaultRoot } = {
   const workspace = await readText(resolvedRoot, 'pnpm-workspace.yaml');
   addCheck(
     'pnpm-workspace',
-    workspace.error ? [readFinding('pnpm-workspace.yaml', workspace.error)] : checkWorkspaceExclusion(workspace.text)
+    workspace.error
+      ? [readFinding('pnpm-workspace.yaml', workspace.error)]
+      : checkWorkspaceExclusion(workspace.text)
   );
 
   const dockerIgnore = await readText(resolvedRoot, '.dockerignore');
   addCheck(
     'dockerignore',
-    dockerIgnore.error ? [readFinding('.dockerignore', dockerIgnore.error)] : checkDockerIgnore(dockerIgnore.text)
+    dockerIgnore.error
+      ? [readFinding('.dockerignore', dockerIgnore.error)]
+      : checkDockerIgnore(dockerIgnore.text)
   );
 
   const compose = await readText(resolvedRoot, 'docker-compose.production.yml');
@@ -1112,7 +1152,9 @@ export async function evaluateCloudAgentInvariants({ rootDir = defaultRoot } = {
   const boardTree = await walkTree(resolvedRoot, boardRoot);
   const boardViolations = [...boardTree.errors];
   if (boardTree.missingRoot) {
-    boardViolations.push(finding('MISSING_BOARD_SOURCE', boardRoot, 'Board source must be inspected.'));
+    boardViolations.push(
+      finding('MISSING_BOARD_SOURCE', boardRoot, 'Board source must be inspected.')
+    );
   }
   for (const entry of boardTree.entries) {
     if (!entry.file || !shouldScanProductionSource(entry.relativePath)) continue;

@@ -279,14 +279,12 @@ services:
       AGENT_SANDBOX_HOST: 0.0.0.0
       AGENT_SANDBOX_PORT: 3020
       AGENT_SANDBOX_TOKEN: ${AGENT_SANDBOX_TOKEN:?Set a private jobs-worker to agent-sandbox token}
-      AGENT_SANDBOX_DOCKER_SOCKET: ${AGENT_SANDBOX_DOCKER_SOCKET:-/run/user/1000/docker.sock}
       AGENT_SANDBOX_DATA_DIR: /var/lib/agent-sandbox
+    # No Docker socket by default: the sandbox runs with a fail-closed executor.
+    # To enable isolated container execution, explicitly add the override file
+    # docker-compose.agent-sandbox-socket.yml with a dedicated rootless daemon.
     volumes:
       - agent_sandbox_data:/var/lib/agent-sandbox
-      - type: bind
-        source: ${AGENT_SANDBOX_DOCKER_SOCKET:-/run/user/1000/docker.sock}
-        target: /run/user/1000/docker.sock
-        read_only: true
     deploy:
       resources:
         limits:

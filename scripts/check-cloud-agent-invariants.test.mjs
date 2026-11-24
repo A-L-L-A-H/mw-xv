@@ -65,7 +65,10 @@ test('forbidden vendored runtime/build paths are classified', () => {
   assert.equal(classifyForbiddenVendorPath('client/src/data/agent-tools.json'), null);
   assert.equal(classifyForbiddenVendorPath('LICENSE'), null);
 
-  const violations = findForbiddenVendoredPaths(['server/data/app.db', 'client/src/data/agent-tools.json']);
+  const violations = findForbiddenVendoredPaths([
+    'server/data/app.db',
+    'client/src/data/agent-tools.json',
+  ]);
   assert.equal(violations.length, 1);
   assert.equal(violations[0].code, 'SQLITE_RUNTIME_DATA');
 });
@@ -101,17 +104,13 @@ const COMPOSE = `services:
     build: ./apps/agent-sandbox
     volumes:
       - agent_sandbox_data:/var/lib/agent-sandbox
-      - type: bind
-        source: \${AGENT_SANDBOX_DOCKER_SOCKET:-/run/user/1000/docker.sock}
-        target: /run/user/1000/docker.sock
-        read_only: true
 volumes:
   freellmapi_data:
     name: moonwitness-freellmapi-data
   agent_sandbox_data:
 `;
 
-test('production Compose accepts internal services with named volume and rootless socket', () => {
+test('production Compose accepts internal services with named volumes and no Docker socket', () => {
   const result = checkProductionCompose(COMPOSE);
   assert.deepEqual(result.violations, []);
 });
@@ -126,11 +125,26 @@ test('production Compose rejects published gateway or sandbox ports', () => {
   );
 });
 
-test('production Compose rejects root-equivalent Docker socket and host repository mounts', () => {
-  const rootSocket = COMPOSE.replaceAll('/run/user/1000/docker.sock', '/var/run/docker.sock');
-  const rootCodes = codes(checkProductionCompose(rootSocket).violations);
-  assert.ok(rootCodes.includes('PRODUCTION_SERVICE_DOCKER_SOCKET'));
-  assert.ok(rootCodes.includes('PRODUCTION_SERVICE_HOST_MOUNT'));
+test('production Compose rejects any Docker socket and host repository mounts', () => {
+  const rootlessSocket = COMPOSE.replace(
+    '      - agent_sandbox_data:/var/lib/agent-sandbox',
+    '      - agent_sandbox_data:/var/lib/agent-sandbox\n      - type: bind\n        source: /run/user/1000/docker.sock\n        target: /run/user/1000/docker.sock\n        read_only: true'
+  );
+  assert.ok(
+    codes(checkProductionCompose(rootlessSocket).violations).includes(
+      'PRODUCTION_SERVICE_DOCKER_SOCKET'
+    )
+  );
+
+  const rootSocket = COMPOSE.replace(
+    '      - agent_sandbox_data:/var/lib/agent-sandbox',
+    '      - agent_sandbox_data:/var/lib/agent-sandbox\n      - type: bind\n        source: /var/run/docker.sock\n        target: /var/run/docker.sock\n        read_only: true'
+  );
+  assert.ok(
+    codes(checkProductionCompose(rootSocket).violations).includes(
+      'PRODUCTION_SERVICE_DOCKER_SOCKET'
+    )
+  );
 
   const hostMount = COMPOSE.replace(
     '      - agent_sandbox_data:/var/lib/agent-sandbox',
@@ -148,7 +162,9 @@ test('production Compose requires the FreeLLMAPI data volume', () => {
   );
   const undeclared = COMPOSE.replace('    name: moonwitness-freellmapi-data\n', '');
   assert.ok(
-    codes(checkProductionCompose(undeclared).violations).includes('FREELMAPI_DATA_VOLUME_UNDECLARED')
+    codes(checkProductionCompose(undeclared).violations).includes(
+      'FREELMAPI_DATA_VOLUME_UNDECLARED'
+    )
   );
 });
 
@@ -180,12 +196,8 @@ test('FreeLLMAPI must be classified as cloud egress before deployment-zone overr
   if (deploymentZone !== undefined) return deploymentZone === 'cloud';
   return provider.kind === 'openai';
 }`;
-  assert.ok(
-    codes(checkCloudEgressClassification(missing)).includes('FREELMAPI_NOT_CLOUD_EGRESS')
-  );
-  assert.ok(
-    codes(checkCloudEgressClassification(null)).includes('MISSING_CLASSIFICATION_ROUTER')
-  );
+  assert.ok(codes(checkCloudEgressClassification(missing)).includes('FREELMAPI_NOT_CLOUD_EGRESS'));
+  assert.ok(codes(checkCloudEgressClassification(null)).includes('MISSING_CLASSIFICATION_ROUTER'));
 });
 
 test('retired hard-coded cloud-adapter token is detected', () => {
@@ -216,7 +228,9 @@ test('gate CLI reports success and structured JSON failures', async () => {
 });
 
 test('evaluateCloudAgentInvariants inspects a temporary tree fail-closed', async () => {
-  const result = await evaluateCloudAgentInvariants({ rootDir: '/tmp/mw-nonexistent-cloud-agent-root' });
+  const result = await evaluateCloudAgentInvariants({
+    rootDir: '/tmp/mw-nonexistent-cloud-agent-root',
+  });
   assert.equal(result.ok, false);
   assert.ok(result.violationCount >= 1);
   assert.ok(codes(result.violations).includes('MISSING_REQUIRED_FILE'));

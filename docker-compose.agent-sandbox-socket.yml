@@ -1,0 +1,24 @@
+# OPT-IN OVERRIDE — agent-sandbox Docker execution
+#
+# WARNING: granting a container access to a Docker socket can be equivalent to
+# granting root on the host. Use this file ONLY with a dedicated rootless Docker
+# daemon that is isolated from the host daemon, never with /var/run/docker.sock.
+#
+# Usage:
+#   docker compose --env-file .env.production \
+#     -f docker-compose.production.yml \
+#     -f docker-compose.agent-sandbox-socket.yml up -d
+#
+# AGENT_SANDBOX_DOCKER_SOCKET must point to a socket under /run/user/<uid>/.
+# The sandbox itself rejects root-equivalent socket paths.
+
+services:
+  agent-sandbox:
+    environment:
+      AGENT_SANDBOX_DOCKER_SOCKET: ${AGENT_SANDBOX_DOCKER_SOCKET:?Set a dedicated rootless Docker socket}
+    volumes:
+      - agent_sandbox_data:/var/lib/agent-sandbox
+      - type: bind
+        source: ${AGENT_SANDBOX_DOCKER_SOCKET:?Set a dedicated rootless Docker socket}
+        target: /run/user/1000/docker.sock
+        read_only: true

@@ -6,6 +6,7 @@ import type {
   SandboxContainerSpec,
   SandboxExecutor,
   SandboxExecOptions,
+  WorkspaceEngine,
 } from './contract.js';
 import {
   DockerApiError,
@@ -121,10 +122,7 @@ function record(value: unknown): Record<string, unknown> {
     : {};
 }
 
-export function assertContainerSecurity(
-  spec: SandboxContainerSpec,
-  inspect: DockerInspect
-): void {
+export function assertContainerSecurity(spec: SandboxContainerSpec, inspect: DockerInspect): void {
   const host = record(inspect.HostConfig);
   const config = record(inspect.Config);
   const labels = record(config.Labels);
@@ -172,7 +170,11 @@ export function assertContainerSecurity(
     if (!env.includes(required)) forbidden('Container environment isolation is incomplete');
   }
   for (const entry of env) {
-    if (/^(?:AWS_|AZURE_|GOOGLE_|MW_AI_|OPENAI_|ANTHROPIC_|.*(?:SECRET|TOKEN|PASSWORD|CREDENTIAL)).*/iu.test(entry)) {
+    if (
+      /^(?:AWS_|AZURE_|GOOGLE_|MW_AI_|OPENAI_|ANTHROPIC_|.*(?:SECRET|TOKEN|PASSWORD|CREDENTIAL)).*/iu.test(
+        entry
+      )
+    ) {
       forbidden('Container environment contains a prohibited host secret');
     }
   }
@@ -278,11 +280,15 @@ export class DockerExecutor implements SandboxExecutor {
 
     let created: { Id?: unknown };
     try {
-      created = await this.api<{ Id?: unknown }>('POST', dockerQuery('/containers/create', { name: body.name ?? '' }), {
-        body,
-        signal,
-        timeoutMs: 30_000,
-      });
+      created = await this.api<{ Id?: unknown }>(
+        'POST',
+        dockerQuery('/containers/create', { name: body.name ?? '' }),
+        {
+          body,
+          signal,
+          timeoutMs: 30_000,
+        }
+      );
     } catch (error) {
       if (!(error instanceof DockerApiError) || error.statusCode !== 409) throw error;
       existing = await this.inspectNamed(body.name ?? '', signal);
@@ -291,7 +297,10 @@ export class DockerExecutor implements SandboxExecutor {
     const id = containerId(created.Id);
     const inspect = await this.inspect(id, signal);
     assertContainerSecurity(spec, inspect);
-    await this.api('POST', dockerQuery(`/containers/${id}/start`, {}), { signal, timeoutMs: 30_000 });
+    await this.api('POST', dockerQuery(`/containers/${id}/start`, {}), {
+      signal,
+      timeoutMs: 30_000,
+    });
     return id;
   }
 
@@ -344,20 +353,13 @@ export class DockerExecutor implements SandboxExecutor {
         }
       );
       execId = containerId(exec.Id);
-      await this.api(
-        'POST',
-        dockerQuery(`/exec/${execId}/start`, {}),
-        {
-          body: { Detach: false, Tty: false },
-          signal: controller.signal,
-          timeoutMs: options.timeoutMs + 5_000,
-          maxResponseBytes: Math.min(
-            16 * 1024 * 1024,
-            options.maxOutputBytes * 16 + 65_536
-          ),
-          onData: (chunk) => decoder.push(chunk),
-        }
-      );
+      await this.api('POST', dockerQuery(`/exec/${execId}/start`, {}), {
+        body: { Detach: false, Tty: false },
+        signal: controller.signal,
+        timeoutMs: options.timeoutMs + 5_000,
+        maxResponseBytes: Math.min(16 * 1024 * 1024, options.maxOutputBytes * 16 + 65_536),
+        onData: (chunk) => decoder.push(chunk),
+      });
       decoder.finish();
     } catch (error) {
       if (options.signal?.aborted) cancelled = true;
@@ -383,7 +385,11 @@ export class DockerExecutor implements SandboxExecutor {
         dockerQuery(`/exec/${execId}/json`, {}),
         { timeoutMs: 5_000, maxResponseBytes: 64 * 1024 }
       );
-      if (exec.Running !== false || typeof exec.ExitCode !== 'number' || !Number.isInteger(exec.ExitCode)) {
+      if (
+        exec.Running !== false ||
+        typeof exec.ExitCode !== 'number' ||
+        !Number.isInteger(exec.ExitCode)
+      ) {
         throw unavailable('Docker exec did not terminate with a valid exit code', exec.Running);
       }
       exitCode = exec.ExitCode;
@@ -532,6 +538,41 @@ function containerId(value: unknown): string {
 }
 
 /** Exported for deterministic fake-daemon tests. */
+/**
+ * Fail-closed executor used when no dedicated rootless Docker socket is
+ * configured. The sandbox still serves health and read-only workspace
+ * inspection, but every container operation is rejected with EXECUTOR_UNAVAILABLE.
+ */
+export class DisabledSandboxExecutor implements SandboxExecutor {
+  readonly engine: WorkspaceEngine = 'rootless-docker';
+
+  private reject(): never {
+    unavailable(
+      'Docker execution is disabled: mount a dedicated rootless daemon socket via docker-compose.agent-sandbox-socket.yml'
+    );
+  }
+
+  async initialize(): Promise<void> {
+    // No external dependency to initialize when execution is disabled.
+  }
+
+  async ensureContainer(): Promise<string> {
+    return this.reject();
+  }
+
+  async execute(): Promise<SandboxCommandResult> {
+    return this.reject();
+  }
+
+  async removeContainer(): Promise<void> {
+    return this.reject();
+  }
+
+  async reconcile(): Promise<readonly string[]> {
+    return [];
+  }
+}
+
 export function multiplexDockerExec(stdout: string, stderr = ''): Buffer {
   const frames: Buffer[] = [];
   for (const [stream, text] of [

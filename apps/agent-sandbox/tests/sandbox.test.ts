@@ -57,7 +57,11 @@ class FakeExecutor implements SandboxExecutor {
     this.containers.add(CONTAINER_ID);
     return CONTAINER_ID;
   }
-  async execute(_id: string, command: readonly string[], _options: SandboxExecOptions): Promise<SandboxCommandResult> {
+  async execute(
+    _id: string,
+    command: readonly string[],
+    _options: SandboxExecOptions
+  ): Promise<SandboxCommandResult> {
     this.commands.push([...command]);
     return okResult(this.stdoutFor(command));
   }
@@ -122,7 +126,10 @@ test('workspace paths reject traversal, secrets and non-allowlisted checks', () 
   assert.throws(() => assertPathAllowed('secrets/key', ['src']));
   assert.doesNotThrow(() => assertPathAllowed('src/app.ts', ['src']));
   assert.throws(() => validateExecuteParams({ runId: 'run-1', check: 'bash' }));
-  assert.deepEqual(validateExecuteParams({ runId: 'run-1', check: 'node-test' }).check, 'node-test');
+  assert.deepEqual(
+    validateExecuteParams({ runId: 'run-1', check: 'node-test' }).check,
+    'node-test'
+  );
 });
 
 test('create params require a pinned digest image and bounded resources', () => {
@@ -153,9 +160,7 @@ test('container create body enforces rootless isolation and exactly one workspac
   assert.deepEqual(body.HostConfig.CapDrop, ['ALL']);
   assert.equal(body.HostConfig.Privileged, false);
   assert.equal(body.HostConfig.Memory, body.HostConfig.MemorySwap);
-  assert.deepEqual(body.HostConfig.Binds, [
-    `${spec.workspaceHostPath}:/workspace:rw`,
-  ]);
+  assert.deepEqual(body.HostConfig.Binds, [`${spec.workspaceHostPath}:/workspace:rw`]);
   assertContainerSecurity(spec, {
     Config: {
       Image: spec.imageRef,
@@ -169,7 +174,12 @@ test('container create body enforces rootless isolation and exactly one workspac
   });
   assert.throws(() =>
     assertContainerSecurity(spec, {
-      Config: { Image: spec.imageRef, Env: body.Env, WorkingDir: '/workspace', Labels: body.Labels },
+      Config: {
+        Image: spec.imageRef,
+        Env: body.Env,
+        WorkingDir: '/workspace',
+        Labels: body.Labels,
+      },
       HostConfig: { ...body.HostConfig, Privileged: true },
       Mounts: [],
     })
@@ -234,8 +244,7 @@ test('workspace lifecycle creates, diffs, commits, rolls back and destroys witho
 test('diff rejects paths outside the approved scope', async () => {
   const { dataDir, snapshotId } = await fixture();
   const executor = new FakeExecutor();
-  executor.stdoutFor = (command) =>
-    command.join(' ').startsWith('git status') ? '?? .env\0' : '';
+  executor.stdoutFor = (command) => (command.join(' ').startsWith('git status') ? '?? .env\0' : '');
   const service = new WorkspaceService({ dataDir, executor });
   await service.createWorkspace(createParams(snapshotId));
   await assert.rejects(() => service.diffWorkspace({ runId: 'run-1' }));
@@ -269,19 +278,28 @@ test('RPC server requires a bearer token and dispatches typed methods', async ()
       body: JSON.stringify({ id: '2', method: 'workspace.shell', params: {} }),
     });
     assert.equal(unknown.status, 400);
-    assert.equal((await unknown.json() as { error: { code: string } }).error.code, 'INVALID_REQUEST');
+    assert.equal(
+      ((await unknown.json()) as { error: { code: string } }).error.code,
+      'INVALID_REQUEST'
+    );
 
     const created = await fetch(`${url}/rpc`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-      body: JSON.stringify({ id: '3', method: 'workspace.create', params: createParams(snapshotId) }),
+      body: JSON.stringify({
+        id: '3',
+        method: 'workspace.create',
+        params: createParams(snapshotId),
+      }),
     });
     assert.equal(created.status, 200);
-    const payload = await created.json() as { ok: boolean; result: { status: string } };
+    const payload = (await created.json()) as { ok: boolean; result: { status: string } };
     assert.equal(payload.ok, true);
     assert.equal(payload.result.status, 'active');
   } finally {
-    await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+    await new Promise<void>((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve()))
+    );
   }
 });
 
@@ -294,11 +312,14 @@ test('config fails closed without a strong token or with a root socket default',
   });
   assert.equal(config.host, '127.0.0.1');
   assert.equal(config.port, 3020);
+
+  // No socket means the production default: health/read-only work, execution fails closed.
+  const withoutSocket = loadSandboxConfig({ AGENT_SANDBOX_TOKEN: 'z'.repeat(48) });
+  assert.equal(withoutSocket.dockerSocket, undefined);
 });
 
 test('local contract mirrors ai-runtime workspace contract limits', async () => {
-  const { WORKSPACE_LIMITS } = await import(
-    '../../../packages/ai-runtime/src/workspace-contract.js'
-  );
+  const { WORKSPACE_LIMITS } =
+    await import('../../../packages/ai-runtime/src/workspace-contract.js');
   assert.deepEqual(LOCAL_LIMITS, WORKSPACE_LIMITS);
 });
