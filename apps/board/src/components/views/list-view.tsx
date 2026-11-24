@@ -913,8 +913,10 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                         }
                         className="select-none px-4 py-3 text-xs transition-colors hover:bg-primary/25"
                       >
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleSort(col.name)}
                           className="group flex w-full items-center gap-1.5 text-left font-inherit text-inherit focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--mw-focus)]"
                           aria-label={`Sort by ${col.label}`}
@@ -941,7 +943,7 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                               className="size-3 text-ink-faint opacity-30 group-hover:opacity-100"
                             />
                           )}
-                        </button>
+                        </Button>
                       </TableHeader>
                     );
                   })}
