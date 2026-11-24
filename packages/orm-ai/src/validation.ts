@@ -13,6 +13,7 @@ import { WorkflowInstance } from '@moonwitness/orm-workflow';
 import {
   CAPABILITY_PATTERN,
   DATA_CLASSIFICATIONS,
+  FREELMAPI_COMPOSE_ORIGIN,
   PROVIDER_KINDS,
   RISK_TIERS,
   SECRET_REF_PATTERN,
@@ -131,14 +132,63 @@ export function assertValidProviderSecretRef(secretRef: string): void {
   }
 }
 
+/**
+ * FreeLLMAPI is a private-network inference gateway. Only its exact approved
+ * origin is accepted: no path, query, fragment, credentials, alternate port,
+ * or user-supplied redirect target. The default origin is the Compose service
+ * address; operators may extend the policy with explicitly approved addresses.
+ */
+export function isApprovedFreellmOrigin(
+  endpointUrl: string | null | undefined,
+  approvedOrigins: readonly string[] = [FREELMAPI_COMPOSE_ORIGIN]
+): boolean {
+  if (typeof endpointUrl !== 'string' || endpointUrl.length > 2048) return false;
+  let parsed: URL;
+  try {
+    parsed = new URL(endpointUrl);
+  } catch {
+    return false;
+  }
+  if (
+    (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') ||
+    parsed.username ||
+    parsed.password ||
+    parsed.search ||
+    parsed.hash ||
+    (parsed.pathname !== '' && parsed.pathname !== '/')
+  ) {
+    return false;
+  }
+  return approvedOrigins.some((origin) => {
+    try {
+      const approved = new URL(origin);
+      return (
+        parsed.protocol === approved.protocol &&
+        parsed.hostname.replace(/^\[|\]$/gu, '').toLowerCase() ===
+          approved.hostname.replace(/^\[|\]$/gu, '').toLowerCase() &&
+        parsed.port === approved.port
+      );
+    } catch {
+      return false;
+    }
+  });
+}
+
 export function isValidProviderEndpoint(
   kind: ProviderKind,
-  endpointUrl: string | null | undefined
+  endpointUrl: string | null | undefined,
+  approvedFreellmOrigins: readonly string[] = [FREELMAPI_COMPOSE_ORIGIN]
 ): boolean {
   if (endpointUrl === undefined || endpointUrl === null || endpointUrl === '') {
-    return kind === 'mock' || kind === 'openai' || kind === 'anthropic';
+    return (
+      kind === 'mock' ||
+      kind === 'openai' ||
+      kind === 'anthropic' ||
+      kind === 'freellmapi'
+    );
   }
   if (typeof endpointUrl !== 'string' || endpointUrl.length > 2048) return false;
+  if (kind === 'freellmapi') return isApprovedFreellmOrigin(endpointUrl, approvedFreellmOrigins);
   let parsed: URL;
   try {
     parsed = new URL(endpointUrl);
@@ -178,11 +228,15 @@ export function isAllowedClassificationRoute(
       (providerClassification === 'local_only' || providerClassification === 'restricted')
     );
   }
-  // cloud_eligible
+  // cloud_eligible. FreeLLMAPI is cloud egress even though its Compose origin is
+  // private, so it is subject to the same classification rules as public clouds.
   if (isLocalProvider) return true;
-  if (providerKind === 'openai' || providerKind === 'anthropic') {
-    if (providerClassification !== 'cloud_eligible') return false;
-    return allowCloudFallback || providerClassification === 'cloud_eligible';
+  if (
+    providerKind === 'openai' ||
+    providerKind === 'anthropic' ||
+    providerKind === 'freellmapi'
+  ) {
+    return providerClassification === 'cloud_eligible';
   }
   return false;
 }

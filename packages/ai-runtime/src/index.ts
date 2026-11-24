@@ -61,4 +61,6 @@ export * from './redteam-arena.js';
 export * from './a2a-consensus.js';
 export * from './policy-fuzzer.js';
 export * from './sandbox-runner.js';
+export * from './workspace-contract.js';
+export * from './workspace-tools.js';
 export * from './incident-healer.js';

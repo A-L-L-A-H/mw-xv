@@ -21,6 +21,7 @@ import {
   DEFAULT_MAX_RESPONSE_BYTES,
   fetchWithProviderTimeout,
   isLoopbackHostname,
+  matchesApprovedPrivateOrigin,
   parseAndValidateStructuredOutput,
   parseRetryAfterHeaderMs,
   readBoundedResponseText,
@@ -33,6 +34,8 @@ export interface OpenAiAdapterConfig {
   readonly id?: string;
   readonly baseUrl?: string | URL;
   readonly allowLoopbackHttp?: boolean;
+  /** Exact private origins permitted for an internal inference gateway. */
+  readonly approvedPrivateOrigins?: readonly string[];
   readonly secretRef: string;
   readonly secretResolver: SecretResolver;
   readonly organizationId?: string;
@@ -227,6 +230,7 @@ export class OpenAiProviderAdapter implements AiProvider {
 
   private readonly baseUrl: URL;
   private readonly allowLoopbackHttp: boolean;
+  private readonly approvedPrivateOrigins: readonly string[];
   private readonly secretRef: string;
   private readonly secretResolver: SecretResolver;
   private readonly organizationId?: string;
@@ -238,6 +242,7 @@ export class OpenAiProviderAdapter implements AiProvider {
   constructor(config: OpenAiAdapterConfig) {
     this.id = config.id ?? 'openai-default';
     this.allowLoopbackHttp = config.allowLoopbackHttp ?? false;
+    this.approvedPrivateOrigins = config.approvedPrivateOrigins ?? [];
     assertValidSecretRef(config.secretRef, this.id, 'adapter-init');
     this.secretRef = config.secretRef;
     this.secretResolver = config.secretResolver;
@@ -249,6 +254,7 @@ export class OpenAiProviderAdapter implements AiProvider {
 
     this.baseUrl = validateCloudOrEndpointUrl(config.baseUrl ?? 'https://api.openai.com', {
       allowLoopbackHttp: this.allowLoopbackHttp,
+      approvedPrivateOrigins: this.approvedPrivateOrigins,
       providerId: this.id,
       correlationId: 'adapter-init',
     });
@@ -264,10 +270,14 @@ export class OpenAiProviderAdapter implements AiProvider {
   private async ensureEndpointAllowed(correlationId: string): Promise<void> {
     validateCloudOrEndpointUrl(this.baseUrl, {
       allowLoopbackHttp: this.allowLoopbackHttp,
+      approvedPrivateOrigins: this.approvedPrivateOrigins,
       providerId: this.id,
       correlationId,
     });
-    if (!isLoopbackHostname(this.baseUrl.hostname)) {
+    if (
+      !isLoopbackHostname(this.baseUrl.hostname) &&
+      !matchesApprovedPrivateOrigin(this.baseUrl, this.approvedPrivateOrigins)
+    ) {
       await assertPublicDnsResolution(this.baseUrl, {
         providerId: this.id,
         correlationId,

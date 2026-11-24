@@ -1,4 +1,6 @@
 export { manifest } from './manifest.js';
+export * from './agent-run-executor.js';
+export * from './freellmapi-discovery.js';
 export { evolutionHttpPlugin } from './evolution-http.js';
 export { AI_CORPORATION_ROUTE_PREFIXES, aiCorporationHttpPlugin } from './ai-corporation-http.js';
 export { AI_DESKTOP_SYNC_ROUTE_PREFIXES, aiDesktopSyncHttpPlugin } from './ai-desktop-sync-http.js';

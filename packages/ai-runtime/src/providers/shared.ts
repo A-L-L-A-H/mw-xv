@@ -15,10 +15,41 @@ import { ProviderError } from '../types.js';
 
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 export const DEFAULT_MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
+/** Exact origin of the vendored gateway; the adapter appends `/v1` itself. */
+export const FREELMAPI_APPROVED_ORIGIN = 'http://freellmapi:3001';
 
 export function isLoopbackHostname(hostname: string): boolean {
   const normalized = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
   return LOOPBACK_HOSTS.has(normalized);
+}
+
+/** Exact-origin match for explicitly approved private inference gateways. */
+export function matchesApprovedPrivateOrigin(
+  url: URL,
+  approvedOrigins: readonly string[] = [FREELMAPI_APPROVED_ORIGIN]
+): boolean {
+  if (
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash ||
+    (url.pathname !== '' && url.pathname !== '/')
+  ) {
+    return false;
+  }
+  return approvedOrigins.some((origin) => {
+    try {
+      const approved = new URL(origin);
+      return (
+        url.protocol === approved.protocol &&
+        url.hostname.replace(/^\[|\]$/gu, '').toLowerCase() ===
+          approved.hostname.replace(/^\[|\]$/gu, '').toLowerCase() &&
+        url.port === approved.port
+      );
+    } catch {
+      return false;
+    }
+  });
 }
 
 export function validateLoopbackEndpointUrl(
@@ -66,6 +97,7 @@ export function validateCloudOrEndpointUrl(
   value: string | URL,
   options: {
     readonly allowLoopbackHttp?: boolean;
+    readonly approvedPrivateOrigins?: readonly string[];
     readonly providerId: string;
     readonly correlationId?: string;
   }
@@ -86,6 +118,9 @@ export function validateCloudOrEndpointUrl(
 
   if (options.allowLoopbackHttp && isLoopbackHostname(url.hostname)) {
     return validateLoopbackEndpointUrl(url, options.providerId, correlationId);
+  }
+  if (options.approvedPrivateOrigins?.length && matchesApprovedPrivateOrigin(url, options.approvedPrivateOrigins)) {
+    return url;
   }
 
   try {

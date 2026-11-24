@@ -1,6 +1,7 @@
 import { seed, ref } from '@moonwitness/orm';
 import { AccessGroup, GroupMembership, ModelAccess, IrFeatureFlag } from '@moonwitness/orm-base';
 import { WorkflowDefinition } from '@moonwitness/orm-workflow';
+import { FREELMAPI_COMPOSE_ORIGIN } from './models/constants.js';
 import {
   AcceptanceCriterion,
   Agent,
@@ -148,6 +149,23 @@ export const AI_AGENT_WORKFORCE_SEED = [
     max_concurrency: 2,
     rate_limit_rpm: 120,
     notes: 'Deterministic mock provider for local testing; no external API calls.',
+  }),
+  seed(ProviderProfile, 'ai.provider_freellmapi_default', {
+    company: ref('base.company_default'),
+    code: 'freellmapi_default',
+    name: 'FreeLLMAPI Cloud Gateway (default)',
+    kind: 'freellmapi',
+    endpoint_url: FREELMAPI_COMPOSE_ORIGIN,
+    secret_ref: 'MW_AI_FREELLM_KEY',
+    data_classification: 'cloud_eligible',
+    // Default-off with the AI Corporation feature gate. Enabling requires an
+    // operator to discover a real model id from the gateway first.
+    enabled: false,
+    timeout_ms: 30000,
+    max_concurrency: 2,
+    rate_limit_rpm: 120,
+    notes:
+      'Pinned vendored FreeLLMAPI gateway. Private Compose origin but always cloud egress; secret reference only, never a raw key.',
   }),
   seed(ModelProfile, 'ai.model_deterministic_mock_v1', {
     company: ref('base.company_default'),

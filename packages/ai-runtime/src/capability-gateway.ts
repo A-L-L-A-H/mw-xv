@@ -222,6 +222,28 @@ export type GatewayInvokeResult =
       readonly denial: PolicyDenialDetails;
     };
 
+/** Durable acknowledgement of a side-effecting tool call (backed by orm-ai in production). */
+export interface ToolEffectAcknowledgement {
+  readonly key: string;
+  readonly argsDigest: string;
+  readonly output: JsonValue;
+  readonly auditRef: string;
+}
+
+export interface ToolEffectStore {
+  find(key: string): Promise<ToolEffectAcknowledgement | null> | ToolEffectAcknowledgement | null;
+  acknowledge(record: ToolEffectAcknowledgement): Promise<void> | void;
+}
+
+export interface ToolAuditSink {
+  record(entry: PolicyAuditEntry): Promise<void> | void;
+}
+
+export interface ToolQuotaStore {
+  getRunUsage(runId: string, grantId: string): Promise<number> | number;
+  incrementRunUsage(runId: string, grantId: string): Promise<number> | number;
+}
+
 export interface CapabilityGatewayOptions {
   readonly grantStore?: CapabilityGrantStore;
   readonly db?: unknown;
@@ -230,6 +252,16 @@ export interface CapabilityGatewayOptions {
   readonly clock?: Clock;
   readonly defaultMaxCallsPerAgentWindow?: number;
   readonly quotaWindowMs?: number;
+  /** Durable ports replace the in-memory compatibility caches. */
+  readonly effectStore?: ToolEffectStore;
+  readonly auditSink?: ToolAuditSink;
+  readonly quotaStore?: ToolQuotaStore;
+  /**
+   * Compatibility overload that fabricates user/approval context is retained
+   * for existing deterministic tests only. Production workers must pass
+   * `false` and provide real ToolExecutionContext + durable ports.
+   */
+  readonly allowInlineInvocation?: boolean;
 }
 
 const DEFAULT_MAX_INPUT_BYTES = 65_536;
@@ -342,6 +374,11 @@ export class CapabilityGateway {
   private readonly auditLog: PolicyAuditEntry[] = [];
   private readonly defaultMaxCallsPerAgentWindow?: number;
   private readonly quotaWindowMs: number;
+  private readonly effectStore?: ToolEffectStore;
+  private readonly auditSink?: ToolAuditSink;
+  private readonly quotaStore?: ToolQuotaStore;
+  private readonly allowInlineInvocation: boolean;
+  private readonly deniedTools = new Set<string>();
   private auditSeq = 1;
 
   constructor(options: CapabilityGatewayOptions = {}) {
@@ -351,6 +388,19 @@ export class CapabilityGateway {
     this.redactor = options.redactor ?? createRedactor();
     this.defaultMaxCallsPerAgentWindow = options.defaultMaxCallsPerAgentWindow;
     this.quotaWindowMs = options.quotaWindowMs ?? 60_000;
+    this.effectStore = options.effectStore;
+    this.auditSink = options.auditSink;
+    this.quotaStore = options.quotaStore;
+    this.allowInlineInvocation = options.allowInlineInvocation ?? true;
+  }
+
+  /** R4 tools are always denied, even if a caller registers one. */
+  denyTool(name: string): void {
+    this.deniedTools.add(name);
+  }
+
+  private async writeAudit(entry: PolicyAuditEntry): Promise<void> {
+    if (this.auditSink) await this.auditSink.record(entry);
   }
 
   registerTool<TInput extends JsonObject, TOutput extends JsonValue>(
@@ -437,6 +487,7 @@ export class CapabilityGateway {
       reasonCode: params.reasonCode,
       idempotentReplay: false,
     });
+    void this.writeAudit(this.auditLog.at(-1)!);
 
     return {
       allowed: false,
@@ -540,6 +591,11 @@ export class CapabilityGateway {
     maybeContext?: ToolExecutionContext
   ): Promise<GatewayInvokeResult | JsonValue> {
     if (typeof toolNameOrReq === 'object' && toolNameOrReq !== null) {
+      if (!this.allowInlineInvocation) {
+        throw new Error(
+          'Inline capability invocation is disabled; supply a real ToolExecutionContext and durable ports'
+        );
+      }
       const req = toolNameOrReq;
       const args = req.args ?? {};
       const actorId = req.agentId ?? 'inline-agent';
@@ -606,6 +662,17 @@ export class CapabilityGateway {
     const args = maybeArgs ?? {};
     const context = maybeContext!;
     const tool = this.tools.get(toolName);
+    if (this.deniedTools.has(toolName) || tool?.riskTier === 'R4') {
+      return this.recordDenial({
+        code: 'policy_denied',
+        reasonCode: 'R4_ALWAYS_DENIED',
+        message: `Tool "${toolName}" is unconditionally prohibited`,
+        context,
+        toolName,
+        capability: tool?.capability ?? 'unknown.unknown@v1',
+        riskTier: 'R4',
+      });
+    }
     if (!tool) {
       return this.recordDenial({
         code: 'policy_denied',
@@ -836,7 +903,8 @@ export class CapabilityGateway {
       }
 
       const idemKey = `${context.companyId}:${tool.name}:${context.idempotencyKey}`;
-      const existingEntry = this.idempotencyCache.get(idemKey);
+      const existingEntry =
+        (await this.effectStore?.find(idemKey)) ?? this.idempotencyCache.get(idemKey);
       const argsDigest = computeDigest(args);
       if (existingEntry) {
         if (existingEntry.argsDigest !== argsDigest) {
@@ -885,7 +953,10 @@ export class CapabilityGateway {
 
     // 6. Per-run and per-agent window quotas
     const runQuotaKey = `${context.companyId}:${context.runId}:${selectedGrant.grantId}`;
-    const usedInRun = this.runCallCounts.get(runQuotaKey) ?? 0;
+    const usedInRun =
+      (await this.quotaStore?.getRunUsage(context.runId, selectedGrant.grantId)) ??
+      this.runCallCounts.get(runQuotaKey) ??
+      0;
     if (usedInRun + 1 > selectedGrant.maxCallsPerRun) {
       return this.recordDenial({
         code: 'policy_denied',
@@ -918,6 +989,7 @@ export class CapabilityGateway {
     }
 
     this.runCallCounts.set(runQuotaKey, usedInRun + 1);
+    await this.quotaStore?.incrementRunUsage(context.runId, selectedGrant.grantId);
     this.runTotalCalls.set(
       String(context.runId),
       (this.runTotalCalls.get(String(context.runId)) ?? 0) + 1
@@ -982,6 +1054,12 @@ export class CapabilityGateway {
         output: redactedOutput,
         auditRef,
       });
+      await this.effectStore?.acknowledge({
+        key: idemKey,
+        argsDigest: computeDigest(args),
+        output: redactedOutput,
+        auditRef,
+      });
     }
 
     this.auditLog.push({
@@ -1001,6 +1079,7 @@ export class CapabilityGateway {
       reasonCode: 'ALLOWED',
       idempotentReplay: false,
     });
+    void this.writeAudit(this.auditLog.at(-1)!);
 
     return {
       allowed: true,

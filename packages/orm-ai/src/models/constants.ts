@@ -6,8 +6,11 @@ export const UUID_PATTERN =
   '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$';
 export const SOURCE_MODEL_PATTERN = '^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+$';
 
-export const PROVIDER_KINDS = ['mock', 'ollama', 'openai', 'anthropic'] as const;
+export const PROVIDER_KINDS = ['mock', 'ollama', 'openai', 'anthropic', 'freellmapi'] as const;
 export type ProviderKind = (typeof PROVIDER_KINDS)[number];
+
+/** Origin-only Compose address of the vendored gateway. Never a path or credential. */
+export const FREELMAPI_COMPOSE_ORIGIN = 'http://freellmapi:3001';
 
 export const DATA_CLASSIFICATIONS = ['local_only', 'cloud_eligible', 'restricted'] as const;
 export type DataClassification = (typeof DATA_CLASSIFICATIONS)[number];
