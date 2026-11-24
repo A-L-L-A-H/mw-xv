@@ -31,6 +31,7 @@ export interface SpritePlayerProps {
   readonly pauseOffscreen?: boolean;
   readonly className?: string;
   readonly style?: CSSProperties;
+  readonly frameStyle?: CSSProperties;
   readonly onFrameChange?: (frameIndex: number) => void;
 }
 
@@ -97,6 +98,7 @@ export function SpritePlayer({
   pauseOffscreen = true,
   className,
   style,
+  frameStyle,
   onFrameChange,
 }: SpritePlayerProps) {
   const harness = getActiveSceneHarness();
@@ -250,6 +252,7 @@ export function SpritePlayer({
         height={scaledHeight}
         decoding="async"
         style={{
+          ...frameStyle,
           display: 'block',
           width: '100%',
           height: '100%',

@@ -78,6 +78,8 @@ const IDLE_CLIP: SpriteClipMetadata = {
   height: 160,
 };
 
+const CREW_SPRITE_FILTER = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='k' color-interpolation-filters='sRGB'%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -3 -3 -3 8.35 0'/%3E%3C/filter%3E%3C/svg%3E#k")`;
+
 /**
  * The in-scene crew plane reuses the canonical idle clip but keeps its own DOM hook so the
  * standalone sprite specimen (data-sprite-clip="crew-01-idle") stays independently testable.
@@ -258,6 +260,7 @@ export function SceneLab() {
             label="crew-01 idle in Moon City"
             playing={spritePlaying}
             reducedMotion={crewReducedMotion}
+            frameStyle={{ filter: CREW_SPRITE_FILTER }}
           />
         </div>
         {showGuides && (

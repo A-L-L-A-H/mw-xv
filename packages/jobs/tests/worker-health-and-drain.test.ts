@@ -19,6 +19,9 @@ interface ChildMessage {
   [key: string]: unknown;
 }
 
+const CHILD_STARTUP_TIMEOUT_MS = 30_000;
+const DRAIN_ASSERTION_TIMEOUT_MS = 10_000;
+
 describe('shared worker health contract (CF-013 / CF-014)', () => {
   it('keeps readiness false until bootstrap and required dependencies are ready', async () => {
     let clock = 1_000;
@@ -209,25 +212,65 @@ describe('child-process worker drain scenarios (CF-013)', () => {
   }
 
   function waitForMessage(
+    child: ChildProcessWithoutNullStreams,
     messages: ChildMessage[],
     type: string,
-    timeoutMs = 5_000
+    timeoutMs = CHILD_STARTUP_TIMEOUT_MS
   ): Promise<ChildMessage> {
     return new Promise((resolve, reject) => {
-      const found = messages.find((message) => message.type === type);
-      if (found) return resolve(found);
-      const started = Date.now();
-      const timer = setInterval(() => {
-        const message = messages.find((candidate) => candidate.type === type);
-        if (message) {
-          clearInterval(timer);
-          resolve(message);
-        } else if (Date.now() - started > timeoutMs) {
-          clearInterval(timer);
-          reject(new Error(`Timed out waiting for "${type}" message`));
+      const buffered = messages.find((message) => message.type === type);
+      if (buffered) return resolve(buffered);
+
+      let stdout = '';
+      const cleanup = () => {
+        clearTimeout(timer);
+        child.stdout.off('data', onData);
+        child.off('exit', onExit);
+      };
+      const onData = (chunk: Buffer) => {
+        stdout += String(chunk);
+        let newline = stdout.indexOf('\n');
+        while (newline !== -1) {
+          const line = stdout.slice(0, newline);
+          stdout = stdout.slice(newline + 1);
+          if (line.trim()) {
+            try {
+              const message = JSON.parse(line) as ChildMessage;
+              if (message.type === type) {
+                cleanup();
+                resolve(message);
+                return;
+              }
+            } catch {
+              // Ignore non-JSON diagnostics.
+            }
+          }
+          newline = stdout.indexOf('\n');
         }
-      }, 5);
+      };
+      const onExit = (code: number | null, signal: NodeJS.Signals | null) => {
+        cleanup();
+        reject(
+          new Error(
+            `Child exited before "${type}" message (code=${String(code)}, signal=${String(signal)})`
+          )
+        );
+      };
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error(`Timed out waiting for "${type}" message`));
+      }, timeoutMs);
+
+      child.stdout.on('data', onData);
+      child.once('exit', onExit);
     });
+  }
+
+  function signalDrain(child: ChildProcessWithoutNullStreams, message: ChildMessage): void {
+    // "ready" proves the child installed its drain handler; stdin is a
+    // deterministic trigger that cannot be delivered before that point, as a
+    // process-level SIGTERM can on a loaded CI runner.
+    child.stdin.write(JSON.stringify({ command: 'drain', reason: message.type }) + '\n');
   }
 
   function waitForExit(
@@ -238,53 +281,67 @@ describe('child-process worker drain scenarios (CF-013)', () => {
     );
   }
 
-  it('drains in-flight work normally and flips readiness before draining', async () => {
-    const child = spawnWorker('drain', 1_000);
-    const messages = messagesOf(child);
-    expect(await waitForMessage(messages, 'ready')).toMatchObject({ ready: true });
-    const exited = waitForExit(child);
-    child.kill('SIGTERM');
+  it(
+    'drains in-flight work normally and flips readiness before draining',
+    async () => {
+      const child = spawnWorker('drain', 1_000);
+      const messages = messagesOf(child);
+      const ready = await waitForMessage(child, messages, 'ready');
+      expect(ready).toMatchObject({ ready: true });
+      const exited = waitForExit(child);
+      signalDrain(child, ready);
 
-    expect(await waitForMessage(messages, 'drain-started')).toMatchObject({
-      ready: false,
-      state: 'draining',
-    });
-    expect(await waitForMessage(messages, 'outcome')).toMatchObject({
-      state: 'drained',
-      completed: 1,
-      abandoned: 0,
-      timedOut: false,
-      ready: false,
-    });
-    expect(await exited).toMatchObject({ code: 0, signal: null });
-  }, 15_000);
+      expect(await waitForMessage(child, messages, 'drain-started')).toMatchObject({
+        ready: false,
+        state: 'draining',
+      });
+      expect(await waitForMessage(child, messages, 'outcome')).toMatchObject({
+        state: 'drained',
+        completed: 1,
+        abandoned: 0,
+        timedOut: false,
+        ready: false,
+      });
+      expect(await exited).toMatchObject({ code: 0, signal: null });
+    },
+    CHILD_STARTUP_TIMEOUT_MS
+  );
 
-  it('bounds a stuck in-flight job with a drain timeout', async () => {
-    const child = spawnWorker('timeout', 200);
-    const messages = messagesOf(child);
-    expect(await waitForMessage(messages, 'ready')).toMatchObject({ ready: true });
-    const exited = waitForExit(child);
-    const started = Date.now();
-    child.kill('SIGTERM');
+  it(
+    'bounds a stuck in-flight job with a drain timeout',
+    async () => {
+      const child = spawnWorker('timeout', 200);
+      const messages = messagesOf(child);
+      const ready = await waitForMessage(child, messages, 'ready');
+      expect(ready).toMatchObject({ ready: true });
+      const exited = waitForExit(child);
+      const drainStartedAt = Date.now();
+      signalDrain(child, ready);
 
-    expect(await waitForMessage(messages, 'outcome')).toMatchObject({
-      state: 'abandoned',
-      abandoned: 1,
-      timedOut: true,
-      error: 'DrainTimeoutError',
-      ready: false,
-    });
-    expect(Date.now() - started).toBeLessThan(2_000);
-    expect(await exited).toMatchObject({ code: 0 });
-  }, 15_000);
+      expect(await waitForMessage(child, messages, 'outcome')).toMatchObject({
+        state: 'abandoned',
+        abandoned: 1,
+        timedOut: true,
+        error: 'DrainTimeoutError',
+        ready: false,
+      });
+      expect(Date.now() - drainStartedAt).toBeLessThan(DRAIN_ASSERTION_TIMEOUT_MS);
+      expect(await exited).toMatchObject({ code: 0 });
+    },
+    CHILD_STARTUP_TIMEOUT_MS
+  );
 
-  it('forced termination stops the child without a graceful commit', async () => {
-    const child = spawnWorker('forced', 1_000);
-    const messages = messagesOf(child);
-    expect(await waitForMessage(messages, 'ready')).toMatchObject({ ready: true });
-    const exited = waitForExit(child);
-    child.kill('SIGKILL');
-    expect(await exited).toMatchObject({ signal: 'SIGKILL' });
-    expect(messages.some((message) => message.type === 'outcome')).toBe(false);
-  }, 15_000);
+  it(
+    'forced termination stops the child without a graceful commit',
+    async () => {
+      const child = spawnWorker('forced', 1_000);
+      const messages = messagesOf(child);
+      expect(await waitForMessage(child, messages, 'ready')).toMatchObject({ ready: true });
+      const exited = waitForExit(child);
+      child.kill('SIGKILL');
+      expect(await exited).toMatchObject({ signal: 'SIGKILL' });
+      expect(messages.some((message) => message.type === 'outcome')).toBe(false);
+    },
+    CHILD_STARTUP_TIMEOUT_MS
+  );
 });

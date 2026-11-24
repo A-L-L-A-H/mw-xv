@@ -42,32 +42,6 @@
       "source": "MoonWitness contributors"
     },
     {
-      "path": "animation/crew-01-hair/crew-01-hair-move-frame-03.svg",
-      "kind": "source",
-      "variant": "canonical-animation-frame",
-      "format": "svg",
-      "width": 1024,
-      "height": 1024,
-      "pack": "moon-city",
-      "domain": "visual-universe",
-      "status": "review",
-      "license": "ISC",
-      "source": "MoonWitness contributors"
-    },
-    {
-      "path": "animation/crew-01-hair/crew-01-hair-move-frame-04.svg",
-      "kind": "source",
-      "variant": "canonical-animation-frame",
-      "format": "svg",
-      "width": 1024,
-      "height": 1024,
-      "pack": "moon-city",
-      "domain": "visual-universe",
-      "status": "review",
-      "license": "ISC",
-      "source": "MoonWitness contributors"
-    },
-    {
       "path": "animation/crew-01-idle/crew-01-idle-clip.json",
       "kind": "source",
       "variant": "canonical-animation-clip",
@@ -93,32 +67,6 @@
     },
     {
       "path": "animation/crew-01-idle/crew-01-idle-frame-02.svg",
-      "kind": "source",
-      "variant": "canonical-animation-frame",
-      "format": "svg",
-      "width": 1024,
-      "height": 1024,
-      "pack": "moon-city",
-      "domain": "visual-universe",
-      "status": "review",
-      "license": "ISC",
-      "source": "MoonWitness contributors"
-    },
-    {
-      "path": "animation/crew-01-idle/crew-01-idle-frame-03.svg",
-      "kind": "source",
-      "variant": "canonical-animation-frame",
-      "format": "svg",
-      "width": 1024,
-      "height": 1024,
-      "pack": "moon-city",
-      "domain": "visual-universe",
-      "status": "review",
-      "license": "ISC",
-      "source": "MoonWitness contributors"
-    },
-    {
-      "path": "animation/crew-01-idle/crew-01-idle-frame-04.svg",
       "kind": "source",
       "variant": "canonical-animation-frame",
       "format": "svg",
@@ -168,32 +116,6 @@
       "source": "MoonWitness contributors"
     },
     {
-      "path": "animation/crew-01-turn/crew-01-turn-frame-03.svg",
-      "kind": "source",
-      "variant": "canonical-animation-frame",
-      "format": "svg",
-      "width": 1024,
-      "height": 1024,
-      "pack": "moon-city",
-      "domain": "visual-universe",
-      "status": "review",
-      "license": "ISC",
-      "source": "MoonWitness contributors"
-    },
-    {
-      "path": "animation/crew-01-turn/crew-01-turn-frame-04.svg",
-      "kind": "source",
-      "variant": "canonical-animation-frame",
-      "format": "svg",
-      "width": 1024,
-      "height": 1024,
-      "pack": "moon-city",
-      "domain": "visual-universe",
-      "status": "review",
-      "license": "ISC",
-      "source": "MoonWitness contributors"
-    },
-    {
       "path": "animation/crew-01-walk/crew-01-walk-clip.json",
       "kind": "source",
       "variant": "canonical-animation-clip",
@@ -219,32 +141,6 @@
     },
     {
       "path": "animation/crew-01-walk/crew-01-walk-frame-02.svg",
-      "kind": "source",
-      "variant": "canonical-animation-frame",
-      "format": "svg",
-      "width": 1024,
-      "height": 1024,
-      "pack": "moon-city",
-      "domain": "visual-universe",
-      "status": "review",
-      "license": "ISC",
-      "source": "MoonWitness contributors"
-    },
-    {
-      "path": "animation/crew-01-walk/crew-01-walk-frame-03.svg",
-      "kind": "source",
-      "variant": "canonical-animation-frame",
-      "format": "svg",
-      "width": 1024,
-      "height": 1024,
-      "pack": "moon-city",
-      "domain": "visual-universe",
-      "status": "review",
-      "license": "ISC",
-      "source": "MoonWitness contributors"
-    },
-    {
-      "path": "animation/crew-01-walk/crew-01-walk-frame-04.svg",
       "kind": "source",
       "variant": "canonical-animation-frame",
       "format": "svg",
