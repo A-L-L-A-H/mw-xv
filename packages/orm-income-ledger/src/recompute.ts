@@ -28,8 +28,8 @@ async function computeStreamMetrics(
   const entries = ctx
     .query(IncomeEntry)
     .where('stream_id', stream.id)
-    .andWhere('occurred_at', '>=', start)
-    .andWhere('occurred_at', '<', end);
+    .andWhere('occurred_at', '>=', start.toISOString())
+    .andWhere('occurred_at', '<', end.toISOString());
 
   const revenueResult = await entries.clone().andWhere('kind', 'revenue').sum('net_minor as total');
   const costResult = await entries
