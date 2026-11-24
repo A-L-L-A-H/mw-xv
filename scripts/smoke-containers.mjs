@@ -194,9 +194,9 @@ export async function runContainerSmoke({
     '--project-name',
     projectName,
     '-f',
-    join(root, 'docker-compose.production.yml'),
+    join(root, 'deploy/compose/docker-compose.production.yml'),
     '-f',
-    join(root, 'docker-compose.smoke.yml'),
+    join(root, 'deploy/compose/docker-compose.smoke.yml'),
   ];
   const composeEnvironment = {
     ...environment,

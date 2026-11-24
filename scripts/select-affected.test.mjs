@@ -1,4 +1,5 @@
 import assert, { deepEqual, equal } from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -20,8 +21,8 @@ test('shared automation configuration and the master roadmap select full validat
   equal(hasFullScopeChange(['ROADMAP.md']), true);
   equal(hasFullScopeChange(['.gitleaks.toml']), true);
   equal(hasFullScopeChange(['.dockerignore']), true);
-  equal(hasFullScopeChange(['docker-compose.yml']), true);
-  equal(hasFullScopeChange(['docker-compose.smoke.yml']), true);
+  equal(hasFullScopeChange(['deploy/compose/docker-compose.yml']), true);
+  equal(hasFullScopeChange(['deploy/compose/docker-compose.smoke.yml']), true);
   equal(hasFullScopeChange(['.githooks/pre-commit']), true);
   equal(hasFullScopeChange(['.gitattributes']), true);
   equal(hasFullScopeChange(['deploy/coolify/app.dockerfile']), true);
@@ -32,7 +33,12 @@ test('every shared-configuration entry names something that is in the repository
   const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const rootEntries = await readdir(repositoryRoot, { withFileTypes: true });
   const present = new Set(rootEntries.map((entry) => entry.name));
-  deepEqual([...fullScopeFiles].filter((entry) => !present.has(entry)).sort(), []);
+  deepEqual(
+    [...fullScopeFiles].filter(
+      (entry) => !present.has(entry) && !existsSync(join(repositoryRoot, entry))
+    ).sort(),
+    []
+  );
 });
 
 test('reads workspace dependency closure directly from manifests without requiring pnpm install', async () => {

@@ -78,7 +78,16 @@ async function main() {
   }
 
   // Sensor and sim tables intentionally stay empty until their seed manifests are explicitly enabled.
-  const exemptAddons = new Set([...DEFAULT_DATA_EXEMPT_ADDONS, 'sensor', 'sim']);
+  // bot-orchestrator/ecommerce_sync/rnd are infrastructure/research addons whose
+  // records are created by operators at runtime; they have no safe demo records.
+  const exemptAddons = new Set([
+    ...DEFAULT_DATA_EXEMPT_ADDONS,
+    'sensor',
+    'sim',
+    'bot-orchestrator',
+    'ecommerce_sync',
+    'rnd',
+  ]);
   assertAddonDefaultDataPolicy(
     inspected.map((entry) => entry.manifest),
     { exemptAddons }

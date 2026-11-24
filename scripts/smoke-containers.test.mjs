@@ -80,7 +80,7 @@ test('runs isolated Compose smoke phases and always removes only its project vol
   assert.ok(commandTexts.some((entry) => entry.endsWith('logs api')));
   assert.equal(
     commandTexts.at(-1).replaceAll('\\', '/'),
-    '--project-name moonwitness-smoke-55-1234 -f X:/fixture/docker-compose.production.yml -f X:/fixture/docker-compose.smoke.yml down --volumes --remove-orphans'
+    '--project-name moonwitness-smoke-55-1234 -f X:/fixture/deploy/compose/docker-compose.production.yml -f X:/fixture/deploy/compose/docker-compose.smoke.yml down --volumes --remove-orphans'
   );
   assert.equal(fixture.options[0].environment.COMPOSE_PROJECT_NAME, 'moonwitness-smoke-55-1234');
   assert.equal(fixture.options[0].environment.EXISTING_ENV, 'preserved');
@@ -125,7 +125,7 @@ test('requires the Docker smoke network to deny external connectivity before sta
 });
 
 test('declares the smoke Compose default network internal', async () => {
-  const compose = await readFile(new URL('../docker-compose.smoke.yml', import.meta.url), 'utf8');
+  const compose = await readFile(new URL('../deploy/compose/docker-compose.smoke.yml', import.meta.url), 'utf8');
   assert.match(compose, /networks:\s+default:\s+internal:\s+true/u);
 });
 

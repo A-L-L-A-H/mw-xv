@@ -5,7 +5,7 @@ import test from 'node:test';
 const workflow = readFileSync('.github/workflows/ci.yml', 'utf8');
 const pagesWorkflow = readFileSync('.github/workflows/pages.yml', 'utf8');
 const releaseWorkflow = readFileSync('.github/workflows/release.yml', 'utf8');
-const productionCompose = readFileSync('docker-compose.production.yml', 'utf8');
+const productionCompose = readFileSync('deploy/compose/docker-compose.production.yml', 'utf8');
 const containerSmoke = readFileSync('scripts/smoke-containers.mjs', 'utf8');
 
 test('CI cancels stale runs within the same workflow, event, branch or PR', () => {

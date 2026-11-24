@@ -25,10 +25,10 @@ const fullScopeFiles = new Set([
   '.prettierignore',
   '.prettierrc',
   'Dockerfile',
-  'docker-compose.yml',
-  'docker-compose.development.yml',
-  'docker-compose.smoke.yml',
-  'docker-compose.production.yml',
+  'deploy/compose/docker-compose.yml',
+  'deploy/compose/docker-compose.development.yml',
+  'deploy/compose/docker-compose.smoke.yml',
+  'deploy/compose/docker-compose.production.yml',
   'deploy',
 ]);
 

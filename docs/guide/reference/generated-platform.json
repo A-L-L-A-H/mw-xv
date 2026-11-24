@@ -84,7 +84,7 @@
       "name": "@moonwitness/ai-evaluation",
       "version": "1.0.0-rc.1",
       "directory": "packages/ai-evaluation",
-      "scripts": ["build", "test", "typecheck"]
+      "scripts": ["build", "check:gates", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/ai-mcp",
@@ -486,6 +486,7 @@
     },
     "@moonwitness/ai-evaluation": {
       "build": "tsc",
+      "check:gates": "tsc -p tsconfig.json && node scripts/check-evaluation-gates.mjs",
       "test": "tsc -p tsconfig.check.json && vitest run",
       "typecheck": "tsc --noEmit -p tsconfig.check.json"
     },
@@ -716,7 +717,7 @@
       "assets:check:bounds": "node packages/assets/scripts/check-svg-bounds.mjs",
       "assets:check:docs": "node scripts/export-doc-assets.mjs --check",
       "assets:export:docs": "node scripts/export-doc-assets.mjs",
-      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && pnpm --filter @moonwitness/assets animation:generate && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets sounds:ambience && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
+      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets sounds:ambience && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
       "assets:generate:illustrations": "node packages/assets/scripts/generate-illustrations.mjs && node scripts/export-doc-assets.mjs",
       "assets:render": "node packages/assets/scripts/render-social.mjs",
       "assets:validate": "node packages/assets/scripts/validate.mjs",
@@ -10469,5 +10470,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "9f07c1fc82ff26c952a333cbc2f0387768c55f3a7692d30ed379d5963ac78e60"
+  "generatedFromSha256": "c541617087be6ab68a5ebd70b102b8ca3a992e1265064543af20f0bb062923d2"
 }

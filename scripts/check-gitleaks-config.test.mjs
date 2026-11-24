@@ -178,8 +178,8 @@ test('committed non-secret placeholders for the pinned names stay below the entr
   const callers = [
     '.github/workflows/ci.yml',
     '.github/workflows/release.yml',
-    'docker-compose.yml',
-    'docker-compose.production.yml',
+    'deploy/compose/docker-compose.yml',
+    'deploy/compose/docker-compose.production.yml',
     '.env.example',
     '.env.production.example',
     'scripts/smoke-containers.mjs',

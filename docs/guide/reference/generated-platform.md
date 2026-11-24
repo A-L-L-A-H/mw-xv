@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `9f07c1fc82ff26c952a333cbc2f0387768c55f3a7692d30ed379d5963ac78e60`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `c541617087be6ab68a5ebd70b102b8ca3a992e1265064543af20f0bb062923d2`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -15,7 +15,7 @@ Source fingerprint: `9f07c1fc82ff26c952a333cbc2f0387768c55f3a7692d30ed379d5963ac
 | `@moonwitness/docs`                 | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
 | `@moonwitness/isp`                  | App     | 0.1.0      | `cargo:build`, `clippy`, `dev`, `fmt`, `migrate`, `start`, `test`                                                                                                                                                                                                                  |
 | `@moonwitness/ui-catalog`           | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `diagnostics:generate`, `preview`, `test`                                                                                                                                                                                                           |
-| `@moonwitness/ai-evaluation`        | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
+| `@moonwitness/ai-evaluation`        | Package | 1.0.0-rc.1 | `build`, `check:gates`, `test`, `typecheck`                                                                                                                                                                                                                                        |
 | `@moonwitness/ai-mcp`               | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/ai-runtime`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/assets`               | Package | 1.0.0-rc.1 | `artwork:derivatives`, `artwork:layers`, `artwork:prepare`, `brand:prepare`, `contact-sheets`, `font:brand:generate`, `fonts:prepare`, `inventory`, `qa`, `sounds:ambience`                                                                                                        |

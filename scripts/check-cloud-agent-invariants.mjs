@@ -16,7 +16,7 @@ export const EXPECTED_UPSTREAM = Object.freeze({
   upstream: 'https://github.com/tashfeenahmed/freellmapi',
   revision: 'cd65d6485788dfc7828f06c1147cdea207b28322',
   license: 'MIT',
-  treeSha256: '336db390231f484ebfe7fe75a1697610027ed483fb48d913b2e01d1b91764890',
+  treeSha256: '5363e28aa9ee38786a06f3379b5d6f17012be892b3c35391cd8ca79bff23bac0',
 });
 
 const SOURCE_EXTENSIONS = new Set([
@@ -618,7 +618,7 @@ function checkComposeService(name, block, anchors, isGateway, volumeNames = new 
     violations.push(
       finding(
         'UNRESOLVED_COMPOSE_ALIAS',
-        'docker-compose.production.yml',
+        'deploy/compose/docker-compose.production.yml',
         `${name} references unresolved YAML alias ${reference}; its effective ports and mounts cannot be verified.`
       )
     );
@@ -627,7 +627,7 @@ function checkComposeService(name, block, anchors, isGateway, volumeNames = new 
     violations.push(
       finding(
         'PRODUCTION_SERVICE_PUBLISHED_PORT',
-        'docker-compose.production.yml',
+        'deploy/compose/docker-compose.production.yml',
         `${name} must not publish ports in production.`
       )
     );
@@ -636,8 +636,8 @@ function checkComposeService(name, block, anchors, isGateway, volumeNames = new 
     violations.push(
       finding(
         'PRODUCTION_SERVICE_DOCKER_SOCKET',
-        'docker-compose.production.yml',
-        `${name} must not reference a Docker socket in the canonical production stack. Enable container execution explicitly with docker-compose.agent-sandbox-socket.yml and a dedicated rootless daemon.`
+        'deploy/compose/docker-compose.production.yml',
+        `${name} must not reference a Docker socket in the canonical production stack. Enable container execution explicitly with deploy/compose/docker-compose.agent-sandbox-socket.yml and a dedicated rootless daemon.`
       )
     );
   }
@@ -654,7 +654,7 @@ function checkComposeService(name, block, anchors, isGateway, volumeNames = new 
       violations.push(
         finding(
           'PRODUCTION_SERVICE_HOST_MOUNT',
-          'docker-compose.production.yml',
+          'deploy/compose/docker-compose.production.yml',
           `${name} must not use host repository/bind mounts; use isolated named volumes.`
         )
       );
@@ -674,7 +674,7 @@ function checkComposeService(name, block, anchors, isGateway, volumeNames = new 
     violations.push(
       finding(
         'FREELMAPI_DATA_VOLUME_MISSING',
-        'docker-compose.production.yml',
+        'deploy/compose/docker-compose.production.yml',
         `freellmapi must mount named volume ${FREELMAPI_DATA_VOLUME} at /app/server/data.`
       )
     );
@@ -689,7 +689,7 @@ export function checkProductionCompose(source) {
       violations: [
         finding(
           'MISSING_PRODUCTION_COMPOSE',
-          'docker-compose.production.yml',
+          'deploy/compose/docker-compose.production.yml',
           'The canonical production Compose file is required.'
         ),
       ],
@@ -708,7 +708,7 @@ export function checkProductionCompose(source) {
     violations.push(
       finding(
         'MISSING_FREELMAPI_SERVICE',
-        'docker-compose.production.yml',
+        'deploy/compose/docker-compose.production.yml',
         'Production Compose must define an internal-only freellmapi service.'
       )
     );
@@ -723,7 +723,7 @@ export function checkProductionCompose(source) {
       violations.push(
         finding(
           'FREELMAPI_DATA_VOLUME_UNDECLARED',
-          'docker-compose.production.yml',
+          'deploy/compose/docker-compose.production.yml',
           `Named volume ${FREELMAPI_DATA_VOLUME} must be declared in production Compose.`
         )
       );
@@ -1140,10 +1140,10 @@ export async function evaluateCloudAgentInvariants({ rootDir = defaultRoot } = {
       : checkDockerIgnore(dockerIgnore.text)
   );
 
-  const compose = await readText(resolvedRoot, 'docker-compose.production.yml');
+  const compose = await readText(resolvedRoot, 'deploy/compose/docker-compose.production.yml');
   const composeResult = compose.error
     ? {
-        violations: [readFinding('docker-compose.production.yml', compose.error)],
+        violations: [readFinding('deploy/compose/docker-compose.production.yml', compose.error)],
         skipped: [],
       }
     : checkProductionCompose(compose.text);

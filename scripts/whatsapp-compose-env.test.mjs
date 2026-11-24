@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { localServiceScripts } from './local-service-scripts.mjs';
 
-const canonicalComposeFile = 'docker-compose.production.yml';
-const compatibilityComposeFile = 'docker-compose.prd.yml';
+const canonicalComposeFile = 'deploy/compose/docker-compose.production.yml';
+const compatibilityComposeFile = 'deploy/compose/docker-compose.prd.yml';
 
 function serviceBlock(source, name) {
   const start = source.search(new RegExp(`^  ${name}:\\s*$`, 'mu'));
@@ -15,7 +15,7 @@ function serviceBlock(source, name) {
 }
 
 test('development Compose runs WhatsApp outbox and attachment cleanup jobs with scoped secrets', () => {
-  const source = readFileSync('docker-compose.development.yml', 'utf8');
+  const source = readFileSync('deploy/compose/docker-compose.development.yml', 'utf8');
   assert.match(serviceBlock(source, 'outbox-worker'), /WHATSAPP_GATEWAY_USERNAME:/u);
   assert.match(serviceBlock(source, 'outbox-worker'), /WHATSAPP_GATEWAY_PASSWORD:/u);
   for (const name of ['jobs-worker', 'jobs-scheduler']) {
@@ -99,7 +99,7 @@ test('canonical production Compose scopes WhatsApp gateway and webhook secrets t
   );
 
   const expectedApiEnvironmentMerge =
-    /^ {6}<<:\s*\[\*app_environment,\s*\*whatsapp_gateway_credentials,\s*\*whatsapp_webhook_environment\]$/mu;
+    /^ {6}<<:\s*\[\*app_environment,\s*\*ai_environment,\s*\*whatsapp_gateway_credentials,\s*\*whatsapp_webhook_environment\]$/mu;
   const expectedOutboxEnvironmentMerge =
     /^ {6}<<:\s*\[\*app_environment,\s*\*whatsapp_gateway_credentials\]$/mu;
   assert.match(serviceBlock(source, 'api'), expectedApiEnvironmentMerge);
@@ -115,7 +115,13 @@ test('canonical production Compose scopes WhatsApp gateway and webhook secrets t
       `${name} must share the attachment store so scheduled cleanup sees the same objects`
     );
   }
-  assert.doesNotMatch(serviceBlock(source, 'board'), /^ {4}environment:/mu);
+  // Anchors are declared inside the first service for YAML validity; only the
+  // Board's own environment block must stay free of WhatsApp credentials.
+  const boardEnvironment = serviceBlock(source, 'board').match(
+    /^ {4}environment:\s*\r?\n([\s\S]*?)(?=^ {4}\S)/mu
+  );
+  assert.ok(boardEnvironment, 'Board service must declare an environment block');
+  assert.doesNotMatch(boardEnvironment[1], /WHATSAPP_/u);
 });
 
 test('prd Compose entrypoint delegates to the canonical hardened stack', () => {

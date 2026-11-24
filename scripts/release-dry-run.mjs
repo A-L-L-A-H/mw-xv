@@ -136,7 +136,7 @@ export function requiredGates(sourceSha, version) {
       id: 'production-compose-config',
       phase: 'verify',
       status: 'not-run',
-      command: 'docker compose -f docker-compose.production.yml config --quiet',
+      command: 'docker compose -f deploy/compose/docker-compose.production.yml config --quiet',
     },
     { id: 'api-board-spdx-sbom', phase: 'verify', status: 'not-run' },
     { id: 'artifact-transport-checksum', phase: 'publish', status: 'not-run' },

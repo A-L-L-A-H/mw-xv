@@ -185,8 +185,8 @@ EnvironmentFile=${MW_ENV_FILE}
 EnvironmentFile=${MW_MESH_ENV_FILE}
 Environment=MW_CONTROL_PLANE_BIND_MESH=${mesh_ip}:${MW_CONTROL_PLANE_PORT}
 Environment=MW_CONTROL_PLANE_BIND_LOOPBACK=127.0.0.1:${MW_CONTROL_PLANE_PORT}
-ExecStart=/usr/bin/docker compose -f ${MW_INSTALL_DIR}/docker-compose.yml up --build control-plane
-ExecStop=/usr/bin/docker compose -f ${MW_INSTALL_DIR}/docker-compose.yml stop control-plane
+ExecStart=/usr/bin/docker compose -f ${MW_INSTALL_DIR}/deploy/compose/docker-compose.yml up --build control-plane
+ExecStop=/usr/bin/docker compose -f ${MW_INSTALL_DIR}/deploy/compose/docker-compose.yml stop control-plane
 Restart=always
 RestartSec=5
 
@@ -199,15 +199,15 @@ EOF
     systemctl enable --now moonwitness-control-plane.service
   else
     log "systemd not active; starting control-plane via docker compose directly"
-    docker compose -f "${MW_INSTALL_DIR}/docker-compose.yml" --env-file "${MW_ENV_FILE}" up -d --build control-plane
+    docker compose -f "${MW_INSTALL_DIR}/deploy/compose/docker-compose.yml" --env-file "${MW_ENV_FILE}" up -d --build control-plane
   fi
 }
 
 start_compose_stack() {
   log "Starting MoonWitness stack (postgres, api, board) via docker compose"
   docker compose \
-    -f "${MW_INSTALL_DIR}/docker-compose.yml" \
-    -f "${MW_INSTALL_DIR}/docker-compose.production.yml" \
+    -f "${MW_INSTALL_DIR}/deploy/compose/docker-compose.yml" \
+    -f "${MW_INSTALL_DIR}/deploy/compose/docker-compose.production.yml" \
     --env-file "${MW_ENV_FILE}" \
     up -d --build postgres api board
 }
