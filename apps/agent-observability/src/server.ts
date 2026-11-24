@@ -11,7 +11,10 @@ export interface ObservabilityConfig {
   maxLogs: number;
   maxMetricSeries: number;
   maxMetricPoints: number;
+  token?: string;
 }
+
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', '::1', 'localhost']);
 
 function readPositiveInteger(value: string | undefined, fallback: number, maximum: number): number {
   if (value === undefined) return fallback;
@@ -34,6 +37,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ObservabilityC
     maxLogs: readPositiveInteger(env.AGENT_OBSERVABILITY_MAX_LOGS, 5_000, 100_000),
     maxMetricSeries: readPositiveInteger(env.AGENT_OBSERVABILITY_MAX_METRICS, 1_000, 20_000),
     maxMetricPoints: readPositiveInteger(env.AGENT_OBSERVABILITY_MAX_METRIC_POINTS, 120, 10_000),
+    ...(env.AGENT_OBSERVABILITY_TOKEN?.trim()
+      ? { token: env.AGENT_OBSERVABILITY_TOKEN.trim() }
+      : {}),
   };
 }
 
@@ -41,6 +47,11 @@ export async function startObservabilityServer(
   options: Partial<ObservabilityConfig> = {}
 ): Promise<{ app: ReturnType<typeof buildApp>['app']; store: TelemetryStore; address: string }> {
   const config = { ...loadConfig(), ...options };
+  if (!config.token && !LOOPBACK_HOSTS.has(config.host)) {
+    throw new Error(
+      'AGENT_OBSERVABILITY_TOKEN is required when binding to a non-loopback interface'
+    );
+  }
   const store = await createSqliteTelemetryStore({
     filename: config.databasePath,
     maxSpans: config.maxSpans,
@@ -51,7 +62,7 @@ export async function startObservabilityServer(
   });
 
   try {
-    const { app } = buildApp({ store });
+    const { app } = buildApp({ store, token: config.token });
     const address = await app.listen({ host: config.host, port: config.port });
     return { app, store, address };
   } catch (error) {

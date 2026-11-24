@@ -229,6 +229,12 @@ export class MemoryTelemetryStore implements TelemetryStore {
     return summarizeRecords(this.spans, this.logs, [...this.metrics.values()], this.revisionValue);
   }
 
+  async pruneExpired(): Promise<number> {
+    const removed = this.prune();
+    if (removed > 0) this.revisionValue += 1;
+    return removed;
+  }
+
   async close(): Promise<void> {}
 
   private prune(): number {

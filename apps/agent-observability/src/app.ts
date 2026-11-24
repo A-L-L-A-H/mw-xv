@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +10,14 @@ import { QoderTelemetryBridge } from './qoder.js';
 export interface BuildAppOptions {
   store?: TelemetryStore;
   publicDir?: string;
+  /** When set, /v1/* ingest and /api/* read endpoints require this bearer token. */
+  token?: string;
+}
+
+function tokenMatches(presented: string, expected: string): boolean {
+  const left = Buffer.from(presented, 'utf8');
+  const right = Buffer.from(expected, 'utf8');
+  return left.length === right.length && timingSafeEqual(left, right);
 }
 
 const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url));
@@ -60,6 +68,29 @@ export function buildApp(options: BuildAppOptions = {}): {
     bodyLimit: 4 * 1024 * 1024,
     genReqId: () => randomUUID(),
     logger: false,
+  });
+
+  if (options.token) {
+    const expected = options.token;
+    app.addHook('onRequest', async (request, reply) => {
+      const pathname = (request.url ?? '').split('?')[0];
+      if (!pathname.startsWith('/v1/') && !pathname.startsWith('/api/')) return;
+      const authorization = request.headers.authorization;
+      const bearer =
+        typeof authorization === 'string' && authorization.startsWith('Bearer ')
+          ? authorization.slice('Bearer '.length)
+          : undefined;
+      const alternate = request.headers['x-observability-token'];
+      const presented = bearer ?? (typeof alternate === 'string' ? alternate : undefined);
+      if (!presented || !tokenMatches(presented, expected)) {
+        await reply.code(401).send({ error: 'Unauthorized' });
+      }
+    });
+  }
+
+  app.addHook('onRequest', async (request) => {
+    const pathname = (request.url ?? '').split('?')[0];
+    if (request.method === 'GET' && pathname.startsWith('/api/')) await store.pruneExpired?.();
   });
 
   app.addHook('onSend', async (_request, reply, payload) => {

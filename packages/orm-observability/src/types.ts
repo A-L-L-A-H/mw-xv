@@ -179,5 +179,7 @@ export interface TelemetryStore {
   listLogs(query?: LogQuery): Promise<LogRecord[]>;
   listMetrics(query?: MetricQuery): Promise<MetricSeries[]>;
   summary(): Promise<TelemetrySummary>;
+  /** Remove records older than retention. Called on reads so expiry is enforced even without ingest traffic. */
+  pruneExpired?(): Promise<number>;
   close(): Promise<void>;
 }

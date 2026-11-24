@@ -198,6 +198,35 @@ describe('agent observability HTTP app', () => {
     expect(script.body).toContain('function buildFlowLayout(');
   });
 
+  it('requires a bearer token for ingest and dashboard APIs when configured', async () => {
+    const store = new MemoryTelemetryStore({ now: () => NOW_MS });
+    const result = buildApp({ store, token: 'test-observability-token' });
+    apps.push(result.app);
+
+    expect((await result.app.inject('/api/summary')).statusCode).toBe(401);
+    expect(
+      (await result.app.inject({ method: 'POST', url: '/v1/traces', payload: tracePayload() }))
+        .statusCode
+    ).toBe(401);
+    expect((await result.app.inject('/healthz')).statusCode).toBe(200);
+
+    const authorized = await result.app.inject({
+      url: '/api/summary',
+      headers: { authorization: 'Bearer test-observability-token' },
+    });
+    expect(authorized.statusCode).toBe(200);
+    const alternate = await result.app.inject({
+      url: '/api/summary',
+      headers: { 'x-observability-token': 'test-observability-token' },
+    });
+    expect(alternate.statusCode).toBe(200);
+    const wrong = await result.app.inject({
+      url: '/api/summary',
+      headers: { authorization: 'Bearer wrong-token' },
+    });
+    expect(wrong.statusCode).toBe(401);
+  });
+
   it('reports health and receiver configuration', async () => {
     const { app } = createApp();
     const health = await app.inject('/healthz');

@@ -27,6 +27,17 @@ describe('observability server persistence', () => {
     expect(config.databasePath).toBe('/tmp/custom-observability.sqlite');
   });
 
+  it('refuses a non-loopback bind without an auth token', async () => {
+    const config = loadConfig({ AGENT_OBSERVABILITY_HOST: '0.0.0.0' });
+    expect(config.host).toBe('0.0.0.0');
+    await expect(
+      startObservabilityServer({
+        host: config.host,
+        databasePath: await databasePath(),
+      })
+    ).rejects.toThrow('AGENT_OBSERVABILITY_TOKEN is required');
+  });
+
   it('keeps telemetry across receiver restarts', async () => {
     const filename = await databasePath();
     const first = await startObservabilityServer({

@@ -434,6 +434,10 @@ export class SqlTelemetryStore implements TelemetryStore {
     });
   }
 
+  async pruneExpired(): Promise<number> {
+    return this.runWrite((trx) => this.prune(trx));
+  }
+
   async close(): Promise<void> {
     this.closing ??= this.db.destroy();
     await this.closing;
