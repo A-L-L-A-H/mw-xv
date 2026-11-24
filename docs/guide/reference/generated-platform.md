@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `2e38a07a75229177bf950c7c4dc9f61b9e33a089277077ac8236123bb1843950`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `eeca00805c213b0ea89d400c38a9996c875894406feb5c196a5c30b0292fc39d`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -18,7 +18,7 @@ Source fingerprint: `2e38a07a75229177bf950c7c4dc9f61b9e33a089277077ac8236123bb18
 | `@moonwitness/ai-evaluation`        | Package | 1.0.0-rc.1 | `build`, `check:gates`, `test`, `typecheck`                                                                                                                                                                                                                                        |
 | `@moonwitness/ai-mcp`               | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/ai-runtime`           | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
-| `@moonwitness/assets`               | Package | 1.0.0-rc.1 | `artwork:derivatives`, `artwork:layers`, `artwork:prepare`, `brand:prepare`, `contact-sheets`, `font:brand:generate`, `fonts:prepare`, `inventory`, `qa`, `sounds:ambience`                                                                                                        |
+| `@moonwitness/assets`               | Package | 1.0.0-rc.1 | `animation:generate`, `artwork:derivatives`, `artwork:layers`, `artwork:prepare`, `brand:prepare`, `contact-sheets`, `font:brand:generate`, `fonts:prepare`, `inventory`, `qa`, `sounds:ambience`                                                                                  |
 | `@moonwitness/auth`                 | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/client`               | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/corpus`               | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
@@ -119,6 +119,9 @@ Source fingerprint: `2e38a07a75229177bf950c7c4dc9f61b9e33a089277077ac8236123bb18
 | `MW_A2A_COMPANY_ID`                 | string         | Yes                       | No                       |
 | `MW_A2A_SIGNING_SECRET`             | secret         | Yes                       | Yes                      |
 | `MW_AI_FREELLM_SECRET_REF`          | secret         | No                        | Yes                      |
+| `MW_CLOUD_AGENT_BASE_COMMIT`        | string         | No                        | No                       |
+| `MW_CLOUD_AGENT_IMAGE_REF`          | string         | No                        | No                       |
+| `MW_CLOUD_AGENT_SNAPSHOT_ID`        | string         | No                        | No                       |
 | `NODE_ENV`                          | string         | Yes                       | No                       |
 | `OTEL_EXPORTER_OTLP_ENDPOINT`       | string         | No                        | No                       |
 | `OTEL_EXPORTER_OTLP_PROTOCOL`       | string         | No                        | No                       |
@@ -164,7 +167,6 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm architecture:check`
 - `pnpm architecture:check:built`
 - `pnpm architecture:generate`
-- `pnpm archive:check`
 - `pnpm assets:check:bounds`
 - `pnpm assets:check:docs`
 - `pnpm assets:export:docs`
