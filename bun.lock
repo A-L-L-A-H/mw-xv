@@ -44,6 +44,7 @@
       "name": "@moonwitness/agent-sandbox",
       "version": "1.0.0-rc.1",
       "devDependencies": {
+        "@moonwitness/types": "workspace:*",
         "@types/node": "^26.6.4",
         "typescript": "~5.7.3",
         "vitest": "^5.0.3",
@@ -334,6 +335,7 @@
       "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/knowledge": "workspace:*",
+        "@moonwitness/types": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "^26.6.4",
@@ -770,6 +772,7 @@
         "@moonwitness/orm-base": "workspace:*",
         "@moonwitness/orm-workflow": "workspace:*",
         "@moonwitness/research": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "objection": "^3.1.5",
       },
       "devDependencies": {
@@ -943,6 +946,7 @@
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "knex": "^3.3.0",
         "objection": "^3.1.5",
       },
@@ -1073,6 +1077,7 @@
       "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/knowledge": "workspace:*",
+        "@moonwitness/types": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "^26.6.4",

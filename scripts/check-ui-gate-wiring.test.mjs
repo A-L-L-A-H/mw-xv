@@ -22,8 +22,14 @@ test('UI design gate has local commands, CI execution, and pre-push enforcement'
 
   assert.match(workflow, /bun run ui:design:check/u);
   assert.match(workflow, /bun run lint:ui/u);
-  assert.match(prePush, /bun run ui:check/u);
-  assert.match(prePush, /bun run lint:ui/u);
+  // Local gates stay fast and static-only: the shared UI boundary scanners run
+  // pre-push, while the heavier ui:check/lint:ui contracts are CI-exclusive.
+  assert.match(prePush, /bun run board:ui:check/u);
+  assert.match(prePush, /bun run desktop:ui:check/u);
+  assert.match(prePush, /bun run ui:design:check/u);
+  assert.match(prePush, /bun run api:addon:check/u);
+  assert.match(prePush, /bun run agent:boundary:check/u);
+  assert.match(prePush, /node scripts\/tasks\/validate-tasks\.mjs/u);
 });
 
 test('desktop boundary CLI uses the relative-path collector and has an integration test', async () => {
