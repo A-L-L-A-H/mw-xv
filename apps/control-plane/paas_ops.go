@@ -109,10 +109,10 @@ func runCmdWithStdin(ctx context.Context, stdin []byte, name string, args ...str
 	return string(out), nil
 }
 
-// defaultHTTPHealthProbe probes url with HTTP GET and requires a 2xx response.
-// url must be a valid, absolute HTTPS URL pointing to a non-loopback, non-internal address.
-func defaultHTTPHealthProbe(ctx context.Context, url string) error {
-	parsed, err := url.Parse(url)
+// defaultHTTPHealthProbe probes rawURL with HTTP GET and requires a 2xx response.
+// rawURL must be a valid, absolute HTTPS URL pointing to a non-loopback, non-internal address.
+func defaultHTTPHealthProbe(ctx context.Context, rawURL string) error {
+	parsed, err := url.Parse(rawURL)
 	if err != nil {
 		return fmt.Errorf("invalid URL: %w", err)
 	}
@@ -122,7 +122,7 @@ func defaultHTTPHealthProbe(ctx context.Context, url string) error {
 	if isInternalAddress(parsed.Hostname()) {
 		return fmt.Errorf("healthcheck URL must not target internal addresses")
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, parsed.String(), nil)
 	if err != nil {
 		return err
 	}

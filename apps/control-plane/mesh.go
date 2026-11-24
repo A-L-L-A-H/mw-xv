@@ -150,6 +150,24 @@ func RedactMeshSecret(text, secret string) string {
 	return out
 }
 
+// SanitizeLogValue strips control characters (including newline injection)
+// and caps the length before a user-influenced value is written to a log.
+func SanitizeLogValue(value string) string {
+	var b strings.Builder
+	for _, r := range value {
+		if r < 0x20 || r == 0x7f {
+			b.WriteRune(' ')
+			continue
+		}
+		b.WriteRune(r)
+	}
+	out := b.String()
+	if len(out) > 512 {
+		out = out[:512]
+	}
+	return out
+}
+
 // EasytierContainerMeta builds the Docker container manifest for EasyTier
 // so any VPS running control-plane can auto-join the encrypted P2P mesh.
 func EasytierContainerMeta(cfg MeshConfig) containerMeta {

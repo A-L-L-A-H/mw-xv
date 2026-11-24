@@ -804,7 +804,7 @@ func (m *A2AManager) HandleDelegate() http.HandlerFunc {
 		}
 		if rej != nil {
 			redactedMsg := RedactA2ASecret(rej.message, m.signingSecret)
-			log.Printf("a2a delegate rejected reason=%s remote=%s msg=%s", rej.reasonCode, r.RemoteAddr, redactedMsg)
+			log.Printf("a2a delegate rejected reason=%s remote=%s msg=%s", rej.reasonCode, SanitizeLogValue(r.RemoteAddr), SanitizeLogValue(redactedMsg))
 			writeA2AError(w, rej.status, rej.reasonCode, redactedMsg)
 			return
 		}
@@ -820,7 +820,7 @@ func (m *A2AManager) HandleDelegate() http.HandlerFunc {
 			return
 		}
 
-		log.Printf("a2a delegate forwarded messageId=%s companyId=%d", RedactA2ASecret(receipt.MessageID, m.signingSecret), receipt.CompanyID)
+		log.Printf("a2a delegate forwarded messageId=%s companyId=%d", SanitizeLogValue(RedactA2ASecret(receipt.MessageID, m.signingSecret)), receipt.CompanyID)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
 		_ = json.NewEncoder(w).Encode(receipt)
