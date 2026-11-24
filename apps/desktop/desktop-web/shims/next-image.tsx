@@ -1,10 +1,11 @@
 import type { ImgHTMLAttributes } from 'react';
 
-export interface NextImageProps extends ImgHTMLAttributes<HTMLImageElement> {
+export interface NextImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src: string | { src: string };
   alt: string;
   fill?: boolean;
   priority?: boolean;
+  sizes?: string;
   quality?: number;
   placeholder?: string;
   blurDataURL?: string;

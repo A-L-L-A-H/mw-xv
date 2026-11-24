@@ -1,12 +1,7 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Button } from '@moonwitness/ui/components/button';
 import { Panel } from '@moonwitness/ui/components/panel';
-import {
-  CheckCircleIcon,
-  RefreshIcon,
-  SparkleIcon,
-  WarningIcon,
-} from '@moonwitness/ui/icons';
+import { CheckCircleIcon, RefreshIcon, SparkleIcon, WarningIcon } from '@moonwitness/ui/icons';
 
 type TelemetryLevel = 'info' | 'warn' | 'error';
 
@@ -30,9 +25,8 @@ function redactClientText(input: string): string {
   out = out.replace(REDACT_PATTERNS[0]!, 'Bearer [REDACTED]');
   out = out.replace(REDACT_PATTERNS[1]!, '[REDACTED_KEY]');
   out = out.replace(REDACT_PATTERNS[2]!, '[REDACTED_TOKEN]');
-  out = out.replace(
-    REDACT_PATTERNS[3]!,
-    (match, value: string) => match.replace(value, '[REDACTED]')
+  out = out.replace(REDACT_PATTERNS[3]!, (match, value: string) =>
+    match.replace(value, '[REDACTED]')
   );
   return out;
 }
@@ -47,7 +41,10 @@ function serializeUnknownArg(arg: unknown): string {
   }
 }
 
-function postTelemetry(getApiUrl: () => string | null | undefined, payload: TelemetryPayload): void {
+function postTelemetry(
+  getApiUrl: () => string | null | undefined,
+  payload: TelemetryPayload
+): void {
   const rawUrl = getApiUrl();
   if (!rawUrl || typeof rawUrl !== 'string') return;
   const apiUrl = rawUrl.replace(/\/+$/u, '');
@@ -208,19 +205,16 @@ export class DesktopErrorBoundary extends Component<
         className: 'flex min-h-dvh items-center justify-center bg-paper p-6 text-ink',
         role: 'alert',
       },
-      React.createElement(
-        Panel,
-        {
-          className: 'w-full max-w-xl',
-          title: 'Desktop View Interrupted',
-          description:
-            'An unexpected rendering error occurred. You can reload safely or copy a redacted diagnostic report for AI troubleshooting.',
-          actions: React.createElement(WarningIcon, {
-            className: 'size-5 text-destructive',
-            'aria-hidden': 'true',
-          }),
-        },
-        React.createElement(
+      React.createElement(Panel, {
+        className: 'w-full max-w-xl',
+        title: 'Desktop View Interrupted',
+        description:
+          'An unexpected rendering error occurred. You can reload safely or copy a redacted diagnostic report for AI troubleshooting.',
+        actions: React.createElement(WarningIcon, {
+          className: 'size-5 text-destructive',
+          'aria-hidden': 'true',
+        }),
+        children: React.createElement(
           'div',
           { className: 'flex flex-col gap-4' },
           React.createElement(
@@ -253,11 +247,7 @@ export class DesktopErrorBoundary extends Component<
                     className: 'size-3.5',
                     'aria-hidden': 'true',
                   }),
-              React.createElement(
-                'span',
-                null,
-                this.state.copied ? 'Copied for AI' : 'Copy for AI'
-              )
+              React.createElement('span', null, this.state.copied ? 'Copied for AI' : 'Copy for AI')
             ),
             React.createElement(
               Button,
@@ -274,8 +264,8 @@ export class DesktopErrorBoundary extends Component<
               React.createElement('span', null, 'Reload View')
             )
           )
-        )
-      )
+        ),
+      })
     );
   }
 }

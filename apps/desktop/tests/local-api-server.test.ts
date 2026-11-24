@@ -187,7 +187,7 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(Array.isArray(inboxBody.data)).toBe(true);
   });
 
-  it('rate-limits the notification inbox without affecting other routes', async () => {
+  it('rate-limits the authenticated notification inbox without changing auth or other routes', async () => {
     const tempHome = makeTempDir('mw-desktop-inbox-rate-limit-');
     const daemon = await startDesktopSidecarDaemon({
       repoRoot: process.cwd(),
@@ -220,17 +220,29 @@ describe('LocalApiServer & Desktop Importer', () => {
     const authHeaders = { authorization: `Bearer ${loginBody.data.access_token}` };
 
     const allowedResponses = await Promise.all(
-      Array.from({ length: 59 }, () => fetch(inboxUrl, { headers: authHeaders }))
+      Array.from({ length: 60 }, () => fetch(inboxUrl, { headers: authHeaders }))
     );
     expect(allowedResponses.map((response) => response.status)).toEqual(
-      Array.from({ length: 59 }, () => 200)
+      Array.from({ length: 60 }, () => 200)
     );
     await Promise.all(allowedResponses.map((response) => response.arrayBuffer()));
 
     const limited = await fetch(inboxUrl, { headers: authHeaders });
     expect(limited.status).toBe(429);
     expect(Number(limited.headers.get('retry-after'))).toBeGreaterThan(0);
-    await limited.arrayBuffer();
+    expect(await limited.json()).toEqual({
+      success: false,
+      error: 'Rate limit exceeded',
+      code: 'RATE_LIMITED',
+      requestId: expect.any(String),
+    });
+
+    const unauthenticatedAfterLimit = await fetch(inboxUrl);
+    expect(unauthenticatedAfterLimit.status).toBe(401);
+    expect(await unauthenticatedAfterLimit.json()).toEqual({
+      success: false,
+      error: 'Authentication required',
+    });
 
     const otherRoute = await fetch(`${daemon.apiUrl}/auth/me`, { headers: authHeaders });
     expect(otherRoute.status).toBe(200);
@@ -811,6 +823,17 @@ describe('LocalApiServer & Desktop Importer', () => {
       authorization: `Bearer ${loginBody.data.access_token}`,
       'content-type': 'application/json',
     };
+
+    const preflight = await fetch(`${daemon.apiUrl}/api/models`, {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'http://127.0.0.1:5173',
+        'access-control-request-method': 'GET',
+        'access-control-request-headers': 'content-type,x-company-id',
+      },
+    });
+    expect(preflight.status).toBeLessThan(400);
+    expect(preflight.headers.get('access-control-allow-headers')).toContain('x-company-id');
 
     // 1. Sleep-Dream works in workspace mode
     const sleepWs = await fetch(`${daemon.apiUrl}/api/desktop/ai/sleep-dream`, {
