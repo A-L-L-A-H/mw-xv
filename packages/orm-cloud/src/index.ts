@@ -1,4 +1,5 @@
 export { manifest } from './manifest.js';
+export { cloudSeedManifest, seedCloudProviders } from './seed.js';
 export {
   CloudProvider,
   CloudServer,

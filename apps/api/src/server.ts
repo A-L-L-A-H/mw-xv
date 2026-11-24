@@ -16,6 +16,7 @@ async function main() {
     const { createMigrationDatabase } = await import('./database/knex.js');
     const { verifyDefaultBaseAccounts, verifyRequiredModels } = await import('./startup-checks.js');
     const { gracefulShutdown } = await import('./lifecycle/graceful-shutdown.js');
+    const { flushLogger } = await import('@moonwitness/logger');
 
     const app = await buildApp({ installSchema: false });
     verifyRequiredModels(Registry.getNames());
@@ -58,6 +59,8 @@ async function main() {
       } catch (error) {
         app.log.error({ err: startupErrorContext(error) }, 'API shutdown failed');
         process.exitCode = 1;
+      } finally {
+        await flushLogger();
       }
     };
 

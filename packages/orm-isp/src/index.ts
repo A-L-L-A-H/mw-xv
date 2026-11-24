@@ -1,4 +1,6 @@
 export { manifest } from './manifest.js';
+export { ispSeedManifest } from './seed-manifest.js';
+export { seed as seedIspReferenceData } from './seed.js';
 export {
   ISPType,
   ISPNAS,
