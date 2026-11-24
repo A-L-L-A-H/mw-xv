@@ -30,11 +30,12 @@
     "build": "tsc",
     "build:web": "vite build --config desktop-web/vite.config.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    "test:web": "playwright test --config playwright.web.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json"
   },
   "dependencies": {
     "@fastify/cors": "11.3.1",
-    "@fastify/rate-limit": "^11.2.0",
     "@moonwitness/ai-mcp": "workspace:*",
     "@moonwitness/ai-runtime": "workspace:*",
     "@moonwitness/client": "workspace:*",
