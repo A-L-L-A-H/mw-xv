@@ -257,7 +257,7 @@
   },
   "scripts": {
     "build": "node scripts/generate-icons.mjs && tsc",
-    "test": "pnpm build && node --test tests/*.test.mjs"
+    "test": "bun run build && node --test tests/*.test.mjs"
   },
   "peerDependencies": {
     "cmdk": ">=1.1.1",

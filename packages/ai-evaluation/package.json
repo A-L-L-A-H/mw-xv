@@ -22,7 +22,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit -p tsconfig.check.json",
     "test": "tsc -p tsconfig.check.json && vitest run",
-    "check:gates": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/ai-runtime build && tsc -p tsconfig.json && node scripts/check-evaluation-gates.mjs"
+    "check:gates": "bun --filter @moonwitness/types build && bun --filter @moonwitness/ai-runtime build && tsc -p tsconfig.json && node scripts/check-evaluation-gates.mjs"
   },
   "dependencies": {
     "@moonwitness/ai-runtime": "workspace:*",
