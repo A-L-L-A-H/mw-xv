@@ -4,7 +4,7 @@
 - **Date:** 2026-11-22
 - **Decision owners:** MoonWitness maintainers
 - **Scope:** `@moonwitness/orm-ai`, `@moonwitness/ai-runtime`, `@moonwitness/ai-mcp`, `@moonwitness/ai-evaluation`, `apps/api`, `apps/board`
-- **Related plan:** [`AI-CORPORATION-GRAND-PLAN.md`](../../moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-GRAND-PLAN.md)
+- **Related plan:** [`AI-CORPORATION-GRAND-PLAN.md`](../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-GRAND-PLAN.md)
 - **Related tasks:** `M12.01`, `M12.02` (`AI1.1`–`AI1.25`)
 - **Related decisions and policies:** [ADR 0001](0001-platform-contracts.md), [ADR 0004](0004-knowledge-rebuild-centralization.md), [ADR 0005](0005-mizan-evaluation-policy-boundary.md), [ADR 0006](0006-mandatory-addon-thin-api.md), [AI Corporation Baseline Audit](../architecture/ai-corporation-baseline-audit.md)
 

@@ -42,10 +42,10 @@ pnpm automation:check:roadmap
 pnpm tasks:sweep -- --check
 
 # Confirm the Visual Universe views are generated from canonical TaskOS
-node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs --check
+node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs --check
 
 # Regenerate Visual Universe local views only after canonical validation
-node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs
+node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs
 ```
 
 The `--candidate` mode remains non-mutating and writes only outside the repository. The one-time `--write` importer is for an empty registry and refuses to overwrite a populated canonical file. Do not use it to replace the migrated registry. Canonical lifecycle changes must use the reviewed TaskOS workflow and must preserve source provenance and dependency integrity.

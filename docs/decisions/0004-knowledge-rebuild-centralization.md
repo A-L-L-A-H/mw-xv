@@ -3,7 +3,7 @@
 - Status: accepted
 - Date: 2026-10-15 (storage selection recorded 2026-10-16)
 - Decision owners: MoonWitness maintainers (maintainer approval recorded 2026-10-15)
-- Related plan: `MOONWITNESS_XI_LOCAL_AI_REBUILD_PLAN_2026-10-15/MOONWITNESS_XI_MASTER_PLAN.md`
+- Related plan: `docs/bundles/local-ai-rebuild-plan/MOONWITNESS_XI_MASTER_PLAN.md`
 - Related task: K0-001
 - Supersedes: none; ADR 0001 remains the accepted delivery contract
 

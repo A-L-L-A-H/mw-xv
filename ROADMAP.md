@@ -223,7 +223,7 @@ Jalur ini melengkapi M1/M7/M8, bukan membuat release pipeline kedua. Detail: [ka
 
 ## M12 — AI Corporation (EGAO)
 
-Workstream arsitektur Addon-First untuk AI Corporation sesuai [ADR 0007](docs/decisions/0007-ai-corporation-addon-first-architecture.md) dan [audit baseline](docs/architecture/ai-corporation-baseline-audit.md). Rincian kartu berada di [kartu AI Corporation](docs/roadmap/13-ai-corporation.md) dan ledger implementasi granular berada di [todo-ai-corporation.md](moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
+Workstream arsitektur Addon-First untuk AI Corporation sesuai [ADR 0007](docs/decisions/0007-ai-corporation-addon-first-architecture.md) dan [audit baseline](docs/architecture/ai-corporation-baseline-audit.md). Rincian kartu berada di [kartu AI Corporation](docs/roadmap/13-ai-corporation.md) dan ledger implementasi granular berada di [todo-ai-corporation.md](docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
 
 - [x] M12.01 Exact-SHA baseline audit dan source-backed reuse matrix (`BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`). Bukti: [M12.01](docs/roadmap/evidence/M12.01.md), [baseline audit](docs/architecture/ai-corporation-baseline-audit.md).
 - [x] M12.02 Official ADR `0007` dan rekonsiliasi roadmap/workstream (`AI1.1`–`AI1.34`). Bukti: [M12.02](docs/roadmap/evidence/M12.02.md), [ADR 0007](docs/decisions/0007-ai-corporation-addon-first-architecture.md).

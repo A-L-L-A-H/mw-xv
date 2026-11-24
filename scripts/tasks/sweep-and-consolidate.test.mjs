@@ -40,11 +40,11 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
       .map((source) => [source, result.tasks.filter((task) => task.sourceRef.file === source).length])
   );
   assert.deepEqual(sourceCounts, {
-    'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json': 109,
+    'docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json': 109,
     'docs/archive/todos/todo.md': 7,
     'docs/roadmap/tasks.json': 239,
     'evolution/backlog.json': 4,
-    'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md': 14,
+    'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md': 14,
     'scripts/tasks/sources/audit-tasks.mjs': 24,
     'todo-desktop.md': 128,
     'todo-wa.md': 112,
@@ -111,12 +111,12 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.ok(visualTasks.every((task) => task.metadata?.id === task.code));
   assert.deepEqual(taskByCode.get('W1-001').metadata.legacyCardNotes, {
     text: 'Human approval required only for canonical style lock. Continue other independent audit work while waiting.',
-    sourceFile: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/W1/W1-001.md',
+    sourceFile: 'docs/bundles/visual-universe-pack/tasks/W1/W1-001.md',
     sourceBlobSha: '74b510d170dd12c640f1ffb1e734ae5293187dcc',
   });
   assert.deepEqual(taskByCode.get('W5-012').metadata.legacyCardNotes, {
     text: 'May be skipped with documented reason; do not block the baseline world runtime.',
-    sourceFile: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/W5/W5-012.md',
+    sourceFile: 'docs/bundles/visual-universe-pack/tasks/W5/W5-012.md',
     sourceBlobSha: 'fe2364614cf7ddfe550e26bbbcea2dcc8a5cf79f',
   });
   assert.equal(taskByCode.get('W1-002').metadata.legacyCardNotes, null);

@@ -612,6 +612,7 @@ Panduan lanjutan: [attachment storage](docs/operations/attachment-storage.md),
 
 | Mulai di sini                                                                         | Isi                                                            |
 | ------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [Indeks dokumentasi](docs/README.md)                                                  | Peta seluruh `docs/`, including source & planning bundles.     |
 | [Developer guide](docs/guide/index.md)                                                | Quickstart, how-to, reference, dan explanation.                |
 | [Quickstart](docs/guide/tutorials/quickstart.md)                                      | Menjalankan PostgreSQL, API, dan Board.                        |
 | [Arsitektur sistem](docs/guide/explanations/architecture.md)                          | Batas komponen dan alur request.                               |

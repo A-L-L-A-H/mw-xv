@@ -145,7 +145,7 @@ Workstream tunggal untuk mengimplementasikan AI Corporation secara Addon-First d
 
 - **Keputusan arsitektur:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (pointer kompatibilitas: [docs/architecture/adr/0007-ai-corporation-addon-first-architecture.md](../architecture/adr/0007-ai-corporation-addon-first-architecture.md)) dan [Baseline Audit & Reuse Matrix](../architecture/ai-corporation-baseline-audit.md).
 - **Kartu kerja kanonik (`M12.01`–`M12.14`):** [13-ai-corporation.md](13-ai-corporation.md) terdaftar dalam [tasks.json](tasks.json) dan [ROADMAP.md](../../ROADMAP.md).
-- **Ledger implementasi granular (`BASE.17`–`BASE.30`, `AI0`–`AI11`, `DOC`, `PR`, `GATE`, `SLICE`):** [`todo-ai-corporation.md`](../../moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
+- **Ledger implementasi granular (`BASE.17`–`BASE.30`, `AI0`–`AI11`, `DOC`, `PR`, `GATE`, `SLICE`):** [`todo-ai-corporation.md`](../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
 
 ### Kontrak sinkronisasi progress (`AI1.33`–`AI1.34`)
 

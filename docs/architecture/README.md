@@ -29,8 +29,8 @@ Canonical index of MoonWitness XV system architecture specifications, domain own
 
 ## 3. Blueprints & Implementation Ledgers
 
-- **[AI Corporation Grand Plan](../../moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-GRAND-PLAN.md)**
-- **[AI Corporation Desktop Harness Blueprint](../../moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)**
-- **[AI Corporation Granular TODO (`todo-ai-corporation.md`)](../../moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md)**
+- **[AI Corporation Grand Plan](../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-GRAND-PLAN.md)**
+- **[AI Corporation Desktop Harness Blueprint](../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)**
+- **[AI Corporation Granular TODO (`todo-ai-corporation.md`)](../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md)**
 - **[Desktop Harness Granular TODO (`todo-desktop.md`)](../../todo-desktop.md)**
 - **[Canonical Roadmap Source Cards (`M12.01`–`M12.14`)](../roadmap/13-ai-corporation.md)**

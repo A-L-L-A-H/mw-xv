@@ -146,7 +146,7 @@ git commit -m "feat(tasks): define canonical moonwitness-tasks/v2 JSON Schema"
 - Target Output: `docs/tasks/tasks.json`
 
 **Interfaces:**
-- Consumes: `docs/roadmap/tasks.json`, `ROADMAP.md`, `todo-wa.md`, `todo.md`, `todo-desktop.md`, `moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md`, `evolution/backlog.json`, Audit tasks (`AUD-001`..`AUD-014`).
+- Consumes: `docs/roadmap/tasks.json`, `ROADMAP.md`, `todo-wa.md`, `todo.md`, `todo-desktop.md`, `docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md`, `evolution/backlog.json`, Audit tasks (`AUD-001`..`AUD-014`).
 - Produces: Consolidated, deduplicated, schema-valid `docs/tasks/tasks.json`.
 
 - [ ] **Step 1: Write test for sweep and consolidation logic**

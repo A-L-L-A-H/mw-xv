@@ -7,8 +7,8 @@
 
 | Authority | Path | Nature | Status |
 |---|---|---|---|
-| Approved XV visual direction | `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/visual-universe-bible-approved.md` | Normative brief for **new visual-universe production** | **Approved by the owner 2026-11-22** |
-| Visual World Bible (production companion) | `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/VISUAL_BIBLE.md` | Detailed continuity rules (world, character, environment, motion, exclusions) | Pack document; inherits the approved direction |
+| Approved XV visual direction | `docs/bundles/visual-universe-pack/evidence/visual-universe-bible-approved.md` | Normative brief for **new visual-universe production** | **Approved by the owner 2026-11-22** |
+| Visual World Bible (production companion) | `docs/bundles/visual-universe-pack/VISUAL_BIBLE.md` | Detailed continuity rules (world, character, environment, motion, exclusions) | Pack document; inherits the approved direction |
 | Creative & Visual Bible (archive) | `CREATIVE-VISUAL-BIBLE.md` | Descriptive map of **all generation families** (II, GOD PROMISE, XII, ROCKSOUL, A-L-L-A-H.COM, research poster), plus rights and sacred boundaries | Archive record, not an approval |
 
 ## 2. Precedence rules

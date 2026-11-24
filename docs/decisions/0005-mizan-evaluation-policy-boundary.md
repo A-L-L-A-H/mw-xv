@@ -2,7 +2,7 @@
 
 - Status: proposed (pending explicit owner approval; `approval-required` gate)
 - Date: 2026-11-21
-- Related plan: [`MOONWITNESS_XI_MASTER_PLAN.md`](../../MOONWITNESS_XI_LOCAL_AI_REBUILD_PLAN_2026-10-15/MOONWITNESS_XI_MASTER_PLAN.md) (Sections 1 and 7.5)
+- Related plan: [`MOONWITNESS_XI_MASTER_PLAN.md`](../bundles/local-ai-rebuild-plan/MOONWITNESS_XI_MASTER_PLAN.md) (Sections 1 and 7.5)
 - Related task: `K6-001`
 - Related decisions and policies: [ADR 0001](0001-platform-contracts.md), [ADR 0004](0004-knowledge-rebuild-centralization.md), [Knowledge privacy and safeguarding](../governance/knowledge-privacy-and-safeguarding.md), [Mizan policy boundary specification](../knowledge/mizan-policy-boundary-spec.md)
 - Supporting profile: [`research/profiles/mizan-policy-boundary-v1.json`](../../research/profiles/mizan-policy-boundary-v1.json)

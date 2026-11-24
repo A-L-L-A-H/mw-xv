@@ -110,7 +110,7 @@ pnpm test:taskos
 pnpm tasks:validate
 pnpm automation:check:roadmap
 pnpm tasks:sweep -- --check
-node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs --check
+node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs --check
 ```
 
 If the Visual Universe projection check reports stale files, review its deterministic output and regenerate only those projections from canonical TaskOS; do not edit `task.json`, `TASKS.md`, or individual task cards as independent status sources. Keep the previous registry backup untouched.

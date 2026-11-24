@@ -2,7 +2,7 @@
 
 - Status: design baseline accepted under [ADR 0004](../decisions/0004-knowledge-rebuild-centralization.md)
 - Scope: K0-003 architecture baseline; this page does not define runtime or schema contracts
-- Source plan: `MOONWITNESS_XI_LOCAL_AI_REBUILD_PLAN_2026-10-15/MOONWITNESS_XI_MASTER_PLAN.md`
+- Source plan: `docs/bundles/local-ai-rebuild-plan/MOONWITNESS_XI_MASTER_PLAN.md`
 
 This page assigns one canonical owner to each class of information. ADR 0004
 selects local PostgreSQL for canonical structured knowledge and operational

@@ -1,13 +1,13 @@
 # M12 — AI Corporation (EGAO) Kartu Kerja Terperinci
 
-Baca [protokol eksekusi](EXECUTION.md) dan [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) terlebih dahulu. Status resmi tetap di [master checklist](../../ROADMAP.md); dokumen ini mendefinisikan source cards kanonik `M12.01`–`M12.14` yang merekonsiliasi proposal ID pada [`todo-ai-corporation.md`](../../moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md) ke dalam `docs/roadmap/tasks.json` tanpa mengubah task M0–M11 atau K0–K9.
+Baca [protokol eksekusi](EXECUTION.md) dan [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) terlebih dahulu. Status resmi tetap di [master checklist](../../ROADMAP.md); dokumen ini mendefinisikan source cards kanonik `M12.01`–`M12.14` yang merekonsiliasi proposal ID pada [`todo-ai-corporation.md`](../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md) ke dalam `docs/roadmap/tasks.json` tanpa mengubah task M0–M11 atau K0–K9.
 
 ---
 
 ## M12.01 — Exact-SHA baseline audit & source-backed reuse matrix (`BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`)
 
 - **Prasyarat:** M0.01, M0.03, M9.03, M9.04, M9.05, M9.06, M9.07, K0-003, K7-001
-- **Baca/periksa:** [ACTIVE-PLAN.md](ACTIVE-PLAN.md), [EXECUTION.md](EXECUTION.md), [ADR 0001](../decisions/0001-platform-contracts.md), [ADR 0006](../decisions/0006-mandatory-addon-thin-api.md), [`todo-ai-corporation.md`](../../moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
+- **Baca/periksa:** [ACTIVE-PLAN.md](ACTIVE-PLAN.md), [EXECUTION.md](EXECUTION.md), [ADR 0001](../decisions/0001-platform-contracts.md), [ADR 0006](../decisions/0006-mandatory-addon-thin-api.md), [`todo-ai-corporation.md`](../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
 - **Deliverable:** `docs/architecture/ai-corporation-baseline-audit.md` berisi audit exact-SHA (`43c3a43` -> `HEAD`), inspeksi `BASE.17`–`BASE.30`, pola engineering `AI0.16`–`AI0.30`, baseline pengukuran/debt `AI0.31`–`AI0.41`, dan Reuse Matrix `AI0.42` untuk seluruh 10 existing owners.
 - **Proposal IDs (ledger):** `BASE.17`–`BASE.30`, `AI0.1`–`AI0.42`
 - **Acceptance criteria:** Seluruh 10 domain/infrastruktur existing diverifikasi langsung dari source, semua invariant `NO-GO` (`BASE.26`–`BASE.30`) terverifikasi, hasil baseline non-Postgres dan celah lingkungan (`POSTGRES_TEST_URL` / `psql`) terekam jujur.
@@ -28,7 +28,7 @@ Dokumen audit tersedia, seluruh link terverifikasi oleh `node scripts/check-docs
 ## M12.02 — Official ADR `0007` & roadmap/workstream reconciliation (`AI1.1`–`AI1.34`)
 
 - **Prasyarat:** M12.01, M0.07, M11.02
-- **Baca/periksa:** [Baseline audit](../architecture/ai-corporation-baseline-audit.md), [ADR 0006](../decisions/0006-mandatory-addon-thin-api.md), [`AI-CORPORATION-ADR-DRAFT.md`](../../moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-ADR-DRAFT.md), [ISSUE-SYNC-CONTRACT.md](ISSUE-SYNC-CONTRACT.md).
+- **Baca/periksa:** [Baseline audit](../architecture/ai-corporation-baseline-audit.md), [ADR 0006](../decisions/0006-mandatory-addon-thin-api.md), [`AI-CORPORATION-ADR-DRAFT.md`](../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-ADR-DRAFT.md), [ISSUE-SYNC-CONTRACT.md](ISSUE-SYNC-CONTRACT.md).
 - **Deliverable:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (`Status: Accepted`), pointer kompatibilitas [ADR 0007 pointer](../architecture/adr/0007-ai-corporation-addon-first-architecture.md), source cards `docs/roadmap/13-ai-corporation.md`, registrasi `M12.01`–`M12.14` di `docs/roadmap/tasks.json`, serta pembaruan `ROADMAP.md`, `docs/roadmap/README.md`, dan `docs/roadmap/ACTIVE-PLAN.md`.
 - **Proposal IDs (ledger):** `AI1.1`–`AI1.34`
 - **Acceptance criteria:** Semua keputusan kepemilikan entitas (`AI1.1`–`AI1.12`), aturan ADR (`AI1.13`–`AI1.25`: D1–D12, Addon-First, `ai.work_contract` tanpa mengubah `orm-request`, agent non-superadmin satu company, data ephemeral di luar ORM, batas 1 ORM + 3 non-ORM package, non-goals v1), dan rekonsiliasi roadmap (`AI1.26`–`AI1.34`) lulus validator tanpa memodifikasi M0–M11/K0–K9.
@@ -238,7 +238,7 @@ Seluruh adversarial security suite (`0` unauthorized actions), observability che
 ## M12.12 — Evaluation lab, baselines & G0–G6 capability gates (`AI11.1`–`AI11.24`)
 
 - **Prasyarat:** M12.08, M12.09, M12.11
-- **Baca/periksa:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md), [todo-ai-corporation.md](../../moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
+- **Baca/periksa:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md), [todo-ai-corporation.md](../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
 - **Deliverable:** Package `packages/ai-evaluation` (`@moonwitness/ai-evaluation`) dengan korpus tugas deterministik non-sensitif, runner baseline single-agent vs multi-agent, metrik cost-per-accepted-deliverable / retained-functionality / recovery / memory ablation / transfer, serta definisi & evaluator gate `G0`–`G6`.
 - **Proposal IDs (ledger):** `AI11.1`–`AI11.24`
 - **Acceptance criteria:** Setiap run mencatat provider/model/harness/tool/SHA/fixture hash serta mempertahankan failed/partial/cancelled runs; setiap gate G0–G6 memiliki threshold terukur, zero safety regression, dan dokumentasi limitasi jujur tanpa klaim AGI.
@@ -280,7 +280,7 @@ Seluruh doc checks (`check-docs.mjs`, `docs:links`, `docs:check:built`, `archite
 ## M12.14 — Vertical slice, release gates G1–G14, E2E Tiers 1–5 & CI verification (`SLICE.1`–`SLICE.15`, `GATE.1`–`GATE.14`, `PR.1`–`PR.14`)
 
 - **Prasyarat:** M12.10, M12.11, M12.12, M12.13
-- **Baca/periksa:** [`todo-ai-corporation.md`](../../moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md), `.github/workflows/ci.yml`, `ROADMAP.md`.
+- **Baca/periksa:** [`todo-ai-corporation.md`](../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md), `.github/workflows/ci.yml`, `ROADMAP.md`.
 - **Deliverable:** Eksekusi vertical slice end-to-end (`SLICE.1`–`SLICE.15`), verifikasi 14 release gates (`GATE.1`–`GATE.14`), pemenuhan checklist PR (`PR.1`–`PR.14`), Progress Ledger & sinkronisasi akhir checkbox `[x]` di `todo-ai-corporation.md`, `ROADMAP.md`, dan `tasks.json`, serta hosted GitHub Actions CI 100% hijau pada `origin/dev`.
 - **Proposal IDs (ledger):** `SLICE.1`–`SLICE.15`, `GATE.1`–`GATE.14`, `PR.1`–`PR.14`, Progress Ledger
 - **Acceptance criteria:** Seluruh gate lokal (`pnpm verify`, `pnpm test:roadmap`, `pnpm automation:check:roadmap`, `pnpm api:addon:check`, `pnpm board:ui:check`, `node scripts/check-docs.mjs`, suite unit/E2E/adversarial) dan seluruh lane hosted CI (`quality-and-build`, `unit-tests`, `knowledge-gate`, `postgres-integration`) lulus pada exact pushed SHA di `origin/dev`.

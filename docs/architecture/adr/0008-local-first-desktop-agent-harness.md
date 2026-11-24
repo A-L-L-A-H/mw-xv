@@ -8,7 +8,7 @@
 - **Related architecture & plans:**
   - [Desktop Local-First Harness Architecture](../desktop-local-first-harness.md)
   - [Desktop Implementation Checklist (`DSK-0`–`DSK-10`)](../../../todo-desktop.md)
-  - [Blueprint: AI Corporation Desktop Harness](../../../moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
+  - [Blueprint: AI Corporation Desktop Harness](../../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
   - [ADR 0001: Platform Contracts](../../decisions/0001-platform-contracts.md)
   - [ADR 0006: Mandatory Addon-First & Thin `apps/api`](../../decisions/0006-mandatory-addon-thin-api.md)
   - [ADR 0007: AI Corporation Addon-First Architecture](../../decisions/0007-ai-corporation-addon-first-architecture.md)

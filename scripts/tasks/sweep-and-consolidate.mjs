@@ -259,7 +259,7 @@ export async function sweepAndConsolidate({
   // Import the AI Corporation PR lifecycle IDs. Only PR.14 is still open and is a human approval gate.
   const aiCorporationTodoPath = path.join(
     rootDir,
-    'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md'
+    'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md'
   );
   try {
     const aiTodoText = await fs.readFile(aiCorporationTodoPath, 'utf8');
@@ -303,7 +303,7 @@ export async function sweepAndConsolidate({
         },
         evidence: {
           paths: [],
-          detailFile: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
+          detailFile: 'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
           commitSha: null,
         },
         references: ['docs/roadmap/evidence/M12.14.md'],
@@ -311,7 +311,7 @@ export async function sweepAndConsolidate({
           ? null
           : 'Maintainer approval is an explicit human gate; automation must not self-approve.',
         sourceRef: {
-          file: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
+          file: 'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
           legacyId: code,
         },
         url: '',
@@ -450,7 +450,7 @@ export async function sweepAndConsolidate({
   // metadata is retained for the generated work-package mirror.
   const visualPackPath = path.join(
     rootDir,
-    'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json'
+    'docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json'
   );
   try {
     const visualPack = JSON.parse(await fs.readFile(visualPackPath, 'utf8'));
@@ -460,7 +460,7 @@ export async function sweepAndConsolidate({
 
     const visualCardNotesPath = path.join(
       rootDir,
-      'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/notes-addendum.json'
+      'docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/notes-addendum.json'
     );
     const visualCardNotes = JSON.parse(await fs.readFile(visualCardNotesPath, 'utf8'));
     if (
@@ -473,7 +473,7 @@ export async function sweepAndConsolidate({
     const visualTaskIds = new Set(visualPack.tasks.map((task) => task.id));
     const visualCardArchiveManifestPath = path.join(
       rootDir,
-      'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/manifest.json'
+      'docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/manifest.json'
     );
     const visualCardArchiveManifest = JSON.parse(
       await fs.readFile(visualCardArchiveManifestPath, 'utf8')
@@ -489,7 +489,7 @@ export async function sweepAndConsolidate({
     }
     if (
       visualCardNotes.sourceSnapshot !==
-      'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/manifest.json'
+      'docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/manifest.json'
     ) {
       throw new Error(
         'Visual Universe task-card notes addendum points to an unexpected archive manifest.'
@@ -547,7 +547,7 @@ export async function sweepAndConsolidate({
     }
 
     for (const sourceTask of visualPack.tasks) {
-      const expectedCardPath = `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/${sourceTask.phase}/${sourceTask.id}.md`;
+      const expectedCardPath = `docs/bundles/visual-universe-pack/tasks/${sourceTask.phase}/${sourceTask.id}.md`;
       if (!archivedCardsByPath.has(expectedCardPath)) {
         throw new Error(
           `Immutable Visual Universe task-card archive is missing "${expectedCardPath}".`
@@ -644,7 +644,7 @@ export async function sweepAndConsolidate({
           paths: [
             ...new Set((sourceTask.evidence ?? []).map((entry) => entry.artifact).filter(Boolean)),
           ],
-          detailFile: `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/${sourceTask.phase}/${sourceTask.id}.md`,
+          detailFile: `docs/bundles/visual-universe-pack/tasks/${sourceTask.phase}/${sourceTask.id}.md`,
           commitSha: sourceTask.commit ?? null,
         },
         references: sourceTask.scope_hints ?? [],
@@ -653,7 +653,7 @@ export async function sweepAndConsolidate({
             ? sourceTask.notes || 'Blocked in the delegated Visual Universe work package.'
             : null,
         sourceRef: {
-          file: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json',
+          file: 'docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json',
           legacyId: sourceTask.id,
         },
         url: '',

@@ -60,4 +60,4 @@ The Playwright audit (`apps/board/e2e/visual-audit.spec.ts`) covers login (`320Ã
 
 ## Visual Universe approval
 
-The MoonWitness XV Visual Universe direction and experience-tier rules are approved in `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/evidence/visual-universe-bible-approved.md`. Production art extends the existing token and font system, keeps interface content live, uses original artwork, and preserves accessible reduced-motion/static states. Pilot character and final hero acceptance remain separate approvals.
+The MoonWitness XV Visual Universe direction and experience-tier rules are approved in `docs/bundles/visual-universe-pack/evidence/visual-universe-bible-approved.md`. Production art extends the existing token and font system, keeps interface content live, uses original artwork, and preserves accessible reduced-motion/static states. Pilot character and final hero acceptance remain separate approvals.
