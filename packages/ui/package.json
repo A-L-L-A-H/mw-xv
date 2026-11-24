@@ -253,6 +253,26 @@
     "./components/log-console": {
       "types": "./dist/components/log-console.d.ts",
       "import": "./dist/components/log-console.js"
+    },
+    "./components/comic-panel": {
+      "types": "./dist/components/comic-panel.d.ts",
+      "import": "./dist/components/comic-panel.js"
+    },
+    "./components/speech-bubble": {
+      "types": "./dist/components/speech-bubble.d.ts",
+      "import": "./dist/components/speech-bubble.js"
+    },
+    "./components/character-stage": {
+      "types": "./dist/components/character-stage.d.ts",
+      "import": "./dist/components/character-stage.js"
+    },
+    "./components/quest-card": {
+      "types": "./dist/components/quest-card.d.ts",
+      "import": "./dist/components/quest-card.js"
+    },
+    "./lib/asset-registry": {
+      "types": "./dist/lib/asset-registry.d.ts",
+      "import": "./dist/lib/asset-registry.js"
     }
   },
   "scripts": {

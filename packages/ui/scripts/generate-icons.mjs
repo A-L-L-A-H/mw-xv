@@ -15,6 +15,17 @@ function pascalCase(value) {
   return value.replace(/(^|-)([a-z])/gu, (_match, _separator, letter) => letter.toUpperCase());
 }
 
+async function writeIfChanged(filePath, content) {
+  try {
+    if ((await readFile(filePath, 'utf8')) === content) {
+      return;
+    }
+  } catch {
+    // Missing target falls through to writeFile.
+  }
+  await writeFile(filePath, content);
+}
+
 await mkdir(output, { recursive: true });
 for (const file of files) {
   const name = file.slice(0, -4);
@@ -38,7 +49,7 @@ for (const file of files) {
   exports.push(component);
   exportLines.push(`export { ${component} } from './${name}.js';`);
 
-  await writeFile(
+  await writeIfChanged(
     resolve(output, `${name}.tsx`),
     `import { forwardRef, useId, type SVGProps } from 'react';
 
@@ -77,5 +88,5 @@ export { ${component} };
   );
 }
 
-await writeFile(resolve(output, 'index.ts'), `${exportLines.join('\n')}\n`);
+await writeIfChanged(resolve(output, 'index.ts'), `${exportLines.join('\n')}\n`);
 stdout.write(`Generated ${exports.length} individually importable typed React icons.\n`);

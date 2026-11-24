@@ -4,11 +4,427 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "3cb93c51179428ef6b0a0df874d0a612abb25002a74360375e5083b003682005",
+    "assetManifestSha256": "61ee3af51bc8aa02c9a1c2c2822310005a5c5faf184fb6274e92f4813c6edbb1",
     "tokens": "packages/ui/src/styles/tokens.css",
-    "tokensSha256": "6201ba52a577d498f7910012fe2158dfd673037b0df8c317cb020c5d8e47d7cf"
+    "tokensSha256": "6f67500508014116e2c1bdba7cb4d176a82cc38a3582c3a3e2f9f0eb670c0587"
   },
   "assets": [
+    {
+      "source": "packages/assets/animation/kuro-signal-blink/kuro-signal-blink-clip.json",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-blink/kuro-signal-blink-clip.json",
+      "kind": "animation-clip",
+      "format": "json",
+      "sha256": "85cb6a702e7ccc1d6e13a68d87b0f1452bf83da316bc67bc33ca4230088b7724"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-blink/kuro-signal-blink-frame-01.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-blink/kuro-signal-blink-frame-01.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "1ac14eba776b7b95c597f9aee9f04a3c7ca98b718115a367b1d5d53a570b59ef"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-blink/kuro-signal-blink-frame-02.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-blink/kuro-signal-blink-frame-02.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "b1078e4e544f76f041919f2942f38ffcdbf27e7444a027ce7f1dd495ad737daf"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-blink/kuro-signal-blink-frame-03.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-blink/kuro-signal-blink-frame-03.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "e78527c7b9e7029e505187e667a470b7b6dbeb5d4c425a913b2236ddf99c7c72"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-blink/kuro-signal-blink-frame-04.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-blink/kuro-signal-blink-frame-04.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "a7b0951d840282a440adf6cc91556a9241c13682db77e981787f598d364a356f"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-blink/kuro-signal-blink-sheet.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-blink/kuro-signal-blink-sheet.png",
+      "kind": "animation-sheet",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "e311cf2ffd46ed6d192de05a964cb5077361548ba26cf50b51f3913d20c8c18f"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-clip.json",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-celebrate/kuro-signal-celebrate-clip.json",
+      "kind": "animation-clip",
+      "format": "json",
+      "sha256": "7c0a0605e663be383529591721db6820778f9832d67504ab5c534d9da4d5d83d"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-01.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-01.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "addf0972e4fec0dfed81f260967ca61dd66f561d3bc0b0406c0a36b68f74a63b"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-02.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-02.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "a6e2dd9e76c5fb315fa78a0fe61f00ad12d63789cfc973c9075c8c73ea15a4e4"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-03.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-03.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "68e5f563714ec26d388f1776145d39661c0123070fbc635495c6a0ba6384af6f"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-04.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-04.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "572a1c822cae0e9263bbea6a9fb5a06611f80a487238659ce4d7220b927c2431"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-sheet.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-celebrate/kuro-signal-celebrate-sheet.png",
+      "kind": "animation-sheet",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "c9513cf627d033e42db55fbf03078219795c9744090c00c1bb53789ed01d564f"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-error/kuro-signal-error-clip.json",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-error/kuro-signal-error-clip.json",
+      "kind": "animation-clip",
+      "format": "json",
+      "sha256": "ad9811b433757e938615380a5910004f53518b9d119b3e435ef7ae7d5892a560"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-error/kuro-signal-error-frame-01.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-error/kuro-signal-error-frame-01.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "4c15a51eec16b02c5b7023ebb19420357972c273d95b2d03a176f6e90f2938b5"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-error/kuro-signal-error-frame-02.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-error/kuro-signal-error-frame-02.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "a21e14fb66edee2160357022628bf8bd8e62d755214d83e5866ed7040a64ab1d"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-error/kuro-signal-error-frame-03.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-error/kuro-signal-error-frame-03.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "70a260da212ac0588b9b5c288b99835b2fc859060cb4ae29cf53f1c2ad469896"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-error/kuro-signal-error-frame-04.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-error/kuro-signal-error-frame-04.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "cceae4d22576cca6f93e945b5e761ec4730e1f2bd0a62c84293f74101a85e149"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-error/kuro-signal-error-sheet.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-error/kuro-signal-error-sheet.png",
+      "kind": "animation-sheet",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "5f7415359ed833d3fa8b14fa5c6c507ced430e2f1de8a6aed0f7e3762b68bbd6"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-idle/kuro-signal-idle-clip.json",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-idle/kuro-signal-idle-clip.json",
+      "kind": "animation-clip",
+      "format": "json",
+      "sha256": "1626a3be4784734a797cd4fbb5ec634ff2889077ce30b624c4529c817261eba7"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-idle/kuro-signal-idle-frame-01.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-idle/kuro-signal-idle-frame-01.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "445b57df5ae60cb0c5951d703ea46452ddf153ae9f57a632f980466773bd8e77"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-idle/kuro-signal-idle-frame-02.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-idle/kuro-signal-idle-frame-02.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "b810f82b0b5471eefde5b2cd62b3a1d99ffd106672e2a639d7c9e0aba987c443"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-idle/kuro-signal-idle-frame-03.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-idle/kuro-signal-idle-frame-03.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "012580037697962156b207f21e2d821268395bb2f40a558e3f64858cc7b3db6e"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-idle/kuro-signal-idle-frame-04.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-idle/kuro-signal-idle-frame-04.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "9ed988efdda5699c108c6ca44bef6d8becfaad1518fe509c01b20e03c95ea080"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-idle/kuro-signal-idle-sheet.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-idle/kuro-signal-idle-sheet.png",
+      "kind": "animation-sheet",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "10a9749be6a76bef3bb1bb63cba33c1830beb10bfde64863720f1822a6450e13"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-clip.json",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-loading/kuro-signal-loading-clip.json",
+      "kind": "animation-clip",
+      "format": "json",
+      "sha256": "419c8c3a19890fc9ec2599ab0d894606b25f1cbb147532740415b3cd69f4f13c"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-frame-01.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-loading/kuro-signal-loading-frame-01.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "497b94ec93d660e2fd2291f70ed50746d6b8464e87b0574b0d3b4485f8782897"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-frame-02.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-loading/kuro-signal-loading-frame-02.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "7d7875d24e65b1e7a51a9a03870c1c6fba68d7ae9c2b7e2efcd2efafa20f63a2"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-frame-03.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-loading/kuro-signal-loading-frame-03.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "aaa543d9cd726d60beae575b5fa00bb1d16b702d51354bdcbbed1ab03bb245f2"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-frame-04.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-loading/kuro-signal-loading-frame-04.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "4766be1333c6c23d7032bc711d8d855d38f886111a98cfe93ca9aa617150c3f0"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-sheet.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-loading/kuro-signal-loading-sheet.png",
+      "kind": "animation-sheet",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "2e9f51864b80f5217410fef92e55fa86a16378c0ed49fda16321804141fd364a"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-clip.json",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-success/kuro-signal-success-clip.json",
+      "kind": "animation-clip",
+      "format": "json",
+      "sha256": "1dce8dc122061d53844f5b52e3e3e854a185e8ac11b6cb8cd53e78dcd5b3d79b"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-frame-01.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-success/kuro-signal-success-frame-01.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "b0504bec0da92b1b2dc5c6f1c26b8010eeede93a5e5f1f387f3333a0399e5fd9"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-frame-02.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-success/kuro-signal-success-frame-02.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "45a08183d0fd9d8dc143e9c696402a9f945e5b624f00bf5f90dbc135b06dd4eb"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-frame-03.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-success/kuro-signal-success-frame-03.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "07c05b126aa0bce5819903744aa486cd55e0f9f3ff6ec292af9c025abc288870"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-frame-04.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-success/kuro-signal-success-frame-04.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "cc64e6ca5dce7a6d285cc86889c15328df49cad71ee46b2dce4dfedec3b0dbe3"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-sheet.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-success/kuro-signal-success-sheet.png",
+      "kind": "animation-sheet",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "bac6634e1cc56fd7ee9aa331280f648ee9b713c37872c95a2fddf55aac8adbf5"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-clip.json",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-think/kuro-signal-think-clip.json",
+      "kind": "animation-clip",
+      "format": "json",
+      "sha256": "91e92e18f23bac31871c4591b6ba5e608361b804f051627e1367b474000ab667"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-frame-01.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-think/kuro-signal-think-frame-01.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "1e35bdf5bde58610316e7bb234b76881d4649fb347e629eb09e6c117cdc6bc7d"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-frame-02.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-think/kuro-signal-think-frame-02.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "9e13511208f6f0d45802317cf546cb09f57ced8f2c08d2c69b21474f6191795e"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-frame-03.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-think/kuro-signal-think-frame-03.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "a719b27e01c521289390529c288be65907ecce0959a24a3db08916a6900118b1"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-frame-04.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-think/kuro-signal-think-frame-04.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "bd2c2b3554a52b166856a454a5dc933e9b7bb2eda42bc1ddc59469a033bc0fc1"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-sheet.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-think/kuro-signal-think-sheet.png",
+      "kind": "animation-sheet",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "5c4c11791cad52414aa82c959196038856dc1ef44f499048f5a337ab930dac33"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-clip.json",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-wave/kuro-signal-wave-clip.json",
+      "kind": "animation-clip",
+      "format": "json",
+      "sha256": "eb25235c40331431e1105689d8785e3d4318947c7164d8270977c8d455327191"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-frame-01.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-wave/kuro-signal-wave-frame-01.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "e978ef27d6a0a19786c53b08107dc466d2d6ab526a4adfd9ef303f8bf4dbd104"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-frame-02.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-wave/kuro-signal-wave-frame-02.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "b49b19dd1e8886f28865accea38f3d200397df5460c872fac51778aab8641301"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-frame-03.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-wave/kuro-signal-wave-frame-03.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "ada4191c82021c78e8d2a59bc5c19c6cfbd465f38802633462af97a86d86b187"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-frame-04.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-wave/kuro-signal-wave-frame-04.png",
+      "kind": "animation-frame",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "96c0dcc833148c294bda838d5fc6224456c6bb19806efb41711b1a2097a37e17"
+    },
+    {
+      "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-sheet.png",
+      "output": "docs/assets/moonwitness/animation/kuro-signal-wave/kuro-signal-wave-sheet.png",
+      "kind": "animation-sheet",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "d9d20298354cf69b8e76f529945453830d72a4f821f1268e87e236fdbffc5c71"
+    },
     {
       "source": "packages/assets/brand/app-icon-192.png",
       "output": "docs/assets/moonwitness/brand/app-icon-192.png",
@@ -251,6 +667,42 @@
       "width": 2048,
       "height": 1152,
       "sha256": "a8f0a0d34b100c3c75af917b3a9fd17f8f963524804fd5c171378ac923cae500"
+    },
+    {
+      "source": "packages/assets/environments/riot-alley-bg.svg",
+      "output": "docs/assets/moonwitness/environments/riot-alley-bg.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "c98a25827d033cc2085739cef3b88f2c7b2a9badc9702263fa6fd0eff8e6ed5c"
+    },
+    {
+      "source": "packages/assets/environments/riot-alley-decor.svg",
+      "output": "docs/assets/moonwitness/environments/riot-alley-decor.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "9d61ddc64e638f691d78c696a3ecad676af655384e6dc9cf76692318d08e111b"
+    },
+    {
+      "source": "packages/assets/environments/riot-alley-fg.svg",
+      "output": "docs/assets/moonwitness/environments/riot-alley-fg.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "d9af4e8b83e4cb2199a07dbd3ec2f277f018dec9fd1d279950f279a629d3417b"
+    },
+    {
+      "source": "packages/assets/environments/riot-alley-mid.svg",
+      "output": "docs/assets/moonwitness/environments/riot-alley-mid.svg",
+      "kind": "environment",
+      "format": "svg",
+      "width": 2048,
+      "height": 1152,
+      "sha256": "552c6b2735500547f1ea11536afdebb5c32c04d6b7d91fcf10542e3b3de06a80"
     },
     {
       "source": "packages/assets/fonts/Anton-latin-ext.woff2",
@@ -1353,6 +1805,1239 @@
       "sha256": "efeae87d4ead889767d59a3d4874d0c40e93de1edaaba2117d2c053f8e5903e9"
     },
     {
+      "source": "packages/assets/illustrations/riot-universe/backgrounds/bg-halftone-ink-dark.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/backgrounds/bg-halftone-ink-dark.webp",
+      "kind": "background",
+      "format": "webp",
+      "width": 1376,
+      "height": 768,
+      "sha256": "952f7e7fd1a06acca08b1f010be650dca456eb92dbe1ef191695686f3783a3bf"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/backgrounds/bg-halftone-paper-light.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/backgrounds/bg-halftone-paper-light.webp",
+      "kind": "background",
+      "format": "webp",
+      "width": 1376,
+      "height": 768,
+      "sha256": "00d00626a4a8cdcdf6e5e8aa4ec251ab47556445689c8707a05374051c941db7"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/backgrounds/bg-riot-arcade-workbench.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/backgrounds/bg-riot-arcade-workbench.webp",
+      "kind": "background",
+      "format": "webp",
+      "width": 1376,
+      "height": 768,
+      "sha256": "a147d7ad8a3a5123cc7e58343894c7c6db1507ebdaab77300983b7c3c7dd6dc9"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/backgrounds/bg-riot-street-alley.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/backgrounds/bg-riot-street-alley.webp",
+      "kind": "background",
+      "format": "webp",
+      "width": 1376,
+      "height": 768,
+      "sha256": "4cdd28f005b9daca5bf2b157c4d3922cb4a490a2aacf45842390a8b6551244d4"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-angry.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-angry.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "7f10f78228842b9acc78cee206a03790fd15a89477315bd06823799cab067baa"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-angry.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-angry.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "0a1c7583b4c98ba3b2a17dd23336c3c370831125430f50ab523b2e43857472e1"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-celebrating.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-celebrating.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "210f939d57a7adf800bcd6ed0efa62b9da5948a56d017eb6ba94c8812aa64e32"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-celebrating.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-celebrating.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "69c756551e1d5b9e85aebf10fffc3e4bf6b866620e53150fbf51a95f3205bda5"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-confused.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-confused.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "0703ce4dab5f2eb0606d4a142afb70758ecc52119352c1f95edaaf28663b8c1c"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-confused.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-confused.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "6c0d45ca7c7f20ca8955aa20ffe041ed3ff6785cfebeec2202da9dcb6c532c97"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-crying.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-crying.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "b2329bffae3102b9745fa956bc73ce51a36ba4ff6836c96751dd8c37f9ce75d4"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-crying.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-crying.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "593bc3aed4084a268dc95a9f5c005f1dd9a326a7d91f2a8c764af12c96d00ec4"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-curious.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-curious.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "777843021950141c9b981b517b162f3392affd15d46b4b150b8406f6a8d02c32"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-curious.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-curious.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "4f07e4088284168b0bbee749175833c5f94470d1954562aaeb27da0c8b132b98"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-determined.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-determined.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "0e8c8f212d46f3b224c02f433f4a44ece5e4c6dfc15d82cf9019f8e39a1d41f3"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-determined.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-determined.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "ab7f237111d296b2d4083133cfe50e792a1e15b9bfa59e2234492c71c35430f5"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-disappointed.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-disappointed.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "f82062e31c7a63f95d491eb20b6c8988fd83dec1181a1445c977d1276d01983f"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-disappointed.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-disappointed.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "db05a9f8ddc5cb5de1fb34434ad99440390c0e71849438487bc940ef848f8e36"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-embarrassed.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-embarrassed.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "5fa3004a53647e9467bdc145f5286d3fa5d2757832cb3042693d62b7dbdd340e"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-embarrassed.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-embarrassed.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "72f53ba524d99fdef53f740fe993ac6590bab21d2ac2ad1b0a1daff28c699f62"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-excited.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-excited.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "035c402ea70d6182ba0f501bba80b571585da66d9f52461fd3131c8773f94862"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-excited.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-excited.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "dad60f304c3d2561d66268a0dbef8cacdcf34e947bea648a5f20ab9166cbc7f8"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-happy.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-happy.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "d6cbe4d068b011c3f3d4c2317d0116c14f8556cb8548fc873c53f185b12393c4"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-happy.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-happy.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "644d7ba65252460fc917877e7365c0d9468ba53af4637b76a4756aeee44ba301"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-laughing.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-laughing.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "8cdd3c43cbd4877ed0b8dd2837badba62a32e54a368ea3eda459fe1b8ff018b1"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-laughing.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-laughing.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "4c3ebe16cff97e95095eb49bf554671d969f260325309a9ff27997b3df603168"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-sad.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-sad.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "0a1df87138792598fc7b8748693a34f869cc572d40932a8bf3e6100493a5caed"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-sad.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-sad.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "91f607cd601a7ae94434c316b97e5e85549b0ed4d04c4bca1b059a82edb3207c"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-sleepy.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-sleepy.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "fdfed9a5410ecb81328be3a7e273f300c8cc30a0cf99bf4beee64b75e9daed76"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-sleepy.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-sleepy.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "13cbebd18fc039b9b636734cf9367ac7a0b17b8b5c59a71c70b83bc1414c720c"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-surprised.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-surprised.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "91ea8f08ff308d3e4945596fb78eeb9c578757a8162e70d4bbaf5fc9831d3d9a"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-surprised.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-surprised.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "048c88d1a46be27df51262118eeaa701f765a548146c6c5b32b78d95593515bc"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-thinking.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-thinking.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "1ca6e41b74871adbe4e7d1574bf65b1f8a6d0679714e6aca269e604617afa60c"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-thinking.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-thinking.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "a79dfcc7fc27b1adb9dc7c5190e9708a5532cd880eab850588e4f4506a13a5ac"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-victory.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-victory.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "2bf6fbf58c177e6f8bf4668540209a31edf9eeab29b87b590594a319b8e2ffdd"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-victory.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-expression-victory.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "e398c7e39fea797022117dd7e26fd28f81332f8699e46099ec1b21b22e6ad2db"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-celebrating.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-celebrating.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "87cebabde39f615108a56d919d178f6666e3d8455769a9b6a535998fc75f587e"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-celebrating.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-celebrating.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "63abfd1d4ccf79b3126d6c587919c7f92208b4356cbde64144f80f65c875661f"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-gaming.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-gaming.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "dd82cf0a6c47f57ed2b3af22a48494b94cc96529e3fb2dd3fbbea55beb044fb2"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-gaming.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-gaming.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "07ca12ab861c10eefc926c6c595fef614820f12a556ee3ec3657467d63a0a90c"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-holding-objects.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-holding-objects.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "da5475b2d4219a44cb18abcd0f8a6469904fcaf3edddffdd1ce2e6ac92bf56c6"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-holding-objects.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-holding-objects.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "c4da8f5e4ed7a82fcc1bc1caacc6cba9944aa5ffd9eddabfd28b06d08e39ea44"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-jumping.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-jumping.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "b58e45547207aacb964aa363f72f57c3b5410bff13c1a52c5e09476ff0417be3"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-jumping.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-jumping.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "c2245a7f1f996533206af6a947a032be281573d4e6d4c03e76fcdc6fc6c427f6"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-pointing.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-pointing.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "4e0d89f39ee918416e850aee3c425c2edc996e3823538559acb2013caf78184f"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-pointing.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-pointing.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "93e1d6a340fb52ebf23888f8c14ba301df4312b4dd48cf1ee319515cc80b6dcd"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-reading.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-reading.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "582e7b1077381731f14ce5ba3ea1882b8cec9a642b318ac2cd0be2d70141c885"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-reading.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-reading.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "1c0e97ca285f20369d14fce2b874522c299505d284281c9dac70980be6eb8f6f"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-running.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-running.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "75a477dd42ae85fab7003335aa839999206924b0446df84b3ec63cc57f9aa090"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-running.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-running.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "a436073d4329bb41225e6c463c7a162a44e854b11cf7d8b321c5a0edd9440f83"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-sitting.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-sitting.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "913327978532e2b3d50b356c3b80aa6a1ad6804f260c343a5def9c7b4214036d"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-sitting.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-sitting.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "700a175f47c636c44d0fd459704973b60aa975b1823029bab72f9789dde3f767"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-standing.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-standing.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "1dda36b622613b68ea1a34baedd0af3d2db2c79859a45b74f697a2c8b2209854"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-standing.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-standing.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "202ac8aaa2a80742828e4b5dec6a4bb1f3a5b03bfb5245941752773d563ca950"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-walking.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-walking.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "fdaee89d9bab08f41daff56c5d83af3f8ce771dfd3bc1f2e1517cd107c1551d4"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-walking.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-walking.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "5772a429a137e3369b8c3403741009a04faed7a83f1e7a8dfc7292ac37778b1f"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-waving.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-waving.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "d56a96275c9a97ceadf89150238da41b1474317228fa5717f0e166a4b6108578"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-waving.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-waving.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "c98f00e8332320566587ce7ea1c640832152fc7e39f76f3467aa51bb194a6b6c"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-working.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-working.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 768,
+      "sha256": "eb0e37ea80e6d211da13c7dfe17286481397785ebc17d47437ea1b11d3a2217a"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-working.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/kuro-signal-pose-working.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 768,
+      "sha256": "6eab7f81feea2d799a690ee391cd6d2f1da05e4d8460c845fab915cc0ff74aa7"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/vesper-ink-portrait.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/vesper-ink-portrait.png",
+      "kind": "character-sprite",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "sha256": "1732489aedc7bcbdb1217689f2e8e5c72cf1be129722f10103397e482748154b"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/characters/vesper-ink-portrait.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/characters/vesper-ink-portrait.webp",
+      "kind": "character-sprite",
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "sha256": "6b2e331952534779397b7bbb1c7e42e2e452f6c0d01ed23ec1fb3955fdf37f77"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/avatar-frame-riot.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/avatar-frame-riot.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "c43d81cc9ddeca5718b7d033aefb54997e469f3afa09d0d890116bed15e9afbd"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/avatar-frame-riot.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/avatar-frame-riot.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "bf7c86023b6a3b556bda886b554b6461d67f0fbe8e0ee3f0b1e93ce17920d3c0"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/avatar-kuro.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/avatar-kuro.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "6b4591a8f6446568f941c00fe4e410f1a7eca945e44d0ab22ec1b97db5bbc2ec"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/avatar-kuro.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/avatar-kuro.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "0a65971c99f98fdb1dfef44c00ad8d6b8a59f9c0282106e0d054213884b82f9d"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/avatar-vesper.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/avatar-vesper.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "4e88d5fed8eb738e870f1f42ba10ccd14ff345fa1e622f1cd894f492ed72e8d3"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/avatar-vesper.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/avatar-vesper.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "2614f2ce92adccc77e63a86d2186f4b169b5278bc184b0e5ea5d9e01ff8e2862"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/badge-archive-keeper.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/badge-archive-keeper.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "de3cff0b40706233a4f9acf0867171f0d7b19210904725ba2ddc8668ed503808"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/badge-archive-keeper.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/badge-archive-keeper.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "258c8bf697248ef36083c839239adc122edd778d575675f7924b81732a85dd2a"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/badge-signal-scout.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/badge-signal-scout.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "40487fb0e6ab8ddac1582e0acceeae48eb1dbb67b6e551145b4b2a910e226da5"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/badge-signal-scout.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/badge-signal-scout.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "0701381134e5e8bd0d629d47e7e6c88a949f91a5d3a609158e8fc31a3d57b7a4"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/badge-story-architect.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/badge-story-architect.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "9e1673369e55fb1608e6c18df7429f561f5c37b22f8c28ae3e25e61bea736b8a"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/badge-story-architect.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/badge-story-architect.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "452c979a71084e82c6ef2fae52bb417a174041b589f4a56be7027c84c3fa64f9"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/badge-zero-drift.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/badge-zero-drift.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "58db6bac8305bd446a41084b9c4f742af45f28af0541b18603ed7029802d812d"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/badge-zero-drift.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/badge-zero-drift.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "78f16935c48e7c302ade1324f14de0aba199247a91986e0c34d023de59acaf5a"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/level-up-burst.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/level-up-burst.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "e0b49afb4d57c5e0e6cea3467fecb7d30bb9cc57be01fbea202452d5685cada3"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/level-up-burst.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/level-up-burst.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "a5cce9355496e3fafd71316230fb84a1f7294141552766e529c630ba23e12615"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/quest-banner.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/quest-banner.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 512,
+      "height": 192,
+      "sha256": "c4387fbc4b529c27d499a1855cf478741cdba5384046f76b812b08c685cc4005"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/quest-banner.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/quest-banner.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 512,
+      "height": 192,
+      "sha256": "43b523dcdd9465255a49d69fe93a1d8fd79bc1d490aa0e6d0a170ccad2243e03"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/rank-legend.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/rank-legend.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "7c09be118b45675aa9428c281470753f1d977813650ab648a6f536a70d72dacc"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/rank-legend.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/rank-legend.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "a7ac93fc3df2fc1ba3f39ecbd72930eb27e0e6dd3d5a0de7fc2c385662560b02"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/rank-rookie.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/rank-rookie.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "34a63992ccc0fd1324c7762a9a41dc02080cc1f92652e975c44d71f16c896231"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/rank-rookie.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/rank-rookie.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "b99f51e27ee3ef91d5c49d0748630fe8599e57c588ae1828c27815c4095cdd68"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/rank-vanguard.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/rank-vanguard.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "ea18cb9e5f27febf79fcfa2e59b1e07bf3b39e14aaef1fd87d9dc7d8e2ee7d22"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/rank-vanguard.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/rank-vanguard.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "f6c23e586bc7903d0be9478b418cd2e000bdefab3db425e23865e9d1da1a5a75"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/reward-crate.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/reward-crate.png",
+      "kind": "game-asset",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "94044f17a71e359fbd22aa3b62bb53cd0edada7484310685e109b8697582d75e"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/game/reward-crate.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/game/reward-crate.svg",
+      "kind": "game-asset",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "a3c63872a4f38e9182a49a6b9887b0753d252a1272608abf7457f5913f71fbe8"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-access-denied.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-access-denied.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "1833d589b31231099cb8fd3219c474092345a587b0abf09534f33bd6fcecf36f"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-achievement.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-achievement.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "c732af5b882df664af6b14d6f38a6f2d98a7a7ae7f309d5f7f1ba5d2efc29a01"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-celebration.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-celebration.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "6278f4d4b3e18c90ba57baacb7f28aa22d12cc0fa311f89addff66d86cd67eb1"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-completion.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-completion.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "69baa27818b4d5e5b63534c25466f82eb8d347a5c472249d016795eb118afdd4"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-discover.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-discover.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "40bdebedea46e5b151eaeaeea922765d7a0a93b1efb096ba87977c467e621a1b"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-empty-collection.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-empty-collection.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "974dc8c9cece820f93b07b92c0e5d867415bdfdf75769339bc79d41335efcf54"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-empty-dashboard.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-empty-dashboard.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "62166979cd99483a30c702f440cf98412756773614102449fcbf742870780443"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-error.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-error.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "f182406d25ee7090fd2c82805ac0df575267b0c4920cc8a660482c061b16d443"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-explore.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-explore.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "0c27cac0a420edb48130c99b893424e484029f31926549f8559fa3c36d53da9a"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-first-time.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-first-time.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "166609749df0bcfef340f3396e79ea0856e034a25e0d9c3c9ff92f44a88d8146"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-loading.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-loading.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "14d2114daf883ef0710b2d38070111470065523cc7a0135c1313d7670ca4502c"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-maintenance.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-maintenance.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "fe320a657fd80aabeee3a3c6f2d4a6ee72e6825815200505b4ac8f5797150906"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-network-disconnected.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-network-disconnected.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "4deea489d61d1d6598295515dd9f84def56f224c610a2a8f0082b5a521e5703c"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-no-activity.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-no-activity.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "8c609e1d8e7ecc80b7a09c6b24d5d91bcc5f7ea8c8623d43db2cb4395e5ffaad"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-no-favorites.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-no-favorites.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "7861156040576a6c2ca391865e30f3924bfb466ecd432b90fc2025a8a66c6460"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-no-messages.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-no-messages.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "bc24b9120fdf68874da82ab73257078c5ea114b1f19f84457a6c2985ed5c17f3"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-no-notifications.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-no-notifications.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "8b45700d8d7010aeebb13b9433864a28180c4ebf9b6dc6783ac77467c39cfb80"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-no-search-results.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-no-search-results.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "77709702a9c70f1b971166e6c9b276f0abbb1ea6317aae6cab9468d540d1cc99"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-not-found.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-not-found.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "d8a288c4d1bd80d553ebe21ceb4aa1e602a952cb597d682b43bcae8f8a6819d6"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-offline.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-offline.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "e86823d87876bd6da9e32a4df00c2516113f6bc02fda574ef287cd03e9fa7301"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-onboarding.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-onboarding.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "3e21b05a7c1d5ffaadba6ed688ef578a97cb7cadc5096b3b12f692106fcf6c50"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-profile.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-profile.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "1f10e44c17d71917c8abbd5cf68b829d9bee39f51b94fcb3b0c418bc68fa46f2"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-success.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-success.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "05cb7bab2adac98f00f0d6434534603f8e7bb90625d73f955fdc177c8a9c5a37"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-unexpected-failure.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-unexpected-failure.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "453637b96a14bba2e23068e814d245cff59c49a510dd6ae602c1093ebe098c6c"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/states/state-welcome.webp",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/states/state-welcome.webp",
+      "kind": "state-illustration",
+      "format": "webp",
+      "width": 640,
+      "height": 480,
+      "sha256": "69331720a67b74f1f2dbe51487131bc06f11f73e33c3b87995c9d92f933c37d3"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-comic-boom.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-comic-boom.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "095f890aa4516a6bf159481cefd5bb2261648915b1e5e8e144b07132a78f6fa5"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-comic-boom.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-comic-boom.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "9bd59436b19b507b1f1d8c971a79c16450c925ce6b3a643ab4630fad178c9481"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-graffiti-crown.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-graffiti-crown.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "ea02a1df8b8c909a89b921f07995ebb388173ca7109368c16994cb6fe2f29feb"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-graffiti-crown.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-graffiti-crown.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "579247020d47bf1e2ae7e1aeb97abaf69685128fee31f485f9af60c9df56c8ae"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-hand-arrow.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-hand-arrow.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "41c67e4f230244e63083d31ab5bfbbfc78757743acf614e52a2d774c3f15dd37"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-hand-arrow.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-hand-arrow.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "57509e4a84257e5192fab3d0ed1b6196be79c5ec6cc9295f40cd115376c69a0e"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-lightning-bolt.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-lightning-bolt.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "e6f92016d33799184e81b7741cda50aafe8d22aa6a6f550920a9eac41d116985"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-lightning-bolt.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-lightning-bolt.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "bca49e99f751bffd8b4b271b2adaa18cdde5c560d3c2a7682b3452add93ab68a"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-motion-burst.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-motion-burst.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "07cfed6f1d194437d74b425ef3325464b12807c6c3f50e4f8ff5f1456ab4307b"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-motion-burst.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-motion-burst.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "568efcd2527f9f63a939286c61bfed160b60d6e6646165ffb70ec6d74363cb77"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-paint-splash.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-paint-splash.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "abaa4756e4272355dc6165bd74aadb02efe3570d73922d6dbb684e14de41dbb7"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-paint-splash.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-paint-splash.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "1515801b616c94c64146f6448cc5e9a5bb7a730bb5cd7c2085eaa7a40d5f0715"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-pixel-heart.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-pixel-heart.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "c3dd038e40dc76b2bce1c2778dc89078072163be588397d8b1af226b34edf120"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-pixel-heart.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-pixel-heart.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "806a0f41771417d39e3bdb3080145e9b6c382868b4b7480298cfdd9d9052f387"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-riot-star.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-riot-star.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "82d22f4650bfc244da0551ca5573bb7dc2a23eabeedd078d9337bf7f389d57b0"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-riot-star.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-riot-star.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "a7b5e150d9c467764eb32fd815840cdcea47a5af87c00b04db320086622a08ec"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-speech-bubble-shout.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-speech-bubble-shout.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "2fc596444557b956de0c29c87ccebc649bc33db4331c18195ee40b52bd884f10"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-speech-bubble-shout.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-speech-bubble-shout.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "6ea85f032c753d4b6e57d76a420cf6e3b103610c8d6c96259e02cd904e82a72a"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-speech-bubble-thought.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-speech-bubble-thought.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "563b8ebf809dd6f128f9179f203bfd3bbb636165fa7c97ad109c2f587fcd3601"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-speech-bubble-thought.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-speech-bubble-thought.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "195c2541a7588c00d647646b7a94cae2120ef9f895fc5cedf5f5b223af7c256b"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-street-flame.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-street-flame.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "70915cdd8a49589026b101c649b64acc844e8a7d4de3008ce03d0d85009e6924"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-street-flame.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-street-flame.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "c06643ce6eaca5c28f101c43aa948939519ff42034a69547bdd3cd208681863d"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-torn-tape-x.png",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-torn-tape-x.png",
+      "kind": "sticker",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "sha256": "65974590931b07c1a9c0ab9ecf5c2afcdad18dd9de52ccb3ecaec8ebc797fc4b"
+    },
+    {
+      "source": "packages/assets/illustrations/riot-universe/stickers/sticker-torn-tape-x.svg",
+      "output": "docs/assets/moonwitness/illustrations/riot-universe/stickers/sticker-torn-tape-x.svg",
+      "kind": "sticker",
+      "format": "svg",
+      "width": 256,
+      "height": 256,
+      "sha256": "aae1b29eb2ef3d9af78936b48ac5d5f25281aad5a4d879c17bd9678f5f52230f"
+    },
+    {
       "source": "packages/assets/illustrations/story-workbench-masthead.webp",
       "output": "docs/assets/moonwitness/illustrations/story-workbench-masthead.webp",
       "kind": "artwork",
@@ -1648,6 +3333,13 @@
       "sha256": "b74d88ab2110d44bab2786b76873659163cdfb77bf091304b3d8454fbbb140ee"
     },
     {
+      "source": "packages/assets/scenes/riot-alley-scene.json",
+      "output": "docs/assets/moonwitness/scenes/riot-alley-scene.json",
+      "kind": "scene",
+      "format": "json",
+      "sha256": "d79847e7ab31703db7d6cb45add6a157aa3074bc2b9a9b1613f70d583f6c11ae"
+    },
+    {
       "source": "packages/assets/sounds/ambience-archive-quiet.wav",
       "output": "docs/assets/moonwitness/sounds/ambience-archive-quiet.wav",
       "kind": "sound",
@@ -1701,7 +3393,7 @@
     {
       "source": "packages/ui/src/styles/tokens.css",
       "output": "docs/assets/moonwitness/styles/tokens.css",
-      "sha256": "6201ba52a577d498f7910012fe2158dfd673037b0df8c317cb020c5d8e47d7cf"
+      "sha256": "6f67500508014116e2c1bdba7cb4d176a82cc38a3582c3a3e2f9f0eb670c0587"
     }
   ]
 }

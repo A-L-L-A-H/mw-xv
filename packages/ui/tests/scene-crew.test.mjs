@@ -63,7 +63,7 @@ test('every crew-01 animation clip declares four distinct frames with existing S
       const absolutePath = join(directory, entry.name);
       if (entry.isDirectory()) {
         collectClipFiles(absolutePath);
-      } else if (entry.name.includes('clip')) {
+      } else if (entry.name.startsWith('crew-01-') && entry.name.includes('clip')) {
         clipFiles.push(absolutePath);
       }
     }

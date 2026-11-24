@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 1152" width="2048" height="1152" role="img" aria-label="Riot alley neon brick walls and transit arches"><title>Riot alley neon brick walls and transit arches</title>
+        <path d="M 24 1140 V 320 H 460 V 1140 Z" fill="#171720" stroke="#0d0d0d" stroke-width="6"/>
+        <path d="M 1560 1140 V 280 H 2024 V 1140 Z" fill="#171720" stroke="#0d0d0d" stroke-width="6"/>
+        <path d="M 460 540 Q 1024 380 1560 540 L 1560 600 Q 1024 440 460 600 Z" fill="#1e1e28" stroke="#0d0d0d" stroke-width="6"/>
+        <rect x="360" y="420" width="44" height="240" rx="8" fill="#ff2e88" stroke="#0d0d0d" stroke-width="5"/>
+        <rect x="1630" y="380" width="44" height="260" rx="8" fill="#00b8f0" stroke="#0d0d0d" stroke-width="5"/>
+        <rect x="140" y="560" width="160" height="190" fill="#f3efe4" fill-opacity="0.88" stroke="#0d0d0d" stroke-width="5"/>
+        <polygon points="170,610 270,610 220,700" fill="#ffe031" stroke="#0d0d0d" stroke-width="4"/>
+      </svg>

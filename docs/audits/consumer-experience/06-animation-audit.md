@@ -1,0 +1,125 @@
+# 06 — Animation, Motion & Audio Audit
+
+**Audit Scope:**
+- Components: [`effects.tsx`](../../../packages/ui/src/components/effects.tsx), [`sprite-player.tsx`](../../../packages/ui/src/components/sprite-player.tsx), [`layered-scene.tsx`](../../../packages/ui/src/components/layered-scene.tsx), [`scene-particles.tsx`](../../../packages/ui/src/components/scene-particles.tsx), [`scene-transitions.tsx`](../../../packages/ui/src/components/scene-transitions.tsx), [`audio.tsx`](../../../packages/ui/src/components/audio.tsx), [`character-preview.tsx`](../../../packages/ui/src/components/character-preview.tsx)
+- Libraries: [`character-adapter.ts`](../../../packages/ui/src/lib/character-adapter.ts), [`scene-playback.ts`](../../../packages/ui/src/lib/scene-playback.ts), [`scene-camera.ts`](../../../packages/ui/src/lib/scene-camera.ts), [`scene-timeline.ts`](../../../packages/ui/src/lib/scene-timeline.ts), [`scene-soundscape.ts`](../../../packages/ui/src/lib/scene-soundscape.ts), [`use-animation-visibility.ts`](../../../packages/ui/src/lib/use-animation-visibility.ts), [`audio-runtime.ts`](../../../packages/ui/src/lib/audio-runtime.ts), [`scene-test-harness.ts`](../../../packages/ui/src/lib/scene-test-harness.ts)
+- Styles & Consumers: [`components.css`](../../../packages/ui/src/styles/components.css), [`tokens.css`](../../../packages/ui/src/styles/tokens.css), [`apps/board/src/providers.tsx`](../../../apps/board/src/providers.tsx), [`apps/board/src/index.css`](../../../apps/board/src/index.css), [`apps/board/src/app/global.css`](../../../apps/board/src/app/global.css), [`apps/desktop/desktop-web/desktop.css`](../../../apps/desktop/desktop-web/desktop.css)
+
+---
+
+## 1. Executive Summary
+
+MoonWitness possesses an unexpectedly rich, deterministic scene/animation/audio engine inside `@moonwitness/ui`—complete with an `IntersectionObserver`-gated playback loop (`scene-playback.ts`), bounded pointer/scroll/keyboard parallax camera (`scene-camera.ts`), DAG-validated timeline (`scene-timeline.ts`), deterministic PRNG particle generator (`scene-particles.tsx`), comic scene transitions (`scene-transitions.tsx`), sprite sequence adapter (`character-adapter.ts`), URL/global deterministic test harness (`scene-test-harness.ts`), and single-instance gesture-gated audio controllers (`audio-runtime.ts`, `scene-soundscape.ts`).
+
+**Critical Consumer Disconnect:** Almost none of the advanced scene/motion/audio infrastructure is wired into production consumer routes (`apps/board` or `apps/desktop`):
+- `LayeredScene`, `SpritePlayer`, `SceneParticles`, `ComicSceneTransition`, `createSceneTimeline`, and `createSceneSoundscapeController` are used **exclusively** in [`apps/ui-catalog/src/SceneLab.tsx`](../../../apps/ui-catalog/src/SceneLab.tsx) and [`apps/ui-catalog/src/FXLab.tsx`](../../../apps/ui-catalog/src/FXLab.tsx).
+- `useSfx().play(...)` is called in **only 1 production location** (`apps/board/src/board-pages/auth-page.tsx:90` on login/register success), even though `SoundProvider` wraps both `apps/board` and `apps/desktop` and `SoundToggle` sits in the persistent topbar.
+- `MotionConfig reducedMotion="user"` (`motion/react`) wraps `BoardProviders` (`apps/board/src/providers.tsx:18`), yet zero components in `apps/board` or `packages/ui` actually use `motion/react` primitives—all motion is CSS keyframes + custom RAF loops.
+- Several subtle `prefers-reduced-motion` and offscreen-visibility defects exist in `effects.tsx`, `use-animation-visibility.ts`, `scene-particles.tsx`, `scene-transitions.tsx`, and `components.css`.
+
+---
+
+## 2. Module-by-Module Technical Audit
+
+### 2.1 Visual & CSS Effects (`packages/ui/src/components/effects.tsx` + `components.css`)
+
+| Primitive | Animation Mechanism | Visibility Gating | `prefers-reduced-motion` Behavior | Findings / Defects |
+| --- | --- | --- | --- | --- |
+| `EditorialTexture` | Static radial/linear CSS backgrounds (`halftone`, `grunge`, `scratch`) | N/A | Static | `pointer-events: none`, `aria-hidden="true"`. Safe. |
+| `AccentMarker` | Skewed yellow highlight pseudo-element | N/A | Static | Safe. |
+| `SignalOrbit` | CSS ring + glow | N/A | `animation: none` at `components.css:2246` | Safe; `aria-hidden="true"` on ring span. |
+| `LoadingProgress` | `mw-ui-progress` keyframe (`1400ms` infinite) | `useAnimationVisibility` | Stops animation; static `38%` bar at `0.6` opacity (`components.css:2247-2254`) | `role="status"`, `aria-label={label}`, `.mw-ui-sr-only` text. Safe. |
+| `LoadingSpinner` | `mw-ui-spin` keyframe (`800ms` linear infinite) | `useAnimationVisibility` | `animation: none` (`components.css:2248`) | **Gap:** When `prefers-reduced-motion: reduce` is active, CSS sets `animation: none`, leaving a static 3/4 circle border with no label unless caller supplies adjacent text. |
+| `SpeedLines` | Deterministic `mulberry32(seed)` SVG wedges; optional `mw-ui-speedlines` pulse (`1200ms ease-in-out 2 alternate`) | `useAnimationVisibility` | `animation: none` (`components.css:2810`) | **Defect:** `.mw-ui-speed-lines-pulse` does NOT require `.mw-ui-motion-visible` in CSS (`components.css:2273`), so it pulses immediately on mount even before `useAnimationVisibility` resolves `isVisible` (though it pauses via `.mw-ui-motion-paused` when offscreen). |
+| `InkUnderline` | `stroke-dashoffset: 1 -> 0` via `mw-ui-ink-draw` (`700ms ease-out 200ms forwards`) | `useAnimationVisibility` | `animation: none; stroke-dashoffset: 0;` (`components.css:2811, 2823-2825`) | **Defect:** When offscreen on initial render (`mw-ui-motion-paused`), `stroke-dashoffset: 1` hides the underline completely until IntersectionObserver fires (`isVisible: true`). SSR/initial paint shows no underline! |
+| `Doodle` | 6 SVG glyphs (`star`, `bolt`, `crown`, `arrow`, `sparkle`, `smiley`); CSS `mw-ui-doodle-jitter` on `.mw-ui-interactive-surface:hover` | `useAnimationVisibility` | Hover gated by `@media (hover: hover) and (prefers-reduced-motion: no-preference)` + `animation: none` | Safe. |
+| `DecorativeMotif` | 6 static SVGs (`underline`, `cross-out`, `orbit`, `globe-grid`, `moon-phases`, `eye-target`) | None | Static | Non-interactive, `aria-hidden="true"`, `focusable="false"`. Safe. |
+| `InkFrame` | SVG `<feTurbulence>` + `<feDisplacementMap>` filter (`ink`, `grunge`, `brutal`) | None | Static | Uses `useId()` for filter IDs (`rough-${id}`), avoiding duplicate ID collisions. |
+| `AnimeImpactBurst` | `impact`, `spark`, `slash` SVGs; `mw-ui-anime-impact-burst` (`480ms steps(3, end) infinite`) when `animate && .mw-ui-motion-visible` | `useAnimationVisibility` | `animation: none` (`components.css:2815`) | Properly gates infinite animation on `.mw-ui-motion-visible`. |
+| `GrungeCanvas` | SVG `<feTurbulence>` noise + CSS scratch gradients | `useAnimationVisibility` | Static | Note: `useAnimationVisibility` is attached (`effects.tsx:538`) even though `GrungeCanvas` has no CSS animations. |
+| `AnimeActionLines` | Deterministic `mulberry32(seed)` speed streaks; `mw-ui-anime-speed-sweep` (`1200ms steps(4, end) infinite`) | `useAnimationVisibility` | `animation: none` (`components.css:2816`) | Properly gated on `.mw-ui-motion-visible`. |
+| `GrungeStamp` | `mw-ui-anime-slam` on mount; `mw-ui-grunge-cel-shake` on hover | `useAnimationVisibility` | `animation: none` (`components.css:2817`) | **Defect:** `mw-ui-grunge-stamp` has `animation: mw-ui-anime-slam ... both` (`components.css:2392`). Before `IntersectionObserver` runs (`isVisible = false` -> `.mw-ui-motion-paused`), the animation pauses at keyframe `0%` (`opacity: 0; scale: 0.9;`)! Same bug affects `.mw-ui-manga-panel`, `.mw-ui-paper-note`, `.mw-ui-empty-state`, `.mw-ui-speech-bubble`. |
+| `GrungeDivider` | Static SVG brush line + optional tilted mono tape label | None | Static | `role="separator"`, `aria-label={label}`. Safe. |
+| `ZineSticker` | Torn card + tape pseudo-element; hover `mw-ui-grunge-cel-shake` | None | `@media (hover: hover) and (prefers-reduced-motion: no-preference)` + `animation: none` | Safe. |
+| `MangaPanel` | Distressed ink/paper panel with `AnimeActionLines` + `mw-ui-anime-slam` | `useAnimationVisibility` | `animation: none` (`components.css:2819`) | Same initial-paint pause-at-`opacity: 0` hazard as `GrungeStamp` when rendered offscreen or in SSR. |
+| `SpeechBubble` | Comic bubble with tail; `mw-ui-speech-pop` (`220ms`) | `useAnimationVisibility` | `animation: none; opacity: 1; transform: rotate(-2deg);` (`components.css:2812, 2826-2829`) | Same SSR/offscreen pause-at-`opacity: 0` hazard when `mw-ui-motion-paused` is applied before intersection. |
+| `LiveIndicator` | `mw-ui-live-pulse` (`1600ms steps(2, end) infinite`) on dot when `data-active="true"` | `useAnimationVisibility` | `animation: none` (`components.css:2813`) | Non-color label always visible. |
+
+### 2.2 `useAnimationVisibility` (`packages/ui/src/lib/use-animation-visibility.ts`)
+
+- **Behavior:** Starts with `useState(false)` (`mw-ui-motion-paused`). On mount, creates an `IntersectionObserver` with `{ threshold: 0 }` and sets `isVisible` to `entry.isIntersecting && entry.intersectionRatio > 0`. Falls back to `true` if `IntersectionObserver` is undefined.
+- **Defect 1 (SSR / Initial Paint Opacity-0 Trap):** Because `isVisible` initializes to `false`, any component using `useAnimationVisibility` that also uses an entrance keyframe starting at `opacity: 0` (`MangaPanel`, `GrungeStamp`, `SpeechBubble`) renders with `animation-play-state: paused` at `0%` (`opacity: 0`) on initial hydration and if rendered above/below viewport until intersection fires. Entrance animations should either start visible or only apply keyframe animation once `.mw-ui-motion-visible` is active.
+- **Defect 2 (Callback-ref Re-attachment):** `useEffect(..., [])` runs once on mount using `elementRef.current`. If a consumer conditionally mounts/remounts the underlying DOM element without unmounting the hook, the observer does not re-bind. Storing `element` in state (as `sprite-player.tsx:146` and `scene-playback.ts:526` correctly do!) fixes this.
+
+### 2.3 Sprite & Character Runtime (`sprite-player.tsx`, `character-adapter.ts`, `character-preview.tsx`)
+
+- **`character-adapter.ts`:**
+  - Supports `'sprite-sequence'` (`loop`, `ping-pong`, `one-shot`, per-frame `durationMs`, `playbackRate`, `pinnedFrame`, `staticFrameIndex`, `reducedMotion`).
+  - Registry (`createCharacterAdapterRegistry()`) supports custom adapters (`rig-optional` extension point) with LIFO resolution and deterministic static fallback if no adapter matches.
+  - **Reduced motion:** Immediately returns `{ frameIndex: staticIndex, asset: clip.fallbackAsset, isStaticFallback: true }`.
+- **`sprite-player.tsx`:**
+  - Wraps `createScenePlaybackController` + `createSpriteSequenceAdapter` + `getActiveSceneHarness()`.
+  - `shouldPlay` disables playback when `effectiveReducedMotion || effectivePinnedFrame !== undefined || fixedTimeMs !== undefined || !playing || effectivePaused || clip.frames.length <= 1`.
+  - **Defect (`sprite-player.tsx:105`):** `effectiveReducedMotion` reads `reducedMotion ?? harness?.reducedMotion ?? false`. It relies on `controller.attachObservers(containerElement)` to read `window.matchMedia('(prefers-reduced-motion: reduce)')`—which works in browser, **but** in SSR (`renderToStaticMarkup`), if `reducedMotion` prop is omitted, SSR renders `data-sprite-state="playing"` until client hydration!
+  - **Defect (`sprite-player.tsx:247`):** Renders a single `<img>` swapping `src` on every frame (`12fps`). Rapid `src` swapping without preloading frames can flicker if assets aren't HTTP-cached.
+- **`character-preview.tsx`:**
+  - Listens to `window.matchMedia('(prefers-reduced-motion: reduce)')` on mount (`lines 25-32`) and exposes Play/Pause, Reset, and manual Reduced Motion toggle.
+  - **Minor UX conflict (`lines 52-56`):** Clicking Play when `reducedMotion` is `true` silently overrides `setReducedMotion(false)` without notifying the user or syncing with OS `matchMedia`.
+
+### 2.4 Layered Scene, Camera, Playback, Timeline & Harness
+
+| Module | Key Capabilities | `prefers-reduced-motion` & Safety | Findings / Gaps |
+| --- | --- | --- | --- |
+| [`scene-playback.ts`](../../../packages/ui/src/lib/scene-playback.ts) | RAF scheduler with `IntersectionObserver` offscreen pause (`pauseOffscreen` default `true`), `visibilitychange` document pause, `matchMedia('(prefers-reduced-motion: reduce)')` listener, `seek/step/play/pause/reset/dispose`, handle leak counter (`activeHandleCount`). | Sets `effectiveState: 'static'`, pins `timeMs` to `staticFallbackTimeMs` (`0`), cancels RAF handle. | Well-engineered and thoroughly unit-tested (`scene-runtime.test.mjs`). |
+| [`scene-camera.ts`](../../../packages/ui/src/lib/scene-camera.ts) | Bounded 2D pan (`[-1, 1]`) & zoom (`[1, 1.35]`), pointer & scroll parallax offsets, keyboard camera (`Arrow*`, `+/-`, `0/Home`), `operationalMode` kill-switch. | Returns `IDENTITY_CAMERA` (`{x:0, y:0, zoom:1}`) and `{translateX:0, translateY:0}` whenever `reducedMotion \|\| operationalMode`. | Clean separation; keyboard handler checks bounds and calls `preventDefault()`. |
+| [`layered-scene.tsx`](../../../packages/ui/src/components/layered-scene.tsx) | Responsive breakpoint layer resolver (`resolveSceneLayersForWidth`), `image`/`vector`/`video-frame` layers, `ResizeObserver` width tracking, keyboard/pointer camera integration. | When `forceStatic \|\| isReduced \|\| resolvedLayers.length === 0`, unmounts multi-layer stage and renders single `<img class="mw-ui-layered-scene-fallback" src={staticFallback} />` (`lines 378-391`). | **Gap 1:** `resizeObserver` only tracks `viewportWidth === undefined`, and `isReduced` relies on `playback.snapshot.reducedMotion` after hydration (so SSR renders full layer stack unless `reducedMotion` prop is passed). **Gap 2:** Unused in `apps/board` (`HomeHeroArt` and `AuthPage` use static `<picture>`/`<img>` instead). |
+| [`scene-timeline.ts`](../../../packages/ui/src/lib/scene-timeline.ts) | Pure deterministic timeline engine (`entrance`, `layer-transition`, `clip`, `event`), easing (`linear`, `ease-out`, `ease-in-out`), cycle & depth validation (`MAX_TIMELINE_DEPTH = 16`), event callbacks. | Pure state machine; caller drives `advance()`/`seek()`. | Not connected to `ScenePlaybackController` automatically; consumers must bridge manually (as done in `SceneLab.tsx`). |
+| [`scene-particles.tsx`](../../../packages/ui/src/components/scene-particles.tsx) | Deterministic `mulberry32` particles (`rain`, `dust`, `stars`, `sparks`), hard-capped at `MAX_SCENE_PARTICLES = 36`, `contain: layout style paint`, `pointer-events: none`. | **Defect:** `SceneParticles` only checks the `reducedMotion` boolean prop (`default: false`). It does **not** listen to `matchMedia('(prefers-reduced-motion: reduce)')` in JS, AND there is **no `.mw-ui-scene-particle` keyframe or `@media (prefers-reduced-motion: reduce)` CSS rule in `components.css`**! In fact, `.mw-ui-scene-particle` has no `@keyframes` rule in `components.css` at all—it relies on `animationDuration` inline style without `animation-name` unless defined by the consumer (`FXLab` or app CSS)! | Confirmed via `components.css` inspection: `.mw-ui-scene-particles` / `.mw-ui-scene-particle` do not appear anywhere in `packages/ui/src/styles/components.css`. |
+| [`scene-transitions.tsx`](../../../packages/ui/src/components/scene-transitions.tsx) | `ComicSceneTransition` (`ink-wipe`, `panel-reveal`, `cut-impact`, `soft`), max duration clamped to `1500ms`, pointer/keyboard click-to-skip (`cancel`), always keeps `opacity: 1; visibility: visible`. | **Defect 1:** Same as `SceneParticles`—only reads `reducedMotion` prop (`default: false`), does not check `window.matchMedia('(prefers-reduced-motion: reduce)')`. **Defect 2:** `.mw-ui-comic-transition` has no CSS rules in `components.css` for `ink-wipe`, `panel-reveal`, `cut-impact`, or `soft` keyframes/clip-paths; inline `transition: transform 280ms ease-out` never changes `transform` because no transform value is applied for `entering` vs `entered`! | Confirmed via `components.css` inspection: `.mw-ui-comic-transition` is unstyled in `components.css`. |
+| [`scene-test-harness.ts`](../../../packages/ui/src/lib/scene-test-harness.ts) | Reads `window.__MW_SCENE_HARNESS__` and URL query params (`sceneTime`, `sceneFrame`, `sceneReducedMotion`, `scenePaused`, `sceneDisableTransitions`, `sceneCameraX/Y/Zoom`). | Overrides `reducedMotion` / `disableTransitions` deterministically for Playwright visual tests. | Solid deterministic testing hook. |
+
+### 2.5 Audio & Soundscape (`audio.tsx`, `audio-runtime.ts`, `scene-soundscape.ts`)
+
+| Module | Policy Enforcement | Findings / Gaps |
+| --- | --- | --- |
+| [`audio-runtime.ts`](../../../packages/ui/src/lib/audio-runtime.ts) | Muted by default (`SOUND_PREFERENCE_KEY = 'mw-ui-sound-enabled'`), requires `enabled && ready` (first `pointerdown`/`keydown`), max 1 active cue (`if (activeAudio && !activeAudio.ended) return`), `preload = 'none'`, `volume = 0.32`, swallows all storage/playback errors. | Clean, policy-compliant. Maps `'success' \| 'alert' \| 'signal'` to `/sounds/ui-{success,alert,signal}.wav` (files exist in `packages/assets/sounds/`). |
+| [`audio.tsx`](../../../packages/ui/src/components/audio.tsx) | `SoundProvider`, `useSfx()`, `SoundToggle` (with `aria-pressed` and descriptive `aria-label`). | **Gap 1:** `apps/board` only triggers `useSfx().play('success')` in `auth-page.tsx:90`. Major consumer wins (form save, Kanban move, WorkContract dispatch, story revision save, quick capture) never emit SFX cues. **Gap 2:** Verify `/sounds/*.wav` are copied into `apps/board/public/sounds/` during build; if missing, `playCatalogSound` silently swallows 404s. |
+| [`scene-soundscape.ts`](../../../packages/ui/src/lib/scene-soundscape.ts) | Ambient loop controller (`moon-city-night`, `underground-hum`, `archive-quiet`, `street-rain`), muted by default, requires user gesture, caps volume at `0.4` (default `0.18`), enforces strictly 1 active audio instance, swallows errors. | **Unused in production:** `ambience-*.wav` assets exist in `packages/assets/sounds/`, and `createSceneSoundscapeController` is tested in `FXLab.tsx`, but zero routes in `apps/board` or `apps/desktop` instantiate it. |
+
+---
+
+## 3. `prefers-reduced-motion` Audit Summary
+
+### 3.1 CSS Coverage
+
+1. **`tokens.css:361-371`:** Zeroes `--mw-motion-fast`, `--mw-motion-normal`, `--mw-motion-slow`, `--mw-motion-anime-snap`, `--mw-motion-anime-slash`, `--mw-motion-anime-burst`, `--mw-motion-grunge-jitter` (`0ms`). **Gap:** Leaves `--mw-motion-draw` (`700ms`), `--mw-motion-delay` (`200ms`), `--mw-motion-effect` (`1200ms`), `--mw-motion-pulse` (`1600ms`), `--mw-motion-progress` (`1400ms`), `--mw-motion-spin` (`800ms`) non-zero.
+2. **`components.css:2084-2131, 2245-2255, 2809-2830`:** Disables transitions/animations across primitives, Radix overlays (`!important`), Sonner toasts (`0ms !important`), charts (`stroke-dashoffset: 0`), `SignalOrbit`, `LoadingProgress`, `LoadingSpinner`, `SpeedLines`, `InkUnderline`, `SpeechBubble`, `LiveIndicator`, `AnimeImpactBurst`, `AnimeActionLines`, `GrungeStamp`, `ZineSticker`, `MangaPanel`, and `Doodle`.
+3. **`apps/board/src/index.css:562-569`:** Global safety net `*, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }` plus `.dashboard-metric-link` override (`546-550`).
+4. **`apps/board/src/app/global.css:903-916, 1385-1393`:** Disables `.home-hero-copy` and `.home-hero-note` reveal animations and resets `animation-duration` / `transition-duration` to `0.01ms !important` in `.home-page` and `.auth-shadow`.
+5. **`apps/desktop/desktop-web/desktop.css:78-82`:** Removes badge glow box-shadow under reduced motion.
+
+### 3.2 JavaScript & Tailwind Utility Gaps
+
+- **`animate-pulse` / `animate-spin` in `apps/board`:** `dashboard-page.tsx` (`lines 425, 494, 558, 583, 671, 691, 777`), `list-view.tsx` (`792, 1045`), and `activity-bell.tsx` (`119`) use Tailwind `animate-pulse` / `animate-spin`. These are clamped to `0.01ms` by the global catch-all in `apps/board/src/index.css:562-569`, **but** they do not use `LoadingSpinner` / `Skeleton` / `useAnimationVisibility`, so they miss `IntersectionObserver` offscreen pausing.
+- **Unstyled / JS-only motion props:** `SceneParticles` (`scene-particles.tsx`) and `ComicSceneTransition` (`scene-transitions.tsx`) do not read `window.matchMedia('(prefers-reduced-motion: reduce)')` automatically—consumers must pass `reducedMotion` manually.
+
+---
+
+## 4. Test Coverage Evidence (`packages/ui/tests/`)
+
+| Test File | Verified Coverage | Unverified / Missing |
+| --- | --- | --- |
+| [`effects.test.mjs`](../../../packages/ui/tests/effects.test.mjs) | SSR markup attributes (`aria-hidden`, `data-variant`, `data-active`, `SpeedLines` `animate: false`) | Does not test runtime `IntersectionObserver` transitions or CSS keyframe resolution in browser. |
+| [`scene-runtime.test.mjs`](../../../packages/ui/tests/scene-runtime.test.mjs) | `ScenePlaybackController` RAF/offscreen/hidden/reducedMotion/dispose, `SceneCameraController`, `SceneTimeline` DAG depth & cycles, `SpriteSequenceAdapter`, `SceneHarness` URL parsing | Tests controller logic with mocked schedulers, not mounted React DOM in `apps/board`. |
+| [`scene-fx-audio.test.mjs`](../../../packages/ui/tests/scene-fx-audio.test.mjs) | `generateSceneParticles` deterministic coords & cap (`36`), `ComicSceneTransition` `reducedMotion: true` visibility, `createSceneSoundscapeController` mute/single-source/error swallowing | Only tests `ComicSceneTransition` with `reducedMotion: true`; does not verify actual CSS animation classes. |
+| [`audio.test.mjs`](../../../packages/ui/tests/audio.test.mjs) | `readSoundPreference`, `persistSoundPreference`, `playCatalogSound` gesture gating, single-slot lock, rejection recovery | Does not verify `/sounds/*.wav` HTTP availability in `apps/board`. |
+
+---
+
+## 5. Remediation Roadmap
+
+1. **P0 — Fix SSR/Offscreen `opacity: 0` trap in `effects.tsx` + `components.css`:** Do not apply `animation-play-state: paused` onto entrance animations (`mw-ui-anime-slam`, `mw-ui-speech-pop`, `mw-ui-ink-draw`) before `.mw-ui-motion-visible` is set; trigger entrance animations only on `.mw-ui-motion-visible` (with visible static fallback when reduced-motion or unmounted).
+2. **P0 — Implement actual CSS rules for `SceneParticles` & `ComicSceneTransition` in `components.css`:** Define `@keyframes mw-ui-particle-fall/float/twinkle/spark` and `ink-wipe` / `panel-reveal` / `cut-impact` / `soft` transitions + `@media (prefers-reduced-motion: reduce)` fallbacks, and auto-detect `matchMedia('(prefers-reduced-motion: reduce)')` inside both components.
+3. **P1 — Fix `useAnimationVisibility` DOM re-attachment:** Track observed element via callback state (`useState<T | null>`) instead of reading `elementRef.current` in a zero-dependency `useEffect`.
+4. **P1 — Zero all motion duration tokens under `prefers-reduced-motion`:** Add `--mw-motion-draw`, `--mw-motion-delay`, `--mw-motion-effect`, `--mw-motion-pulse`, `--mw-motion-progress`, `--mw-motion-spin`, and `--mw-motion-comic-*` to `@media (prefers-reduced-motion: reduce)` in `tokens.css`.
+5. **P2 — Wire `useSfx` and `LayeredScene` / `ComicSceneTransition` into key product moments:** Trigger `play('success')` / `play('signal')` on record save, Kanban move, WorkContract dispatch, and story revision save; optionally adopt `LayeredScene` for public hero / auth stage where progressive layers are desired.

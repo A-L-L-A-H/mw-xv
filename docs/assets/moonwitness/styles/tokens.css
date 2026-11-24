@@ -114,6 +114,10 @@
   --mw-radius-lg: 0.5rem;
   --mw-shadow-ink: 3px 3px 0 0 var(--mw-ink);
   --mw-shadow-ink-lg: 6px 6px 0 0 var(--mw-ink);
+  --mw-comic-border-width: 2px;
+  --mw-comic-gutter: 0.75rem;
+  --mw-shadow-comic: 4px 4px 0 0 var(--mw-ink);
+  --mw-motion-pop: 180ms;
   --mw-motion-fast: 120ms;
   --mw-motion-normal: 160ms;
   --mw-motion-slow: 220ms;
@@ -348,6 +352,65 @@
   --mw-violet-readable: #d8b4fe;
 }
 
+/* Skin: moonwitness-riot (high-impact punk zine & comic) */
+[data-skin='moonwitness-riot'] {
+  --mw-paper: #f5efdf;
+  --mw-paper-raised: #fff9eb;
+  --mw-ink: #0a0a0c;
+  --mw-ink-soft: #2d2d2a;
+  --mw-ink-faint: #2d2d2a;
+  --mw-muted: #e4dcc8;
+  --mw-primary: #ffe031;
+  --mw-primary-foreground: #0a0a0c;
+  --mw-accent: #ff2e88;
+  --mw-accent-foreground: #0a0a0c;
+  --mw-on-accent: #0a0a0c;
+  --mw-on-magenta: #0a0a0c;
+  --mw-on-violet: #0a0a0c;
+  --mw-border: #0a0a0c;
+  --mw-border-strong: #0a0a0c;
+  --mw-focus: #a60e4f;
+  --mw-magenta-readable: #a60e4f;
+  --mw-cyan-readable: #006e92;
+  --mw-yellow-readable: #6b5500;
+  --mw-violet-readable: #6322cf;
+  --mw-frame-width: 3px;
+  --mw-shadow-ink: 4px 4px 0 0 #0a0a0c;
+  --mw-shadow-ink-lg: 7px 7px 0 0 #0a0a0c;
+  --mw-shadow-comic: 4px 4px 0 0 #0a0a0c;
+  --mw-shadow-anime-impact: 4px 4px 0 0 #0a0a0c, 8px 8px 0 0 #ff2e88;
+  --mw-halftone-dot: rgb(10 10 12 / 18%);
+  --mw-grunge-grain-opacity: 0.2;
+}
+
+[data-skin='moonwitness-riot'].dark {
+  --mw-paper: #09090b;
+  --mw-paper-raised: #121216;
+  --mw-ink: #f5efdf;
+  --mw-ink-soft: #cfcabd;
+  --mw-ink-faint: #cfcabd;
+  --mw-muted: #1e1e24;
+  --mw-primary: #ff2e88;
+  --mw-primary-foreground: #0a0a0c;
+  --mw-accent: #ffe031;
+  --mw-accent-foreground: #0a0a0c;
+  --mw-border: #f5efdf;
+  --mw-border-strong: #f5efdf;
+  --mw-focus: #ffe031;
+  --mw-error: #fda29b;
+  --mw-on-error: #0a0a0c;
+  --mw-magenta-readable: #ff4d99;
+  --mw-cyan-readable: #00b8f0;
+  --mw-yellow-readable: #ffe031;
+  --mw-violet-readable: #c084fc;
+  --mw-shadow-ink: 4px 4px 0 0 #000000;
+  --mw-shadow-ink-lg: 7px 7px 0 0 #ff2e88;
+  --mw-shadow-comic: 4px 4px 0 0 #000000;
+  --mw-shadow-anime-impact: 4px 4px 0 0 #000000, 8px 8px 0 0 #00b8f0;
+  --mw-halftone-dot: rgb(245 239 223 / 14%);
+  --mw-grunge-grain-opacity: 0.22;
+}
+
 /* Density: compact */
 [data-density='compact'] {
   --mw-space-2: 0.375rem;
@@ -363,6 +426,7 @@
     --mw-motion-fast: 0ms;
     --mw-motion-normal: 0ms;
     --mw-motion-slow: 0ms;
+    --mw-motion-pop: 0ms;
     --mw-motion-anime-snap: 0ms;
     --mw-motion-anime-slash: 0ms;
     --mw-motion-anime-burst: 0ms;

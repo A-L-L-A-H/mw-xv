@@ -53,5 +53,8 @@ test('rejects duplicate character IDs', () => {
 
 test('validates the checked-in registry', () => {
   const registry = JSON.parse(readFileSync(new URL('../source/world/characters/character-registry.json', import.meta.url), 'utf8'));
-  assert.deepEqual(validateCharacterRegistry(registry), { characterCount: 1, characterIds: ['crew-01'] });
+  assert.deepEqual(validateCharacterRegistry(registry), {
+    characterCount: 3,
+    characterIds: ['crew-01', 'kuro-signal', 'vesper-ink'],
+  });
 });

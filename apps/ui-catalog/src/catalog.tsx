@@ -63,6 +63,13 @@ import tileHalftoneUrl from '@moonwitness/assets/materials/tile-halftone.svg';
 import scuffedBorderUrl from '@moonwitness/assets/materials/scuffed-border.svg';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { CharacterPreview } from '@moonwitness/ui/components/character-preview';
+import { ComicPanel } from '@moonwitness/ui/components/comic-panel';
+import { CharacterDisplay } from '@moonwitness/ui/components/character-stage';
+import { AchievementBadge, QuestCard } from '@moonwitness/ui/components/quest-card';
+import {
+  SpeechBubble as UniverseSpeechBubble,
+  StickerBadge,
+} from '@moonwitness/ui/components/speech-bubble';
 import idleFrameOne from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-01.svg';
 import idleFrameTwo from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
 import hairFrameOne from '@moonwitness/assets/animation/crew-01-hair/crew-01-hair-move-frame-01.svg';
@@ -331,6 +338,37 @@ function Section({
       </header>
       <div className="catalog-examples">{children}</div>
     </section>
+  );
+}
+
+function CoveragePanel({
+  title,
+  description,
+  facts,
+  boundary,
+  children,
+}: {
+  title: string;
+  description: string;
+  facts?: readonly (readonly [string, ReactNode])[];
+  boundary?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <Panel title={title} description={description}>
+      {children}
+      {facts ? (
+        <dl className="auth-coverage-facts">
+          {facts.map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+      {boundary ? <p className="auth-coverage-boundary">{boundary}</p> : null}
+    </Panel>
   );
 }
 
@@ -1829,401 +1867,190 @@ function CatalogContent() {
     'auth-coverage': {
       label: 'Auth route coverage',
       title: 'Auth route coverage',
-      description:
-        'A source-backed boundary specimen for the real sign-in and registration consumers.',
+      description: 'Boundary specimen for sign-in and registration routes.',
       loading: 'eager',
       renderer: () => (
-        <>
-          <div className="auth-coverage-grid" data-testid="auth-route-specimen">
-            <Panel
-              title="Registered access screens"
-              description="These existing routes own credential entry and their API-returned status states."
-            >
-              <img className="auth-coverage-art" src={authLoginDesktop} alt="" />
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>Sign in</dt>
-                  <dd>
-                    <code>/login</code>
-                  </dd>
-                </div>
-                <div>
-                  <dt>Registration</dt>
-                  <dd>
-                    <code>/register</code>
-                  </dd>
-                </div>
-                <div>
-                  <dt>States</dt>
-                  <dd>Idle · submitting · returned error</dd>
-                </div>
-              </dl>
-            </Panel>
-            <Panel
-              title="Session list not exposed"
-              description="The auth addon registers refresh-token internals, but the current Board has no session-management screen. Tokens stay inside the auth API and are not shown as records here."
-            >
-              <p className="auth-coverage-boundary">
-                Catalog boundary specimen · no session route or token fixture is represented.
-              </p>
-            </Panel>
-          </div>
-        </>
+        <div className="auth-coverage-grid" data-testid="auth-route-specimen">
+          <CoveragePanel
+            title="Registered access screens"
+            description="Existing routes own credential entry and API status states."
+            facts={[
+              ['Sign in', <code>/login</code>],
+              ['Registration', <code>/register</code>],
+              ['States', 'Idle · submitting · returned error'],
+            ]}
+          >
+            <img className="auth-coverage-art" src={authLoginDesktop} alt="" />
+          </CoveragePanel>
+          <CoveragePanel
+            title="Session list not exposed"
+            description="Auth refresh-token internals stay inside the auth API with no session-management screen."
+            boundary="Catalog boundary specimen · no session route or token fixture is represented."
+          />
+        </div>
       ),
     },
     'integration-coverage': {
       label: 'Integration boundary',
       title: 'Integration boundary',
-      description:
-        'A contract-only specimen for the superadmin-only webhook models; it does not imply that a production Board route exists.',
+      description: 'Contract-only specimen for superadmin webhook models.',
       loading: 'eager',
       renderer: () => (
-        <>
-          <div className="auth-coverage-grid" data-testid="integration-boundary-specimen">
-            <Panel
-              title="Webhook endpoint contract"
-              description="Model: integration.webhook_endpoint · create, read, update and delete are granted only to base.group_superadmin."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>Fields</dt>
-                  <dd>name · company · url · event_types · enabled</dd>
-                </div>
-                <div>
-                  <dt>Secret reference</dt>
-                  <dd>Reference only; secret material stays outside the UI.</dd>
-                </div>
-                <div>
-                  <dt>Empty</dt>
-                  <dd>No endpoints returned by the authorized consumer.</dd>
-                </div>
-                <div>
-                  <dt>Unavailable</dt>
-                  <dd>Endpoint records could not be loaded.</dd>
-                </div>
-              </dl>
-            </Panel>
-            <Panel
-              title="Webhook delivery contract"
-              description="Model: integration.webhook_delivery · no custom integration route or production Board screen is registered."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>Fields</dt>
-                  <dd>
-                    endpoint · company · event_type · status · attempts · response_status ·
-                    delivered_at
-                  </dd>
-                </div>
-                <div>
-                  <dt>Delivery states</dt>
-                  <dd>delivered · retrying · dead</dd>
-                </div>
-                <div>
-                  <dt>Error state</dt>
-                  <dd>Delivery details unavailable; private error fields stay hidden.</dd>
-                </div>
-                <div>
-                  <dt>Permission denied</dt>
-                  <dd>Requires the existing superadmin model access grant.</dd>
-                </div>
-              </dl>
-              <p className="auth-coverage-boundary">
-                Catalog boundary specimen · schema and permission states only; no endpoint,
-                delivery, count, or route fixture is represented.
-              </p>
-            </Panel>
-          </div>
-        </>
+        <div className="auth-coverage-grid" data-testid="integration-boundary-specimen">
+          <CoveragePanel
+            title="Webhook endpoint contract"
+            description="Model: integration.webhook_endpoint · create, read, update and delete are granted only to base.group_superadmin."
+            facts={[
+              ['Fields', 'name · company · url · event_types · enabled'],
+              ['Secret reference', 'Reference only; secret material stays outside the UI.'],
+              ['Empty', 'No endpoints returned by the authorized consumer.'],
+              ['Unavailable', 'Endpoint records could not be loaded.'],
+            ]}
+          />
+          <CoveragePanel
+            title="Webhook delivery contract"
+            description="Model: integration.webhook_delivery · no custom integration route or production Board screen is registered."
+            facts={[
+              [
+                'Fields',
+                'endpoint · company · event_type · status · attempts · response_status · delivered_at',
+              ],
+              ['Delivery states', 'delivered · retrying · dead'],
+              ['Error state', 'Delivery details unavailable; private error fields stay hidden.'],
+              ['Permission denied', 'Requires the existing superadmin model access grant.'],
+            ]}
+            boundary="Catalog boundary specimen · schema and permission states only; no endpoint, delivery, count, or route fixture is represented."
+          />
+        </div>
       ),
     },
     'request-coverage': {
       label: 'Purchase request workflow',
       title: 'Purchase request workflow',
-      description:
-        'A contract-only design specimen for request.purchase and its reusable approval workflow; no request record or spend metric is represented.',
+      description: 'Contract-only design specimen for request.purchase and approval.',
       loading: 'eager',
       renderer: () => (
-        <>
-          <div className="auth-coverage-grid" data-testid="request-workflow-specimen">
-            <Panel
-              title="Purchase request"
-              description="The model stores request details; approval status belongs to request.purchase_approval."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>Fields</dt>
-                  <dd>title · description · amount_minor · currency · company · vendor</dd>
-                </div>
-                <div>
-                  <dt>User access</dt>
-                  <dd>Read, create and update; delete is denied.</dd>
-                </div>
-                <div>
-                  <dt>Empty</dt>
-                  <dd>No requests are available to the authorized user.</dd>
-                </div>
-                <div>
-                  <dt>Unavailable</dt>
-                  <dd>Request records could not be loaded.</dd>
-                </div>
-              </dl>
-            </Panel>
-            <Panel
-              title="Approval lifecycle"
-              description="Workflow state, action and actor permissions come from the registered workflow definition."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>States</dt>
-                  <dd>draft → submitted → approved or rejected</dd>
-                </div>
-                <div>
-                  <dt>Submit</dt>
-                  <dd>User, superadmin or system; draft to submitted.</dd>
-                </div>
-                <div>
-                  <dt>Approve / reject</dt>
-                  <dd>Superadmin or system; approval requires a distinct actor.</dd>
-                </div>
-                <div>
-                  <dt>Permission denied</dt>
-                  <dd>Actions remain unavailable outside their registered roles.</dd>
-                </div>
-              </dl>
-              <p className="auth-coverage-boundary">
-                Catalog boundary specimen · schema and workflow states only; no request amounts,
-                vendors, routes or records are shown.
-              </p>
-            </Panel>
-          </div>
-        </>
+        <div className="auth-coverage-grid" data-testid="request-workflow-specimen">
+          <CoveragePanel
+            title="Purchase request"
+            description="Stores request details; approval status belongs to request.purchase_approval."
+            facts={[
+              ['Fields', 'title · description · amount_minor · currency · company · vendor'],
+              ['User access', 'Read, create and update; delete is denied.'],
+              ['Empty', 'No requests available.'],
+              ['Unavailable', 'Request records could not be loaded.'],
+            ]}
+          />
+          <CoveragePanel
+            title="Approval lifecycle"
+            description="Workflow state and permissions come from the registered workflow."
+            facts={[
+              ['States', 'draft → submitted → approved or rejected'],
+              ['Submit', 'User, superadmin or system; draft to submitted.'],
+              ['Approve / reject', 'Superadmin or system; approval requires a distinct actor.'],
+              ['Permission denied', 'Actions unavailable outside registered roles.'],
+            ]}
+            boundary="Catalog boundary specimen · schema and workflow states only; no request amounts, vendors, routes or records are shown."
+          />
+        </div>
       ),
     },
     assets: {
       label: 'Asset inventory',
       title: 'Canonical asset inventory',
-      description:
-        'Browse registered package assets and review their source status without creating production records.',
+      description: 'Browse registered package assets without production records.',
       loading: 'lazy',
       renderer: () => (
-        <>
-          <Suspense fallback={<p role="status">Loading asset inventory…</p>}>
-            <AssetBrowser />
-          </Suspense>
-        </>
+        <Suspense fallback={<p role="status">Loading asset inventory…</p>}>
+          <AssetBrowser />
+        </Suspense>
       ),
     },
     'asset-diagnostics': {
       label: 'Asset diagnostics',
       title: 'Asset & scene diagnostics',
-      description:
-        'Build-time asset QA and scene schema validation from canonical package validators.',
+      description: 'Build-time asset QA and scene schema validation.',
       loading: 'lazy',
       renderer: () => (
-        <>
-          <Suspense fallback={<p role="status">Loading asset diagnostics…</p>}>
-            <AssetDiagnostics />
-          </Suspense>
-        </>
+        <Suspense fallback={<p role="status">Loading asset diagnostics…</p>}>
+          <AssetDiagnostics />
+        </Suspense>
       ),
     },
     'orm-storage-coverage': {
       label: 'Attachment storage (orm-storage)',
       title: 'Attachment storage (orm-storage)',
-      description:
-        'Contract-only design specimen for orm-storage attachment storage providers; no production Board storage screen or attachment management route is registered.',
+      description: 'Contract-only specimen for orm-storage attachment providers.',
       loading: 'eager',
       renderer: () => (
-        <>
-          <div className="auth-coverage-grid" data-testid="orm-storage-specimen">
-            <Panel
-              title="Attachment storage provider"
-              description="Provider-neutral storage primitives (LocalFileAttachmentStorage, S3AttachmentStorage); models: none — addon has no domain models."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>Providers</dt>
-                  <dd>Local file · S3-compatible (Garage)</dd>
-                </div>
-                <div>
-                  <dt>Empty</dt>
-                  <dd>No stored objects returned by the storage provider.</dd>
-                </div>
-                <div>
-                  <dt>Unavailable</dt>
-                  <dd>Storage readiness check failed; bucket or directory not reachable.</dd>
-                </div>
-                <div>
-                  <dt>Uploading / downloading</dt>
-                  <dd>Streaming attachment transfer with size limit and checksum verification.</dd>
-                </div>
-                <div>
-                  <dt>Rejected / infected / clean</dt>
-                  <dd>
-                    Only where an attached scanner reports actual scan results; otherwise not
-                    displayed.
-                  </dd>
-                </div>
-                <div>
-                  <dt>Permission denied</dt>
-                  <dd>Attachment access governed by the record's model access grant.</dd>
-                </div>
-              </dl>
-              <p className="auth-coverage-boundary">
-                Catalog boundary specimen · schema and lifecycle states only; no attachment, object,
-                route, or record fixture is represented.
-              </p>
-            </Panel>
-            <Panel
-              title="Orphan reconciliation"
-              description="PruneOrphanResult / ReconcileResult report scanned, orphaned, deleted, and failed object keys."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>States</dt>
-                  <dd>Ready · unavailable · scanning · truncated</dd>
-                </div>
-                <div>
-                  <dt>Empty</dt>
-                  <dd>No orphaned or stale objects detected.</dd>
-                </div>
-                <div>
-                  <dt>Failure</dt>
-                  <dd>Object deletion failures are listed per key.</dd>
-                </div>
-              </dl>
-              <p className="auth-coverage-boundary">
-                Catalog boundary specimen · no production storage route or Board consumer screen
-                exists.
-              </p>
-            </Panel>
-          </div>
-        </>
+        <div className="auth-coverage-grid" data-testid="orm-storage-specimen">
+          <CoveragePanel
+            title="Attachment storage provider"
+            description="LocalFileAttachmentStorage / S3AttachmentStorage (no domain models)."
+            facts={[
+              ['Providers', 'Local file · S3-compatible (Garage)'],
+              ['Lifecycle', 'Ready · uploading/downloading · unavailable · permission denied'],
+            ]}
+            boundary="Catalog boundary specimen · schema states only; no attachment fixture represented."
+          />
+          <CoveragePanel
+            title="Orphan reconciliation"
+            description="PruneOrphanResult / ReconcileResult report scanned, orphaned, deleted, and failed keys."
+            facts={[['States', 'Ready · unavailable · scanning · truncated']]}
+          />
+        </div>
       ),
     },
     'ai-coverage': {
       label: 'AI Corporation (orm-ai)',
       title: 'AI Corporation (orm-ai)',
-      description:
-        'Contract-only design specimen for ai models and Board consumers at /board/ai/hq, /board/ai/providers, /board/ai/mission-control, /board/ai/continuity, /board/ai/governance, /board/ai/eval-lab.',
+      description: 'Contract-only specimen for ai models and Board AI routes.',
       loading: 'eager',
       renderer: () => (
-        <>
-          <div className="auth-coverage-grid" data-testid="ai-specimen">
-            <Panel
-              title="Agents"
-              description="Model: ai.agent · read/create/update granted to authorized AI Corporation users."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>Fields</dt>
-                  <dd>name · kind · provider · status · capability_grants</dd>
-                </div>
-                <div>
-                  <dt>States</dt>
-                  <dd>draft · active · retired · emergency stop</dd>
-                </div>
-                <div>
-                  <dt>Empty</dt>
-                  <dd>No agents are available to the authorized user.</dd>
-                </div>
-                <div>
-                  <dt>Permission denied</dt>
-                  <dd>Requires the registered ai.agent access grant.</dd>
-                </div>
-              </dl>
-            </Panel>
-            <Panel
-              title="Models & providers"
-              description="Model: ai.provider_profile, ai.model_profile · technical models (developmentOnly)."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>States</dt>
-                  <dd>active · retired</dd>
-                </div>
-                <div>
-                  <dt>Permission denied</dt>
-                  <dd>Technical models require development-only access grant.</dd>
-                </div>
-              </dl>
-            </Panel>
-            <Panel
-              title="Agent runs"
-              description="Model: ai.agent_run · run states and artifacts tied to a work contract."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>States</dt>
-                  <dd>queued · running · succeeded · failed · cancelled</dd>
-                </div>
-                <div>
-                  <dt>Empty</dt>
-                  <dd>No runs returned by the authorized consumer.</dd>
-                </div>
-              </dl>
-            </Panel>
-            <Panel
-              title="Obligations & work contracts"
-              description="Model: ai.obligation, ai.work_contract · execution policy and acceptance criteria."
-            >
-              <dl className="auth-coverage-facts">
-                <div>
-                  <dt>States</dt>
-                  <dd>draft · active · completed · rejected</dd>
-                </div>
-                <div>
-                  <dt>Permission denied</dt>
-                  <dd>Actions remain unavailable outside registered roles.</dd>
-                </div>
-              </dl>
-            </Panel>
-          </div>
-        </>
+        <div className="auth-coverage-grid" data-testid="ai-specimen">
+          <CoveragePanel
+            title="Agents & models"
+            description="Models: ai.agent, ai.provider_profile, ai.model_profile."
+            facts={[
+              ['Agent states', 'draft · active · retired · emergency stop'],
+              ['Profile states', 'active · retired (developmentOnly grant)'],
+            ]}
+          />
+          <CoveragePanel
+            title="Runs & obligations"
+            description="Models: ai.agent_run, ai.obligation, ai.work_contract."
+            facts={[
+              ['Run states', 'queued · running · succeeded · failed · cancelled'],
+              ['Contract states', 'draft · active · completed · rejected'],
+            ]}
+          />
+        </div>
       ),
     },
     'character-preview': {
       label: 'Character preview (crew-01)',
       title: 'Character preview (crew-01)',
-      description:
-        'Catalog-only fictional example. crew-01 is not a real crew member and has no backend record; this preview uses canonical asset IDs without production user data.',
+      description: 'Catalog-only fictional example using canonical crew-01 asset IDs.',
       loading: 'eager',
       renderer: () => (
-        <>
-          <div className="auth-coverage-grid" data-testid="character-preview-specimen">
-            <Panel
-              title="Idle clip"
-              description="Subtle breathing loop; ping-pong playback, pausable, resettable, with reduced-motion still fallback."
-            >
-              <CharacterPreview
-                clipId="animation/crew-01-idle/crew-01-idle-clip.json"
-                fallbackAsset="animation/crew-01-idle/crew-01-idle-frame-01.svg"
-                frames={[idleFrameOne, idleFrameTwo]}
-              />
-            </Panel>
-            <Panel
-              title="Hair movement clip"
-              description="Optional subtle hair sway for the anonymous back-facing figure; no facial detail forced."
-            >
-              <CharacterPreview
-                clipId="animation/crew-01-hair/crew-01-hair-move-clip.json"
-                fallbackAsset="animation/crew-01-hair/crew-01-hair-move-frame-01.svg"
-                frames={[hairFrameOne, hairFrameTwo]}
-              />
-            </Panel>
-            <Panel
-              title="Walk & turn prototype"
-              description="Representative movement set with aligned pivots and static pose fallback."
-            >
-              <CharacterPreview
-                clipId="animation/crew-01-walk/crew-01-walk-clip.json"
-                fallbackAsset="animation/crew-01-walk/crew-01-walk-frame-01.svg"
-                frames={[walkFrameOne, walkFrameTwo]}
-              />
-            </Panel>
-          </div>
-        </>
+        <div className="auth-coverage-grid" data-testid="character-preview-specimen">
+          {[
+            ['Idle clip', 'Subtle breathing loop with reduced-motion fallback.', 'idle', [idleFrameOne, idleFrameTwo]],
+            ['Hair movement clip', 'Subtle hair sway for back-facing figure.', 'hair-move', [hairFrameOne, hairFrameTwo]],
+            ['Walk & turn prototype', 'Movement set with static pose fallback.', 'walk', [walkFrameOne, walkFrameTwo]],
+          ].map(([title, desc, kind, frames]) => {
+            const folder = kind === 'hair-move' ? 'hair' : kind;
+            return (
+              <Panel key={kind as string} title={title as string} description={desc as string}>
+                <CharacterPreview
+                  clipId={`animation/crew-01-${folder}/crew-01-${kind}-clip.json`}
+                  fallbackAsset={`animation/crew-01-${folder}/crew-01-${kind}-frame-01.svg`}
+                  frames={frames as string[]}
+                />
+              </Panel>
+            );
+          })}
+        </div>
       ),
     },
     'scene-environment-inspector': {
@@ -2233,11 +2060,9 @@ function CatalogContent() {
         'Interactive Moon City multi-plane preview, responsive focal/safe-area composition rules, bounded camera/parallax, timeline orchestration, and sprite sequence playback.',
       loading: 'lazy',
       renderer: () => (
-        <>
-          <Suspense fallback={<p role="status">Loading scene inspector…</p>}>
-            <SceneLab />
-          </Suspense>
-        </>
+        <Suspense fallback={<p role="status">Loading scene inspector…</p>}>
+          <SceneLab />
+        </Suspense>
       ),
     },
     'fx-lab': {
@@ -2247,32 +2072,29 @@ function CatalogContent() {
         'Bounded scene particle presets (rain, dust, stars, sparks), interruptible comic transitions (ink-wipe, panel-reveal, cut-impact, soft), and policy-limited scene ambience controller (muted by default, gesture-gated, single-source).',
       loading: 'lazy',
       renderer: () => (
-        <>
-          <Suspense fallback={<p role="status">Loading FX lab…</p>}>
-            <FXLab />
-          </Suspense>
-        </>
+        <Suspense fallback={<p role="status">Loading FX lab…</p>}>
+          <FXLab />
+        </Suspense>
       ),
     },
     charts: {
       label: 'Charts',
       title: 'Charts',
-      description:
-        'Data visualizations include loading/error/empty states, locale formatting, and accessible alternatives.',
+      description: 'Data visualizations with loading/error/empty states and accessible tables.',
       loading: 'eager',
-      renderer: () => (
-        <>
+      renderer: () => {
+        const zeroSeries = [
+          { label: 'Pending', value: 0 },
+          { label: 'Failed', value: 0 },
+        ];
+        const zeroLineSeries = zeroSeries.map(({ label }) => ({ label, values: [0, 0, 0] }));
+        return (
           <Example
             title="Bar & line charts"
-            description="Each chart has a labeled table alternative and values formatted with the requested locale."
+            description="Each chart has a labeled table alternative and locale formatting."
           >
             <div className="catalog-chart-grid">
-              <BarChart
-                title="Installed addons"
-                data={chartData}
-                locale="en-US"
-                valueLabel="Addons"
-              />
+              <BarChart title="Installed addons" data={chartData} locale="en-US" valueLabel="Addons" />
               <LineChart
                 title="Weekly activity"
                 labels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri']}
@@ -2282,43 +2104,88 @@ function CatalogContent() {
                 ]}
                 locale="en-US"
               />
-              <BarChart
-                title="Zero values bar example"
-                data={[
-                  { label: 'Pending', value: 0 },
-                  { label: 'Failed', value: 0 },
-                ]}
-                locale="en-US"
-                valueLabel="Count"
-              />
-              <LineChart
-                title="Zero values line example"
-                labels={['Mon', 'Tue', 'Wed']}
-                series={[
-                  { label: 'Pending', values: [0, 0, 0] },
-                  { label: 'Failed', values: [0, 0, 0] },
-                ]}
-                locale="en-US"
-              />
+              <BarChart title="Zero values bar example" data={zeroSeries} locale="en-US" valueLabel="Count" />
+              <LineChart title="Zero values line example" labels={['Mon', 'Tue', 'Wed']} series={zeroLineSeries} locale="en-US" />
               <BarChart title="Loading example" data={[]} loading />
               <LineChart title="Line loading example" labels={[]} series={[]} loading />
               <BarChart title="Error example" data={[]} error="Activity could not be loaded." />
-              <LineChart
-                title="Line error example"
-                labels={[]}
-                series={[]}
-                error="Timeline could not be loaded."
-              />
+              <LineChart title="Line error example" labels={[]} series={[]} error="Timeline could not be loaded." />
               <BarChart title="Empty example" data={[]} emptyMessage="No events yet." />
-              <LineChart
-                title="Line empty example"
-                labels={[]}
-                series={[]}
-                emptyMessage="No timeline points yet."
-              />
+              <LineChart title="Line empty example" labels={[]} series={[]} emptyMessage="No timeline points yet." />
             </div>
           </Example>
-        </>
+        );
+      },
+    },
+    'visual-universe': {
+      label: 'Visual Universe (Signal Riot)',
+      title: 'Visual Universe (Signal Riot)',
+      description: 'Contoh desain: Signal Riot comic panels, character stage, stickers, and quests.',
+      loading: 'eager',
+      renderer: () => (
+        <Example
+          wide
+          title="Comic framing & character stage · Contoh desain"
+          description="Contoh desain: ComicPanel, SpeechBubble, StickerBadge, CharacterDisplay, QuestCard, and AchievementBadge."
+        >
+          <div className="catalog-raw-art-stack" data-testid="visual-universe-specimen">
+            <ComicPanel
+              panelNumber="01"
+              kicker="CONTOH DESAIN"
+              title="Signal Riot Companion"
+              surface="paper"
+              accent="magenta"
+              actions={
+                <div className="catalog-inline">
+                  <StickerBadge tone="yellow" tilt="left">
+                    CONTOH DESAIN
+                  </StickerBadge>
+                  <StickerBadge tone="magenta" tilt="right">
+                    SIGNAL RIOT
+                  </StickerBadge>
+                </div>
+              }
+            >
+              <div className="catalog-inline">
+                <CharacterDisplay
+                  characterId="kuro-signal"
+                  expression="excited"
+                  size="md"
+                  basePath={import.meta.env.BASE_URL}
+                />
+                <UniverseSpeechBubble speaker="Kuro Signal" tail="left" variant="shout">
+                  Contoh desain: 3/4 readiness gates locked. One preflight check remaining!
+                </UniverseSpeechBubble>
+              </div>
+            </ComicPanel>
+            <QuestCard
+              title="Editorial Gate Check"
+              description="Contoh desain: deterministic step progress without invented metrics."
+              completedSteps={3}
+              totalSteps={4}
+              status="active"
+              badgeId="badge-story-architect"
+              rewardLabel="Unlocks at 4/4"
+              basePath={import.meta.env.BASE_URL}
+            />
+            <div className="catalog-inline">
+              <AchievementBadge
+                badgeId="badge-story-architect"
+                title="Story Architect"
+                rank="Architect"
+                unlocked
+                basePath={import.meta.env.BASE_URL}
+              />
+              <AchievementBadge
+                badgeId="badge-zero-drift"
+                title="Zero Drift"
+                rank="Vanguard"
+                unlocked={false}
+                basePath={import.meta.env.BASE_URL}
+              />
+            </div>
+          </div>
+        </Example>
       ),
     },
   });

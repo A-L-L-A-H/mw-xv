@@ -3,7 +3,7 @@ FROM node:24-bookworm-slim AS build
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends python3 make g++ curl unzip ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.4" \
+    && curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.5" \
     && ln -s /root/.bun/bin/bun /usr/local/bin/bun \
     && ln -s /root/.bun/bin/bunx /usr/local/bin/bunx
 WORKDIR /workspace

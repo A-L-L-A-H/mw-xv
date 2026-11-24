@@ -8,6 +8,38 @@ const githubDirectory = join(repositoryRoot, '.github');
 const immutableSha = /^[0-9a-f]{40}$/;
 const versionComment = /^v?\d+(?:\.\d+){0,2}(?:[-+][A-Za-z0-9.-]+)?$/;
 
+export function findBunVersionDrift(sources, expectedBunVersion) {
+  const findings = [];
+  for (const source of sources) {
+    const content = source.content;
+    // Check setup-bun action default version
+    const setupBunMatch = content.match(/default:\s*'([^']+)'/);
+    if (setupBunMatch && source.path.includes('setup-bun/action.yml')) {
+      const version = setupBunMatch[1];
+      if (version !== expectedBunVersion) {
+        findings.push({
+          path: source.path,
+          reference: version,
+          reason: `must match the root packageManager bun@${expectedBunVersion}`,
+        });
+      }
+    }
+    // Check workflow uses of setup-bun
+    const workflowMatches = content.matchAll(/bun-version:\s*'([^']+)'/g);
+    for (const match of workflowMatches) {
+      const version = match[1];
+      if (version !== expectedBunVersion) {
+        findings.push({
+          path: source.path,
+          reference: version,
+          reason: `must match the root packageManager bun@${expectedBunVersion}`,
+        });
+      }
+    }
+  }
+  return findings;
+}
+
 async function collectFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
@@ -76,7 +108,39 @@ export function pnpmSetupOrderValid(actionSource) {
   return nodeSetup >= 0 && pnpmActionSetup > nodeSetup;
 }
 
-export function workflowInstallsFrozenWorkspaceAfterSetup(source, path = '') {
+export function findBunVersionDrift(sources, expectedBunVersion) {
+  const findings = [];
+  for (const source of sources) {
+    const content = source.content;
+    // Check setup-bun action default version
+    const setupBunMatch = content.match(/default:\s*'([^']+)'/);
+    if (setupBunMatch && source.path.includes('setup-bun/action.yml')) {
+      const version = setupBunMatch[1];
+      if (version !== expectedBunVersion) {
+        findings.push({
+          path: source.path,
+          reference: version,
+          reason: `must match the root packageManager bun@${expectedBunVersion}`,
+        });
+      }
+    }
+    // Check workflow uses of setup-bun
+    const workflowMatches = content.matchAll(/bun-version:\s*'([^']+)'/g);
+    for (const match of workflowMatches) {
+      const version = match[1];
+      if (version !== expectedBunVersion) {
+        findings.push({
+          path: source.path,
+          reference: version,
+          reason: `must match the root packageManager bun@${expectedBunVersion}`,
+        });
+      }
+    }
+  }
+  return findings;
+}
+
+export function workflowInstallsFrozenWorkspaceAfterSetup(source, path) {
   const lines = source.split(/\r?\n/u);
   const ciPlanOnly = path === '.github/workflows/ci.yml';
   let inPlanJob = false;
@@ -128,6 +192,7 @@ export function findPnpmVersionDrift(sources, packageManager) {
         ...lines[index].matchAll(/(?:bun|pnpm)-version:\s*['"]([^'"]+)['"]/gu),
         ...lines[index].matchAll(/bun\.sh\/install \| bash -s "bun-v([^"]+)"/gu),
         ...lines[index].matchAll(/default:\s*['"](\d+\.\d+\.\d+)['"]/gu),
+        ...lines[index].matchAll(/corepack prepare pnpm@([\d.]+)/gu),
       ];
       for (const match of references) {
         const actual = match[1];

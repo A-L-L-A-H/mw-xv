@@ -16,8 +16,14 @@ export const RUNTIME_BUDGET_BYTES = {
   artwork: 375 * 1024,
   sound: 25 * 1024,
   animation: 40 * 1024,
-  'animation-frame': 40 * 1024,
+  'animation-frame': 96 * 1024,
+  'animation-sheet': 280 * 1024,
   'animation-clip': 24 * 1024,
+  'character-sprite': 160 * 1024,
+  'state-illustration': 160 * 1024,
+  background: 220 * 1024,
+  sticker: 64 * 1024,
+  'game-asset': 120 * 1024,
   environment: 64 * 1024,
   scene: 48 * 1024,
   brand: 96 * 1024,
@@ -72,6 +78,14 @@ const EXPECTED_DIR_BY_KIND = {
   lockup: ['brand/'],
   environment: ['environments/'],
   scene: ['scenes/'],
+  'character-sprite': ['illustrations/'],
+  'state-illustration': ['illustrations/'],
+  background: ['illustrations/'],
+  sticker: ['illustrations/'],
+  'game-asset': ['illustrations/'],
+  'animation-frame': ['animation/'],
+  'animation-sheet': ['animation/'],
+  'animation-clip': ['animation/'],
 };
 
 const INVENTORY_DIRECTORIES = [
@@ -184,7 +198,10 @@ export async function runAssetQa(rootDir = packageRoot, options = {}) {
     bucket.push(asset.path);
     hashesByDigest.set(digest, bucket);
 
-    const effectiveKind = isAnimationPath ? 'animation' : asset.kind;
+    const effectiveKind =
+      isAnimationPath && !['animation-frame', 'animation-sheet', 'animation-clip'].includes(asset.kind)
+        ? 'animation'
+        : asset.kind;
     const budget = SPECIFIC_PATH_BUDGETS[asset.path] ?? RUNTIME_BUDGET_BYTES[effectiveKind] ?? 250 * 1024;
     runtimeSizes.push({ path: asset.path, kind: asset.kind, bytes: fileStat.size, budget });
     if (fileStat.size > budget) {

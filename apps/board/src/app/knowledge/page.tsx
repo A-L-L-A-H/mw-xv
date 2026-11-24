@@ -8,7 +8,7 @@ import { EmptyState } from '@moonwitness/ui/components/empty-state';
 import { PageHeader } from '@moonwitness/ui/components/page-header';
 import { Panel } from '@moonwitness/ui/components/panel';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
-import { BookOpenIcon } from '@moonwitness/ui/icons';
+import { getStateIllustration } from '@moonwitness/ui/lib/asset-registry';
 
 interface PublicCitation {
   readonly source_id: string;
@@ -82,6 +82,8 @@ function isValidApprovedPublication(value: unknown): value is ApprovedPublicatio
 
 export default function PublicKnowledgeShellPage() {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const offlineArt = getStateIllustration('offline');
+  const emptyCollectionArt = getStateIllustration('empty-collection');
 
   const fetchPublications = useCallback(async (signal?: AbortSignal): Promise<LoadState> => {
     try {
@@ -182,7 +184,14 @@ export default function PublicKnowledgeShellPage() {
 
       {state.status === 'unavailable' ? (
         <EmptyState
-          icon={<BookOpenIcon size={20} />}
+          icon={
+            <img
+              src={offlineArt.src}
+              alt=""
+              className="h-28 w-28 object-contain"
+              decoding="async"
+            />
+          }
           title="Public projections unavailable"
           description={state.message}
           action={
@@ -201,9 +210,27 @@ export default function PublicKnowledgeShellPage() {
 
       {state.status === 'ready' && state.items.length === 0 ? (
         <EmptyState
-          icon={<BookOpenIcon size={20} />}
+          icon={
+            <img
+              src={emptyCollectionArt.src}
+              alt=""
+              className="h-28 w-28 object-contain"
+              decoding="async"
+            />
+          }
           title="No approved public projections"
           description="Only explicitly reviewed, rights-cleared PUBLIC_APPROVED snapshots appear here. Draft, internal, restricted, and taken-down records remain withheld."
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                void loadPublications();
+              }}
+            >
+              Refresh projections
+            </Button>
+          }
         />
       ) : null}
 

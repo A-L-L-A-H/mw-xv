@@ -348,6 +348,10 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
     'radius-sm',
     'radius-lg',
     'shadow-ink',
+    'comic-border-width',
+    'comic-gutter',
+    'shadow-comic',
+    'motion-pop',
     'motion-fast',
     'motion-normal',
     'motion-slow',
@@ -389,6 +393,9 @@ test('type, spacing, shape, shadow and reduced-motion scales are present', () =>
   assert.equal(tokenValue('signal-blue'), '#00b8f0');
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /--mw-motion-normal:\s*0ms/);
+  assert.match(css, /--mw-motion-pop:\s*0ms/);
+  assert.match(css, /\[data-skin='moonwitness-riot'\]/);
+  assert.match(css, /\[data-skin='moonwitness-riot'\]\.dark/);
 
   const layer = (name) => Number(tokenValue(name));
   assert.ok(layer('layer-base') < layer('layer-raised'));

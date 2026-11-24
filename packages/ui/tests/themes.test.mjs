@@ -60,9 +60,12 @@ test('default themeRegistry exposes all built-in skins and resolves unknown skin
   assert.equal(themeRegistry.has('moonwitness-ink'), true);
   assert.equal(themeRegistry.has('moonwitness-compact'), true);
   assert.equal(themeRegistry.has('moonwitness-high-contrast'), true);
+  assert.equal(themeRegistry.has('moonwitness-riot'), true);
   assert.equal(themeRegistry.has('non-existent'), false);
 
   assert.equal(themeRegistry.get('moonwitness-compact')?.defaultDensity, 'compact');
+  assert.equal(themeRegistry.get('moonwitness-riot')?.defaultMode, 'dark');
+  assert.equal(themeRegistry.get('moonwitness-riot')?.defaultDensity, 'comfortable');
   assert.equal(themeRegistry.resolve('unknown-skin').id, DEFAULT_SKIN_ID);
   assert.equal(themeRegistry.resolve(undefined).id, DEFAULT_SKIN_ID);
   assert.equal(themeRegistry.resolve(null).id, DEFAULT_SKIN_ID);

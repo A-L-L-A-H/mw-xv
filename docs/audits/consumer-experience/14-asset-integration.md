@@ -1,0 +1,50 @@
+# Consumer Experience — 14. Asset & Visual Universe Integration
+
+- **Asset Coverage Matrix:** [`13-asset-coverage.md`](./13-asset-coverage.md)
+- **Wiring Specification:** [`16-wiring-specification.md`](./16-wiring-specification.md)
+- **Implementation Roadmap:** [`17-implementation-roadmap.md`](./17-implementation-roadmap.md)
+
+---
+
+## 1. Public Asset Sync (`apps/board/public/`)
+
+Executed [`scripts/copy-board-public-assets.mjs`](../../../scripts/copy-board-public-assets.mjs) to synchronize all `@moonwitness/assets` runtime artifacts (excluding `source/`) into `apps/board/public/`:
+
+- `apps/board/public/illustrations/riot-universe/characters/` — 16 `kuro-signal-expression-*` (`.webp`/`.png`), 12 `kuro-signal-pose-*` (`.webp`/`.png`), and `vesper-ink-portrait.{webp,png}`.
+- `apps/board/public/illustrations/riot-universe/states/` — 25 `state-*.webp` UI state illustrations (including `state-no-search-results.webp`, `state-empty-collection.webp`, `state-offline.webp`, `state-access-denied.webp`, `state-discover.webp`).
+- `apps/board/public/illustrations/riot-universe/game/` — 13 game progression assets (`.png`/`.svg`, including `badge-story-architect.png`, `badge-zero-drift.png`).
+- `apps/board/public/illustrations/riot-universe/stickers/` — 12 comic sticker assets (`.png`/`.svg`).
+- `apps/board/public/illustrations/riot-universe/backgrounds/` — 4 backdrop textures (`.webp`).
+- `apps/board/public/animation/kuro-signal-{idle,blink,wave,celebrate,think,loading,success,error}/` — 8 4-frame sprite clips (`frame-01..04.png`, `sheet.png`, `clip.json`).
+- `apps/board/public/environments/riot-alley-{bg,mid,fg,decor}.svg` and `apps/board/public/scenes/riot-alley-scene.json`.
+
+Because [`apps/desktop/desktop-web/vite.config.ts`](../../../apps/desktop/desktop-web/vite.config.ts) shares `apps/board/public` as its `publicDir` and aliases `@` to `apps/board/src`, these synchronized assets resolve identically on both Next.js (`apps/board`) and Desktop (`apps/desktop`).
+
+---
+
+## 2. Integrated Consumer Routes, Components & Asset Mapping
+
+| Route / Surface | Target Files | Shared `@moonwitness/ui` Components | `@moonwitness/ui/lib/asset-registry` / `@moonwitness/assets` Assets | Interactive & State Behavior |
+| :--- | :--- | :--- | :--- | :--- |
+| `/board/studio` | [`apps/board/src/app/board/studio/page.tsx`](../../../apps/board/src/app/board/studio/page.tsx), [`apps/board/src/components/creative/editorial-studio-panel.tsx`](../../../apps/board/src/components/creative/editorial-studio-panel.tsx) | `PageHeader` (`treatment="brush"`), `ComicPanel`, `MangaFrame`, `SpeechBubble`, `StickerBadge`, `CharacterDisplay`, `QuestCard`, `RewardPanel` (`AchievementBadge`), `MetricTile`, `Panel`, `Tabs`, `Input`, `Textarea`, `SelectField`, `Checkbox`, `Button`, `EmptyState`, `Badge`, `Label` | `kuro-signal-expression-{thinking,curious,excited,celebrating}.{webp,png}`, `kuro-signal-{idle,celebrate}` sprite frames, `vesper-ink-portrait.{webp,png}`, `badge-story-architect.png`, `badge-zero-drift.png`, `state-no-search-results.webp`, `state-empty-collection.webp`, `state-discover.webp` | Preserves GOD PROMISE & ROCKSOUL imprints, title/brief DNA synthesis, 4-gate checklist, and Asmaul Husna 6-cluster filter/search. Kuro expression switches deterministically across `0/4` (`thinking`) → `1/4` (`curious`) → `2–3/4` (`excited`) → `4/4` (`celebrating`), with toggleable `SpritePlayer` clip playback that automatically falls back to static portrait under `prefers-reduced-motion: reduce`. `QuestCard` + `RewardPanel` unlock `badge-story-architect` and `badge-zero-drift` only at `4/4` completion. Zero search results show `state-no-search-results.webp` with a `Reset Filters` `Button`. |
+| `/board/knowledge` | [`apps/board/src/board-pages/knowledge-page.tsx`](../../../apps/board/src/board-pages/knowledge-page.tsx) | `EmptyState`, `Skeleton`, `Button`, `Input` | `getStateIllustration('access-denied')`, `getStateIllustration('offline')`, `getStateIllustration('empty-collection')`, `getStateIllustration('no-search-results')` | Preserves all `@moonwitness/client` queries, company-scoped access checks, SHA-256 citation metadata, and `e2e/knowledge-explorer.spec.ts` status/heading text. Upgrades access-denied, query error (`offline` + retry `Button`), unqueried/empty (`empty-collection`), and zero graph search (`no-search-results` + clear `Button`) states to character-driven `EmptyState` artwork. |
+| `/knowledge` | [`apps/board/src/app/knowledge/page.tsx`](../../../apps/board/src/app/knowledge/page.tsx) | `PageHeader`, `Panel`, `EmptyState`, `Skeleton`, `Badge`, `Button` | `getStateIllustration('offline')`, `getStateIllustration('empty-collection')` | Preserves `next.config.ts` redirect behavior, `/api/public/publications` fetch, and fail-closed SHA-256 validation. Renders `offline` artwork with `Retry` on unavailable state and `empty-collection` artwork with `Refresh projections` when zero `PUBLIC_APPROVED` items exist. |
+| `apps/ui-catalog` (`#visual-universe`) | [`apps/ui-catalog/src/catalog.tsx`](../../../apps/ui-catalog/src/catalog.tsx) | `ComicPanel`, `SpeechBubble`, `StickerBadge`, `CharacterDisplay`, `QuestCard`, `AchievementBadge`, `ArtworkFrame` | `kuro-signal-expression-excited.webp`, `badge-story-architect.png`, `badge-zero-drift.png` (via `basePath={import.meta.env.BASE_URL}` + representative Vite `@moonwitness/assets/*` imports) | Adds the `Visual Universe (Signal Riot)` showcase section labeled with `"Contoh desain"` copy without inventing production data. |
+
+---
+
+## 3. Theme Propagation (`moonwitness-riot` & Built-in Skins)
+
+- **Registry-Driven Skin Selector:** [`packages/ui/src/themes/index.ts`](../../../packages/ui/src/themes/index.ts) exposes `moonwitness-riot` alongside `moonwitness-ink`, `moonwitness-compact`, and `moonwitness-high-contrast` through `themeRegistry.list()`.
+- **Cross-App Propagation:** [`apps/board/src/board-pages/settings-page.tsx`](../../../apps/board/src/board-pages/settings-page.tsx) and [`apps/board/src/components/providers/skin-provider.tsx`](../../../apps/board/src/components/providers/skin-provider.tsx) read `themeRegistry.list()` directly and set `document.documentElement.dataset.skin` / `dataset.density` and `.dark` across both `apps/board` and `apps/desktop`.
+- **Zero Hardcoded Visual Colors:** Every upgraded component in `apps/board` and `apps/ui-catalog` uses only semantic Tailwind utilities (`bg-paper`, `bg-card`, `text-ink`, `text-ink-soft`, `text-ink-faint`, `border-ink/*`) and `@moonwitness/ui` `data-surface` / `data-accent` / `data-tone` props, inheriting `--mw-*` and `--mw-comic-*` tokens seamlessly under all 4 skins and light/dark modes.
+
+---
+
+## 4. Governance & Test Coverage
+
+- **Unit / Render Test:** [`apps/board/tests/studio-visual-universe.test.tsx`](../../../apps/board/tests/studio-visual-universe.test.tsx) mounts `EditorialStudioPanel` in JSDOM and verifies:
+  1. Readiness progression `0/4` (`thinking`) → `1/4` (`curious`) → `2/4` & `3/4` (`excited`) → `4/4` (`celebrating`), deterministic `QuestCard` step percentage, and `badge-story-architect` / `badge-zero-drift` unlock flip.
+  2. Animated `kuro-signal-celebrate` `SpritePlayer` toggle and `prefers-reduced-motion: reduce` static portrait fallback.
+  3. Asmaul Husna Explorer zero-result `EmptyState` (`state-no-search-results.webp`) and `Reset Filters` recovery to all 12 entries.
+- **Governance Gates:** [`scripts/check-board-shared-ui.mjs`](../../../scripts/check-board-shared-ui.mjs) and [`scripts/check-ui-design-system.mjs`](../../../scripts/check-ui-design-system.mjs) enforce zero raw native `<button>`, `<input>`, `<select>`, `<textarea>`, `<svg>`, zero hardcoded colors, and 100% public `@moonwitness/ui` subpath imports (`52/52` shared components imported across audited apps).

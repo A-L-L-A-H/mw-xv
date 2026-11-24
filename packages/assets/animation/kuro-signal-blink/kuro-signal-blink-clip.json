@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "clipId": "kuro-signal-blink",
+  "characterId": "kuro-signal",
+  "pack": "riot-universe",
+  "domain": "visual-universe",
+  "description": "Four-frame stepped comic animation clip (blink) for kuro-signal with 2x2 1024x1024 sprite atlas.",
+  "clip": {
+    "id": "kuro-signal-blink",
+    "loop": true,
+    "direction": "forward",
+    "pivot": {
+      "x": 0.5,
+      "y": 0.88
+    },
+    "frames": [
+      {
+        "asset": "animation/kuro-signal-blink/kuro-signal-blink-frame-01.png",
+        "durationMs": 180
+      },
+      {
+        "asset": "animation/kuro-signal-blink/kuro-signal-blink-frame-02.png",
+        "durationMs": 180
+      },
+      {
+        "asset": "animation/kuro-signal-blink/kuro-signal-blink-frame-03.png",
+        "durationMs": 180
+      },
+      {
+        "asset": "animation/kuro-signal-blink/kuro-signal-blink-frame-04.png",
+        "durationMs": 180
+      }
+    ]
+  },
+  "spriteSheet": {
+    "atlas": "animation/kuro-signal-blink/kuro-signal-blink-sheet.png",
+    "frameWidth": 512,
+    "frameHeight": 512,
+    "frameCount": 4,
+    "frameDurationMs": 180,
+    "columns": 2,
+    "rows": 2,
+    "loop": true,
+    "direction": "forward",
+    "pivot": {
+      "x": 0.5,
+      "y": 0.88
+    }
+  },
+  "reducedMotionFallback": "animation/kuro-signal-blink/kuro-signal-blink-frame-01.png",
+  "license": "ISC",
+  "status": "approved"
+}

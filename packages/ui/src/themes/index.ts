@@ -68,6 +68,22 @@ export const BUILTIN_SKINS: readonly SkinMetadata[] = Object.freeze([
       accent: '#ffd000',
     }),
   }),
+  Object.freeze({
+    id: 'moonwitness-riot',
+    label: 'MoonWitness Riot',
+    description:
+      'High-impact punk zine and comic skin with stark contrast, heavy ink borders, and electric neon accents.',
+    supportedModes: Object.freeze(['light', 'dark'] as const),
+    supportedDensities: Object.freeze(['comfortable', 'compact'] as const),
+    defaultMode: 'dark',
+    defaultDensity: 'comfortable',
+    swatch: Object.freeze({
+      background: '#09090b',
+      surface: '#121216',
+      foreground: '#f5efdf',
+      accent: '#ff2e88',
+    }),
+  }),
 ]);
 
 function validateSkinMetadata(skin: SkinMetadata): void {

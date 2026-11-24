@@ -17,13 +17,13 @@ test('UI design gate has local commands, CI execution, and pre-push enforcement'
   assert.match(packageJson.scripts['ui:design:check'], /check-ui-design-system\.mjs/u);
   assert.match(packageJson.scripts['lint:ui'], /eslint packages\/ui\/src/u);
   assert.match(packageJson.scripts['lint:ui'], /@moonwitness\/board lint/u);
-  assert.match(packageJson.scripts.verify, /pnpm ui:check/u);
-  assert.match(packageJson.scripts.verify, /pnpm lint:ui/u);
+  assert.match(packageJson.scripts.verify, /bun run ui:check/u);
+  assert.match(packageJson.scripts.verify, /bun run lint:ui/u);
 
-  assert.match(workflow, /pnpm ui:design:check/u);
-  assert.match(workflow, /pnpm lint:ui/u);
-  assert.match(prePush, /pnpm ui:check/u);
-  assert.match(prePush, /pnpm lint:ui/u);
+  assert.match(workflow, /bun run ui:design:check/u);
+  assert.match(workflow, /bun run lint:ui/u);
+  assert.match(prePush, /bun run ui:check/u);
+  assert.match(prePush, /bun run lint:ui/u);
 });
 
 test('desktop boundary CLI uses the relative-path collector and has an integration test', async () => {
