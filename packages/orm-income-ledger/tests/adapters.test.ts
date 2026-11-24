@@ -35,7 +35,6 @@ afterEach(async () => {
 });
 
 describe('income ledger adapters', () => {
-
   describe('createEntryFromSale', () => {
     it('creates entry from marketplace sale', async () => {
       const ctx = createIncomeLedgerContext(db);
@@ -187,7 +186,13 @@ describe('income ledger adapters', () => {
         }),
       };
 
-      await createEntryFromAds(ctx, 'admob', fetcher, new Date('2026-02-01'), new Date('2026-02-28'));
+      await createEntryFromAds(
+        ctx,
+        'admob',
+        fetcher,
+        new Date('2026-02-01'),
+        new Date('2026-02-28')
+      );
 
       const entry = await db('income_entry').where('source_model', 'ads.admob').first();
       expect(entry.external_ref).toBeNull();

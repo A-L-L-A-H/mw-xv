@@ -195,7 +195,17 @@ describe('incomeHttpPlugin (manifest.httpPlugins)', () => {
       const { init, invokePost } = await createHarness();
       await init();
 
-      const kinds = ['saas', 'marketplace', 'ads', 'affiliate', 'content_royalty', 'digital_product', 'service', 'donation', 'other'];
+      const kinds = [
+        'saas',
+        'marketplace',
+        'ads',
+        'affiliate',
+        'content_royalty',
+        'digital_product',
+        'service',
+        'donation',
+        'other',
+      ];
 
       for (const kind of kinds) {
         const res = await invokePost(

@@ -27,7 +27,6 @@ afterEach(async () => {
 });
 
 describe('recomputeMetrics edge cases', () => {
-
   it('handles multiple periods correctly', async () => {
     const ctx = createIncomeLedgerContext(db);
     const stream = await ctx.query(IncomeStream).insertAndFetch({
@@ -46,7 +45,7 @@ describe('recomputeMetrics edge cases', () => {
 
     const metrics = await db('income_metric').where('stream_id', stream.id).orderBy('period');
     expect(metrics).toHaveLength(3);
-    expect(metrics.map(m => m.period)).toEqual(['2026-01', '2026-02', '2026-03']);
+    expect(metrics.map((m) => m.period)).toEqual(['2026-01', '2026-02', '2026-03']);
   });
 
   it('handles dead streams (excludes them)', async () => {
@@ -80,8 +79,8 @@ describe('recomputeMetrics edge cases', () => {
     // We expect: 8 seeded (idea status) + 1 live = 9 metrics
     // The dead stream should be excluded
     expect(metrics).toHaveLength(9);
-    expect(metrics.some(m => m.stream_id === deadStream.id)).toBe(false);
-    expect(metrics.some(m => m.stream_id === liveStream.id)).toBe(true);
+    expect(metrics.some((m) => m.stream_id === deadStream.id)).toBe(false);
+    expect(metrics.some((m) => m.stream_id === liveStream.id)).toBe(true);
   });
 
   it('handles cost/fee/tax entries correctly in net calculation', async () => {
@@ -156,7 +155,9 @@ describe('recomputeMetrics edge cases', () => {
 
     await recomputeMetrics(ctx, '2026-01');
 
-    const metric = await db('income_metric').where({ stream_id: stream.id, period: '2026-01' }).first();
+    const metric = await db('income_metric')
+      .where({ stream_id: stream.id, period: '2026-01' })
+      .first();
     expect(metric).toBeDefined();
     // Revenue is summed from net_minor where kind='revenue'
     // Cost is summed from amount_minor where kind IN ('cost', 'fee', 'tax')
@@ -199,7 +200,9 @@ describe('recomputeMetrics edge cases', () => {
 
     await recomputeMetrics(ctx, '2026-01');
 
-    const metric = await db('income_metric').where({ stream_id: stream.id, period: '2026-01' }).first();
+    const metric = await db('income_metric')
+      .where({ stream_id: stream.id, period: '2026-01' })
+      .first();
     expect(Number(metric.mrr_minor)).toBe(500_000);
     expect(Number(metric.arr_minor)).toBe(6_000_000);
   });
@@ -229,11 +232,15 @@ describe('recomputeMetrics edge cases', () => {
 
     await recomputeMetrics(ctx, '2026-01');
 
-    const adsMetric = await db('income_metric').where({ stream_id: adsStream.id, period: '2026-01' }).first();
+    const adsMetric = await db('income_metric')
+      .where({ stream_id: adsStream.id, period: '2026-01' })
+      .first();
     expect(Number(adsMetric.mrr_minor)).toBe(0);
     expect(Number(adsMetric.arr_minor)).toBe(0);
 
-    const pausedMetric = await db('income_metric').where({ stream_id: pausedSaaS.id, period: '2026-01' }).first();
+    const pausedMetric = await db('income_metric')
+      .where({ stream_id: pausedSaaS.id, period: '2026-01' })
+      .first();
     expect(Number(pausedMetric.mrr_minor)).toBe(0);
     expect(Number(pausedMetric.arr_minor)).toBe(0);
   });
@@ -263,7 +270,9 @@ describe('recomputeMetrics edge cases', () => {
 
     await recomputeMetrics(ctx, '2026-01');
 
-    const metric = await db('income_metric').where({ stream_id: stream.id, period: '2026-01' }).first();
+    const metric = await db('income_metric')
+      .where({ stream_id: stream.id, period: '2026-01' })
+      .first();
     expect(metric.runway_months).toBe(5); // 500000 / 100000
   });
 
@@ -303,7 +312,9 @@ describe('recomputeMetrics edge cases', () => {
 
     await recomputeMetrics(ctx, '2026-01');
 
-    const metric = await db('income_metric').where({ stream_id: stream.id, period: '2026-01' }).first();
+    const metric = await db('income_metric')
+      .where({ stream_id: stream.id, period: '2026-01' })
+      .first();
     expect(metric.runway_months).toBeNull();
   });
 
@@ -323,7 +334,9 @@ describe('recomputeMetrics edge cases', () => {
 
     const now = new Date();
     const expectedPeriod = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
-    const metric = await db('income_metric').where({ stream_id: stream.id, period: expectedPeriod }).first();
+    const metric = await db('income_metric')
+      .where({ stream_id: stream.id, period: expectedPeriod })
+      .first();
     expect(metric).toBeDefined();
   });
 });
