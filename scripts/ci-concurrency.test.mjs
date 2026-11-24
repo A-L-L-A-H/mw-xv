@@ -51,10 +51,19 @@ test('CI runs quality-and-build, unit-tests, knowledge-gate, and postgres-integr
 test('every CI job declares explicit least-privilege contents: read permissions', () => {
   assert.match(workflow, /^permissions:\r?\n {2}contents: read/mu);
   const jobsSection = workflow.slice(workflow.search(/^jobs:\s*$/mu));
-  const jobHeaders = jobsSection.match(/^ {2}[a-z0-9_-]+:/gmu) ?? [];
-  const jobPermissions = jobsSection.match(/^ {4}permissions:\r?\n {6}contents: read/gmu) ?? [];
-  assert.equal(jobPermissions.length, jobHeaders.length);
-  assert.doesNotMatch(workflow, /:\s*write\b/u);
+  const jobHeaders = [...jobsSection.matchAll(/^ {2}([a-z0-9_-]+):\s*$/gmu)];
+  assert.ok(jobHeaders.length > 0);
+  for (const [index, job] of jobHeaders.entries()) {
+    const nextJob = jobHeaders[index + 1];
+    const jobBody = jobsSection.slice(job.index, nextJob?.index);
+    assert.match(jobBody, /^ {4}permissions:/mu, `${job[1]} must declare permissions`);
+    assert.match(jobBody, /^ {6}contents: read\s*$/mu, `${job[1]} must allow contents reads`);
+    assert.doesNotMatch(jobBody, /^ {6}contents: write\s*$/mu, `${job[1]} must not write contents`);
+  }
+  const writePermissions = [...workflow.matchAll(/^ {6}([a-z-]+): write\s*$/gmu)].map(
+    ([, permission]) => permission
+  );
+  assert.deepEqual(writePermissions, ['security-events']);
 });
 
 test('affected CI selector keeps full validation for shared config and master roadmap changes', () => {

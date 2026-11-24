@@ -214,6 +214,9 @@ export async function runContainerSmoke({
     // answer; /readyz gates on the attachment driver and must be pointed at the local one.
     ATTACHMENT_STORAGE_DRIVER: 'local',
     SUPERADMIN_PASSWORD: 'ci-smoke-superadmin-password',
+    MW_AI_FREELLM_KEY: 'ci-only-freellm-key-at-least-32-characters',
+    AGENT_SANDBOX_TOKEN: 'ci-only-agent-sandbox-token-at-least-32-chars',
+    ENCRYPTION_KEY: 'ci-only-encryption-key-at-least-32-characters',
     API_PORT: String(apiPort),
     BOARD_PORT: String(boardPort),
     LOG_LEVEL: 'info',

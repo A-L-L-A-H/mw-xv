@@ -1,4 +1,6 @@
-const requiredCheckNames = ['ci-technical-gate'];
+import { CI_GATE_CHECK_NAME } from '../ci-gate.mjs';
+
+const requiredCheckNames = [CI_GATE_CHECK_NAME];
 const fullShaPattern = /^[a-f0-9]{40}$/u;
 const sourceLinePattern =
   /^\s*[-*]\s*(?:Source(?: code)? SHA|Source and final test SHA|Source commit pushed|Implementation commit|Local source SHA for test changes|Current source head(?: at evidence capture)?)\s*:\s*[^\r\n]*?\b([a-f0-9]{40})\b[^\r\n]*$/gimu;
@@ -88,7 +90,7 @@ export function exactDevPullRequestTechnicalGate(run, pages) {
   const gates = jobs.filter(
     (job) =>
       job &&
-      job.name === 'ci-technical-gate' &&
+      job.name === CI_GATE_CHECK_NAME &&
       Number.isSafeInteger(job.id) &&
       ['queued', 'in_progress', 'completed'].includes(job.status)
   );
@@ -112,7 +114,7 @@ export function completedExactDevPullRequestTechnicalGate(run, pages) {
   const gate = exactDevPullRequestTechnicalGate(run, pages);
   if (!gate || gate.status !== 'completed') {
     throw new Error(
-      `Completed PR CI run ${run.id} for ${run.head_sha} did not report a completed ci-technical-gate.`
+      `Completed PR CI run ${run.id} for ${run.head_sha} did not report a completed ${CI_GATE_CHECK_NAME}.`
     );
   }
   return [gate];

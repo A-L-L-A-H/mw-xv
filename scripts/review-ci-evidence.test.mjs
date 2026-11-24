@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { selectReviewCiRun, verifyReviewCiEvidence } from './review-ci-evidence.mjs';
+import { CI_GATE_CHECK_NAME } from './ci-gate.mjs';
 
 const run = (overrides = {}) => ({
   id: 42,
@@ -13,7 +14,7 @@ const run = (overrides = {}) => ({
   pull_requests: [{ number: 24 }],
   ...overrides,
 });
-const jobs = [{ name: 'ci-technical-gate', status: 'completed', conclusion: 'success' }];
+const jobs = [{ id: 9, name: CI_GATE_CHECK_NAME, status: 'completed', conclusion: 'success' }];
 
 test('selects completed CI evidence for the exact PR and head SHA, even if approval alone failed', () => {
   const selected = selectReviewCiRun(
@@ -41,6 +42,20 @@ test('rejects missing, stale, wrong-PR, or unfinished CI evidence', () => {
   );
 });
 
+test('rejects malformed SHAs before reading any evidence', () => {
+  assert.throws(() => selectReviewCiRun([run()], 'short', 24), /full 40-character/u);
+  assert.throws(() => verifyReviewCiEvidence([run()], jobs, 'short', 24, 42), /full 40-character/u);
+});
+
+test('selects the newest gate attempt rather than a stale failed one', () => {
+  const stale = { id: 1, name: CI_GATE_CHECK_NAME, status: 'completed', conclusion: 'failure' };
+  const current = { id: 2, name: CI_GATE_CHECK_NAME, status: 'completed', conclusion: 'success' };
+  assert.match(
+    verifyReviewCiEvidence([run()], [stale, current], 'a'.repeat(40), 24, 42),
+    /successful ci-gate/u
+  );
+});
+
 test('requires the latest matching completed run and a successful technical gate job', () => {
   const older = run({ id: 41 });
   const newerFailure = run({
@@ -55,7 +70,7 @@ test('requires the latest matching completed run and a successful technical gate
     () =>
       verifyReviewCiEvidence(
         [run()],
-        [{ name: 'ci-technical-gate', status: 'completed', conclusion: 'failure' }],
+        [{ id: 9, name: CI_GATE_CHECK_NAME, status: 'completed', conclusion: 'failure' }],
         'a'.repeat(40),
         24,
         42

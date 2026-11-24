@@ -60,13 +60,13 @@ test('retries bounded transient GitHub API read failures and preserves permissio
 
 test('flattens every GitHub CLI pagination page and rejects malformed page shapes', () => {
   const checkPages = [
-    { check_runs: [{ id: 1, name: 'ci-technical-gate' }] },
-    { check_runs: [{ id: 2, name: 'ci-technical-gate' }] },
+    { check_runs: [{ id: 1, name: 'ci-gate' }] },
+    { check_runs: [{ id: 2, name: 'ci-gate' }] },
   ];
   const releasePages = [[{ tag_name: 'v1.0.0' }], [{ tag_name: 'v1.1.0' }]];
   assert.deepEqual(flattenGitHubPages(checkPages, 'check_runs'), [
-    { id: 1, name: 'ci-technical-gate' },
-    { id: 2, name: 'ci-technical-gate' },
+    { id: 1, name: 'ci-gate' },
+    { id: 2, name: 'ci-gate' },
   ]);
   assert.deepEqual(flattenGitHubPages(releasePages, undefined), [
     { tag_name: 'v1.0.0' },
@@ -193,15 +193,15 @@ test('selects exact same-repository dev-to-main PR gate and ignores duplicate pu
       {
         jobs: [
           { id: 20, name: 'quality', status: 'completed', conclusion: 'success' },
-          { id: 24, name: 'ci-gate', status: 'completed', conclusion: 'failure' },
-          { id: 22, name: 'ci-technical-gate', status: 'completed', conclusion: 'success' },
-          { id: 21, name: 'ci-technical-gate', status: 'completed', conclusion: 'failure' },
+          { id: 24, name: 'CodeQL', status: 'completed', conclusion: 'failure' },
+          { id: 22, name: 'ci-gate', status: 'completed', conclusion: 'success' },
+          { id: 21, name: 'ci-gate', status: 'completed', conclusion: 'failure' },
         ],
       },
     ]),
     {
       id: 22,
-      name: 'ci-technical-gate',
+      name: 'ci-gate',
       head_sha: devSha,
       status: 'completed',
       conclusion: 'success',
@@ -215,14 +215,14 @@ test('fails immediately when a completed PR CI run omits its technical gate', ()
   const run = { id: 42, head_sha: devSha, status: 'completed' };
   assert.throws(
     () => completedExactDevPullRequestTechnicalGate(run, [{ jobs: [] }]),
-    /did not report a completed ci-technical-gate/u
+    /did not report a completed ci-gate/u
   );
   assert.throws(
     () =>
       completedExactDevPullRequestTechnicalGate(run, [
-        { jobs: [{ id: 4, name: 'ci-technical-gate', status: 'in_progress' }] },
+        { jobs: [{ id: 4, name: 'ci-gate', status: 'in_progress' }] },
       ]),
-    /did not report a completed ci-technical-gate/u
+    /did not report a completed ci-gate/u
   );
 });
 
@@ -270,7 +270,7 @@ test('captures a pending exact-source gate without waiting or treating it as ver
       base: { ref: 'main', sha: mainSha, repo: { full_name: 'bjo163/moonwitness-xiv' } },
     }),
     readJobs: async () => [
-      { jobs: [{ id: 25, name: 'ci-technical-gate', status: 'in_progress', conclusion: null }] },
+      { jobs: [{ id: 25, name: 'ci-gate', status: 'in_progress', conclusion: null }] },
     ],
   });
 
@@ -279,7 +279,7 @@ test('captures a pending exact-source gate without waiting or treating it as ver
     checkRuns: [
       {
         id: 25,
-        name: 'ci-technical-gate',
+        name: 'ci-gate',
         head_sha: devSha,
         status: 'in_progress',
         conclusion: null,
@@ -347,7 +347,7 @@ test('accepts the completed exact PR technical gate for lifecycle evidence', () 
         jobs: [
           {
             id: 4,
-            name: 'ci-technical-gate',
+            name: 'ci-gate',
             status: 'completed',
             conclusion: 'success',
           },
@@ -357,7 +357,7 @@ test('accepts the completed exact PR technical gate for lifecycle evidence', () 
     [
       {
         id: 4,
-        name: 'ci-technical-gate',
+        name: 'ci-gate',
         head_sha: devSha,
         status: 'completed',
         conclusion: 'success',
@@ -406,21 +406,21 @@ test('collects current checks and ancestry without confusing evidence SHA with i
     checkRuns: [
       {
         id: 2,
-        name: 'ci-technical-gate',
+        name: 'ci-gate',
         head_sha: devSha,
         status: 'completed',
         conclusion: 'success',
       },
       {
         id: 1,
-        name: 'ci-technical-gate',
+        name: 'ci-gate',
         head_sha: devSha,
         status: 'completed',
         conclusion: 'failure',
       },
       {
         id: 3,
-        name: 'ci-technical-gate',
+        name: 'ci-gate',
         head_sha: sourceSha,
         status: 'completed',
         conclusion: 'success',
@@ -440,13 +440,13 @@ test('collects current checks and ancestry without confusing evidence SHA with i
   assert.equal(row.sourceInDev, true);
   assert.equal(row.sourceInMain, false);
   assert.deepEqual(row.requiredChecks, [
-    { name: 'ci-technical-gate', headSha: devSha, status: 'completed', conclusion: 'success' },
+    { name: 'ci-gate', headSha: devSha, status: 'completed', conclusion: 'success' },
   ]);
   const partialRow = snapshot.tasks.find(({ taskId }) => taskId === 'M1.02');
   assert.equal(partialRow.acceptanceVerified, false);
   assert.equal(partialRow.sourceInDev, true);
   assert.deepEqual(partialRow.requiredChecks, [
-    { name: 'ci-technical-gate', headSha: devSha, status: 'completed', conclusion: 'success' },
+    { name: 'ci-gate', headSha: devSha, status: 'completed', conclusion: 'success' },
   ]);
   const projected = projectLifecycleSnapshot({
     snapshot,
