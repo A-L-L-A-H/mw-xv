@@ -158,6 +158,9 @@ jobs:
           WHATSAPP_GATEWAY_PASSWORD: ci-only-whatsapp-password
           ATTACHMENT_S3_ACCESS_KEY: GKci-only-access-key-id
           ATTACHMENT_S3_SECRET_KEY: ci-only-attachment-secret-that-is-at-least-32-characters-long
+          MW_AI_FREELLM_KEY: ci-only-freellm-inference-key
+          AGENT_SANDBOX_TOKEN: ci-only-agent-sandbox-token
+          ENCRYPTION_KEY: ci-only-freellm-encryption-key
         run: docker compose -f docker-compose.yml -f docker-compose.production.yml config --quiet
       - name: Export the verified images and record their transport digest
         if: github.ref_type == 'tag'
@@ -268,6 +271,11 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Refuse publication while the fleet is paused
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/fleet-stop.mjs probe --repo "$GH_REPO"
       - name: Verify the exact release artifact identity
         env:
           GH_TOKEN: ${{ github.token }}

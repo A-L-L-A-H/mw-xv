@@ -194,7 +194,20 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
+          fetch-depth: 0
           persist-credentials: false
+
+      - name: Verify the requested tag is an immutable main descendant
+        env:
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]
+          test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "$RELEASE_TAG")"
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          git merge-base --is-ancestor "$RELEASE_TAG" refs/remotes/origin/main
 
       - name: Download platform desktop bundles
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
@@ -264,4 +277,12 @@ jobs:
           RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
         run: |
           set -euo pipefail
-          gh release upload "$RELEASE_TAG" release-upload/* --repo "$GH_REPOSITORY" --clobber
+          existing="$(gh release view "$RELEASE_TAG" --repo "$GH_REPOSITORY" --json assets --jq '.assets[].name' || true)"
+          for asset in release-upload/*; do
+            name="$(basename "$asset")"
+            if printf '%s\n' "$existing" | grep -Fxq "$name"; then
+              echo "Release asset '$name' already exists; refusing to overwrite it." >&2
+              exit 1
+            fi
+          done
+          gh release upload "$RELEASE_TAG" release-upload/* --repo "$GH_REPOSITORY"

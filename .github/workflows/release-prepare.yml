@@ -87,4 +87,31 @@ jobs:
           fi
           git commit -m "chore(release): prepare workspace release"
           node scripts/push-expected-ref.mjs origin HEAD refs/heads/dev "$EXPECTED_SOURCE_SHA"
+          prepared_sha="$(git rev-parse HEAD)"
+          [[ "$prepared_sha" =~ ^[a-f0-9]{40}$ ]]
+          echo "prepared_sha=$prepared_sha" >> "$GITHUB_OUTPUT"
           echo "pushed=true" >> "$GITHUB_OUTPUT"
+      - name: Dispatch exact-SHA CI and await the governance checks
+        id: ci
+        if: steps.publish.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PREPARED_SHA: ${{ steps.publish.outputs.prepared_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$PREPARED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          gh workflow run ci.yml --repo "$GH_REPO" --ref dev
+          node scripts/release-await-ci.mjs --sha "$PREPARED_SHA" --repo "$GH_REPO" \
+            --checks '["ci-gate"]' --timeout-seconds 1800 --interval-seconds 30
+      - name: Dispatch promotion after exact-SHA CI succeeds
+        if: steps.publish.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PREPARED_SHA: ${{ steps.publish.outputs.prepared_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$PREPARED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          gh workflow run promote.yml --repo "$GH_REPO" --ref dev -f expected_sha="$PREPARED_SHA"
+          echo "Dispatched promotion for verified dev SHA $PREPARED_SHA." >> "$GITHUB_STEP_SUMMARY"

@@ -3,7 +3,12 @@ name: Promote dev to main
 on:
   push:
     branches: [dev]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Exact dev SHA this promotion is allowed to act on
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -31,6 +36,21 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
+      - name: Refuse promotion while the fleet is paused
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/fleet-stop.mjs probe --repo "$GH_REPO"
+      - name: Bind an intentional dispatch to the exact dev SHA
+        env:
+          INPUT_SHA: ${{ inputs.expected_sha || '' }}
+          EVENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$INPUT_SHA" ]]; then
+            [[ "$INPUT_SHA" =~ ^[a-f0-9]{40}$ ]]
+            test "$INPUT_SHA" = "$EVENT_SHA"
+          fi
       - name: Skip stale promotion events
         id: stale
         env:
@@ -93,7 +113,9 @@ jobs:
           set -euo pipefail
           gh api "repos/$GH_REPO/commits/$EXPECTED_SHA/check-runs?per_page=100" > promotion-checks.json
           latest_tag="$(git tag --list 'v[0-9]*' --sort=-v:refname | head -n 1 || true)"
-          if [[ -n "$latest_tag" ]] && node scripts/release-plan.mjs --current-version "$latest_tag" --from "$BASE_SHA" --to "$EXPECTED_SHA" > promotion-release-plan.json 2>/dev/null; then
+          if node scripts/release-plan.mjs --head "$EXPECTED_SHA" --baseline-sha "$BASE_SHA" > promotion-release-plan.json; then
+            true
+          elif [[ -n "$latest_tag" ]] && node scripts/release-plan.mjs --head "$EXPECTED_SHA" --baseline-tag "$latest_tag" > promotion-release-plan.json; then
             true
           else
             echo '{"status":"unavailable"}' > promotion-release-plan.json
@@ -119,10 +141,40 @@ jobs:
           set -euo pipefail
           node scripts/evolution/check-constitution.mjs --enforce-pause
           node scripts/evolution/check-ratchet.mjs
+      - name: Require exact-SHA CI and policy gates before any merge
+        id: ci_gate
+        if: steps.stale.outputs.stale != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EXPECTED_SHA: ${{ github.sha }}
+          RUNNER_TEMP: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/commits/$EXPECTED_SHA/check-runs?per_page=100" --paginate --slurp \
+            | node -e '
+              const chunks = [];
+              process.stdin.on("data", (chunk) => chunks.push(chunk));
+              process.stdin.on("end", () => {
+                const pages = JSON.parse(chunks.join(""));
+                const runs = (Array.isArray(pages) ? pages : [pages]).flatMap((page) => page?.check_runs ?? page ?? []);
+                process.stdout.write(JSON.stringify(runs));
+              });
+            ' > "$RUNNER_TEMP/promotion-check-runs.json"
+          # policy-gate is enforced by the ruleset on the merge_group SHA; this
+          # push-time gate requires the exact-SHA technical aggregate only.
+          if node scripts/release-await-ci.mjs --sha "$EXPECTED_SHA" --repo "$GH_REPO" \
+              --checks '["ci-gate"]' --checks-file "$RUNNER_TEMP/promotion-check-runs.json"; then
+            echo "pass=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pass=false" >> "$GITHUB_OUTPUT"
+            echo "Exact-SHA ci-gate/policy-gate checks are not successful; promotion stays blocked." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Ensure approval-required label exists
         if: >-
           steps.stale.outputs.stale != 'true' && (
             steps.evolution_gate.outcome != 'success' ||
+            steps.ci_gate.outputs.pass != 'true' ||
             (steps.risk.outputs.approval_required == 'true' && vars.AUTONOMOUS_PROMOTE != 'true')
           )
         env:
@@ -135,6 +187,7 @@ jobs:
         if: >-
           steps.stale.outputs.stale != 'true' && (
             steps.evolution_gate.outcome != 'success' ||
+            steps.ci_gate.outputs.pass != 'true' ||
             (steps.risk.outputs.approval_required == 'true' && vars.AUTONOMOUS_PROMOTE != 'true')
           )
         env:
@@ -149,6 +202,7 @@ jobs:
         if: >-
           steps.stale.outputs.stale != 'true' &&
           steps.evolution_gate.outcome == 'success' &&
+          steps.ci_gate.outputs.pass == 'true' &&
           (steps.risk.outputs.approval_required != 'true' || vars.AUTONOMOUS_PROMOTE == 'true')
         env:
           GH_TOKEN: ${{ github.token }}

@@ -105,6 +105,12 @@ jobs:
         if: steps.source.outputs.stale != 'true'
         with:
           node-version: '24'
+      - name: Refuse release orchestration while the fleet is paused
+        if: steps.source.outputs.stale != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/fleet-stop.mjs probe --repo "$GH_REPO"
       - name: Collect remote tags, dev state, and published releases
         if: steps.source.outputs.stale != 'true'
         id: state

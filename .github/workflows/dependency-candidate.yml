@@ -114,11 +114,24 @@ jobs:
     permissions:
       actions: write
     steps:
-      - name: Dispatch promotion and full CI for candidate dev head
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Dispatch full CI, await exact-SHA gates, then dispatch promotion
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          CANDIDATE_SHA: ${{ needs.validate.outputs.candidate_sha }}
         run: |
           set -euo pipefail
-          gh workflow run promote.yml --repo "$GITHUB_REPOSITORY" --ref dev
+          [[ "$CANDIDATE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "$(git ls-remote origin refs/heads/dev | cut -f1)" = "$CANDIDATE_SHA"
           gh workflow run ci.yml --repo "$GH_REPO" --ref dev
+          node scripts/release-await-ci.mjs --sha "$CANDIDATE_SHA" --repo "$GH_REPO" \
+            --checks '["ci-gate"]' --timeout-seconds 1800 --interval-seconds 30
+          gh workflow run promote.yml --repo "$GH_REPO" --ref dev -f expected_sha="$CANDIDATE_SHA"

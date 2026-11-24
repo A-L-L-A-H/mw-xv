@@ -90,5 +90,9 @@ jobs:
           fi
           git commit -m 'chore(evolution): ratchet repository fitness baseline'
           node scripts/push-expected-ref.mjs origin HEAD refs/heads/dev "$EXPECTED_DEV_SHA"
+          result_sha="$(git rev-parse HEAD)"
+          [[ "$result_sha" =~ ^[a-f0-9]{40}$ ]]
           gh workflow run ci.yml --repo "$GH_REPO" --ref dev
-          gh workflow run promote.yml --repo "$GH_REPO" --ref dev
+          node scripts/release-await-ci.mjs --sha "$result_sha" --repo "$GH_REPO" \
+            --checks '["ci-gate"]' --timeout-seconds 1800 --interval-seconds 30
+          gh workflow run promote.yml --repo "$GH_REPO" --ref dev -f expected_sha="$result_sha"
