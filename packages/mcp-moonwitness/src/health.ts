@@ -18,8 +18,16 @@ export interface ApiHealthResult {
 const DEFAULT_BASE_URL = 'http://127.0.0.1:3000';
 const DEFAULT_TIMEOUT_MS = 5_000;
 
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === '/') {
+    end -= 1;
+  }
+  return value.slice(0, end);
+}
+
 export async function probeApiHealth(options: ApiHealthOptions = {}): Promise<ApiHealthResult> {
-  const baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/u, '');
+  const baseUrl = trimTrailingSlashes(options.baseUrl ?? DEFAULT_BASE_URL);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const fetchImpl = options.fetchImpl ?? fetch;
   const startedAt = Date.now();

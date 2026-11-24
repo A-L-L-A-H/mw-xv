@@ -64,19 +64,46 @@ export function renderDedupeKey(
   template: string,
   ctx: { readonly payload: unknown; readonly triggerKind: string; readonly triggerRef: string }
 ): string {
-  return template.replace(/\{([^}]+)\}/g, (_match, rawPath: string) => {
+  const resolveToken = (rawPath: string): string => {
     const path = rawPath.trim();
     if (path === 'trigger.kind') return ctx.triggerKind;
     if (path === 'trigger.ref') return ctx.triggerRef;
-    if (path === 'payload') return JSON.stringify(ctx.payload);
+    if (path === 'payload') return String(JSON.stringify(ctx.payload));
     let current: unknown = { payload: ctx.payload };
     for (const segment of path.split('.')) {
       if (!isRecord(current)) return '';
       current = current[segment];
     }
     if (current === undefined || current === null) return '';
-    return typeof current === 'string' ? current : JSON.stringify(current);
-  });
+    return typeof current === 'string' ? current : String(JSON.stringify(current));
+  };
+
+  const rendered: string[] = [];
+  let literalStart = 0;
+  let tokenStart = -1;
+
+  for (let index = 0; index < template.length; index += 1) {
+    const character = template[index];
+    if (character === '{') {
+      // The previous pattern allowed nested opening braces inside a token.
+      if (tokenStart === -1) tokenStart = index;
+      continue;
+    }
+    if (character !== '}' || tokenStart === -1) continue;
+
+    if (index > tokenStart + 1) {
+      rendered.push(
+        template.slice(literalStart, tokenStart),
+        resolveToken(template.slice(tokenStart + 1, index))
+      );
+      literalStart = index + 1;
+    }
+    // An empty `{}` is literal; later tokens are still eligible for rendering.
+    tokenStart = -1;
+  }
+
+  rendered.push(template.slice(literalStart));
+  return rendered.join('');
 }
 
 function hasRecentRun(

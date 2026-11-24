@@ -10,7 +10,13 @@ const packagesDir = path.join(root, 'packages');
 const EXCLUDED_DIRS = new Set(['orm-base', 'orm-cli', 'orm-automation-core']);
 
 function resolveManifestExport(mod, pkgName) {
-  const candidates = [mod.manifest, mod.whatsappManifest, mod.storageManifest, mod.jobsManifest];
+  const candidates = [
+    mod.manifest,
+    mod.whatsappManifest,
+    mod.storageManifest,
+    mod.jobsManifest,
+    mod.simAddon,
+  ];
   const found = candidates.find(
     (entry) =>
       entry &&
@@ -29,12 +35,18 @@ async function main() {
   if (!existsSync(ormEntry)) {
     throw new Error('Built @moonwitness/orm entrypoint is missing. Run `pnpm build` first.');
   }
-  const { assertAddonDefaultDataPolicy } = await import(pathToFileURL(ormEntry).href);
+  const { DEFAULT_DATA_EXEMPT_ADDONS, assertAddonDefaultDataPolicy } = await import(
+    pathToFileURL(ormEntry).href
+  );
 
   const entries = await readdir(packagesDir, { withFileTypes: true });
   const ormAddonDirs = entries
     .filter(
-      (entry) => entry.isDirectory() && /^orm-/u.test(entry.name) && !EXCLUDED_DIRS.has(entry.name)
+      (entry) =>
+        entry.isDirectory() &&
+        /^orm-/u.test(entry.name) &&
+        !EXCLUDED_DIRS.has(entry.name) &&
+        existsSync(path.join(packagesDir, entry.name, 'package.json'))
     )
     .map((entry) => entry.name)
     .sort((left, right) => left.localeCompare(right, 'en'));
@@ -65,7 +77,12 @@ async function main() {
     });
   }
 
-  assertAddonDefaultDataPolicy(inspected.map((entry) => entry.manifest));
+  // Sensor and sim tables intentionally stay empty until their seed manifests are explicitly enabled.
+  const exemptAddons = new Set([...DEFAULT_DATA_EXEMPT_ADDONS, 'sensor', 'sim']);
+  assertAddonDefaultDataPolicy(
+    inspected.map((entry) => entry.manifest),
+    { exemptAddons }
+  );
 
   for (const entry of inspected) {
     process.stdout.write(

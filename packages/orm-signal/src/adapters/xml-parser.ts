@@ -21,8 +21,111 @@ function decodeEntities(input: string): string {
   });
 }
 
-const TAG_RE = /<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9:_-]*)((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))*)\s*(\/?)\s*>/;
-const ATTR_RE = /([a-zA-Z_:][a-zA-Z0-9_:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
+const WHITESPACE_RE = /\s/;
+
+interface ParsedTag {
+  readonly closing: boolean;
+  readonly name: string;
+  readonly attrs: Array<readonly [string, string]>;
+  readonly selfClosing: boolean;
+  readonly end: number;
+}
+
+function isWhitespace(char: string | undefined): boolean {
+  return char !== undefined && WHITESPACE_RE.test(char);
+}
+
+function skipWhitespace(xml: string, index: number): number {
+  while (isWhitespace(xml[index])) index += 1;
+  return index;
+}
+
+function isAsciiLetter(code: number): boolean {
+  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+}
+
+function isNameStart(code: number, attribute: boolean): boolean {
+  return isAsciiLetter(code) || (attribute && (code === 95 || code === 58));
+}
+
+function isNameChar(code: number, attribute: boolean): boolean {
+  return (
+    isAsciiLetter(code) ||
+    (code >= 48 && code <= 57) ||
+    code === 58 ||
+    code === 95 ||
+    code === 45 ||
+    (attribute && code === 46)
+  );
+}
+
+function readName(
+  xml: string,
+  index: number,
+  attribute: boolean
+): { name: string; end: number } | undefined {
+  if (!isNameStart(xml.charCodeAt(index), attribute)) return undefined;
+  let cursor = index + 1;
+  while (isNameChar(xml.charCodeAt(cursor), attribute)) cursor += 1;
+  return { name: xml.slice(index, cursor), end: cursor };
+}
+
+function parseTag(xml: string, start: number): ParsedTag | undefined {
+  let cursor = skipWhitespace(xml, start + 1);
+  let closing = false;
+  if (xml[cursor] === '/') {
+    closing = true;
+    cursor = skipWhitespace(xml, cursor + 1);
+  }
+
+  const rawName = readName(xml, cursor, false);
+  if (!rawName) return undefined;
+  cursor = rawName.end;
+  const attrs: Array<readonly [string, string]> = [];
+
+  while (true) {
+    const beforeWhitespace = cursor;
+    cursor = skipWhitespace(xml, cursor);
+
+    if (xml[cursor] === '>') {
+      return { closing, name: rawName.name, attrs, selfClosing: false, end: cursor + 1 };
+    }
+    if (xml[cursor] === '/') {
+      cursor = skipWhitespace(xml, cursor + 1);
+      if (xml[cursor] !== '>') return undefined;
+      return { closing, name: rawName.name, attrs, selfClosing: true, end: cursor + 1 };
+    }
+    if (cursor === beforeWhitespace) return undefined;
+
+    const attrName = readName(xml, cursor, true);
+    if (!attrName) return undefined;
+    cursor = skipWhitespace(xml, attrName.end);
+    if (xml[cursor] !== '=') return undefined;
+    cursor = skipWhitespace(xml, cursor + 1);
+
+    const quote = xml[cursor];
+    let value: string;
+    if (quote === '"' || quote === "'") {
+      const valueStart = cursor + 1;
+      cursor = valueStart;
+      while (cursor < xml.length && xml[cursor] !== quote) cursor += 1;
+      if (cursor >= xml.length) return undefined;
+      value = xml.slice(valueStart, cursor);
+      cursor += 1;
+    } else {
+      const valueStart = cursor;
+      while (cursor < xml.length && !isWhitespace(xml[cursor]) && xml[cursor] !== '>') cursor += 1;
+      if (cursor === valueStart) return undefined;
+      if (cursor > valueStart + 1 && xml[cursor] === '>' && xml[cursor - 1] === '/') {
+        value = xml.slice(valueStart, cursor - 1);
+        cursor -= 1;
+      } else {
+        value = xml.slice(valueStart, cursor);
+      }
+    }
+    attrs.push([attrName.name, value]);
+  }
+}
 
 type XmlNode =
   | { _text: string }
@@ -91,18 +194,17 @@ export const XMLParser = {
         continue;
       }
 
-      const match = TAG_RE.exec(xml.slice(nextTag));
-      if (!match) {
+      const tag = parseTag(xml, nextTag);
+      if (!tag) {
         appendText(xml.slice(nextTag, nextTag + 1));
         cursor = nextTag + 1;
         continue;
       }
 
-      const [full, closing, rawName, rawAttrs, selfClosing] = match;
-      const name = rawName.replace(/^[a-zA-Z]+:/, '');
-      cursor = nextTag + full.length;
+      const name = tag.name.replace(/^[a-zA-Z]+:/, '');
+      cursor = tag.end;
 
-      if (closing) {
+      if (tag.closing) {
         const topIndex = stack.findLastIndex((entry) => entry.name === name);
         if (topIndex >= 0) {
           const [closed] = stack.splice(topIndex);
@@ -116,13 +218,11 @@ export const XMLParser = {
       }
 
       const attrs: Record<string, unknown> = {};
-      let attrMatch: RegExpExecArray | null;
-      ATTR_RE.lastIndex = 0;
-      while ((attrMatch = ATTR_RE.exec(rawAttrs ?? '')) !== null) {
-        attrs[attrMatch[1]] = decodeEntities(attrMatch[2] ?? attrMatch[3] ?? attrMatch[4] ?? '');
+      for (const [attrName, value] of tag.attrs) {
+        attrs[attrName] = decodeEntities(value);
       }
 
-      if (selfClosing) {
+      if (tag.selfClosing) {
         const node: XmlNode = { _name: name, ...attrs };
         const parent = stack[stack.length - 1];
         if (!parent) pushChild(root, name, node);

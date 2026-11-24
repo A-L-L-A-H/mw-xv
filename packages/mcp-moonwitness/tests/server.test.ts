@@ -180,6 +180,40 @@ describe('api health probe', () => {
     expect(result.ok).toBe(true);
     expect(result.status).toBe(200);
   });
+
+  it.each([
+    ['http://127.0.0.1:3000', 'http://127.0.0.1:3000/health'],
+    ['http://127.0.0.1:3000/', 'http://127.0.0.1:3000/health'],
+    ['http://127.0.0.1:3000///', 'http://127.0.0.1:3000/health'],
+    ['http://127.0.0.1:3000/api//v1///', 'http://127.0.0.1:3000/api//v1/health'],
+    ['/', '/health'],
+    ['///', '/health'],
+    ['', '/health'],
+  ] as const)('trims all trailing slashes from base URL %j', async (baseUrl, expectedUrl) => {
+    let requestedUrl: string | undefined;
+    const result = await probeApiHealth({
+      baseUrl,
+      fetchImpl: async (input) => {
+        requestedUrl = String(input);
+        return new Response('{}', { status: 200 });
+      },
+    });
+    expect(result.ok).toBe(true);
+    expect(requestedUrl).toBe(expectedUrl);
+  });
+
+  it('handles long slash runs without altering non-trailing characters', async () => {
+    const slashRun = '/'.repeat(10_000);
+    let requestedUrl: string | undefined;
+    await probeApiHealth({
+      baseUrl: `http://127.0.0.1:3000/api${slashRun}v1///`,
+      fetchImpl: async (input) => {
+        requestedUrl = String(input);
+        return new Response('{}', { status: 200 });
+      },
+    });
+    expect(requestedUrl).toBe(`http://127.0.0.1:3000/api${slashRun}v1/health`);
+  });
 });
 
 describe('stdio transport framing', () => {
