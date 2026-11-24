@@ -198,7 +198,11 @@ export function renderPromotionReport({
 }
 
 function git(args) {
-  return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  return execFileSync('git', args, {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  }).trim();
 }
 
 export function loadPromotionSourceMetadata(
