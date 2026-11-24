@@ -117,7 +117,9 @@ function readCloudAgentConfig() {
     parsed.hash ||
     (parsed.pathname !== '' && parsed.pathname !== '/')
   ) {
-    throw new Error('AI_FREELLMAPI_ORIGIN must be an exact origin without path, query or credentials');
+    throw new Error(
+      'AI_FREELLMAPI_ORIGIN must be an exact origin without path, query or credentials'
+    );
   }
   const defaultModel = process.env.FREELLMAPI_DEFAULT_MODEL?.trim();
   if (defaultModel !== undefined && !/^[A-Za-z0-9][A-Za-z0-9._:\-/]{0,191}$/u.test(defaultModel)) {
@@ -131,6 +133,7 @@ function readCloudAgentConfig() {
     throw new Error('AGENT_SANDBOX_URL must be an exact http(s) origin');
   }
   if (
+    (sandboxParsed.protocol !== 'http:' && sandboxParsed.protocol !== 'https:') ||
     sandboxParsed.username ||
     sandboxParsed.password ||
     sandboxParsed.search ||
@@ -139,12 +142,34 @@ function readCloudAgentConfig() {
   ) {
     throw new Error('AGENT_SANDBOX_URL must be an exact origin');
   }
+
+  // Curated sandbox refs are deployment configuration, never derived from an
+  // execution fingerprint. The effect factory fails closed when any is absent.
+  const sandboxImageRef = process.env.MW_CLOUD_AGENT_IMAGE_REF?.trim();
+  if (sandboxImageRef !== undefined && !/^.+$@sha256:[a-f0-9]{64}$/u.test(sandboxImageRef)) {
+    throw new Error('MW_CLOUD_AGENT_IMAGE_REF must be pinned to a sha256 digest');
+  }
+  const sandboxSnapshotId = process.env.MW_CLOUD_AGENT_SNAPSHOT_ID?.trim();
+  if (
+    sandboxSnapshotId !== undefined &&
+    !/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/u.test(sandboxSnapshotId)
+  ) {
+    throw new Error('MW_CLOUD_AGENT_SNAPSHOT_ID contains unsupported characters');
+  }
+  const sandboxBaseCommit = process.env.MW_CLOUD_AGENT_BASE_COMMIT?.trim();
+  if (sandboxBaseCommit !== undefined && !/^[a-f0-9]{40,64}$/u.test(sandboxBaseCommit)) {
+    throw new Error('MW_CLOUD_AGENT_BASE_COMMIT must be a 40 or 64 character hex commit');
+  }
+
   return Object.freeze({
     origin: `${parsed.protocol}//${parsed.host}`,
     defaultModel,
     secretRef: process.env.MW_AI_FREELLM_SECRET_REF ?? 'MW_AI_FREELLM_KEY',
     sandboxOrigin: `${sandboxParsed.protocol}//${sandboxParsed.host}`,
     sandboxTokenRef: process.env.AGENT_SANDBOX_TOKEN_REF ?? 'AGENT_SANDBOX_TOKEN',
+    sandboxImageRef,
+    sandboxSnapshotId,
+    sandboxBaseCommit,
   });
 }
 

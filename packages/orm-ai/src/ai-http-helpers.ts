@@ -51,17 +51,14 @@ export function ensureAiJobHandlersRegistered(): void {
             throw new Error('Cross-company agent run dispatch rejected');
           }
           // A hosting app (API/worker bootstrap) installs the fully composed
-          // effect. Without it, keep the historical no-op stub so unconfigured
-          // installations and unit tests are unchanged.
-          return runDurableAgentRun(
-            payload,
-            context,
-            getCloudAgentEffect() ?? {
-              async execute() {
-                return { executedBy: 'orm-ai-durable-executor', handlerName };
-              },
-            }
-          );
+          // effect via setCloudAgentEffect(). Without it there is no safe way
+          // to execute a run: fail closed so the run is marked failed with no
+          // evidence rather than silently completing.
+          const effect = getCloudAgentEffect();
+          if (!effect) {
+            throw new Error('Cloud coding-agent effect is not configured');
+          }
+          return runDurableAgentRun(payload, context, effect);
         },
       });
     } catch {

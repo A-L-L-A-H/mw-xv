@@ -22,21 +22,40 @@ import type {
   WorkspaceEvidenceBundle,
   WorkspaceSandboxClient,
 } from '@moonwitness/ai-runtime';
-import type { AttachmentStorage } from '@moonwitness/orm-storage';
 import type { DurableRunEffects, TrustedRunSnapshot } from './agent-run-executor.js';
 import {
+  CLOUD_AGENT_CHECK_KIND,
+  DEFAULT_MAX_DURATION_MS,
+  DEFAULT_MAX_STEPS,
+} from './cloud-agent-defaults.js';
+import {
+  createDurableAgentRunStateStore,
   createDurableCapabilityGrantStore,
   createDurableToolAuditSink,
   createDurableToolEffectStore,
   createDurableToolQuotaStore,
 } from './durable-ports.js';
 
-export const CLOUD_AGENT_EFFECT_ID = 'cloud-agent-effect' as const;
-export const CLOUD_AGENT_CHECK_KIND = 'pnpm-typecheck' as const;
+// Re-export the single set of library-safe defaults for the sandbox adapter and
+// hosting app. The canonical definitions live in cloud-agent-defaults.ts.
+export {
+  CLOUD_AGENT_CHECK_COMMANDS,
+  CLOUD_AGENT_CHECK_KIND,
+  CLOUD_AGENT_MANIFEST_COMMAND,
+  DEFAULT_MAX_DURATION_MS,
+  DEFAULT_MAX_STEPS,
+  DEFAULT_SANDBOX_CPU_CORES,
+  DEFAULT_SANDBOX_MAX_OUTPUT_BYTES,
+  DEFAULT_SANDBOX_MEMORY_MB,
+  DEFAULT_SANDBOX_PIDS_LIMIT,
+  DEFAULT_SANDBOX_TIMEOUT_MS,
+  EVIDENCE_VERIFICATION_STATUS,
+} from './cloud-agent-defaults.js';
 
-const DEFAULT_MAX_STEPS = 8;
-const DEFAULT_MAX_DURATION_MS = 120_000;
+export const CLOUD_AGENT_EFFECT_ID = 'cloud-agent-effect' as const;
+
 const FINGERPRINT_PATTERN = /^[a-f0-9]{64}$/u;
+const PINNED_IMAGE_REF_PATTERN = /@sha256:[a-f0-9]{64}$/iu;
 
 /**
  * Dependencies are injected structurally so no other agent's module needs to
@@ -56,6 +75,7 @@ export interface CloudAgentEffectDeps {
     baseCommit: string;
     snapshotId: string;
     imageRef: string;
+    ownerAddon: 'orm-ai';
     gateway: CapabilityGateway;
   }) => Promise<{
     client: WorkspaceSandboxClient;
@@ -71,8 +91,15 @@ export interface CloudAgentEffectDeps {
       readonly dataClassification: DataClassification;
     }
   ) => Promise<{ storageKey: string; sha256: string }>;
-  /** Optional bootstrap-owned storage handle; evidence bytes are written by persistEvidence. */
-  readonly storage?: AttachmentStorage;
+  /**
+   * Pinned sandbox references supplied by the hosting app from central config.
+   * Never derived from the execution fingerprint or from process environment.
+   */
+  readonly sandboxRefs?: {
+    readonly snapshotId: string;
+    readonly baseCommit: string;
+    readonly imageRef: string;
+  };
   readonly maxSteps?: number;
   readonly maxDurationMs?: number;
 }
@@ -108,26 +135,38 @@ function requireRiskTier(value: string): RiskTier {
   return value as RiskTier;
 }
 
+function requireSandboxRef(value: unknown, label: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`Sandbox ${label} is missing or invalid`);
+  }
+  return value.trim();
+}
+
 /**
- * Snapshot labels are derived only from the immutable execution fingerprint and
- * trusted run columns. No model id, endpoint or credential is fabricated here;
- * the sandbox adapter still validates its pinned image and snapshot.
+ * Sandbox refs are authority inputs: they must be supplied explicitly by the
+ * hosting app from central config. The business execution fingerprint is NOT a
+ * digest of a container image or a repository snapshot, so no fallback is
+ * permitted here. Fail closed whenever a ref is absent or unpinned.
  */
 function resolveSandboxRefs(
-  snapshot: TrustedRunSnapshot
+  _snapshot: TrustedRunSnapshot,
+  refs: CloudAgentEffectDeps['sandboxRefs']
 ): Pick<
   Parameters<CloudAgentEffectDeps['createSandbox']>[0],
   'snapshotId' | 'baseCommit' | 'imageRef'
 > {
-  return {
-    snapshotId:
-      trustedString(snapshot.run.snapshot_id) ?? `snap-${snapshot.fingerprint.slice(0, 32)}`,
-    baseCommit: trustedString(snapshot.run.base_commit) ?? snapshot.fingerprint,
-    imageRef:
-      trustedString(snapshot.run.image_ref) ??
-      process.env.MW_CLOUD_AGENT_IMAGE_REF ??
-      `agent-sandbox@sha256:${snapshot.fingerprint}`,
-  };
+  if (!refs) {
+    throw new Error(
+      'Sandbox refs are missing: snapshotId, baseCommit and imageRef must be supplied by the hosting app'
+    );
+  }
+  const snapshotId = requireSandboxRef(refs.snapshotId, 'snapshotId');
+  const baseCommit = requireSandboxRef(refs.baseCommit, 'baseCommit');
+  const imageRef = requireSandboxRef(refs.imageRef, 'imageRef');
+  if (!PINNED_IMAGE_REF_PATTERN.test(imageRef)) {
+    throw new Error('Sandbox imageRef must be pinned to @sha256:<64 hex digits>');
+  }
+  return { snapshotId, baseCommit, imageRef };
 }
 
 function buildSystemPolicy(
@@ -214,6 +253,10 @@ export function createCloudAgentEffect(deps: CloudAgentEffectDeps): DurableRunEf
         throw new Error('maxDurationMs must be positive');
       }
 
+      // Resolve authority inputs before any provider, sandbox or durable side
+      // effect. A missing/unpinned ref must never reach the sandbox adapter.
+      const sandboxRefs = resolveSandboxRefs(snapshot, deps.sandboxRefs);
+
       const binding = await deps.createProvider(snapshot);
       if (!binding?.provider || !binding.model) {
         throw new Error('Provider binding is incomplete');
@@ -235,7 +278,8 @@ export function createCloudAgentEffect(deps: CloudAgentEffectDeps): DurableRunEf
       const { client, manifest } = await deps.createSandbox({
         runId,
         allowedPaths: snapshot.allowedPaths,
-        ...resolveSandboxRefs(snapshot),
+        ...sandboxRefs,
+        ownerAddon: 'orm-ai',
         gateway,
       });
 
@@ -294,6 +338,13 @@ export function createCloudAgentEffect(deps: CloudAgentEffectDeps): DurableRunEf
         routingPolicy: binding.routingPolicy,
         companyId,
         maxToolCalls: maxSteps,
+        stateStore: createDurableAgentRunStateStore({
+          companyId,
+          agentRunId: snapshot.runId,
+          fencingToken,
+        }),
+        fencingToken,
+        idempotencyKey: `${correlationId}:${snapshot.fingerprint}`.slice(0, 127),
       });
 
       const checkpoint = trustedString(snapshot.run.checkpoint_json);
@@ -318,6 +369,23 @@ export function createCloudAgentEffect(deps: CloudAgentEffectDeps): DurableRunEf
 
       try {
         const result = await harness.execute(input, executeTool, signal);
+        if (result.status !== 'completed') {
+          // A non-throwing harness failure is still a failure: never persist
+          // evidence and never commit a workspace for an incomplete run.
+          try {
+            await client.rollbackWorkspace({ runId });
+          } catch {
+            // The harness failure remains the authoritative execution cause.
+          }
+          const failure = new Error(
+            `Cloud agent harness did not complete (${result.status})` +
+              (result.error?.message ? `: ${result.error.message.slice(0, 256)}` : '')
+          );
+          throw Object.assign(failure, {
+            code: result.error?.code ?? result.status,
+            status: result.status,
+          });
+        }
         const bundle = await buildWorkspaceEvidence({
           client,
           manifest,

@@ -47,6 +47,7 @@ import {
   persistEvidenceBundle,
   setupCloudAgentSandbox,
 } from '../src/cloud-agent-sandbox.js';
+import { CLOUD_AGENT_MANIFEST_COMMAND } from '../src/cloud-agent-defaults.js';
 import { ARTIFACT_VERIFICATION_STATUSES } from '../src/models/constants.js';
 
 const ADDONS: readonly Addon[] = [
@@ -373,7 +374,7 @@ describe('setupCloudAgentSandbox', () => {
     expect(setup.client).toBe(client);
     expect(setup.workspace.workspaceId).toBe('ws-run-cloud-1');
     expect(setup.manifest.imageRef).toBe(PINNED_IMAGE_REF);
-    expect(setup.manifest.command).toEqual(['node', '--test']);
+    expect(setup.manifest.command).toEqual(CLOUD_AGENT_MANIFEST_COMMAND);
     expect(setup.tools).toContain('workspace.read');
     expect(setup.tools).toContain('workspace.list');
     expect(gateway.listRegisteredTools().map((tool) => tool.name)).toContain('workspace.read');
@@ -498,7 +499,7 @@ describe('buildAndVerifyWorkspaceEvidence', () => {
     const manifest = buildEphemeralSandboxManifest({
       runId: 'run-cloud-5',
       imageRef: PINNED_IMAGE_REF,
-      command: ['node', '--test'],
+      command: CLOUD_AGENT_MANIFEST_COMMAND,
       cpuCores: 0.5,
       memoryMb: 512,
       timeoutMs: 30_000,

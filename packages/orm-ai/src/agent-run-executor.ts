@@ -24,6 +24,7 @@ export const EXECUTION_FINGERPRINT_VERSION = 1 as const;
 export const AGENT_RUN_APPROVAL_WORKFLOW = 'ai.agent_run_approval' as const;
 
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
+const FINGERPRINT_PATTERN = /^[a-f0-9]{64}$/u;
 
 function canonical(value: unknown): string {
   if (value === null || value === undefined) return 'null';
@@ -45,7 +46,11 @@ export function sha256Canonical(value: unknown): string {
 export interface ExecutionFingerprintInput {
   readonly contract: { readonly id: number; readonly code: string; readonly revision?: number };
   readonly agent: { readonly id: number; readonly code: string };
-  readonly grant: { readonly id: number; readonly policyVersion: number; readonly expiresAt?: string };
+  readonly grant: {
+    readonly id: number;
+    readonly policyVersion: number;
+    readonly expiresAt?: string;
+  };
   readonly provider: { readonly id: number; readonly code: string; readonly kind: string };
   readonly model: { readonly id: number; readonly modelId: string };
   readonly policy: { readonly id: number; readonly version: number; readonly maxRiskTier: string };
@@ -246,11 +251,31 @@ export async function runDurableAgentRun(
   const snapshot = await loadTrustedRunSnapshot(payload.agentRunId, payload.companyId);
   if (!snapshot) return { status: 'replayed', agentRunId: payload.agentRunId };
 
+  // The fingerprint was approved at creation time with repository inputs. A
+  // mismatch here means the execution authority changed after approval: fail
+  // closed and leave the stored value untouched (never silently overwrite it).
+  const storedFingerprint = snapshot.run.execution_fingerprint;
+  if (
+    typeof storedFingerprint === 'string' &&
+    FINGERPRINT_PATTERN.test(storedFingerprint) &&
+    storedFingerprint !== snapshot.fingerprint
+  ) {
+    throw new StaleFencingError('Execution fingerprint changed after approval');
+  }
+
   const status = String(snapshot.run.status ?? 'pending');
   if (TERMINAL_STATUSES.has(status)) {
-    return { status: 'replayed', agentRunId: payload.agentRunId, fingerprint: snapshot.fingerprint };
+    return {
+      status: 'replayed',
+      agentRunId: payload.agentRunId,
+      fingerprint: snapshot.fingerprint,
+    };
   }
-  await assertCurrentFencing({ run: snapshot.run, jobId: context.jobId, companyId: payload.companyId });
+  await assertCurrentFencing({
+    run: snapshot.run,
+    jobId: context.jobId,
+    companyId: payload.companyId,
+  });
 
   if (context.signal.aborted || status === 'cancelled') {
     await AgentRun.query()
@@ -258,16 +283,17 @@ export async function runDurableAgentRun(
       .patch({ status: 'cancelled', finished_at: new Date().toISOString() });
     return { status: 'cancelled', agentRunId: snapshot.runId, fingerprint: snapshot.fingerprint };
   }
-  const agent = await Agent.query().findOne({ id: snapshot.run.agent_id, company_id: payload.companyId });
+  const agent = await Agent.query().findOne({
+    id: snapshot.run.agent_id,
+    company_id: payload.companyId,
+  });
   if (!agent || !isAgentOperational(agent as never)) {
-    await AgentRun.query()
-      .where({ id: snapshot.runId, company_id: payload.companyId })
-      .patch({
-        status: 'cancelled',
-        error_code: 'AGENT_HALTED',
-        error_summary: 'Agent is not active or has been emergency-stopped',
-        finished_at: new Date().toISOString(),
-      });
+    await AgentRun.query().where({ id: snapshot.runId, company_id: payload.companyId }).patch({
+      status: 'cancelled',
+      error_code: 'AGENT_HALTED',
+      error_summary: 'Agent is not active or has been emergency-stopped',
+      finished_at: new Date().toISOString(),
+    });
     return { status: 'cancelled', agentRunId: snapshot.runId, fingerprint: snapshot.fingerprint };
   }
 
@@ -290,24 +316,58 @@ export async function runDurableAgentRun(
       companyId: payload.companyId,
     });
     const effectResult = await effects.execute(snapshot, context.signal);
+    // Effects may report a non-throwing terminal status. Only an explicit
+    // failure/cancellation (or an exhausted budget) is terminal-failure; an
+    // effect with no status stays backward compatible as 'completed'.
+    const reportedStatus =
+      typeof effectResult?.status === 'string' ? effectResult.status : undefined;
+    const terminalStatus: 'completed' | 'failed' | 'cancelled' =
+      reportedStatus === 'cancelled'
+        ? 'cancelled'
+        : reportedStatus === 'failed' || reportedStatus === 'budget_exhausted'
+          ? 'failed'
+          : 'completed';
+    const effectError =
+      typeof effectResult?.error === 'object' && effectResult.error !== null
+        ? (effectResult.error as Record<string, unknown>)
+        : undefined;
     const checkpoint = {
       ...parseCheckpoint(snapshot.run.checkpoint_json),
       fingerprint: snapshot.fingerprint,
       lastEffect: effectResult,
     };
+    const patch: {
+      status: 'completed' | 'failed' | 'cancelled';
+      finished_at: string;
+      step_count: number;
+      checkpoint_json: string;
+      checkpoint_cursor: string;
+      error_code?: string;
+      error_summary?: string;
+    } = {
+      status: terminalStatus,
+      finished_at: new Date().toISOString(),
+      step_count: Number(snapshot.run.step_count ?? 0) + 1,
+      checkpoint_json: JSON.stringify(checkpoint),
+      checkpoint_cursor: snapshot.fingerprint,
+    };
+    if (terminalStatus !== 'completed') {
+      patch.error_code = String(effectError?.code ?? reportedStatus ?? terminalStatus).slice(0, 64);
+      patch.error_summary = String(
+        effectError?.message ?? `Effect reported status ${String(reportedStatus)}`
+      ).slice(0, 2_000);
+    }
     const committed = await AgentRun.query()
       .where({ id: snapshot.runId, company_id: payload.companyId, status: 'running' })
-      .patch({
-        status: 'completed',
-        finished_at: new Date().toISOString(),
-        step_count: Number(snapshot.run.step_count ?? 0) + 1,
-        checkpoint_json: JSON.stringify(checkpoint),
-        checkpoint_cursor: snapshot.fingerprint,
-      });
+      .patch(patch);
     if (committed !== 1) {
       throw new StaleFencingError('Run changed while effects were executing');
     }
-    return { status: 'completed', agentRunId: snapshot.runId, fingerprint: snapshot.fingerprint };
+    return {
+      status: terminalStatus,
+      agentRunId: snapshot.runId,
+      fingerprint: snapshot.fingerprint,
+    };
   } catch (error) {
     const code = error instanceof Error ? error.name : 'EXECUTION_FAILED';
     await AgentRun.query()
@@ -362,7 +422,8 @@ export async function acknowledgeToolEffect(params: {
       agent_run_id: params.agentRunId,
       effect_key: params.effectKey,
     });
-    if (!raced || raced.args_sha256 !== params.argsDigest) throw new StaleFencingError('Effect conflict');
+    if (!raced || raced.args_sha256 !== params.argsDigest)
+      throw new StaleFencingError('Effect conflict');
     return {
       replayed: true,
       output: raced.output_json ? JSON.parse(raced.output_json) : null,

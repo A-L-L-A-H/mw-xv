@@ -20,7 +20,19 @@ import { createAttachmentStorage } from '../storage/attachment-storage.js';
  */
 export function installCloudAgentEffect(): boolean {
   const sandboxToken = process.env[cloudAgentConfig.sandboxTokenRef];
-  if (!sandboxToken || sandboxToken.trim().length === 0) return false;
+  const { sandboxImageRef, sandboxSnapshotId, sandboxBaseCommit } = cloudAgentConfig;
+  if (
+    !sandboxToken ||
+    sandboxToken.trim().length === 0 ||
+    !sandboxImageRef ||
+    !sandboxSnapshotId ||
+    !sandboxBaseCommit
+  ) {
+    console.warn(
+      'cloud coding-agent effect disabled: sandbox token, pinned image, snapshot id and base commit are all required'
+    );
+    return false;
+  }
 
   const storage = createAttachmentStorage();
   const sandboxClient = createWorkspaceHttpClient({
@@ -30,6 +42,11 @@ export function installCloudAgentEffect(): boolean {
 
   setCloudAgentEffect(
     createCloudAgentEffect({
+      sandboxRefs: {
+        snapshotId: sandboxSnapshotId,
+        baseCommit: sandboxBaseCommit,
+        imageRef: sandboxImageRef,
+      },
       createProvider: async (snapshot) =>
         createTrustedProviderBinding({
           snapshot,

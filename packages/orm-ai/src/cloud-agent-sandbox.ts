@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import {
   WORKSPACE_LIMITS,
   buildEphemeralSandboxManifest,
@@ -12,20 +12,21 @@ import {
   type WorkspaceSandboxClient,
 } from '@moonwitness/ai-runtime';
 import type { AttachmentStorage } from '@moonwitness/orm-storage';
-import { type ArtifactVerificationStatus, type DataClassification } from './models/constants.js';
+import { sha256Canonical } from './agent-run-executor.js';
+import {
+  EVIDENCE_VERIFICATION_STATUS as CLOUD_AGENT_EVIDENCE_VERIFICATION_STATUS,
+  CLOUD_AGENT_MANIFEST_COMMAND,
+  DEFAULT_SANDBOX_CPU_CORES,
+  DEFAULT_SANDBOX_MAX_OUTPUT_BYTES,
+  DEFAULT_SANDBOX_MEMORY_MB,
+  DEFAULT_SANDBOX_PIDS_LIMIT,
+  DEFAULT_SANDBOX_TIMEOUT_MS,
+} from './cloud-agent-defaults.js';
+import type { DataClassification } from './models/constants.js';
 import { ArtifactManifest } from './models/runs.js';
 
 /** Registry references must be pinned to a sha256 digest before a sandbox is created. */
 const PINNED_IMAGE_REF = /@sha256:[a-f0-9]{64}$/iu;
-
-const DEFAULT_CPU_CORES = 0.5;
-const DEFAULT_MEMORY_MB = 512;
-const DEFAULT_TIMEOUT_MS = 30_000;
-const DEFAULT_MAX_OUTPUT_BYTES = 1_048_576;
-const DEFAULT_PIDS_LIMIT = 64;
-
-/** A produced but not accepted verification state; promotion is never automatic. */
-const EVIDENCE_VERIFICATION_STATUS: ArtifactVerificationStatus = 'checked';
 
 export interface CloudAgentSandboxSetup {
   readonly client: WorkspaceSandboxClient;
@@ -38,15 +39,21 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, Number.isFinite(value) ? value : min));
 }
 
-/** Canonical JSON: object keys are sorted recursively so the digest is deterministic. */
-function stableJson(value: unknown): string {
+/**
+ * Produces the byte-exact payload persisted for an evidence bundle.
+ *
+ * Hashing is centralized in `sha256Canonical`; this serializer only reproduces
+ * the canonical byte sequence that digest covers, so a verifier that hashes the
+ * raw stored artifact (as the HTTP layer does) recomputes the same digest.
+ */
+function toCanonicalJson(value: unknown): string {
   if (value === null || typeof value !== 'object') {
     return value === undefined ? 'null' : JSON.stringify(value);
   }
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (Array.isArray(value)) return `[${value.map(toCanonicalJson).join(',')}]`;
   const record = value as Record<string, unknown>;
   const keys = Object.keys(record).sort();
-  return `{${keys.map((key) => `${JSON.stringify(key)}:${stableJson(record[key])}`).join(',')}}`;
+  return `{${keys.map((key) => `${JSON.stringify(key)}:${toCanonicalJson(record[key])}`).join(',')}}`;
 }
 
 export async function setupCloudAgentSandbox(options: {
@@ -77,33 +84,37 @@ export async function setupCloudAgentSandbox(options: {
 
   const requested = options.limits ?? {};
   const cpuCores = clamp(
-    requested.cpuCores ?? DEFAULT_CPU_CORES,
+    requested.cpuCores ?? DEFAULT_SANDBOX_CPU_CORES,
     WORKSPACE_LIMITS.cpuCores.min,
     WORKSPACE_LIMITS.cpuCores.max
   );
   const memoryMb = Math.floor(
     clamp(
-      requested.memoryMb ?? DEFAULT_MEMORY_MB,
+      requested.memoryMb ?? DEFAULT_SANDBOX_MEMORY_MB,
       WORKSPACE_LIMITS.memoryMb.min,
       WORKSPACE_LIMITS.memoryMb.max
     )
   );
   const timeoutMs = Math.floor(
     clamp(
-      requested.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      requested.timeoutMs ?? DEFAULT_SANDBOX_TIMEOUT_MS,
       WORKSPACE_LIMITS.timeoutMs.min,
       WORKSPACE_LIMITS.timeoutMs.max
     )
   );
   const maxOutputBytes = Math.floor(
     clamp(
-      requested.maxOutputBytes ?? DEFAULT_MAX_OUTPUT_BYTES,
+      requested.maxOutputBytes ?? DEFAULT_SANDBOX_MAX_OUTPUT_BYTES,
       WORKSPACE_LIMITS.outputBytes.min,
       WORKSPACE_LIMITS.outputBytes.max
     )
   );
   const pidsLimit = Math.floor(
-    clamp(DEFAULT_PIDS_LIMIT, WORKSPACE_LIMITS.pidsLimit.min, WORKSPACE_LIMITS.pidsLimit.max)
+    clamp(
+      DEFAULT_SANDBOX_PIDS_LIMIT,
+      WORKSPACE_LIMITS.pidsLimit.min,
+      WORKSPACE_LIMITS.pidsLimit.max
+    )
   );
 
   const workspace = await options.client.createWorkspace({
@@ -122,7 +133,7 @@ export async function setupCloudAgentSandbox(options: {
   const manifest = buildEphemeralSandboxManifest({
     runId: options.runId,
     imageRef: options.imageRef,
-    command: ['node', '--test'],
+    command: CLOUD_AGENT_MANIFEST_COMMAND,
     cpuCores,
     memoryMb,
     timeoutMs,
@@ -146,8 +157,8 @@ export async function persistEvidenceBundle(options: {
   readonly bundle: WorkspaceEvidenceBundle;
   readonly dataClassification: DataClassification;
 }): Promise<{ readonly storageKey: string; readonly sha256: string }> {
-  const bytes = Buffer.from(stableJson(options.bundle), 'utf8');
-  const sha256 = createHash('sha256').update(bytes).digest('hex');
+  const bytes = Buffer.from(toCanonicalJson(options.bundle), 'utf8');
+  const sha256 = sha256Canonical(options.bundle);
   const storageKey = randomUUID();
 
   await options.storage.put(storageKey, bytes);
@@ -161,12 +172,17 @@ export async function persistEvidenceBundle(options: {
     size_bytes: bytes.byteLength,
     mime_type: 'application/json',
     data_classification: options.dataClassification,
-    verification_status: EVIDENCE_VERIFICATION_STATUS,
+    verification_status: CLOUD_AGENT_EVIDENCE_VERIFICATION_STATUS,
   });
 
   return { storageKey, sha256 };
 }
 
+/**
+ * Thin compatibility wrapper around the ai-runtime evidence builder, retained
+ * for callers and tests that build and verify evidence in a single step. All
+ * verification semantics live in `buildWorkspaceEvidence`.
+ */
 export async function buildAndVerifyWorkspaceEvidence(params: {
   readonly client: WorkspaceSandboxClient;
   readonly manifest: EphemeralSandboxManifest;

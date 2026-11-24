@@ -21,7 +21,9 @@ import { CapabilityGrant, ExecutionPolicy } from './models.js';
  * Durable implementations of the ai-runtime ports.
  *
  * These adapt existing ORM tables instead of introducing a second state store:
- * - tool effects / harness checkpoints -> ai.agent_run_effect (reserved key prefixes)
+ * - tool effect acknowledgements -> ai.agent_run_effect (caller-owned effect_key)
+ * - harness checkpoints / committed runs -> ai.agent_run_effect under the
+ *   reserved `harness:checkpoint:` and `harness:commit:` key prefixes
  * - capability grants / policy versions -> ai.capability_grant, ai.execution_policy
  * - audit trail and per-run quota -> append-only base.audit_log
  * - run lease -> ai.agent_run (fencing token + status)
@@ -30,6 +32,7 @@ import { CapabilityGrant, ExecutionPolicy } from './models.js';
  * tool metadata cross this boundary.
  */
 
+/** Reserved effect_key prefixes for harness state (never used for tool effects). */
 const HARNESS_CHECKPOINT_PREFIX = 'harness:checkpoint:';
 const HARNESS_COMMIT_PREFIX = 'harness:commit:';
 export const TOOL_AUDIT_MODEL = 'ai.tool_invocation';
@@ -231,7 +234,10 @@ function commitKey(companyId: number, idempotencyKey: string): string {
   return `${HARNESS_COMMIT_PREFIX}${companyId}:${idempotencyKey}`;
 }
 
-/** Durable harness checkpoints and committed run results in the same effect ledger. */
+/**
+ * Durable harness checkpoints and committed run results in the same effect
+ * ledger. Suitable for use as `BoundedReadOnlyAgentHarness.stateStore`.
+ */
 export function createDurableAgentRunStateStore(scope: DurableRunScope): AgentRunStateStore {
   const readRecord = async <T>(key: string): Promise<T | null> => {
     const row = await AgentRunEffect.query().findOne({
