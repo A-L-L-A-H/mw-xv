@@ -33,6 +33,14 @@ const secretPatterns = [
   /(?:password|secret|token|api[_-]?key)\s*[:=]\s*["']?[\w.+/=-]{20,}["']?/i,
 ];
 
+// Exact placeholder literals used by the public evaluation-gates guide. Keeping
+// them in an allowlist preserves the scanner for real credentials while letting
+// documented examples be published.
+const PLACEHOLDER_ALLOWLIST = new Set([
+  'postgresql://u:p@',
+  "SECRET='ci-placeholder-only'",
+]);
+
 function scan(directory) {
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     const filePath = path.join(directory, entry.name);
@@ -75,7 +83,8 @@ function scan(directory) {
       text = contents.toString('utf8');
     }
     for (const pattern of secretPatterns) {
-      if (pattern.test(text))
+      const match = pattern.exec(text);
+      if (match && !PLACEHOLDER_ALLOWLIST.has(match[0]))
         throw new Error(`Potential secret detected in public file: ${relativePath}`);
     }
   }
