@@ -6,7 +6,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import process from 'node:process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const ignoredDirectories = new Set(['.git', 'node_modules', 'dist', 'coverage']);
+// Vendored snapshots are pinned third-party source. Their internal links follow
+// the upstream site layout (e.g. /dev/components) and are not maintained here,
+// so they are excluded from this repository's documentation link gate.
+const ignoredDirectories = new Set(['.git', 'node_modules', 'dist', 'coverage', 'vendor']);
 const linkPattern = /!?\[[^\]]*\]\((<[^>]+>|[^)\s]+)(?:\s+"[^"]*")?\)/gu;
 
 export function stripFencedCode(source) {
