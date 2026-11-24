@@ -11,9 +11,9 @@ import {
   settingsLanguagesKey,
   settingsUserKey,
   type BoardQueryScope,
-} from './query-scope-keys.js';
+} from './query-scope-keys';
 
-export type { BoardQueryScope } from './query-scope-keys.js';
+export type { BoardQueryScope } from './query-scope-keys';
 
 /** Capture the scope before starting a request so its cache writes remain tenant-bound. */
 export function getQueryScope(): BoardQueryScope {
