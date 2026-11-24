@@ -83,3 +83,66 @@ This documentation and audit pass is substantially consolidated, but **all audit
 - **TaskOS:** current `dev` registry blob `4d677b63b825f7d4da0bbd83ad5c08a5d51b167f` contains 637 unique records: 468 done, 49 doing, 96 todo and 24 blocked. `main` remains at its older 627-record snapshot.
 - **New source-recovery / archive proposals:** [#178](https://github.com/A-L-L-A-H/mw-xv/issues/178)–[#181](https://github.com/A-L-L-A-H/mw-xv/issues/181) preserve one story source-recovery task per MoonWitness title; [#182](https://github.com/A-L-L-A-H/mw-xv/issues/182) covers the 22-file Library pack; [#185](https://github.com/A-L-L-A-H/mw-xv/issues/185) covers a private provenance index for 203 PNGs. The wider archive source-recovery parent [#183](https://github.com/A-L-L-A-H/mw-xv/issues/183) and private export intake [#187](https://github.com/A-L-L-A-H/mw-xv/issues/187) are also present. TaskOS projections [#184](https://github.com/A-L-L-A-H/mw-xv/issues/184) and [#186](https://github.com/A-L-L-A-H/mw-xv/issues/186) are kept distinct from these un-managed discovery proposals.
 - **Boundaries:** no Library image binaries or nested source-pack bytes were copied into MW-XV; no bjo163 source repository was migrated or modified; no old issue was closed/deleted; no canon was promoted. Full ChatGPT account history, all image prompts/rights and all-repository code audit remain incomplete.
+
+---
+
+## 2026-11-24 live re-verification (additive checkpoint)
+
+This section was appended by a later audit pass. The 2026-11-23 report above is retained unchanged as the historical checkpoint. Nothing in this section promotes canon, closes an issue, merges a PR or imports source bytes.
+
+### Method actually executed
+
+- `gh auth status` — authenticated as `The-Batteries`, scopes `gist, read:org, repo, workflow`.
+- `gh api -X GET search/issues -f q='repo:A-L-L-A-H/mw-xv is:issue[ is:open|is:closed]'`.
+- `gh issue list -R A-L-L-A-H/mw-xv --state all --limit 500` and `gh pr list -R A-L-L-A-H/mw-xv --state all --limit 500`.
+- `gh repo list bjo163 --limit 500` and `GET /search/repositories?q=user:bjo163`.
+- Local read-only inspection of `docs/knowledge/idea-archive/`, `docs/raw/`, `corpus/`, `research/`, `raw_arts/`, git status/log and workflow files.
+
+### Verified deltas against the 2026-11-23 snapshot
+
+| Measure | 2026-11-23 archive | 2026-11-24 verified | Change |
+|---|---:|---:|---|
+| Issues | 161 (66 open / 95 closed) | **191 (85 open / 106 closed)** | +30 |
+| Pull requests | 26 (2 open / 24 closed) | **30 (2 open / 26 merged / 2 closed)** | +4 |
+| PR #81 | open, unapproved | **merged** | state changed |
+| Open promotion PR | #81 | **#218** (plus Dependabot #172) | superseded |
+| Issues indexed in ISSUE-INDEX.md | 161 | **191** | 30 rows added |
+| PRs indexed in ISSUE-INDEX.md | 26 | **30** | 4 rows added |
+
+The 30 new issues are #189–#221 (numbers #198 and #216–#218 are PRs, not issues). The large majority carry the `audit` and `auto-generated` labels and were produced by the repository's hourly code-audit automation. They are engineering execution backlog, **not** new archive proposals. Issue #197 (`[PROPOSAL] Bridge Antigravity Desktop hooks into MoonWitness Live Agent Flow`) is the only new non-audit proposal in that range.
+
+### Source-estimate correction
+
+The 2026-11-23 report's "280 repositories" figure came from three paginated GitHub **search** queries. Two other endpoints give different results for the same owner:
+
+- `gh repo list bjo163 --limit 500` → **150** accessible repositories (148 public + 2 private; includes archived `moonwitness-memory`).
+- `GET /search/repositories?q=user:bjo163` → **90**.
+- Prior three-search census → **280** (148 public + 132 private).
+
+These are different query scopes, not a contradiction to resolve by picking one number. All three are recorded as `FACT (endpoint-specific)`. The repository consolidation report should continue to name the query used for any count.
+
+### Access honest statement (Phase 0)
+
+This pass had **no tool** for ChatGPT Memory, Memory Summary, or prior conversation history. The only prompt source available is the one supplied in this conversation; it matches the verbatim master prompt already preserved at `docs/raw/2026-11-23-master-prompt-total-idea-archive.md` (774 newline-terminated lines; the earlier report's 775 counts the final unterminated line). No memory was fabricated and no inaccessible transcript was claimed as read. ChatGPT Library items remain metadata-only, and private export content remains outside this public repository.
+
+### Work performed by this pass
+
+1. Re-fetched all issue/PR state from the live API and regenerated both index tables in `ISSUE-INDEX.md` (191 issue rows, 30 PR rows), preserving stable-ID and managed-marker columns from the committed original.
+2. Added a dated `2026-11-24 live reconciliation` section to the issue index documenting the deltas, the PR #81 merge, the `CF-020` conflict still awaiting human triage, and the endpoint-specific repository counts.
+3. Added an additive evidence comment to the archive parent issue [#183](https://github.com/A-L-L-A-H/mw-xv/issues/183#issuecomment-7124559268).
+4. Added this appendix. **No application code was edited; no GitHub issue was created, edited, closed or deleted; no PR was merged; no canon was promoted.**
+
+### Decision on new GitHub issues (Phase 8)
+
+No new issues were created. Issues **#15–#22, #27** (original proposals) and **#173–#188** (Total Idea Archive deliverables, one per story lead / framework / archive package / source-intake task) already exist in `A-L-L-A-H/mw-xv` and were verified as present. Creating another set for the same deliverables would duplicate existing backlog, contrary to the repository's no-duplicate rule and absolute rule 11 of the master prompt. The new #189–#221 audit items already cover the engineering debt discovered since the last snapshot. Any further issue creation requires a genuinely uncovered unit of work plus the canonical TaskOS/Issue-Sync path.
+
+### Gates that remain open (unchanged from the prior report)
+
+1. Full ChatGPT conversation export, private archive inventory and retention/consent decision.
+2. Per-source exact refs/HEADs/tags, Git mirrors, LFS assets and independent restore tests.
+3. Non-Git assets (issues/PR comments, wiki, releases, packages, containers, Pages, Actions artifacts, DNS, deployments).
+4. Per-repository source, dependency, license, security and runtime audit for the 118+ public repositories still metadata-only.
+5. Recovery of primary story manuscripts, character source sheets, artwork masters and original image-generation prompt history.
+6. Source/edition/translation/rights verification for Asmaul Husna and other religious reference data.
+7. Human resolution of unresolved canon, product, brand, framework and repository decisions.
+8. `CF-020` open/closed duplicate (#74/#75) triage by a maintainer.

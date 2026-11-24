@@ -1,15 +1,15 @@
 # GitHub Issue Index — Complete Issue and PR Inventory
 
-**Snapshot:** 2026-11-23 · **Repository:** `A-L-L-A-H/mw-xv` · **Branch checked:** `dev`
+**Snapshot:** 2026-11-24 · **Repository:** `A-L-L-A-H/mw-xv` · **Branch checked:** `dev`
 **Purpose:** a navigational index of the live GitHub issue/PR records at the audit snapshot. It does not replace TaskOS and does not confer completion or promotion status.
 
 ## Snapshot statistics
 
 | Object | Count | State |
 |---|---:|---|
-| Issues (PR objects excluded) | 161 | 66 open / 95 closed |
-| Pull requests | 26 | 2 open / 24 closed |
-| Duplicate TaskOS-managed issue markers | 0 | 25 observed managed markers are unique |
+| Issues (PR objects excluded) | 191 | 85 open / 106 closed |
+| Pull requests | 30 | 2 open / 28 closed-or-merged (26 merged, 2 closed) |
+| Duplicate TaskOS-managed issue markers | 0 | 25 observed managed markers are unique (unchanged; no new managed issue created) |
 | Duplicate stable-ID groups in issue titles | 21 | 20 legacy `MW-*` groups + one `CF-020` conflict |
 | TaskOS source records | 637 | Registry remains the only canonical task lifecycle source |
 
@@ -44,38 +44,38 @@ These counts are point-in-time API results. Re-fetch the issue/PR list before ma
 | [#44](https://github.com/A-L-L-A-H/mw-xv/issues/44) | [STABILIZATION P0] Recover TaskOS registry from provenance-verified sources | closed | — | — | 2026-11-22 | 2026-11-23 |
 | [#46](https://github.com/A-L-L-A-H/mw-xv/issues/46) | [M12.05] First durable, bounded read-only agent via @moonwitness/jobs (AI4.1–AI4.37). | open | M12.05 | 1466489807:M12.05 | 2026-11-23 | 2026-11-23 |
 | [#47](https://github.com/A-L-L-A-H/mw-xv/issues/47) | [M12.07] Proof-Carrying Work (PCW), independent verification & obligation continuity (AI6.1–AI6.31). | open | M12.07 | 1466489807:M12.07 | 2026-11-23 | 2026-11-23 |
-| [#49](https://github.com/A-L-L-A-H/mw-xv/issues/49) | [UI-VIS-01] Repair the stale theme-toggle locator in the visual audit | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#50](https://github.com/A-L-L-A-H/mw-xv/issues/50) | [UI-VIS-02] Make visual-audit screenshot writes deterministic | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#51](https://github.com/A-L-L-A-H/mw-xv/issues/51) | [UI-VIS-03] Restore Firefox and WebKit in the visual browser matrix | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#49](https://github.com/A-L-L-A-H/mw-xv/issues/49) | [UI-VIS-01] Repair the stale theme-toggle locator in the visual audit | closed | — | — | 2026-11-23 | 2026-11-24 |
+| [#50](https://github.com/A-L-L-A-H/mw-xv/issues/50) | [UI-VIS-02] Make visual-audit screenshot writes deterministic | closed | — | — | 2026-11-23 | 2026-11-24 |
+| [#51](https://github.com/A-L-L-A-H/mw-xv/issues/51) | [UI-VIS-03] Restore Firefox and WebKit in the visual browser matrix | closed | — | — | 2026-11-23 | 2026-11-24 |
 | [#52](https://github.com/A-L-L-A-H/mw-xv/issues/52) | [UI-SCENE-01] Make SceneLab consume the canonical Moon City scene definition | open | — | — | 2026-11-23 | 2026-11-23 |
 | [#53](https://github.com/A-L-L-A-H/mw-xv/issues/53) | [UI-ASSET-01] Show asset review and distribution status in SceneLab | open | — | — | 2026-11-23 | 2026-11-23 |
 | [#54](https://github.com/A-L-L-A-H/mw-xv/issues/54) | [UI-ART-01] Generate a revised Moon City hero art study for review | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#55](https://github.com/A-L-L-A-H/mw-xv/issues/55) | [CF-001] Cloud runtime ownership and gap audit | open | CF-001 | — | 2026-11-23 | 2026-11-23 |
-| [#56](https://github.com/A-L-L-A-H/mw-xv/issues/56) | [CF-002] Verify tenant isolation across cloud API operations | open | CF-002 | — | 2026-11-23 | 2026-11-23 |
-| [#57](https://github.com/A-L-L-A-H/mw-xv/issues/57) | [CF-003] Harden cloud-to-control-plane service authentication contract | open | CF-003 | — | 2026-11-23 | 2026-11-23 |
-| [#58](https://github.com/A-L-L-A-H/mw-xv/issues/58) | [CF-004] Audit cloud provider secret storage, redaction and rotation | open | CF-004 | — | 2026-11-23 | 2026-11-23 |
-| [#59](https://github.com/A-L-L-A-H/mw-xv/issues/59) | [CF-005] Make cloud provisioning requests idempotent under retry | open | CF-005 | — | 2026-11-23 | 2026-11-23 |
-| [#60](https://github.com/A-L-L-A-H/mw-xv/issues/60) | [CF-006] Reconcile cloud deployment state with provider state | open | CF-006 | — | 2026-11-23 | 2026-11-23 |
-| [#61](https://github.com/A-L-L-A-H/mw-xv/issues/61) | [CF-007] Make cloud quota reservation concurrency-safe | open | CF-007 | — | 2026-11-23 | 2026-11-23 |
-| [#62](https://github.com/A-L-L-A-H/mw-xv/issues/62) | [CF-008] Add compensation for partial cloud provisioning failures | open | CF-008 | — | 2026-11-23 | 2026-11-23 |
-| [#63](https://github.com/A-L-L-A-H/mw-xv/issues/63) | [CF-009] Enforce stale-target fencing during cloud HA failover | open | CF-009 | — | 2026-11-23 | 2026-11-23 |
-| [#64](https://github.com/A-L-L-A-H/mw-xv/issues/64) | [CF-010] Expand cloud HA drills with deterministic failure injection | open | CF-010 | — | 2026-11-23 | 2026-11-23 |
-| [#65](https://github.com/A-L-L-A-H/mw-xv/issues/65) | [CF-011] Harden cloud health probes against unsafe endpoints and hangs | open | CF-011 | — | 2026-11-23 | 2026-11-23 |
-| [#66](https://github.com/A-L-L-A-H/mw-xv/issues/66) | [CF-012] Add low-cardinality cloud operations metrics | open | CF-012 | — | 2026-11-23 | 2026-11-23 |
-| [#67](https://github.com/A-L-L-A-H/mw-xv/issues/67) | [CF-013] Verify jobs worker readiness and graceful drain contract | open | CF-013 | — | 2026-11-23 | 2026-11-23 |
-| [#68](https://github.com/A-L-L-A-H/mw-xv/issues/68) | [CF-014] Standardize scheduler and outbox worker health contracts | open | CF-014 | — | 2026-11-23 | 2026-11-23 |
-| [#69](https://github.com/A-L-L-A-H/mw-xv/issues/69) | [CF-015] Add jobs lease recovery and dead-letter adversarial tests | open | CF-015 | — | 2026-11-23 | 2026-11-23 |
-| [#70](https://github.com/A-L-L-A-H/mw-xv/issues/70) | [CF-016] Forward Control Plane A2A traffic to the durable API inbox | open | CF-016 | — | 2026-11-23 | 2026-11-23 |
-| [#71](https://github.com/A-L-L-A-H/mw-xv/issues/71) | [CF-017] Add per-agent A2A peer identity, key pinning and rotation | open | CF-017 | — | 2026-11-23 | 2026-11-23 |
-| [#72](https://github.com/A-L-L-A-H/mw-xv/issues/72) | [CF-018] Bind A2A peer identity to private-mesh transport authentication | open | CF-018 | — | 2026-11-23 | 2026-11-23 |
-| [#73](https://github.com/A-L-L-A-H/mw-xv/issues/73) | [CF-019] Add bounded A2A inbox pagination, backpressure and retention policy | open | CF-019 | — | 2026-11-23 | 2026-11-23 |
-| [#74](https://github.com/A-L-L-A-H/mw-xv/issues/74) | [CF-020] Design the gated A2A inbox-to-work-contract dispatch bridge | open | CF-020 | — | 2026-11-23 | 2026-11-23 |
-| [#75](https://github.com/A-L-L-A-H/mw-xv/issues/75) | [CF-020] Design the gated A2A inbox-to-work-contract dispatch bridge | closed | CF-020 | — | 2026-11-23 | 2026-11-23 |
-| [#76](https://github.com/A-L-L-A-H/mw-xv/issues/76) | [CF-021] Validate cloud configuration at startup and expose safe readiness reasons | open | CF-021 | — | 2026-11-23 | 2026-11-23 |
-| [#77](https://github.com/A-L-L-A-H/mw-xv/issues/77) | [CF-022] Document cloud data backup and restore verification procedure | open | CF-022 | — | 2026-11-23 | 2026-11-23 |
-| [#78](https://github.com/A-L-L-A-H/mw-xv/issues/78) | [CF-023] Reconcile ACTIVE-PLAN checkpoint with current branch and promotion history | open | CF-023 | — | 2026-11-23 | 2026-11-23 |
-| [#79](https://github.com/A-L-L-A-H/mw-xv/issues/79) | [CF-024] Investigate conflicting CI conclusions for the same dev SHA | open | CF-024 | — | 2026-11-23 | 2026-11-23 |
-| [#80](https://github.com/A-L-L-A-H/mw-xv/issues/80) | [CF-EPIC] Cloud Engineering Foundation & Operations | open | CF-EPIC | — | 2026-11-23 | 2026-11-23 |
+| [#55](https://github.com/A-L-L-A-H/mw-xv/issues/55) | [CF-001] Cloud runtime ownership and gap audit | open | CF-001 | — | 2026-11-23 | 2026-11-24 |
+| [#56](https://github.com/A-L-L-A-H/mw-xv/issues/56) | [CF-002] Verify tenant isolation across cloud API operations | open | CF-002 | — | 2026-11-23 | 2026-11-24 |
+| [#57](https://github.com/A-L-L-A-H/mw-xv/issues/57) | [CF-003] Harden cloud-to-control-plane service authentication contract | open | CF-003 | — | 2026-11-23 | 2026-11-24 |
+| [#58](https://github.com/A-L-L-A-H/mw-xv/issues/58) | [CF-004] Audit cloud provider secret storage, redaction and rotation | open | CF-004 | — | 2026-11-23 | 2026-11-24 |
+| [#59](https://github.com/A-L-L-A-H/mw-xv/issues/59) | [CF-005] Make cloud provisioning requests idempotent under retry | open | CF-005 | — | 2026-11-23 | 2026-11-24 |
+| [#60](https://github.com/A-L-L-A-H/mw-xv/issues/60) | [CF-006] Reconcile cloud deployment state with provider state | open | CF-006 | — | 2026-11-23 | 2026-11-24 |
+| [#61](https://github.com/A-L-L-A-H/mw-xv/issues/61) | [CF-007] Make cloud quota reservation concurrency-safe | open | CF-007 | — | 2026-11-23 | 2026-11-24 |
+| [#62](https://github.com/A-L-L-A-H/mw-xv/issues/62) | [CF-008] Add compensation for partial cloud provisioning failures | open | CF-008 | — | 2026-11-23 | 2026-11-24 |
+| [#63](https://github.com/A-L-L-A-H/mw-xv/issues/63) | [CF-009] Enforce stale-target fencing during cloud HA failover | open | CF-009 | — | 2026-11-23 | 2026-11-24 |
+| [#64](https://github.com/A-L-L-A-H/mw-xv/issues/64) | [CF-010] Expand cloud HA drills with deterministic failure injection | open | CF-010 | — | 2026-11-23 | 2026-11-24 |
+| [#65](https://github.com/A-L-L-A-H/mw-xv/issues/65) | [CF-011] Harden cloud health probes against unsafe endpoints and hangs | open | CF-011 | — | 2026-11-23 | 2026-11-24 |
+| [#66](https://github.com/A-L-L-A-H/mw-xv/issues/66) | [CF-012] Add low-cardinality cloud operations metrics | open | CF-012 | — | 2026-11-23 | 2026-11-24 |
+| [#67](https://github.com/A-L-L-A-H/mw-xv/issues/67) | [CF-013] Verify jobs worker readiness and graceful drain contract | open | CF-013 | — | 2026-11-23 | 2026-11-24 |
+| [#68](https://github.com/A-L-L-A-H/mw-xv/issues/68) | [CF-014] Standardize scheduler and outbox worker health contracts | open | CF-014 | — | 2026-11-23 | 2026-11-24 |
+| [#69](https://github.com/A-L-L-A-H/mw-xv/issues/69) | [CF-015] Add jobs lease recovery and dead-letter adversarial tests | open | CF-015 | — | 2026-11-23 | 2026-11-24 |
+| [#70](https://github.com/A-L-L-A-H/mw-xv/issues/70) | [CF-016] Forward Control Plane A2A traffic to the durable API inbox | open | CF-016 | — | 2026-11-23 | 2026-11-24 |
+| [#71](https://github.com/A-L-L-A-H/mw-xv/issues/71) | [CF-017] Add per-agent A2A peer identity, key pinning and rotation | open | CF-017 | — | 2026-11-23 | 2026-11-24 |
+| [#72](https://github.com/A-L-L-A-H/mw-xv/issues/72) | [CF-018] Bind A2A peer identity to private-mesh transport authentication | open | CF-018 | — | 2026-11-23 | 2026-11-24 |
+| [#73](https://github.com/A-L-L-A-H/mw-xv/issues/73) | [CF-019] Add bounded A2A inbox pagination, backpressure and retention policy | open | CF-019 | — | 2026-11-23 | 2026-11-24 |
+| [#74](https://github.com/A-L-L-A-H/mw-xv/issues/74) | [CF-020] Design the gated A2A inbox-to-work-contract dispatch bridge | open | CF-020 | — | 2026-11-23 | 2026-11-24 |
+| [#75](https://github.com/A-L-L-A-H/mw-xv/issues/75) | [CF-020] Design the gated A2A inbox-to-work-contract dispatch bridge | closed | CF-020 | — | 2026-11-23 | 2026-11-24 |
+| [#76](https://github.com/A-L-L-A-H/mw-xv/issues/76) | [CF-021] Validate cloud configuration at startup and expose safe readiness reasons | open | CF-021 | — | 2026-11-23 | 2026-11-24 |
+| [#77](https://github.com/A-L-L-A-H/mw-xv/issues/77) | [CF-022] Document cloud data backup and restore verification procedure | open | CF-022 | — | 2026-11-23 | 2026-11-24 |
+| [#78](https://github.com/A-L-L-A-H/mw-xv/issues/78) | [CF-023] Reconcile ACTIVE-PLAN checkpoint with current branch and promotion history | closed | CF-023 | — | 2026-11-23 | 2026-11-24 |
+| [#79](https://github.com/A-L-L-A-H/mw-xv/issues/79) | [CF-024] Investigate conflicting CI conclusions for the same dev SHA | open | CF-024 | — | 2026-11-23 | 2026-11-24 |
+| [#80](https://github.com/A-L-L-A-H/mw-xv/issues/80) | [CF-EPIC] Cloud Engineering Foundation & Operations | open | CF-EPIC | — | 2026-11-23 | 2026-11-24 |
 | [#83](https://github.com/A-L-L-A-H/mw-xv/issues/83) | [MW-UI-001] Produce the approved Moon City home scene source artwork | closed | MW-UI-001 | — | 2026-11-23 | 2026-11-23 |
 | [#84](https://github.com/A-L-L-A-H/mw-xv/issues/84) | [MW-UI-002] Add home-scene asset manifest entries | closed | MW-UI-002 | — | 2026-11-23 | 2026-11-23 |
 | [#85](https://github.com/A-L-L-A-H/mw-xv/issues/85) | [MW-UI-003] Create the first home scene descriptor | closed | MW-UI-003 | — | 2026-11-23 | 2026-11-23 |
@@ -157,23 +157,63 @@ These counts are point-in-time API results. Re-fetch the issue/PR list before ma
 | [#161](https://github.com/A-L-L-A-H/mw-xv/issues/161) | [MW-ART-002] Generate Moon City moon focal source master | closed | MW-ART-002 | — | 2026-11-23 | 2026-11-23 |
 | [#162](https://github.com/A-L-L-A-H/mw-xv/issues/162) | [MW-ART-003] Generate Moon City cloud atmosphere layer | closed | MW-ART-003 | — | 2026-11-23 | 2026-11-23 |
 | [#163](https://github.com/A-L-L-A-H/mw-xv/issues/163) | [AUD-015] Extract canonical asset review-status resolver | open | AUD-015 | 1466489807:AUD-015 | 2026-11-23 | 2026-11-23 |
-| [#164](https://github.com/A-L-L-A-H/mw-xv/issues/164) | [AUD-016] Add unit coverage for asset review-status mapping | open | AUD-016 | 1466489807:AUD-016 | 2026-11-23 | 2026-11-23 |
+| [#164](https://github.com/A-L-L-A-H/mw-xv/issues/164) | [AUD-016] Add unit coverage for asset review-status mapping | closed | AUD-016 | 1466489807:AUD-016 | 2026-11-23 | 2026-11-24 |
 | [#165](https://github.com/A-L-L-A-H/mw-xv/issues/165) | [AUD-017] Add reusable asset review-status badge | open | AUD-017 | 1466489807:AUD-017 | 2026-11-23 | 2026-11-23 |
 | [#166](https://github.com/A-L-L-A-H/mw-xv/issues/166) | [AUD-018] Create a read-only asset provenance details component | open | AUD-018 | 1466489807:AUD-018 | 2026-11-23 | 2026-11-23 |
 | [#167](https://github.com/A-L-L-A-H/mw-xv/issues/167) | [AUD-019] Wire review status and provenance into SceneLab inspector | open | AUD-019 | 1466489807:AUD-019 | 2026-11-23 | 2026-11-23 |
 | [#168](https://github.com/A-L-L-A-H/mw-xv/issues/168) | [AUD-020] Add SceneLab review-status and provenance regression coverage | open | AUD-020 | 1466489807:AUD-020 | 2026-11-23 | 2026-11-23 |
-| [#169](https://github.com/A-L-L-A-H/mw-xv/issues/169) | [AUD-021] Test backward and end-boundary homepage filmstrip keys | open | AUD-021 | 1466489807:AUD-021 | 2026-11-23 | 2026-11-23 |
-| [#170](https://github.com/A-L-L-A-H/mw-xv/issues/170) | [AUD-022] Correct stale responsive accessibility coverage documentation | open | AUD-022 | 1466489807:AUD-022 | 2026-11-23 | 2026-11-23 |
+| [#169](https://github.com/A-L-L-A-H/mw-xv/issues/169) | [AUD-021] Test backward and end-boundary homepage filmstrip keys | closed | AUD-021 | 1466489807:AUD-021 | 2026-11-23 | 2026-11-24 |
+| [#170](https://github.com/A-L-L-A-H/mw-xv/issues/170) | [AUD-022] Re-triage the responsive accessibility documentation finding | open | AUD-022 | 1466489807:AUD-022 | 2026-11-23 | 2026-11-23 |
 | [#171](https://github.com/A-L-L-A-H/mw-xv/issues/171) | [AUD-023] Verify responsive image source selection for homepage hero | open | AUD-023 | 1466489807:AUD-023 | 2026-11-23 | 2026-11-23 |
 | [#173](https://github.com/A-L-L-A-H/mw-xv/issues/173) | [FRAMEWORK] Preserve CRAYON v1.3 and reconcile companion-paper variants | open | — | — | 2026-11-23 | 2026-11-23 |
 | [#174](https://github.com/A-L-L-A-H/mw-xv/issues/174) | [RESEARCH] Dīn Allah / Universal Iman Foundation — reconcile the four-book charter | open | — | — | 2026-11-23 | 2026-11-23 |
 | [#175](https://github.com/A-L-L-A-H/mw-xv/issues/175) | [RESEARCH] Quantum–Fe Stone Energy — evidence review and safe validation boundary | open | — | — | 2026-11-23 | 2026-11-23 |
 | [#176](https://github.com/A-L-L-A-H/mw-xv/issues/176) | [GAME] Reconcile MoonWitness RPG concept with ROCKSOUL GAME — The Lost Signal | open | — | — | 2026-11-23 | 2026-11-23 |
 | [#177](https://github.com/A-L-L-A-H/mw-xv/issues/177) | [ARCHIVE] MoonWitness OS v2.0 — recover the model source before canonizing Mīzān | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#178](https://github.com/A-L-L-A-H/mw-xv/issues/178) | [STORY] Recover primary source for MOONWITNESS — Two Generations, One Toast | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#179](https://github.com/A-L-L-A-H/mw-xv/issues/179) | [STORY] Recover primary source for MOONWITNESS — Chaos Before Dawn | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#180](https://github.com/A-L-L-A-H/mw-xv/issues/180) | [STORY] Recover primary source for MOONWITNESS — BIRD OF A FEATHER | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#181](https://github.com/A-L-L-A-H/mw-xv/issues/181) | [STORY] Recover primary source for MOONWITNESS — THUNDERSTRUCK | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#182](https://github.com/A-L-L-A-H/mw-xv/issues/182) | [ARCHIVE] Review the 22-file MoonWitness Foundation Library pack | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#183](https://github.com/A-L-L-A-H/mw-xv/issues/183) | [KNOWLEDGE ARCHIVE] Complete the Total Idea Archive through source recovery and human review | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#184](https://github.com/A-L-L-A-H/mw-xv/issues/184) | [AUD-024] Add tablet Axe coverage for protected Board screens | closed | AUD-024 | 1466489807:AUD-024 | 2026-11-23 | 2026-11-24 |
+| [#185](https://github.com/A-L-L-A-H/mw-xv/issues/185) | [VISUAL] Create a private provenance index for the 203 Library PNG sources | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#186](https://github.com/A-L-L-A-H/mw-xv/issues/186) | [AUD-009] Fix logger synchronous file I/O and deep secret redaction | open | AUD-009 | 1466489807:AUD-009 | 2026-11-23 | 2026-11-23 |
+| [#187](https://github.com/A-L-L-A-H/mw-xv/issues/187) | [SOURCE INTAKE] Preserve the complete ChatGPT export in a private, source-traceable archive | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#188](https://github.com/A-L-L-A-H/mw-xv/issues/188) | [SOURCE AUDIT] Reconcile the expanded ChatGPT Library inventory (1,670 entries) | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#189](https://github.com/A-L-L-A-H/mw-xv/issues/189) | Audit: Enforce Prettier formatting across 144 files (format:check violations) | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#190](https://github.com/A-L-L-A-H/mw-xv/issues/190) | Audit: Fix 59 @typescript-eslint/no-unused-vars occurrences | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#191](https://github.com/A-L-L-A-H/mw-xv/issues/191) | Audit: Fix 23 @typescript-eslint/no-explicit-any errors (mostly seed/test files) | closed | — | — | 2026-11-23 | 2026-11-23 |
+| [#192](https://github.com/A-L-L-A-H/mw-xv/issues/192) | Audit: Fix 15 no-undef errors in .mjs tests and scripts (browser/globals env missing) | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#193](https://github.com/A-L-L-A-H/mw-xv/issues/193) | Audit: Fix 7 no-useless-assignment errors | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#194](https://github.com/A-L-L-A-H/mw-xv/issues/194) | Audit: Fix prefer-const, consistent-type-imports, require-yield, preserve-caught-error lint errors | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#195](https://github.com/A-L-L-A-H/mw-xv/issues/195) | Audit: Centralize Asia/Jakarta timezone + utcOffsetMinutes 420 literals | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#196](https://github.com/A-L-L-A-H/mw-xv/issues/196) | Audit: eslint scans generated src-tauri target/build output (ignore it) | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#197](https://github.com/A-L-L-A-H/mw-xv/issues/197) | [PROPOSAL] Bridge Antigravity Desktop hooks into MoonWitness Live Agent Flow | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#199](https://github.com/A-L-L-A-H/mw-xv/issues/199) | Audit: connectors.test.ts fails on dev (16 tests) vs renamed snake_case model fields | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#200](https://github.com/A-L-L-A-H/mw-xv/issues/200) | Audit: Mirrored WhatsApp runtime modules in apps/api vs packages/orm-whatsapp | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#201](https://github.com/A-L-L-A-H/mw-xv/issues/201) | Audit: M15-M18 invariant gates copy-paste identical rule blocks | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#202](https://github.com/A-L-L-A-H/mw-xv/issues/202) | Audit: E2E credential literals scattered across 3 locations | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#203](https://github.com/A-L-L-A-H/mw-xv/issues/203) | Audit: Duplicated private-mesh-IP validators across TS/Go/desktop | open | — | — | 2026-11-23 | 2026-11-24 |
+| [#204](https://github.com/A-L-L-A-H/mw-xv/issues/204) | Audit: Board bypasses its own date-format util in 3 components | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#205](https://github.com/A-L-L-A-H/mw-xv/issues/205) | Audit: Minor-unit money formatting inline in commercial-page (no shared helper) | closed | — | — | 2026-11-23 | 2026-11-24 |
+| [#206](https://github.com/A-L-L-A-H/mw-xv/issues/206) | Audit: Board site-URL fallback triplicated across layout/robots/sitemap | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#207](https://github.com/A-L-L-A-H/mw-xv/issues/207) | Audit: Worker command bootstrap scaffolding triplicated in jobs-worker/jobs-scheduler/outbox-worker | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#208](https://github.com/A-L-L-A-H/mw-xv/issues/208) | Audit: Tracked eslint-output.txt + live lint warnings (prefer-const, consistent-type-imports, no-useless-assignment, no-undef, no-explicit-any, unused-vars) | open | — | — | 2026-11-23 | 2026-11-24 |
+| [#209](https://github.com/A-L-L-A-H/mw-xv/issues/209) | Audit: pnpm-lock.yaml churn (+130 lines) bundled inside lint-fix commit dbe03da | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#210](https://github.com/A-L-L-A-H/mw-xv/issues/210) | Audit: dbe03da touched compliance tests without src — lint scope src/tests enforced inconsistently | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#211](https://github.com/A-L-L-A-H/mw-xv/issues/211) | Audit: orm-sim computeRunChecksum not key-order stable (JSON.stringify replacer misuse) | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#212](https://github.com/A-L-L-A-H/mw-xv/issues/212) | Audit: canonicalJson helper duplicated 8x across ai-runtime/orm-ai/orm-workflow/research | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#213](https://github.com/A-L-L-A-H/mw-xv/issues/213) | Audit: orm-* test scripts inconsistent (tsc-check gate applied to only 11 of 30 packages) | open | — | — | 2026-11-23 | 2026-11-23 |
+| [#214](https://github.com/A-L-L-A-H/mw-xv/issues/214) | Audit: orm-governance package incomplete — no index/manifest/tests, exports point to unbuildable dist/index.js | closed | — | — | 2026-11-23 | 2026-11-24 |
+| [#215](https://github.com/A-L-L-A-H/mw-xv/issues/215) | Audit: fields.string({values}) vs fields.enum convention split; orm-governance status unions declared twice | closed | — | — | 2026-11-23 | 2026-11-24 |
+| [#219](https://github.com/A-L-L-A-H/mw-xv/issues/219) | Audit: orm-income-ledger TypeScript compilation fails (22 errors) | open | — | — | 2026-11-24 | 2026-11-24 |
+| [#220](https://github.com/A-L-L-A-H/mw-xv/issues/220) | Audit: orm-income-ledger ESLint warnings (consistent-type-imports, no-unused-vars, prefer-const) | open | — | — | 2026-11-24 | 2026-11-24 |
+| [#221](https://github.com/A-L-L-A-H/mw-xv/issues/221) | Audit: orm-income-ledger missing test coverage (adapters, recompute, http-plugin) | open | — | — | 2026-11-24 | 2026-11-24 |
 
 ## Pull request index
 
-| PR | Title | State | Branch relationship | Created | Updated |
+| PR | Title | State | Branches | Created | Updated |
 |---|---|---|---|---|---|
 | [#1](https://github.com/A-L-L-A-H/mw-xv/pull/1) | release: promote dev foundation, local-ai, evolution, and modularization updates | closed | `dev` → `main` | 2026-11-21 | 2026-11-21 |
 | [#3](https://github.com/A-L-L-A-H/mw-xv/pull/3) | release: promote dev to main | closed | `dev` → `main` | 2026-11-22 | 2026-11-22 |
@@ -196,21 +236,15 @@ These counts are point-in-time API results. Re-fetch the issue/PR list before ma
 | [#30](https://github.com/A-L-L-A-H/mw-xv/pull/30) | release: promote dev to main | closed | `dev` → `main` | 2026-11-22 | 2026-11-22 |
 | [#31](https://github.com/A-L-L-A-H/mw-xv/pull/31) | release: promote dev to main | closed | `dev` → `main` | 2026-11-22 | 2026-11-22 |
 | [#37](https://github.com/A-L-L-A-H/mw-xv/pull/37) | release: promote dev to main | closed | `dev` → `main` | 2026-11-22 | 2026-11-23 |
-| [#45](https://github.com/A-L-L-A-H/mw-xv/pull/45) | feat(api): add durable A2A mesh inbox receiver | closed | `codex/m14-a2a-backend` → `dev` | 2026-11-23 | 2026-11-23 |
+| [#45](https://github.com/A-L-L-A-H/mw-xv/pull/45) | feat(api): add durable A2A mesh inbox receiver | closed | `dev` → `main` | 2026-11-23 | 2026-11-23 |
 | [#48](https://github.com/A-L-L-A-H/mw-xv/pull/48) | release: promote dev to main | closed | `dev` → `main` | 2026-11-23 | 2026-11-23 |
-| [#81](https://github.com/A-L-L-A-H/mw-xv/pull/81) | release: promote dev to main | open | `dev` → `main` | 2026-11-23 | 2026-11-23 |
-| [#82](https://github.com/A-L-L-A-H/mw-xv/pull/82) | chore(ci): bump the actions group with 9 updates | closed | `dependabot/github_actions/dev/actions-fa77643155` → `dev` | 2026-11-23 | 2026-11-23 |
-| [#178](https://github.com/A-L-L-A-H/mw-xv/issues/178) | [STORY] Recover primary source for MOONWITNESS — Two Generations, One Toast | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#179](https://github.com/A-L-L-A-H/mw-xv/issues/179) | [STORY] Recover primary source for MOONWITNESS — Chaos Before Dawn | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#180](https://github.com/A-L-L-A-H/mw-xv/issues/180) | [STORY] Recover primary source for MOONWITNESS — BIRD OF A FEATHER | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#181](https://github.com/A-L-L-A-H/mw-xv/issues/181) | [STORY] Recover primary source for MOONWITNESS — THUNDERSTRUCK | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#182](https://github.com/A-L-L-A-H/mw-xv/issues/182) | [ARCHIVE] Review the 22-file MoonWitness Foundation Library pack | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#183](https://github.com/A-L-L-A-H/mw-xv/issues/183) | [KNOWLEDGE ARCHIVE] Complete the Total Idea Archive through source recovery and human review | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#184](https://github.com/A-L-L-A-H/mw-xv/issues/184) | [AUD-024] Add tablet Axe coverage for protected Board screens | open | AUD-024 | 1466489807:AUD-024 | 2026-11-23 | 2026-11-23 |
-| [#185](https://github.com/A-L-L-A-H/mw-xv/issues/185) | [VISUAL] Create a private provenance index for the 203 Library PNG sources | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#186](https://github.com/A-L-L-A-H/mw-xv/issues/186) | [AUD-009] Fix logger synchronous file I/O and deep secret redaction | open | AUD-009 | 1466489807:AUD-009 | 2026-11-23 | 2026-11-23 |
-| [#187](https://github.com/A-L-L-A-H/mw-xv/issues/187) | [SOURCE INTAKE] Preserve the complete ChatGPT export in a private, source-traceable archive | open | — | — | 2026-11-23 | 2026-11-23 |
-| [#172](https://github.com/A-L-L-A-H/mw-xv/pull/172) | chore(ci): bump the actions group across 1 directory with 11 updates | open | `dependabot/github_actions/dev/actions-ce72366ff0` → `dev` | 2026-11-23 | 2026-11-23 |
+| [#81](https://github.com/A-L-L-A-H/mw-xv/pull/81) | release: promote dev to main | closed | `dev` → `main` | 2026-11-23 | 2026-11-23 |
+| [#82](https://github.com/A-L-L-A-H/mw-xv/pull/82) | chore(ci): bump the actions group with 9 updates | closed | `dev` → `main` | 2026-11-23 | 2026-11-23 |
+| [#172](https://github.com/A-L-L-A-H/mw-xv/pull/172) | chore(ci): bump the actions group across 1 directory with 11 updates | open | `dev` → `main` | 2026-11-23 | 2026-11-24 |
+| [#198](https://github.com/A-L-L-A-H/mw-xv/pull/198) | release: promote dev to main | closed | `dev` → `main` | 2026-11-23 | 2026-11-23 |
+| [#216](https://github.com/A-L-L-A-H/mw-xv/pull/216) | release: promote dev to main | closed | `dev` → `main` | 2026-11-24 | 2026-11-24 |
+| [#217](https://github.com/A-L-L-A-H/mw-xv/pull/217) | release: promote dev to main | closed | `dev` → `main` | 2026-11-24 | 2026-11-24 |
+| [#218](https://github.com/A-L-L-A-H/mw-xv/pull/218) | release: promote dev to main | open | `dev` → `main` | 2026-11-24 | 2026-11-24 |
 
 ## Duplicate / conflict audit
 
@@ -263,6 +297,19 @@ The 25 issue bodies carrying a managed marker are listed in the main table. At t
 - Comments were added to [Issue #27](https://github.com/A-L-L-A-H/mw-xv/issues/27) to record the repository census, TaskOS reconciliation, CI findings, and duplicate `CF-020` conflict.
 - No PR was merged by this audit.
 - Existing issues #15–#22 and #27 were reused as source/decision records.
+
+
+## 2026-11-24 live reconciliation
+
+This section is an additive, dated checkpoint. The 2026-11-23 snapshot above is retained as history and is not rewritten.
+
+- Verified with `gh issue list -R A-L-L-A-H/mw-xv --state all --limit 500` and `gh pr list ...`: **191 issues (85 open / 106 closed)** and **30 PRs (2 open / 28 closed-or-merged)**. The prior 161/26 counts were correct at 2026-11-23 but are now stale.
+- 30 issues created after the prior snapshot (#189–#221, with #198 and #216–#218 being PR numbers) were added to the tables above. Most are `Audit:` items produced by the hourly code-audit automation (`audit`, `auto-generated` labels); they are execution backlog records, not new archive proposals.
+- PR #81 (`dev → main`) is now **merged**; the prior report recorded it as open. PR #218 is the current open promotion candidate and #172 is the open Dependabot PR. No promotion was performed by this archive pass.
+- `CF-020` remains open at #74 and closed at #75; no automatic reconciliation was performed. Human triage is still required.
+- The `bjo163` namespace count is endpoint-dependent and must not be reported as a single fact: `gh repo list bjo163 --limit 500` returns **150** accessible repositories (148 public + 2 private, including the archived `moonwitness-memory`), `GET /search/repositories?q=user:bjo163` returns **90**, while the prior report's three paginated GitHub searches produced **280 records (148 public + 132 private)**. These are different query scopes; see the repository consolidation report. No source repository was deleted, archived or rewritten.
+- No GitHub issue was created, closed, edited or deleted during this reconciliation. Issue #173–#188 already cover the Total Idea Archive deliverables; creating duplicates would violate the repository's no-duplicate rule.
+- An additive evidence comment was posted to the archive parent issue [#183](https://github.com/A-L-L-A-H/mw-xv/issues/183#issuecomment-7124559268) recording these verified deltas and the source-access limitation.
 
 ## Operational rules
 
