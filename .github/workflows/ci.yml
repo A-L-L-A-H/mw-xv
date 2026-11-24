@@ -180,6 +180,9 @@ jobs:
           node scripts/check-release-provenance.mjs
           pnpm test:secrets
           pnpm automation:check:secrets
+          pnpm automation:check:workflow-trust
+          pnpm test:security-policy
+          pnpm node:parity --strict
       - name: Verify shared UI, API addon boundary, assets, and documentation links
         run: |
           pnpm board:ui:check

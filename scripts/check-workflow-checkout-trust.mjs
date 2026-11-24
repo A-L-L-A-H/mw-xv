@@ -305,11 +305,12 @@ export function inspectTrustedCheckoutPolicies({
       )
     )
       findings.push('Dependency candidate publication must use the expected source SHA guard.');
-    if (
-      !dependencyCandidate.includes(
+    const dispatchesPromotion =
+      dependencyCandidate.includes(
         'gh workflow run promote.yml --repo "$GITHUB_REPOSITORY" --ref dev'
-      )
-    )
+      ) ||
+      dependencyCandidate.includes('gh workflow run promote.yml --repo "$GH_REPO" --ref dev');
+    if (!dispatchesPromotion)
       findings.push(
         'Dependency candidate must explicitly dispatch promotion after its GITHUB_TOKEN push.'
       );
@@ -874,11 +875,25 @@ export function inspectTrustedCheckoutPolicies({
   return findings;
 }
 
+// Optional policy inputs that are intentionally absent in this repository.
+// Keeping them explicit prevents a deleted workflow from silently disabling a
+// whole policy block (the checker previously treated every ENOENT as a no-op).
+const KNOWN_ABSENT_OPTIONAL_FILES = new Set([
+  '.github/workflows/visual-review.yml',
+  '.github/workflows/browser-matrix.yml',
+  '.github/workflows/deep-regression.yml',
+  'scripts/roadmap/run-issue-intake.mjs',
+]);
+
 async function readOptionalFile(filePath) {
   try {
     return await readFile(filePath, 'utf8');
   } catch (error) {
-    if (error?.code === 'ENOENT') return '';
+    if (error?.code === 'ENOENT') {
+      const relative = path.relative(repositoryRoot, filePath).replaceAll('\\', '/');
+      if (KNOWN_ABSENT_OPTIONAL_FILES.has(relative)) return '';
+      throw new Error(`Expected optional policy file is missing: ${relative}`);
+    }
     throw error;
   }
 }
