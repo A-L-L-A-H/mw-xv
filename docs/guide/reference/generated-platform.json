@@ -152,6 +152,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/mcp-moonwitness",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/mcp-moonwitness",
+      "scripts": ["build", "test", "typecheck"]
+    },
+    {
       "name": "@moonwitness/orm",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm",
@@ -170,9 +176,21 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-automation-core",
+      "version": "1.0.0",
+      "directory": "packages/orm-automation-core",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-base",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-base",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-catalog",
+      "version": "1.0.0",
+      "directory": "packages/orm-catalog",
       "scripts": ["build", "test"]
     },
     {
@@ -180,6 +198,12 @@
       "version": "1.0.0",
       "directory": "packages/orm-cli",
       "scripts": ["build", "dev"]
+    },
+    {
+      "name": "@moonwitness/orm-clinical",
+      "version": "1.0.0",
+      "directory": "packages/orm-clinical",
+      "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-cloud",
@@ -248,6 +272,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-public-services",
+      "version": "1.0.0",
+      "directory": "packages/orm-public-services",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-request",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-request",
@@ -260,9 +290,27 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-sensor",
+      "version": "1.0.0",
+      "directory": "packages/orm-sensor",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-sharia",
       "version": "1.0.0",
       "directory": "packages/orm-sharia",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-signal",
+      "version": "1.0.0",
+      "directory": "packages/orm-signal",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-sim",
+      "version": "1.0.0",
+      "directory": "packages/orm-sim",
       "scripts": ["build", "test"]
     },
     {
@@ -430,6 +478,11 @@
       "build": "tsc",
       "test": "vitest run"
     },
+    "@moonwitness/mcp-moonwitness": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    },
     "@moonwitness/orm": {
       "build": "tsc",
       "test": "vitest run"
@@ -442,13 +495,25 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-automation-core": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
+    },
     "@moonwitness/orm-base": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-catalog": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
     "@moonwitness/orm-cli": {
       "build": "tsc",
       "dev": "tsx src/seed-runner.ts"
+    },
+    "@moonwitness/orm-clinical": {
+      "build": "tsc",
+      "test": "vitest run"
     },
     "@moonwitness/orm-cloud": {
       "build": "tsc",
@@ -494,6 +559,10 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-public-services": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
+    },
     "@moonwitness/orm-request": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
@@ -502,9 +571,21 @@
       "build": "tsc",
       "test": "vitest run"
     },
+    "@moonwitness/orm-sensor": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
     "@moonwitness/orm-sharia": {
       "build": "tsc",
       "test": "vitest run"
+    },
+    "@moonwitness/orm-signal": {
+      "build": "tsc",
+      "test": "vitest run"
+    },
+    "@moonwitness/orm-sim": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/orm-storage": {
       "build": "tsc",
@@ -538,6 +619,7 @@
     "root": {
       "addon:create": "node scripts/addon-create.mjs",
       "addon:scaffold": "node scripts/evolution/scaffold-exp-addon.mjs",
+      "agent:boundary:check": "node --test scripts/check-addon-agent-boundary.test.mjs && node scripts/check-addon-agent-boundary.mjs",
       "ai:watchdog": "node scripts/ai-drift-watchdog.mjs",
       "api:addon:check": "node --test scripts/check-api-addon-boundary.test.mjs && node scripts/check-api-addon-boundary.mjs",
       "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs --check",
@@ -9840,5 +9922,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "10580fc3bfe88875848ec51aec2845417cd645547a08b479b58973e236327b0a"
+  "generatedFromSha256": "8b8ea509d6051b47fdff84af0e0e3ecef712d5aafadc682730bd6bc8bd324123"
 }
