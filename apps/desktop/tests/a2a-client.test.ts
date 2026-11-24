@@ -240,4 +240,120 @@ describe('A2AMeshClient', () => {
     expect(errRes.reasonCode).toBe('INVALID_SIGNATURE');
     expect(errRes.error).not.toContain(TEST_SECRET);
   });
+
+  it('rejects unsafe schemes, credentials, traversal, query/fragments, and invalid ports before calling fetch', async () => {
+    let fetchCalled = false;
+    const client = new A2AMeshClient({
+      signingSecret: TEST_SECRET,
+      fetchFn: async () => {
+        fetchCalled = true;
+        return { ok: true, status: 202, text: async () => '{}' };
+      },
+    });
+
+    const unsafeEndpoints = [
+      'ftp://100.64.0.20:3003/a2a/delegate',
+      'file:///etc/passwd',
+      'javascript:alert(1)',
+      'http://user:pass@100.64.0.20:3003/a2a/delegate',
+      'http://user@100.64.0.20:3003/a2a/delegate',
+      'http://:@100.64.0.20:3003/a2a/delegate',
+      'http://100.64.0.20:3003/a2a/../admin',
+      'http://100.64.0.20:3003/%2e%2e/admin',
+      'http://100.64.0.20:3003/a2a%2fadmin',
+      'http://100.64.0.20:3003/a2a%5cadmin',
+      'http://100.64.0.20:3003/a2a\\admin',
+      'http://100.64.0.20:3003/unexpected',
+      'http://100.64.0.20:3003/a2a/delegate?redirect=http://169.254.169.254',
+      'http://100.64.0.20:3003/a2a/delegate#frag',
+      'http://100.64.0.20:0/a2a/delegate',
+      'http://100.64.0.20:70000/a2a/delegate',
+      'http://127.0.0.1:3003/a2a/delegate',
+      'http://169.254.169.254/latest/meta-data',
+    ];
+
+    for (const targetEndpoint of unsafeEndpoints) {
+      await expect(
+        client.delegateToMeshNode({
+          runId: 'run-unsafe',
+          agentId: 101,
+          sourceAgentId: 'agent-desktop-1',
+          targetAgentId: 'agent-vps-2',
+          targetEndpoint,
+          companyId: 42,
+          delegationDepth: 1,
+          dataClassification: 'restricted',
+          fencingToken: 15,
+          payload: { task: 'test' },
+          grant: createGrant(),
+          expectedPolicyVersion: 1,
+        })
+      ).rejects.toMatchObject({
+        name: 'A2AProtocolError',
+        reasonCode: 'PUBLIC_ENDPOINT_FORBIDDEN',
+      });
+    }
+
+    expect(fetchCalled).toBe(false);
+  });
+
+  it('passes redirect: manual and reconstructed mesh URLs for valid IPv4 and IPv6 endpoints', async () => {
+    const capturedCalls: Array<{ url: string; redirect: RequestRedirect | undefined }> = [];
+    const client = new A2AMeshClient({
+      signingSecret: TEST_SECRET,
+      fetchFn: async (url, init) => {
+        capturedCalls.push({ url, redirect: init?.redirect });
+        return {
+          ok: true,
+          status: 202,
+          text: async () =>
+            JSON.stringify({
+              status: 'queued',
+              messageId: 'msg-ipv6',
+              companyId: 42,
+              delegationDepth: 1,
+              fencingToken: 16,
+              receivedAt: '2026-11-23T10:00:00.000Z',
+            }),
+        };
+      },
+    });
+
+    await client.delegateToMeshNode({
+      runId: 'run-ipv4',
+      agentId: 101,
+      messageId: 'msg-ipv6',
+      sourceAgentId: 'agent-desktop-1',
+      targetAgentId: 'agent-vps-2',
+      targetEndpoint: 'http://100.64.0.20:3003',
+      companyId: 42,
+      delegationDepth: 1,
+      dataClassification: 'restricted',
+      fencingToken: 16,
+      payload: { task: 'test' },
+      grant: createGrant(),
+      expectedPolicyVersion: 1,
+    });
+
+    await client.delegateToMeshNode({
+      runId: 'run-ipv6',
+      agentId: 101,
+      messageId: 'msg-ipv6',
+      sourceAgentId: 'agent-desktop-1',
+      targetAgentId: 'agent-vps-2',
+      targetEndpoint: 'https://[fd00::42]:8443/a2a',
+      companyId: 42,
+      delegationDepth: 1,
+      dataClassification: 'restricted',
+      fencingToken: 17,
+      payload: { task: 'test' },
+      grant: createGrant(),
+      expectedPolicyVersion: 1,
+    });
+
+    expect(capturedCalls).toEqual([
+      { url: 'http://100.64.0.20:3003/a2a/delegate', redirect: 'manual' },
+      { url: 'https://[fd00::42]:8443/a2a', redirect: 'manual' },
+    ]);
+  });
 });

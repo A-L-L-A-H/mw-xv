@@ -127,9 +127,21 @@ export function renderTaskCardDetails(markdown, taskId) {
   const deliverable = field('Deliverable');
   const fileScope = field('File scope');
   const verification = field('Verification target');
+  const executionSteps = subsection(card, 'Execution steps');
+  const boundedFileScope = subsection(card, 'Bounded file scope');
+  const verificationSection =
+    subsection(card, 'Verification') || subsection(card, 'Focused verification');
+  const englishSteps = [
+    executionSteps,
+    boundedFileScope && `Bounded file scope:\n${boundedFileScope}`,
+    verificationSection && `Verification:\n${verificationSection}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
   return {
     steps:
       subsection(card, 'Langkah pelaksanaan') ||
+      englishSteps ||
       [
         deliverable && `Deliver: ${deliverable}`,
         fileScope && `Stay within file scope: ${fileScope}`,
@@ -137,7 +149,10 @@ export function renderTaskCardDetails(markdown, taskId) {
       ]
         .filter(Boolean)
         .join('\n'),
-    acceptance: subsection(card, 'Verifikasi dan syarat selesai') || field('Acceptance'),
+    acceptance:
+      subsection(card, 'Verifikasi dan syarat selesai') ||
+      subsection(card, 'Acceptance criteria') ||
+      field('Acceptance'),
   };
 }
 

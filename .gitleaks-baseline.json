@@ -2476,5 +2476,26 @@
     "Message": "feat(a2a): add peer identity, transport gates and canonical mesh CIDRs",
     "Tags": [],
     "Fingerprint": "5e379095892ac6188a6ff499cfa049d5aef16e4d:packages/orm-a2a/tests/peer-identity.test.ts:generic-api-key:135"
+  },
+  {
+    "RuleID": "generic-api-key",
+    "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+    "StartLine": 231,
+    "EndLine": 231,
+    "StartColumn": 31,
+    "EndColumn": 63,
+    "Match": "api_key=REDACTED ",
+    "Secret": "REDACTED",
+    "File": "packages/ai-runtime/tests/obligation-monitor.test.ts",
+    "SymlinkFile": "",
+    "Commit": "6cd65de36f0f29bc05d2a626b8dac2e866df5c9b",
+    "Link": "https://github.com/A-L-L-A-H/mw-xv/blob/6cd65de36f0f29bc05d2a626b8dac2e866df5c9b/packages/ai-runtime/tests/obligation-monitor.test.ts#L231",
+    "Entropy": 4.5016294,
+    "Author": "MoonWitness Dev",
+    "Email": "dev@moonwitness.local",
+    "Date": "2026-11-24T21:44:47Z",
+    "Message": "style: ignore .claude worktrees and format workspace files (Fixes #242)",
+    "Tags": [],
+    "Fingerprint": "6cd65de36f0f29bc05d2a626b8dac2e866df5c9b:packages/ai-runtime/tests/obligation-monitor.test.ts:generic-api-key:231"
   }
 ]

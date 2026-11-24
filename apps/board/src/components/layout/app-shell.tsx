@@ -521,7 +521,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-col">
-        <header className="board-topbar sticky top-0 z-20 flex min-w-0 items-center gap-1 border-b-2 border-ink bg-paper/90 px-3 py-3 backdrop-blur sm:gap-3 sm:px-6">
+        <header className="board-topbar sticky top-0 z-20 flex min-w-0 items-center gap-1 border-b-2 border-ink bg-paper/90 px-3 py-3 backdrop-blur sm:gap-2 sm:px-4 lg:px-5 xl:gap-3 xl:px-6">
           <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
             <SheetTrigger asChild>
               <Button
@@ -602,7 +602,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             id="open-command-palette"
             ref={commandPaletteTriggerRef}
             onClick={() => setPaletteOpen(true)}
-            className="press flex h-10 min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-none border-2 border-ink bg-paper-raised px-2 text-left text-sm text-ink-faint shadow-ink-sm sm:max-w-md sm:px-3 md:min-w-[11rem]"
+            className="press flex h-10 min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-none border-2 border-ink bg-paper-raised px-2 text-left text-sm text-ink-faint shadow-ink-sm sm:max-w-md sm:px-3 md:min-w-[9rem] xl:min-w-[11rem]"
           >
             <SearchIcon className="size-4 shrink-0 text-ink" strokeWidth={2.6} />
             <span className="truncate">Search records, models, commands…</span>
@@ -611,7 +611,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </kbd>
           </Button>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="ml-auto flex min-w-0 shrink-0 items-center gap-1.5 xl:gap-2">
             {isDesktop && <WorkspaceAssistantDrawer />}
             {!isWorkspaceDesktop && <DesktopHarnessDrawer />}
             {/* Tenant / Company Switcher */}
@@ -621,13 +621,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-1.5 border-2 border-ink px-2 font-mono text-xs shadow-ink-sm sm:gap-2 sm:px-3"
+                    className="min-w-0 gap-1.5 border-2 border-ink px-2 font-mono text-xs shadow-ink-sm xl:gap-2 xl:px-3"
                     aria-label={`Switch company. Current scope: ${currentCompany?.name ?? 'Global Scope'}`}
                     title={`Company scope: ${currentCompany?.name ?? 'Global Scope'}`}
                   >
-                    <CompanyIcon className="size-3.5 text-yellow-readable" />
-                    <span className="hidden lg:inline">Tenant:</span>
-                    <span className="hidden max-w-[120px] truncate font-bold lg:inline">
+                    <CompanyIcon className="size-3.5 shrink-0 text-yellow-readable" />
+                    <span className="hidden xl:inline">Tenant:</span>
+                    <span className="hidden max-w-[96px] truncate font-bold lg:inline xl:max-w-[120px]">
                       {currentCompany ? currentCompany.name : 'Global Scope'}
                     </span>
                   </Button>
@@ -703,14 +703,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Button
                   id="user-menu"
                   variant="outline"
-                  className="gap-1.5 px-2 normal-case sm:gap-2 sm:px-3"
+                  className="min-w-0 gap-1.5 px-2 normal-case xl:gap-2 xl:px-3"
                   aria-label={`User menu for ${user?.login ?? 'current user'}`}
                   title={`User menu for ${user?.login ?? 'current user'}`}
                 >
-                  <span className="grid size-6 place-items-center border-2 border-ink bg-primary font-display text-xs text-primary-foreground">
+                  <span className="grid size-6 shrink-0 place-items-center border-2 border-ink bg-primary font-display text-xs text-primary-foreground">
                     {user?.login.slice(0, 1).toUpperCase()}
                   </span>
-                  <span className="hidden lg:inline">{user?.login}</span>
+                  <span className="hidden max-w-[84px] truncate lg:inline xl:max-w-[140px]">
+                    {user?.login}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">

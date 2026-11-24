@@ -98,7 +98,7 @@ export default defineConfig({
       },
     },
     {
-      command: `bun --filter @moonwitness/board exec next dev --hostname 127.0.0.1 --port ${boardPort}`,
+      command: `bunx --cwd apps/board next dev --hostname 127.0.0.1 --port ${boardPort}`,
       cwd: repositoryRoot,
       url: `${baseURL}/login`,
       timeout: 120_000,

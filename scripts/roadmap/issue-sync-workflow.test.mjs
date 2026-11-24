@@ -25,6 +25,7 @@ function section(start, end) {
 }
 
 const dispatchInputs = hasWorkflow ? section('      stale_sync_retry_count:', 'permissions:') : '';
+const planJob = hasWorkflow ? section('  plan:', '  apply:') : '';
 const applyJob = hasWorkflow ? section('  apply:', undefined) : '';
 const applyStep = hasWorkflow
   ? section(
@@ -97,4 +98,27 @@ test('the continuation counter is a deliberate dispatch input with a bounded def
 test('ephemeral batch and snapshot files are cleaned on every exit path', () => {
   if (!hasWorkflow) return;
   assert.match(applyStep, /trap 'rm -f "\$batch_file" "\$snapshot_file"' EXIT/u);
+});
+
+test('both plan and apply jobs set up bun, install frozen dependencies, and build @moonwitness/types before sync-issues', () => {
+  if (!hasWorkflow) return;
+  for (const [name, job] of [
+    ['plan', planJob],
+    ['apply', applyJob],
+  ]) {
+    const setupIndex = job.indexOf('./.github/actions/setup-bun');
+    const installIndex = job.indexOf('bun install --frozen-lockfile');
+    const buildIndex = job.indexOf('bun --filter @moonwitness/types build');
+    const syncIndex = job.indexOf('node scripts/roadmap/sync-issues.mjs');
+    assert.ok(setupIndex > -1, `${name} job must run ./.github/actions/setup-bun`);
+    assert.ok(
+      installIndex > setupIndex,
+      `${name} job must run bun install --frozen-lockfile after setup-bun`
+    );
+    assert.ok(buildIndex > installIndex, `${name} job must build @moonwitness/types after install`);
+    assert.ok(
+      syncIndex > buildIndex,
+      `${name} job must run sync-issues.mjs after building @moonwitness/types`
+    );
+  }
 });
