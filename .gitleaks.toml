@@ -19,6 +19,9 @@ regexes = [
   '''^\s*"\^\\\\s\*idempotencyKey: 'duplicate-vote-0001',\$",$''',
   '''^\s*"\^\\\\s\*idempotencyKey: 'reject-decision-0001',\$",$''',
   '''^\s*- Add adapter fixtures for API pagination, missing[/]duplicate checks, stale snapshots, revoked permissions, and malformed/untrusted webhook or issue events\.$''',
+  '''^\s*const HMAC_INPUT = 'mesh-cidr-fixture';$''',
+  '''^\s*FREELLMAPI_COMMIT_SHA: cd65d6485788dfc7828f06c1147cdea207b28322$''',
+  '''^\s*nextSecret: 'peer-key-gamma-fixture',$''',
 ]
 
 [[allowlists]]
