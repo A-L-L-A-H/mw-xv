@@ -103,7 +103,7 @@
     "architecture:check:built": "node scripts/architecture/generate-diagrams.mjs --check",
     "test:architecture": "node --test scripts/architecture/*.test.mjs",
     "audit:workspace": "node scripts/audit-workspace.mjs",
-    "verify": "pnpm ui:check && pnpm lint:ui && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:unit:built && pnpm test:architecture && pnpm architecture:check:built && pnpm docs:build:built",
+    "verify": "pnpm ui:check && pnpm lint:ui && pnpm lint && pnpm format:check && pnpm typecheck && pnpm orm:codegen --check && pnpm test:unit:built && pnpm test:architecture && pnpm architecture:check:built && pnpm docs:build:built",
     "release:check": "node scripts/check-release.mjs",
     "automation:check:action-pins": "node scripts/check-action-pins.mjs",
     "automation:check:action-tags": "node scripts/check-action-tag-pins.mjs",

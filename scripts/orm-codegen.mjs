@@ -8,6 +8,10 @@ import ts from 'typescript';
 
 const defaultRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+// Infrastructure packages that own models/utilities but intentionally do not
+// install a standalone addon. Keep this list explicit and minimal.
+const NON_ADDON_PACKAGES = new Set(['orm-automation-core', 'orm-cli']);
+
 function compareText(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
@@ -113,6 +117,24 @@ function collectConstStringArrays(sourceFile) {
   return constMap;
 }
 
+/** Resolve `const x = { ... }` field maps referenced as `fields: x`. */
+function collectConstObjectLiterals(sourceFile) {
+  const constMap = new Map();
+  const visit = (node) => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer &&
+      ts.isObjectLiteralExpression(node.initializer)
+    ) {
+      constMap.set(node.name.text, node.initializer);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return constMap;
+}
+
 function parseFieldInitializer(fieldName, callNode, constMap) {
   if (!ts.isCallExpression(callNode)) return null;
   let kind = null;
@@ -186,6 +208,7 @@ export function parseOrmSourceFile(
   );
   const localConsts = collectConstStringArrays(sourceFile);
   const mergedConsts = new Map([...sharedConstMap.entries(), ...localConsts.entries()]);
+  const objectConsts = collectConstObjectLiterals(sourceFile);
 
   const models = [];
   const addons = [];
@@ -224,7 +247,10 @@ export function parseOrmSourceFile(
         extractStringLiteral(getPropertyAssignment(specObj, 'table')) ??
         modelName.replaceAll('.', '_');
       const order = extractStringLiteral(getPropertyAssignment(specObj, 'order'));
-      const fieldsObj = getPropertyAssignment(specObj, 'fields');
+      let fieldsObj = getPropertyAssignment(specObj, 'fields');
+      if (fieldsObj && ts.isIdentifier(fieldsObj)) {
+        fieldsObj = objectConsts.get(fieldsObj.text) ?? fieldsObj;
+      }
       const parsedFields = [];
 
       if (fieldsObj && ts.isObjectLiteralExpression(fieldsObj)) {
@@ -561,7 +587,7 @@ export async function compileWorkspaceOrmCodegen(options = {}) {
       file: `${path.relative(workspaceRoot, pkgDir).replaceAll('\\', '/')}/package.json`,
     };
 
-    if (pkgAddons.length === 0) {
+    if (pkgAddons.length === 0 && !NON_ADDON_PACKAGES.has(dirName)) {
       validationErrors.push(
         `Package '${pkgJson.name}' under 'packages/${dirName}' does not declare defineAddon(...)`
       );

@@ -188,6 +188,7 @@ jobs:
           pnpm automation:check:workflow-trust
           pnpm test:security-policy
           pnpm node:parity --strict
+          pnpm orm:codegen --check
       - name: Verify shared UI, API addon boundary, assets, and documentation links
         run: |
           pnpm board:ui:check
