@@ -10,21 +10,21 @@
 
 A paginated GitHub repository search for `user:bjo163` was run on 2026-11-23:
 
-| Page      |                     Results |
-| --------- | --------------------------: |
-| 1         |                         100 |
-| 2         |                         100 |
-| 3         |                          80 |
-| 4         |                           0 |
+| Page | Results |
+|---|---:|
+| 1 | 100 |
+| 2 | 100 |
+| 3 | 80 |
+| 4 | 0 |
 | **Total** | **280 unique repositories** |
 
 There were no duplicate repository names across the three non-empty result pages.
 
 | Visibility | Search results |
-| ---------- | -------------: |
-| Public     |            148 |
-| Private    |            132 |
-| **Total**  |        **280** |
+|---|---:|
+| Public | 148 |
+| Private | 132 |
+| **Total** | **280** |
 
 ## Cross-check against the existing public inventory
 
@@ -38,7 +38,6 @@ There were no duplicate repository names across the three non-empty result pages
 This verifies the repository metadata returned by the GitHub search interface available to this session. It does **not** prove that every historical repository, deleted repository, transfer, organization-owned repository, Git LFS object or external resource is included.
 
 This snapshot does not inspect or export:
-
 - gists, discussions, wikis or deleted repositories;
 - Git LFS objects, releases, package registries or container images;
 - GitHub Pages, Actions artifacts, webhooks, secrets, deployments or DNS;

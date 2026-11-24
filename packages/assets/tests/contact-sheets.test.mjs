@@ -42,9 +42,7 @@ test('buildContactSheetHtml embeds stable IDs and variants deterministically', (
       },
     ],
   };
-  const html = buildContactSheetHtml(group, [
-    { item: group.items[0], dataUrl: 'data:image/svg+xml;base64,AA==' },
-  ]);
+  const html = buildContactSheetHtml(group, [{ item: group.items[0], dataUrl: 'data:image/svg+xml;base64,AA==' }]);
   assert.match(html, /data-asset-id="crew-01-sheet"/u);
   assert.match(html, /neutral · svg · 512x512/u);
 });

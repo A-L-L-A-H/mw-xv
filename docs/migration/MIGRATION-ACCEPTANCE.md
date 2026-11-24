@@ -93,7 +93,6 @@ Exit: owner approval and evidence are recorded. Until then, keep old owner intac
 ## Evidence record
 
 For metadata-only references, record repository/ref/commit and the observed notice/license status. Only if K0-006 is reopened and a source-specific import is expressly approved, record for every imported item:
-
 - source repository, ref, exact commit, path and Git blob SHA;
 - SHA-256 of exported bytes;
 - SPDX license or unknown status, attribution and rights evidence;

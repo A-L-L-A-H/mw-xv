@@ -10,26 +10,26 @@ The API remains a thin assembly and HTTP boundary. Durable domain models belong 
 
 ## Ownership and first target to inspect
 
-| Domain                                   | Reuse or extend first                                             | Experience                   | Boundary                                                                  |
-| ---------------------------------------- | ----------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------- |
-| Identity, user, company, access          | orm-base, auth, orm-organization                                  | Board / API                  | No legacy local IAM as second authority                                   |
-| Project, task, milestone                 | orm-project, orm-workflow, jobs                                   | Board / Desktop              | Reuse before another project system                                       |
-| Source bytes, editions, passage locators | corpus, orm-storage                                               | Research / Board             | Rights checked separately; source bytes immutable                         |
-| Claims, evidence, provenance, concepts   | knowledge, research, orm-knowledge                                | Research / Board             | Separate source facts, claims, assessment and interpretation              |
-| Story / narrative                        | Knowledge, Research, Story Workbench                              | Board / Creation             | A story is not automatically an event                                     |
-| Event reconstruction                     | Research / Knowledge                                              | Research                     | Evidence, counter-evidence, provenance, uncertainty                       |
-| Person, author, witness, transmitter     | Research / ORM Knowledge after model review                       | Research                     | Source-scoped identity; no alias guessing                                 |
-| Law / regulation                         | Research / Knowledge                                              | Research                     | Record jurisdiction and authority; not legal advice                       |
-| Perspective / framing                    | Research                                                          | Research                     | Perspective is not ownership of the phenomenon                            |
-| Cross-domain relation                    | Research / Knowledge graph                                        | Research                     | Similarity is not causation or identity                                   |
-| Content projects / series / entries      | orm-project, orm-workflow, Story Workbench                        | Board / Public Web           | Separate brief, source refs, artifact, revision and publication           |
-| Artwork / media                          | packages/assets, packages/ui, UI Catalog, orm-storage             | Board / Public Web / Desktop | Artwork-first; rights and attribution required                            |
-| Community participation                  | Existing identity, project, workflow and notification foundations | Board / Public Web           | Proposals start non-canonical; review before knowledge promotion          |
-| Messaging / channels                     | orm-integration, orm-whatsapp, orm-notification, orm-storage      | Board / Desktop              | Channel/operator identity separate from platform identity                 |
-| AI agents / work contracts               | orm-ai, ai-runtime, ai-mcp, ai-evaluation, jobs/workflow          | Desktop / Board              | Capability grants, tenant scope, proof and independent review             |
-| Private archives                         | Corpus private intake only under approved policy; ORM Storage     | Desktop / Board              | Consent, privacy, retention, revocation and tenant scope                  |
-| Temporal/calendar research               | Research or isolated optional package after external review       | Research                     | Separate astronomy, calendar criteria, rukyat, jurisdiction and authority |
-| Ontology / vocabulary                    | Knowledge / Research contracts                                    | Research / docs              | Reuse only after semantics, scope and rights review                       |
+| Domain | Reuse or extend first | Experience | Boundary |
+|---|---|---|---|
+| Identity, user, company, access | orm-base, auth, orm-organization | Board / API | No legacy local IAM as second authority |
+| Project, task, milestone | orm-project, orm-workflow, jobs | Board / Desktop | Reuse before another project system |
+| Source bytes, editions, passage locators | corpus, orm-storage | Research / Board | Rights checked separately; source bytes immutable |
+| Claims, evidence, provenance, concepts | knowledge, research, orm-knowledge | Research / Board | Separate source facts, claims, assessment and interpretation |
+| Story / narrative | Knowledge, Research, Story Workbench | Board / Creation | A story is not automatically an event |
+| Event reconstruction | Research / Knowledge | Research | Evidence, counter-evidence, provenance, uncertainty |
+| Person, author, witness, transmitter | Research / ORM Knowledge after model review | Research | Source-scoped identity; no alias guessing |
+| Law / regulation | Research / Knowledge | Research | Record jurisdiction and authority; not legal advice |
+| Perspective / framing | Research | Research | Perspective is not ownership of the phenomenon |
+| Cross-domain relation | Research / Knowledge graph | Research | Similarity is not causation or identity |
+| Content projects / series / entries | orm-project, orm-workflow, Story Workbench | Board / Public Web | Separate brief, source refs, artifact, revision and publication |
+| Artwork / media | packages/assets, packages/ui, UI Catalog, orm-storage | Board / Public Web / Desktop | Artwork-first; rights and attribution required |
+| Community participation | Existing identity, project, workflow and notification foundations | Board / Public Web | Proposals start non-canonical; review before knowledge promotion |
+| Messaging / channels | orm-integration, orm-whatsapp, orm-notification, orm-storage | Board / Desktop | Channel/operator identity separate from platform identity |
+| AI agents / work contracts | orm-ai, ai-runtime, ai-mcp, ai-evaluation, jobs/workflow | Desktop / Board | Capability grants, tenant scope, proof and independent review |
+| Private archives | Corpus private intake only under approved policy; ORM Storage | Desktop / Board | Consent, privacy, retention, revocation and tenant scope |
+| Temporal/calendar research | Research or isolated optional package after external review | Research | Separate astronomy, calendar criteria, rukyat, jurisdiction and authority |
+| Ontology / vocabulary | Knowledge / Research contracts | Research / docs | Reuse only after semantics, scope and rights review |
 
 ## Existing target capabilities to reuse
 

@@ -11,12 +11,12 @@ Status: verified on 2026-11-22.
 
 Commands and exit codes:
 
-| Command                               | Exit |
-| ------------------------------------- | ---: |
-| `git status --short --branch`         |    0 |
-| `git rev-parse HEAD`                  |    0 |
-| `git branch --show-current`           |    0 |
-| `git remote -v`                       |    0 |
-| `git ls-remote origin refs/heads/dev` |    0 |
+| Command | Exit |
+| --- | ---: |
+| `git status --short --branch` | 0 |
+| `git rev-parse HEAD` | 0 |
+| `git branch --show-current` | 0 |
+| `git remote -v` | 0 |
+| `git ls-remote origin refs/heads/dev` | 0 |
 
 The baseline differs from pack SHA `0b89060602c659efdd5e9e1a12c166fee237418e`; current `dev` is `e768079e4551c2f88b528f2a59acfc09ade4ba3e` and is the source of truth.

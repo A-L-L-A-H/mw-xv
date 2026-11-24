@@ -38,7 +38,6 @@ This is a concrete mismatch between the read model and the server-side creation 
 ## Bounded scope
 
 Expected files:
-
 - `apps/api/src/routes/project.routes.ts`
 - `apps/api/tests/project.routes.test.ts`
 - `docs/roadmap/evidence/M13.05.md`
@@ -67,7 +66,6 @@ pnpm --filter @moonwitness/api build
 ```
 
 Also run:
-
 - Prettier on modified files.
 - `git diff --check`.
 - Isolated PostgreSQL/concurrency checks if transaction or locking semantics changed.

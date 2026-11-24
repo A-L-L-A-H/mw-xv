@@ -151,13 +151,7 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(jobsHealthRes.status).toBe(200);
     const jobsHealthBody = (await jobsHealthRes.json()) as {
       success: boolean;
-      data: {
-        queued: number;
-        running: number;
-        dead: number;
-        outboxPending: number;
-        outboxDead: number;
-      };
+      data: { queued: number; running: number; dead: number; outboxPending: number; outboxDead: number };
     };
     expect(jobsHealthBody.success).toBe(true);
     expect(typeof jobsHealthBody.data.queued).toBe('number');
@@ -514,9 +508,9 @@ describe('LocalApiServer & Desktop Importer', () => {
       success: boolean;
       data: { backups: Array<{ fileName: string; verified: boolean }> };
     };
-    expect(
-      listBackupsBody.data.backups.some((b) => b.fileName === createdBackup.data.fileName)
-    ).toBe(true);
+    expect(listBackupsBody.data.backups.some((b) => b.fileName === createdBackup.data.fileName)).toBe(
+      true
+    );
 
     // Restore rejects missing confirmation and path traversal
     const restoreNoConfirm = await fetch(`${daemon.apiUrl}/api/desktop/backups/restore`, {

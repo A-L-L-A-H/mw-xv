@@ -71,7 +71,10 @@
   "notesSummary": {
     "genericAtomicNotes": 91,
     "taskSpecificNotes": 2,
-    "taskSpecificTaskIds": ["W1-001", "W5-012"]
+    "taskSpecificTaskIds": [
+      "W1-001",
+      "W5-012"
+    ]
   },
   "createdAt": "2026-11-23"
 }

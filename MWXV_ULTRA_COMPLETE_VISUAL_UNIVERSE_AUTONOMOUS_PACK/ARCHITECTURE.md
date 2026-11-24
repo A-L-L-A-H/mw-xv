@@ -43,7 +43,6 @@ API ---------- HTTP/runtime assembly only
 ### Optional package extraction
 
 A package such as `@moonwitness/scene-runtime` is **conditional**, not predetermined. Extract only if:
-
 1. The runtime has a stable framework-appropriate public contract.
 2. More than one real consumer needs it.
 3. It can remain independent of app routes, auth, ORM, API and domain logic.

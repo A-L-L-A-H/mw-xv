@@ -7,13 +7,11 @@ Implement these capabilities inside the existing `apps/ui-catalog` unless source
 ## Workspaces
 
 ### 1. Asset Browser
-
 - Search/filter by pack, kind, domain, character, environment, tag, format, source/generated and license status.
 - Preview variants and source-to-generated relationships.
 - Display stable ID, path, dimensions, byte size, focal point, provenance and license.
 
 ### 2. Character Studio
-
 - Character identity sheet and turnaround.
 - Outfit/prop/pose/expression variant preview.
 - Layer visibility and pivots.
@@ -21,21 +19,18 @@ Implement these capabilities inside the existing `apps/ui-catalog` unless source
 - Consistency checklist and warnings.
 
 ### 3. Environment Composer
-
 - Load scene fixture by ID.
 - Toggle layers and inspect depth order, anchors, pivots and bounds.
 - Responsive scene preview.
 - Static and reduced-motion comparison.
 
 ### 4. Timeline / FX Preview
-
 - Discrete deterministic timeline states.
 - Animation clip timing, loop and pause controls.
 - FX intensity/duration controls with safe bounds.
 - No auto-playing sound.
 
 ### 5. Asset QA Inspector
-
 - Manifest parse/validation result.
 - Missing refs, orphan files, duplicate IDs/path, invalid dimensions, missing provenance/license.
 - Sprite bounds/timing and scene graph diagnostics.

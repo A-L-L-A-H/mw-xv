@@ -54,12 +54,7 @@ function shouldCopyFile(srcPath) {
   if (SKIP_DIR_NAMES.has(base)) {
     return false;
   }
-  if (
-    base.endsWith('.d.ts') ||
-    base.endsWith('.d.ts.map') ||
-    base.endsWith('.js.map') ||
-    base.endsWith('.tsbuildinfo')
-  ) {
+  if (base.endsWith('.d.ts') || base.endsWith('.d.ts.map') || base.endsWith('.js.map') || base.endsWith('.tsbuildinfo')) {
     return false;
   }
   return true;
@@ -131,9 +126,7 @@ function measureDirBytes(dirPath) {
 
 function main() {
   if (!fs.existsSync(path.join(distSrcDir, 'cli.js'))) {
-    throw new Error(
-      `Missing ${path.join(distSrcDir, 'cli.js')}. Run pnpm --filter @moonwitness/desktop build first.`
-    );
+    throw new Error(`Missing ${path.join(distSrcDir, 'cli.js')}. Run pnpm --filter @moonwitness/desktop build first.`);
   }
 
   fs.rmSync(sidecarDir, { recursive: true, force: true });
@@ -159,9 +152,9 @@ function main() {
         type: 'module',
       },
       null,
-      2
+      2,
     ) + '\n',
-    'utf8'
+    'utf8',
   );
 
   // 4. BFS copy runtime dependencies (and transitive runtime dependencies)
@@ -284,7 +277,7 @@ function main() {
       stagedPackages: stagedNames.size,
       files: manifest.files,
       totalMB: Number(mb),
-    })
+    }),
   );
 }
 

@@ -106,10 +106,12 @@ export const crmHttpPlugin: AddonHttpPlugin = async (app) => {
         typeof deal.stage !== 'string' ||
         typeof deal.amountCents !== 'number'
       ) {
-        return reply.code(400).send({
-          success: false,
-          error: 'Each deal must include id, stage, and numeric amountCents',
-        });
+        return reply
+          .code(400)
+          .send({
+            success: false,
+            error: 'Each deal must include id, stage, and numeric amountCents',
+          });
       }
     }
 

@@ -6,9 +6,9 @@ services:
       context: ../../..
       dockerfile: apps/radius/Dockerfile
     ports:
-      - '1812:1812/udp'
-      - '1813:1813/udp'
-      - '3000:3000'
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+      - "3000:3000"
     environment:
       - MW_RADIUS_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/moonwitness_radius
       - MW_RADIUS_RADIUS_SECRET=testing123
@@ -30,9 +30,9 @@ services:
     volumes:
       - radius_pgdata:/var/lib/postgresql/data
     ports:
-      - '5433:5432'
+      - "5433:5432"
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d moonwitness_radius']
+      test: ["CMD-SHELL", "pg_isready -U postgres -d moonwitness_radius"]
       interval: 10s
       timeout: 5s
       retries: 5

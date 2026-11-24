@@ -2,9 +2,18 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { LayeredScene, resolveSceneLayersForWidth } from '../dist/components/layered-scene.js';
-import { SpritePlayer, computeSpriteFrameIndex } from '../dist/components/sprite-player.js';
-import { resetSceneHarness, setSceneHarness } from '../dist/lib/scene-test-harness.js';
+import {
+  LayeredScene,
+  resolveSceneLayersForWidth,
+} from '../dist/components/layered-scene.js';
+import {
+  SpritePlayer,
+  computeSpriteFrameIndex,
+} from '../dist/components/sprite-player.js';
+import {
+  resetSceneHarness,
+  setSceneHarness,
+} from '../dist/lib/scene-test-harness.js';
 
 const sampleLayers = [
   {
@@ -162,7 +171,9 @@ test('SpritePlayer computes frames deterministically and honors pinnedFrame, red
   assert.match(reducedHtml, /src="\/wave-static\.png"/u);
 
   setSceneHarness({ fixedFrame: 2 });
-  const harnessHtml = renderToStaticMarkup(React.createElement(SpritePlayer, { clip }));
+  const harnessHtml = renderToStaticMarkup(
+    React.createElement(SpritePlayer, { clip })
+  );
   assert.match(harnessHtml, /data-sprite-frame="2"/u);
   assert.match(harnessHtml, /data-sprite-state="pinned"/u);
   assert.match(harnessHtml, /src="\/wave-2\.png"/u);

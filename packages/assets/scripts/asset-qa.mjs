@@ -88,8 +88,7 @@ const INVENTORY_DIRECTORIES = [
 ];
 
 export async function runAssetQa(rootDir = packageRoot, options = {}) {
-  const manifest =
-    options.manifest ?? JSON.parse(await readFile(resolve(rootDir, 'manifest.json'), 'utf8'));
+  const manifest = options.manifest ?? JSON.parse(await readFile(resolve(rootDir, 'manifest.json'), 'utf8'));
   const existingDirs = INVENTORY_DIRECTORIES.filter((dir) => existsSync(resolve(rootDir, dir)));
   const trackedFiles = options.trackedFiles ?? (await listInventoryMedia(rootDir, existingDirs));
   const inventoryDiff = compareAssetInventory(
@@ -105,18 +104,10 @@ export async function runAssetQa(rootDir = packageRoot, options = {}) {
   const manifestPaths = new Set(manifest.assets.map((asset) => asset.path));
 
   for (const unlisted of inventoryDiff.unlistedFiles) {
-    errors.push({
-      code: 'orphan_file',
-      path: unlisted,
-      message: `Unlisted media file outside manifest: ${unlisted}`,
-    });
+    errors.push({ code: 'orphan_file', path: unlisted, message: `Unlisted media file outside manifest: ${unlisted}` });
   }
   for (const missing of inventoryDiff.missingFiles) {
-    errors.push({
-      code: 'missing_file',
-      path: missing,
-      message: `Manifest entry missing on disk: ${missing}`,
-    });
+    errors.push({ code: 'missing_file', path: missing, message: `Manifest entry missing on disk: ${missing}` });
   }
 
   for (const asset of manifest.assets) {
@@ -194,8 +185,7 @@ export async function runAssetQa(rootDir = packageRoot, options = {}) {
     hashesByDigest.set(digest, bucket);
 
     const effectiveKind = isAnimationPath ? 'animation' : asset.kind;
-    const budget =
-      SPECIFIC_PATH_BUDGETS[asset.path] ?? RUNTIME_BUDGET_BYTES[effectiveKind] ?? 250 * 1024;
+    const budget = SPECIFIC_PATH_BUDGETS[asset.path] ?? RUNTIME_BUDGET_BYTES[effectiveKind] ?? 250 * 1024;
     runtimeSizes.push({ path: asset.path, kind: asset.kind, bytes: fileStat.size, budget });
     if (fileStat.size > budget) {
       errors.push({

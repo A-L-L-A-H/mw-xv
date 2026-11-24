@@ -71,13 +71,10 @@ describe('Mega-Wave I.4: Deterministic Multi-Provider Local/Edge LLM Router', ()
     });
 
     // Non-sensitive prompt falls back to cloud when local fails
-    const nonSensitive = await router.route(
-      { prompt: 'public docs', sensitive: false },
-      async (p) => {
-        if (p.locality === 'local') throw new Error('ollama timeout');
-        return { text: 'cloud-answer', promptTokens: 20, completionTokens: 30, latencyMs: 180 };
-      }
-    );
+    const nonSensitive = await router.route({ prompt: 'public docs', sensitive: false }, async (p) => {
+      if (p.locality === 'local') throw new Error('ollama timeout');
+      return { text: 'cloud-answer', promptTokens: 20, completionTokens: 30, latencyMs: 180 };
+    });
     expect(nonSensitive.providerId).toBe('cloud-openai');
     expect(nonSensitive.locality).toBe('cloud');
     expect(nonSensitive.attempts).toHaveLength(2);
@@ -137,15 +134,11 @@ describe('Mega-Wave I.4: Deterministic Multi-Provider Local/Edge LLM Router', ()
 
     const healthOpen = router.getHealthSnapshot().find((h) => h.providerId === 'local-lmstudio');
     expect(healthOpen?.circuitState).toBe('open');
-    expect(router.getEligibleProviders({ prompt: 'test' }).map((p) => p.id)).toEqual([
-      'local-ollama',
-    ]);
+    expect(router.getEligibleProviders({ prompt: 'test' }).map((p) => p.id)).toEqual(['local-ollama']);
 
     // Advance clock past cooldown -> half-open -> succeeds -> closed
     clockMs += 10_001;
-    const healthHalfOpen = router
-      .getHealthSnapshot()
-      .find((h) => h.providerId === 'local-lmstudio');
+    const healthHalfOpen = router.getHealthSnapshot().find((h) => h.providerId === 'local-lmstudio');
     expect(healthHalfOpen?.circuitState).toBe('half-open');
 
     const recovered = await router.route({ prompt: 'recover' }, async (p) => ({
@@ -155,9 +148,7 @@ describe('Mega-Wave I.4: Deterministic Multi-Provider Local/Edge LLM Router', ()
       latencyMs: 50,
     }));
     expect(recovered.providerId).toBe('local-lmstudio');
-    expect(
-      router.getHealthSnapshot().find((h) => h.providerId === 'local-lmstudio')?.circuitState
-    ).toBe('closed');
+    expect(router.getHealthSnapshot().find((h) => h.providerId === 'local-lmstudio')?.circuitState).toBe('closed');
   });
 
   it('enforces strict token and cost budget ceilings', async () => {

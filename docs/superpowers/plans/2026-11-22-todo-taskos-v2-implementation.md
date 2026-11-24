@@ -2,6 +2,7 @@
 
 > **Historical implementation plan — not a live backlog or proof of completion.** Its original 1,346-task estimate is unverified. The actual repository registry `docs/tasks/tasks.json` is currently zero-byte; the verified recovery inventory contains 627 candidate records pending tests and approval. Do not use this document's historical checkboxes or task count to drive current execution. Current SOT status is maintained in `docs/tasks/README.md`, `docs/tasks/RECOVERY-INVENTORY.md`, and `docs/roadmap/STABILIZATION-PLAN.md`.
 
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement full `moonwitness-tasks/v2` contract support in `apps/todo` (moonwitness-dx) including SQLite schema migrations, enriched Task struct, lossless import/export CLI, enhanced MCP tools, and Second Brain web UI.
@@ -24,18 +25,15 @@
 ### Task 1: SQLite Migrations 9 & 10 (Schema Extension)
 
 **Files:**
-
 - Modify: `apps/todo/src/store.rs` (MIGRATIONS array)
 - Test: `apps/todo/src/store.rs` (integration test module)
 
 **Interfaces:**
-
 - Produces: Migration 9 (22 task columns + unique index), Migration 10 (documents, document_links, FTS5)
 
 - [ ] **Step 1: Write failing integration test for migrations**
 
 Add to `apps/todo/src/store.rs` test module:
-
 ```rust
 #[test]
 fn migration_9_10_adds_taskos_v2_columns_and_documents_tables() {
@@ -45,7 +43,7 @@ fn migration_9_10_adds_taskos_v2_columns_and_documents_tables() {
         .prepare("PRAGMA table_info(tasks)").unwrap()
         .query_map([], |r| r.get::<_, String>(1)).unwrap()
         .collect::<Result<Vec<_>, _>>().unwrap();
-
+    
     let expected = ["code", "series", "milestone", "horizon", "category", "priority",
                     "effort", "risk", "owner", "summary", "problem", "proposed_solution",
                     "acceptance_criteria_json", "validation_json", "evidence_json",
@@ -54,7 +52,7 @@ fn migration_9_10_adds_taskos_v2_columns_and_documents_tables() {
     for col in expected {
         assert!(cols.contains(&col.to_string()), "Missing column: {}", col);
     }
-
+    
     // Verify documents, document_links, global_search_fts tables exist
     let tables: Vec<String> = store.conn
         .prepare("SELECT name FROM sqlite_master WHERE type='table'").unwrap()
@@ -63,7 +61,7 @@ fn migration_9_10_adds_taskos_v2_columns_and_documents_tables() {
     assert!(tables.contains(&"documents".to_string()));
     assert!(tables.contains(&"document_links".to_string()));
     assert!(tables.contains(&"global_search_fts".to_string()));
-
+    
     // Verify FTS5 triggers work
     store.conn.execute(
         "INSERT INTO documents (slug, layer, title, body, tags) VALUES ('test/doc', 'wiki', 'Test', 'Body', 'tag1,tag2')",
@@ -85,7 +83,6 @@ Expected: FAIL — columns/tables don't exist yet
 - [ ] **Step 3: Add Migration 9 (22 task columns + unique index)**
 
 In `MIGRATIONS` array in `apps/todo/src/store.rs`, add after migration 8:
-
 ```rust
 // Migration 9: Rich TaskOS v2 schema columns for tasks (add columns first, then populate, then unique index)
 "ALTER TABLE tasks ADD COLUMN code TEXT;
@@ -119,7 +116,6 @@ In `MIGRATIONS` array in `apps/todo/src/store.rs`, add after migration 8:
 - [ ] **Step 4: Add Migration 10 (Documents, Links, FTS5)**
 
 In `MIGRATIONS` array, add after migration 9c:
-
 ```rust
 // Migration 10: Second Brain documents, links, and FTS5 global search
 "CREATE TABLE documents (
@@ -201,20 +197,17 @@ git commit -m "feat(todo): add TaskOS v2 migrations 9 & 10 with FTS5 search"
 ### Task 2: Enrich Task Struct & TaskPatch
 
 **Files:**
-
 - Modify: `apps/todo/src/store.rs` (Task, TaskPatch structs)
 - Modify: `apps/todo/src/web.rs` (Patch struct)
 - Modify: `apps/todo/src/mcp.rs` (UpdateTaskArgs, CreateTaskArgs structs)
 
 **Interfaces:**
-
 - Consumes: Task struct from Task 1
 - Produces: Enriched Task, TaskPatch, web Patch, MCP args with 22 v2 fields
 
 - [ ] **Step 1: Write test for enriched Task struct**
 
 Add to store test module:
-
 ```rust
 #[test]
 fn task_struct_has_all_v2_fields() {
@@ -246,7 +239,7 @@ fn task_struct_has_all_v2_fields() {
         task_type: Some("feature".into()),
         ..Default::default()
     }).unwrap();
-
+    
     assert_eq!(task.code, Some("TEST-001".to_string()));
     assert_eq!(task.series, Some("TEST".to_string()));
     assert_eq!(task.priority, Some("p1".to_string()));
@@ -262,7 +255,6 @@ Expected: FAIL — fields don't exist on Task/TaskPatch
 - [ ] **Step 3: Enrich Task struct in `apps/todo/src/store.rs`**
 
 Add 22 optional fields to `Task` struct:
-
 ```rust
 pub code: Option<String>,
 pub series: Option<String>,
@@ -328,20 +320,17 @@ git commit -m "feat(todo): enrich Task, TaskPatch, and MCP args with TaskOS v2 f
 ### Task 3: Lossless Import/Export CLI
 
 **Files:**
-
 - Create: `apps/todo/src/import.rs`
 - Modify: `apps/todo/src/export.rs` (add `TasksJson` format)
 - Modify: `apps/todo/src/main.rs` (register CLI commands)
 
 **Interfaces:**
-
 - Consumes: `moonwitness-tasks/v2` JSON, enriched store
 - Produces: `moonwitness-dx import <file> [--mode upsert|replace]`, `moonwitness-dx export --format tasks-json`
 
 - [ ] **Step 1: Write test for round-trip import/export**
 
 Add to export test module:
-
 ```rust
 #[test]
 fn import_export_roundtrip_preserves_all_fields() {
@@ -349,7 +338,7 @@ fn import_export_roundtrip_preserves_all_fields() {
     let home = Home::open(tmp.path().to_path_buf()).unwrap();
     let store = home.store().unwrap();
     let project = store.create_project("test", "Test", None).unwrap();
-
+    
     // Create task with all v2 fields via store directly
     let task = store.create_task_in(project.id, "Roundtrip Task", TaskPatch {
         code: Some("RT-001".into()),
@@ -357,15 +346,15 @@ fn import_export_roundtrip_preserves_all_fields() {
         // ... all v2 fields
         ..Default::default()
     }).unwrap();
-
+    
     // Export to tasks.json
     let out_path = tmp.path().join("tasks.json");
     export(&home, Format::TasksJson, None, Some(&out_path)).unwrap();
-
+    
     // Import into fresh home
     let home2 = Home::open(tmp.path().join("home2")).unwrap();
     import_tasks_json(&home2, &out_path, ImportMode::Upsert).unwrap();
-
+    
     let store2 = home2.store().unwrap();
     let imported = store2.find_task("RT-001").unwrap();
     assert_eq!(imported.code, Some("RT-001".to_string()));
@@ -418,17 +407,14 @@ git commit -m "feat(todo): add lossless import/export for moonwitness-tasks/v2"
 ### Task 4: Enhanced MCP Tools
 
 **Files:**
-
 - Modify: `apps/todo/src/mcp.rs`
 
 **Interfaces:**
-
 - Produces: 6 new MCP tools for agent-driven TaskOS + Second Brain workflows
 
 - [ ] **Step 1: Write test for each new MCP tool**
 
 Add tests for:
-
 - `task_claim` — verifies dependency check, status transition, unblocks dependents
 - `task_checklist_toggle` — toggles AC done status
 - `task_submit_review` — validates all AC done before status=review
@@ -467,14 +453,12 @@ git commit -m "feat(todo): add 6 TaskOS/Second Brain MCP tools"
 ### Task 5: Web UI — Smart Kanban + Second Brain Tab
 
 **Files:**
-
 - Modify: `apps/todo/web/src/types.ts` (TaskV2, Document, Layer types)
 - Modify: `apps/todo/web/src/api.ts` (new API calls)
 - Modify: `apps/todo/web/src/App.tsx` (UI components)
 - Modify: `apps/todo/web/src/app.css` (styles)
 
 **Interfaces:**
-
 - Consumes: `/api/board`, `/api/tasks`, `/api/documents`, `/api/search`
 - Produces: Enhanced Kanban with badges/drawer, Second Brain viewer/editor
 
@@ -519,7 +503,6 @@ git commit -m "feat(todo-web): add smart Kanban badges, AC drawer, and Second Br
 ### Task 6: Full Integration Verification
 
 **Files:**
-
 - Test: All workspace test suites
 
 - [ ] **Step 1: Run tasks validator and roadmap checker**
@@ -567,11 +550,9 @@ This plan document was created and saved; its existence does **not** prove its i
 **Which approach?**
 
 If Subagent-Driven chosen:
-
 - REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development
 - Fresh subagent per task + two-stage review
 
 If Inline Execution chosen:
-
 - REQUIRED SUB-SKILL: Use superpowers:executing-plans
 - Batch execution with checkpoints for review

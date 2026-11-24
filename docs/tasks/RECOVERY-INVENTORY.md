@@ -30,15 +30,15 @@ This follow-up was performed against the exact Git blobs after the original 627-
 
 A direct Git blob audit of `docs/tasks/tasks.json` found 1,358 valid JSON records. The source-reference distribution is:
 
-| Existing source reference |   Records |
-| ------------------------- | --------: |
-| `docs/roadmap/tasks.json` |       239 |
-| `audit`                   |        14 |
-| `todo-wa.md`              |       112 |
-| `todo.md`                 |       861 |
-| `todo-desktop.md`         |       128 |
-| `evolution/backlog.json`  |         4 |
-| **Total**                 | **1,358** |
+| Existing source reference | Records |
+| --- | ---: |
+| `docs/roadmap/tasks.json` | 239 |
+| `audit` | 14 |
+| `todo-wa.md` | 112 |
+| `todo.md` | 861 |
+| `todo-desktop.md` | 128 |
+| `evolution/backlog.json` | 4 |
+| **Total** | **1,358** |
 
 Task codes are unique and every record has a `sourceRef.file`, but the 861 `todo.md` references are stale as current provenance because root `todo.md` is now a pointer. The source-backed candidate inventory intentionally uses the archived checklist and imports only its seven still-open records; it adds 14 promotion-governance and 109 Visual Universe records for a candidate total of 627.
 
@@ -63,27 +63,25 @@ This resolves the old root-pointer provenance for that 861-record subset: 854 co
 The uploaded candidate was compared by task code against the complete legacy registry blob, not only by total record count.
 
 **Source identities:**
-
 - Legacy registry `docs/tasks/tasks.json`: blob SHA `d56499936761dcc062704d06588ee2679fd1aae2`; 1,358 unique task codes.
 - Candidate source tree: synthetic PR merge commit `0ac65eb3df98a3c8a9d416dfcd9696e1410ad6da` (PR head `c433aad30da0e2593245ae375b532859f3b1f851` merged with base `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d`).
 - Candidate JSON SHA-256: `46b3a89d31ed2079da598f12844d918d21a98bcc0f47a1912cd807b1e462f388`; artifact ID `14779558473`.
 
 **Exact task-code set comparison:**
 
-| Classification                     | Count | Treatment                                                                           |
-| ---------------------------------- | ----: | ----------------------------------------------------------------------------------- |
-| Legacy codes present in candidate  |   504 | Retain stable task identities                                                       |
-| Legacy codes absent from candidate |   854 | All 854 are `done` and cite root `todo.md`; retain as historical checklist evidence |
-| Candidate codes absent from legacy |   123 | Add 14 AI Corporation PR lifecycle IDs and 109 Visual Universe task IDs             |
-| Candidate duplicate codes          |     0 | None                                                                                |
-| Candidate total                    |   627 | 504 retained + 123 new                                                              |
+| Classification | Count | Treatment |
+| --- | ---: | --- |
+| Legacy codes present in candidate | 504 | Retain stable task identities |
+| Legacy codes absent from candidate | 854 | All 854 are `done` and cite root `todo.md`; retain as historical checklist evidence |
+| Candidate codes absent from legacy | 123 | Add 14 AI Corporation PR lifecycle IDs and 109 Visual Universe task IDs |
+| Candidate duplicate codes | 0 | None |
+| Candidate total | 627 | 504 retained + 123 new |
 
 The 854 removed codes are exactly the completed subset of the 861 root-`todo.md` records. The remaining seven open IDs are included in the candidate under `docs/archive/todos/todo.md` and are mapped from legacy `todo` to TaskOS `blocked` pending re-triage. The 854 completed checklist entries remain in the immutable archive and in the byte-for-byte legacy registry backup at `${oldArchivePath}` after the owner-approved migration.
 
 Arithmetic: **1,358 - 854 + 123 = 627**. This accounts for the full net change of 731 records; it is not an unexplained deletion. The 497 other legacy records (roadmap, audit, WhatsApp, Desktop and Evolution source groups) plus the seven archived open MW items account for the 504 retained identities.
 
 **Candidate validations:**
-
 - 627 unique codes, 2 declared projects, every project reference resolves, every record has repository-relative source provenance.
 - Exact source counts: roadmap 239, audit 14, WhatsApp 112, archived open MW 7, AI Corporation PR 14, Desktop 128, Evolution 4, Visual Universe 109.
 - Status counts: done 468, doing 49, todo 89, blocked 21.
@@ -104,16 +102,16 @@ Arithmetic: **1,358 - 854 + 123 = 627**. This accounts for the full net change o
 
 ## Verified source inventory
 
-| Source                                                                                   |    Verified records | Current state                                                                               | Migration treatment                                                                                                                                                  |
-| ---------------------------------------------------------------------------------------- | ------------------: | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `docs/roadmap/tasks.json` + `ROADMAP.md`                                                 |  239 (174 M + 65 K) | 157 complete, 35 todo, 47 in progress; the Markdown checkboxes agree (157 checked, 82 open) | Import all; TaskOS becomes canonical lifecycle source                                                                                                                |
-| `todo-wa.md`                                                                             |                 112 | 72 checked, 40 open                                                                         | Import all with stable `WA-` prefix                                                                                                                                  |
-| `todo-desktop.md`                                                                        |                 128 | All 128 checked                                                                             | Import as completed history with source provenance                                                                                                                   |
-| `docs/archive/todos/todo.md`                                                             |      7 open records | 854 other checklist rows checked; archive contains 861 checklist rows                       | Import only 7 unchecked MW records as blocked / needs re-triage; retain the archive                                                                                  |
-| `moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md`               | 14 PR lifecycle IDs | PR.01–PR.13 checked; PR.14 unchecked                                                        | Import 13 completed records and PR.14 as a human-owned blocked approval gate; AI0/AI1-style proposal IDs are not promoted as official tasks                          |
-| `evolution/backlog.json`                                                                 |                   4 | 2 completed, 2 active                                                                       | Import with completed/active status preserved                                                                                                                        |
-| `scripts/tasks/sources/audit-tasks.mjs`                                                  |                  14 | Explicit audit backlog entries                                                              | Import with provenance pointing to the dedicated source data file; importer logic remains separate                                                                   |
-| `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json` |                 109 | 93 done, 3 skipped, 13 blocked                                                              | Import into project `visual-universe`; skipped is mapped to TaskOS done plus `status:skipped` tag, and the original task object is retained losslessly in `metadata` |
+| Source | Verified records | Current state | Migration treatment |
+| --- | ---: | --- | --- |
+| `docs/roadmap/tasks.json` + `ROADMAP.md` | 239 (174 M + 65 K) | 157 complete, 35 todo, 47 in progress; the Markdown checkboxes agree (157 checked, 82 open) | Import all; TaskOS becomes canonical lifecycle source |
+| `todo-wa.md` | 112 | 72 checked, 40 open | Import all with stable `WA-` prefix |
+| `todo-desktop.md` | 128 | All 128 checked | Import as completed history with source provenance |
+| `docs/archive/todos/todo.md` | 7 open records | 854 other checklist rows checked; archive contains 861 checklist rows | Import only 7 unchecked MW records as blocked / needs re-triage; retain the archive |
+| `moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md` | 14 PR lifecycle IDs | PR.01–PR.13 checked; PR.14 unchecked | Import 13 completed records and PR.14 as a human-owned blocked approval gate; AI0/AI1-style proposal IDs are not promoted as official tasks |
+| `evolution/backlog.json` | 4 | 2 completed, 2 active | Import with completed/active status preserved |
+| `scripts/tasks/sources/audit-tasks.mjs` | 14 | Explicit audit backlog entries | Import with provenance pointing to the dedicated source data file; importer logic remains separate |
+| `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json` | 109 | 93 done, 3 skipped, 13 blocked | Import into project `visual-universe`; skipped is mapped to TaskOS done plus `status:skipped` tag, and the original task object is retained losslessly in `metadata` |
 
 **Expected initial TaskOS projection: 627 task records** (239 + 112 + 128 + 7 + 14 + 4 + 14 + 109). This is a source-inventory expectation, not a claim that the registry has been restored or validated. The automated projection test must confirm the exact total and schema before the one-time write is allowed.
 
@@ -121,24 +119,24 @@ Arithmetic: **1,358 - 854 + 123 = 627**. This accounts for the full net change o
 
 The source statuses resolve to this expected TaskOS distribution after import:
 
-| TaskOS status | Records | Derivation                                                                                                                            |
-| ------------- | ------: | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `done`        |     468 | 157 roadmap + 72 WhatsApp + 128 Desktop + 13 PR governance + 2 Evolution + 96 Visual Universe (including 3 explicitly tagged skipped) |
-| `doing`       |      49 | 47 roadmap in progress + 2 active Evolution                                                                                           |
-| `todo`        |      89 | 35 roadmap + 40 WhatsApp + 14 audit                                                                                                   |
-| `blocked`     |      21 | 7 archived legacy + 1 PR.14 human approval + 13 Visual Universe                                                                       |
-| **Total**     | **627** | No duplicate IDs across the eight source groups                                                                                       |
+| TaskOS status | Records | Derivation |
+| --- | ---: | --- |
+| `done` | 468 | 157 roadmap + 72 WhatsApp + 128 Desktop + 13 PR governance + 2 Evolution + 96 Visual Universe (including 3 explicitly tagged skipped) |
+| `doing` | 49 | 47 roadmap in progress + 2 active Evolution |
+| `todo` | 89 | 35 roadmap + 40 WhatsApp + 14 audit |
+| `blocked` | 21 | 7 archived legacy + 1 PR.14 human approval + 13 Visual Universe |
+| **Total** | **627** | No duplicate IDs across the eight source groups |
 
 The three Visual Universe tasks originally marked `skipped` are represented as TaskOS `done` plus the explicit `status:skipped` tag and preserved original metadata. They remain distinguishable in the generated pack projection. These are calculated migration expectations, not live restored-registry counts.
 
 ## Reviewed but excluded from active import
 
-| Source                                                        | Observed state                                     | Reason                                                                                                                                                                     |
-| ------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Root `todo.md`                                                | 2,761-character pointer to `docs/tasks/tasks.json` | It is navigation only, not a source backlog. The importer verifies this contract and never parses it as tasks.                                                             |
-| `todo-foundation.md`                                          | 18/18 checkboxes checked                           | Historical completed checklist; preserve as source evidence, do not create a second active backlog.                                                                        |
-| `todo-ui.md`                                                  | 635/635 checkboxes checked                         | Historical completed design/implementation ledger; preserve, do not import as active tasks.                                                                                |
-| Other `AI0.*` / `AI1.*` lines in the AI Corporation checklist | Proposal IDs and baseline notes                    | The source explicitly says these IDs are proposals, not official master task IDs until a separate Phase 0 reconciliation. Only the explicit PR lifecycle IDs are imported. |
+| Source | Observed state | Reason |
+| --- | --- | --- |
+| Root `todo.md` | 2,761-character pointer to `docs/tasks/tasks.json` | It is navigation only, not a source backlog. The importer verifies this contract and never parses it as tasks. |
+| `todo-foundation.md` | 18/18 checkboxes checked | Historical completed checklist; preserve as source evidence, do not create a second active backlog. |
+| `todo-ui.md` | 635/635 checkboxes checked | Historical completed design/implementation ledger; preserve, do not import as active tasks. |
+| Other `AI0.*` / `AI1.*` lines in the AI Corporation checklist | Proposal IDs and baseline notes | The source explicitly says these IDs are proposals, not official master task IDs until a separate Phase 0 reconciliation. Only the explicit PR lifecycle IDs are imported. |
 
 ## Safety and validation rules
 
@@ -169,6 +167,7 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 
 **Do not describe TaskOS as migrated/canonical until the data owner approves the reconciled candidate, the one-time write is performed with a preserved rollback snapshot, and post-migration validators pass. The current 1,358-record legacy registry is populated and remains unchanged.**
 
+
 ## Visual Universe task-card preservation check — 2026-11-23
 
 - [x] Preserved the original 109-task source manifest separately from pack configuration.
@@ -179,6 +178,7 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 - [x] Extracted pure TaskOS-driven Board/card renderers and added contract tests for per-criterion status, canonical notes, archived notes and honest missing-exit-code output.
 - [x] Run `pnpm test:taskos` and the full CI suite on exact, non-cancelled pre-migration dev SHA `def3df35b5d54d7359600e0471af5a6dd4cb7f29` (runs [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241)); all five jobs passed.
 
+
 ## Exact development-head candidate evidence — 2026-11-23
 
 - Source: `dev` SHA `def3df35b5d54d7359600e0471af5a6dd4cb7f29`; push CI run [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869), artifact ID `14780700916`.
@@ -188,6 +188,7 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 - Structural inspection: zero missing project references, source references, dependency IDs or block IDs; zero non-reciprocal edges; zero dependency cycles.
 - Exact-SHA push and PR CI each passed quality/build, unit tests (including TaskOS recovery candidate generation/validation), knowledge gate, DX, and PostgreSQL integration.
 - At this historical checkpoint, `docs/tasks/tasks.json` was still 1,358 records (blob SHA `d56499936761dcc062704d06588ee2679fd1aae2`). The owner subsequently approved and applied the 627-record candidate; the old blob is preserved at `${oldArchivePath}`.
+
 
 ## Owner-approved TaskOS migration applied — 2026-11-23
 

@@ -146,12 +146,7 @@ describe('local-ai-discovery', () => {
       const result = await discoverLocalAiProviders({
         providers: [
           { id: 'slow', name: 'Slow Local', kind: 'vllm', endpoint: `${baseUrl}/v1/models` },
-          {
-            id: 'offline',
-            name: 'Offline Local',
-            kind: 'ollama',
-            endpoint: 'http://127.0.0.1:1/api/tags',
-          },
+          { id: 'offline', name: 'Offline Local', kind: 'ollama', endpoint: 'http://127.0.0.1:1/api/tags' },
         ],
         timeoutMs: 120,
       });

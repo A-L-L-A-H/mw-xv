@@ -21,87 +21,21 @@
     "textSafeZoneMobile": { "x": 0.06, "y": 0.08, "width": 0.88, "height": 0.36 }
   },
   "depthOrder": [
-    {
-      "id": "sky",
-      "zOrder": 0,
-      "asset": "source/artwork/moon-city-sky-layer.svg",
-      "parallax": { "x": 0.0, "y": 0.0 }
-    },
-    {
-      "id": "moon",
-      "zOrder": 10,
-      "asset": "source/artwork/moon-city-moon-disc-layer.svg",
-      "parallax": { "x": 0.04, "y": 0.03 }
-    },
-    {
-      "id": "clouds-far",
-      "zOrder": 20,
-      "asset": "source/artwork/moon-city-clouds-loop-b.svg",
-      "parallax": { "x": 0.08, "y": 0.04 }
-    },
-    {
-      "id": "skyline-far",
-      "zOrder": 30,
-      "asset": "source/world/environments/moon-city-skyline-far.svg",
-      "parallax": { "x": 0.14, "y": 0.06 }
-    },
-    {
-      "id": "clouds-near",
-      "zOrder": 40,
-      "asset": "source/artwork/moon-city-clouds-loop-a.svg",
-      "parallax": { "x": 0.22, "y": 0.08 }
-    },
-    {
-      "id": "skyline-mid",
-      "zOrder": 50,
-      "asset": "source/world/environments/moon-city-skyline-mid.svg",
-      "parallax": { "x": 0.32, "y": 0.12 }
-    },
-    {
-      "id": "rooftop-foreground",
-      "zOrder": 70,
-      "asset": "source/artwork/moon-city-foreground-layer.svg",
-      "parallax": { "x": 0.55, "y": 0.18 }
-    },
-    {
-      "id": "prop-railing",
-      "zOrder": 80,
-      "asset": "source/world/environments/moon-city-prop-railing.svg",
-      "parallax": { "x": 0.65, "y": 0.22 }
-    },
-    {
-      "id": "prop-wires",
-      "zOrder": 85,
-      "asset": "source/world/environments/moon-city-prop-wires.svg",
-      "parallax": { "x": 0.72, "y": 0.24 }
-    },
-    {
-      "id": "prop-sign",
-      "zOrder": 90,
-      "asset": "source/world/environments/moon-city-prop-sign.svg",
-      "parallax": { "x": 0.68, "y": 0.2 }
-    }
+    { "id": "sky", "zOrder": 0, "asset": "source/artwork/moon-city-sky-layer.svg", "parallax": { "x": 0.0, "y": 0.0 } },
+    { "id": "moon", "zOrder": 10, "asset": "source/artwork/moon-city-moon-disc-layer.svg", "parallax": { "x": 0.04, "y": 0.03 } },
+    { "id": "clouds-far", "zOrder": 20, "asset": "source/artwork/moon-city-clouds-loop-b.svg", "parallax": { "x": 0.08, "y": 0.04 } },
+    { "id": "skyline-far", "zOrder": 30, "asset": "source/world/environments/moon-city-skyline-far.svg", "parallax": { "x": 0.14, "y": 0.06 } },
+    { "id": "clouds-near", "zOrder": 40, "asset": "source/artwork/moon-city-clouds-loop-a.svg", "parallax": { "x": 0.22, "y": 0.08 } },
+    { "id": "skyline-mid", "zOrder": 50, "asset": "source/world/environments/moon-city-skyline-mid.svg", "parallax": { "x": 0.32, "y": 0.12 } },
+    { "id": "rooftop-foreground", "zOrder": 70, "asset": "source/artwork/moon-city-foreground-layer.svg", "parallax": { "x": 0.55, "y": 0.18 } },
+    { "id": "prop-railing", "zOrder": 80, "asset": "source/world/environments/moon-city-prop-railing.svg", "parallax": { "x": 0.65, "y": 0.22 } },
+    { "id": "prop-wires", "zOrder": 85, "asset": "source/world/environments/moon-city-prop-wires.svg", "parallax": { "x": 0.72, "y": 0.24 } },
+    { "id": "prop-sign", "zOrder": 90, "asset": "source/world/environments/moon-city-prop-sign.svg", "parallax": { "x": 0.68, "y": 0.2 } }
   ],
   "alternateEnvironments": [
-    {
-      "id": "underground",
-      "asset": "source/world/environments/env-underground.svg",
-      "reusableFor": ["operations", "jobs", "infrastructure"]
-    },
-    {
-      "id": "archive",
-      "asset": "source/world/environments/env-archive.svg",
-      "reusableFor": ["knowledge", "corpus", "documents"]
-    },
-    {
-      "id": "rooftop",
-      "asset": "source/world/environments/env-rooftop.svg",
-      "reusableFor": ["home", "stories", "community"]
-    },
-    {
-      "id": "street",
-      "asset": "source/world/environments/env-street.svg",
-      "reusableFor": ["inbox", "requests", "crm"]
-    }
+    { "id": "underground", "asset": "source/world/environments/env-underground.svg", "reusableFor": ["operations", "jobs", "infrastructure"] },
+    { "id": "archive", "asset": "source/world/environments/env-archive.svg", "reusableFor": ["knowledge", "corpus", "documents"] },
+    { "id": "rooftop", "asset": "source/world/environments/env-rooftop.svg", "reusableFor": ["home", "stories", "community"] },
+    { "id": "street", "asset": "source/world/environments/env-street.svg", "reusableFor": ["inbox", "requests", "crm"] }
   ]
 }

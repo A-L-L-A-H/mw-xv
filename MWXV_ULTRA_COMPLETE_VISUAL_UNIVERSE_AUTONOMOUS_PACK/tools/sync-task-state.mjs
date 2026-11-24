@@ -1,12 +1,8 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import prettier from 'prettier';
-import {
-  parseTasksRegistry,
-  validateTaskRegistryData,
-} from '../../scripts/tasks/validate-tasks.mjs';
+import { parseTasksRegistry, validateTaskRegistryData } from '../../scripts/tasks/validate-tasks.mjs';
 import { projectVisualUniverseTask } from '../../scripts/tasks/visual-universe-projection.mjs';
 import {
   renderVisualUniverseBoard,
@@ -16,9 +12,6 @@ import {
 
 const packRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = path.resolve(packRoot, '..');
-const prettierConfig = await prettier.resolveConfig(path.join(repositoryRoot, '.prettierrc'), {
-  editorconfig: true,
-});
 const planPath = path.join(packRoot, 'task.json');
 const manifestPath = path.join(packRoot, 'pack-manifest.json');
 const boardPath = path.join(packRoot, 'TASKS.md');
@@ -52,14 +45,8 @@ const checkOnly = process.argv.includes('--check');
 for (const task of plan.tasks) {
   if (typeof task.deliverables === 'string') task.deliverables = [task.deliverables];
   assert.ok(Array.isArray(task.deliverables), `${task.id} deliverables must be an array`);
-  assert.ok(
-    Array.isArray(task.acceptance_criteria),
-    `${task.id} acceptance_criteria must be an array`
-  );
-  assert.ok(
-    Array.isArray(task.acceptance_criteria_state),
-    `${task.id} acceptance_criteria_state must be an array`
-  );
+  assert.ok(Array.isArray(task.acceptance_criteria), `${task.id} acceptance_criteria must be an array`);
+  assert.ok(Array.isArray(task.acceptance_criteria_state), `${task.id} acceptance_criteria_state must be an array`);
   assert.equal(
     task.acceptance_criteria_state.length,
     task.acceptance_criteria.length,
@@ -70,20 +57,14 @@ for (const task of plan.tasks) {
   taskFiles.set(taskPath, renderVisualUniverseTaskCard(task));
 }
 validateVisualUniverseTaskGraph(plan.tasks);
-const normalizedPlan = await prettier.format(`${JSON.stringify(plan, null, 2)}\n`, {
-  ...prettierConfig,
-  parser: 'json',
-});
+const normalizedPlan = `${JSON.stringify(plan, null, 2)}\n`;
 const normalizedBoard = renderVisualUniverseBoard(plan.tasks);
 
 if (checkOnly) {
   assert.equal(await readText(planPath), normalizedPlan, 'task.json is not normalized');
   assert.equal(await readText(boardPath), normalizedBoard, 'TASKS.md is stale');
-  for (const [taskPath, content] of taskFiles)
-    assert.equal(await readText(taskPath), content, `${path.basename(taskPath)} is stale`);
-  console.log(
-    `Validated ${plan.tasks.length} task records, dependencies, task documents, and TASKS.md.`
-  );
+  for (const [taskPath, content] of taskFiles) assert.equal(await readText(taskPath), content, `${path.basename(taskPath)} is stale`);
+  console.log(`Validated ${plan.tasks.length} task records, dependencies, task documents, and TASKS.md.`);
 } else {
   await writeFile(planPath, normalizedPlan);
   await writeFile(boardPath, normalizedBoard);
@@ -91,7 +72,5 @@ if (checkOnly) {
     await mkdir(path.dirname(taskPath), { recursive: true });
     await writeFile(taskPath, content);
   }
-  console.log(
-    `Synchronized ${plan.tasks.length} task records, individual task documents, and TASKS.md.`
-  );
+  console.log(`Synchronized ${plan.tasks.length} task records, individual task documents, and TASKS.md.`);
 }

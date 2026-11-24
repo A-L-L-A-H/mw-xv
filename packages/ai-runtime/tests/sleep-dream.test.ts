@@ -79,13 +79,17 @@ describe('M16.01 Sleep-Dream Memory Consolidation', () => {
       );
       expect(decayedConflict).toBeDefined();
       expect(decayedConflict?.status).toBe('decayed');
-      expect(decayedConflict?.decayReason).toBe('proactive_interference_conflict');
+      expect(decayedConflict?.decayReason).toBe(
+        'proactive_interference_conflict'
+      );
       expect(decayedConflict?.supersededByMemoryId).toBe('mem-new');
       expect(decayedConflict?.originalProvenance).toBe('run:045');
       expect(decayedConflict?.originalSha256).toBe('abc123originalhash');
       expect(decayedConflict?.reversible).toBe(true);
 
-      const decayedStale = report.consolidatedMemories.find((m) => m.memoryId === 'mem-stale');
+      const decayedStale = report.consolidatedMemories.find(
+        (m) => m.memoryId === 'mem-stale'
+      );
       expect(decayedStale?.status).toBe('decayed');
       expect(decayedStale?.decayReason).toBe('stale_low_salience');
       expect(decayedStale?.reversible).toBe(true);

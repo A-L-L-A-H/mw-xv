@@ -9,10 +9,7 @@ import {
   syntheticWitnessSubjectRefSha256,
   WitnessTestimony,
 } from '@moonwitness/orm-knowledge';
-import {
-  researchWitnessHttpPlugin as researchWitnessRoutes,
-  researchPrivacyHttpPlugin as researchPrivacyRoutes,
-} from '@moonwitness/orm-knowledge';
+import { researchWitnessHttpPlugin as researchWitnessRoutes, researchPrivacyHttpPlugin as researchPrivacyRoutes } from '@moonwitness/orm-knowledge';
 
 describe('owner-scoped synthetic witness API', () => {
   let db: Knex;

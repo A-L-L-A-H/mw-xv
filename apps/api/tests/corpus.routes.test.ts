@@ -2,10 +2,7 @@ import Fastify from 'fastify';
 import path from 'node:path';
 import swagger from '@fastify/swagger';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  corpusHttpPlugin as corpusRoutes,
-  resolveCorpusDataRoot,
-} from '@moonwitness/orm-knowledge';
+import { corpusHttpPlugin as corpusRoutes, resolveCorpusDataRoot } from '@moonwitness/orm-knowledge';
 
 describe('corpus API contract', () => {
   afterEach(() => vi.unstubAllEnvs());

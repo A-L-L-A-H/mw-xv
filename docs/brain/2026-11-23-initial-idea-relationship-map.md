@@ -11,22 +11,22 @@ This document links the concepts explicitly named in the current intake to exist
 
 ## 2. Provisional relationship map
 
-| Concept / workstream                   | Primary role in the current map                    | Existing record                                           | Relationship decision                                                                              |
-| -------------------------------------- | -------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| MoonWitness                            | Product / shared experience                        | [Issue #16](https://github.com/A-L-L-A-H/mw-xv/issues/16) | Product umbrella proposal; radio, messages, community and progression remain separately scoped     |
-| MoonWitness Radio                      | Audio / radio experience                           | [Issue #16](https://github.com/A-L-L-A-H/mw-xv/issues/16) | Product sub-experience; do not create a second storage, publication or notification owner          |
-| GOD PROMISE                            | Editorial / reflection format                      | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Keep its own editorial rules and source attribution                                                |
-| ROCKSOUL                               | Personal reflection / creative framework           | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Related editorial track, but not automatically the same canon as GOD PROMISE                       |
-| Asmaul Husna                           | Religious reference dataset and visual concept map | [Issue #18](https://github.com/A-L-L-A-H/mw-xv/issues/18) | Source/reference domain; visual concepts remain editorial metadata and must not define theology    |
-| Qāf Kāf kahf Kun                       | Concept label                                      | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Link to GOD PROMISE as a recorded label only; meaning and historical development remain unresolved |
-| HISTA                                  | Framework label                                    | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Preserve as a distinct framework seed until original definition and use are sourced                |
-| ANGEL WITH SHOTGUN                     | Creative / narrative label                         | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Keep as creative work; do not convert narrative symbolism into religious doctrine                  |
-| Isa/Yesus                              | Religious / narrative topic                        | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Topic label only; source, canon and representation decisions require human review                  |
-| AEQ / BABYDOLL Service Jam             | Exploratory initiative                             | [Issue #22](https://github.com/A-L-L-A-H/mw-xv/issues/22) | Keep independent / unresolved; no automatic integration into MoonWitness                           |
-| Artwork-first pipeline                 | Cross-cutting creative workflow                    | [Issue #19](https://github.com/A-L-L-A-H/mw-xv/issues/19) | Enables reviewed visual assets; not a new creative universe or asset manager                       |
-| Evidence / source comparison           | Research method                                    | [Issue #20](https://github.com/A-L-L-A-H/mw-xv/issues/20) | Supports claims and provenance; does not decide creative canon by itself                           |
-| Desktop AI harness                     | Internal engineering tool                          | [Issue #21](https://github.com/A-L-L-A-H/mw-xv/issues/21) | Supports controlled execution; separate from user-facing story and content canon                   |
-| Extension Hub / Community / Experience | Product architecture proposal                      | [Issue #15](https://github.com/A-L-L-A-H/mw-xv/issues/15) | Parent proposal only; do not implement unapproved packages or duplicate existing owners            |
+| Concept / workstream | Primary role in the current map | Existing record | Relationship decision |
+|---|---|---|---|
+| MoonWitness | Product / shared experience | [Issue #16](https://github.com/A-L-L-A-H/mw-xv/issues/16) | Product umbrella proposal; radio, messages, community and progression remain separately scoped |
+| MoonWitness Radio | Audio / radio experience | [Issue #16](https://github.com/A-L-L-A-H/mw-xv/issues/16) | Product sub-experience; do not create a second storage, publication or notification owner |
+| GOD PROMISE | Editorial / reflection format | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Keep its own editorial rules and source attribution |
+| ROCKSOUL | Personal reflection / creative framework | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Related editorial track, but not automatically the same canon as GOD PROMISE |
+| Asmaul Husna | Religious reference dataset and visual concept map | [Issue #18](https://github.com/A-L-L-A-H/mw-xv/issues/18) | Source/reference domain; visual concepts remain editorial metadata and must not define theology |
+| Qāf Kāf kahf Kun | Concept label | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Link to GOD PROMISE as a recorded label only; meaning and historical development remain unresolved |
+| HISTA | Framework label | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Preserve as a distinct framework seed until original definition and use are sourced |
+| ANGEL WITH SHOTGUN | Creative / narrative label | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Keep as creative work; do not convert narrative symbolism into religious doctrine |
+| Isa/Yesus | Religious / narrative topic | [Issue #17](https://github.com/A-L-L-A-H/mw-xv/issues/17) | Topic label only; source, canon and representation decisions require human review |
+| AEQ / BABYDOLL Service Jam | Exploratory initiative | [Issue #22](https://github.com/A-L-L-A-H/mw-xv/issues/22) | Keep independent / unresolved; no automatic integration into MoonWitness |
+| Artwork-first pipeline | Cross-cutting creative workflow | [Issue #19](https://github.com/A-L-L-A-H/mw-xv/issues/19) | Enables reviewed visual assets; not a new creative universe or asset manager |
+| Evidence / source comparison | Research method | [Issue #20](https://github.com/A-L-L-A-H/mw-xv/issues/20) | Supports claims and provenance; does not decide creative canon by itself |
+| Desktop AI harness | Internal engineering tool | [Issue #21](https://github.com/A-L-L-A-H/mw-xv/issues/21) | Supports controlled execution; separate from user-facing story and content canon |
+| Extension Hub / Community / Experience | Product architecture proposal | [Issue #15](https://github.com/A-L-L-A-H/mw-xv/issues/15) | Parent proposal only; do not implement unapproved packages or duplicate existing owners |
 
 ## 3. Existing system ownership to reuse
 
@@ -54,7 +54,6 @@ This is a reuse map derived from current MW-XV proposal/documentation; each deta
 ## 5. Existing TaskOS dependencies and gaps
 
 Existing TaskOS items already cover much of the underlying infrastructure:
-
 - `K5-001` — local-only memory/archive ingestion manifest (recorded as done).
 - `K5-002` — privacy redaction, revocation and retention controls (recorded as doing).
 - `K5-003` — original/correction/provenance domain (recorded as doing).
@@ -81,6 +80,7 @@ No new GitHub issue is created by this initial map. Existing issues #15–#22 al
 
 **Next valid step:** source-by-source intake and evidence-backed triage. Do not mark the wider archive complete on the basis of this map.
 
+
 ## 8. Existing story, character and canon archive — reuse, do not recreate
 
 The following public research documents already exist in the target. They are valuable source maps, but their own status warnings must travel with every downstream record:
@@ -98,7 +98,6 @@ The following public research documents already exist in the target. They are va
 ### Story structure already documented
 
 The public narrative source records:
-
 - A 99-chapter V10 editorial index and a 16-part V10.1 expanded companion.
 - MoonWitness II as a story / witness platform concept with the sequence `CAPTURE → CONNECT → WITNESS → UNDERSTAND → PRESERVE → PROMOTE → MOVE FORWARD`.
 - Thirteen named functions: Storytelling, Exposure, Change Advisory Board, Chasing Heart, Lovestruck, Breath Electric, Seduction, Fault Lines, Villain of the Story, Witness Archive, Sanity’s Last Breath, Past Presence and Promoting.
@@ -115,7 +114,6 @@ Use `UNKNOWN` / `UNRESOLVED` when identity is not evidenced. Keep persona, alias
 ### Existing unresolved continuity and source gaps
 
 The V10 recovery-gap register already lists, among others:
-
 - `00-MAIN GOD PROMISE` versus ROCKSOUL as distinct source leads requiring original-source recovery.
 - World Patch #014 wording conflict: FAMILY WITHOUT FEAR versus THE WRONG WAY / HELLROAD.
 - The Batteries four books and NPD 24:27 / 24:37 / 25:50 source and page-order gaps.
@@ -129,7 +127,6 @@ Preserve the gap register as a review queue. Do not convert it into new duplicat
 ### Religious reference identity
 
 The existing identity contract differentiates:
-
 - `RevelationIdentity` — named revelation identity;
 - `TextualWitness` — a specific source-backed textual witness;
 - `Canon` — a tradition-scoped canon / collection classification;
@@ -141,6 +138,7 @@ These are not interchangeable. Canon membership does not prove revelation identi
 
 No second Story Bible, Character Bible or canon database is created here. The files above remain the source-backed public narrative archive. The new intake and this map act only as a navigation layer connecting current user-provided concepts to the existing evidence and unresolved gaps.
 
+
 ## 9. Backlog and TaskOS snapshot — 2026-11-23
 
 This is a point-in-time read-only audit; it is not a replacement lifecycle registry.
@@ -148,7 +146,6 @@ This is a point-in-time read-only audit; it is not a replacement lifecycle regis
 ### TaskOS
 
 The canonical `docs/tasks/tasks.json` was read and parsed:
-
 - 636 task records, 636 unique task codes, zero duplicate codes.
 - Status distribution: 468 `done`, 49 `doing`, 97 `todo`, 22 `blocked`.
 - Source groups: roadmap 239; audit 23; WhatsApp 112; archived open MW 7; AI Corporation PR lifecycle 14; Desktop 128; Evolution 4; Visual Universe 109.
@@ -160,10 +157,10 @@ TaskOS README snapshot has an internal documentation inconsistency: its current-
 
 A paginated all-state audit of `/issues` filtered out pull-request objects, as required by the issue-sync contract:
 
-| Object type                                   | Total | Open | Closed |
-| --------------------------------------------- | ----: | ---: | -----: |
-| GitHub Issues                                 |   146 |   51 |     95 |
-| Pull Requests returned by the Issues endpoint |    26 |    2 |     24 |
+| Object type | Total | Open | Closed |
+|---|---:|---:|---:|
+| GitHub Issues | 146 | 51 | 95 |
+| Pull Requests returned by the Issues endpoint | 26 | 2 | 24 |
 
 Among the 146 issues, 23 contain a TaskOS managed marker. All 23 marker identities are unique; no duplicate TaskOS markers were detected in the returned issue set.
 
@@ -172,6 +169,7 @@ Issues #15–#22 and #27 are still open. They already cover the expansion bounda
 ### Promotion and verification boundary
 
 The `dev` branch contains the three new archive / inventory documents and their validation edits. The automation opened or refreshed [PR #81](https://github.com/A-L-L-A-H/mw-xv/pull/81), targeting `main`; it remains open and unmerged. Its diff includes a wider pre-existing development batch, not only this archive documentation. The latest exact-SHA CI and documentation checks were still pending when inspected. No successful merge, release or deployment is claimed.
+
 
 ## 10. Canonical archive navigation
 

@@ -102,18 +102,10 @@ describe('workflowHttpPlugin saga and quorum routes (INV-014)', () => {
     const harness = createHarness();
     await harness.init();
 
-    const res1 = await harness.invokePost(
-      '/api/workflow/saga/plan',
-      {},
-      { userId: 1, role: 'user' }
-    );
+    const res1 = await harness.invokePost('/api/workflow/saga/plan', {}, { userId: 1, role: 'user' });
     expect(res1.statusCode).toBe(403);
 
-    const res2 = await harness.invokePost(
-      '/api/workflow/quorum/evaluate',
-      {},
-      { userId: 1, role: 'user' }
-    );
+    const res2 = await harness.invokePost('/api/workflow/quorum/evaluate', {}, { userId: 1, role: 'user' });
     expect(res2.statusCode).toBe(403);
   });
 
@@ -145,11 +137,7 @@ describe('workflowHttpPlugin saga and quorum routes (INV-014)', () => {
       };
     };
     expect(body.success).toBe(true);
-    expect(body.data.executionOrder).toEqual([
-      'provision_nas',
-      'allocate_ip',
-      'send_welcome_email',
-    ]);
+    expect(body.data.executionOrder).toEqual(['provision_nas', 'allocate_ip', 'send_welcome_email']);
     expect(body.data.stepCount).toBe(3);
     expect(body.data.compensationPlan).toHaveLength(3);
   });

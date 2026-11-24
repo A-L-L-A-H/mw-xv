@@ -35,12 +35,7 @@ describe('Quote-to-Order Pricing Compiler', () => {
       quoteDiscountCents: 10_000, // allocated proportionally across 190_000 and 95_000 (2:1)
       taxRules: [
         { jurisdiction: 'US-CA-STATE', rateBps: 725, appliesToCategories: ['saas'] },
-        {
-          jurisdiction: 'US-CA-LOCAL',
-          rateBps: 100,
-          compound: true,
-          appliesToCategories: ['saas'],
-        },
+        { jurisdiction: 'US-CA-LOCAL', rateBps: 100, compound: true, appliesToCategories: ['saas'] },
       ],
       minGrossMarginBps: 5000,
     });

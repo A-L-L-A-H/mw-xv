@@ -32,160 +32,25 @@ export interface PSAKAccount {
 export const PSAK_CHART_OF_ACCOUNTS = new Map<string, PSAKAccount>([
   ['1101', { code: '1101', name: 'Kas', name_id: 'Kas', type: 'asset', isActive: true }],
   ['1102', { code: '1102', name: 'Bank', name_id: 'Bank', type: 'asset', isActive: true }],
-  [
-    '1200',
-    {
-      code: '1200',
-      name: 'Piutang Usaha',
-      name_id: 'Piutang Usaha',
-      type: 'asset',
-      isActive: true,
-    },
-  ],
-  [
-    '1300',
-    { code: '1300', name: 'Persediaan', name_id: 'Persediaan', type: 'asset', isActive: true },
-  ],
-  [
-    '1400',
-    { code: '1400', name: 'Aset Tetap', name_id: 'Aset Tetap', type: 'asset', isActive: true },
-  ],
-  [
-    '1500',
-    {
-      code: '1500',
-      name: 'Aset Tidak Berwujud',
-      name_id: 'Aset Tidak Berwujud',
-      type: 'asset',
-      isActive: true,
-    },
-  ],
-  [
-    '2000',
-    {
-      code: '2000',
-      name: 'Hutang Usaha',
-      name_id: 'Hutang Usaha',
-      type: 'liability',
-      isActive: true,
-    },
-  ],
-  [
-    '2100',
-    {
-      code: '2100',
-      name: 'Hutang Pajak',
-      name_id: 'Hutang Pajak',
-      type: 'liability',
-      isActive: true,
-    },
-  ],
-  [
-    '2200',
-    {
-      code: '2200',
-      name: 'Biaya Yang Masih Harus Dibayar',
-      name_id: 'Biaya Yang Masih Harus Dibayar',
-      type: 'liability',
-      isActive: true,
-    },
-  ],
-  [
-    '2300',
-    {
-      code: '2300',
-      name: 'Hutang Jangka Panjang',
-      name_id: 'Hutang Jangka Panjang',
-      type: 'liability',
-      isActive: true,
-    },
-  ],
-  [
-    '3000',
-    {
-      code: '3000',
-      name: 'Modal Disetor',
-      name_id: 'Modal Disetor',
-      type: 'equity',
-      isActive: true,
-    },
-  ],
-  [
-    '3100',
-    { code: '3100', name: 'Laba Ditahan', name_id: 'Laba Ditahan', type: 'equity', isActive: true },
-  ],
-  [
-    '4101',
-    { code: '4101', name: 'Penjualan', name_id: 'Penjualan', type: 'revenue', isActive: true },
-  ],
-  [
-    '4102',
-    {
-      code: '4102',
-      name: 'Pendapatan Jasa',
-      name_id: 'Pendapatan Jasa',
-      type: 'revenue',
-      isActive: true,
-    },
-  ],
-  [
-    '4200',
-    {
-      code: '4200',
-      name: 'Pendapatan Lain-lain',
-      name_id: 'Pendapatan Lain-lain',
-      type: 'revenue',
-      isActive: true,
-    },
-  ],
-  [
-    '5101',
-    {
-      code: '5101',
-      name: 'Harga Pokok Penjualan',
-      name_id: 'Harga Pokok Penjualan',
-      type: 'expense',
-      isActive: true,
-    },
-  ],
-  [
-    '5102',
-    { code: '5102', name: 'Biaya Gaji', name_id: 'Biaya Gaji', type: 'expense', isActive: true },
-  ],
-  [
-    '5200',
-    { code: '5200', name: 'Biaya Sewa', name_id: 'Biaya Sewa', type: 'expense', isActive: true },
-  ],
-  [
-    '5300',
-    {
-      code: '5300',
-      name: 'Biaya Utilitas',
-      name_id: 'Biaya Utilitas',
-      type: 'expense',
-      isActive: true,
-    },
-  ],
-  [
-    '5400',
-    {
-      code: '5400',
-      name: 'Biaya Penyusutan',
-      name_id: 'Biaya Penyusutan',
-      type: 'expense',
-      isActive: true,
-    },
-  ],
-  [
-    '6101',
-    {
-      code: '6101',
-      name: 'Biaya Administrasi',
-      name_id: 'Biaya Administrasi',
-      type: 'expense',
-      isActive: true,
-    },
-  ],
+  ['1200', { code: '1200', name: 'Piutang Usaha', name_id: 'Piutang Usaha', type: 'asset', isActive: true }],
+  ['1300', { code: '1300', name: 'Persediaan', name_id: 'Persediaan', type: 'asset', isActive: true }],
+  ['1400', { code: '1400', name: 'Aset Tetap', name_id: 'Aset Tetap', type: 'asset', isActive: true }],
+  ['1500', { code: '1500', name: 'Aset Tidak Berwujud', name_id: 'Aset Tidak Berwujud', type: 'asset', isActive: true }],
+  ['2000', { code: '2000', name: 'Hutang Usaha', name_id: 'Hutang Usaha', type: 'liability', isActive: true }],
+  ['2100', { code: '2100', name: 'Hutang Pajak', name_id: 'Hutang Pajak', type: 'liability', isActive: true }],
+  ['2200', { code: '2200', name: 'Biaya Yang Masih Harus Dibayar', name_id: 'Biaya Yang Masih Harus Dibayar', type: 'liability', isActive: true }],
+  ['2300', { code: '2300', name: 'Hutang Jangka Panjang', name_id: 'Hutang Jangka Panjang', type: 'liability', isActive: true }],
+  ['3000', { code: '3000', name: 'Modal Disetor', name_id: 'Modal Disetor', type: 'equity', isActive: true }],
+  ['3100', { code: '3100', name: 'Laba Ditahan', name_id: 'Laba Ditahan', type: 'equity', isActive: true }],
+  ['4101', { code: '4101', name: 'Penjualan', name_id: 'Penjualan', type: 'revenue', isActive: true }],
+  ['4102', { code: '4102', name: 'Pendapatan Jasa', name_id: 'Pendapatan Jasa', type: 'revenue', isActive: true }],
+  ['4200', { code: '4200', name: 'Pendapatan Lain-lain', name_id: 'Pendapatan Lain-lain', type: 'revenue', isActive: true }],
+  ['5101', { code: '5101', name: 'Harga Pokok Penjualan', name_id: 'Harga Pokok Penjualan', type: 'expense', isActive: true }],
+  ['5102', { code: '5102', name: 'Biaya Gaji', name_id: 'Biaya Gaji', type: 'expense', isActive: true }],
+  ['5200', { code: '5200', name: 'Biaya Sewa', name_id: 'Biaya Sewa', type: 'expense', isActive: true }],
+  ['5300', { code: '5300', name: 'Biaya Utilitas', name_id: 'Biaya Utilitas', type: 'expense', isActive: true }],
+  ['5400', { code: '5400', name: 'Biaya Penyusutan', name_id: 'Biaya Penyusutan', type: 'expense', isActive: true }],
+  ['6101', { code: '6101', name: 'Biaya Administrasi', name_id: 'Biaya Administrasi', type: 'expense', isActive: true }],
 ]);
 
 export function validateJournalEntry(entry: JournalEntry): { valid: boolean; errors: string[] } {
@@ -193,10 +58,8 @@ export function validateJournalEntry(entry: JournalEntry): { valid: boolean; err
 
   if (!entry.id) errors.push('Journal entry missing id');
   if (!entry.date) errors.push('Journal entry missing date');
-  if (!entry.lines || entry.lines.length === 0)
-    errors.push('Journal entry must have at least one line');
-  if (entry.lines.length < 2)
-    errors.push('Journal entry must have at least two lines for double-entry');
+  if (!entry.lines || entry.lines.length === 0) errors.push('Journal entry must have at least one line');
+  if (entry.lines.length < 2) errors.push('Journal entry must have at least two lines for double-entry');
 
   let totalDebit = 0;
   let totalCredit = 0;
@@ -205,10 +68,8 @@ export function validateJournalEntry(entry: JournalEntry): { valid: boolean; err
     if (!line.accountCode) errors.push('Line missing accountCode');
     if (line.debit < 0) errors.push(`Negative debit on account ${line.accountCode}`);
     if (line.credit < 0) errors.push(`Negative credit on account ${line.accountCode}`);
-    if (line.debit > 0 && line.credit > 0)
-      errors.push(`Line ${line.accountCode} has both debit and credit`);
-    if (line.debit === 0 && line.credit === 0)
-      errors.push(`Line ${line.accountCode} has zero amount`);
+    if (line.debit > 0 && line.credit > 0) errors.push(`Line ${line.accountCode} has both debit and credit`);
+    if (line.debit === 0 && line.credit === 0) errors.push(`Line ${line.accountCode} has zero amount`);
 
     totalDebit += line.debit;
     totalCredit += line.credit;
@@ -219,9 +80,7 @@ export function validateJournalEntry(entry: JournalEntry): { valid: boolean; err
   }
 
   if (Math.abs(totalDebit - totalCredit) > 0.01) {
-    errors.push(
-      `Debit/Credit imbalance: debit=${totalDebit}, credit=${totalCredit}, diff=${Math.abs(totalDebit - totalCredit)}`
-    );
+    errors.push(`Debit/Credit imbalance: debit=${totalDebit}, credit=${totalCredit}, diff=${Math.abs(totalDebit - totalCredit)}`);
   }
 
   return { valid: errors.length === 0, errors };
@@ -246,9 +105,7 @@ export function exportToAccurateFormat(entry: JournalEntry): string {
     ].join(',');
   });
 
-  const header = [
-    'Journal Entry,JournalNo,AccountCode,AccountName,Debit,Credit,Description,CostCenter,Project',
-  ];
+  const header = ['Journal Entry,JournalNo,AccountCode,AccountName,Debit,Credit,Description,CostCenter,Project'];
   return [...header, ...lines].join('\n');
 }
 
@@ -402,10 +259,7 @@ export function importFromSAPFormat(text: string): JournalEntry {
   };
 }
 
-export function importJournalEntry(
-  text: string,
-  format: 'accurate' | 'odoo' | 'sap'
-): JournalEntry {
+export function importJournalEntry(text: string, format: 'accurate' | 'odoo' | 'sap'): JournalEntry {
   switch (format) {
     case 'accurate':
       return importFromAccurateFormat(text);
@@ -429,25 +283,24 @@ export const ErpLedgerConnector = defineModel('integration.erp_ledger_connector'
     chart_of_accounts: fields.text({ required: true, default: '[]' }),
     enabled: fields.boolean({ required: true, default: false }),
     last_sync_at: fields.string(),
-    sync_status: fields.enum(['idle', 'syncing', 'success', 'error'], {
-      required: true,
-      default: 'idle',
-    }),
+    sync_status: fields.enum(['idle', 'syncing', 'success', 'error'], { required: true, default: 'idle' }),
     last_error: fields.text(),
   },
 });
 
-export function buildJournalEntryFromTransaction(transaction: {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  debitAccount: string;
-  creditAccount: string;
-  costCenter?: string;
-  project?: string;
-  reference?: string;
-}): JournalEntry {
+export function buildJournalEntryFromTransaction(
+  transaction: {
+    id: string;
+    date: string;
+    description: string;
+    amount: number;
+    debitAccount: string;
+    creditAccount: string;
+    costCenter?: string;
+    project?: string;
+    reference?: string;
+  }
+): JournalEntry {
   return {
     id: transaction.id,
     date: transaction.date,

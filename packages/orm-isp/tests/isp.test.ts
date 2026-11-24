@@ -15,11 +15,7 @@ import { manifest as projectManifest } from '@moonwitness/orm-project';
 import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
 import { manifest as crmManifest } from '@moonwitness/orm-crm';
 import { manifest as salesManifest } from '@moonwitness/orm-sales';
-import {
-  manifest as subscriptionManifest,
-  Subscription,
-  SubscriptionInvoiceLine,
-} from '@moonwitness/orm-subscription';
+import { manifest as subscriptionManifest, Subscription, SubscriptionInvoiceLine } from '@moonwitness/orm-subscription';
 import { AuditLog } from '@moonwitness/orm-base';
 import { Cron, enqueueJob, jobsManifest, runOneJob } from '@moonwitness/jobs';
 import {
@@ -130,7 +126,7 @@ describe('@moonwitness/orm-isp addon', () => {
 
     it('returns explicit adminToken verbatim', () => {
       expect(resolveIspAdminToken({ adminToken: '  explicit-token  ' })).toBe('explicit-token');
-      expect(resolveIspAdminToken({ adminToken: 'x', jwtSecret: 'ignored' })).toBe('x');
+expect(resolveIspAdminToken({ adminToken: 'x', jwtSecret: 'ignored' })).toBe('x');
     });
 
     it('derives an HMAC-SHA256 token from the jwt secret matching the ISP auth domain', () => {
@@ -246,14 +242,10 @@ describe('@moonwitness/orm-isp addon', () => {
               return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
             }
             if (url.endsWith('/api/clients')) {
-              return new Response(JSON.stringify({ id: 9, name: 'MikroTik Core' }), {
-                status: 200,
-              });
+              return new Response(JSON.stringify({ id: 9, name: 'MikroTik Core' }), { status: 200 });
             }
             if (url.includes('/rotate-secret')) {
-              return new Response(JSON.stringify({ id: 9, name: 'MikroTik Core' }), {
-                status: 200,
-              });
+              return new Response(JSON.stringify({ id: 9, name: 'MikroTik Core' }), { status: 200 });
             }
             if (url.endsWith('/api/subscribers')) {
               return new Response(JSON.stringify({ id: 1, username: 'acme-fiber-01' }), {
@@ -476,10 +468,7 @@ describe('@moonwitness/orm-isp addon', () => {
 
       const res = await app.inject({ method: 'POST', url: '/api/isp/outbox/process' });
       expect(res.statusCode).toBe(200);
-      expect(res.json()).toMatchObject({
-        success: true,
-        data: { processed: 2, sent: 2, failed: 0 },
-      });
+      expect(res.json()).toMatchObject({ success: true, data: { processed: 2, sent: 2, failed: 0 } });
 
       const rows = await ISPRadiusOutbox.query().orderBy('id', 'asc');
       for (const row of rows) {
@@ -545,7 +534,7 @@ describe('@moonwitness/orm-isp addon', () => {
       expect(selectHealthyNas([probedPrimary!, probedBackup!])).toBeUndefined();
 
       // Restore primary health through the runtime-driven probe path.
-      requests.length = 0;
+      (requests.length = 0);
       await app.close();
       const recoveryApp = Fastify({ logger: false });
       recoveryApp.addHook('onRequest', async (req) => {
@@ -604,13 +593,7 @@ describe('@moonwitness/orm-isp addon', () => {
         companyId: 1,
         groupPermissions: [
           { model_name: 'isp.nas', read: true, create: false, write: true, unlink: false },
-          {
-            model_name: 'isp.radius_session',
-            read: true,
-            create: false,
-            write: true,
-            unlink: false,
-          },
+          { model_name: 'isp.radius_session', read: true, create: false, write: true, unlink: false },
         ],
       };
       const grantedSessions = await app.inject({
@@ -740,11 +723,7 @@ describe('@moonwitness/orm-isp addon', () => {
         fetchImpl: (async (input, init) => {
           const url = String(input);
           const headers = (init?.headers ?? {}) as Record<string, string>;
-          jobRequests.push({
-            url,
-            authorization: headers.authorization,
-            body: init?.body ? String(init.body) : undefined,
-          });
+          jobRequests.push({ url, authorization: headers.authorization, body: init?.body ? String(init.body) : undefined });
           if (url.endsWith('/api/sessions')) {
             return new Response(JSON.stringify(runtimeSessions), { status: 200 });
           }
@@ -766,9 +745,7 @@ describe('@moonwitness/orm-isp addon', () => {
         expect(reconcileJob).toMatchObject({ status: 'succeeded' });
         const synced = await ISPRadiusSession.query().findOne({ session_id: 'job-sess-001' });
         expect(synced).toBeDefined();
-        expect(jobRequests[0]?.authorization).toBe(
-          `Bearer ${expectedAdminToken('jobs-test-secret')}`
-        );
+        expect(jobRequests[0]?.authorization).toBe(`Bearer ${expectedAdminToken('jobs-test-secret')}`);
 
         const outboxJobId = await enqueueJob('isp.outbox.process', { companyId: 1 });
         expect(await runOneJob({ workerId: 'isp-test-worker' })).toBe(true);
@@ -782,9 +759,9 @@ describe('@moonwitness/orm-isp addon', () => {
         const nas = await ISPNAS.query().first();
         expect(nas?.health_status).toBe('healthy');
 
-        await expect(enqueueJob('isp.sessions.reconcile', { companyId: 'oops' })).rejects.toThrow(
-          'ISP job payload companyId must be a positive integer'
-        );
+        await expect(
+          enqueueJob('isp.sessions.reconcile', { companyId: 'oops' })
+        ).rejects.toThrow('ISP job payload companyId must be a positive integer');
       } finally {
         dispose();
       }
@@ -818,9 +795,7 @@ describe('@moonwitness/orm-isp addon', () => {
       expect(firstPass.every((row) => row.handler_version === 1)).toBe(true);
       expect(firstPass.every((row) => row.active === true)).toBe(true);
 
-      const originalNextRun = firstPass.find(
-        (row) => row.code === 'isp.outbox.process'
-      )?.next_run_at;
+      const originalNextRun = firstPass.find((row) => row.code === 'isp.outbox.process')?.next_run_at;
       await ensureIspCrons(db);
       const secondPass = await Cron.query().whereIn('code', [
         'isp.sessions.reconcile',
@@ -828,9 +803,9 @@ describe('@moonwitness/orm-isp addon', () => {
         'isp.nas.probe',
       ]);
       expect(secondPass).toHaveLength(3);
-      expect(secondPass.find((row) => row.code === 'isp.outbox.process')?.next_run_at).toBe(
-        originalNextRun
-      );
+      expect(
+        secondPass.find((row) => row.code === 'isp.outbox.process')?.next_run_at
+      ).toBe(originalNextRun);
     });
   });
 });

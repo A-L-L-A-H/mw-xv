@@ -34,14 +34,7 @@
     },
     "test": {
       "dependsOn": ["build"],
-      "inputs": [
-        "src/**",
-        "tests/**",
-        "test/**",
-        "package.json",
-        "tsconfig*.json",
-        "vitest.config.*"
-      ],
+      "inputs": ["src/**", "tests/**", "test/**", "package.json", "tsconfig*.json", "vitest.config.*"],
       "outputs": ["coverage/**"]
     }
   }
