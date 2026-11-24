@@ -256,6 +256,14 @@
         {
           "asset": "animation/crew-01-idle/crew-01-idle-frame-02.svg",
           "durationMs": 720
+        },
+        {
+          "asset": "animation/crew-01-idle/crew-01-idle-frame-03.svg",
+          "durationMs": 720
+        },
+        {
+          "asset": "animation/crew-01-idle/crew-01-idle-frame-04.svg",
+          "durationMs": 720
         }
       ]
     }
