@@ -1,4 +1,5 @@
 ﻿import type { Knex } from 'knex';
+import { countValue } from '@moonwitness/types';
 import { SignalSource, type SignalSourceKind } from './models.js';
 import {
   resolveInsertedId,
@@ -85,16 +86,6 @@ export const SIGNAL_SOURCE_SEEDS: readonly SignalSourceSeed[] = [
 
 export const SIGNAL_SOURCE_SEED_COUNT = SIGNAL_SOURCE_SEEDS.length;
 
-function parseCount(value: unknown): number {
-  return (
-    Number(
-      typeof value === 'object' && value !== null && 'count' in value
-        ? (value as { count: unknown }).count
-        : value
-    ) || 0
-  );
-}
-
 export async function seedSignalSources(
   db: Knex,
   options: { readonly companyId?: number } = {}
@@ -127,7 +118,7 @@ export async function seedSignalSources(
   }
 
   const total = await db(SignalSource.tableName).count({ count: '*' }).first();
-  return { inserted, total: parseCount(total) };
+  return { inserted, total: countValue(total) };
 }
 
 export const seedManifest: AddonSeedManifest = {

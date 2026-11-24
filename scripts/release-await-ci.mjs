@@ -2,10 +2,8 @@ import process from 'node:process';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { ghJson } from './lib/gh-cli.mjs';
 
-const execFileAsync = promisify(execFile);
 const fullShaPattern = /^[a-f0-9]{40}$/u;
 
 /**
@@ -85,15 +83,6 @@ export function evaluateAwaitEvidence(evidence, options) {
   return { done: true, runId: run.id };
 }
 
-async function ghJson(args, env) {
-  const { stdout } = await execFileAsync('gh', ['api', ...args], {
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-    env: { ...process.env, ...env },
-  });
-  return JSON.parse(stdout);
-}
-
 /** @param {{read:(kind:string)=>Promise<unknown>, sleep?:(ms:number)=>Promise<void>}} io */
 export async function awaitExactCi(options, io) {
   const deadline = Date.now() + options.timeoutSeconds * 1000;
@@ -127,7 +116,7 @@ export function createGithubReader(repository, sha, env = {}) {
             '-F',
             'per_page=100',
           ],
-          env
+          { env }
         ).then((pages) =>
           (Array.isArray(pages) ? pages : [pages]).flatMap(
             (page) => page?.workflow_runs ?? page ?? []
@@ -144,7 +133,7 @@ export function createGithubReader(repository, sha, env = {}) {
             '-F',
             'per_page=100',
           ],
-          env
+          { env }
         ).then((pages) =>
           (Array.isArray(pages) ? pages : [pages]).flatMap((page) => page?.check_runs ?? page ?? [])
         );

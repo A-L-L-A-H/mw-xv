@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { lookup } from 'node:dns/promises';
 import type { LookupAddress } from 'node:dns';
 import type { Knex } from 'knex';
-import { isRecord } from '@moonwitness/types';
+import { isPositiveId, isRecord } from '@moonwitness/types';
 import { OutboxEvent, PermanentJobError, registerOutboxConsumer } from '@moonwitness/jobs';
 import { WebhookDelivery, WebhookEndpoint } from './models.js';
 import { sendSignedRequest } from './transport.js';
@@ -50,10 +50,6 @@ interface EndpointRecord {
   event_types: string;
   secret_ref: string;
   enabled: boolean;
-}
-
-function isPositiveId(value: unknown): value is number {
-  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
 }
 
 function parseDispatchPayload(value: unknown): DispatchPayload {

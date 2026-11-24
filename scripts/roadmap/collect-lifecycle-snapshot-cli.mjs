@@ -1,10 +1,10 @@
-import { execFile, execFileSync } from 'node:child_process';
-import { promisify } from 'node:util';
+import { execFileSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { ghJson as runGhJson } from '../lib/gh-cli.mjs';
 import {
   collectLifecycleSnapshot,
   completedExactDevPullRequestTechnicalGate,
@@ -15,7 +15,10 @@ import {
 } from './collect-lifecycle-snapshot.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const execFileAsync = promisify(execFile);
+const ghCliOptions = {
+  cwd: repositoryRoot,
+  maxBuffer: 32 * 1024 * 1024,
+};
 
 function git(args) {
   return execFileSync('git', args, { cwd: repositoryRoot, encoding: 'utf8' }).trim();
@@ -39,28 +42,12 @@ export async function withGitHubReadRetry(
   }
 }
 
-async function ghJson(args) {
-  const { stdout } = await withGitHubReadRetry(() =>
-    execFileAsync('gh', ['api', '--paginate', '--slurp', ...args], {
-      cwd: repositoryRoot,
-      encoding: 'utf8',
-      env: process.env,
-      maxBuffer: 32 * 1024 * 1024,
-    })
-  );
-  return JSON.parse(stdout);
+function ghJson(args) {
+  return withGitHubReadRetry(() => runGhJson(args, { ...ghCliOptions, paginate: true }));
 }
 
-async function ghJsonObject(args) {
-  const { stdout } = await withGitHubReadRetry(() =>
-    execFileAsync('gh', ['api', ...args], {
-      cwd: repositoryRoot,
-      encoding: 'utf8',
-      env: process.env,
-      maxBuffer: 32 * 1024 * 1024,
-    })
-  );
-  return JSON.parse(stdout);
+function ghJsonObject(args) {
+  return withGitHubReadRetry(() => runGhJson(args, ghCliOptions));
 }
 
 export async function readCurrentDevPullRequestTechnicalGate({

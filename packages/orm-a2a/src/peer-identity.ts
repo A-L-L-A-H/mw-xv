@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { createRedactor } from '@moonwitness/ai-runtime';
+import { assertNonEmpty, assertPositiveInteger } from '@moonwitness/types';
 
 /**
  * CF-017 (issue #71): explicit per-agent A2A peer key identity.
@@ -109,18 +110,6 @@ export interface A2aPeerIdentityResolveInput {
 
 interface StoredPeerKey extends A2aPeerIdentitySnapshotKey {
   readonly secret: string;
-}
-
-function assertNonEmpty(value: string, label: string): void {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new Error(`${label} must be a non-empty string`);
-  }
-}
-
-function assertPositiveInteger(value: number, label: string): void {
-  if (!Number.isSafeInteger(value) || value < 1) {
-    throw new Error(`${label} must be a positive safe integer`);
-  }
 }
 
 export function fingerprintPeerKeySecret(secret: string): string {

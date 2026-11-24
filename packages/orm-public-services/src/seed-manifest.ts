@@ -1,8 +1,5 @@
 import type { AddonSeedManifest, SeedContext, SeedResult } from '@moonwitness/orm-base';
-import { createHash } from 'node:crypto';
 import type { Knex } from 'knex';
-
-const SALT = 'mw-public-services-2026';
 
 async function seedPublicServices(ctx: SeedContext): Promise<SeedResult> {
   const db = ctx.db as Knex;

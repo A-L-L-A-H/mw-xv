@@ -1,10 +1,4 @@
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-export function isPositiveId(value: unknown): value is number {
-  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
-}
+export { isPositiveId, isRecord } from '@moonwitness/types';
 
 const JOB_NAME_PATTERN = /^[a-z][a-z0-9_.-]{2,127}$/;
 

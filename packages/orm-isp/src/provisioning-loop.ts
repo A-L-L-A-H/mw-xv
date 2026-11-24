@@ -1,4 +1,3 @@
-const SUBSCRIBER_SECRET = 'fttx-001-radius-secret';
 import { Subscription, SubscriptionInvoiceLine } from '@moonwitness/orm-subscription';
 import { DEFAULT_ISP_SERVICE_URL } from '@moonwitness/types';
 import { ISPNAS, ISPRadiusOutbox, ISPRadiusSession, ISPSubscriber } from './models/index.js';

@@ -1,9 +1,8 @@
-import type { Knex } from 'knex';
 import {
+  requireAddonDb,
   requireAuth,
   type AddonHttpPlugin,
   type AddonHttpReply,
-  type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
 import {
@@ -18,13 +17,6 @@ import {
   type MaturityAssessmentInput,
   type RiskScoreInput,
 } from './compliance-engine.js';
-
-function requireDb(req: AddonHttpRequestBase): Knex {
-  const app = req as unknown as { server?: { db?: Knex } };
-  const db = app.server?.db;
-  if (!db) throw new Error('Database not available on request context');
-  return db;
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -54,7 +46,7 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     try {
-      const result = await mapFrameworks(requireDb(req), {
+      const result = await mapFrameworks(requireAddonDb(req), {
         companyId: auth.companyId,
         frameworkIds: frameworkIds as string[],
         includeControls: Boolean(includeControls),
@@ -110,7 +102,7 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
         automationLevel: automationLevel as ControlTestInput['automationLevel'],
       };
 
-      const result = await testControl(requireDb(req), input);
+      const result = await testControl(requireAddonDb(req), input);
       return reply.code(200).send({ success: true, data: result });
     } catch (err: unknown) {
       return reply.code(400).send({ success: false, error: (err as Error).message });
@@ -187,7 +179,7 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
         verifyExpiry: verifyExpiry === true,
       };
 
-      const result = await verifyEvidence(requireDb(req), input);
+      const result = await verifyEvidence(requireAddonDb(req), input);
       return reply.code(200).send({ success: true, data: result });
     } catch (err: unknown) {
       return reply.code(400).send({ success: false, error: (err as Error).message });
@@ -238,7 +230,7 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
         lowFindings: Number(lowFindings ?? 0),
       };
 
-      const result = await assessComplianceMaturity(requireDb(req), input);
+      const result = await assessComplianceMaturity(requireAddonDb(req), input);
       return reply.code(200).send({ success: true, data: result });
     } catch (err: unknown) {
       return reply.code(400).send({ success: false, error: (err as Error).message });
@@ -267,7 +259,7 @@ export const complianceHttpPlugin: AddonHttpPlugin = async (app) => {
     } = req.body;
 
     try {
-      const result = await trackRemediations(requireDb(req), {
+      const result = await trackRemediations(requireAddonDb(req), {
         companyId: auth.companyId,
         includeOverdue: includeOverdue === true,
         includePending: includePending === true,

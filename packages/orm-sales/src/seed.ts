@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import { countValue } from '@moonwitness/types';
 import { SaleOrder, SaleOrderLine, SaleOrderState, SaleOrderTagLink } from './models/index.js';
 import { Partner, resolveInsertedId } from '@moonwitness/orm-base';
 
@@ -309,13 +310,6 @@ export function buildSalesInitialSeed(): SalesInitialSeed {
   return bundle;
 }
 
-function parseCount(value: unknown): number {
-  return (
-    Number(typeof value === 'object' && value !== null && 'count' in value ? value.count : value) ||
-    0
-  );
-}
-
 export async function seedSalesInitialData(
   db: Knex,
   options: SeedSalesInitialDataOptions = {}
@@ -492,10 +486,10 @@ export async function seedSalesInitialData(
 
   return {
     companyId,
-    statesTotal: parseCount(statesTotal),
-    ordersTotal: parseCount(ordersTotal),
-    linesTotal: parseCount(linesTotal),
-    tagLinksTotal: parseCount(tagLinksTotal),
+    statesTotal: countValue(statesTotal),
+    ordersTotal: countValue(ordersTotal),
+    linesTotal: countValue(linesTotal),
+    tagLinksTotal: countValue(tagLinksTotal),
     insertedStates,
     insertedOrders,
     insertedLines,

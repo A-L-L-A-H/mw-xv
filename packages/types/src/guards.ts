@@ -76,3 +76,22 @@ export function countValue(row: unknown): number {
   const parsed = parseInteger(raw);
   return parsed !== null && parsed >= 0 ? parsed : 0;
 }
+
+/** Returns true if value is a positive safe integer ID (> 0). */
+export function isPositiveId(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
+}
+
+/** Asserts that value is a non-empty, non-whitespace string. */
+export function assertNonEmpty(value: unknown, label: string): asserts value is string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`${label} must be a non-empty string`);
+  }
+}
+
+/** Asserts that value is a positive safe integer (>= 1). */
+export function assertPositiveInteger(value: unknown, label: string): asserts value is number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1) {
+    throw new Error(`${label} must be a positive safe integer`);
+  }
+}

@@ -1,4 +1,5 @@
 import { evaluateTaskLifecycle } from './lifecycle.mjs';
+import { isFullSha } from './sha.mjs';
 
 const maximumSnapshotAgeMs = 5 * 60 * 1000;
 
@@ -6,10 +7,6 @@ export function assertLifecycleSnapshotFresh(generatedAt, now = Date.now()) {
   const timestamp = Date.parse(generatedAt);
   if (!Number.isFinite(timestamp) || timestamp > now || now - timestamp > maximumSnapshotAgeMs)
     throw new Error('Lifecycle snapshot must be no more than five minutes old.');
-}
-
-function isFullSha(value) {
-  return typeof value === 'string' && /^[a-f0-9]{40}$/u.test(value);
 }
 
 function findIssueState(issues, taskId, repositoryId) {

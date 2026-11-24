@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Knex } from 'knex';
-import { createHash } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import { checkRateLimit, hashIp, rollupMetric } from '../src/http-plugin.js';
-
-const SALT = 'mw-public-services-2026';
 
 type SqliteKnex = Knex & { destroy(): Promise<void> };
 
@@ -40,17 +38,41 @@ async function createDb(): Promise<SqliteKnex> {
 }
 
 describe('hashIp (user_identifier)', () => {
-  it('produces sha256 of ip+salt', () => {
-    const expected = createHash('sha256')
-      .update('1.2.3.4' + SALT)
-      .digest('hex');
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  it('produces keyed HMAC-SHA256 using configured environment salt', () => {
+    process.env.PUBLIC_SERVICES_IP_SALT = 'test-configured-salt';
+    const expected = createHmac('sha256', 'test-configured-salt').update('1.2.3.4').digest('hex');
     expect(hashIp('1.2.3.4')).toBe(expected);
   });
 
-  it('is deterministic and anonymizing', () => {
+  it('produces keyed HMAC-SHA256 when explicit salt is provided', () => {
+    const expected = createHmac('sha256', 'explicit-salt').update('1.2.3.4').digest('hex');
+    expect(hashIp('1.2.3.4', 'explicit-salt')).toBe(expected);
+  });
+
+  it('is deterministic and anonymizing with ephemeral fallback', () => {
+    delete process.env.PUBLIC_SERVICES_IP_SALT;
+    delete process.env.MW_PUBLIC_SERVICES_SALT;
+    delete process.env.MW_INTERNAL_SECRET;
+    delete process.env.JWT_SECRET;
+    delete process.env.NODE_ENV;
     expect(hashIp('10.0.0.1')).toBe(hashIp('10.0.0.1'));
     expect(hashIp('10.0.0.1')).not.toBe('10.0.0.1');
     expect(hashIp('10.0.0.1')).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('fails closed in production when no salt secret is configured', () => {
+    delete process.env.PUBLIC_SERVICES_IP_SALT;
+    delete process.env.MW_PUBLIC_SERVICES_SALT;
+    delete process.env.MW_INTERNAL_SECRET;
+    delete process.env.JWT_SECRET;
+    process.env.NODE_ENV = 'production';
+    expect(() => hashIp('10.0.0.1')).toThrow(/production/);
   });
 
   it('differs per ip', () => {

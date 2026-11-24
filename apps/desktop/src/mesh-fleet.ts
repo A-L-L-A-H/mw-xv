@@ -1,6 +1,9 @@
-import { isIP } from 'node:net';
-import { PRIVATE_MESH_CIDRS, isPrivateMeshHost } from '@moonwitness/ai-runtime';
-import { AccessDeniedError, ValidationError } from '@moonwitness/types';
+import {
+  AccessDeniedError,
+  PRIVATE_MESH_CIDRS,
+  ValidationError,
+  isPrivateMeshIp as isSharedPrivateMeshIp,
+} from '@moonwitness/types';
 import { redactSensitiveText, type DesktopRiskGate } from './risk-gate.js';
 import type {
   DataClassification,
@@ -89,17 +92,12 @@ export interface MeshFleetAuthContext {
 export type MeshFetchFn = (input: string, init?: RequestInit) => Promise<Response>;
 
 /**
- * Validates that a host string is strictly a private mesh IP address.
- *
- * The allowed ranges are the canonical `PRIVATE_MESH_CIDRS` exported by
- * `@moonwitness/ai-runtime` (issue #203); this function deliberately adds no
- * local copy of the list or its matching logic. `isIP` keeps the historical
- * host-only contract (URLs and DNS names remain rejected).
+ * Validates that a host string is strictly a private mesh IP address
+ * (`PRIVATE_MESH_CIDRS` from `@moonwitness/types`). URLs, DNS names, and loopback
+ * addresses remain rejected.
  */
 export function isPrivateMeshIp(host: string): boolean {
-  const normalized = host.replace(/^\[|\]$/gu, '').trim();
-  if (isIP(normalized) === 0) return false;
-  return isPrivateMeshHost(normalized);
+  return isSharedPrivateMeshIp(host);
 }
 
 /**

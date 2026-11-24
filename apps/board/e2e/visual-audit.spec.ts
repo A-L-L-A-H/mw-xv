@@ -1,8 +1,9 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { E2E_SUPERADMIN_PASSWORD } from './constants.js';
 
 const root = path.resolve(import.meta.dirname, '../../..');
@@ -727,6 +728,44 @@ function screenshotPath(directory: string, testInfo: TestInfo, fileName: string)
 
 type ScreenshotOptions = Omit<NonNullable<Parameters<Page['screenshot']>[0]>, 'path'>;
 
+const retryableFsErrorCodes = new Set(['EBUSY', 'EPERM', 'EACCES', 'UNKNOWN']);
+
+async function writeStableScreenshot(
+  page: Page,
+  outputPath: string,
+  options: ScreenshotOptions = {}
+) {
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  const pngBuffer = await page.screenshot(options);
+  const tempPath = `${outputPath}.tmp-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  let moved = false;
+  try {
+    await writeFile(tempPath, pngBuffer);
+    // Windows intermittently holds a transient lock on overwritten PNGs (antivirus/indexer);
+    // write to a unique temp file and retry atomic rename cleanly.
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await rename(tempPath, outputPath);
+        moved = true;
+        return;
+      } catch (error) {
+        const code =
+          error && typeof error === 'object' && 'code' in error
+            ? String((error as { code?: unknown }).code)
+            : '';
+        if (attempt >= 7 || (code !== '' && !retryableFsErrorCodes.has(code))) {
+          throw error;
+        }
+        await delay(150 * (attempt + 1));
+      }
+    }
+  } finally {
+    if (!moved) {
+      await rm(tempPath, { force: true }).catch(() => undefined);
+    }
+  }
+}
+
 async function writeAuditScreenshot(
   page: Page,
   testInfo: TestInfo,
@@ -734,8 +773,7 @@ async function writeAuditScreenshot(
   options: ScreenshotOptions = {}
 ) {
   const outputPath = screenshotPath(auditDirectory, testInfo, fileName);
-  await mkdir(path.dirname(outputPath), { recursive: true });
-  await page.screenshot({ ...options, path: outputPath });
+  await writeStableScreenshot(page, outputPath, options);
 }
 
 async function writeCatalogScreenshot(
@@ -749,18 +787,7 @@ async function writeCatalogScreenshot(
   // file-lock error; assertions still run in every browser.
   if (testInfo.project.name !== 'chromium') return;
   const outputPath = screenshotPath(catalogDirectory, testInfo, fileName);
-  await mkdir(path.dirname(outputPath), { recursive: true });
-  // Windows intermittently fails the png write with a transient UNKNOWN /
-  // sharing-violation error from antivirus scanning; retry briefly.
-  for (let attempt = 0; ; attempt += 1) {
-    try {
-      await page.screenshot({ ...options, path: outputPath });
-      return;
-    } catch (error) {
-      if (attempt >= 2) throw error;
-      await page.waitForTimeout(250 * (attempt + 1));
-    }
-  }
+  await writeStableScreenshot(page, outputPath, options);
 }
 
 test('responsive screen audit: login matches the Enter the Shadow reference', async ({
@@ -1162,7 +1189,7 @@ test('responsive protected screens fit and remain accessible in both themes', as
         await expectNoHorizontalOverflow(page, label);
         if (view.name === 'list' && size.name === 'desktop-1440') {
           const tableRegion = page.getByRole('region', {
-            name: 'Partners records table',
+            name: 'Partners records table horizontal scroll',
             exact: true,
           });
           await expect(tableRegion).toBeVisible();

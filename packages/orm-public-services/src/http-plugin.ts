@@ -1,17 +1,34 @@
 import type { AddonHttpPlugin, AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
-import { createHash } from 'node:crypto';
+import { createHash, createHmac, randomBytes } from 'node:crypto';
 import type { Knex } from 'knex';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-const SALT = 'mw-public-services-2026';
+let ephemeralIpHashSecret: string | undefined;
 
-export function hashIp(ip: string): string {
-  return createHash('sha256')
-    .update(ip + SALT)
-    .digest('hex');
+function resolveIpHashSecret(): string {
+  const configured =
+    process.env.PUBLIC_SERVICES_IP_SALT?.trim() ||
+    process.env.MW_PUBLIC_SERVICES_SALT?.trim() ||
+    process.env.MW_INTERNAL_SECRET?.trim() ||
+    process.env.JWT_SECRET?.trim();
+  if (configured) {
+    return configured;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'PUBLIC_SERVICES_IP_SALT, MW_PUBLIC_SERVICES_SALT, MW_INTERNAL_SECRET, or JWT_SECRET must be configured in production'
+    );
+  }
+  ephemeralIpHashSecret ??= randomBytes(32).toString('hex');
+  return ephemeralIpHashSecret;
+}
+
+export function hashIp(ip: string, salt?: string): string {
+  const secret = salt?.trim() || resolveIpHashSecret();
+  return createHmac('sha256', secret).update(ip).digest('hex');
 }
 
 function getClientIp(req: AddonHttpRequestBase): string {

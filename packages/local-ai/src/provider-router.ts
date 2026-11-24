@@ -1,3 +1,5 @@
+import { isLoopbackEndpointUrl as isSharedLoopbackEndpointUrl } from '@moonwitness/types';
+
 export type RouterProviderKind = 'ollama' | 'lm-studio' | 'llama-cpp' | 'openai-compatible';
 export type ProviderLocality = 'local' | 'cloud';
 export type PrivacyTier = 'offline-strict' | 'hybrid';
@@ -116,23 +118,11 @@ const DEFAULT_CIRCUIT_BREAKER: CircuitBreakerConfig = {
   cooldownMs: 30_000,
 };
 
-const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
-
 export function isLoopbackEndpointUrl(endpoint: string): boolean {
-  try {
-    const parsed = new URL(endpoint);
-    const host = parsed.hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-    return (
-      (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
-      parsed.username.length === 0 &&
-      parsed.password.length === 0 &&
-      parsed.search.length === 0 &&
-      parsed.hash.length === 0 &&
-      LOOPBACK_HOSTS.has(host)
-    );
-  } catch {
-    return false;
-  }
+  return isSharedLoopbackEndpointUrl(endpoint, {
+    rejectQuery: true,
+    allowIpv4LoopbackSubnet: false,
+  });
 }
 
 export function estimatePromptTokens(prompt: string): number {

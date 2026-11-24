@@ -1,14 +1,11 @@
 import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { join, resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { ghJson } from './lib/gh-cli.mjs';
 
-const execFileAsync = promisify(execFile);
 const GOVERNANCE_CONFIG = '.github/governance/rulesets.json';
 
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -198,14 +195,6 @@ export function assertBreakGlass(env, config) {
   if (!actor || !config.breakGlassActors.includes(actor))
     throw new Error('Governance apply requires an allowlisted GOVERNANCE_ACTOR.');
   return actor;
-}
-
-async function ghJson(args) {
-  const { stdout } = await execFileAsync('gh', ['api', ...args], {
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-  });
-  return JSON.parse(stdout);
 }
 
 /** Default live adapter. Tests inject their own adapter. */

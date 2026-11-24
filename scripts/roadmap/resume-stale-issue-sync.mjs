@@ -1,13 +1,10 @@
 import { execFileSync } from 'node:child_process';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
+import { isFullSha } from './sha.mjs';
 import { taskIdPattern } from './task-ids.mjs';
 
 export const maxStaleSyncRetries = 2;
-
-function isFullSha(value) {
-  return /^[a-f0-9]{40}$/u.test(value);
-}
 
 export function parseStaleSyncTaskIds(value) {
   const taskIds = [

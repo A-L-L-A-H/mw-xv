@@ -22,6 +22,8 @@
  * public endpoint are introduced by CF-018.
  */
 
+import { assertPositiveInteger } from '@moonwitness/types';
+
 export interface A2aTransportPeerRegistration {
   /** Normalized SAN URI (preferred, e.g. `spiffe://mesh/company/7/agent/source`) or CN. */
   readonly identity: string;
@@ -229,12 +231,6 @@ export function verifyA2aTransportIdentity(
       source: 'tls_client_certificate',
     },
   };
-}
-
-function assertPositiveInteger(value: unknown, label: string): asserts value is number {
-  if (!Number.isSafeInteger(value) || (value as number) < 1) {
-    throw new Error(`${label} must be a positive safe integer`);
-  }
 }
 
 export function createA2aTransportIdentityConfigFromJson(

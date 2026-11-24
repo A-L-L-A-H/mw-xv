@@ -1,8 +1,6 @@
 import type { AddonSeedManifest, SeedContext, SeedResult } from '@moonwitness/orm-base';
 import type { Knex } from 'knex';
 
-const SALT = 'mw-ecommerce-sync-2026';
-
 async function seedEcommerceSync(ctx: SeedContext): Promise<SeedResult> {
   const db = ctx.db as Knex;
   let inserted = 0;
@@ -21,9 +19,7 @@ async function seedEcommerceSync(ctx: SeedContext): Promise<SeedResult> {
         scopes: ['read_products', 'write_products', 'read_orders', 'write_orders'],
         webhook_topics: ['orders/create', 'orders/updated', 'products/create', 'products/update'],
       },
-      credentials: {
-        access_token: 'ENCRYPTED_PLACEHOLDER',
-      },
+      credentials: null,
     },
     {
       marketplace: 'woocommerce',
@@ -34,10 +30,7 @@ async function seedEcommerceSync(ctx: SeedContext): Promise<SeedResult> {
         consumer_secret: 'cs_...',
         version: 'wc/v3',
       },
-      credentials: {
-        consumer_key: 'ENCRYPTED_PLACEHOLDER',
-        consumer_secret: 'ENCRYPTED_PLACEHOLDER',
-      },
+      credentials: null,
     },
   ];
 
@@ -48,7 +41,7 @@ async function seedEcommerceSync(ctx: SeedContext): Promise<SeedResult> {
 
     const now = new Date().toISOString();
     const configJson = JSON.stringify(mp.config);
-    const credentialsJson = JSON.stringify(mp.credentials);
+    const credentialsJson = mp.credentials ? JSON.stringify(mp.credentials) : null;
 
     if (existing) {
       await db('marketplace_connections').where({ id: existing.id }).update({

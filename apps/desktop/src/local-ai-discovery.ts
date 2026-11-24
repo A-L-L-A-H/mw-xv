@@ -1,4 +1,6 @@
-import { DEFAULT_OLLAMA_URL } from '@moonwitness/types';
+import { DEFAULT_OLLAMA_URL, isLoopbackEndpointUrl, isRecord } from '@moonwitness/types';
+
+export { isLoopbackEndpointUrl };
 
 export type LocalAiProviderKind = 'ollama' | 'lmstudio' | 'vllm';
 
@@ -68,47 +70,6 @@ export const DEFAULT_LOCAL_AI_PROVIDERS: readonly LocalAiProviderTarget[] = [
 ];
 
 const DEV_MODEL_PATTERN = /coder|code|deepseek|starcoder|codellama|devstral|qwen.*coder/iu;
-
-function isValidLoopbackIpv4(hostname: string): boolean {
-  const parts = hostname.split('.');
-  if (parts.length !== 4 || parts[0] !== '127') {
-    return false;
-  }
-  return parts.every((part) => {
-    if (!/^\d{1,3}$/u.test(part)) {
-      return false;
-    }
-    const value = Number(part);
-    return Number.isInteger(value) && value >= 0 && value <= 255;
-  });
-}
-
-export function isLoopbackEndpointUrl(rawUrl: string): boolean {
-  if (typeof rawUrl !== 'string' || rawUrl.trim().length === 0) {
-    return false;
-  }
-  let parsed: URL;
-  try {
-    parsed = new URL(rawUrl);
-  } catch {
-    return false;
-  }
-
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    return false;
-  }
-
-  const host = parsed.hostname.toLowerCase();
-  if (host === 'localhost' || host === '::1' || host === '[::1]') {
-    return true;
-  }
-
-  return isValidLoopbackIpv4(host);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function parseOllamaModels(
   payload: unknown,

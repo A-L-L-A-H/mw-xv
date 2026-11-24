@@ -1,9 +1,8 @@
-import type { Knex } from 'knex';
 import {
+  requireAddonDb,
   requireAuth,
   type AddonHttpPlugin,
   type AddonHttpReply,
-  type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
 import {
@@ -29,13 +28,6 @@ import {
   type WaqfMerkleInput,
   type WaqfMerkleResult,
 } from './sharia-engine.js';
-
-function requireDb(req: AddonHttpRequestBase): Knex {
-  const app = req as unknown as { server?: { db?: Knex } };
-  const db = app.server?.db;
-  if (!db) throw new Error('Database not available on request context');
-  return db;
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -124,7 +116,7 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
         zakatRateBps: zakatRateBps !== undefined ? Number(zakatRateBps) : undefined,
       };
 
-      const result = await calculateZakat(requireDb(req), input);
+      const result = await calculateZakat(requireAddonDb(req), input);
       return reply.code(200).send({ success: true, data: result });
     } catch (err: unknown) {
       return reply.code(400).send({ success: false, error: (err as Error).message });
@@ -242,7 +234,7 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
         notes: notes as string | undefined,
       };
 
-      const result = await distributeProfitSharing(requireDb(req), input);
+      const result = await distributeProfitSharing(requireAddonDb(req), input);
       return reply.code(200).send({ success: true, data: result });
     } catch (err: unknown) {
       return reply.code(400).send({ success: false, error: (err as Error).message });
@@ -273,7 +265,7 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
         trail: trail as WaqfMerkleInput['trail'],
       };
 
-      const result = await computeWaqfMerkle(requireDb(req), input);
+      const result = await computeWaqfMerkle(requireAddonDb(req), input);
       return reply.code(200).send({ success: true, data: result });
     } catch (err: unknown) {
       return reply.code(400).send({ success: false, error: (err as Error).message });
@@ -314,7 +306,7 @@ export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     try {
-      const result = await appendWaqfMerkleEvent(requireDb(req), Number(assetId), {
+      const result = await appendWaqfMerkleEvent(requireAddonDb(req), Number(assetId), {
         event: event as WaqfMerkleInput['trail'][number]['event'],
         timestamp: timestamp as string,
         valueMinor: Number(valueMinor),

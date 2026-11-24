@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import { countValue } from '@moonwitness/types';
 import { Lead, LeadStage, LeadTagLink, Opportunity } from './models/index.js';
 import {
   resolveInsertedId,
@@ -385,16 +386,6 @@ export function buildCrmInitialSeed(): CrmInitialSeedBundle {
   };
 }
 
-function parseCount(value: unknown): number {
-  return (
-    Number(
-      typeof value === 'object' && value !== null && 'count' in value
-        ? (value as { count: unknown }).count
-        : value
-    ) || 0
-  );
-}
-
 export async function seedCrmInitialData(
   db: Knex,
   options: SeedCrmInitialDataOptions = {}
@@ -562,10 +553,10 @@ export async function seedCrmInitialData(
 
   return {
     companyId,
-    stagesTotal: parseCount(stagesTotal),
-    leadsTotal: parseCount(leadsTotal),
-    opportunitiesTotal: parseCount(opportunitiesTotal),
-    tagLinksTotal: parseCount(tagLinksTotal),
+    stagesTotal: countValue(stagesTotal),
+    leadsTotal: countValue(leadsTotal),
+    opportunitiesTotal: countValue(opportunitiesTotal),
+    tagLinksTotal: countValue(tagLinksTotal),
     insertedStages,
     insertedLeads,
     insertedOpportunities,

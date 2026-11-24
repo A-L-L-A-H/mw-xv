@@ -1,6 +1,7 @@
 import { isIP } from 'node:net';
 import type { Knex } from 'knex';
 import type { Transaction } from 'objection';
+import { extractRelationId, resolveMutationField } from '@moonwitness/orm';
 import { CompanyMembership, User } from '@moonwitness/orm-base';
 import {
   OrganizationDepartment,
@@ -57,28 +58,6 @@ const RISK_ORDER: Readonly<Record<RiskTier, number>> = {
   R3: 3,
   R4: 4,
 };
-
-function relationId(
-  values: MutationRecord,
-  current: ModelRow | undefined,
-  field: string
-): number | null {
-  const idKey = `${field}_id`;
-  const value = Object.hasOwn(values, idKey)
-    ? values[idKey]
-    : Object.hasOwn(values, field)
-      ? values[field]
-      : current?.[idKey];
-  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? value : null;
-}
-
-function fieldValue<T>(
-  values: MutationRecord,
-  current: ModelRow | undefined,
-  key: string
-): T | unknown {
-  return Object.hasOwn(values, key) ? values[key] : current?.[key];
-}
 
 function isValidJsonString(value: unknown, expectedKind?: 'array' | 'object'): boolean {
   if (typeof value !== 'string') return false;
@@ -531,7 +510,7 @@ export async function isValidAiMutation(
   trx?: DbOrTrx
 ): Promise<boolean> {
   if (!modelName.startsWith('ai.')) return true;
-  const companyId = relationId(values, current, 'company');
+  const companyId = extractRelationId(values, current, 'company');
   if (companyId === null) return false;
   if (current && typeof current.company_id === 'number' && current.company_id !== companyId) {
     return false;
@@ -539,33 +518,34 @@ export async function isValidAiMutation(
   const currentId = typeof current?.id === 'number' ? current.id : undefined;
 
   if (modelName === ProviderProfile.modelName) {
-    const kind = fieldValue<ProviderKind>(values, current, 'kind');
+    const kind = resolveMutationField<ProviderKind>(values, current, 'kind');
     if (typeof kind !== 'string' || !PROVIDER_KINDS.includes(kind as ProviderKind)) return false;
-    const classification = fieldValue(values, current, 'data_classification') ?? 'local_only';
+    const classification =
+      resolveMutationField(values, current, 'data_classification') ?? 'local_only';
     if (!DATA_CLASSIFICATIONS.includes(classification as DataClassification)) return false;
-    const secretRef = fieldValue(values, current, 'secret_ref');
+    const secretRef = resolveMutationField(values, current, 'secret_ref');
     if (typeof secretRef !== 'string' || !SECRET_REF_REGEX.test(secretRef)) return false;
-    const endpointUrl = fieldValue(values, current, 'endpoint_url');
+    const endpointUrl = resolveMutationField(values, current, 'endpoint_url');
     if (endpointUrl !== undefined && endpointUrl !== null && typeof endpointUrl !== 'string') {
       return false;
     }
     if (!isValidProviderEndpoint(kind as ProviderKind, endpointUrl as string | null | undefined)) {
       return false;
     }
-    const timeoutMs = fieldValue(values, current, 'timeout_ms') ?? 30000;
-    const maxConcurrency = fieldValue(values, current, 'max_concurrency') ?? 2;
-    const rateLimitRpm = fieldValue(values, current, 'rate_limit_rpm') ?? 60;
+    const timeoutMs = resolveMutationField(values, current, 'timeout_ms') ?? 30000;
+    const maxConcurrency = resolveMutationField(values, current, 'max_concurrency') ?? 2;
+    const rateLimitRpm = resolveMutationField(values, current, 'rate_limit_rpm') ?? 60;
     return isPositiveInt(timeoutMs) && isPositiveInt(maxConcurrency) && isPositiveInt(rateLimitRpm);
   }
 
   if (modelName === ModelProfile.modelName) {
-    const providerId = relationId(values, current, 'provider_profile');
+    const providerId = extractRelationId(values, current, 'provider_profile');
     if (!(await sameCompanyRecord(ProviderProfile, providerId, companyId, trx))) return false;
-    const contextWindow = fieldValue(values, current, 'context_window') ?? 8192;
-    const maxOutputTokens = fieldValue(values, current, 'max_output_tokens') ?? 2048;
-    const inputCost = fieldValue(values, current, 'input_cost_micros_per_1k') ?? 0;
-    const outputCost = fieldValue(values, current, 'output_cost_micros_per_1k') ?? 0;
-    const modalities = fieldValue(values, current, 'modalities_json') ?? '["text"]';
+    const contextWindow = resolveMutationField(values, current, 'context_window') ?? 8192;
+    const maxOutputTokens = resolveMutationField(values, current, 'max_output_tokens') ?? 2048;
+    const inputCost = resolveMutationField(values, current, 'input_cost_micros_per_1k') ?? 0;
+    const outputCost = resolveMutationField(values, current, 'output_cost_micros_per_1k') ?? 0;
+    const modalities = resolveMutationField(values, current, 'modalities_json') ?? '["text"]';
     return (
       isPositiveInt(contextWindow) &&
       isPositiveInt(maxOutputTokens) &&
@@ -576,19 +556,21 @@ export async function isValidAiMutation(
   }
 
   if (modelName === ExecutionPolicy.modelName) {
-    const policyVersion = fieldValue(values, current, 'policy_version') ?? 1;
-    const defaultTier = (fieldValue(values, current, 'default_risk_tier') ?? 'R0') as RiskTier;
-    const maxTier = (fieldValue(values, current, 'max_risk_tier') ?? 'R0') as RiskTier;
+    const policyVersion = resolveMutationField(values, current, 'policy_version') ?? 1;
+    const defaultTier = (resolveMutationField(values, current, 'default_risk_tier') ??
+      'R0') as RiskTier;
+    const maxTier = (resolveMutationField(values, current, 'max_risk_tier') ?? 'R0') as RiskTier;
     if (!RISK_TIERS.includes(defaultTier) || !RISK_TIERS.includes(maxTier)) return false;
     if (RISK_ORDER[defaultTier] > RISK_ORDER[maxTier]) return false;
-    const classification = fieldValue(values, current, 'allowed_classification') ?? 'local_only';
+    const classification =
+      resolveMutationField(values, current, 'allowed_classification') ?? 'local_only';
     if (!DATA_CLASSIFICATIONS.includes(classification as DataClassification)) return false;
-    const maxSteps = fieldValue(values, current, 'max_steps') ?? 8;
-    const maxWall = fieldValue(values, current, 'max_wall_clock_seconds') ?? 120;
-    const maxTokens = fieldValue(values, current, 'max_tokens_per_run') ?? 32000;
-    const maxCost = fieldValue(values, current, 'max_cost_micros_per_run') ?? 0;
-    const maxDepth = fieldValue(values, current, 'max_delegation_depth') ?? 0;
-    const maxConcurrent = fieldValue(values, current, 'max_concurrent_runs') ?? 1;
+    const maxSteps = resolveMutationField(values, current, 'max_steps') ?? 8;
+    const maxWall = resolveMutationField(values, current, 'max_wall_clock_seconds') ?? 120;
+    const maxTokens = resolveMutationField(values, current, 'max_tokens_per_run') ?? 32000;
+    const maxCost = resolveMutationField(values, current, 'max_cost_micros_per_run') ?? 0;
+    const maxDepth = resolveMutationField(values, current, 'max_delegation_depth') ?? 0;
+    const maxConcurrent = resolveMutationField(values, current, 'max_concurrent_runs') ?? 1;
     return (
       isPositiveInt(policyVersion) &&
       isPositiveInt(maxSteps) &&
@@ -601,20 +583,20 @@ export async function isValidAiMutation(
   }
 
   if (modelName === Agent.modelName) {
-    const departmentId = relationId(values, current, 'department');
+    const departmentId = extractRelationId(values, current, 'department');
     if (
       departmentId !== null &&
       !(await sameCompanyRecord(OrganizationDepartment, departmentId, companyId, trx))
     ) {
       return false;
     }
-    const teamId = relationId(values, current, 'team');
+    const teamId = extractRelationId(values, current, 'team');
     if (teamId !== null) {
       const team = await sameCompanyRecord(OrganizationTeam, teamId, companyId, trx);
       if (!team) return false;
       if (departmentId !== null && team.department_id !== departmentId) return false;
     }
-    const positionId = relationId(values, current, 'position');
+    const positionId = extractRelationId(values, current, 'position');
     if (positionId !== null) {
       const position = await sameCompanyRecord(OrganizationPosition, positionId, companyId, trx);
       if (!position) return false;
@@ -627,18 +609,18 @@ export async function isValidAiMutation(
         return false;
       }
     }
-    const orgMembershipId = relationId(values, current, 'organization_membership');
+    const orgMembershipId = extractRelationId(values, current, 'organization_membership');
     if (
       orgMembershipId !== null &&
       !(await sameCompanyRecord(OrganizationMembership, orgMembershipId, companyId, trx))
     ) {
       return false;
     }
-    const reportsToId = relationId(values, current, 'reports_to_agent');
+    const reportsToId = extractRelationId(values, current, 'reports_to_agent');
     if (!(await assertAcyclicAgentHierarchy(currentId, reportsToId, companyId, trx))) {
       return false;
     }
-    const retiredAt = fieldValue(values, current, 'retired_at');
+    const retiredAt = resolveMutationField(values, current, 'retired_at');
     if (
       retiredAt !== undefined &&
       retiredAt !== null &&
@@ -647,7 +629,7 @@ export async function isValidAiMutation(
     ) {
       return false;
     }
-    const serviceUserId = relationId(values, current, 'service_user');
+    const serviceUserId = extractRelationId(values, current, 'service_user');
     if (serviceUserId !== null) {
       const check = await validateServicePrincipalUser(serviceUserId, companyId, trx, currentId);
       if (!check.valid) return false;
@@ -656,23 +638,23 @@ export async function isValidAiMutation(
   }
 
   if (modelName === AgentProfile.modelName) {
-    const agentId = relationId(values, current, 'agent');
+    const agentId = extractRelationId(values, current, 'agent');
     if (!(await sameCompanyRecord(Agent, agentId, companyId, trx))) return false;
-    const modelProfileId = relationId(values, current, 'default_model_profile');
+    const modelProfileId = extractRelationId(values, current, 'default_model_profile');
     if (
       modelProfileId !== null &&
       !(await sameCompanyRecord(ModelProfile, modelProfileId, companyId, trx))
     ) {
       return false;
     }
-    const policyId = relationId(values, current, 'default_execution_policy');
+    const policyId = extractRelationId(values, current, 'default_execution_policy');
     if (
       policyId !== null &&
       !(await sameCompanyRecord(ExecutionPolicy, policyId, companyId, trx))
     ) {
       return false;
     }
-    const caps = fieldValue(values, current, 'default_capabilities_json') ?? '[]';
+    const caps = resolveMutationField(values, current, 'default_capabilities_json') ?? '[]';
     if (!isValidJsonString(caps, 'array')) return false;
     for (const item of JSON.parse(caps as string) as unknown[]) {
       if (typeof item !== 'string' || !CAPABILITY_REGEX.test(item)) return false;
@@ -681,24 +663,25 @@ export async function isValidAiMutation(
   }
 
   if (modelName === WorkContract.modelName) {
-    const policyId = relationId(values, current, 'execution_policy');
+    const policyId = extractRelationId(values, current, 'execution_policy');
     const policy = await sameCompanyRecord(ExecutionPolicy, policyId, companyId, trx);
     if (!policy) return false;
-    const riskTier = (fieldValue(values, current, 'risk_tier') ?? 'R0') as RiskTier;
+    const riskTier = (resolveMutationField(values, current, 'risk_tier') ?? 'R0') as RiskTier;
     const maxPolicyTier = policy.max_risk_tier as RiskTier;
     if (!RISK_TIERS.includes(riskTier) || RISK_ORDER[riskTier] > RISK_ORDER[maxPolicyTier]) {
       return false;
     }
-    const classification = fieldValue(values, current, 'data_classification') ?? 'local_only';
+    const classification =
+      resolveMutationField(values, current, 'data_classification') ?? 'local_only';
     if (!DATA_CLASSIFICATIONS.includes(classification as DataClassification)) return false;
-    const assignedAgentId = relationId(values, current, 'assigned_agent');
+    const assignedAgentId = extractRelationId(values, current, 'assigned_agent');
     if (
       assignedAgentId !== null &&
       !(await sameCompanyRecord(Agent, assignedAgentId, companyId, trx))
     ) {
       return false;
     }
-    const reviewerAgentId = relationId(values, current, 'reviewer_agent');
+    const reviewerAgentId = extractRelationId(values, current, 'reviewer_agent');
     if (
       reviewerAgentId !== null &&
       !(await sameCompanyRecord(Agent, reviewerAgentId, companyId, trx))
@@ -712,18 +695,18 @@ export async function isValidAiMutation(
     ) {
       return false;
     }
-    const workflowId = relationId(values, current, 'workflow_instance');
+    const workflowId = extractRelationId(values, current, 'workflow_instance');
     if (
       workflowId !== null &&
       !(await sameCompanyRecord(WorkflowInstance, workflowId, companyId, trx))
     ) {
       return false;
     }
-    const delegationDepth = fieldValue(values, current, 'delegation_depth') ?? 0;
+    const delegationDepth = resolveMutationField(values, current, 'delegation_depth') ?? 0;
     const maxDepth =
       typeof policy.max_delegation_depth === 'number' ? policy.max_delegation_depth : 0;
     if (!isNonNegativeInt(delegationDepth) || delegationDepth > maxDepth) return false;
-    const parentId = relationId(values, current, 'parent_contract');
+    const parentId = extractRelationId(values, current, 'parent_contract');
     if (parentId !== null) {
       const parent = await sameCompanyRecord(WorkContract, parentId, companyId, trx);
       if (!parent) return false;
@@ -736,19 +719,25 @@ export async function isValidAiMutation(
       return false;
     }
     return (
-      isValidJsonString(fieldValue(values, current, 'scope_json') ?? '{}', 'object') &&
-      isValidJsonString(fieldValue(values, current, 'constraints_json') ?? '{}', 'object') &&
-      isValidJsonString(fieldValue(values, current, 'non_goals_json') ?? '[]', 'array') &&
-      isValidJsonString(fieldValue(values, current, 'expected_deliverables_json') ?? '[]', 'array')
+      isValidJsonString(resolveMutationField(values, current, 'scope_json') ?? '{}', 'object') &&
+      isValidJsonString(
+        resolveMutationField(values, current, 'constraints_json') ?? '{}',
+        'object'
+      ) &&
+      isValidJsonString(resolveMutationField(values, current, 'non_goals_json') ?? '[]', 'array') &&
+      isValidJsonString(
+        resolveMutationField(values, current, 'expected_deliverables_json') ?? '[]',
+        'array'
+      )
     );
   }
 
   if (modelName === AcceptanceCriterion.modelName) {
-    const contractId = relationId(values, current, 'work_contract');
+    const contractId = extractRelationId(values, current, 'work_contract');
     const contract = await sameCompanyRecord(WorkContract, contractId, companyId, trx);
     if (!contract) return false;
-    const sequence = fieldValue(values, current, 'sequence') ?? 1;
-    const version = fieldValue(values, current, 'version') ?? 1;
+    const sequence = resolveMutationField(values, current, 'sequence') ?? 1;
+    const version = resolveMutationField(values, current, 'version') ?? 1;
     if (!isPositiveInt(sequence) || !isPositiveInt(version)) return false;
 
     const lockedAt = contract.criteria_locked_at;
@@ -772,38 +761,38 @@ export async function isValidAiMutation(
   }
 
   if (modelName === CapabilityGrant.modelName) {
-    const agentId = relationId(values, current, 'agent');
+    const agentId = extractRelationId(values, current, 'agent');
     if (!(await sameCompanyRecord(Agent, agentId, companyId, trx))) return false;
-    const policyId = relationId(values, current, 'execution_policy');
+    const policyId = extractRelationId(values, current, 'execution_policy');
     const policy = await sameCompanyRecord(ExecutionPolicy, policyId, companyId, trx);
     if (!policy) return false;
-    const contractId = relationId(values, current, 'work_contract');
+    const contractId = extractRelationId(values, current, 'work_contract');
     if (
       contractId !== null &&
       !(await sameCompanyRecord(WorkContract, contractId, companyId, trx))
     ) {
       return false;
     }
-    const capability = fieldValue(values, current, 'capability');
+    const capability = resolveMutationField(values, current, 'capability');
     if (typeof capability !== 'string' || !CAPABILITY_REGEX.test(capability)) return false;
-    const policyVersion = fieldValue(values, current, 'policy_version');
+    const policyVersion = resolveMutationField(values, current, 'policy_version');
     if (policyVersion !== policy.policy_version) return false;
-    const maxCalls = fieldValue(values, current, 'max_calls_per_run') ?? 25;
+    const maxCalls = resolveMutationField(values, current, 'max_calls_per_run') ?? 25;
     if (!isPositiveInt(maxCalls)) return false;
-    const issuedAt = fieldValue(values, current, 'issued_at');
-    const expiresAt = fieldValue(values, current, 'expires_at');
+    const issuedAt = resolveMutationField(values, current, 'issued_at');
+    const expiresAt = resolveMutationField(values, current, 'expires_at');
     if (!isValidIsoTimestamp(issuedAt) || !isValidIsoTimestamp(expiresAt)) return false;
     if (Date.parse(expiresAt) <= Date.parse(issuedAt)) return false;
-    return isValidJsonString(fieldValue(values, current, 'scope_json') ?? '{}', 'object');
+    return isValidJsonString(resolveMutationField(values, current, 'scope_json') ?? '{}', 'object');
   }
 
   if (modelName === AgentRun.modelName) {
-    const contractId = relationId(values, current, 'work_contract');
+    const contractId = extractRelationId(values, current, 'work_contract');
     const contract = await sameCompanyRecord(WorkContract, contractId, companyId, trx);
     if (!contract) return false;
-    const agentId = relationId(values, current, 'agent');
+    const agentId = extractRelationId(values, current, 'agent');
     if (!(await sameCompanyRecord(Agent, agentId, companyId, trx))) return false;
-    const grantId = relationId(values, current, 'capability_grant');
+    const grantId = extractRelationId(values, current, 'capability_grant');
     const grant = await sameCompanyRecord(CapabilityGrant, grantId, companyId, trx);
     if (!grant || grant.agent_id !== agentId) return false;
     if (
@@ -816,13 +805,13 @@ export async function isValidAiMutation(
     if (!current && (grant.status !== 'active' || Boolean(grant.revoked_at))) {
       return false;
     }
-    const providerId = relationId(values, current, 'provider_profile');
+    const providerId = extractRelationId(values, current, 'provider_profile');
     const provider = await sameCompanyRecord(ProviderProfile, providerId, companyId, trx);
     if (!provider) return false;
-    const modelProfileId = relationId(values, current, 'model_profile');
+    const modelProfileId = extractRelationId(values, current, 'model_profile');
     const modelProfile = await sameCompanyRecord(ModelProfile, modelProfileId, companyId, trx);
     if (!modelProfile || modelProfile.provider_profile_id !== providerId) return false;
-    const policyId = relationId(values, current, 'execution_policy');
+    const policyId = extractRelationId(values, current, 'execution_policy');
     const policy = await sameCompanyRecord(ExecutionPolicy, policyId, companyId, trx);
     if (!policy || grant.execution_policy_id !== policyId) return false;
     if (
@@ -835,7 +824,7 @@ export async function isValidAiMutation(
     ) {
       return false;
     }
-    const jobId = relationId(values, current, 'job');
+    const jobId = extractRelationId(values, current, 'job');
     if (jobId !== null) {
       const job = (await Job.query(trx).findById(jobId)) as unknown as ModelRow | undefined;
       if (
@@ -846,46 +835,47 @@ export async function isValidAiMutation(
       }
     }
     return (
-      isNonNegativeInt(fieldValue(values, current, 'fencing_token') ?? 0) &&
-      isNonNegativeInt(fieldValue(values, current, 'step_count') ?? 0) &&
-      isNonNegativeInt(fieldValue(values, current, 'input_tokens') ?? 0) &&
-      isNonNegativeInt(fieldValue(values, current, 'output_tokens') ?? 0) &&
-      isNonNegativeInt(fieldValue(values, current, 'estimated_cost_micros') ?? 0)
+      isNonNegativeInt(resolveMutationField(values, current, 'fencing_token') ?? 0) &&
+      isNonNegativeInt(resolveMutationField(values, current, 'step_count') ?? 0) &&
+      isNonNegativeInt(resolveMutationField(values, current, 'input_tokens') ?? 0) &&
+      isNonNegativeInt(resolveMutationField(values, current, 'output_tokens') ?? 0) &&
+      isNonNegativeInt(resolveMutationField(values, current, 'estimated_cost_micros') ?? 0)
     );
   }
 
   if (modelName === ArtifactManifest.modelName) {
-    const contractId = relationId(values, current, 'work_contract');
+    const contractId = extractRelationId(values, current, 'work_contract');
     if (!(await sameCompanyRecord(WorkContract, contractId, companyId, trx))) return false;
-    const criterionId = relationId(values, current, 'acceptance_criterion');
+    const criterionId = extractRelationId(values, current, 'acceptance_criterion');
     if (criterionId !== null) {
       const criterion = await sameCompanyRecord(AcceptanceCriterion, criterionId, companyId, trx);
       if (!criterion || criterion.work_contract_id !== contractId) return false;
     }
-    const runId = relationId(values, current, 'agent_run');
+    const runId = extractRelationId(values, current, 'agent_run');
     if (runId !== null) {
       const run = await sameCompanyRecord(AgentRun, runId, companyId, trx);
       if (!run || run.work_contract_id !== contractId) return false;
     }
-    const producerAgentId = relationId(values, current, 'producer_agent');
+    const producerAgentId = extractRelationId(values, current, 'producer_agent');
     if (
       producerAgentId !== null &&
       !(await sameCompanyRecord(Agent, producerAgentId, companyId, trx))
     ) {
       return false;
     }
-    const classification = fieldValue(values, current, 'data_classification') ?? 'local_only';
+    const classification =
+      resolveMutationField(values, current, 'data_classification') ?? 'local_only';
     if (!DATA_CLASSIFICATIONS.includes(classification as DataClassification)) return false;
-    const storageKey = fieldValue(values, current, 'storage_key');
-    const sha256 = fieldValue(values, current, 'sha256');
-    const sizeBytes = fieldValue(values, current, 'size_bytes');
+    const storageKey = resolveMutationField(values, current, 'storage_key');
+    const sha256 = resolveMutationField(values, current, 'sha256');
+    const sizeBytes = resolveMutationField(values, current, 'size_bytes');
     return isValidStorageKey(storageKey) && isValidSha256(sha256) && isNonNegativeInt(sizeBytes);
   }
 
   if (modelName === Obligation.modelName) {
-    const originContractId = relationId(values, current, 'origin_contract');
+    const originContractId = extractRelationId(values, current, 'origin_contract');
     if (!(await sameCompanyRecord(WorkContract, originContractId, companyId, trx))) return false;
-    const originArtifactId = relationId(values, current, 'origin_artifact');
+    const originArtifactId = extractRelationId(values, current, 'origin_artifact');
     if (originArtifactId !== null) {
       const originArtifact = await sameCompanyRecord(
         ArtifactManifest,
@@ -895,46 +885,46 @@ export async function isValidAiMutation(
       );
       if (!originArtifact || originArtifact.work_contract_id !== originContractId) return false;
     }
-    const ownerAgentId = relationId(values, current, 'owner_agent');
+    const ownerAgentId = extractRelationId(values, current, 'owner_agent');
     if (ownerAgentId !== null && !(await sameCompanyRecord(Agent, ownerAgentId, companyId, trx))) {
       return false;
     }
-    const ownerUserId = relationId(values, current, 'owner_user');
+    const ownerUserId = extractRelationId(values, current, 'owner_user');
     if (ownerUserId !== null) {
       const user = (await User.query(trx).findById(ownerUserId)) as unknown as ModelRow | undefined;
       if (!user || user.active === false || user.active === 0) return false;
     }
-    const status = fieldValue(values, current, 'status') ?? 'open';
+    const status = resolveMutationField(values, current, 'status') ?? 'open';
     if (status === 'superseded' || status === 'retired') {
-      const rationale = fieldValue(values, current, 'decision_rationale');
+      const rationale = resolveMutationField(values, current, 'decision_rationale');
       if (typeof rationale !== 'string' || rationale.trim().length === 0) return false;
     }
     return (
-      isValidJsonString(fieldValue(values, current, 'scope_json') ?? '{}', 'object') &&
-      isValidJsonString(fieldValue(values, current, 'impact_links_json') ?? '[]', 'array')
+      isValidJsonString(resolveMutationField(values, current, 'scope_json') ?? '{}', 'object') &&
+      isValidJsonString(resolveMutationField(values, current, 'impact_links_json') ?? '[]', 'array')
     );
   }
 
   if (modelName === Taskforce.modelName) {
-    const leadAgentId = relationId(values, current, 'lead_agent');
+    const leadAgentId = extractRelationId(values, current, 'lead_agent');
     if (leadAgentId !== null && !(await sameCompanyRecord(Agent, leadAgentId, companyId, trx))) {
       return false;
     }
-    const contractId = relationId(values, current, 'work_contract');
+    const contractId = extractRelationId(values, current, 'work_contract');
     if (
       contractId !== null &&
       !(await sameCompanyRecord(WorkContract, contractId, companyId, trx))
     ) {
       return false;
     }
-    const policyId = relationId(values, current, 'execution_policy');
+    const policyId = extractRelationId(values, current, 'execution_policy');
     if (
       policyId !== null &&
       !(await sameCompanyRecord(ExecutionPolicy, policyId, companyId, trx))
     ) {
       return false;
     }
-    const expiresAt = fieldValue(values, current, 'expires_at');
+    const expiresAt = resolveMutationField(values, current, 'expires_at');
     if (
       expiresAt !== undefined &&
       expiresAt !== null &&
@@ -943,7 +933,7 @@ export async function isValidAiMutation(
     ) {
       return false;
     }
-    const disbandedAt = fieldValue(values, current, 'disbanded_at');
+    const disbandedAt = resolveMutationField(values, current, 'disbanded_at');
     if (
       disbandedAt !== undefined &&
       disbandedAt !== null &&
@@ -952,53 +942,53 @@ export async function isValidAiMutation(
     ) {
       return false;
     }
-    const maxAgents = fieldValue(values, current, 'max_agents') ?? 4;
-    const budgetMicros = fieldValue(values, current, 'budget_micros') ?? 0;
-    const spentMicros = fieldValue(values, current, 'spent_micros') ?? 0;
+    const maxAgents = resolveMutationField(values, current, 'max_agents') ?? 4;
+    const budgetMicros = resolveMutationField(values, current, 'budget_micros') ?? 0;
+    const spentMicros = resolveMutationField(values, current, 'spent_micros') ?? 0;
     return (
       isPositiveInt(maxAgents) &&
       isNonNegativeInt(budgetMicros) &&
       isNonNegativeInt(spentMicros) &&
-      isValidJsonString(fieldValue(values, current, 'scope_json') ?? '{}', 'object')
+      isValidJsonString(resolveMutationField(values, current, 'scope_json') ?? '{}', 'object')
     );
   }
 
   if (modelName === WorkforceAssignment.modelName) {
-    const taskforceId = relationId(values, current, 'taskforce');
+    const taskforceId = extractRelationId(values, current, 'taskforce');
     if (!(await sameCompanyRecord(Taskforce, taskforceId, companyId, trx))) return false;
-    const agentId = relationId(values, current, 'agent');
+    const agentId = extractRelationId(values, current, 'agent');
     if (!(await sameCompanyRecord(Agent, agentId, companyId, trx))) return false;
-    const contractId = relationId(values, current, 'work_contract');
+    const contractId = extractRelationId(values, current, 'work_contract');
     if (
       contractId !== null &&
       !(await sameCompanyRecord(WorkContract, contractId, companyId, trx))
     ) {
       return false;
     }
-    const assignedAt = fieldValue(values, current, 'assigned_at');
+    const assignedAt = resolveMutationField(values, current, 'assigned_at');
     if (!isValidIsoTimestamp(assignedAt)) return false;
-    const expiresAt = fieldValue(values, current, 'expires_at');
+    const expiresAt = resolveMutationField(values, current, 'expires_at');
     if (expiresAt !== undefined && expiresAt !== null && expiresAt !== '') {
       if (!isValidIsoTimestamp(expiresAt)) return false;
       if (Date.parse(expiresAt) <= Date.parse(assignedAt)) return false;
     }
-    const budgetMicros = fieldValue(values, current, 'budget_micros') ?? 0;
+    const budgetMicros = resolveMutationField(values, current, 'budget_micros') ?? 0;
     return isNonNegativeInt(budgetMicros);
   }
 
   if (modelName === SkillVersion.modelName) {
-    const sourceRunId = relationId(values, current, 'source_run');
+    const sourceRunId = extractRelationId(values, current, 'source_run');
     if (sourceRunId !== null && !(await sameCompanyRecord(AgentRun, sourceRunId, companyId, trx))) {
       return false;
     }
-    const workflowId = relationId(values, current, 'approval_workflow');
+    const workflowId = extractRelationId(values, current, 'approval_workflow');
     if (
       workflowId !== null &&
       !(await sameCompanyRecord(WorkflowInstance, workflowId, companyId, trx))
     ) {
       return false;
     }
-    const evalScore = fieldValue(values, current, 'eval_score_bps');
+    const evalScore = resolveMutationField(values, current, 'eval_score_bps');
     if (
       evalScore !== undefined &&
       evalScore !== null &&
@@ -1006,51 +996,52 @@ export async function isValidAiMutation(
     ) {
       return false;
     }
-    const caps = fieldValue(values, current, 'allowed_capabilities_json') ?? '[]';
+    const caps = resolveMutationField(values, current, 'allowed_capabilities_json') ?? '[]';
     if (!isValidJsonString(caps, 'array')) return false;
     for (const item of JSON.parse(caps as string) as unknown[]) {
       if (typeof item !== 'string' || !CAPABILITY_REGEX.test(item)) return false;
     }
-    return isPositiveInt(fieldValue(values, current, 'version') ?? 1);
+    return isPositiveInt(resolveMutationField(values, current, 'version') ?? 1);
   }
 
   if (modelName === MemoryCandidate.modelName) {
-    const classification = fieldValue(values, current, 'data_classification') ?? 'local_only';
+    const classification =
+      resolveMutationField(values, current, 'data_classification') ?? 'local_only';
     if (!DATA_CLASSIFICATIONS.includes(classification as DataClassification)) return false;
-    const contractId = relationId(values, current, 'work_contract');
+    const contractId = extractRelationId(values, current, 'work_contract');
     if (
       contractId !== null &&
       !(await sameCompanyRecord(WorkContract, contractId, companyId, trx))
     ) {
       return false;
     }
-    const runId = relationId(values, current, 'source_run');
+    const runId = extractRelationId(values, current, 'source_run');
     const run = runId !== null ? await sameCompanyRecord(AgentRun, runId, companyId, trx) : null;
     if (runId !== null && !run) return false;
     if (run && contractId !== null && run.work_contract_id !== contractId) return false;
-    const agentId = relationId(values, current, 'source_agent');
+    const agentId = extractRelationId(values, current, 'source_agent');
     if (agentId !== null && !(await sameCompanyRecord(Agent, agentId, companyId, trx))) {
       return false;
     }
     if (run && agentId !== null && run.agent_id !== agentId) return false;
-    const artifactId = relationId(values, current, 'evidence_artifact');
+    const artifactId = extractRelationId(values, current, 'evidence_artifact');
     if (artifactId !== null) {
       const artifact = await sameCompanyRecord(ArtifactManifest, artifactId, companyId, trx);
       if (!artifact) return false;
       if (contractId !== null && artifact.work_contract_id !== contractId) return false;
     }
-    const skillId = relationId(values, current, 'promoted_skill');
+    const skillId = extractRelationId(values, current, 'promoted_skill');
     if (skillId !== null && !(await sameCompanyRecord(SkillVersion, skillId, companyId, trx))) {
       return false;
     }
-    const workflowId = relationId(values, current, 'approval_workflow');
+    const workflowId = extractRelationId(values, current, 'approval_workflow');
     if (
       workflowId !== null &&
       !(await sameCompanyRecord(WorkflowInstance, workflowId, companyId, trx))
     ) {
       return false;
     }
-    const confidence = fieldValue(values, current, 'confidence_bps') ?? 5000;
+    const confidence = resolveMutationField(values, current, 'confidence_bps') ?? 5000;
     return isNonNegativeInt(confidence) && confidence <= 10000;
   }
 

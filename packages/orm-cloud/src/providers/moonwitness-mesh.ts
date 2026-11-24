@@ -1,4 +1,4 @@
-import { isIP } from 'node:net';
+import { isPrivateMeshIp as isSharedPrivateMeshIp } from '@moonwitness/types';
 import { controlPlaneAuthHeaders, resolveControlPlaneToken } from '../auth.js';
 import {
   evaluateTenantPaasQuota,
@@ -72,41 +72,8 @@ export interface ControlMeshPaasAppResult {
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 
-function stripIpv6Brackets(hostname: string): string {
-  if (hostname.startsWith('[') && hostname.endsWith(']')) {
-    return hostname.slice(1, -1);
-  }
-  return hostname;
-}
-
 export function isPrivateMeshIp(rawHost: string): boolean {
-  const host = stripIpv6Brackets(rawHost.trim()).toLowerCase();
-  const ipVersion = isIP(host);
-
-  if (ipVersion === 4) {
-    const octets = host.split('.').map((part) => Number(part));
-    if (octets.length !== 4 || octets.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) {
-      return false;
-    }
-    const [a, b] = octets;
-    if (a === 10) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (host === '127.0.0.1') return true;
-    return false;
-  }
-
-  if (ipVersion === 6) {
-    // fd00::/8 unique local addresses
-    if (host.startsWith('fd')) {
-      const firstHextet = host.split(':')[0] ?? '';
-      return /^[0-9a-f]{4}$/u.test(firstHextet) && firstHextet.startsWith('fd');
-    }
-    return false;
-  }
-
-  return false;
+  return isSharedPrivateMeshIp(rawHost, { allowLoopback: true });
 }
 
 export function assertPrivateMeshEndpoint(endpoint: string): URL {

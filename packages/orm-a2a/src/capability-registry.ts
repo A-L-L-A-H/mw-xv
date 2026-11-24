@@ -1,3 +1,4 @@
+import { assertNonEmpty } from '@moonwitness/types';
 import {
   buildA2aCapabilitySeed,
   type A2aCapabilityClaimSeed,
@@ -61,12 +62,6 @@ const MILLISECONDS_PER_MINUTE = 60_000;
 const MILLISECONDS_PER_DAY = HOURS_PER_DAY * MINUTES_PER_HOUR * MILLISECONDS_PER_MINUTE;
 const ISO_UTC_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
-function assertNonEmpty(value: string, label: string): void {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new Error(`${label} must be a non-empty string`);
-  }
-}
-
 function assertIsoUtcTimestamp(value: string, label: string): number {
   assertNonEmpty(value, label);
   if (!ISO_UTC_PATTERN.test(value)) {
@@ -77,12 +72,6 @@ function assertIsoUtcTimestamp(value: string, label: string): number {
     throw new Error(`${label} must be a valid ISO-8601 UTC timestamp`);
   }
   return epoch;
-}
-
-function assertPositiveInteger(value: number, label: string): void {
-  if (!Number.isSafeInteger(value) || value < 1) {
-    throw new Error(`${label} must be a positive safe integer`);
-  }
 }
 
 function assertKnownNode(registry: A2aCapabilityRegistry, nodeId: string, label: string): void {

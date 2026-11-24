@@ -347,6 +347,14 @@ export function requireAuth(
   };
 }
 
+/** Require an initialized Knex database handle on an addon HTTP request context. */
+export function requireAddonDb(req: AddonHttpRequestBase): Knex {
+  const app = req as unknown as { server?: { db?: Knex } };
+  const db = app.server?.db;
+  if (!db) throw new Error('Database not available on request context');
+  return db;
+}
+
 export type AddonLifecycleStatus = 'uninstalled' | 'installed' | 'disabled' | 'upgrade_failed';
 
 export interface Addon {

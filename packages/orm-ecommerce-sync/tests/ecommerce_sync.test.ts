@@ -86,6 +86,7 @@ describe('ecommerce_sync addon', () => {
     expect(shopify).toBeDefined();
     expect(shopify!.name).toBe('Shopify Store');
     expect(shopify!.status).toBe('pending');
+    expect(shopify!.credentials).toBeNull();
     expect(JSON.parse(shopify!.config)).toEqual(
       expect.objectContaining({
         shop_domain: 'example-store.myshopify.com',
@@ -96,6 +97,7 @@ describe('ecommerce_sync addon', () => {
     expect(woocommerce).toBeDefined();
     expect(woocommerce!.name).toBe('WooCommerce Store');
     expect(woocommerce!.status).toBe('pending');
+    expect(woocommerce!.credentials).toBeNull();
     expect(JSON.parse(woocommerce!.config)).toEqual(
       expect.objectContaining({
         store_url: 'https://example.com',

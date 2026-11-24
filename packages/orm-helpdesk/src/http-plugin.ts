@@ -1,9 +1,9 @@
 import type { Knex } from 'knex';
 import {
+  requireAddonDb,
   requireAuth,
   type AddonHttpPlugin,
   type AddonHttpReply,
-  type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
 import {
@@ -28,13 +28,6 @@ import {
   type KnowledgeArticleLike,
   type CsatSurveyLike,
 } from './helpdesk-engine.js';
-
-function requireDb(req: AddonHttpRequestBase): Knex {
-  const app = req as unknown as { server?: { db?: Knex } };
-  const db = app.server?.db;
-  if (!db) throw new Error('Database not available on request context');
-  return db;
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -93,7 +86,7 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     try {
-      const db = requireDb(req);
+      const db = requireAddonDb(req);
       const now = new Date().toISOString();
 
       const policies = await loadSlaPolicies(db, auth.companyId);
@@ -154,7 +147,7 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     try {
-      const db = requireDb(req);
+      const db = requireAddonDb(req);
       const now = new Date().toISOString();
 
       const ticket = await db('helpdesk_support_tickets').where({ id: ticketId }).first();
@@ -215,7 +208,7 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     try {
-      const db = requireDb(req);
+      const db = requireAddonDb(req);
       const now = new Date().toISOString();
 
       const ticket = await db('helpdesk_support_tickets').where({ id: ticketId }).first();
@@ -261,7 +254,7 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     try {
-      const db = requireDb(req);
+      const db = requireAddonDb(req);
       const policies = await loadSlaPolicies(db, auth.companyId);
       const input: SlaEvaluateInput = {
         priority: priority as 'P1' | 'P2' | 'P3' | 'P4',
@@ -293,7 +286,7 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     try {
-      const db = requireDb(req);
+      const db = requireAddonDb(req);
       const ticket = await db('helpdesk_support_tickets')
         .where({ id: Number(ticketId) })
         .first();
@@ -404,7 +397,7 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     }
 
     try {
-      const db = requireDb(req);
+      const db = requireAddonDb(req);
       const now = new Date().toISOString();
 
       const ticket = await db('helpdesk_support_tickets')
@@ -439,7 +432,7 @@ export const helpdeskHttpPlugin: AddonHttpPlugin = async (app) => {
     if (!auth) return;
 
     try {
-      const db = requireDb(req);
+      const db = requireAddonDb(req);
       const surveys = await db('helpdesk_csat_surveys as cs')
         .join('helpdesk_support_tickets as t', 'cs.ticket_id', 't.id')
         .where('t.company_id', auth.companyId)

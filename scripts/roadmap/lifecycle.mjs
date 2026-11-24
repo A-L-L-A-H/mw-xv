@@ -1,3 +1,4 @@
+import { isFullSha } from './sha.mjs';
 import { taskIdPattern } from './task-ids.mjs';
 
 const taskStatuses = new Set(['todo', 'in_progress', 'blocked', 'complete']);
@@ -12,10 +13,6 @@ const checkConclusions = new Set([
   'success',
   'timed_out',
 ]);
-
-function isFullSha(value) {
-  return typeof value === 'string' && /^[a-f0-9]{40}$/u.test(value);
-}
 
 /**
  * Derive work completion and delivery from explicit source/GitHub evidence.
