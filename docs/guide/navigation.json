@@ -67,6 +67,11 @@
           "title": "Portal dokumentasi",
           "kind": "how-to",
           "path": "docs/guide/how-to/developer-portal.md"
+        },
+        {
+          "title": "Operasi fleet otonom",
+          "kind": "how-to",
+          "path": "docs/guide/how-to/autonomous-fleet-operations.md"
         }
       ]
     },
