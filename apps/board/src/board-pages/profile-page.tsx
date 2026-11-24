@@ -9,8 +9,10 @@ import { Button } from '@moonwitness/ui/components/button';
 import { Input } from '@moonwitness/ui/components/input';
 import { Label } from '@moonwitness/ui/components/label';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
 import { useAuth } from '@/hooks/use-auth-context';
 import { client } from '@/lib/client';
+import { isCurrentScopeQueryKey, profileQueryKeys } from '@/lib/query-scope';
 
 interface PartnerProfile {
   id: number;
@@ -33,8 +35,8 @@ export function ProfilePage() {
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['profile', user?.id],
+  const { data, isLoading, isFetching, isError, isSuccess, error, refetch } = useQuery({
+    queryKey: profileQueryKeys.contact(user?.id),
     queryFn: async () => {
       if (!user) return null;
       const currentUser = await client.getMe();
@@ -50,6 +52,8 @@ export function ProfilePage() {
 
   const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!user || !isSuccess || !data) return;
+    const mutationKey = profileQueryKeys.contact(user.id);
     const form = new FormData(event.currentTarget);
     const value = (key: string) => String(form.get(key) ?? '').trim();
     try {
@@ -65,7 +69,8 @@ export function ProfilePage() {
           website: value('website') || null,
         },
       });
-      await queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+      if (!isCurrentScopeQueryKey(mutationKey)) return;
+      await queryClient.invalidateQueries({ queryKey: mutationKey, exact: true });
       toast.success('Profile updated');
     } catch (saveError) {
       toast.error(saveError instanceof Error ? saveError.message : 'Could not update profile');
@@ -106,8 +111,24 @@ export function ProfilePage() {
             <Skeleton className="h-16" />
             <Skeleton className="h-16" />
           </div>
-        ) : error ? (
-          <p className="p-6 text-sm text-destructive">Could not load the linked contact profile.</p>
+        ) : isError ? (
+          <EmptyState
+            role="alert"
+            className="p-6"
+            title="Contact profile unavailable"
+            description="The linked contact profile could not be loaded for the current company."
+            action={
+              <Button variant="outline" disabled={isFetching} onClick={() => void refetch()}>
+                {isFetching ? 'Retrying…' : 'Retry'}
+              </Button>
+            }
+          />
+        ) : isSuccess && !data ? (
+          <EmptyState
+            className="p-6"
+            title="No linked contact profile"
+            description="Your account does not have a contact profile in the current company."
+          />
         ) : (
           <dl className="grid gap-px bg-ink/15 sm:grid-cols-2">
             <ProfileDetail icon={PartnerIcon} label="Contact name" value={data?.name} />
@@ -127,7 +148,7 @@ export function ProfilePage() {
           </dl>
         )}
       </section>
-      {data && (
+      {isSuccess && !isError && data && (
         <form
           key={`${data.id}-${data.name}`}
           onSubmit={(event) => void saveProfile(event)}

@@ -85,6 +85,8 @@ export default function PublicKnowledgeShellPage() {
 
   const fetchPublications = useCallback(async (signal?: AbortSignal): Promise<LoadState> => {
     try {
+      // Documented public unauthenticated exception: SDK RequestOptions exposes neither
+      // skipAuth nor AbortSignal. Keep cancellation and pre-login access without expanding the client API.
       const response = await fetch('/api/public/publications', {
         method: 'GET',
         headers: { accept: 'application/json' },

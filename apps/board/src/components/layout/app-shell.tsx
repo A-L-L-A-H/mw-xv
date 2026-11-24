@@ -33,7 +33,7 @@ import { scopedQueryKey } from '@/lib/query-scope';
 import { canReadResearch } from '@/lib/research-access';
 import { useAuth } from '@/hooks/use-auth-context';
 import { useModels } from '@/hooks/use-model';
-import { useTheme } from '@/hooks/use-theme';
+import { useSkin } from '@/components/providers/skin-context';
 import { DashboardIcon, modelIcon, modelLabel } from '@/lib/models';
 import { readDevelopmentMode, updateDevelopmentMode } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
@@ -205,7 +205,8 @@ function DesktopUpdateBannerMount() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
-  const { theme, toggle } = useTheme();
+  const { mode: theme, setMode } = useSkin();
+  const toggle = useCallback(() => setMode(theme === 'dark' ? 'light' : 'dark'), [setMode, theme]);
   const { isDesktop } = useDesktopBridge();
   const {
     mode: desktopMode,

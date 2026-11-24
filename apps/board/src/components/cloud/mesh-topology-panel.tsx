@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { Panel } from '@moonwitness/ui/components/panel';
 import {

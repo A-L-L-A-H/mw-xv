@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useViews } from '@/hooks/use-model';
-import { Button } from '@moonwitness/ui/components/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@moonwitness/ui/components/tabs';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { EmptyState } from '@moonwitness/ui/components/empty-state';
 import { Doodle } from '@moonwitness/ui/components/effects';
@@ -112,78 +112,85 @@ export function ModelPage() {
     router.replace(query ? `/board/m/${model}?${query}` : `/board/m/${model}`);
   };
   const openRecord = (recId: number) => router.push(`/board/m/${model}/${recId}`);
+  const toolbar = (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <Breadcrumbs items={breadcrumbs} />
+      {!isCreate && !isEdit && supportedViews.length > 1 ? (
+        <TabsList className="flex flex-wrap items-center gap-1" aria-label="View switcher">
+          {supportedViews.map((viewName) => (
+            <TabsTrigger key={viewName} value={viewName} className="uppercase">
+              {viewName}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      ) : null}
+    </div>
+  );
+  const content = isCreate ? (
+    <FormView
+      model={model}
+      views={views}
+      initialValues={relationParent ? { [relationParent.field]: relationParent.id } : undefined}
+      onBack={() =>
+        router.push(
+          relationParent
+            ? `/board/m/${relationParent.model}/${relationParent.id}`
+            : `/board/m/${model}`
+        )
+      }
+      onSaved={(newId) =>
+        router.replace(
+          relationParent
+            ? `/board/m/${relationParent.model}/${relationParent.id}`
+            : `/board/m/${model}/${newId}`
+        )
+      }
+    />
+  ) : isEdit && recordId !== undefined && !Number.isNaN(recordId) ? (
+    <FormView
+      model={model}
+      views={views}
+      recordId={recordId}
+      onBack={() => router.push(`/board/m/${model}`)}
+    />
+  ) : activeView === 'kanban' ? (
+    <KanbanView model={model} views={views} onOpenRecord={openRecord} />
+  ) : activeView === 'calendar' ? (
+    <CalendarView model={model} views={views} onOpenRecord={openRecord} />
+  ) : activeView === 'graph' ? (
+    <GraphView model={model} views={views} />
+  ) : activeView === 'pivot' ? (
+    <PivotView model={model} views={views} />
+  ) : (
+    <ListView
+      model={model}
+      views={views}
+      onOpenRecord={openRecord}
+      onCreateRecord={() => router.push(`/board/m/${model}/new`)}
+    />
+  );
+
+  if (isCreate || isEdit) {
+    return (
+      <div className="space-y-6">
+        {toolbar}
+        {content}
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Breadcrumbs items={breadcrumbs} />
-        {!isCreate && !isEdit && supportedViews.length > 1 && (
-          <div
-            className="flex flex-wrap items-center gap-1"
-            role="tablist"
-            aria-label="View switcher"
-          >
-            {supportedViews.map((viewName) => (
-              <Button
-                key={viewName}
-                type="button"
-                role="tab"
-                aria-selected={activeView === viewName}
-                variant={activeView === viewName ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => switchView(viewName)}
-                className="uppercase"
-              >
-                {viewName}
-              </Button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {isCreate ? (
-        <FormView
-          model={model}
-          views={views}
-          initialValues={relationParent ? { [relationParent.field]: relationParent.id } : undefined}
-          onBack={() =>
-            router.push(
-              relationParent
-                ? `/board/m/${relationParent.model}/${relationParent.id}`
-                : `/board/m/${model}`
-            )
-          }
-          onSaved={(newId) =>
-            router.replace(
-              relationParent
-                ? `/board/m/${relationParent.model}/${relationParent.id}`
-                : `/board/m/${model}/${newId}`
-            )
-          }
-        />
-      ) : isEdit && recordId !== undefined && !Number.isNaN(recordId) ? (
-        <FormView
-          model={model}
-          views={views}
-          recordId={recordId}
-          onBack={() => router.push(`/board/m/${model}`)}
-        />
-      ) : activeView === 'kanban' ? (
-        <KanbanView model={model} views={views} onOpenRecord={openRecord} />
-      ) : activeView === 'calendar' ? (
-        <CalendarView model={model} views={views} onOpenRecord={openRecord} />
-      ) : activeView === 'graph' ? (
-        <GraphView model={model} views={views} />
-      ) : activeView === 'pivot' ? (
-        <PivotView model={model} views={views} />
-      ) : (
-        <ListView
-          model={model}
-          views={views}
-          onOpenRecord={openRecord}
-          onCreateRecord={() => router.push(`/board/m/${model}/new`)}
-        />
-      )}
-    </div>
+    <Tabs
+      value={activeView}
+      onValueChange={(nextView) => {
+        if (supportedViews.includes(nextView as BoardViewName)) switchView(nextView as BoardViewName);
+      }}
+      className="space-y-6"
+    >
+      {toolbar}
+      <TabsContent value={activeView} className="space-y-6">
+        {content}
+      </TabsContent>
+    </Tabs>
   );
 }

@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
 import { Input } from '@moonwitness/ui/components/input';
 import { Label } from '@moonwitness/ui/components/label';
 import { LogConsole, type LogConsoleEntry } from '@moonwitness/ui/components/log-console';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { Panel } from '@moonwitness/ui/components/panel';
 import { SelectField } from '@moonwitness/ui/components/select-field';
+import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@moonwitness/ui/components/tabs';
 import {
   ActivityIcon,
@@ -24,6 +26,7 @@ import {
   SignalIcon,
   WarningIcon,
 } from '@moonwitness/ui/icons';
+import { ConfirmDialog } from '@/components/views/confirm-dialog';
 import { MeshTopologyPanel } from './mesh-topology-panel';
 import { PaasTemplateCatalog } from './paas-template-catalog';
 import type { PaasTemplateDefinition } from './paas-template-data';
@@ -66,16 +69,62 @@ interface PostgresBackupRecord {
 
 const DEFAULT_TENANTS = ['default', 'production', 'staging'] as const;
 
-const INITIAL_BACKUPS: readonly PostgresBackupRecord[] = [
-  {
-    id: 'pg-snap-001',
-    filename: 'moonwitness_prod_20261123_0200.sql.zst',
-    createdAt: '2026-11-23T02:00:00Z',
-    sizeMb: 148,
-    sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-    verified: true,
-  },
-];
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function parseNodeMetrics(value: unknown): PaasStudioNodeMetrics | null {
+  if (!isRecord(value)) return null;
+  if (
+    typeof value.nodeId !== 'string' ||
+    typeof value.meshIp !== 'string' ||
+    !isFiniteNumber(value.cpuPercent) ||
+    !isFiniteNumber(value.memoryUsedMb) ||
+    !isFiniteNumber(value.memoryTotalMb) ||
+    !isFiniteNumber(value.memoryPercent) ||
+    !isFiniteNumber(value.runningApps)
+  ) {
+    return null;
+  }
+  return value as unknown as PaasStudioNodeMetrics;
+}
+
+function parseApps(value: unknown): readonly PaasStudioApp[] | null {
+  if (!Array.isArray(value)) return null;
+  const apps: PaasStudioApp[] = [];
+  for (const item of value) {
+    if (
+      !isRecord(item) ||
+      typeof item.id !== 'string' ||
+      typeof item.slug !== 'string' ||
+      typeof item.image !== 'string' ||
+      typeof item.status !== 'string'
+    ) {
+      return null;
+    }
+    apps.push(item as unknown as PaasStudioApp);
+  }
+  return apps;
+}
+
+function parsePostgresBackup(value: unknown): PostgresBackupRecord | null {
+  if (!isRecord(value)) return null;
+  if (
+    typeof value.id !== 'string' ||
+    typeof value.filename !== 'string' ||
+    typeof value.createdAt !== 'string' ||
+    !isFiniteNumber(value.sizeMb) ||
+    typeof value.sha256 !== 'string' ||
+    typeof value.verified !== 'boolean'
+  ) {
+    return null;
+  }
+  return value as unknown as PostgresBackupRecord;
+}
 
 function statusBadgeVariant(status: string): 'primary' | 'cyan' | 'destructive' | 'default' {
   const normalized = status.toLowerCase();
@@ -94,14 +143,19 @@ export function PaasStudioPanel({
   tenants = DEFAULT_TENANTS,
 }: PaasStudioPanelProps) {
   const [metrics, setMetrics] = useState<PaasStudioNodeMetrics | null>(null);
-  const [apps, setApps] = useState<readonly PaasStudioApp[]>([]);
-  const [desktopModeAvailable, setDesktopModeAvailable] = useState<boolean>(true);
+  const [apps, setApps] = useState<readonly PaasStudioApp[] | null>(null);
+  const [desktopModeAvailable, setDesktopModeAvailable] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [deploying, setDeploying] = useState<boolean>(false);
   const [deployingTemplateId, setDeployingTemplateId] = useState<string | null>(null);
   const [busyAppId, setBusyAppId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [stateError, setStateError] = useState<string | null>(null);
+  const [pendingAppAction, setPendingAppAction] = useState<{
+    app: PaasStudioApp;
+    action: 'stop' | 'delete';
+  } | null>(null);
   const [activeLogs, setActiveLogs] = useState<{ slug: string; text: string } | null>(null);
 
   const [slug, setSlug] = useState<string>('');
@@ -132,9 +186,13 @@ export function PaasStudioPanel({
   const [vpsTier, setVpsTier] = useState<string>('worker-4vcpu');
 
   // Wave C.15: PostgreSQL Backups & Restore state
-  const [backups, setBackups] = useState<readonly PostgresBackupRecord[]>(INITIAL_BACKUPS);
+  const [backups, setBackups] = useState<readonly PostgresBackupRecord[]>([]);
+  const [backupsLoaded, setBackupsLoaded] = useState<boolean>(false);
   const [backupBusy, setBackupBusy] = useState<boolean>(false);
   const [backupFeedback, setBackupFeedback] = useState<string | null>(null);
+  const [backupError, setBackupError] = useState<string | null>(
+    'Live PostgreSQL backup inventory is not exposed by the current Desktop bridge.'
+  );
 
   const normalizedBase = apiBase.replace(/\/+$/u, '');
 
@@ -233,6 +291,7 @@ export function PaasStudioPanel({
   const handleTriggerPostgresBackup = useCallback(async () => {
     setBackupBusy(true);
     setBackupFeedback(null);
+    setBackupError(null);
     try {
       const response = await fetch(`${normalizedBase}/backups/postgres`, {
         method: 'POST',
@@ -240,25 +299,28 @@ export function PaasStudioPanel({
         body: JSON.stringify({ trigger: 'manual-studio' }),
       });
       if (!response.ok) {
-        setBackupFeedback(
+        setBackupError(
           `Snapshot request returned HTTP ${response.status} (Desktop DX bridge required).`
         );
         return;
       }
-      const payload = (await response.json().catch(() => ({}))) as Partial<PostgresBackupRecord>;
-      const created: PostgresBackupRecord = {
-        id: payload.id ?? `pg-snap-${Date.now()}`,
-        filename: payload.filename ?? `moonwitness_manual_${Date.now()}.sql.zst`,
-        createdAt: payload.createdAt ?? new Date().toISOString(),
-        sizeMb: payload.sizeMb ?? 150,
-        sha256:
-          payload.sha256 ?? '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
-        verified: payload.verified ?? true,
-      };
-      setBackups((prev) => [created, ...prev]);
+      const payload = (await response.json().catch(() => null)) as unknown;
+      const created = isRecord(payload) && payload.success === true
+        ? parsePostgresBackup(payload.data)
+        : null;
+      if (!created) {
+        setBackupError(
+          'Snapshot response did not include complete live backup metadata; no fixture was created.'
+        );
+        setBackupFeedback(null);
+        return;
+      }
+      setBackups((prev) => [created, ...prev.filter((backup) => backup.id !== created.id)]);
+      setBackupsLoaded(true);
+      setBackupError(null);
       setBackupFeedback(`Manual PostgreSQL snapshot created: ${created.filename}`);
     } catch {
-      setBackupFeedback('Unable to reach /paas/backups/postgres (Desktop DX bridge offline).');
+      setBackupError('Unable to reach /paas/backups/postgres (Desktop DX bridge offline).');
     } finally {
       setBackupBusy(false);
     }
@@ -268,6 +330,7 @@ export function PaasStudioPanel({
     async (backup: PostgresBackupRecord) => {
       setBackupBusy(true);
       setBackupFeedback(null);
+      setBackupError(null);
       try {
         const response = await fetch(`${normalizedBase}/backups/restore`, {
           method: 'POST',
@@ -280,16 +343,28 @@ export function PaasStudioPanel({
           }),
         });
         if (!response.ok) {
-          setBackupFeedback(
+          setBackupError(
             `Dry-run restore check returned HTTP ${response.status} for ${backup.filename}.`
           );
           return;
         }
+        const payload = (await response.json().catch(() => null)) as unknown;
+        const result = isRecord(payload) && payload.success === true && isRecord(payload.data)
+          ? payload.data
+          : null;
+        if (!result || (result.verified !== true && result.ok !== true)) {
+          setBackupError(
+            `Dry-run response did not confirm verification for ${backup.filename}.`
+          );
+          setBackupFeedback(null);
+          return;
+        }
+        setBackupError(null);
         setBackupFeedback(
           `Dry-run restore verified for ${backup.filename} (SHA-256 ${backup.sha256.slice(0, 12)}...).`
         );
       } catch {
-        setBackupFeedback(`Unable to reach /paas/backups/restore for ${backup.filename}.`);
+        setBackupError(`Unable to reach /paas/backups/restore for ${backup.filename}.`);
       } finally {
         setBackupBusy(false);
       }
@@ -300,6 +375,7 @@ export function PaasStudioPanel({
   const refreshState = useCallback(async () => {
     setLoading(true);
     setErrorMessage(null);
+    setStateError(null);
     try {
       const [metricsRes, appsRes] = await Promise.all([
         fetch(`${normalizedBase}/metrics`, { cache: 'no-store' }),
@@ -309,24 +385,46 @@ export function PaasStudioPanel({
       if (metricsRes.status === 404 || appsRes.status === 404) {
         setDesktopModeAvailable(false);
         setMetrics(null);
-        setApps([]);
+        setApps(null);
         return;
       }
 
       if (!metricsRes.ok || !appsRes.ok) {
         setDesktopModeAvailable(false);
-        setErrorMessage('MoonWitness Mesh PaaS control-plane bridge is currently offline.');
+        setMetrics(null);
+        setApps(null);
+        setStateError('MoonWitness Mesh PaaS control-plane telemetry could not be loaded.');
         return;
       }
 
-      setDesktopModeAvailable(true);
-      const metricsData = (await metricsRes.json()) as PaasStudioNodeMetrics;
-      const appsPayload = (await appsRes.json()) as { apps?: PaasStudioApp[] } | PaasStudioApp[];
+      const [metricsPayload, appsPayload] = (await Promise.all([
+        metricsRes.json().catch(() => null),
+        appsRes.json().catch(() => null),
+      ])) as unknown[];
+      const metricsData =
+        isRecord(metricsPayload) && metricsPayload.success === true
+          ? parseNodeMetrics(metricsPayload.data)
+          : null;
+      const appsData =
+        isRecord(appsPayload) && appsPayload.success === true
+          ? parseApps(appsPayload.data)
+          : null;
+      if (!metricsData || !appsData) {
+        setDesktopModeAvailable(false);
+        setMetrics(null);
+        setApps(null);
+        setStateError('The PaaS bridge returned incomplete telemetry; no values were inferred.');
+        return;
+      }
 
       setMetrics(metricsData);
-      setApps(Array.isArray(appsPayload) ? appsPayload : (appsPayload.apps ?? []));
+      setApps(appsData);
+      setDesktopModeAvailable(true);
     } catch {
       setDesktopModeAvailable(false);
+      setMetrics(null);
+      setApps(null);
+      setStateError('Unable to reach the MoonWitness Mesh PaaS control-plane bridge.');
     } finally {
       setLoading(false);
     }
@@ -430,14 +528,25 @@ export function PaasStudioPanel({
         return;
       }
 
-      const payload = (await response.json()) as { logs?: string; message?: string };
+      const payload = (await response.json().catch(() => null)) as unknown;
+      const result = isRecord(payload) && payload.success === true && isRecord(payload.data)
+        ? payload.data
+        : null;
+      if (!result || result.ok === false) {
+        setErrorMessage(`Action "${action}" returned no successful result for ${app.slug}.`);
+        return;
+      }
       if (action === 'logs') {
         setActiveLogs({
           slug: app.slug,
-          text: payload.logs ?? 'No log output returned.',
+          text: typeof result.logs === 'string' ? result.logs : 'No log output returned.',
         });
       } else {
-        setFeedback(payload.message ?? `Action "${action}" completed for ${app.slug}.`);
+        setFeedback(
+          typeof result.message === 'string'
+            ? result.message
+            : `Action "${action}" completed for ${app.slug}.`
+        );
         await refreshState();
       }
     } catch {
@@ -445,6 +554,13 @@ export function PaasStudioPanel({
     } finally {
       setBusyAppId(null);
     }
+  };
+
+  const confirmPendingAppAction = async () => {
+    if (!pendingAppAction || busyAppId) return;
+    const { app, action } = pendingAppAction;
+    await handleAppAction(app, action);
+    setPendingAppAction(null);
   };
 
   return (
@@ -465,50 +581,67 @@ export function PaasStudioPanel({
           </Button>
         }
       >
-        {!desktopModeAvailable ? (
+        {loading ? (
+          <div role="status" aria-label="Loading PaaS telemetry" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+          </div>
+        ) : stateError ? (
+          <EmptyState
+            role="alert"
+            title="Live PaaS telemetry unavailable"
+            description={stateError}
+            action={
+              <Button variant="outline" onClick={() => void refreshState()}>
+                Retry
+              </Button>
+            }
+          />
+        ) : !desktopModeAvailable ? (
           <div className="flex items-start gap-3 rounded-md border border-dashed p-4 text-sm">
             <WarningIcon className="mt-0.5 h-4 w-4 shrink-0" />
             <div className="space-y-1">
               <p className="font-medium">Desktop DX Mode Required for Live Mesh PaaS</p>
               <p className="opacity-80">
-                You are currently viewing PaaS Studio in Web Mode. Launch MoonWitness Desktop DX to
-                connect directly to your private mesh control-plane via{' '}
-                <code>{normalizedBase}/*</code>.
+                Launch MoonWitness Desktop DX to connect directly to your private mesh control-plane
+                via <code>{normalizedBase}/*</code>.
               </p>
             </div>
           </div>
-        ) : (
+        ) : metrics && apps ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <MetricTile
               label="CPU Load"
-              value={`${metrics?.cpuPercent ?? 0}%`}
-              detail={metrics?.nodeId ?? 'mesh-node'}
+              value={`${metrics.cpuPercent}%`}
+              detail={metrics.nodeId}
               accent="cyan"
               icon={<ActivityIcon className="h-4 w-4" />}
             />
             <MetricTile
               label="Memory"
-              value={`${metrics?.memoryPercent ?? 0}%`}
-              detail={`${metrics?.memoryUsedMb ?? 0} / ${metrics?.memoryTotalMb ?? 0} MB`}
+              value={`${metrics.memoryPercent}%`}
+              detail={`${metrics.memoryUsedMb} / ${metrics.memoryTotalMb} MB`}
               accent="magenta"
               icon={<BoltIcon className="h-4 w-4" />}
             />
             <MetricTile
               label="Mesh IP"
-              value={metrics?.meshIp ?? '—'}
+              value={metrics.meshIp}
               detail="Private WireGuard / Tailscale"
               accent="green"
               icon={<SignalIcon className="h-4 w-4" />}
             />
             <MetricTile
               label="Running Apps"
-              value={String(metrics?.runningApps ?? apps.length)}
+              value={String(metrics.runningApps)}
               detail="Active containers"
               accent="violet"
               icon={<GlobeIcon className="h-4 w-4" />}
             />
           </div>
-        )}
+        ) : null}
       </Panel>
 
       <Panel
@@ -584,7 +717,11 @@ export function PaasStudioPanel({
 
           <div className="flex items-center justify-between gap-3 md:col-span-2">
             <div className="text-sm">
-              {errorMessage ? <span className="text-destructive">{errorMessage}</span> : null}
+              {errorMessage ? (
+                <span role="alert" className="text-destructive">
+                  {errorMessage}
+                </span>
+              ) : null}
               {!errorMessage && feedback ? <span>{feedback}</span> : null}
             </div>
             <Button type="submit" disabled={!desktopModeAvailable || deploying}>
@@ -599,19 +736,36 @@ export function PaasStudioPanel({
         title="Deployed Apps"
         description="Inspect container status, stream logs, or control lifecycle."
       >
-        {apps.length === 0 ? (
+        {loading ? (
+          <div role="status" aria-label="Loading deployed apps" className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Skeleton className="h-40" />
+            <Skeleton className="h-40" />
+          </div>
+        ) : stateError ? (
+          <EmptyState
+            role="alert"
+            title="Deployed apps unavailable"
+            description="The live app inventory failed to load; no previous or fixture apps are shown."
+            action={
+              <Button variant="outline" onClick={() => void refreshState()}>
+                Retry
+              </Button>
+            }
+          />
+        ) : !desktopModeAvailable ? (
           <p className="text-sm opacity-75">
-            {desktopModeAvailable
-              ? 'No PaaS apps deployed on this mesh node yet.'
-              : 'Connect via Desktop DX to view and manage deployed apps.'}
+            Connect via Desktop DX to view and manage deployed apps.
           </p>
-        ) : (
+        ) : apps && apps.length === 0 ? (
+          <p className="text-sm opacity-75">No PaaS apps deployed on this mesh node yet.</p>
+        ) : apps ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {apps.map((app) => {
               const isBusy = busyAppId === app.id;
               return (
                 <div
                   key={app.id}
+                  aria-busy={isBusy}
                   className="flex flex-col justify-between gap-4 rounded-md border p-4"
                 >
                   <div className="space-y-1.5">
@@ -632,7 +786,7 @@ export function PaasStudioPanel({
                       type="button"
                       size="xs"
                       variant="outline"
-                      disabled={isBusy}
+                      disabled={busyAppId !== null}
                       onClick={() => void handleAppAction(app, 'restart')}
                     >
                       <RefreshIcon className="h-3.5 w-3.5" />
@@ -642,8 +796,8 @@ export function PaasStudioPanel({
                       type="button"
                       size="xs"
                       variant="secondary"
-                      disabled={isBusy}
-                      onClick={() => void handleAppAction(app, 'stop')}
+                      disabled={busyAppId !== null}
+                      onClick={() => setPendingAppAction({ app, action: 'stop' })}
                     >
                       <PauseIcon className="h-3.5 w-3.5" />
                       Stop
@@ -652,7 +806,7 @@ export function PaasStudioPanel({
                       type="button"
                       size="xs"
                       variant="outline"
-                      disabled={isBusy}
+                      disabled={busyAppId !== null}
                       onClick={() => void handleAppAction(app, 'logs')}
                     >
                       <CodeIcon className="h-3.5 w-3.5" />
@@ -662,8 +816,8 @@ export function PaasStudioPanel({
                       type="button"
                       size="xs"
                       variant="destructive"
-                      disabled={isBusy}
-                      onClick={() => void handleAppAction(app, 'delete')}
+                      disabled={busyAppId !== null}
+                      onClick={() => setPendingAppAction({ app, action: 'delete' })}
                     >
                       <DeleteIcon className="h-3.5 w-3.5" />
                       Delete
@@ -673,12 +827,12 @@ export function PaasStudioPanel({
               );
             })}
           </div>
-        )}
+        ) : null}
       </Panel>
 
       <Panel
         title="Live PaaS Operations Suite"
-        description="Stream container logs, generate 1-click EasyTier VPS join plans, and manage SHA-256 verified PostgreSQL backups."
+        description="Stream container logs, generate EasyTier VPS join plans, and inspect live PostgreSQL backup metadata."
         actions={<Badge variant="primary">Wave C.13–C.15</Badge>}
       >
         <Tabs defaultValue="logs-stats" className="space-y-4">
@@ -695,20 +849,40 @@ export function PaasStudioPanel({
 
           <TabsContent value="logs-stats" className="space-y-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <MetricTile
-                label="Live CPU"
-                value={`${metrics?.cpuPercent ?? 0}%`}
-                detail={metrics?.nodeId ?? 'mesh-node'}
-                accent="cyan"
-                icon={<ActivityIcon className="h-4 w-4" />}
-              />
-              <MetricTile
-                label="Live RAM"
-                value={`${metrics?.memoryPercent ?? 0}%`}
-                detail={`${metrics?.memoryUsedMb ?? 0} / ${metrics?.memoryTotalMb ?? 0} MB`}
-                accent="magenta"
-                icon={<BoltIcon className="h-4 w-4" />}
-              />
+              {metrics ? (
+                <>
+                  <MetricTile
+                    label="Live CPU"
+                    value={`${metrics.cpuPercent}%`}
+                    detail={metrics.nodeId}
+                    accent="cyan"
+                    icon={<ActivityIcon className="h-4 w-4" />}
+                  />
+                  <MetricTile
+                    label="Live RAM"
+                    value={`${metrics.memoryPercent}%`}
+                    detail={`${metrics.memoryUsedMb} / ${metrics.memoryTotalMb} MB`}
+                    accent="magenta"
+                    icon={<BoltIcon className="h-4 w-4" />}
+                  />
+                </>
+              ) : (
+                <EmptyState
+                  role={stateError ? 'alert' : undefined}
+                  className="p-4 sm:col-span-2"
+                  title={loading ? 'Loading live metrics' : 'Live metrics unavailable'}
+                  description={
+                    stateError ?? 'Live node metrics are only shown after a successful read.'
+                  }
+                  action={
+                    stateError ? (
+                      <Button variant="outline" size="sm" onClick={() => void refreshState()}>
+                        Retry
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              )}
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="paas-log-target">Target App Stream</Label>
                 <div className="flex items-center gap-2">
@@ -718,7 +892,7 @@ export function PaasStudioPanel({
                     onChange={(event) => setSelectedLogApp(event.target.value)}
                   >
                     <option value="control-plane">control-plane</option>
-                    {apps.map((app) => (
+                    {apps?.map((app) => (
                       <option key={app.id} value={app.slug || app.id}>
                         {app.slug}
                       </option>
@@ -810,7 +984,7 @@ export function PaasStudioPanel({
                 <span className="font-mono text-xs font-bold uppercase tracking-wide text-ink">
                   1-Click EasyTier + Control-Plane + Caddy Join Plan
                 </span>
-                <Badge variant="cyan">Private Mesh Ready</Badge>
+                <Badge variant="cyan">Plan Only · Not Provisioned</Badge>
               </div>
               <pre className="overflow-x-auto rounded bg-ink/5 p-3 font-mono text-xs text-ink">
                 {vpsJoinPlan}
@@ -825,13 +999,13 @@ export function PaasStudioPanel({
                   PostgreSQL Snapshots &amp; Dry-Run Verification
                 </p>
                 <p className="text-xs opacity-75">
-                  All snapshots are checksummed with SHA-256 before restore verification.
+                  Verification is shown only when the live bridge explicitly confirms it.
                 </p>
               </div>
               <Button
                 type="button"
                 size="sm"
-                disabled={backupBusy}
+                disabled={backupBusy || !desktopModeAvailable}
                 onClick={() => void handleTriggerPostgresBackup()}
               >
                 <LockIcon className="h-3.5 w-3.5" />
@@ -839,12 +1013,28 @@ export function PaasStudioPanel({
               </Button>
             </div>
 
+            {backupError ? (
+              <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+                {backupError}
+              </div>
+            ) : null}
             {backupFeedback ? (
-              <div className="rounded-md border border-ink/15 bg-ink/5 px-3 py-2 font-mono text-xs">
+              <div role="status" className="rounded-md border border-ink/15 bg-ink/5 px-3 py-2 font-mono text-xs">
                 {backupFeedback}
               </div>
             ) : null}
 
+            {backups.length === 0 ? (
+              <EmptyState
+                className="p-6"
+                title={backupsLoaded ? 'No PostgreSQL snapshots' : 'No live backup metadata loaded'}
+                description={
+                  backupsLoaded
+                    ? 'The live inventory succeeded and returned no snapshots.'
+                    : 'The current Desktop bridge does not expose a PostgreSQL backup inventory. No fixture backups are shown.'
+                }
+              />
+            ) : (
             <div className="space-y-2">
               {backups.map((backup) => (
                 <div
@@ -855,7 +1045,12 @@ export function PaasStudioPanel({
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-xs font-bold">{backup.filename}</span>
                       <Badge variant={backup.verified ? 'primary' : 'magenta'}>
-                        <CheckIcon className="mr-1 h-3 w-3" />
+                        {backup.verified ? (
+                          <CheckIcon className="mr-1 h-3 w-3" />
+                        ) : (
+                          <WarningIcon className="mr-1 h-3 w-3" />
+                        )}
+                        {backup.verified ? 'Verified · ' : 'Unverified · '}
                         SHA-256: {backup.sha256.slice(0, 12)}...
                       </Badge>
                     </div>
@@ -876,6 +1071,7 @@ export function PaasStudioPanel({
                 </div>
               ))}
             </div>
+            )}
           </TabsContent>
         </Tabs>
       </Panel>
@@ -899,6 +1095,21 @@ export function PaasStudioPanel({
           </pre>
         </Panel>
       ) : null}
+
+      <ConfirmDialog
+        open={pendingAppAction !== null}
+        title={pendingAppAction?.action === 'delete' ? 'Delete app' : 'Stop app'}
+        description={
+          pendingAppAction
+            ? `${pendingAppAction.action === 'delete' ? 'Delete' : 'Stop'} ${pendingAppAction.app.slug}. The live inventory will update only after the control-plane confirms the action.`
+            : ''
+        }
+        confirmLabel={pendingAppAction?.action === 'delete' ? 'Delete app' : 'Stop app'}
+        destructive
+        busy={pendingAppAction ? busyAppId === pendingAppAction.app.id : false}
+        onConfirm={() => void confirmPendingAppAction()}
+        onCancel={() => setPendingAppAction(null)}
+      />
     </div>
   );
 }

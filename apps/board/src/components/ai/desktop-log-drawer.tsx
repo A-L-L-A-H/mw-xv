@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { LogConsole, type LogConsoleEntry } from '@moonwitness/ui/components/log-console';
@@ -13,6 +13,8 @@ import {
   SheetTrigger,
 } from '@moonwitness/ui/components/sheet';
 import { CheckCircleIcon, CodeIcon, SparkleIcon } from '@moonwitness/ui/icons';
+import { ConfirmDialog } from '@/components/views/confirm-dialog';
+import { client } from '@/lib/client';
 import { useDesktopMode } from '@/lib/desktop-mode';
 
 interface DesktopApiWindow extends Window {
@@ -28,11 +30,10 @@ interface DesktopBundleResponse {
   readonly bundle?: string;
 }
 
-function getDesktopApiBaseUrl(): string | null {
-  if (typeof window === 'undefined') return null;
+function isDesktopRuntime(): boolean {
+  if (typeof window === 'undefined') return false;
   const raw = (window as DesktopApiWindow).__MW_DESKTOP_API_URL__;
-  if (!raw || typeof raw !== 'string') return null;
-  return raw.replace(/\/+$/u, '');
+  return typeof raw === 'string' && raw.trim().length > 0;
 }
 
 function buildFallbackMarkdown(entries: readonly LogConsoleEntry[]): string {
@@ -59,59 +60,74 @@ export function DesktopLogDrawer() {
   const [open, setOpen] = useState(false);
   const [entries, setEntries] = useState<readonly LogConsoleEntry[]>([]);
   const [loading, setLoading] = useState(false);
+  const [readError, setReadError] = useState<string | null>(null);
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearError, setClearError] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const fetchInFlightRef = useRef(false);
+  const readGenerationRef = useRef(0);
 
   const isDeveloperMode = mode === 'developer';
 
   const fetchLogs = useCallback(async () => {
-    const baseUrl = getDesktopApiBaseUrl();
-    if (!baseUrl) return;
+    if (!isDesktopRuntime() || fetchInFlightRef.current) return;
+    fetchInFlightRef.current = true;
+    const requestGeneration = readGenerationRef.current;
     setLoading(true);
     try {
-      const response = await fetch(`${baseUrl}/api/desktop/logs`);
-      if (!response.ok) return;
-      const payload = (await response.json()) as DesktopLogsResponse;
-      if (Array.isArray(payload.entries)) {
-        setEntries(payload.entries);
+      const payload = await client.request<DesktopLogsResponse>('/api/desktop/logs');
+      if (!Array.isArray(payload?.entries)) {
+        throw new Error('Desktop log response did not contain an entries array.');
       }
+      if (requestGeneration !== readGenerationRef.current) return;
+      setEntries(payload.entries);
+      setReadError(null);
     } catch {
-      // Sidecar may be restarting; keep last known entries.
+      if (requestGeneration === readGenerationRef.current) {
+        // Sidecar may be restarting; retain entries but label them as stale.
+        setReadError('Desktop log refresh failed. Any entries shown are last known data.');
+      }
     } finally {
+      fetchInFlightRef.current = false;
       setLoading(false);
     }
   }, []);
 
   const handleClear = useCallback(async () => {
-    const baseUrl = getDesktopApiBaseUrl();
-    if (!baseUrl) {
-      setEntries([]);
+    if (clearing) return;
+    readGenerationRef.current += 1;
+    setClearError(null);
+    setClearing(true);
+    if (!isDesktopRuntime()) {
+      setClearError('Desktop sidecar is unavailable. Logs were not cleared.');
+      setClearConfirmOpen(false);
+      setClearing(false);
       return;
     }
     try {
-      await fetch(`${baseUrl}/api/desktop/logs/clear`, { method: 'POST' });
+      await client.request('/api/desktop/logs/clear', { method: 'POST' });
       setEntries([]);
+      setClearConfirmOpen(false);
     } catch {
-      // Keep UI responsive if sidecar is unavailable.
+      setClearError('Unable to clear desktop logs. Existing entries were kept.');
+      setClearConfirmOpen(false);
+    } finally {
+      setClearing(false);
     }
-  }, []);
+  }, [clearing]);
 
   const handleCopyForAi = useCallback(
     async (visibleEntries?: readonly LogConsoleEntry[]) => {
-      const baseUrl = getDesktopApiBaseUrl();
       let markdown = buildFallbackMarkdown(visibleEntries ?? entries);
 
-      if (baseUrl) {
+      if (isDesktopRuntime()) {
         try {
-          const response = await fetch(`${baseUrl}/api/desktop/logs/bundle`);
-          if (response.ok) {
-            const contentType = response.headers.get('content-type') ?? '';
-            if (contentType.includes('application/json')) {
-              const payload = (await response.json()) as DesktopBundleResponse;
-              markdown = payload.markdown ?? payload.bundle ?? markdown;
-            } else {
-              const text = await response.text();
-              if (text.trim().length > 0) markdown = text;
-            }
+          const payload = await client.request<DesktopBundleResponse>('/api/desktop/logs/bundle');
+          if (typeof payload?.markdown === 'string' && payload.markdown.trim().length > 0) {
+            markdown = payload.markdown;
+          } else if (typeof payload?.bundle === 'string' && payload.bundle.trim().length > 0) {
+            markdown = payload.bundle;
           }
         } catch {
           // Fall back to client-formatted diagnostic bundle.
@@ -147,7 +163,7 @@ export function DesktopLogDrawer() {
   }, [isDeveloperMode]);
 
   useEffect(() => {
-    if (!isDeveloperMode || !open) return;
+    if (!isDeveloperMode || !open || clearConfirmOpen || clearing) return;
     let cancelled = false;
     const run = () => {
       if (!cancelled) void fetchLogs();
@@ -158,7 +174,7 @@ export function DesktopLogDrawer() {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [isDeveloperMode, open, fetchLogs]);
+  }, [isDeveloperMode, open, clearConfirmOpen, clearing, fetchLogs]);
 
   if (!isDeveloperMode) {
     return (
@@ -190,6 +206,9 @@ export function DesktopLogDrawer() {
   }
 
   const errorCount = entries.filter((entry) => entry.level === 'error').length;
+  const logsDescription = readError
+    ? 'Latest refresh failed. Any entries shown are last known local diagnostics, not live results.'
+    : 'Live local diagnostics across Rust, Sidecar, Webview, MCP, and Mesh.';
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -210,24 +229,55 @@ export function DesktopLogDrawer() {
       <SheetContent side="right" className="w-full max-w-3xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Desktop Diagnostics & Logs</SheetTitle>
-          <SheetDescription>
-            Live loopback sidecar, Rust host, Webview, MCP, and Mesh logs. Shortcut: Ctrl+Shift+L.
-          </SheetDescription>
+          <SheetDescription>{logsDescription} Shortcut: Ctrl+Shift+L.</SheetDescription>
         </SheetHeader>
-        <div className="mt-4">
-          <LogConsole
-            entries={entries}
-            loading={loading}
-            copyStatus={copyStatus}
-            onRefresh={() => {
-              void fetchLogs();
-            }}
-            onClear={() => {
+        <div className="mt-4 space-y-3">
+          {clearError ? (
+            <p role="alert" className="text-sm text-destructive">
+              {clearError}
+            </p>
+          ) : null}
+          {readError ? (
+            <p role="alert" className="text-sm text-destructive">
+              {readError}
+            </p>
+          ) : null}
+          <fieldset disabled={clearing} aria-busy={clearing || loading} className="min-w-0">
+            <LogConsole
+              entries={entries}
+              description={logsDescription}
+              loading={loading || clearing}
+              emptyMessage={
+                readError
+                  ? 'No log entries to display. The latest refresh failed; any results are last known data.'
+                  : undefined
+              }
+              copyStatus={copyStatus}
+              onRefresh={() => {
+                if (!clearing) void fetchLogs();
+              }}
+              onClear={() => {
+                if (!clearing) {
+                  setClearError(null);
+                  setClearConfirmOpen(true);
+                }
+              }}
+              onCopyForAi={(visible) => {
+                if (!clearing) void handleCopyForAi(visible);
+              }}
+            />
+          </fieldset>
+          <ConfirmDialog
+            open={clearConfirmOpen}
+            title="Clear desktop logs?"
+            description="This permanently clears the local desktop diagnostic log. This action cannot be undone."
+            confirmLabel="Clear logs"
+            destructive
+            busy={clearing}
+            onConfirm={() => {
               void handleClear();
             }}
-            onCopyForAi={(visible) => {
-              void handleCopyForAi(visible);
-            }}
+            onCancel={() => setClearConfirmOpen(false)}
           />
         </div>
       </SheetContent>
