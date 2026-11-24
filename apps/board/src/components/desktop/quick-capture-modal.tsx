@@ -24,6 +24,7 @@ import {
 import { toast } from '@moonwitness/ui/components/toast';
 import { CheckIcon, SignalIcon, SparkleIcon } from '@moonwitness/ui/icons';
 import { client } from '@/lib/client';
+import { formatDateTime } from '@/lib/date-format';
 
 interface SyncEngineStatus {
   nodeId: string;
@@ -157,7 +158,7 @@ export function QuickCaptureModal() {
             {syncStatus
               ? `${pendingCount} pending · L${syncStatus.lamportClock}${
                   syncStatus.lastPlannedAt
-                    ? ` · ${new Date(syncStatus.lastPlannedAt).toLocaleTimeString()}`
+                    ? ` · ${formatDateTime(syncStatus.lastPlannedAt, 'time')}`
                     : ''
                 }`
               : 'Sync ready'}

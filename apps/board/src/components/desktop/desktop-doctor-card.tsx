@@ -8,6 +8,7 @@ import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { toast } from '@moonwitness/ui/components/toast';
 import { CheckIcon, RefreshIcon, SecurityIcon } from '@moonwitness/ui/icons';
 import { client } from '@/lib/client';
+import { formatDateTime } from '@/lib/date-format';
 
 type DoctorCheckStatus = 'ok' | 'warn' | 'fail';
 
@@ -198,7 +199,7 @@ export function DesktopDoctorCard() {
       {report && (
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-dashed border-ink/20 pt-3 font-mono text-[11px] text-ink-faint">
           <span>Platform: {report.platform}</span>
-          <span>Checked: {new Date(report.generatedAt).toLocaleTimeString()}</span>
+          <span>Checked: {formatDateTime(report.generatedAt, 'time')}</span>
         </div>
       )}
     </Panel>
