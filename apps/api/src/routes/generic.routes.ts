@@ -54,7 +54,8 @@ import type {
 import {
   queryGraphIsBounded,
   relationExpression,
-  rpcSearchReadIsBounded,
+  RPC_MAX_PAGE_SIZE,
+  rpcReadIsBounded,
   userGraphAllowed,
 } from './generic-query-graph.js';
 import { auditSnapshot } from './generic-audit.js';
@@ -437,13 +438,17 @@ async function executeRpc(
       const relationGraph = typeof kwargs.with === 'string' ? kwargs.with : undefined;
       return (await model.search_read(domain, {
         ...(kwargs as Parameters<typeof model.search_read>[1]),
+        limit: kwargs.limit ?? RPC_MAX_PAGE_SIZE,
         ...(relationGraph ? { withGraphFetched: relationGraph } : {}),
       })) as JsonValue;
     }
     case 'search':
-      return (await model.search(domain, kwargs as Parameters<typeof model.search>[1])).map(
-        (record) => record.id
-      );
+      return (
+        await model.search(domain, {
+          ...(kwargs as Parameters<typeof model.search>[1]),
+          limit: kwargs.limit ?? RPC_MAX_PAGE_SIZE,
+        } as Parameters<typeof model.search>[1])
+      ).map((record) => record.id);
     case 'create': {
       const values = first;
       if (values === undefined || !(Array.isArray(values) || asJsonObject(values)))
@@ -1509,8 +1514,8 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
       required === 'read' || required === 'write' || required === 'unlink'
         ? await userReadScope(req, modelName)
         : [];
-    if (required === 'read' && method === 'search_read' && !rpcSearchReadIsBounded(kwargs))
-      return reply.send(rpcError(-32602, 'Search query exceeds configured limits'));
+    if (required === 'read' && !rpcReadIsBounded(method, args, kwargs))
+      return reply.send(rpcError(-32602, 'Read query exceeds configured limits'));
     if (required === 'read' && !userGraphAllowed(req.auth?.role, modelName, requestedGraph))
       return reply.status(403).send(rpcError(-32003, 'Forbidden relation graph'));
     if (

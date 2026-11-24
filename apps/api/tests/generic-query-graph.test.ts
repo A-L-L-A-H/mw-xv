@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   queryGraphIsBounded,
   relationExpression,
+  RPC_MAX_PAGE_SIZE,
+  rpcReadIsBounded,
   rpcSearchReadIsBounded,
   userGraphAllowed,
 } from '../src/routes/generic-query-graph.js';
@@ -42,5 +44,20 @@ describe('generic query relation graph policy', () => {
     expect(rpcSearchReadIsBounded({ fields: Array.from({ length: 101 }, () => 'id') })).toBe(false);
     expect(rpcSearchReadIsBounded({ order: 'x'.repeat(513) })).toBe(false);
     expect(rpcSearchReadIsBounded({ with: 'partner.addresses.country.extra' })).toBe(false);
+  });
+
+  it('bounds every read-mapped RPC method, not just search_read', () => {
+    for (const method of ['search', 'search_read', 'search_count']) {
+      expect(rpcReadIsBounded(method, [], {})).toBe(true);
+      expect(rpcReadIsBounded(method, [], { limit: RPC_MAX_PAGE_SIZE })).toBe(true);
+      expect(rpcReadIsBounded(method, [], { limit: RPC_MAX_PAGE_SIZE + 1 })).toBe(false);
+      expect(rpcReadIsBounded(method, [], { limit: 0 })).toBe(false);
+      expect(rpcReadIsBounded(method, [], { offset: -1 })).toBe(false);
+    }
+    expect(rpcReadIsBounded('read', [Array.from({ length: 500 }, (_, i) => i)], {})).toBe(true);
+    expect(rpcReadIsBounded('read', [Array.from({ length: 501 }, (_, i) => i)], {})).toBe(false);
+    expect(
+      rpcReadIsBounded('fields_get', [], { fields: Array.from({ length: 101 }, () => 'id') })
+    ).toBe(false);
   });
 });
