@@ -99,20 +99,31 @@ function projectWithProfile(
   if (!isAttestedEvidenceResolution(evidence)) {
     return { status: 'rejected', reason: 'evidence_attestation' };
   }
-  const allowedPassage = selectedProfile.authorized_passages?.find(
-    (passage) =>
-      passage.source_id === evidence.source_id &&
-      passage.edition_id === evidence.edition_id &&
-      passage.locator === evidence.locator &&
-      passage.content_sha256 === evidence.content_sha256 &&
-      passage.content_sha256 === evidence.evidence.selector.content_sha256 &&
-      passage.allowed_use === 'read_analyze' &&
-      passage.rights_evidence_ref.trim().length > 0
-  );
-  if (typeof selectedProfile.id !== 'string' || !allowedPassage) {
+  const allowedPassage =
+    selectedProfile &&
+    typeof selectedProfile.id === 'string' &&
+    selectedProfile.id.trim().length > 0
+      ? selectedProfile.authorized_passages?.find(
+          (passage) =>
+            passage.source_id === evidence.source_id &&
+            passage.edition_id === evidence.edition_id &&
+            passage.locator === evidence.locator &&
+            passage.content_sha256 === evidence.content_sha256 &&
+            passage.content_sha256 === evidence.evidence.selector.content_sha256 &&
+            passage.allowed_use === 'read_analyze' &&
+            passage.rights_evidence_ref.trim().length > 0
+        )
+      : undefined;
+  if (!allowedPassage) {
     return { status: 'rejected', reason: 'profile_source' };
   }
-  if (!methodIdentifier.test(method.id) || !methodVersion.test(method.version)) {
+  if (
+    !method ||
+    typeof method.id !== 'string' ||
+    typeof method.version !== 'string' ||
+    !methodIdentifier.test(method.id) ||
+    !methodVersion.test(method.version)
+  ) {
     return { status: 'rejected', reason: 'method' };
   }
 
@@ -131,6 +142,7 @@ function projectWithProfile(
   const originalText = spanMatchesExcerpt(term_span, evidence.excerpt);
   if (
     originalText === undefined ||
+    originalText.trim().length === 0 ||
     term_span.scalar_start < annotation.source_range.scalar_start ||
     term_span.scalar_end > annotation.source_range.scalar_end
   ) {
@@ -171,7 +183,15 @@ function projectWithProfile(
       profile_id: selectedProfile.id,
       predicate: 'candidate_divine_attribute',
       status: 'candidate',
-      term: { original_text: originalText, span: { ...term_span } },
+      term: {
+        original_text: originalText,
+        span: {
+          byte_start: term_span.byte_start,
+          byte_end: term_span.byte_end,
+          scalar_start: term_span.scalar_start,
+          scalar_end: term_span.scalar_end,
+        },
+      },
       source: {
         source_id: evidence.source_id,
         edition_id: evidence.edition_id,
@@ -183,7 +203,7 @@ function projectWithProfile(
       },
       polarity: 'positive',
       context_mode: annotation.context.mode,
-      method: { ...method },
+      method: { id: method.id, version: method.version },
       interpretation_scope: 'analysis_not_revelation',
     },
   };

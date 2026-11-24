@@ -120,4 +120,59 @@ describe('local AI runtime contract', () => {
       reason: 'provider_unreachable',
     });
   });
+
+  it('classifies HTTP 200 malformed JSON and oversize text as invalid_response across providers', async () => {
+    for (const provider of ['simple-v1', 'ollama', 'openai-compat'] as const) {
+      const malformedEndpoint = await localEndpoint(() => ({
+        status: 200,
+        body: '<html>not-json</html>',
+      }));
+      const malformedRuntime = createLocalAiRuntime(
+        readLocalAiConfig({
+          AI_MODE: 'local',
+          LOCAL_AI_ENDPOINT: malformedEndpoint.href,
+          LOCAL_AI_PROVIDER: provider,
+        })
+      );
+      expect(await malformedRuntime.generate({ prompt: 'synthetic prompt' })).toEqual({
+        status: 'unavailable',
+        reason: 'invalid_response',
+      });
+
+      const oversizePayload =
+        provider === 'ollama'
+          ? { response: 'x'.repeat(100_001) }
+          : provider === 'openai-compat'
+            ? { choices: [{ message: { content: 'x'.repeat(100_001) } }] }
+            : { text: 'x'.repeat(100_001) };
+      const oversizeEndpoint = await localEndpoint(() => ({
+        status: 200,
+        body: JSON.stringify(oversizePayload),
+      }));
+      const oversizeRuntime = createLocalAiRuntime(
+        readLocalAiConfig({
+          AI_MODE: 'local',
+          LOCAL_AI_ENDPOINT: oversizeEndpoint.href,
+          LOCAL_AI_PROVIDER: provider,
+        })
+      );
+      expect(await oversizeRuntime.generate({ prompt: 'synthetic prompt' })).toEqual({
+        status: 'unavailable',
+        reason: 'invalid_response',
+      });
+
+      const outageEndpoint = await localEndpoint(() => ({ status: 503, body: '{}' }));
+      const outageRuntime = createLocalAiRuntime(
+        readLocalAiConfig({
+          AI_MODE: 'local',
+          LOCAL_AI_ENDPOINT: outageEndpoint.href,
+          LOCAL_AI_PROVIDER: provider,
+        })
+      );
+      expect(await outageRuntime.generate({ prompt: 'synthetic prompt' })).toEqual({
+        status: 'unavailable',
+        reason: 'provider_unreachable',
+      });
+    }
+  });
 });

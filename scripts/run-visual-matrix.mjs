@@ -10,7 +10,7 @@ import { resolvePackageManager } from './package-manager.mjs';
 const repositoryRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const packageManager = resolvePackageManager();
 if (!packageManager) {
-  stderr.write('Run the visual browser matrix through pnpm.\n');
+  stderr.write('Run the visual browser matrix through bun.\n');
   exit(2);
 }
 
@@ -28,9 +28,7 @@ if (missingBrowsers.length > 0) {
   );
   for (const [name, browser] of missingBrowsers) {
     stderr.write(`Missing Playwright ${name} executable: ${browser.executablePath()}\n`);
-    stderr.write(
-      `Install it with: pnpm --filter @moonwitness/board exec playwright install ${name}\n`
-    );
+    stderr.write(`Install it with: bunx --cwd apps/board playwright install ${name}\n`);
   }
   stderr.write('No visual matrix projects were skipped.\n');
   exit(2);
@@ -40,9 +38,9 @@ const result = spawnSync(
   packageManager.command,
   [
     ...packageManager.prefixArgs,
-    '--filter',
-    '@moonwitness/board',
-    'exec',
+    'x',
+    '--cwd',
+    'apps/board',
     'playwright',
     'test',
     'e2e/visual-audit.spec.ts',

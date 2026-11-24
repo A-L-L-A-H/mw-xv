@@ -122,7 +122,14 @@ export function isLoopbackEndpointUrl(endpoint: string): boolean {
   try {
     const parsed = new URL(endpoint);
     const host = parsed.hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-    return LOOPBACK_HOSTS.has(host);
+    return (
+      (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+      parsed.username.length === 0 &&
+      parsed.password.length === 0 &&
+      parsed.search.length === 0 &&
+      parsed.hash.length === 0 &&
+      LOOPBACK_HOSTS.has(host)
+    );
   } catch {
     return false;
   }
@@ -154,6 +161,16 @@ export function createMultiProviderLlmRouter(config: ProviderRouterConfig): Mult
     windowSize: config.circuitBreaker?.windowSize ?? DEFAULT_CIRCUIT_BREAKER.windowSize,
     cooldownMs: config.circuitBreaker?.cooldownMs ?? DEFAULT_CIRCUIT_BREAKER.cooldownMs,
   };
+  if (
+    !Number.isInteger(cb.failureThreshold) ||
+    cb.failureThreshold < 1 ||
+    !Number.isInteger(cb.windowSize) ||
+    cb.windowSize < 1 ||
+    !Number.isFinite(cb.cooldownMs) ||
+    cb.cooldownMs < 0
+  ) {
+    throw new TypeError('circuitBreaker bounds must be positive counts and non-negative cooldown');
+  }
 
   const states = new Map<string, ProviderState>();
   for (const provider of config.providers) {

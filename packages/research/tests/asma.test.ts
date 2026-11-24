@@ -7,8 +7,10 @@ import {
   projectAsmaAttributeCandidate,
   projectResearchSemanticAnnotation,
   resolveResearchEvidenceReference,
+  segmentText,
   validateResearchEvidenceReference,
   validateResearchSemanticAnnotation,
+  type AsmaAnalysisMethod,
   type ResearchEvidenceReference,
   type ResolvablePassage,
   type ResearchSemanticAnnotation,
@@ -434,5 +436,146 @@ describe('Asma candidate projection', () => {
     expect(shifted.status).toBe('candidate');
     if (shifted.status === 'candidate')
       expect(shifted.candidate.id).not.toBe(analysis.candidate.id);
+
+    const shiftedAssertion = project({
+      subject_assertion_id: 'mw:assertion:asma-fixture-alt',
+    } as Partial<ResearchSemanticAnnotation>);
+    expect(shiftedAssertion.status).toBe('rejected');
+
+    const altMethod = projectAsmaAttributeCandidateWithProfile({
+      annotation,
+      evidence: resolved,
+      term_span: termSpan,
+      method: { id: 'mw:asma-method:attribute-review', version: '1.0.1' },
+      profile: syntheticProfile,
+    });
+    expect(altMethod.status).toBe('candidate');
+    if (altMethod.status === 'candidate') {
+      expect(altMethod.candidate.id).not.toBe(analysis.candidate.id);
+    }
+
+    const altMethodId = projectAsmaAttributeCandidateWithProfile({
+      annotation,
+      evidence: resolved,
+      term_span: termSpan,
+      method: { id: 'mw:asma-method:attribute-review-alt', version: '1.0.0' },
+      profile: syntheticProfile,
+    });
+    expect(altMethodId.status).toBe('candidate');
+    if (altMethodId.status === 'candidate') {
+      expect(altMethodId.candidate.id).not.toBe(analysis.candidate.id);
+    }
+
+    const altSpanStart = scalarIndexOf(text, 'attributed');
+    const altSpan = span(text, altSpanStart, altSpanStart + 'attributed'.length);
+    const altSpanResult = projectAsmaAttributeCandidateWithProfile({
+      annotation,
+      evidence: resolved,
+      term_span: altSpan,
+      method,
+      profile: syntheticProfile,
+    });
+    expect(altSpanResult.status).toBe('candidate');
+    if (altSpanResult.status === 'candidate') {
+      expect(altSpanResult.candidate.id).not.toBe(analysis.candidate.id);
+    }
+  });
+
+  it('connects K4-001 Arabic segmentation on Q7:46 bytes without leaking caller fields or accepting whitespace spans', async () => {
+    const artifact = await readFile(
+      new URL(
+        '../../../corpus/reference/sha256/6f/6ff83b01099fb7992b5f7fa101cfab3d6556607ca6b1fe69d53cb76f97027760',
+        import.meta.url
+      )
+    );
+    const line = artifact.toString('utf8');
+    const quranPassage: ResolvablePassage = {
+      source_id: 'mw:source:tanzil-quran-text',
+      edition_id: 'mw:edition:tanzil-quran-text-v1.1-uthmani-txt2',
+      locator: 'Q7:46',
+      text: line,
+      content_sha256: quranRightsManifest.artifact.sha256,
+      citation: quranRightsManifest.attribution.text,
+    };
+    const segments = segmentText(line, { language: 'ar' });
+    const wordSegment = segments.find((seg) => seg.kind === 'word' && seg.scalar_start > 10);
+    const whitespaceSegment = segments.find((seg) => seg.kind === 'whitespace');
+    expect(wordSegment).toBeDefined();
+    expect(whitespaceSegment).toBeDefined();
+    if (!wordSegment || !whitespaceSegment) return;
+
+    const quranEvidence: ResearchEvidenceReference = {
+      id: 'mw:evidence:asma-q7-46-seg',
+      assertion_id: 'mw:assertion:asma-q7-46-seg',
+      direction: 'supporting',
+      selector: {
+        source_id: quranPassage.source_id as 'mw:source:tanzil-quran-text',
+        edition_id: quranPassage.edition_id as 'mw:edition:tanzil-quran-text-v1.1-uthmani-txt2',
+        locator: 'Q7:46',
+        content_sha256: quranPassage.content_sha256,
+      },
+    };
+    const resolved = await resolveResearchEvidenceReference(
+      quranEvidence,
+      async () => quranPassage
+    );
+    const quranAnnotation: ResearchSemanticAnnotation = {
+      ...annotation,
+      id: 'mw:semantic-annotation:asma-q7-46-seg',
+      subject_assertion_id: 'mw:assertion:asma-q7-46-seg',
+      evidence_id: 'mw:evidence:asma-q7-46-seg',
+      source_content_sha256: quranPassage.content_sha256,
+      source_range: span(line, 0, Array.from(line).length),
+    };
+
+    const methodWithExtra = {
+      id: 'mw:asma-method:source-span-binding',
+      version: '1.0.0',
+      extraTag: 'should-not-leak',
+    } as AsmaAnalysisMethod;
+    const projected = projectAsmaAttributeCandidate({
+      annotation: quranAnnotation,
+      evidence: resolved,
+      term_span: {
+        byte_start: wordSegment.byte_start,
+        byte_end: wordSegment.byte_end,
+        scalar_start: wordSegment.scalar_start,
+        scalar_end: wordSegment.scalar_end,
+      },
+      method: methodWithExtra,
+    });
+    expect(projected.status).toBe('candidate');
+    if (projected.status === 'candidate') {
+      expect(projected.candidate.term.original_text).toBe(wordSegment.text);
+      expect(Object.keys(projected.candidate.method).sort()).toEqual(['id', 'version']);
+    }
+
+    expect(
+      projectAsmaAttributeCandidate({
+        annotation: quranAnnotation,
+        evidence: resolved,
+        term_span: {
+          byte_start: whitespaceSegment.byte_start,
+          byte_end: whitespaceSegment.byte_end,
+          scalar_start: whitespaceSegment.scalar_start,
+          scalar_end: whitespaceSegment.scalar_end,
+        },
+        method: { id: 'mw:asma-method:source-span-binding', version: '1.0.0' },
+      })
+    ).toEqual({ status: 'rejected', reason: 'term_span' });
+
+    expect(
+      projectAsmaAttributeCandidate({
+        annotation: quranAnnotation,
+        evidence: resolved,
+        term_span: {
+          byte_start: wordSegment.byte_start,
+          byte_end: wordSegment.byte_end,
+          scalar_start: wordSegment.scalar_start,
+          scalar_end: wordSegment.scalar_end,
+        },
+        method: null as unknown as AsmaAnalysisMethod,
+      })
+    ).toEqual({ status: 'rejected', reason: 'method' });
   });
 });

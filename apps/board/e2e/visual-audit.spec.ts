@@ -292,17 +292,12 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
   await mkdir(catalogDirectory, { recursive: true });
   await page.clock.install({ time: new Date('2026-10-24T12:00:00.000Z') });
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.addInitScript(() => {
-    localStorage.setItem(
-      'mw-board-session',
-      JSON.stringify({
-        access_token: 'visual-audit-only',
-        refresh_token: 'visual-audit-only',
-        token_type: 'Bearer',
-        expires_in: 3600,
-        user: { id: 9001, login: 'ui.visual.audit', role: 'superadmin', company_id: 1 },
-      })
-    );
+  const mockSession = JSON.stringify({
+    access_token: 'visual-audit-only',
+    refresh_token: 'visual-audit-only',
+    token_type: 'Bearer',
+    expires_in: 3600,
+    user: { id: 9001, login: 'ui.visual.audit', role: 'superadmin', company_id: 1 },
   });
 
   const activities = [
@@ -343,6 +338,10 @@ test('canonical activity, notification, and cron icons remain usable on desktop 
     const respond = (data: unknown) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(data) });
 
+    if (pathname === '/api/session') {
+      if (route.request().method() === 'GET') return respond({ token: mockSession });
+      return respond({ ok: true });
+    }
     if (pathname === '/api/models') return respond({ models: [] });
     if (pathname === '/api/base.activity') {
       return respond({ data: activities, total: activities.length });
@@ -534,12 +533,12 @@ test('ordinary-user dashboard has a verified visual baseline', async ({ page }, 
   await page.getByRole('button', { name: 'Enter the Shadow' }).click();
   await expect(page).toHaveURL(/board$/u);
 
-  const administratorSession = await page.evaluate(
-    () =>
-      JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as {
-        access_token: string;
-      } | null
-  );
+  const sessionResponse = await page.request.get('/api/session');
+  expect(sessionResponse.ok()).toBe(true);
+  const sessionPayload = (await sessionResponse.json()) as { token?: string | null };
+  const administratorSession = (
+    typeof sessionPayload.token === 'string' ? JSON.parse(sessionPayload.token) : null
+  ) as { access_token: string } | null;
   expect(administratorSession).not.toBeNull();
 
   // One API server is shared by all three matrix projects. Scope the fixture

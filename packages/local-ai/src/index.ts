@@ -17,8 +17,12 @@ export {
   type RetrieveLocalPassageRequest,
 } from './retrieval.js';
 export {
+  evaluateLocalModelHardwareCompatibility,
   isLocalModelRegistry,
   verifyLocalModelArtifact,
+  type HardwareCompatibilityProfile,
+  type HardwareCompatibilityReason,
+  type HardwareCompatibilityResult,
   type LocalModelArtifact,
   type LocalModelRegistry,
   type ModelArtifactVerification,
@@ -62,7 +66,7 @@ export interface LocalAiConfig {
 }
 
 export type { LocalAiRequest, LocalAiResult, LocalAiRuntime } from './runtime.types.js';
-import type { LocalAiRequest, LocalAiResult, LocalAiRuntime } from './runtime.types.js';
+import type { LocalAiRequest, LocalAiRuntime } from './runtime.types.js';
 
 export type LocalAiFetch = typeof fetch;
 
@@ -254,7 +258,21 @@ export function createLocalAiRuntime(
           redirect: 'error',
         });
         if (!response.ok) return { status: 'unavailable', reason: 'provider_unreachable' };
-        const body: unknown = await response.json();
+        let body: unknown;
+        if (typeof response.text === 'function') {
+          const rawBody = await response.text();
+          try {
+            body = JSON.parse(rawBody) as unknown;
+          } catch {
+            return { status: 'unavailable', reason: 'invalid_response' };
+          }
+        } else {
+          try {
+            body = (await response.json()) as unknown;
+          } catch {
+            return { status: 'unavailable', reason: 'invalid_response' };
+          }
+        }
         const text = extractProviderText(provider, body);
         if (text === undefined || text.length > MAX_RESPONSE_LENGTH) {
           return { status: 'unavailable', reason: 'invalid_response' };

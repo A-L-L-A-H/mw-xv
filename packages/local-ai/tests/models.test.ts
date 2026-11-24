@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  evaluateLocalModelHardwareCompatibility,
   isLocalModelRegistry,
   verifyLocalModelArtifact,
   type LocalModelArtifact,
@@ -163,5 +164,49 @@ describe('local model artifact registry', () => {
       valid: false,
       reason: 'integrity_mismatch',
     });
+  });
+
+  it('evaluates host RAM/VRAM requirements without hiding unsupported or CPU-only hardware', () => {
+    const cpuOnlyArtifact = artifact({ requirements: { minimumRamGiB: 16, minimumVramGiB: null } });
+    const gpuArtifact = artifact({ requirements: { minimumRamGiB: 16, minimumVramGiB: 8 } });
+
+    expect(
+      evaluateLocalModelHardwareCompatibility(
+        { totalRamGiB: 31.62, availableVramGiB: null },
+        cpuOnlyArtifact
+      )
+    ).toEqual({ compatible: true });
+
+    expect(
+      evaluateLocalModelHardwareCompatibility(
+        { totalRamGiB: 31.62, availableVramGiB: null },
+        gpuArtifact
+      )
+    ).toEqual({ compatible: false, reason: 'vram_required_unmeasured' });
+
+    expect(
+      evaluateLocalModelHardwareCompatibility({ totalRamGiB: 8, availableVramGiB: 12 }, gpuArtifact)
+    ).toEqual({ compatible: false, reason: 'insufficient_ram' });
+
+    expect(
+      evaluateLocalModelHardwareCompatibility(
+        { totalRamGiB: 31.62, availableVramGiB: 4 },
+        gpuArtifact
+      )
+    ).toEqual({ compatible: false, reason: 'insufficient_vram' });
+
+    expect(
+      evaluateLocalModelHardwareCompatibility(
+        { totalRamGiB: 31.62, availableVramGiB: 8 },
+        gpuArtifact
+      )
+    ).toEqual({ compatible: true });
+
+    expect(
+      evaluateLocalModelHardwareCompatibility(
+        { totalRamGiB: 0, availableVramGiB: null },
+        cpuOnlyArtifact
+      )
+    ).toEqual({ compatible: false, reason: 'invalid_host_profile' });
   });
 });
