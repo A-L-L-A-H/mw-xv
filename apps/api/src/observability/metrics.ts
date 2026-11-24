@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import { readCloudMetrics } from '@moonwitness/orm-cloud';
 
 export interface HttpMetric {
   count: number;
@@ -304,5 +305,7 @@ export function renderMetrics(
     lines.push(`moonwitness_whatsapp_media_bytes_total{direction="${direction}"} ${metric.bytes}`);
   }
   lines.push(...whatsappDatabaseMetrics);
+  // Cloud operation counters (CF-012) use bounded operation/outcome/provider labels.
+  lines.push(...readCloudMetrics().split('\n').filter(Boolean));
   return `${lines.join('\n')}\n`;
 }

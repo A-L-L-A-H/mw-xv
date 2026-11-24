@@ -1,8 +1,15 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { Knex } from 'knex';
 import { timingSafeEqual } from 'node:crypto';
+import {
+  createWorkerHealthContract,
+  validateWorkerProbeConfig,
+  type WorkerHealthContract,
+} from '@moonwitness/jobs';
 import { testConnection } from '../database/knex.js';
 import { readWhatsAppDatabaseMetrics, renderMetrics } from '../observability/metrics.js';
+
+export { readWorkerHealthPort, readWorkerHealthHost } from '@moonwitness/jobs';
 
 async function readInstalledAddons(db: Knex) {
   return (await db('_orm_addons').select('name', 'version').orderBy('name')) as Array<{
@@ -21,31 +28,33 @@ export interface WorkerHealthOptions {
 
 export interface WorkerHealthServer {
   app: FastifyInstance;
+  /** Shared, transport-agnostic health contract (CF-013/CF-014). */
+  contract: WorkerHealthContract;
   setReady(ready: boolean): void;
+  beginDrain(reason?: string): void;
   close(): Promise<void>;
-}
-
-export function readWorkerHealthPort(value: string | undefined, name: string): number {
-  if (value === undefined || value === '') return 0;
-  const port = Number(value);
-  if (!Number.isInteger(port) || port < 0 || port > 65535) {
-    throw new Error(`${name} must be an integer between 0 and 65535; 0 disables worker probes`);
-  }
-  return port;
 }
 
 export async function startWorkerHealthServer(
   options: WorkerHealthOptions
 ): Promise<WorkerHealthServer | null> {
-  if (options.port === 0) return null;
+  const config = validateWorkerProbeConfig({
+    name: `${options.name.toUpperCase().replace(/[^A-Z0-9]/gu, '_')}_HEALTH`,
+    host: options.host,
+    port: options.port,
+  });
+  if (config === null) return null;
   const app = Fastify({ logger: false });
-  let ready = true;
+  const contract = createWorkerHealthContract({ worker: options.name });
+  contract.registerDependency('database', async () => testConnection(options.db));
   let closing: Promise<void> | undefined;
   app.get('/livez', async (_request, reply) =>
-    reply.header('Cache-Control', 'no-store').send({ status: 'alive', worker: options.name })
+    reply.header('Cache-Control', 'no-store').send(contract.getLiveness())
   );
   app.get('/readyz', async (_request, reply) => {
-    const dbOk = await testConnection(options.db);
+    const readiness = await contract.getReadiness();
+    const dbOk =
+      readiness.dependencies.find((dependency) => dependency.name === 'database')?.status === 'up';
     const installedAddons = dbOk ? await readInstalledAddons(options.db).catch(() => []) : [];
     const pool = options.db.client.pool ?? undefined;
     const databasePool = pool
@@ -55,13 +64,11 @@ export async function startWorkerHealthServer(
           capacity: pool.numPendingCreates() ?? 0,
         }
       : undefined;
-    const healthy = ready && dbOk;
     return reply
       .header('Cache-Control', 'no-store')
-      .status(healthy ? 200 : 503)
+      .status(readiness.ready ? 200 : 503)
       .send({
-        status: healthy ? 'ready' : 'not-ready',
-        worker: options.name,
+        ...readiness,
         database: dbOk ? 'connected' : 'disconnected',
         databasePool,
         installedAddons,
@@ -86,18 +93,26 @@ export async function startWorkerHealthServer(
       .send(renderMetrics(process.uptime(), await readWhatsAppDatabaseMetrics(options.db)));
   });
   try {
-    await app.listen({ host: options.host, port: options.port });
+    await app.listen({ host: config.host, port: config.port });
+    // Bootstrap is complete once the probe listener is live; specific dependencies
+    // still gate readiness through their registered probes.
+    contract.markBootstrapped();
   } catch (error) {
     await app.close();
     throw error;
   }
   return {
     app,
-    setReady(nextReady) {
-      ready = nextReady;
+    contract,
+    setReady(ready) {
+      contract.setReady(ready);
+    },
+    beginDrain(reason = 'shutdown') {
+      // Readiness turns false before any in-flight work is drained.
+      contract.beginDrain(reason);
     },
     close() {
-      ready = false;
+      contract.markStopped();
       closing ??= app.close();
       return closing;
     },

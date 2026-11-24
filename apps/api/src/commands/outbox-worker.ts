@@ -6,6 +6,7 @@ import { bootstrapApiWorker } from '../addons/registry.js';
 import { runOutboxLoop } from '@moonwitness/jobs';
 import { registerNotificationOutboxConsumer } from '@moonwitness/orm-notification';
 import {
+  readWorkerHealthHost,
   readWorkerHealthPort,
   startWorkerHealthServer,
   type WorkerHealthServer,
@@ -27,7 +28,9 @@ let unregisterWhatsAppConsumer = () => {};
 const attachmentStorage = createAttachmentStorage();
 const services = new ServiceContainer();
 const workerHealthToken = createServiceToken<WorkerHealthServer>('api.workerHealth');
-const shutdown = createProcessShutdownController(() => workerHealth?.setReady(false), { services });
+const shutdown = createProcessShutdownController(() => workerHealth?.beginDrain('SIGTERM'), {
+  services,
+});
 
 try {
   await bootstrapApiWorker(db);
@@ -43,7 +46,7 @@ try {
   if (!shutdown.signal.aborted) {
     workerHealth = await startWorkerHealthServer({
       db,
-      host: process.env.WORKER_HEALTH_HOST || '127.0.0.1',
+      host: readWorkerHealthHost(process.env.WORKER_HEALTH_HOST, 'WORKER_HEALTH_HOST'),
       name: 'outbox-worker',
       metricsToken: process.env.METRICS_TOKEN,
       port: readWorkerHealthPort(

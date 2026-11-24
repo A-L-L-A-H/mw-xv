@@ -5,6 +5,7 @@ import { createDatabase } from '../database/knex.js';
 import { bootstrapApiWorker } from '../addons/registry.js';
 import { registerJobHandler, runWorkerLoop } from '@moonwitness/jobs';
 import {
+  readWorkerHealthHost,
   readWorkerHealthPort,
   startWorkerHealthServer,
   type WorkerHealthServer,
@@ -20,7 +21,9 @@ const db = createDatabase();
 let workerHealth: Awaited<ReturnType<typeof startWorkerHealthServer>> = null;
 const services = new ServiceContainer();
 const workerHealthToken = createServiceToken<WorkerHealthServer>('api.workerHealth');
-const shutdown = createProcessShutdownController(() => workerHealth?.setReady(false), { services });
+const shutdown = createProcessShutdownController(() => workerHealth?.beginDrain('SIGTERM'), {
+  services,
+});
 
 try {
   await bootstrapApiWorker(db);
@@ -30,7 +33,7 @@ try {
   if (!shutdown.signal.aborted) {
     workerHealth = await startWorkerHealthServer({
       db,
-      host: process.env.WORKER_HEALTH_HOST || '127.0.0.1',
+      host: readWorkerHealthHost(process.env.WORKER_HEALTH_HOST, 'WORKER_HEALTH_HOST'),
       name: 'jobs-worker',
       port: readWorkerHealthPort(process.env.JOBS_WORKER_HEALTH_PORT, 'JOBS_WORKER_HEALTH_PORT'),
     });
@@ -50,7 +53,16 @@ try {
   const unregisterIsp = registerIspJobHandlers();
   const unregisterCloud = registerCloudJobHandlers();
   try {
-    await runWorkerLoop({ workerId: `moonwitness-${randomUUID()}` }, shutdown.signal);
+    await runWorkerLoop({ workerId: `moonwitness-${randomUUID()}` }, shutdown.signal, 1000, {
+      onDrainStart: (reason) => workerHealth?.beginDrain(reason),
+      onDrainComplete: (outcome) => {
+        // Safe summary only: no job payloads, tokens or connection strings.
+        console.info(
+          `jobs-worker drain complete: state=${outcome.state} completed=${outcome.completed} ` +
+            `abandoned=${outcome.abandoned} timedOut=${outcome.timedOut}`
+        );
+      },
+    });
   } finally {
     unregisterCloud();
     unregisterIsp();

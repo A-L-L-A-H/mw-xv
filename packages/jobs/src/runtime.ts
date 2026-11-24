@@ -3,6 +3,7 @@ import type { Transaction } from 'objection';
 import { Environment } from '@moonwitness/orm';
 import { Company, CompanyMembership, User } from '@moonwitness/orm-base';
 import { Cron, Job, JobRun, OutboxEvent } from './models.js';
+import { createGracefulDrainController, raceWithAbort, type DrainOutcome } from './drain.js';
 
 interface RegisteredHandler {
   version: number;
@@ -364,7 +365,18 @@ export interface WorkerOptions {
   retryMaxSeconds?: number;
 }
 
-export async function runOneJob(options: WorkerOptions): Promise<boolean> {
+/** Optional hooks used by the worker loop to bound and account for in-flight work. */
+export interface JobExecutionOptions {
+  /** Aborting this signal bounds the in-flight handler (used by graceful drain). */
+  signal?: AbortSignal;
+  onClaimed?: () => void;
+  onSettled?: (settled: boolean) => void;
+}
+
+export async function runOneJob(
+  options: WorkerOptions,
+  execution: JobExecutionOptions = {}
+): Promise<boolean> {
   const leaseSeconds = options.leaseSeconds ?? 60;
   if (!options.workerId || options.workerId.length > 255)
     throw new Error('workerId must contain 1 to 255 characters');
@@ -372,6 +384,8 @@ export async function runOneJob(options: WorkerOptions): Promise<boolean> {
     throw new Error('leaseSeconds must be at least 3');
   const claim = await claimNext(options.workerId, leaseSeconds);
   if (!claim) return false;
+  execution.onClaimed?.();
+  const externalSignal = execution.signal;
   const handler = handlers.get(claim.job.handler);
   if (!handler || handler.version !== claim.job.handler_version) {
     const error = new PermanentJobError(
@@ -380,10 +394,17 @@ export async function runOneJob(options: WorkerOptions): Promise<boolean> {
     );
     const safe = sanitizeError(error);
     await commitJobResult(claim, 'dead', { errorCode: safe.code, errorMessage: safe.message });
+    execution.onSettled?.(true);
     return true;
   }
 
   const controller = new AbortController();
+  const abortFromExternal = () =>
+    controller.abort(externalSignal?.reason ?? new Error('Execution aborted'));
+  if (externalSignal) {
+    if (externalSignal.aborted) abortFromExternal();
+    else externalSignal.addEventListener('abort', abortFromExternal, { once: true });
+  }
   const heartbeatEvery = Math.max(
     1000,
     (options.heartbeatSeconds ?? Math.max(1, Math.floor(leaseSeconds / 3))) * 1000
@@ -422,7 +443,10 @@ export async function runOneJob(options: WorkerOptions): Promise<boolean> {
   try {
     const context = await createJobContext(claim.job, controller.signal);
     const payload: unknown = JSON.parse(claim.job.payload);
-    const result = await handler.run(payload, context);
+    const handlerRun = handler.run(payload, context);
+    const result = externalSignal
+      ? await raceWithAbort(handlerRun, externalSignal)
+      : await handlerRun;
     if (controller.signal.aborted) throw controller.signal.reason;
     const encodedResult = result === undefined ? undefined : JSON.stringify(result);
     await commitJobResult(claim, 'succeeded', { result: encodedResult });
@@ -444,6 +468,8 @@ export async function runOneJob(options: WorkerOptions): Promise<boolean> {
     });
   } finally {
     clearInterval(heartbeat);
+    if (externalSignal) externalSignal.removeEventListener('abort', abortFromExternal);
+    execution.onSettled?.(!externalSignal?.aborted);
   }
   return true;
 }
@@ -492,14 +518,44 @@ async function createJobContext(job: JobRecord, signal: AbortSignal): Promise<Jo
   };
 }
 
+export interface WorkerDrainOptions {
+  /** Maximum time to wait for the in-flight job. Defaults to 30 seconds. */
+  drainTimeoutMs?: number;
+  /** Called synchronously on shutdown, before in-flight work is drained. Wire this
+   * to the shared health contract's `beginDrain()` so readiness flips first. */
+  onDrainStart?: (reason: string) => void;
+  onDrainComplete?: (outcome: DrainOutcome) => void;
+}
+
 export async function runWorkerLoop(
   options: WorkerOptions,
   signal: AbortSignal,
-  idleDelayMs = 1000
+  idleDelayMs = 1000,
+  drain: WorkerDrainOptions = {}
 ): Promise<void> {
-  while (!signal.aborted) {
-    const processed = await runOneJob(options);
-    if (!processed) await waitFor(idleDelayMs, signal);
+  const coordinator = createGracefulDrainController({
+    workerId: options.workerId,
+    drainTimeoutMs: drain.drainTimeoutMs,
+    onDrainStart: drain.onDrainStart,
+  });
+  const beginDrain = () => {
+    if (coordinator.state === 'running') coordinator.begin('shutdown');
+  };
+  if (signal.aborted) beginDrain();
+  else signal.addEventListener('abort', beginDrain, { once: true });
+  try {
+    while (!signal.aborted) {
+      const processed = await runOneJob(options, {
+        signal: coordinator.executionSignal,
+        onClaimed: () => coordinator.enterJob(),
+        onSettled: (settled) => coordinator.exitJob(settled),
+      });
+      if (!processed) await waitFor(idleDelayMs, signal);
+    }
+  } finally {
+    signal.removeEventListener('abort', beginDrain);
+    drain.onDrainComplete?.(coordinator.finish());
+    coordinator.dispose();
   }
 }
 
