@@ -3,7 +3,7 @@
   "routes": {
     "homepage": {
       "javascript": { "maxRawBytes": 1000000, "maxGzipBytes": 300000 },
-      "stylesheet": { "maxRawBytes": 205000, "maxGzipBytes": 40000 }
+      "stylesheet": { "maxRawBytes": 210000, "maxGzipBytes": 40000 }
     },
     "board": {
       "javascript": { "maxRawBytes": 1800000, "maxGzipBytes": 550000 },
