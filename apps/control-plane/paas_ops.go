@@ -130,8 +130,7 @@ func defaultHTTPHealthProbe(ctx context.Context, rawURL string) error {
 	// resolvable public host. CodeQL cannot see through the custom
 	// isInternalAddress check, so suppress the request-forgery finding here.
 	client := &http.Client{Timeout: 5 * time.Second}
-	// codeql[go/request-forgery]
-	resp, err := client.Do(req)
+	resp, err := client.Do(req) // codeql[go/request-forgery]
 	if err != nil {
 		return err
 	}
