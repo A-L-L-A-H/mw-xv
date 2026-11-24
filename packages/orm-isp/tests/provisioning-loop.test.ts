@@ -190,7 +190,7 @@ describe('orm-isp provisioning loop', () => {
       const first = await enforceOverdueSubscriberSuspensions({
         asOfDate: '2026-11-23',
         jwtSecret: TEST_JWT_SECRET,
-        ispServiceUrl: 'http://127.0.0.1:3102',
+        ispServiceUrl: `http://127.0.0.1:3102/base${'/'.repeat(50_000)}`,
         fetchImpl,
       });
       expect(first).toMatchObject({
@@ -207,8 +207,8 @@ describe('orm-isp provisioning loop', () => {
         disconnectDispatched: true,
       });
       expect(requestedUrls).toEqual([
-        'http://127.0.0.1:3102/api/subscribers/nusantara-fttx-001/suspend',
-        'http://127.0.0.1:3102/api/sessions/disconnect',
+        'http://127.0.0.1:3102/base/api/subscribers/nusantara-fttx-001/suspend',
+        'http://127.0.0.1:3102/base/api/sessions/disconnect',
       ]);
       expect(disconnectBodies).toHaveLength(1);
       expect(disconnectBodies[0]).toMatchObject({
@@ -249,7 +249,7 @@ describe('orm-isp provisioning loop', () => {
     } finally {
       await db.destroy();
     }
-  });
+  }, 20_000);
 
   it('skips non-overdue invoices and records failed disconnect dispatch', async () => {
     const db = createTestDb();

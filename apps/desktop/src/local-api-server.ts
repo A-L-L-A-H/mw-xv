@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import type { Knex } from 'knex';
 import {
   Environment,
@@ -726,6 +727,7 @@ export async function startLocalApiServer(
     allowedHeaders: ['Content-Type', 'Authorization', 'x-mw-desktop-token', 'x-request-id'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
+  await app.register(rateLimit, { global: false });
 
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof PlatformError) {
@@ -1034,6 +1036,9 @@ export async function startLocalApiServer(
 
   app.get<{ Querystring: { limit?: string } }>(
     '/notifications/inbox',
+    {
+      config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
+    },
     async (req, reply) => {
       if (!req.auth) {
         return reply.code(401).send({ success: false, error: 'Authentication required' });

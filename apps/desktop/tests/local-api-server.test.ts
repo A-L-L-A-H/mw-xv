@@ -187,6 +187,56 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(Array.isArray(inboxBody.data)).toBe(true);
   });
 
+  it('rate-limits the notification inbox without affecting other routes', async () => {
+    const tempHome = makeTempDir('mw-desktop-inbox-rate-limit-');
+    const daemon = await startDesktopSidecarDaemon({
+      repoRoot: process.cwd(),
+      desktopHomeDir: tempHome,
+      sqlitePath: path.join(tempHome, 'local.db'),
+      boardOrigin: 'http://127.0.0.1:5173',
+      apiBaseUrl: 'http://127.0.0.1:4242',
+      healthPort: 0,
+      apiPort: 0,
+      offlineMode: true,
+      installAddonsOnStart: true,
+    });
+    handles.push(daemon);
+
+    const inboxUrl = `${daemon.apiUrl}/notifications/inbox?limit=20`;
+    const unauthenticated = await fetch(inboxUrl);
+    expect(unauthenticated.status).toBe(401);
+    expect(await unauthenticated.json()).toEqual({
+      success: false,
+      error: 'Authentication required',
+    });
+
+    const loginRes = await fetch(`${daemon.apiUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ login: 'local', password: 'local-offline-session' }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginBody = (await loginRes.json()) as { data: { access_token: string } };
+    const authHeaders = { authorization: `Bearer ${loginBody.data.access_token}` };
+
+    const allowedResponses = await Promise.all(
+      Array.from({ length: 59 }, () => fetch(inboxUrl, { headers: authHeaders }))
+    );
+    expect(allowedResponses.map((response) => response.status)).toEqual(
+      Array.from({ length: 59 }, () => 200)
+    );
+    await Promise.all(allowedResponses.map((response) => response.arrayBuffer()));
+
+    const limited = await fetch(inboxUrl, { headers: authHeaders });
+    expect(limited.status).toBe(429);
+    expect(Number(limited.headers.get('retry-after'))).toBeGreaterThan(0);
+    await limited.arrayBuffer();
+
+    const otherRoute = await fetch(`${daemon.apiUrl}/auth/me`, { headers: authHeaders });
+    expect(otherRoute.status).toBe(200);
+    await otherRoute.arrayBuffer();
+  });
+
   it('imports moonwitness-tasks/v2 JSON idempotently by external_ref', async () => {
     const tempHome = makeTempDir('mw-desktop-import-');
     const sqlitePath = path.join(tempHome, 'local.db');

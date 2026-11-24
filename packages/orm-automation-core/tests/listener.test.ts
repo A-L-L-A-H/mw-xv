@@ -89,6 +89,26 @@ describe('renderDedupeKey', () => {
       payload: { a: 1 }, triggerKind: 'manual', triggerRef: 'r',
     })).toBe('p:{"a":1}');
   });
+
+  it('preserves unmatched braces, empty tokens, and nested opening braces', () => {
+    const ctx = { payload: { score: 87 }, triggerKind: 'manual', triggerRef: 'r' };
+    expect(renderDedupeKey('{payload.score', ctx)).toBe('{payload.score');
+    expect(renderDedupeKey('}:{payload.score}', ctx)).toBe('}:87');
+    expect(renderDedupeKey('{}{payload.score}', ctx)).toBe('{}87');
+    expect(renderDedupeKey('{{payload.score}:{payload.score}', ctx)).toBe(':87');
+    expect(renderDedupeKey('{ payload.score }', ctx)).toBe('87');
+  });
+
+  it('handles adversarially long unmatched brace runs', () => {
+    const template = `prefix:${'{'.repeat(50_000)}`;
+    expect(
+      renderDedupeKey(template, {
+        payload: {},
+        triggerKind: 'manual',
+        triggerRef: 'r',
+      })
+    ).toBe(template);
+  });
 });
 
 describe('AUTOMATION_RULE_CODE_PATTERN', () => {

@@ -51,6 +51,38 @@ describe('XMLParser', () => {
     const entry = (atom.feed as { entry: { title: { _text: string } } }).entry;
     expect(entry.title._text).toBe('Atom Entry');
   });
+
+  it('preserves XML syntax variants, malformed less-than text, and attribute entities', () => {
+    const xml = `<?xml version="1.0"?><!-- <ignored> &amp; --><ns:root xmlns:ns="urn:test" note="1 > 0 &amp; 2 < 3" label='it&apos;s > fine'><ns:message><</ns:message><ns:raw><![CDATA[<raw> &amp; ]]></ns:raw><ns:item id="&lt;id&gt;" count=2/><ns:item id="second"></ns:item><?work done?></ns:root>`;
+
+    expect(XMLParser.parse(xml)).toEqual({
+      root: {
+        'xmlns:ns': 'urn:test',
+        note: '1 > 0 & 2 < 3',
+        label: "it's > fine",
+        message: { _text: '<' },
+        raw: { _text: '<raw> &amp; ' },
+        item: [{ _name: 'item', id: '<id>', count: '2' }, { id: 'second' }],
+      },
+    });
+  });
+
+  it('handles adversarial attribute fragments and quotes without backtracking', () => {
+    const attributes = 'data-name="value" '.repeat(10_000);
+    const singleQuotedAttributes = "data-name='value' ".repeat(10_000);
+    const openQuotes = 'data-name="'.repeat(10_000);
+    const valid = XMLParser.parse(`<root ${attributes}/>`);
+    expect(valid).toEqual({ root: { _name: 'root', 'data-name': 'value' } });
+
+    for (const xml of [
+      `<root ${attributes}!`,
+      `<root ${singleQuotedAttributes}!`,
+      `<root ${openQuotes}`,
+      `<root data="${'<'.repeat(20_000)}`,
+    ]) {
+      expect(XMLParser.parse(xml)).toEqual({});
+    }
+  });
 });
 
 describe('RssAdapter', () => {
@@ -127,6 +159,16 @@ describe('GithubTrendingAdapter', () => {
     expect(drafts.length).toBe(1);
     expect(drafts[0].title).toBe('user/repo-one');
     expect(drafts[0].url).toBe('https://github.com/user/repo-one');
+  });
+
+  it('decodes supported entities exactly once while stripping tags and normalizing whitespace', async () => {
+    const html = `<a href="/user/repo-one" class="repo-name">repo-one</a><p class="col-9">  Tom &amp; Jerry &lt;3 &gt; &quot;quoted&quot; &#39;single&#39; &amp;lt;tag&amp;gt; &amp;amp; <b>tools</b>\n today </p>`;
+    const drafts = await new GithubTrendingAdapter().fetch(
+      makeCtx({ fetchImpl: async () => new Response(html, { status: 200 }) })
+    );
+    expect(drafts[0].summary).toBe(
+      'Tom & Jerry <3 > "quoted" \'single\' &lt;tag&gt; &amp; tools today'
+    );
   });
 });
 

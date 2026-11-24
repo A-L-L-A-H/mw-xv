@@ -13,14 +13,18 @@ interface ParsedRepo {
 
 const REPO_ANCHOR_RE = /<a[^>]*class="[^"]*repo-name[^"]*"[^>]*href="\/([^"/]+)\/([^"/?#]+)"|<a[^>]*href="\/([^"/]+)\/([^"/?#]+)"[^>]*class="[^"]*repo-name[^"]*"/g;
 
+const HTML_ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+};
+
 function stripTags(html: string): string {
   return html
     .replace(/<[^>]*>/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+    .replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => HTML_ENTITIES[entity])
     .replace(/\s+/g, ' ')
     .trim();
 }
