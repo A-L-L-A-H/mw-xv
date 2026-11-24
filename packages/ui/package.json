@@ -276,7 +276,7 @@
     }
   },
   "scripts": {
-    "build": "node scripts/generate-icons.mjs && tsc",
+    "build": "bun --filter @moonwitness/types build && node scripts/generate-icons.mjs && tsc",
     "test": "bun run build && node --test tests/*.test.mjs"
   },
   "peerDependencies": {

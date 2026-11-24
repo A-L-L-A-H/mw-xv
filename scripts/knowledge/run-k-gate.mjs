@@ -125,27 +125,27 @@ export const KNOWLEDGE_GATE_STEPS = [
 ];
 
 function executeCommand(command, cwd) {
-  const isPnpm = command.bin === 'pnpm';
+  const isBun = command.bin === 'pnpm';
   const env = {
     ...process.env,
     AI_MODE: 'disabled',
   };
-  const result =
-    isPnpm && process.platform === 'win32'
-      ? spawnSync(`pnpm.cmd ${command.args.join(' ')}`, {
-          cwd,
-          encoding: 'utf8',
-          shell: true,
-          maxBuffer: 16 * 1024 * 1024,
-          env,
-        })
-      : spawnSync(isPnpm ? 'pnpm' : process.execPath, command.args, {
-          cwd,
-          encoding: 'utf8',
-          shell: false,
-          maxBuffer: 16 * 1024 * 1024,
-          env,
-        });
+  const bunArgs = ['--filter', ...command.args.slice(2)];
+  const result = isBun
+    ? spawnSync('bun', bunArgs, {
+        cwd,
+        encoding: 'utf8',
+        shell: process.platform === 'win32',
+        maxBuffer: 16 * 1024 * 1024,
+        env,
+      })
+    : spawnSync(process.execPath, command.args, {
+        cwd,
+        encoding: 'utf8',
+        shell: false,
+        maxBuffer: 16 * 1024 * 1024,
+        env,
+      });
 
   return {
     exitCode: result.status ?? 1,

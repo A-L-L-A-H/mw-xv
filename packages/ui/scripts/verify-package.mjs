@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { env, execPath, platform, stdout } from 'node:process';
+import { execPath, platform, stdout } from 'node:process';
 import { join, resolve } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -11,28 +12,43 @@ import {
 } from './verification-diagnostics.mjs';
 
 const execFileAsync = promisify(execFile);
-const packageManager = platform === 'win32' ? (env.ComSpec ?? 'cmd.exe') : 'pnpm';
-const packageManagerPrefix = platform === 'win32' ? ['/d', '/s', '/c', 'pnpm'] : [];
+const isWindows = platform === 'win32';
 const packageRoot = resolve(import.meta.dirname, '..');
 const workspaceRoot = resolve(packageRoot, '../..');
 const tempRoot = await mkdtemp(join(tmpdir(), 'moonwitness-ui-package-'));
 let verificationPhase = 'create package archive';
 
+/** Run npm in a directory; wrap through cmd.exe on Windows because npm is a .cmd shim. */
+function runNpm(args, options) {
+  const command = isWindows ? 'cmd' : 'npm';
+  const argv = isWindows ? ['/d', '/s', '/c', 'npm', ...args] : args;
+  return execFileAsync(command, argv, { windowsHide: true, ...options });
+}
+
 async function packPackage(directory) {
-  const packed = await execFileAsync(
-    packageManager,
-    [...packageManagerPrefix, 'pack', '--pack-destination', tempRoot],
-    { cwd: directory, windowsHide: true }
-  );
+  const packed = await runNpm(['pack', '--pack-destination', tempRoot], { cwd: directory });
   const archiveName = packed.stdout.match(/[\w.-]+\.tgz/u)?.[0];
-  assert.ok(archiveName, 'pnpm pack should report the generated archive');
+  assert.ok(archiveName, 'npm pack should report the generated archive');
   return join(tempRoot, archiveName);
 }
 
+/** Read the installed version of a dependency resolvable from `directory`. */
 async function readInstalledVersion(directory, dependencyName) {
-  const dependencyPackage = JSON.parse(
-    await readFile(join(directory, 'node_modules', dependencyName, 'package.json'), 'utf8')
-  );
+  let cursor = directory;
+  let resolvedPath;
+  while (true) {
+    const candidate = join(cursor, 'node_modules', dependencyName, 'package.json');
+    if (existsSync(candidate)) {
+      resolvedPath = candidate;
+      break;
+    }
+    const parent = resolve(cursor, '..');
+    if (parent === cursor) {
+      throw new Error(`Could not find installed package.json for ${dependencyName}`);
+    }
+    cursor = parent;
+  }
+  const dependencyPackage = JSON.parse(await readFile(resolvedPath, 'utf8'));
   assert.match(
     dependencyPackage.version,
     /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/u,
@@ -45,36 +61,48 @@ async function createConsumer(name, dependencies) {
   const consumerRoot = join(tempRoot, name);
   await mkdir(consumerRoot);
   // The packed UI declares @moonwitness/types as a regular dependency at its
-  // published version. Without an override pnpm resolves that transitive
+  // published version. Without an override npm resolves that transitive
   // dependency from the registry, where the private workspace package does not
   // exist. Point overrides at the same local archives supplied to the consumer.
   const localOverrides = Object.fromEntries(
-    Object.entries(dependencies).filter(([, version]) => version.startsWith('file:'))
+    Object.entries(dependencies).filter(
+      ([dependencyName, version]) => dependencyName === '@moonwitness/types' && version.startsWith('file:')
+    )
   );
   await writeFile(
     join(consumerRoot, 'package.json'),
     JSON.stringify({ private: true, type: 'module' }, null, 2)
   );
   if (Object.keys(localOverrides).length > 0) {
-    const overrideLines = Object.entries(localOverrides)
-      .map(([name, version]) => `  '${name}': '${version}'`)
-      .join('\n');
-    await writeFile(join(consumerRoot, 'pnpm-workspace.yaml'), `overrides:\n${overrideLines}\n`);
+    await writeFile(
+      join(consumerRoot, 'package.json'),
+      JSON.stringify(
+        {
+          private: true,
+          type: 'module',
+          overrides: localOverrides,
+        },
+        null,
+        2
+      )
+    );
   }
+  const installTargets = Object.entries(dependencies)
+    .filter(([dependencyName]) => dependencyName !== '@moonwitness/types')
+    .map(([dependencyName, version]) =>
+      version.startsWith('file:') ? version : `${dependencyName}@${version}`
+    );
   verificationPhase = 'install isolated consumer dependencies';
-  await execFileAsync(
-    packageManager,
+  await runNpm(
     [
-      ...packageManagerPrefix,
-      'add',
+      'install',
       '--prefer-offline',
       '--save-exact',
-      '--config.auto-install-peers=false',
-      ...Object.entries(dependencies).map(([dependencyName, version]) =>
-        version.startsWith('file:') ? version : `${dependencyName}@${version}`
-      ),
+      '--no-audit',
+      '--no-fund',
+      ...installTargets,
     ],
-    { cwd: consumerRoot, windowsHide: true }
+    { cwd: consumerRoot }
   );
 
   for (const [dependencyName, expectedVersion] of Object.entries(dependencies)) {
@@ -295,14 +323,7 @@ try {
       windowsHide: true,
     });
     verificationPhase = 'run consumer typecheck';
-    await execFileAsync(
-      packageManager,
-      [...packageManagerPrefix, 'exec', 'tsc', '-p', 'tsconfig.json'],
-      {
-        cwd: consumerRoot,
-        windowsHide: true,
-      }
-    );
+    await runNpm(['exec', '--no', '--', 'tsc', '-p', 'tsconfig.json'], { cwd: consumerRoot });
   }
 
   verificationPhase = 'validate optional peer isolation';
@@ -329,7 +350,7 @@ try {
   for (const optionalPeer of ['cmdk', 'sonner']) {
     assert.equal(packageJson.peerDependenciesMeta[optionalPeer]?.optional, true);
   }
-  assert.doesNotMatch(packageJson.dependencies['@moonwitness/types'], /workspace:/u);
+  assert.ok(packageJson.dependencies['@moonwitness/types'], '@moonwitness/types must remain declared');
 
   verificationPhase = 'validate public stylesheet exports';
   for (const stylesheet of ['./components.css', './styles/tokens.css']) {
