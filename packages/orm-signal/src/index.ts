@@ -12,8 +12,9 @@ export {
   type SignalScoreWeights,
   type SignalFinalScore,
 } from './scoring.js';
-export { seedManifest, SIGNAL_SOURCE_SEEDS } from './seed.js';
+export { signalSeedManifest } from './seed-manifest.js';
 export type { AddonSeedManifest } from '@moonwitness/orm-base';
+export { SIGNAL_SOURCE_SEEDS } from './seed.js';
 export {
   signalAdapters,
   adapterForKind,

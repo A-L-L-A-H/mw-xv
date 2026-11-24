@@ -3,7 +3,8 @@ import knex, { type Knex } from 'knex';
 import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { SignalSource, manifest } from '../src/index.js';
-import { SIGNAL_SOURCE_SEEDS, SIGNAL_SOURCE_SEED_COUNT, seedManifest, seedSignalSources } from '../src/seed.js';
+import { SIGNAL_SOURCE_SEEDS, SIGNAL_SOURCE_SEED_COUNT, seedSignalSources } from '../src/seed.js';
+import { signalSeedManifest } from '../src/seed-manifest.js';
 
 async function installAndReset(db: Knex): Promise<void> {
   await installAddons(db, [manifest, baseManifest]);
@@ -57,19 +58,19 @@ describe('seedSignalSources', () => {
     expect(second.total).toBe(SIGNAL_SOURCE_SEED_COUNT);
   });
 
-  it('seedManifest.seed reports correct counts via the addon seed contract', async () => {
+  it('signalSeedManifest.seed reports correct counts via the addon seed contract', async () => {
     await installAndReset(db);
     // Reset the seed ledger for this model so the manifest contract path
     // performs fresh inserts instead of skipping pre-seeded rows.
     await db('_orm_data').where({ model: SignalSource.modelName }).delete();
 
     const company = await db('companies').first('id');
-    const result = await seedManifest.seed({ db, companyId: Number(company.id) });
+    const result = await signalSeedManifest.seed({ db, companyId: Number(company.id) });
     expect(result.inserted).toBe(SIGNAL_SOURCE_SEED_COUNT);
     expect(result.updated).toBe(0);
     expect(result.skipped).toBe(0);
 
-    const again = await seedManifest.seed({ db, companyId: Number(company.id) });
+    const again = await signalSeedManifest.seed({ db, companyId: Number(company.id) });
     expect(again.inserted).toBe(0);
     expect(again.skipped).toBe(SIGNAL_SOURCE_SEED_COUNT);
   });
