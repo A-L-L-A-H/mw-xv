@@ -13,6 +13,7 @@ export function resolvePackageManager(environment = env, operatingSystem = platf
     return { command: execPath, prefixArgs: [cli], shell: false };
   }
 
+  // Always use bun - pnpm has been fully migrated
   let command = 'bun';
   let shell = false;
   if (operatingSystem === 'win32') {
