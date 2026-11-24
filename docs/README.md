@@ -17,7 +17,7 @@ sudah dipusatkan ke sini; tautan internalnya sudah diperbarui.
 | [Rekayasa](engineering/baseline.md) | Baseline, inventory, feature matrix, dan runbook perawatan. |
 | [Operasional](operations/github-bootstrap.md) | GitHub, WhatsApp, storage, evaluasi AI lokal, insiden. |
 | [Desain](design/visual-direction.md) | Arah visual, brand, token, aset, dan katalog UI. |
-| [Pengetahuan](knowledge/idea-archive/README.md) | Arsip ide, narasi, dan kebijakan sumber. |
+| [Pengetahuan](knowledge/IDEA-ARCHIVE-INDEX.md) | Arsip ide, narasi, dan kebijakan sumber. |
 | [Second Brain](second-brain/README.md) | Alur `raw/` → `brain/` → `wiki/` untuk ide dan pengetahuan. |
 | [Laporan evaluasi](research/) | Reproducibility, semantics benchmark, dan protokol evaluasi model. |
 | [Tata kelola](governance/knowledge-privacy-and-safeguarding.md) | Privasi, perlindungan anak, dan gate publikasi. |
@@ -71,7 +71,7 @@ Salinan historisnya ada di [docs/archive/todos/](archive/todos/).
 - Rekayasa & pengujian: [performance baseline](engineering/performance-baseline.md) · [WhatsApp verification](testing/whatsapp-verification.md).
 - Operasional: [WhatsApp/Whatsmeow migration](operations/whatsapp-whatsmeow-migration-plan.md).
 - Roadmap: [control-plane execution report](roadmap/control-plane-execution-report.md) · [M13 walkthrough](roadmap/evidence/M13-desktop-flow-walkthrough.md).
-- Pengetahuan: [GitHub issue index](knowledge/idea-archive/ISSUE-INDEX.md).
+- Pengetahuan: [GitHub issue index](knowledge/idea-archive/GITHUB-ISSUE-INDEX.md).
 - Addon: [developer guide](addons/developer-guide.md).
 - Rencana & spec arsip: [TaskOS v2 implementation](superpowers/plans/2026-11-22-todo-taskos-v2-implementation.md) · [ISP cloud hardening](superpowers/specs/2026-11-22-isp-cloud-hardening-design.md).
 - Visual Universe: [dependency graph](bundles/visual-universe-pack/DEPENDENCY_GRAPH.md) · [source index](bundles/visual-universe-pack/SOURCE_INDEX.md) · [handoff template](bundles/visual-universe-pack/HANDOFF_TEMPLATE.md) · [start prompt](bundles/visual-universe-pack/START_PROMPT.md) · [task summary](bundles/visual-universe-pack/TASK_SUMMARY.md).

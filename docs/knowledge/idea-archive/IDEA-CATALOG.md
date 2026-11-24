@@ -116,12 +116,10 @@ The following titles are preserved from available recent-conversation context da
 
 | Stable ID | Original title | Classification | Source evidence | Current status / boundary |
 |---|---|---|---|---|
-| IDEA-0069 | **MOONWITNESS — Two Generations, One Toast** | USER IDEA · MEMORY-SUMMARY · LIBRARY-CAPTION-ONLY | Recent conversation summary; Library image caption/file title `Moonwitness: Two Generations, One Toast.png` | DRAFT; father/son, memory and parallel-world motifs appear in the available summary/caption. Exact dialogue, plot sequence and approved visual prompt are not recovered.  Aliases: `MW-STORY-LEAD-0001`, `C-SEED-005` (deck-local) |
-| IDEA-0070 | **MOONWITNESS — Chaos Before Dawn** | USER IDEA · MEMORY-SUMMARY | Recent conversation summary of a pre-dawn / dream-world narrative involving MyLuft | DRAFT; retain the title and limited summary only. Full source text, cast details and chronology remain missing.  Aliases: `MW-STORY-LEAD-0002`, `C-SEED-006` (deck-local) |
-| IDEA-0071 | **MOONWITNESS — BIRD OF A FEATHER** | USER IDEA · MEMORY-SUMMARY | Recent conversation summary records the title and a poster-text revision request | DRAFT; title-only lead. Plot, characters, universe link and ending are unresolved.  Aliases: `MW-STORY-LEAD-0003`, `C-SEED-007` (deck-local) |
-| IDEA-0072 | **MOONWITNESS — THUNDERSTRUCK** | USER IDEA · MEMORY-SUMMARY | Recent conversation summary dated 30 Sep 2026; V10 progress ledger separately mentions `MENGGIGIL / THUNDERSTRUCK` | DRAFT; a “Wahyono” wordplay note is remembered. Its relationship to `MENGGIGIL`, to any religious term, or to other story characters is not established.  Aliases: `MW-STORY-LEAD-0004`, `C-SEED-008` (deck-local) |
-| IDEA-0073 | **Isa/Yesus** | USER IDEA | `docs/second-brain/raw/2026-11-23-total-idea-archive-intake.md` IDEA-SEED-0010 | Preserve as a topic label only; representation and canon need review. Alias: `IDEA-SEED-0010`. |
-| IDEA-0074 | **Malaikat, hero, dan peran spiritual** | USER IDEA | `docs/second-brain/raw/2026-11-23-total-idea-archive-intake.md` IDEA-SEED-0011 | Separate source-based religious reference from metaphor and fiction. Alias: `IDEA-SEED-0011`. |
+| IDEA-0069 | **MOONWITNESS — Two Generations, One Toast** | USER IDEA · MEMORY-SUMMARY · LIBRARY-CAPTION-ONLY | Recent conversation summary; Library image caption/file title `Moonwitness: Two Generations, One Toast.png` | DRAFT; father/son, memory and parallel-world motifs appear in the available summary/caption. Exact dialogue, plot sequence and approved visual prompt are not recovered. |
+| IDEA-0070 | **MOONWITNESS — Chaos Before Dawn** | USER IDEA · MEMORY-SUMMARY | Recent conversation summary of a pre-dawn / dream-world narrative involving MyLuft | DRAFT; retain the title and limited summary only. Full source text, cast details and chronology remain missing. |
+| IDEA-0071 | **MOONWITNESS — BIRD OF A FEATHER** | USER IDEA · MEMORY-SUMMARY | Recent conversation summary records the title and a poster-text revision request | DRAFT; title-only lead. Plot, characters, universe link and ending are unresolved. |
+| IDEA-0072 | **MOONWITNESS — THUNDERSTRUCK** | USER IDEA · MEMORY-SUMMARY | Recent conversation summary dated 30 Sep 2026; V10 progress ledger separately mentions `MENGGIGIL / THUNDERSTRUCK` | DRAFT; a “Wahyono” wordplay note is remembered. Its relationship to `MENGGIGIL`, to any religious term, or to other story characters is not established. |
 
 
 **Version distinction:** CRAYON v1.3 uses `G2 = Governing Order` and `B3 = Being`. The separately named `OMNISCIENCE METHOD / RGBL` paper uses `G = Guidance` and `B = Balance`. These are not interchangeable versions of one acronym.
@@ -130,7 +128,7 @@ The following titles are preserved from available recent-conversation context da
 
 ## Catalog status
 
-- **74 stable concept records** are indexed above.
+- **72 stable concept records** are indexed above.
 - Some rows are a family-level record rather than one atomic utterance; do not multiply them into separate unique ideas without a source.
 - Rows marked `REPOSITORY-DOCUMENTED` are not automatically user-locked canon or production capabilities.
 - The catalog is intentionally incomplete where primary source text, complete conversation history, art files, or private archive consent is unavailable.

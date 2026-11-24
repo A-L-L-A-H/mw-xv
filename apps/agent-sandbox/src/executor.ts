@@ -548,7 +548,7 @@ export class DisabledSandboxExecutor implements SandboxExecutor {
 
   private reject(): never {
     unavailable(
-      'Docker execution is disabled: mount a dedicated rootless daemon socket via docker-compose.agent-sandbox-socket.yml'
+      'Docker execution is disabled: mount a dedicated rootless daemon socket via deploy/compose/docker-compose.agent-sandbox-socket.yml'
     );
   }
 

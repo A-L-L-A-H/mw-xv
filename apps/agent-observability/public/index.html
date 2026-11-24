@@ -86,7 +86,7 @@
             <span class="status-dot" id="connectionDot"></span>
             <strong id="connectionLabel">Connecting</strong>
           </div>
-          <p>SQLite-backed receiver. Telemetry persists locally across restarts.</p>
+          <p>In-memory receiver. Data is retained locally and cleared on restart.</p>
           <div class="endpoint-chip">OTLP/HTTP JSON</div>
         </div>
 
@@ -355,7 +355,7 @@
         </section>
 
         <footer class="page-footer">
-          <span>Local-first • secret-redacted • bounded SQLite storage</span>
+          <span>Local-first • secret-redacted • bounded in-memory storage</span>
           <code id="footerEndpoint">OTLP endpoint: /</code>
         </footer>
       </main>

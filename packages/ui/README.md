@@ -1,6 +1,6 @@
 # MoonWitness UI Bible
 
-This is the single design and implementation rulebook for `@moonwitness/ui`. `TOKENS.md` records the token contract and contrast requirements. `todo-ui.md` tracks implementation work; it is not a second source of design rules. Product copy and feature truth stay in the app.
+This is the single design and implementation rulebook for `@moonwitness/ui`. `TOKENS.md` records the token contract and contrast requirements. `docs/tasks/sources/todo-ui.md` tracks implementation work; it is not a second source of design rules. Product copy and feature truth stay in the app.
 
 ## Art direction from the references
 

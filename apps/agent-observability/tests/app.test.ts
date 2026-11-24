@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app.js';
-import { MemoryTelemetryStore } from '../src/store.js';
+import { TelemetryStore } from '../src/store.js';
 import { NOW_MS, TRACE_ID, logPayload, metricPayload, tracePayload } from './fixtures.js';
 
 const apps: Array<ReturnType<typeof buildApp>['app']> = [];
 
 function createApp() {
-  const store = new MemoryTelemetryStore({ now: () => NOW_MS });
+  const store = new TelemetryStore({ now: () => NOW_MS });
   const result = buildApp({ store });
   apps.push(result.app);
   return result;

@@ -249,7 +249,7 @@ describe('orm-isp provisioning loop', () => {
     } finally {
       await db.destroy();
     }
-  }, 20_000);
+  });
 
   it('skips non-overdue invoices and records failed disconnect dispatch', async () => {
     const db = createTestDb();

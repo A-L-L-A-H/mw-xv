@@ -8,7 +8,7 @@
 The archive has been expanded into a structured knowledge layer covering creative ideas, projects, canon, stories, characters, visual direction, brands/products, religious/philosophical frameworks, technology, repository relationships, issues/PRs and unresolved decisions.
 
 - The supplied 775-line master prompt has been copied **verbatim** into `docs/second-brain/raw/2026-11-23-master-prompt-total-idea-archive.md`.
-- The idea catalog has 74 stable `IDEA-####` entries; the project registry has 26 `PRJ-####` project records.
+- The idea catalog has 72 stable `IDEA-####` entries; the project registry has 26 `PRJ-####` project records.
 - The current archive has separate story/canon, character, visual, brand/product and framework registries.
 - MoonWitness II, XII, XIV/V10 and XV sources are kept as separate generations.
 - 280 GitHub repository metadata records were discovered: 148 public and 132 private.
@@ -41,7 +41,7 @@ The archive has been expanded into a structured knowledge layer covering creativ
 
 ## Code / CI fixes applied
 
-1. `.github/workflows/ci.yml` was corrected to assert the current 637 TaskOS records and status counts (468 / 49 / 96 / 24), instead of the stale 627 / 468 / 49 / 89 / 21 recovery baseline.
+1. `.github/workflows/ci.yml` was corrected to assert the current 636 TaskOS records and status counts (468 / 49 / 96 / 23), instead of the stale 627 / 468 / 49 / 89 / 21 recovery baseline.
 2. `scripts/check-ui-design-system.mjs` regex boundary was simplified from the overlapping `[\da-f\w-]` character class to `[\w-]`. This removes the CodeQL overlap finding without broadening the accepted trailing characters, because `\w` already contains digits and ASCII letters.
 3. The latest CI run on the currently observed `dev` head had not yet reached a final overall conclusion when the report was written. Do not mark PR #81 verified or released on the basis of an in-progress workflow.
 
@@ -109,7 +109,7 @@ This section was appended by a later audit pass. The 2026-11-23 report above is 
 | Issues indexed in ISSUE-INDEX.md | 161 | **191** | 30 rows added |
 | PRs indexed in ISSUE-INDEX.md | 26 | **30** | 4 rows added |
 
-The 30 new issues are #188 plus #189–#221 excluding PR numbers #198 and #216–#218. The large majority carry the `audit` and `auto-generated` labels and were produced by the repository's hourly code-audit automation. They are engineering execution backlog, **not** new archive proposals. Issue #197 (`[PROPOSAL] Bridge Antigravity Desktop hooks into MoonWitness Live Agent Flow`) is the only new non-audit proposal in that range.
+The 30 new issues are #189–#221 (numbers #198 and #216–#218 are PRs, not issues). The large majority carry the `audit` and `auto-generated` labels and were produced by the repository's hourly code-audit automation. They are engineering execution backlog, **not** new archive proposals. Issue #197 (`[PROPOSAL] Bridge Antigravity Desktop hooks into MoonWitness Live Agent Flow`) is the only new non-audit proposal in that range.
 
 ### Source-estimate correction
 

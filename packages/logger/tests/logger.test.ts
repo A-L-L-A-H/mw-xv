@@ -1,7 +1,7 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { createLogger, flushLogger } from '../src/index.js';
+import { createLogger } from '../src/index.js';
 
 describe('Centralized Logger (@moonwitness/logger)', () => {
   const testLogDir = path.resolve(process.cwd(), 'tmp-test-logs');
@@ -81,117 +81,6 @@ describe('Centralized Logger (@moonwitness/logger)', () => {
       expect(content).not.toContain(sentinel);
     }
     expect(content).toContain('[redacted]');
-  });
-
-  it('redacts secrets nested 4+ levels deep with MW_AI_ and apiKey patterns', async () => {
-    const log = createLogger({
-      name: 'deep-redaction',
-      level: 'info',
-      logDir: testLogDir,
-      logFileName: 'deep-redaction.log',
-      enableFile: true,
-      enableConsole: false,
-    });
-
-    log.info(
-      {
-        level1: {
-          level2: {
-            level3: {
-              level4: {
-                token: 'deep-token-value',
-                secret: 'deep-secret-value',
-                apiKey: 'deep-apikey-value',
-                MW_AI_API_KEY: 'deep-mw-ai-value',
-                password: 'deep-password-value',
-                normalField: 'should-not-be-redacted',
-              },
-            },
-          },
-        },
-        topLevelToken: 'top-token',
-        MW_AI_SECRET: 'top-mw-secret',
-      },
-      'deep nested secret redaction probe'
-    );
-
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const content = fs.readFileSync(path.join(testLogDir, 'deep-redaction.log'), 'utf8');
-    for (const sentinel of [
-      'deep-token-value',
-      'deep-secret-value',
-      'deep-apikey-value',
-      'deep-mw-ai-value',
-      'deep-password-value',
-      'top-token',
-      'top-mw-secret',
-    ]) {
-      expect(content).not.toContain(sentinel);
-    }
-    expect(content).toContain('should-not-be-redacted');
-    expect(content).toContain('[redacted]');
-  });
-
-  it('redacts secrets in arrays at any depth', async () => {
-    const log = createLogger({
-      name: 'array-redaction',
-      level: 'info',
-      logDir: testLogDir,
-      logFileName: 'array-redaction.log',
-      enableFile: true,
-      enableConsole: false,
-    });
-
-    log.info(
-      {
-        tokens: [
-          { secret: 'nested-in-array-secret' },
-          [{ apiKey: 'deep-in-nested-array' }],
-        ],
-        credentials: [
-          { password: 'pass-1' },
-          { password: 'pass-2' },
-        ],
-      },
-      'array secret redaction probe'
-    );
-
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const content = fs.readFileSync(path.join(testLogDir, 'array-redaction.log'), 'utf8');
-    for (const sentinel of [
-      'nested-in-array-secret',
-      'deep-in-nested-array',
-      'pass-1',
-      'pass-2',
-    ]) {
-      expect(content).not.toContain(sentinel);
-    }
-    expect(content).toContain('[redacted]');
-  });
-
-  it('flushLogger flushes async destination without message loss', async () => {
-    const log = createLogger({
-      name: 'flush-test',
-      level: 'info',
-      logDir: testLogDir,
-      logFileName: 'flush.log',
-      enableFile: true,
-      enableConsole: false,
-    });
-
-    log.info({ msg: 'before-flush' }, 'before flush');
-    await new Promise((r) => setTimeout(r, 200));
-    await log.flush?.();
-
-    const content1 = fs.readFileSync(path.join(testLogDir, 'flush.log'), 'utf8');
-    expect(content1).toContain('before-flush');
-
-    log.info({ msg: 'after-flush' }, 'after flush');
-    await new Promise((r) => setTimeout(r, 200));
-    await log.flush?.();
-
-    const content2 = fs.readFileSync(path.join(testLogDir, 'flush.log'), 'utf8');
-    expect(content2).toContain('after-flush');
   });
 
   it('does not log raw paths when no matched route template is available', async () => {

@@ -53,7 +53,7 @@ describe('XMLParser', () => {
   });
 
   it('preserves XML syntax variants, malformed less-than text, and attribute entities', () => {
-    const xml = `<?xml version="1.0"?><!-- <ignored> &amp; --><ns:root xmlns:ns="urn:test" note="1 > 0 &amp; 2 < 3" label='it&apos;s > fine'><ns:message><</ns:message><ns:raw><![CDATA[<raw> &amp; ]]></ns:raw><ns:item id="&lt;id&gt;" count=2/><ns:item id="second"></ns:item><?work done?></ns:root>`;
+    const xml = `<?xml version="1.0"?><!-- <ignored> &amp; --><ns:root xmlns:ns="urn:test" note="1 > 0 &amp; 2 < 3" label='it&apos;s > fine'><ns:message><</ns:message><ns:raw><![CDATA[<raw> &amp; ]]></ns:raw><ns:item id="&lt;id&gt;" count=2 /><ns:item id="second"></ns:item><?work done?></ns:root>`;
 
     expect(XMLParser.parse(xml)).toEqual({
       root: {
@@ -62,7 +62,10 @@ describe('XMLParser', () => {
         label: "it's > fine",
         message: { _text: '<' },
         raw: { _text: '<raw> &amp; ' },
-        item: [{ _name: 'item', id: '<id>', count: '2' }, { id: 'second' }],
+        item: [
+          { _name: 'item', id: '<id>', count: '2' },
+          { id: 'second' },
+        ],
       },
     });
   });
@@ -166,9 +169,7 @@ describe('GithubTrendingAdapter', () => {
     const drafts = await new GithubTrendingAdapter().fetch(
       makeCtx({ fetchImpl: async () => new Response(html, { status: 200 }) })
     );
-    expect(drafts[0].summary).toBe(
-      'Tom & Jerry <3 > "quoted" \'single\' &lt;tag&gt; &amp; tools today'
-    );
+    expect(drafts[0].summary).toBe("Tom & Jerry <3 > \"quoted\" 'single' &lt;tag&gt; &amp; tools today");
   });
 });
 

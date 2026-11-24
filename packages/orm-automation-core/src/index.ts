@@ -41,10 +41,3 @@ export type {
   AutomationActionContext,
   AutomationActionInput,
 } from './actions/types.js';
-
-export {
-  automationCoreSeedManifest,
-  seed,
-} from './seed-manifest.js';
-
-export type { AddonSeedManifest, SeedContext, SeedResult } from './seed-manifest.js';

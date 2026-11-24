@@ -3,9 +3,9 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
-import { MemoryTelemetryStore, type TelemetryStore } from '@moonwitness/orm-observability';
 import { decodeLogs, decodeMetrics, decodeTraces } from './otlp.js';
 import { QoderTelemetryBridge } from './qoder.js';
+import { TelemetryStore } from './store.js';
 
 export interface BuildAppOptions {
   store?: TelemetryStore;
@@ -61,7 +61,7 @@ export function buildApp(options: BuildAppOptions = {}): {
   app: FastifyInstance;
   store: TelemetryStore;
 } {
-  const store = options.store ?? new MemoryTelemetryStore();
+  const store = options.store ?? new TelemetryStore();
   const qoderTelemetry = new QoderTelemetryBridge({ store });
   const directory = options.publicDir ?? publicDirectory;
   const app = Fastify({
@@ -105,10 +105,6 @@ export function buildApp(options: BuildAppOptions = {}): {
     return payload;
   });
 
-  app.addHook('onClose', async () => {
-    await store.close();
-  });
-
   app.setErrorHandler((error, request, reply) => {
     const statusCode =
       typeof error === 'object' &&
@@ -131,14 +127,14 @@ export function buildApp(options: BuildAppOptions = {}): {
 
   app.get('/healthz', async () => ({
     status: 'ok',
-    revision: await store.getRevision(),
+    revision: store.revision,
     uptimeSeconds: Math.round(process.uptime()),
   }));
 
   app.post('/v1/traces', async (request, reply) => {
     const decoded = decodeTraces(request.body);
     if (!decoded.valid) return reply.code(400).send({ error: 'Invalid OTLP trace payload' });
-    const stored = await store.ingestSpans(decoded.spans);
+    const stored = store.ingestSpans(decoded.spans);
     const rejected = decoded.rejected + stored.rejected;
     return reply.send(rejected > 0 ? { partialSuccess: { rejectedSpans: String(rejected) } } : {});
   });
@@ -146,7 +142,7 @@ export function buildApp(options: BuildAppOptions = {}): {
   app.post('/v1/metrics', async (request, reply) => {
     const decoded = decodeMetrics(request.body);
     if (!decoded.valid) return reply.code(400).send({ error: 'Invalid OTLP metric payload' });
-    const stored = await store.ingestMetrics(decoded.metrics);
+    const stored = store.ingestMetrics(decoded.metrics);
     const rejected = decoded.rejected + stored.rejected;
     return reply.send(
       rejected > 0 ? { partialSuccess: { rejectedDataPoints: String(rejected) } } : {}
@@ -156,7 +152,7 @@ export function buildApp(options: BuildAppOptions = {}): {
   app.post('/v1/logs', async (request, reply) => {
     const decoded = decodeLogs(request.body);
     if (!decoded.valid) return reply.code(400).send({ error: 'Invalid OTLP log payload' });
-    const stored = await store.ingestLogs(decoded.logs);
+    const stored = store.ingestLogs(decoded.logs);
     const rejected = decoded.rejected + stored.rejected;
     return reply.send(
       rejected > 0 ? { partialSuccess: { rejectedLogRecords: String(rejected) } } : {}
@@ -164,7 +160,7 @@ export function buildApp(options: BuildAppOptions = {}): {
   });
 
   app.post('/v1/qoder', async (request, reply) => {
-    if (!(await qoderTelemetry.handle(request.body))) {
+    if (!qoderTelemetry.handle(request.body)) {
       return reply.code(400).send({ error: 'Invalid Qoder hook payload' });
     }
     return reply.send({ suppressOutput: true });
@@ -179,7 +175,7 @@ export function buildApp(options: BuildAppOptions = {}): {
     const query = queryRecord(request.query);
     reply.header('Cache-Control', 'no-store');
     return {
-      traces: await store.listTraces({
+      traces: store.listTraces({
         limit: queryNumber(query.limit),
         query: queryString(query.query),
         status: queryString(query.status),
@@ -191,7 +187,7 @@ export function buildApp(options: BuildAppOptions = {}): {
     const query = queryRecord(request.params);
     const traceId = queryString(query.traceId)?.slice(0, 128) ?? '';
     reply.header('Cache-Control', 'no-store');
-    const trace = await store.getTrace(traceId);
+    const trace = store.getTrace(traceId);
     return trace ? trace : reply.code(404).send({ error: 'Trace not found' });
   });
 
@@ -199,7 +195,7 @@ export function buildApp(options: BuildAppOptions = {}): {
     const query = queryRecord(request.query);
     reply.header('Cache-Control', 'no-store');
     return {
-      logs: await store.listLogs({
+      logs: store.listLogs({
         limit: queryNumber(query.limit),
         query: queryString(query.query),
         severity: queryString(query.severity),
@@ -211,7 +207,7 @@ export function buildApp(options: BuildAppOptions = {}): {
     const query = queryRecord(request.query);
     reply.header('Cache-Control', 'no-store');
     return {
-      metrics: await store.listMetrics({
+      metrics: store.listMetrics({
         limit: queryNumber(query.limit),
         query: queryString(query.query),
       }),

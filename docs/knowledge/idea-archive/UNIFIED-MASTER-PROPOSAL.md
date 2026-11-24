@@ -16,7 +16,7 @@ MoonWitness is the central message / witness / shared-experience product directi
 ### Verified source state
 - Target is public `A-L-L-A-H/mw-xv`, a TypeScript monorepo with Fastify API, Next.js Board, PostgreSQL, addons, TaskOS, knowledge/research/corpus, assets/UI and a local AI Desktop/Runtime architecture.
 - Current `dev` TaskOS snapshot contains 637 unique records. `main` remains at the original 627-record snapshot. The 1,358-record predecessor is preserved separately.
-- 191 GitHub issues and 30 PRs were read across the paginated API on 2026-11-24; current totals are 85 open / 106 closed and 2 open / 26 merged / 2 closed.
+- 161 actual GitHub issues and 26 PRs were read across the paginated API; current totals are 66 open / 95 closed.
 - Existing proposals #15–#22 and #27 cover product expansion, content, reference data, artwork, research, desktop AI, AEQ/BABYDOLL and legacy-source preservation. Source-specific follow-ups #173–#183 and #185–#187 are indexed separately; #184 and #186 are TaskOS projections.
 - 280 repository metadata results were returned in `bjo163/*` search: 148 public and 132 private.
 - 30 selected public repositories received README/root-tree inspection; 118 public and 132 private remain metadata-only.
@@ -152,7 +152,7 @@ Use one canonical `packages/assets` manifest and existing UI Catalog. Do not cop
 - No verified mirror/LFS restore proof for the source estate.
 - Private repository/resource census still limited to repository metadata results.
 - Current TaskOS dev docs distinguish 637 from historical main's 627; exact-SHA validation and promotion remain separate release gates.
-- PR #81 is merged; the open promotion PR is #218 (plus Dependabot #172) with explicit sensitive promotion review requirements; archive docs should not be confused with merge authorization.
+- Open PR #81 represents a much broader dev batch and has explicit sensitive promotion review requirements; archive docs should not be confused with merge authorization.
 
 ## 11. Risk register
 

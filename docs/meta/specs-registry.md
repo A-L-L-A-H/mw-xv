@@ -10,4 +10,4 @@ Setiap design spec memuat blok pemetaan task:
 ```html
 <!-- tasks: AUD-001, AUD-002 -->
 ```
-Blok ini adalah penanda dokumentasi, bukan mekanisme otomatis: tidak ada script yang membacanya. Otoritas lifecycle tetap [TaskOS registry](../tasks/tasks.json), `ROADMAP.md` dan [Issue Sync Contract](../roadmap/ISSUE-SYNC-CONTRACT.md). `pnpm tasks:validate` memvalidasi `docs/tasks/tasks.json`, bukan marker pada spec.
+Blok ini menautkan spesifikasi ke task di [TaskOS registry](../tasks/tasks.json). Konsistensi registry dengan source checklist divalidasi oleh `pnpm tasks:validate` (`scripts/tasks/validate-tasks.mjs`).

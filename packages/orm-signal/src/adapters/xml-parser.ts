@@ -49,21 +49,15 @@ function isNameStart(code: number, attribute: boolean): boolean {
 }
 
 function isNameChar(code: number, attribute: boolean): boolean {
-  return (
-    isAsciiLetter(code) ||
-    (code >= 48 && code <= 57) ||
-    code === 58 ||
-    code === 95 ||
-    code === 45 ||
-    (attribute && code === 46)
-  );
+  return isAsciiLetter(code)
+    || (code >= 48 && code <= 57)
+    || code === 58
+    || code === 95
+    || code === 45
+    || (attribute && code === 46);
 }
 
-function readName(
-  xml: string,
-  index: number,
-  attribute: boolean
-): { name: string; end: number } | undefined {
+function readName(xml: string, index: number, attribute: boolean): { name: string; end: number } | undefined {
   if (!isNameStart(xml.charCodeAt(index), attribute)) return undefined;
   let cursor = index + 1;
   while (isNameChar(xml.charCodeAt(cursor), attribute)) cursor += 1;
@@ -116,12 +110,7 @@ function parseTag(xml: string, start: number): ParsedTag | undefined {
       const valueStart = cursor;
       while (cursor < xml.length && !isWhitespace(xml[cursor]) && xml[cursor] !== '>') cursor += 1;
       if (cursor === valueStart) return undefined;
-      if (cursor > valueStart + 1 && xml[cursor] === '>' && xml[cursor - 1] === '/') {
-        value = xml.slice(valueStart, cursor - 1);
-        cursor -= 1;
-      } else {
-        value = xml.slice(valueStart, cursor);
-      }
+      value = xml.slice(valueStart, cursor);
     }
     attrs.push([attrName.name, value]);
   }

@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { QoderTelemetryBridge } from '../src/qoder.js';
-import { MemoryTelemetryStore } from '../src/store.js';
+import { TelemetryStore } from '../src/store.js';
 import { NOW_MS } from './fixtures.js';
 
 describe('QoderTelemetryBridge', () => {
-  it('correlates a prompt, tool call, and turn completion into one trace', async () => {
+  it('correlates a prompt, tool call, and turn completion into one trace', () => {
     let now = NOW_MS;
-    const store = new MemoryTelemetryStore({ now: () => now });
+    const store = new TelemetryStore({ now: () => now });
     const bridge = new QoderTelemetryBridge({ store, now: () => now });
 
     expect(
-      await bridge.handle({
+      bridge.handle({
         hook_event_name: 'UserPromptSubmit',
         session_id: 'session-1',
         prompt: 'hello',
@@ -18,7 +18,7 @@ describe('QoderTelemetryBridge', () => {
       })
     ).toBe(true);
     now += 20;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'PreToolUse',
       session_id: 'session-1',
       tool_name: 'Read',
@@ -26,7 +26,7 @@ describe('QoderTelemetryBridge', () => {
       tool_input: { file_path: 'README.md' },
     });
     now += 80;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'PostToolUse',
       session_id: 'session-1',
       tool_name: 'Read',
@@ -34,13 +34,13 @@ describe('QoderTelemetryBridge', () => {
       tool_response: 'file contents',
     });
     now += 30;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'Stop',
       session_id: 'session-1',
       last_assistant_message: 'done',
     });
 
-    const summary = (await store.listTraces())[0];
+    const summary = store.listTraces()[0];
     expect(summary).toMatchObject({
       rootName: 'qoder.prompt',
       durationMs: 130,
@@ -49,7 +49,7 @@ describe('QoderTelemetryBridge', () => {
       runId: 'session-1',
       agentName: 'researcher',
     });
-    const detail = await store.getTrace(summary!.traceId);
+    const detail = store.getTrace(summary!.traceId);
     expect(detail?.spans[0]).toMatchObject({
       name: 'qoder.prompt',
       status: 'ok',
@@ -65,42 +65,9 @@ describe('QoderTelemetryBridge', () => {
     });
   });
 
-  it('serializes concurrent hook delivery to preserve correlation', async () => {
-    const store = new MemoryTelemetryStore({ now: () => NOW_MS });
-    const bridge = new QoderTelemetryBridge({ store, now: () => NOW_MS });
-
-    const results = await Promise.all([
-      bridge.handle({
-        hook_event_name: 'UserPromptSubmit',
-        session_id: 'session-concurrent',
-        prompt: 'hello',
-      }),
-      bridge.handle({
-        hook_event_name: 'PreToolUse',
-        session_id: 'session-concurrent',
-        tool_name: 'Read',
-        tool_use_id: 'tool-concurrent',
-      }),
-      bridge.handle({
-        hook_event_name: 'PostToolUse',
-        session_id: 'session-concurrent',
-        tool_name: 'Read',
-        tool_use_id: 'tool-concurrent',
-      }),
-      bridge.handle({ hook_event_name: 'Stop', session_id: 'session-concurrent' }),
-    ]);
-
-    expect(results).toEqual([true, true, true, true]);
-    const trace = await store.getTrace((await store.listTraces())[0]!.traceId);
-    expect(trace?.spans).toHaveLength(2);
-    expect(trace?.spans.find((span) => span.name === 'qoder.tool.Read')?.parentSpanId).toBe(
-      trace?.spans.find((span) => span.name === 'qoder.prompt')?.spanId
-    );
-  });
-
-  it('does not retain prompts, tool payloads, responses, or assistant messages', async () => {
+  it('does not retain prompts, tool payloads, responses, or assistant messages', () => {
     let now = NOW_MS;
-    const store = new MemoryTelemetryStore({ now: () => now });
+    const store = new TelemetryStore({ now: () => now });
     const bridge = new QoderTelemetryBridge({ store, now: () => now });
     const secrets = {
       prompt: 'prompt-private-content',
@@ -109,13 +76,13 @@ describe('QoderTelemetryBridge', () => {
       assistant: 'assistant-private-content',
     };
 
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'UserPromptSubmit',
       session_id: 'session-private',
       prompt: secrets.prompt,
     });
     now += 10;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'PreToolUse',
       session_id: 'session-private',
       tool_name: 'Bash',
@@ -123,7 +90,7 @@ describe('QoderTelemetryBridge', () => {
       tool_input: { command: secrets.tool },
     });
     now += 20;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'PostToolUse',
       session_id: 'session-private',
       tool_name: 'Bash',
@@ -131,40 +98,40 @@ describe('QoderTelemetryBridge', () => {
       tool_response: { output: secrets.response },
     });
     now += 30;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'Stop',
       session_id: 'session-private',
       last_assistant_message: secrets.assistant,
     });
 
     const stored = JSON.stringify({
-      summary: await store.summary(),
-      traces: await store.listTraces(),
-      logs: await store.listLogs(),
-      metrics: await store.listMetrics(),
+      summary: store.summary(),
+      traces: store.listTraces(),
+      logs: store.listLogs(),
+      metrics: store.listMetrics(),
     });
     for (const secret of Object.values(secrets)) expect(stored).not.toContain(secret);
   });
 
-  it('records tool and turn failures without raw error content', async () => {
+  it('records tool and turn failures without raw error content', () => {
     let now = NOW_MS;
-    const store = new MemoryTelemetryStore({ now: () => now });
+    const store = new TelemetryStore({ now: () => now });
     const bridge = new QoderTelemetryBridge({ store, now: () => now });
 
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'UserPromptSubmit',
       session_id: 'session-error',
       prompt: 'private prompt',
     });
     now += 10;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'PreToolUse',
       session_id: 'session-error',
       tool_name: 'Bash',
       tool_use_id: 'tool-error',
     });
     now += 10;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'PostToolUseFailure',
       session_id: 'session-error',
       tool_name: 'Bash',
@@ -173,37 +140,37 @@ describe('QoderTelemetryBridge', () => {
       error_type: 'execution_error',
     });
     now += 10;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'StopFailure',
       session_id: 'session-error',
       error: 'raw turn error with private details',
       error_type: 'api_error',
     });
 
-    expect(await store.summary()).toMatchObject({ errorCount: 2, errorLogCount: 2 });
-    const detail = await store.getTrace((await store.listTraces())[0]!.traceId);
+    expect(store.summary()).toMatchObject({ errorCount: 2, errorLogCount: 2 });
+    const detail = store.getTrace(store.listTraces()[0]!.traceId);
     expect(detail?.spans.every((span) => span.status === 'error')).toBe(true);
-    expect(await store.listLogs({ severity: 'ERROR' })).toHaveLength(2);
-    const stored = JSON.stringify({ traces: detail, logs: await store.listLogs() });
+    expect(store.listLogs({ severity: 'ERROR' })).toHaveLength(2);
+    const stored = JSON.stringify({ traces: detail, logs: store.listLogs() });
     expect(stored).not.toContain('raw tool error');
     expect(stored).not.toContain('raw turn error');
   });
 
-  it('correlates subagent activity under the active prompt', async () => {
+  it('correlates subagent activity under the active prompt', () => {
     let now = NOW_MS;
-    const store = new MemoryTelemetryStore({ now: () => now });
+    const store = new TelemetryStore({ now: () => now });
     const bridge = new QoderTelemetryBridge({ store, now: () => now });
 
-    await bridge.handle({ hook_event_name: 'UserPromptSubmit', session_id: 'session-agent' });
+    bridge.handle({ hook_event_name: 'UserPromptSubmit', session_id: 'session-agent' });
     now += 10;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'SubagentStart',
       session_id: 'session-agent',
       agent_id: 'agent-1',
       agent_type: 'reviewer',
     });
     now += 40;
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'SubagentStop',
       session_id: 'session-agent',
       agent_id: 'agent-1',
@@ -211,9 +178,9 @@ describe('QoderTelemetryBridge', () => {
       last_assistant_message: 'private subagent response',
     });
     now += 10;
-    await bridge.handle({ hook_event_name: 'Stop', session_id: 'session-agent' });
+    bridge.handle({ hook_event_name: 'Stop', session_id: 'session-agent' });
 
-    const trace = await store.getTrace((await store.listTraces())[0]!.traceId);
+    const trace = store.getTrace(store.listTraces()[0]!.traceId);
     expect(trace?.spans).toHaveLength(2);
     expect(trace?.spans[1]).toMatchObject({
       name: 'qoder.subagent.reviewer',
@@ -225,12 +192,12 @@ describe('QoderTelemetryBridge', () => {
     expect(JSON.stringify(trace)).not.toContain('private subagent response');
   });
 
-  it('groups tool-only sessions under a safe synthetic root', async () => {
-    const store = new MemoryTelemetryStore({ now: () => NOW_MS });
+  it('groups tool-only sessions under a safe synthetic root', () => {
+    const store = new TelemetryStore({ now: () => NOW_MS });
     const bridge = new QoderTelemetryBridge({ store, now: () => NOW_MS });
 
     expect(
-      await bridge.handle({
+      bridge.handle({
         hook_event_name: 'PostToolUse',
         session_id: 'session-fallback',
         tool_name: 'Glob',
@@ -238,7 +205,7 @@ describe('QoderTelemetryBridge', () => {
         tool_response: 'private response',
       })
     ).toBe(true);
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'PostToolUse',
       session_id: 'session-fallback',
       tool_name: 'Read',
@@ -246,7 +213,7 @@ describe('QoderTelemetryBridge', () => {
       tool_response: 'another private response',
     });
 
-    const trace = await store.getTrace((await store.listTraces())[0]!.traceId);
+    const trace = store.getTrace(store.listTraces()[0]!.traceId);
     const root = trace?.spans.find((span) => span.name === 'qoder.session');
     const glob = trace?.spans.find((span) => span.name === 'qoder.tool.Glob');
     const read = trace?.spans.find((span) => span.name === 'qoder.tool.Read');
@@ -261,19 +228,19 @@ describe('QoderTelemetryBridge', () => {
     expect(JSON.stringify(trace)).not.toContain('private response');
   });
 
-  it('emits cumulative Qoder counters', async () => {
-    const store = new MemoryTelemetryStore({ now: () => NOW_MS });
+  it('emits cumulative Qoder counters', () => {
+    const store = new TelemetryStore({ now: () => NOW_MS });
     const bridge = new QoderTelemetryBridge({ store, now: () => NOW_MS });
 
-    await bridge.handle({ hook_event_name: 'UserPromptSubmit', session_id: 'session-metrics' });
-    await bridge.handle({ hook_event_name: 'Stop', session_id: 'session-metrics' });
-    await bridge.handle({
+    bridge.handle({ hook_event_name: 'UserPromptSubmit', session_id: 'session-metrics' });
+    bridge.handle({ hook_event_name: 'Stop', session_id: 'session-metrics' });
+    bridge.handle({
       hook_event_name: 'PostToolUse',
       session_id: 'session-metrics',
       tool_name: 'Read',
       tool_use_id: 'tool-metrics',
     });
-    await bridge.handle({
+    bridge.handle({
       hook_event_name: 'PostToolUseFailure',
       session_id: 'session-metrics',
       tool_name: 'Bash',
@@ -281,7 +248,7 @@ describe('QoderTelemetryBridge', () => {
       error_type: 'execution_error',
     });
 
-    const metrics = await store.listMetrics();
+    const metrics = store.listMetrics();
     expect(metrics.find((series) => series.name === 'qoder.prompt.count')?.points[0]?.value).toBe(
       1
     );

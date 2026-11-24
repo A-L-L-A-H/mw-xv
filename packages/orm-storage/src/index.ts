@@ -291,42 +291,26 @@ export class LocalFileAttachmentStorage implements AttachmentStorage {
         if (!entry.isFile() || !UUID_PATTERN.test(entry.name)) continue;
         const key = entry.name.toLowerCase();
         const objectPath = this.objectPath(key);
-        let file: Awaited<ReturnType<typeof open>>;
-        try {
-          file = await open(objectPath, 'r');
-        } catch (error) {
-          if (isMissing(error)) continue;
-          throw error;
-        }
-        try {
-          const details = await file.stat();
-          const current = await lstat(objectPath);
-          if (
-            !details.isFile() ||
-            !current.isFile() ||
-            current.isSymbolicLink() ||
-            details.dev !== current.dev ||
-            details.ino !== current.ino
-          ) {
-            throw new Error('Attachment object must be a regular file');
-          }
-          if (details.mtimeMs > olderThan.getTime()) continue;
-          if (protectedKeys.has(key)) {
-            checked += 1;
-            continue;
-          }
-          if (objects.length === limit) {
-            truncated = true;
-            break;
-          }
+        const details = await stat(objectPath);
+        if (details.mtimeMs > olderThan.getTime()) continue;
+        if (protectedKeys.has(key)) {
           checked += 1;
+          continue;
+        }
+        if (objects.length === limit) {
+          truncated = true;
+          break;
+        }
+        checked += 1;
 
-          const hash = createHash('sha256');
+        const file = await open(objectPath, 'r');
+        const hash = createHash('sha256');
+        try {
           for await (const chunk of file.createReadStream({ autoClose: false })) hash.update(chunk);
-          objects.push({ key, sizeBytes: details.size, checksum: hash.digest('hex') });
         } finally {
           await file.close();
         }
+        objects.push({ key, sizeBytes: details.size, checksum: hash.digest('hex') });
       }
     } finally {
       await directory.close().catch(() => undefined);

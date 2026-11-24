@@ -101,13 +101,9 @@ describe('renderDedupeKey', () => {
 
   it('handles adversarially long unmatched brace runs', () => {
     const template = `prefix:${'{'.repeat(50_000)}`;
-    expect(
-      renderDedupeKey(template, {
-        payload: {},
-        triggerKind: 'manual',
-        triggerRef: 'r',
-      })
-    ).toBe(template);
+    expect(renderDedupeKey(template, {
+      payload: {}, triggerKind: 'manual', triggerRef: 'r',
+    })).toBe(template);
   });
 });
 

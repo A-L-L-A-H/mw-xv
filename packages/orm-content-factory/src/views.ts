@@ -33,7 +33,7 @@ export const views = [
   defineView(ContentAsset, {
     title: 'Content Assets',
     list: {
-      columns: ['title', 'template', 'locale', 'status', 'template_version'],
+      columns: ['title', 'template', 'locale', 'status', 'template_version', 'created_at'],
       order: 'created_at desc, id desc',
     },
     form: {
