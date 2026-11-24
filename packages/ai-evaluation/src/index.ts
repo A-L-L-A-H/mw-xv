@@ -746,5 +746,6 @@ export async function runOverlapDetectorBenchmark(options?: {
 
 export * from './ablation-gate.js';
 export * from './world-sim.js';
+export * from './pass-at-k.js';
 export * from './adversarial-suite.js';
 export * from './agi-benchmark.js';
