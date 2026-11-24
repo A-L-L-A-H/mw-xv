@@ -39,11 +39,17 @@ describe('@moonwitness/orm-sim models, addon manifest, and domain helpers', () =
     expect(seedManifest.seedVersion).toBe(SIM_SEED_VERSION);
   });
 
-  it('computes deterministic checksums, step estimates, and finished-run detection', () => {
+  it('computes key-order-stable checksums, step estimates, and finished-run detection', () => {
     const snapshot = { viscosity: 1.0, density: 998.2 };
+    const reorderedSnapshot = { density: 998.2, viscosity: 1.0 };
     const checksum = computeRunChecksum(snapshot);
-    expect(checksum).toMatch(/^[0-9a-f]{8}$/u);
+    expect(checksum).toMatch(/^[0-9a-f]{64}$/u);
     expect(computeRunChecksum(snapshot)).toBe(checksum);
+    expect(computeRunChecksum(reorderedSnapshot)).toBe(checksum);
+
+    const nestedSnapshot = { outer: { first: 1, entries: [{ west: 2, east: 3 }] }, top: true };
+    const reorderedNestedSnapshot = { top: true, outer: { entries: [{ east: 3, west: 2 }], first: 1 } };
+    expect(computeRunChecksum(nestedSnapshot)).toBe(computeRunChecksum(reorderedNestedSnapshot));
 
     expect(
       estimateRunSteps({ max_steps: 1000, tolerance: 1e-6 })

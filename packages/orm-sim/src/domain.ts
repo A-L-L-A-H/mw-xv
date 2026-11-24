@@ -1,3 +1,20 @@
+import { createHash } from 'node:crypto';
+
+type UnknownRecord = Record<string, unknown>;
+
+function canonicalRunSnapshot(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonicalRunSnapshot).join(',')}]`;
+  }
+  if (value && typeof value === 'object') {
+    return `{${Object.entries(value as UnknownRecord)
+      .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
+      .map(([key, item]) => `${JSON.stringify(key)}:${canonicalRunSnapshot(item)}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value) ?? 'null';
+}
+
 export function estimateRunSteps(
   solverProfile: { max_steps: number; tolerance: number },
   mesh?: { element_count: number }
@@ -9,13 +26,7 @@ export function estimateRunSteps(
 }
 
 export function computeRunChecksum(inputSnapshot: object): string {
-  const str = JSON.stringify(inputSnapshot, Object.keys(inputSnapshot).sort());
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < str.length; i++) {
-    hash ^= str.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return ('00000000' + (hash >>> 0).toString(16)).slice(-8);
+  return createHash('sha256').update(canonicalRunSnapshot(inputSnapshot)).digest('hex');
 }
 
 export function isRunFinished(
