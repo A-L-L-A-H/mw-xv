@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import type {
@@ -76,10 +76,6 @@ export interface WorkspaceServiceOptions {
   readonly dataDir: string;
   readonly executor: SandboxExecutor;
   readonly now?: () => Date;
-}
-
-function sha256(text: string): string {
-  return createHash('sha256').update(text, 'utf8').digest('hex');
 }
 
 /** Typed workspace operations. No ORM, model call, policy engine or business authorization. */
@@ -305,7 +301,7 @@ export class WorkspaceService implements WorkspaceOperations {
       scopeClean: true,
       files,
       unifiedDiff,
-      diffSha256: sha256(unifiedDiff),
+      diffSha256: sha256Hex(unifiedDiff),
       sizeBytes,
       truncated: false,
     };

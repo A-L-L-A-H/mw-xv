@@ -26,6 +26,7 @@
     "@moonwitness/orm-base": "workspace:*",
     "@moonwitness/orm-workflow": "workspace:*",
     "@moonwitness/research": "workspace:*",
+    "@moonwitness/types": "workspace:*",
     "objection": "^3.1.5"
   },
   "devDependencies": {

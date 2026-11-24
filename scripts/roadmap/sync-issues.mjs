@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { execFileSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -18,9 +18,6 @@ const maximumApplyBatchSize = 5;
  * @typedef {{ taskId: string, operation: 'create'|'update'|'noop'|'conflict', issueNumber?: number, reason?: string, title: string, body: string, labels?: string[], assignees?: string[], managedLabels?: string[], managedAssignees?: string[], milestoneTitle?: string, expectedTitle?: string, expectedManagedBlock?: string, expectedMilestoneTitle?: string, expectedIssueState?: 'open'|'closed', closeIssue?: true }} IssueOperation
  */
 
-function sha256(value) {
-  return createHash('sha256').update(value).digest('hex');
-}
 
 function replaceManagedBlock(body, block) {
   const currentBlock = readManagedBlock(body);
@@ -347,7 +344,7 @@ export function planIssueSync({
       ...(closeIssue ? { closeIssue: true } : {}),
     };
   });
-  const inputHash = sha256(
+  const inputHash = sha256Hex(
     JSON.stringify({
       repositoryId,
       sourceSha,

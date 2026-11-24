@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { createJsonSchemaValidator, type JsonSchemaContract } from '@moonwitness/knowledge';
 import suggestionEnvelopeSchema from './suggestion-envelope.schema.json' with { type: 'json' };
 
@@ -106,9 +106,6 @@ export function validateResearchSuggestionEnvelope(value: unknown) {
   return validateSchema(value);
 }
 
-function sha256(text: string): string {
-  return createHash('sha256').update(text, 'utf8').digest('hex');
-}
 
 /**
  * Validate model output and re-resolve every cited source span and duplicate link against trusted
@@ -176,7 +173,7 @@ export async function validateResearchSuggestionEnvelopeWithResolver(
         throw new SuggestionEnvelopeError('span_invalid', 'Cited Unicode-scalar range is invalid');
       }
       const excerpt = scalars.slice(start, end).join('');
-      if (sha256(excerpt) !== selector.selected_span_sha256) {
+      if (sha256Hex(excerpt) !== selector.selected_span_sha256) {
         throw new SuggestionEnvelopeError(
           'span_digest_mismatch',
           'Selected span digest does not match'

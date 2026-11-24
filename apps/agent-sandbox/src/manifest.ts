@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import type { EphemeralSandboxManifest } from './contract.js';
 
 /**
@@ -41,8 +41,6 @@ export function buildWorkspaceManifest(params: {
     automatedPromotionAllowed: false,
     automatedSelfMerge: false,
   };
-  const manifestSha256 = createHash('sha256')
-    .update(JSON.stringify(core), 'utf8')
-    .digest('hex');
+  const manifestSha256 = sha256Hex(JSON.stringify(core));
   return { ...core, manifestSha256 };
 }

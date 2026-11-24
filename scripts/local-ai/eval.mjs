@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { existsSync } from 'node:fs';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
@@ -8,10 +8,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { TextDecoder } from 'node:util';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-
-function sha256Hex(bytes) {
-  return createHash('sha256').update(bytes).digest('hex');
-}
 
 function selectSearchProbeToken(text) {
   const tokens = text.normalize('NFKC').match(/[\p{L}\p{N}]+/gu) ?? [];

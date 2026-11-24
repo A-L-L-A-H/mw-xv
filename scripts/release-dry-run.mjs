@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -7,7 +7,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const releaseWorkflow = path.join(repositoryRoot, '.github/workflows/release.yml');
-const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 
 function parseArguments(args) {
   const options = new Map();
@@ -190,8 +189,8 @@ export function buildReleaseDryRunReport(
     const before = currentFiles.get(file.path) ?? '';
     fileChanges.push({
       path: file.path,
-      beforeSha256: sha256(before),
-      afterSha256: sha256(file.contents),
+      beforeSha256: sha256Hex(before),
+      afterSha256: sha256Hex(file.contents),
     });
     if (file.path.endsWith('package.json')) {
       const previous = JSON.parse(before);
@@ -277,7 +276,7 @@ async function run(options) {
   const workflow = await readFile(releaseWorkflow, 'utf8');
   const report = buildReleaseDryRunReport(preparation, currentFiles, repository);
   report.channel = channel;
-  report.releaseWorkflowSha256 = sha256(workflow);
+  report.releaseWorkflowSha256 = sha256Hex(workflow);
   const output = `${JSON.stringify(report, null, 2)}\n`;
   const outputPath = options.get('--output');
   if (outputPath) await writeFile(path.resolve(outputPath), output, { flag: 'wx' });

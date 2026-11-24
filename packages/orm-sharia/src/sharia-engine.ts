@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import type { Knex } from 'knex';
 import { ShariaContract, ZakatAssessment, ProfitSharingDistribution, WaqfAsset, HalalComplianceAudit } from './models/index.js';
 import { Company, Partner, User, ConfigParameter, ConfigParameterValueType } from '@moonwitness/orm-base';
@@ -102,19 +102,15 @@ function parseProfitSharingRatio(ratio: string): { customerBps: number; companyB
   return { customerBps: Math.round((customer / total) * 10000), companyBps: Math.round((company / total) * 10000) };
 }
 
-function sha256(input: string): string {
-  return crypto.createHash('sha256').update(input).digest('hex');
-}
-
 function buildMerkleRoot(hashes: string[]): string {
-  if (hashes.length === 0) return sha256('empty');
+  if (hashes.length === 0) return sha256Hex('empty');
   let level = [...hashes];
   while (level.length > 1) {
     const next: string[] = [];
     for (let i = 0; i < level.length; i += 2) {
       const left = level[i];
       const right = i + 1 < level.length ? level[i + 1] : left;
-      next.push(sha256(left + right));
+      next.push(sha256Hex(left + right));
     }
     level = next;
   }
@@ -212,7 +208,7 @@ export async function distributeProfitSharing(db: Knex, input: ProfitSharingInpu
     approvedBy: input.approvedById,
     timestamp: new Date().toISOString(),
   });
-  const merkleRoot = sha256(journalPayload);
+  const merkleRoot = sha256Hex(journalPayload);
   const journalEntryRef = `JE-SHARIA-${input.distributionDate.replace(/-/g, '')}-${contract.contract_no}`;
 
   await db(ProfitSharingDistribution.tableName).insert({
@@ -289,7 +285,7 @@ export async function computeWaqfMerkle(db: Knex, input: WaqfMerkleInput): Promi
 
   const trail = input.trail.map(node => ({
     ...node,
-    hash: sha256(JSON.stringify({ ...node, hash: undefined })),
+    hash: sha256Hex(JSON.stringify({ ...node, hash: undefined })),
   }));
 
   const hashes = trail.map(n => n.hash);
@@ -305,7 +301,7 @@ export async function appendWaqfMerkleEvent(db: Knex, assetId: number, event: Om
 
   const existingTrailStr = asset?.merkle_trail ?? (MOCK_WAQF_TRAILS.get(assetId) ? JSON.stringify(MOCK_WAQF_TRAILS.get(assetId)) : '[]');
   const existingTrail: MerkleTrailNode[] = existingTrailStr ? JSON.parse(existingTrailStr) : [];
-  const newNode: MerkleTrailNode = { ...event, hash: sha256(JSON.stringify(event)) };
+  const newNode: MerkleTrailNode = { ...event, hash: sha256Hex(JSON.stringify(event)) };
   const updatedTrail = [...existingTrail, newNode];
   const hashes = updatedTrail.map(n => n.hash);
   const merkleRoot = buildMerkleRoot(hashes);

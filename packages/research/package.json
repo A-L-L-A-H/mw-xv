@@ -23,7 +23,8 @@
     "test": "tsc -p tsconfig.test.json && vitest run"
   },
   "dependencies": {
-    "@moonwitness/knowledge": "workspace:*"
+    "@moonwitness/knowledge": "workspace:*",
+    "@moonwitness/types": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

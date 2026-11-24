@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
@@ -110,10 +110,6 @@ async function ensureSafeOutputParent(root: string, destination: string): Promis
   }
 }
 
-function sha256(bytes: Buffer): string {
-  return createHash('sha256').update(bytes).digest('hex');
-}
-
 function decodeUtf8(bytes: Buffer, label: string): string {
   try {
     return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
@@ -154,7 +150,7 @@ function compareIds(left: JsonObject, right: JsonObject): number {
 }
 
 function recordFilename(id: string): string {
-  return `${createHash('sha256').update(id, 'utf8').digest('hex')}.json`;
+  return `${sha256Hex(id)}.json`;
 }
 
 export async function ingestDataset(request: IngestionRequest): Promise<IngestionReport> {
@@ -164,7 +160,7 @@ export async function ingestDataset(request: IngestionRequest): Promise<Ingestio
   const recipe = parseRecipe(parseCanonicalJson(decodeUtf8(recipeBytes, 'Recipe')));
   const sourceFile = await assertRegularFile(root, recipe.source.path, 'source.path');
   const sourceBytes = await readFile(sourceFile);
-  const actualSourceSha = sha256(sourceBytes);
+  const actualSourceSha = sha256Hex(sourceBytes);
   if (actualSourceSha !== recipe.source.sha256) {
     throw new TypeError(
       `Source checksum mismatch: expected ${recipe.source.sha256}, got ${actualSourceSha}`
@@ -178,7 +174,7 @@ export async function ingestDataset(request: IngestionRequest): Promise<Ingestio
   const report: IngestionReport = {
     format: 'moonwitness-ingestion-report/v1',
     recipeId: recipe.recipeId,
-    recipeSha256: sha256(recipeBytes),
+    recipeSha256: sha256Hex(recipeBytes),
     parser: recipe.parser,
     source: { path: recipe.source.path, sha256: actualSourceSha, bytes: sourceBytes.byteLength },
     records: records.length,
@@ -270,7 +266,7 @@ export async function replayDatasetRelease(
 
   const recipeFile = await assertRegularFile(root, manifest.sourceRecipe.path, 'sourceRecipe.path');
   const recipeBytes = await readFile(recipeFile);
-  if (sha256(recipeBytes) !== manifest.sourceRecipe.sha256) {
+  if (sha256Hex(recipeBytes) !== manifest.sourceRecipe.sha256) {
     throw new TypeError('Pinned source recipe checksum mismatch; release was not rebuilt');
   }
   const preview = await ingestDataset({

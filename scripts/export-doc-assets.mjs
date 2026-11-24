@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { Buffer } from 'node:buffer';
 import { readdir, readFile, mkdir, writeFile, rm } from 'node:fs/promises';
 import process from 'node:process';
@@ -17,9 +17,6 @@ const generatedManifestName = 'asset-map.json';
 // fingerprint that was only reproducible on the machine that generated it.
 const portableTextPattern = /\.(?:svg|css|json|js|mjs|ts|html|txt|xml|csv|md)$/iu;
 
-function sha256(contents) {
-  return createHash('sha256').update(contents).digest('hex');
-}
 
 function isPortableText(filePath) {
   return portableTextPattern.test(filePath);
@@ -93,7 +90,7 @@ export function createDocAssetArtifacts({
       format: asset.format,
       width: asset.width,
       height: asset.height,
-      sha256: sha256(portable),
+      sha256: sha256Hex(portable),
     });
   }
 
@@ -109,16 +106,16 @@ export function createDocAssetArtifacts({
     generatedFrom: 'packages/assets/manifest.json and packages/ui/src/styles/tokens.css',
     sources: {
       assetManifest: assetManifestRelative,
-      assetManifestSha256: sha256(toPortableText(assetManifestContents)),
+      assetManifestSha256: sha256Hex(toPortableText(assetManifestContents)),
       tokens: tokenSourceRelative,
-      tokensSha256: sha256(tokenBuffer),
+      tokensSha256: sha256Hex(tokenBuffer),
     },
     assets: assetRecords,
     stylesheets: [
       {
         source: tokenSourceRelative,
         output: `${outputDirectoryRelative}/${tokenPath}`,
-        sha256: sha256(tokenBuffer),
+        sha256: sha256Hex(tokenBuffer),
       },
     ],
   };
