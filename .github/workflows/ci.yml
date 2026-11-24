@@ -111,7 +111,7 @@ jobs:
 
   quality-and-build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     steps:
@@ -149,7 +149,7 @@ jobs:
           pnpm lint:ui
           pnpm api:addon:check
           pnpm test:assets
-          pnpm exec playwright install chromium
+          pnpm exec playwright install --with-deps chromium firefox webkit
           pnpm assets:check:bounds
           pnpm test:ui
           node scripts/check-docs.mjs
@@ -189,6 +189,13 @@ jobs:
             docs/guide/reference/generated-models.md \
             docs/guide/reference/generated-platform.json \
             docs/guide/reference/generated-platform.md
+
+      - name: Run Chromium, Firefox, and WebKit visual matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(fnm env --shell bash)" && fnm use 24
+          pnpm test:e2e:visual:matrix
 
       - name: Upload generated reference outputs for exact reconciliation
         if: always() && steps.build-workspace.outputs.references_generated == 'true'

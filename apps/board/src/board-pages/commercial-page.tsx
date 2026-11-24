@@ -11,6 +11,7 @@ import { Panel } from '@moonwitness/ui/components/panel';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { toast } from '@moonwitness/ui/components/toast';
 import { client } from '@/lib/client';
+import { formatMinorAmount } from '@/lib/format-money';
 import { scopedQueryKey } from '@/lib/query-scope';
 
 interface CrmOpportunityRecord {
@@ -242,8 +243,7 @@ export function CommercialPage() {
                   <div>
                     <p className="font-display text-sm font-semibold text-ink">{opp.name}</p>
                     <p className="font-mono text-xs text-ink-muted">
-                      {opp.currency ?? 'USD'}{' '}
-                      {((opp.expected_revenue_minor ?? 0) / 100).toLocaleString()} ·{' '}
+                      {formatMinorAmount(opp.expected_revenue_minor, opp.currency ?? 'USD')} ·{' '}
                       {opp.probability ?? 0}% win rate
                     </p>
                   </div>
@@ -283,7 +283,7 @@ export function CommercialPage() {
                       )}
                     </div>
                     <p className="font-mono text-xs text-ink-muted">
-                      Amount: {((order.total_amount_minor ?? 0) / 100).toLocaleString()}
+                      Amount: {formatMinorAmount(order.total_amount_minor)}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -341,7 +341,7 @@ export function CommercialPage() {
                     </Badge>
                   </div>
                   <p className="font-mono text-xs text-ink-muted">
-                    Amount: {((sub.amount_minor ?? 0) / 100).toLocaleString()} · Next invoice:{' '}
+                    Amount: {formatMinorAmount(sub.amount_minor)} · Next invoice:{' '}
                     {sub.next_invoice_date ?? 'N/A'}
                   </p>
                 </div>

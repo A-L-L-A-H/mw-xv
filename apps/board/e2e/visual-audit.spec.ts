@@ -48,7 +48,7 @@ test('command shortcut stays inactive while typing in an editable control', asyn
 
 test('dashboard KPI cards show current values without fabricated trend percentages', async ({
   page,
-}) => {
+}, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/login');
   await page.getByLabel('Email or Username').fill('superadmin');
@@ -63,8 +63,7 @@ test('dashboard KPI cards show current values without fabricated trend percentag
   expect(metricCopy.join(' ')).not.toContain('%');
 
   await expectNoA11yViolations(page, 'dashboard/kpi-no-fabricated-trends');
-  await page.screenshot({
-    path: path.join(auditDirectory, 'dashboard-kpi-no-trend-desktop-1440.png'),
+  await writeAuditScreenshot(page, testInfo, 'dashboard-kpi-no-trend-desktop-1440.png', {
     fullPage: true,
   });
   // The dashboard below the KPI grid is live data: the model registry grid,
@@ -577,8 +576,7 @@ test('ordinary-user dashboard has a verified visual baseline', async ({ page }, 
   await expect(page.getByRole('heading', { name: 'System Audit Ledger Events' })).toHaveCount(0);
   await expectNoHorizontalOverflow(page, 'dashboard/user/desktop-1440');
   await expectNoA11yViolations(page, 'dashboard/user/desktop-1440');
-  await page.screenshot({
-    path: path.join(auditDirectory, 'dashboard-user-desktop-1440.png'),
+  await writeAuditScreenshot(page, testInfo, 'dashboard-user-desktop-1440.png', {
     fullPage: true,
   });
   await expect(page).toHaveScreenshot('board-dashboard-user-desktop-1440.png', {
@@ -649,8 +647,7 @@ test('mobile overlays keep accessible names, keyboard dismissal, focus return, a
   expect(commandPaletteBounds!.x).toBeGreaterThanOrEqual(0);
   expect(commandPaletteBounds!.x + commandPaletteBounds!.width).toBeLessThanOrEqual(375);
   await expectNoA11yViolations(page, 'mobile/command-palette-open');
-  await page.screenshot({
-    path: path.join(auditDirectory, 'command-palette-mobile-375.png'),
+  await writeAuditScreenshot(page, testInfo, 'command-palette-mobile-375.png', {
     fullPage: false,
   });
   await writeCatalogScreenshot(page, testInfo, 'command-palette-motion-mobile-375.png', {
@@ -724,27 +721,41 @@ function browserSuffix(testInfo: TestInfo): string {
   return testInfo.project.name === 'chromium' ? '' : `-${testInfo.project.name}`;
 }
 
-type CatalogShotOptions = Pick<
-  NonNullable<Parameters<Page['screenshot']>[0]>,
-  'fullPage' | 'animations'
->;
+function screenshotPath(directory: string, testInfo: TestInfo, fileName: string): string {
+  const { name, ext } = path.parse(fileName);
+  return path.join(directory, `${name}${browserSuffix(testInfo)}${ext}`);
+}
+
+type ScreenshotOptions = Omit<NonNullable<Parameters<Page['screenshot']>[0]>, 'path'>;
+
+async function writeAuditScreenshot(
+  page: Page,
+  testInfo: TestInfo,
+  fileName: string,
+  options: ScreenshotOptions = {}
+) {
+  const outputPath = screenshotPath(auditDirectory, testInfo, fileName);
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  await page.screenshot({ ...options, path: outputPath });
+}
 
 async function writeCatalogScreenshot(
   page: Page,
   testInfo: TestInfo,
   fileName: string,
-  options: CatalogShotOptions = {}
+  options: ScreenshotOptions = {}
 ) {
   // Canonical documentation artifacts come from the chromium project only.
   // All three matrix projects writing the same path fails on Windows with a
   // file-lock error; assertions still run in every browser.
   if (testInfo.project.name !== 'chromium') return;
-  await mkdir(catalogDirectory, { recursive: true });
+  const outputPath = screenshotPath(catalogDirectory, testInfo, fileName);
+  await mkdir(path.dirname(outputPath), { recursive: true });
   // Windows intermittently fails the png write with a transient UNKNOWN /
   // sharing-violation error from antivirus scanning; retry briefly.
   for (let attempt = 0; ; attempt += 1) {
     try {
-      await page.screenshot({ path: path.join(catalogDirectory, fileName), ...options });
+      await page.screenshot({ ...options, path: outputPath });
       return;
     } catch (error) {
       if (attempt >= 2) throw error;
@@ -785,8 +796,7 @@ test('responsive screen audit: login matches the Enter the Shadow reference', as
     await expect(page.getByRole('link', { name: 'MoonWitness home', exact: true })).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
     await expectNoHorizontalOverflow(page, `login/${size.name}`);
-    await page.screenshot({
-      path: path.join(auditDirectory, `login-${size.name}-light${browserSuffix(testInfo)}.png`),
+    await writeAuditScreenshot(page, testInfo, `login-${size.name}-light.png`, {
       fullPage: true,
     });
     await expectNoA11yViolations(page, `login/${size.name}`);
@@ -860,8 +870,7 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
     }));
     expect(heroImage).toEqual({ loaded: true, alt: '' });
     await expectNoA11yViolations(page, `homepage/${size.name}`);
-    await page.screenshot({
-      path: path.join(auditDirectory, `home-${size.name}${browserSuffix(testInfo)}.png`),
+    await writeAuditScreenshot(page, testInfo, `home-${size.name}.png`, {
       fullPage: true,
     });
     if (
@@ -905,8 +914,7 @@ test('story workbench masthead keeps brand copy readable across viewports', asyn
     );
     await expectNoHorizontalOverflow(page, `workbench/${size.name}`);
     await expectNoA11yViolations(page, `workbench/${size.name}`);
-    await page.screenshot({
-      path: path.join(auditDirectory, `workbench-${size.name}${browserSuffix(testInfo)}.png`),
+    await writeAuditScreenshot(page, testInfo, `workbench-${size.name}.png`, {
       fullPage: true,
     });
     if (testInfo.project.name === 'chromium') {
@@ -1009,11 +1017,7 @@ test('story workbench editor and preview stay readable with a populated story', 
     expect(inspectorColumn).toBe(size.width <= 1280 && size.width > 768 ? '2' : 'auto');
     await expectNoHorizontalOverflow(page, `workbench-filled/${size.name}`);
     await expectNoA11yViolations(page, `workbench-filled/${size.name}`);
-    await page.screenshot({
-      path: path.join(
-        auditDirectory,
-        `workbench-filled-${size.name}${browserSuffix(testInfo)}.png`
-      ),
+    await writeAuditScreenshot(page, testInfo, `workbench-filled-${size.name}.png`, {
       fullPage: true,
     });
     if (testInfo.project.name === 'chromium') {
@@ -1105,11 +1109,7 @@ test('empty and unavailable story workbench states explain the next action', asy
       await expect(page.getByRole('button', { name: 'Retry loading story' })).toBeVisible();
       await expectNoHorizontalOverflow(page, `workbench-${scenario.name}/${size.name}`);
       await expectNoA11yViolations(page, `workbench-${scenario.name}/${size.name}`);
-      await page.screenshot({
-        path: path.join(
-          auditDirectory,
-          `workbench-${scenario.name}-${size.name}${browserSuffix(testInfo)}.png`
-        ),
+      await writeAuditScreenshot(page, testInfo, `workbench-${scenario.name}-${size.name}.png`, {
         fullPage: true,
       });
       if (testInfo.project.name === 'chromium') {
@@ -1243,11 +1243,7 @@ test('responsive protected screens fit and remain accessible in both themes', as
             maxDiffPixels: 2,
           });
         }
-        await page.screenshot({
-          path: path.join(
-            auditDirectory,
-            `${view.name}-${size.name}-${theme}${browserSuffix(testInfo)}.png`
-          ),
+        await writeAuditScreenshot(page, testInfo, `${view.name}-${size.name}-${theme}.png`, {
           fullPage: true,
         });
         if (view.name === 'dashboard' && size.name === 'mobile-375') {
