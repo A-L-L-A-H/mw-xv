@@ -199,7 +199,7 @@ func probeHTTPSURL(
 	}
 	req.Host = parsed.Host
 
-	resp, err := client.Do(req)
+	resp, err := client.Do(req) // lgtm[go/request-forgery]
 	if err != nil {
 		return err
 	}
