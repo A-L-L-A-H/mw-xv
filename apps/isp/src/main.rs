@@ -20,6 +20,8 @@ use sha2::Sha256;
 use sqlx::Row;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::str::FromStr;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::net::UdpSocket;
 use tokio::signal;
@@ -177,6 +179,10 @@ struct AppState {
 #[derive(Clone)]
 struct Database {
     pool: sqlx::SqlitePool,
+    /// Count of Access-Requests rejected due to quota exceeded
+    quota_exceeded_rejects: Arc<AtomicU64>,
+    /// Count of duplicate quota accumulations skipped (idempotent replay)
+    quota_duplicate_accumulations: Arc<AtomicU64>,
 }
 
 impl Database {
@@ -187,7 +193,11 @@ impl Database {
             .max_connections(5)
             .connect_with(options)
             .await?;
-        Ok(Self { pool })
+        Ok(Self {
+            pool,
+            quota_exceeded_rejects: Arc::new(AtomicU64::new(0)),
+            quota_duplicate_accumulations: Arc::new(AtomicU64::new(0)),
+        })
     }
 
     async fn migrate(&self) -> Result<()> {
@@ -544,22 +554,32 @@ impl Database {
     /// inflate the subscriber's usage (AUD/TAUD-08).
     async fn accumulate_quota_usage(&self, username: &str) -> Result<()> {
         // 1. Add each active session's growth since its high-water mark.
-        sqlx::query(
-            "UPDATE subscribers
-             SET quota_used_bytes = quota_used_bytes + (
-               SELECT COALESCE(SUM(
-                 (acct_input_octets + acct_output_octets) - quota_accumulated_octets
-               ), 0)
-               FROM radius_sessions
-               WHERE username = ?2 AND status = 'active'
-                 AND (acct_input_octets + acct_output_octets) > quota_accumulated_octets
-             )
-             WHERE username = ?2",
+        let rows = sqlx::query(
+            "SELECT (acct_input_octets + acct_output_octets) - quota_accumulated_octets AS delta
+             FROM radius_sessions
+             WHERE username = ?1 AND status = 'active'
+               AND (acct_input_octets + acct_output_octets) > quota_accumulated_octets",
         )
         .bind(username)
-        .bind(username)
-        .execute(&self.pool)
+        .fetch_all(&self.pool)
         .await?;
+
+        let total_delta: i64 = rows.iter().map(|r| r.get::<i64, _>("delta")).sum();
+        if total_delta > 0 {
+            sqlx::query(
+                "UPDATE subscribers
+                 SET quota_used_bytes = quota_used_bytes + ?1
+                 WHERE username = ?2",
+            )
+            .bind(total_delta)
+            .bind(username)
+            .execute(&self.pool)
+            .await?;
+        } else if rows.is_empty() {
+            // No deltas to apply - this is a replay of an already-accumulated request
+            self.quota_duplicate_accumulations.fetch_add(1, Ordering::Relaxed);
+        }
+
         // 2. Raise the high-water mark to the counters just accounted for.
         sqlx::query(
             "UPDATE radius_sessions
@@ -835,6 +855,7 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
     .ok()?;
     let quota_limit = subscriber.quota_bytes;
     if quota_limit > 0 && fresh_usage.unwrap_or(0) >= quota_limit {
+        db.quota_exceeded_rejects.fetch_add(1, Ordering::Relaxed);
         let _ = db
             .mark_quota_disconnect(&username)
             .await;
@@ -1021,6 +1042,7 @@ fn build_http_router(db: Database, admin_token: String) -> Router {
         .route("/api/sessions", get(list_sessions))
         .route("/api/sessions/disconnect", post(disconnect_session))
         .route("/api/stats", get(get_stats))
+        .route("/metrics", get(get_metrics))
         .route_layer(middleware::from_fn_with_state(state.clone(), require_bearer_auth));
     Router::new()
         .route("/health", get(health))
@@ -1321,6 +1343,22 @@ async fn get_stats(State(state): State<AppState>) -> Result<Json<AuthStats>, Sta
         total_subscribers,
         active_sessions,
     }))
+}
+
+async fn get_metrics(State(state): State<AppState>) -> String {
+    let db = &state.db;
+    let quota_exceeded = db.quota_exceeded_rejects.load(Ordering::Relaxed);
+    let quota_duplicates = db.quota_duplicate_accumulations.load(Ordering::Relaxed);
+
+    format!(
+        r#"# HELP moonwitness_isp_quota_exceeded_rejects_total Total number of Access-Requests rejected due to quota exceeded
+# TYPE moonwitness_isp_quota_exceeded_rejects_total counter
+moonwitness_isp_quota_exceeded_rejects_total {quota_exceeded}
+# HELP moonwitness_isp_quota_duplicate_accumulations_total Total number of duplicate quota accumulation attempts skipped (idempotent replay)
+# TYPE moonwitness_isp_quota_duplicate_accumulations_total counter
+moonwitness_isp_quota_duplicate_accumulations_total {quota_duplicates}
+"#
+    )
 }
 
 #[cfg(test)]
