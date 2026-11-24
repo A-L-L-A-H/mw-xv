@@ -37,7 +37,7 @@
 
 ## 3. Quota Cap & Remediation Coverage
 
-- **9 Quota-Capped Calls (`HTTP 429 RESOURCE_EXHAUSTED`, `4h57m` reset):** Recorded in [11-character-design-bible.md](./11-character-design-bible.md#7-cutout--master-asset-specification-matrix-12-target-pngs--2-halftone-masters). All 9 targets were cleanly generated via deterministic Option A `sharp` + SVG compositing in [`generate-riot-universe.mjs`](../../../packages/assets/scripts/generate-riot-universe.mjs) using the 3 existing real AI character PNG masters and existing `raw_arts/art/*.png` plates.
+- **9 Quota-Capped Calls (`HTTP 429 RESOURCE_EXHAUSTED`, `4h57m` reset):** Recorded in [11-character-design-bible.md](./11-character-design-bible.md#7-cutout-master-asset-specification-matrix-12-target-pngs-2-halftone-masters). All 9 targets were cleanly generated via deterministic Option A `sharp` + SVG compositing in [`generate-riot-universe.mjs`](../../../packages/assets/scripts/generate-riot-universe.mjs) using the 3 existing real AI character PNG masters and existing `raw_arts/art/*.png` plates.
 - **Zero Duplicate Runtime Assets:** All `401` runtime assets have distinct SHA-256 hashes (except the 4 pre-existing documented brand SVG exceptions in [`asset-qa.mjs`](../../../packages/assets/scripts/asset-qa.mjs)).
 - **Transfer Budget Compliance:** Every generated `riot-universe` runtime asset passes [`asset-qa.mjs`](../../../packages/assets/scripts/asset-qa.mjs) (`character-sprite <= 160 KB`, `state-illustration <= 160 KB`, `background <= 220 KB`, `sticker <= 64 KB`, `game-asset <= 120 KB`, `animation-frame <= 96 KB`, `animation-sheet <= 280 KB`).
 

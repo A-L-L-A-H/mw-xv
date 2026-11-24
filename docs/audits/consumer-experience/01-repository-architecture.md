@@ -1,7 +1,7 @@
 # Consumer Experience Audit — 01. Repository Architecture
 
 - **Scope:** MoonWitness XV monorepo (`apps/*`, `packages/*`, `scripts/*`)
-- **Toolchain:** `pnpm@11.17.0`, Node `24.x` (`24.22.3` pinned in [`pnpm-workspace.yaml`](../../../pnpm-workspace.yaml)), TypeScript `~5.7.3`
+- **Toolchain:** `bun@1.4.5`, Node `24.x` (`24.22.3` pinned in [`package.json`](../../../package.json)), TypeScript `~5.7.3`
 - **Primary Architecture Diagram:** [`diagrams/architecture-layers.mmd`](diagrams/architecture-layers.mmd)
 - **Workspace Dependency Source:** [`docs/architecture/diagrams/workspace-dependencies.mmd`](../../architecture/diagrams/workspace-dependencies.mmd)
 
@@ -9,7 +9,7 @@
 
 ## 1. Repository Architecture Map
 
-MoonWitness XV is a pnpm workspace monorepo organized under two top-level workspace globs (`apps/*` and `packages/*`) declared in [`pnpm-workspace.yaml`](../../../pnpm-workspace.yaml) and [`package.json`](../../../package.json).
+MoonWitness XV is a bun workspace monorepo organized under two top-level workspace globs (`apps/*` and `packages/*`) declared in [`package.json`](../../../package.json).
 
 - **`apps/` (9 active workspace apps + `apps/test-results` artifact folder):**
   - **Consumer Web & Desktop Surfaces:** [`apps/board`](../../../apps/board/package.json), [`apps/desktop`](../../../apps/desktop/package.json), [`apps/ui-catalog`](../../../apps/ui-catalog/package.json), [`apps/docs`](../../../apps/docs/package.json)

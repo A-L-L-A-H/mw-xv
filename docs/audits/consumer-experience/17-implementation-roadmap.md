@@ -27,7 +27,7 @@
 - **Package Owner:** `@moonwitness/ui`
 - **Exact Affected File Paths:** `packages/ui/src/styles/tokens.css`, `packages/ui/src/styles/components.css`, `apps/board/src/index.css`, `apps/board/src/app/global.css`
 - **Existing Condition:** `--mw-chalk-mask` (`viewBox="0 0 200 100" preserveAspectRatio="none"`) is applied with `mask-size: 100% 100%` over `inset: 0` on `.mw-ui-panel`, `.mw-ui-dialog-content`, `.mw-ui-table`, `.ink-panel`, and `.home-editorial-card`.
-- **Problem:** Non-uniform scaling distorts 2–4px SVG strokes into 20–45px blocks slicing through table headers, mobile cards, dialog controls, and headings ([`02-visual-audit.md`](./02-visual-audit.md#31-stretched---mw-chalk-mask-collision-defect-p0)).
+- **Problem:** Non-uniform scaling distorts 2–4px SVG strokes into 20–45px blocks slicing through table headers, mobile cards, dialog controls, and headings ([`02-visual-audit.md`](./02-visual-audit.md#31-stretched-mw-chalk-mask-collision-defect-p0)).
 - **Proposed Solution:** Remove stretched `mask-size: 100% 100%` overlays from content panels, tables, and dialogs; replace with 9-slice `border-image` SVG (fixed corner/edge widths) or crisp `--mw-frame-width` ink borders + `--mw-grunge-radius-hand` + `--mw-torn-safe-inset` padding clearance. Remove dead `--board-chalk-mask` and `--global-chalk-mask` duplicate SVG data URIs.
 - **Dependencies:** None
 - **Expected Output:** Updated border/frame CSS rules in `tokens.css`, `components.css`, `index.css`, and `global.css`.
@@ -41,7 +41,7 @@
 - **Package Owner:** `@moonwitness/board`
 - **Exact Affected File Paths:** `apps/board/src/board-pages/settings-page.tsx`
 - **Existing Condition:** Unselected Theme, Skin, and Density `<Button>` cards inherit default yellow `--mw-primary` background while child descriptions use `text-ink-soft` (`#c9c5b8` in `.dark`).
-- **Problem:** Yields `~1.3:1` contrast in dark mode, making unselected skin descriptions unreadable ([`02-visual-audit.md`](./02-visual-audit.md#32-dark-mode-contrast-collapse--unstable-remounts-on-settings-p0)).
+- **Problem:** Yields `~1.3:1` contrast in dark mode, making unselected skin descriptions unreadable ([`02-visual-audit.md`](./02-visual-audit.md#32-dark-mode-contrast-collapse-unstable-remounts-on-settings-p0)).
 - **Proposed Solution:** Pass `variant="outline"` (or `variant="ghost"`) on unselected Theme/Skin/Density buttons so they render on `--mw-surface` with `--mw-foreground`/`--mw-ink-soft`, and apply `bg-primary text-[var(--mw-primary-foreground)]` with explicit dark foreground on selected cards.
 - **Dependencies:** None
 - **Expected Output:** Accessible light/dark Settings picker cards across all skins.
@@ -55,7 +55,7 @@
 - **Package Owner:** `@moonwitness/ui`, `@moonwitness/assets`
 - **Exact Affected File Paths:** `packages/ui/src/styles/tokens.css`, `packages/assets/fonts.css`, `packages/assets/manifest.json`
 - **Existing Condition:** `--mw-font-display`, `--mw-font-grunge`, and `--mw-font-brush` all prepend `'MoonWitness Grunge'`, shadowing `Anton` and `Road Rage`; `JetBrains Mono` omits `@font-face` weight `700`.
-- **Problem:** Flattens condensed KPI/header typography (`Anton`) vs brush headings (`Road Rage`) and causes synthetic faux-bold on `font-mono font-bold` ([`05-design-system.md`](./05-design-system.md#3-typography--font-asset-audit)).
+- **Problem:** Flattens condensed KPI/header typography (`Anton`) vs brush headings (`Road Rage`) and causes synthetic faux-bold on `font-mono font-bold` ([`05-design-system.md`](./05-design-system.md#3-typography-font-asset-audit)).
 - **Proposed Solution:** Set `--mw-font-display: 'Anton', 'MoonWitness Grunge', Impact, 'Arial Narrow', sans-serif`, `--mw-font-brush: 'Road Rage', 'MoonWitness Grunge', Impact, sans-serif`, keep `--mw-font-grunge: 'MoonWitness Grunge', 'Road Rage', Impact, sans-serif`, and register `JetBrains Mono` weight `700` in `packages/assets/fonts.css`.
 - **Dependencies:** None
 - **Expected Output:** Distinct `Anton`, `Road Rage`, `MoonWitness Grunge`, and `JetBrains Mono` 700 font faces loaded cleanly.
@@ -69,7 +69,7 @@
 - **Package Owner:** `@moonwitness/assets`
 - **Exact Affected File Paths:** `raw_arts/fonts/saksi-hand-400.woff2`, `raw_arts/fonts/saksi-hand-700.woff2`, `raw_arts/fonts/saksi-marker-400.woff2`, `raw_arts/fonts/saksi-marker-700.woff2`, `raw_arts/fonts/saksi-mono-400.woff2`, `raw_arts/fonts/saksi-mono-700.woff2`, `raw_arts/fonts/cinzel-400.woff2`, `raw_arts/fonts/cinzel-600.woff2`, `raw_arts/fonts/cinzel-700.woff2`, `packages/assets/fonts.css`, `packages/assets/licenses.json`, `packages/assets/manifest.json`
 - **Existing Condition:** 9 `.woff2` files sit unregistered in `raw_arts/fonts/`.
-- **Problem:** Orphaned font assets create licensing/provenance ambiguity and unused disk artifacts ([`05-design-system.md`](./05-design-system.md#31-hosted-fonts-packagesassetsfontscss-vs-raw_artsfonts)).
+- **Problem:** Orphaned font assets create licensing/provenance ambiguity and unused disk artifacts ([`05-design-system.md`](./05-design-system.md#31-hosted-fonts-packagesassetsfontscss-vs-raw-artsfonts)).
 - **Proposed Solution:** Verify license provenance in `packages/assets/licenses.json`; promote `saksi-hand` & `saksi-marker` into `packages/assets/fonts/` + `fonts.css` (`--mw-font-comic`) if ISC/OFL-verified, and archive `saksi-mono`/`cinzel` (or register `cinzel` strictly for Studio imprint if approved).
 - **Dependencies:** `CX-003`
 - **Expected Output:** Zero unregistered font binaries in `raw_arts/fonts/`.
@@ -97,7 +97,7 @@
 - **Package Owner:** `@moonwitness/ui`
 - **Exact Affected File Paths:** `packages/ui/src/styles/tokens.css`, `packages/ui/TOKENS.md`, `packages/ui/tests/tokens.test.mjs`
 - **Existing Condition:** `tokens.css` lacks `[data-skin='moonwitness-riot']` rules and lacks semantic `--mw-comic-*` tokens (`gutter`, `panel-border`, `bubble-bg/fg`, `sfx-bg/fg`, `stamp-bg/fg`, `halftone-size`, `sticker-tilt`).
-- **Problem:** Comic/cartoon components cannot inherit skin-aware tokens without hardcoded literals ([`05-design-system.md`](./05-design-system.md#5-specification-moonwitness-riot-skin--semantic-comicmotion-tokens)).
+- **Problem:** Comic/cartoon components cannot inherit skin-aware tokens without hardcoded literals ([`05-design-system.md`](./05-design-system.md#5-specification-moonwitness-riot-skin-semantic-comicmotion-tokens)).
 - **Proposed Solution:** Add `[data-skin='moonwitness-riot']` and `[data-skin='moonwitness-riot'].dark` blocks plus `:root`/`.dark` `--mw-comic-*` tokens to `tokens.css` and document them in `TOKENS.md`.
 - **Dependencies:** `CX-005`
 - **Expected Output:** Verified CSS token layer supporting all 4 skins × 2 modes + semantic comic variables.
@@ -143,7 +143,7 @@
 - **Package Owner:** `@moonwitness/ui`
 - **Exact Affected File Paths:** `packages/ui/src/styles/components.css`, `packages/ui/src/components/scene-particles.tsx`, `packages/ui/src/components/scene-transitions.tsx`, `packages/ui/tests/scene-fx-audio.test.mjs`
 - **Existing Condition:** `.mw-ui-scene-particle` and `.mw-ui-comic-transition` have zero CSS rules/keyframes in `components.css`; neither component subscribes to `window.matchMedia('(prefers-reduced-motion: reduce)')`.
-- **Problem:** FXLab particle presets (`rain`, `dust`, `stars`, `sparks`) and comic transitions (`ink-wipe`, `panel-reveal`, `cut-impact`, `soft`) render blank or static in live browser ([`02-visual-audit.md`](./02-visual-audit.md#1-executive-visual-summary), [`06-animation-audit.md`](./06-animation-audit.md#24-layered-scene-camera-playback-timeline--harness)).
+- **Problem:** FXLab particle presets (`rain`, `dust`, `stars`, `sparks`) and comic transitions (`ink-wipe`, `panel-reveal`, `cut-impact`, `soft`) render blank or static in live browser ([`02-visual-audit.md`](./02-visual-audit.md#1-executive-visual-summary), [`06-animation-audit.md`](./06-animation-audit.md#24-layered-scene-camera-playback-timeline-harness)).
 - **Proposed Solution:** Author `.mw-ui-scene-particles`, `.mw-ui-scene-particle` keyframes (`mw-ui-particle-fall/float/twinkle/spark`), and `.mw-ui-comic-transition` clip-path/transform states in `components.css`; subscribe both components to `matchMedia('(prefers-reduced-motion: reduce)')` honoring `getActiveSceneHarness()` overrides.
 - **Dependencies:** `CX-008`
 - **Expected Output:** Live animated particles and comic transitions in FXLab and product scenes, settling immediately under reduced motion.
@@ -185,7 +185,7 @@
 - **Package Owner:** `@moonwitness/board`, `@moonwitness/ui`
 - **Exact Affected File Paths:** `apps/board/src/components/views/form-view.tsx`, `apps/board/src/components/views/kanban-view.tsx`, `apps/board/src/board-pages/projects-page.tsx`, `apps/board/src/board-pages/story-workbench-page.tsx`, `apps/board/src/components/desktop/quick-capture-modal.tsx`, `apps/board/public/sounds/` (via `scripts/copy-board-public-assets.mjs`)
 - **Existing Condition:** `useSfx().play(...)` is called only in `auth-page.tsx:90`; `createSceneSoundscapeController` is unused outside `FXLab.tsx`.
-- **Problem:** `SoundToggle` in `AppShell` appears inert across almost every user workflow ([`06-animation-audit.md`](./06-animation-audit.md#25-audio--soundscape-audiotsx-audio-runtimets-scene-soundscapets)).
+- **Problem:** `SoundToggle` in `AppShell` appears inert across almost every user workflow ([`06-animation-audit.md`](./06-animation-audit.md#25-audio-soundscape-audiotsx-audio-runtimets-scene-soundscapets)).
 - **Proposed Solution:** Trigger `useSfx().play('success' | 'signal' | 'alert')` on record save (`FormView`), stage move (`KanbanView`, `ProjectsPage`), story revision save (`StoryWorkbenchPage`), and quick capture (`QuickCaptureModal`), while keeping audio muted by default and gesture-gated. Add optional opt-in ambient scene toggle in Studio/Story Workbench via `createSceneSoundscapeController`.
 - **Dependencies:** `CX-011`
 - **Expected Output:** Cohesive tactile SFX feedback when user enables `SoundToggle`, verified against `bundle-budget.json` (`<= 50,000 B` UI sounds).
@@ -361,7 +361,7 @@
 - **Package Owner:** `@moonwitness/ui`
 - **Exact Affected File Paths:** `packages/ui/src/components/empty-state.tsx`, `packages/ui/src/styles/components.css`, `packages/ui/tests/effects.test.mjs`
 - **Existing Condition:** `EmptyState` supports only small `icon`, `title`, `description`, `action`.
-- **Problem:** Board empty states look bare (`32px` doodle or plain text) despite rich `illustrations/{empty,no-results,no-activity}-*.svg` assets existing ([`02-visual-audit.md`](./02-visual-audit.md#35-unillustrated-empty-error--progressionsticker-gaps)).
+- **Problem:** Board empty states look bare (`32px` doodle or plain text) despite rich `illustrations/{empty,no-results,no-activity}-*.svg` assets existing ([`02-visual-audit.md`](./02-visual-audit.md#35-unillustrated-empty-error-progressionsticker-gaps)).
 - **Proposed Solution:** Add optional `illustration?: AssetId | ReactNode` and `mode?: 'light' | 'dark'` props to `EmptyState` (resolving via `asset-registry` with `aria-hidden="true"` decorative `<img>`) and keep existing `icon` prop 100% compatible.
 - **Dependencies:** `CX-011`, `CX-008`
 - **Expected Output:** Illustrated `EmptyState` primitive ready for immediate adoption across Board views.
@@ -389,7 +389,7 @@
 - **Package Owner:** `@moonwitness/ui-catalog`
 - **Exact Affected File Paths:** `apps/ui-catalog/src/styles.css`, `apps/ui-catalog/src/AssetBrowser.tsx`, `apps/ui-catalog/src/catalog.tsx`, `apps/ui-catalog/tests/catalog.spec.ts`
 - **Existing Condition:** `AssetBrowser.tsx:40-45` renders `"All categorys"` / `"All statuss"`; `styles.css:1418` hardcodes `height: 17.5rem; overflow: hidden` on mobile `.mw-ui-page-header`; 9 existing `@moonwitness/ui` components (`date-picker`, `label`, `log-console`, `mode-picker`, `number-input`, `smart-button-box`, `status-bar`, `tag-input`, `update-banner`) and the 8 new components lack Catalog specimens.
-- **Problem:** Catalog fails as a complete reference consumer and risks mobile header clipping ([`02-visual-audit.md`](./02-visual-audit.md#33-responsive-clipping--route-accessibility-p1)).
+- **Problem:** Catalog fails as a complete reference consumer and risks mobile header clipping ([`02-visual-audit.md`](./02-visual-audit.md#33-responsive-clipping-route-accessibility-p1)).
 - **Proposed Solution:** Fix `"All categories"` / `"All statuses"` strings, change `height: 17.5rem` to `min-height: 17.5rem` (`overflow: visible`), and add lazy-split Catalog sections (`VisualExperienceLab.tsx` / `FormControlsSection.tsx`) showcasing all missing and new components without breaching `bundle-budget.json`.
 - **Dependencies:** `CX-014`, `CX-015`, `CX-021`, `CX-022`, `CX-023`, `CX-025`
 - **Expected Output:** 100% `@moonwitness/ui` component coverage in `apps/ui-catalog`.
@@ -420,7 +420,7 @@
 - **Package Owner:** `@moonwitness/board`
 - **Exact Affected File Paths:** `apps/board/next.config.ts`, `apps/board/src/app/page.tsx`, `apps/board/src/components/home/home-header.tsx`, `apps/board/src/app/knowledge/page.tsx`
 - **Existing Condition:** `apps/board/next.config.ts:54` permanently redirects `/knowledge` -> `/board/knowledge`; `/` has zero links to `/knowledge` (`02 KNOWLEDGE` card links to `/register`); `/knowledge` lacks Sign In / Register CTAs.
-- **Problem:** Unauthenticated visitors cannot reach `apps/board/src/app/knowledge/page.tsx`, getting bounced to `/login` ([`02-visual-audit.md`](./02-visual-audit.md#33-responsive-clipping--route-accessibility-p1), [`07-user-flow-audit.md`](./07-user-flow-audit.md#journey-1--public-landing--exploration-)).
+- **Problem:** Unauthenticated visitors cannot reach `apps/board/src/app/knowledge/page.tsx`, getting bounced to `/login` ([`02-visual-audit.md`](./02-visual-audit.md#33-responsive-clipping-route-accessibility-p1), [`07-user-flow-audit.md`](./07-user-flow-audit.md#journey-1-public-landing-exploration)).
 - **Proposed Solution:** Remove `{ source: '/knowledge', destination: '/board/knowledge', permanent: true }` from `next.config.ts`; link `/` header + `02 KNOWLEDGE` card to `/knowledge`; add `Sign in` / `Join the Crew` links on `/knowledge`. (Keep `apps/desktop` `/knowledge` -> `KnowledgePage` behavior intact since desktop auto-authenticates.)
 - **Dependencies:** None
 - **Expected Output:** Public `/knowledge` route renders fail-closed `PUBLIC_APPROVED` projections without auth redirect.
@@ -434,7 +434,7 @@
 - **Package Owner:** `@moonwitness/board`
 - **Exact Affected File Paths:** `apps/board/src/app/global.css`, `apps/board/src/components/layout/app-shell.tsx`, `apps/board/src/index.css`
 - **Existing Condition:** `.home-title` sets `white-space: nowrap` clipping `MOONWITNESS` at `390px`; `#open-command-palette` crushes to `"CTRL"` at `768x1024`; `.board-sidebar::after` overlaps mobile `SheetContent` close `X` button.
-- **Problem:** Broken responsive ergonomics at tablet and mobile breakpoints ([`02-visual-audit.md`](./02-visual-audit.md#33-responsive-clipping--route-accessibility-p1)).
+- **Problem:** Broken responsive ergonomics at tablet and mobile breakpoints ([`02-visual-audit.md`](./02-visual-audit.md#33-responsive-clipping-route-accessibility-p1)).
 - **Proposed Solution:** Remove `white-space: nowrap` / adjust fluid clamp (`clamp(2.4rem, 11vw, 7.8rem)`) below `480px` in `global.css`; prioritize `#open-command-palette` (`min-w-[11rem]`) at `md` in `app-shell.tsx` by moving secondary utilities cleanly; add right inset/z-index clearance on `SheetClose` away from `.board-sidebar::after` (`index.css`). Also adjust `QuickCaptureModal` trigger offset so it never overlaps bottom pagination on mobile.
 - **Dependencies:** `CX-001`
 - **Expected Output:** Clean `390x844` and `768x1024` layouts with zero element clipping or control overlap.
@@ -448,7 +448,7 @@
 - **Package Owner:** `@moonwitness/board`
 - **Exact Affected File Paths:** `apps/board/src/board-pages/settings-page.tsx`, `apps/board/src/board-pages/profile-page.tsx`, `apps/board/src/lib/client.ts`
 - **Existing Condition:** `SettingsPage` keys `<SettingsPageContent key={scopeKey} />` on `getQueryScope()`; background refetches (`/auth/me`, `/notifications/inbox`) trigger full subtree remounts and persistent skeleton shimmers.
-- **Problem:** Interactive controls detach from DOM mid-click (`element was detached from the DOM`) during live Playwright interaction ([`02-visual-audit.md`](./02-visual-audit.md#32-dark-mode-contrast-collapse--unstable-remounts-on-settings-p0)).
+- **Problem:** Interactive controls detach from DOM mid-click (`element was detached from the DOM`) during live Playwright interaction ([`02-visual-audit.md`](./02-visual-audit.md#32-dark-mode-contrast-collapse-unstable-remounts-on-settings-p0)).
 - **Proposed Solution:** Derive stable tenant/user key (`user.id + companyId`) rather than mutable scope reference, preserve rendered controls during `isFetching` background refetches (`placeholderData` / stale-while-revalidate), and show non-blocking inline sync indicator instead of replacing form with `<Skeleton />`.
 - **Dependencies:** None
 - **Expected Output:** Stable DOM identity across background refetches on `/board/settings` and `/board/profile`.
@@ -490,7 +490,7 @@
 - **Package Owner:** `@moonwitness/board`, `@moonwitness/client`
 - **Exact Affected File Paths:** `apps/board/src/components/creative/editorial-studio-panel.tsx`, `apps/board/src/app/board/studio/page.tsx`, `packages/client/src/client.ts`
 - **Existing Condition:** `editorial-studio-panel.tsx#L395-L406` mixes Indonesian empty-state copy into an English screen, and title/brief/readiness checklist edits are client-only memory lost on refresh.
-- **Problem:** Studio work cannot be saved, exported, or resumed across sessions ([`02-visual-audit.md`](./02-visual-audit.md#34-flat-saas-operational-views-vs-comiccharacter-identity), [`07-user-flow-audit.md`](./07-user-flow-audit.md#journey-13--creative--asmaul-husna-studio-boardstudio)).
+- **Problem:** Studio work cannot be saved, exported, or resumed across sessions ([`02-visual-audit.md`](./02-visual-audit.md#34-flat-saas-operational-views-vs-comiccharacter-identity), [`07-user-flow-audit.md`](./07-user-flow-audit.md#journey-13-creative-asmaul-husna-studio-boardstudio)).
 - **Proposed Solution:** Normalize UI copy to English (consistent with locale policy), add deterministic JSON/Markdown brief export + `MoonWitnessClient` `storeStoryVersion` / local draft persistence with loading/error states and `useSfx().play('success')` feedback.
 - **Dependencies:** `CX-012`, `CX-027`
 - **Expected Output:** English-consistent, save/export-capable Creative Studio.
@@ -504,7 +504,7 @@
 - **Package Owner:** `@moonwitness/board`
 - **Exact Affected File Paths:** `apps/board/next.config.ts`
 - **Existing Condition:** `next.config.ts:40` sets `script-src 'self' 'unsafe-inline'` unconditionally, causing 19 CSP `eval()` console errors during Next.js `next dev` HMR.
-- **Problem:** Noisy dev console errors obscure real runtime exceptions during visual audits ([`02-visual-audit.md`](./02-visual-audit.md#35-unillustrated-empty-error--progressionsticker-gaps)).
+- **Problem:** Noisy dev console errors obscure real runtime exceptions during visual audits ([`02-visual-audit.md`](./02-visual-audit.md#35-unillustrated-empty-error-progressionsticker-gaps)).
 - **Proposed Solution:** Allow `'unsafe-eval'` strictly when `process.env.NODE_ENV === 'development'` while keeping production `next build`/`next start` CSP locked to `'self' 'unsafe-inline'` (zero `'unsafe-eval'` in prod).
 - **Dependencies:** None
 - **Expected Output:** Zero CSP `eval()` errors in `next dev`, strict prod CSP preserved.
@@ -522,7 +522,7 @@
 - **Package Owner:** `@moonwitness/desktop`, `@moonwitness/board`
 - **Exact Affected File Paths:** `apps/board/src/components/layout/app-shell.tsx`, `apps/board/src/lib/desktop-bridge.ts`, `apps/desktop/src/index.ts`, `apps/desktop/desktop-web/main.tsx`
 - **Existing Condition:** Clicking "Check" in `DesktopUpdateBannerMount` (`app-shell.tsx:189-204`) sets `status = 'checking'` with no IPC completion callback, leaving the banner permanently spinning.
-- **Problem:** Dead-end updater UX in Desktop mode ([`07-user-flow-audit.md`](./07-user-flow-audit.md#journey-4--desktop-bootstrap--mode-selection-appsdesktopdesktop-webmaintsx)).
+- **Problem:** Dead-end updater UX in Desktop mode ([`07-user-flow-audit.md`](./07-user-flow-audit.md#journey-4-desktop-bootstrap-mode-selection-appsdesktopdesktop-webmaintsx)).
 - **Proposed Solution:** Add `checkForUpdates()` / `installUpdate()` methods on `DesktopCapabilityBridge` (`window.__MW_DESKTOP__`) with safe fallback to `'up-to-date'` / `'error'` timeout when running in webview-only preview, ensuring `DesktopUpdateBannerMount` always transitions out of `'checking'`.
 - **Dependencies:** None
 - **Expected Output:** Bounded, non-hanging desktop update lifecycle.

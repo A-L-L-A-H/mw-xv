@@ -103,7 +103,7 @@ Circular dependencies are prevented by **four structural rules** verified in Typ
 
 ## 4. Governance Rules & Gate Enforcement
 
-All consumer-experience changes must pass the three static governance scripts plus bundle budget gates documented in [`01-repository-architecture.md`](./01-repository-architecture.md#8-governance-gates--bundle-budgets):
+All consumer-experience changes must pass the three static governance scripts plus bundle budget gates documented in [`01-repository-architecture.md`](./01-repository-architecture.md#8-governance-gates-bundle-budgets):
 
 ### 4.1 `scripts/check-board-shared-ui.mjs` (`pnpm board:ui:check --all-product-apps`)
 - **App Classification Gate:** Every folder in `apps/*` with a `package.json` must match [`scripts/ui-governance-policy.json`](../../../scripts/ui-governance-policy.json):
