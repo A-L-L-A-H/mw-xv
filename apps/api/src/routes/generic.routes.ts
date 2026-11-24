@@ -59,7 +59,7 @@ import {
   userGraphAllowed,
 } from './generic-query-graph.js';
 import { auditSnapshot } from './generic-audit.js';
-import { findReference } from './generic-references.js';
+import { findReference, findReferencesBatch } from './generic-references.js';
 
 type RpcEnvelope = {
   jsonrpc?: unknown;
@@ -438,7 +438,7 @@ async function executeRpc(
       const relationGraph = typeof kwargs.with === 'string' ? kwargs.with : undefined;
       return (await model.search_read(domain, {
         ...(kwargs as Parameters<typeof model.search_read>[1]),
-        limit: kwargs.limit ?? RPC_MAX_PAGE_SIZE,
+        limit: (kwargs.limit as number | undefined) ?? RPC_MAX_PAGE_SIZE,
         ...(relationGraph ? { withGraphFetched: relationGraph } : {}),
       } as Parameters<typeof model.search_read>[1])) as JsonValue;
     }
@@ -446,7 +446,7 @@ async function executeRpc(
       return (
         await model.search(domain, {
           ...(kwargs as Parameters<typeof model.search>[1]),
-          limit: kwargs.limit ?? RPC_MAX_PAGE_SIZE,
+          limit: (kwargs.limit as number | undefined) ?? RPC_MAX_PAGE_SIZE,
         } as Parameters<typeof model.search>[1])
       ).map((record) => record.id);
     case 'create': {
@@ -519,13 +519,14 @@ async function executeRpc(
         }
       }
       if (values.active === false) {
+        const conflicts = await findReferencesBatch(
+          model.modelName,
+          before.map((record) => record.id),
+          model.modelName === 'base.partner',
+          trx
+        );
         for (const record of before) {
-          const reference = await findReference(
-            model.modelName,
-            record.id,
-            model.modelName === 'base.partner',
-            trx
-          );
+          const reference = conflicts.get(record.id);
           if (reference) throw new Error(`Record is still used by '${reference}'`);
         }
       }
@@ -566,13 +567,14 @@ async function executeRpc(
       });
       if (visible.length !== idList.length) throw new Error('Record not found');
       const before = await model.query(trx).whereIn('id', idList);
+      const conflicts = await findReferencesBatch(
+        model.modelName,
+        before.map((record) => record.id),
+        model.modelName === 'base.partner',
+        trx
+      );
       for (const record of before) {
-        const reference = await findReference(
-          model.modelName,
-          record.id,
-          model.modelName === 'base.partner',
-          trx
-        );
+        const reference = conflicts.get(record.id);
         if (reference) throw new Error(`Record is still used by '${reference}'`);
       }
       const unlinked = await model.unlink(ids, false, { transaction: trx });
@@ -1539,8 +1541,9 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
           : Array.isArray(rawIds)
             ? rawIds.filter((value): value is number => typeof value === 'number')
             : [];
+      const conflicts = await findReferencesBatch(modelName, ids, modelName === 'base.partner');
       for (const id of ids) {
-        const reference = await findReference(modelName, id, modelName === 'base.partner');
+        const reference = conflicts.get(id);
         if (reference)
           return reply.status(409).send(rpcError(-32009, `Record is still used by '${reference}'`));
       }
@@ -1553,8 +1556,9 @@ export const genericRoutes: FastifyPluginAsync<GenericRoutesOptions> = async (fa
           : Array.isArray(rawIds)
             ? rawIds.filter((value): value is number => typeof value === 'number')
             : [];
+      const conflicts = await findReferencesBatch(modelName, ids, modelName === 'base.partner');
       for (const id of ids) {
-        const reference = await findReference(modelName, id, modelName === 'base.partner');
+        const reference = conflicts.get(id);
         if (reference)
           return reply.status(409).send(rpcError(-32009, `Record is still used by '${reference}'`));
       }
