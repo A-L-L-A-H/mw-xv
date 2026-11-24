@@ -1,13 +1,19 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "428f1537307424cc5ee146ad984c85753a310134140447f44d7bfb66cb074a00",
+  "sourceSha256": "8fa85ebe01e691e7aadb10ca867c5b4e4817d6314c1cdc1a11800b327950c669",
   "packages": [
     {
       "name": "@moonwitness/agent-observability",
       "kind": "app",
       "version": "1.0.0-rc.1",
       "manifest": "apps/agent-observability"
+    },
+    {
+      "name": "@moonwitness/agent-sandbox",
+      "kind": "app",
+      "version": "1.0.0-rc.1",
+      "manifest": "apps/agent-sandbox"
     },
     {
       "name": "@moonwitness/ai-evaluation",
@@ -1600,6 +1606,12 @@
       "to": "@moonwitness/knowledge",
       "kind": "runtime",
       "manifest": "packages/research"
+    },
+    {
+      "from": "@moonwitness/ui",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/ui"
     },
     {
       "from": "@moonwitness/ui-catalog",

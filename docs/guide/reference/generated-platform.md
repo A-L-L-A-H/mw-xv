@@ -1,16 +1,17 @@
 # Generated platform reference
 
-Source fingerprint: `54020d68d6cf9df87130c82e9d6ac7ef4e8fafd701fc6a89244fa9afb0f285b7`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `479dc4e35613759678359b73916961cd17d331d05454e8a034e53c6f4c374b68`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
 | Name                                | Kind    | Version    | Scripts                                                                                                                                                                                                                                                                            |
 | ----------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@moonwitness/agent-observability`  | App     | 1.0.0-rc.1 | `build`, `demo`, `dev`, `start`, `test`, `typecheck`                                                                                                                                                                                                                               |
+| `@moonwitness/agent-sandbox`        | App     | 1.0.0-rc.1 | `build`, `start`, `test`, `typecheck`                                                                                                                                                                                                                                              |
 | `@moonwitness/api`                  | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
 | `@moonwitness/board`                | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
 | `@moonwitness/control-plane`        | App     | 0.1.0      | `dev`, `docker:build`, `fmt`                                                                                                                                                                                                                                                       |
-| `@moonwitness/desktop`              | App     | 1.0.0-rc.1 | `build`, `build:web`, `test`, `typecheck`                                                                                                                                                                                                                                          |
+| `@moonwitness/desktop`              | App     | 1.0.0-rc.1 | `build`, `build:web`, `test`, `test:web`, `typecheck`, `typecheck:web`                                                                                                                                                                                                             |
 | `@moonwitness/docs`                 | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
 | `@moonwitness/isp`                  | App     | 0.1.0      | `cargo:build`, `clippy`, `dev`, `fmt`, `migrate`, `start`, `test`                                                                                                                                                                                                                  |
 | `@moonwitness/ui-catalog`           | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `diagnostics:generate`, `preview`, `test`                                                                                                                                                                                                           |
@@ -72,6 +73,9 @@ Source fingerprint: `54020d68d6cf9df87130c82e9d6ac7ef4e8fafd701fc6a89244fa9afb0f
 | Name                                | Value category | Present in `.env.example` | Sensitive value redacted |
 | ----------------------------------- | -------------- | ------------------------- | ------------------------ |
 | `ACCESS_TOKEN_TTL_SECONDS`          | secret         | Yes                       | Yes                      |
+| `AGENT_SANDBOX_TOKEN_REF`           | secret         | No                        | Yes                      |
+| `AGENT_SANDBOX_URL`                 | string         | No                        | No                       |
+| `AI_FREELLMAPI_ORIGIN`              | string         | No                        | No                       |
 | `AI_MODE`                           | string         | Yes                       | No                       |
 | `API_HOST`                          | string         | Yes                       | No                       |
 | `API_PORT`                          | integer        | Yes                       | No                       |
@@ -93,6 +97,7 @@ Source fingerprint: `54020d68d6cf9df87130c82e9d6ac7ef4e8fafd701fc6a89244fa9afb0f
 | `DB_POOL_MIN`                       | integer        | Yes                       | No                       |
 | `DB_STATEMENT_TIMEOUT_MS`           | integer        | Yes                       | No                       |
 | `ENABLE_API_DOCS`                   | string         | No                        | No                       |
+| `FREELLMAPI_DEFAULT_MODEL`          | string         | No                        | No                       |
 | `HOST`                              | string         | No                        | No                       |
 | `JOB_HANDLERS_MODULE`               | string         | Yes                       | No                       |
 | `JOBS_SCHEDULER_HEALTH_PORT`        | integer        | Yes                       | No                       |
@@ -113,11 +118,8 @@ Source fingerprint: `54020d68d6cf9df87130c82e9d6ac7ef4e8fafd701fc6a89244fa9afb0f
 | `MW_A2A_API_ENDPOINT`               | string         | Yes                       | No                       |
 | `MW_A2A_COMPANY_ID`                 | string         | Yes                       | No                       |
 | `MW_A2A_SIGNING_SECRET`             | secret         | Yes                       | Yes                      |
+| `MW_AI_FREELLM_SECRET_REF`          | secret         | No                        | Yes                      |
 | `NODE_ENV`                          | string         | Yes                       | No                       |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`       | string         | No                        | No                       |
-| `OTEL_EXPORTER_OTLP_PROTOCOL`       | string         | No                        | No                       |
-| `OTEL_SERVICE_NAME`                 | string         | No                        | No                       |
-| `OTEL_SERVICE_VERSION`              | string         | No                        | No                       |
 | `OUTBOX_HANDLERS_MODULE`            | string         | Yes                       | No                       |
 | `OUTBOX_WORKER_HEALTH_PORT`         | integer        | Yes                       | No                       |
 | `PORT`                              | integer        | No                        | No                       |
@@ -187,6 +189,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm desktop:build`
 - `pnpm desktop:mcp`
 - `pnpm desktop:test`
+- `pnpm desktop:test:web`
 - `pnpm desktop:ui:check`
 - `pnpm desktop:web`
 - `pnpm dev`
@@ -311,6 +314,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm test:ui-budget`
 - `pnpm test:ui-catalog`
 - `pnpm test:ui-design-check`
+- `pnpm test:ui:react-matrix`
 - `pnpm test:unit`
 - `pnpm test:unit-runner-policy`
 - `pnpm test:unit:built`
