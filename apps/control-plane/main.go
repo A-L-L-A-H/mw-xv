@@ -8,6 +8,8 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
+	"crypto/tls"
+	"crypto/x509"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
@@ -33,7 +35,75 @@ import (
 const (
 	defaultListenAddr = "127.0.0.1:3003"
 	defaultDbPath     = "control-plane.db"
+
+	// controlPlaneAuthDomain is the audience/service identity shared with the
+	// token issuer in packages/orm-cloud/src/auth.ts
+	// (CONTROL_PLANE_INTERNAL_AUTH_DOMAIN). The HMAC derivation domain-separates
+	// this service's credential from every other derived internal token.
+	controlPlaneAuthDomain = "moonwitness-control-plane-admin-v1"
 )
+
+// controlPlaneAccess is the authorization class assigned to every registered
+// route in controlPlaneRouteMatrix.
+type controlPlaneAccess uint8
+
+const (
+	accessPublic           controlPlaneAccess = iota // intentionally public, non-sensitive
+	accessAuthenticated                             // canonical admin bearer token
+	accessPrivileged                                // admin bearer token + explicit method gate
+	accessA2APeer                                   // A2A envelope + verified peer transport identity
+	accessWebhookSignature                          // provider HMAC signature, never a service token
+)
+
+// controlPlaneRoute is one row of the explicit Control Plane route matrix.
+// The matrix is the single registration source used by buildMux, so a route
+// cannot silently bypass an authorization class.
+type controlPlaneRoute struct {
+	pattern string
+	family  string
+	access  controlPlaneAccess
+	methods []string // empty means any method
+}
+
+// controlPlaneRouteMatrix documents public, authenticated, privileged and
+// A2A-peer endpoints. GET /health is the only public row and returns bounded,
+// non-sensitive status only.
+var controlPlaneRouteMatrix = []controlPlaneRoute{
+	{pattern: "/health", family: "health", access: accessPublic, methods: []string{http.MethodGet}},
+	{pattern: "/mesh/status", family: "mesh", access: accessAuthenticated},
+	{pattern: "/services", family: "legacy-services", access: accessAuthenticated},
+	{pattern: "/services/", family: "legacy-services", access: accessAuthenticated},
+	{pattern: "/deploy", family: "legacy-deploy", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/api/services", family: "api-services", access: accessAuthenticated},
+	{pattern: "/api/services/", family: "api-services", access: accessAuthenticated},
+	{pattern: "/api/deploy", family: "api-deploy", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/api/deployments", family: "api-deployments", access: accessAuthenticated},
+	{pattern: "/api/deployments/", family: "api-deployments", access: accessAuthenticated},
+	{pattern: "/api/containers/", family: "container-logs", access: accessPrivileged},
+	{pattern: "/paas/node/metrics", family: "paas-ops", access: accessAuthenticated},
+	{pattern: "/paas/apps", family: "paas-apps", access: accessAuthenticated},
+	{pattern: "/paas/apps/deploy", family: "paas-apps", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/paas/apps/", family: "paas-apps", access: accessPrivileged},
+	{pattern: "/paas/backups/postgres", family: "paas-backups", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/paas/backups", family: "paas-backups", access: accessAuthenticated},
+	{pattern: "/paas/backups/restore", family: "paas-backups", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/paas/cluster/nodes", family: "paas-cluster", access: accessAuthenticated},
+	{pattern: "/paas/cluster/nodes/join", family: "paas-cluster", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/paas/cluster/ha/status", family: "paas-cluster", access: accessAuthenticated},
+	{pattern: "/paas/apps/deploy-git", family: "git-builder", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/paas/apps/preview", family: "git-builder", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/paas/webhooks/github/", family: "git-webhook", access: accessWebhookSignature, methods: []string{http.MethodPost}},
+	{pattern: "/a2a/delegate", family: "a2a-federation", access: accessA2APeer, methods: []string{http.MethodPost}},
+}
+
+func controlPlaneAccessForPattern(pattern string) (controlPlaneAccess, bool) {
+	for _, route := range controlPlaneRouteMatrix {
+		if route.pattern == pattern {
+			return route.access, true
+		}
+	}
+	return accessPublic, false
+}
 
 // config holds runtime configuration read from env.
 type config struct {
@@ -143,11 +213,21 @@ func main() {
 		Addr:    cfg.listenAddr,
 		Handler: buildMux(DB, cfg.dockerBin, adminToken),
 	}
+	mtlsCert, mtlsKey, err := configureA2AMTLS(srv)
+	if err != nil {
+		log.Fatalf("invalid A2A mTLS configuration (fail-closed): %v", err)
+	}
 
 	go func() {
 		log.Printf("control-plane listening on %s", cfg.listenAddr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("http server error: %v", err)
+		var serveErr error
+		if srv.TLSConfig != nil {
+			serveErr = srv.ListenAndServeTLS(mtlsCert, mtlsKey)
+		} else {
+			serveErr = srv.ListenAndServe()
+		}
+		if serveErr != nil && serveErr != http.ErrServerClosed {
+			log.Fatalf("http server error: %v", serveErr)
 		}
 	}()
 
@@ -166,56 +246,159 @@ func shouldAutostartLegacyRegistry() bool {
 	return strings.EqualFold(strings.TrimSpace(os.Getenv("MW_CONTROL_PLANE_AUTOSTART_LEGACY")), "true")
 }
 
-// buildMux wires the full HTTP router for the control plane. Every route
-// except GET /health requires Bearer auth with the resolved admin token.
+// configureA2AMTLS opt-in terminates mTLS on the Control Plane listener and
+// requires a client certificate signed by the configured peer CA. All three
+// settings must be present together; a partial configuration is a startup
+// error. Without them the A2A handler still fails closed because no verified
+// peer certificate can be present on a plaintext connection.
+func configureA2AMTLS(srv *http.Server) (string, string, error) {
+	certFile := strings.TrimSpace(os.Getenv("MW_A2A_MTLS_CERT_FILE"))
+	keyFile := strings.TrimSpace(os.Getenv("MW_A2A_MTLS_KEY_FILE"))
+	caFile := strings.TrimSpace(os.Getenv("MW_A2A_PEER_CA_FILE"))
+	if certFile == "" && keyFile == "" && caFile == "" {
+		return "", "", nil
+	}
+	if certFile == "" || keyFile == "" || caFile == "" {
+		return "", "", errors.New("MW_A2A_MTLS_CERT_FILE, MW_A2A_MTLS_KEY_FILE and MW_A2A_PEER_CA_FILE must be set together")
+	}
+	pemData, err := os.ReadFile(caFile)
+	if err != nil {
+		return "", "", fmt.Errorf("read A2A peer CA file: %w", err)
+	}
+	pool := x509.NewCertPool()
+	if !pool.AppendCertsFromPEM(pemData) {
+		return "", "", errors.New("A2A peer CA file contains no valid certificates")
+	}
+	srv.TLSConfig = &tls.Config{
+		MinVersion: tls.VersionTLS12,
+		ClientAuth: tls.RequireAndVerifyClientCert,
+		ClientCAs:  pool,
+	}
+	return certFile, keyFile, nil
+}
+
+// buildMux wires the full HTTP router from controlPlaneRouteMatrix. Every row
+// is registered with the authorization class declared in the matrix, so no
+// handler can accidentally be exposed without its intended middleware.
 func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 	mux := http.NewServeMux()
-
-	// Health stays unauthenticated for container/orchestrator liveness probes.
-	mux.HandleFunc("/health", handleHealth(db, dockerBin))
-	mux.HandleFunc("/mesh/status", requireBearerAuth(adminToken, handleMeshStatus(NewMeshManagerFromEnv(dockerBin))))
-	mux.HandleFunc("/services", requireBearerAuth(adminToken, handleServices(dockerBin)))
-	mux.HandleFunc("/services/", requireBearerAuth(adminToken, handleService(dockerBin)))
-	mux.HandleFunc("/deploy", requireBearerAuth(adminToken, handleDeploy(db, dockerBin)))
-
-	// New API endpoints backed by SQLite (preferred for UI integration).
-	mux.HandleFunc("/api/services", requireBearerAuth(adminToken, handleApiServices(db)))
-	mux.HandleFunc("/api/services/", requireBearerAuth(adminToken, handleApiService(db)))
-	mux.HandleFunc("/api/deploy", requireBearerAuth(adminToken, handleApiDeploy(db, dockerBin)))
-	mux.HandleFunc("/api/deployments", requireBearerAuth(adminToken, handleApiDeployments(db)))
-	mux.HandleFunc("/api/deployments/", requireBearerAuth(adminToken, handleApiDeployment(db)))
-	mux.HandleFunc("/api/containers/", requireBearerAuth(adminToken, handleContainerSubroutes(dockerBin)))
-
-	// PaaS node agent endpoints (authenticated via X-Control-Plane-Token or Bearer).
 	paasMgr := NewPaasManager(db, dockerBin, NewMeshManagerFromEnv(dockerBin), nil, nil)
-	paasMgr.MountRoutes(mux, adminToken)
-	RegisterGitBuilderRoutes(mux, paasMgr, adminToken)
-
-	// A2A peer-to-peer mesh federation endpoint (authenticated via HMAC-SHA256 envelope + private mesh IP).
 	a2aMgr := NewA2AManagerFromEnv()
-	mux.HandleFunc("/a2a/delegate", a2aMgr.HandleDelegate())
 
+	raw := map[string]http.HandlerFunc{
+		"/health":                     handleHealth(db, dockerBin),
+		"/mesh/status":                handleMeshStatus(NewMeshManagerFromEnv(dockerBin)),
+		"/services":                   handleServices(dockerBin),
+		"/services/":                  handleService(dockerBin),
+		"/deploy":                     handleDeploy(db, dockerBin),
+		"/api/services":               handleApiServices(db),
+		"/api/services/":              handleApiService(db),
+		"/api/deploy":                 handleApiDeploy(db, dockerBin),
+		"/api/deployments":            handleApiDeployments(db),
+		"/api/deployments/":           handleApiDeployment(db),
+		"/api/containers/":            handleContainerSubroutes(dockerBin),
+		"/paas/node/metrics":          paasMgr.handleNodeMetrics(),
+		"/paas/apps":                  paasMgr.handleApps(),
+		"/paas/apps/deploy":           paasMgr.handleDeploy(),
+		"/paas/apps/":                 paasMgr.handleAppSubroutes(),
+		"/paas/backups/postgres":      paasMgr.handleBackupPostgres(),
+		"/paas/backups":               paasMgr.handleListBackups(),
+		"/paas/backups/restore":       paasMgr.handleRestoreBackup(),
+		"/paas/cluster/nodes":         paasMgr.handleClusterNodes(),
+		"/paas/cluster/nodes/join":    paasMgr.handleClusterJoin(),
+		"/paas/cluster/ha/status":     paasMgr.handleHAStatus(),
+		"/paas/apps/deploy-git":       paasMgr.handleGitDeploy(),
+		"/paas/apps/preview":          paasMgr.handlePreviewDeploy(),
+		"/paas/webhooks/github/":      paasMgr.handleGitHubWebhook(),
+		"/a2a/delegate":               a2aMgr.HandleDelegate(),
+	}
+
+	for _, route := range controlPlaneRouteMatrix {
+		handler, ok := raw[route.pattern]
+		if !ok {
+			panic("control plane route matrix has no handler for " + route.pattern)
+		}
+		switch route.access {
+		case accessPublic, accessWebhookSignature, accessA2APeer:
+			// Public liveness, provider HMAC and A2A peer identity are enforced
+			// by their own handlers, never by a service bearer token.
+		case accessAuthenticated:
+			if strings.HasPrefix(route.pattern, "/paas/") {
+				handler = requirePaasAuth(adminToken, handler)
+			} else {
+				handler = requireBearerAuth(adminToken, handler)
+			}
+		case accessPrivileged:
+			if strings.HasPrefix(route.pattern, "/paas/") {
+				handler = requirePrivilegedPaasAuth(adminToken, handler)
+			} else {
+				handler = requireAccessBearerAuth(adminToken, accessPrivileged, handler)
+			}
+		}
+		if len(route.methods) > 0 {
+			handler = requireMethods(route.methods, handler)
+		}
+		mux.HandleFunc(route.pattern, handler)
+	}
 	return mux
 }
 
-// requireBearerAuth enforces `Authorization: Bearer <token>` using a
-// constant-time comparison. Missing or invalid credentials fail closed with
-// 401 Unauthorized.
+// requireBearerAuth enforces the canonical audience-bound admin bearer token.
 func requireBearerAuth(token string, next http.HandlerFunc) http.HandlerFunc {
+	return requireAccessBearerAuth(token, accessAuthenticated, next)
+}
+
+// requireAccessBearerAuth rejects missing, malformed, wrong-audience and
+// rotated-out credentials. The comparison is constant time and the response is
+// generic: no presented credential is ever logged or echoed.
+func requireAccessBearerAuth(token string, access controlPlaneAccess, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		authz := r.Header.Get("Authorization")
-		ok := false
-		if strings.HasPrefix(authz, "Bearer ") {
-			presented := authz[len("Bearer "):]
-			// Constant-time compare to avoid leaking token prefixes; equal
-			// lengths are required for a match (1 returned by ConstantTimeCompare).
-			ok = len(presented) == len(token) &&
-				subtle.ConstantTimeCompare([]byte(presented), []byte(token)) == 1
+		if !validServiceBearer(r.Header.Get("Authorization"), token) {
+			w.Header().Set("Cache-Control", "no-store")
+			writeUnauthorized(w)
+			return
 		}
-		if !ok {
+		_ = access // access class is recorded in the matrix and enforced by method gating
+		next(w, r)
+	}
+}
+
+func validServiceBearer(authz, expected string) bool {
+	if expected == "" || strings.Count(authz, " ") != 1 {
+		return false
+	}
+	idx := strings.IndexByte(authz, ' ')
+	if idx < 0 || authz[:idx] != "Bearer" {
+		return false
+	}
+	presented := authz[idx+1:]
+	if presented == "" || len(presented) != len(expected) {
+		return false
+	}
+	for _, ch := range presented {
+		if ch <= ' ' || ch == 0x7f {
+			return false
+		}
+	}
+	return subtle.ConstantTimeCompare([]byte(presented), []byte(expected)) == 1
+}
+
+func writeUnauthorized(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+	_ = json.NewEncoder(w).Encode(map[string]string{"error": "unauthorized"})
+}
+
+func requireMethods(methods []string, next http.HandlerFunc) http.HandlerFunc {
+	allowed := make(map[string]bool, len(methods))
+	for _, method := range methods {
+		allowed[method] = true
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !allowed[r.Method] {
 			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusUnauthorized)
-			_ = json.NewEncoder(w).Encode(map[string]string{"error": "unauthorized"})
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			_ = json.NewEncoder(w).Encode(map[string]string{"error": "method not allowed"})
 			return
 		}
 		next(w, r)
@@ -231,8 +414,6 @@ func requireBearerAuth(token string, next http.HandlerFunc) http.HandlerFunc {
 //  3. Standalone fallback: read or auto-generate .admin-token next to the
 //     SQLite DB path (32 CSPRNG bytes -> 64 hex chars, written with 0600).
 func resolveAdminToken(dbPath string) (string, error) {
-	const domainLabel = "moonwitness-control-plane-admin-v1"
-
 	if token := strings.TrimSpace(os.Getenv("MW_CONTROL_PLANE_TOKEN")); token != "" {
 		return token, nil
 	}
@@ -243,7 +424,7 @@ func resolveAdminToken(dbPath string) (string, error) {
 	}
 	if secret != "" {
 		mac := hmac.New(sha256.New, []byte(secret))
-		mac.Write([]byte(domainLabel))
+		mac.Write([]byte(controlPlaneAuthDomain))
 		return hex.EncodeToString(mac.Sum(nil)), nil
 	}
 
@@ -419,32 +600,40 @@ func runCmdOutput(ctx context.Context, name string, args ...string) (string, err
 	return stdout.String(), nil
 }
 
+// handleHealth is the only intentionally public route. Its payload is a fixed
+// shape of bounded status values: no error text, versions, addresses, container
+// details, configuration or credentials are ever exposed.
 func handleHealth(db *sql.DB, dockerBin string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	type componentStatus struct {
+		Status string `json:"status"`
+	}
+	type healthPayload struct {
+		Status   string          `json:"status"`
+		Database componentStatus `json:"database"`
+		Docker   string          `json:"docker"`
+	}
 
-		dbErr := db.Ping()
+	return func(w http.ResponseWriter, r *http.Request) {
+		dbStatus := "ok"
+		if db.Ping() != nil {
+			dbStatus = "error"
+		}
 		dockerStatus := "unknown"
 		if _, err := runCmdOutput(r.Context(), dockerBin, "version", "--format", "{{.Server.Version}}"); err == nil {
 			dockerStatus = "ok"
 		}
 
-		health := map[string]interface{}{
-			"status": "ok",
-			"database": map[string]interface{}{"status": func() string {
-				if dbErr != nil {
-					return "error"
-				}
-				return "ok"
-			}()},
-			"docker": dockerStatus,
+		status := "ok"
+		if dbStatus != "ok" {
+			status = "degraded"
 		}
-		if dbErr != nil {
-			health["status"] = "degraded"
-			health["database"] = map[string]interface{}{"status": "error", "error": dbErr.Error()}
-		}
+		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(health)
+		_ = json.NewEncoder(w).Encode(healthPayload{
+			Status:   status,
+			Database: componentStatus{Status: dbStatus},
+			Docker:   dockerStatus,
+		})
 	}
 }
 

@@ -81,8 +81,10 @@ func VerifyGitHubWebhookSignature(secret string, payload []byte, sigHeader strin
 	return hmac.Equal(expected, presented)
 }
 
-// isBlockedGitHost returns true if host is loopback, private, link-local,
-// CGNAT, multicast, unspecified, or a local/internal hostname (SSRF protection).
+// isBlockedGitHost returns true if host is loopback, in the canonical private
+// mesh range list, link-local, multicast, unspecified, or a local/internal
+// hostname (SSRF protection). The private/mesh ranges come from the single
+// canonical privateMeshCIDRs declaration in a2a.go, shared with A2A admission.
 func isBlockedGitHost(host string) bool {
 	h := strings.ToLower(strings.TrimSpace(host))
 	if h == "" {
@@ -96,17 +98,11 @@ func isBlockedGitHost(host string) bool {
 	if ip == nil {
 		return false
 	}
-	if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() ||
-		ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
+	if IsPrivateMeshIP(ip) {
 		return true
 	}
-	// Block RFC 6598 CGNAT (100.64.0.0/10) used by mesh overlays.
-	if ip4 := ip.To4(); ip4 != nil {
-		if ip4[0] == 100 && ip4[1] >= 64 && ip4[1] <= 127 {
-			return true
-		}
-	}
-	return false
+	return ip.IsLoopback() || ip.IsLinkLocalUnicast() ||
+		ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified()
 }
 
 func validateGitRepoURL(raw string) error {

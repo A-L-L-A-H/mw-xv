@@ -155,13 +155,7 @@ func NewPaasManager(db *sql.DB, dockerBin string, meshMgr *MeshManager, caddyMgr
 // configured) are accepted via constant-time comparison. Fails closed (401).
 func requirePaasAuth(adminToken string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		presented := strings.TrimSpace(r.Header.Get("X-Control-Plane-Token"))
-		if presented == "" {
-			authz := r.Header.Get("Authorization")
-			if strings.HasPrefix(authz, "Bearer ") {
-				presented = strings.TrimSpace(authz[len("Bearer "):])
-			}
-		}
+		presented := paasCredentialFromRequest(r)
 
 		ok := false
 		if presented != "" {
@@ -176,6 +170,58 @@ func requirePaasAuth(adminToken string, next http.HandlerFunc) http.HandlerFunc 
 		}
 
 		if !ok {
+			writePaasJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+			return
+		}
+		next(w, r)
+	}
+}
+
+// paasCredentialFromRequest accepts exactly one well-formed credential header.
+// Missing, malformed or whitespace-padded values are rejected rather than
+// trimmed into a valid token.
+func paasCredentialFromRequest(r *http.Request) string {
+	if header := r.Header.Get("X-Control-Plane-Token"); header != "" {
+		if !wellFormedToken(header) {
+			return ""
+		}
+		return header
+	}
+	authz := r.Header.Get("Authorization")
+	if strings.Count(authz, " ") != 1 {
+		return ""
+	}
+	idx := strings.IndexByte(authz, ' ')
+	if idx < 0 || authz[:idx] != "Bearer" {
+		return ""
+	}
+	presented := authz[idx+1:]
+	if !wellFormedToken(presented) {
+		return ""
+	}
+	return presented
+}
+
+func wellFormedToken(token string) bool {
+	if token == "" || strings.TrimSpace(token) != token {
+		return false
+	}
+	for _, ch := range token {
+		if ch <= ' ' || ch == 0x7f {
+			return false
+		}
+	}
+	return true
+}
+
+// requirePrivilegedPaasAuth is the stronger variant used by privileged /paas/*
+// rows of the control-plane route matrix. It accepts the same two header forms
+// as requirePaasAuth but only the canonical audience-bound admin token; the raw
+// MW_INTERNAL_SECRET is not a privileged credential.
+func requirePrivilegedPaasAuth(adminToken string, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		presented := paasCredentialFromRequest(r)
+		if adminToken == "" || !constantTimeEquals(presented, adminToken) {
 			writePaasJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
 			return
 		}
