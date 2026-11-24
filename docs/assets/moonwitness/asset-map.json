@@ -4,7 +4,7 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "a2840fc6555fb68fa9c10094e1fc857a17900d9f2a8f3519d564803401dc32f9",
+    "assetManifestSha256": "265b57f30f163b920a1030d68a0a8c18a690b7b71ae7fda08697a9190dc13fd6",
     "tokens": "packages/ui/src/styles/tokens.css",
     "tokensSha256": "6201ba52a577d498f7910012fe2158dfd673037b0df8c317cb020c5d8e47d7cf"
   },
@@ -1645,7 +1645,7 @@
       "output": "docs/assets/moonwitness/scenes/moon-city-scene.json",
       "kind": "scene",
       "format": "json",
-      "sha256": "a06234df0a223bb953171c59610b80edc05c54614921a184176bdffb4ba5a7e2"
+      "sha256": "20fa9dda0215fd4747da74a4b362bcfe3f26027841f711d5e6e7296bf290965b"
     },
     {
       "source": "packages/assets/sounds/ambience-archive-quiet.wav",
