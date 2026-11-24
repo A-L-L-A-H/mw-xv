@@ -1,4 +1,4 @@
-import { Context } from '@moonwitness/orm';
+import type { Context } from '../context.js';
 import { IncomeEntry, IncomeStream } from '../models.js';
 
 export async function createEntryFromContentRoyalty(
@@ -9,7 +9,7 @@ export async function createEntryFromContentRoyalty(
     estimatedRoyaltyMinor: number;
     currency: string;
     publishedAt: Date;
-    externalRef?: string;
+    external_ref?: string;
   },
 ): Promise<void> {
   const stream = await ctx
@@ -21,14 +21,14 @@ export async function createEntryFromContentRoyalty(
   if (!stream) return;
 
   await ctx.query(IncomeEntry).insert({
-    streamId: stream.id,
-    occurredAt: result.publishedAt,
-    amountMinor: result.estimatedRoyaltyMinor,
+    stream_id: stream.id,
+    occurred_at: result.publishedAt.toISOString(),
+    amount_minor: result.estimatedRoyaltyMinor,
     currency: result.currency,
     kind: 'revenue',
-    sourceModel: `content.${result.platform}`,
-    sourceId: result.contentId,
-    externalRef: result.externalRef ?? null,
-    netMinor: result.estimatedRoyaltyMinor,
+    source_model: `content.${result.platform}`,
+    source_id: result.contentId,
+    external_ref: result.external_ref ?? null,
+    net_minor: result.estimatedRoyaltyMinor,
   });
 }

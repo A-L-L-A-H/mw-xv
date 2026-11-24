@@ -3,7 +3,6 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
-import rateLimit from '@fastify/rate-limit';
 import type { Knex } from 'knex';
 import {
   Environment,
@@ -719,15 +718,29 @@ export async function startLocalApiServer(
     }
   });
 
-  await app.register(cors, {
+  // @fastify/cors is compiled against a different fastify patch release than this
+  // workspace, so its plugin signature is structurally incompatible with the app
+  // instance. Adapt the instance parameter without changing runtime behaviour.
+  const corsPlugin = cors as unknown as (
+    instance: FastifyInstance,
+    options: Parameters<typeof cors>[1],
+    done: Parameters<typeof cors>[2],
+  ) => void;
+
+  await app.register(corsPlugin, {
     origin: (origin, cb) => {
       cb(null, isAllowedCorsOrigin(origin));
     },
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-mw-desktop-token', 'x-request-id'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-company-id',
+      'x-mw-desktop-token',
+      'x-request-id',
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
-  await app.register(rateLimit, { global: false });
 
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof PlatformError) {
@@ -1034,10 +1047,37 @@ export async function startLocalApiServer(
     }
   );
 
+  const notificationInboxRateLimitMax = 60;
+  const notificationInboxRateLimitWindowMs = 60_000;
+  const notificationInboxRateLimitWindows = new Map<string, { startedAt: number; count: number }>();
+
   app.get<{ Querystring: { limit?: string } }>(
     '/notifications/inbox',
     {
-      config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
+      preHandler: async (req, reply) => {
+        // Unauthenticated requests keep the handler's existing 401 response and do not consume quota.
+        if (!req.auth) return;
+        const key = `${req.auth.companyId}:${req.auth.userId}`;
+        const now = Date.now();
+        let rateWindow = notificationInboxRateLimitWindows.get(key);
+        if (!rateWindow || now - rateWindow.startedAt >= notificationInboxRateLimitWindowMs) {
+          rateWindow = { startedAt: now, count: 0 };
+          notificationInboxRateLimitWindows.set(key, rateWindow);
+        }
+        rateWindow.count += 1;
+        if (rateWindow.count > notificationInboxRateLimitMax) {
+          const retryAfterSeconds = Math.max(
+            1,
+            Math.ceil((rateWindow.startedAt + notificationInboxRateLimitWindowMs - now) / 1_000)
+          );
+          return reply.code(429).header('retry-after', retryAfterSeconds).send({
+            success: false,
+            error: 'Rate limit exceeded',
+            code: 'RATE_LIMITED',
+            requestId: req.id,
+          });
+        }
+      },
     },
     async (req, reply) => {
       if (!req.auth) {

@@ -1,34 +1,39 @@
-import { createContext, defineAddon } from '@moonwitness/orm';
-import type { Knex } from 'knex';
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { manifest } from '../src/manifest.js';
+import { installAddons } from '@moonwitness/orm';
+import { manifest as baseManifest } from '@moonwitness/orm-base';
+import knex, { type Knex } from 'knex';
+import { Model } from 'objection';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { createIncomeLedgerContext } from '../src/context.js';
 import { computeAllocationSplit } from '../src/index.js';
-import { incomeLedgerSeedManifest } from '../src/seed-manifest.js';
-import { IncomeStream } from '../src/models/index.js';
+import { manifest } from '../src/manifest.js';
+import { IncomeStream } from '../src/models.js';
 import { recomputeMetrics } from '../src/recompute.js';
+import { incomeLedgerSeedManifest } from '../src/seed-manifest.js';
 
-type SqliteKnex = Knex & { destroy(): Promise<void> };
-
-let db: SqliteKnex;
+let db: Knex;
 
 beforeEach(async () => {
-  const knexFactory = (await import('knex')).default;
-  db = knexFactory({
+  db = knex({
     client: 'better-sqlite3',
     connection: { filename: ':memory:' },
     useNullAsDefault: true,
-  }) as SqliteKnex;
+  });
+  Model.knex(db);
+  await installAddons(db, [baseManifest, manifest]);
 });
 
-afterAll(async () => {
+afterEach(async () => {
   await db.destroy();
 });
 
 describe('income ledger manifest', () => {
   it('declares the addon shape', () => {
-    expect(manifest.namespace).toBe('income');
+    expect(manifest.name).toBe('income');
+    expect(manifest.version).toBe('1.0.0');
     expect(manifest.depends).toEqual(['base']);
     expect(manifest.models).toHaveLength(5);
+    const ownModels = new Set(manifest.models.map((model) => model.modelName));
+    expect((manifest.data ?? []).some((record) => ownModels.has(record.model.modelName))).toBe(true);
   });
 
   it('declares the seed manifest shape', () => {
@@ -65,74 +70,72 @@ describe('computeAllocationSplit', () => {
 
 describe('seed upsert logic', () => {
   it('inserts reference streams once and updates on second run', async () => {
-    await db.schema.createTable('income_stream', (table) => {
-      table.string('id').primary();
-      table.string('kind').notNullable();
-      table.string('platform').nullable();
-      table.string('status').notNullable();
-      table.integer('goalMonthlyMinor').notNullable();
-      table.string('currency').notNullable();
-      table.json('tags');
-      table.string('companyId').nullable();
-      table.datetime('createdAt');
-      table.datetime('updatedAt');
+    const seedDb = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
     });
+    try {
+      await seedDb.schema.createTable('income_stream', (table) => {
+        table.increments('id').primary();
+        table.string('kind').notNullable();
+        table.string('platform').nullable();
+        table.string('status').notNullable();
+        table.integer('goal_monthly_minor').notNullable();
+        table.string('currency').notNullable();
+        table.json('tags');
+        table.integer('company_id').nullable();
+        table.datetime('created_at');
+        table.datetime('updated_at');
+      });
 
-    const first = await incomeLedgerSeedManifest.seed({ db });
-    expect(first.inserted).toBe(8);
-    expect(first.updated).toBe(0);
-    expect(first.skipped).toBe(0);
+      const first = await incomeLedgerSeedManifest.seed({ db: seedDb });
+      expect(first.inserted).toBe(8);
+      expect(first.updated).toBe(0);
+      expect(first.skipped).toBe(0);
 
-    const count = await db('income_stream').count({ count: '*' });
-    expect(Number(count[0].count)).toBe(8);
+      const count = await seedDb('income_stream').count({ count: '*' });
+      expect(Number(count[0].count)).toBe(8);
 
-    const saas = await db('income_stream').where({ kind: 'saas', platform: 'subscription' }).first();
-    expect(saas.status).toBe('idea');
-    expect(saas.goalMonthlyMinor).toBe(500_000);
+      const saas = await seedDb('income_stream').where({ kind: 'saas', platform: 'subscription' }).first();
+      expect(saas.status).toBe('idea');
+      expect(saas.goal_monthly_minor).toBe(500_000);
 
-    const second = await incomeLedgerSeedManifest.seed({ db });
-    expect(second.inserted).toBe(0);
-    expect(second.updated).toBe(8);
+      const second = await incomeLedgerSeedManifest.seed({ db: seedDb });
+      expect(second.inserted).toBe(0);
+      expect(second.updated).toBe(8);
+    } finally {
+      await seedDb.destroy();
+    }
   });
 });
 
 describe('recomputeMetrics', () => {
   it('computes net metrics for a period and merges on rerun', async () => {
-    const addon = defineAddon({
-      namespace: 'income',
-      depends: [],
-      models: [],
-    });
-    // Install the addon models via manifest so ctx.query works against sqlite.
-    const ctx = await createContext({
-      manifests: [manifest],
-      connection: { client: 'better-sqlite3', connection: ':memory:' },
-    });
-    void addon;
+    const ctx = createIncomeLedgerContext(db);
+    const company = await db('companies').first('id');
+    expect(company).toBeDefined();
 
-    const streamId = crypto.randomUUID();
-    await ctx.query(IncomeStream).insert({
-      id: streamId,
+    const stream = await ctx.query(IncomeStream).insertAndFetch({
       kind: 'saas',
       platform: 'subscription',
       status: 'live',
-      goalMonthlyMinor: 500_000,
+      goal_monthly_minor: 500_000,
       currency: 'USD',
       tags: {},
+      company_id: Number(company.id),
     });
 
     await recomputeMetrics(ctx, '2026-01');
 
-    const metrics = await ctx.knex('income_metric').where({ streamId, period: '2026-01' }).first();
+    const metrics = await db('income_metric').where({ stream_id: stream.id, period: '2026-01' }).first();
     expect(metrics).toBeDefined();
-    expect(Number(metrics.revenueMinor)).toBe(0);
-    expect(Number(metrics.mrrMinor)).toBe(500_000);
-    expect(Number(metrics.arrMinor)).toBe(6_000_000);
+    expect(Number(metrics.revenue_minor)).toBe(0);
+    expect(Number(metrics.mrr_minor)).toBe(500_000);
+    expect(Number(metrics.arr_minor)).toBe(6_000_000);
 
     await recomputeMetrics(ctx, '2026-01');
-    const rows = await ctx.knex('income_metric').where({ streamId, period: '2026-01' });
+    const rows = await db('income_metric').where({ stream_id: stream.id, period: '2026-01' });
     expect(rows).toHaveLength(1);
-
-    await ctx.destroy();
   });
 });

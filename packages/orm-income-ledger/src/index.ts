@@ -1,3 +1,5 @@
+import { manifest } from './manifest.js';
+
 export {
   INCOME_STREAM_KINDS,
   INCOME_STREAM_STATUSES,

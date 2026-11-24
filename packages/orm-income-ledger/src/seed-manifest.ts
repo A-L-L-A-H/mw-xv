@@ -1,6 +1,4 @@
 import type { AddonSeedManifest, SeedContext, SeedResult } from '@moonwitness/orm-base';
-import { Context } from '@moonwitness/orm';
-import { IncomeStream } from './models.js';
 
 async function seedIncomeLedger(ctx: SeedContext): Promise<SeedResult> {
   const db = ctx.db;
@@ -11,14 +9,14 @@ async function seedIncomeLedger(ctx: SeedContext): Promise<SeedResult> {
   const companyId = ctx.companyId ?? 1;
 
   const streams = [
-    { kind: 'saas', platform: 'subscription', goalMonthlyMinor: 5_000_00 },
-    { kind: 'marketplace', platform: 'marketplace', goalMonthlyMinor: 3_000_00 },
-    { kind: 'ads', platform: 'adsense', goalMonthlyMinor: 500_00 },
-    { kind: 'ads', platform: 'admob', goalMonthlyMinor: 200_00 },
-    { kind: 'affiliate', platform: 'partnerstack', goalMonthlyMinor: 1_000_00 },
-    { kind: 'content_royalty', platform: 'youtube', goalMonthlyMinor: 800_00 },
-    { kind: 'donation', platform: 'kofi', goalMonthlyMinor: 300_00 },
-    { kind: 'other', platform: null, goalMonthlyMinor: 0 },
+    { kind: 'saas', platform: 'subscription', goal_monthly_minor: 5_000_00 },
+    { kind: 'marketplace', platform: 'marketplace', goal_monthly_minor: 3_000_00 },
+    { kind: 'ads', platform: 'adsense', goal_monthly_minor: 500_00 },
+    { kind: 'ads', platform: 'admob', goal_monthly_minor: 200_00 },
+    { kind: 'affiliate', platform: 'partnerstack', goal_monthly_minor: 1_000_00 },
+    { kind: 'content_royalty', platform: 'youtube', goal_monthly_minor: 800_00 },
+    { kind: 'donation', platform: 'kofi', goal_monthly_minor: 300_00 },
+    { kind: 'other', platform: null, goal_monthly_minor: 0 },
   ];
 
   for (const stream of streams) {
@@ -27,11 +25,11 @@ async function seedIncomeLedger(ctx: SeedContext): Promise<SeedResult> {
     if (existing) {
       await db('income_stream').where({ id: existing.id }).update({
         status: 'idea',
-        goalMonthlyMinor: stream.goalMonthlyMinor,
+        goal_monthly_minor: stream.goal_monthly_minor,
         currency: 'USD',
-        tags: {},
-        companyId,
-        updatedAt: new Date(),
+        tags: JSON.stringify({}),
+        company_id: companyId,
+        updated_at: new Date().toISOString(),
       });
       updated++;
     } else {
@@ -39,12 +37,12 @@ async function seedIncomeLedger(ctx: SeedContext): Promise<SeedResult> {
         kind: stream.kind,
         platform: stream.platform,
         status: 'idea',
-        goalMonthlyMinor: stream.goalMonthlyMinor,
+        goal_monthly_minor: stream.goal_monthly_minor,
         currency: 'USD',
-        tags: {},
-        companyId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        tags: JSON.stringify({}),
+        company_id: companyId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
       inserted++;
     }

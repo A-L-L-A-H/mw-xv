@@ -1,4 +1,4 @@
-import { Context } from '@moonwitness/orm';
+import type { Context } from './context.js';
 import { IncomeEntry, IncomeMetric, IncomeStream } from './models.js';
 
 function periodKey(date: Date): string {
@@ -14,39 +14,39 @@ function periodBounds(period: string): { start: Date; end: Date } {
 
 async function computeStreamMetrics(
   ctx: Context,
-  stream: IncomeStream,
+  stream: InstanceType<typeof IncomeStream>,
   period: string,
 ): Promise<{
-  revenueMinor: number;
-  costMinor: number;
-  netMinor: number;
-  mrrMinor: number;
-  arrMinor: number;
-  runwayMonths: number | null;
+  revenue_minor: number;
+  cost_minor: number;
+  net_minor: number;
+  mrr_minor: number;
+  arr_minor: number;
+  runway_months: number | null;
 }> {
   const { start, end } = periodBounds(period);
-  const entries = await ctx
+  const entries = ctx
     .query(IncomeEntry)
-    .where('streamId', stream.id)
-    .andWhere('occurredAt', '>=', start)
-    .andWhere('occurredAt', '<', end);
+    .where('stream_id', stream.id)
+    .andWhere('occurred_at', '>=', start)
+    .andWhere('occurred_at', '<', end);
 
-  const revenueResult = await entries.clone().andWhere('kind', 'revenue').sum('netMinor as total');
-  const costResult = await entries.clone().andWhereIn('kind', ['cost', 'fee', 'tax']).sum('amountMinor as total');
+  const revenueResult = await entries.clone().andWhere('kind', 'revenue').sum('net_minor as total');
+  const costResult = await entries.clone().whereIn('kind', ['cost', 'fee', 'tax']).sum('amount_minor as total');
 
-  const rev = Number(revenueResult?.[0]?.total ?? 0);
-  const cost = Number(costResult?.[0]?.total ?? 0);
-  const netMinor = rev - cost;
+  const rev = Number((revenueResult[0] as unknown as Record<string, unknown> | undefined)?.total ?? 0);
+  const cost = Number((costResult[0] as unknown as Record<string, unknown> | undefined)?.total ?? 0);
+  const net_minor = rev - cost;
 
-  const mrrMinor = stream.kind === 'saas' && stream.status === 'live' ? stream.goalMonthlyMinor : 0;
-  const arrMinor = mrrMinor * 12;
+  const mrr_minor = stream.kind === 'saas' && stream.status === 'live' ? stream.goal_monthly_minor : 0;
+  const arr_minor = mrr_minor * 12;
 
-  let runwayMonths: number | null = null;
-  if (netMinor > 0 && stream.goalMonthlyMinor > 0) {
-    runwayMonths = Math.floor(stream.goalMonthlyMinor / netMinor);
+  let runway_months: number | null = null;
+  if (net_minor > 0 && stream.goal_monthly_minor > 0) {
+    runway_months = Math.floor(stream.goal_monthly_minor / net_minor);
   }
 
-  return { revenueMinor: rev, costMinor: cost, netMinor, mrrMinor, arrMinor, runwayMonths };
+  return { revenue_minor: rev, cost_minor: cost, net_minor, mrr_minor, arr_minor, runway_months };
 }
 
 export async function recomputeMetrics(ctx: Context, period?: string): Promise<void> {
@@ -58,25 +58,25 @@ export async function recomputeMetrics(ctx: Context, period?: string): Promise<v
     await ctx
       .query(IncomeMetric)
       .insert({
-        streamId: stream.id,
+        stream_id: stream.id,
         period: targetPeriod,
-        revenueMinor: metrics.revenueMinor,
-        costMinor: metrics.costMinor,
-        netMinor: metrics.netMinor,
-        mrrMinor: metrics.mrrMinor,
-        arrMinor: metrics.arrMinor,
-        runwayMonths: metrics.runwayMonths,
-        computedAt: new Date(),
+        revenue_minor: metrics.revenue_minor,
+        cost_minor: metrics.cost_minor,
+        net_minor: metrics.net_minor,
+        mrr_minor: metrics.mrr_minor,
+        arr_minor: metrics.arr_minor,
+        runway_months: metrics.runway_months,
+        computed_at: new Date().toISOString(),
       })
-      .onConflict(['streamId', 'period'])
+      .onConflict(['stream_id', 'period'])
       .merge({
-        revenueMinor: metrics.revenueMinor,
-        costMinor: metrics.costMinor,
-        netMinor: metrics.netMinor,
-        mrrMinor: metrics.mrrMinor,
-        arrMinor: metrics.arrMinor,
-        runwayMonths: metrics.runwayMonths,
-        computedAt: new Date(),
+        revenue_minor: metrics.revenue_minor,
+        cost_minor: metrics.cost_minor,
+        net_minor: metrics.net_minor,
+        mrr_minor: metrics.mrr_minor,
+        arr_minor: metrics.arr_minor,
+        runway_months: metrics.runway_months,
+        computed_at: new Date().toISOString(),
       });
   }
 }

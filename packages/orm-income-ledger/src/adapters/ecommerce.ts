@@ -1,15 +1,15 @@
-import { Context } from '@moonwitness/orm';
+import type { Context } from '../context.js';
 import { IncomeEntry, IncomeStream } from '../models.js';
 
 export async function createEntryFromMarketplaceOrder(
   ctx: Context,
   order: {
     id: string;
-    revenueMinor: number;
+    revenue_minor: number;
     feeMinor: number;
     currency: string;
-    occurredAt: Date;
-    externalRef?: string;
+    occurred_at: Date;
+    external_ref?: string;
   },
 ): Promise<void> {
   const stream = await ctx
@@ -20,17 +20,17 @@ export async function createEntryFromMarketplaceOrder(
 
   if (!stream) return;
 
-  const netMinor = order.revenueMinor - order.feeMinor;
+  const net_minor = order.revenue_minor - order.feeMinor;
 
   await ctx.query(IncomeEntry).insert({
-    streamId: stream.id,
-    occurredAt: order.occurredAt,
-    amountMinor: order.revenueMinor,
+    stream_id: stream.id,
+    occurred_at: order.occurred_at.toISOString(),
+    amount_minor: order.revenue_minor,
     currency: order.currency,
     kind: 'revenue',
-    sourceModel: 'ecom.marketplace_order',
-    sourceId: order.id,
-    externalRef: order.externalRef ?? null,
-    netMinor,
+    source_model: 'ecom.marketplace_order',
+    source_id: order.id,
+    external_ref: order.external_ref ?? null,
+    net_minor,
   });
 }

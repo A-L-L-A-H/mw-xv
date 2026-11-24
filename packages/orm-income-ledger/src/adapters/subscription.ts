@@ -1,11 +1,11 @@
-import { Context } from '@moonwitness/orm';
+import type { Context } from '../context.js';
 import { IncomeEntry, IncomeStream } from '../models.js';
 
 export async function upsertMrrFromSubscription(
   ctx: Context,
   subscription: {
     id: string;
-    mrrMinor: number;
+    mrr_minor: number;
     currency: string;
     status: string;
     periodStart: Date;
@@ -21,14 +21,14 @@ export async function upsertMrrFromSubscription(
   if (!stream) return;
 
   await ctx.query(IncomeEntry).insert({
-    streamId: stream.id,
-    occurredAt: subscription.periodStart,
-    amountMinor: subscription.mrrMinor,
+    stream_id: stream.id,
+    occurred_at: subscription.periodStart.toISOString(),
+    amount_minor: subscription.mrr_minor,
     currency: subscription.currency,
     kind: 'revenue',
-    sourceModel: 'subscription.subscription',
-    sourceId: subscription.id,
-    externalRef: null,
-    netMinor: subscription.mrrMinor,
+    source_model: 'subscription.subscription',
+    source_id: subscription.id,
+    external_ref: null,
+    net_minor: subscription.mrr_minor,
   });
 }
