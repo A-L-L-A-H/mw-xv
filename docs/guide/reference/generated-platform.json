@@ -6819,7 +6819,9 @@
       ],
       "menus": [],
       "views": [],
-      "seeds": {},
+      "seeds": {
+        "observability.telemetry_state": 1
+      },
       "accessRules": []
     },
     {
@@ -10491,5 +10493,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "5eb98db97672a4fc386b65746fb991f3f3f98dd4f2482733a37424056cf504eb"
+  "generatedFromSha256": "80ee7b9b5c22d88c7d0323a99a8e6d9d5ed7d96277a5da2593c67632724f09b4"
 }

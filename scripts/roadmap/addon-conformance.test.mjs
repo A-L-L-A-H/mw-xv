@@ -203,6 +203,7 @@ describe('workspace addon conformance', () => {
       { id: 'orm-integration.endpoint_example_disabled', field: 'name' },
       { id: 'orm-whatsapp.label_demo_vip', field: 'name' },
       { id: 'ai.group_operator', field: 'name' },
+      { id: 'observability.state_revision', field: 'key' },
     ];
     const immutableSeeds = [
       {
