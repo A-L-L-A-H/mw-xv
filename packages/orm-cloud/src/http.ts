@@ -327,10 +327,11 @@ interface DeployOutcome {
 }
 
 export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): AddonHttpPlugin {
-  const validation = validateCloudConfig(options);
-  if (options.strictStartup && !validation.ok) throw new CloudConfigError(validation);
-
   return async (fastifyApp) => {
+    // Resolve configuration when the plugin is registered, not when the module is
+    // imported, so applications can set environment configuration during bootstrap.
+    const validation = validateCloudConfig(options);
+    if (options.strictStartup && !validation.ok) throw new CloudConfigError(validation);
     const fastify = fastifyApp as FastifyInstance;
     const features = validation.value?.features;
     const defaultAgentUrl = (
