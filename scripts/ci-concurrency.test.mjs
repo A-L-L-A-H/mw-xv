@@ -8,20 +8,22 @@ const releaseWorkflow = readFileSync('.github/workflows/release.yml', 'utf8');
 const productionCompose = readFileSync('docker-compose.production.yml', 'utf8');
 const containerSmoke = readFileSync('scripts/smoke-containers.mjs', 'utf8');
 
-test('CI cancels stale runs only within the same workflow, event and SHA', () => {
+test('CI cancels stale runs within the same workflow, event, branch or PR', () => {
   assert.match(
     workflow,
-    /group:\s*ci-\$\{\{\s*github\.workflow\s*\}\}-\$\{\{\s*github\.event_name\s*\}\}-\$\{\{\s*github\.sha\s*\}\}/u
+    /group:\s*ci-\$\{\{\s*github\.workflow\s*\}\}-\$\{\{\s*github\.event_name\s*\}\}-\$\{\{\s*github\.event\.pull_request\.number\s*\|\|\s*github\.ref\s*\}\}/u
   );
   assert.match(workflow, /cancel-in-progress:\s*true/u);
 
-  // Push and PR runs for the same SHA are distinct concurrency groups: neither
-  // cancels the other, which previously left jobs reported as `cancelled` and
-  // made the exact-SHA ci-gate unreliable (issue #79 / CF-024).
-  const group = (workflowName, eventName, sha) => `ci-${workflowName}-${eventName}-${sha}`;
-  assert.notEqual(group('CI', 'push', 'sha-a'), group('CI', 'pull_request', 'sha-a'));
-  assert.notEqual(group('CI', 'push', 'sha-a'), group('CI', 'push', 'sha-b'));
-  assert.equal(group('CI', 'push', 'sha-a'), group('CI', 'push', 'sha-a'));
+  // Push and PR runs for the same commit are distinct concurrency groups: neither
+  // cancels the other, while newer commits on the same branch or PR cancel stale
+  // runs that would otherwise starve the runner queue.
+  const group = (workflowName, eventName, scope) =>
+    `ci-${workflowName}-${eventName}-${scope}`;
+  assert.notEqual(group('CI', 'push', 'refs/heads/dev'), group('CI', 'pull_request', 'refs/heads/dev'));
+  assert.notEqual(group('CI', 'push', 'refs/heads/dev'), group('CI', 'pull_request', '218'));
+  assert.notEqual(group('CI', 'pull_request', '218'), group('CI', 'pull_request', '219'));
+  assert.equal(group('CI', 'push', 'refs/heads/dev'), group('CI', 'push', 'refs/heads/dev'));
 });
 
 test('CI runs quality-and-build, unit-tests, knowledge-gate, and postgres-integration on dev and main', () => {
