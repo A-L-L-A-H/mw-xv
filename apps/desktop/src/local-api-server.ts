@@ -362,17 +362,8 @@ function buildDesktopModePayload(mode: DesktopExperienceMode): {
 
 function isAllowedCorsOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
-  if (STATIC_ALLOWED_CORS_ORIGINS.has(origin)) return true;
-  try {
-    const parsed = new URL(origin);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return false;
-    }
-    const host = parsed.hostname.toLowerCase();
-    return host === '127.0.0.1' || host === 'localhost' || host === '::1' || host === '[::1]';
-  } catch {
-    return false;
-  }
+  // Strict allowlist only — no wildcard localhost fallback (TASK-EX-05 / TAUD-XX)
+  return STATIC_ALLOWED_CORS_ORIGINS.has(origin);
 }
 
 function isInternalModel(modelName: string): boolean {
@@ -2517,7 +2508,10 @@ export async function startLocalApiServer(
     value === 'mesh';
 
   // Centralized Desktop Logs (active in BOTH Workspace & DX modes)
-  app.get('/api/desktop/logs', async (req) => {
+  app.get('/api/desktop/logs', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
     const query = isRecord(req.query) ? req.query : {};
     const level =
       query.level === 'all' || isDesktopLogLevel(query.level) ? query.level : undefined;
@@ -2548,6 +2542,9 @@ export async function startLocalApiServer(
   });
 
   app.post('/api/desktop/logs/ingest', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
     const body = isRecord(req.body) ? req.body : {};
     const message = typeof body.message === 'string' ? body.message.trim() : '';
     if (!message) {
@@ -2572,12 +2569,18 @@ export async function startLocalApiServer(
     return { success: true, entry };
   });
 
-  app.post('/api/desktop/logs/clear', async () => {
+  app.post('/api/desktop/logs/clear', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
     logHub.clear();
     return { success: true, cleared: true };
   });
 
-  app.get('/api/desktop/logs/bundle', async () => {
+  app.get('/api/desktop/logs/bundle', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
     const markdown = logHub.formatBundle({
       appVersion: '1.0.0-rc.1',
       platform: process.platform,

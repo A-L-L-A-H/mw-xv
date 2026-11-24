@@ -980,10 +980,33 @@ describe('LocalApiServer & Desktop Importer', () => {
     const missingRes = await fetch(`${daemon.apiUrl}/api/non-existent-route-for-log-test`);
     expect(missingRes.status).toBeGreaterThanOrEqual(400);
 
+    // Unauthenticated requests should return 401
+    const unauthEndpoints = [
+      { method: 'GET', path: '/api/desktop/logs' },
+      { method: 'POST', path: '/api/desktop/logs/ingest' },
+      { method: 'POST', path: '/api/desktop/logs/clear' },
+      { method: 'GET', path: '/api/desktop/logs/bundle' },
+    ];
+    for (const { method, path } of unauthEndpoints) {
+      const res = await fetch(`${daemon.apiUrl}${path}`, { method });
+      expect(res.status).toBe(401);
+      expect(await res.json()).toEqual({ success: false, error: 'Authentication required' });
+    }
+
+    // Login to get token
+    const loginRes = await fetch(`${daemon.apiUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ login: 'local', password: 'local-offline-session' }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginBody = (await loginRes.json()) as { data: { access_token: string } };
+    const authHeaders = { authorization: `Bearer ${loginBody.data.access_token}` };
+
     // Ingest a webview error in workspace mode
     const ingestRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/ingest`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...authHeaders },
       body: JSON.stringify({
         level: 'error',
         source: 'webview',
@@ -1001,7 +1024,7 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(ingestBody.entry.source).toBe('webview');
 
     // List logs in workspace mode
-    const listRes = await fetch(`${daemon.apiUrl}/api/desktop/logs?level=all&source=all`);
+    const listRes = await fetch(`${daemon.apiUrl}/api/desktop/logs?level=all&source=all`, { headers: authHeaders });
     expect(listRes.status).toBe(200);
     const listBody = (await listRes.json()) as {
       success: boolean;
@@ -1018,7 +1041,7 @@ describe('LocalApiServer & Desktop Importer', () => {
     ).toBe(true);
 
     // Fetch diagnostic bundle in workspace mode
-    const bundleRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/bundle`);
+    const bundleRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/bundle`, { headers: authHeaders });
     expect(bundleRes.status).toBe(200);
     const bundleBody = (await bundleRes.json()) as {
       success: boolean;
@@ -1030,9 +1053,9 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(bundleBody.entryCount).toBeGreaterThanOrEqual(2);
 
     // Clear logs in workspace mode
-    const clearRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/clear`, { method: 'POST' });
+    const clearRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/clear`, { method: 'POST', headers: authHeaders });
     expect(clearRes.status).toBe(200);
-    const afterClear = (await (await fetch(`${daemon.apiUrl}/api/desktop/logs`)).json()) as {
+    const afterClear = (await (await fetch(`${daemon.apiUrl}/api/desktop/logs`, { headers: authHeaders })).json()) as {
       entries: unknown[];
       total: number;
     };
