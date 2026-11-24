@@ -301,7 +301,7 @@ jobs:
       - name: Install frozen workspace dependencies
         run: bun install --frozen-lockfile
       - name: Build knowledge workspace dependencies
-        run: bun --filter @moonwitness/orm-knowledge build
+        run: bun run build
       - name: Run K9-001 deterministic knowledge gate
         run: node scripts/knowledge/run-k-gate.mjs --json
 

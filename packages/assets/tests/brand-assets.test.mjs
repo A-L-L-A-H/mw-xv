@@ -384,10 +384,11 @@ test('package exports only framework-independent static assets', async () => {
   }
 });
 
-test('pnpm package tarball contains every public manifest asset and export target', async () => {
-  const packed = JSON.parse(
-    execSync('pnpm pack --dry-run --json', { cwd: packageRoot, encoding: 'utf8' })
+test('package tarball contains every public manifest asset and export target', async () => {
+  const rawPacked = JSON.parse(
+    execSync('npm pack --dry-run --json', { cwd: packageRoot, encoding: 'utf8' })
   );
+  const packed = Array.isArray(rawPacked) ? rawPacked[0] : rawPacked;
   const packedPaths = new Set(packed.files.map(({ path }) => path));
   const packageJson = JSON.parse(await readFile(resolve(packageRoot, 'package.json'), 'utf8'));
   for (const asset of manifest.assets.filter(({ kind }) => kind !== 'source')) {

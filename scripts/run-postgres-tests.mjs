@@ -34,9 +34,9 @@ await mkdir(reportDirectory, { recursive: true });
 for (const args of [
   ...(built ? [] : [['build']]),
   [
-    '--filter',
-    '@moonwitness/orm-knowledge',
-    'exec',
+    'x',
+    '--cwd',
+    'packages/orm-knowledge',
     'vitest',
     'run',
     'tests/postgres.integration.test.ts',
@@ -45,12 +45,12 @@ for (const args of [
     'tests/research-suggestion-store.postgres.integration.test.ts',
     '--reporter=default',
   ],
-  ['--filter', '@moonwitness/api', 'exec', 'tsc', '--noEmit', '-p', 'tsconfig.integration.json'],
+  ['x', '--cwd', 'apps/api', 'tsc', '--noEmit', '-p', 'tsconfig.integration.json'],
   // These suites share one PostgreSQL server; serial files avoid lock-test timeout contention.
   [
-    '--filter',
-    '@moonwitness/api',
-    'exec',
+    'x',
+    '--cwd',
+    'apps/api',
     'vitest',
     'run',
     'tests/postgres.integration.test.ts',
