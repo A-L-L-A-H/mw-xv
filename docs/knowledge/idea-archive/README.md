@@ -42,6 +42,12 @@ It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM,
 | 18. Framework registry | [FRAMEWORK-REGISTRY.md](FRAMEWORK-REGISTRY.md) | RGBL, HISTA, Mizan and other source-qualified frameworks |
 | 19. Library source register | [LIBRARY-SOURCE-REGISTER.md](LIBRARY-SOURCE-REGISTER.md) | Source availability, prompt/image limitations and privacy boundaries |
 | 20. Audit status report | [AUDIT-STATUS-REPORT.md](AUDIT-STATUS-REPORT.md) | Consolidated findings, CI and remaining gates |
+| 21. Machine index | [INDEX.json](INDEX.json) | Deterministic 209-record ID → file/status/source map for agents |
+| 22. Decision packets | [DECISION-PACKETS.md](DECISION-PACKETS.md) | Answerable version-strata crosswalk and top unresolved questions |
+| 23. Backlog digest | [BACKLOG-DIGEST.md](BACKLOG-DIGEST.md) | Separates machine-generated audit noise from human-gated work |
+| 24. Source recovery runbook | [SOURCE-RECOVERY-RUNBOOK.md](SOURCE-RECOVERY-RUNBOOK.md) | Local-first procedure to turn #187 from blocked into executable |
+| 25. Visual authority crosswalk | [VISUAL-AUTHORITY-CROSSWALK.md](VISUAL-AUTHORITY-CROSSWALK.md) | Which visual document answers which question; approval gates preserved |
+| 26. Creative seed deck | [CREATIVE-SEED-DECK.md](CREATIVE-SEED-DECK.md) | Label-only ideas preserved without being turned into software |
 
 ## Source coverage and honest statistics
 
@@ -67,8 +73,8 @@ The issue/PR and TaskOS figures below were rechecked against the live `dev` snap
 | Idea catalog records | See [catalog](IDEA-CATALOG.md) | Records can point to a shared idea family; not a count of every thought in history |
 | Stories / characters / canon | See [story bible](STORY-CANON-CHARACTER-BIBLE.md) | Source-backed counts are separated from memory-only leads |
 | Current TaskOS | 637 records on `dev` | 468 done, 49 doing, 96 todo, 24 blocked at blob `4d677b63` |
-| GitHub Issues | 161 | 66 open, 95 closed in the current paginated issue audit; PR objects excluded |
-| Pull Requests | 26 | 2 open, 24 closed in the same endpoint results |
+| GitHub Issues | 191 | 85 open, 106 closed at the 2026-11-24 live recheck; PR objects excluded |
+| Pull Requests | 30 | 2 open, 26 merged, 2 closed at the same recheck |
 
 **Do not sum repeated references as unique ideas.** A story title mentioned in a prompt, README and issue remains one idea with multiple sources. The catalog intentionally uses stable IDs to reduce duplicate counting.
 

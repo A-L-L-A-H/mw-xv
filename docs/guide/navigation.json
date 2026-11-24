@@ -76,6 +76,31 @@
       ]
     },
     {
+      "title": "Pengetahuan & arsip",
+      "items": [
+        {
+          "title": "Total Idea Archive — Master Index",
+          "kind": "reference",
+          "path": "docs/knowledge/idea-archive/README.md"
+        },
+        {
+          "title": "Canon Registry",
+          "kind": "reference",
+          "path": "docs/knowledge/idea-archive/CANON-REGISTRY.md"
+        },
+        {
+          "title": "Unresolved Decisions",
+          "kind": "reference",
+          "path": "docs/knowledge/idea-archive/UNRESOLVED-DECISIONS.md"
+        },
+        {
+          "title": "Indeks naratif V10",
+          "kind": "reference",
+          "path": "docs/knowledge/narratives/INDEX.md"
+        }
+      ]
+    },
+    {
       "title": "Referensi",
       "items": [
         { "title": "API", "kind": "reference", "path": "docs/guide/reference/api.md" },
