@@ -8,17 +8,20 @@ const releaseWorkflow = readFileSync('.github/workflows/release.yml', 'utf8');
 const productionCompose = readFileSync('docker-compose.production.yml', 'utf8');
 const containerSmoke = readFileSync('scripts/smoke-containers.mjs', 'utf8');
 
-test('CI cancels stale runs only within the same workflow and ref', () => {
+test('CI cancels stale runs only within the same workflow, event and SHA', () => {
   assert.match(
     workflow,
-    /group:\s*ci-\$\{\{\s*github\.workflow\s*\}\}-\$\{\{\s*github\.ref\s*\}\}/u
+    /group:\s*ci-\$\{\{\s*github\.workflow\s*\}\}-\$\{\{\s*github\.event_name\s*\}\}-\$\{\{\s*github\.sha\s*\}\}/u
   );
   assert.match(workflow, /cancel-in-progress:\s*true/u);
 
-  const group = (workflowName, ref) => `ci-${workflowName}-${ref}`;
-  assert.notEqual(group('CI', 'refs/heads/dev'), group('CI', 'refs/heads/main'));
-  assert.notEqual(group('CI', 'refs/heads/dev'), group('CI', 'refs/pull/1/merge'));
-  assert.equal(group('CI', 'refs/heads/dev'), group('CI', 'refs/heads/dev'));
+  // Push and PR runs for the same SHA are distinct concurrency groups: neither
+  // cancels the other, which previously left jobs reported as `cancelled` and
+  // made the exact-SHA ci-gate unreliable (issue #79 / CF-024).
+  const group = (workflowName, eventName, sha) => `ci-${workflowName}-${eventName}-${sha}`;
+  assert.notEqual(group('CI', 'push', 'sha-a'), group('CI', 'pull_request', 'sha-a'));
+  assert.notEqual(group('CI', 'push', 'sha-a'), group('CI', 'push', 'sha-b'));
+  assert.equal(group('CI', 'push', 'sha-a'), group('CI', 'push', 'sha-a'));
 });
 
 test('CI runs quality-and-build, unit-tests, knowledge-gate, and postgres-integration on dev and main', () => {
