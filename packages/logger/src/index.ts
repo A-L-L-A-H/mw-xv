@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import pino, { type Logger, type LoggerOptions, type TransportTargetOptions } from 'pino';
+import pino, { type Logger, type LoggerOptions, type TransportTargetOptions, type DestinationStream } from 'pino';
 import pretty from 'pino-pretty';
 
 export type LogLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace' | 'silent';
@@ -106,6 +106,66 @@ function redactDeep(value: unknown, depth = 0): unknown {
   }
 }
 
+interface FlushableDestination {
+  flush?: (cb?: () => void) => void;
+  flushSync?: () => void;
+}
+
+type FlushableLogger = Logger & { flush?: () => Promise<void>; flushSync?: () => void };
+
+type ChildFn = (bindings: Record<string, unknown>, options?: LoggerOptions) => Logger;
+
+function toFlushableDestination(destination: DestinationStream): FlushableDestination {
+  return destination as unknown as FlushableDestination;
+}
+
+function wrapLoggerMethods<L extends Logger>(log: L): L {
+  const origInfo = log.info.bind(log);
+  const origWarn = log.warn.bind(log);
+  const origError = log.error.bind(log);
+  const origDebug = log.debug.bind(log);
+  const origFatal = log.fatal.bind(log);
+  const origTrace = log.trace.bind(log);
+  const wrap = (fn: Function) => (obj: unknown, msg?: string, ...args: unknown[]) => {
+    const redacted = typeof obj === 'object' && obj !== null ? redactDeep(obj) : obj;
+    return fn(redacted, msg, ...args);
+  };
+  log.info = wrap(origInfo);
+  log.warn = wrap(origWarn);
+  log.error = wrap(origError);
+  log.debug = wrap(origDebug);
+  log.fatal = wrap(origFatal);
+  log.trace = wrap(origTrace);
+  return log;
+}
+
+function attachFlushMethods<L extends Logger>(log: L, destination: DestinationStream | undefined): L {
+  if (!destination) return log;
+  const dest = toFlushableDestination(destination);
+  const flushable = log as FlushableLogger;
+  flushable.flush = () =>
+    new Promise<void>((resolve) => {
+      if (typeof dest.flush === 'function') {
+        dest.flush(() => resolve());
+      } else {
+        resolve();
+      }
+    });
+  flushable.flushSync = () => {
+    if (typeof dest.flushSync === 'function') {
+      dest.flushSync();
+    }
+  };
+  return log;
+}
+
+function createChildWrapper(originalChild: Logger['child']): ChildFn {
+  return function (bindings: Record<string, unknown>, options?: LoggerOptions) {
+    const child = originalChild(bindings as never, options as never);
+    return wrapLoggerMethods(child);
+  };
+}
+
 export function createLogger(options: CreateLoggerOptions = {}): Logger {
   const isTest = process.env.NODE_ENV === 'test';
   const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
@@ -144,7 +204,7 @@ export function createLogger(options: CreateLoggerOptions = {}): Logger {
   }
 
   // File output (enabled by default) — async non-blocking JSON lines
-  let fileDestination: pino.DestinationStream | undefined;
+  let fileDestination: DestinationStream | undefined;
   if (enableFile) {
     try {
       fs.mkdirSync(logDir, { recursive: true });
@@ -195,68 +255,20 @@ export function createLogger(options: CreateLoggerOptions = {}): Logger {
 
   const logger = streams.length > 0 ? pino(pinoOptions, pino.multistream(streams)) : pino(pinoOptions);
 
-  const originalChild = logger.child.bind(logger);
-  logger.child = function (bindings: Record<string, unknown>, options?: LoggerOptions) {
-    const child = originalChild(bindings, options);
-    const origInfo = child.info.bind(child);
-    const origWarn = child.warn.bind(child);
-    const origError = child.error.bind(child);
-    const origDebug = child.debug.bind(child);
-    const origFatal = child.fatal.bind(child);
-    const origTrace = child.trace.bind(child);
-    const wrap = (fn: Function) => (obj: unknown, msg?: string, ...args: unknown[]) => {
-      const redacted = typeof obj === 'object' && obj !== null ? redactDeep(obj) : obj;
-      return fn(redacted, msg, ...args);
-    };
-    child.info = wrap(origInfo);
-    child.warn = wrap(origWarn);
-    child.error = wrap(origError);
-    child.debug = wrap(origDebug);
-    child.fatal = wrap(origFatal);
-    child.trace = wrap(origTrace);
-    return child;
-  };
+  // Wrap child method
+  (logger as unknown as { child: ChildFn }).child = createChildWrapper(logger.child.bind(logger));
 
   // Wrap root logger methods for deep redaction
-  const origInfo = logger.info.bind(logger);
-  const origWarn = logger.warn.bind(logger);
-  const origError = logger.error.bind(logger);
-  const origDebug = logger.debug.bind(logger);
-  const origFatal = logger.fatal.bind(logger);
-  const origTrace = logger.trace.bind(logger);
-  const wrap = (fn: Function) => (obj: unknown, msg?: string, ...args: unknown[]) => {
-    const redacted = typeof obj === 'object' && obj !== null ? redactDeep(obj) : obj;
-    return fn(redacted, msg, ...args);
-  };
-  logger.info = wrap(origInfo);
-  logger.warn = wrap(origWarn);
-  logger.error = wrap(origError);
-  logger.debug = wrap(origDebug);
-  logger.fatal = wrap(origFatal);
-  logger.trace = wrap(origTrace);
+  wrapLoggerMethods(logger);
 
   // Attach flush methods to logger for per-instance flushing
-  if (fileDestination) {
-    (logger as Logger & { flush?: () => Promise<void>; flushSync?: () => void }).flush = () =>
-      new Promise((resolve) => {
-        if (typeof fileDestination.flush === 'function') {
-          fileDestination.flush(() => resolve());
-        } else {
-          resolve();
-        }
-      });
-    (logger as Logger & { flushSync?: () => void }).flushSync = () => {
-      if (typeof fileDestination.flushSync === 'function') {
-        fileDestination.flushSync();
-      }
-    };
-  }
+  attachFlushMethods(logger, fileDestination);
 
   return logger;
 }
 
 let rootLogger: Logger | undefined;
-let rootFileDestination: pino.DestinationStream | undefined;
+let rootFileDestination: DestinationStream | undefined;
 
 export function getLogger(): Logger {
   if (!rootLogger) {
@@ -327,79 +339,37 @@ export function getLogger(): Logger {
 
     rootLogger = streams.length > 0 ? pino(pinoOptions, pino.multistream(streams)) : pino(pinoOptions);
 
-    const originalChild = rootLogger.child.bind(rootLogger);
-    rootLogger.child = function (bindings: Record<string, unknown>, options?: LoggerOptions) {
-      const child = originalChild(bindings, options);
-      const origInfo = child.info.bind(child);
-      const origWarn = child.warn.bind(child);
-      const origError = child.error.bind(child);
-      const origDebug = child.debug.bind(child);
-      const origFatal = child.fatal.bind(child);
-      const origTrace = child.trace.bind(child);
-      const wrap = (fn: Function) => (obj: unknown, msg?: string, ...args: unknown[]) => {
-        const redacted = typeof obj === 'object' && obj !== null ? redactDeep(obj) : obj;
-        return fn(redacted, msg, ...args);
-      };
-      child.info = wrap(origInfo);
-      child.warn = wrap(origWarn);
-      child.error = wrap(origError);
-      child.debug = wrap(origDebug);
-      child.fatal = wrap(origFatal);
-      child.trace = wrap(origTrace);
-      return child;
-    };
+    // Wrap child method
+    (rootLogger as unknown as { child: ChildFn }).child = createChildWrapper(rootLogger.child.bind(rootLogger));
 
     // Wrap root logger methods for deep redaction
-    const origInfo = rootLogger.info.bind(rootLogger);
-    const origWarn = rootLogger.warn.bind(rootLogger);
-    const origError = rootLogger.error.bind(rootLogger);
-    const origDebug = rootLogger.debug.bind(rootLogger);
-    const origFatal = rootLogger.fatal.bind(rootLogger);
-    const origTrace = rootLogger.trace.bind(rootLogger);
-    const wrapRoot = (fn: Function) => (obj: unknown, msg?: string, ...args: unknown[]) => {
-      const redacted = typeof obj === 'object' && obj !== null ? redactDeep(obj) : obj;
-      return fn(redacted, msg, ...args);
-    };
-    rootLogger.info = wrapRoot(origInfo);
-    rootLogger.warn = wrapRoot(origWarn);
-    rootLogger.error = wrapRoot(origError);
-    rootLogger.debug = wrapRoot(origDebug);
-    rootLogger.fatal = wrapRoot(origFatal);
-    rootLogger.trace = wrapRoot(origTrace);
+    wrapLoggerMethods(rootLogger);
 
     // Attach flush methods to rootLogger
-    if (rootFileDestination) {
-      (rootLogger as Logger & { flush?: () => Promise<void>; flushSync?: () => void }).flush = () =>
-        new Promise((resolve) => {
-          if (typeof rootFileDestination.flush === 'function') {
-            rootFileDestination.flush(() => resolve());
-          } else {
-            resolve();
-          }
-        });
-      (rootLogger as Logger & { flushSync?: () => void }).flushSync = () => {
-        if (typeof rootFileDestination.flushSync === 'function') {
-          rootFileDestination.flushSync();
-        }
-      };
-    }
+    attachFlushMethods(rootLogger, rootFileDestination);
   }
   return rootLogger;
 }
 
 export function flushLogger(): Promise<void> {
   return new Promise((resolve) => {
-    if (rootFileDestination && typeof rootFileDestination.flush === 'function') {
-      rootFileDestination.flush(() => resolve());
-    } else {
-      resolve();
+    if (rootFileDestination) {
+      const dest = toFlushableDestination(rootFileDestination);
+      if (typeof dest.flush === 'function') {
+        dest.flush(() => resolve());
+        return;
+      }
     }
+    resolve();
   });
 }
 
 export function flushLoggerSync(): void {
-  if (rootFileDestination && typeof rootFileDestination.flushSync === 'function') {
-    rootFileDestination.flushSync();
+  if (rootFileDestination) {
+    const dest = toFlushableDestination(rootFileDestination);
+    if (typeof dest.flushSync === 'function') {
+      dest.flushSync();
+    }
   }
 }
 
