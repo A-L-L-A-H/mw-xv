@@ -4,9 +4,18 @@
 @import '@moonwitness/ui/components.css';
 @import '@moonwitness/assets/fonts.css';
 
+/* Match the packed-package Tailwind contract: utility classes live in both source and dist. */
+@source '../../../packages/ui/src';
+@source '../../../packages/ui/dist';
+/* Only the overlay/control components used by this catalog need their utility variants emitted;
+   scanning the whole package duplicates unused rules into the initial stylesheet. */
+@source not '../../../packages/ui/src/**';
+@source not '../../../packages/ui/dist/**';
 @source '../../../packages/ui/src/components/command.tsx';
 @source '../../../packages/ui/src/components/dialog.tsx';
 @source '../../../packages/ui/src/components/dropdown-menu.tsx';
+@source '../../../packages/ui/src/components/filter-facet-bar.tsx';
+@source '../../../packages/ui/src/components/kanban-board.tsx';
 @source '../../../packages/ui/src/components/popover.tsx';
 @source '../../../packages/ui/src/components/select.tsx';
 @source '../../../packages/ui/src/components/sheet.tsx';
@@ -244,7 +253,57 @@ a:focus-visible {
   line-height: 1.05;
 }
 .catalog-intro-panel {
-  margin-bottom: 4rem;
+  margin-bottom: 1rem;
+}
+.catalog-section-index {
+  margin-bottom: 1rem;
+  border: 1px solid var(--mw-border);
+  background: var(--mw-surface);
+  padding: 0.85rem 1rem;
+}
+.catalog-section-index summary {
+  width: fit-content;
+  cursor: pointer;
+  font-weight: 700;
+}
+.catalog-section-index > p {
+  max-width: 48rem;
+  color: var(--mw-muted-foreground);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.catalog-section-index ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem 1.5rem;
+  margin: 1rem 0 0;
+  padding-left: 1.4rem;
+}
+.catalog-section-index li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  min-width: 0;
+}
+.catalog-section-index a {
+  color: inherit;
+}
+.catalog-section-index code {
+  overflow-wrap: anywhere;
+  color: var(--mw-muted-foreground);
+  font-size: 0.68rem;
+}
+.catalog-section-index li > span {
+  color: var(--mw-muted-foreground);
+  font: 0.62rem var(--mw-font-mono);
+  text-transform: uppercase;
+}
+@media (max-width: 720px) {
+  .catalog-section-index ol {
+    grid-template-columns: 1fr;
+  }
 }
 .catalog-intro-meta {
   display: flex;
@@ -1198,26 +1257,12 @@ a:focus-visible {
   border: 1px solid var(--mw-border);
   background: var(--mw-surface);
 }
-.asset-browser-controls label {
-  display: grid;
+.asset-browser-controls .mw-ui-field {
   align-content: start;
   gap: 0.35rem;
   min-width: 0;
-  color: var(--mw-ink-soft);
-  font-size: 0.78rem;
-  font-weight: 650;
 }
-.asset-browser-controls input,
-.asset-browser-controls select {
-  min-height: 2.75rem;
-  width: 100%;
-  border: 1px solid var(--mw-border);
-  border-radius: 0.25rem;
-  background: var(--mw-background);
-  color: var(--mw-foreground);
-  padding: 0.55rem 0.65rem;
-}
-.asset-browser-controls small {
+.asset-browser-controls .mw-ui-field-description {
   color: var(--mw-ink-faint);
   font-size: 0.68rem;
   font-weight: 450;

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@moonwitness/ui/components/button';
+import { Checkbox } from '@moonwitness/ui/components/checkbox';
 import {
   LayeredScene,
   type SceneLayerDescriptor,
@@ -209,6 +210,8 @@ export function SceneLab() {
         <Button variant="default" onClick={() => timelineRef.current?.complete()}>
           Complete timeline
         </Button>
+        {/* Narrow harness exception: the shared package has no range primitive. Keep native
+            timeline semantics, a visible label, and an explicit accessible value. */}
         <label className="scene-lab-scrubber">
           Timeline position {timelineTimeMs} ms
           <input
@@ -219,6 +222,7 @@ export function SceneLab() {
             value={timelineTimeMs}
             onChange={(event) => timelineRef.current?.seek(Number(event.currentTarget.value))}
             aria-label="Timeline position"
+            aria-valuetext={`${timelineTimeMs} milliseconds`}
           />
         </label>
       </div>
@@ -265,11 +269,7 @@ export function SceneLab() {
               return (
                 <li key={layer.id} data-plane-id={layer.id} data-plane-order={layer.zOrder}>
                   <label>
-                    <input
-                      type="checkbox"
-                      checked={!hidden}
-                      onChange={() => toggleLayer(layer.id)}
-                    />
+                    <Checkbox checked={!hidden} onChange={() => toggleLayer(layer.id)} />
                     <span>
                       {layer.id} (z={layer.zOrder} · pivot {layer.pivot?.x ?? 0.5},
                       {layer.pivot?.y ?? 0.5} · px {layer.parallax?.x ?? 0})
