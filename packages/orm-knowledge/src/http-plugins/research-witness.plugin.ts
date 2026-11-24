@@ -1,14 +1,6 @@
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { readOwnedSyntheticWitness, WitnessAccessError } from '../witness-access.js';
-
-function hasValidationError(request: unknown): boolean {
-  return (
-    typeof request === 'object' &&
-    request !== null &&
-    'validationError' in request &&
-    Boolean((request as { readonly validationError?: unknown }).validationError)
-  );
-}
+import { hasValidationError } from './helpers.js';
 
 const errorSchema = {
   type: 'object',

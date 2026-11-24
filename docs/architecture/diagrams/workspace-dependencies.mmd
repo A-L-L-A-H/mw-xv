@@ -61,6 +61,7 @@ flowchart LR
   pkg59["@moonwitness/ui"]
   pkg60["@moonwitness/ui-catalog"]
   pkg0 -->|runtime| pkg42
+  pkg1 -->|development| pkg58
   pkg2 -->|runtime| pkg4
   pkg2 -->|runtime| pkg58
   pkg3 -->|runtime| pkg4
@@ -109,6 +110,8 @@ flowchart LR
   pkg8 -->|runtime| pkg59
   pkg9 -->|runtime| pkg58
   pkg11 -->|runtime| pkg17
+  pkg11 -->|runtime| pkg58
+  pkg12 -->|development| pkg6
   pkg12 -->|development| pkg59
   pkg12 -->|runtime| pkg3
   pkg12 -->|runtime| pkg4
@@ -212,6 +215,7 @@ flowchart LR
   pkg40 -->|runtime| pkg25
   pkg40 -->|runtime| pkg56
   pkg40 -->|runtime| pkg57
+  pkg40 -->|runtime| pkg58
   pkg41 -->|runtime| pkg16
   pkg41 -->|runtime| pkg21
   pkg41 -->|runtime| pkg25
@@ -242,6 +246,7 @@ flowchart LR
   pkg49 -->|runtime| pkg25
   pkg50 -->|runtime| pkg21
   pkg50 -->|runtime| pkg25
+  pkg50 -->|runtime| pkg58
   pkg51 -->|runtime| pkg21
   pkg51 -->|runtime| pkg25
   pkg52 -->|runtime| pkg21
@@ -266,6 +271,7 @@ flowchart LR
   pkg56 -->|runtime| pkg41
   pkg56 -->|runtime| pkg58
   pkg57 -->|runtime| pkg17
+  pkg57 -->|runtime| pkg58
   pkg59 -->|runtime| pkg58
   pkg60 -->|runtime| pkg6
   pkg60 -->|runtime| pkg59

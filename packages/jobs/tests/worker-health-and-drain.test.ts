@@ -24,7 +24,7 @@ const DRAIN_ASSERTION_TIMEOUT_MS = 10_000;
 
 describe('shared worker health contract (CF-013 / CF-014)', () => {
   it('keeps readiness false until bootstrap and required dependencies are ready', async () => {
-    let clock = 1_000;
+    const clock = 1_000;
     const health = createWorkerHealthContract({
       worker: 'jobs-worker',
       dependencies: ['database', 'redis'],

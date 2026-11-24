@@ -52,3 +52,4 @@ export type {
   SeedResult,
   AddonSeedManifest,
 } from './seed-manifest.js';
+export { resolveInsertedId } from './seed-utils.js';

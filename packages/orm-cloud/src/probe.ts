@@ -1,3 +1,4 @@
+import { DEFAULT_CONTROL_PLANE_URL } from '@moonwitness/types';
 import { controlPlaneAuthHeaders, recordCloudOperation, resolveControlPlaneToken } from './auth.js';
 import { CloudDeploymentTarget } from './models/index.js';
 
@@ -323,7 +324,7 @@ export async function probeCloudTargetsHealth(
     } else {
       try {
         const url = assertProbeTarget(
-          target.api_url ?? options.defaultTargetUrl ?? 'http://127.0.0.1:3003',
+          target.api_url ?? options.defaultTargetUrl ?? DEFAULT_CONTROL_PLANE_URL,
           policy
         );
         result = await probeOneTarget(url, token, fetchImpl, policy, timeoutMs, maxResponseBytes);

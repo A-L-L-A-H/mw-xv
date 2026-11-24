@@ -8,7 +8,7 @@ async function seedPublicServices(ctx: SeedContext): Promise<SeedResult> {
   const db = ctx.db as Knex;
   let inserted = 0;
   let updated = 0;
-  let skipped = 0;
+  const skipped = 0;
 
   const companyId = ctx.companyId ?? 1;
 

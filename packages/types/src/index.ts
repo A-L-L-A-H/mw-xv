@@ -11,3 +11,4 @@ export * from './errors.js';
 export * from './theme.js';
 export * from './scene.js';
 export * from './character-adapter.js';
+export * from './service-endpoints.js';

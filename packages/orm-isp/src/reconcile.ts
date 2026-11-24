@@ -1,5 +1,5 @@
 import { createConnection } from 'node:net';
-import { isRecord } from '@moonwitness/types';
+import { DEFAULT_ISP_SERVICE_URL, isRecord } from '@moonwitness/types';
 import { ispAuthHeaders, resolveIspAdminToken } from './auth.js';
 import { meterSessionsToSubscriptionInvoices } from './metering.js';
 import { ISPNAS, ISPRadiusOutbox, ISPRadiusSession, ISPSubscriber } from './models/index.js';
@@ -85,7 +85,7 @@ interface RuntimeRadiusSession {
 }
 
 function normalizeBaseUrl(ispServiceUrl?: string): string {
-  return (ispServiceUrl ?? process.env.MW_ISP_URL ?? 'http://127.0.0.1:3002').replace(/\/+$/u, '');
+  return (ispServiceUrl ?? process.env.MW_ISP_URL ?? DEFAULT_ISP_SERVICE_URL).replace(/\/+$/u, '');
 }
 
 function readOptionalString(value: unknown): string | null {

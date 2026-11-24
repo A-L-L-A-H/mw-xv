@@ -14,18 +14,18 @@ import {
 } from './dependency-update-plan.mjs';
 
 test('full dependency candidate gates reuse the workspace build without dropping checks', () => {
-  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('pnpm typecheck'));
-  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('pnpm test:unit:built'));
-  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('pnpm architecture:check:built'));
-  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('pnpm docs:check:built'));
-  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('pnpm test:integration:built'));
-  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('pnpm test:e2e:built'));
-  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('pnpm test:docs-portal'));
-  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('pnpm test:unit'));
-  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('pnpm test:integration'));
-  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('pnpm test:e2e'));
-  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('pnpm architecture:check'));
-  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('pnpm docs:check'));
+  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('bun run typecheck'));
+  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('bun run test:unit:built'));
+  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('bun run architecture:check:built'));
+  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('bun run docs:check:built'));
+  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('bun run test:integration:built'));
+  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('bun run test:e2e:built'));
+  assert.ok(COMPATIBILITY_REVIEW_GATES.includes('bun run test:docs-portal'));
+  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('bun run test:unit'));
+  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('bun run test:integration'));
+  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('bun run test:e2e'));
+  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('bun run architecture:check'));
+  assert.ok(!COMPATIBILITY_REVIEW_GATES.includes('bun run docs:check'));
 });
 
 test('read-only planning writes JSON only when an output path is explicitly requested', () => {
@@ -106,14 +106,14 @@ test('groups exact outdated runtime, development, and action candidates determin
   assert.equal(plan.groups.runtime[0].majorImpact.status, 'manual-review-required');
   assert.deepEqual(plan.groups.runtime[0].majorImpact.workspaceDependents, ['@moonwitness/api']);
   assert.deepEqual(plan.groups.runtime[0].majorImpact.testImpacts, [
-    'pnpm typecheck',
-    'pnpm test:unit:built',
+    'bun run typecheck',
+    'bun run test:unit:built',
   ]);
   assert.match(plan.groups.runtime[0].majorImpact.localUsage, /reference "zeta"/);
   assert.ok(
     plan.groups.runtime[0].majorImpact.requiredTasks.some((task) => task.includes('migration'))
   );
-  assert.ok(plan.groups.runtime[0].majorImpact.requiredGates.includes('pnpm test:e2e:built'));
+  assert.ok(plan.groups.runtime[0].majorImpact.requiredGates.includes('bun run test:e2e:built'));
   assert.match(renderSummary(plan), /Major compatibility review: zeta/);
   assert.match(renderSummary(plan), /candidate executor refuses major updates/);
   assert.match(renderSummary(plan), /Test impacts derived from the impacted workspaces/);
@@ -278,7 +278,10 @@ test('grounds a candidate report in the installed store and the real workspace u
   assert.equal(candidate.localUsage.kind, 'local-import-scan');
   assert.ok(candidate.localUsage.referencingFiles > 0);
   assert.ok(candidate.localUsage.specifiers.includes('pino'));
-  assert.deepEqual(candidate.majorImpact.testImpacts, ['pnpm typecheck', 'pnpm test:unit:built']);
+  assert.deepEqual(candidate.majorImpact.testImpacts, [
+    'bun run typecheck',
+    'bun run test:unit:built',
+  ]);
   assert.match(candidate.majorImpact.localUsage, /reference "pino"/);
   assert.match(renderSummary(plan), /Impacted workspaces: packages\/logger/);
 });
@@ -310,16 +313,16 @@ test('maps API, Board, UI and workflow dependents onto the lanes that must re-ve
     'packages/ui',
   ]);
   assert.deepEqual(plan.groups.runtime[0].majorImpact.testImpacts, [
-    'pnpm typecheck',
-    'pnpm test:unit:built',
-    'pnpm test:integration:built',
-    'pnpm test:e2e:built',
-    'pnpm test:ui-catalog',
-    'pnpm test:ui-budget',
-    'pnpm test:action-pins',
-    'pnpm test:workflow-trust',
-    'pnpm test:ci-gate',
-    'pnpm automation:check:action-tags',
+    'bun run typecheck',
+    'bun run test:unit:built',
+    'bun run test:integration:built',
+    'bun run test:e2e:built',
+    'bun run test:ui-catalog',
+    'bun run test:ui-budget',
+    'bun run test:action-pins',
+    'bun run test:workflow-trust',
+    'bun run test:ci-gate',
+    'bun run automation:check:action-tags',
   ]);
 });
 

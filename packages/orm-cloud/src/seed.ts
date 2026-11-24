@@ -1,4 +1,5 @@
 import type { AddonSeedManifest, SeedContext, SeedResult } from '@moonwitness/orm-base';
+import { DEFAULT_CONTROL_PLANE_URL } from '@moonwitness/types';
 import type { Knex } from 'knex';
 
 interface CloudProviderSeedRow {
@@ -15,7 +16,7 @@ const PROVIDER_REFERENCE_ROWS: CloudProviderSeedRow[] = [
     code: 'docker_agent',
     name: 'Local Docker Agent (Control Plane)',
     type: 'docker_agent',
-    endpoint: 'http://127.0.0.1:3003',
+    endpoint: DEFAULT_CONTROL_PLANE_URL,
     region: 'local',
     is_active: true,
   },

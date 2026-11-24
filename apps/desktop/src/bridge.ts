@@ -1,5 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { AccessDeniedError, ValidationError, type Domain } from '@moonwitness/types';
+import {
+  AccessDeniedError,
+  DEFAULT_BOARD_ORIGIN,
+  DEFAULT_LOCALHOST_BOARD_ORIGIN,
+  ValidationError,
+  type Domain,
+} from '@moonwitness/types';
 import { LocalSidecarController } from './local-sidecar.js';
 import { LocalMcpHostRegistry } from './mcp-host.js';
 import { DesktopRiskGate, NativeHumanApprovalIssuer, isLoopbackEndpointUrl } from './risk-gate.js';
@@ -156,8 +162,8 @@ export class DesktopEventStreamHub {
 }
 
 export const DEFAULT_ALLOWED_IPC_ORIGINS: readonly string[] = Object.freeze([
-  'http://127.0.0.1:5173',
-  'http://localhost:5173',
+  DEFAULT_BOARD_ORIGIN,
+  DEFAULT_LOCALHOST_BOARD_ORIGIN,
   'tauri://localhost',
   'http://tauri.localhost',
   'https://tauri.localhost',

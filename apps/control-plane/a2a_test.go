@@ -11,6 +11,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/hex"
 	"encoding/json"
+	"log"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
@@ -742,5 +743,45 @@ func TestA2AMethodNotAllowed(t *testing.T) {
 	h.mgr.HandleDelegate()(rec, req)
 	if rec.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("expected 405, got %d", rec.Code)
+	}
+}
+
+func TestA2ADelegateLogSanitizationStripsNewlines(t *testing.T) {
+	now := time.Date(2026, 11, 23, 10, 0, 0, 0, time.UTC)
+	h := newA2ATestHarness(t, nil, now)
+
+	var logBuf bytes.Buffer
+	origOut := log.Writer()
+	log.SetOutput(&logBuf)
+	t.Cleanup(func() { log.SetOutput(origOut) })
+
+	// 1) Rejection path with newline injection attempt in RemoteAddr.
+	body := buildSignedTestEnvelope(t, nil, testA2ASecret, now)
+	rec := h.request(t, body, func(r *http.Request) {
+		r.RemoteAddr = "203.0.113.5:1234\r\nforged=log\nentry"
+	})
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403, got %d", rec.Code)
+	}
+
+	// 2) Forward failure path with newline injection attempt in MessageID.
+	hFail := newA2ATestHarness(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(A2AErrorResponse{Error: "bad", ReasonCode: "INVALID_ENVELOPE"})
+	}, now)
+	injectedID := "msg-1\r\nFAKE_AUDIT=true"
+	body2 := buildSignedTestEnvelope(t, map[string]any{"messageId": injectedID}, testA2ASecret, now)
+	rec2 := hFail.request(t, body2, nil)
+	if rec2.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", rec2.Code)
+	}
+
+	logged := logBuf.String()
+	lines := strings.Split(strings.TrimSpace(logged), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("expected exactly 2 log lines (no injected newlines), got %d:\n%s", len(lines), logged)
+	}
+	if strings.Contains(logged, "\r") {
+		t.Fatalf("log output contained carriage return: %q", logged)
 	}
 }

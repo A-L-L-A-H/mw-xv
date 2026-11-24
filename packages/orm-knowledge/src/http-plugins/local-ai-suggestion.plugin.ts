@@ -14,18 +14,10 @@ import {
   researchSuggestionListMaxLimit,
   storeResearchSuggestions,
 } from '../research-suggestion-store.js';
+import { hasValidationError } from './helpers.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function hasValidationError(request: unknown): boolean {
-  return (
-    typeof request === 'object' &&
-    request !== null &&
-    'validationError' in request &&
-    Boolean((request as { readonly validationError?: unknown }).validationError)
-  );
 }
 
 const sources = [

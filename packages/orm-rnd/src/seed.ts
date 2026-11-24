@@ -48,7 +48,7 @@ export async function seedRnd(ctx: { db: Knex; options?: RndSeedOptions }): Prom
   const db = ctx.db;
   let inserted = 0;
   let updated = 0;
-  let skipped = 0;
+  const skipped = 0;
 
   // Seed ResearchProgram - upsert by code
   const existingProgram = await db(ResearchProgram.tableName)

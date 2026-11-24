@@ -218,7 +218,7 @@ function runPostgresTool(command, args, options = {}) {
 
 function run(command, args, options = {}) {
   const resolved =
-    command === 'pnpm' && process.platform === 'win32'
+    command === 'bun'
       ? resolvePackageManager()
       : { command, prefixArgs: [], shell: false };
   if (!resolved) throw new Error(`Could not resolve executable: ${command}`);
@@ -246,8 +246,8 @@ function run(command, args, options = {}) {
 
 function invokeFixture(mode, databaseUrl) {
   const rawOutput = run(
-    'pnpm',
-    ['--filter', '@moonwitness/api', 'exec', 'tsx', 'src/commands/restore-drill-fixture.ts', mode],
+    'bun',
+    ['x', '--cwd', 'apps/api', 'tsx', 'src/commands/restore-drill-fixture.ts', mode],
     {
       env: {
         ...process.env,

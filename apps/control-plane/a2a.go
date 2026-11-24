@@ -804,7 +804,7 @@ func (m *A2AManager) HandleDelegate() http.HandlerFunc {
 		}
 		if rej != nil {
 			redactedMsg := RedactA2ASecret(rej.message, m.signingSecret)
-			log.Printf("a2a delegate rejected reason=%s remote=%s msg=%s", rej.reasonCode, SanitizeLogValue(r.RemoteAddr), SanitizeLogValue(redactedMsg))
+			log.Printf("a2a delegate rejected reason=%s remote=%s msg=%s", SanitizeLogValue(rej.reasonCode), SanitizeLogValue(r.RemoteAddr), SanitizeLogValue(redactedMsg))
 			writeA2AError(w, rej.status, rej.reasonCode, redactedMsg)
 			return
 		}
@@ -815,7 +815,7 @@ func (m *A2AManager) HandleDelegate() http.HandlerFunc {
 
 		receipt, fwdRej := m.forward(ctx, body, r.Header, env)
 		if fwdRej != nil {
-			log.Printf("a2a delegate forward failed reason=%s messageId=%s", fwdRej.reasonCode, SanitizeLogValue(RedactA2ASecret(env.MessageID, m.signingSecret)))
+			log.Printf("a2a delegate forward failed reason=%s messageId=%s", SanitizeLogValue(fwdRej.reasonCode), SanitizeLogValue(RedactA2ASecret(env.MessageID, m.signingSecret)))
 			writeA2AError(w, fwdRej.status, fwdRej.reasonCode, fwdRej.message)
 			return
 		}

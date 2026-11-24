@@ -48,7 +48,14 @@ import {
   type EpisodicMemoryItem,
   type RedTeamScenario,
 } from '@moonwitness/ai-runtime';
-import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moonwitness/types';
+import {
+  DEFAULT_BOARD_ORIGIN,
+  DEFAULT_LOCALHOST_BOARD_ORIGIN,
+  isRecord,
+  PlatformError,
+  ValidationError,
+  type JsonObject,
+} from '@moonwitness/types';
 import { A2AMeshClient } from './a2a-client.js';
 import { searchHybridLocalMemory, type HybridMemoryRecord } from './hybrid-memory.js';
 import { DESKTOP_ADDONS, type LocalSidecarController } from './local-sidecar.js';
@@ -148,8 +155,8 @@ const STATIC_ALLOWED_CORS_ORIGINS: ReadonlySet<string> = new Set([
   'tauri://localhost',
   'http://tauri.localhost',
   'https://tauri.localhost',
-  'http://127.0.0.1:5173',
-  'http://localhost:5173',
+  DEFAULT_BOARD_ORIGIN,
+  DEFAULT_LOCALHOST_BOARD_ORIGIN,
 ]);
 
 const DEFAULT_STAGES: readonly {

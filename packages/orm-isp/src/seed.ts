@@ -36,7 +36,7 @@ export async function seed(ctx: SeedContext): Promise<SeedResult> {
   const companyId = ctx.companyId ?? DEFAULT_COMPANY_ID;
   let inserted = 0;
   let updated = 0;
-  let skipped = 0;
+  const skipped = 0;
 
   for (const ispType of ISP_TYPE_CATALOG) {
     const existing = await db('isp_isp_types').where({ code: ispType.code }).first('id');

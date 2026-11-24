@@ -5,18 +5,18 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 export const COMPATIBILITY_REVIEW_GATES = [
-  'pnpm lint',
-  'pnpm format:check',
-  'pnpm typecheck',
-  'pnpm test:unit:built',
-  'pnpm test:integration:built',
-  'pnpm test:e2e:built',
-  'pnpm test:ui-catalog',
-  'pnpm test:ui-budget',
-  'pnpm test:architecture',
-  'pnpm architecture:check:built',
-  'pnpm docs:check:built',
-  'pnpm test:docs-portal',
+  'bun run lint',
+  'bun run format:check',
+  'bun run typecheck',
+  'bun run test:unit:built',
+  'bun run test:integration:built',
+  'bun run test:e2e:built',
+  'bun run test:ui-catalog',
+  'bun run test:ui-budget',
+  'bun run test:architecture',
+  'bun run architecture:check:built',
+  'bun run docs:check:built',
+  'bun run test:docs-portal',
 ];
 
 /** Candidate batches stay small so one update never mixes majors or unrelated lanes. */
@@ -25,32 +25,32 @@ export const DEFAULT_BATCH_LIMIT = 3;
 const repoRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
 const GATE_BY_WORKSPACE = [
-  { prefix: 'apps/api', gates: ['pnpm test:integration:built', 'pnpm test:e2e:built'] },
-  { prefix: 'apps/board', gates: ['pnpm test:e2e:built'] },
-  { prefix: 'apps/docs', gates: ['pnpm docs:check:built', 'pnpm test:docs-portal'] },
-  { prefix: 'apps/ui-catalog', gates: ['pnpm test:ui-catalog'] },
-  { prefix: 'packages/ui', gates: ['pnpm test:ui-catalog', 'pnpm test:ui-budget'] },
-  { prefix: 'packages/assets', gates: ['pnpm test:assets'] },
+  { prefix: 'apps/api', gates: ['bun run test:integration:built', 'bun run test:e2e:built'] },
+  { prefix: 'apps/board', gates: ['bun run test:e2e:built'] },
+  { prefix: 'apps/docs', gates: ['bun run docs:check:built', 'bun run test:docs-portal'] },
+  { prefix: 'apps/ui-catalog', gates: ['bun run test:ui-catalog'] },
+  { prefix: 'packages/ui', gates: ['bun run test:ui-catalog', 'bun run test:ui-budget'] },
+  { prefix: 'packages/assets', gates: ['bun run test:assets'] },
   {
     prefix: '.github',
     gates: [
-      'pnpm test:action-pins',
-      'pnpm test:workflow-trust',
-      'pnpm test:ci-gate',
-      'pnpm automation:check:action-tags',
+      'bun run test:action-pins',
+      'bun run test:workflow-trust',
+      'bun run test:ci-gate',
+      'bun run automation:check:action-tags',
     ],
   },
 ];
 
-const FALLBACK_GATES = ['pnpm typecheck', 'pnpm test:unit:built'];
+const FALLBACK_GATES = ['bun run typecheck', 'bun run test:unit:built'];
 
 const GATE_ORDER = [
   ...COMPATIBILITY_REVIEW_GATES,
-  'pnpm test:assets',
-  'pnpm test:action-pins',
-  'pnpm test:workflow-trust',
-  'pnpm test:ci-gate',
-  'pnpm automation:check:action-tags',
+  'bun run test:assets',
+  'bun run test:action-pins',
+  'bun run test:workflow-trust',
+  'bun run test:ci-gate',
+  'bun run automation:check:action-tags',
 ];
 
 function toRepoPath(location) {
@@ -84,11 +84,17 @@ function gatesForWorkspaces(paths) {
 
 let virtualStoreEntries;
 function installedManifest(name) {
-  // pnpm's outdated JSON carries no registry metadata, so the only upstream
-  // pointer available offline is the manifest already resolved in this store.
+  // Check hoisted node_modules first, then Bun's isolated .bun store.
+  try {
+    return JSON.parse(
+      readFileSync(resolve(repoRoot, 'node_modules', ...name.split('/'), 'package.json'), 'utf8')
+    );
+  } catch {
+    // Fall back to isolated store entries if not hoisted at root.
+  }
   if (virtualStoreEntries === undefined) {
     try {
-      virtualStoreEntries = readdirSync(resolve(repoRoot, 'node_modules/.pnpm'));
+      virtualStoreEntries = readdirSync(resolve(repoRoot, 'node_modules/.bun'));
     } catch {
       virtualStoreEntries = null;
     }
@@ -100,7 +106,7 @@ function installedManifest(name) {
     try {
       return JSON.parse(
         readFileSync(
-          resolve(repoRoot, 'node_modules/.pnpm', entry, 'node_modules', name, 'package.json'),
+          resolve(repoRoot, 'node_modules/.bun', entry, 'node_modules', name, 'package.json'),
           'utf8'
         )
       );
@@ -145,7 +151,7 @@ function compatibilityProbe(name, group) {
   }
   const specifiers = new Set();
   const files = new Set();
-  for (const line of output.split('\n')) {
+  for (const line of output.split(/\r?\n/u)) {
     const located = /^([^:]+):(\d+):(.*)$/.exec(line);
     if (!located) continue;
     const specifier = /['`]([^'`\\]+)['`]/.exec(located[3]);
@@ -497,13 +503,13 @@ export function renderSummary(plan) {
 function loadOutdatedJson() {
   let stdout;
   try {
-    stdout = execSync('pnpm outdated --recursive --format json', {
+    stdout = execSync('bun outdated --recursive', {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'inherit'],
     });
   } catch (error) {
     if (error.status !== 1 || typeof error.stdout !== 'string') {
-      throw new Error(`pnpm outdated failed (exit ${String(error.status)}).`, { cause: error });
+      throw new Error(`bun outdated failed (exit ${String(error.status)}).`, { cause: error });
     }
     stdout = error.stdout;
   }
@@ -514,7 +520,7 @@ function loadOutdatedJson() {
     }
     return parsed;
   } catch (error) {
-    throw new Error('pnpm outdated did not return valid JSON.', { cause: error });
+    throw new Error('bun outdated did not return valid JSON.', { cause: error });
   }
 }
 

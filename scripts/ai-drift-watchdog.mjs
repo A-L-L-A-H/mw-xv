@@ -9,6 +9,7 @@ import {
   findBoardRuntimeImportViolations,
   findDesktopNonOverlapViolations,
 } from './check-desktop-non-overlap.mjs';
+import { resolvePackageManager } from './package-manager.mjs';
 
 const defaultRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EXPECTED_GATES = ['G0', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6'];
@@ -38,15 +39,17 @@ async function loadAiEvaluationModule(workspaceRoot = defaultRoot) {
   const aiRuntimeDist = path.join(workspaceRoot, 'packages/ai-runtime/dist/index.js');
 
   if (!existsSync(aiEvaluationDist) || !existsSync(aiRuntimeDist)) {
-    const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
-    execFileSync(
-      pnpmCmd,
-      ['--filter', '@moonwitness/ai-runtime', '--filter', '@moonwitness/ai-evaluation', 'build'],
-      {
+    const packageManager = resolvePackageManager();
+    if (!packageManager) {
+      throw new Error('Could not resolve package manager (bun) to build AI evaluation packages.');
+    }
+    for (const pkg of ['@moonwitness/ai-runtime', '@moonwitness/ai-evaluation']) {
+      execFileSync(packageManager.command, [...packageManager.prefixArgs, '--filter', pkg, 'build'], {
         cwd: workspaceRoot,
         stdio: 'ignore',
-      }
-    );
+        ...(packageManager.shell ? { shell: true } : {}),
+      });
+    }
   }
 
   return await import(pathToFileURL(aiEvaluationDist).href);

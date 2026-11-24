@@ -36,7 +36,7 @@ test('schema, workflow, and dependency changes require approval regardless of co
   const expectedTiers = new Map([
     ['packages/orm-base/src/models/user.ts', 'runtime-data'],
     ['.github/workflows/promote.yml', 'release-surface'],
-    ['pnpm-lock.yaml', 'runtime-data'],
+    ['bun.lock', 'runtime-data'],
   ]);
   for (const [filePath, tier] of expectedTiers) {
     const result = classifyPromotionRisk({
@@ -53,7 +53,7 @@ test('the release surface outranks product code within one diff', () => {
     commits: [commit('c4', 'fix(api): keep the response shape')],
     changes: [
       { status: 'M', path: 'apps/api/src/routes/partner.routes.ts' },
-      { status: 'M', path: '.github/actions/setup-pnpm/action.yml' },
+      { status: 'M', path: '.github/actions/setup-bun/action.yml' },
     ],
   });
 

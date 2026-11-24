@@ -325,7 +325,7 @@ export function inspectTrustedCheckoutPolicies({
       findings.push('Release dry-run must only run from dev.');
     if (!releasePlan.includes('permissions:\n  contents: read'))
       findings.push('Release dry-run workflow must remain read-only.');
-    if (!releasePlan.includes('pnpm release:dry-run'))
+    if (!releasePlan.includes('bun run release:dry-run'))
       findings.push('Release dry-run workflow must use the shared release planner.');
     if (!releasePlan.includes('actions/upload-artifact@'))
       findings.push('Release dry-run workflow must retain a reviewable plan artifact.');
@@ -892,7 +892,7 @@ async function readOptionalFile(filePath) {
     if (error?.code === 'ENOENT') {
       const relative = path.relative(repositoryRoot, filePath).replaceAll('\\', '/');
       if (KNOWN_ABSENT_OPTIONAL_FILES.has(relative)) return '';
-      throw new Error(`Expected optional policy file is missing: ${relative}`);
+      throw new Error(`Expected optional policy file is missing: ${relative}`, { cause: error });
     }
     throw error;
   }

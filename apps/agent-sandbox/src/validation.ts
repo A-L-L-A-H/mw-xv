@@ -8,7 +8,13 @@ const COMMIT_SHA = /^[a-f0-9]{40,64}$/u;
 const LABEL = /^[A-Za-z0-9][A-Za-z0-9._-]{0,47}$/u;
 const PINNED_IMAGE =
   /^(?:[a-z0-9]+(?:[._-][a-z0-9]+)*(?::[0-9]{1,5})?\/)*[a-z0-9]+(?:[._-][a-z0-9]+)*@sha256:[a-f0-9]{64}$/u;
-const CONTROL_CHAR = /[\u0000-\u001f\u007f]/u;
+function hasControlCharacter(value: string): boolean {
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code <= 0x1f || code === 0x7f) return true;
+  }
+  return false;
+}
 const SENSITIVE_SEGMENT =
   /^(?:\.git|\.env(?:\..*)?|\.npmrc|\.pypirc|\.netrc|_netrc|\.aws|\.ssh|\.gnupg|\.docker|\.kube|\.secrets|secrets|credentials(?:\.json)?|service-account[^/]*\.json|id_(?:rsa|dsa|ecdsa|ed25519)(?:\.pub)?|\.mw-sandbox)$/iu;
 const SENSITIVE_SUFFIX = /\.(?:pem|key|p12|pfx|jks|keystore)$/iu;
@@ -87,7 +93,7 @@ export function isSensitiveWorkspacePath(relativePath: string): boolean {
 export function normalizeWorkspacePath(value: unknown, label = 'path'): string {
   const raw = requiredString(value, label, 1024);
   if (
-    CONTROL_CHAR.test(raw) ||
+    hasControlCharacter(raw) ||
     raw.includes('\\') ||
     raw.includes(':') ||
     raw.startsWith('/') ||
@@ -333,7 +339,7 @@ export function validateDiffParams(value: unknown): {
 export function validateCommitParams(value: unknown): { readonly runId: string; readonly message: string } {
   assertRecord(value, 'params', ['runId', 'message']);
   const message = requiredString(value.message, 'message', WORKSPACE_LIMITS.commitMessageBytes);
-  if (CONTROL_CHAR.test(message.replaceAll('\n', '').replaceAll('\t', ''))) {
+  if (hasControlCharacter(message.replaceAll('\n', '').replaceAll('\t', ''))) {
     invalid('message contains control characters');
   }
   return { runId: validateRunId(value.runId), message: message.trim() };

@@ -22,6 +22,14 @@ const WEAK_SECRETS = new Set([
 
 export type SecretQuality = 'missing' | 'malformed' | 'weak' | 'ok';
 
+function hasControlCharacter(value: string): boolean {
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code <= 0x1f || code === 0x7f) return true;
+  }
+  return false;
+}
+
 /**
  * Classifies secret material without ever returning or logging the value.
  * Used by privileged-operation and startup gates so malformed/weak secrets fail closed.
@@ -29,7 +37,7 @@ export type SecretQuality = 'missing' | 'malformed' | 'weak' | 'ok';
 export function classifySecret(value: string | undefined | null): SecretQuality {
   if (!value || value.trim().length === 0) return 'missing';
   const trimmed = value.trim();
-  if (/[\u0000-\u001F\u007F]/u.test(trimmed)) return 'malformed';
+  if (hasControlCharacter(trimmed)) return 'malformed';
   if (
     trimmed.length < MIN_SECRET_LENGTH ||
     WEAK_SECRETS.has(trimmed.toLowerCase()) ||

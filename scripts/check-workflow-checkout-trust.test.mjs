@@ -74,7 +74,7 @@ const releasePlan = `
     if: github.ref == 'refs/heads/dev'
 permissions:
   contents: read
-      - run: pnpm release:dry-run -- --output report.json
+      - run: bun run release:dry-run -- --output report.json
       - uses: actions/upload-artifact@0123456789012345678901234567890123456789
 `;
 const promote = `

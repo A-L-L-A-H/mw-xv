@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { resolvePackageManager } from '../package-manager.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -50,9 +51,9 @@ export const KNOWLEDGE_GATE_STEPS = [
     allowPostgresSkipWhenUnset: false,
     maxAllowedSkippedTests: 0,
     commands: [
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/knowledge', 'build'] },
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/knowledge', 'typecheck'] },
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/knowledge', 'test', '--', '--maxWorkers=1'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/knowledge', 'build'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/knowledge', 'typecheck'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/knowledge', 'test', '--', '--maxWorkers=1'] },
     ],
   },
   {
@@ -61,9 +62,9 @@ export const KNOWLEDGE_GATE_STEPS = [
     // 3 POSIX mode-bit tests in private-archive-manifest.test.ts skip only on win32; Linux CI requires 0 skips.
     maxAllowedSkippedTests: process.platform === 'win32' ? 3 : 0,
     commands: [
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/corpus', 'build'] },
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/corpus', 'typecheck'] },
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/corpus', 'test', '--', '--maxWorkers=1'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/corpus', 'build'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/corpus', 'typecheck'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/corpus', 'test', '--', '--maxWorkers=1'] },
     ],
   },
   {
@@ -71,9 +72,9 @@ export const KNOWLEDGE_GATE_STEPS = [
     allowPostgresSkipWhenUnset: false,
     maxAllowedSkippedTests: 0,
     commands: [
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/research', 'build'] },
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/research', 'typecheck'] },
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/research', 'test', '--', '--maxWorkers=1'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/research', 'build'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/research', 'typecheck'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/research', 'test', '--', '--maxWorkers=1'] },
     ],
   },
   {
@@ -82,9 +83,9 @@ export const KNOWLEDGE_GATE_STEPS = [
     // 16 conditional matrix branches in prompt-injection.test.ts (it.runIf per LMI-01..13 expectation profile).
     maxAllowedSkippedTests: 16,
     commands: [
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/local-ai', 'build'] },
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/local-ai', 'typecheck'] },
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/local-ai', 'test', '--', '--maxWorkers=1'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/local-ai', 'build'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/local-ai', 'typecheck'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/local-ai', 'test', '--', '--maxWorkers=1'] },
     ],
   },
   {
@@ -92,9 +93,9 @@ export const KNOWLEDGE_GATE_STEPS = [
     allowPostgresSkipWhenUnset: true,
     maxAllowedSkippedTests: 0,
     commands: [
-      { bin: 'pnpm', args: ['--filter', '@moonwitness/orm-knowledge', 'build'] },
+      { bin: 'bun', args: ['--filter', '@moonwitness/orm-knowledge', 'build'] },
       {
-        bin: 'pnpm',
+        bin: 'bun',
         args: ['--filter', '@moonwitness/orm-knowledge', 'test', '--', '--maxWorkers=1'],
       },
     ],
@@ -125,17 +126,25 @@ export const KNOWLEDGE_GATE_STEPS = [
 ];
 
 function executeCommand(command, cwd) {
-  const isBun = command.bin === 'pnpm';
+  const isBun = command.bin === 'bun';
   const env = {
     ...process.env,
     AI_MODE: 'disabled',
   };
-  const bunArgs = ['--filter', ...command.args.slice(1)];
+  const packageManager = isBun ? resolvePackageManager() : null;
+  if (isBun && !packageManager) {
+    return {
+      exitCode: 1,
+      stdout: '',
+      stderr: 'Could not resolve package manager (bun).',
+      error: 'Could not resolve package manager (bun).',
+    };
+  }
   const result = isBun
-    ? spawnSync('bun', bunArgs, {
+    ? spawnSync(packageManager.command, [...packageManager.prefixArgs, ...command.args], {
         cwd,
         encoding: 'utf8',
-        shell: process.platform === 'win32',
+        shell: packageManager.shell,
         maxBuffer: 16 * 1024 * 1024,
         env,
       })

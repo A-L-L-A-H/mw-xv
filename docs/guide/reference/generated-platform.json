@@ -883,7 +883,7 @@
       "ui:design:check": "bun run test:ui-design-check && node scripts/check-ui-design-system.mjs",
       "ui:design:report": "node scripts/check-ui-design-system.mjs --json",
       "ui:visual:update": "bun --filter @moonwitness/ui-catalog build && bunx --cwd apps/ui-catalog playwright test --update-snapshots",
-      "verify": "bun run ui:check && bun run lint:ui && bun run lint && bun run format:check && bun run typecheck && bun run test:unit:built && bun run test:architecture && bun run architecture:check:built && bun run docs:build:built"
+      "verify": "bun run node:parity --strict && bun run automation:check:secrets && bun run automation:check:action-pins && bun run automation:check:action-tags && bun run ui:check && bun run lint:ui && bun run lint && bun run format:check && bun run typecheck && bun run test:unit:built && bun run test:architecture && bun run architecture:check:built && bun run docs:build:built"
     }
   },
   "environment": [
@@ -10488,5 +10488,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "5b659b319539c29284c2154274984d52e853c699b6fa947cf17f4f70e91e066f"
+  "generatedFromSha256": "9edd61d9c6a5c32e967ac311614bc47ef543e9d9601ccfd00c84f86cf0b3ba0b"
 }

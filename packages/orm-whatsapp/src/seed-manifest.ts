@@ -9,7 +9,7 @@ export const whatsappSeedManifest: AddonSeedManifest = {
     const { db } = ctx;
     let inserted = 0;
     let updated = 0;
-    let skipped = 0;
+    const skipped = 0;
 
     for (const template of bundle.templates) {
       const existing = await db('whatsapp_transactional_templates').where({ id: template.id }).first();

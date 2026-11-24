@@ -76,7 +76,7 @@ export async function seedComplianceReferenceData(ctx: SeedContext): Promise<See
   const db = ctx.db as Knex;
   let inserted = 0;
   let updated = 0;
-  let skipped = 0;
+  const skipped = 0;
 
   const companyId = ctx.companyId ?? 1;
   const ownerId = ctx.ownerId ?? 1;

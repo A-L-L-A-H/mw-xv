@@ -26,19 +26,22 @@ describe('unit runner CI ownership', () => {
     assert.ok(jobsBlock);
     const jobNames = [...jobsBlock.matchAll(/^ {2}([a-z][\w-]+):\r?$/gmu)].map(([_, name]) => name);
     assert.deepEqual(jobNames, [
+      'secret-scan',
+      'static-analysis',
+      'dependency-audit',
       'quality-and-build',
       'unit-tests',
       'knowledge-gate',
       'postgres-integration',
       'dx-test',
     ]);
-    assert.match(jobsBlock, /pnpm test:unit:built/u);
+    assert.match(jobsBlock, /bun run test:unit:built/u);
   });
 
   it('keeps the asset scripts split the way the checks expect', () => {
     assert.match(
       rootPackage.scripts['test:assets'],
-      /test:assets:source && pnpm assets:check:docs/u
+      /test:assets:source && bun run assets:check:docs/u
     );
     assert.match(rootPackage.scripts['test:assets:source'], /export-doc-assets\.test\.mjs/u);
   });

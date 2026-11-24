@@ -9,18 +9,10 @@ import {
 } from '@moonwitness/local-ai';
 import { resolveCorpusDataRoot } from '../corpus-root.js';
 import { resolveConceptProfileEvidence } from '../research-review.js';
+import { hasValidationError } from './helpers.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function hasValidationError(request: unknown): boolean {
-  return (
-    typeof request === 'object' &&
-    request !== null &&
-    'validationError' in request &&
-    Boolean((request as { readonly validationError?: unknown }).validationError)
-  );
 }
 
 const quranReference = Object.freeze({

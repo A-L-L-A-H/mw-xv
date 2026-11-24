@@ -1,6 +1,6 @@
 ﻿import type { Knex } from 'knex';
 import { SignalSource, type SignalSourceKind } from './models.js';
-import type { AddonSeedManifest, SeedContext, SeedResult } from '@moonwitness/orm-base';
+import { resolveInsertedId, type AddonSeedManifest, type SeedContext, type SeedResult } from '@moonwitness/orm-base';
 
 export const SIGNAL_SEED_VERSION = '1.0.0';
 
@@ -79,20 +79,6 @@ export const SIGNAL_SOURCE_SEEDS: readonly SignalSourceSeed[] = [
 ];
 
 export const SIGNAL_SOURCE_SEED_COUNT = SIGNAL_SOURCE_SEEDS.length;
-
-function resolveInsertedId(inserted: readonly unknown[], context: string): number {
-  const value = inserted[0];
-  if (typeof value === 'number' && Number.isFinite(value)) return Number(value);
-  if (typeof value === 'bigint') return Number(value);
-  if (typeof value === 'string' && /^\d+$/.test(value)) return Number(value);
-  if (value && typeof value === 'object' && 'id' in value) {
-    const id = (value as { readonly id?: unknown }).id;
-    if (typeof id === 'number' && Number.isFinite(id)) return Number(id);
-    if (typeof id === 'bigint') return Number(id);
-    if (typeof id === 'string' && /^\d+$/.test(id)) return Number(id);
-  }
-  throw new Error(`Unable to resolve inserted id for ${context}`);
-}
 
 function parseCount(value: unknown): number {
   return Number(

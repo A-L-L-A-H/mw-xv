@@ -847,7 +847,7 @@ export async function runOfflineEvaluationGates(): Promise<OfflineEvaluationGate
   });
 
   let provenanceValid = false;
-  let provenanceDetail = 'validateEvaluationReport rejected the corpus';
+  let provenanceDetail: string;
   try {
     validateEvaluationReport(corpus);
     provenanceValid = true;

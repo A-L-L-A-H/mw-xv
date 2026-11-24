@@ -98,7 +98,7 @@
     "architecture:check:built": "node scripts/architecture/generate-diagrams.mjs --check",
     "test:architecture": "node --test scripts/architecture/*.test.mjs",
     "audit:workspace": "node scripts/audit-workspace.mjs",
-    "verify": "bun run ui:check && bun run lint:ui && bun run lint && bun run format:check && bun run typecheck && bun run test:unit:built && bun run test:architecture && bun run architecture:check:built && bun run docs:build:built",
+    "verify": "bun run node:parity --strict && bun run automation:check:secrets && bun run automation:check:action-pins && bun run automation:check:action-tags && bun run ui:check && bun run lint:ui && bun run lint && bun run format:check && bun run typecheck && bun run test:unit:built && bun run test:architecture && bun run architecture:check:built && bun run docs:build:built",
     "release:check": "node scripts/check-release.mjs",
     "automation:check:action-pins": "node scripts/check-action-pins.mjs",
     "automation:check:action-tags": "node scripts/check-action-tag-pins.mjs",

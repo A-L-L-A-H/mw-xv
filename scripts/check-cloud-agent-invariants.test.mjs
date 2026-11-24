@@ -73,10 +73,13 @@ test('forbidden vendored runtime/build paths are classified', () => {
   assert.equal(violations[0].code, 'SQLITE_RUNTIME_DATA');
 });
 
-test('vendor cannot join the pnpm workspace or main Docker context', () => {
-  assert.deepEqual(checkWorkspaceExclusion('packages:\n  - "packages/*"\n  - "apps/*"\n'), []);
+test('vendor cannot join the workspace or main Docker context', () => {
+  assert.deepEqual(
+    checkWorkspaceExclusion(JSON.stringify({ workspaces: ['packages/*', 'apps/*'] })),
+    []
+  );
   assert.ok(
-    codes(checkWorkspaceExclusion('packages:\n  - "vendor/freellmapi"\n')).includes(
+    codes(checkWorkspaceExclusion(JSON.stringify({ workspaces: ['vendor/freellmapi'] }))).includes(
       'VENDOR_IN_PNPM_WORKSPACE'
     )
   );

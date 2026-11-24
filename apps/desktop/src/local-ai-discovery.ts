@@ -1,3 +1,5 @@
+import { DEFAULT_OLLAMA_URL } from '@moonwitness/types';
+
 export type LocalAiProviderKind = 'ollama' | 'lmstudio' | 'vllm';
 
 export interface LocalAiProviderTarget {
@@ -49,7 +51,7 @@ export const DEFAULT_LOCAL_AI_PROVIDERS: readonly LocalAiProviderTarget[] = [
     id: 'ollama',
     name: 'Ollama',
     kind: 'ollama',
-    endpoint: 'http://127.0.0.1:11434/api/tags',
+    endpoint: `${DEFAULT_OLLAMA_URL}/api/tags`,
   },
   {
     id: 'lmstudio',

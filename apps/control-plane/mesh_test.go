@@ -226,3 +226,45 @@ func TestMeshStatusMisconfiguredFailClosed(t *testing.T) {
 		t.Fatal("expected non-empty error for misconfigured mesh")
 	}
 }
+
+func TestSanitizeLogValueStripsNewlinesAndControlChars(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{
+			name: "crlf log injection",
+			in:   "req-1\r\nFAKE_LOG level=info msg=ok\nnext\rline",
+			want: "req-1  FAKE_LOG level=info msg=ok next line",
+		},
+		{
+			name: "other control chars and DEL",
+			in:   "abc\x00\x07\x1b[31mred\x7f",
+			want: "abc   [31mred ",
+		},
+		{
+			name: "clean string preserved",
+			in:   "100.64.0.10:3003",
+			want: "100.64.0.10:3003",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := SanitizeLogValue(tc.in)
+			if got != tc.want {
+				t.Fatalf("SanitizeLogValue(%q) = %q, want %q", tc.in, got, tc.want)
+			}
+			if strings.ContainsAny(got, "\r\n") {
+				t.Fatalf("SanitizeLogValue output still contains newline: %q", got)
+			}
+		})
+	}
+
+	longInput := strings.Repeat("a", 600) + "\r\n"
+	longOut := SanitizeLogValue(longInput)
+	if len(longOut) != 512 {
+		t.Fatalf("expected truncated length 512, got %d", len(longOut))
+	}
+}

@@ -3,6 +3,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { AuditLog } from '@moonwitness/orm-base';
 import { Subscription } from '@moonwitness/orm-subscription';
+import { DEFAULT_ISP_SERVICE_URL } from '@moonwitness/types';
 import { ispAuthHeaders, resolveIspAdminToken } from './auth.js';
 import { meterSessionsToSubscriptionInvoices } from './metering.js';
 import {
@@ -92,7 +93,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
     const baseUrl = (
       options.ispServiceUrl ??
       process.env.MW_ISP_URL ??
-      'http://127.0.0.1:3002'
+      DEFAULT_ISP_SERVICE_URL
     ).replace(/\/+$/u, '');
     const fetchImpl = options.fetchImpl ?? globalThis.fetch;
     const adminToken = resolveIspAdminToken({

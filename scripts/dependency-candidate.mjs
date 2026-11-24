@@ -33,9 +33,9 @@ function compareVersions(left, right) {
 }
 
 function command(executable, args, cwd, capture = false) {
-  const packageManager = executable === 'pnpm' ? resolvePackageManager() : undefined;
-  if (executable === 'pnpm' && !packageManager) {
-    throw new Error('Run dependency candidate commands through pnpm on this platform.');
+  const packageManager = executable === 'bun' ? resolvePackageManager() : undefined;
+  if (executable === 'bun' && !packageManager) {
+    throw new Error('Run dependency candidate commands through bun on this platform.');
   }
   const commandName = packageManager?.command ?? executable;
   const commandArgs = [...(packageManager?.prefixArgs ?? []), ...args];
@@ -67,10 +67,15 @@ async function manifestAt(path) {
 }
 
 async function workspaceManifestPaths(root) {
-  const patterns = (await readFile(join(root, 'pnpm-workspace.yaml'), 'utf8'))
-    .split(/\r?\n/u)
-    .map((line) => /^\s*-\s*['"]?([^'"#]+)['"]?\s*$/u.exec(line)?.[1]?.trim())
-    .filter((pattern) => pattern?.endsWith('/*'));
+  const rootManifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+  const rawWorkspaces = Array.isArray(rootManifest.workspaces)
+    ? rootManifest.workspaces
+    : Array.isArray(rootManifest.workspaces?.packages)
+      ? rootManifest.workspaces.packages
+      : [];
+  const patterns = rawWorkspaces
+    .map((entry) => String(entry).trim())
+    .filter((pattern) => pattern.endsWith('/*'));
   const manifests = [];
   for (const pattern of patterns) {
     const directory = join(root, pattern.slice(0, -2));
@@ -157,13 +162,13 @@ export async function applyCandidate({
     manifest[declaration.section][packageName] = exactVersion;
     await writeFile(declaration.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   }
-  execute('pnpm', ['--dir', root, 'install', '--lockfile-only', '--ignore-scripts'], root);
+  execute('bun', ['install', '--lockfile-only', '--ignore-scripts'], root);
 
   const manifestRelatives = [];
   for (const declaration of changedDeclarations) {
     const manifestAfter = await manifestAt(declaration.manifestPath);
     if (manifestAfter[declaration.section][packageName] !== exactVersion) {
-      throw new Error(`pnpm did not save ${packageName} at the requested exact version.`);
+      throw new Error(`bun did not save ${packageName} at the requested exact version.`);
     }
     manifestRelatives.push(relative(root, declaration.manifestPath).replaceAll('\\', '/'));
   }
@@ -173,7 +178,7 @@ export async function applyCandidate({
   ]
     .filter((path) => !path.startsWith('node_modules/'))
     .sort();
-  const allowedFiles = [...manifestRelatives, 'pnpm-lock.yaml'].sort();
+  const allowedFiles = [...manifestRelatives, 'bun.lock'].sort();
   if (
     changedFiles.length !== allowedFiles.length ||
     changedFiles.some((path, index) => path !== allowedFiles[index])
@@ -206,15 +211,15 @@ export async function runCandidate({
     root,
     execute,
   });
-  execute('pnpm', ['--dir', root, 'install', '--frozen-lockfile'], root);
-  const playwrightInstall = ['--dir', root, 'exec', 'playwright', 'install'];
+  execute('bun', ['install', '--frozen-lockfile'], root);
+  const playwrightInstall = ['x', 'playwright', 'install'];
   if (platform === 'linux') playwrightInstall.push('--with-deps');
   playwrightInstall.push('chromium');
-  execute('pnpm', playwrightInstall, root);
+  execute('bun', playwrightInstall, root);
   for (const gate of COMPATIBILITY_REVIEW_GATES) {
-    execute('pnpm', ['--dir', root, ...gate.split(' ').slice(1)], root);
+    execute('bun', gate.split(' ').slice(1), root);
   }
-  execute('pnpm', ['--dir', root, '--filter', '@moonwitness/board', 'lint'], root);
+  execute('bun', ['--filter', '@moonwitness/board', 'lint'], root);
   execute('node', ['scripts/smoke-containers.mjs'], root);
   return result;
 }

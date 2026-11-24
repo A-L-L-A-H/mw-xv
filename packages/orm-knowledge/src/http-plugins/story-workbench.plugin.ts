@@ -13,6 +13,7 @@ import {
   type StoryMediaReference,
   type StoryVersionDocument,
 } from '../story-version-store.js';
+import { hasValidationError } from './helpers.js';
 
 const storyIdPattern = '^mw:story:[a-z0-9][a-z0-9._-]{0,179}$';
 const mediaReferenceSchema = {
@@ -62,15 +63,6 @@ const errorSchema = {
   required: ['success', 'error'],
   properties: { success: { const: false }, error: { type: 'string' } },
 } as const;
-
-function hasValidationError(request: unknown): boolean {
-  return (
-    typeof request === 'object' &&
-    request !== null &&
-    'validationError' in request &&
-    Boolean((request as { readonly validationError?: unknown }).validationError)
-  );
-}
 
 function validateStoryPayload(value: unknown): ReturnType<typeof validateStoryVersion> {
   return validateStoryVersion(value);

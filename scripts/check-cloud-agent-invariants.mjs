@@ -230,6 +230,21 @@ function parseFlowList(rawValue) {
 }
 
 function workspaceIncludesVendor(source) {
+  if (source.trimStart().startsWith('{')) {
+    try {
+      const manifest = JSON.parse(source);
+      const rawWorkspaces = Array.isArray(manifest?.workspaces)
+        ? manifest.workspaces
+        : Array.isArray(manifest?.workspaces?.packages)
+          ? manifest.workspaces.packages
+          : [];
+      return rawWorkspaces.some((pattern) =>
+        typeof pattern === 'string' && workspacePatternIncludesVendor(pattern.trim())
+      );
+    } catch {
+      return false;
+    }
+  }
   const lines = source.split(/\r?\n/u);
   for (let index = 0; index < lines.length; index += 1) {
     const header = /^packages:\s*(.*)$/u.exec(lines[index]);
@@ -263,15 +278,15 @@ function workspacePatternIncludesVendor(pattern) {
 export function checkWorkspaceExclusion(source) {
   if (source === null || source === undefined) {
     return [
-      finding('MISSING_WORKSPACE_FILE', 'pnpm-workspace.yaml', 'pnpm-workspace.yaml is required.'),
+      finding('MISSING_WORKSPACE_FILE', 'package.json', 'package.json is required.'),
     ];
   }
   if (!workspaceIncludesVendor(source)) return [];
   return [
     finding(
       'VENDOR_IN_PNPM_WORKSPACE',
-      'pnpm-workspace.yaml',
-      'vendor/freellmapi must remain outside the pnpm workspace.'
+      'package.json',
+      'vendor/freellmapi must remain outside the workspace.'
     ),
   ];
 }
@@ -1124,11 +1139,11 @@ export async function evaluateCloudAgentInvariants({ rootDir = defaultRoot } = {
     ...findForbiddenVendoredPaths(vendorRelativePaths),
   ]);
 
-  const workspace = await readText(resolvedRoot, 'pnpm-workspace.yaml');
+  const workspace = await readText(resolvedRoot, 'package.json');
   addCheck(
-    'pnpm-workspace',
+    'bun-workspace',
     workspace.error
-      ? [readFinding('pnpm-workspace.yaml', workspace.error)]
+      ? [readFinding('package.json', workspace.error)]
       : checkWorkspaceExclusion(workspace.text)
   );
 

@@ -14,7 +14,7 @@ export const aiSeedManifest: AddonSeedManifest = {
 
     let inserted = 0;
     let updated = 0;
-    let skipped = 0;
+    const skipped = 0;
 
     for (const record of seedData) {
       const table = record.model.tableName;

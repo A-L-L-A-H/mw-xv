@@ -10,6 +10,7 @@ import {
   renderChangelogSection,
 } from './render-changelog.mjs';
 import { readCommitRange, resolveCommit } from './git-range.mjs';
+import { resolvePackageManager } from './package-manager.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const changelogPath = 'CHANGELOG.md';
@@ -275,38 +276,33 @@ async function main(args) {
     return;
   }
   if (apply && preparation.files.length) {
+    const packageManager = resolvePackageManager();
+    if (!packageManager) throw new Error('Could not resolve package manager (bun).');
+    const runBun = (bunArgs) =>
+      execFileSync(packageManager.command, [...packageManager.prefixArgs, ...bunArgs], {
+        cwd: repositoryRoot,
+        stdio: 'inherit',
+        ...(packageManager.shell ? { shell: true } : {}),
+      });
     for (const file of preparation.files)
       await writeFile(path.join(repositoryRoot, file.path), file.contents, 'utf8');
-    execFileSync('pnpm', ['install', '--frozen-lockfile'], {
-      cwd: repositoryRoot,
-      stdio: 'inherit',
-    });
-    execFileSync('pnpm', ['docs:generate'], { cwd: repositoryRoot, stdio: 'inherit' });
-    execFileSync('pnpm', ['release:check', `v${preparation.version}`], {
-      cwd: repositoryRoot,
-      stdio: 'inherit',
-    });
-    execFileSync('pnpm', ['docs:check'], { cwd: repositoryRoot, stdio: 'inherit' });
-    execFileSync(
-      'pnpm',
-      [
-        'exec',
-        'prettier',
-        '--write',
-        'package.json',
-        'apps/*/package.json',
-        'packages/*/package.json',
-        'CHANGELOG.md',
-        'docs',
-      ],
-      { cwd: repositoryRoot, stdio: 'inherit' }
-    );
-    execFileSync('pnpm', ['release:check', `v${preparation.version}`], {
-      cwd: repositoryRoot,
-      stdio: 'inherit',
-    });
-    execFileSync('pnpm', ['docs:check'], { cwd: repositoryRoot, stdio: 'inherit' });
-    execFileSync('pnpm', ['format:check'], { cwd: repositoryRoot, stdio: 'inherit' });
+    runBun(['install', '--frozen-lockfile']);
+    runBun(['run', 'docs:generate']);
+    runBun(['run', 'release:check', `v${preparation.version}`]);
+    runBun(['run', 'docs:check']);
+    runBun([
+      'x',
+      'prettier',
+      '--write',
+      'package.json',
+      'apps/*/package.json',
+      'packages/*/package.json',
+      'CHANGELOG.md',
+      'docs',
+    ]);
+    runBun(['run', 'release:check', `v${preparation.version}`]);
+    runBun(['run', 'docs:check']);
+    runBun(['run', 'format:check']);
     preparation.writesPerformed = true;
     preparation.generatedDocs = true;
   }

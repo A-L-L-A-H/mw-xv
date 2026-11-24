@@ -88,7 +88,7 @@ async function ghJson(args, env) {
 /** @param {{read:(kind:string)=>Promise<unknown>, sleep?:(ms:number)=>Promise<void>}} io */
 export async function awaitExactCi(options, io) {
   const deadline = Date.now() + options.timeoutSeconds * 1000;
-  let lastReason = 'await not started';
+  let lastReason;
   for (;;) {
     const runs = await io.read('runs');
     const checkRuns = await io.read('checkRuns');

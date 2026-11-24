@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "addons": ["auth", "base", "jobs", "notification"],
   "generatedFrom": "core addon manifests and model field metadata; no seed values included",
-  "sourceSha256": "cf6f80314e87675dcb082fd6a1cbd2e01ba0257e2f2c85832e3705a9bb89db77",
+  "sourceSha256": "b1bca26d95e2a181d7aad75a026f8a3a2d1c8763f0b919ff6037f1103a3c21d1",
   "models": [
     {
       "name": "auth.refresh_token",
@@ -219,6 +219,26 @@
     {
       "name": "notification.template",
       "table": "notification_templates"
+    },
+    {
+      "name": "observability.telemetry_log",
+      "table": "observability_logs"
+    },
+    {
+      "name": "observability.telemetry_metric_point",
+      "table": "observability_metric_points"
+    },
+    {
+      "name": "observability.telemetry_metric_series",
+      "table": "observability_metric_series"
+    },
+    {
+      "name": "observability.telemetry_span",
+      "table": "observability_spans"
+    },
+    {
+      "name": "observability.telemetry_state",
+      "table": "observability_state"
     },
     {
       "name": "organization.department",

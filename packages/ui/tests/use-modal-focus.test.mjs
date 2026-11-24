@@ -20,25 +20,29 @@ globalThis.Node = dom.window.Node;
 globalThis.KeyboardEvent = dom.window.KeyboardEvent;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
+function getVisibleClientRects(element) {
+  let current = element;
+  while (current) {
+    if (
+      current.hidden ||
+      current.getAttribute('aria-hidden') === 'true' ||
+      current.hasAttribute('inert') ||
+      dom.window.getComputedStyle(current).display === 'none'
+    ) {
+      return [];
+    }
+    current = current.parentElement;
+  }
+  const closedDetails = element.closest('details:not([open])');
+  if (closedDetails && !closedDetails.querySelector('summary')?.contains(element)) return [];
+  return [{}];
+}
+
 // JSDOM has no layout engine. Model visible boxes while retaining hidden-state checks.
 Object.defineProperty(dom.window.HTMLElement.prototype, 'getClientRects', {
   configurable: true,
   value() {
-    let current = this;
-    while (current) {
-      if (
-        current.hidden ||
-        current.getAttribute('aria-hidden') === 'true' ||
-        current.hasAttribute('inert') ||
-        dom.window.getComputedStyle(current).display === 'none'
-      ) {
-        return [];
-      }
-      current = current.parentElement;
-    }
-    const closedDetails = this.closest('details:not([open])');
-    if (closedDetails && !closedDetails.querySelector('summary')?.contains(this)) return [];
-    return [{}];
+    return getVisibleClientRects(this);
   },
 });
 

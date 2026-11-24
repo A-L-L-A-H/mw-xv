@@ -178,7 +178,7 @@ test('built PostgreSQL mode reuses package output while running type and integra
         .trim()
         .split(/\r?\n/u)
         .map((line) => JSON.parse(line));
-      assert.equal(commands[0]?.args[0], mode === 'standalone' ? 'build' : '--filter');
+      assert.equal(commands[0]?.args[0], mode === 'standalone' ? 'build' : 'x');
       assert.ok(commands.some(({ args }) => args.includes('tsc')));
       assert.ok(commands.some(({ args }) => args.includes('vitest')));
       assert.ok(

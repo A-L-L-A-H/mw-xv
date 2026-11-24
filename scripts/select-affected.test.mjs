@@ -41,12 +41,12 @@ test('every shared-configuration entry names something that is in the repository
   );
 });
 
-test('reads workspace dependency closure directly from manifests without requiring pnpm install', async () => {
+test('reads workspace dependency closure directly from manifests without requiring bun install', async () => {
   const root = await mkdtemp(join(tmpdir(), 'moonwitness-affected-'));
   try {
     await writeFile(
-      join(root, 'pnpm-workspace.yaml'),
-      "packages:\n  - 'apps/*'\n  - 'packages/*'\n"
+      join(root, 'package.json'),
+      JSON.stringify({ name: 'fixture-root', private: true, workspaces: ['apps/*', 'packages/*'] })
     );
     await mkdir(join(root, 'apps', 'api'), { recursive: true });
     await mkdir(join(root, 'apps', 'logs'), { recursive: true });
@@ -94,7 +94,10 @@ test('reads workspace dependency closure directly from manifests without requiri
 test('a workspace directory without a manifest is reported instead of dropped', async () => {
   const root = await mkdtemp(join(tmpdir(), 'moonwitness-affected-graph-'));
   try {
-    await writeFile(join(root, 'pnpm-workspace.yaml'), "packages:\n  - 'packages/*'\n");
+    await writeFile(
+      join(root, 'package.json'),
+      JSON.stringify({ name: 'fixture-root', private: true, workspaces: ['packages/*'] })
+    );
     await mkdir(join(root, 'packages', 'orm'), { recursive: true });
     await writeFile(
       join(root, 'packages', 'orm', 'package.json'),

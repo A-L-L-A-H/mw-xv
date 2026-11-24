@@ -109,7 +109,7 @@ export class DockerHttpTransport implements DockerTransport {
       let settled = false;
       let responseBytes = 0;
       const chunks: Buffer[] = [];
-      let timer: NodeJS.Timeout | undefined;
+      let timer: NodeJS.Timeout | undefined = undefined;
       let activeRequest: ReturnType<typeof httpRequest> | undefined;
 
       const cleanup = (): void => {

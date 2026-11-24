@@ -82,6 +82,44 @@ jobs:
           if [[ "$version" != v* ]]; then version="v$version"; fi
           bun run release:check "$version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Verify Node parity, workflow pins, and secret policy
+        run: |
+          bun run node:parity --strict
+          bun run automation:check:secrets
+          bun run automation:check:action-pins
+          bun run automation:check:action-tags
+      - name: Block CRITICAL dependency advisories
+        run: bun audit --audit-level=critical
+      - name: Install pinned gitleaks CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          version='8.30.1'
+          archive="$RUNNER_TEMP/gitleaks_${version}_linux_x64.tar.gz"
+          curl --fail --silent --show-error --location \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${version}/gitleaks_${version}_linux_x64.tar.gz" \
+            --output "$archive"
+          expected='551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb'
+          actual="$(sha256sum "$archive" | cut -d' ' -f1)"
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::gitleaks checksum mismatch: expected $expected, got $actual"
+            exit 1
+          fi
+          tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
+          install -m 0755 "$RUNNER_TEMP/gitleaks" /usr/local/bin/gitleaks
+      - name: Scan full Git history for secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          gitleaks detect \
+            --source . \
+            --config .gitleaks.toml \
+            --baseline-path .gitleaks-baseline.json \
+            --report-format json \
+            --report-path "$RUNNER_TEMP/gitleaks-report.json" \
+            --redact \
+            --no-banner \
+            --exit-code 1
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
         run: bun run lint
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)

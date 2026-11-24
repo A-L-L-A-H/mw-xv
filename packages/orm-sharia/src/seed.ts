@@ -69,7 +69,7 @@ export async function seed(ctx: SeedContext): Promise<SeedResult> {
   const groupId = await resolveUserGroupId(db);
   let inserted = 0;
   let updated = 0;
-  let skipped = 0;
+  const skipped = 0;
 
   for (const grant of USER_GROUP_MODEL_ACCESS) {
     const existing = await db('model_access')

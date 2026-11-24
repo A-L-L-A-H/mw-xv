@@ -5,6 +5,12 @@ import { fileURLToPath, URL } from 'node:url';
 // Read-only drift checks. Build changed packages before running this command.
 // Required CI checks and approvals still decide whether a candidate can release.
 const checks = [
+  ['Node.js parity', ['scripts/check-node-version.mjs', '--strict']],
+  ['Secret scanning policy', ['scripts/check-gitleaks-config.mjs']],
+  ['GitHub Action pin policy', ['scripts/check-action-pins.mjs']],
+  ['GitHub Action tag pin verification', ['scripts/check-action-tag-pins.mjs']],
+  ['Workflow checkout trust policy', ['scripts/check-workflow-checkout-trust.mjs']],
+  ['Release provenance policy', ['scripts/check-release-provenance.mjs']],
   ['Workspace Docker manifests', ['--test', 'scripts/docker-workspace-manifests.test.mjs']],
   ['Architecture artifacts', ['scripts/architecture/generate-diagrams.mjs', '--check']],
   ['Generated documentation', ['scripts/docs/generate-reference.mjs', '--check']],

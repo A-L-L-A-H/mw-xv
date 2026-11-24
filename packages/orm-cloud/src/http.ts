@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { Subscription } from '@moonwitness/orm-subscription';
+import { DEFAULT_CONTROL_PLANE_URL } from '@moonwitness/types';
 import { selectHealthyDeploymentTarget } from './ha.js';
 import {
   CloudApp,
@@ -337,7 +338,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     const defaultAgentUrl = (
       options.controlPlaneUrl ??
       process.env.MW_CONTROL_PLANE_URL ??
-      'http://127.0.0.1:3003'
+      DEFAULT_CONTROL_PLANE_URL
     ).replace(/\/+$/u, '');
     const fetchImpl = options.fetchImpl ?? globalThis.fetch;
     const resolvedToken =

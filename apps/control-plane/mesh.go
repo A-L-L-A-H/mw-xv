@@ -162,6 +162,7 @@ func SanitizeLogValue(value string) string {
 		b.WriteRune(r)
 	}
 	out := b.String()
+	out = strings.ReplaceAll(strings.ReplaceAll(out, "\r", " "), "\n", " ")
 	if len(out) > 512 {
 		out = out[:512]
 	}

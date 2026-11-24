@@ -26,19 +26,16 @@ if (!packageManager) {
   process.exit(2);
 }
 
-const isBun = packageManager.command.toLowerCase().includes('bun');
-// bun has no pnpm-style `--filter exec`; run tsc directly inside the package.
-const result = isBun
-  ? spawnSync(packageManager.command, [...packageManager.prefixArgs, 'x', 'tsc', '--pretty', 'false'], {
-      cwd: packageRoot,
-      encoding: 'utf8',
-      shell: packageManager.shell,
-    })
-  : spawnSync(packageManager.command, ['--filter', packageName, 'exec', 'tsc', '--pretty', 'false'], {
-      cwd: repositoryRoot,
-      encoding: 'utf8',
-      shell: packageManager.shell,
-    });
+// Run tsc directly inside the package via bun x.
+const result = spawnSync(
+  packageManager.command,
+  [...packageManager.prefixArgs, 'x', 'tsc', '--pretty', 'false'],
+  {
+    cwd: packageRoot,
+    encoding: 'utf8',
+    shell: packageManager.shell,
+  }
+);
 const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
 
 if (result.status === 0) {

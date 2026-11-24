@@ -10,7 +10,9 @@ import {
 } from 'react-router';
 import { Button } from '@moonwitness/ui/components/button';
 import brandSymbol from '@moonwitness/assets/brand/moonwitness-symbol-light.svg';
-import notFoundImage from '@moonwitness/assets/illustrations/not-found-light.svg';
+import notFoundFallbackImage from '@moonwitness/assets/illustrations/not-found-light.svg';
+import riotNotFoundImage from '@moonwitness/assets/illustrations/riot-universe/states/state-not-found.webp';
+import kuroThinkingImage from '@moonwitness/assets/illustrations/riot-universe/characters/kuro-signal-expression-thinking.webp';
 import guideBundleSource from '../../../dist/docs/guide.bundle.json';
 import roadmapProgressSource from '../../../dist/roadmap-progress.json';
 import type { SearchPage } from './document-content.js';
@@ -178,7 +180,20 @@ function Search({ onNavigate }: { onNavigate: () => void }) {
               </Link>
             ))
           ) : (
-            <p role="status">Tidak ada hasil untuk “{query}”.</p>
+            <div className="search-empty" role="status">
+              <img
+                className="search-empty-art"
+                src={kuroThinkingImage}
+                alt=""
+                width="64"
+                height="64"
+                decoding="async"
+              />
+              <div className="search-empty-copy">
+                <p>Tidak ada hasil untuk “{query}”.</p>
+                <small>Coba kata kunci lain seperti arsitektur, addon, atau roadmap.</small>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -186,7 +201,38 @@ function Search({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-function PortalLayout() {
+type DocsSkin = 'moonwitness-ink' | 'moonwitness-riot';
+const SKIN_STORAGE_KEY = 'mw-docs-skin';
+
+function readStoredSkin(): DocsSkin {
+  try {
+    return window.localStorage.getItem(SKIN_STORAGE_KEY) === 'moonwitness-riot'
+      ? 'moonwitness-riot'
+      : 'moonwitness-ink';
+  } catch {
+    return 'moonwitness-ink';
+  }
+}
+
+function useDocsSkin(): [DocsSkin, () => void] {
+  const [skin, setSkin] = useState<DocsSkin>(() => readStoredSkin());
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-skin', skin);
+    try {
+      window.localStorage.setItem(SKIN_STORAGE_KEY, skin);
+    } catch {
+      // Ignore storage access errors in restricted browsing contexts.
+    }
+  }, [skin]);
+
+  const toggleSkin = () =>
+    setSkin((current) => (current === 'moonwitness-riot' ? 'moonwitness-ink' : 'moonwitness-riot'));
+
+  return [skin, toggleSkin];
+}
+
+function PortalLayout({ skin, onToggleSkin }: { skin: DocsSkin; onToggleSkin: () => void }) {
   const location = useLocation();
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const selectedPage = pages.find((page) => page.route === location.pathname);
@@ -196,6 +242,8 @@ function PortalLayout() {
   useEffect(() => setMobileNavigationOpen(false), [location.pathname]);
 
   if (!selectedPage && !roadmapPage) return <NotFound />;
+
+  const isRiotSkin = skin === 'moonwitness-riot';
 
   return (
     <div className="portal-shell">
@@ -210,6 +258,18 @@ function PortalLayout() {
           </span>
         </Link>
         <Search onNavigate={() => setMobileNavigationOpen(false)} />
+        <button
+          type="button"
+          className="skin-toggle"
+          aria-pressed={isRiotSkin}
+          title={
+            isRiotSkin ? 'Ganti tampilan ke MoonWitness Ink' : 'Ganti tampilan ke MoonWitness Riot'
+          }
+          onClick={onToggleSkin}
+        >
+          <span className="skin-toggle-dot" aria-hidden="true" />
+          <span>{isRiotSkin ? 'MoonWitness Riot' : 'MoonWitness Ink'}</span>
+        </button>
         <a
           className="source-link"
           href={`${repository}/tree/${sourceRef}`}
@@ -464,7 +524,20 @@ function NotFound() {
           MoonWitness <b>Docs</b>
         </span>
       </Link>
-      <img src={notFoundImage} alt="" width="240" height="220" />
+      <div className="not-found-artwork">
+        <img
+          src={riotNotFoundImage}
+          alt=""
+          width="260"
+          height="260"
+          decoding="async"
+          onError={(event) => {
+            if (event.currentTarget.dataset.fallbackApplied) return;
+            event.currentTarget.dataset.fallbackApplied = 'true';
+            event.currentTarget.src = notFoundFallbackImage;
+          }}
+        />
+      </div>
       <p className="eyebrow">404 · PAGE NOT FOUND</p>
       <h1>Halaman ini tidak ditemukan.</h1>
       <p>Periksa alamatnya atau kembali ke halaman panduan.</p>
@@ -476,12 +549,13 @@ function NotFound() {
 }
 
 export function DocsApp() {
+  const [skin, toggleSkin] = useDocsSkin();
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route path="/" element={<Navigate to={pages[0]?.route ?? '/'} replace />} />
-        <Route path="/roadmap" element={<PortalLayout />} />
-        <Route path="/guide/*" element={<PortalLayout />} />
+        <Route path="/roadmap" element={<PortalLayout skin={skin} onToggleSkin={toggleSkin} />} />
+        <Route path="/guide/*" element={<PortalLayout skin={skin} onToggleSkin={toggleSkin} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

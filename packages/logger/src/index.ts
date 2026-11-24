@@ -130,7 +130,7 @@ function wrapLoggerMethods<L extends Logger>(log: L): L {
   const origDebug = log.debug.bind(log);
   const origFatal = log.fatal.bind(log);
   const origTrace = log.trace.bind(log);
-  const wrap = (fn: Function) => (obj: unknown, msg?: string, ...args: unknown[]) => {
+  const wrap = (fn: (obj: unknown, msg?: string, ...args: unknown[]) => void) => (obj: unknown, msg?: string, ...args: unknown[]) => {
     const redacted = typeof obj === 'object' && obj !== null ? redactDeep(obj) : obj;
     return fn(redacted, msg, ...args);
   };

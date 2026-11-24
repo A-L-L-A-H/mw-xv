@@ -171,3 +171,58 @@ test('nested page reload and branded not-found route work under the repository b
     new RegExp(`${portalPath('guide/tutorials/quickstart')}`, 'u')
   );
 });
+
+test('supports Signal Riot skin toggle persistence, artwork states, and zero horizontal overflow on 390px', async ({
+  page,
+}) => {
+  await page.goto('');
+  const html = page.locator('html');
+  await expect(html).toHaveAttribute('data-skin', 'moonwitness-ink');
+
+  const skinToggle = page.getByRole('button', { name: /MoonWitness Ink/u });
+  await expect(skinToggle).toHaveAttribute('aria-pressed', 'false');
+  await skinToggle.click();
+
+  await expect(html).toHaveAttribute('data-skin', 'moonwitness-riot');
+  await expect(page.getByRole('button', { name: /MoonWitness Riot/u })).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  );
+  expect(await page.evaluate(() => window.localStorage.getItem('mw-docs-skin'))).toBe(
+    'moonwitness-riot'
+  );
+
+  await page.reload();
+  await expect(html).toHaveAttribute('data-skin', 'moonwitness-riot');
+  await expect(page.getByRole('button', { name: /MoonWitness Riot/u })).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+
+  const search = page.getByRole('searchbox', { name: 'Cari dokumentasi' });
+  await search.fill('zzzz-tidak-ada-hasil-riot');
+  const emptyStatus = page.locator('#docs-search-results [role="status"]');
+  await expect(emptyStatus).toBeVisible();
+  const searchArtLoaded = await emptyStatus
+    .locator('img')
+    .evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0);
+  expect(searchArtLoaded).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+
+  await page.getByRole('button', { name: /MoonWitness Riot/u }).click();
+  await expect(html).toHaveAttribute('data-skin', 'moonwitness-ink');
+  expect(await page.evaluate(() => window.localStorage.getItem('mw-docs-skin'))).toBe(
+    'moonwitness-ink'
+  );
+
+  await page.goto('does-not-exist');
+  await expect(page.getByRole('heading', { name: 'Halaman ini tidak ditemukan.' })).toBeVisible();
+  const notFoundArtLoaded = await page
+    .locator('.not-found-artwork img')
+    .evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0);
+  expect(notFoundArtLoaded).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});
