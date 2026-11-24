@@ -10,6 +10,7 @@ import {
   ModelAccess,
 } from '@moonwitness/orm-base';
 import type { AuthContext, GroupModelGrant } from '../auth/policy.js';
+import { createAuthCacheBus, type AuthCacheBus } from './auth-cache-bus.js';
 
 export type { AuthContext };
 
@@ -59,6 +60,20 @@ const MAX_AUTH_CACHE_ENTRIES = 2_000;
 
 let authCacheEpoch = 1;
 const authCache = new Map<number, CachedAuthRecord>();
+let authCacheBus: AuthCacheBus | null = null;
+
+/**
+ * Broadcast every invalidation to other API replicas over PG NOTIFY. Test
+ * backends (SQLite) get an inert bus, so behavior there is unchanged.
+ */
+export function setAuthCacheBus(bus: AuthCacheBus | null): void {
+  authCacheBus = bus;
+}
+
+/** Testing hook: handle an invalidation that arrived from another replica. */
+export function handleRemoteAuthCacheInvalidation(userId?: number): void {
+  invalidateAuthCache(userId);
+}
 
 export function getAuthCacheEpoch(): number {
   return authCacheEpoch;
@@ -67,14 +82,16 @@ export function getAuthCacheEpoch(): number {
 /**
  * Immediately invalidates cached auth state for a specific user or all users.
  * Called on role, password, group membership, model access, company membership, or session revocation.
+ * Also broadcasts the invalidation to other API replicas via PG NOTIFY.
  */
 export function invalidateAuthCache(userId?: number): void {
   if (userId !== undefined) {
     authCache.delete(userId);
-    return;
+  } else {
+    authCacheEpoch += 1;
+    authCache.clear();
   }
-  authCacheEpoch += 1;
-  authCache.clear();
+  void authCacheBus?.broadcast(userId);
 }
 
 export function invalidateAuthCacheForModel(modelName: string, userId?: number): void {
@@ -132,6 +149,21 @@ export function validateJwtSecret(secret: string | undefined): string {
 const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
   invalidateAuthCache();
   const cacheTtlMs = resolveCacheTtlMs(options.cacheTtlMs);
+
+  // Cross-replica invalidation: on PostgreSQL, listen for invalidations from
+  // other replicas and apply them to the local cache. No-ops on test backends.
+  if (!authCacheBus && process.env.DATABASE_URL) {
+    const bus = createAuthCacheBus({
+      connectionString: process.env.DATABASE_URL,
+      logger: { warn: (message: string) => fastify.log.warn(message) },
+      onNotification: handleRemoteAuthCacheInvalidation,
+    });
+    setAuthCacheBus(bus);
+    fastify.addHook('onClose', async () => {
+      await bus.close();
+      setAuthCacheBus(null);
+    });
+  }
 
   await fastify.register(jwt, {
     secret: validateJwtSecret(options.jwtSecret),
