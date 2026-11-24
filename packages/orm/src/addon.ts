@@ -657,13 +657,18 @@ async function installData(db: Knex.Transaction, data: readonly SeedRecord[]) {
     for (const [name, value] of Object.entries(record.values)) {
       const field = record.model.fields[name];
       if (!field) throw new Error(`Unknown seed field: ${record.model.modelName}.${name}`);
-      if (typeof value === 'object' && value !== null) {
+      if (typeof value === 'object' && value !== null && '$ref' in value) {
         const linked = await ensure(value.$ref);
         const targetModel = resolveFieldTarget(field.target);
         if (targetModel?.modelName !== linked.model)
           throw new Error(`Invalid relation for ${record.id}.${name}`);
         values[columnName(name, field)] = linked.record_id;
-      } else values[columnName(name, field)] = value;
+      } else if (field.kind === 'json') {
+        values[columnName(name, field)] =
+          typeof value === 'object' || Array.isArray(value)
+            ? JSON.stringify(value ?? null)
+            : (value as string | number | boolean | null);
+      } else values[columnName(name, field)] = value as string | number | boolean | null;
     }
     return values;
   }
