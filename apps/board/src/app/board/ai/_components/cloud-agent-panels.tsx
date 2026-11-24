@@ -277,7 +277,7 @@ export function RunEvidencePanel({
               <span>job {run.job_id ?? 'not dispatched'}</span>
               <span>fence {run.fencing_token ?? 0}</span>
               {run.error_code !== null && run.error_code !== undefined ? (
-                <span className="text-red-700">{run.error_code}</span>
+                <span className="text-destructive">{run.error_code}</span>
               ) : null}
               {run.status === 'pending' || run.status === 'running' ? (
                 <Button type="button" size="sm" variant="outline" onClick={() => void cancel(run)}>

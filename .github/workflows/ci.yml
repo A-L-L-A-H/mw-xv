@@ -80,6 +80,12 @@ jobs:
           node-version: '24.22.3'
           cache: npm
           cache-dependency-path: vendor/freellmapi/package-lock.json
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: '24'
+          pnpm-version: '11.17.0'
+      - name: Install frozen workspace dependencies
+        run: pnpm install --frozen-lockfile --no-runtime
       - name: Verify vendored source invariants
         run: node scripts/check-cloud-agent-invariants.mjs
       - name: Install pinned vendored dependencies

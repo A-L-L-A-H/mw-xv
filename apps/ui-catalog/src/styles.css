@@ -1262,11 +1262,6 @@ a:focus-visible {
   gap: 0.35rem;
   min-width: 0;
 }
-.asset-browser-controls .mw-ui-field-description {
-  color: var(--mw-ink-faint);
-  font-size: 0.68rem;
-  font-weight: 450;
-}
 .asset-browser-count {
   margin: 1rem 0 0.65rem;
   color: var(--mw-ink-faint);

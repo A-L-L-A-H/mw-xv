@@ -21,6 +21,10 @@ regexes = [
   '''^\s*- Add adapter fixtures for API pagination, missing[/]duplicate checks, stale snapshots, revoked permissions, and malformed/untrusted webhook or issue events\.$''',
 ]
 
+[[allowlists]]
+description = "Pinned third-party vendor snapshots keep their upstream test fixtures, docs and patches; reviewed at import time"
+paths = ["^vendor/"]
+
 [[rules]]
 id = "moonwitness-runtime-secret"
 description = "High-entropy MoonWitness runtime authentication, metrics, or WhatsApp credential"

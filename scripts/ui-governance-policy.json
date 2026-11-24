@@ -117,6 +117,19 @@
       "generatedAssets": [],
       "runtimeEvidence": []
     },
+    "apps/agent-sandbox": {
+      "packageName": "@moonwitness/agent-sandbox",
+      "classification": "non-ui",
+      "browser": false,
+      "sourceRoots": [],
+      "publicRoots": [],
+      "sharedSourceRoots": [],
+      "routeRoots": [],
+      "entryFiles": [],
+      "aliases": {},
+      "generatedAssets": [],
+      "runtimeEvidence": []
+    },
     "apps/api": {
       "packageName": "@moonwitness/api",
       "classification": "non-ui",
