@@ -94,6 +94,7 @@ async function updateConversationPreview(
 export async function dispatchQueuedWhatsAppStatus(
   statusId: number,
   companyId: number,
+  eventId: number,
   storage: AttachmentStorage
 ): Promise<void> {
   const status = await WhatsappStatus.query().findOne({ id: statusId, company_id: companyId });
@@ -125,6 +126,48 @@ export async function dispatchQueuedWhatsAppStatus(
       write_date: new Date().toISOString(),
     });
   if (claimed !== 1) return;
+
+  // Check if a durable provider acknowledgement already exists for this
+  // outbox event (the message was accepted by GoWA but the DB patch failed).
+  const events = await WhatsappMessage.knex()('outbox_events')
+    .where({ id: eventId, company_id: companyId, event_type: WHATSAPP_STATUS_PUBLISH_EVENT })
+    .select('payload')
+    .first();
+  let existingAck: { external_id: string; accepted_at?: string } | undefined;
+  if (events) {
+    try {
+      const parsed = JSON.parse(String(events.payload ?? '{}'));
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        'provider_ack' in parsed &&
+        parsed.provider_ack &&
+        typeof parsed.provider_ack === 'object' &&
+        'external_id' in parsed.provider_ack &&
+        typeof parsed.provider_ack.external_id === 'string' &&
+        parsed.provider_ack.external_id
+      ) {
+        existingAck = parsed.provider_ack as { external_id: string; accepted_at?: string };
+      }
+    } catch {
+      // Ignore malformed payloads.
+    }
+  }
+
+  if (existingAck) {
+    // Durable provider ack found — apply it without re-sending.
+    await WhatsappStatus.query()
+      .where({ id: statusId, company_id: companyId })
+      .patch({
+        external_id: existingAck.external_id.slice(0, 255),
+        status: 'sent',
+        retryable: false,
+        last_error: null,
+        published_at: existingAck.accepted_at ?? new Date().toISOString(),
+        write_date: existingAck.accepted_at ?? new Date().toISOString(),
+      });
+    return;
+  }
 
   let providerCallStarted = false;
   let providerAccepted = false;
@@ -190,6 +233,7 @@ export async function dispatchQueuedWhatsAppStatus(
           ? sent.id
           : `gowa-${randomUUID()}`;
     const publishedAt = new Date().toISOString();
+    await persistProviderAcknowledgementForStatus(eventId, companyId, statusId, externalId, publishedAt);
     await WhatsappStatus.query()
       .where({ id: statusId, company_id: companyId })
       .patch({
@@ -224,6 +268,42 @@ export async function dispatchQueuedWhatsAppStatus(
   }
 }
 
+async function persistProviderAcknowledgementForStatus(
+  eventId: number,
+  companyId: number,
+  statusId: number,
+  externalId: string,
+  acceptedAt: string
+): Promise<void> {
+  const events = await WhatsappMessage.knex()('outbox_events')
+    .where({ id: eventId, company_id: companyId, event_type: WHATSAPP_STATUS_PUBLISH_EVENT })
+    .select('payload')
+    .first();
+  if (!events) throw new Error('WhatsApp Status delivery event is unavailable');
+  let payload: Record<string, unknown> = {};
+  try {
+    const parsed: unknown = JSON.parse(String(events.payload ?? '{}'));
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
+      payload = parsed as Record<string, unknown>;
+  } catch {
+    // Preserve the status ID supplied by the consumer even if an older payload is malformed.
+  }
+  const acknowledgement = {
+    external_id: externalId.slice(0, 255),
+    accepted_at: acceptedAt,
+  };
+  const updated = await WhatsappMessage.knex()('outbox_events')
+    .where({ id: eventId, company_id: companyId, event_type: WHATSAPP_STATUS_PUBLISH_EVENT })
+    .update({
+      payload: JSON.stringify({
+        ...payload,
+        status_id: statusId,
+        provider_ack: acknowledgement,
+      }),
+    });
+  if (Number(updated) !== 1) throw new Error('WhatsApp Status provider acknowledgement was not persisted');
+}
+
 async function persistProviderAcknowledgement(
   eventId: number,
   companyId: number,
@@ -242,7 +322,7 @@ async function persistProviderAcknowledgement(
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
       payload = parsed as Record<string, unknown>;
   } catch {
-    // Preserve the message ID supplied by the consumer even if an older payload is malformed.
+    // Preserve the status ID supplied by the consumer even if an older payload is malformed.
   }
   const acknowledgement = {
     external_id: externalId.slice(0, 255),
@@ -543,7 +623,7 @@ export function registerWhatsAppOutboxConsumer(storage: AttachmentStorage): () =
   );
   const unregisterStatus = registerOutboxConsumer(
     WHATSAPP_STATUS_PUBLISH_EVENT,
-    async (payload, _eventId, context) => {
+    async (payload, eventId, context) => {
       if (
         !payload ||
         typeof payload !== 'object' ||
@@ -559,6 +639,7 @@ export function registerWhatsAppOutboxConsumer(storage: AttachmentStorage): () =
       await dispatchQueuedWhatsAppStatus(
         (payload as { status_id: number }).status_id,
         context.companyId,
+        eventId,
         storage
       );
     }
