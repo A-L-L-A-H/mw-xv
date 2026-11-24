@@ -225,10 +225,10 @@ export function validateExecuteParams(value: unknown): {
   assertRecord(value, 'params', ['runId', 'check'], ['cwd', 'timeoutMs', 'maxOutputBytes']);
   const checks = new Set([
     'node-test',
-    'pnpm-test',
-    'pnpm-typecheck',
-    'pnpm-lint',
-    'pnpm-build',
+    'bun-test',
+    'bun-typecheck',
+    'bun-lint',
+    'bun-build',
     'vitest-run',
     'tsc-noemit',
   ]);

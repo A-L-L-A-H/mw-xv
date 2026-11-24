@@ -13,10 +13,10 @@ export type WorkspaceEngine = 'rootless-docker';
 export type WorkspaceStatus = 'active' | 'cancelled' | 'destroyed';
 export type WorkspaceCheckKind =
   | 'node-test'
-  | 'pnpm-test'
-  | 'pnpm-typecheck'
-  | 'pnpm-lint'
-  | 'pnpm-build'
+  | 'bun-test'
+  | 'bun-typecheck'
+  | 'bun-lint'
+  | 'bun-build'
   | 'vitest-run'
   | 'tsc-noemit';
 

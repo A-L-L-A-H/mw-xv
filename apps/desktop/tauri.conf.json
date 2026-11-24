@@ -4,9 +4,9 @@
   "version": "1.0.0-rc.1",
   "identifier": "com.moonwitness.desktop",
   "build": {
-    "beforeDevCommand": "pnpm --filter @moonwitness/board dev",
+    "beforeDevCommand": "bun --filter @moonwitness/board dev",
     "devUrl": "http://127.0.0.1:5173/board",
-    "beforeBuildCommand": "pnpm --filter @moonwitness/desktop build && pnpm --filter @moonwitness/desktop build:web",
+    "beforeBuildCommand": "bun --filter @moonwitness/desktop build && bun --filter @moonwitness/desktop build:web",
     "frontendDist": "./dist-board"
   },
   "app": {

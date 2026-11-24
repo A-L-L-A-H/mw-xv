@@ -33,7 +33,7 @@ export default defineConfig({
   projects,
   webServer: [
     {
-      command: 'pnpm --filter @moonwitness/api run visual-audit:server',
+      command: 'bun --filter @moonwitness/api run visual-audit:server',
       cwd: repositoryRoot,
       url: `http://127.0.0.1:${apiPort}/readyz`,
       timeout: 120_000,
@@ -51,7 +51,7 @@ export default defineConfig({
       },
     },
     {
-      command: `pnpm --filter @moonwitness/board exec next dev --hostname 127.0.0.1 --port ${boardPort}`,
+      command: `bun --filter @moonwitness/board exec next dev --hostname 127.0.0.1 --port ${boardPort}`,
       cwd: repositoryRoot,
       url: `${baseURL}/login`,
       timeout: 120_000,

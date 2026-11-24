@@ -12,7 +12,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -108,7 +110,18 @@ func runCmdWithStdin(ctx context.Context, stdin []byte, name string, args ...str
 }
 
 // defaultHTTPHealthProbe probes url with HTTP GET and requires a 2xx response.
+// url must be a valid, absolute HTTPS URL pointing to a non-loopback, non-internal address.
 func defaultHTTPHealthProbe(ctx context.Context, url string) error {
+	parsed, err := url.Parse(url)
+	if err != nil {
+		return fmt.Errorf("invalid URL: %w", err)
+	}
+	if parsed.Scheme != "https" {
+		return fmt.Errorf("healthcheck URL must use HTTPS scheme")
+	}
+	if isInternalAddress(parsed.Hostname()) {
+		return fmt.Errorf("healthcheck URL must not target internal addresses")
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return err
@@ -124,6 +137,23 @@ func defaultHTTPHealthProbe(ctx context.Context, url string) error {
 		return fmt.Errorf("healthcheck returned status %d", resp.StatusCode)
 	}
 	return nil
+}
+
+// isInternalAddress returns true if the hostname resolves to a loopback,
+// link-local, or private (RFC 1918 / RFC 4193) address.
+// This is a conservative check - we deny anything that isn't a public internet address.
+func isInternalAddress(hostname string) bool {
+	ips, err := net.LookupIP(hostname)
+	if err != nil {
+		// If we can't resolve, be conservative and deny
+		return true
+	}
+	for _, ip := range ips {
+		if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsPrivate() {
+			return true
+		}
+	}
+	return false
 }
 
 // handleAppLogsStream streams `docker logs --follow --timestamps --tail N <container>`

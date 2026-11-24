@@ -547,7 +547,7 @@ export async function dispatchTaskAgentRun(
   const verificationCommands =
     input.verificationCommands && input.verificationCommands.length > 0
       ? input.verificationCommands
-      : ['pnpm typecheck', 'pnpm test'];
+      : ['bun typecheck', 'bun test'];
 
   const packet: TaskAgentPacketPreview = {
     runId,

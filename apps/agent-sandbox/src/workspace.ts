@@ -57,12 +57,12 @@ import { assertNoSymlinkPath } from './workspace-fs.js';
 /** Fixed command templates only. RPC callers select a check, never a command. */
 const CHECK_COMMANDS: Readonly<Record<WorkspaceCheckKind, readonly string[]>> = {
   'node-test': ['node', '--test'],
-  'pnpm-test': ['pnpm', 'test'],
-  'pnpm-typecheck': ['pnpm', 'typecheck'],
-  'pnpm-lint': ['pnpm', 'lint'],
-  'pnpm-build': ['pnpm', 'build'],
-  'vitest-run': ['pnpm', 'exec', 'vitest', 'run'],
-  'tsc-noemit': ['pnpm', 'exec', 'tsc', '--noEmit'],
+  'bun-test': ['bun', 'test'],
+  'bun-typecheck': ['bun', 'typecheck'],
+  'bun-lint': ['bun', 'lint'],
+  'bun-build': ['bun', 'build'],
+  'vitest-run': ['bun', 'exec', 'vitest', 'run'],
+  'tsc-noemit': ['bun', 'exec', 'tsc', '--noEmit'],
 };
 
 const MAX_DIFF_FILES = 1_000;
