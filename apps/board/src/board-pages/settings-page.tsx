@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -44,6 +44,7 @@ import {
   getQueryScope,
   isCurrentScopeQueryKey,
   settingsQueryKeys,
+  type BoardQueryScope,
 } from '@/lib/query-scope';
 import {
   DEFAULT_PREFERENCES,
@@ -173,6 +174,20 @@ function SettingsQueryError({
 
 export function SettingsPage() {
   const { user, logout } = useAuth();
+  const activeScope = getQueryScope();
+  const scopeKey = `${activeScope.userId ?? ''}:${activeScope.companyId ?? ''}:${activeScope.metadataGeneration ?? ''}`;
+  return <SettingsPageContent key={scopeKey} activeScope={activeScope} user={user} logout={logout} />;
+}
+
+function SettingsPageContent({
+  activeScope,
+  user,
+  logout,
+}: {
+  activeScope: BoardQueryScope;
+  user: ReturnType<typeof useAuth>['user'];
+  logout: ReturnType<typeof useAuth>['logout'];
+}) {
   const isAdmin = user?.role === 'superadmin' || user?.role === 'system';
   const { isDesktop } = useDesktopBridge();
   const { mode: desktopMode, setMode: setDesktopMode } = useDesktopMode();
@@ -199,29 +214,6 @@ export function SettingsPage() {
   const [newFlagRollout, setNewFlagRollout] = useState('100');
   const [creatingFlag, setCreatingFlag] = useState(false);
   const [savingPreferences, setSavingPreferences] = useState(false);
-
-  const activeScope = getQueryScope();
-  useEffect(() => {
-    setPreferenceDraft({});
-    setParamDrafts({});
-    setFlagRolloutDrafts({});
-    setNewParamKey('');
-    setNewParamType('string');
-    setNewParamValue('');
-    setNewParamSecret(false);
-    setNewParamDescription('');
-    setNewFlagKey('');
-    setNewFlagName('');
-    setNewFlagEnabled(false);
-    setNewFlagRollout('100');
-    setSaved(false);
-    setSavingPreferences(false);
-    setChangingPassword(false);
-    setSavingParamId(null);
-    setSavingFlagId(null);
-    setCreatingParam(false);
-    setCreatingFlag(false);
-  }, [activeScope.userId, activeScope.companyId, activeScope.metadataGeneration]);
 
   const queryClient = useQueryClient();
   const localAiQuery = useQuery({

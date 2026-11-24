@@ -35,7 +35,7 @@ export function ProfilePage() {
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
-  const { data, isLoading, isFetching, isError, isSuccess, error, refetch } = useQuery({
+  const { data, isLoading, isFetching, isError, isSuccess, refetch } = useQuery({
     queryKey: profileQueryKeys.contact(user?.id),
     queryFn: async () => {
       if (!user) return null;

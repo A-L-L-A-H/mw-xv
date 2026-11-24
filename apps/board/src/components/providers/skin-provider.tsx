@@ -6,6 +6,8 @@ import { createSkinInitScript, DEFAULT_SKIN_ID, themeRegistry } from '@moonwitne
 import { SkinContext, type SkinContextValue } from './skin-context';
 import { readPreferences, savePreferences } from '@/lib/preferences';
 
+// Pre-hydration skin init script imported by the root layout alongside SkinProvider.
+// oxlint-disable-next-line react/only-export-components
 export const SKIN_INIT_SCRIPT = createSkinInitScript();
 
 export function SkinProvider({ children }: { children: ReactNode }) {
