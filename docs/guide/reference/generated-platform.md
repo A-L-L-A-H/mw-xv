@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `479dc4e35613759678359b73916961cd17d331d05454e8a034e53c6f4c374b68`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `9f07c1fc82ff26c952a333cbc2f0387768c55f3a7692d30ed379d5963ac78e60`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -120,6 +120,10 @@ Source fingerprint: `479dc4e35613759678359b73916961cd17d331d05454e8a034e53c6f4c3
 | `MW_A2A_SIGNING_SECRET`             | secret         | Yes                       | Yes                      |
 | `MW_AI_FREELLM_SECRET_REF`          | secret         | No                        | Yes                      |
 | `NODE_ENV`                          | string         | Yes                       | No                       |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`       | string         | No                        | No                       |
+| `OTEL_EXPORTER_OTLP_PROTOCOL`       | string         | No                        | No                       |
+| `OTEL_SERVICE_NAME`                 | string         | No                        | No                       |
+| `OTEL_SERVICE_VERSION`              | string         | No                        | No                       |
 | `OUTBOX_HANDLERS_MODULE`            | string         | Yes                       | No                       |
 | `OUTBOX_WORKER_HEALTH_PORT`         | integer        | Yes                       | No                       |
 | `PORT`                              | integer        | No                        | No                       |

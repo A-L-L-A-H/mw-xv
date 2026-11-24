@@ -716,7 +716,7 @@
       "assets:check:bounds": "node packages/assets/scripts/check-svg-bounds.mjs",
       "assets:check:docs": "node scripts/export-doc-assets.mjs --check",
       "assets:export:docs": "node scripts/export-doc-assets.mjs",
-      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets sounds:ambience && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
+      "assets:generate": "pnpm --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && pnpm --filter @moonwitness/assets animation:generate && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && pnpm --filter @moonwitness/assets sounds:ambience && pnpm --filter @moonwitness/assets fonts:prepare && pnpm --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
       "assets:generate:illustrations": "node packages/assets/scripts/generate-illustrations.mjs && node scripts/export-doc-assets.mjs",
       "assets:render": "node packages/assets/scripts/render-social.mjs",
       "assets:validate": "node packages/assets/scripts/validate.mjs",
@@ -884,7 +884,7 @@
       "ui:design:check": "pnpm test:ui-design-check && node scripts/check-ui-design-system.mjs",
       "ui:design:report": "node scripts/check-ui-design-system.mjs --json",
       "ui:visual:update": "pnpm --filter @moonwitness/ui-catalog build && pnpm --filter @moonwitness/ui-catalog exec playwright test --update-snapshots",
-      "verify": "pnpm ui:check && pnpm lint:ui && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:unit:built && pnpm test:architecture && pnpm architecture:check:built && pnpm docs:build:built"
+      "verify": "pnpm ui:check && pnpm lint:ui && pnpm lint && pnpm format:check && pnpm typecheck && pnpm orm:codegen --check && pnpm test:unit:built && pnpm test:architecture && pnpm architecture:check:built && pnpm docs:build:built"
     }
   },
   "environment": [
@@ -1173,6 +1173,30 @@
     {
       "name": "NODE_ENV",
       "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "OTEL_EXPORTER_OTLP_ENDPOINT",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "OTEL_EXPORTER_OTLP_PROTOCOL",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "OTEL_SERVICE_NAME",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "OTEL_SERVICE_VERSION",
+      "configuredInExample": false,
       "secret": false,
       "valueType": "string"
     },
@@ -6377,6 +6401,406 @@
       ]
     },
     {
+      "name": "observability",
+      "version": "1.0.0",
+      "depends": [],
+      "models": [
+        {
+          "name": "observability.telemetry_log",
+          "table": "observability_logs",
+          "fields": [
+            {
+              "name": "agent_name",
+              "kind": "text",
+              "column": "agent_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "log_id",
+              "kind": "text",
+              "column": "log_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "run_id",
+              "kind": "text",
+              "column": "run_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "service_name",
+              "kind": "text",
+              "column": "service_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "severity",
+              "kind": "enum",
+              "column": "severity",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["DEBUG", "ERROR", "FATAL", "INFO", "TRACE", "UNSPECIFIED", "WARN"]
+            },
+            {
+              "name": "span_id",
+              "kind": "text",
+              "column": "span_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "timestamp_ms",
+              "kind": "float",
+              "column": "timestamp_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "trace_id",
+              "kind": "text",
+              "column": "trace_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["log_id"]]
+        },
+        {
+          "name": "observability.telemetry_metric_point",
+          "table": "observability_metric_points",
+          "fields": [
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "series_id",
+              "kind": "text",
+              "column": "series_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "timestamp_ms",
+              "kind": "float",
+              "column": "timestamp_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["series_id", "timestamp_ms"]]
+        },
+        {
+          "name": "observability.telemetry_metric_series",
+          "table": "observability_metric_series",
+          "fields": [
+            {
+              "name": "description",
+              "kind": "text",
+              "column": "description",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "latest_time_ms",
+              "kind": "float",
+              "column": "latest_time_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "metric_type",
+              "kind": "enum",
+              "column": "metric_type",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["exponential_histogram", "gauge", "histogram", "sum", "summary"]
+            },
+            {
+              "name": "name",
+              "kind": "text",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "scope_name",
+              "kind": "text",
+              "column": "scope_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "series_id",
+              "kind": "text",
+              "column": "series_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "service_name",
+              "kind": "text",
+              "column": "service_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "unit",
+              "kind": "text",
+              "column": "unit",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["series_id"]]
+        },
+        {
+          "name": "observability.telemetry_span",
+          "table": "observability_spans",
+          "fields": [
+            {
+              "name": "agent_name",
+              "kind": "text",
+              "column": "agent_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "duration_ms",
+              "kind": "float",
+              "column": "duration_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "end_time_ms",
+              "kind": "float",
+              "column": "end_time_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "name",
+              "kind": "text",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "parent_span_id",
+              "kind": "text",
+              "column": "parent_span_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "run_id",
+              "kind": "text",
+              "column": "run_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "service_name",
+              "kind": "text",
+              "column": "service_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "span_id",
+              "kind": "text",
+              "column": "span_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "start_time_ms",
+              "kind": "float",
+              "column": "start_time_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["error", "ok", "unset"]
+            },
+            {
+              "name": "trace_id",
+              "kind": "text",
+              "column": "trace_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["span_id", "trace_id"]]
+        },
+        {
+          "name": "observability.telemetry_state",
+          "table": "observability_state",
+          "fields": [
+            {
+              "name": "key",
+              "kind": "string",
+              "column": "key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "value",
+              "kind": "integer",
+              "column": "value",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            }
+          ],
+          "uniqueConstraints": [["key"]]
+        }
+      ],
+      "menus": [],
+      "views": [],
+      "seeds": {},
+      "accessRules": []
+    },
+    {
       "name": "organization",
       "version": "1.0.0",
       "depends": ["base"],
@@ -10045,5 +10469,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "479dc4e35613759678359b73916961cd17d331d05454e8a034e53c6f4c374b68"
+  "generatedFromSha256": "9f07c1fc82ff26c952a333cbc2f0387768c55f3a7692d30ed379d5963ac78e60"
 }
