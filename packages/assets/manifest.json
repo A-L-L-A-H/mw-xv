@@ -42,6 +42,32 @@
       "source": "MoonWitness contributors"
     },
     {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-03.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-04.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
       "path": "animation/crew-01-idle/crew-01-idle-clip.json",
       "kind": "source",
       "variant": "canonical-animation-clip",
@@ -67,6 +93,32 @@
     },
     {
       "path": "animation/crew-01-idle/crew-01-idle-frame-02.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-03.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-04.svg",
       "kind": "source",
       "variant": "canonical-animation-frame",
       "format": "svg",
@@ -116,6 +168,32 @@
       "source": "MoonWitness contributors"
     },
     {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-03.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-04.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
       "path": "animation/crew-01-walk/crew-01-walk-clip.json",
       "kind": "source",
       "variant": "canonical-animation-clip",
@@ -141,6 +219,32 @@
     },
     {
       "path": "animation/crew-01-walk/crew-01-walk-frame-02.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-03.svg",
+      "kind": "source",
+      "variant": "canonical-animation-frame",
+      "format": "svg",
+      "width": 1024,
+      "height": 1024,
+      "pack": "moon-city",
+      "domain": "visual-universe",
+      "status": "review",
+      "license": "ISC",
+      "source": "MoonWitness contributors"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-04.svg",
       "kind": "source",
       "variant": "canonical-animation-frame",
       "format": "svg",
@@ -1261,6 +1365,16 @@
       "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
     },
     {
+      "path": "illustrations/editorial-archive.webp",
+      "source": "source/artwork/editorial-archive-source.png",
+      "kind": "artwork",
+      "variant": "homepage-archive-card",
+      "format": "webp",
+      "width": 800,
+      "height": 450,
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+    },
+    {
       "path": "illustrations/editorial-knowledge.webp",
       "source": "source/artwork/home-editorial-triptych-master.png",
       "kind": "artwork",
@@ -1275,6 +1389,26 @@
       "source": "source/artwork/home-editorial-triptych-master.png",
       "kind": "artwork",
       "variant": "homepage-people-card",
+      "format": "webp",
+      "width": 800,
+      "height": 450,
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+    },
+    {
+      "path": "illustrations/editorial-rain.webp",
+      "source": "source/artwork/editorial-rain-source.png",
+      "kind": "artwork",
+      "variant": "homepage-rain-card",
+      "format": "webp",
+      "width": 800,
+      "height": 450,
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+    },
+    {
+      "path": "illustrations/editorial-signal.webp",
+      "source": "source/artwork/editorial-signal-source.png",
+      "kind": "artwork",
+      "variant": "homepage-signal-card",
       "format": "webp",
       "width": 800,
       "height": 450,
@@ -1324,6 +1458,16 @@
       "format": "webp",
       "width": 920,
       "height": 1150,
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+    },
+    {
+      "path": "illustrations/moon-city-orbit.webp",
+      "source": "source/artwork/moon-city-orbit-source.png",
+      "kind": "artwork",
+      "variant": "homepage-orbit-band",
+      "format": "webp",
+      "width": 1600,
+      "height": 900,
       "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
     },
     {
@@ -1785,6 +1929,33 @@
       "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
     },
     {
+      "path": "source/artwork/editorial-archive-source.png",
+      "kind": "source",
+      "variant": "original-ai-artwork",
+      "format": "png",
+      "width": 1500,
+      "height": 857,
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+    },
+    {
+      "path": "source/artwork/editorial-rain-source.png",
+      "kind": "source",
+      "variant": "original-ai-artwork",
+      "format": "png",
+      "width": 960,
+      "height": 536,
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+    },
+    {
+      "path": "source/artwork/editorial-signal-source.png",
+      "kind": "source",
+      "variant": "original-ai-artwork",
+      "format": "png",
+      "width": 1440,
+      "height": 823,
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+    },
+    {
       "path": "source/artwork/home-editorial-triptych-master.png",
       "kind": "source",
       "variant": "original-ai-artwork",
@@ -1893,6 +2064,15 @@
         "x": 0.779,
         "y": 0.236
       }
+    },
+    {
+      "path": "source/artwork/moon-city-orbit-source.png",
+      "kind": "source",
+      "variant": "original-ai-artwork",
+      "format": "png",
+      "width": 1500,
+      "height": 857,
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
     },
     {
       "path": "source/artwork/moon-city-sky-layer.svg",

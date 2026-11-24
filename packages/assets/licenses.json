@@ -183,6 +183,18 @@
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
     },
     {
+      "path": "illustrations/editorial-archive.webp",
+      "sourceFile": "source/artwork/editorial-archive-source.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derivative of existing raw_arts/art illustration in this repository",
+      "terms": "Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).",
+      "generatedOn": "2026-11-24",
+      "focalPoint": "right (hooded archivist and moon kept clear of the left copy rail)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Cropped, resized and re-encoded from an existing MoonWitness raw artwork master to add a distinct editorial variant. No new external image generation was used."
+    },
+    {
       "path": "illustrations/editorial-knowledge.webp",
       "sourceFile": "source/artwork/home-editorial-triptych-master.png",
       "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
@@ -205,6 +217,30 @@
       "alt": "",
       "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
+    },
+    {
+      "path": "illustrations/editorial-rain.webp",
+      "sourceFile": "source/artwork/editorial-rain-source.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derivative of existing raw_arts/art illustration in this repository",
+      "terms": "Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).",
+      "generatedOn": "2026-11-24",
+      "focalPoint": "center (rooftop antenna array beneath the moon for the Shape step)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Cropped, resized and re-encoded from an existing MoonWitness raw artwork master to add a distinct editorial variant. No new external image generation was used."
+    },
+    {
+      "path": "illustrations/editorial-signal.webp",
+      "sourceFile": "source/artwork/editorial-signal-source.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derivative of existing raw_arts/art illustration in this repository",
+      "terms": "Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).",
+      "generatedOn": "2026-11-24",
+      "focalPoint": "center (two crew workers beneath the blue moon for the Connect step)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Cropped, resized and re-encoded from an existing MoonWitness raw artwork master to add a distinct editorial variant. No new external image generation was used."
     },
     {
       "path": "illustrations/editorial-stories.webp",
@@ -241,6 +277,18 @@
       "alt": "",
       "decorative": true,
       "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
+    },
+    {
+      "path": "illustrations/moon-city-orbit.webp",
+      "sourceFile": "source/artwork/moon-city-orbit-source.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derivative of existing raw_arts/art illustration in this repository",
+      "terms": "Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).",
+      "generatedOn": "2026-11-24",
+      "focalPoint": "center (three crew seen from behind under the moon for the orbit band)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Cropped, resized and re-encoded from an existing MoonWitness raw artwork master to add a distinct editorial variant. No new external image generation was used."
     },
     {
       "path": "illustrations/story-workbench-masthead.webp",
@@ -404,114 +452,6 @@
       "distribution": "source-only pending visual acceptance"
     },
     {
-      "path": "animation/crew-01-idle/crew-01-idle-frame-01.svg",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored SVG",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 idle animation clip master; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-idle/crew-01-idle-frame-02.svg",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored SVG",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 idle animation clip master; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-idle/crew-01-idle-clip.json",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored JSON",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 idle animation clip master; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-hair/crew-01-hair-move-frame-01.svg",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored SVG",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 hair movement clip; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-hair/crew-01-hair-move-frame-02.svg",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored SVG",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 hair movement clip; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-hair/crew-01-hair-move-clip.json",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored JSON",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 hair movement clip; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-walk/crew-01-walk-frame-01.svg",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored SVG",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 walk prototype clip; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-walk/crew-01-walk-frame-02.svg",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored SVG",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 walk prototype clip; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-walk/crew-01-walk-clip.json",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored JSON",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 walk prototype clip; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-turn/crew-01-turn-frame-01.svg",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored SVG",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 turn prototype clip; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-turn/crew-01-turn-frame-02.svg",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored SVG",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 turn prototype clip; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
-      "path": "animation/crew-01-turn/crew-01-turn-clip.json",
-      "creator": "MoonWitness contributors",
-      "source": "Original manually authored JSON",
-      "license": "ISC",
-      "modifications": "Original canonical crew-01 turn prototype clip; no face depicted.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
-    },
-    {
       "path": "source/artwork/moon-city-moon-disc-layer.svg",
       "creator": "MoonWitness contributors",
       "source": "Original manually authored SVG",
@@ -627,6 +567,186 @@
       "modifications": "Original canonical Moon City environment asset authored under ISC license.",
       "status": "approved",
       "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-01.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-02.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-03.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-04.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-clip.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-01.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-02.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-03.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-04.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-clip.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-01.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-02.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-03.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-04.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-clip.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-01.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-02.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-03.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-04.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-clip.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
     }
   ],
   "originalFonts": [

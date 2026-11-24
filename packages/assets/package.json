@@ -15,6 +15,7 @@
     "artwork:prepare": "node scripts/prepare-artwork.mjs",
     "artwork:derivatives": "node scripts/responsive-derivatives.mjs",
     "artwork:layers": "node scripts/layered-art-pipeline.mjs",
+    "animation:generate": "node scripts/generate-crew-animation.mjs",
     "sounds:ambience": "node scripts/generate-scene-ambience.mjs",
     "contact-sheets": "node scripts/generate-contact-sheets.mjs",
     "qa": "node scripts/asset-qa.mjs"

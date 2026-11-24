@@ -136,8 +136,10 @@
       "direction": "ping-pong",
       "pivot": { "x": 0.5, "y": 0.9 },
       "frames": [
-        { "asset": "animation/crew-01-idle/crew-01-idle-frame-01.svg", "durationMs": 900 },
-        { "asset": "animation/crew-01-idle/crew-01-idle-frame-02.svg", "durationMs": 900 }
+        { "asset": "animation/crew-01-idle/crew-01-idle-frame-01.svg", "durationMs": 720 },
+        { "asset": "animation/crew-01-idle/crew-01-idle-frame-02.svg", "durationMs": 720 },
+        { "asset": "animation/crew-01-idle/crew-01-idle-frame-03.svg", "durationMs": 720 },
+        { "asset": "animation/crew-01-idle/crew-01-idle-frame-04.svg", "durationMs": 720 }
       ]
     }
   ]

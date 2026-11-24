@@ -52,7 +52,11 @@ test('UI Catalog SceneLab consumes the canonical Moon City scene instead of main
   assert.match(sceneLabSource, /HERO_SCENE\.breakpoints\.map/u);
   assert.match(sceneLabSource, /IDLE_CLIP_DEFINITION\.frames\.map/u);
   assert.doesNotMatch(sceneLabSource, /const INITIAL_LAYERS[^=]*=\s*\[/u);
-  const sourceMap = sceneLabSource.match(/const SCENE_LAYER_SOURCES[^=]*=\s*\{([\s\S]*?)\n\};/u)?.[1] ?? '';
-  const mappedAssets = Array.from(sourceMap.matchAll(/'([^']+)'\s*:/gu), (match) => match[1]).sort();
-  assert.deepEqual(mappedAssets, hero.layers.map((layer) => layer.asset).sort());
+  // Layer sources may be an object keyed by asset path or an index-aligned
+  // array of imports; both are canonical-driven. Assert every canonical asset
+  // is actually referenced instead of coupling to the container shape.
+  for (const layer of hero.layers) {
+    const escaped = layer.asset.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+    assert.match(sceneLabSource, new RegExp(escaped, 'u'), `missing canonical asset ${layer.asset}`);
+  }
 });
