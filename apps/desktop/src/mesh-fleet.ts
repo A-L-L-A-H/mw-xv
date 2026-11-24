@@ -1,4 +1,5 @@
 import { isIP } from 'node:net';
+import { PRIVATE_MESH_CIDRS, isPrivateMeshHost } from '@moonwitness/ai-runtime';
 import { AccessDeniedError, ValidationError } from '@moonwitness/types';
 import { redactSensitiveText, type DesktopRiskGate } from './risk-gate.js';
 import type {
@@ -88,54 +89,17 @@ export interface MeshFleetAuthContext {
 export type MeshFetchFn = (input: string, init?: RequestInit) => Promise<Response>;
 
 /**
- * Checks whether an IPv4 address belongs to one of the allowed private mesh CIDRs:
- * - 10.0.0.0/8
- * - 100.64.0.0/10
- * - 172.16.0.0/12
- * - 192.168.0.0/16
- */
-function isPrivateMeshIPv4(ip: string): boolean {
-  const parts = ip.split('.');
-  if (parts.length !== 4) return false;
-  const octets = parts.map((part) => Number(part));
-  if (octets.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) {
-    return false;
-  }
-  const [a, b] = octets;
-  if (a === undefined || b === undefined) return false;
-  if (a === 10) return true;
-  if (a === 100 && b >= 64 && b <= 127) return true;
-  if (a === 172 && b >= 16 && b <= 31) return true;
-  if (a === 192 && b === 168) return true;
-  return false;
-}
-
-/**
- * Checks whether an IPv6 address belongs to fd00::/8 (Unique Local Address).
- */
-function isPrivateMeshIPv6(ip: string): boolean {
-  const normalized = ip.toLowerCase();
-  if (isIP(normalized) !== 6) return false;
-  // Reject IPv4-mapped IPv6 addresses unless explicitly checking fd00::/8 prefix
-  const firstGroup = normalized.split(':')[0] ?? '';
-  if (firstGroup.length !== 4) return false;
-  return firstGroup.startsWith('fd');
-}
-
-/**
  * Validates that a host string is strictly a private mesh IP address.
- * Fails closed on public IPs, loopback addresses, and DNS hostnames.
+ *
+ * The allowed ranges are the canonical `PRIVATE_MESH_CIDRS` exported by
+ * `@moonwitness/ai-runtime` (issue #203); this function deliberately adds no
+ * local copy of the list or its matching logic. `isIP` keeps the historical
+ * host-only contract (URLs and DNS names remain rejected).
  */
 export function isPrivateMeshIp(host: string): boolean {
   const normalized = host.replace(/^\[|\]$/gu, '').trim();
-  const version = isIP(normalized);
-  if (version === 4) {
-    return isPrivateMeshIPv4(normalized);
-  }
-  if (version === 6) {
-    return isPrivateMeshIPv6(normalized);
-  }
-  return false;
+  if (isIP(normalized) === 0) return false;
+  return isPrivateMeshHost(normalized);
 }
 
 /**
@@ -165,7 +129,7 @@ export function assertPrivateMeshEndpoint(endpointUrl: string): URL {
   const host = parsed.hostname.replace(/^\[|\]$/gu, '');
   if (!isPrivateMeshIp(host)) {
     throw new AccessDeniedError(
-      `Mesh endpoint host '${host}' is not a private mesh IP (allowed: 10.0.0.0/8, 100.64.0.0/10, 172.16.0.0/12, 192.168.0.0/16, fd00::/8)`,
+      `Mesh endpoint host '${host}' is not a private mesh IP (allowed: ${PRIVATE_MESH_CIDRS.join(', ')})`,
       {
         code: 'access_denied',
         details: { host, reasonCode: 'MESH_NON_PRIVATE_IP' },
