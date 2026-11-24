@@ -704,14 +704,26 @@ describe('cloud auth and operations hardening', () => {
       await closed.app.close();
     }
 
-    expect(() =>
+    // Configuration is resolved when the plugin registers (not at construction),
+    // so strict startup rejects while the Fastify app becomes ready.
+    const strictApp = Fastify();
+    strictApp.register(
       createCloudHttpPlugin({
         controlPlaneUrl: 'http://127.0.0.1:3003',
         adminToken: 'x',
         features: { controlPlane: true },
         strictStartup: true,
       })
-    ).toThrow(CloudConfigError);
+    );
+    let strictThrown: unknown;
+    try {
+      await strictApp.ready();
+    } catch (error) {
+      strictThrown = error;
+    } finally {
+      await strictApp.close();
+    }
+    expect(strictThrown).toBeInstanceOf(CloudConfigError);
   }, 30_000);
 
   it('drives deployment transitions through the shared state machine and preserves response shapes', async () => {
