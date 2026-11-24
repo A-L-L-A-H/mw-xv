@@ -149,6 +149,7 @@ jobs:
           bun run ui:design:check
           bun run lint:ui
           bun run api:addon:check
+          bun --filter @moonwitness/types build
           bun run test:assets
           bunx playwright install chromium
           bun run assets:check:bounds
