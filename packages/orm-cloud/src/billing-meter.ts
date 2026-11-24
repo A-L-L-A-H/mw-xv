@@ -446,3 +446,76 @@ export function applyBillingWebhookEvent(
     }),
   };
 }
+
+/*
+ * CF-007 / idempotent usage accounting under retry
+ * ---------------------------------------------------------------------------
+ * Usage events are keyed by `eventId`: a duplicate delivery (e.g. a retried
+ * webhook or a replayed settlement) is acknowledged but never counted twice.
+ * This is the metering counterpart of PaasQuotaReservationLedger.settle().
+ */
+export interface UsageSettlementEvent {
+  readonly eventId: string;
+  readonly tenantId: string;
+  readonly metric: keyof TenantUsageMetrics;
+  readonly units: number;
+  readonly correlationId?: string;
+  readonly recordedAt?: string;
+}
+
+export interface UsageSettlementResult {
+  readonly applied: boolean;
+  readonly duplicate: boolean;
+  readonly eventId: string;
+  readonly tenantId: string;
+  readonly usage: TenantUsageMetrics;
+  readonly reason: string;
+}
+
+export class TenantUsageSettlementLedger {
+  private readonly appliedEventIds = new Set<string>();
+  private readonly usage: Record<keyof TenantUsageMetrics, number> = {
+    containerHours: 0,
+    ramGbHours: 0,
+    storageGb: 0,
+    egressGb: 0,
+  };
+
+  snapshot(): TenantUsageMetrics {
+    return { ...this.usage };
+  }
+
+  apply(event: UsageSettlementEvent): UsageSettlementResult {
+    if (!event.eventId || !event.eventId.trim()) {
+      throw new Error('Usage settlement requires a non-empty eventId');
+    }
+    if (!Object.prototype.hasOwnProperty.call(this.usage, event.metric)) {
+      throw new Error(`Unknown usage metric "${event.metric}"`);
+    }
+    if (!Number.isFinite(event.units) || event.units < 0) {
+      throw new Error('Usage settlement units must be a finite non-negative number');
+    }
+
+    if (this.appliedEventIds.has(event.eventId)) {
+      return {
+        applied: false,
+        duplicate: true,
+        eventId: event.eventId,
+        tenantId: event.tenantId,
+        usage: this.snapshot(),
+        reason: `Duplicate usage event "${event.eventId}" ignored (idempotent under retry)`,
+      };
+    }
+
+    this.appliedEventIds.add(event.eventId);
+    this.usage[event.metric] += event.units;
+    return {
+      applied: true,
+      duplicate: false,
+      eventId: event.eventId,
+      tenantId: event.tenantId,
+      usage: this.snapshot(),
+      reason: `Recorded ${event.units} ${event.metric} for tenant "${event.tenantId}"`,
+    };
+  }
+}

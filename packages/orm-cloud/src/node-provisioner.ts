@@ -429,3 +429,227 @@ export function planVpsNodeProvision(request: VpsProvisionRequest): ProvisionRep
     planSha256,
   };
 }
+
+/*
+ * CF-008 / compensation for partial provisioning failures
+ * ---------------------------------------------------------------------------
+ * Provisioning step -> compensating action (all actions are idempotent and
+ * are scoped to the completed steps of THIS correlation ID only):
+ *
+ *   preflight-os                -> no persistent state; inspect only
+ *   install-docker              -> systemctl disable --now docker
+ *   join-easytier-mesh          -> disable easytier, remove mesh.env
+ *   configure-control-plane     -> disable unit, remove unit + env, daemon-reload
+ *   configure-caddy-edge        -> reload/restart Caddy, restore Caddyfile
+ *   verify-health-probe         -> read-only probe; inspect journalctl only
+ *
+ * A failed operation records state `compensated` (fully rolled back) or
+ * `needs_operator_retry` (one or more cleanup actions failed). Cleanup errors
+ * are preserved in `cleanupResults` / `pendingOperatorCleanup` and are never
+ * silently swallowed. The correlation ID is bound to every action so an
+ * operator can retry without affecting other operations or pre-existing
+ * resources.
+ */
+
+export interface ProvisionCompensationAction {
+  readonly stepId: ProvisionStepId;
+  readonly order: number;
+  readonly command: string;
+  readonly idempotent: true;
+  readonly reason: string;
+}
+
+export interface ProvisionCompensationPlan {
+  readonly correlationId: string;
+  readonly nodeId: string;
+  readonly state: 'recoverable' | 'compensation_required';
+  readonly failedStepId: ProvisionStepId;
+  readonly completedStepIds: readonly ProvisionStepId[];
+  readonly actions: readonly ProvisionCompensationAction[];
+  readonly auditSha256: string;
+}
+
+export function planProvisionCompensation(
+  report: ProvisionReport,
+  completedStepIds: readonly ProvisionStepId[],
+  failedStepId: ProvisionStepId,
+  correlationId: string
+): ProvisionCompensationPlan {
+  const byId = new Map(report.steps.map((step) => [step.id, step]));
+  const completed = new Set(completedStepIds);
+  const actions: ProvisionCompensationAction[] = [];
+
+  // Reverse order: undo the most recently applied side effect first. Only
+  // steps that actually completed are compensated (scoped cleanup).
+  for (const stepId of [...completedStepIds].reverse()) {
+    const step = byId.get(stepId);
+    if (!step || stepId === failedStepId || !completed.has(stepId)) continue;
+    actions.push({
+      stepId,
+      order: actions.length + 1,
+      command: step.rollbackHint,
+      idempotent: true,
+      reason: `Rollback "${step.title}" from failed operation ${correlationId}`,
+    });
+  }
+
+  const canonical = {
+    correlationId,
+    nodeId: report.nodeId,
+    failedStepId,
+    completedStepIds: [...completedStepIds],
+    actions: actions.map((action) => ({
+      stepId: action.stepId,
+      order: action.order,
+      command: action.command,
+    })),
+  };
+  return {
+    correlationId,
+    nodeId: report.nodeId,
+    state: actions.length > 0 ? 'compensation_required' : 'recoverable',
+    failedStepId,
+    completedStepIds: [...completedStepIds],
+    actions,
+    auditSha256: createHash('sha256').update(JSON.stringify(canonical)).digest('hex'),
+  };
+}
+
+export interface ProvisionFaultInjection {
+  /** External side-effect boundary at which the provision step fails. */
+  readonly failStepId?: ProvisionStepId;
+  /** Cleanup boundary at which the compensating action fails. */
+  readonly failCompensationStepId?: ProvisionStepId;
+}
+
+export interface ProvisionExecutionInput {
+  readonly request: VpsProvisionRequest;
+  readonly correlationId: string;
+  readonly fault?: ProvisionFaultInjection;
+  readonly runStep?: (step: ProvisionStep, correlationId: string) => void | Promise<void>;
+  readonly runCompensation?: (
+    action: ProvisionCompensationAction,
+    correlationId: string
+  ) => void | Promise<void>;
+  readonly executedAt?: string;
+}
+
+export interface ProvisionCleanupResult {
+  readonly stepId: ProvisionStepId;
+  readonly ok: boolean;
+  readonly error?: string;
+}
+
+export interface ProvisionExecutionReport {
+  readonly ok: boolean;
+  readonly correlationId: string;
+  readonly nodeId: string;
+  readonly state: 'completed' | 'compensated' | 'needs_operator_retry' | 'rejected';
+  readonly completedStepIds: readonly ProvisionStepId[];
+  readonly failedStepId?: ProvisionStepId;
+  readonly failureMessage?: string;
+  readonly compensation?: ProvisionCompensationPlan;
+  readonly cleanupResults: readonly ProvisionCleanupResult[];
+  /** Cleanup work preserved for operator retry; never silently swallowed. */
+  readonly pendingOperatorCleanup: readonly ProvisionStepId[];
+  readonly auditSha256: string;
+}
+
+export async function executeProvisionWithCompensation(
+  input: ProvisionExecutionInput
+): Promise<ProvisionExecutionReport> {
+  const report = planVpsNodeProvision(input.request);
+  const base = { correlationId: input.correlationId, nodeId: input.request.nodeId };
+
+  if (!report.ok) {
+    return {
+      ok: false,
+      ...base,
+      state: 'rejected',
+      completedStepIds: [],
+      cleanupResults: [],
+      pendingOperatorCleanup: [],
+      failureMessage: `Invalid provisioning request: ${report.validationErrors.map((e) => e.code).join(', ')}`,
+      auditSha256: createHash('sha256')
+        .update(JSON.stringify({ ...base, state: 'rejected', errors: report.validationErrors }))
+        .digest('hex'),
+    };
+  }
+
+  const completedStepIds: ProvisionStepId[] = [];
+  let failedStepId: ProvisionStepId | undefined;
+  let failureMessage: string | undefined;
+
+  for (const step of report.steps) {
+    if (input.fault?.failStepId === step.id) {
+      failedStepId = step.id;
+      failureMessage = `Injected failure at external side-effect boundary "${step.id}"`;
+      break;
+    }
+    await input.runStep?.(step, input.correlationId);
+    completedStepIds.push(step.id);
+  }
+
+  if (!failedStepId) {
+    return {
+      ok: true,
+      ...base,
+      state: 'completed',
+      completedStepIds,
+      cleanupResults: [],
+      pendingOperatorCleanup: [],
+      auditSha256: createHash('sha256')
+        .update(JSON.stringify({ ...base, state: 'completed', completedStepIds }))
+        .digest('hex'),
+    };
+  }
+
+  const compensation = planProvisionCompensation(
+    report,
+    completedStepIds,
+    failedStepId,
+    input.correlationId
+  );
+  const cleanupResults: ProvisionCleanupResult[] = [];
+  const pendingOperatorCleanup: ProvisionStepId[] = [];
+
+  for (const action of compensation.actions) {
+    try {
+      if (input.fault?.failCompensationStepId === action.stepId) {
+        throw new Error(`Injected cleanup failure for "${action.stepId}"`);
+      }
+      await input.runCompensation?.(action, input.correlationId);
+      cleanupResults.push({ stepId: action.stepId, ok: true });
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Cleanup failed';
+      cleanupResults.push({ stepId: action.stepId, ok: false, error });
+      pendingOperatorCleanup.push(action.stepId);
+    }
+  }
+
+  const state = pendingOperatorCleanup.length > 0 ? 'needs_operator_retry' : 'compensated';
+  return {
+    ok: false,
+    ...base,
+    state,
+    completedStepIds,
+    failedStepId,
+    failureMessage,
+    compensation,
+    cleanupResults,
+    pendingOperatorCleanup,
+    auditSha256: createHash('sha256')
+      .update(
+        JSON.stringify({
+          ...base,
+          state,
+          failedStepId,
+          completedStepIds,
+          cleanupResults,
+          pendingOperatorCleanup,
+          failedCompensationActions: compensation.actions.map((a) => a.stepId),
+        })
+      )
+      .digest('hex'),
+  };
+}

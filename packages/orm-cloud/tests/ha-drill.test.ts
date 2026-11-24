@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { runMeshHaFailoverDrill } from '../src/ha-drill.js';
+import {
+  HA_DRILL_RUNBOOK,
+  runDeterministicHaDrill,
+  runMeshHaFailoverDrill,
+  type HaDrillScenario,
+} from '../src/ha-drill.js';
 import type { ActiveTenantDeployment, MeshVpsNode } from '../src/mesh-ha.js';
 
 const CLUSTER_NODES: readonly MeshVpsNode[] = [
@@ -109,5 +114,103 @@ describe('ha-drill (Wave C.18)', () => {
     expect(probedNodes).toEqual(['vps-standby-02']);
     expect(evidence.passed).toBe(true);
     expect(evidence.rtoMetrics.detectionMs).toBe(1200);
+  });
+});
+
+describe('CF-010 deterministic failure-injection drills', () => {
+  const EXPECTED: Readonly<Record<HaDrillScenario, string>> = {
+    provider_outage: 'full',
+    partial_failover: 'partial',
+    stale_node_recovery: 'full',
+    health_probe_timeout: 'full',
+    failed_rollback: 'operator_retry',
+  };
+
+  function drill(scenario: HaDrillScenario, overrides: Record<string, unknown> = {}) {
+    return runDeterministicHaDrill({
+      drillId: `drill-${scenario}`,
+      scenario,
+      environment: 'test',
+      nodes: CLUSTER_NODES,
+      deployments: DEPLOYMENTS,
+      targetPrimaryNodeId: 'vps-primary-01',
+      ownerGeneration: 3,
+      providerEndpoints: ['http://10.144.0.1:3003'],
+      executedAt: '2026-11-24T00:00:00.000Z',
+      ...overrides,
+    });
+  }
+
+  it('runs setup, injected fault, safety, recovery and cleanup for every scenario deterministically', () => {
+    for (const scenario of Object.keys(EXPECTED) as HaDrillScenario[]) {
+      const first = drill(scenario);
+      const second = drill(scenario);
+
+      expect(first.steps.map((step) => step.phase)).toEqual([
+        'setup',
+        'inject_fault',
+        'assert_safety',
+        'assert_recovery',
+        'cleanup',
+      ]);
+      expect(first.steps.every((step) => step.passed)).toBe(true);
+      expect(first.safetyInvariants.every((invariant) => invariant.passed)).toBe(true);
+      expect(first.recoveryOutcome.expected).toBe(EXPECTED[scenario]);
+      expect(first.recoveryOutcome.achieved).toBe(true);
+      expect(first.passed).toBe(true);
+      expect(first.evidenceSha256).toMatch(/^[0-9a-f]{64}$/u);
+      expect(second.evidenceSha256).toBe(first.evidenceSha256);
+    }
+  });
+
+  it('fences the recovered old node as standby and preserves diagnostics for failed rollback', () => {
+    const recovery = drill('stale_node_recovery');
+    expect(recovery.fencing).toMatchObject({
+      beforeGeneration: 3,
+      staleHeartbeatRejected: true,
+      recoveredNodeRole: 'standby',
+    });
+    expect(recovery.fencing.afterGeneration).toBeGreaterThan(recovery.fencing.beforeGeneration);
+
+    const rollback = drill('failed_rollback');
+    expect(rollback.pendingOperatorCleanup).toEqual(['rollback:vps-primary-01']);
+    expect(rollback.recoveryOutcome.actual).toBe('operator_retry');
+  });
+
+  it('refuses to target production environments or public provider endpoints', () => {
+    const prodEnv = drill('provider_outage', { environment: 'production' });
+    expect(prodEnv.safetyInvariants.find((i) => i.name === 'production_isolation')?.passed).toBe(
+      false
+    );
+    expect(prodEnv.passed).toBe(false);
+
+    const publicEndpoint = drill('provider_outage', {
+      providerEndpoints: ['https://8.8.8.8:3003'],
+    });
+    expect(
+      publicEndpoint.safetyInvariants.find((i) => i.name === 'production_isolation')?.passed
+    ).toBe(false);
+    expect(publicEndpoint.passed).toBe(false);
+  });
+
+  it('redacts secrets from preserved diagnostic evidence', () => {
+    const secret = 'drill-top-secret-token';
+    const evidence = drill('failed_rollback', {
+      secrets: [secret],
+      providerEndpoints: ['http://10.144.0.1:3003?token=' + secret],
+    });
+
+    expect(evidence.diagnostics).not.toContain(secret);
+    expect(evidence.diagnostics).toContain('[REDACTED]');
+    expect(evidence.safetyInvariants.find((i) => i.name === 'diagnostics_redacted')?.passed).toBe(
+      true
+    );
+  });
+
+  it('ships a runbook covering every scenario and result interpretation', () => {
+    for (const scenario of Object.keys(EXPECTED) as HaDrillScenario[]) {
+      expect(HA_DRILL_RUNBOOK).toContain(scenario);
+    }
+    expect(HA_DRILL_RUNBOOK).toContain('evidenceSha256');
   });
 });

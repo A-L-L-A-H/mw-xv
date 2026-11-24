@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   evaluateMeshFailoverPlan,
+  isPrivateMeshHost,
   isPrivateMeshIp,
+  PRIVATE_MESH_CIDRS,
   type ActiveTenantDeployment,
   type MeshVpsNode,
 } from '../src/mesh-ha.js';
@@ -18,6 +20,91 @@ describe('isPrivateMeshIp', () => {
     expect(isPrivateMeshIp('172.32.0.1')).toBe(false);
     expect(isPrivateMeshIp('100.128.0.1')).toBe(false);
     expect(isPrivateMeshIp('not-an-ip')).toBe(false);
+  });
+
+  it('parities the canonical A2A ranges including IPv6 fd00::/8 (Issue #203)', () => {
+    expect([...PRIVATE_MESH_CIDRS]).toEqual([
+      '10.0.0.0/8',
+      '100.64.0.0/10',
+      '172.16.0.0/12',
+      '192.168.0.0/16',
+      'fd00::/8',
+    ]);
+
+    // IPv6 ULA parity: the former IPv4-only mesh-ha helper omitted these.
+    expect(isPrivateMeshIp('fd00::1')).toBe(true);
+    expect(isPrivateMeshIp('fd7a:115c:a1e0::1')).toBe(true);
+    expect(isPrivateMeshIp('[fd12::abcd]')).toBe(true);
+    expect(isPrivateMeshIp('fe80::1')).toBe(false); // link-local is not ULA
+    expect(isPrivateMeshIp('2001:4860:4860::8888')).toBe(false);
+
+    expect(isPrivateMeshHost('http://[fd00::1]:3003/paas/apps')).toBe(true);
+    expect(isPrivateMeshHost('http://8.8.8.8:3003')).toBe(false);
+
+    for (const host of ['10.0.0.1', '100.64.0.1', '172.16.0.1', '192.168.0.1', 'fd00::1']) {
+      expect(isPrivateMeshHost(host)).toBe(isPrivateMeshIp(host));
+    }
+  });
+
+  it('accepts an IPv6 ULA standby node in failover planning', () => {
+    const nodes: MeshVpsNode[] = [
+      {
+        nodeId: 'vps-v4-primary',
+        meshIp: 'fd00::10',
+        region: 'sgp',
+        healthy: true,
+        dockerStatus: 'running',
+        availableRamMb: 2048,
+        cpuLoadPercent: 20,
+      },
+      {
+        nodeId: 'vps-v6-standby',
+        meshIp: 'fd00::20',
+        region: 'sgp',
+        healthy: true,
+        dockerStatus: 'running',
+        availableRamMb: 2048,
+        cpuLoadPercent: 20,
+      },
+    ];
+
+    const primaryHealthy = evaluateMeshFailoverPlan({
+      nodes,
+      deployments: [
+        {
+          deploymentId: 'dep-v6',
+          tenantId: 'tenant-v6',
+          appSlug: 'v6-api',
+          primaryNodeId: 'vps-v4-primary',
+          requiredRamMb: 256,
+        },
+      ],
+    });
+    expect(primaryHealthy.actions).toEqual([]);
+
+    const failedPrimary = evaluateMeshFailoverPlan({
+      nodes: nodes.map((node) =>
+        node.nodeId === 'vps-v4-primary'
+          ? { ...node, healthy: false, dockerStatus: 'offline' as const }
+          : node
+      ),
+      deployments: [
+        {
+          deploymentId: 'dep-v6',
+          tenantId: 'tenant-v6',
+          appSlug: 'v6-api',
+          primaryNodeId: 'vps-v4-primary',
+          requiredRamMb: 256,
+        },
+      ],
+    });
+    expect(failedPrimary.failClosed).toBe(false);
+    expect(failedPrimary.actions.map((action) => action.kind)).toEqual([
+      'failover_deploy',
+      'caddy_reroute',
+      'drain_primary',
+    ]);
+    expect(failedPrimary.actions[0]?.targetMeshIp).toBe('fd00::20');
   });
 });
 

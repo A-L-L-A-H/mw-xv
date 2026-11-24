@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  executeProvisionWithCompensation,
   isValidEasyTierMeshIp,
   planVpsNodeProvision,
   redactProvisionSecrets,
   validateVpsProvisionRequest,
+  type ProvisionStepId,
   type VpsProvisionRequest,
 } from '../src/node-provisioner.js';
 
@@ -50,7 +52,9 @@ describe('node-provisioner (Wave C.14)', () => {
       'verify-health-probe',
     ]);
     expect(reportA.steps.every((s) => s.idempotent)).toBe(true);
-    expect(reportA.systemdUnitPreview).toContain('Environment=MW_CONTROL_PLANE_AUTOSTART_LEGACY=false');
+    expect(reportA.systemdUnitPreview).toContain(
+      'Environment=MW_CONTROL_PLANE_AUTOSTART_LEGACY=false'
+    );
     expect(reportA.redactedSummary).not.toContain(BASE_REQUEST.meshNetworkSecret);
     for (const step of reportA.steps) {
       expect(step.redactedCommand).not.toContain(BASE_REQUEST.meshNetworkSecret);
@@ -98,5 +102,80 @@ describe('node-provisioner (Wave C.14)', () => {
       undefined,
     ]);
     expect(output).toBe('key=[REDACTED] tok=[REDACTED]');
+  });
+});
+
+describe('CF-008 compensation for partial provisioning failures', () => {
+  const STEP_ORDER: readonly ProvisionStepId[] = [
+    'preflight-os',
+    'install-docker',
+    'join-easytier-mesh',
+    'configure-control-plane',
+    'configure-caddy-edge',
+    'verify-health-probe',
+  ];
+
+  it('injects a failure at every external side-effect boundary and compensates only completed steps', async () => {
+    for (const failStepId of STEP_ORDER) {
+      const executed: ProvisionStepId[] = [];
+      const cleaned: ProvisionStepId[] = [];
+      const result = await executeProvisionWithCompensation({
+        request: BASE_REQUEST,
+        correlationId: `corr-${failStepId}`,
+        fault: { failStepId },
+        runStep: (step, correlationId) => {
+          expect(correlationId).toBe(`corr-${failStepId}`);
+          executed.push(step.id);
+        },
+        runCompensation: (action, correlationId) => {
+          expect(correlationId).toBe(`corr-${failStepId}`);
+          expect(action.idempotent).toBe(true);
+          cleaned.push(action.stepId);
+        },
+      });
+
+      const expectedCompleted = STEP_ORDER.slice(0, STEP_ORDER.indexOf(failStepId));
+      expect(result.ok).toBe(false);
+      expect(result.failedStepId).toBe(failStepId);
+      expect(result.completedStepIds).toEqual(expectedCompleted);
+      expect(executed).toEqual(expectedCompleted);
+      expect(result.compensation?.correlationId).toBe(`corr-${failStepId}`);
+      expect(result.compensation?.actions.map((action) => action.stepId)).toEqual(
+        [...expectedCompleted].reverse()
+      );
+      expect(cleaned).toEqual([...expectedCompleted].reverse());
+      expect(result.state).toBe('compensated');
+      expect(result.pendingOperatorCleanup).toEqual([]);
+      expect(result.cleanupResults.every((cleanup) => cleanup.ok)).toBe(true);
+      expect(result.auditSha256).toMatch(/^[0-9a-f]{64}$/u);
+    }
+  });
+
+  it('preserves cleanup failures for operator retry instead of swallowing them', async () => {
+    const result = await executeProvisionWithCompensation({
+      request: BASE_REQUEST,
+      correlationId: 'corr-cleanup-fail',
+      fault: { failStepId: 'verify-health-probe', failCompensationStepId: 'configure-caddy-edge' },
+    });
+
+    expect(result.state).toBe('needs_operator_retry');
+    expect(result.pendingOperatorCleanup).toContain('configure-caddy-edge');
+    const failedCleanup = result.cleanupResults.find((cleanup) => !cleanup.ok);
+    expect(failedCleanup?.error).toContain('Injected cleanup failure');
+    expect(result.auditSha256).toMatch(/^[0-9a-f]{64}$/u);
+  });
+
+  it('rejects invalid requests without running or cleaning up any side effect', async () => {
+    const runStep = vi.fn();
+    const result = await executeProvisionWithCompensation({
+      request: { ...BASE_REQUEST, meshNetworkSecret: 'short' },
+      correlationId: 'corr-invalid',
+      runStep,
+    });
+
+    expect(result.state).toBe('rejected');
+    expect(result.completedStepIds).toEqual([]);
+    expect(result.cleanupResults).toEqual([]);
+    expect(runStep).not.toHaveBeenCalled();
   });
 });

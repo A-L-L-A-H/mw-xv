@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_BILLING_TIERS,
+  TenantUsageSettlementLedger,
   applyBillingWebhookEvent,
   calculateTenantInvoice,
   evaluateBillingLifecycle,
@@ -166,5 +167,36 @@ describe('billing-meter (Wave C.16)', () => {
     );
     expect(canceled.transition.state).toBe('canceled');
     expect(canceled.transition.enforcementPlan.action).toBe('stop');
+  });
+});
+
+describe('CF-007 idempotent usage accounting', () => {
+  it('records a usage event once under duplicate settlement and keeps metrics isolated', () => {
+    const ledger = new TenantUsageSettlementLedger();
+    const event = {
+      eventId: 'evt-meter-1',
+      tenantId: 'tenant-1',
+      metric: 'containerHours' as const,
+      units: 3,
+    };
+
+    const first = ledger.apply(event);
+    const duplicate = ledger.apply(event);
+    expect(first.applied).toBe(true);
+    expect(duplicate).toMatchObject({ applied: false, duplicate: true });
+
+    const otherMetric = ledger.apply({
+      ...event,
+      eventId: 'evt-meter-2',
+      metric: 'ramGbHours',
+      units: 512,
+    });
+    expect(otherMetric.applied).toBe(true);
+    expect(ledger.snapshot()).toEqual({
+      containerHours: 3,
+      ramGbHours: 512,
+      storageGb: 0,
+      egressGb: 0,
+    });
   });
 });
