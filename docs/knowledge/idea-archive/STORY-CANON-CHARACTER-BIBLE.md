@@ -162,6 +162,6 @@ These four episode / poster titles are retained from the available recent-conver
 
 ## 8. Canon registry status rules
 
-Use `LOCKED` only for explicit owner-confirmed constraints with a traceable source. Use `PROVISIONAL` for accepted working lore with open review. Use `RETIRED` for superseded versions retained historically. Use `UNRESOLVED` for conflicts. Existing source labels such as `review`, `draft`, `published`, `registered`, `recovered_draft`, `proposed` and `user_submitted_in_chat` must not be flattened.
+Story-stage values such as `DRAFT / SOURCE-PARTIAL`, `DRAFT / TITLE-ONLY` and `DRAFT / UNRESOLVED` are **draft stage + evidence**, not canon status. Use `LOCKED` only for explicit owner-confirmed constraints with a traceable source. Use `PROVISIONAL` for accepted working lore with open review. Use `RETIRED` for superseded versions retained historically. Use `UNRESOLVED` for conflicts. Existing source labels such as `review`, `draft`, `published`, `registered`, `recovered_draft`, `proposed` and `user_submitted_in_chat` must not be flattened.
 
 No silent renumbering, alias fusion, story rewrite or poster replacement is authorized by this index.

@@ -1,5 +1,7 @@
 > **Master archive notice (2026-11-23):** This earlier monolithic source-backed index is retained as a detailed appendix. The current navigational source of truth is [docs/knowledge/idea-archive/README.md](idea-archive/README.md), which links the separate idea, project, canon, character, visual, framework, brand/product, repository, issue, execution and unresolved registries. Do not maintain competing catalogues here.
 
+> **FROZEN 2026-11-23 APPENDIX.** Counts in this file are historical: 161 issues / 26 PRs are superseded by `idea-archive/ISSUE-INDEX.md` (191 / 30); the "22 Library files + one folder" figure refers only to the `/MoonWitness` subtree and is superseded by `idea-archive/LIBRARY-SOURCE-REGISTER.md` (279 root entries / 319 recursive / 203 PNG); the 280-repository figure came from three paginated search queries and must name its endpoint. No count in this appendix is live. Do not update or extend this file; add new records to the canonical registries under `idea-archive/`.
+
 # Total Idea Archive & Cross-Project Index
 
 **Audit date:** 2026-11-23 (Asia/Jakarta)  

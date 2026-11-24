@@ -250,7 +250,7 @@ These counts are point-in-time API results. Re-fetch the issue/PR list before ma
 
 ### Repeated legacy stable IDs
 
-The following 20 title IDs each occur on four separate issue numbers. All 80 issue records in these groups were closed at the snapshot. They contain no `moonwitness-task` managed marker and none of these `MW-*` IDs appears as a TaskOS code in the current 636-record registry. They are preserved as historical issue/discussion records; this index does not choose a canonical issue or delete/merge discussion.
+The following 20 title IDs each occur on four separate issue numbers. All 80 issue records in these groups were closed at the snapshot. They contain no `moonwitness-task` managed marker and none of these `MW-*` IDs appears as a TaskOS code in the current 637-record registry. They are preserved as historical issue/discussion records; this index does not choose a canonical issue or delete/merge discussion.
 
 | Stable ID | Issue numbers (all closed) |
 |---|---|
@@ -304,7 +304,7 @@ The 25 issue bodies carrying a managed marker are listed in the main table. At t
 This section is an additive, dated checkpoint. The 2026-11-23 snapshot above is retained as history and is not rewritten.
 
 - Verified with `gh issue list -R A-L-L-A-H/mw-xv --state all --limit 500` and `gh pr list ...`: **191 issues (85 open / 106 closed)** and **30 PRs (2 open / 28 closed-or-merged)**. The prior 161/26 counts were correct at 2026-11-23 but are now stale.
-- 30 issues created after the prior snapshot (#189–#221, with #198 and #216–#218 being PR numbers) were added to the tables above. Most are `Audit:` items produced by the hourly code-audit automation (`audit`, `auto-generated` labels); they are execution backlog records, not new archive proposals.
+- 30 issues created after the prior snapshot (#188 plus #189–#221, excluding PR numbers #198 and #216–#218) were added to the tables above. Most are `Audit:` items produced by the hourly code-audit automation (`audit`, `auto-generated` labels); they are execution backlog records, not new archive proposals.
 - PR #81 (`dev → main`) is now **merged**; the prior report recorded it as open. PR #218 is the current open promotion candidate and #172 is the open Dependabot PR. No promotion was performed by this archive pass.
 - `CF-020` remains open at #74 and closed at #75; no automatic reconciliation was performed. Human triage is still required.
 - The `bjo163` namespace count is endpoint-dependent and must not be reported as a single fact: `gh repo list bjo163 --limit 500` returns **150** accessible repositories (148 public + 2 private, including the archived `moonwitness-memory`), `GET /search/repositories?q=user:bjo163` returns **90**, while the prior report's three paginated GitHub searches produced **280 records (148 public + 132 private)**. These are different query scopes; see the repository consolidation report. No source repository was deleted, archived or rewritten.

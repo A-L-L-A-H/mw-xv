@@ -3,6 +3,8 @@
 **Snapshot:** 2026-11-24 · **Status:** `PRESERVATION / NOT SPECIFICATION`  
 **Purpose:** some ideas exist only as a name, caption or one line. They are too thin to be a story bible and too valuable to be discarded. This deck gives them a medium **without turning them into software**. No card below is a TaskOS task, a feature request, a canon rule or an approved artwork.
 
+> **ID scope:** `C-SEED-####` values are deck-local aliases. Canonical homes are the linked `IDEA-*`, `FRM-*`, `PRJ-*` and `UNR-*` IDs in [INDEX.json](INDEX.json).
+
 ## Rules for this deck
 
 1. The original label is quoted exactly as found. No expansion, translation or etymology is inferred.

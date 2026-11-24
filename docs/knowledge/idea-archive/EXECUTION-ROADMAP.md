@@ -74,9 +74,9 @@ There are also current engineering tasks and managed Issues for cloud foundation
 ## Current execution state
 
 - Knowledge archive: initial stable catalog and bibles are committed on `dev` (see archive index).
-- Repository census: 280 accessible repo records; exact public CSV is committed; deep audit remains incomplete.
+- Repository census: 280 accessible repo records from three paginated `GET /search/repositories?q=user:bjo163` queries (148 public + 132 private); `gh repo list bjo163` returns 150. exact public CSV is committed; deep audit remains incomplete.
 - TaskOS: dev 637 unique tasks; 96 todo, 49 doing, 24 blocked, 468 done at blob `4d677b63`; main remains at 627.
 - Story / canon: II and XII exact source records sampled; full manuscript recovery is open.
-- Issue consolidation: #15–#22 and #27 remain the original product/source entry points; un-managed proposals #173–#183, #185 and #187 cover source-recovery / archive discovery, while #184 and #186 are TaskOS-managed projections. The current issue index records 161 issues and 26 PRs.
-- Promotion / CI: automatic PR #81 remains a separate protected promotion batch. Do not merge or claim release from archive-doc commits alone.
+- Issue consolidation: #15–#22 and #27 remain the original product/source entry points; un-managed proposals #173–#183, #185 and #187 cover source-recovery / archive discovery, while #184 and #186 are TaskOS-managed projections. The current issue index records 191 issues and 30 PRs (85 open / 106 closed; 2 open / 26 merged / 2 closed).
+- Promotion / CI: PR #81 is merged; the current open promotion candidate is #218. Do not merge or claim release from archive-doc commits alone.
 

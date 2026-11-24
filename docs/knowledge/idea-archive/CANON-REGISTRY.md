@@ -10,6 +10,8 @@ This registry preserves sourced rules and constraints. It does not decide confli
 - `UNRESOLVED` — source conflict or missing owner decision.
 - `RETIRED` — superseded record retained for history.
 
+Compound values such as `PROVISIONAL lore` or `LOCKED owner instruction` mean **status + classification**, not additional status values. `RETIRED` and `UNRESOLVED` remain in the vocabulary for future use.
+
 ## Canon / continuity register
 
 | Canon ID | Rule / exact source wording | Domain | Source / provenance | Status |
@@ -24,7 +26,7 @@ This registry preserves sourced rules and constraints. It does not decide confli
 | CAN-0008 | “Narrative Roles Stay Contextual.” | Character / story roles | II world rules | PROVISIONAL lore |
 | CAN-0009 | “Canon may grow. Lore may remain unresolved.” | Continuity | II world rules | PROVISIONAL lore |
 | CAN-0010 | “World rules should make creation and exploration easier, not harder.” | Narrative design | II world rules | PROVISIONAL lore |
-| CAN-0011 | Do not depict Allah as a human, character or visual object. | Religious / visual boundary | Owner-provided 775-line master prompt | LOCKED owner instruction |
+| CAN-0011 | Do not depict Allah as a human, character or visual object. | Religious / visual boundary | Owner-provided master prompt (774 newline-terminated lines; 775 including the unterminated final line) | LOCKED owner instruction |
 | CAN-0012 | Do not silently change canon, remove historical versions or replace original wording without preserving the source. | Archive / canon governance | Owner-provided master prompt | LOCKED archive rule |
 | CAN-0013 | Distinguish original user ideas from AI suggestions, drafts, proposals and assumptions. | Archive / provenance | Owner-provided master prompt | LOCKED archive rule |
 | CAN-0014 | Distinguish scripture text, hadith, tafsir, translation, personal interpretation, metaphor and creative concept. | Religious / editorial | Owner-provided master prompt | LOCKED editorial boundary |

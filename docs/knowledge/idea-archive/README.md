@@ -42,11 +42,12 @@ It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM,
 | 18. Framework registry | [FRAMEWORK-REGISTRY.md](FRAMEWORK-REGISTRY.md) | RGBL, HISTA, Mizan and other source-qualified frameworks |
 | 19. Library source register | [LIBRARY-SOURCE-REGISTER.md](LIBRARY-SOURCE-REGISTER.md) | Source availability, prompt/image limitations and privacy boundaries |
 | 20. Audit status report | [AUDIT-STATUS-REPORT.md](AUDIT-STATUS-REPORT.md) | Consolidated findings, CI and remaining gates |
-| 21. Machine index | [INDEX.json](INDEX.json) | Deterministic 209-record ID → file/status/source map for agents |
+| 21. Machine index | [INDEX.json](INDEX.json) | Deterministic 211-record ID → file/status/source map for agents |
 | 22. Decision packets | [DECISION-PACKETS.md](DECISION-PACKETS.md) | Answerable version-strata crosswalk and top unresolved questions |
 | 23. Backlog digest | [BACKLOG-DIGEST.md](BACKLOG-DIGEST.md) | Separates machine-generated audit noise from human-gated work |
 | 24. Source recovery runbook | [SOURCE-RECOVERY-RUNBOOK.md](SOURCE-RECOVERY-RUNBOOK.md) | Local-first procedure to turn #187 from blocked into executable |
 | 25. Visual authority crosswalk | [VISUAL-AUTHORITY-CROSSWALK.md](VISUAL-AUTHORITY-CROSSWALK.md) | Which visual document answers which question; approval gates preserved |
+| 26a. Legacy issue redirect | [GITHUB-ISSUE-INDEX.md](GITHUB-ISSUE-INDEX.md) | Superseded compatibility pointer; maintain only ISSUE-INDEX.md |
 | 26. Creative seed deck | [CREATIVE-SEED-DECK.md](CREATIVE-SEED-DECK.md) | Label-only ideas preserved without being turned into software |
 
 ## Source coverage and honest statistics
@@ -93,6 +94,8 @@ Each record must retain one or more of these source meanings:
 - `UNRESOLVED` — conflicting or incomplete evidence.
 
 Additional evidence states: `REPOSITORY-DOCUMENTED`, `USER-REPORTED`, `MISSING`, `REFERENCE-ONLY`, `NEEDS-SOURCE`, `RIGHTS-REVIEW`.
+
+Source-evidence labels used in the catalog are **not** canon status. Crosswalk: `LIBRARY-SOURCE-READ` → `SOURCE-READ`; `LIBRARY-SOURCE-PARTIAL` → `SOURCE-PARTIAL`; `LIBRARY-CAPTION-ONLY` → `CAPTION-ONLY`; `MEMORY-SUMMARY` and `BUSINESS CONTEXT` are secondary-source qualifiers; `DECISION LEAD` is a proposal qualifier. Compound values such as `PROVISIONAL lore` or `LOCKED owner instruction` in the canon registry mean *status + classification*, never a new status vocabulary. `C-SEED-####` in the seed deck is a deck-local alias; canonical IDs are the linked `IDEA-*`/`FRM-*`/`PRJ-*`/`UNR-*` values.
 
 ## Non-negotiable archive rules
 

@@ -146,12 +146,12 @@ This is a point-in-time read-only audit; it is not a replacement lifecycle regis
 ### TaskOS
 
 The canonical `docs/tasks/tasks.json` was read and parsed:
-- 636 task records, 636 unique task codes, zero duplicate codes.
-- Status distribution: 468 `done`, 49 `doing`, 97 `todo`, 22 `blocked`.
+- 637 task records, 637 unique task codes, zero duplicate codes.
+- Status distribution: 468 `done`, 49 `doing`, 96 `todo`, 24 `blocked`.
 - Source groups: roadmap 239; audit 23; WhatsApp 112; archived open MW 7; AI Corporation PR lifecycle 14; Desktop 128; Evolution 4; Visual Universe 109.
 - Two registered projects: `moonwitness` and `visual-universe`.
 
-TaskOS README snapshot has an internal documentation inconsistency: its current-registry section reports 636, while residual migration/core-file sentences still say 627. This is a documentation discrepancy, not evidence that the JSON contains only 627 tasks. It has not been edited in this archive pass.
+TaskOS README snapshot has an internal documentation inconsistency: its current-registry section reports 637, while residual migration/core-file sentences still say 627. This is a documentation discrepancy, not evidence that the JSON contains only 627 tasks. It has not been edited in this archive pass.
 
 ### GitHub Issues / Pull Requests
 
@@ -159,16 +159,16 @@ A paginated all-state audit of `/issues` filtered out pull-request objects, as r
 
 | Object type | Total | Open | Closed |
 |---|---:|---:|---:|
-| GitHub Issues | 146 | 51 | 95 |
-| Pull Requests returned by the Issues endpoint | 26 | 2 | 24 |
+| GitHub Issues | 191 | 85 | 106 |
+| Pull requests | 30 | 2 open | 26 merged + 2 closed |
 
-Among the 146 issues, 23 contain a TaskOS managed marker. All 23 marker identities are unique; no duplicate TaskOS markers were detected in the returned issue set.
+Among the 191 issues, 25 contain a TaskOS managed marker. All 23 marker identities are unique; no duplicate TaskOS markers were detected in the returned issue set.
 
 Issues #15–#22 and #27 are still open. They already cover the expansion boundary, MoonWitness product vision, GOD PROMISE / ROCKSOUL editorial work, Asmaul Husna reference, artwork pipeline, research workflow, desktop AI evaluation, AEQ / BABYDOLL and source consolidation. This archive pass creates no duplicate issue and does not promote their proposals to accepted implementation tasks.
 
 ### Promotion and verification boundary
 
-The `dev` branch contains the three new archive / inventory documents and their validation edits. The automation opened or refreshed [PR #81](https://github.com/A-L-L-A-H/mw-xv/pull/81), targeting `main`; it remains open and unmerged. Its diff includes a wider pre-existing development batch, not only this archive documentation. The latest exact-SHA CI and documentation checks were still pending when inspected. No successful merge, release or deployment is claimed.
+The `dev` branch contains the three new archive / inventory documents and their validation edits. The automation opened or refreshed [PR #81](https://github.com/A-L-L-A-H/mw-xv/pull/81), targeting `main`; it was merged by the 2026-11-24 recheck. Its diff includes a wider pre-existing development batch, not only this archive documentation. The latest exact-SHA CI and documentation checks were still pending when inspected. No successful merge, release or deployment is claimed.
 
 
 ## 10. Canonical archive navigation

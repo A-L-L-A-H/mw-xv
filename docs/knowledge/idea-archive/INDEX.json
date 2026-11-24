@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "format": "moonwitness-idea-archive-index/v1",
   "generator": "scripts/knowledge/build-idea-archive-index.mjs",
-  "note": "Navigation index only. Not a task registry, not canon authority, not source bytes.",
+  "note": "Generated navigation index. Regenerate with node scripts/knowledge/build-idea-archive-index.mjs --check. Do not hand-edit. Not a task registry, not canon authority, not source bytes.",
   "countedFiles": 26,
   "counts": {
-    "IDEA": 72,
+    "IDEA": 74,
     "PRJ": 26,
     "CAN": 16,
     "MW-STORY-LEAD": 4,
@@ -742,7 +742,7 @@
       "id": "IDEA-0069",
       "title": "MOONWITNESS — Two Generations, One Toast",
       "source": "Recent conversation summary; Library image caption/file title Moonwitness: Two Generations, One Toast.png",
-      "status": "DRAFT; father/son, memory and parallel-world motifs appear in the available summary/caption. Exact dialogue, plot sequence and approved visual prompt are not recovered.",
+      "status": "DRAFT; father/son, memory and parallel-world motifs appear in the available summary/caption. Exact dialogue, plot sequence and approved visual prompt are not recovered.  Aliases: MW-STORY-LEAD-0001, C-SEED-005 (deck-local)",
       "issues": [],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
@@ -752,7 +752,7 @@
       "id": "IDEA-0070",
       "title": "MOONWITNESS — Chaos Before Dawn",
       "source": "Recent conversation summary of a pre-dawn / dream-world narrative involving MyLuft",
-      "status": "DRAFT; retain the title and limited summary only. Full source text, cast details and chronology remain missing.",
+      "status": "DRAFT; retain the title and limited summary only. Full source text, cast details and chronology remain missing.  Aliases: MW-STORY-LEAD-0002, C-SEED-006 (deck-local)",
       "issues": [],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
@@ -762,7 +762,7 @@
       "id": "IDEA-0071",
       "title": "MOONWITNESS — BIRD OF A FEATHER",
       "source": "Recent conversation summary records the title and a poster-text revision request",
-      "status": "DRAFT; title-only lead. Plot, characters, universe link and ending are unresolved.",
+      "status": "DRAFT; title-only lead. Plot, characters, universe link and ending are unresolved.  Aliases: MW-STORY-LEAD-0003, C-SEED-007 (deck-local)",
       "issues": [],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
@@ -772,7 +772,27 @@
       "id": "IDEA-0072",
       "title": "MOONWITNESS — THUNDERSTRUCK",
       "source": "Recent conversation summary dated 30 Sep 2026; V10 progress ledger separately mentions MENGGIGIL / THUNDERSTRUCK",
-      "status": "DRAFT; a “Wahyono” wordplay note is remembered. Its relationship to MENGGIGIL, to any religious term, or to other story characters is not established.",
+      "status": "DRAFT; a “Wahyono” wordplay note is remembered. Its relationship to MENGGIGIL, to any religious term, or to other story characters is not established.  Aliases: MW-STORY-LEAD-0004, C-SEED-008 (deck-local)",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0073",
+      "title": "Isa/Yesus",
+      "source": "docs/second-brain/raw/2026-11-23-total-idea-archive-intake.md IDEA-SEED-0010",
+      "status": "Preserve as a topic label only; representation and canon need review. Alias: IDEA-SEED-0010.",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0074",
+      "title": "Malaikat, hero, dan peran spiritual",
+      "source": "docs/second-brain/raw/2026-11-23-total-idea-archive-intake.md IDEA-SEED-0011",
+      "status": "Separate source-based religious reference from metaphor and fiction. Alias: IDEA-SEED-0011.",
       "issues": [],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
@@ -1161,7 +1181,7 @@
     {
       "id": "CAN-0011",
       "title": "Do not depict Allah as a human, character or visual object.",
-      "source": "Owner-provided 775-line master prompt",
+      "source": "Owner-provided master prompt (774 newline-terminated lines; 775 including the unterminated final line)",
       "status": "LOCKED owner instruction",
       "issues": [],
       "namespace": "CAN",
@@ -1753,64 +1773,68 @@
     },
     {
       "id": "UNR-0001",
-      "title": "Full ChatGPT history available?",
-      "source": "Owner / MISSING",
-      "status": "☐",
-      "issues": [],
+      "title": "P0",
+      "source": "Use a local-only, source-preserving intake; never reconstruct original wording from summary",
+      "status": "Owner / MISSING",
+      "issues": [
+        187
+      ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0002",
-      "title": "Private bjo163/* resources",
-      "source": "Owner / OPEN",
-      "status": "☐",
+      "title": "P0",
+      "source": "Account for them through private inventory and restore evidence; no public mirror",
+      "status": "Owner / OPEN",
       "issues": [],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0003",
-      "title": "Source mirror & LFS restore",
-      "source": "Owner / OPEN",
-      "status": "☐",
+      "title": "P0",
+      "source": "P0 mirror/restore first; keep namespace intact until gate passes",
+      "status": "Owner / OPEN",
       "issues": [],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0004",
-      "title": "License / rights / provenance",
-      "source": "Owner / OPEN",
-      "status": "☐",
-      "issues": [],
+      "title": "P0",
+      "source": "Unknown rights means no bytes copied; preserve metadata only",
+      "status": "Owner / OPEN",
+      "issues": [
+        185
+      ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0005",
-      "title": "Reopen K0-006?",
-      "source": "Owner / LOCKED CURRENT POLICY",
-      "status": "☐",
+      "title": "P0",
+      "source": "Keep closed; do not bulk import; only reopen by a source-specific explicit decision",
+      "status": "Owner / LOCKED CURRENT POLICY",
       "issues": [
         27
       ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
@@ -1897,17 +1921,18 @@
     },
     {
       "id": "UNR-0014",
-      "title": "Exact Asmaul Husna numbering profile",
-      "source": "Owner / REVIEW",
-      "status": "☐",
+      "title": "P1",
+      "source": "Preserve an explicitly named project profile and compare variants; require human/source review for all 99",
+      "status": "Owner / REVIEW",
       "issues": [
+        18,
         67,
         71
       ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
@@ -1932,14 +1957,14 @@
     },
     {
       "id": "UNR-0017",
-      "title": "Visual depiction boundary",
-      "source": "Owner / LOCKED IN CONTEXT",
-      "status": "☐",
+      "title": "P1",
+      "source": "Follow conservative no-depiction boundary; never commission a visual character",
+      "status": "Owner / LOCKED IN AVAILABLE CONTEXT",
       "issues": [],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
@@ -2050,17 +2075,18 @@
     },
     {
       "id": "UNR-0028",
-      "title": "Canonical CF-020",
-      "source": "Maintainer / TRIAGE",
-      "status": "☐",
+      "title": "P1",
+      "source": "Do not auto-close, reopen, delete or change either issue; ask issue owner/maintainer to decide canonical identity",
+      "status": "Maintainer / TRIAGE REQUIRED",
       "issues": [
+        27,
         74,
         75
       ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
@@ -2149,86 +2175,101 @@
     },
     {
       "id": "UNR-0037",
-      "title": "CRAYON v1.3 vs v2",
-      "source": "Owner / REVIEW",
-      "status": "☐",
-      "issues": [],
+      "title": "P1",
+      "source": "Preserve each file as written; owner/research review decides whether to align; Issue #173",
+      "status": "Owner / REVIEW",
+      "issues": [
+        173
+      ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0038",
-      "title": "Dīn Allah version label",
-      "source": "Owner / REVIEW",
-      "status": "☐",
-      "issues": [],
+      "title": "P1",
+      "source": "Do not rename or rewrite source; record a version crosswalk; Issue #174",
+      "status": "Owner / REVIEW",
+      "issues": [
+        174
+      ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0039",
-      "title": "Quantum–Fe Stone claims",
-      "source": "Owner / NEEDS-RESEARCH",
-      "status": "☐",
-      "issues": [],
+      "title": "P1",
+      "source": "No novelty, efficiency or new-material claim until source/patent and physical evidence support it; Issue #175",
+      "status": "Owner / NEEDS-RESEARCH",
+      "issues": [
+        175
+      ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0040",
-      "title": "ROCKSOUL GAME vs 25-prophet RPG",
-      "source": "Owner / UNRESOLVED",
-      "status": "☐",
-      "issues": [],
+      "title": "P1",
+      "source": "Do not merge story/canon, engine or source ownership without an explicit decision; Issue #176",
+      "status": "Owner / UNRESOLVED",
+      "issues": [
+        176
+      ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0041",
-      "title": "Mīzān first source",
-      "source": "Owner / NEEDS-SOURCE",
-      "status": "☐",
-      "issues": [],
+      "title": "P1",
+      "source": "Do not treat formula as Qur’anic equation, divine judgment or implementation spec; Issue #177",
+      "status": "Owner / NEEDS-SOURCE",
+      "issues": [
+        177
+      ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0042",
-      "title": "Four story leads' primaries",
-      "source": "Owner / NEEDS-SOURCE",
-      "status": "☐",
-      "issues": [],
+      "title": "P1",
+      "source": "Keep four distinct draft records; do not invent missing plots or merge MENGGIGIL with THUNDERSTRUCK; Issues #178–#181",
+      "status": "Owner / NEEDS-SOURCE",
+      "issues": [
+        178,
+        181
+      ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {
       "id": "UNR-0043",
-      "title": "203 PNG provenance & rights",
-      "source": "Owner / RIGHTS-REVIEW",
-      "status": "☐",
-      "issues": [],
+      "title": "P1",
+      "source": "Keep names/IDs/prompt text private by default; no binary import or rights assumption; Issue #185",
+      "status": "Owner / RIGHTS-REVIEW",
+      "issues": [
+        185
+      ],
       "namespace": "UNR",
-      "file": "DECISION-PACKETS.md",
+      "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": [
-        "UNRESOLVED-DECISIONS.md"
+        "DECISION-PACKETS.md"
       ]
     },
     {

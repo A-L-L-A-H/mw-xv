@@ -1,9 +1,16 @@
 # Second Brain — Wiki Layer (`docs/second-brain/wiki/`)
 
-Lapisan **Wiki** adalah sumber kebenaran kanonik dan abadi (*evergreen single source of truth*) untuk repositori MoonWitness.
+This layer is a **working note area**, not an authority. It does not own canon, task lifecycle, or issue state.
 
-## Struktur & Kategori
-1. **Arsitektur & Desain Inti:** Prinsip sistem, batas-batas package, kontrak isolasi tenant, dan pola ORM.
-2. **Kamus Domain Bisnis:** Definisi entitas bisnis (Partner, User, Company, Workflow, Attachment, dll).
-3. **Runbook & Prosedur Operasional:** Panduan deployment, backup-restore drill, rotasi kredensial, dan penanganan insiden.
-4. **Standar Rekayasa:** Konvensi penulisan kode, pengujian, dan kebijakan rilis.
+## Canonical surfaces
+
+| Concern | Canonical source |
+|---|---|
+| Work identity, status, dependencies | `docs/tasks/tasks.json` (TaskOS) |
+| Roadmap completion proof | `ROADMAP.md` + linked evidence |
+| Issue ownership / triage | `docs/roadmap/ISSUE-SYNC-CONTRACT.md` + GitHub Issues |
+| Idea, project, story, character, visual, brand records | `docs/knowledge/idea-archive/README.md` |
+| Canon rules | `docs/knowledge/idea-archive/CANON-REGISTRY.md` |
+| Open conflicts and owner decisions | `docs/knowledge/idea-archive/UNRESOLVED-DECISIONS.md` |
+
+Operational runbooks live in `docs/guide/how-to/`. Nothing in this folder overrides those sources.

@@ -73,6 +73,9 @@ async function build() {
       existing.alsoReferencedIn.push(name);
       return;
     }
+    // A non-canonical file must not define an ID whose canonical file exists.
+    const canonical = canonicalFiles.get(namespaceOf(record.id));
+    if (canonical && canonical !== name && files.includes(canonical)) return;
     byId.set(record.id, {
       ...record,
       namespace: namespaceOf(record.id),
@@ -82,7 +85,24 @@ async function build() {
     });
   }
 
-  for (const name of files) {
+  // Canonical defining file per namespace. Process these first so answer/decision
+  // packets and derived decks never become the defining record for an ID.
+  const canonicalFiles = new Map([
+    ['IDEA', 'IDEA-CATALOG.md'],
+    ['PRJ', 'PROJECT-REGISTRY.md'],
+    ['CAN', 'CANON-REGISTRY.md'],
+    ['MW-STORY-LEAD', 'STORY-CANON-CHARACTER-BIBLE.md'],
+    ['CHR', 'CHARACTER-REGISTRY.md'],
+    ['FRM', 'FRAMEWORK-REGISTRY.md'],
+    ['SRC-LIB', 'LIBRARY-SOURCE-REGISTER.md'],
+    ['UNR', 'UNRESOLVED-DECISIONS.md'],
+  ]);
+  const orderedFiles = [
+    ...files.filter((name) => [...canonicalFiles.values()].includes(name)),
+    ...files.filter((name) => ![...canonicalFiles.values()].includes(name)),
+  ];
+
+  for (const name of orderedFiles) {
     const content = await readFile(path.join(archiveDir, name), 'utf8');
     const lines = content.split(/\r?\n/);
     for (const line of lines) {
@@ -124,7 +144,7 @@ async function build() {
     schemaVersion: 1,
     format: 'moonwitness-idea-archive-index/v1',
     generator: 'scripts/knowledge/build-idea-archive-index.mjs',
-    note: 'Navigation index only. Not a task registry, not canon authority, not source bytes.',
+    note: 'Generated navigation index. Regenerate with node scripts/knowledge/build-idea-archive-index.mjs --check. Do not hand-edit. Not a task registry, not canon authority, not source bytes.',
     countedFiles: files.length,
     counts,
     entries,
