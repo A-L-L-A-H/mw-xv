@@ -18,19 +18,19 @@ const reportDirectory = path.join(root, 'test-results', 'junit');
 const packageManager = resolvePackageManager();
 if (!packageManager) {
   process.stderr.write(
-    'Run test:unit:ci through pnpm so the package manager can be resolved safely.\n'
+    'Run test:unit:ci through bun so the package manager can be resolved safely.\n'
   );
   process.exit(2);
 }
 
 await mkdir(reportDirectory, { recursive: true });
 
-function run(args, label) {
-  const result = spawnSync(packageManager.command, [...packageManager.prefixArgs, ...args], {
+function runCommand(command, args, label, shell = false) {
+  const result = spawnSync(command, args, {
     cwd: root,
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
-    ...(packageManager.shell ? { shell: true } : {}),
+    ...(shell ? { shell: true } : {}),
   });
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
   process.stdout.write(output);
@@ -86,11 +86,23 @@ function run(args, label) {
   }
 }
 
+function run(args, label) {
+  runCommand(
+    packageManager.command,
+    [...packageManager.prefixArgs, ...args],
+    label,
+    packageManager.shell
+  );
+}
+
+function runNode(args, label) {
+  runCommand(process.execPath, args, label);
+}
+
 run(['run', 'test:unit-runner-policy'], 'Unit runner CI ownership policy');
 run(['run', 'test:taskos'], 'TaskOS registry safety');
-run(['build'], 'Build');
-run(['--filter', '@moonwitness/whatsapp', 'test'], 'WhatsApp worker');
-run(['exec', 'node', '--test', 'scripts/roadmap/addon-conformance.test.mjs'], 'Addon conformance');
+run(['run', 'build'], 'Build');
+runNode(['--test', 'scripts/roadmap/addon-conformance.test.mjs'], 'Addon conformance');
 for (const check of unitRunnerChecks) {
   run(check.args, check.name);
 }
@@ -99,6 +111,7 @@ const suites = [
   {
     name: 'api',
     packageName: '@moonwitness/api',
+    packageDir: 'apps/api',
     excludePostgres: true,
     maxWorkers: 2,
     coverage: ['src/auth/policy.ts', 'src/auth/rules.ts'],
@@ -180,6 +193,7 @@ const suites = [
   {
     name: 'agent-observability',
     packageName: '@moonwitness/agent-observability',
+    packageDir: 'apps/agent-observability',
     typecheck: true,
   },
   {
@@ -213,20 +227,14 @@ const suites = [
 ];
 
 for (const suite of suites) {
+  const packageDir = suite.packageDir ?? `packages/${suite.name}`;
   if (suite.typecheck) {
     run(
-      [
-        '--filter',
-        suite.packageName,
-        'exec',
-        'tsc',
-        '-p',
-        suite.typecheckConfig ?? 'tsconfig.check.json',
-      ],
+      ['x', '--cwd', packageDir, 'tsc', '-p', suite.typecheckConfig ?? 'tsconfig.check.json'],
       `${suite.name} typecheck`
     );
   }
-  const args = ['--filter', suite.packageName, 'exec', 'vitest', 'run'];
+  const args = ['x', '--cwd', packageDir, 'vitest', 'run'];
   if (suite.maxWorkers) args.push(`--maxWorkers=${suite.maxWorkers}`);
   if (suite.excludePostgres) {
     args.push(
@@ -255,5 +263,5 @@ for (const suite of suites) {
 }
 
 run(['run', 'test:knowledge-cli:built'], 'Knowledge offline validator CLI');
-run(['exec', 'node', 'scripts/check-coverage.mjs'], 'Critical branch coverage');
+runNode(['scripts/check-coverage.mjs'], 'Critical branch coverage');
 process.stdout.write(`JUnit reports written to ${path.relative(root, reportDirectory)}\n`);
