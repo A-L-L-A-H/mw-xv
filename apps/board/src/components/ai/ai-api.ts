@@ -284,13 +284,39 @@ export interface AiGovernanceApprovalDto {
 export interface AiCapabilityGateDto {
   readonly gate: string;
   readonly label: string;
-  readonly passed: boolean;
-  readonly safetyRegressions: number;
+  /** null unless a live/verified evaluation supplied a verdict. Never inferred. */
+  readonly passed: boolean | null;
+  /** null unless a live/verified evaluation supplied a regression count. Never assumed to be 0. */
+  readonly safetyRegressions: number | null;
 }
 
 export interface AiAblationConditionDto {
-  readonly passRate: number;
-  readonly harmRate: number;
+  /** null unless a live/verified evaluation supplied a measured rate. */
+  readonly passRate: number | null;
+  /** null unless a live/verified evaluation supplied a measured rate. */
+  readonly harmRate: number | null;
+}
+
+export interface AiEvalOfflineGateDto {
+  readonly mode: 'offline-mock';
+  readonly syntheticFixture: true;
+  readonly realModelUsed: false;
+  readonly ok: boolean;
+  readonly checks: readonly {
+    readonly id: string;
+    readonly passed: boolean;
+    readonly detail: string;
+  }[];
+  readonly corpus: {
+    readonly sourceSha: string;
+    readonly fixtureHash: string;
+    readonly runCount: number;
+    readonly reportSha256: string;
+  };
+  readonly gatesReportSha256: string;
+  readonly gateIds: readonly string[];
+  readonly ablationArms: readonly string[];
+  readonly ablationReportSha256: string;
 }
 
 export interface AiEvalSummaryDto {
@@ -306,6 +332,15 @@ export interface AiEvalSummaryDto {
     readonly workforceAssignments: number;
     readonly jobs: number;
   };
+  /** True only when a provenance-carrying offline verification report was captured. */
+  readonly reportAvailable: boolean;
+  /** Provenance of the captured report; null means NO DATA. */
+  readonly sourceSha: string | null;
+  readonly fixtureHash: string | null;
+  readonly reportSha256: string | null;
+  readonly capturedAt: string | null;
+  /** Harness verification only: synthetic fixtures, never a production evaluation. */
+  readonly offlineGate: AiEvalOfflineGateDto | null;
   readonly capabilityGates: readonly AiCapabilityGateDto[];
   readonly ablationConditions: Readonly<Record<string, AiAblationConditionDto>>;
 }
@@ -464,7 +499,8 @@ export function useAiEvalSummary() {
     queryFn: async () => {
       const response = await client.request<{
         success: boolean;
-        data: AiEvalSummaryDto;
+        /** null is the explicit NO DATA response when no verified report exists. */
+        data: AiEvalSummaryDto | null;
       }>('/api/ai/eval-summary');
       return response?.data ?? null;
     },

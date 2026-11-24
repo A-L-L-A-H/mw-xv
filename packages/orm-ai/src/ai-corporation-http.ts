@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { Knex } from 'knex';
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { Registry } from '@moonwitness/orm';
+import { runOfflineEvaluationGates } from '@moonwitness/ai-evaluation';
 import { isProviderCloudEgress, validateDiffScope } from '@moonwitness/ai-runtime';
 import { cancelJob, enqueueJob, Job } from '@moonwitness/jobs';
 import type { AttachmentStorage } from '@moonwitness/orm-storage';
@@ -70,6 +71,16 @@ import {
 export const AI_CORPORATION_ROUTE_PREFIXES = ['/api/ai', '/ai'] as const;
 
 const SHA256_HEX_REGEX = /^[a-f0-9]{64}$/iu;
+/** Static gate definitions only; never a verdict. Verdicts come from the evaluation contract. */
+const AI_EVAL_GATE_LABELS: Readonly<Record<string, string>> = {
+  G0: 'Governed Assistant',
+  G1: 'Bounded Actor',
+  G2: 'Persistent Worker',
+  G3: 'Coordinated Team',
+  G4: 'Adaptive Organization',
+  G5: 'Experience-Driven Improvement',
+  G6: 'Cross-Domain Transfer Research',
+};
 const PROJECT_TASK_MODEL = 'project.task';
 const PROJECT_STAGE_MODEL = 'project.stage';
 const PROJECT_TASK_DEPENDENCY_MODEL = 'project.task_dependency';
@@ -1879,6 +1890,8 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
     // 11. Evaluation Summary (/api/ai/eval-summary)
     // =========================================================================
     app.get(`${prefix}/eval-summary`, async (req, reply) => {
+      // Operator authorization: authentication, active company membership and
+      // cross-tenant guards are enforced by requireAiCompanyContext.
       const ctx = await requireAiCompanyContext(req, reply);
       if (!ctx) return;
       const [
@@ -1900,47 +1913,105 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
         WorkforceAssignment.query().where({ company_id: ctx.companyId, active: true }).resultSize(),
         Job.query().where({ company_id: ctx.companyId, active: true }).resultSize(),
       ]);
+      const counts = {
+        agents: agentCount,
+        workContracts: contractCount,
+        agentRuns: runCount,
+        artifacts: artifactCount,
+        obligations: obligationCount,
+        taskforces: taskforceCount,
+        workforceAssignments: assignmentCount,
+        jobs: jobCount,
+      };
+
+      // The only evaluation source is the deterministic, offline contract. It
+      // validates provenance, replay determinism and gate coverage internally;
+      // a failed or unverified report must never turn into a readiness claim.
+      let report: Awaited<ReturnType<typeof runOfflineEvaluationGates>> | null = null;
+      let capturedAt: string | null = null;
+      let noDataReason = 'offline-evaluation-unavailable';
+      try {
+        const candidate = await runOfflineEvaluationGates();
+        const hasProvenance =
+          Boolean(candidate.corpus.sourceSha?.trim()) &&
+          Boolean(candidate.corpus.fixtureHash?.trim()) &&
+          SHA256_HEX_REGEX.test(candidate.corpus.reportSha256) &&
+          SHA256_HEX_REGEX.test(candidate.gates.reportSha256) &&
+          SHA256_HEX_REGEX.test(candidate.ablation.reportSha256) &&
+          candidate.corpus.runCount > 0 &&
+          candidate.gates.gateIds.length > 0 &&
+          candidate.ablation.arms.length > 0;
+        if (!candidate.ok || candidate.checks.some((check) => !check.passed)) {
+          noDataReason = 'offline-evaluation-gates-failed';
+        } else if (!hasProvenance) {
+          noDataReason = 'offline-evaluation-provenance-invalid';
+        } else {
+          capturedAt = new Date().toISOString();
+          // Persist the provenance of the report served to this operator.
+          await recordAiAudit(ctx.userId, 'ai.eval_summary', ctx.companyId, 'read', {
+            sourceSha: candidate.corpus.sourceSha,
+            fixtureHash: candidate.corpus.fixtureHash,
+            reportSha256: candidate.corpus.reportSha256,
+            gatesReportSha256: candidate.gates.reportSha256,
+            ablationReportSha256: candidate.ablation.reportSha256,
+            capturedAt,
+            mode: candidate.mode,
+            syntheticFixture: candidate.syntheticFixture,
+            realModelUsed: candidate.realModelUsed,
+            checksPassed: candidate.checks.filter((check) => check.passed).length,
+            checksTotal: candidate.checks.length,
+          });
+          report = candidate;
+        }
+      } catch {
+        // Fail closed: no report means no verdicts, rates, or regression totals.
+        noDataReason = 'offline-evaluation-unavailable';
+      }
+
+      if (!report || !capturedAt) {
+        return {
+          success: true,
+          data: null,
+          meta: { reason: noDataReason, companyId: ctx.companyId, counts },
+        };
+      }
 
       return {
         success: true,
         data: {
           companyId: ctx.companyId,
-          agiClaimed: false,
-          counts: {
-            agents: agentCount,
-            workContracts: contractCount,
-            agentRuns: runCount,
-            artifacts: artifactCount,
-            obligations: obligationCount,
-            taskforces: taskforceCount,
-            workforceAssignments: assignmentCount,
-            jobs: jobCount,
+          agiClaimed: report.gates.agiClaimed,
+          counts,
+          // The offline contract verifies the evaluation harness against
+          // deterministic fixtures. It does NOT evaluate a live model or a
+          // production deployment, so no PASS verdict, pass rate, readiness
+          // level or regression total is inferred from fixture output.
+          reportAvailable: true,
+          sourceSha: report.corpus.sourceSha,
+          fixtureHash: report.corpus.fixtureHash,
+          reportSha256: report.corpus.reportSha256,
+          capturedAt,
+          offlineGate: {
+            mode: report.mode,
+            syntheticFixture: report.syntheticFixture,
+            realModelUsed: report.realModelUsed,
+            ok: report.ok,
+            checks: report.checks,
+            corpus: report.corpus,
+            gatesReportSha256: report.gates.reportSha256,
+            gateIds: report.gates.gateIds,
+            ablationArms: report.ablation.arms,
+            ablationReportSha256: report.ablation.reportSha256,
           },
-          capabilityGates: [
-            { gate: 'G0', label: 'Governed Assistant', passed: true, safetyRegressions: 0 },
-            { gate: 'G1', label: 'Bounded Actor', passed: true, safetyRegressions: 0 },
-            { gate: 'G2', label: 'Persistent Worker', passed: true, safetyRegressions: 0 },
-            { gate: 'G3', label: 'Coordinated Team', passed: true, safetyRegressions: 0 },
-            { gate: 'G4', label: 'Adaptive Organization', passed: true, safetyRegressions: 0 },
-            {
-              gate: 'G5',
-              label: 'Experience-Driven Improvement',
-              passed: true,
-              safetyRegressions: 0,
-            },
-            {
-              gate: 'G6',
-              label: 'Cross-Domain Transfer Research',
-              passed: true,
-              safetyRegressions: 0,
-            },
-          ],
-          ablationConditions: {
-            'no-memory': { passRate: 0.75, harmRate: 0 },
-            'episodic-only': { passRate: 0.85, harmRate: 0 },
-            'skill-only': { passRate: 0.88, harmRate: 0 },
-            combined: { passRate: 0.94, harmRate: 0 },
-          },
+          capabilityGates: report.gates.gateIds.map((gate) => ({
+            gate,
+            label: AI_EVAL_GATE_LABELS[gate] ?? gate,
+            passed: null,
+            safetyRegressions: null,
+          })),
+          ablationConditions: Object.fromEntries(
+            report.ablation.arms.map((arm) => [arm, { passRate: null, harmRate: null }])
+          ),
         },
       };
     });

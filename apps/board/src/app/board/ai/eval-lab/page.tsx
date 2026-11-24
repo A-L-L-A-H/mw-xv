@@ -97,8 +97,9 @@ export default function AiEvalLabPage() {
         {hasLiveSummary ? (
           <p>
             Source: <code>/api/ai/eval-summary</code>. This page only renders the summary returned by
-            the API; it does not run the corpus. The summary carries no report SHA-256 or model
-            provenance, so these numbers are not proof of a production evaluation. Verify the offline
+            the API; it does not run the corpus. The summary carries a report SHA-256 and
+            provenance, but the offline gate is marked synthetic (<code>realModelUsed: false</code>),
+            so these numbers are not proof of a production evaluation. Verify the offline
             gate with <code>pnpm --filter @moonwitness/ai-evaluation check:gates</code> and consult
             the operator runbook before treating them as release evidence.
           </p>

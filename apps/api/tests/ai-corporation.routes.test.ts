@@ -501,14 +501,48 @@ describe('AI Corporation & Desktop Sync API routes', () => {
     expect(revokeMemRes.statusCode).toBe(200);
     expect(revokeMemRes.json().data.status).toBe('revoked');
 
+    const unauthEvalSummary = await app.inject({
+      method: 'GET',
+      url: '/api/ai/eval-summary',
+    });
+    expect(unauthEvalSummary.statusCode).toBe(401);
+
     const evalSummaryRes = await app.inject({
       method: 'GET',
       url: '/api/ai/eval-summary',
       headers: operator.headers,
     });
     expect(evalSummaryRes.statusCode).toBe(200);
-    expect(evalSummaryRes.json().data.agiClaimed).toBe(false);
-    expect(evalSummaryRes.json().data.capabilityGates).toHaveLength(7);
+    const evalSummary = evalSummaryRes.json().data;
+    expect(evalSummary.agiClaimed).toBe(false);
+    expect(evalSummary.capabilityGates).toHaveLength(7);
+
+    // Provenance comes from the offline evaluation contract and is persisted
+    // in the operator's audit trail; no value is hardcoded by the endpoint.
+    expect(evalSummary.reportAvailable).toBe(true);
+    expect(evalSummary.sourceSha).toBeTruthy();
+    expect(evalSummary.fixtureHash).toMatch(/^[a-f0-9]{64}$/u);
+    expect(evalSummary.reportSha256).toMatch(/^[a-f0-9]{64}$/u);
+    expect(evalSummary.capturedAt).toBeTruthy();
+    expect(evalSummary.offlineGate.ok).toBe(true);
+    expect(evalSummary.offlineGate.mode).toBe('offline-mock');
+    expect(evalSummary.offlineGate.syntheticFixture).toBe(true);
+    expect(evalSummary.offlineGate.realModelUsed).toBe(false);
+
+    // Offline fixtures are not a live evaluation: verdicts, rates and
+    // regression totals stay NO DATA instead of being synthesized.
+    expect(
+      evalSummary.capabilityGates.every(
+        (gate: { passed: unknown; safetyRegressions: unknown }) =>
+          gate.passed === null && gate.safetyRegressions === null
+      )
+    ).toBe(true);
+    expect(
+      Object.values(evalSummary.ablationConditions).every(
+        (arm: { passRate: unknown; harmRate: unknown }) =>
+          arm.passRate === null && arm.harmRate === null
+      )
+    ).toBe(true);
 
     // 9. Emergency stop halts agent, cancels active runs, and blocks new dispatch.
     const stopRes = await app.inject({
