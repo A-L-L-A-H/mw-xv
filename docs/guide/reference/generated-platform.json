@@ -10,6 +10,12 @@
   },
   "packages": [
     {
+      "name": "@moonwitness/agent-observability",
+      "version": "1.0.0-rc.1",
+      "directory": "apps/agent-observability",
+      "scripts": ["build", "demo", "dev", "start", "test", "typecheck"]
+    },
+    {
       "name": "@moonwitness/api",
       "version": "1.0.0-rc.1",
       "directory": "apps/api",
@@ -188,6 +194,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-bot-orchestrator",
+      "version": "1.0.0",
+      "directory": "packages/orm-bot-orchestrator",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-catalog",
       "version": "1.0.0",
       "directory": "packages/orm-catalog",
@@ -218,9 +230,21 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-content-factory",
+      "version": "1.0.0",
+      "directory": "packages/orm-content-factory",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-crm",
       "version": "1.0.0",
       "directory": "packages/orm-crm",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-ecommerce-sync",
+      "version": "1.0.0",
+      "directory": "packages/orm-ecommerce-sync",
       "scripts": ["build", "test"]
     },
     {
@@ -233,6 +257,12 @@
       "name": "@moonwitness/orm-helpdesk",
       "version": "1.0.0",
       "directory": "packages/orm-helpdesk",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-income-ledger",
+      "version": "1.0.0",
+      "directory": "packages/orm-income-ledger",
       "scripts": ["build", "test"]
     },
     {
@@ -260,6 +290,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-observability",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/orm-observability",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-organization",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-organization",
@@ -281,6 +317,12 @@
       "name": "@moonwitness/orm-request",
       "version": "1.0.0-rc.1",
       "directory": "packages/orm-request",
+      "scripts": ["build", "test"]
+    },
+    {
+      "name": "@moonwitness/orm-rnd",
+      "version": "1.0.0",
+      "directory": "packages/orm-rnd",
       "scripts": ["build", "test"]
     },
     {
@@ -357,6 +399,14 @@
     }
   ],
   "scripts": {
+    "@moonwitness/agent-observability": {
+      "build": "tsc",
+      "demo": "tsx examples/demo-agent.ts",
+      "dev": "tsx watch src/cli.ts",
+      "start": "node dist/cli.js",
+      "test": "tsc -p tsconfig.check.json && vitest run",
+      "typecheck": "tsc -p tsconfig.check.json"
+    },
     "@moonwitness/api": {
       "attachments:reconcile": "tsx src/commands/attachments-reconcile.ts",
       "build": "tsc",
@@ -503,6 +553,10 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-bot-orchestrator": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
+    },
     "@moonwitness/orm-catalog": {
       "build": "tsc",
       "test": "vitest run"
@@ -523,9 +577,17 @@
       "build": "tsc",
       "test": "vitest run"
     },
+    "@moonwitness/orm-content-factory": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
+    },
     "@moonwitness/orm-crm": {
       "build": "tsc",
       "test": "vitest run"
+    },
+    "@moonwitness/orm-ecommerce-sync": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/orm-governance": {
       "build": "tsc",
@@ -534,6 +596,10 @@
     "@moonwitness/orm-helpdesk": {
       "build": "tsc",
       "test": "vitest run"
+    },
+    "@moonwitness/orm-income-ledger": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/orm-integration": {
       "build": "tsc",
@@ -551,6 +617,10 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/orm-observability": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
+    },
     "@moonwitness/orm-organization": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
@@ -564,6 +634,10 @@
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/orm-request": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
+    },
+    "@moonwitness/orm-rnd": {
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
@@ -622,9 +696,9 @@
       "agent:boundary:check": "node --test scripts/check-addon-agent-boundary.test.mjs && node scripts/check-addon-agent-boundary.mjs",
       "ai:watchdog": "node scripts/ai-drift-watchdog.mjs",
       "api:addon:check": "node --test scripts/check-api-addon-boundary.test.mjs && node scripts/check-api-addon-boundary.mjs",
-      "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs --check",
+      "architecture:check": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-observability build && node scripts/architecture/generate-diagrams.mjs --check",
       "architecture:check:built": "node scripts/architecture/generate-diagrams.mjs --check",
-      "architecture:generate": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs",
+      "architecture:generate": "pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-observability build && node scripts/architecture/generate-diagrams.mjs",
       "assets:check:bounds": "node packages/assets/scripts/check-svg-bounds.mjs",
       "assets:check:docs": "node scripts/export-doc-assets.mjs --check",
       "assets:export:docs": "node scripts/export-doc-assets.mjs",
@@ -648,6 +722,7 @@
       "control-plane:build": "pnpm --filter @moonwitness/control-plane docker:build",
       "control-plane:dev": "pnpm --filter @moonwitness/control-plane dev",
       "db:migrate": "pnpm --filter @moonwitness/api db:migrate",
+      "demo:observability": "pnpm --filter @moonwitness/agent-observability demo",
       "dependency:candidate": "node scripts/dependency-candidate.mjs",
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
       "desktop:build": "pnpm --filter @moonwitness/desktop... build && pnpm --filter @moonwitness/desktop build:web",
@@ -658,14 +733,15 @@
       "dev": "pnpm --filter @moonwitness/ui build && node scripts/run-local-services.mjs dev",
       "dev:api": "pnpm --filter @moonwitness/api dev",
       "dev:board": "pnpm --filter @moonwitness/board dev",
+      "dev:observability": "pnpm --filter @moonwitness/orm-observability... build && pnpm --filter @moonwitness/agent-observability dev",
       "docs:build": "pnpm docs:check && node scripts/docs/build-guide.mjs && pnpm --filter @moonwitness/docs portal:build",
       "docs:build:built": "pnpm docs:check:built && node scripts/docs/build-guide.mjs && pnpm --filter @moonwitness/docs portal:build:built",
       "docs:change:classify": "node scripts/classify-docs-change.mjs",
-      "docs:check": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && node --test scripts/docs/generate-reference.test.mjs scripts/docs/update-readme.test.mjs scripts/docs/build-guide.test.mjs && node scripts/docs/generate-reference.mjs --check && node scripts/docs/update-readme.mjs --check && pnpm docs:links && pnpm docs:examples:check:built",
+      "docs:check": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-observability build && node --test scripts/docs/generate-reference.test.mjs scripts/docs/update-readme.test.mjs scripts/docs/build-guide.test.mjs && node scripts/docs/generate-reference.mjs --check && node scripts/docs/update-readme.mjs --check && pnpm docs:links && pnpm docs:examples:check:built",
       "docs:check:built": "node --test scripts/docs/generate-reference.test.mjs scripts/docs/update-readme.test.mjs scripts/docs/build-guide.test.mjs && node scripts/docs/generate-reference.mjs --check && node scripts/docs/update-readme.mjs --check && pnpm docs:links && pnpm docs:examples:check:built",
       "docs:examples:check": "pnpm --filter @moonwitness/orm build && pnpm exec tsc --noEmit -p packages/orm/examples/tsconfig.json && pnpm --filter @moonwitness/orm exec vitest run tests/addon.test.ts",
       "docs:examples:check:built": "pnpm exec tsc --noEmit -p packages/orm/examples/tsconfig.json && pnpm --filter @moonwitness/orm exec vitest run tests/addon.test.ts",
-      "docs:generate": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && node scripts/docs/generate-reference.mjs && node scripts/docs/update-readme.mjs",
+      "docs:generate": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/knowledge build && pnpm --filter @moonwitness/corpus build && pnpm --filter @moonwitness/research build && pnpm --filter @moonwitness/orm build && pnpm --filter @moonwitness/orm-base build && pnpm --filter @moonwitness/auth build && pnpm --filter @moonwitness/jobs build && pnpm --filter @moonwitness/orm-integration build && pnpm --filter @moonwitness/orm-notification build && pnpm --filter @moonwitness/orm-organization build && pnpm --filter @moonwitness/orm-workflow build && pnpm --filter @moonwitness/orm-project build && pnpm --filter @moonwitness/orm-request build && pnpm --filter @moonwitness/orm-storage build && pnpm --filter @moonwitness/orm-whatsapp build && pnpm --filter @moonwitness/orm-knowledge build && pnpm --filter @moonwitness/orm-observability build && node scripts/docs/generate-reference.mjs && node scripts/docs/update-readme.mjs",
       "docs:links": "node scripts/check-docs.mjs && node scripts/check-doc-navigation.mjs && node --test scripts/check-docs.test.mjs scripts/check-doc-navigation.test.mjs scripts/check-external-doc-links.test.mjs",
       "docs:links:external": "node scripts/check-external-doc-links.mjs",
       "docs:publication:check": "node scripts/check-docs-publication.mjs apps/docs/dist",
@@ -716,6 +792,7 @@
       "roadmap:progress": "node scripts/roadmap/progress-dashboard.mjs",
       "start": "node scripts/run-local-services.mjs start",
       "start:built": "node scripts/run-local-services.mjs start:built",
+      "start:observability": "pnpm --filter @moonwitness/orm-observability... build && pnpm --filter @moonwitness/agent-observability build && pnpm --filter @moonwitness/agent-observability start",
       "tasks:sweep": "node scripts/tasks/sweep-and-consolidate.mjs",
       "tasks:sync": "node scripts/tasks/sync-roadmap.mjs",
       "tasks:validate": "node scripts/tasks/validate-tasks.mjs",
@@ -777,7 +854,7 @@
       "test:ui-design-check": "node --test scripts/check-ui-design-system.test.mjs scripts/check-ui-gate-wiring.test.mjs",
       "test:unit": "pnpm build && pnpm test:unit:built",
       "test:unit-runner-policy": "node --test scripts/unit-runner-policy.test.mjs",
-      "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-project test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-whatsapp test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/orm-ai test && pnpm --filter @moonwitness/ai-runtime test && pnpm --filter @moonwitness/ai-mcp test && pnpm --filter @moonwitness/ai-evaluation test && pnpm --filter @moonwitness/local-ai typecheck && pnpm --filter @moonwitness/local-ai test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
+      "test:unit:built": "pnpm --filter @moonwitness/types test && pnpm --filter @moonwitness/api exec vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && pnpm --filter @moonwitness/auth test && pnpm --filter @moonwitness/client test && pnpm --filter @moonwitness/jobs test && pnpm --filter @moonwitness/logger test && pnpm --filter @moonwitness/orm test && pnpm test:board-csv && pnpm test:addon-conformance && pnpm --filter @moonwitness/orm-base test && pnpm --filter @moonwitness/orm-integration test && pnpm --filter @moonwitness/orm-knowledge test && pnpm --filter @moonwitness/orm-notification test && pnpm --filter @moonwitness/orm-organization test && pnpm --filter @moonwitness/orm-project test && pnpm --filter @moonwitness/orm-request test && pnpm --filter @moonwitness/orm-storage test && pnpm --filter @moonwitness/orm-whatsapp test && pnpm --filter @moonwitness/orm-workflow test && pnpm --filter @moonwitness/orm-ai test && pnpm --filter @moonwitness/ai-runtime test && pnpm --filter @moonwitness/orm-observability test && pnpm --filter @moonwitness/agent-observability test && pnpm --filter @moonwitness/ai-mcp test && pnpm --filter @moonwitness/ai-evaluation test && pnpm --filter @moonwitness/local-ai typecheck && pnpm --filter @moonwitness/local-ai test && pnpm --filter @moonwitness/knowledge typecheck && pnpm --filter @moonwitness/knowledge test && pnpm --filter @moonwitness/corpus typecheck && pnpm --filter @moonwitness/corpus test && pnpm --filter @moonwitness/research typecheck && pnpm --filter @moonwitness/research test && pnpm test:knowledge-cli:built && pnpm test:assets && pnpm test:ui && pnpm test:platform-audit && pnpm test:board-budget && pnpm board:budget && pnpm test:release-workflow && pnpm test:release-latest-policy && pnpm test:release-image-publish && pnpm test:release-asset-reconcile && pnpm test:release-dry-run && pnpm test:release-verify-attestations && pnpm test:expected-ref && pnpm test:release-plan && pnpm test:release-orchestration && pnpm test:versioned-docs",
       "test:unit:ci": "node scripts/run-unit-tests.mjs",
       "test:versioned-docs": "node --test scripts/docs/versioned-site.test.mjs",
       "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && pnpm --filter @moonwitness/api exec vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
@@ -1050,6 +1127,30 @@
     {
       "name": "NODE_ENV",
       "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "OTEL_EXPORTER_OTLP_ENDPOINT",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "OTEL_EXPORTER_OTLP_PROTOCOL",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "OTEL_SERVICE_NAME",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "OTEL_SERVICE_VERSION",
+      "configuredInExample": false,
       "secret": false,
       "valueType": "string"
     },
@@ -6254,6 +6355,406 @@
       ]
     },
     {
+      "name": "observability",
+      "version": "1.0.0",
+      "depends": [],
+      "models": [
+        {
+          "name": "observability.telemetry_log",
+          "table": "observability_logs",
+          "fields": [
+            {
+              "name": "agent_name",
+              "kind": "text",
+              "column": "agent_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "log_id",
+              "kind": "text",
+              "column": "log_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "run_id",
+              "kind": "text",
+              "column": "run_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "service_name",
+              "kind": "text",
+              "column": "service_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "severity",
+              "kind": "enum",
+              "column": "severity",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["DEBUG", "ERROR", "FATAL", "INFO", "TRACE", "UNSPECIFIED", "WARN"]
+            },
+            {
+              "name": "span_id",
+              "kind": "text",
+              "column": "span_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "timestamp_ms",
+              "kind": "float",
+              "column": "timestamp_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "trace_id",
+              "kind": "text",
+              "column": "trace_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["log_id"]]
+        },
+        {
+          "name": "observability.telemetry_metric_point",
+          "table": "observability_metric_points",
+          "fields": [
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "series_id",
+              "kind": "text",
+              "column": "series_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "timestamp_ms",
+              "kind": "float",
+              "column": "timestamp_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["series_id", "timestamp_ms"]]
+        },
+        {
+          "name": "observability.telemetry_metric_series",
+          "table": "observability_metric_series",
+          "fields": [
+            {
+              "name": "description",
+              "kind": "text",
+              "column": "description",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "latest_time_ms",
+              "kind": "float",
+              "column": "latest_time_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "metric_type",
+              "kind": "enum",
+              "column": "metric_type",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["exponential_histogram", "gauge", "histogram", "sum", "summary"]
+            },
+            {
+              "name": "name",
+              "kind": "text",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "scope_name",
+              "kind": "text",
+              "column": "scope_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "series_id",
+              "kind": "text",
+              "column": "series_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "service_name",
+              "kind": "text",
+              "column": "service_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "unit",
+              "kind": "text",
+              "column": "unit",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["series_id"]]
+        },
+        {
+          "name": "observability.telemetry_span",
+          "table": "observability_spans",
+          "fields": [
+            {
+              "name": "agent_name",
+              "kind": "text",
+              "column": "agent_name",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "duration_ms",
+              "kind": "float",
+              "column": "duration_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "end_time_ms",
+              "kind": "float",
+              "column": "end_time_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "name",
+              "kind": "text",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "parent_span_id",
+              "kind": "text",
+              "column": "parent_span_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "run_id",
+              "kind": "text",
+              "column": "run_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "service_name",
+              "kind": "text",
+              "column": "service_name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "span_id",
+              "kind": "text",
+              "column": "span_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "start_time_ms",
+              "kind": "float",
+              "column": "start_time_ms",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "status",
+              "kind": "enum",
+              "column": "status",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false,
+              "values": ["error", "ok", "unset"]
+            },
+            {
+              "name": "trace_id",
+              "kind": "text",
+              "column": "trace_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["span_id", "trace_id"]]
+        },
+        {
+          "name": "observability.telemetry_state",
+          "table": "observability_state",
+          "fields": [
+            {
+              "name": "key",
+              "kind": "string",
+              "column": "key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "value",
+              "kind": "integer",
+              "column": "value",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            }
+          ],
+          "uniqueConstraints": [["key"]]
+        }
+      ],
+      "menus": [],
+      "views": [],
+      "seeds": {},
+      "accessRules": []
+    },
+    {
       "name": "organization",
       "version": "1.0.0",
       "depends": ["base"],
@@ -9922,5 +10423,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "8b8ea509d6051b47fdff84af0e0e3ecef712d5aafadc682730bd6bc8bd324123"
+  "generatedFromSha256": "54020d68d6cf9df87130c82e9d6ac7ef4e8fafd701fc6a89244fa9afb0f285b7"
 }

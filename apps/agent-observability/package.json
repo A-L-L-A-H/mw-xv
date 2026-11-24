@@ -1,0 +1,54 @@
+{
+  "name": "@moonwitness/agent-observability",
+  "version": "1.0.0-rc.1",
+  "private": true,
+  "description": "Local OpenTelemetry receiver and agent observability dashboard",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./instrumentation": {
+      "types": "./dist/instrumentation.d.ts",
+      "import": "./dist/instrumentation.js"
+    }
+  },
+  "files": [
+    "dist",
+    "public"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/cli.ts",
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "demo": "tsx examples/demo-agent.ts",
+    "typecheck": "tsc -p tsconfig.check.json",
+    "test": "tsc -p tsconfig.check.json && vitest run"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "1.10.0",
+    "@opentelemetry/api-logs": "0.223.0",
+    "@opentelemetry/exporter-logs-otlp-http": "0.301.2",
+    "@opentelemetry/exporter-metrics-otlp-http": "0.301.2",
+    "@opentelemetry/exporter-trace-otlp-http": "0.301.2",
+    "@opentelemetry/resources": "3.1.1",
+    "@opentelemetry/sdk-logs": "3.1.1",
+    "@opentelemetry/sdk-metrics": "3.1.1",
+    "@opentelemetry/sdk-node": "0.301.2",
+    "@moonwitness/orm-observability": "workspace:*",
+    "@opentelemetry/semantic-conventions": "1.45.0",
+    "fastify": "5.12.8"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "tsx": "4.23.15",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}

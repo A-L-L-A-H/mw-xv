@@ -23,6 +23,7 @@ import * as integration from '../../packages/orm-integration/dist/index.js';
 import * as whatsapp from '../../packages/orm-whatsapp/dist/index.js';
 import * as witness from '../../packages/orm-knowledge/dist/index.js';
 import * as ai from '../../packages/orm-ai/dist/index.js';
+import * as observability from '../../packages/orm-observability/dist/index.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const requireFromApi = createRequire(path.join(root, 'apps/api/package.json'));
@@ -47,6 +48,7 @@ const addonPackages = [
   { directory: 'orm-whatsapp', module: whatsapp, manifest: whatsapp.manifest },
   { directory: 'orm-knowledge', module: witness, manifest: witness.manifest },
   { directory: 'orm-ai', module: ai, manifest: ai.manifest },
+  { directory: 'orm-observability', module: observability, manifest: observability.manifest },
 ];
 const addonManifests = addonPackages.map(({ manifest }) => manifest);
 const modelName = (model) => model.modelName;
