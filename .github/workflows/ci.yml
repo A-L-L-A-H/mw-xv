@@ -86,11 +86,16 @@ jobs:
           pnpm-version: '11.17.0'
       - name: Install frozen workspace dependencies
         run: pnpm install --frozen-lockfile --no-runtime
-      - name: Verify vendored source invariants
-        run: node scripts/check-cloud-agent-invariants.mjs
+      - name: Verify vendored source invariants and pinned tree digest
+        run: |
+          node scripts/check-cloud-agent-invariants.mjs
+          node scripts/check-vendor-tree-integrity.mjs
       - name: Install pinned vendored dependencies
         working-directory: vendor/freellmapi
         run: npm ci
+      - name: Audit vendored dependencies for critical advisories
+        working-directory: vendor/freellmapi
+        run: npm audit --audit-level=critical
       - name: Build vendored FreeLLMAPI server
         working-directory: vendor/freellmapi
         run: npm run build:server

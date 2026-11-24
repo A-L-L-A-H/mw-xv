@@ -16,6 +16,7 @@ export const EXPECTED_UPSTREAM = Object.freeze({
   upstream: 'https://github.com/tashfeenahmed/freellmapi',
   revision: 'cd65d6485788dfc7828f06c1147cdea207b28322',
   license: 'MIT',
+  treeSha256: '336db390231f484ebfe7fe75a1697610027ed483fb48d913b2e01d1b91764890',
 });
 
 const SOURCE_EXTENSIONS = new Set([

@@ -4,5 +4,6 @@
   "importedAt": "2026-11-24",
   "importMethod": "git-archive-tracked-files",
   "license": "MIT",
-  "localPatches": []
+  "localPatches": [],
+  "treeSha256": "336db390231f484ebfe7fe75a1697610027ed483fb48d913b2e01d1b91764890"
 }
