@@ -205,10 +205,14 @@ export function createGithubAdapter(repository) {
   const base = `repos/${repository}/rulesets`;
   return {
     async read() {
-      const pages = await ghJson([base, '--paginate', '--slurp']);
-      return (Array.isArray(pages) ? pages : [pages]).flatMap((page) =>
-        Array.isArray(page) ? page : page?.rulesets ?? []
-      );
+      const all = [];
+      for (let page = 1; ; page += 1) {
+        const response = await ghJson([`${base}?per_page=100&page=${page}`]);
+        const rulesets = Array.isArray(response) ? response : response?.rulesets ?? [];
+        all.push(...(Array.isArray(rulesets) ? rulesets : [rulesets]));
+        if (!Array.isArray(response) || response.length < 100) break;
+      }
+      return all;
     },
     async create(ruleset) {
       return withBody(base, 'POST', ruleset);
