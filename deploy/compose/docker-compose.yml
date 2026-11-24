@@ -1,3 +1,7 @@
+# Local base stack. Run from the repository root with
+#   docker compose -f deploy/compose/docker-compose.yml up -d postgres
+# Relative paths resolve from this file's directory (deploy/compose/), so build contexts use ../..
+# to reach the repository root. Do not pass --project-directory .; it would break those contexts.
 services:
   postgres:
     image: postgres:16-alpine
@@ -29,7 +33,7 @@ services:
 
   radius:
     build:
-      context: .
+      context: ../..
       dockerfile: apps/isp/Dockerfile
     container_name: moonwitness_isp
     restart: unless-stopped
@@ -50,7 +54,7 @@ services:
 
   control-plane:
     build:
-      context: ./apps/control-plane
+      context: ../../apps/control-plane
       dockerfile: Dockerfile
     container_name: moonwitness-control-plane
     restart: unless-stopped

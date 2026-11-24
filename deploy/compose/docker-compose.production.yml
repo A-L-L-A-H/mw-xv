@@ -4,6 +4,11 @@
 #
 #   docker compose --env-file .env.production -f deploy/compose/docker-compose.production.yml up -d --build
 #
+# Run from the repository root. Relative paths in this file are resolved from the Compose project
+# directory, which defaults to this file's directory (deploy/compose/). Build contexts therefore use
+# ../.. to reach the repository root; do NOT add --project-directory . to the commands above, or the
+# contexts would resolve one level above the repository instead.
+#
 # Anchors live inside the first service so both entrypoints render byte-identical config.
 
 services:
@@ -50,7 +55,7 @@ services:
       WHATSAPP_WEBHOOK_URL: ${WHATSAPP_WEBHOOK_URL:-}
       WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:-}
     build:
-      context: .
+      context: ../..
       target: board-runtime
       args:
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:5173}
@@ -89,7 +94,7 @@ services:
       retries: 3
 
   api:
-    build: .
+    build: ../..
     image: moonwitness-api:production
     restart: unless-stopped
     init: true
@@ -227,7 +232,7 @@ services:
 
   freellmapi:
     build:
-      context: ./vendor/freellmapi
+      context: ../../vendor/freellmapi
       args:
         FREELLMAPI_COMMIT_SHA: cd65d6485788dfc7828f06c1147cdea207b28322
     image: moonwitness-freellmapi:production
@@ -263,7 +268,7 @@ services:
       retries: 3
 
   agent-sandbox:
-    build: ./apps/agent-sandbox
+    build: ../../apps/agent-sandbox
     image: moonwitness-agent-sandbox:production
     command: ['node', 'dist/server.js']
     restart: unless-stopped

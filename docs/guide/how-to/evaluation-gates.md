@@ -61,7 +61,7 @@ The Board service receives none of these. `api`, `jobs-worker`, and `freellmapi`
 
 ### Render the Compose files without secrets
 
-Compose files now live under `deploy/compose/`. Because `docker compose` resolves relative build contexts from the project directory, pass `--project-directory .` when validating from the repository root:
+Compose files live under `deploy/compose/`. With no `--project-directory` override, `docker compose` resolves relative paths from the directory of the first `-f` file (`deploy/compose/`). The build contexts in these files are therefore written as `../..`, `../../vendor/freellmapi`, and `../../apps/agent-sandbox`, which resolve to the repository root. Run every command from the repository root and **do not** pass `--project-directory .`: that moves the project directory to the repository root and makes `../..` resolve one level above it.
 
 ```bash
 # Use throwaway values only; this renders config, it does not start anything.
@@ -76,19 +76,26 @@ env \
   MW_AI_FREELLM_KEY='placeholder' \
   ENCRYPTION_KEY='placeholder' \
   AGENT_SANDBOX_TOKEN='placeholder' \
-  docker compose --project-directory . \
+  docker compose \
     -f deploy/compose/docker-compose.production.yml config
 ```
 
 Assertions for the production file:
 
-- Build contexts resolve to the repository root, `./vendor/freellmapi`, and `./apps/agent-sandbox`.
+- Build contexts resolve to the repository root, `<repo>/vendor/freellmapi`, and `<repo>/apps/agent-sandbox` — never under `deploy/compose/`.
 - Only `api` and `board` publish host ports; `freellmapi` and `agent-sandbox` publish none.
 - `freellmapi_data` is a named volume at `/app/server/data`, with a healthcheck on `/api/ping`.
 - `jobs-worker` depends on healthy `freellmapi` and `agent-sandbox`; Board startup does not depend on the gateway.
 - `agent-sandbox` has no Docker socket by default. The optional socket override requires a dedicated rootless daemon socket, never `/var/run/docker.sock`.
 
-`deploy/compose/docker-compose.freellmapi-test.yml` is an **override** that binds only `127.0.0.1:${FREELMAPI_TEST_PORT:-3001}:3001`. It is not a standalone entrypoint: `docker compose -f deploy/compose/docker-compose.freellmapi-test.yml config` fails with "neither an image nor a build context specified". Always layer it over the production file, and never use it as the production command.
+`deploy/compose/docker-compose.freellmapi-test.yml` is an **override** that binds only `127.0.0.1:${FREELMAPI_TEST_PORT:-3001}:3001`. It is not a standalone entrypoint: `docker compose -f deploy/compose/docker-compose.freellmapi-test.yml config` fails with "neither an image nor a build context specified". Always layer it over the production file, and never use it as the production command:
+
+```bash
+# Prefix this with the same `env VAR='placeholder' ...` assignments shown above.
+docker compose \
+  -f deploy/compose/docker-compose.production.yml \
+  -f deploy/compose/docker-compose.freellmapi-test.yml config
+```
 
 ### Cloud coding-agent invariants
 
@@ -104,7 +111,7 @@ This is a read-only static gate (9 checks at the time of writing) covering vendo
 | --- | --- |
 | Did the gate evaluator run correctly? | `pnpm --filter @moonwitness/ai-evaluation check:gates` exits 0 with `ok: true`. |
 | Did a real model succeed on a task? | A live provider-backed eval run with recorded provenance; **not** the offline gate or Board defaults. |
-| Is production Compose safe to render? | `docker compose --project-directory . -f deploy/compose/docker-compose.production.yml config` with placeholder env, plus the invariant gate. |
+| Is production Compose safe to render? | `docker compose -f deploy/compose/docker-compose.production.yml config` with placeholder env, plus the invariant gate. |
 | Are the Board numbers real results? | Only if the summary endpoint supplies provenance and the offline/live run is recorded in an evidence note. Currently: unverified. |
 
 Escalate to the coordinator when the summary endpoint is static, when Compose contexts resolve under `deploy/compose/`, or when a gate is skipped. Record the exact command and output in `docs/roadmap/evidence/` rather than asserting a PASS from memory.

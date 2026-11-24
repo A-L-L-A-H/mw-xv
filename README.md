@@ -59,11 +59,16 @@ Mulai cepat: [Quickstart](#quickstart) · [Panduan developer](docs/guide/index.m
 
 Prasyarat: **Node.js 24**, **pnpm 11.17**, dan **Docker Compose**.
 
+Semua perintah Compose di bawah dijalankan dari root repository dengan `-f deploy/compose/...`.
+File Compose tidak lagi ada di root; build context di dalamnya memakai `../..` karena path relatif
+Compose dihitung dari direktori file pertama (`deploy/compose/`). Jangan menambahkan
+`--project-directory .` — itu akan menggeser context ke atas repository.
+
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
 cp .env.example .env
-docker compose up -d postgres
+docker compose -f deploy/compose/docker-compose.yml up -d postgres
 pnpm build
 pnpm dev
 ```
@@ -79,9 +84,9 @@ Isi `.env` minimal:
 - `SUPERADMIN_PASSWORD` — password awal `superadmin`; hanya diterapkan selama akun belum punya hash
   di database.
 
-`pnpm dev` menjalankan API, Board, dan outbox worker sekaligus. `docker compose up -d` tanpa nama
-service juga menyalakan OmniRoute, gateway LLM dev-only di `127.0.0.1:20128`; gunakan
-`docker compose up -d postgres` bila tidak diperlukan.
+`pnpm dev` menjalankan API, Board, dan outbox worker sekaligus. `docker compose -f deploy/compose/docker-compose.yml up -d`
+tanpa nama service menyalakan seluruh stack lokal; gunakan
+`docker compose -f deploy/compose/docker-compose.yml up -d postgres` bila hanya butuh database.
 
 Stack default **tidak** memasang `/var/run/docker.sock`. Fitur control-plane yang memanggil Docker
 CLI harus memakai profil eksplisit dan hanya di lingkungan lokal yang tepercaya:
@@ -502,8 +507,8 @@ integrasi, serta drill backup/restore pada database uji disposable.
 Tes PostgreSQL lokal:
 
 ```bash
-docker compose up -d postgres
-docker compose exec -T postgres createdb -U postgres moonwitness_local_test
+docker compose -f deploy/compose/docker-compose.yml up -d postgres
+docker compose -f deploy/compose/docker-compose.yml exec -T postgres createdb -U postgres moonwitness_local_test
 export POSTGRES_TEST_URL=postgresql://postgres:postgres@127.0.0.1:5432/moonwitness_local_test
 pnpm test:integration
 ```
@@ -554,6 +559,10 @@ docker compose --env-file .env.production -f deploy/compose/docker-compose.produ
 docker compose --env-file .env.production -f deploy/compose/docker-compose.production.yml ps
 docker compose --env-file .env.production -f deploy/compose/docker-compose.production.yml logs -f api jobs-worker jobs-scheduler outbox-worker
 ```
+
+Context build Board/API (`../..`), FreeLLMAPI (`../../vendor/freellmapi`), dan agent sandbox
+(`../../apps/agent-sandbox`) sudah dihitung dari direktori `deploy/compose/`, sehingga perintah di
+atas bisa dijalankan langsung dari root repository tanpa `--project-directory .`.
 
 Compose menjalankan Board (Next.js standalone, port container 8080), API (3000), job worker,
 scheduler, dan outbox worker. Database production tetap eksternal/terkelola. Semua port dipetakan ke

@@ -1,8 +1,12 @@
 # Optional full development stack. The base stack starts PostgreSQL and GoWA.
+# Relative build contexts resolve from this file's directory (deploy/compose/), so they use ../..
+# to reach the repository root. Run from the repository root with
+#   docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.development.yml up -d --build
+# Do not pass --project-directory .; it would break those contexts.
 services:
   api:
     build:
-      context: .
+      context: ../..
       target: build
     command: ['pnpm', '--filter', '@moonwitness/api', 'dev']
     environment:
@@ -46,7 +50,7 @@ services:
       retries: 6
   board:
     build:
-      context: .
+      context: ../..
       target: build
     command: ['pnpm', '--filter', '@moonwitness/board', 'dev']
     environment:
@@ -56,7 +60,7 @@ services:
       api: { condition: service_healthy }
   outbox-worker:
     build:
-      context: .
+      context: ../..
       target: build
     command: ['pnpm', '--filter', '@moonwitness/api', 'jobs:outbox']
     environment:
@@ -83,7 +87,7 @@ services:
       postgres: { condition: service_healthy }
   jobs-worker:
     build:
-      context: .
+      context: ../..
       target: build
     command: ['pnpm', '--filter', '@moonwitness/api', 'jobs:worker']
     environment:
@@ -106,7 +110,7 @@ services:
       postgres: { condition: service_healthy }
   jobs-scheduler:
     build:
-      context: .
+      context: ../..
       target: build
     command: ['pnpm', '--filter', '@moonwitness/api', 'jobs:scheduler']
     environment:
