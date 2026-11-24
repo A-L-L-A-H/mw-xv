@@ -108,38 +108,6 @@ export function pnpmSetupOrderValid(actionSource) {
   return nodeSetup >= 0 && pnpmActionSetup > nodeSetup;
 }
 
-export function findBunVersionDrift(sources, expectedBunVersion) {
-  const findings = [];
-  for (const source of sources) {
-    const content = source.content;
-    // Check setup-bun action default version
-    const setupBunMatch = content.match(/default:\s*'([^']+)'/);
-    if (setupBunMatch && source.path.includes('setup-bun/action.yml')) {
-      const version = setupBunMatch[1];
-      if (version !== expectedBunVersion) {
-        findings.push({
-          path: source.path,
-          reference: version,
-          reason: `must match the root packageManager bun@${expectedBunVersion}`,
-        });
-      }
-    }
-    // Check workflow uses of setup-bun
-    const workflowMatches = content.matchAll(/bun-version:\s*'([^']+)'/g);
-    for (const match of workflowMatches) {
-      const version = match[1];
-      if (version !== expectedBunVersion) {
-        findings.push({
-          path: source.path,
-          reference: version,
-          reason: `must match the root packageManager bun@${expectedBunVersion}`,
-        });
-      }
-    }
-  }
-  return findings;
-}
-
 export function workflowInstallsFrozenWorkspaceAfterSetup(source, path) {
   const lines = source.split(/\r?\n/u);
   const ciPlanOnly = path === '.github/workflows/ci.yml';
