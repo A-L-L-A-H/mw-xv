@@ -190,6 +190,46 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
         const newSecret = randomBytes(24).toString('base64url');
         const reason = req.body?.reason?.trim() || 'manual_rotation';
 
+        // Sync the new secret to the RADIUS runtime BEFORE committing to DB
+        // so a runtime timeout/error never leaves DB and runtime diverged
+        // (audit finding TAUD-10 / TASK-EX-03).
+        let runtimeRes: Response;
+        try {
+          runtimeRes = await fetchImpl(
+            `${baseUrl}/api/clients/${encodeURIComponent(nas.ip_address)}/rotate-secret`,
+            {
+              method: 'POST',
+              headers: ispAuthHeaders(adminToken, { 'content-type': 'application/json' }),
+              body: JSON.stringify({ secret: newSecret, reason }),
+              signal: AbortSignal.timeout(5_000),
+            }
+          );
+        } catch {
+          return reply.code(502).send({
+            success: false,
+            error: 'ISP runtime unreachable; NAS secret was not rotated in database',
+            data: {
+              nasId: nas.id,
+              ipAddress: nas.ip_address,
+              rotated: false,
+              runtimeSynced: false,
+            },
+          });
+        }
+
+        if (!runtimeRes.ok) {
+          return reply.code(502).send({
+            success: false,
+            error: `ISP runtime rejected secret rotation (${runtimeRes.status}); database unchanged`,
+            data: {
+              nasId: nas.id,
+              ipAddress: nas.ip_address,
+              rotated: false,
+              runtimeSynced: false,
+            },
+          });
+        }
+
         await ISPNAS.query().findById(nas.id).patch({ secret: newSecret });
         await AuditLog.query().insert({
           model: ISPNAS.modelName,
@@ -199,29 +239,13 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
           changes: JSON.stringify({ reason, secret: '[redacted]' }),
         });
 
-        let runtimeSynced: boolean;
-        try {
-          const res = await fetchImpl(
-            `${baseUrl}/api/clients/${encodeURIComponent(nas.ip_address)}/rotate-secret`,
-            {
-              method: 'POST',
-              headers: ispAuthHeaders(adminToken, { 'content-type': 'application/json' }),
-              body: JSON.stringify({ secret: newSecret, reason }),
-              signal: AbortSignal.timeout(5_000),
-            }
-          );
-          runtimeSynced = res.ok;
-        } catch {
-          runtimeSynced = false;
-        }
-
         return {
           success: true,
           data: {
             nasId: nas.id,
             ipAddress: nas.ip_address,
             rotated: true,
-            runtimeSynced,
+            runtimeSynced: true,
           },
         };
       }

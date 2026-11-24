@@ -228,7 +228,7 @@ expect(resolveIspAdminToken({ adminToken: 'x', jwtSecret: 'ignored' })).toBe('x'
       await app.register(
         createIspHttpPlugin({
           ispServiceUrl: 'http://isp.local:3002',
-          jwtSecret: JWT_SECRET,
+          jwtSecret: 'unit-test-jwt-secret',
           fetchImpl: async (input, init) => {
             const url = String(input);
             const headers = (init?.headers ?? {}) as Record<string, string>;
@@ -680,6 +680,126 @@ expect(resolveIspAdminToken({ adminToken: 'x', jwtSecret: 'ignored' })).toBe('x'
       currentAuth = null;
       const unauthHealth = await app.inject({ method: 'GET', url: '/api/isp/health' });
       expect(unauthHealth.statusCode).toBe(401);
+    });
+
+    it('keeps the database unchanged when the ISP runtime rejects or times out during secret rotation', async () => {
+      const nas = await ISPNAS.query().first();
+      expect(nas).toBeDefined();
+      const secretBefore = nas!.secret;
+      let rotationAttempts = 0;
+
+      const failingApp = Fastify({ logger: false });
+      currentAuth = { userId: 2, role: 'superadmin', companyId: 1 };
+      failingApp.addHook('onRequest', async (req) => {
+        (req as { auth?: typeof currentAuth }).auth = currentAuth;
+      });
+      await failingApp.register(
+        createIspHttpPlugin({
+          ispServiceUrl: 'http://isp.local:3002',
+          jwtSecret: 'unit-test-jwt-secret',
+          fetchImpl: async (input, init) => {
+            const url = String(input);
+            if (url.includes('/rotate-secret')) {
+              rotationAttempts += 1;
+              void init;
+              if (rotationAttempts === 1) {
+                throw new Error('simulated runtime timeout');
+              }
+              return new Response(JSON.stringify({ error: 'nas busy' }), { status: 500 });
+            }
+            if (url.endsWith('/health')) {
+              return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+            }
+            return new Response('{}', { status: 404 });
+          },
+        })
+      );
+      await failingApp.ready();
+
+      // Runtime unreachable: DB must stay untouched.
+      const timeoutRes = await failingApp.inject({
+        method: 'POST',
+        url: `/api/isp/nas/${nas!.id}/rotate-secret`,
+        payload: { reason: 'runtime_down' },
+      });
+      expect(timeoutRes.statusCode).toBe(502);
+      expect(timeoutRes.json()).toMatchObject({ success: false });
+      const afterTimeout = await ISPNAS.query().findById(nas!.id);
+      expect(afterTimeout?.secret).toBe(secretBefore);
+      expect(
+        await db(AuditLog.tableName)
+          .where({ model: ISPNAS.modelName, operation: 'rotate_secret' })
+          .count({ count: '*' })
+          .first()
+      ).toMatchObject({ count: 0 });
+
+      // Runtime rejects: DB must also stay untouched.
+      const rejectRes = await failingApp.inject({
+        method: 'POST',
+        url: `/api/isp/nas/${nas!.id}/rotate-secret`,
+        payload: { reason: 'runtime_rejects' },
+      });
+      expect(rejectRes.statusCode).toBe(502);
+      const afterReject = await ISPNAS.query().findById(nas!.id);
+      expect(afterReject?.secret).toBe(secretBefore);
+      expect(
+        await db(AuditLog.tableName)
+          .where({ model: ISPNAS.modelName, operation: 'rotate_secret' })
+          .count({ count: '*' })
+          .first()
+      ).toMatchObject({ count: 0 });
+
+      await failingApp.close();
+    });
+
+    it('persists the new secret only after the runtime accepted it', async () => {
+      const nas = await ISPNAS.query().first();
+      expect(nas).toBeDefined();
+      const secretBefore = nas!.secret;
+      const callOrder: string[] = [];
+
+      const orderedApp = Fastify({ logger: false });
+      currentAuth = { userId: 2, role: 'superadmin', companyId: 1 };
+      orderedApp.addHook('onRequest', async (req) => {
+        (req as { auth?: typeof currentAuth }).auth = currentAuth;
+      });
+      await orderedApp.register(
+        createIspHttpPlugin({
+          ispServiceUrl: 'http://isp.local:3002',
+          jwtSecret: 'unit-test-jwt-secret',
+          fetchImpl: async (input) => {
+            const url = String(input);
+            if (url.includes('/rotate-secret')) {
+              callOrder.push('runtime');
+              return new Response(JSON.stringify({ id: 9 }), { status: 200 });
+            }
+            return new Response('{}', { status: 404 });
+          },
+        })
+      );
+      await orderedApp.ready();
+
+      const res = await orderedApp.inject({
+        method: 'POST',
+        url: `/api/isp/nas/${nas!.id}/rotate-secret`,
+        payload: { reason: 'ordered_rotation' },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({
+        success: true,
+        data: { rotated: true, runtimeSynced: true },
+      });
+      expect(callOrder).toEqual(['runtime']);
+      const after = await ISPNAS.query().findById(nas!.id);
+      expect(after?.secret).not.toBe(secretBefore);
+      expect(
+        await db(AuditLog.tableName)
+          .where({ model: ISPNAS.modelName, operation: 'rotate_secret' })
+          .count({ count: '*' })
+          .first()
+      ).toMatchObject({ count: 1 });
+
+      await orderedApp.close();
     });
   });
 

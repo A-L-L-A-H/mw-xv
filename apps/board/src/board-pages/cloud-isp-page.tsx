@@ -205,13 +205,17 @@ export function CloudIspPage() {
 
   const rotateNasSecretMutation = useMutation({
     mutationFn: async (nasId: number) =>
-      client.request<{ success: boolean; data: { runtimeSynced: boolean } }>(
+      client.request<{ success: boolean; data: { rotated?: boolean; runtimeSynced: boolean } }>(
         `/api/isp/nas/${nasId}/rotate-secret`,
         { method: 'POST', body: {} }
       ),
-    onSuccess: async () => {
+    onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey: ['isp'] });
-      toast.success('NAS secret rotated cleanly.');
+      if (result?.data?.runtimeSynced === false) {
+        toast.error('NAS secret rotation did not sync to ISP RADIUS runtime.');
+        return;
+      }
+      toast.success('NAS secret rotated and synced to ISP RADIUS runtime.');
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Unable to rotate NAS secret.');
