@@ -7,3 +7,8 @@ corpus/** -text
 docs/guide/reference/** text eol=lf
 # TaskOS sweep-and-consolidate --check compares raw bytes against an LF projection.
 docs/tasks/tasks.json text eol=lf
+# Pinned third-party snapshots and raw source art are not reviewable first-party code.
+vendor/** linguist-vendored
+raw_arts/** linguist-generated
+# Immutable Visual Universe task-card archive is golden data, not hand-edited source.
+docs/bundles/visual-universe-pack/legacy/** linguist-generated
