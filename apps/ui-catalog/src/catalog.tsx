@@ -84,6 +84,9 @@ const AssetBrowser = lazy(() =>
 const AssetDiagnostics = lazy(() =>
   import('./AssetDiagnostics.js').then((mod) => ({ default: mod.AssetDiagnostics }))
 );
+const ExtendedControlsLab = lazy(() =>
+  import('./ExtendedControlsLab.js').then((mod) => ({ default: mod.ExtendedControlsLab }))
+);
 import { PaperNote } from '@moonwitness/ui/components/paper-note';
 import { SectionRibbon } from '@moonwitness/ui/components/section-ribbon';
 import {
@@ -2090,6 +2093,18 @@ function CatalogContent() {
       renderer: () => (
         <Suspense fallback={<p role="status">Loading FX lab…</p>}>
           <FXLab />
+        </Suspense>
+      ),
+    },
+    'extended-controls': {
+      label: 'Extended controls lab',
+      title: 'Extended controls lab',
+      description:
+        'Consumer-experience controls: brand mark, breadcrumbs, buttons, confirm dialog, date picker, error state, inbox popover, inputs, log console, mode picker, number input, section ribbon, smart button box, status bar, tag input, and update banner.',
+      loading: 'lazy',
+      renderer: () => (
+        <Suspense fallback={<p role="status">Loading extended controls lab…</p>}>
+          <ExtendedControlsLab />
         </Suspense>
       ),
     },
