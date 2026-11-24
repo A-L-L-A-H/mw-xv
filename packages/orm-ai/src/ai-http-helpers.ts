@@ -5,6 +5,7 @@ import { registerJobHandler } from '@moonwitness/jobs';
 import { AuditLog, Company, CompanyMembership } from '@moonwitness/orm-base';
 import type { WorkflowRole } from '@moonwitness/orm-workflow';
 import { runDurableAgentRun } from './agent-run-executor.js';
+import { getCloudAgentEffect } from './cloud-agent-effect-factory.js';
 import { ExecutionPolicy } from './models.js';
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -49,13 +50,18 @@ export function ensureAiJobHandlersRegistered(): void {
           if (context.companyId !== undefined && context.companyId !== payload.companyId) {
             throw new Error('Cross-company agent run dispatch rejected');
           }
-          return runDurableAgentRun(payload, context, {
-            // The cloud coding-agent effect pipeline is supplied by the
-            // jobs-worker bootstrap. No inference/tool effect runs here.
-            async execute() {
-              return { executedBy: 'orm-ai-durable-executor', handlerName };
-            },
-          });
+          // A hosting app (API/worker bootstrap) installs the fully composed
+          // effect. Without it, keep the historical no-op stub so unconfigured
+          // installations and unit tests are unchanged.
+          return runDurableAgentRun(
+            payload,
+            context,
+            getCloudAgentEffect() ?? {
+              async execute() {
+                return { executedBy: 'orm-ai-durable-executor', handlerName };
+              },
+            }
+          );
         },
       });
     } catch {

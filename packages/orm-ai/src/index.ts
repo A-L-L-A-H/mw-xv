@@ -1,6 +1,10 @@
 export { manifest } from './manifest.js';
 export * from './agent-run-executor.js';
 export * from './durable-ports.js';
+export * from './cloud-agent-provider.js';
+export * from './cloud-agent-sandbox.js';
+export * from './cloud-agent-effect.js';
+export * from './cloud-agent-effect-factory.js';
 export * from './freellmapi-discovery.js';
 export { evolutionHttpPlugin } from './evolution-http.js';
 export { AI_CORPORATION_ROUTE_PREFIXES, aiCorporationHttpPlugin } from './ai-corporation-http.js';

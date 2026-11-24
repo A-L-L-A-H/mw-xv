@@ -39,6 +39,7 @@ import { jobsRoutes } from '../routes/jobs.routes.js';
 import { canAccess } from '../auth/policy.js';
 import { getRecordRuleDomain } from '../auth/rules.js';
 import { hasCompanyAccess, recordAiAudit } from '../ai-corporation/route-helpers.js';
+import { installCloudAgentEffect } from '../ai-corporation/cloud-agent-effect-setup.js';
 
 export interface ApiAddonRuntimeContext {
   jwtSecret: string;
@@ -239,6 +240,7 @@ export async function installApiAddons(
     .map((addon) => addon.manifest)
     .filter((manifest): manifest is Addon => manifest !== undefined);
   syncAddonMenusToRegistry(manifests);
+  if (addons.some((addon) => addon.name === 'ai')) installCloudAgentEffect();
   const skipBootMigrations =
     installOptions.skipBootMigrations ?? process.env.SKIP_BOOT_MIGRATIONS === 'true';
 
@@ -293,6 +295,7 @@ export async function bootstrapApiWorker(
   // in the API process, so the worker must register the AI handlers itself or an
   // enqueued ai.agent_run.* job would have no handler here.
   if (addons.some((addon) => addon.name === 'ai')) {
+    installCloudAgentEffect();
     ensureAiJobHandlersRegistered();
   }
 }
