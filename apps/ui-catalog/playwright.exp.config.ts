@@ -18,7 +18,7 @@ export default defineConfig({
     ...devices['Desktop Chrome'],
   },
   webServer: {
-    command: 'pnpm exec vite preview --host 127.0.0.1 --port 4194 --strictPort',
+    command: 'bun exec vite preview --host 127.0.0.1 --port 4194 --strictPort',
     url: baseURL,
     reuseExistingServer: false,
     timeout: 30_000,
