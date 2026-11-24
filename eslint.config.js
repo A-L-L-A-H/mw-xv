@@ -66,7 +66,6 @@ export default [
       '**/.next*/**',
       '**/node_modules/**',
       '.qoder-tmp/**',
-      'apps/todo/**',
       'services/**',
       'apps/desktop/src-tauri/target/**',
       'pnpm-lock.yaml',

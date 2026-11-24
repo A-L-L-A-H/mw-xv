@@ -72,7 +72,7 @@ The source planning bundle is `docs/bundles/local-ai-rebuild-plan/`. Its machine
 
 - Priority: P0; risk: normal.
 - Depends on: `K0-001`, `K0-002`.
-- File scope: `docs/agents/`, `docs/roadmap/`.
+- File scope: `docs/operations/local-agent-protocol.md`, `docs/roadmap/`.
 - Deliverable: Agent protocol, evidence file template, K task index integration.
 - Acceptance: No direct main/force push, secrets, data exfiltration, bypass, premature complete; roadmap M tasks preserved.
 - Verification target: `pnpm test:roadmap; existing issue-plan dry-run`. This is a target, not evidence that the command exists or has passed.

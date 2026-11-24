@@ -1,4 +1,4 @@
-# Second Brain — Wiki Layer (`docs/wiki/`)
+# Second Brain — Wiki Layer (`docs/second-brain/wiki/`)
 
 Lapisan **Wiki** adalah sumber kebenaran kanonik dan abadi (*evergreen single source of truth*) untuk repositori MoonWitness.
 

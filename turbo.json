@@ -29,7 +29,7 @@
       "outputs": []
     },
     "lint": {
-      "inputs": ["src/**", "tests/**", "package.json", ".eslintrc*", "eslint.config.*"],
+      "inputs": ["src/**", "tests/**", "package.json", "eslint.config.*"],
       "outputs": []
     },
     "test": {

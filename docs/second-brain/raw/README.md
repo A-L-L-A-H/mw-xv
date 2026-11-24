@@ -7,7 +7,7 @@ Lapisan **Raw** adalah gerbang tangkapan cepat (*quick capture / inbox*) untuk i
 2. **Penamaan Berkas:** Gunakan format tanggal: `YYYY-MM-DD-<slug-ringkas>.md`.
 3. **Penyaringan (*Triage*):** Catatan di `raw/` disaring secara berkala:
    - Diformulasikan menjadi rencana kerja di `docs/second-brain/brain/`.
-   - Diangkat menjadi standar resmi di `docs/wiki/`.
+   - Diangkat menjadi standar resmi di `docs/second-brain/wiki/`.
    - Diubah menjadi tugas terstruktur melalui workflow TaskOS; jangan mengedit file registry hasil generator secara langsung.
    - Diarsipkan jika sudah tidak relevan.
 
