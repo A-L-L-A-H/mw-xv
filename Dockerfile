@@ -7,7 +7,9 @@ RUN apt-get update \
     && ln -s /root/.bun/bin/bun /usr/local/bin/bun \
     && ln -s /root/.bun/bin/bunx /usr/local/bin/bunx
 WORKDIR /workspace
-COPY package.json bun.lock ./
+COPY package.json bun.lock bunfig.toml ./
+COPY apps/agent-observability/package.json ./apps/agent-observability/package.json
+COPY apps/agent-sandbox/package.json ./apps/agent-sandbox/package.json
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/board/package.json ./apps/board/package.json
 COPY apps/control-plane/package.json ./apps/control-plane/package.json
@@ -27,25 +29,39 @@ COPY packages/jobs/package.json ./packages/jobs/package.json
 COPY packages/knowledge/package.json ./packages/knowledge/package.json
 COPY packages/local-ai/package.json ./packages/local-ai/package.json
 COPY packages/logger/package.json ./packages/logger/package.json
+COPY packages/mcp-moonwitness/package.json ./packages/mcp-moonwitness/package.json
 COPY packages/orm-ai/package.json ./packages/orm-ai/package.json
 COPY packages/orm-a2a/package.json ./packages/orm-a2a/package.json
+COPY packages/orm-automation-core/package.json ./packages/orm-automation-core/package.json
 COPY packages/orm-base/package.json ./packages/orm-base/package.json
+COPY packages/orm-bot-orchestrator/package.json ./packages/orm-bot-orchestrator/package.json
+COPY packages/orm-catalog/package.json ./packages/orm-catalog/package.json
 COPY packages/orm-cli/package.json ./packages/orm-cli/package.json
+COPY packages/orm-clinical/package.json ./packages/orm-clinical/package.json
 COPY packages/orm-cloud/package.json ./packages/orm-cloud/package.json
 COPY packages/orm-compliance/package.json ./packages/orm-compliance/package.json
+COPY packages/orm-content-factory/package.json ./packages/orm-content-factory/package.json
 COPY packages/orm-crm/package.json ./packages/orm-crm/package.json
+COPY packages/orm-ecommerce-sync/package.json ./packages/orm-ecommerce-sync/package.json
 COPY packages/orm-governance/package.json ./packages/orm-governance/package.json
 COPY packages/orm-helpdesk/package.json ./packages/orm-helpdesk/package.json
+COPY packages/orm-income-ledger/package.json ./packages/orm-income-ledger/package.json
 COPY packages/orm-integration/package.json ./packages/orm-integration/package.json
 COPY packages/orm-isp/package.json ./packages/orm-isp/package.json
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json
 COPY packages/orm-notification/package.json ./packages/orm-notification/package.json
+COPY packages/orm-observability/package.json ./packages/orm-observability/package.json
 COPY packages/orm-organization/package.json ./packages/orm-organization/package.json
 COPY packages/orm-project/package.json ./packages/orm-project/package.json
+COPY packages/orm-public-services/package.json ./packages/orm-public-services/package.json
 COPY packages/orm/package.json ./packages/orm/package.json
 COPY packages/orm-request/package.json ./packages/orm-request/package.json
+COPY packages/orm-rnd/package.json ./packages/orm-rnd/package.json
 COPY packages/orm-sales/package.json ./packages/orm-sales/package.json
+COPY packages/orm-sensor/package.json ./packages/orm-sensor/package.json
 COPY packages/orm-sharia/package.json ./packages/orm-sharia/package.json
+COPY packages/orm-signal/package.json ./packages/orm-signal/package.json
+COPY packages/orm-sim/package.json ./packages/orm-sim/package.json
 COPY packages/orm-storage/package.json ./packages/orm-storage/package.json
 COPY packages/orm-subscription/package.json ./packages/orm-subscription/package.json
 COPY packages/orm-whatsapp/package.json ./packages/orm-whatsapp/package.json

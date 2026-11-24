@@ -2030,14 +2030,34 @@ function CatalogContent() {
     'character-preview': {
       label: 'Character preview (crew-01)',
       title: 'Character preview (crew-01)',
+<<<<<<< HEAD
       description: 'Catalog-only fictional example. crew-01 is not a real crew member.',
+=======
+      description:
+        'Catalog-only fictional example. crew-01 is not a real crew member and has no backend record; this preview uses canonical asset IDs without production user data.',
+>>>>>>> dfd36578 (fix(bun): fix ui-catalog preview, restore preview description, complete Dockerfile manifests)
       loading: 'eager',
       renderer: () => (
         <div className="auth-coverage-grid" data-testid="character-preview-specimen">
           {[
-            ['Idle clip', 'Subtle breathing loop with reduced-motion fallback.', 'idle', [idleFrameOne, idleFrameTwo]],
-            ['Hair movement clip', 'Subtle hair sway for back-facing figure.', 'hair-move', [hairFrameOne, hairFrameTwo]],
-            ['Walk & turn prototype', 'Movement set with static pose fallback.', 'walk', [walkFrameOne, walkFrameTwo]],
+            [
+              'Idle clip',
+              'Subtle breathing loop with reduced-motion fallback.',
+              'idle',
+              [idleFrameOne, idleFrameTwo],
+            ],
+            [
+              'Hair movement clip',
+              'Subtle hair sway for back-facing figure.',
+              'hair-move',
+              [hairFrameOne, hairFrameTwo],
+            ],
+            [
+              'Walk & turn prototype',
+              'Movement set with static pose fallback.',
+              'walk',
+              [walkFrameOne, walkFrameTwo],
+            ],
           ].map(([title, desc, kind, frames]) => {
             const folder = kind === 'hair-move' ? 'hair' : kind;
             return (
@@ -2094,7 +2114,12 @@ function CatalogContent() {
             description="Each chart has a labeled table alternative and locale formatting."
           >
             <div className="catalog-chart-grid">
-              <BarChart title="Installed addons" data={chartData} locale="en-US" valueLabel="Addons" />
+              <BarChart
+                title="Installed addons"
+                data={chartData}
+                locale="en-US"
+                valueLabel="Addons"
+              />
               <LineChart
                 title="Weekly activity"
                 labels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri']}
@@ -2104,14 +2129,34 @@ function CatalogContent() {
                 ]}
                 locale="en-US"
               />
-              <BarChart title="Zero values bar example" data={zeroSeries} locale="en-US" valueLabel="Count" />
-              <LineChart title="Zero values line example" labels={['Mon', 'Tue', 'Wed']} series={zeroLineSeries} locale="en-US" />
+              <BarChart
+                title="Zero values bar example"
+                data={zeroSeries}
+                locale="en-US"
+                valueLabel="Count"
+              />
+              <LineChart
+                title="Zero values line example"
+                labels={['Mon', 'Tue', 'Wed']}
+                series={zeroLineSeries}
+                locale="en-US"
+              />
               <BarChart title="Loading example" data={[]} loading />
               <LineChart title="Line loading example" labels={[]} series={[]} loading />
               <BarChart title="Error example" data={[]} error="Activity could not be loaded." />
-              <LineChart title="Line error example" labels={[]} series={[]} error="Timeline could not be loaded." />
+              <LineChart
+                title="Line error example"
+                labels={[]}
+                series={[]}
+                error="Timeline could not be loaded."
+              />
               <BarChart title="Empty example" data={[]} emptyMessage="No events yet." />
-              <LineChart title="Line empty example" labels={[]} series={[]} emptyMessage="No timeline points yet." />
+              <LineChart
+                title="Line empty example"
+                labels={[]}
+                series={[]}
+                emptyMessage="No timeline points yet."
+              />
             </div>
           </Example>
         );
@@ -2120,7 +2165,8 @@ function CatalogContent() {
     'visual-universe': {
       label: 'Visual Universe (Signal Riot)',
       title: 'Visual Universe (Signal Riot)',
-      description: 'Contoh desain: Signal Riot comic panels, character stage, stickers, and quests.',
+      description:
+        'Contoh desain: Signal Riot comic panels, character stage, stickers, and quests.',
       loading: 'eager',
       renderer: () => (
         <Example
