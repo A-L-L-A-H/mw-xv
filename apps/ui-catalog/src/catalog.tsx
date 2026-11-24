@@ -2030,12 +2030,8 @@ function CatalogContent() {
     'character-preview': {
       label: 'Character preview (crew-01)',
       title: 'Character preview (crew-01)',
-<<<<<<< HEAD
-      description: 'Catalog-only fictional example. crew-01 is not a real crew member.',
-=======
       description:
         'Catalog-only fictional example. crew-01 is not a real crew member and has no backend record; this preview uses canonical asset IDs without production user data.',
->>>>>>> dfd36578 (fix(bun): fix ui-catalog preview, restore preview description, complete Dockerfile manifests)
       loading: 'eager',
       renderer: () => (
         <div className="auth-coverage-grid" data-testid="character-preview-specimen">

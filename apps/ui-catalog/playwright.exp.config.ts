@@ -18,11 +18,7 @@ export default defineConfig({
     ...devices['Desktop Chrome'],
   },
   webServer: {
-<<<<<<< HEAD
-    command: 'bun exec vite preview --host 127.0.0.1 --port 4194 --strictPort',
-=======
     command: 'bunx vite preview --host 127.0.0.1 --port 4194 --strictPort',
->>>>>>> dfd36578 (fix(bun): fix ui-catalog preview, restore preview description, complete Dockerfile manifests)
     url: baseURL,
     reuseExistingServer: false,
     timeout: 30_000,
