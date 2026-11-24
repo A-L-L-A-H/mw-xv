@@ -209,7 +209,7 @@ test('isolated recovery candidate mode writes validated output without touching 
 
   try {
     const result = spawnSync(
-      process.execPath,
+      'node',
       ['scripts/tasks/sweep-and-consolidate.mjs', '--candidate', candidatePath],
       {
         cwd: repositoryRoot,
@@ -236,7 +236,7 @@ test('candidate output mode refuses paths inside the repository', async () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
   const insidePath = path.join(repositoryRoot, 'docs/tasks/recovery-candidate.json');
   const result = spawnSync(
-    process.execPath,
+    'node',
     ['scripts/tasks/sweep-and-consolidate.mjs', '--candidate', insidePath],
     { cwd: repositoryRoot, encoding: 'utf8' }
   );

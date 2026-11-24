@@ -164,11 +164,11 @@ jobs:
           # policy-gate is enforced by the ruleset on the merge_group SHA; this
           # push-time gate requires the exact-SHA technical aggregate only.
           if node scripts/release-await-ci.mjs --sha "$EXPECTED_SHA" --repo "$GH_REPO" \
-              --checks '["ci-gate"]' --checks-file "$RUNNER_TEMP/promotion-check-runs.json"; then
+              --checks '["ci-gate", "postgres-integration"]' --checks-file "$RUNNER_TEMP/promotion-check-runs.json"; then
             echo "pass=true" >> "$GITHUB_OUTPUT"
           else
             echo "pass=false" >> "$GITHUB_OUTPUT"
-            echo "Exact-SHA ci-gate/policy-gate checks are not successful; promotion stays blocked." >> "$GITHUB_STEP_SUMMARY"
+            echo "Exact-SHA ci-gate/postgres-integration checks are not successful; promotion stays blocked." >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Ensure approval-required label exists
         if: >-

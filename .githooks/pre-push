@@ -17,3 +17,6 @@ node scripts/check-docs.mjs
 node scripts/roadmap/validate-roadmap.mjs
 node scripts/tasks/validate-tasks.mjs
 node scripts/evolution/check-constitution.mjs
+
+echo "Running fast unit tests (CI parity)..."
+bun run test:unit:ci
