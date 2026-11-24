@@ -9,8 +9,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "pnpm --filter @moonwitness/ui build && pnpm diagnostics:generate && tsc -p tsconfig.json && vite build",
-    "build:built": "pnpm diagnostics:generate && tsc -p tsconfig.json && vite build",
+    "build": "bun --filter @moonwitness/ui build && bun run diagnostics:generate && tsc -p tsconfig.json && vite build",
+    "build:built": "bun run diagnostics:generate && tsc -p tsconfig.json && vite build",
     "diagnostics:generate": "node scripts/generate-asset-diagnostics.mjs",
     "test": "playwright test",
     "preview": "vite preview"
