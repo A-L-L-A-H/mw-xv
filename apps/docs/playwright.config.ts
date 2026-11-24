@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const basePath = process.env.MW_DOCS_BASE_PATH ?? '/moonwitness-xiv/';
 const baseUrl = `http://127.0.0.1:4178${basePath}`;
-const repositoryRoot = resolve(fileURLToPath(import.meta.url), '../..');
+const repositoryRoot = resolve(import.meta.dirname, '../..');
 
 export default defineConfig({
   testDir: './tests',
@@ -24,6 +24,6 @@ export default defineConfig({
     cwd: repositoryRoot,
     url: baseUrl,
     reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
+    timeout: 120_000,
   },
 });

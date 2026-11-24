@@ -142,9 +142,17 @@ function halftoneDots(cols, rows, startX, startY, step, radius, color, opacity =
   return dots.join('');
 }
 
+const EXPRESSION_MASTERS = {
+  happy: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
+  excited: 'source/artwork/riot-universe/kuro-signal-portrait-excited-master.png',
+  thinking: 'source/artwork/riot-universe/kuro-signal-portrait-thinking-master.png',
+  celebrating: 'source/artwork/riot-universe/kuro-signal-portrait-celebrating-master.png',
+};
+
 const EXPRESSIONS = [
   {
     slug: 'happy',
+    masterKey: 'happy',
     tilt: 0,
     scale: 1,
     offsetY: 0,
@@ -156,6 +164,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'excited',
+    masterKey: 'excited',
     tilt: -3,
     scale: 1.04,
     offsetY: -8,
@@ -168,6 +177,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'laughing',
+    masterKey: 'excited',
     tilt: 4,
     scale: 1.03,
     offsetY: -6,
@@ -179,6 +189,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'angry',
+    masterKey: 'happy',
     tilt: -2,
     scale: 1.05,
     offsetY: 4,
@@ -191,6 +202,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'confused',
+    masterKey: 'thinking',
     tilt: 6,
     scale: 0.97,
     offsetY: 4,
@@ -202,6 +214,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'thinking',
+    masterKey: 'thinking',
     tilt: -4,
     scale: 0.98,
     offsetY: 2,
@@ -216,6 +229,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'surprised',
+    masterKey: 'excited',
     tilt: 0,
     scale: 1.06,
     offsetY: -10,
@@ -227,6 +241,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'sad',
+    masterKey: 'thinking',
     tilt: -5,
     scale: 0.95,
     offsetY: 14,
@@ -238,6 +253,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'crying',
+    masterKey: 'thinking',
     tilt: 5,
     scale: 0.96,
     offsetY: 10,
@@ -250,6 +266,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'sleepy',
+    masterKey: 'thinking',
     tilt: 7,
     scale: 0.96,
     offsetY: 12,
@@ -262,6 +279,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'curious',
+    masterKey: 'thinking',
     tilt: -6,
     scale: 1,
     offsetY: 0,
@@ -273,6 +291,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'celebrating',
+    masterKey: 'celebrating',
     tilt: 3,
     scale: 1.04,
     offsetY: -8,
@@ -286,6 +305,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'embarrassed',
+    masterKey: 'happy',
     tilt: 4,
     scale: 0.98,
     offsetY: 6,
@@ -296,6 +316,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'determined',
+    masterKey: 'excited',
     tilt: -2,
     scale: 1.03,
     offsetY: -4,
@@ -306,6 +327,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'victory',
+    masterKey: 'celebrating',
     tilt: 2,
     scale: 1.05,
     offsetY: -10,
@@ -317,6 +339,7 @@ const EXPRESSIONS = [
   },
   {
     slug: 'disappointed',
+    masterKey: 'thinking',
     tilt: -4,
     scale: 0.95,
     offsetY: 14,
@@ -389,7 +412,7 @@ const POSES = [
   },
   {
     slug: 'waving',
-    view: 'threeQuarter',
+    view: 'front',
     tilt: 3,
     offsetY: -6,
     backFx: `<ellipse cx="256" cy="726" rx="140" ry="18" fill="${INK}" fill-opacity="0.22"/>`,
@@ -400,7 +423,7 @@ const POSES = [
   },
   {
     slug: 'pointing',
-    view: 'side',
+    view: 'front',
     tilt: 4,
     offsetY: -4,
     backFx: `<ellipse cx="256" cy="726" rx="138" ry="18" fill="${INK}" fill-opacity="0.22"/>`,
@@ -477,31 +500,31 @@ const POSES = [
 ];
 
 const UI_STATES = [
-  { slug: 'empty-dashboard', bg: 'city-shadow.png', accent: CYAN, actor: 'kuro', glyph: '<rect x="260" y="138" width="120" height="86" rx="8" fill="#17171a" stroke="#0d0d0d" stroke-width="5"/><path d="M278 168h84M278 190h56" stroke="#00b8f0" stroke-width="5" stroke-linecap="round"/>' },
-  { slug: 'no-search-results', bg: 'signal-tunnel.png', accent: YELLOW, actor: 'vesper', glyph: '<circle cx="312" cy="176" r="40" fill="#17171a" stroke="#ffe031" stroke-width="6"/><path d="M342 206l32 32M296 160l32 32M328 160l-32 32" stroke="#ffe031" stroke-width="6" stroke-linecap="round"/>' },
-  { slug: 'no-notifications', bg: 'city-shadow.png', accent: VIOLET, actor: 'kuro', glyph: '<path d="M320 132c-22 0-36 16-36 38v22l-12 16h96l-12-16v-22c0-22-14-38-36-38Z" fill="#17171a" stroke="#c084fc" stroke-width="5"/><path d="M274 134l92 84" stroke="#ff2e88" stroke-width="6" stroke-linecap="round"/>' },
-  { slug: 'empty-collection', bg: 'crew-rooftop.png', accent: MAGENTA, actor: 'vesper', glyph: '<path d="M258 154h44l14 16h66v58H258Z" fill="#17171a" stroke="#ff2e88" stroke-width="5" stroke-linejoin="round"/><path d="M276 196h88" stroke="#f3efe4" stroke-width="4" stroke-dasharray="6 8"/>' },
-  { slug: 'no-favorites', bg: 'city-shadow.png', accent: MAGENTA, actor: 'kuro', glyph: `<path d="${starPath(320, 182, 46, 20, 5)}" fill="#17171a" stroke="#ff2e88" stroke-width="5.5"/>` },
-  { slug: 'no-messages', bg: 'wallpaper-signal-city-wide.png', accent: CYAN, actor: 'kuro', glyph: '<rect x="258" y="144" width="124" height="82" rx="8" fill="#17171a" stroke="#00b8f0" stroke-width="5"/><path d="M262 148l58 44 58-44" fill="none" stroke="#00b8f0" stroke-width="5"/>' },
-  { slug: 'no-activity', bg: 'night-shift.png', accent: YELLOW, actor: 'vesper', glyph: '<path d="M248 188h36l16-34 22 64 18-30h52" fill="none" stroke="#ffe031" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>' },
-  { slug: 'first-time', bg: 'crew-rooftop.png', accent: YELLOW, actor: 'both', glyph: `<path d="${starPath(320, 176, 42, 14, 4)}" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/>` },
-  { slug: 'loading', bg: 'wallpaper-signal-city-wide.png', accent: CYAN, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="42" fill="none" stroke="#17171a" stroke-width="10"/><path d="M320 138a42 42 0 0 1 42 42" fill="none" stroke="#00b8f0" stroke-width="10" stroke-linecap="round"/><circle cx="320" cy="180" r="14" fill="#ffe031"/>' },
-  { slug: 'success', bg: 'crew-rooftop.png', accent: YELLOW, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="44" fill="#ffe031" stroke="#0d0d0d" stroke-width="6"/><path d="M298 180l16 16 32-36" fill="none" stroke="#0d0d0d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>' },
-  { slug: 'error', bg: 'signal-tunnel.png', accent: MAGENTA, actor: 'kuro', glyph: '<polygon points="320,132 370,222 270,222" fill="#ff2e88" stroke="#0d0d0d" stroke-width="6" stroke-linejoin="round"/><path d="M320 162v28" stroke="#0d0d0d" stroke-width="7" stroke-linecap="round"/><circle cx="320" cy="204" r="4.5" fill="#0d0d0d"/>' },
-  { slug: 'offline', bg: 'city-shadow.png', accent: CYAN, actor: 'kuro', glyph: '<path d="M266 168a76 76 0 0 1 108 0M284 190a50 50 0 0 1 72 0" fill="none" stroke="#00b8f0" stroke-width="6" stroke-linecap="round"/><path d="M276 138l88 86" stroke="#ff2e88" stroke-width="7" stroke-linecap="round"/>' },
-  { slug: 'network-disconnected', bg: 'night-shift.png', accent: MAGENTA, actor: 'vesper', glyph: '<path d="M256 184h42m44 0h42" stroke="#00b8f0" stroke-width="7" stroke-linecap="round"/><rect x="294" y="164" width="16" height="40" rx="3" fill="#ff2e88" stroke="#0d0d0d" stroke-width="4"/><rect x="330" y="164" width="16" height="40" rx="3" fill="#ffe031" stroke="#0d0d0d" stroke-width="4"/>' },
-  { slug: 'maintenance', bg: 'night-shift.png', accent: YELLOW, actor: 'vesper', glyph: '<circle cx="320" cy="180" r="36" fill="#17171a" stroke="#ffe031" stroke-width="7" stroke-dasharray="14 8"/><circle cx="320" cy="180" r="14" fill="#ffe031" stroke="#0d0d0d" stroke-width="4"/>' },
-  { slug: 'access-denied', bg: 'signal-tunnel.png', accent: MAGENTA, actor: 'vesper', glyph: '<rect x="282" y="168" width="76" height="58" rx="8" fill="#17171a" stroke="#ff2e88" stroke-width="6"/><path d="M298 168v-18a22 22 0 0 1 44 0v18" fill="none" stroke="#ff2e88" stroke-width="6"/>' },
-  { slug: 'not-found', bg: 'city-shadow.png', accent: VIOLET, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="44" fill="#17171a" stroke="#c084fc" stroke-width="6" stroke-dasharray="16 8"/><path d="M298 158l44 44M342 158l-44 44" stroke="#ffe031" stroke-width="7" stroke-linecap="round"/>' },
-  { slug: 'unexpected-failure', bg: 'signal-tunnel.png', accent: MAGENTA, actor: 'kuro', glyph: '<path d="M326 128l-34 52h32l-12 46 38-58h-32Z" fill="#ff2e88" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>' },
-  { slug: 'welcome', bg: 'crew-rooftop.png', accent: YELLOW, actor: 'both', glyph: '<path d="M276 218v-72l44-24 44 24v72Z" fill="#17171a" stroke="#ffe031" stroke-width="5"/><circle cx="344" cy="184" r="5" fill="#ffe031"/>' },
-  { slug: 'onboarding', bg: 'wallpaper-signal-city-wide.png', accent: CYAN, actor: 'both', glyph: '<circle cx="320" cy="180" r="42" fill="#17171a" stroke="#00b8f0" stroke-width="6"/><polygon points="320,146 334,180 320,214 306,180" fill="#ffe031" stroke="#0d0d0d" stroke-width="3.5"/>' },
-  { slug: 'discover', bg: 'crew-rooftop.png', accent: CYAN, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="42" fill="#17171a" stroke="#00b8f0" stroke-width="5"/><circle cx="320" cy="180" r="22" fill="none" stroke="#ff2e88" stroke-width="4"/><circle cx="320" cy="180" r="7" fill="#ffe031"/>' },
-  { slug: 'explore', bg: 'wallpaper-signal-city-wide.png', accent: VIOLET, actor: 'vesper', glyph: '<polygon points="274,218 302,146 368,142 340,214" fill="#17171a" stroke="#c084fc" stroke-width="5"/><circle cx="320" cy="180" r="12" fill="#00b8f0"/>' },
-  { slug: 'profile', bg: 'city-shadow.png', accent: YELLOW, actor: 'kuro', glyph: '<rect x="266" y="138" width="108" height="84" rx="10" fill="#17171a" stroke="#ffe031" stroke-width="5"/><circle cx="320" cy="168" r="14" fill="#ff2e88"/><path d="M294 206c6-16 46-16 52 0" fill="#00b8f0"/>' },
-  { slug: 'achievement', bg: 'crew-rooftop.png', accent: YELLOW, actor: 'kuro', glyph: '<path d="M286 142h68v34c0 22-16 34-34 38-18-4-34-16-34-38Z" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/><path d="M302 224h36" stroke="#ffe031" stroke-width="8" stroke-linecap="round"/>' },
-  { slug: 'completion', bg: 'night-shift.png', accent: CYAN, actor: 'both', glyph: '<path d="M284 136v96M284 138l72 18-72 24Z" fill="#00b8f0" stroke="#00b8f0" stroke-width="6" stroke-linejoin="round"/>' },
-  { slug: 'celebration', bg: 'crew-rooftop.png', accent: MAGENTA, actor: 'both', glyph: `<path d="${starPath(320, 178, 44, 16, 5)}" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/><path d="${starPath(260, 142, 16, 6, 4)}" fill="#ff2e88"/><path d="${starPath(380, 146, 16, 6, 4)}" fill="#00b8f0"/>` },
+  { slug: 'empty-dashboard', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: CYAN, actor: 'kuro', glyph: '<rect x="260" y="138" width="120" height="86" rx="8" fill="#17171a" stroke="#0d0d0d" stroke-width="5"/><path d="M278 168h84M278 190h56" stroke="#00b8f0" stroke-width="5" stroke-linecap="round"/>' },
+  { slug: 'no-search-results', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: YELLOW, actor: 'vesper', glyph: '<circle cx="312" cy="176" r="40" fill="#17171a" stroke="#ffe031" stroke-width="6"/><path d="M342 206l32 32M296 160l32 32M328 160l-32 32" stroke="#ffe031" stroke-width="6" stroke-linecap="round"/>' },
+  { slug: 'no-notifications', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: VIOLET, actor: 'kuro', glyph: '<path d="M320 132c-22 0-36 16-36 38v22l-12 16h96l-12-16v-22c0-22-14-38-36-38Z" fill="#17171a" stroke="#c084fc" stroke-width="5"/><path d="M274 134l92 84" stroke="#ff2e88" stroke-width="6" stroke-linecap="round"/>' },
+  { slug: 'empty-collection', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'vesper', glyph: '<path d="M258 154h44l14 16h66v58H258Z" fill="#17171a" stroke="#ff2e88" stroke-width="5" stroke-linejoin="round"/><path d="M276 196h88" stroke="#f3efe4" stroke-width="4" stroke-dasharray="6 8"/>' },
+  { slug: 'no-favorites', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'kuro', glyph: `<path d="${starPath(320, 182, 46, 20, 5)}" fill="#17171a" stroke="#ff2e88" stroke-width="5.5"/>` },
+  { slug: 'no-messages', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: CYAN, actor: 'kuro', glyph: '<rect x="258" y="144" width="124" height="82" rx="8" fill="#17171a" stroke="#00b8f0" stroke-width="5"/><path d="M262 148l58 44 58-44" fill="none" stroke="#00b8f0" stroke-width="5"/>' },
+  { slug: 'no-activity', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: YELLOW, actor: 'vesper', glyph: '<path d="M248 188h36l16-34 22 64 18-30h52" fill="none" stroke="#ffe031" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>' },
+  { slug: 'first-time', master: 'scene-onboarding-welcome-master.png', expr: 'excited', accent: YELLOW, actor: 'both', glyph: `<path d="${starPath(320, 176, 42, 14, 4)}" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/>` },
+  { slug: 'loading', master: 'bg-riot-arcade-workbench-master.png', expr: 'thinking', accent: CYAN, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="42" fill="none" stroke="#17171a" stroke-width="10"/><path d="M320 138a42 42 0 0 1 42 42" fill="none" stroke="#00b8f0" stroke-width="10" stroke-linecap="round"/><circle cx="320" cy="180" r="14" fill="#ffe031"/>' },
+  { slug: 'success', master: 'scene-quest-victory-master.png', expr: 'celebrating', accent: YELLOW, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="44" fill="#ffe031" stroke="#0d0d0d" stroke-width="6"/><path d="M298 180l16 16 32-36" fill="none" stroke="#0d0d0d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>' },
+  { slug: 'error', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'kuro', glyph: '<polygon points="320,132 370,222 270,222" fill="#ff2e88" stroke="#0d0d0d" stroke-width="6" stroke-linejoin="round"/><path d="M320 162v28" stroke="#0d0d0d" stroke-width="7" stroke-linecap="round"/><circle cx="320" cy="204" r="4.5" fill="#0d0d0d"/>' },
+  { slug: 'offline', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: CYAN, actor: 'kuro', glyph: '<path d="M266 168a76 76 0 0 1 108 0M284 190a50 50 0 0 1 72 0" fill="none" stroke="#00b8f0" stroke-width="6" stroke-linecap="round"/><path d="M276 138l88 86" stroke="#ff2e88" stroke-width="7" stroke-linecap="round"/>' },
+  { slug: 'network-disconnected', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'vesper', glyph: '<path d="M256 184h42m44 0h42" stroke="#00b8f0" stroke-width="7" stroke-linecap="round"/><rect x="294" y="164" width="16" height="40" rx="3" fill="#ff2e88" stroke="#0d0d0d" stroke-width="4"/><rect x="330" y="164" width="16" height="40" rx="3" fill="#ffe031" stroke="#0d0d0d" stroke-width="4"/>' },
+  { slug: 'maintenance', master: 'bg-riot-arcade-workbench-master.png', expr: 'thinking', accent: YELLOW, actor: 'vesper', glyph: '<circle cx="320" cy="180" r="36" fill="#17171a" stroke="#ffe031" stroke-width="7" stroke-dasharray="14 8"/><circle cx="320" cy="180" r="14" fill="#ffe031" stroke="#0d0d0d" stroke-width="4"/>' },
+  { slug: 'access-denied', master: 'bg-riot-street-alley-master.png', expr: 'thinking', accent: MAGENTA, actor: 'vesper', glyph: '<rect x="282" y="168" width="76" height="58" rx="8" fill="#17171a" stroke="#ff2e88" stroke-width="6"/><path d="M298 168v-18a22 22 0 0 1 44 0v18" fill="none" stroke="#ff2e88" stroke-width="6"/>' },
+  { slug: 'not-found', master: 'bg-riot-street-alley-master.png', expr: 'thinking', accent: VIOLET, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="44" fill="#17171a" stroke="#c084fc" stroke-width="6" stroke-dasharray="16 8"/><path d="M298 158l44 44M342 158l-44 44" stroke="#ffe031" stroke-width="7" stroke-linecap="round"/>' },
+  { slug: 'unexpected-failure', master: 'scene-empty-signal-static-master.png', expr: 'thinking', accent: MAGENTA, actor: 'kuro', glyph: '<path d="M326 128l-34 52h32l-12 46 38-58h-32Z" fill="#ff2e88" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>' },
+  { slug: 'welcome', master: 'scene-onboarding-welcome-master.png', expr: 'excited', accent: YELLOW, actor: 'both', glyph: '<path d="M276 218v-72l44-24 44 24v72Z" fill="#17171a" stroke="#ffe031" stroke-width="5"/><circle cx="344" cy="184" r="5" fill="#ffe031"/>' },
+  { slug: 'onboarding', master: 'scene-onboarding-welcome-master.png', expr: 'excited', accent: CYAN, actor: 'both', glyph: '<circle cx="320" cy="180" r="42" fill="#17171a" stroke="#00b8f0" stroke-width="6"/><polygon points="320,146 334,180 320,214 306,180" fill="#ffe031" stroke="#0d0d0d" stroke-width="3.5"/>' },
+  { slug: 'discover', master: 'scene-onboarding-welcome-master.png', expr: 'excited', accent: CYAN, actor: 'kuro', glyph: '<circle cx="320" cy="180" r="42" fill="#17171a" stroke="#00b8f0" stroke-width="5"/><circle cx="320" cy="180" r="22" fill="none" stroke="#ff2e88" stroke-width="4"/><circle cx="320" cy="180" r="7" fill="#ffe031"/>' },
+  { slug: 'explore', master: 'scene-onboarding-welcome-master.png', expr: 'happy', accent: VIOLET, actor: 'vesper', glyph: '<polygon points="274,218 302,146 368,142 340,214" fill="#17171a" stroke="#c084fc" stroke-width="5"/><circle cx="320" cy="180" r="12" fill="#00b8f0"/>' },
+  { slug: 'profile', master: 'scene-onboarding-welcome-master.png', expr: 'happy', accent: YELLOW, actor: 'kuro', glyph: '<rect x="266" y="138" width="108" height="84" rx="10" fill="#17171a" stroke="#ffe031" stroke-width="5"/><circle cx="320" cy="168" r="14" fill="#ff2e88"/><path d="M294 206c6-16 46-16 52 0" fill="#00b8f0"/>' },
+  { slug: 'achievement', master: 'scene-quest-victory-master.png', expr: 'celebrating', accent: YELLOW, actor: 'kuro', glyph: '<path d="M286 142h68v34c0 22-16 34-34 38-18-4-34-16-34-38Z" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/><path d="M302 224h36" stroke="#ffe031" stroke-width="8" stroke-linecap="round"/>' },
+  { slug: 'completion', master: 'scene-quest-victory-master.png', expr: 'celebrating', accent: CYAN, actor: 'both', glyph: '<path d="M284 136v96M284 138l72 18-72 24Z" fill="#00b8f0" stroke="#00b8f0" stroke-width="6" stroke-linejoin="round"/>' },
+  { slug: 'celebration', master: 'scene-quest-victory-master.png', expr: 'celebrating', accent: MAGENTA, actor: 'both', glyph: `<path d="${starPath(320, 178, 44, 16, 5)}" fill="#ffe031" stroke="#0d0d0d" stroke-width="5"/><path d="${starPath(260, 142, 16, 6, 4)}" fill="#ff2e88"/><path d="${starPath(380, 146, 16, 6, 4)}" fill="#00b8f0"/>` },
 ];
 
 const STICKERS = [
@@ -664,14 +687,14 @@ const GAME_ASSETS = [
 ];
 
 const ANIMATION_CLIPS = [
-  { id: 'idle', durationMs: 260, direction: 'ping-pong', bob: [0, -6, -3, 0], tilt: [0, -1, 1, 0], fx: (i) => `<circle cx="386" cy="94" r="${8 + i * 2}" fill="${CYAN}" fill-opacity="${0.4 + i * 0.15}" stroke="${INK}" stroke-width="3"/>` },
-  { id: 'blink', durationMs: 180, direction: 'forward', bob: [0, 2, 3, 0], tilt: [0, 0.5, 0, 0], fx: (i) => i === 1 || i === 2 ? `<path d="M 206 206 Q 232 218 254 206 M 280 206 Q 304 218 324 206" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><circle cx="404" cy="108" r="${7 + i * 2}" fill="${YELLOW}" stroke="${INK}" stroke-width="3"/>` : `<path d="${starPath(406, 108, 12 + i * 2, 4, 4)}" fill="${YELLOW}" stroke="${INK}" stroke-width="3"/>` },
-  { id: 'wave', durationMs: 200, direction: 'ping-pong', bob: [0, -8, -4, 0], tilt: [-3, 3, -2, 0], fx: (i) => `<path d="M ${84 - i * 4} 174 Q 64 136 ${88 + i * 4} 108" fill="none" stroke="${YELLOW}" stroke-width="6" stroke-linecap="round"/><path d="M ${66 - i * 4} 188 Q 42 138 ${70 + i * 4} 96" fill="none" stroke="${MAGENTA}" stroke-width="5" stroke-linecap="round"/>` },
-  { id: 'celebrate', durationMs: 180, direction: 'forward', bob: [0, -16, -24, -8], tilt: [-3, 2, 4, -1], fx: (i) => `<path d="${starPath(94 + i * 6, 108 - i * 4, 22, 8, 5)}" fill="${YELLOW}" stroke="${INK}" stroke-width="4"/><path d="${starPath(422 - i * 6, 114 - i * 4, 22, 8, 5)}" fill="${MAGENTA}" stroke="${INK}" stroke-width="4"/>` },
-  { id: 'think', durationMs: 280, direction: 'ping-pong', bob: [0, -3, -5, -2], tilt: [-4, -6, -5, -3], fx: (i) => `<circle cx="386" cy="168" r="${6 + i}" fill="${PAPER}" stroke="${INK}" stroke-width="3.5"/><circle cx="412" cy="136" r="${10 + i * 2}" fill="${PAPER}" stroke="${INK}" stroke-width="4"/><circle cx="436" cy="100" r="${14 + i * 2}" fill="${CYAN}" stroke="${INK}" stroke-width="4"/>` },
-  { id: 'loading', durationMs: 180, direction: 'forward', bob: [0, -4, 0, 4], tilt: [0, 1, 0, -1], fx: (i) => `<g transform="rotate(${i * 90} 418 122)"><circle cx="418" cy="122" r="24" fill="none" stroke="${INK}" stroke-width="7"/><path d="M 418 98 A 24 24 0 0 1 442 122" fill="none" stroke="${CYAN}" stroke-width="7" stroke-linecap="round"/></g>` },
-  { id: 'success', durationMs: 200, direction: 'forward', bob: [0, -10, -14, -4], tilt: [0, 2, 3, 1], fx: (i) => `<circle cx="414" cy="126" r="${22 + i * 3}" fill="${YELLOW}" stroke="${INK}" stroke-width="4.5"/><path d="M 402 126 L 412 136 L 428 114" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>` },
-  { id: 'error', durationMs: 160, direction: 'ping-pong', bob: [0, 4, -4, 2], tilt: [-4, 4, -3, 2], fx: (i) => `<polygon points="414,${86 + i * 2} 444,${144 + i * 2} 384,${144 + i * 2}" fill="${MAGENTA}" stroke="${INK}" stroke-width="4.5"/><path d="M 414 ${106 + i * 2} V ${124 + i * 2}" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><circle cx="414" cy="${134 + i * 2}" r="3" fill="${INK}"/>` },
+  { id: 'idle', masterKey: 'happy', durationMs: 260, direction: 'ping-pong', bob: [0, -6, -3, 0], tilt: [0, -1, 1, 0], fx: (i) => `<circle cx="386" cy="94" r="${8 + i * 2}" fill="${CYAN}" fill-opacity="${0.4 + i * 0.15}" stroke="${INK}" stroke-width="3"/>` },
+  { id: 'blink', masterKey: 'happy', durationMs: 180, direction: 'forward', bob: [0, 2, 3, 0], tilt: [0, 0.5, 0, 0], fx: (i) => i === 1 || i === 2 ? `<path d="M 206 206 Q 232 218 254 206 M 280 206 Q 304 218 324 206" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><circle cx="404" cy="108" r="${7 + i * 2}" fill="${YELLOW}" stroke="${INK}" stroke-width="3"/>` : `<path d="${starPath(406, 108, 12 + i * 2, 4, 4)}" fill="${YELLOW}" stroke="${INK}" stroke-width="3"/>` },
+  { id: 'wave', masterKey: 'excited', durationMs: 200, direction: 'ping-pong', bob: [0, -8, -4, 0], tilt: [-3, 3, -2, 0], fx: (i) => `<path d="M ${84 - i * 4} 174 Q 64 136 ${88 + i * 4} 108" fill="none" stroke="${YELLOW}" stroke-width="6" stroke-linecap="round"/><path d="M ${66 - i * 4} 188 Q 42 138 ${70 + i * 4} 96" fill="none" stroke="${MAGENTA}" stroke-width="5" stroke-linecap="round"/>` },
+  { id: 'celebrate', masterKey: 'celebrating', durationMs: 180, direction: 'forward', bob: [0, -16, -24, -8], tilt: [-3, 2, 4, -1], fx: (i) => `<path d="${starPath(94 + i * 6, 108 - i * 4, 22, 8, 5)}" fill="${YELLOW}" stroke="${INK}" stroke-width="4"/><path d="${starPath(422 - i * 6, 114 - i * 4, 22, 8, 5)}" fill="${MAGENTA}" stroke="${INK}" stroke-width="4"/>` },
+  { id: 'think', masterKey: 'thinking', durationMs: 280, direction: 'ping-pong', bob: [0, -3, -5, -2], tilt: [-4, -6, -5, -3], fx: (i) => `<circle cx="386" cy="168" r="${6 + i}" fill="${PAPER}" stroke="${INK}" stroke-width="3.5"/><circle cx="412" cy="136" r="${10 + i * 2}" fill="${PAPER}" stroke="${INK}" stroke-width="4"/><circle cx="436" cy="100" r="${14 + i * 2}" fill="${CYAN}" stroke="${INK}" stroke-width="4"/>` },
+  { id: 'loading', masterKey: 'thinking', durationMs: 180, direction: 'forward', bob: [0, -4, 0, 4], tilt: [0, 1, 0, -1], fx: (i) => `<g transform="rotate(${i * 90} 418 122)"><circle cx="418" cy="122" r="24" fill="none" stroke="${INK}" stroke-width="7"/><path d="M 418 98 A 24 24 0 0 1 442 122" fill="none" stroke="${CYAN}" stroke-width="7" stroke-linecap="round"/></g>` },
+  { id: 'success', masterKey: 'celebrating', durationMs: 200, direction: 'forward', bob: [0, -10, -14, -4], tilt: [0, 2, 3, 1], fx: (i) => `<circle cx="414" cy="126" r="${22 + i * 3}" fill="${YELLOW}" stroke="${INK}" stroke-width="4.5"/><path d="M 402 126 L 412 136 L 428 114" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>` },
+  { id: 'error', masterKey: 'happy', durationMs: 160, direction: 'ping-pong', bob: [0, 4, -4, 2], tilt: [-4, 4, -3, 2], fx: (i) => `<polygon points="414,${86 + i * 2} 444,${144 + i * 2} 384,${144 + i * 2}" fill="${MAGENTA}" stroke="${INK}" stroke-width="4.5"/><path d="M 414 ${106 + i * 2} V ${124 + i * 2}" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><circle cx="414" cy="${134 + i * 2}" r="3" fill="${INK}"/>` },
 ];
 
 async function placeOnCanvas(width, height, fgBuf, offsetY = 0) {
@@ -719,6 +742,16 @@ async function buildCompositePortrait(cutoutBuf, { size = 512, tilt = 0, scale =
     .toBuffer();
 }
 
+async function encodeWebpWithinBudget(buildPipeline, maxBytes, qualities) {
+  let smallest = null;
+  for (const quality of qualities) {
+    const buf = await buildPipeline().webp({ quality, effort: 6 }).toBuffer();
+    if (!smallest || buf.length < smallest.length) smallest = buf;
+    if (buf.length <= maxBytes) return buf;
+  }
+  return smallest;
+}
+
 async function main() {
   const manifestPath = resolve(packageRoot, 'manifest.json');
   const licensesPath = resolve(packageRoot, 'licenses.json');
@@ -727,21 +760,43 @@ async function main() {
 
   const riotSourceDir = resolve(packageRoot, 'source/artwork/riot-universe');
   const kuroModelPath = resolve(riotSourceDir, 'kuro-signal-model-sheet-master.png');
-  const kuroPortraitPath = resolve(riotSourceDir, 'kuro-signal-portrait-happy-master.png');
+  const kuroHappyPath = resolve(riotSourceDir, 'kuro-signal-portrait-happy-master.png');
+  const kuroExcitedPath = resolve(riotSourceDir, 'kuro-signal-portrait-excited-master.png');
+  const kuroThinkingPath = resolve(riotSourceDir, 'kuro-signal-portrait-thinking-master.png');
+  const kuroCelebratingPath = resolve(riotSourceDir, 'kuro-signal-portrait-celebrating-master.png');
+  const kuroFullbodyPath = resolve(riotSourceDir, 'kuro-signal-fullbody-standing-master.png');
   const vesperPortraitPath = resolve(riotSourceDir, 'vesper-ink-portrait-master.png');
 
   stdout.write('Keying character masters via 4-edge exterior flood-fill...\n');
-  const [kuroPortraitCutout, vesperPortraitCutout, kuroFrontCutout, kuroSideCutout, kuroThreeQuarterCutout] =
-    await Promise.all([
-      floodFillCutout(kuroPortraitPath),
-      floodFillCutout(vesperPortraitPath),
-      floodFillCutout(kuroModelPath, { left: 105, top: 30, width: 304, height: 724 }),
-      floodFillCutout(kuroModelPath, { left: 614, top: 44, width: 208, height: 710 }),
-      floodFillCutout(kuroModelPath, { left: 988, top: 38, width: 268, height: 722 }),
-    ]);
+  const [
+    kuroPortraitHappyCutout,
+    kuroPortraitExcitedCutout,
+    kuroPortraitThinkingCutout,
+    kuroPortraitCelebratingCutout,
+    kuroFullbodyStandingCutout,
+    vesperPortraitCutout,
+    kuroSideCutout,
+    kuroThreeQuarterCutout,
+  ] = await Promise.all([
+    floodFillCutout(kuroHappyPath),
+    floodFillCutout(kuroExcitedPath),
+    floodFillCutout(kuroThinkingPath),
+    floodFillCutout(kuroCelebratingPath),
+    floodFillCutout(kuroFullbodyPath),
+    floodFillCutout(vesperPortraitPath),
+    floodFillCutout(kuroModelPath, { left: 614, top: 44, width: 208, height: 710 }),
+    floodFillCutout(kuroModelPath, { left: 988, top: 38, width: 268, height: 722 }),
+  ]);
+
+  const expressionCutouts = {
+    happy: kuroPortraitHappyCutout,
+    excited: kuroPortraitExcitedCutout,
+    thinking: kuroPortraitThinkingCutout,
+    celebrating: kuroPortraitCelebratingCutout,
+  };
 
   const viewCutouts = {
-    front: kuroFrontCutout,
+    front: kuroFullbodyStandingCutout,
     side: kuroSideCutout,
     threeQuarter: kuroThreeQuarterCutout,
   };
@@ -749,7 +804,7 @@ async function main() {
   const generated = [];
   const sourceProvenance = [];
 
-  // 1. Register the 3 existing AI source masters + synthesize the 11 companion source masters
+  // 1. Register all 12 Direct AI Source Masters + synthesize the 2 procedural halftone masters
   const existingMasters = [
     {
       path: 'source/artwork/riot-universe/kuro-signal-model-sheet-master.png',
@@ -761,13 +816,67 @@ async function main() {
       path: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
       source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
-      modifications: 'Unaltered happy bust portrait master for kuro-signal.',
+      modifications: 'Direct AI happy bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
+    },
+    {
+      path: 'source/artwork/riot-universe/kuro-signal-portrait-excited-master.png',
+      creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
+      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      modifications: 'Direct AI excited bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
+    },
+    {
+      path: 'source/artwork/riot-universe/kuro-signal-portrait-thinking-master.png',
+      creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
+      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      modifications: 'Direct AI thinking bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
+    },
+    {
+      path: 'source/artwork/riot-universe/kuro-signal-portrait-celebrating-master.png',
+      creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
+      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      modifications: 'Direct AI celebrating bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).',
+    },
+    {
+      path: 'source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png',
+      creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
+      source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
+      modifications: 'Direct AI full-body standing master for kuro-signal (normalized 1024x1536 RGB contain on #ffffff).',
     },
     {
       path: 'source/artwork/riot-universe/vesper-ink-portrait-master.png',
       creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
       source: 'Direct AI master generation on solid white backdrop for Signal Riot character pipeline',
-      modifications: 'Unaltered bust portrait master for vesper-ink.',
+      modifications: 'Direct AI bust portrait master for vesper-ink.',
+    },
+    {
+      path: 'source/artwork/riot-universe/bg-riot-street-alley-master.png',
+      creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
+      source: 'Direct AI master generation for Signal Riot nocturnal street alley environment',
+      modifications: 'Direct AI 1376x768 landscape master for Signal Riot street alley backdrop.',
+    },
+    {
+      path: 'source/artwork/riot-universe/bg-riot-arcade-workbench-master.png',
+      creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
+      source: 'Direct AI master generation for Signal Riot arcade studio workbench environment',
+      modifications: 'Direct AI 1376x768 landscape master for Signal Riot arcade workbench backdrop.',
+    },
+    {
+      path: 'source/artwork/riot-universe/scene-empty-signal-static-master.png',
+      creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
+      source: 'Direct AI master generation for Signal Riot empty/offline/static scene states',
+      modifications: 'Direct AI 1376x768 narrative scene master for empty-signal-static.',
+    },
+    {
+      path: 'source/artwork/riot-universe/scene-onboarding-welcome-master.png',
+      creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
+      source: 'Direct AI master generation for Signal Riot onboarding/welcome scene states',
+      modifications: 'Direct AI 1376x768 narrative scene master for onboarding-welcome.',
+    },
+    {
+      path: 'source/artwork/riot-universe/scene-quest-victory-master.png',
+      creator: 'Google Gemini image generation, commissioned by MoonWitness contributors',
+      source: 'Direct AI master generation for Signal Riot quest victory/celebration scene states',
+      modifications: 'Direct AI 1376x768 narrative scene master for quest-victory.',
     },
   ];
   for (const item of existingMasters) {
@@ -797,118 +906,37 @@ async function main() {
     });
   }
 
-  // Synthesize the 4 quota-capped Kuro character source masters (Option A) onto pure #ffffff
-  const derivedCharacterMasters = [
-    { slug: 'portrait-excited', expr: EXPRESSIONS.find((e) => e.slug === 'excited'), w: 1024, h: 1024, cutout: kuroPortraitCutout },
-    { slug: 'portrait-thinking', expr: EXPRESSIONS.find((e) => e.slug === 'thinking'), w: 1024, h: 1024, cutout: kuroPortraitCutout },
-    { slug: 'portrait-celebrating', expr: EXPRESSIONS.find((e) => e.slug === 'celebrating'), w: 1024, h: 1024, cutout: kuroPortraitCutout },
-  ];
-  for (const item of derivedCharacterMasters) {
-    const rel = `source/artwork/riot-universe/kuro-signal-${item.slug}-master.png`;
-    const buf512 = await buildCompositePortrait(item.cutout, {
-      size: 512,
-      tilt: item.expr.tilt,
-      scale: item.expr.scale,
-      offsetY: item.expr.offsetY,
-      tint: item.expr.tint,
-      overlaySvg: item.expr.overlay,
-      background: { r: 255, g: 255, b: 255, alpha: 1 },
-    });
-    const outBuf = await sharp(buf512).resize(item.w, item.h).removeAlpha().png({ compressionLevel: 9 }).toBuffer();
-    await atomicWrite(resolve(packageRoot, rel), outBuf);
+  // 2. Backgrounds (2 Direct AI -> WebP + 2 procedural halftone masters -> WebP, <= 220 KB)
+  const MAX_BG_BYTES = 220 * 1024;
+  for (const slug of ['riot-street-alley', 'riot-arcade-workbench']) {
+    const masterRel = `source/artwork/riot-universe/bg-${slug}-master.png`;
+    const webpRel = `illustrations/riot-universe/backgrounds/bg-${slug}.webp`;
+    const masterAbs = resolve(packageRoot, masterRel);
+    const webpBuf = await encodeWebpWithinBudget(
+      () => sharp(masterAbs).resize(1376, 768, { fit: 'cover', position: 'centre' }),
+      MAX_BG_BYTES,
+      [78, 66, 54, 44]
+    );
+    await atomicWrite(resolve(packageRoot, webpRel), webpBuf);
     generated.push({
-      path: rel,
-      kind: 'source',
-      variant: 'riot-universe-derived-master',
-      format: 'png',
-      width: item.w,
-      height: item.h,
+      path: webpRel,
+      kind: 'background',
+      variant: slug,
+      format: 'webp',
+      width: 1376,
+      height: 768,
       pack: 'riot-universe',
       domain: 'visual-universe',
       status: 'approved',
-      license: 'ISC',
-      source: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
-      sourceAsset: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
-    });
-    sourceProvenance.push({
-      path: rel,
-      creator: 'MoonWitness contributors',
-      source: 'Option A composite via sharp from kuro-signal-portrait-happy-master.png + comic-ink overlays',
-      license: 'ISC',
-      termsVerified: true,
-      modifications: `Flood-fill cutout composited with bespoke comic-ink ${item.slug} expression layer on solid #ffffff backdrop (generated locally due to 4h57m RESOURCE_EXHAUSTED quota cap).`,
-      status: 'approved',
-      distribution: 'approved source master for MoonWitness Signal Riot asset pipeline',
+      license: 'MoonWitness Commissioned Asset (ISC pipeline)',
+      source: masterRel,
+      sourceAsset: masterRel,
     });
   }
 
-  // kuro-signal-fullbody-standing-master.png (1024x1536 on #ffffff)
-  {
-    const rel = 'source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png';
-    const standingCut = await sharp(kuroFrontCutout)
-      .resize(860, 1420, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
-      .png()
-      .toBuffer();
-    const outBuf = await sharp({
-      create: { width: 1024, height: 1536, channels: 3, background: { r: 255, g: 255, b: 255 } },
-    })
-      .composite([{ input: standingCut, left: 82, top: 58 }])
-      .png({ compressionLevel: 9 })
-      .toBuffer();
-    await atomicWrite(resolve(packageRoot, rel), outBuf);
-    generated.push({
-      path: rel,
-      kind: 'source',
-      variant: 'riot-universe-derived-master',
-      format: 'png',
-      width: 1024,
-      height: 1536,
-      pack: 'riot-universe',
-      domain: 'visual-universe',
-      status: 'approved',
-      license: 'ISC',
-      source: 'source/artwork/riot-universe/kuro-signal-model-sheet-master.png',
-      sourceAsset: 'source/artwork/riot-universe/kuro-signal-model-sheet-master.png',
-    });
-    sourceProvenance.push({
-      path: rel,
-      creator: 'MoonWitness contributors',
-      source: 'Option A extraction via sharp from kuro-signal-model-sheet-master.png',
-      license: 'ISC',
-      termsVerified: true,
-      modifications: 'Front full-body view extracted and centered on solid #ffffff backdrop (generated locally due to 4h57m RESOURCE_EXHAUSTED quota cap).',
-      status: 'approved',
-      distribution: 'approved source master for MoonWitness Signal Riot asset pipeline',
-    });
-  }
-
-  // 2. Backgrounds (4 masters + 4 runtime WebP)
-  const bgSpecs = [
-    {
-      slug: 'riot-street-alley',
-      raw: 'raw_arts/art/city-shadow.png',
-      notes: 'Composited from raw_arts/art/city-shadow.png with nocturnal magenta/cyan alley neon wash and halftone moon texture.',
-      overlay: `
-        <rect x="0" y="0" width="1376" height="768" fill="${NIGHT}" fill-opacity="0.22"/>
-        <path d="M 880 620 L 1376 540 L 1376 768 L 760 768 Z" fill="${MAGENTA}" fill-opacity="0.16"/>
-        <path d="M 960 660 L 1376 610 L 1376 768 L 880 768 Z" fill="${CYAN}" fill-opacity="0.14"/>
-        ${halftoneDots(18, 8, 920, 40, 26, 2.2, PAPER, 0.14)}
-      `,
-    },
-    {
-      slug: 'riot-arcade-workbench',
-      raw: 'raw_arts/art/night-shift.png',
-      notes: 'Composited from raw_arts/art/night-shift.png with cyan CRT wash, warm desk glow, and comic halftone grid.',
-      overlay: `
-        <rect x="0" y="0" width="1376" height="768" fill="${NIGHT}" fill-opacity="0.25"/>
-        <circle cx="980" cy="360" r="240" fill="${CYAN}" fill-opacity="0.16"/>
-        <circle cx="380" cy="480" r="190" fill="${YELLOW}" fill-opacity="0.1"/>
-        ${halftoneDots(22, 10, 40, 36, 28, 2, CYAN, 0.12)}
-      `,
-    },
+  const proceduralBgSpecs = [
     {
       slug: 'halftone-paper-light',
-      raw: null,
       notes: 'Procedural warm newsprint zine texture (#f3efe4) with Ben-Day halftone dots and corner registration marks.',
       baseColor: { r: 243, g: 239, b: 228, alpha: 1 },
       overlay: `
@@ -919,7 +947,6 @@ async function main() {
     },
     {
       slug: 'halftone-ink-dark',
-      raw: null,
       notes: 'Procedural charcoal zine backdrop (#0e0e10) with subtle halftone grid and cyan/magenta rim vignette.',
       baseColor: { r: 14, g: 14, b: 16, alpha: 1 },
       overlay: `
@@ -930,16 +957,20 @@ async function main() {
     },
   ];
 
-  for (const bg of bgSpecs) {
+  for (const bg of proceduralBgSpecs) {
     const masterRel = `source/artwork/riot-universe/bg-${bg.slug}-master.png`;
     const webpRel = `illustrations/riot-universe/backgrounds/bg-${bg.slug}.webp`;
     const overlayBuf = await svgBuffer(1376, 768, bg.overlay);
-    const baseImg = bg.raw
-      ? sharp(resolve(repoRoot, bg.raw)).resize(1376, 768, { fit: 'cover', position: 'centre' })
-      : sharp({ create: { width: 1376, height: 768, channels: 4, background: bg.baseColor } });
-    const masterBuf = await baseImg.composite([{ input: overlayBuf, left: 0, top: 0 }]).png({ compressionLevel: 9 }).toBuffer();
+    const masterBuf = await sharp({ create: { width: 1376, height: 768, channels: 4, background: bg.baseColor } })
+      .composite([{ input: overlayBuf, left: 0, top: 0 }])
+      .png({ compressionLevel: 9 })
+      .toBuffer();
     await atomicWrite(resolve(packageRoot, masterRel), masterBuf);
-    const webpBuf = await sharp(masterBuf).webp({ quality: 54, effort: 6 }).toBuffer();
+    const webpBuf = await encodeWebpWithinBudget(
+      () => sharp(masterBuf),
+      MAX_BG_BYTES,
+      [78, 66, 54, 44]
+    );
     await atomicWrite(resolve(packageRoot, webpRel), webpBuf);
 
     generated.push({
@@ -958,7 +989,7 @@ async function main() {
     sourceProvenance.push({
       path: masterRel,
       creator: 'MoonWitness contributors',
-      source: bg.raw ? `Option A composite from ${bg.raw}` : 'Option A procedural comic-halftone SVG/sharp rasterizer',
+      source: 'Procedural comic-halftone SVG/sharp rasterizer',
       license: 'ISC',
       termsVerified: true,
       modifications: bg.notes,
@@ -981,89 +1012,12 @@ async function main() {
     });
   }
 
-  // 3 quota-capped narrative scene masters in source/artwork/riot-universe/
-  const sceneMasterSpecs = [
-    {
-      slug: 'scene-empty-signal-static',
-      raw: 'raw_arts/art/crew-rooftop.png',
-      actor: kuroFrontCutout,
-      actorBox: { w: 320, h: 580, left: 820, top: 170 },
-      overlay: `
-        <rect x="0" y="0" width="1376" height="768" fill="${NIGHT}" fill-opacity="0.32"/>
-        <circle cx="980" cy="240" r="110" fill="none" stroke="${CYAN}" stroke-width="4" stroke-dasharray="14 10"/>
-        <circle cx="980" cy="240" r="158" fill="none" stroke="${CYAN}" stroke-width="3" stroke-opacity="0.6"/>
-      `,
-      notes: 'Empty-signal rooftop composition combining raw_arts/art/crew-rooftop.png with Kuro cutout and cyan static rings.',
-    },
-    {
-      slug: 'scene-onboarding-welcome',
-      raw: 'raw_arts/art/city-shadow.png',
-      actor: kuroPortraitCutout,
-      actorBox: { w: 460, h: 460, left: 660, top: 260 },
-      secondActor: vesperPortraitCutout,
-      secondBox: { w: 430, h: 430, left: 930, top: 280 },
-      overlay: `
-        <circle cx="990" cy="360" r="320" fill="${YELLOW}" fill-opacity="0.16"/>
-        <path d="M 640 740 H 1340" stroke="${YELLOW}" stroke-width="6"/>
-      `,
-      notes: 'Welcome doorway composition pairing Kuro and Vesper cutouts over raw_arts/art/city-shadow.png.',
-    },
-    {
-      slug: 'scene-quest-victory',
-      raw: 'raw_arts/art/wallpaper-signal-city-wide.png',
-      actor: kuroFrontCutout,
-      actorBox: { w: 360, h: 640, left: 780, top: 96 },
-      overlay: `
-        <path d="${starPath(960, 360, 360, 150, 12)}" fill="${YELLOW}" fill-opacity="0.22" stroke="${MAGENTA}" stroke-width="4"/>
-        <path d="M 902 108 L 918 42 L 960 76 L 1002 42 L 1018 108 Z" fill="${YELLOW}" stroke="${INK}" stroke-width="6"/>
-      `,
-      notes: 'Quest victory burst composition combining Kuro cutout, comic sunburst, and signal crown over raw_arts/art/wallpaper-signal-city-wide.png.',
-    },
-  ];
-  for (const sc of sceneMasterSpecs) {
-    const rel = `source/artwork/riot-universe/${sc.slug}-master.png`;
-    const composites = [{ input: await svgBuffer(1376, 768, sc.overlay), left: 0, top: 0 }];
-    const a1 = await sharp(sc.actor).resize(sc.actorBox.w, sc.actorBox.h, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
-    composites.push({ input: a1, left: sc.actorBox.left, top: sc.actorBox.top });
-    if (sc.secondActor) {
-      const a2 = await sharp(sc.secondActor).resize(sc.secondBox.w, sc.secondBox.h, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
-      composites.push({ input: a2, left: sc.secondBox.left, top: sc.secondBox.top });
-    }
-    const outBuf = await sharp(resolve(repoRoot, sc.raw))
-      .resize(1376, 768, { fit: 'cover', position: 'centre' })
-      .composite(composites)
-      .png({ compressionLevel: 9 })
-      .toBuffer();
-    await atomicWrite(resolve(packageRoot, rel), outBuf);
-    generated.push({
-      path: rel,
-      kind: 'source',
-      variant: 'riot-universe-scene-master',
-      format: 'png',
-      width: 1376,
-      height: 768,
-      pack: 'riot-universe',
-      domain: 'visual-universe',
-      status: 'approved',
-      license: 'ISC',
-      source: 'packages/assets/scripts/generate-riot-universe.mjs',
-    });
-    sourceProvenance.push({
-      path: rel,
-      creator: 'MoonWitness contributors',
-      source: `Option A composite from ${sc.raw} + character cutouts`,
-      license: 'ISC',
-      termsVerified: true,
-      modifications: sc.notes,
-      status: 'approved',
-      distribution: 'approved source master for MoonWitness Signal Riot asset pipeline',
-    });
-  }
-
   // 3. 16 Kuro Expressions (512x512 PNG + WebP)
   stdout.write('Generating 16 Kuro expression cutouts (.png + .webp)...\n');
   for (const expr of EXPRESSIONS) {
-    const pngBuf = await buildCompositePortrait(kuroPortraitCutout, {
+    const cutout = expressionCutouts[expr.masterKey];
+    const sourceMasterRel = EXPRESSION_MASTERS[expr.masterKey];
+    const pngBuf = await buildCompositePortrait(cutout, {
       size: 512,
       tilt: expr.tilt,
       scale: expr.scale,
@@ -1088,9 +1042,9 @@ async function main() {
         pack: 'riot-universe',
         domain: 'visual-universe',
         status: 'approved',
-        license: 'ISC',
-        source: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
-        sourceAsset: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
+        license: 'MoonWitness Commissioned Asset (ISC pipeline)',
+        source: sourceMasterRel,
+        sourceAsset: sourceMasterRel,
       });
     }
   }
@@ -1099,6 +1053,10 @@ async function main() {
   stdout.write('Generating 12 Kuro full-body pose cutouts (.png + .webp)...\n');
   for (const pose of POSES) {
     const baseCutout = viewCutouts[pose.view];
+    const poseSourceRel =
+      pose.view === 'front'
+        ? 'source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png'
+        : 'source/artwork/riot-universe/kuro-signal-model-sheet-master.png';
     let fg = sharp(baseCutout).resize(400, 640, {
       fit: 'contain',
       background: { r: 0, g: 0, b: 0, alpha: 0 },
@@ -1134,9 +1092,9 @@ async function main() {
         pack: 'riot-universe',
         domain: 'visual-universe',
         status: 'approved',
-        license: 'ISC',
-        source: 'source/artwork/riot-universe/kuro-signal-model-sheet-master.png',
-        sourceAsset: 'source/artwork/riot-universe/kuro-signal-model-sheet-master.png',
+        license: 'MoonWitness Commissioned Asset (ISC pipeline)',
+        source: poseSourceRel,
+        sourceAsset: poseSourceRel,
       });
     }
   }
@@ -1161,17 +1119,19 @@ async function main() {
         pack: 'riot-universe',
         domain: 'visual-universe',
         status: 'approved',
-        license: 'ISC',
+        license: 'MoonWitness Commissioned Asset (ISC pipeline)',
         source: 'source/artwork/riot-universe/vesper-ink-portrait-master.png',
         sourceAsset: 'source/artwork/riot-universe/vesper-ink-portrait-master.png',
       });
     }
   }
 
-  // 6. 25 UI States (640x480 WebP)
+  // 6. 25 UI States (640x480 WebP <= 160 KB)
   stdout.write('Generating 25 UI state vignettes (.webp)...\n');
+  const MAX_STATE_BYTES = 160 * 1024;
   for (const state of UI_STATES) {
     const rel = `illustrations/riot-universe/states/state-${state.slug}.webp`;
+    const masterRel = `source/artwork/riot-universe/${state.master}`;
     const overlaySvg = `
       <rect x="0" y="0" width="640" height="480" fill="${NIGHT}" fill-opacity="0.48"/>
       <rect x="16" y="16" width="608" height="448" rx="14" fill="none" stroke="${state.accent}" stroke-width="5"/>
@@ -1181,18 +1141,23 @@ async function main() {
     `;
     const composites = [{ input: await svgBuffer(640, 480, overlaySvg), left: 0, top: 0 }];
     if (state.actor === 'kuro' || state.actor === 'both') {
-      const kBuf = await sharp(kuroPortraitCutout).resize(240, 240, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+      const kuroCutout = expressionCutouts[state.expr];
+      const kBuf = await sharp(kuroCutout).resize(240, 240, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
       composites.push({ input: kBuf, left: state.actor === 'both' ? 40 : 28, top: 218 });
     }
     if (state.actor === 'vesper' || state.actor === 'both') {
       const vBuf = await sharp(vesperPortraitCutout).resize(230, 230, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
       composites.push({ input: vBuf, left: state.actor === 'both' ? 378 : 386, top: 226 });
     }
-    const webpBuf = await sharp(resolve(repoRoot, `raw_arts/art/${state.bg}`))
-      .resize(640, 480, { fit: 'cover', position: 'centre' })
-      .composite(composites)
-      .webp({ quality: 80, effort: 6 })
-      .toBuffer();
+    const masterAbs = resolve(packageRoot, masterRel);
+    const webpBuf = await encodeWebpWithinBudget(
+      () =>
+        sharp(masterAbs)
+          .resize(640, 480, { fit: 'cover', position: 'centre' })
+          .composite(composites),
+      MAX_STATE_BYTES,
+      [80, 68, 56, 44]
+    );
     await atomicWrite(resolve(packageRoot, rel), webpBuf);
     generated.push({
       path: rel,
@@ -1204,8 +1169,9 @@ async function main() {
       pack: 'riot-universe',
       domain: 'ui-states',
       status: 'approved',
-      license: 'ISC',
-      source: 'packages/assets/scripts/generate-riot-universe.mjs',
+      license: 'MoonWitness Commissioned Asset (ISC pipeline)',
+      source: masterRel,
+      sourceAsset: masterRel,
     });
   }
 
@@ -1259,7 +1225,7 @@ async function main() {
 
     let pngBuf;
     if (item.avatarKey) {
-      const portrait = item.avatarKey === 'kuro' ? kuroPortraitCutout : vesperPortraitCutout;
+      const portrait = item.avatarKey === 'kuro' ? kuroPortraitHappyCutout : vesperPortraitCutout;
       const ringSvg = `<circle cx="128" cy="128" r="112" fill="${CHARCOAL}" stroke="${INK}" stroke-width="10"/><circle cx="128" cy="128" r="98" fill="${item.avatarKey === 'kuro' ? CYAN : VIOLET}" fill-opacity="0.22" stroke="${item.avatarKey === 'kuro' ? YELLOW : VIOLET}" stroke-width="6"/>`;
       const faceBuf = await sharp(portrait).resize(184, 184, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
       const frontRing = `<circle cx="128" cy="128" r="108" fill="none" stroke="${INK}" stroke-width="8"/><circle cx="128" cy="128" r="100" fill="none" stroke="${item.avatarKey === 'kuro' ? YELLOW : VIOLET}" stroke-width="4"/>`;
@@ -1315,13 +1281,15 @@ async function main() {
     const dirRel = `animation/kuro-signal-${clipSpec.id}`;
     const sheetRel = `${dirRel}/kuro-signal-${clipSpec.id}-sheet.png`;
     const clipRel = `${dirRel}/kuro-signal-${clipSpec.id}-clip.json`;
+    const clipCutout = expressionCutouts[clipSpec.masterKey];
+    const clipSourceRel = EXPRESSION_MASTERS[clipSpec.masterKey];
     const frameBuffers = [];
     const frameEntries = [];
 
     for (let i = 0; i < 4; i += 1) {
       const frameNum = String(i + 1).padStart(2, '0');
       const frameRel = `${dirRel}/kuro-signal-${clipSpec.id}-frame-${frameNum}.png`;
-      const frameBuf = await buildCompositePortrait(kuroPortraitCutout, {
+      const frameBuf = await buildCompositePortrait(clipCutout, {
         size: 512,
         tilt: clipSpec.tilt[i],
         scale: 0.98 + (i % 2 === 1 ? 0.02 : 0),
@@ -1342,9 +1310,9 @@ async function main() {
         pack: 'riot-universe',
         domain: 'visual-universe',
         status: 'approved',
-        license: 'ISC',
-        source: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
-        sourceAsset: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
+        license: 'MoonWitness Commissioned Asset (ISC pipeline)',
+        source: clipSourceRel,
+        sourceAsset: clipSourceRel,
       });
     }
 
@@ -1371,9 +1339,9 @@ async function main() {
       pack: 'riot-universe',
       domain: 'visual-universe',
       status: 'approved',
-      license: 'ISC',
-      source: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
-      sourceAsset: 'source/artwork/riot-universe/kuro-signal-portrait-happy-master.png',
+      license: 'MoonWitness Commissioned Asset (ISC pipeline)',
+      source: clipSourceRel,
+      sourceAsset: clipSourceRel,
     });
 
     const clipDoc = {

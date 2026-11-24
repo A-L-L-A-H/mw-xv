@@ -66,8 +66,8 @@ Compose files live under `deploy/compose/`. With no `--project-directory` overri
 ```bash
 # Use throwaway values only; this renders config, it does not start anything.
 env \
-  DATABASE_URL='postgresql://u:p@db:5432/mw' \
-  JWT_SECRET='ci-placeholder-only' \
+  DATABASE_URL='postgresql://db:5432/mw' \
+  JWT_SECRET='placeholder' \
   WHATSAPP_GATEWAY_URL='http://example.invalid' \
   ATTACHMENT_S3_ACCESS_KEY='placeholder' \
   ATTACHMENT_S3_SECRET_KEY='placeholder' \

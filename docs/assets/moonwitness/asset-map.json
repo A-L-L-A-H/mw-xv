@@ -4,7 +4,7 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "61ee3af51bc8aa02c9a1c2c2822310005a5c5faf184fb6274e92f4813c6edbb1",
+    "assetManifestSha256": "2251d5aee4519f4d5cb0a1c09e82bc2f7770236df1fb9ea31daa41598d428f20",
     "tokens": "packages/ui/src/styles/tokens.css",
     "tokensSha256": "f537d897f16b031f611fa029b53dd7db9b38dd7866ed30b27b922250e4ef642e"
   },
@@ -75,7 +75,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "addf0972e4fec0dfed81f260967ca61dd66f561d3bc0b0406c0a36b68f74a63b"
+      "sha256": "18bc88cdbafc166c9545a8c1abeaf791ef2feb68d2c088b89e504837f2722b1a"
     },
     {
       "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-02.png",
@@ -84,7 +84,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "a6e2dd9e76c5fb315fa78a0fe61f00ad12d63789cfc973c9075c8c73ea15a4e4"
+      "sha256": "d529a762e7c8124e6e70dbafaf8649a133503da14bddf3b1421e12ba243b482f"
     },
     {
       "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-03.png",
@@ -93,7 +93,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "68e5f563714ec26d388f1776145d39661c0123070fbc635495c6a0ba6384af6f"
+      "sha256": "c5bd01fc767806fb10a6a7ef218dd23fcc6ab4cd9c2f14293be30ac7176d0223"
     },
     {
       "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-frame-04.png",
@@ -102,7 +102,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "572a1c822cae0e9263bbea6a9fb5a06611f80a487238659ce4d7220b927c2431"
+      "sha256": "cbbfa5705183b263a475cb39a87075e34a6bdbedbc50ec2c22e96d56e72754a7"
     },
     {
       "source": "packages/assets/animation/kuro-signal-celebrate/kuro-signal-celebrate-sheet.png",
@@ -111,7 +111,7 @@
       "format": "png",
       "width": 1024,
       "height": 1024,
-      "sha256": "c9513cf627d033e42db55fbf03078219795c9744090c00c1bb53789ed01d564f"
+      "sha256": "847b2f36b2115e043f4d7a65c553bc18cd774e1332495ae1a98def6aab7c3fe9"
     },
     {
       "source": "packages/assets/animation/kuro-signal-error/kuro-signal-error-clip.json",
@@ -231,7 +231,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "497b94ec93d660e2fd2291f70ed50746d6b8464e87b0574b0d3b4485f8782897"
+      "sha256": "adca1e2968a9ed1dcf02ff8b9ce984989062f56e4af36d4f7d6b10b4124e96d5"
     },
     {
       "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-frame-02.png",
@@ -240,7 +240,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "7d7875d24e65b1e7a51a9a03870c1c6fba68d7ae9c2b7e2efcd2efafa20f63a2"
+      "sha256": "329d68396e4dc93196a5cf1a42e3f8d8935fac754ff3da79eaebd9529028f7a5"
     },
     {
       "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-frame-03.png",
@@ -249,7 +249,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "aaa543d9cd726d60beae575b5fa00bb1d16b702d51354bdcbbed1ab03bb245f2"
+      "sha256": "9e3d4fae62f43326e96a8bf4909eafae6ea820dce107d4019bdf56b68a89e1a4"
     },
     {
       "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-frame-04.png",
@@ -258,7 +258,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "4766be1333c6c23d7032bc711d8d855d38f886111a98cfe93ca9aa617150c3f0"
+      "sha256": "7dde11ab504a52362bcb1012e5e68d1fa0599107ee0ee6c6ef96ffda0b505b91"
     },
     {
       "source": "packages/assets/animation/kuro-signal-loading/kuro-signal-loading-sheet.png",
@@ -267,7 +267,7 @@
       "format": "png",
       "width": 1024,
       "height": 1024,
-      "sha256": "2e9f51864b80f5217410fef92e55fa86a16378c0ed49fda16321804141fd364a"
+      "sha256": "572edf2fff5cab6c3e2b36821a1991756fe89f029d3c9e4e1b8e353d81d8df13"
     },
     {
       "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-clip.json",
@@ -283,7 +283,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "b0504bec0da92b1b2dc5c6f1c26b8010eeede93a5e5f1f387f3333a0399e5fd9"
+      "sha256": "66aa4474f39a461f9d24e5413dc5dedc295cd0fca4a8e087bec2a4d95a546f73"
     },
     {
       "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-frame-02.png",
@@ -292,7 +292,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "45a08183d0fd9d8dc143e9c696402a9f945e5b624f00bf5f90dbc135b06dd4eb"
+      "sha256": "25b8e8785298aedae503c139a880dbbf957ce186118a66d5c576cade94a1d36a"
     },
     {
       "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-frame-03.png",
@@ -301,7 +301,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "07c05b126aa0bce5819903744aa486cd55e0f9f3ff6ec292af9c025abc288870"
+      "sha256": "8bac930fd35adefada73ec437cfd57a6be7aa4efeba63025dcd0473afd8fed69"
     },
     {
       "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-frame-04.png",
@@ -310,7 +310,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "cc64e6ca5dce7a6d285cc86889c15328df49cad71ee46b2dce4dfedec3b0dbe3"
+      "sha256": "45be2e8b739fd22a17a0a085151c3359cc963a23a1ea844a351ccb4126734a60"
     },
     {
       "source": "packages/assets/animation/kuro-signal-success/kuro-signal-success-sheet.png",
@@ -319,7 +319,7 @@
       "format": "png",
       "width": 1024,
       "height": 1024,
-      "sha256": "bac6634e1cc56fd7ee9aa331280f648ee9b713c37872c95a2fddf55aac8adbf5"
+      "sha256": "456a3f2f37094f25d33fa5b70114f2a1155e72b1a93cdd562e2d22c4d58bb67c"
     },
     {
       "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-clip.json",
@@ -335,7 +335,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "1e35bdf5bde58610316e7bb234b76881d4649fb347e629eb09e6c117cdc6bc7d"
+      "sha256": "d7819f1da6e321f8e57a4bddfd02b8a72811b9a28459a9f2ab6a7a5016499fac"
     },
     {
       "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-frame-02.png",
@@ -344,7 +344,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "9e13511208f6f0d45802317cf546cb09f57ced8f2c08d2c69b21474f6191795e"
+      "sha256": "71ed09779e9c0bb92167ade10de17143a513b652c5d860363d8d1805f8be86f5"
     },
     {
       "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-frame-03.png",
@@ -353,7 +353,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "a719b27e01c521289390529c288be65907ecce0959a24a3db08916a6900118b1"
+      "sha256": "33e36b85ef695413422915c26116eeb99d3016733b737b2287bec9f2ca29eac7"
     },
     {
       "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-frame-04.png",
@@ -362,7 +362,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "bd2c2b3554a52b166856a454a5dc933e9b7bb2eda42bc1ddc59469a033bc0fc1"
+      "sha256": "ec7a3c008af5bbf576e6965ef8ed8834978dda08b8229ff5ebfef6b5f55eeb71"
     },
     {
       "source": "packages/assets/animation/kuro-signal-think/kuro-signal-think-sheet.png",
@@ -371,7 +371,7 @@
       "format": "png",
       "width": 1024,
       "height": 1024,
-      "sha256": "5c4c11791cad52414aa82c959196038856dc1ef44f499048f5a337ab930dac33"
+      "sha256": "c0c988e145d7d9f4c720eced87b5eac767f7edd5e5c27bb170a50eb977799873"
     },
     {
       "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-clip.json",
@@ -387,7 +387,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "e978ef27d6a0a19786c53b08107dc466d2d6ab526a4adfd9ef303f8bf4dbd104"
+      "sha256": "77ac5246ba138fd30378365c7ca7f126f13a55853add61674b0a248bd5c0c955"
     },
     {
       "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-frame-02.png",
@@ -396,7 +396,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "b49b19dd1e8886f28865accea38f3d200397df5460c872fac51778aab8641301"
+      "sha256": "e85e5e879d2459b7aa7efc837b4986e16e6278aeadc4fdbc0f215f05ffa221aa"
     },
     {
       "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-frame-03.png",
@@ -405,7 +405,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "ada4191c82021c78e8d2a59bc5c19c6cfbd465f38802633462af97a86d86b187"
+      "sha256": "e209d6fe111e473c8c79877dd38c3d27c345eb3ba0bfc9939af3a0789a44cc8a"
     },
     {
       "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-frame-04.png",
@@ -414,7 +414,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "96c0dcc833148c294bda838d5fc6224456c6bb19806efb41711b1a2097a37e17"
+      "sha256": "725b30ed1d9347471c896bd44670d2eba2516e37fe8fa41d33f8428ff24c7127"
     },
     {
       "source": "packages/assets/animation/kuro-signal-wave/kuro-signal-wave-sheet.png",
@@ -423,7 +423,7 @@
       "format": "png",
       "width": 1024,
       "height": 1024,
-      "sha256": "d9d20298354cf69b8e76f529945453830d72a4f821f1268e87e236fdbffc5c71"
+      "sha256": "e3e2210e0cd3e676039f1359c6b9d271abd2e4321497a8292d688b91cd84f904"
     },
     {
       "source": "packages/assets/brand/app-icon-192.png",
@@ -1811,7 +1811,7 @@
       "format": "webp",
       "width": 1376,
       "height": 768,
-      "sha256": "952f7e7fd1a06acca08b1f010be650dca456eb92dbe1ef191695686f3783a3bf"
+      "sha256": "410884b824fd27798d728c59e24db235beb982ef90c4e6a4d9140c22a0cc4cd3"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/backgrounds/bg-halftone-paper-light.webp",
@@ -1820,7 +1820,7 @@
       "format": "webp",
       "width": 1376,
       "height": 768,
-      "sha256": "00d00626a4a8cdcdf6e5e8aa4ec251ab47556445689c8707a05374051c941db7"
+      "sha256": "73520175c64e85af5a1c5b7f52576c74ba17e232cadca46c8d02adbc6197cf41"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/backgrounds/bg-riot-arcade-workbench.webp",
@@ -1829,7 +1829,7 @@
       "format": "webp",
       "width": 1376,
       "height": 768,
-      "sha256": "a147d7ad8a3a5123cc7e58343894c7c6db1507ebdaab77300983b7c3c7dd6dc9"
+      "sha256": "0fb832e0fae4105a105bafbc83314265a0dbef9f6e109ed12760ac32c06496c9"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/backgrounds/bg-riot-street-alley.webp",
@@ -1838,7 +1838,7 @@
       "format": "webp",
       "width": 1376,
       "height": 768,
-      "sha256": "4cdd28f005b9daca5bf2b157c4d3922cb4a490a2aacf45842390a8b6551244d4"
+      "sha256": "8ec0f0268c06d7620d8aad7979bee2c4092e2d05e9f966ba7d74598393271d37"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-angry.png",
@@ -1865,7 +1865,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "210f939d57a7adf800bcd6ed0efa62b9da5948a56d017eb6ba94c8812aa64e32"
+      "sha256": "2759d65d21606e84ef47b1a8616fb93a6746e73f1934f0a8343f758f6ac30e7a"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-celebrating.webp",
@@ -1874,7 +1874,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "69c756551e1d5b9e85aebf10fffc3e4bf6b866620e53150fbf51a95f3205bda5"
+      "sha256": "6f25484c251fc18b364391b4905123bf14614335c9cd48a84cc6e55ab3bd7972"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-confused.png",
@@ -1883,7 +1883,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "0703ce4dab5f2eb0606d4a142afb70758ecc52119352c1f95edaaf28663b8c1c"
+      "sha256": "e78b477f1d04e15aabe289c0485cbe2eb3bc904d7a1adfbd83c777e5b89c3316"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-confused.webp",
@@ -1892,7 +1892,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "6c0d45ca7c7f20ca8955aa20ffe041ed3ff6785cfebeec2202da9dcb6c532c97"
+      "sha256": "d88a39a5b7b8a5f7e169ead1f804ff5b99794af337381b2772032413dcd61b53"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-crying.png",
@@ -1901,7 +1901,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "b2329bffae3102b9745fa956bc73ce51a36ba4ff6836c96751dd8c37f9ce75d4"
+      "sha256": "17f25e22c52600306e6f979a195403fdfa3edcb09af54cfe17ededb7caab155e"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-crying.webp",
@@ -1910,7 +1910,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "593bc3aed4084a268dc95a9f5c005f1dd9a326a7d91f2a8c764af12c96d00ec4"
+      "sha256": "c8f8423d099a7046febe2c38010e3ff4d08b6c9f7ef68bb0119c6e81fb1e629d"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-curious.png",
@@ -1919,7 +1919,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "777843021950141c9b981b517b162f3392affd15d46b4b150b8406f6a8d02c32"
+      "sha256": "05cd9c410fbbb5bc228eab1169cf45af59096047f5eb808a2dc8c08e984bfde8"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-curious.webp",
@@ -1928,7 +1928,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "4f07e4088284168b0bbee749175833c5f94470d1954562aaeb27da0c8b132b98"
+      "sha256": "c5a919e3b7c624f5e2f9886f5be5f1c42797738ac18a58d4e3919e4ad9a9ff4e"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-determined.png",
@@ -1937,7 +1937,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "0e8c8f212d46f3b224c02f433f4a44ece5e4c6dfc15d82cf9019f8e39a1d41f3"
+      "sha256": "0ac123fd767c16097fc3e4729da7d475affa4047dcbdf1891e9b0947f46d24be"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-determined.webp",
@@ -1946,7 +1946,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "ab7f237111d296b2d4083133cfe50e792a1e15b9bfa59e2234492c71c35430f5"
+      "sha256": "d4fd992d3c1fc0cffe5883df062ed123633bc3710ddcaefcb54ebc218e0b3c8b"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-disappointed.png",
@@ -1955,7 +1955,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "f82062e31c7a63f95d491eb20b6c8988fd83dec1181a1445c977d1276d01983f"
+      "sha256": "f114d28d12cc01c54e0132c955741c704625a3b9d443204ca7b4a2217d61a81a"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-disappointed.webp",
@@ -1964,7 +1964,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "db05a9f8ddc5cb5de1fb34434ad99440390c0e71849438487bc940ef848f8e36"
+      "sha256": "69af33dbd95e2442b9256c41fed11627c55933904be5badc5f20a962e9ad30f7"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-embarrassed.png",
@@ -1991,7 +1991,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "035c402ea70d6182ba0f501bba80b571585da66d9f52461fd3131c8773f94862"
+      "sha256": "639c49198e89ae017f6f1093e904eeebe005e8569505c4dfa3326a38c2f046e3"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-excited.webp",
@@ -2000,7 +2000,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "dad60f304c3d2561d66268a0dbef8cacdcf34e947bea648a5f20ab9166cbc7f8"
+      "sha256": "8374723c1a79c57cc96d99ba1a7f4168ed23de89ad43cba77004058180738399"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-happy.png",
@@ -2027,7 +2027,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "8cdd3c43cbd4877ed0b8dd2837badba62a32e54a368ea3eda459fe1b8ff018b1"
+      "sha256": "a6b548301e496f2888ee71e399b15269343cff1eff344f1b43664c564c7a0422"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-laughing.webp",
@@ -2036,7 +2036,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "4c3ebe16cff97e95095eb49bf554671d969f260325309a9ff27997b3df603168"
+      "sha256": "10af40e5663f7f77b00f27d9e14943e82f0f9180567fc61729c2aae276290b7c"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-sad.png",
@@ -2045,7 +2045,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "0a1df87138792598fc7b8748693a34f869cc572d40932a8bf3e6100493a5caed"
+      "sha256": "07867c2dee15da2f9dd53e4ad1c88944b6c02aa23cccd7de091a87b89cc090c5"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-sad.webp",
@@ -2054,7 +2054,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "91f607cd601a7ae94434c316b97e5e85549b0ed4d04c4bca1b059a82edb3207c"
+      "sha256": "c35452280fbe98ba61dfb930a732546bc07c8e2a4b75d32ee5ed8e49c51add96"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-sleepy.png",
@@ -2063,7 +2063,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "fdfed9a5410ecb81328be3a7e273f300c8cc30a0cf99bf4beee64b75e9daed76"
+      "sha256": "386938c8cb6fc57f4506ea66998a0c88e5ed22fbb88eff347927ccc10e07e33e"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-sleepy.webp",
@@ -2072,7 +2072,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "13cbebd18fc039b9b636734cf9367ac7a0b17b8b5c59a71c70b83bc1414c720c"
+      "sha256": "03dd35b06029ca8865fbe6a44e38645fc3d33ba9c4c2e5693f883a04f0f7ff5b"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-surprised.png",
@@ -2081,7 +2081,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "91ea8f08ff308d3e4945596fb78eeb9c578757a8162e70d4bbaf5fc9831d3d9a"
+      "sha256": "feebef845129c6fc7a435a79aab65da1b5a4af8b2adb84d6811f2f3adda93283"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-surprised.webp",
@@ -2090,7 +2090,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "048c88d1a46be27df51262118eeaa701f765a548146c6c5b32b78d95593515bc"
+      "sha256": "eff21040a17120af3fc8a98c20c2c4afaa28d81e3a218342a989b00208c49d5c"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-thinking.png",
@@ -2099,7 +2099,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "1ca6e41b74871adbe4e7d1574bf65b1f8a6d0679714e6aca269e604617afa60c"
+      "sha256": "5e1ec483bc4e968d6dbc9c6dadaabc80a036bad3fdf92bc058b9cb13658f0f5c"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-thinking.webp",
@@ -2108,7 +2108,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "a79dfcc7fc27b1adb9dc7c5190e9708a5532cd880eab850588e4f4506a13a5ac"
+      "sha256": "b435a97ba5f0c631bbc3ad0e770c920f638ffb73fa93899e661b9f61cfafd851"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-victory.png",
@@ -2117,7 +2117,7 @@
       "format": "png",
       "width": 512,
       "height": 512,
-      "sha256": "2bf6fbf58c177e6f8bf4668540209a31edf9eeab29b87b590594a319b8e2ffdd"
+      "sha256": "cba8419ef0cd7cc3ea6aefcfdbea311bc6c5f4aaacbf6000b2524a43a9421fc0"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-victory.webp",
@@ -2126,7 +2126,7 @@
       "format": "webp",
       "width": 512,
       "height": 512,
-      "sha256": "e398c7e39fea797022117dd7e26fd28f81332f8699e46099ec1b21b22e6ad2db"
+      "sha256": "41581967060f697fc28c86f66eb3f6e05247679a25b2864f2f35be4ea7b8e7b4"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-celebrating.png",
@@ -2135,7 +2135,7 @@
       "format": "png",
       "width": 512,
       "height": 768,
-      "sha256": "87cebabde39f615108a56d919d178f6666e3d8455769a9b6a535998fc75f587e"
+      "sha256": "4bc6da3c19fc06a6dbe0e832dad23d0ad06cded8c2fc50f4fc267f3b41ec7323"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-celebrating.webp",
@@ -2144,7 +2144,7 @@
       "format": "webp",
       "width": 512,
       "height": 768,
-      "sha256": "63abfd1d4ccf79b3126d6c587919c7f92208b4356cbde64144f80f65c875661f"
+      "sha256": "83cd572596099190a9fe04e1781e25ac36e61369ebc718cdf6591a5fc04fbda3"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-gaming.png",
@@ -2153,7 +2153,7 @@
       "format": "png",
       "width": 512,
       "height": 768,
-      "sha256": "dd82cf0a6c47f57ed2b3af22a48494b94cc96529e3fb2dd3fbbea55beb044fb2"
+      "sha256": "7f16497c6420ba5853d60a3c4f150e01f8eb911aa0d3fa61651cf05c2b2e4dd8"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-gaming.webp",
@@ -2162,7 +2162,7 @@
       "format": "webp",
       "width": 512,
       "height": 768,
-      "sha256": "07ca12ab861c10eefc926c6c595fef614820f12a556ee3ec3657467d63a0a90c"
+      "sha256": "6c3c9451b6a8ec7402070050a678cb33666097d1da24ab715e676caf1f20b1e7"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-holding-objects.png",
@@ -2171,7 +2171,7 @@
       "format": "png",
       "width": 512,
       "height": 768,
-      "sha256": "da5475b2d4219a44cb18abcd0f8a6469904fcaf3edddffdd1ce2e6ac92bf56c6"
+      "sha256": "7e371561ad6c801910bdc0bd7531e8f8055725270b6c4f064511dfea5aaaad5b"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-holding-objects.webp",
@@ -2180,7 +2180,7 @@
       "format": "webp",
       "width": 512,
       "height": 768,
-      "sha256": "c4da8f5e4ed7a82fcc1bc1caacc6cba9944aa5ffd9eddabfd28b06d08e39ea44"
+      "sha256": "bf5acaf03825b7e137f4ef55d59bded48319dad19a3d5a6fc34443da7b931636"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-jumping.png",
@@ -2189,7 +2189,7 @@
       "format": "png",
       "width": 512,
       "height": 768,
-      "sha256": "b58e45547207aacb964aa363f72f57c3b5410bff13c1a52c5e09476ff0417be3"
+      "sha256": "eb1485089843220f07c4f33781ee8f45db0b2b08d0bf73c5b0800d0bc535d46d"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-jumping.webp",
@@ -2198,7 +2198,7 @@
       "format": "webp",
       "width": 512,
       "height": 768,
-      "sha256": "c2245a7f1f996533206af6a947a032be281573d4e6d4c03e76fcdc6fc6c427f6"
+      "sha256": "9fd61c40584cdfff154adec1f882089a4eda7b28a6d6916c0fbb54dfad5ce08f"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-pointing.png",
@@ -2207,7 +2207,7 @@
       "format": "png",
       "width": 512,
       "height": 768,
-      "sha256": "4e0d89f39ee918416e850aee3c425c2edc996e3823538559acb2013caf78184f"
+      "sha256": "b31836ef2a9622a502784457ef7b076308fd9872df025009fec63b0e379cf62b"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-pointing.webp",
@@ -2216,7 +2216,7 @@
       "format": "webp",
       "width": 512,
       "height": 768,
-      "sha256": "93e1d6a340fb52ebf23888f8c14ba301df4312b4dd48cf1ee319515cc80b6dcd"
+      "sha256": "9e7e829b3ed17668a1f1a79913944a36de0f1cc621458d68c29357f5bfd91910"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-reading.png",
@@ -2279,7 +2279,7 @@
       "format": "png",
       "width": 512,
       "height": 768,
-      "sha256": "1dda36b622613b68ea1a34baedd0af3d2db2c79859a45b74f697a2c8b2209854"
+      "sha256": "4ec9777ba945fbd0b64ddd1d91e49d48bdb879551e5f269c5cb27d0989d18eaf"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-standing.webp",
@@ -2288,7 +2288,7 @@
       "format": "webp",
       "width": 512,
       "height": 768,
-      "sha256": "202ac8aaa2a80742828e4b5dec6a4bb1f3a5b03bfb5245941752773d563ca950"
+      "sha256": "8d6da110778c945245ee889b2fa84ce2133a7fa049c914b310e78db6256be5f6"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-walking.png",
@@ -2315,7 +2315,7 @@
       "format": "png",
       "width": 512,
       "height": 768,
-      "sha256": "d56a96275c9a97ceadf89150238da41b1474317228fa5717f0e166a4b6108578"
+      "sha256": "735496d6d6fde95104da4c8cf70a6b0132afeca99631db61eb0aff4c6c923beb"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-waving.webp",
@@ -2324,7 +2324,7 @@
       "format": "webp",
       "width": 512,
       "height": 768,
-      "sha256": "c98f00e8332320566587ce7ea1c640832152fc7e39f76f3467aa51bb194a6b6c"
+      "sha256": "059c3e75e0bd1303ddb93750544cbac655706ae358094d95356d97ea9825d43d"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-working.png",
@@ -2603,7 +2603,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "1833d589b31231099cb8fd3219c474092345a587b0abf09534f33bd6fcecf36f"
+      "sha256": "175d8026b2c4998bf5565cf1559864d4698c377f9b475ee30d7bc353f112f7fb"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-achievement.webp",
@@ -2612,7 +2612,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "c732af5b882df664af6b14d6f38a6f2d98a7a7ae7f309d5f7f1ba5d2efc29a01"
+      "sha256": "f1f617b4a35ae7d2a0c6a7cee240a87f03f3cf341f1c25ba3e21d215f3a858fd"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-celebration.webp",
@@ -2621,7 +2621,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "6278f4d4b3e18c90ba57baacb7f28aa22d12cc0fa311f89addff66d86cd67eb1"
+      "sha256": "d95cf629b72ba8fb7e221b505b9491e668d00798812976e06e45e13adfed0fbe"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-completion.webp",
@@ -2630,7 +2630,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "69baa27818b4d5e5b63534c25466f82eb8d347a5c472249d016795eb118afdd4"
+      "sha256": "7113b6c6996d2155bf4a667d3181bbde31397629792b1dbd5300e03c21e8bc15"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-discover.webp",
@@ -2639,7 +2639,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "40bdebedea46e5b151eaeaeea922765d7a0a93b1efb096ba87977c467e621a1b"
+      "sha256": "c72360357dd56238e35fa631e5924c734311e16823ae9ebcdc0b59b3dcf50d16"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-empty-collection.webp",
@@ -2648,7 +2648,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "974dc8c9cece820f93b07b92c0e5d867415bdfdf75769339bc79d41335efcf54"
+      "sha256": "0be30dd3878ee676166e73cdf8c0714190bbffe3ac9a7c16da8e5f4b00653487"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-empty-dashboard.webp",
@@ -2657,7 +2657,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "62166979cd99483a30c702f440cf98412756773614102449fcbf742870780443"
+      "sha256": "691f77ebcc17fffae0f9c7fc0dc488b96251f3e05bc75d4e72d0b474e0926602"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-error.webp",
@@ -2666,7 +2666,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "f182406d25ee7090fd2c82805ac0df575267b0c4920cc8a660482c061b16d443"
+      "sha256": "92a2801e9e939e1da803df24710c2c22b3ff0ba06a320c2feacee064358c17ea"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-explore.webp",
@@ -2675,7 +2675,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "0c27cac0a420edb48130c99b893424e484029f31926549f8559fa3c36d53da9a"
+      "sha256": "87749e57a0df4628e8aa4fa9ff312daeafe58fd3e69d488e176b769b3b65e9dc"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-first-time.webp",
@@ -2684,7 +2684,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "166609749df0bcfef340f3396e79ea0856e034a25e0d9c3c9ff92f44a88d8146"
+      "sha256": "08d060852ca710bb53eeda43171b72fd17280618024b87cc902be6df00abb7e2"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-loading.webp",
@@ -2693,7 +2693,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "14d2114daf883ef0710b2d38070111470065523cc7a0135c1313d7670ca4502c"
+      "sha256": "4d86dc7e8cc82640bddc2a36828b5280583d646c0c5e16042cb20bf61a831905"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-maintenance.webp",
@@ -2702,7 +2702,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "fe320a657fd80aabeee3a3c6f2d4a6ee72e6825815200505b4ac8f5797150906"
+      "sha256": "2236f2b30825775dd951ae0312cdaee5abfbc1d7db88e4e2c4900f665c8fcf26"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-network-disconnected.webp",
@@ -2711,7 +2711,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "4deea489d61d1d6598295515dd9f84def56f224c610a2a8f0082b5a521e5703c"
+      "sha256": "0d3efdadec351d6acf2ea22ed956b4edeea3e8394b3d4ad0151eb0741632132f"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-no-activity.webp",
@@ -2720,7 +2720,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "8c609e1d8e7ecc80b7a09c6b24d5d91bcc5f7ea8c8623d43db2cb4395e5ffaad"
+      "sha256": "86f820eaf08f895e94d929c666a1dd8758af9a5145d1ff6e8470df9a6534044b"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-no-favorites.webp",
@@ -2729,7 +2729,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "7861156040576a6c2ca391865e30f3924bfb466ecd432b90fc2025a8a66c6460"
+      "sha256": "7856220bbd01e32eb0fb927c520d578759b2cc139bec6b67e9a578e0c586c9b3"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-no-messages.webp",
@@ -2738,7 +2738,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "bc24b9120fdf68874da82ab73257078c5ea114b1f19f84457a6c2985ed5c17f3"
+      "sha256": "df47e64f9dafb22a6cb6d97cdca9cfbe1ab1707b1db96794f1692be17322ce5b"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-no-notifications.webp",
@@ -2747,7 +2747,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "8b45700d8d7010aeebb13b9433864a28180c4ebf9b6dc6783ac77467c39cfb80"
+      "sha256": "e384b70d1a8c7f01a838a660b3c9e9f3d37bd266539535012285222b4428b827"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-no-search-results.webp",
@@ -2756,7 +2756,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "77709702a9c70f1b971166e6c9b276f0abbb1ea6317aae6cab9468d540d1cc99"
+      "sha256": "46241d36629bf4f5c883fc7585e1406b5ed4a3b2e2d308a4b2b59215f31a7edc"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-not-found.webp",
@@ -2765,7 +2765,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "d8a288c4d1bd80d553ebe21ceb4aa1e602a952cb597d682b43bcae8f8a6819d6"
+      "sha256": "44f15f7d2054966aa2ee2dcffed3a41924d1f3de09f35026a88cd7482a65a9f7"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-offline.webp",
@@ -2774,7 +2774,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "e86823d87876bd6da9e32a4df00c2516113f6bc02fda574ef287cd03e9fa7301"
+      "sha256": "6f96fad6b0e4be233dd08f108abeeebe22277ae9f54a883629a1c994fe95df0d"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-onboarding.webp",
@@ -2783,7 +2783,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "3e21b05a7c1d5ffaadba6ed688ef578a97cb7cadc5096b3b12f692106fcf6c50"
+      "sha256": "7bc959a293d7216309726726bd51005a778ce95116438c3ccb1995eb19ca98f1"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-profile.webp",
@@ -2792,7 +2792,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "1f10e44c17d71917c8abbd5cf68b829d9bee39f51b94fcb3b0c418bc68fa46f2"
+      "sha256": "57fa2669e2c21af39dbd01085a4fe3c92716d9151c766f9fb247ca57b251dfb8"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-success.webp",
@@ -2801,7 +2801,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "05cb7bab2adac98f00f0d6434534603f8e7bb90625d73f955fdc177c8a9c5a37"
+      "sha256": "a8c3abb9a0a306b4230f78e6973434a2c42c3e8c43938b895ff903839cb63f8f"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-unexpected-failure.webp",
@@ -2810,7 +2810,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "453637b96a14bba2e23068e814d245cff59c49a510dd6ae602c1093ebe098c6c"
+      "sha256": "e8fc4670d7b22de50d2431a0162cb4ea1a1b6c027ab3b6294551802412d90f65"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/states/state-welcome.webp",
@@ -2819,7 +2819,7 @@
       "format": "webp",
       "width": 640,
       "height": 480,
-      "sha256": "69331720a67b74f1f2dbe51487131bc06f11f73e33c3b87995c9d92f933c37d3"
+      "sha256": "4ef249884fa63a0e71fc3bcddae9a47abb460250e2e6c9cd735cb8d325b104a3"
     },
     {
       "source": "packages/assets/illustrations/riot-universe/stickers/sticker-comic-boom.png",

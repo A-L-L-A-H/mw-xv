@@ -68,7 +68,7 @@ test('riot-universe manifest and source provenance validate cleanly', () => {
   validateAssetManifest(manifest);
   validateSourceProvenance(manifest, licenses);
   const riotSources = manifest.assets.filter((a) => a.kind === 'source' && a.pack === 'riot-universe');
-  assert.equal(riotSources.length, 14, '3 original AI masters + 11 derived masters tracked');
+  assert.equal(riotSources.length, 14, '12 direct AI masters + 2 procedural halftone masters tracked');
   for (const src of riotSources) {
     const prov = licenses.sourceAssets.find((p) => p.path === src.path);
     assert.ok(prov, `missing source provenance for ${src.path}`);

@@ -2295,9 +2295,31 @@ function CatalogContent() {
               <span className="catalog-breadcrumb">Design system / UI package</span>
               <span className="catalog-version">v1.0.0-rc.1</span>
             </div>
-            <Button variant="outline" size="sm" onClick={toggleTheme} aria-pressed={dark}>
-              {dark ? 'Use light theme' : 'Use dark theme'}
-            </Button>
+            <div>
+              <Select value={skin} onValueChange={(nextSkin) => selectSkin(nextSkin)}>
+                <SelectTrigger
+                  aria-label="Switch skin"
+                  style={{
+                    minHeight: '2rem',
+                    height: '2rem',
+                    width: '12rem',
+                    maxWidth: '100%',
+                  }}
+                >
+                  <SelectValue placeholder="Skin" />
+                </SelectTrigger>
+                <SelectContent>
+                  {themeRegistry.list().map((entry) => (
+                    <SelectItem key={entry.id} value={entry.id}>
+                      {entry.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={toggleTheme} aria-pressed={dark}>
+                {dark ? 'Use light theme' : 'Use dark theme'}
+              </Button>
+            </div>
           </header>
 
           <div className="catalog-content">
