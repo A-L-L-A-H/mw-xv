@@ -121,6 +121,48 @@ export const manifest = defineAddon({
       write: false,
       unlink: false,
     }),
+    // Explicit cloud operation grants for administrators: every HTTP route in
+    // CLOUD_ROUTE_ACCESS_MATRIX maps to one of these model permissions.
+    seed(ModelAccess, 'cloud.access_superadmin_provider', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudProvider.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
+    }),
+    seed(ModelAccess, 'cloud.access_superadmin_server', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudServer.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
+    }),
+    seed(ModelAccess, 'cloud.access_superadmin_target', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudDeploymentTarget.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
+    }),
+    seed(ModelAccess, 'cloud.access_superadmin_app', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudApp.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
+    }),
+    seed(ModelAccess, 'cloud.access_superadmin_deployment', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudDeployment.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
+    }),
   ],
   views,
   menus: [

@@ -1,0 +1,847 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import knex, { type Knex } from 'knex';
+import Fastify from 'fastify';
+import { installAddons } from '@moonwitness/orm';
+import { jobsManifest } from '@moonwitness/jobs';
+import { manifest as baseManifest, Company } from '@moonwitness/orm-base';
+import { manifest as crmManifest } from '@moonwitness/orm-crm';
+import { manifest as notificationManifest } from '@moonwitness/orm-notification';
+import { manifest as organizationManifest } from '@moonwitness/orm-organization';
+import { manifest as projectManifest } from '@moonwitness/orm-project';
+import { manifest as salesManifest } from '@moonwitness/orm-sales';
+import { manifest as subscriptionManifest, Subscription } from '@moonwitness/orm-subscription';
+import { manifest as workflowManifest } from '@moonwitness/orm-workflow';
+import {
+  CLOUD_CONFIG_REASON_CODES,
+  CLOUD_METRICS_CONTRACT,
+  CLOUD_OPERATIONS,
+  CLOUD_OUTCOMES,
+  CLOUD_PROVIDERS,
+  CLOUD_ROUTE_ACCESS_MATRIX,
+  ALLOWED_DEPLOYMENT_TRANSITIONS,
+  HA_DRILL_RUNBOOK,
+  PRIVATE_MESH_CIDRS,
+  TERMINAL_DEPLOYMENT_STATES,
+  TenantUsageSettlementLedger,
+  applyDeploymentEvent,
+  applyFencedHeartbeat,
+  CloudApp,
+  CloudConfigError,
+  CloudDeployment,
+  CloudDeploymentTarget,
+  CloudProvider,
+  CloudProvider as ProviderModel,
+  describeControlPlaneToken,
+  executeProvisionWithCompensation,
+  isPrivateMeshHost,
+  nextHaGeneration,
+  planDeploymentRetry,
+  planHaNodeRecovery,
+  planProvisionCompensation,
+  reconcileDeploymentOutcome,
+  resolveHaFailoverRace,
+  runDeterministicHaDrill,
+  tryClaimHaOwnership,
+  idempotencyPayloadFingerprint,
+  isAllowedProbeHost,
+  normalizeCloudOperation,
+  normalizeCloudOutcome,
+  normalizeCloudProvider,
+  PaasQuotaReservationLedger,
+  probeCloudTargetsHealth,
+  readCloudMetricSnapshot,
+  readCloudMetrics,
+  readCloudReadiness,
+  redactSecrets,
+  resetCloudMetrics,
+  resolveControlPlaneToken,
+  resolveControlPlaneTokenCandidates,
+  assertProbeTarget,
+  validateCloudConfig,
+  validateCloudConfigOrThrow,
+  verifyControlPlaneToken,
+  createCloudHttpPlugin,
+  manifest,
+  type CloudHttpPluginOptions,
+} from '../src/index.js';
+
+const TEST_ADMIN_TOKEN = 'test-admin-token-123456';
+const SENTINEL = 'SENTINEL_SUPER_SECRET_9f8e7d';
+
+interface CapturedCall {
+  url: string;
+  method?: string;
+  authorization?: string;
+  body?: string;
+}
+
+function defaultFetch(calls: CapturedCall[]): typeof fetch {
+  return async (input, init) => {
+    const url = String(input);
+    calls.push({
+      url,
+      method: init?.method,
+      authorization: new Headers(init?.headers).get('authorization') ?? undefined,
+      body: init?.body ? String(init.body) : undefined,
+    });
+    if (url.endsWith('/health')) {
+      return new Response(JSON.stringify({ status: 'ok', docker: 'ok' }), { status: 200 });
+    }
+    if (url.endsWith('/services')) return new Response('[]', { status: 200 });
+    if (url.endsWith('/api/deploy')) {
+      return new Response(JSON.stringify({ id: 'ctr-tenant-1' }), { status: 201 });
+    }
+    if (url.includes('/api/containers/')) {
+      return new Response(JSON.stringify({ logs: 'live log line' }), { status: 200 });
+    }
+    if (url.includes('/api/v1/deploy')) {
+      return new Response(JSON.stringify({ deployment_uuid: 'coolify-dep', message: 'queued' }), {
+        status: 200,
+      });
+    }
+    return new Response('{}', { status: 404 });
+  };
+}
+
+interface TestApp {
+  app: Awaited<ReturnType<typeof Fastify>>;
+  calls: CapturedCall[];
+  setAuth: (auth: Record<string, unknown> | null) => void;
+}
+
+async function buildApp(options: Partial<CloudHttpPluginOptions> = {}): Promise<TestApp> {
+  const calls: CapturedCall[] = [];
+  let auth: Record<string, unknown> | null = {
+    userId: 2,
+    role: 'superadmin',
+    companyId: 1,
+  };
+  const app = Fastify({ logger: false });
+  app.addHook('onRequest', async (req) => {
+    (req as { auth?: unknown }).auth = auth;
+  });
+  const pluginOptions: CloudHttpPluginOptions = {
+    controlPlaneUrl: 'http://127.0.0.1:3003',
+    adminToken: TEST_ADMIN_TOKEN,
+    fetchImpl: defaultFetch(calls),
+    ...options,
+  };
+  await app.register(createCloudHttpPlugin(pluginOptions));
+  await app.ready();
+  return {
+    app,
+    calls,
+    setAuth: (next) => {
+      auth = next;
+    },
+  };
+}
+
+describe('cloud auth and operations hardening', () => {
+  let db: Knex;
+  let tenantBId: number;
+  let probeCompanyId: number;
+  let bAppId: number;
+  let bSubscriptionId: number;
+  let bDeploymentId: number;
+  let bTargetId: number;
+
+  beforeAll(async () => {
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+      pool: {
+        afterCreate(
+          connection: { pragma(sql: string): unknown },
+          done: (error: Error | null, connection: unknown) => void
+        ) {
+          connection.pragma('foreign_keys = ON');
+          done(null, connection);
+        },
+      },
+    });
+    await installAddons(db, [
+      baseManifest,
+      jobsManifest,
+      notificationManifest,
+      organizationManifest,
+      workflowManifest,
+      projectManifest,
+      crmManifest,
+      salesManifest,
+      subscriptionManifest,
+      manifest,
+    ]);
+
+    const tenantB = await Company.query().insertAndFetch({ name: 'tenant-b-isolation' });
+    tenantBId = tenantB.id;
+    const bTarget = await CloudDeploymentTarget.query().insertAndFetch({
+      company_id: tenantBId,
+      name: 'b-isolation-target',
+      environment: 'production',
+      api_url: 'http://127.0.0.1:39999',
+      is_active: true,
+    });
+    bTargetId = bTarget.id;
+    const bApp = await CloudApp.query().insertAndFetch({
+      company_id: tenantBId,
+      deployment_target_id: bTargetId,
+      name: 'b-isolation-app',
+      image: 'nginx',
+      image_tag: '1.0',
+      is_active: true,
+    });
+    bAppId = bApp.id;
+    const bDeployment = await CloudDeployment.query().insertAndFetch({
+      company_id: tenantBId,
+      app_id: bAppId,
+      status: 'running',
+      container_id: 'b-foreign-container',
+      trigger: 'manual',
+      started_at: '2026-11-24T00:00:00',
+    });
+    bDeploymentId = bDeployment.id;
+
+    const templateSubscription = await Subscription.query().first();
+    const bSubscription = await Subscription.query().insertAndFetch({
+      name: 'b-isolation-subscription',
+      partner_id: templateSubscription!.partner_id,
+      plan_id: templateSubscription!.plan_id,
+      company_id: tenantBId,
+      state: 'expired',
+    });
+    bSubscriptionId = bSubscription.id;
+
+    const probeCompany = await Company.query().insertAndFetch({ name: 'tenant-probe-policy' });
+    probeCompanyId = probeCompany.id;
+    for (const [name, apiUrl] of [
+      ['probe-good', 'http://control-plane.local:3003'],
+      ['probe-linklocal', 'http://169.254.169.254/latest/meta-data'],
+      ['probe-redirect', 'http://control-plane.local:3003/redirect'],
+      ['probe-hang', 'http://control-plane.local:3003/hang'],
+      ['probe-huge', 'http://control-plane.local:3003/huge'],
+      ['probe-malformed', 'http://control-plane.local:3003/malformed'],
+    ] as const) {
+      await CloudDeploymentTarget.query().insertAndFetch({
+        company_id: probeCompanyId,
+        name,
+        environment: 'production',
+        api_url: apiUrl,
+        is_active: true,
+        health_status: 'healthy',
+      });
+    }
+  }, 90_000);
+
+  afterAll(async () => {
+    await db.destroy();
+  });
+
+  it('publishes an explicit route/model access matrix covering every operation family', () => {
+    for (const rule of CLOUD_ROUTE_ACCESS_MATRIX) {
+      expect(rule.model).toMatch(/^cloud\./u);
+      expect(['read', 'create', 'write', 'unlink']).toContain(rule.permission);
+      expect(rule.operation.length).toBeGreaterThan(0);
+      expect(rule.feature.length).toBeGreaterThan(0);
+    }
+    const paths = CLOUD_ROUTE_ACCESS_MATRIX.map((rule) => rule.path);
+    expect(new Set(paths).size).toBe(paths.length);
+    for (const path of [
+      '/api/cloud/apps/:id/deploy',
+      '/api/cloud/apps/:id',
+      '/api/cloud/subscriptions/:id/enforce',
+      '/api/cloud/deployments/:id/logs',
+      '/api/cloud/deployments/:id/logs/stream',
+      '/api/cloud/targets/probe',
+      '/api/cloud/export/terraform',
+      '/api/cloud/services',
+      '/api/cloud/health',
+      '/api/cloud/readiness',
+    ]) {
+      expect(paths).toContain(path);
+    }
+  });
+
+  it('allows same-company operations and denies cross-company IDs for every route family', async () => {
+    const { app, setAuth, calls } = await buildApp();
+    try {
+      const ownApp = await CloudApp.query().findOne({ company_id: 1, name: 'moonwitness-isp' });
+      const ownDeploy = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+      });
+      expect(ownDeploy.statusCode).toBe(201);
+      const ownDeploymentId = ownDeploy.json().data.deploymentId as number;
+      const ownLogs = await app.inject({
+        method: 'GET',
+        url: `/api/cloud/deployments/${ownDeploymentId}/logs`,
+      });
+      expect(ownLogs.statusCode).toBe(200);
+
+      const families: Array<{ method: 'GET' | 'POST' | 'DELETE'; url: string }> = [
+        { method: 'POST', url: `/api/cloud/apps/${bAppId}/deploy` },
+        { method: 'DELETE', url: `/api/cloud/apps/${bAppId}` },
+        { method: 'POST', url: `/api/cloud/subscriptions/${bSubscriptionId}/enforce` },
+        { method: 'GET', url: `/api/cloud/deployments/${bDeploymentId}/logs` },
+        { method: 'GET', url: `/api/cloud/deployments/${bDeploymentId}/logs/stream` },
+      ];
+      for (const family of families) {
+        const res = await app.inject(family);
+        expect(res.statusCode, `${family.method} ${family.url}`).toBe(404);
+        expect(res.body).not.toContain('b-isolation');
+        expect(res.body).not.toContain('b-foreign-container');
+        expect(res.body).not.toContain(TEST_ADMIN_TOKEN);
+      }
+
+      const tfRes = await app.inject({ method: 'GET', url: '/api/cloud/export/terraform' });
+      expect(tfRes.statusCode).toBe(200);
+      expect(tfRes.body).not.toContain('b-isolation-app');
+
+      const healthBefore = (await CloudDeploymentTarget.query().findById(bTargetId))!.health_status;
+      const probeRes = await app.inject({ method: 'POST', url: '/api/cloud/targets/probe' });
+      expect(probeRes.statusCode).toBe(200);
+      expect(probeRes.json().data.probed).toBeLessThanOrEqual(3);
+      expect((await CloudDeploymentTarget.query().findById(bTargetId))!.health_status).toBe(
+        healthBefore
+      );
+      expect(
+        await CloudApp.query()
+          .findById(bAppId)
+          .then((app) => app!.is_active)
+      ).toBe(true);
+
+      setAuth(null);
+      expect((await app.inject({ method: 'GET', url: '/api/cloud/health' })).statusCode).toBe(401);
+      setAuth({ userId: 3, role: 'user', companyId: 1 });
+      expect(
+        (await app.inject({ method: 'POST', url: `/api/cloud/apps/${ownApp!.id}/deploy` }))
+          .statusCode
+      ).toBe(403);
+      setAuth({ userId: 3, role: 'superadmin' });
+      expect((await app.inject({ method: 'GET', url: '/api/cloud/health' })).statusCode).toBe(403);
+      expect(calls.some((call) => call.url.includes('169.254.169.254'))).toBe(false);
+    } finally {
+      await app.close();
+    }
+  }, 30_000);
+
+  it('redacts sentinel secrets everywhere and supports overlapping token rotation', async () => {
+    expect(redactSecrets(`Bearer ${SENTINEL} secret_key="${SENTINEL}"`)).not.toContain(SENTINEL);
+    expect(redactSecrets(`postgres://user:${SENTINEL}@db.local/x`)).not.toContain(SENTINEL);
+    expect(redactSecrets(JSON.stringify({ token: SENTINEL }))).not.toContain(SENTINEL);
+
+    const provider = await ProviderModel.query().findOne({ code: 'docker_agent' });
+    await ProviderModel.query().findById(provider!.id).patch({ secret_key: SENTINEL });
+    const ownApp = await CloudApp.query().findOne({ company_id: 1, name: 'moonwitness-isp' });
+    const calls: CapturedCall[] = [];
+    const { app } = await buildApp({
+      fetchImpl: async (input, init) => {
+        calls.push({ url: String(input), body: init?.body ? String(init.body) : undefined });
+        throw new Error(`upstream rejected token=${SENTINEL} Bearer ${TEST_ADMIN_TOKEN}`);
+      },
+    });
+    try {
+      const res = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+      });
+      expect(res.statusCode).toBe(502);
+      expect(res.body).not.toContain(SENTINEL);
+      expect(res.body).not.toContain(TEST_ADMIN_TOKEN);
+      const latest = await CloudDeployment.query().orderBy('id', 'desc').first();
+      expect(latest!.error_message ?? '').not.toContain(SENTINEL);
+      expect(latest!.log ?? '').not.toContain(SENTINEL);
+      expect(calls.every((call) => !String(call.body).includes(SENTINEL))).toBe(true);
+    } finally {
+      await app.close();
+    }
+
+    const previous = resolveControlPlaneToken({ adminToken: 'old-rotation-token-12345' });
+    const current = resolveControlPlaneToken({ adminToken: 'new-rotation-token-12345' });
+    const options = {
+      adminToken: current,
+      previousAdminToken: previous,
+      rotationVersion: 'v2',
+    };
+    expect(resolveControlPlaneTokenCandidates(options)).toEqual([current, previous]);
+    expect(verifyControlPlaneToken(current, options)).toBe(true);
+    expect(verifyControlPlaneToken(previous, options)).toBe(true);
+    expect(verifyControlPlaneToken('unknown-token', options)).toBe(false);
+    expect(verifyControlPlaneToken(undefined, options)).toBe(false);
+    const described = describeControlPlaneToken(options);
+    expect(described).toMatchObject({
+      configured: true,
+      rotationVersion: 'v2',
+      overlapEnabled: true,
+    });
+    expect(JSON.stringify(described)).not.toContain(current);
+    expect(JSON.stringify(described)).not.toContain(previous);
+  }, 30_000);
+
+  it('makes provisioning retry-safe: sequential replay, payload conflict, concurrent retry and ambiguous timeout', async () => {
+    const ownApp = await CloudApp.query().findOne({ company_id: 1, name: 'moonwitness-isp' });
+    const providerCalls: string[] = [];
+    const { app } = await buildApp({
+      fetchImpl: async (input, init) => {
+        providerCalls.push(String(input));
+        await Promise.resolve();
+        return new Response(JSON.stringify({ id: `ctr-${providerCalls.length}` }), { status: 201 });
+      },
+    });
+    try {
+      const before = Number(
+        (await db(CloudDeployment.tableName)
+          .where({ company_id: 1 })
+          .count({ count: '*' })
+          .first())!.count
+      );
+
+      const key = 'retry-key-0001';
+      const first = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+        headers: { 'idempotency-key': key },
+      });
+      const replay = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+        headers: { 'idempotency-key': key },
+      });
+      expect(first.statusCode).toBe(201);
+      expect(replay.statusCode).toBe(200);
+      expect(replay.json().replayed).toBe(true);
+      expect(replay.json().data.deploymentId).toBe(first.json().data.deploymentId);
+      expect(providerCalls.filter((url) => url.endsWith('/api/deploy'))).toHaveLength(1);
+      const afterSequential = Number(
+        (await db(CloudDeployment.tableName)
+          .where({ company_id: 1 })
+          .count({ count: '*' })
+          .first())!.count
+      );
+      expect(afterSequential).toBe(before + 1);
+
+      await CloudApp.query().findById(ownApp!.id).patch({ image_tag: '2.0.0' });
+      try {
+        const conflict = await app.inject({
+          method: 'POST',
+          url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+          headers: { 'idempotency-key': key },
+        });
+        expect(conflict.statusCode).toBe(409);
+        expect(conflict.json().code).toBe('IDEMPOTENCY_PAYLOAD_CONFLICT');
+        expect(providerCalls.filter((url) => url.endsWith('/api/deploy'))).toHaveLength(1);
+      } finally {
+        await CloudApp.query().findById(ownApp!.id).patch({ image_tag: 'latest' });
+      }
+
+      const concurrentKey = 'retry-key-concurrent';
+      const [concurrentA, concurrentB] = await Promise.all([
+        app.inject({
+          method: 'POST',
+          url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+          headers: { 'idempotency-key': concurrentKey },
+        }),
+        app.inject({
+          method: 'POST',
+          url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+          headers: { 'idempotency-key': concurrentKey },
+        }),
+      ]);
+      expect([concurrentA.statusCode, concurrentB.statusCode].sort()).toEqual([200, 201]);
+      expect(providerCalls.filter((url) => url.endsWith('/api/deploy'))).toHaveLength(2);
+      expect(concurrentA.json().data.deploymentId).toBe(concurrentB.json().data.deploymentId);
+
+      expect(idempotencyPayloadFingerprint({ b: 2, a: 1 })).toBe(
+        idempotencyPayloadFingerprint({ a: 1, b: 2 })
+      );
+      expect(idempotencyPayloadFingerprint({ a: 1 })).not.toBe(
+        idempotencyPayloadFingerprint({ a: 2 })
+      );
+      const badKey = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+        headers: { 'idempotency-key': 'short' },
+      });
+      expect(badKey.statusCode).toBe(400);
+      expect(badKey.json().code).toBe('INVALID_IDEMPOTENCY_KEY');
+    } finally {
+      await app.close();
+    }
+
+    let timeoutCalls = 0;
+    const timeoutApp = await buildApp({
+      fetchImpl: async () => {
+        timeoutCalls += 1;
+        const error = new Error('upstream timeout');
+        error.name = 'TimeoutError';
+        throw error;
+      },
+    });
+    try {
+      const options = {
+        method: 'POST' as const,
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+        headers: { 'idempotency-key': 'timeout-key-0001' },
+      };
+      const ambiguous = await timeoutApp.app.inject(options);
+      expect(ambiguous.statusCode).toBe(202);
+      expect(ambiguous.json().ambiguous).toBe(true);
+      const reconciled = await timeoutApp.app.inject(options);
+      expect(reconciled.statusCode).toBe(202);
+      expect(reconciled.json().reconciliationRequired).toBe(true);
+      expect(timeoutCalls).toBe(1);
+    } finally {
+      await timeoutApp.app.close();
+    }
+  }, 30_000);
+
+  it('bounds probes with an SSRF allowlist, redirect revalidation, timeout and response size', async () => {
+    expect(isAllowedProbeHost('127.0.0.1')).toBe(true);
+    expect(isAllowedProbeHost('169.254.169.254')).toBe(false);
+    expect(isAllowedProbeHost('8.8.8.8')).toBe(false);
+    expect(isAllowedProbeHost('10.0.0.5')).toBe(false);
+    expect(isAllowedProbeHost('10.0.0.5', { allowPrivateRanges: true })).toBe(true);
+    expect(
+      isAllowedProbeHost('control-plane.local', { allowedHosts: ['control-plane.local'] })
+    ).toBe(true);
+    expect(() => assertProbeTarget('http://user:pass@127.0.0.1:3003')).toThrow();
+    expect(() => assertProbeTarget('ftp://127.0.0.1')).toThrow();
+    expect(() => assertProbeTarget('http://169.254.169.254/')).toThrow();
+
+    const fetched: string[] = [];
+    const startedAt = Date.now();
+    const result = await probeCloudTargetsHealth({
+      companyId: probeCompanyId,
+      adminToken: TEST_ADMIN_TOKEN,
+      allowedHosts: ['control-plane.local'],
+      timeoutMs: 40,
+      fetchImpl: async (input, init) => {
+        const url = String(input);
+        fetched.push(url);
+        if (url.endsWith('/redirect')) {
+          return new Response('', {
+            status: 302,
+            headers: { location: 'http://169.254.169.254/latest/meta-data' },
+          });
+        }
+        if (url.endsWith('/hang')) {
+          return new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              const error = new Error('aborted');
+              error.name = 'TimeoutError';
+              reject(error);
+            });
+          });
+        }
+        if (url.endsWith('/huge')) {
+          return new Response('x'.repeat(128 * 1024), { status: 200 });
+        }
+        if (url.endsWith('/malformed')) {
+          return new Response('not-json', { status: 200 });
+        }
+        return new Response(JSON.stringify({ status: 'ok', docker: 'ok' }), { status: 200 });
+      },
+    });
+
+    expect(Date.now() - startedAt).toBeLessThan(3_000);
+    expect(result.probed).toBe(6);
+    expect(result.healthy).toBe(1);
+    expect(result.invalid).toBe(1);
+    expect(result.offline).toBe(4);
+    for (const code of [
+      'TARGET_NOT_ALLOWED',
+      'REDIRECT_BLOCKED',
+      'TIMEOUT',
+      'RESPONSE_TOO_LARGE',
+      'MALFORMED_RESPONSE',
+    ]) {
+      expect(result.reasonCodes).toContain(code);
+    }
+    expect(fetched.some((url) => url.includes('169.254.169.254'))).toBe(false);
+    expect(fetched.filter((url) => url.endsWith('/redirect'))).toHaveLength(1);
+    expect(JSON.stringify(result)).not.toContain('x'.repeat(100));
+
+    const good = await CloudDeploymentTarget.query().findOne({
+      company_id: probeCompanyId,
+      name: 'probe-good',
+    });
+    const blocked = await CloudDeploymentTarget.query().findOne({
+      company_id: probeCompanyId,
+      name: 'probe-linklocal',
+    });
+    expect(good!.health_status).toBe('healthy');
+    expect(blocked!.health_status).toBe('healthy');
+  }, 30_000);
+
+  it('emits low-cardinality metrics with normalized labels and no tenant/secret values', async () => {
+    resetCloudMetrics();
+    const { app, setAuth } = await buildApp();
+    try {
+      await app.inject({ method: 'GET', url: '/api/cloud/health' });
+      await app.inject({ method: 'GET', url: '/api/cloud/services' });
+      await app.inject({ method: 'GET', url: '/api/cloud/readiness' });
+      setAuth(null);
+      await app.inject({ method: 'GET', url: '/api/cloud/health' });
+    } finally {
+      await app.close();
+    }
+
+    const snapshot = readCloudMetricSnapshot();
+    expect(snapshot.length).toBeGreaterThan(0);
+    expect(snapshot.length).toBeLessThanOrEqual(CLOUD_METRICS_CONTRACT.maxSeries);
+    for (const sample of snapshot) {
+      expect(CLOUD_OPERATIONS).toContain(sample.operation);
+      expect(CLOUD_OUTCOMES).toContain(sample.outcome);
+      expect(CLOUD_PROVIDERS).toContain(sample.provider);
+      expect(sample.count).toBeGreaterThan(0);
+    }
+    const text = readCloudMetrics();
+    expect(text).toContain(CLOUD_METRICS_CONTRACT.counter);
+    expect(text).toContain('operation="control_plane.health"');
+    expect(text).not.toContain(SENTINEL);
+    expect(text).not.toMatch(/company[_-]?id/iu);
+    expect(text).not.toContain('b-isolation');
+    expect(text).not.toContain('127.0.0.1');
+
+    expect(normalizeCloudOperation(SENTINEL)).toBe('other');
+    expect(normalizeCloudOutcome(503)).toBe('failed');
+    expect(normalizeCloudOutcome(402)).toBe('denied');
+    expect(normalizeCloudProvider(SENTINEL)).toBe('other');
+  }, 30_000);
+
+  it('validates startup config, keeps disabled features inert and reports safe readiness reasons', async () => {
+    const emptyEnv = {} as NodeJS.ProcessEnv;
+    const disabled = validateCloudConfig(
+      { features: { controlPlane: false, provisioning: false } },
+      emptyEnv
+    );
+    expect(disabled.ok).toBe(true);
+    expect(readCloudReadiness(disabled)).toMatchObject({ ready: true, enabledFeatures: [] });
+
+    const missing = validateCloudConfig(
+      { adminToken: 'x', features: { controlPlane: true } },
+      emptyEnv
+    );
+    expect(missing.reasonCodes).toContain('CLOUD_TOKEN_WEAK');
+    expect(missing.reasonCodes).toContain('CLOUD_CP_URL_MISSING');
+    expect(readCloudReadiness(missing).ready).toBe(false);
+    for (const issue of missing.issues) {
+      expect(issue.message).not.toContain('http://');
+      expect(issue.message).not.toContain('x');
+    }
+
+    const malformed = validateCloudConfig(
+      {
+        controlPlaneUrl: 'not-a-url',
+        adminToken: TEST_ADMIN_TOKEN,
+        features: { controlPlane: true },
+      },
+      emptyEnv
+    );
+    expect(malformed.reasonCodes).toContain('CLOUD_CP_URL_MALFORMED');
+
+    const secretRef = validateCloudConfig(
+      {
+        adminTokenRef: 'MW_TEST_MISSING_REF',
+        features: { controlPlane: true },
+      },
+      emptyEnv
+    );
+    expect(secretRef.reasonCodes).toContain('CLOUD_SECRET_REF_MISSING');
+
+    const dependency = validateCloudConfig(
+      { adminToken: TEST_ADMIN_TOKEN, features: { provisioning: true, controlPlane: false } },
+      emptyEnv
+    );
+    expect(dependency.reasonCodes).toContain('CLOUD_FEATURE_DEPENDENCY_MISSING');
+
+    expect(() =>
+      validateCloudConfigOrThrow(
+        {
+          controlPlaneUrl: 'http://127.0.0.1:3003',
+          adminToken: SENTINEL,
+          features: { controlPlane: true },
+        },
+        emptyEnv
+      )
+    ).not.toThrow();
+    let thrown: unknown;
+    try {
+      validateCloudConfigOrThrow(
+        {
+          controlPlaneUrl: 'http://127.0.0.1:3003',
+          adminToken: 'x',
+          features: { controlPlane: true },
+        },
+        emptyEnv
+      );
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(CloudConfigError);
+    expect((thrown as CloudConfigError).message).not.toContain('x');
+    expect((thrown as CloudConfigError).reasonCodes).toContain('CLOUD_TOKEN_WEAK');
+    for (const code of (thrown as CloudConfigError).reasonCodes) {
+      expect(CLOUD_CONFIG_REASON_CODES).toContain(code);
+    }
+
+    const closed = await buildApp({
+      controlPlaneUrl: 'http://127.0.0.1:3003',
+      adminToken: undefined,
+      features: { controlPlane: true, provisioning: true },
+    });
+    try {
+      const health = await closed.app.inject({ method: 'GET', url: '/api/cloud/health' });
+      expect(health.statusCode).toBe(503);
+      expect(health.json().code).toBe('CLOUD_TOKEN_MISSING');
+      expect(health.json().error).not.toContain('http://');
+      const readiness = await closed.app.inject({ method: 'GET', url: '/api/cloud/readiness' });
+      expect(readiness.statusCode).toBe(200);
+      expect(readiness.json().data.ready).toBe(false);
+      expect(readiness.json().data.reasonCodes).toContain('CLOUD_TOKEN_MISSING');
+    } finally {
+      await closed.app.close();
+    }
+
+    expect(() =>
+      createCloudHttpPlugin({
+        controlPlaneUrl: 'http://127.0.0.1:3003',
+        adminToken: 'x',
+        features: { controlPlane: true },
+        strictStartup: true,
+      })
+    ).toThrow(CloudConfigError);
+  }, 30_000);
+
+  it('drives deployment transitions through the shared state machine and preserves response shapes', async () => {
+    const ownApp = await CloudApp.query().findOne({ company_id: 1, name: 'moonwitness-isp' });
+    const successApp = await buildApp();
+    try {
+      const res = await successApp.app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+      });
+      expect(res.statusCode).toBe(201);
+      expect(res.json()).toMatchObject({
+        success: true,
+        data: { status: 'running', containerId: 'ctr-tenant-1' },
+      });
+      const latest = await CloudDeployment.query().orderBy('id', 'desc').first();
+      expect(latest!.status).toBe('running');
+    } finally {
+      await successApp.app.close();
+    }
+
+    const failingApp = await buildApp({
+      fetchImpl: async () => new Response('provider error', { status: 500 }),
+    });
+    try {
+      const res = await failingApp.app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+      });
+      expect(res.statusCode).toBe(502);
+      const latest = await CloudDeployment.query().orderBy('id', 'desc').first();
+      expect(latest!.status).toBe('failed');
+    } finally {
+      await failingApp.app.close();
+    }
+
+    expect(TERMINAL_DEPLOYMENT_STATES.has('failed')).toBe(true);
+    expect(
+      applyDeploymentEvent('failed', {
+        kind: 'provider_succeeded',
+        observedAt: '2026-11-24T00:00:00Z',
+      })
+    ).toMatchObject({ changed: false, terminalProtected: true });
+    expect(ALLOWED_DEPLOYMENT_TRANSITIONS.pending).toContain('running');
+    expect(
+      planDeploymentRetry({ deploymentId: 42, state: 'pending', attempts: 0 }).idempotencyKey
+    ).toBe('deploy:42:uncorrelated');
+    expect(
+      reconcileDeploymentOutcome(
+        { state: 'pending', providerCorrelationId: 'ctr-1', attempts: 1 },
+        'ambiguous'
+      ).state
+    ).toBe('unknown');
+  }, 30_000);
+
+  it('enforces the quota ledger at the reservation boundary and settles failures', async () => {
+    const ownApp = await CloudApp.query().findOne({ company_id: 1, name: 'moonwitness-isp' });
+    const ledger = new PaasQuotaReservationLedger();
+    const scope = { companyId: 1, resource: 'cloud.app.deploy' };
+    const { app } = await buildApp({ quotaLedger: ledger, quotaCapacity: 1, quotaUnits: 1 });
+    try {
+      const first = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+        headers: { 'idempotency-key': 'quota-key-first' },
+      });
+      expect(first.statusCode).toBe(201);
+      expect(ledger.snapshot(scope).committedUnits).toBe(1);
+
+      const denied = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+        headers: { 'idempotency-key': 'quota-key-second' },
+      });
+      expect(denied.statusCode).toBe(402);
+      expect(denied.json().code).toBe('PAAS_QUOTA_RESERVATION_EXCEEDED');
+
+      const replay = await app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+        headers: { 'idempotency-key': 'quota-key-first' },
+      });
+      expect(replay.statusCode).toBe(200);
+      expect(ledger.snapshot(scope).committedUnits).toBe(1);
+    } finally {
+      await app.close();
+    }
+
+    const failureLedger = new PaasQuotaReservationLedger();
+    const failing = await buildApp({
+      quotaLedger: failureLedger,
+      quotaCapacity: 1,
+      quotaUnits: 1,
+      fetchImpl: async () => new Response('provider error', { status: 500 }),
+    });
+    try {
+      const failed = await failing.app.inject({
+        method: 'POST',
+        url: `/api/cloud/apps/${ownApp!.id}/deploy`,
+        headers: { 'idempotency-key': 'quota-key-failure' },
+      });
+      expect(failed.statusCode).toBe(502);
+      expect(failureLedger.snapshot(scope).reservedUnits).toBe(0);
+      expect(failureLedger.snapshot(scope).remainingUnits).toBe(1);
+    } finally {
+      await failing.app.close();
+    }
+  }, 30_000);
+
+  it('re-exports the shared CLOUD-B integration surface from the package entrypoint', () => {
+    for (const helper of [
+      applyDeploymentEvent,
+      reconcileDeploymentOutcome,
+      planDeploymentRetry,
+      PaasQuotaReservationLedger,
+      TenantUsageSettlementLedger,
+      executeProvisionWithCompensation,
+      planProvisionCompensation,
+      tryClaimHaOwnership,
+      applyFencedHeartbeat,
+      resolveHaFailoverRace,
+      planHaNodeRecovery,
+      nextHaGeneration,
+      isPrivateMeshHost,
+      runDeterministicHaDrill,
+    ]) {
+      expect(typeof helper).toBe('function');
+    }
+    expect(PRIVATE_MESH_CIDRS.length).toBeGreaterThan(0);
+    expect(HA_DRILL_RUNBOOK.length).toBeGreaterThan(0);
+    expect(TERMINAL_DEPLOYMENT_STATES.size).toBeGreaterThan(0);
+  });
+});

@@ -18,11 +18,9 @@ export const views = [
           columns: 2,
           fields: ['company', 'name', 'code', 'type', 'endpoint', 'region', 'is_active'],
         },
-        {
-          title: 'Credentials',
-          columns: 2,
-          fields: ['access_key', 'secret_key'],
-        },
+        // access_key/secret_key are intentionally NOT exposed in any view. Provider
+        // credentials are supplied via secret references (see auth.ts token contract)
+        // and are redacted from API responses, audit payloads, logs and Terraform output.
       ],
     },
     search: { fields: ['name', 'code', 'type', 'region'] },
@@ -147,7 +145,10 @@ export const views = [
             'domain',
             'health_check_url',
             'volumes',
-            'env_vars',
+            {
+              name: 'env_vars',
+              label: 'Environment Variables (use secret references; values are redacted in logs)',
+            },
           ],
         },
         { title: 'Description', fields: ['description'] },

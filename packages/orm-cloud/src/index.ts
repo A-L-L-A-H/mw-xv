@@ -1,5 +1,4 @@
 export { manifest } from './manifest.js';
-export { cloudSeedManifest, seedCloudProviders } from './seed.js';
 export {
   CloudProvider,
   CloudServer,
@@ -7,21 +6,92 @@ export {
   CloudApp,
   CloudDeployment,
 } from './models/index.js';
-export { createCloudHttpPlugin, cloudHttpPlugin, type CloudHttpPluginOptions } from './http.js';
 export {
+  createCloudHttpPlugin,
+  cloudHttpPlugin,
+  CLOUD_ROUTE_ACCESS_MATRIX,
+  CloudIdempotencyError,
+  idempotencyPayloadFingerprint,
+  idempotencyStoreKey,
+  withCloudKeyedLock,
+  type CloudHttpPluginOptions,
+  type CloudRouteAccessRule,
+} from './http.js';
+export {
+  CLOUD_CONFIG_REASON_CODES,
+  CLOUD_FEATURES,
+  CLOUD_METRICS_AUTH_REQUIREMENT,
+  CLOUD_METRICS_CONTRACT,
+  CLOUD_OPERATIONS,
+  CLOUD_OUTCOMES,
+  CLOUD_PROVIDERS,
+  CLOUD_SECRET_REDACTION_MARKER,
   CONTROL_PLANE_INTERNAL_AUTH_DOMAIN,
+  CloudConfigError,
+  classifySecret,
   controlPlaneAuthHeaders,
+  describeControlPlaneToken,
+  normalizeCloudOperation,
+  normalizeCloudOutcome,
+  normalizeCloudProvider,
+  readCloudMetricSnapshot,
+  readCloudMetrics,
+  readCloudReadiness,
+  recordCloudOperation,
+  redactSecrets,
+  resetCloudMetrics,
   resolveControlPlaneToken,
+  resolveControlPlaneTokenCandidates,
+  sanitizeMetricLabel,
+  validateCloudConfig,
+  validateCloudConfigOrThrow,
+  verifyControlPlaneToken,
+  type CloudConfigInput,
+  type CloudConfigIssue,
+  type CloudConfigReasonCode,
+  type CloudConfigValidation,
+  type CloudFeature,
+  type CloudFeatureFlags,
+  type CloudMetricSample,
+  type CloudMetricsContract,
+  type CloudOperation,
+  type CloudOutcome,
+  type CloudProviderLabel,
+  type CloudReadiness,
+  type ControlPlaneTokenOptions,
+  type SecretQuality,
+  type ValidatedCloudConfig,
 } from './auth.js';
 export {
+  assertProbeTarget,
+  isAllowedProbeHost,
   probeCloudTargetsHealth,
+  ProbeTargetError,
+  readBoundedResponseBody,
   type ProbeCloudTargetsHealthOptions,
   type ProbeCloudTargetsHealthResult,
+  type ProbeFailureReason,
+  type ProbeOutcomeStatus,
+  type ProbeTargetPolicy,
 } from './probe.js';
 export { CLOUD_TARGETS_PROBE_JOB, ensureCloudCrons, registerCloudJobHandlers } from './jobs.js';
-export { selectHealthyDeploymentTarget, type HaTargetCandidate } from './ha.js';
 export {
+  applyFencedHeartbeat,
+  nextHaGeneration,
+  planHaNodeRecovery,
+  resolveHaFailoverRace,
+  selectHealthyDeploymentTarget,
+  tryClaimHaOwnership,
+  type HaTargetCandidate,
+} from './ha.js';
+export {
+  ALLOWED_DEPLOYMENT_TRANSITIONS,
+  TERMINAL_DEPLOYMENT_STATES,
+  applyDeploymentEvent,
   deployViaCoolify,
+  planDeploymentRetry,
+  reconcileDeploymentOutcome,
+  type CloudDeploymentState,
   type CoolifyDeployParams,
   type CoolifyDeployResult,
 } from './providers/coolify.js';
@@ -47,6 +117,7 @@ export {
   DEFAULT_PAAS_PLANS,
   evaluateTenantPaasQuota,
   PaasQuotaExceededError,
+  PaasQuotaReservationLedger,
   planSubscriptionEnforcement,
   type PaasPlanLimits,
   type PaasPlanTier,
@@ -71,7 +142,9 @@ export {
   type PaasTemplateId,
 } from './templates.js';
 export {
+  PRIVATE_MESH_CIDRS,
   evaluateMeshFailoverPlan,
+  isPrivateMeshHost,
   type ActiveTenantDeployment,
   type MeshDockerStatus,
   type MeshFailoverAction,
@@ -82,7 +155,9 @@ export {
   type MeshVpsNode,
 } from './mesh-ha.js';
 export {
+  executeProvisionWithCompensation,
   isValidEasyTierMeshIp,
+  planProvisionCompensation,
   planVpsNodeProvision,
   redactProvisionSecrets,
   validateVpsProvisionRequest,
@@ -100,6 +175,7 @@ export {
   calculateTenantInvoice,
   evaluateBillingLifecycle,
   signBillingWebhookPayload,
+  TenantUsageSettlementLedger,
   verifyBillingWebhookSignature,
   type BillingInvoice,
   type BillingLifecycleInput,
@@ -118,6 +194,8 @@ export {
   type VerifyBillingWebhookResult,
 } from './billing-meter.js';
 export {
+  HA_DRILL_RUNBOOK,
+  runDeterministicHaDrill,
   runMeshHaFailoverDrill,
   type CaddyCutoverRoute,
   type FailoverDrillEvidence,
