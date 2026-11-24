@@ -1,0 +1,21 @@
+{
+  "name": "@moonwitness/agent-sandbox",
+  "version": "1.0.0-rc.1",
+  "private": true,
+  "description": "Private, authenticated, rootless execution sidecar for MoonWitness cloud coding-agent workspaces",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
+    "test": "vitest run",
+    "start": "node dist/server.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}

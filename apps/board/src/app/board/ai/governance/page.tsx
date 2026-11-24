@@ -27,7 +27,12 @@ import {
   SecurityIcon,
   WarningIcon,
 } from '@moonwitness/ui/icons';
-import { useAiAgents, useAiGovernanceApprovals, useAiGrants } from '@/components/ai/ai-api';
+import {
+  useAiAgents,
+  useAiGovernanceApprovals,
+  useAiGrants,
+  useAiRuns,
+} from '@/components/ai/ai-api';
 import {
   EmergencyConfirmModal,
   MissionControlShell,
@@ -35,6 +40,7 @@ import {
   RiskTierBadge,
 } from '@/components/ai/mission-control-chrome';
 import { client } from '@/lib/client';
+import { RunApprovalPanel } from '../_components/cloud-agent-panels';
 
 interface PendingGovernanceModalAction {
   readonly title: string;
@@ -88,6 +94,7 @@ export default function AiGovernancePage() {
   const grantsQuery = useAiGrants();
   const approvalsQuery = useAiGovernanceApprovals();
   const agentsQuery = useAiAgents();
+  const runsQuery = useAiRuns();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -468,6 +475,14 @@ export default function AiGovernancePage() {
           </TableBody>
         </Table>
       </Panel>
+
+      <RunApprovalPanel
+        runs={(runsQuery.data ?? []) as never}
+        onChanged={() => {
+          void runsQuery.refetch();
+          void approvalsQuery.refetch();
+        }}
+      />
 
       <EmergencyConfirmModal
         open={pendingAction !== null}

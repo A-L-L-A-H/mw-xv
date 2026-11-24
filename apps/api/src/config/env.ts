@@ -97,6 +97,59 @@ function readS3StorageConfig(): EnvConfig['s3Storage'] {
   };
 }
 
+/**
+ * Cloud coding-agent settings. Kept separate from EnvConfig because worker-only
+ * values and secret references must never reach Board DTOs.
+ */
+function readCloudAgentConfig() {
+  const origin = process.env.AI_FREELLMAPI_ORIGIN ?? 'http://freellmapi:3001';
+  let parsed: URL;
+  try {
+    parsed = new URL(origin);
+  } catch {
+    throw new Error('AI_FREELLMAPI_ORIGIN must be an exact http(s) origin');
+  }
+  if (
+    (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') ||
+    parsed.username ||
+    parsed.password ||
+    parsed.search ||
+    parsed.hash ||
+    (parsed.pathname !== '' && parsed.pathname !== '/')
+  ) {
+    throw new Error('AI_FREELLMAPI_ORIGIN must be an exact origin without path, query or credentials');
+  }
+  const defaultModel = process.env.FREELLMAPI_DEFAULT_MODEL?.trim();
+  if (defaultModel !== undefined && !/^[A-Za-z0-9][A-Za-z0-9._:\-/]{0,191}$/u.test(defaultModel)) {
+    throw new Error('FREELLMAPI_DEFAULT_MODEL contains unsupported characters');
+  }
+  const sandboxOrigin = process.env.AGENT_SANDBOX_URL ?? 'http://agent-sandbox:3020';
+  let sandboxParsed: URL;
+  try {
+    sandboxParsed = new URL(sandboxOrigin);
+  } catch {
+    throw new Error('AGENT_SANDBOX_URL must be an exact http(s) origin');
+  }
+  if (
+    sandboxParsed.username ||
+    sandboxParsed.password ||
+    sandboxParsed.search ||
+    sandboxParsed.hash ||
+    (sandboxParsed.pathname !== '' && sandboxParsed.pathname !== '/')
+  ) {
+    throw new Error('AGENT_SANDBOX_URL must be an exact origin');
+  }
+  return Object.freeze({
+    origin: `${parsed.protocol}//${parsed.host}`,
+    defaultModel,
+    secretRef: process.env.MW_AI_FREELLM_SECRET_REF ?? 'MW_AI_FREELLM_KEY',
+    sandboxOrigin: `${sandboxParsed.protocol}//${sandboxParsed.host}`,
+    sandboxTokenRef: process.env.AGENT_SANDBOX_TOKEN_REF ?? 'AGENT_SANDBOX_TOKEN',
+  });
+}
+
+export const cloudAgentConfig = readCloudAgentConfig();
+
 const databaseUrl = readDatabaseUrl(
   process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:5432/moonwitness_db'
 );

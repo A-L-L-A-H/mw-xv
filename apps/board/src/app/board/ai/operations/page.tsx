@@ -40,6 +40,7 @@ import {
   ProvenanceBadge,
 } from '@/components/ai/mission-control-chrome';
 import { client } from '@/lib/client';
+import { RunEvidencePanel } from '../_components/cloud-agent-panels';
 
 type PendingEmergencyAction =
   | {
@@ -539,6 +540,13 @@ export default function AiLiveOperationsPage() {
           </Table>
         )}
       </Panel>
+
+      <RunEvidencePanel
+        runs={(runsQuery.data ?? []) as never}
+        onChanged={() => {
+          void runsQuery.refetch();
+        }}
+      />
 
       <EmergencyConfirmModal
         open={pendingAction !== null}

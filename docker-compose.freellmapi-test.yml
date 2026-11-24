@@ -1,0 +1,4 @@
+services:
+  freellmapi:
+    ports:
+      - '127.0.0.1:${FREELMAPI_TEST_PORT:-3001}:3001'
