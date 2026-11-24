@@ -12,7 +12,7 @@ those actions. The account endpoint returns capabilities so Board only shows per
 
 ## Local development
 
-Start PostgreSQL with `docker compose up -d`, then run `pnpm dev`. This starts API, Board, and the
+Start PostgreSQL with `docker compose -f deploy/compose/docker-compose.yml up -d postgres`, then run `pnpm dev`. This starts API, Board, and the
 PostgreSQL outbox worker together. The development stack already
 points `WHATSAPP_GATEWAY_URL` at the hosted gateway; override it in `.env` together with
 `WHATSAPP_GATEWAY_USERNAME` and `WHATSAPP_GATEWAY_PASSWORD` when the address or credentials
