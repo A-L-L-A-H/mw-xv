@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { lstat, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { isRecord } from '@moonwitness/types';
 import {
   parseCanonicalJson,
   validateSourceArtifactManifest,
@@ -8,6 +9,7 @@ import {
   type SourceArtifactManifest,
   type SourceBytesManifest,
 } from '@moonwitness/knowledge';
+import { safeRelativePath } from './path-safety.js';
 import { putRawArtifact } from './raw-artifact-store.js';
 import type { RawArtifactReceipt } from './raw-artifact-store.js';
 
@@ -65,27 +67,6 @@ const locatorPattern = /^Q([1-9]\d{0,2}):([1-9]\d{0,2})$/u;
 const indexKeys = ['entries', 'format'];
 const entryKeys = ['artifact_path', 'edition_id', 'locator', 'sha256', 'source_manifest_path'];
 
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function safeRelativePath(value: unknown, label: string): string {
-  if (
-    typeof value !== 'string' ||
-    value.length === 0 ||
-    path.isAbsolute(value) ||
-    value.includes('\\') ||
-    value.includes('\0')
-  ) {
-    throw new TypeError(`${label} must be a safe relative POSIX path`);
-  }
-  const segments = value.split('/');
-  if (segments.some((segment) => segment.length === 0 || segment === '.' || segment === '..')) {
-    throw new TypeError(`${label} must not contain empty, dot, or parent segments`);
-  }
-  return segments.join(path.sep);
-}
-
 async function readRegularFile(root: string, relativePath: string, label: string): Promise<Buffer> {
   const rootInfo = await lstat(root);
   if (rootInfo.isSymbolicLink() || !rootInfo.isDirectory()) {
@@ -110,7 +91,7 @@ async function readRegularFile(root: string, relativePath: string, label: string
 
 function parseIndex(value: unknown): QuranPassageIndex {
   if (
-    !isObject(value) ||
+    !isRecord(value) ||
     Object.keys(value).sort().join(',') !== indexKeys.join(',') ||
     value.format !== 'moonwitness-quran-passage-index/v1' ||
     !Array.isArray(value.entries)
@@ -120,7 +101,7 @@ function parseIndex(value: unknown): QuranPassageIndex {
 
   const seen = new Set<string>();
   const entries = value.entries.map((candidate, index) => {
-    if (!isObject(candidate) || Object.keys(candidate).sort().join(',') !== entryKeys.join(',')) {
+    if (!isRecord(candidate) || Object.keys(candidate).sort().join(',') !== entryKeys.join(',')) {
       throw new TypeError(`Quran passage index entry ${index} has an invalid shape`);
     }
     if (
@@ -176,7 +157,7 @@ async function lookupPassage(request: ReadQuranPassageRequest): Promise<{
     new TextDecoder('utf-8', { fatal: true }).decode(manifestBytes)
   );
   const validation = validateSourceArtifactManifest(manifestValue);
-  if (!validation.valid || !isObject(manifestValue)) {
+  if (!validation.valid || !isRecord(manifestValue)) {
     throw new TypeError('Quran passage source manifest is invalid or missing rights evidence');
   }
   const manifestCandidate = manifestValue as unknown as SourceArtifactManifest;

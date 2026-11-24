@@ -1,3 +1,4 @@
+import { isRecord } from '@moonwitness/types';
 import { sha256Hex } from '@moonwitness/types/node';
 import { lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -14,16 +15,13 @@ import {
 } from './dataset-release.js';
 import type { ActiveDatasetRelease } from './dataset-release.js';
 import type { DatasetReleaseSnapshot } from './dataset-release.js';
+import { safeRelativePath } from './path-safety.js';
 import type { IngestionRecipe, IngestionReport, IngestionRequest } from './types.js';
 
 type JsonObject = Record<string, unknown>;
 
-function isObject(value: unknown): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function parseRecipe(value: unknown): IngestionRecipe {
-  if (!isObject(value)) throw new TypeError('Recipe must be a JSON object');
+  if (!isRecord(value)) throw new TypeError('Recipe must be a JSON object');
   const keys = Object.keys(value).sort();
   if (keys.join(',') !== 'format,parser,recipeId,source') {
     throw new TypeError('Recipe must contain only format, recipeId, source, and parser');
@@ -35,7 +33,7 @@ function parseRecipe(value: unknown): IngestionRecipe {
   if (typeof value.recipeId !== 'string' || !/^[a-z0-9][a-z0-9._-]{0,99}$/u.test(value.recipeId)) {
     throw new TypeError('recipeId must be a stable lowercase identifier');
   }
-  if (!isObject(value.source) || Object.keys(value.source).sort().join(',') !== 'path,sha256') {
+  if (!isRecord(value.source) || Object.keys(value.source).sort().join(',') !== 'path,sha256') {
     throw new TypeError('source must contain only path and sha256');
   }
   if (typeof value.source.path !== 'string' || value.source.path.length === 0) {
@@ -50,17 +48,6 @@ function parseRecipe(value: unknown): IngestionRecipe {
     parser: 'json-record-array/v1',
     source: { path: value.source.path, sha256: value.source.sha256 },
   };
-}
-
-function safeRelativePath(value: string, label: string): string {
-  if (path.isAbsolute(value) || value.includes('\\') || value.includes('\0')) {
-    throw new TypeError(`${label} must be a safe relative POSIX path`);
-  }
-  const segments = value.split('/');
-  if (segments.some((segment) => segment.length === 0 || segment === '.' || segment === '..')) {
-    throw new TypeError(`${label} must not contain empty, dot, or parent segments`);
-  }
-  return segments.join(path.sep);
 }
 
 async function assertRegularFile(
@@ -130,7 +117,7 @@ function validateRecords(value: unknown): JsonObject[] {
         .join('; ');
       throw new TypeError(`Record at index ${index} is invalid: ${messages}`);
     }
-    if (!isObject(candidate)) throw new TypeError(`Record at index ${index} must be an object`);
+    if (!isRecord(candidate)) throw new TypeError(`Record at index ${index} must be an object`);
     if (typeof candidate.id !== 'string')
       throw new TypeError(`Record at index ${index} has no string ID`);
     if (ids.has(candidate.id)) throw new TypeError(`Duplicate record ID: ${candidate.id}`);

@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { lstat, mkdir, readFile, readdir, rename, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { canonicalizeJson, hashCanonicalJson, parseCanonicalJson } from '@moonwitness/knowledge';
+import { trySafeRelativePath } from './path-safety.js';
 
 export interface DatasetReleaseSnapshot {
   format: 'moonwitness-knowledge-snapshot/v1';
@@ -66,15 +67,6 @@ function activePath(root: string, datasetId: string): string {
   return path.join(root, 'datasets', datasetId, 'active.json');
 }
 
-function safeRelativePath(value: string): string | null {
-  if (path.isAbsolute(value) || value.includes('\\') || value.includes('\0')) return null;
-  const segments = value.split('/');
-  if (segments.some((segment) => segment.length === 0 || segment === '.' || segment === '..')) {
-    return null;
-  }
-  return segments.join(path.sep);
-}
-
 function validateInput(input: DatasetReleaseInput): void {
   if (!datasetIdPattern.test(input.datasetId)) throw new TypeError('datasetId is invalid');
   if (!semverPattern.test(input.version))
@@ -99,11 +91,11 @@ function validateInput(input: DatasetReleaseInput): void {
   ) {
     throw new TypeError('snapshot must be a valid canonical SHA-256 knowledge snapshot');
   }
-  if (safeRelativePath(input.snapshotPath) === null) {
+  if (trySafeRelativePath(input.snapshotPath) === null) {
     throw new TypeError('snapshotPath must be a safe relative path');
   }
   if (
-    safeRelativePath(input.sourceRecipe.path) === null ||
+    trySafeRelativePath(input.sourceRecipe.path) === null ||
     !digestPattern.test(input.sourceRecipe.sha256)
   ) {
     throw new TypeError('sourceRecipe must pin a safe relative path and SHA-256 digest');
@@ -111,7 +103,7 @@ function validateInput(input: DatasetReleaseInput): void {
 }
 
 async function resolveSnapshotDirectory(root: string, snapshotPath: string): Promise<string> {
-  const relative = safeRelativePath(snapshotPath);
+  const relative = trySafeRelativePath(snapshotPath);
   if (relative === null) throw new TypeError('snapshotPath must be a safe relative path');
   const destination = path.resolve(root, relative);
   const fromRoot = path.relative(root, destination);
