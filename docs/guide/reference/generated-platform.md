@@ -1,11 +1,12 @@
 # Generated platform reference
 
-Source fingerprint: `8b8ea509d6051b47fdff84af0e0e3ecef712d5aafadc682730bd6bc8bd324123`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `b2a4280303cddb42ff28fc1d822c325a7fa442bc47a4f38ba4be3690082adf97`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
 | Name                               | Kind    | Version    | Scripts                                                                                                                                                                                                                                                                            |
 | ---------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@moonwitness/agent-observability` | App     | 1.0.0-rc.1 | `build`, `demo`, `dev`, `start`, `test`, `typecheck`                                                                                                                                                                                                                               |
 | `@moonwitness/api`                 | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
 | `@moonwitness/board`               | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
 | `@moonwitness/control-plane`       | App     | 0.1.0      | `dev`, `docker:build`, `fmt`                                                                                                                                                                                                                                                       |
@@ -170,6 +171,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm control-plane:build`
 - `pnpm control-plane:dev`
 - `pnpm db:migrate`
+- `pnpm demo:observability`
 - `pnpm dependency:candidate`
 - `pnpm dependency:plan`
 - `pnpm desktop:build`
@@ -180,6 +182,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm dev`
 - `pnpm dev:api`
 - `pnpm dev:board`
+- `pnpm dev:observability`
 - `pnpm docs:build`
 - `pnpm docs:build:built`
 - `pnpm docs:change:classify`
@@ -238,6 +241,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm roadmap:progress`
 - `pnpm start`
 - `pnpm start:built`
+- `pnpm start:observability`
 - `pnpm tasks:sweep`
 - `pnpm tasks:sync`
 - `pnpm tasks:validate`

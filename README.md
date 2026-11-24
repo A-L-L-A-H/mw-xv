@@ -28,6 +28,7 @@ Mulai cepat: [Quickstart](#quickstart) · [Panduan developer](docs/guide/index.m
 
 - [Sorotan](#sorotan)
 - [Quickstart](#quickstart)
+- [Agent observability](#agent-observability)
 - [Arsitektur](#arsitektur)
 - [Peta workspace](#peta-workspace)
 - [Mesin model dan addon](#mesin-model-dan-addon)
@@ -105,6 +106,47 @@ partner, negara, dan contoh data lain untuk eksplorasi; jangan dipakai di produc
 Panduan langkah demi langkah, termasuk tes PostgreSQL terisolasi, ada di
 [quickstart](docs/guide/tutorials/quickstart.md).
 
+## Agent observability
+
+`@moonwitness/agent-observability` adalah receiver OpenTelemetry lokal untuk traces, metrics, dan
+logs. Dashboard menampilkan flow graph interaktif, waterfall span, log terkorelasi, penggunaan token,
+biaya, dan time series metric.
+
+```bash
+pnpm start:observability
+# Buka http://127.0.0.1:4318
+
+# Terminal lain: kirim telemetry demo melalui SDK OpenTelemetry
+pnpm demo:observability
+```
+
+Gunakan `pnpm dev:observability` untuk mode watch. Agent berbasis OpenTelemetry dapat diarahkan
+ke receiver ini tanpa custom adapter:
+
+```sh
+OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
+OTEL_EXPORTER_OTLP_PROTOCOL=http/json
+OTEL_SERVICE_NAME=nama-agent
+```
+
+Helper TypeScript tersedia melalui `@moonwitness/agent-observability/instrumentation`; lihat
+[contoh agent](apps/agent-observability/examples/demo-agent.ts).
+
+### Qoder CLI
+
+Konfigurasi project [`.qoder/settings.json`](.qoder/settings.json) mengirim hook HTTP Qoder ke
+`POST /v1/qoder` saat receiver berjalan. Satu prompt menjadi satu trace dengan child span untuk
+tool call dan subagent; kegagalan tool/turn juga muncul sebagai error span dan log.
+
+Bridge hanya menyimpan metadata seperti nama tool, status, durasi, ID korelasi, dan panjang teks.
+Isi prompt, input/output tool, pesan assistant, path transcript, working directory, dan error mentah
+tidak dikirim ke dashboard. Hook Qoder belum menyediakan token usage atau biaya, sehingga kolom itu
+tetap kosong untuk aktivitas Qoder.
+
+Receiver menyimpan data di memori dengan retensi default satu jam dan tidak memiliki autentikasi.
+Biarkan bind default `127.0.0.1`; jangan mengeksposnya ke jaringan publik tanpa kontrol akses yang
+sesuai.
+
 ## Arsitektur
 
 ```mermaid
@@ -142,12 +184,13 @@ di [diagram arsitektur](docs/architecture/diagrams/README.md); penjelasan batas 
 
 ### Aplikasi
 
-| Workspace                                     | Peran                                                                      |
-| --------------------------------------------- | -------------------------------------------------------------------------- |
-| `@moonwitness/api` (`apps/api`)               | Fastify API: REST dinamis, JSON-RPC 2.0, auth, admin, dan command worker.  |
-| `@moonwitness/board` (`apps/board`)           | Next.js App Router: homepage publik dan Board admin dari origin yang sama. |
-| `@moonwitness/docs` (`apps/docs`)             | Portal dokumentasi dan halaman desain berbasis Vite.                       |
-| `@moonwitness/ui-catalog` (`apps/ui-catalog`) | Katalog statis interaktif untuk komponen `@moonwitness/ui`.                |
+| Workspace                                                       | Peran                                                                      |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `@moonwitness/api` (`apps/api`)                                 | Fastify API: REST dinamis, JSON-RPC 2.0, auth, admin, dan command worker.  |
+| `@moonwitness/agent-observability` (`apps/agent-observability`) | Receiver OTLP/HTTP JSON dan dashboard traces, metrics, serta logs agent.   |
+| `@moonwitness/board` (`apps/board`)                             | Next.js App Router: homepage publik dan Board admin dari origin yang sama. |
+| `@moonwitness/docs` (`apps/docs`)                               | Portal dokumentasi dan halaman desain berbasis Vite.                       |
+| `@moonwitness/ui-catalog` (`apps/ui-catalog`)                   | Katalog statis interaktif untuk komponen `@moonwitness/ui`.                |
 
 ### Paket
 
@@ -596,10 +639,11 @@ Referensi model, field, relasi, akses, environment, dan endpoint yang dihasilkan
 
 ## Generated workspace reference
 
-Monorepo version: `1.0.0-rc.1` · metadata fingerprint: `8b8ea509d6051b47fdff84af0e0e3ecef712d5aafadc682730bd6bc8bd324123`.
+Monorepo version: `1.0.0-rc.1` · metadata fingerprint: `b2a4280303cddb42ff28fc1d822c325a7fa442bc47a4f38ba4be3690082adf97`.
 
 | App/package                        | Kind    | Version      | Workspace scripts                                                                                                                                                                                                                                                                  |
 | ---------------------------------- | ------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@moonwitness/agent-observability` | App     | `1.0.0-rc.1` | `build`, `demo`, `dev`, `start`, `test`, `typecheck`                                                                                                                                                                                                                               |
 | `@moonwitness/api`                 | App     | `1.0.0-rc.1` | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
 | `@moonwitness/board`               | App     | `1.0.0-rc.1` | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
 | `@moonwitness/control-plane`       | App     | `0.1.0`      | `dev`, `docker:build`, `fmt`                                                                                                                                                                                                                                                       |
@@ -654,7 +698,7 @@ Monorepo version: `1.0.0-rc.1` · metadata fingerprint: `8b8ea509d6051b47fdff84a
 | `@moonwitness/types`               | Package | `1.0.0-rc.1` | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/ui`                  | Package | `1.0.0-rc.1` | `build`, `test`                                                                                                                                                                                                                                                                    |
 
-Root commands: `pnpm addon:create`, `pnpm addon:scaffold`, `pnpm agent:boundary:check`, `pnpm ai:watchdog`, `pnpm api:addon:check`, `pnpm architecture:check`, `pnpm architecture:check:built`, `pnpm architecture:generate`, `pnpm assets:check:bounds`, `pnpm assets:check:docs`, `pnpm assets:export:docs`, `pnpm assets:generate`, `pnpm assets:generate:illustrations`, `pnpm assets:render`, `pnpm assets:validate`, `pnpm attachments:reconcile`, `pnpm audit:workspace`, `pnpm automation:check:action-pins`, `pnpm automation:check:action-tags`, `pnpm automation:check:roadmap`, `pnpm automation:check:secrets`, `pnpm automation:check:ubuntu-runner-candidate`, `pnpm automation:check:workflow-trust`, `pnpm board:budget`, `pnpm board:ui:check`, `pnpm board:visual:update`, `pnpm build`, `pnpm ci:affected`, `pnpm control-plane:build`, `pnpm control-plane:dev`, `pnpm db:migrate`, `pnpm dependency:candidate`, `pnpm dependency:plan`, `pnpm desktop:build`, `pnpm desktop:mcp`, `pnpm desktop:test`, `pnpm desktop:ui:check`, `pnpm desktop:web`, `pnpm dev`, `pnpm dev:api`, `pnpm dev:board`, `pnpm docs:build`, `pnpm docs:build:built`, `pnpm docs:change:classify`, `pnpm docs:check`, `pnpm docs:check:built`, `pnpm docs:examples:check`, `pnpm docs:examples:check:built`, `pnpm docs:generate`, `pnpm docs:links`, `pnpm docs:links:external`, `pnpm docs:publication:check`, `pnpm dx:test`, `pnpm evolution:check`, `pnpm evolution:fitness`, `pnpm evolution:postmortem`, `pnpm evolution:prune`, `pnpm evolution:signals`, `pnpm format`, `pnpm format:check`, `pnpm hooks:install`, `pnpm jobs:outbox`, `pnpm jobs:scheduler`, `pnpm jobs:worker`, `pnpm lint`, `pnpm lint:fix`, `pnpm lint:ui`, `pnpm local-ai:eval`, `pnpm local-ai:register-model`, `pnpm local-ai:tournament`, `pnpm node:parity`, `pnpm orm:check:seeds`, `pnpm orm:codegen`, `pnpm orm:inspect`, `pnpm platform:audit`, `pnpm preflight:fast`, `pnpm prepare`, `pnpm promotion:approval-check`, `pnpm promotion:risk`, `pnpm radius:build`, `pnpm radius:dev`, `pnpm radius:migrate`, `pnpm readme:check`, `pnpm readme:generate`, `pnpm release:changelog`, `pnpm release:check`, `pnpm release:classify`, `pnpm release:dry-run`, `pnpm release:plan`, `pnpm release:preflight:built`, `pnpm release:prepare`, `pnpm release:verify-attestations`, `pnpm reset:superadmin-password`, `pnpm revoke:auth-sessions`, `pnpm roadmap:issues:audit`, `pnpm roadmap:issues:plan`, `pnpm roadmap:progress`, `pnpm start`, `pnpm start:built`, `pnpm tasks:sweep`, `pnpm tasks:sync`, `pnpm tasks:validate`, `pnpm test`, `pnpm test:action-pins`, `pnpm test:action-tags`, `pnpm test:addon-conformance`, `pnpm test:affected`, `pnpm test:architecture`, `pnpm test:artifact-safety`, `pnpm test:assets`, `pnpm test:assets:source`, `pnpm test:board-budget`, `pnpm test:board-csv`, `pnpm test:ci-gate`, `pnpm test:coverage-policy`, `pnpm test:dependency-candidate`, `pnpm test:dependency-plan`, `pnpm test:docs-navigation`, `pnpm test:docs-portal`, `pnpm test:docs-publication`, `pnpm test:e2e`, `pnpm test:e2e:built`, `pnpm test:e2e:diagnostics`, `pnpm test:e2e:visual`, `pnpm test:e2e:visual:matrix`, `pnpm test:expected-ref`, `pnpm test:flaky-policy`, `pnpm test:integration`, `pnpm test:integration:built`, `pnpm test:knowledge-cli:built`, `pnpm test:maintenance-incidents`, `pnpm test:package-manager`, `pnpm test:platform-audit`, `pnpm test:promotion-policy`, `pnpm test:promotion-report`, `pnpm test:release-asset-reconcile`, `pnpm test:release-classification`, `pnpm test:release-dry-run`, `pnpm test:release-image-publish`, `pnpm test:release-latest-policy`, `pnpm test:release-orchestration`, `pnpm test:release-plan`, `pnpm test:release-prepare`, `pnpm test:release-prepare-workflow`, `pnpm test:release-provenance`, `pnpm test:release-verify-attestations`, `pnpm test:release-workflow`, `pnpm test:render-changelog`, `pnpm test:restore-drill`, `pnpm test:roadmap`, `pnpm test:secrets`, `pnpm test:security-policy`, `pnpm test:taskos`, `pnpm test:ubuntu-runner-candidate`, `pnpm test:ui`, `pnpm test:ui-budget`, `pnpm test:ui-catalog`, `pnpm test:ui-design-check`, `pnpm test:unit`, `pnpm test:unit-runner-policy`, `pnpm test:unit:built`, `pnpm test:unit:ci`, `pnpm test:versioned-docs`, `pnpm test:whatsapp`, `pnpm test:workflow-trust`, `pnpm test:workspace-version-policy`, `pnpm timezone:check`, `pnpm typecheck`, `pnpm ui:budget`, `pnpm ui:check`, `pnpm ui:design:audit`, `pnpm ui:design:check`, `pnpm ui:design:report`, `pnpm ui:visual:update`, `pnpm verify`.
+Root commands: `pnpm addon:create`, `pnpm addon:scaffold`, `pnpm agent:boundary:check`, `pnpm ai:watchdog`, `pnpm api:addon:check`, `pnpm architecture:check`, `pnpm architecture:check:built`, `pnpm architecture:generate`, `pnpm assets:check:bounds`, `pnpm assets:check:docs`, `pnpm assets:export:docs`, `pnpm assets:generate`, `pnpm assets:generate:illustrations`, `pnpm assets:render`, `pnpm assets:validate`, `pnpm attachments:reconcile`, `pnpm audit:workspace`, `pnpm automation:check:action-pins`, `pnpm automation:check:action-tags`, `pnpm automation:check:roadmap`, `pnpm automation:check:secrets`, `pnpm automation:check:ubuntu-runner-candidate`, `pnpm automation:check:workflow-trust`, `pnpm board:budget`, `pnpm board:ui:check`, `pnpm board:visual:update`, `pnpm build`, `pnpm ci:affected`, `pnpm control-plane:build`, `pnpm control-plane:dev`, `pnpm db:migrate`, `pnpm demo:observability`, `pnpm dependency:candidate`, `pnpm dependency:plan`, `pnpm desktop:build`, `pnpm desktop:mcp`, `pnpm desktop:test`, `pnpm desktop:ui:check`, `pnpm desktop:web`, `pnpm dev`, `pnpm dev:api`, `pnpm dev:board`, `pnpm dev:observability`, `pnpm docs:build`, `pnpm docs:build:built`, `pnpm docs:change:classify`, `pnpm docs:check`, `pnpm docs:check:built`, `pnpm docs:examples:check`, `pnpm docs:examples:check:built`, `pnpm docs:generate`, `pnpm docs:links`, `pnpm docs:links:external`, `pnpm docs:publication:check`, `pnpm dx:test`, `pnpm evolution:check`, `pnpm evolution:fitness`, `pnpm evolution:postmortem`, `pnpm evolution:prune`, `pnpm evolution:signals`, `pnpm format`, `pnpm format:check`, `pnpm hooks:install`, `pnpm jobs:outbox`, `pnpm jobs:scheduler`, `pnpm jobs:worker`, `pnpm lint`, `pnpm lint:fix`, `pnpm lint:ui`, `pnpm local-ai:eval`, `pnpm local-ai:register-model`, `pnpm local-ai:tournament`, `pnpm node:parity`, `pnpm orm:check:seeds`, `pnpm orm:codegen`, `pnpm orm:inspect`, `pnpm platform:audit`, `pnpm preflight:fast`, `pnpm prepare`, `pnpm promotion:approval-check`, `pnpm promotion:risk`, `pnpm radius:build`, `pnpm radius:dev`, `pnpm radius:migrate`, `pnpm readme:check`, `pnpm readme:generate`, `pnpm release:changelog`, `pnpm release:check`, `pnpm release:classify`, `pnpm release:dry-run`, `pnpm release:plan`, `pnpm release:preflight:built`, `pnpm release:prepare`, `pnpm release:verify-attestations`, `pnpm reset:superadmin-password`, `pnpm revoke:auth-sessions`, `pnpm roadmap:issues:audit`, `pnpm roadmap:issues:plan`, `pnpm roadmap:progress`, `pnpm start`, `pnpm start:built`, `pnpm start:observability`, `pnpm tasks:sweep`, `pnpm tasks:sync`, `pnpm tasks:validate`, `pnpm test`, `pnpm test:action-pins`, `pnpm test:action-tags`, `pnpm test:addon-conformance`, `pnpm test:affected`, `pnpm test:architecture`, `pnpm test:artifact-safety`, `pnpm test:assets`, `pnpm test:assets:source`, `pnpm test:board-budget`, `pnpm test:board-csv`, `pnpm test:ci-gate`, `pnpm test:coverage-policy`, `pnpm test:dependency-candidate`, `pnpm test:dependency-plan`, `pnpm test:docs-navigation`, `pnpm test:docs-portal`, `pnpm test:docs-publication`, `pnpm test:e2e`, `pnpm test:e2e:built`, `pnpm test:e2e:diagnostics`, `pnpm test:e2e:visual`, `pnpm test:e2e:visual:matrix`, `pnpm test:expected-ref`, `pnpm test:flaky-policy`, `pnpm test:integration`, `pnpm test:integration:built`, `pnpm test:knowledge-cli:built`, `pnpm test:maintenance-incidents`, `pnpm test:package-manager`, `pnpm test:platform-audit`, `pnpm test:promotion-policy`, `pnpm test:promotion-report`, `pnpm test:release-asset-reconcile`, `pnpm test:release-classification`, `pnpm test:release-dry-run`, `pnpm test:release-image-publish`, `pnpm test:release-latest-policy`, `pnpm test:release-orchestration`, `pnpm test:release-plan`, `pnpm test:release-prepare`, `pnpm test:release-prepare-workflow`, `pnpm test:release-provenance`, `pnpm test:release-verify-attestations`, `pnpm test:release-workflow`, `pnpm test:render-changelog`, `pnpm test:restore-drill`, `pnpm test:roadmap`, `pnpm test:secrets`, `pnpm test:security-policy`, `pnpm test:taskos`, `pnpm test:ubuntu-runner-candidate`, `pnpm test:ui`, `pnpm test:ui-budget`, `pnpm test:ui-catalog`, `pnpm test:ui-design-check`, `pnpm test:unit`, `pnpm test:unit-runner-policy`, `pnpm test:unit:built`, `pnpm test:unit:ci`, `pnpm test:versioned-docs`, `pnpm test:whatsapp`, `pnpm test:workflow-trust`, `pnpm test:workspace-version-policy`, `pnpm timezone:check`, `pnpm typecheck`, `pnpm ui:budget`, `pnpm ui:check`, `pnpm ui:design:audit`, `pnpm ui:design:check`, `pnpm ui:design:report`, `pnpm ui:visual:update`, `pnpm verify`.
 
 Generated model, field, relation, access, environment-name, and endpoint references are in the [developer guide](docs/guide/index.md).
 

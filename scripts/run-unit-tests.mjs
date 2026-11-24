@@ -173,6 +173,11 @@ const suites = [
     typecheck: true,
   },
   {
+    name: 'agent-observability',
+    packageName: '@moonwitness/agent-observability',
+    typecheck: true,
+  },
+  {
     name: 'ai-mcp',
     packageName: '@moonwitness/ai-mcp',
     typecheck: true,
