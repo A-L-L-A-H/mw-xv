@@ -65,3 +65,4 @@ export * from './workspace-contract.js';
 export * from './workspace-tools.js';
 export * from './incident-healer.js';
 export * from './canonical-json.js';
+export * from './sort-utils.js';

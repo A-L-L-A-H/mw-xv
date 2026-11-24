@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { compareAscii } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 import type { ReadOnlyRepoInspector, RepoFileEntry } from './repo-inspector.js';
 
@@ -102,11 +103,6 @@ const MANIFEST_BASENAMES: Readonly<Record<string, RepoManifestKind>> = {
 const ENTRY_POINT_PATTERN = /(?:^|\/)src\/(?:index|main|server|cli)\.[^/]+$/u;
 const MARKDOWN_HEADING_PATTERN = /^(#{1,6})\s+(.+?)\s*#*$/u;
 
-function compareAscii(a: string, b: string): number {
-  if (a < b) return -1;
-  if (a > b) return 1;
-  return 0;
-}
 
 function getPosixBasename(posixPath: string): string {
   const slashIndex = posixPath.lastIndexOf('/');

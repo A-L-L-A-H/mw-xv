@@ -1,4 +1,5 @@
 import { createRedactor, type RedactionContext } from './redaction.js';
+import { clampBps } from './sort-utils.js';
 import { sha256Hex, toCanonicalJson as canonicalJson } from './canonical-json.js';
 
 export type WorldModelReasonCode = 'UNEXPECTED_SIDE_EFFECT' | 'PREDICTION_MISMATCH';
@@ -106,18 +107,11 @@ export interface EvaluateWorldModelConsistencyOptions {
 }
 
 const DEFAULT_SURPRISE_THRESHOLD_BPS = 2500;
-const MAX_BPS = 10_000;
 
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/gu, '/').replace(/^\.\//u, '').trim();
 }
 
-function clampBps(value: number): number {
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(MAX_BPS, Math.round(value)));
-}
 
 export function evaluateWorldModelConsistency(
   prediction: WorldModelPrediction,
@@ -385,7 +379,7 @@ export function evaluateWorldModelConsistency(
   }
 
   const surpriseScoreBps =
-    totalChecks === 0 ? 0 : clampBps((mismatchedChecks / totalChecks) * MAX_BPS);
+    totalChecks === 0 ? 0 : clampBps((mismatchedChecks / totalChecks) * 10_000);
 
   const reasonCodes = [...new Set(findings.map((finding) => finding.reasonCode))].sort((a, b) =>
     a.localeCompare(b)

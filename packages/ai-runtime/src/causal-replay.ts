@@ -1,4 +1,5 @@
 import { createRedactor, type RedactionContext } from './redaction.js';
+import { clampBps } from './sort-utils.js';
 import { sha256Hex, toCanonicalJson as canonicalJson } from './canonical-json.js';
 
 export type CausalRootCauseCategory =
@@ -88,14 +89,6 @@ export interface CausalReplayOptions {
 }
 
 const DEFAULT_SURPRISE_THRESHOLD_BPS = 2500;
-const MAX_BPS = 10_000;
-
-function clampBps(value: number): number {
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(MAX_BPS, Math.round(value)));
-}
 
 function sanitizeCheckpoint(
   checkpoint: CausalCheckpoint,
@@ -192,7 +185,7 @@ function classifyRootCause(checkpoint: CausalCheckpoint): CausalRootCauseAttribu
 
   const top = active[0]!;
   const totalSignals = active.reduce((sum, entry) => sum + entry.signals.length, 0);
-  const dominanceBps = clampBps((top.signals.length / totalSignals) * MAX_BPS);
+  const dominanceBps = clampBps((top.signals.length / totalSignals) * 10_000);
   const confidenceBps = Math.max(6000, dominanceBps);
 
   return {
