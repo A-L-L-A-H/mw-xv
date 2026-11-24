@@ -275,7 +275,7 @@ jobs:
           bun run tasks:validate
           bun run automation:check:roadmap
           bun run tasks:sweep -- --check
-          node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs --check
+          node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs --check
       - name: Upload the source-validated TaskOS recovery candidate
         if: always() && steps.taskos-recovery.outputs.candidate_generated == 'true'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
