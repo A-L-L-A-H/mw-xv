@@ -1,6 +1,6 @@
 # Visual Universe Task Graph
 
-**Current state: migration-gated.** The repository-wide `docs/tasks/tasks.json` contains 1,358 legacy records, including 861 records that still reference root `todo.md`, now only a pointer. A source-backed 627-record migration candidate is defined and covered by importer tests, but its export and 1,358-to-627 reconciliation review are not yet complete. The 109-task Visual Universe project is therefore not an approved canonical execution queue. Keep autonomous execution stopped until exact-SHA CI is green, the candidate is reviewed, the legacy snapshot is preserved, and canonical migration is explicitly approved.
+**Current state: migration-gated.** The repository-wide `docs/tasks/tasks.json` contains 1,358 legacy records, including 861 records that still reference root `docs/tasks/sources/todo.md`, now only a pointer. A source-backed 627-record migration candidate is defined and covered by importer tests, but its export and 1,358-to-627 reconciliation review are not yet complete. The 109-task Visual Universe project is therefore not an approved canonical execution queue. Keep autonomous execution stopped until exact-SHA CI is green, the candidate is reviewed, the legacy snapshot is preserved, and canonical migration is explicitly approved.
 
 ## Source preservation
 

@@ -39,7 +39,7 @@ This timeline records only dates and windows supported by the supplied prompt, a
 
 ## Additional Library source evidence (2026-11-23)
 
-- The current 775-line master prompt is archived verbatim at `docs/raw/2026-11-23-master-prompt-total-idea-archive.md`.
+- The current 775-line master prompt is archived verbatim at `docs/second-brain/raw/2026-11-23-master-prompt-total-idea-archive.md`.
 - A separate older 439-line Library note named `Pasted text.txt` was inspected as a source but is personal/private and is not reproduced in this public archive.
 - `Omniscience_Method_RGBL_AI_Ready_Research_Paper.md` is a separate 437-line Library paper, version 1.0 dated 17 August 2026; the method is summarized in `FRAMEWORK-REGISTRY.md`.
 - The first Library root snapshot enumerated 94 objects / 63 PNGs. A later fully paginated listing returned 279 root entries (278 files + 1 folder) and 319 recursive entries (300 files + 19 folders), including 203 PNGs. These are metadata counts, not counts of content-reviewed or rights-cleared assets. See `LIBRARY-SOURCE-REGISTER.md` for both snapshots.

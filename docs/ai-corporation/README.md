@@ -8,7 +8,7 @@
   - [AI Corporation Research Register](../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-RESEARCH-REGISTER.md)
   - [AI Corporation Desktop Harness Blueprint](../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
   - [AI Corporation Granular TODO (`AI0`–`AI11`, `DOC`, `GATE`, `SLICE`)](../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md)
-  - [Desktop Harness Granular TODO (`DSK-0`–`DSK-10`)](../../todo-desktop.md)
+  - [Desktop Harness Granular TODO (`DSK-0`–`DSK-10`)](../tasks/sources/todo-desktop.md)
   - [Canonical Roadmap Source Cards (`M12.01`–`M12.14`)](../roadmap/13-ai-corporation.md)
   - [Master Roadmap](../../ROADMAP.md)
 

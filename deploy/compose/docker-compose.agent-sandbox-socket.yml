@@ -6,8 +6,8 @@
 #
 # Usage:
 #   docker compose --env-file .env.production \
-#     -f docker-compose.production.yml \
-#     -f docker-compose.agent-sandbox-socket.yml up -d
+#     -f deploy/compose/docker-compose.production.yml \
+#     -f deploy/compose/docker-compose.agent-sandbox-socket.yml up -d
 #
 # AGENT_SANDBOX_DOCKER_SOCKET must point to a socket under /run/user/<uid>/.
 # The sandbox itself rejects root-equivalent socket paths.

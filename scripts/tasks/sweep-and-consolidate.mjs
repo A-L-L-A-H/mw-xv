@@ -123,8 +123,8 @@ export async function sweepAndConsolidate({
     addTask(aud);
   }
 
-  // 3. Ingest todo-wa.md (WhatsApp checklist)
-  const todoWaPath = path.join(rootDir, 'todo-wa.md');
+  // 3. Ingest docs/tasks/sources/todo-wa.md (WhatsApp checklist)
+  const todoWaPath = path.join(rootDir, 'docs/tasks/sources/todo-wa.md');
   try {
     const waText = await fs.readFile(todoWaPath, 'utf8');
     for (const line of waText.split(/\r?\n/)) {
@@ -172,10 +172,10 @@ export async function sweepAndConsolidate({
             commands: ['pnpm test:whatsapp'],
             expected: 'WhatsApp gateway test suites pass',
           },
-          evidence: { paths: [], detailFile: 'todo-wa.md', commitSha: null },
+          evidence: { paths: [], detailFile: 'docs/tasks/sources/todo-wa.md', commitSha: null },
           references: ['docs/operations/whatsapp.md'],
           blockedReason: null,
-          sourceRef: { file: 'todo-wa.md', legacyId: rawCode },
+          sourceRef: { file: 'docs/tasks/sources/todo-wa.md', legacyId: rawCode },
           url: '',
           comments: [],
         });
@@ -188,11 +188,11 @@ export async function sweepAndConsolidate({
     );
   }
 
-  // Root todo.md is a navigation pointer. Verify it remains a pointer and never parse it as a backlog.
-  const rootTodoPath = path.join(rootDir, 'todo.md');
+  // Root docs/tasks/sources/todo.md is a navigation pointer. Verify it remains a pointer and never parse it as a backlog.
+  const rootTodoPath = path.join(rootDir, 'docs/tasks/sources/todo.md');
   const rootTodoText = await fs.readFile(rootTodoPath, 'utf8');
   if (!rootTodoText.includes('docs/tasks/tasks.json')) {
-    throw new Error('Root todo.md must remain a pointer to the canonical TaskOS registry.');
+    throw new Error('Root docs/tasks/sources/todo.md must remain a pointer to the canonical TaskOS registry.');
   }
 
   // Import only unchecked records from the archived MW checklist. They remain blocked until re-triaged.
@@ -330,9 +330,9 @@ export async function sweepAndConsolidate({
     );
   }
 
-  // 5. Ingest todo-desktop.md
+  // 5. Ingest docs/tasks/sources/todo-desktop.md
   try {
-    const dskText = await fs.readFile(path.join(rootDir, 'todo-desktop.md'), 'utf8');
+    const dskText = await fs.readFile(path.join(rootDir, 'docs/tasks/sources/todo-desktop.md'), 'utf8');
     for (const line of dskText.split(/\r?\n/)) {
       const match = /^\s*-\s*\[([ xX])\]\s+\*\*(DSK-[0-9.]+)\*\*\s+(.*)$/.exec(line);
       if (match) {
@@ -365,10 +365,10 @@ export async function sweepAndConsolidate({
           scope: { packages: ['@moonwitness/desktop'], files: [] },
           acceptanceCriteria: [{ id: `${code}-ac-1`, text: title, done: isDone }],
           validation: { commands: ['pnpm --filter @moonwitness/desktop test'], expected: 'Pass' },
-          evidence: { paths: [], detailFile: 'todo-desktop.md', commitSha: null },
+          evidence: { paths: [], detailFile: 'docs/tasks/sources/todo-desktop.md', commitSha: null },
           references: [],
           blockedReason: null,
-          sourceRef: { file: 'todo-desktop.md', legacyId: code },
+          sourceRef: { file: 'docs/tasks/sources/todo-desktop.md', legacyId: code },
           url: '',
           comments: [],
         });
@@ -376,7 +376,7 @@ export async function sweepAndConsolidate({
     }
   } catch (error) {
     throw new Error(
-      `Failed to ingest required Desktop task source todo-desktop.md: ${error.message}`,
+      `Failed to ingest required Desktop task source docs/tasks/sources/todo-desktop.md: ${error.message}`,
       { cause: error }
     );
   }

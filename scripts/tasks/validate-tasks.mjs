@@ -231,10 +231,10 @@ export async function validateTaskRegistryData(tasksData, { checkRoadmapParity =
 export function findStaleRecoveryNarrative(narrative, taskCount) {
   if (taskCount === 0) return [];
   const staleClaims = [
-    [/Recovery status:\s*BLOCKED/iu, 'todo.md still declares recovery BLOCKED'],
-    [/zero-byte/iu, 'todo.md still describes the registry as zero-byte'],
-    [/Do not (?:run|resume)/iu, 'todo.md still contains a do-not-resume recovery instruction'],
-    [/TaskOS remains unavailable/iu, 'todo.md still says TaskOS is unavailable'],
+    [/Recovery status:\s*BLOCKED/iu, 'docs/tasks/sources/todo.md still declares recovery BLOCKED'],
+    [/zero-byte/iu, 'docs/tasks/sources/todo.md still describes the registry as zero-byte'],
+    [/Do not (?:run|resume)/iu, 'docs/tasks/sources/todo.md still contains a do-not-resume recovery instruction'],
+    [/TaskOS remains unavailable/iu, 'docs/tasks/sources/todo.md still says TaskOS is unavailable'],
   ];
   return staleClaims.filter(([pattern]) => pattern.test(narrative)).map(([, message]) => message);
 }
@@ -250,10 +250,10 @@ export async function validateTasks({ checkRoadmapParity = true } = {}) {
   }
   const result = await validateTaskRegistryData(tasksData, { checkRoadmapParity });
   try {
-    const narrative = await fs.readFile(path.join(rootDir, 'todo.md'), 'utf8');
+    const narrative = await fs.readFile(path.join(rootDir, 'docs/tasks/sources/todo.md'), 'utf8');
     result.errors.push(...findStaleRecoveryNarrative(narrative, result.taskCount));
   } catch (error) {
-    if (error.code !== 'ENOENT') result.errors.push(`Failed reading todo.md: ${error.message}`);
+    if (error.code !== 'ENOENT') result.errors.push(`Failed reading docs/tasks/sources/todo.md: ${error.message}`);
   }
   result.valid = result.errors.length === 0;
   return result;

@@ -1,9 +1,9 @@
-# Compatibility entrypoint for operators using `--env-file .env.prd -f docker-compose.prd.yml`.
-# The canonical production stack lives in docker-compose.production.yml; both entrypoints now
+# Compatibility entrypoint for operators using `--env-file .env.prd -f deploy/compose/docker-compose.prd.yml`.
+# The canonical production stack lives in deploy/compose/docker-compose.production.yml; both entrypoints now
 # deploy exactly the same hardened services (read-only rootfs, cap_drop, no-new-privileges,
 # resource limits, and health checks).
 #
-#   docker compose --env-file .env.prd -f docker-compose.prd.yml up -d --build
+#   docker compose --env-file .env.prd -f deploy/compose/docker-compose.prd.yml up -d --build
 #
 # Note: the canonical stack requires WHATSAPP_GATEWAY_URL, WHATSAPP_GATEWAY_USERNAME,
 # WHATSAPP_GATEWAY_PASSWORD, ATTACHMENT_S3_ACCESS_KEY, and ATTACHMENT_S3_SECRET_KEY in addition

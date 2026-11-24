@@ -23,7 +23,7 @@ The operating principle is to reuse existing domain owners. A new package or ser
 ## 2. Exact target baseline and current governance
 
 
-> **Superseding live-state correction — 2026-11-23:** The registry is not empty. The earlier zero-byte statement came from an incomplete large-file read and is withdrawn. Direct Git-blob inspection confirms a populated TaskOS registry. At the audit baseline, `dev` (`08e7e3cbdcdfdfa2214196b5622da9b6184d4918`) contains **636 unique task records** (468 done, 49 doing, 97 todo, 22 blocked; blob `210f91e853a7241b6b3249ed65c1ca79b98274b3`); `main` (`5dd3da3389cdd4b55ef1a538f0dc46c13918f108`) contains **627** (468 done, 49 doing, 89 todo, 21 blocked; blob `8216b6503d154d635112be96c41939a9efd38390`). All main IDs exist on dev; dev has nine additional audit records, `AUD-015`–`AUD-023`. The earlier 627-record owner-approved migration remains a valid historical checkpoint, not the current dev total. PR [#81](https://github.com/A-L-L-A-H/mw-xv/pull/81) is still open and not release-ready: exact-SHA CI has TaskOS test, generated docs asset and Gitleaks failures; PostgreSQL integration and JS/TS CodeQL were cancelled. See [ACTIVE-PLAN.md](../roadmap/ACTIVE-PLAN.md) and [TaskOS Recovery Inventory](../tasks/RECOVERY-INVENTORY.md) for the verified detail. The following original planning-baseline subsections are retained as historical snapshots, not current status.
+> **Superseding live-state correction — 2026-11-23:** The registry is not empty. The earlier zero-byte statement came from an incomplete large-file read and is withdrawn. Direct Git-blob inspection confirms a populated TaskOS registry. At the audit baseline, `dev` (`08e7e3cbdcdfdfa2214196b5622da9b6184d4918`) contains **636 unique task records** (468 done, 49 doing, 97 todo, 22 blocked; blob `210f91e853a7241b6b3249ed65c1ca79b98274b3`); `main` (`5dd3da3389cdd4b55ef1a538f0dc46c13918f108`) contains **627** (468 done, 49 doing, 89 todo, 21 blocked; blob `8216b6503d154d635112be96c41939a9efd38390`). All main IDs exist on dev; dev has nine additional audit records, `AUD-015`–`AUD-023`. The earlier 627-record owner-approved migration remains a valid historical checkpoint, not the current dev total. PR [#81](https://github.com/A-L-L-A-H/mw-xv/pull/81) is still open and not release-ready: exact-SHA CI has TaskOS test, generated docs asset and Gitleaks failures; PostgreSQL integration and JS/TS CodeQL were cancelled. See [ACTIVE-PLAN.md](../../roadmap/ACTIVE-PLAN.md) and [TaskOS Recovery Inventory](../../tasks/RECOVERY-INVENTORY.md) for the verified detail. The following original planning-baseline subsections are retained as historical snapshots, not current status.
 
 
 
@@ -37,7 +37,7 @@ The operating principle is to reuse existing domain owners. A new package or ser
 | `dev` immediately before this consolidation commit | `a58a43327fbc9267a9840bb65b0ad2735b069907` |
 | `main` at the current stabilization baseline | `2a9d78333433b783a80bcb82f6ac7f7ad95f6c2d` |
 | Common ancestor at checkpoint | `a6cd74a6f189e7ea053b046e94a06ea2d36530fc` |
-| Branch relationship | `dev` is ahead of `main`; exact count and current SHA are maintained in [Active Plan](../roadmap/ACTIVE-PLAN.md) |
+| Branch relationship | `dev` is ahead of `main`; exact count and current SHA are maintained in [Active Plan](../../roadmap/ACTIVE-PLAN.md) |
 | Release status | M12.14 remains `in_progress`; its evidence still lists PR.14 as awaiting maintainer/CODEOWNER approval |
 | Desktop / FLOW status | M13.01–M13.12 are recorded complete on `dev`; M13.09–M13.12 still need exact-current-SHA CI and promotion review |
 
@@ -134,8 +134,8 @@ Evidence-backed reason:
 
 M13.05 must extend the existing route and tests, not add a second DAG, database, route or model. It gates **creation of a new WorkContract**; it must not claim to guard every later agent run-start path. Existing linked-contract idempotency stays intact, and the transaction/locking boundary must be checked against actual dependency writers before claiming race safety.
 
-Detailed card: [`docs/roadmap/14-desktop-engineering.md`](../roadmap/14-desktop-engineering.md)  
-Local agent instructions: [`docs/roadmap/rock-soul-flow-m13-05-handoff.md`](../roadmap/rock-soul-flow-m13-05-handoff.md)
+Detailed card: [`docs/roadmap/14-desktop-engineering.md`](../../roadmap/14-desktop-engineering.md)  
+Local agent instructions: [`docs/roadmap/rock-soul-flow-m13-05-handoff.md`](../../roadmap/rock-soul-flow-m13-05-handoff.md)
 
 ## 7. Conditional follow-on sequence (not yet registered task IDs)
 

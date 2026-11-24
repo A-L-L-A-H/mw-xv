@@ -67,11 +67,11 @@
 
 ### 4.1 Supported Runtime & Deployment Topologies (`AI10.31`–`AI10.33`)
 
-Aligned with `package.json`, `docker-compose.yml`, and [ADR 0001](../decisions/0001-platform-contracts.md):
+Aligned with `package.json`, `deploy/compose/docker-compose.yml`, and [ADR 0001](../decisions/0001-platform-contracts.md):
 
 1. **Local Workstation / Desktop Harness (`Windows 11 PowerShell 5.1 / WSL2 / Linux / macOS`):**
    - Node.js `22.x` LTS (`pnpm@11.17.0`), `apps/api` (`:3000`), `apps/board` (`:5173`), `apps/desktop` (Tauri v2 + Node `22.x` sidecar with `~/.moonwitness/local.db` SQLite WAL), and optional loopback Ollama (`http://127.0.0.1:11434`).
-2. **Containerized Local / Self-Hosted Stack (`docker-compose.yml` / `docker-compose.production.yml`):**
+2. **Containerized Local / Self-Hosted Stack (`deploy/compose/docker-compose.yml` / `deploy/compose/docker-compose.production.yml`):**
    - `postgres:16-alpine`, `api` (`SKIP_BOOT_MIGRATIONS=true` after `db:migrate`), `board:8080` (Next.js standalone behind Nginx), and dedicated worker processes exposing `/readyz` health probes on ports `3011` (`jobs-worker`), `3012` (`jobs-scheduler`), and `3013` (`outbox-worker`).
 3. **Health & Readiness Probes (`AI10.33`):**
    - API: `GET /livez` and `GET /readyz` (verifies database pool, active addon versions, and attachment storage).

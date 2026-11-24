@@ -25,6 +25,6 @@ Canonical register of Architecture Decision Records (ADRs) for MoonWitness XV.
 
 - **ADR `0007` & ADR `0008` Reconciliation:**
   - `ADR 0007` is stored at [`docs/decisions/0007-ai-corporation-addon-first-architecture.md`](0007-ai-corporation-addon-first-architecture.md) with a blueprint compatibility pointer at [`docs/architecture/adr/0007-ai-corporation-addon-first-architecture.md`](../architecture/adr/0007-ai-corporation-addon-first-architecture.md).
-  - `ADR 0008` is authored at [`docs/architecture/adr/0008-local-first-desktop-agent-harness.md`](../architecture/adr/0008-local-first-desktop-agent-harness.md) for the Local-First Desktop Agent Harness ([`todo-desktop.md`](../../todo-desktop.md)).
+  - `ADR 0008` is authored at [`docs/architecture/adr/0008-local-first-desktop-agent-harness.md`](../architecture/adr/0008-local-first-desktop-agent-harness.md) for the Local-First Desktop Agent Harness ([`docs/tasks/sources/todo-desktop.md`](../tasks/sources/todo-desktop.md)).
 - **Deferred A2A Peer-Agent Protocol Decision (`M12.06` / `AI5.30`–`AI5.33`):**
   - Cross-runtime external Agent-to-Agent (A2A) delegation is explicitly **deferred and disabled in v1** per [ADR 0007](0007-ai-corporation-addon-first-architecture.md) D9 and documented in [`docs/ai-corporation/mcp-catalog.md`](../ai-corporation/mcp-catalog.md) §4. Any future proposal to enable external A2A peer federation must allocate **ADR `0009+`** (keeping `ADR 0008` exclusively for the Local-First Desktop Agent Harness).

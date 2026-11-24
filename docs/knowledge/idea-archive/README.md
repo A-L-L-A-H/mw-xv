@@ -7,13 +7,13 @@
 
 ## Purpose and authority
 
-This archive responds to the owner-provided 775-line prompt **“MASTER PROMPT — TOTAL IDEA ARCHIVE & UNIFIED PROJECT CONSOLIDATION”**. The original source is preserved verbatim at [the raw master prompt](../../raw/2026-11-23-master-prompt-total-idea-archive.md). It records ideas, project identities, story/canon references, visual direction, religious/philosophical concepts, technology and source-repository relationships.
+This archive responds to the owner-provided 775-line prompt **“MASTER PROMPT — TOTAL IDEA ARCHIVE & UNIFIED PROJECT CONSOLIDATION”**. The original source is preserved verbatim at [the raw master prompt](../../second-brain/raw/2026-11-23-master-prompt-total-idea-archive.md). It records ideas, project identities, story/canon references, visual direction, religious/philosophical concepts, technology and source-repository relationships.
 
 It is a **knowledge navigation layer**, not a second runtime database, CMS, ORM, task tracker or approval authority.
 
-- Raw original wording and incoming source notes: [`docs/raw/`](../../raw/README.md).
-- Initial current-turn intake: [Total Idea Archive — Initial Intake](../../raw/2026-11-23-total-idea-archive-intake.md).
-- Associative synthesis: [Initial Idea Relationship Map](../../brain/2026-11-23-initial-idea-relationship-map.md).
+- Raw original wording and incoming source notes: [`docs/second-brain/raw/`](../../second-brain/raw/README.md).
+- Initial current-turn intake: [Total Idea Archive — Initial Intake](../../second-brain/raw/2026-11-23-total-idea-archive-intake.md).
+- Associative synthesis: [Initial Idea Relationship Map](../../second-brain/brain/2026-11-23-initial-idea-relationship-map.md).
 - Task identity/lifecycle: [TaskOS](../../tasks/README.md) and [Issue Sync Contract](../../roadmap/ISSUE-SYNC-CONTRACT.md).
 - Existing narrative source archive: [Narrative V10 index](../narratives/INDEX.md).
 - Legacy-source preservation gate: [Migration Acceptance](../../migration/MIGRATION-ACCEPTANCE.md) and [Issue #27](https://github.com/A-L-L-A-H/mw-xv/issues/27).
@@ -120,4 +120,4 @@ The first Library discovery snapshot recorded 94 objects and 63 PNGs. A later co
 
 ## Maintenance
 
-New sources are first captured in `docs/raw/YYYY-MM-DD-<slug>.md`, then linked into this archive only after provenance and classification review. Changes to canon or rights require a human decision. Changes to implementation scope go through TaskOS and the bounded issue synchronization process.
+New sources are first captured in `docs/second-brain/raw/YYYY-MM-DD-<slug>.md`, then linked into this archive only after provenance and classification review. Changes to canon or rights require a human decision. Changes to implementation scope go through TaskOS and the bounded issue synchronization process.

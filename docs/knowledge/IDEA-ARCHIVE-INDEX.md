@@ -32,7 +32,7 @@ Classification is independent of evidence class: `FACT`, `USER IDEA`, `CANON`, `
 
 | Area | Existing source of truth / working archive | Interpretation |
 |---|---|---|
-| Overall product and architecture | [MoonWitness Vision](../strategy/MOONWITNESS-VISION.md), [Grand Plan](../strategy/MOONWITNESS-GRAND-PLAN-2026-11-23.md), [domain ownership](../architecture/DOMAIN-OWNERSHIP-RECONCILIATION.md) | Product/engineering direction; not an all-ideas creative canon |
+| Overall product and architecture | [MoonWitness Vision](../meta/strategy/MOONWITNESS-VISION.md), [Grand Plan](../meta/strategy/MOONWITNESS-GRAND-PLAN-2026-11-23.md), [domain ownership](../architecture/DOMAIN-OWNERSHIP-RECONCILIATION.md) | Product/engineering direction; not an all-ideas creative canon |
 | Legacy repository disposition | [Source Migration Matrix](../migration/SOURCE-MIGRATION-MATRIX.md), [Migration Acceptance](../migration/MIGRATION-ACCEPTANCE.md), [Issue #27](https://github.com/A-L-L-A-H/mw-xv/issues/27) | Metadata and clean-room planning; no legacy imports under current K0-006 decision |
 | MoonWitness V10 family | [Narrative Index](narratives/INDEX.md), [V10 public draft](narratives/MASTER_NARRATIVE_V10_PUBLIC_DRAFT.md), [V10.1 expanded research edition](narratives/MASTER_NARRATIVE_V10_1_EXPANDED.md), [source crosswalk](narratives/SOURCE_CROSSWALK_V10.md), [recovery gaps](narratives/RECOVERY_GAPS_V10.md), [correlation matrix](narratives/CORRELATION_MATRIX_V1.md) | A sanitized editorial research pack; not original V10 transcript, not ratified canon, not a complete personal archive |
 | Historical progress | [2023–2026 progress ledger](narratives/PROGRESS_LEDGER_2023_2026.md) | Time-stamped historical evidence, not a live status dashboard |

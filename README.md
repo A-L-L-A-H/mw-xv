@@ -87,7 +87,7 @@ Stack default **tidak** memasang `/var/run/docker.sock`. Fitur control-plane yan
 CLI harus memakai profil eksplisit dan hanya di lingkungan lokal yang tepercaya:
 
 ```sh
-docker compose -f docker-compose.yml -f docker-compose.docker-socket.yml \
+docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.docker-socket.yml \
   --profile docker-in-docker up control-plane-docker
 ```
 
@@ -550,16 +550,16 @@ Salin `.env.production.example` ke `.env.production`, isi variabel bertanda waji
 di host, lalu:
 
 ```sh
-docker compose --env-file .env.production -f docker-compose.production.yml up -d --build
-docker compose --env-file .env.production -f docker-compose.production.yml ps
-docker compose --env-file .env.production -f docker-compose.production.yml logs -f api jobs-worker jobs-scheduler outbox-worker
+docker compose --env-file .env.production -f deploy/compose/docker-compose.production.yml up -d --build
+docker compose --env-file .env.production -f deploy/compose/docker-compose.production.yml ps
+docker compose --env-file .env.production -f deploy/compose/docker-compose.production.yml logs -f api jobs-worker jobs-scheduler outbox-worker
 ```
 
 Compose menjalankan Board (Next.js standalone, port container 8080), API (3000), job worker,
 scheduler, dan outbox worker. Database production tetap eksternal/terkelola. Semua port dipetakan ke
 loopback; pasang reverse proxy HTTPS di depannya. Container berjalan sebagai user non-root, dengan
 filesystem read-only, `cap_drop: ALL`, `no-new-privileges`, batas CPU/memori, dan health check.
-Endpoint readiness tetap gagal sampai PostgreSQL siap. `docker-compose.prd.yml` kini hanya entrypoint
+Endpoint readiness tetap gagal sampai PostgreSQL siap. `deploy/compose/docker-compose.prd.yml` kini hanya entrypoint
 kompatibilitas yang menyertakan stack kanonik tersebut — kedua file menghasilkan konfigurasi identik.
 
 Tambahkan handler domain ke image dan isi `JOB_HANDLERS_MODULE`/`OUTBOX_HANDLERS_MODULE` dengan path

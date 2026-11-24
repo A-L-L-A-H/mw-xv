@@ -32,6 +32,6 @@ pnpm automation:check:roadmap
 
 ## Legacy migration sources
 
-The historical migration inputs are frozen snapshots, not permanent parallel backlogs: `todo-wa.md`, `todo-desktop.md`, `docs/archive/todos/todo.md`, the AI Corporation PR checklist, `evolution/backlog.json`, `scripts/tasks/sources/audit-tasks.mjs`, and the immutable Visual Universe source snapshot.
+The historical migration inputs are frozen snapshots, not permanent parallel backlogs: `docs/tasks/sources/todo-wa.md`, `docs/tasks/sources/todo-desktop.md`, `docs/archive/todos/todo.md`, the AI Corporation PR checklist, `evolution/backlog.json`, `scripts/tasks/sources/audit-tasks.mjs`, and the immutable Visual Universe source snapshot.
 
 Update task lifecycle through TaskOS only. Roadmap, GitHub Issues and Visual Universe local task files are projections or operational views. Preserve source snapshots and human-owned approval gates; never fabricate task records from totals or read status from stale snapshots.

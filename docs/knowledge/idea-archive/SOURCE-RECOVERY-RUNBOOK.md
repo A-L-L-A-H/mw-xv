@@ -47,7 +47,7 @@ Use the tool's streamed NDJSON export. Every extracted record must retain: sourc
 Work in two passes:
 
 1. **Private pass (local/private store):** group by project family, story, character, canon rule and visual asset. Keep original wording verbatim. Record first appearance, revisions, explicit corrections and decisions (Phases 2 and 6 of the master prompt).
-2. **Public pass (this repository):** copy only derived notes into `docs/raw/YYYY-MM-DD-<slug>.md` with a `SRC-` locator, classification (`FACT`, `USER IDEA`, `CANON`, `DECISION`, `DRAFT`, `PROPOSAL`, `ASSUMPTION`, `OBSOLETE`, `UNRESOLVED`), and a pointer to the private hash manifest by ID.
+2. **Public pass (this repository):** copy only derived notes into `docs/second-brain/raw/YYYY-MM-DD-<slug>.md` with a `SRC-` locator, classification (`FACT`, `USER IDEA`, `CANON`, `DECISION`, `DRAFT`, `PROPOSAL`, `ASSUMPTION`, `OBSOLETE`, `UNRESOLVED`), and a pointer to the private hash manifest by ID.
 
 Never copy: raw conversation messages, personal diary content, account exports, credentials, infrastructure secrets, child-sensitive data, or third-party artwork bytes.
 

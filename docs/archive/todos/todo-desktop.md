@@ -13,7 +13,7 @@
 > - [Blueprint: AI Corporation Desktop Harness](../../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
 > - [ADR 0006: Mandatory Addon-First & Thin `apps/api`](../../../docs/decisions/0006-mandatory-addon-thin-api.md)
 > - [ADR 0007: AI Corporation Addon-First Architecture](../../../docs/decisions/0007-ai-corporation-addon-first-architecture.md)
-> - [Master Monorepo Transformation TODO](todo.md) · [AI Corporation TODO](../../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md)
+> - [Master Monorepo Transformation TODO](../../tasks/sources/todo.md) · [AI Corporation TODO](../../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md)
 
 ---
 
@@ -55,7 +55,7 @@
 - [x] **DSK-0.7** Authoritative Desktop Architecture Decision Record created at [`docs/architecture/adr/0008-local-first-desktop-agent-harness.md`](../../../docs/architecture/adr/0008-local-first-desktop-agent-harness.md).
 - [x] **DSK-0.8** Detailed Desktop Local-First Architecture, Mermaid diagrams, sync protocol, and STRIDE threat model created at [`docs/architecture/desktop-local-first-harness.md`](../../../docs/architecture/desktop-local-first-harness.md).
 - [x] **DSK-0.9** AI Corporation Blueprint extension created at [`docs/bundles/ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md`](../../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md).
-- [x] **DSK-0.10** Granular `DSK-0`–`DSK-10` checklist created at [`todo-desktop.md`](todo-desktop.md) and verified with [`scripts/check-docs.mjs`](../../../scripts/check-docs.mjs) (zero broken Markdown links).
+- [x] **DSK-0.10** Granular `DSK-0`–`DSK-10` checklist created at [`docs/tasks/sources/todo-desktop.md`](../../tasks/sources/todo-desktop.md) and verified with [`scripts/check-docs.mjs`](../../../scripts/check-docs.mjs) (zero broken Markdown links).
 - [x] **DSK-0.11** Reconcile ADR numbering in `docs/decisions/` between Desktop Harness ADR (`0008`) and `M12.06` A2A ADR slot referenced in [`docs/roadmap/13-ai-corporation.md`](../../../docs/roadmap/13-ai-corporation.md) before opening desktop code PRs.
 - [ ] **DSK-0.12** Register desktop engineering track tasks in `docs/roadmap/tasks.json` and `ROADMAP.md` (only when maintainer activates desktop implementation batch under [`docs/decisions/0001-platform-contracts.md`](../../../docs/decisions/0001-platform-contracts.md)).
 

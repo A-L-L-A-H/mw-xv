@@ -19,7 +19,7 @@ The initial owner-approved migration reconciled **1,358 → 627** task identitie
 - **Roadmap completion:** `ROADMAP.md` checkboxes and linked evidence remain the completion proof for M/K work; TaskOS statuses must pass roadmap parity.
 - **Human triage:** GitHub Issues own assignees, discussion and human approval gates.
 - **Delivery/release:** exact source SHA, required CI, promotion PR/review and release metadata; never infer release readiness from checkboxes.
-- **Projections:** `docs/roadmap/tasks.json`, root `todo.md`, and Visual Universe `task.json`, `TASKS.md` and individual task cards are views, not competing lifecycle authorities.
+- **Projections:** `docs/roadmap/tasks.json`, root `docs/tasks/sources/todo.md`, and Visual Universe `task.json`, `TASKS.md` and individual task cards are views, not competing lifecycle authorities.
 
 ## Core files
 

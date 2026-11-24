@@ -5,7 +5,7 @@
 - **Canonical Architecture & ADR:**
   - [ADR 0008: Local-First Desktop Agent Harness](../../../architecture/adr/0008-local-first-desktop-agent-harness.md)
   - [Desktop Local-First Harness Architecture](../../../architecture/desktop-local-first-harness.md)
-  - [Desktop Engineering Checklist (`DSK-0`–`DSK-10`)](../../../../todo-desktop.md)
+  - [Desktop Engineering Checklist (`DSK-0`–`DSK-10`)](../../../tasks/sources/todo-desktop.md)
 - **Blueprint & Roadmap Links:**
   - [AI Corporation Grand Plan](AI-CORPORATION-GRAND-PLAN.md)
   - [AI Corporation Implementation Plan](AI-CORPORATION-IMPLEMENTATION-PLAN.md)

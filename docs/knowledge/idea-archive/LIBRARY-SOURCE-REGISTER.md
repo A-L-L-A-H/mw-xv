@@ -41,7 +41,7 @@ These counts describe returned Library metadata only. They do not mean all file 
 
 | Source record | Library source | Observed format / date | Review state and treatment |
 |---|---|---|---|
-| SRC-LIB-0001 | Current-turn master prompt, `Teks yang ditempel (1).txt` | 775 lines · 23 Nov 2026 | **SOURCE-READ**; preserved verbatim at [raw master prompt](../../raw/2026-11-23-master-prompt-total-idea-archive.md) |
+| SRC-LIB-0001 | Current-turn master prompt, `Teks yang ditempel (1).txt` | 775 lines · 23 Nov 2026 | **SOURCE-READ**; preserved verbatim at [raw master prompt](../../second-brain/raw/2026-11-23-master-prompt-total-idea-archive.md) |
 | SRC-LIB-0002 | Older Library `Pasted text.txt` | 439 lines · 19 Jun 2026 | **PRIVATE-WITHHELD**; sensitive first-person note; not copied or summarized into public Git |
 | SRC-LIB-0003 | `Omniscience_Method_RGBL_AI_Ready_Research_Paper.md` | 437 lines · v1.0 · 17 Aug 2026 | **SOURCE-READ**; summarized in [Framework Registry](FRAMEWORK-REGISTRY.md); personal experiential detail omitted |
 | SRC-LIB-0004 | Library folder `rocksoul` | Folder metadata | **METADATA-ONLY**; recursive contents were not resolved by the listing call; do not infer it is empty |

@@ -161,7 +161,7 @@ jobs:
           MW_AI_FREELLM_KEY: ci-only-freellm-inference-key
           AGENT_SANDBOX_TOKEN: ci-only-agent-sandbox-token
           ENCRYPTION_KEY: ci-only-freellm-encryption-key
-        run: docker compose -f docker-compose.yml -f docker-compose.production.yml config --quiet
+        run: docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.production.yml config --quiet
       - name: Export the verified images and record their transport digest
         if: github.ref_type == 'tag'
         env:

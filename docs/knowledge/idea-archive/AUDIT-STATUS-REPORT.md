@@ -7,7 +7,7 @@
 
 The archive has been expanded into a structured knowledge layer covering creative ideas, projects, canon, stories, characters, visual direction, brands/products, religious/philosophical frameworks, technology, repository relationships, issues/PRs and unresolved decisions.
 
-- The supplied 775-line master prompt has been copied **verbatim** into `docs/raw/2026-11-23-master-prompt-total-idea-archive.md`.
+- The supplied 775-line master prompt has been copied **verbatim** into `docs/second-brain/raw/2026-11-23-master-prompt-total-idea-archive.md`.
 - The idea catalog has 72 stable `IDEA-####` entries; the project registry has 26 `PRJ-####` project records.
 - The current archive has separate story/canon, character, visual, brand/product and framework registries.
 - MoonWitness II, XII, XIV/V10 and XV sources are kept as separate generations.
@@ -21,7 +21,7 @@ The archive has been expanded into a structured knowledge layer covering creativ
 
 | Source | Coverage achieved | Remaining limitation |
 |---|---|---|
-| Current user prompt | 775 lines read and copied verbatim to `docs/raw/` | One prompt only; not the full account export |
+| Current user prompt | 775 lines read and copied verbatim to `docs/second-brain/raw/` | One prompt only; not the full account export |
 | Model Memory Summary / recent context | Used as discovery aid and explicitly labelled secondary | Cannot establish original wording or full chronology |
 | ChatGPT Library | Fully paginated inventory: 279 root entries (278 files + 1 folder) and 319 recursive entries (300 files + 19 folders); 203 PNGs; `/MoonWitness` subtree has 22 files | Inventory counts are metadata-only. Image prompts, revisions, rights and all nested file contents are not fully reviewed; one older 439-line personal note remains private-withheld |
 | MW-XV target | README, roadmap, TaskOS blob, migration/ownership docs, 161 issues, 26 PRs, branches, workflows, run jobs/logs, CI fixes and archive file tree inspected | No local full checkout/build in this session; current CI result and PR approval still separate |
@@ -96,7 +96,7 @@ This section was appended by a later audit pass. The 2026-11-23 report above is 
 - `gh api -X GET search/issues -f q='repo:A-L-L-A-H/mw-xv is:issue[ is:open|is:closed]'`.
 - `gh issue list -R A-L-L-A-H/mw-xv --state all --limit 500` and `gh pr list -R A-L-L-A-H/mw-xv --state all --limit 500`.
 - `gh repo list bjo163 --limit 500` and `GET /search/repositories?q=user:bjo163`.
-- Local read-only inspection of `docs/knowledge/idea-archive/`, `docs/raw/`, `corpus/`, `research/`, `raw_arts/`, git status/log and workflow files.
+- Local read-only inspection of `docs/knowledge/idea-archive/`, `docs/second-brain/raw/`, `corpus/`, `research/`, `raw_arts/`, git status/log and workflow files.
 
 ### Verified deltas against the 2026-11-23 snapshot
 
@@ -123,7 +123,7 @@ These are different query scopes, not a contradiction to resolve by picking one 
 
 ### Access honest statement (Phase 0)
 
-This pass had **no tool** for ChatGPT Memory, Memory Summary, or prior conversation history. The only prompt source available is the one supplied in this conversation; it matches the verbatim master prompt already preserved at `docs/raw/2026-11-23-master-prompt-total-idea-archive.md` (774 newline-terminated lines; the earlier report's 775 counts the final unterminated line). No memory was fabricated and no inaccessible transcript was claimed as read. ChatGPT Library items remain metadata-only, and private export content remains outside this public repository.
+This pass had **no tool** for ChatGPT Memory, Memory Summary, or prior conversation history. The only prompt source available is the one supplied in this conversation; it matches the verbatim master prompt already preserved at `docs/second-brain/raw/2026-11-23-master-prompt-total-idea-archive.md` (774 newline-terminated lines; the earlier report's 775 counts the final unterminated line). No memory was fabricated and no inaccessible transcript was claimed as read. ChatGPT Library items remain metadata-only, and private export content remains outside this public repository.
 
 ### Work performed by this pass
 

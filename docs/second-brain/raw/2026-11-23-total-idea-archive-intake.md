@@ -98,7 +98,7 @@ Do not reconstruct these from summaries and present the result as an original so
 1. Preserve each supplied source unchanged or as a source-pinned record before synthesis.
 2. Extract one idea per record where useful; keep repetitions and variant wording traceable.
 3. Resolve project and canon links only with evidence.
-4. Use `docs/brain/` for synthesis and relationship mapping.
+4. Use `docs/second-brain/brain/` for synthesis and relationship mapping.
 5. Use TaskOS only for accepted, bounded work. Do not edit generated registries directly.
 6. Before placing private conversation content or personal records in this public repository, apply the accepted privacy, consent, publication and retention gates.
 

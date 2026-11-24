@@ -63,7 +63,7 @@ services:
       - DOCKER_BIN=docker
     # The Docker socket is intentionally not mounted: it grants host-root equivalent access.
     # Opt in explicitly with:
-    #   docker compose -f docker-compose.yml -f docker-compose.docker-socket.yml \
+    #   docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.docker-socket.yml \
     #     --profile docker-in-docker up control-plane-docker
     volumes:
       - control-plane_data:/data

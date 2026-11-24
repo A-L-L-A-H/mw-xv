@@ -2,7 +2,7 @@
 # WARNING: mounting /var/run/docker.sock gives the container root-equivalent
 # access to the host. Use only in trusted local development, never in production.
 #
-#   docker compose -f docker-compose.yml -f docker-compose.docker-socket.yml \
+#   docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.docker-socket.yml \
 #     --profile docker-in-docker up control-plane-docker
 #
 # Do not run this service together with the default `control-plane` service:

@@ -217,7 +217,7 @@ from that deployment before an incident; do not assume a volume name from this r
 If GoWA's session backup is absent or cannot be restored, follow the QR pairing recovery path in
 this runbook and treat it as a new linked-device session; do not claim that the old session was
 recovered. This procedure defines the order and safety checks only. A full coordinated restore
-drill remains unproven and is tracked separately under P0-25, P2-15, and P4-37 in `todo-wa.md`.
+drill remains unproven and is tracked separately under P0-25, P2-15, and P4-37 in `docs/tasks/sources/todo-wa.md`.
 
 ## GoWA compatibility and rollback
 
@@ -232,7 +232,7 @@ The current matrix is:
 Before an upgrade, record the current GoWA image digest/tag from the deployment host, API release/commit,
 and configured expected version. Take a backup of GoWA's own persistent data and prove that the
 backup can be read and restored before changing versions; this prerequisite is tracked in
-`todo-wa.md` P0-25. Keep the previous image digest and the matching pre-upgrade backup together.
+`docs/tasks/sources/todo-wa.md` P0-25. Keep the previous image digest and the matching pre-upgrade backup together.
 
 Test the candidate GoWA image and API version in staging first. During the production maintenance
 window, pause the outbox worker so queued messages are not sent while the gateway/API versions are

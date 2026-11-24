@@ -46,8 +46,8 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
     'evolution/backlog.json': 4,
     'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md': 14,
     'scripts/tasks/sources/audit-tasks.mjs': 24,
-    'todo-desktop.md': 128,
-    'todo-wa.md': 112,
+    'docs/tasks/sources/todo-desktop.md': 128,
+    'docs/tasks/sources/todo-wa.md': 112,
   });
 
 

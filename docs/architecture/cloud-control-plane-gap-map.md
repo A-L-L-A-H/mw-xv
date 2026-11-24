@@ -48,8 +48,8 @@ No duplicate service or package is proposed. The canonical owner column below is
 
 ## Deployment dependencies observed
 
-- Container build and exposure: [`apps/control-plane/Dockerfile`](../../apps/control-plane/Dockerfile) (Go 1.27 build, Alpine runtime, port 3003) and [`docker-compose.yml:51`](../../docker-compose.yml#L51) (loopback-only `127.0.0.1:3003:3003`, SQLite volume, `depends_on` postgres/gowa/radius, `MW_INTERNAL_SECRET` from env).
-- Host Docker access is **not** default: [docker-compose.docker-socket.yml](../../docker-compose.docker-socket.yml) is an explicit `docker-in-docker` opt-in with a root-equivalent socket warning. Deploy/probe actions that call `DOCKER_BIN=docker` therefore depend on a separately provisioned Docker daemon or control-plane agent.
+- Container build and exposure: [`apps/control-plane/Dockerfile`](../../apps/control-plane/Dockerfile) (Go 1.27 build, Alpine runtime, port 3003) and [`deploy/compose/docker-compose.yml:51`](../../deploy/compose/docker-compose.yml#L51) (loopback-only `127.0.0.1:3003:3003`, SQLite volume, `depends_on` postgres/gowa/radius, `MW_INTERNAL_SECRET` from env).
+- Host Docker access is **not** default: [deploy/compose/docker-compose.docker-socket.yml](../../deploy/compose/docker-compose.docker-socket.yml) is an explicit `docker-in-docker` opt-in with a root-equivalent socket warning. Deploy/probe actions that call `DOCKER_BIN=docker` therefore depend on a separately provisioned Docker daemon or control-plane agent.
 - Provider endpoints seeded or read from models are external (`Coolify`, EasyTier mesh peers, cloud storage vault); they are not reachable/activated by this audit.
 
 ## Implemented vs planned vs external

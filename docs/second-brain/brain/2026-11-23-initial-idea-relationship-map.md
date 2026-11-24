@@ -85,13 +85,13 @@ No new GitHub issue is created by this initial map. Existing issues #15–#22 al
 
 The following public research documents already exist in the target. They are valuable source maps, but their own status warnings must travel with every downstream record:
 
-- [Narrative archive index](../knowledge/narratives/INDEX.md)
-- [V10.1 expanded narrative](../knowledge/narratives/MASTER_NARRATIVE_V10_1_EXPANDED.md)
-- [V10 public draft / 99-chapter index](../knowledge/narratives/MASTER_NARRATIVE_V10_PUBLIC_DRAFT.md)
-- [Source crosswalk](../knowledge/narratives/SOURCE_CROSSWALK_V10.md)
-- [Historical progress ledger](../knowledge/narratives/PROGRESS_LEDGER_2023_2026.md)
-- [V10 recovery gaps](../knowledge/narratives/RECOVERY_GAPS_V10.md)
-- [Revelation / witness / canon / edition identity contract](../knowledge/revelation-identity.md)
+- [Narrative archive index](../../knowledge/narratives/INDEX.md)
+- [V10.1 expanded narrative](../../knowledge/narratives/MASTER_NARRATIVE_V10_1_EXPANDED.md)
+- [V10 public draft / 99-chapter index](../../knowledge/narratives/MASTER_NARRATIVE_V10_PUBLIC_DRAFT.md)
+- [Source crosswalk](../../knowledge/narratives/SOURCE_CROSSWALK_V10.md)
+- [Historical progress ledger](../../knowledge/narratives/PROGRESS_LEDGER_2023_2026.md)
+- [V10 recovery gaps](../../knowledge/narratives/RECOVERY_GAPS_V10.md)
+- [Revelation / witness / canon / edition identity contract](../../knowledge/revelation-identity.md)
 
 **Status warning:** V10.1 explicitly describes itself as a public expanded research edition, not the original V9/V10 transcript and not approved final canon. Its private-source leads are not permission to retrieve, reconstruct or publish missing manuscripts. The 2023–2025 chronology contains historical leads, not a forensic timeline.
 
@@ -173,6 +173,6 @@ The `dev` branch contains the three new archive / inventory documents and their 
 
 ## 10. Canonical archive navigation
 
-The detailed, source-qualified archive now lives in [`docs/knowledge/idea-archive/README.md`](../knowledge/idea-archive/README.md). It links the idea catalog, project registry, canon registry, story and character bibles, visual/brand/product archives, religion/philosophy archive, history, repository report, unified proposal, execution roadmap, unresolved decisions and issue index.
+The detailed, source-qualified archive now lives in [`docs/knowledge/idea-archive/README.md`](../../knowledge/idea-archive/README.md). It links the idea catalog, project registry, canon registry, story and character bibles, visual/brand/product archives, religion/philosophy archive, history, repository report, unified proposal, execution roadmap, unresolved decisions and issue index.
 
 This Brain document remains the first relationship synthesis. It must not be treated as the full archive or as a canon authority. Where its earlier provisional statements differ from an exact source in the archive, prefer the cited source file and keep the difference visible for review.

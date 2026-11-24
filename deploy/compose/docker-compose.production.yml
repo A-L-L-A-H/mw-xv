@@ -1,8 +1,8 @@
 # Canonical hardened production stack: Board, API, workers, vendored FreeLLMAPI, and agent sandbox.
 # PostgreSQL is NOT shipped here; it is expected from a managed provider.
-# docker-compose.prd.yml is a compatibility entrypoint that includes this file.
+# deploy/compose/docker-compose.prd.yml is a compatibility entrypoint that includes this file.
 #
-#   docker compose --env-file .env.production -f docker-compose.production.yml up -d --build
+#   docker compose --env-file .env.production -f deploy/compose/docker-compose.production.yml up -d --build
 #
 # Anchors live inside the first service so both entrypoints render byte-identical config.
 
@@ -282,7 +282,7 @@ services:
       AGENT_SANDBOX_DATA_DIR: /var/lib/agent-sandbox
     # No Docker socket by default: the sandbox runs with a fail-closed executor.
     # To enable isolated container execution, explicitly add the override file
-    # docker-compose.agent-sandbox-socket.yml with a dedicated rootless daemon.
+    # deploy/compose/docker-compose.agent-sandbox-socket.yml with a dedicated rootless daemon.
     volumes:
       - agent_sandbox_data:/var/lib/agent-sandbox
     deploy:

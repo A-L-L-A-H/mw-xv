@@ -4,7 +4,7 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "82111690bdc3e20e1169e3bfb42803218185976300e1a69c4ba86b766c03e4ca",
+    "assetManifestSha256": "a2840fc6555fb68fa9c10094e1fc857a17900d9f2a8f3519d564803401dc32f9",
     "tokens": "packages/ui/src/styles/tokens.css",
     "tokensSha256": "6201ba52a577d498f7910012fe2158dfd673037b0df8c317cb020c5d8e47d7cf"
   },
@@ -178,7 +178,7 @@
       "format": "svg",
       "width": 2048,
       "height": 512,
-      "sha256": "c58aa398233918cef28dc197f06169dcf2f503259ef45985fb6a6935af47fb4a"
+      "sha256": "511c851079b932d01964c04951e77e7a3490749052e73cceae9628431b6a7ef8"
     },
     {
       "source": "packages/assets/environments/moon-city-clouds-near.svg",
@@ -187,7 +187,7 @@
       "format": "svg",
       "width": 2048,
       "height": 512,
-      "sha256": "10ac4be7adc9ef6fca6c1d24c20531e04d4731ccb4dc4bb554fe20331ff7746a"
+      "sha256": "94ef577498a798e4ff52f144a98390a6c7fd1075f5d73c427c68bd7d4ffa118a"
     },
     {
       "source": "packages/assets/environments/moon-city-foreground.svg",
@@ -205,7 +205,7 @@
       "format": "svg",
       "width": 1024,
       "height": 1024,
-      "sha256": "14efb9b61584bcf941c34e6afb073eb9eb139b06a7a05f73a945f818a58e4751"
+      "sha256": "5f5dc2c6fa813db91445f158b19fa1cb43c9ed49f745bcfbfcdadffe99344471"
     },
     {
       "source": "packages/assets/environments/moon-city-prop-railing.svg",
@@ -1146,6 +1146,15 @@
       "sha256": "4a989cb8e5c92d69e4dd3467104b285641d41df3ce11fffdbdcd90db0c5fbb55"
     },
     {
+      "source": "packages/assets/illustrations/editorial-archive.webp",
+      "output": "docs/assets/moonwitness/illustrations/editorial-archive.webp",
+      "kind": "artwork",
+      "format": "webp",
+      "width": 800,
+      "height": 450,
+      "sha256": "a01214370c6b44bb82090074eba21f1b4ff9969b74d9549bb70225e9da7cbcc7"
+    },
+    {
       "source": "packages/assets/illustrations/editorial-knowledge.webp",
       "output": "docs/assets/moonwitness/illustrations/editorial-knowledge.webp",
       "kind": "artwork",
@@ -1162,6 +1171,24 @@
       "width": 800,
       "height": 450,
       "sha256": "b3d78c37bf52108cb68374bdd3bce413ce3c17efa28ab96d9824ed424b25d488"
+    },
+    {
+      "source": "packages/assets/illustrations/editorial-rain.webp",
+      "output": "docs/assets/moonwitness/illustrations/editorial-rain.webp",
+      "kind": "artwork",
+      "format": "webp",
+      "width": 800,
+      "height": 450,
+      "sha256": "d95b50175074fbc0d4703dfb1c75b48f64fb9d1f2ffd9cd0e9d40fd375c17174"
+    },
+    {
+      "source": "packages/assets/illustrations/editorial-signal.webp",
+      "output": "docs/assets/moonwitness/illustrations/editorial-signal.webp",
+      "kind": "artwork",
+      "format": "webp",
+      "width": 800,
+      "height": 450,
+      "sha256": "44395c856139ffb7eee7c3bf4ef39ef8ed0bbb4534adb6681eef0726c6a29d24"
     },
     {
       "source": "packages/assets/illustrations/editorial-stories.webp",
@@ -1207,6 +1234,15 @@
       "width": 920,
       "height": 1150,
       "sha256": "7a25b3674166099d17595e7ff7404948b69082e3b70e06ada4e460d5c31d26ba"
+    },
+    {
+      "source": "packages/assets/illustrations/moon-city-orbit.webp",
+      "output": "docs/assets/moonwitness/illustrations/moon-city-orbit.webp",
+      "kind": "artwork",
+      "format": "webp",
+      "width": 1600,
+      "height": 900,
+      "sha256": "a452c8877cf5e87b58b35c3f3bd1646c42674c314d29f1ab73b71da1acd114c7"
     },
     {
       "source": "packages/assets/illustrations/no-activity-dark.svg",
