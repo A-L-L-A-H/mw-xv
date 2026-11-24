@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `80ee7b9b5c22d88c7d0323a99a8e6d9d5ed7d96277a5da2593c67632724f09b4`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `5b659b319539c29284c2154274984d52e853c699b6fa947cf17f4f70e91e066f`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -167,7 +167,6 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm architecture:check`
 - `pnpm architecture:check:built`
 - `pnpm architecture:generate`
-- `pnpm archive:check`
 - `pnpm assets:check:bounds`
 - `pnpm assets:check:docs`
 - `pnpm assets:export:docs`
@@ -182,6 +181,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm automation:check:roadmap`
 - `pnpm automation:check:secrets`
 - `pnpm automation:check:ubuntu-runner-candidate`
+- `pnpm automation:check:vulnerability-policy`
 - `pnpm automation:check:workflow-trust`
 - `pnpm board:budget`
 - `pnpm board:ui:check`
@@ -191,19 +191,16 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm control-plane:build`
 - `pnpm control-plane:dev`
 - `pnpm db:migrate`
-- `pnpm demo:observability`
 - `pnpm dependency:candidate`
 - `pnpm dependency:plan`
 - `pnpm desktop:build`
 - `pnpm desktop:mcp`
 - `pnpm desktop:test`
-- `pnpm desktop:test:web`
 - `pnpm desktop:ui:check`
 - `pnpm desktop:web`
 - `pnpm dev`
 - `pnpm dev:api`
 - `pnpm dev:board`
-- `pnpm dev:observability`
 - `pnpm docs:build`
 - `pnpm docs:build:built`
 - `pnpm docs:change:classify`
@@ -262,7 +259,6 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm roadmap:progress`
 - `pnpm start`
 - `pnpm start:built`
-- `pnpm start:observability`
 - `pnpm tasks:sweep`
 - `pnpm tasks:sync`
 - `pnpm tasks:validate`
@@ -322,7 +318,6 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm test:ui-budget`
 - `pnpm test:ui-catalog`
 - `pnpm test:ui-design-check`
-- `pnpm test:ui:react-matrix`
 - `pnpm test:unit`
 - `pnpm test:unit-runner-policy`
 - `pnpm test:unit:built`
