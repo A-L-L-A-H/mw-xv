@@ -298,7 +298,7 @@ describe('A2AMeshClient', () => {
   });
 
   it('passes redirect: manual and reconstructed mesh URLs for valid IPv4 and IPv6 endpoints', async () => {
-    const capturedCalls: Array<{ url: string; redirect: RequestRedirect | undefined }> = [];
+    const capturedCalls: Array<{ url: string; redirect: RequestInit['redirect'] }> = [];
     const client = new A2AMeshClient({
       signingSecret: TEST_SECRET,
       fetchFn: async (url, init) => {
