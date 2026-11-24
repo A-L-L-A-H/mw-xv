@@ -2,6 +2,7 @@ import { Ajv2020 } from 'ajv/dist/2020.js';
 import * as formatsModule from 'ajv-formats';
 import provenanceGraphSchema from '../schemas/provenance-graph.schema.json' with { type: 'json' };
 import { validateCanonicalKnowledgeId } from './identity.js';
+import { pointerForIssue } from './json-schema.js';
 import { knowledgeRecordKinds } from './types.js';
 import type {
   KnowledgeDerivation,
@@ -45,20 +46,6 @@ export interface KnowledgeProvenanceGraph {
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 formatsModule.default.default(ajv, { mode: 'full' });
 const validateShape = ajv.compile<KnowledgeProvenanceGraph>(provenanceGraphSchema);
-
-function pointerForIssue(
-  instancePath: string,
-  keyword: string,
-  params: Record<string, unknown>
-): string {
-  if (keyword === 'required' && typeof params.missingProperty === 'string') {
-    return `${instancePath}/${params.missingProperty.replaceAll('~', '~0').replaceAll('/', '~1')}`;
-  }
-  if (keyword === 'additionalProperties' && typeof params.additionalProperty === 'string') {
-    return `${instancePath}/${params.additionalProperty.replaceAll('~', '~0').replaceAll('/', '~1')}`;
-  }
-  return instancePath || '/';
-}
 
 function canonicalIdIssue(id: string, path: string): KnowledgeValidationIssue | undefined {
   const result = validateCanonicalKnowledgeId(id);

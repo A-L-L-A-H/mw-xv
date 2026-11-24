@@ -34,7 +34,11 @@ const compileSchema = ajv.compile.bind(ajv) as (
   schema: JsonSchemaContract
 ) => SchemaValidationFunction;
 
-function pointerForIssue(
+/**
+ * Build the issue path for an Ajv error, RFC 6901-escaping the missing or
+ * offending property name (`~0` for `~`, `~1` for `/`).
+ */
+export function pointerForIssue(
   instancePath: string,
   keyword: string,
   params: Record<string, unknown>
