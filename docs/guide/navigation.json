@@ -59,6 +59,11 @@
         },
         { "title": "Recovery", "kind": "how-to", "path": "docs/guide/how-to/recovery.md" },
         {
+          "title": "Deployment dan evaluation gates",
+          "kind": "how-to",
+          "path": "docs/guide/how-to/evaluation-gates.md"
+        },
+        {
           "title": "Release dan upgrade",
           "kind": "how-to",
           "path": "docs/guide/how-to/release-upgrade.md"

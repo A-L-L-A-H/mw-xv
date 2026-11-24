@@ -21,7 +21,8 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit -p tsconfig.check.json",
-    "test": "tsc -p tsconfig.check.json && vitest run"
+    "test": "tsc -p tsconfig.check.json && vitest run",
+    "check:gates": "tsc -p tsconfig.json && node scripts/check-evaluation-gates.mjs"
   },
   "dependencies": {
     "@moonwitness/ai-runtime": "workspace:*",

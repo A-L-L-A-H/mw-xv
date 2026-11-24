@@ -25,85 +25,15 @@ import {
 import { useAiEvalSummary, useAiMemory } from '@/components/ai/ai-api';
 import { AgiTelemetryPanel } from '@/components/ai/agi-telemetry-panel';
 import { MissionControlShell, ProvenanceBadge } from '@/components/ai/mission-control-chrome';
-
-const DEFAULT_CAPABILITY_GATES = [
-  {
-    gate: 'G0',
-    label: 'Governed Assistant',
-    criterion: 'Schema-valid outputs, redaction, and policy adherence',
-    passed: true,
-    safetyRegressions: 0,
-  },
-  {
-    gate: 'G1',
-    label: 'Bounded Actor',
-    criterion: 'Read-only inspection and scoped tool calls without boundary violation',
-    passed: true,
-    safetyRegressions: 0,
-  },
-  {
-    gate: 'G2',
-    label: 'Persistent Worker',
-    criterion: 'Crash recovery, lease fencing, and continuing obligation continuity',
-    passed: true,
-    safetyRegressions: 0,
-  },
-  {
-    gate: 'G3',
-    label: 'Coordinated Team',
-    criterion: 'Multi-agent decomposition outperforms single-agent on decomposable tasks',
-    passed: true,
-    safetyRegressions: 0,
-  },
-  {
-    gate: 'G4',
-    label: 'Adaptive Organization',
-    criterion: 'Governed taskforce formation and scoped workforce assignment',
-    passed: true,
-    safetyRegressions: 0,
-  },
-  {
-    gate: 'G5',
-    label: 'Experience-Driven Improvement',
-    criterion: 'Approved memory and skill versions improve cost/latency on held-out tasks',
-    passed: true,
-    safetyRegressions: 0,
-  },
-  {
-    gate: 'G6',
-    label: 'Cross-Domain Transfer Research',
-    criterion: 'Novel task transfer with zero safety regressions (Non-AGI research gate)',
-    passed: true,
-    safetyRegressions: 0,
-  },
-] as const;
-
-const DEFAULT_ABLATION_ARMS = [
-  {
-    arm: 'no-memory',
-    passRate: 0.75,
-    harmRate: 0,
-    description: 'Baseline run without memory or skill retrieval',
-  },
-  {
-    arm: 'episodic-only',
-    passRate: 0.85,
-    harmRate: 0,
-    description: 'Approved episodic memory retrieval only',
-  },
-  {
-    arm: 'skill-only',
-    passRate: 0.88,
-    harmRate: 0,
-    description: 'Approved procedural skill versions only',
-  },
-  {
-    arm: 'combined',
-    passRate: 0.94,
-    harmRate: 0,
-    description: 'Combined episodic memory + procedural skill versions',
-  },
-] as const;
+import {
+  NO_DATA,
+  countPassedGates,
+  formatCount,
+  formatRate,
+  toAblationArmViews,
+  toCapabilityGateViews,
+  totalSafetyRegressions,
+} from './eval-results';
 
 export default function AiEvalLabPage() {
   const evalQuery = useAiEvalSummary();
@@ -113,15 +43,13 @@ export default function AiEvalLabPage() {
   const candidates = memoryQuery.data?.candidates ?? [];
   const skills = memoryQuery.data?.skills ?? [];
 
-  const gates =
-    summary?.capabilityGates && summary.capabilityGates.length > 0
-      ? summary.capabilityGates.map((g, idx) => ({
-          ...g,
-          criterion:
-            DEFAULT_CAPABILITY_GATES[idx]?.criterion ??
-            'Deterministic benchmark gate with zero safety regressions',
-        }))
-      : DEFAULT_CAPABILITY_GATES;
+  // The API summary is the only live input. Every displayed verdict, count and
+  // rate comes from it; absent or malformed fields stay explicitly "no data".
+  const gates = toCapabilityGateViews(summary);
+  const ablationArms = toAblationArmViews(summary);
+  const gateCount = countPassedGates(gates);
+  const safetyRegressions = totalSafetyRegressions(gates);
+  const hasLiveSummary = summary != null;
 
   return (
     <MissionControlShell
@@ -129,7 +57,7 @@ export default function AiEvalLabPage() {
       title="Research & Evaluation Lab"
       accentTitle="Gates G0–G6 & Memory Ablation"
       breadcrumbLabel="Evaluation Lab"
-      description="Read-only reproducible benchmark corpus report, G0–G6 capability gates (with explicit non-AGI engineering boundary), and 4-arm memory/skill ablation metrics."
+      description="Read-only evaluation summary with explicit non-AGI engineering boundary. Values are shown only when the API supplies them; this page never runs a model or synthesizes gate results."
       errorAlert={
         evalQuery.isError
           ? evalQuery.error instanceof Error
@@ -164,6 +92,25 @@ export default function AiEvalLabPage() {
         </p>
       </div>
 
+      {/* Provenance notice: the Board is a view, not an evaluation runner. */}
+      <div className="mt-4 border border-ink/20 bg-paper-raised p-4 font-mono text-xs text-ink-soft">
+        {hasLiveSummary ? (
+          <p>
+            Source: <code>/api/ai/eval-summary</code>. This page only renders the summary returned by
+            the API; it does not run the corpus. The summary carries no report SHA-256 or model
+            provenance, so these numbers are not proof of a production evaluation. Verify the offline
+            gate with <code>pnpm --filter @moonwitness/ai-evaluation check:gates</code> and consult
+            the operator runbook before treating them as release evidence.
+          </p>
+        ) : (
+          <p>
+            No live evaluation summary is available. Gate verdicts, safety-regression counts and
+            ablation rates are intentionally shown as {NO_DATA}; no PASS, zero-regression or
+            readiness claim is inferred from missing data.
+          </p>
+        )}
+      </div>
+
       {/* Evaluation Lab KPIs */}
       <section
         aria-label="Evaluation lab benchmark metrics"
@@ -171,28 +118,38 @@ export default function AiEvalLabPage() {
       >
         <MetricTile
           label="Capability Gates Passed"
-          value={`${gates.filter((g) => g.passed).length} / ${gates.length}`}
-          detail="Deterministic G0–G6 gate evaluation"
+          value={
+            gateCount === null ? NO_DATA : `${formatCount(gateCount.passed)} / ${formatCount(gateCount.total)}`
+          }
+          detail={
+            hasLiveSummary
+              ? 'Gate verdicts reported by the API summary'
+              : 'Waiting for live gate verdicts — none assumed'
+          }
           accent="green"
           icon={<CheckIcon className="size-5" />}
         />
         <MetricTile
           label="Safety Regressions"
-          value="0"
-          detail="Zero unauthorized actions across corpus"
+          value={formatCount(safetyRegressions)}
+          detail={
+            hasLiveSummary
+              ? 'Sum of reported gate safety regressions'
+              : 'Unavailable without live evaluation data'
+          }
           accent="magenta"
           icon={<SecurityIcon className="size-5" />}
         />
         <MetricTile
           label="Memory Candidates"
-          value={String(candidates.length)}
+          value={memoryQuery.isLoading ? NO_DATA : formatCount(candidates.length)}
           detail="Separated from K0–K9 knowledge tables"
           accent="cyan"
           icon={<DocumentIcon className="size-5" />}
         />
         <MetricTile
           label="Governed Skill Versions"
-          value={String(skills.length)}
+          value={memoryQuery.isLoading ? NO_DATA : formatCount(skills.length)}
           detail="Promoted only after ablation pass"
           accent="yellow"
           icon={<JobsIcon className="size-5" />}
@@ -203,11 +160,10 @@ export default function AiEvalLabPage() {
         {/* G0-G6 Capability Gates Table */}
         <Panel
           title="Capability Gates G0–G6 Scorecard"
-          description="Reproducible offline evaluation corpus scorecard with zero safety regressions required at every gate."
+          description="Gate definitions are static; verdicts and regression counts appear only when supplied by the live API summary."
           actions={
             <div className="flex items-center gap-1.5">
               <ProvenanceBadge kind="derived" />
-              <ProvenanceBadge kind="persisted" />
             </div>
           }
         >
@@ -231,11 +187,17 @@ export default function AiEvalLabPage() {
                       <div className="font-bold text-ink">{gate.label}</div>
                       <div className="text-ink-faint">{gate.criterion}</div>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{gate.safetyRegressions}</TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {formatCount(gate.safetyRegressions)}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant={gate.passed ? 'primary' : 'destructive'}>
-                        {gate.passed ? 'PASS' : 'BLOCKED'}
-                      </Badge>
+                      {gate.passed === null ? (
+                        <Badge variant="default">NO DATA</Badge>
+                      ) : (
+                        <Badge variant={gate.passed ? 'primary' : 'destructive'}>
+                          {gate.passed ? 'PASS' : 'BLOCKED'}
+                        </Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -247,7 +209,7 @@ export default function AiEvalLabPage() {
         {/* 4-Arm Memory & Skill Ablation Table */}
         <Panel
           title="4-Arm Memory & Skill Ablation Harness"
-          description="Compares no-memory, episodic-only, skill-only, and combined conditions on held-out tasks."
+          description="Arm names and descriptions are static definitions. Rates are rendered only when the API returns validated values."
           actions={
             <div className="flex items-center gap-1.5">
               <SparkleIcon className="size-4" />
@@ -265,25 +227,16 @@ export default function AiEvalLabPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {DEFAULT_ABLATION_ARMS.map((row) => {
-                const dynamicArm = summary?.ablationConditions?.[row.arm];
-                const passRate = dynamicArm?.passRate ?? row.passRate;
-                const harmRate = dynamicArm?.harmRate ?? row.harmRate;
-                return (
-                  <TableRow key={row.arm}>
-                    <TableCell className="font-mono text-xs font-bold">{row.arm}</TableCell>
-                    <TableCell className="font-mono text-xs text-ink-soft">
-                      {row.description}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {(passRate * 100).toFixed(0)}%
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {(harmRate * 100).toFixed(0)}%
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {ablationArms.map((row) => (
+                <TableRow key={row.arm}>
+                  <TableCell className="font-mono text-xs font-bold">{row.arm}</TableCell>
+                  <TableCell className="font-mono text-xs text-ink-soft">
+                    {row.description}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{formatRate(row.passRate)}</TableCell>
+                  <TableCell className="font-mono text-xs">{formatRate(row.harmRate)}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
 
