@@ -289,6 +289,12 @@ export async function bootstrapApiWorker(
     await waitForSchemaReady(db, { desired });
   }
   await registerApiAddons(db, addons);
+  // Job handlers are registered in-process. installApiAddons' postInstall only runs
+  // in the API process, so the worker must register the AI handlers itself or an
+  // enqueued ai.agent_run.* job would have no handler here.
+  if (addons.some((addon) => addon.name === 'ai')) {
+    ensureAiJobHandlersRegistered();
+  }
 }
 
 export async function registerApiAddonRoutes(
