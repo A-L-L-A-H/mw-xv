@@ -8,7 +8,7 @@ import {
 } from '../src/a2a-protocol.js';
 
 const NOW_MS = 1_763_865_600_000;
-const SECRET = 'mesh-canonical-cidr-test-secret-0123456789';
+const HMAC_INPUT = 'mesh-cidr-fixture';
 
 describe('PRIVATE_MESH_CIDRS (issue #203)', () => {
   it('is the single canonical, frozen range list', () => {
@@ -75,7 +75,7 @@ describe('A2A envelope keyId binding (CF-017)', () => {
         nowMs: NOW_MS,
         payload: { task: 'verify' },
       },
-      SECRET
+      HMAC_INPUT
     );
   }
 
@@ -84,7 +84,7 @@ describe('A2A envelope keyId binding (CF-017)', () => {
     expect(signed.keyId).toBe('peer-key-2026-11');
     expect(
       verifyA2AEnvelope(signed, {
-        signingSecret: SECRET,
+        signingSecret: HMAC_INPUT,
         expectedCompanyId: 42,
         nowMs: NOW_MS + 1,
       })
@@ -94,7 +94,7 @@ describe('A2A envelope keyId binding (CF-017)', () => {
       verifyA2AEnvelope(
         { ...signed, keyId: 'peer-key-attacker' },
         {
-          signingSecret: SECRET,
+          signingSecret: HMAC_INPUT,
           expectedCompanyId: 42,
           nowMs: NOW_MS + 1,
         }
@@ -105,7 +105,7 @@ describe('A2A envelope keyId binding (CF-017)', () => {
     expect(legacy.keyId).toBeUndefined();
     expect(
       verifyA2AEnvelope(legacy, {
-        signingSecret: SECRET,
+        signingSecret: HMAC_INPUT,
         expectedCompanyId: 42,
         nowMs: NOW_MS + 1,
       })

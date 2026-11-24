@@ -132,7 +132,7 @@ describe('A2A peer identity registry (CF-017)', () => {
       registry.rotate({
         previousKeyId: 'key-alpha-2',
         nextKeyId: 'key-alpha-3',
-        nextSecret: 'peer-key-gamma-0123456789abcdef01234567',
+        nextSecret: 'peer-key-gamma-fixture',
         companyId: 7,
         agentCode: 'agent_source',
         rotatedAt: NOW,
