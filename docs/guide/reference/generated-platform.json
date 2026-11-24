@@ -487,7 +487,7 @@
     },
     "@moonwitness/ai-evaluation": {
       "build": "tsc",
-      "check:gates": "tsc -p tsconfig.json && node scripts/check-evaluation-gates.mjs",
+      "check:gates": "pnpm --filter @moonwitness/types build && pnpm --filter @moonwitness/ai-runtime build && tsc -p tsconfig.json && node scripts/check-evaluation-gates.mjs",
       "test": "tsc -p tsconfig.check.json && vitest run",
       "typecheck": "tsc --noEmit -p tsconfig.check.json"
     },
@@ -10491,5 +10491,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "e1520b03de6d56018128aa546f13471f662b3311e4a5f15dc040bd4d63cbd4e5"
+  "generatedFromSha256": "5eb98db97672a4fc386b65746fb991f3f3f98dd4f2482733a37424056cf504eb"
 }
