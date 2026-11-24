@@ -53,6 +53,12 @@ jobs:
           ref: ${{ steps.context.outputs.merge_sha }}
           fetch-depth: 0
           persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: '24'
+          pnpm-version: '11.17.0'
+      - name: Install frozen workspace dependencies
+        run: pnpm install --frozen-lockfile --no-runtime
       - name: Verify the task registry is internally consistent
         run: node scripts/tasks/validate-tasks.mjs
       - name: Verify the exact diff scope and provenance boundary
