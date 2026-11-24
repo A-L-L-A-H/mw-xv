@@ -92,6 +92,10 @@ function redactDeep(value: unknown, depth = 0): unknown {
       const obj = value as Record<string, unknown>;
       const redacted: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(obj)) {
+        if (k === 'req' && v !== null && typeof v === 'object' && 'routeOptions' in v) {
+          redacted[k] = v;
+          continue;
+        }
         if (isSecretKey(k)) {
           redacted[k] = '[redacted]';
         } else {
@@ -204,13 +208,14 @@ export function createLogger(options: CreateLoggerOptions = {}): Logger {
   }
 
   // File output (enabled by default) — async non-blocking JSON lines
+  // In test mode, use sync destination so flush() / flushSync() reliably persist logs
   let fileDestination: DestinationStream | undefined;
   if (enableFile) {
     try {
       fs.mkdirSync(logDir, { recursive: true });
       fileDestination = pino.destination({
         dest: path.resolve(logDir, logFileName),
-        sync: false,
+        sync: isTest,
         mkdir: true,
       });
       streams.push({
@@ -304,7 +309,7 @@ export function getLogger(): Logger {
         fs.mkdirSync(logDir, { recursive: true });
         rootFileDestination = pino.destination({
           dest: path.resolve(logDir, logFileName),
-          sync: false,
+          sync: isTest,
           mkdir: true,
         });
         streams.push({
