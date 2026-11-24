@@ -7,7 +7,7 @@ export function nanos(milliseconds: number): string {
   return (BigInt(milliseconds) * 1_000_000n).toString();
 }
 
-export function tracePayload() {
+export function tracePayload(nowMs = NOW_MS) {
   return {
     resourceSpans: [
       {
@@ -26,8 +26,8 @@ export function tracePayload() {
                 spanId: ROOT_SPAN_ID,
                 name: 'agent.run',
                 kind: 1,
-                startTimeUnixNano: nanos(NOW_MS),
-                endTimeUnixNano: nanos(NOW_MS + 250),
+                startTimeUnixNano: nanos(nowMs),
+                endTimeUnixNano: nanos(nowMs + 250),
                 attributes: [
                   { key: 'moonwitness.run_id', value: { stringValue: 'run-123' } },
                   { key: 'moonwitness.agent.name', value: { stringValue: 'researcher' } },
@@ -42,7 +42,7 @@ export function tracePayload() {
                 ],
                 events: [
                   {
-                    timeUnixNano: nanos(NOW_MS + 10),
+                    timeUnixNano: nanos(nowMs + 10),
                     name: 'agent.started',
                     attributes: [{ key: 'attempt', value: { intValue: '1' } }],
                   },
@@ -55,8 +55,8 @@ export function tracePayload() {
                 parentSpanId: ROOT_SPAN_ID,
                 name: 'tool.search',
                 kind: 3,
-                startTimeUnixNano: nanos(NOW_MS + 50),
-                endTimeUnixNano: nanos(NOW_MS + 120),
+                startTimeUnixNano: nanos(nowMs + 50),
+                endTimeUnixNano: nanos(nowMs + 120),
                 attributes: [
                   { key: 'moonwitness.tool.name', value: { stringValue: 'workspace.search' } },
                   { key: 'gen_ai.usage.input_tokens', value: { intValue: '840' } },

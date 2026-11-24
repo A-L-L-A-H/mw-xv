@@ -728,7 +728,7 @@ export async function startLocalApiServer(
   ) => void;
 
   await app.register(corsPlugin, {
-    origin: (origin, cb) => {
+    origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
       cb(null, isAllowedCorsOrigin(origin));
     },
     credentials: true,
