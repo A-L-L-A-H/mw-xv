@@ -12,7 +12,9 @@ export const whatsappSeedManifest: AddonSeedManifest = {
     let skipped = 0;
 
     for (const template of bundle.templates) {
-      const existing = await db('whatsapp_transactional_templates').where({ id: template.id }).first();
+      const existing = await db('whatsapp_transactional_templates')
+        .where({ id: template.id })
+        .first();
       if (existing) {
         await db('whatsapp_transactional_templates').where({ id: template.id }).update(template);
         updated++;
@@ -45,7 +47,9 @@ export const whatsappSeedManifest: AddonSeedManifest = {
     }
 
     for (const policy of bundle.escalationPolicies) {
-      const existing = await db('whatsapp_helpdesk_escalation_policies').where({ id: policy.id }).first();
+      const existing = await db('whatsapp_helpdesk_escalation_policies')
+        .where({ id: policy.id })
+        .first();
       if (existing) {
         await db('whatsapp_helpdesk_escalation_policies').where({ id: policy.id }).update(policy);
         updated++;
@@ -56,9 +60,13 @@ export const whatsappSeedManifest: AddonSeedManifest = {
     }
 
     for (const rule of bundle.categoryRules) {
-      const existing = await db('whatsapp_helpdesk_category_rules').where({ category: rule.category }).first();
+      const existing = await db('whatsapp_helpdesk_category_rules')
+        .where({ category: rule.category })
+        .first();
       if (existing) {
-        await db('whatsapp_helpdesk_category_rules').where({ category: rule.category }).update(rule);
+        await db('whatsapp_helpdesk_category_rules')
+          .where({ category: rule.category })
+          .update(rule);
         updated++;
       } else {
         await db('whatsapp_helpdesk_category_rules').insert(rule);
