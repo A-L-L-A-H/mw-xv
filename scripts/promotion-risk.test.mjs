@@ -162,6 +162,17 @@ test('a rename out of a sensitive path is still a sensitive promotion', () => {
   assert.equal(result.riskTier, 'runtime-data');
 });
 
+test('Git-generated revert subjects remain eligible for automatic promotion', () => {
+  const result = classifyPromotionRisk({
+    commits: [commit('g6', 'Revert "chore: remove unused files"')],
+    changes: [],
+  });
+
+  assert.equal(result.requiresApproval, false);
+  assert.equal(result.changeKind, 'patch');
+  assert.deepEqual(result.reasons, []);
+});
+
 test('invalid source commit messages fail closed', () => {
   const result = classifyPromotionRisk({
     commits: [{ sha: 'g7', parents: ['parent'], subject: 'change auth rules' }],

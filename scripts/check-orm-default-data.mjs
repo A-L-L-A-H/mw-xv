@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const packagesDir = path.join(root, 'packages');
 
-const EXCLUDED_DIRS = new Set(['orm-base', 'orm-cli']);
+const EXCLUDED_DIRS = new Set(['orm-base', 'orm-cli', 'orm-automation-core']);
 
 function resolveManifestExport(mod, pkgName) {
   const candidates = [mod.manifest, mod.whatsappManifest, mod.storageManifest, mod.jobsManifest];
@@ -33,7 +33,9 @@ async function main() {
 
   const entries = await readdir(packagesDir, { withFileTypes: true });
   const ormAddonDirs = entries
-    .filter((entry) => entry.isDirectory() && /^orm-/u.test(entry.name) && !EXCLUDED_DIRS.has(entry.name))
+    .filter(
+      (entry) => entry.isDirectory() && /^orm-/u.test(entry.name) && !EXCLUDED_DIRS.has(entry.name)
+    )
     .map((entry) => entry.name)
     .sort((left, right) => left.localeCompare(right, 'en'));
 

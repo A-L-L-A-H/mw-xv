@@ -18,6 +18,32 @@ test('maps features, fixes, and non-release commits to the documented version le
   assert.equal(parseConventionalCommit({ subject: 'chore: refresh lockfile' }).changeKind, 'none');
 });
 
+test('recognizes Git-generated revert subjects as patch commits', () => {
+  const result = classifyCommits([
+    {
+      sha: 'i9',
+      parents: ['p1'],
+      subject: 'Revert "chore: remove unused files and dependencies flagged by knip"',
+      body: 'This reverts commit 4f404223d5d460a90203879328c0e0df8799e788.',
+    },
+  ]);
+
+  assert.equal(result.changeKind, 'patch');
+  assert.deepEqual(result.invalidCommits, []);
+  assert.equal(result.commits[0].type, 'revert');
+  assert.equal(
+    result.commits[0].description,
+    'chore: remove unused files and dependencies flagged by knip'
+  );
+});
+
+test('rejects empty Git-generated revert subjects', () => {
+  const result = classifyCommits([{ sha: 'j1', parents: ['p1'], subject: 'Revert ""' }]);
+
+  assert.equal(result.changeKind, 'invalid');
+  assert.equal(result.invalidCommits.length, 1);
+});
+
 test('maps ! and BREAKING CHANGE trailers to major', () => {
   assert.equal(
     parseConventionalCommit({ subject: 'feat(api)!: replace the auth contract' }).changeKind,
