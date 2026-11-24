@@ -5,6 +5,7 @@ echo "Running shared UI design, desktop, lint, API addon boundary, and typecheck
 pnpm ui:check
 pnpm lint:ui
 pnpm api:addon:check
+pnpm agent:boundary:check
 pnpm --filter @moonwitness/board typecheck
 
 echo "Running fast CI-parity checks before push..."
