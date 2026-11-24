@@ -1,0 +1,34 @@
+{
+  "name": "@moonwitness/orm-sensor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sensor/IoT telemetry addon for MoonWitness ORM",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@moonwitness/orm": "workspace:*",
+    "@moonwitness/orm-base": "workspace:*",
+    "knex": "^3.3.0",
+    "objection": "^3.1.5"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.0.3",
+    "better-sqlite3": "^13.0.3",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}
