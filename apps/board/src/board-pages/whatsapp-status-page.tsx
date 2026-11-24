@@ -10,6 +10,7 @@ import { Input } from '@moonwitness/ui/components/input';
 import { Textarea } from '@moonwitness/ui/components/textarea';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { client } from '@/lib/client';
+import { formatDateTime } from '@/lib/date-format';
 import { scopedQueryKey } from '@/lib/query-scope';
 import { MAX_ATTACHMENT_BYTES } from '@moonwitness/types';
 
@@ -277,7 +278,7 @@ export function WhatsAppStatusPage() {
                     className="text-xs text-ink-faint"
                     dateTime={item.published_at ?? item.create_date}
                   >
-                    {new Date(item.published_at ?? item.create_date).toLocaleString()}
+                    {formatDateTime(item.published_at ?? item.create_date, 'shortDateTime')}
                   </time>
                 </div>
                 {item.content && <p className="whitespace-pre-wrap text-sm">{item.content}</p>}
