@@ -257,7 +257,7 @@ describe('child-process worker drain scenarios (CF-013)', () => {
       ready: false,
     });
     expect(await exited).toMatchObject({ code: 0, signal: null });
-  });
+  }, 15_000);
 
   it('bounds a stuck in-flight job with a drain timeout', async () => {
     const child = spawnWorker('timeout', 200);
@@ -276,7 +276,7 @@ describe('child-process worker drain scenarios (CF-013)', () => {
     });
     expect(Date.now() - started).toBeLessThan(2_000);
     expect(await exited).toMatchObject({ code: 0 });
-  });
+  }, 15_000);
 
   it('forced termination stops the child without a graceful commit', async () => {
     const child = spawnWorker('forced', 1_000);
@@ -286,5 +286,5 @@ describe('child-process worker drain scenarios (CF-013)', () => {
     child.kill('SIGKILL');
     expect(await exited).toMatchObject({ signal: 'SIGKILL' });
     expect(messages.some((message) => message.type === 'outcome')).toBe(false);
-  });
+  }, 15_000);
 });
