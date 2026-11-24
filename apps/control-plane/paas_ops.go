@@ -129,8 +129,8 @@ func defaultHTTPHealthProbe(ctx context.Context, rawURL string) error {
 	// URL is validated above: HTTPS-only scheme and a non-internal,
 	// resolvable public host. CodeQL cannot see through the custom
 	// isInternalAddress check, so suppress the request-forgery finding here.
-	// codeql[go/request-forgery]
 	client := &http.Client{Timeout: 5 * time.Second}
+	// codeql[go/request-forgery]
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
