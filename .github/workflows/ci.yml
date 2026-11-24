@@ -141,6 +141,7 @@ jobs:
           node scripts/check-release-provenance.mjs
           bun run test:secrets
           bun run automation:check:secrets
+          bun run automation:check:vulnerability-policy
       - name: Verify shared UI, API addon boundary, assets, and documentation links
         run: |
           bun run board:ui:check
