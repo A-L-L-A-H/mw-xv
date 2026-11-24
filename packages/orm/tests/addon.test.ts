@@ -1,6 +1,13 @@
 import knex, { type Knex } from 'knex';
 import { afterEach, describe, expect, it } from 'vitest';
-import { assertAddonDefaultDataPolicy, defineAddon, installAddons, seed } from '../src/addon.js';
+import {
+  assertAddonDefaultDataPolicy,
+  defineAddon,
+  installAddons,
+  requireAuth,
+  seed,
+  type AddonHttpReply,
+} from '../src/addon.js';
 import { defineModel, fields, type BaseModel } from '../src/model-definition.js';
 import { Registry } from '../src/registry.js';
 import { manifest as documentedManifest } from '../examples/sales/manifest.js';
@@ -286,5 +293,74 @@ describe('programmatic addon installer', () => {
     expect(() =>
       assertAddonDefaultDataPolicy([compliantAddon, providerOnlyAddon, authExemptAddon])
     ).not.toThrow();
+  });
+});
+
+describe('requireAuth addon HTTP guard', () => {
+  const createMockReply = () => {
+    let statusCode = 200;
+    let payload: unknown = undefined;
+    const reply: AddonHttpReply = {
+      code(code: number) {
+        statusCode = code;
+        return reply;
+      },
+      header() {
+        return reply;
+      },
+      send(data?: unknown) {
+        payload = data;
+        return payload;
+      },
+    };
+    return {
+      reply,
+      getStatus: () => statusCode,
+      getPayload: () => payload,
+    };
+  };
+
+  it('rejects unauthenticated requests with 401', () => {
+    const mock = createMockReply();
+    const result = requireAuth({}, mock.reply);
+    expect(result).toBeNull();
+    expect(mock.getStatus()).toBe(401);
+    expect(mock.getPayload()).toEqual({ success: false, error: 'Authentication required' });
+  });
+
+  it('rejects requests with missing or invalid companyId with 403', () => {
+    for (const invalidCompanyId of [undefined, null, '1', 0, -1, 1.5, NaN]) {
+      const mock = createMockReply();
+      const result = requireAuth(
+        { auth: { userId: 1, companyId: invalidCompanyId as unknown as number } },
+        mock.reply
+      );
+      expect(result).toBeNull();
+      expect(mock.getStatus()).toBe(403);
+      expect(mock.getPayload()).toEqual({ success: false, error: 'Active company is required' });
+    }
+  });
+
+  it('returns authenticated context with defaults when valid', () => {
+    const mock = createMockReply();
+    const result = requireAuth({ auth: { userId: 42, companyId: 7 } }, mock.reply);
+    expect(result).toEqual({
+      userId: 42,
+      role: 'user',
+      companyId: 7,
+    });
+  });
+
+  it('preserves explicitly assigned role', () => {
+    const mock = createMockReply();
+    const result = requireAuth(
+      { auth: { userId: 10, companyId: 3, role: 'superadmin' } },
+      mock.reply
+    );
+    expect(result).toEqual({
+      userId: 10,
+      role: 'superadmin',
+      companyId: 3,
+    });
   });
 });

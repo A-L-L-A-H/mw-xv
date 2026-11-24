@@ -1,4 +1,10 @@
-import type { AddonHttpPlugin, AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
+import {
+  requireAuth,
+  type AddonHttpPlugin,
+  type AddonHttpReply,
+  type AddonHttpRequestBase,
+  type AuthenticatedContext,
+} from '@moonwitness/orm';
 import { planCoaBatch, type CoaPlanInput, type SubscriberLifecycleStatus } from './coa-policy.js';
 import {
   aggregateRadiusAccounting,
@@ -9,26 +15,6 @@ import {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function requireAuth(
-  req: AddonHttpRequestBase,
-  reply: AddonHttpReply
-): { userId: number; role: string; companyId: number } | null {
-  if (!req.auth) {
-    reply.code(401).send({ success: false, error: 'Authentication required' });
-    return null;
-  }
-  const companyId = req.auth.companyId;
-  if (typeof companyId !== 'number' || !Number.isInteger(companyId) || companyId <= 0) {
-    reply.code(403).send({ success: false, error: 'Active company context required' });
-    return null;
-  }
-  return {
-    userId: req.auth.userId,
-    role: req.auth.role ?? 'user',
-    companyId,
-  };
 }
 
 function parseCoaPlanInput(item: unknown): CoaPlanInput | null {

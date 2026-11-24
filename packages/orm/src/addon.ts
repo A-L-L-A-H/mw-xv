@@ -321,6 +321,32 @@ export type AddonHttpPlugin<TApp = AddonHttpApp, TOptions = AddonHttpHostContext
   options: TOptions
 ) => unknown | Promise<unknown>;
 
+export interface AuthenticatedContext {
+  readonly userId: number;
+  readonly role: string;
+  readonly companyId: number;
+}
+
+export function requireAuth(
+  req: AddonHttpRequestBase,
+  reply: AddonHttpReply
+): AuthenticatedContext | null {
+  if (!req.auth) {
+    reply.code(401).send({ success: false, error: 'Authentication required' });
+    return null;
+  }
+  const companyId = req.auth.companyId;
+  if (typeof companyId !== 'number' || !Number.isInteger(companyId) || companyId <= 0) {
+    reply.code(403).send({ success: false, error: 'Active company is required' });
+    return null;
+  }
+  return {
+    userId: req.auth.userId,
+    role: req.auth.role ?? 'user',
+    companyId,
+  };
+}
+
 export type AddonLifecycleStatus = 'uninstalled' | 'installed' | 'disabled' | 'upgrade_failed';
 
 export interface Addon {

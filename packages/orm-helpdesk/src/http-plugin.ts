@@ -1,5 +1,11 @@
 import type { Knex } from 'knex';
-import type { AddonHttpPlugin, AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
+import {
+  requireAuth,
+  type AddonHttpPlugin,
+  type AddonHttpReply,
+  type AddonHttpRequestBase,
+  type AuthenticatedContext,
+} from '@moonwitness/orm';
 import { SlaPolicy, SupportTicket, TicketMessage, EscalationRule, KnowledgeDeflection, CsatSurvey } from './models/index.js';
 import { Company, Partner, User } from '@moonwitness/orm-base';
 import {
@@ -15,25 +21,6 @@ import {
   type KnowledgeArticleLike,
   type CsatSurveyLike,
 } from './helpdesk-engine.js';
-
-interface AuthenticatedContext {
-  readonly userId: number;
-  readonly role: string;
-  readonly companyId: number;
-}
-
-function requireAuth(req: AddonHttpRequestBase, reply: AddonHttpReply): AuthenticatedContext | null {
-  if (!req.auth) {
-    reply.code(401).send({ success: false, error: 'Authentication required' });
-    return null;
-  }
-  const companyId = req.auth.companyId;
-  if (typeof companyId !== 'number' || !Number.isInteger(companyId) || companyId <= 0) {
-    reply.code(403).send({ success: false, error: 'Active company is required' });
-    return null;
-  }
-  return { userId: req.auth.userId, role: req.auth.role ?? 'user', companyId };
-}
 
 function requireDb(req: AddonHttpRequestBase): Knex {
   const app = req as unknown as { server?: { db?: Knex } };
