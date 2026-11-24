@@ -1,4 +1,4 @@
-import { defineAddon } from '@moonwitness/orm';
+import { defineAddon, seed } from '@moonwitness/orm';
 import {
   TelemetryLog,
   TelemetryMetricPoint,
@@ -67,6 +67,12 @@ export const observabilityAddon = defineAddon({
     TelemetryMetricSeries,
     TelemetryMetricPoint,
     TelemetryState,
+  ],
+  data: [
+    seed(TelemetryState, 'observability.state_revision', {
+      key: REVISION_STATE_KEY,
+      value: 0,
+    }),
   ],
   setup: async (trx) => {
     for (const index of INDEXES) {
