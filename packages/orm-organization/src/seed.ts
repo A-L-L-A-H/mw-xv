@@ -1,3 +1,4 @@
+import { type Knex } from 'knex';
 import { DEFAULT_TIMEZONE } from '@moonwitness/orm-base';
 
 export interface OrganizationSeedPermission {
