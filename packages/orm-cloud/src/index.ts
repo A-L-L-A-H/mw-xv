@@ -149,6 +149,23 @@ export {
   type ComposeIngressRoute,
   type ComposeSecurityResult,
 } from './coolify-compose-compiler.js';
+export {
+  allocatePreviewPort,
+  buildDeclarativeCaddySpec,
+  reconcileCaddyWithAgent,
+  promotePreviewAppsToWildcard,
+  readPaasInstanceSettings,
+  savePaasInstanceSettings,
+  isValidPublicDomain,
+  ConfigParameter,
+  type CaddySpecRoute,
+  type CaddyPreviewListener,
+  type CaddyDeclarativeSpec,
+  type PaasInstanceSettings,
+  type BuildDeclarativeCaddySpecOptions,
+  type ReconcileCaddyWithAgentParams,
+  type PromotePreviewAppsToWildcardParams,
+} from './paas-state.js';
 export { exportCloudTerraformHcl } from './terraform.js';
 export {
   DEFAULT_PAAS_PLANS,

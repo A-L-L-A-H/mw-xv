@@ -167,7 +167,7 @@
 
 ---
 
-## - [ ] M22 — Add Preview Port Allocator, Declarative Caddy Spec Builder, & Wildcard Promoter (`paas-state.ts`, Part 2)
+## - [x] M22 — Add Preview Port Allocator, Declarative Caddy Spec Builder, & Wildcard Promoter (`paas-state.ts`, Part 2)
 
 - **Owner Files (MODIFY):**
   - `packages/orm-cloud/src/paas-state.ts`
