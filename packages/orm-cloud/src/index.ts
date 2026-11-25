@@ -140,6 +140,15 @@ export {
   type ListCoolifyTemplatesOptions,
   type ListCoolifyTemplatesResult,
 } from './coolify-template-pack.js';
+export {
+  compileCoolifyCompose,
+  validateComposeSecurity,
+  resolveCoolifyMagicVariables,
+  type CompileCoolifyComposeInput,
+  type CompileCoolifyComposeResult,
+  type ComposeIngressRoute,
+  type ComposeSecurityResult,
+} from './coolify-compose-compiler.js';
 export { exportCloudTerraformHcl } from './terraform.js';
 export {
   DEFAULT_PAAS_PLANS,

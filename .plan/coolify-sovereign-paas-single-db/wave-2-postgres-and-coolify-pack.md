@@ -114,7 +114,7 @@
 
 ---
 
-## - [ ] M20 — Complete `compileCoolifyCompose` YAML Transformer (`coolify-compose-compiler.ts`)
+## - [x] M20 — Complete `compileCoolifyCompose` YAML Transformer (`coolify-compose-compiler.ts`)
 
 - **Owner Files (MODIFY):**
   - `packages/orm-cloud/src/coolify-compose-compiler.ts`

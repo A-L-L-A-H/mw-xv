@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 
 export type CoolifyMagicVarType = 'PASSWORD' | 'USER' | 'HEX' | 'BASE64';
 
@@ -314,3 +315,293 @@ export function resolveCoolifyMagicVariables(input: ResolveCoolifyMagicVariables
 
   return { env, secrets };
 }
+
+export interface CompileCoolifyComposeInput {
+  slug: string;
+  tenantId: string;
+  composeYaml: string;
+  defaultPort: number;
+  primaryDomain?: string;
+  wildcardDomain?: string;
+  publicIpv4?: string;
+  previewPort?: number;
+  existingEnv?: Record<string, string>;
+  userEnv?: Record<string, string>;
+}
+
+export interface ComposeIngressRoute {
+  service: string;
+  host: string;
+  url: string;
+  port: number;
+}
+
+export interface CompileCoolifyComposeResult {
+  composeYaml: string;
+  files: Record<string, string>;
+  env: Record<string, string>;
+  primaryService: string;
+  primaryPort: number;
+  ingressRoutes: ComposeIngressRoute[];
+}
+
+const PAAS_NETWORK = 'moonwitness-paas';
+const INLINE_CONTENT_MAX_BYTES = 256 * 1024;
+
+function normalizeLabels(labels: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (Array.isArray(labels)) {
+    for (const entry of labels) {
+      if (typeof entry !== 'string') {
+        continue;
+      }
+      const idx = entry.indexOf('=');
+      if (idx < 0) {
+        out[entry.trim()] = '';
+      } else {
+        out[entry.slice(0, idx).trim()] = entry.slice(idx + 1);
+      }
+    }
+    return out;
+  }
+  if (labels && typeof labels === 'object' && !Array.isArray(labels)) {
+    for (const [key, value] of Object.entries(labels as Record<string, unknown>)) {
+      out[key] = value == null ? '' : String(value);
+    }
+  }
+  return out;
+}
+
+function isNamedVolumeSource(source: string): boolean {
+  if (!source) {
+    return false;
+  }
+  return !source.startsWith('.') && !source.startsWith('/') && !source.startsWith('~') && !source.includes('\\');
+}
+
+function volumeTail(vol: string, source: string): string {
+  const colonIdx = vol.indexOf(':');
+  return colonIdx >= 0 ? vol.slice(source.length) : '';
+}
+
+export function compileCoolifyCompose(input: CompileCoolifyComposeInput): CompileCoolifyComposeResult {
+  const {
+    slug,
+    tenantId,
+    composeYaml,
+    defaultPort,
+    primaryDomain,
+    wildcardDomain,
+    publicIpv4,
+    previewPort,
+    existingEnv = {},
+    userEnv = {},
+  } = input;
+
+  if (!slug || typeof slug !== 'string') {
+    throw new Error('slug is required');
+  }
+  if (typeof defaultPort !== 'number' || defaultPort < 1 || defaultPort > 65535) {
+    throw new Error('defaultPort must be a valid port');
+  }
+
+  const doc = parseYaml(composeYaml);
+  if (!doc || typeof doc !== 'object' || Array.isArray(doc)) {
+    throw new Error('composeYaml must parse to a mapping');
+  }
+  const docObj = doc as Record<string, unknown>;
+  const servicesRaw = docObj.services;
+  if (!servicesRaw || typeof servicesRaw !== 'object' || Array.isArray(servicesRaw)) {
+    throw new Error('composeYaml must declare a services mapping');
+  }
+  const services = servicesRaw as Record<string, unknown>;
+  const serviceOrder = Object.keys(services);
+
+  type IngressDecl = { type: 'FQDN' | 'URL'; token: string; port?: number };
+  const serviceDecls = new Map<string, IngressDecl[]>();
+  for (const svcName of serviceOrder) {
+    const svcVal = services[svcName];
+    if (!svcVal || typeof svcVal !== 'object' || Array.isArray(svcVal)) {
+      continue;
+    }
+    const entries = readEnvironmentEntries((svcVal as Record<string, unknown>).environment);
+    const decls: IngressDecl[] = [];
+    for (const { key } of entries) {
+      const m = key.match(INGRESS_DECL_REGEX);
+      if (m) {
+        decls.push({ type: (m[1] === 'FQDN' ? 'FQDN' : 'URL'), token: m[2], port: m[4] ? Number.parseInt(m[4], 10) : undefined });
+      }
+    }
+    if (decls.length > 0) {
+      serviceDecls.set(svcName, decls);
+    }
+  }
+
+  let primaryService = serviceOrder[0] ?? slug;
+  if (typeof defaultPort === 'number' && defaultPort > 0) {
+    for (const svcName of serviceOrder) {
+      const decls = serviceDecls.get(svcName);
+      if (decls && decls.some((d) => d.port === defaultPort)) {
+        primaryService = svcName;
+        break;
+      }
+    }
+  } else {
+    for (const svcName of serviceOrder) {
+      if (serviceDecls.has(svcName)) {
+        primaryService = svcName;
+        break;
+      }
+    }
+  }
+
+  const files: Record<string, string> = {};
+  const ingressRoutes: ComposeIngressRoute[] = [];
+
+  // Resolve magic variables + ingress URLs from the declarations present in doc.
+  const resolved = resolveCoolifyMagicVariables({
+    slug,
+    composeYaml,
+    doc,
+    defaultPort,
+    primaryDomain,
+    wildcardDomain,
+    publicIpv4,
+    previewPort,
+    existingEnv,
+    userEnv,
+  });
+  const env = resolved.env;
+
+  for (const svcName of serviceOrder) {
+    const decls = serviceDecls.get(svcName);
+    if (!decls) {
+      continue;
+    }
+    const isPrimary = svcName === primaryService;
+    const safeSvc = safeServiceName(svcName);
+    for (const decl of decls) {
+      let url: string;
+      let host: string;
+      if (isPrimary) {
+        url = primaryDomain ? `https://${primaryDomain}` : publicIpv4 && typeof previewPort === 'number' ? `http://${publicIpv4}:${previewPort}` : `http://mw-paas-${slug}:${defaultPort}`;
+        host = primaryDomain ?? (publicIpv4 ?? `mw-paas-${slug}`);
+      } else if (wildcardDomain) {
+        host = `${safeSvc}-${slug}.${wildcardDomain}`;
+        url = `https://${host}`;
+      } else {
+        const port = decl.port ?? defaultPort;
+        host = `mw-paas-${slug}-${safeSvc}`;
+        url = `http://${host}:${port}`;
+      }
+      ingressRoutes.push({ service: svcName, host, url, port: decl.port ?? defaultPort });
+      if (decl.port) {
+        ingressRoutes.push({ service: svcName, host, url, port: decl.port });
+      }
+    }
+  }
+
+  const topLevelVolumes = new Set<string>();
+
+  for (const svcName of serviceOrder) {
+    const svc = services[svcName] as Record<string, unknown>;
+
+    // 1. Delete Coolify-only exclude_from_hc per service.
+    delete svc.exclude_from_hc;
+
+    // 2. Set restart: 'unless-stopped' if unset (preserve on-failure / no).
+    if (!('restart' in svc) || svc.restart == null || svc.restart === '') {
+      svc.restart = 'unless-stopped';
+    }
+
+    // 3. Add labels mw.paas.managed, mw.paas.app, mw.paas.service, mw.paas.tenant.
+    const labels = normalizeLabels(svc.labels);
+    labels['mw.paas.managed'] = 'true';
+    labels['mw.paas.app'] = slug;
+    labels['mw.paas.service'] = svcName;
+    labels['mw.paas.tenant'] = tenantId;
+    svc.labels = labels;
+
+    // 4. Prefix named volumes and populate top-level doc.volumes.
+    if (Array.isArray(svc.volumes)) {
+      const rewritten: unknown[] = [];
+      for (const vol of svc.volumes) {
+        const parsed = parseVolumeEntry(vol);
+        const source = parsed.source ?? '';
+        if (source && isNamedVolumeSource(source)) {
+          const prefixed = `mw-${slug}-${source}`;
+          topLevelVolumes.add(prefixed);
+          if (typeof vol === 'string') {
+            rewritten.push(`${prefixed}${volumeTail(vol, source)}`);
+          } else if (vol && typeof vol === 'object' && !Array.isArray(vol)) {
+            rewritten.push({ ...(vol as Record<string, unknown>), source: prefixed });
+          } else {
+            rewritten.push(vol);
+          }
+        } else {
+          rewritten.push(vol);
+        }
+      }
+      svc.volumes = rewritten;
+    }
+
+    // 5. Extract inline content: bind mounts into files, delete .content key.
+    if (Array.isArray(svc.volumes)) {
+      for (const vol of svc.volumes) {
+        const parsed = parseVolumeEntry(vol);
+        if (parsed.type === 'bind' && typeof parsed.content === 'string' && parsed.source) {
+          const src = parsed.source;
+          if (src.includes('..') || src.startsWith('/') || src.startsWith('~') || src.includes('\\')) {
+            throw new Error(`inline bind mount escapes stack directory: ${src}`);
+          }
+          if (Buffer.byteLength(parsed.content, 'utf8') > INLINE_CONTENT_MAX_BYTES) {
+            throw new Error(`inline file exceeds ${INLINE_CONTENT_MAX_BYTES} bytes: ${src}`);
+          }
+          files[src.replace(/^\.\//, '')] = parsed.content;
+          if (vol && typeof vol === 'object' && !Array.isArray(vol)) {
+            delete (vol as Record<string, unknown>).content;
+          }
+        }
+      }
+    }
+
+    // 6. Strip bare marker-only SERVICE_FQDN_* / SERVICE_URL_* entries without '='.
+    if (Array.isArray(svc.environment)) {
+      svc.environment = (svc.environment as unknown[]).filter((e) => {
+        if (typeof e !== 'string') {
+          return true;
+        }
+        const eqIdx = e.indexOf('=');
+        const key = eqIdx < 0 ? e.trim() : e.slice(0, eqIdx).trim();
+        return !(INGRESS_DECL_REGEX.test(key) && eqIdx < 0);
+      });
+    } else if (svc.environment && typeof svc.environment === 'object' && !Array.isArray(svc.environment)) {
+      const envMap = svc.environment as Record<string, unknown>;
+      for (const key of Object.keys(envMap)) {
+        if (INGRESS_DECL_REGEX.test(key) && envMap[key] == null) {
+          delete envMap[key];
+        }
+      }
+    }
+  }
+
+  // 7. Networks: every service to default; primary + declaring services to moonwitness-paas with alias.
+  const networks: Record<string, unknown> = { default: {}, [PAAS_NETWORK]: { external: true } };
+  for (const svcName of serviceOrder) {
+    const svc = services[svcName] as Record<string, unknown>;
+    const svcNetworks: Record<string, unknown> = { default: {} };
+    if (svcName === primaryService || serviceDecls.has(svcName)) {
+      const alias = svcName === primaryService ? `mw-paas-${slug}` : `mw-paas-${slug}-${safeServiceName(svcName)}`;
+      svcNetworks[PAAS_NETWORK] = { aliases: [alias] };
+    }
+    svc.networks = svcNetworks;
+  }
+  docObj.networks = networks;
+
+  // 8. Stringify via yaml.
+  const finalYaml = stringifyYaml(docObj);
+
+  const primaryPort = defaultPort;
+  return { composeYaml: finalYaml, files, env, primaryService, primaryPort, ingressRoutes };
+}
+
