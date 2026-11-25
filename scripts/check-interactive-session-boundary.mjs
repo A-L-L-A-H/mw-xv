@@ -58,7 +58,7 @@ const AUTHORITY_FACTORY_PATTERN =
   /^(?:create|define|register|install)(?:(?:interactive|coding)?sessions?(?:runner|loop|store|registry|authority|repository|aggregate|model)?|models?(?:store|registry|authority|repository|aggregate))$/iu;
 const SQL_CALL_NAMES = new Set(['exec', 'execute', 'query', 'raw', 'sql']);
 const SQL_CREATE_TABLE_PATTERN =
-  /\bCREATE\s+(?:TEMP(?:ORARY)?\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`\[]?([A-Za-z_][A-Za-z0-9_.$]*)/iu;
+  /\bCREATE\s+(?:TEMP(?:ORARY)?\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`[]?([A-Za-z_][A-Za-z0-9_.$]*)/iu;
 
 function compareText(left, right) {
   return left === right ? 0 : left < right ? -1 : 1;
@@ -907,7 +907,7 @@ function checkProductionCompose(file, source, violations, skipped) {
     const match = /^(\s*)volumes\s*:\s*(.*)$/u.exec(line.text);
     if (!match || match[1].length !== propertyIndent) continue;
     const tail = match[2].trim();
-    let items = [];
+    let items;
 
     if (tail.startsWith('[') && tail.endsWith(']')) {
       items = splitFlowItems(tail.slice(1, -1)).map((raw) => ({ raw, firstLine: line.line, lines: [line] }));
