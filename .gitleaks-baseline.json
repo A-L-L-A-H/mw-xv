@@ -2539,5 +2539,26 @@
     "Message": "docs: regenerate workspace reference and README blocks\n\nRegenerated reference documentation to match current source code.\nCI test 'reference check mode compares rendered output without changing tracked files' now passes.\n\nCo-Authored-By: Claude Code <noreply@anthropic.com>",
     "Tags": [],
     "Fingerprint": "eec5ac579684eff6b0b2158fc62667cd601b0c17:packages/ai-runtime/tests/merkle-ledger.test.ts:generic-api-key:168"
+  },
+  {
+    "RuleID": "generic-api-key",
+    "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+    "StartLine": 21,
+    "EndLine": 21,
+    "StartColumn": 8,
+    "EndColumn": 62,
+    "Match": "JWT_SECRET = 'observability-test-jwt-secret-1234567890'",
+    "Secret": "observability-test-jwt-secret-1234567890",
+    "File": "packages/orm-observability/tests/http-plugin.test.ts",
+    "SymlinkFile": "",
+    "Commit": "6f173b6e9cb9595da71e657b1c87e3f76d2a6344",
+    "Link": "https://github.com/A-L-L-A-H/mw-xv/blob/6f173b6e9cb9595da71e657b1c87e3f76d2a6344/packages/orm-observability/tests/http-plugin.test.ts#L21",
+    "Entropy": 4.362815,
+    "Author": "root",
+    "Email": "root@apps.mycocolink.com",
+    "Date": "2026-11-25T02:04:26Z",
+    "Message": "feat(observability): consolidate telemetry into API and Board\n\nMake the API observability addon the sole OTLP/Qoder receiver and PostgreSQL-backed read authority, remove the standalone dashboard, expose read-only telemetry in Mission Control, and enforce API-only ingest credentials with a deterministic boundary gate.",
+    "Tags": [],
+    "Fingerprint": "6f173b6e9cb9595da71e657b1c87e3f76d2a6344:packages/orm-observability/tests/http-plugin.test.ts:generic-api-key:21"
   }
 ]
