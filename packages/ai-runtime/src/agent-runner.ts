@@ -684,10 +684,34 @@ export class BoundedReadOnlyAgentHarness implements AgentHarness {
                   error: { code: 'CANCELLED', message: 'Agent run cancelled during tool call' },
                 };
               }
+              const sanitized = this.redactor.redactError(toolError);
+              const denial = (
+                toolError as Error & {
+                  toolDenied?: unknown;
+                  reasonCode?: unknown;
+                  code?: unknown;
+                }
+              );
+              if (
+                sanitized.name === 'CloudAgentToolDeniedError' &&
+                denial?.toolDenied === true &&
+                typeof denial.reasonCode === 'string'
+              ) {
+                throw Object.assign(
+                  new Error(
+                    `Tool "${this.redactor.redactString(call.name)}" denied (${this.redactor.redactString(denial.reasonCode)})`
+                  ),
+                  {
+                    name: sanitized.name,
+                    code: typeof denial.code === 'string' ? denial.code : 'TOOL_DENIED',
+                    reasonCode: this.redactor.redactString(denial.reasonCode),
+                    causeName: sanitized.name,
+                  }
+                );
+              }
               // Tool errors can embed secrets from the tool's environment; they must
               // pass through the same redaction pipeline as tool results before
               // reaching the model transcript or any checkpoint.
-              const sanitized = this.redactor.redactError(toolError);
               const redactedMessage = `Tool "${this.redactor.redactString(call.name)}" failed: ${sanitized.message}`;
               messages.push({
                 role: 'tool',
