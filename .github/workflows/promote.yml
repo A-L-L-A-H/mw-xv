@@ -21,7 +21,7 @@ jobs:
   promote:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 55
     permissions:
       contents: write
       checks: read
@@ -156,7 +156,8 @@ jobs:
           # one-shot snapshot before the lanes finish (~20 min), which previously
           # locked in pass=false and permanently blocked autonomous promotion.
           if node scripts/release-await-ci.mjs --sha "$EXPECTED_SHA" --repo "$GH_REPO" \
-              --checks '["ci-gate", "postgres-integration"]'; then
+              --checks '["ci-gate", "postgres-integration"]' \
+              --timeout-seconds 2400 --interval-seconds 30; then
             echo "pass=true" >> "$GITHUB_OUTPUT"
           else
             echo "pass=false" >> "$GITHUB_OUTPUT"
