@@ -50,7 +50,7 @@ let activeSdk: NodeSDK | undefined;
 
 function resolveProtocol(value: string | undefined): OtlpHttpProtocol {
   if (value === undefined || value === '' || value === 'http/json') return 'http/json';
-  throw new Error('The local agent observability receiver accepts OTLP over http/json');
+  throw new Error('The MoonWitness API observability addon accepts OTLP over http/json');
 }
 
 function endpointFor(signal: 'traces' | 'metrics' | 'logs', baseEndpoint: string): string {
@@ -62,7 +62,7 @@ function endpointFor(signal: 'traces' | 'metrics' | 'logs', baseEndpoint: string
 export function startAgentTelemetry(options: AgentTelemetryOptions = {}): NodeSDK {
   if (activeSdk) return activeSdk;
   const endpoint =
-    options.endpoint ?? process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://127.0.0.1:4318';
+    options.endpoint ?? process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://127.0.0.1:3000';
   resolveProtocol(options.protocol ?? process.env.OTEL_EXPORTER_OTLP_PROTOCOL);
   const serviceName = options.serviceName ?? process.env.OTEL_SERVICE_NAME ?? 'moonwitness-agent';
   const serviceVersion = options.serviceVersion ?? process.env.OTEL_SERVICE_VERSION;

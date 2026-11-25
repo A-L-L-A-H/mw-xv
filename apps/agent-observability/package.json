@@ -2,7 +2,7 @@
   "name": "@moonwitness/agent-observability",
   "version": "1.0.0-rc.1",
   "private": true,
-  "description": "Local OpenTelemetry receiver and agent observability dashboard",
+  "description": "OpenTelemetry instrumentation client for the MoonWitness API observability addon",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,16 +14,17 @@
     "./instrumentation": {
       "types": "./dist/instrumentation.d.ts",
       "import": "./dist/instrumentation.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
     }
   },
   "files": [
-    "dist",
-    "public"
+    "dist"
   ],
   "scripts": {
-    "dev": "tsx watch src/cli.ts",
     "build": "tsc",
-    "start": "node dist/cli.js",
     "demo": "tsx examples/demo-agent.ts",
     "typecheck": "tsc -p tsconfig.check.json",
     "test": "tsc -p tsconfig.check.json && vitest run"
@@ -42,8 +43,7 @@
     "@opentelemetry/sdk-metrics": "3.1.1",
     "@opentelemetry/sdk-node": "0.301.2",
     "@moonwitness/orm-observability": "workspace:*",
-    "@opentelemetry/semantic-conventions": "1.45.0",
-    "fastify": "5.12.8"
+    "@opentelemetry/semantic-conventions": "1.45.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

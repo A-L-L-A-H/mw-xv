@@ -1,4 +1,5 @@
 import { defineAddon, seed } from '@moonwitness/orm';
+import { observabilityHttpPlugin } from './http-plugin.js';
 import {
   TelemetryLog,
   TelemetryMetricPoint,
@@ -61,6 +62,7 @@ export const observabilityAddon = defineAddon({
   name: 'observability',
   version: '1.0.0',
   depends: [],
+  httpPlugins: [observabilityHttpPlugin],
   models: [
     TelemetrySpan,
     TelemetryLog,

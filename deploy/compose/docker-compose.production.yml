@@ -120,6 +120,7 @@ services:
           *whatsapp_gateway_credentials,
           *whatsapp_webhook_environment,
         ]
+      OBSERVABILITY_INGEST_TOKEN: ${OBSERVABILITY_INGEST_TOKEN:-}
     volumes:
       - type: volume
         source: whatsapp_attachments

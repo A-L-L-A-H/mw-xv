@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "addons": ["auth", "base", "jobs", "notification"],
   "generatedFrom": "core addon manifests and model field metadata; no seed values included",
-  "sourceSha256": "07981c50ca88410c6cf97f5798a5701e4814c0033078bb0d0f0576f1a87fd7f4",
+  "sourceSha256": "efd225ac0006d09a89f5d456e8b9c9cbeb9f85b8d332b6a00ebbb0c09285af1c",
   "models": [
     {
       "name": "auth.refresh_token",

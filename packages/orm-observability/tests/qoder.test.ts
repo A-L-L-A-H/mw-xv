@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { QoderTelemetryBridge } from '../src/qoder.js';
-import { MemoryTelemetryStore } from '../src/store.js';
+import { MemoryTelemetryStore } from '../src/memory-store.js';
 import { NOW_MS } from './fixtures.js';
 
 describe('QoderTelemetryBridge', () => {

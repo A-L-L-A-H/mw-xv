@@ -1,6 +1,12 @@
 import { randomBytes } from 'node:crypto';
-import type { TelemetryStore } from './store.js';
-import type { LogRecord, LogSeverity, MetricSeries, SpanRecord, SpanStatus } from './types.js';
+import type {
+  LogRecord,
+  LogSeverity,
+  MetricSeries,
+  SpanRecord,
+  SpanStatus,
+  TelemetryStore,
+} from './types.js';
 
 const QODER_EVENTS = new Set([
   'SessionStart',

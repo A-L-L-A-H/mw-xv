@@ -1,12 +1,12 @@
 # Generated platform reference
 
-Source fingerprint: `5461f381fd2d9aeb81aa9564023788e1e2f32c68d21034c36c86f72b572abf20`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `37d858a960a782920d473e33c16d73cb306ade7b4e518173a20040002a854c73`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
 | Name                                | Kind    | Version    | Scripts                                                                                                                                                                                                                                                                            |
 | ----------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@moonwitness/agent-observability`  | App     | 1.0.0-rc.1 | `build`, `demo`, `dev`, `start`, `test`, `typecheck`                                                                                                                                                                                                                               |
+| `@moonwitness/agent-observability`  | App     | 1.0.0-rc.1 | `build`, `demo`, `test`, `typecheck`                                                                                                                                                                                                                                               |
 | `@moonwitness/agent-sandbox`        | App     | 1.0.0-rc.1 | `build`, `start`, `test`, `typecheck`                                                                                                                                                                                                                                              |
 | `@moonwitness/api`                  | App     | 1.0.0-rc.1 | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
 | `@moonwitness/board`                | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
@@ -123,8 +123,10 @@ Source fingerprint: `5461f381fd2d9aeb81aa9564023788e1e2f32c68d21034c36c86f72b572
 | `MW_CLOUD_AGENT_IMAGE_REF`          | string         | No                        | No                       |
 | `MW_CLOUD_AGENT_SNAPSHOT_ID`        | string         | No                        | No                       |
 | `NODE_ENV`                          | string         | Yes                       | No                       |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`       | string         | No                        | No                       |
-| `OTEL_EXPORTER_OTLP_PROTOCOL`       | string         | No                        | No                       |
+| `OBSERVABILITY_INGEST_TOKEN`        | secret         | Yes                       | Yes                      |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`       | string         | Yes                       | No                       |
+| `OTEL_EXPORTER_OTLP_HEADERS`        | string         | Yes                       | No                       |
+| `OTEL_EXPORTER_OTLP_PROTOCOL`       | string         | Yes                       | No                       |
 | `OTEL_SERVICE_NAME`                 | string         | No                        | No                       |
 | `OTEL_SERVICE_VERSION`              | string         | No                        | No                       |
 | `OUTBOX_HANDLERS_MODULE`            | string         | Yes                       | No                       |

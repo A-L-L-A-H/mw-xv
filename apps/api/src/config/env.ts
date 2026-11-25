@@ -26,6 +26,11 @@ if (metricsToken && metricsToken.length < 32) {
   throw new Error('METRICS_TOKEN must be at least 32 characters when configured');
 }
 
+const observabilityIngestToken = process.env.OBSERVABILITY_INGEST_TOKEN || undefined;
+if (observabilityIngestToken && observabilityIngestToken.length < 32) {
+  throw new Error('OBSERVABILITY_INGEST_TOKEN must be at least 32 characters when configured');
+}
+
 function readPort(value: string | undefined): number {
   const port = Number(value ?? 3000);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -180,9 +185,10 @@ const databaseUrl = readDatabaseUrl(
 );
 const databaseRuntime = readDatabaseRuntimeLimits(process.env);
 
-export const config: EnvConfig = {
+export const config: EnvConfig & { observabilityIngestToken?: string } = {
   superadminPassword: process.env.SUPERADMIN_PASSWORD || undefined,
   metricsToken,
+  observabilityIngestToken,
   attachmentStorageDirectory: path.resolve(
     repositoryRoot,
     process.env.ATTACHMENT_STORAGE_DIR || 'storage/attachments'

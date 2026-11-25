@@ -113,26 +113,30 @@ Panduan langkah demi langkah, termasuk tes PostgreSQL terisolasi, ada di
 
 ## Agent observability
 
-`@moonwitness/agent-observability` adalah receiver OpenTelemetry lokal untuk traces, metrics, dan
-logs. Dashboard menampilkan flow graph interaktif, waterfall span, log terkorelasi, penggunaan token,
-biaya, dan time series metric.
+`@moonwitness/agent-observability` adalah library instrumentasi OpenTelemetry untuk traces, metrics,
+dan logs. Satu-satunya receiver adalah addon `@moonwitness/orm-observability` di API; persistence
+memakai PostgreSQL dan UI operator berada di Board Mission Control. Tidak ada server atau dashboard
+observability terpisah.
+
+Jalankan API terlebih dahulu, lalu kirim telemetry demo dari terminal lain:
 
 ```bash
-pnpm start:observability
-# Buka http://127.0.0.1:4318
-
-# Terminal lain: kirim telemetry demo melalui SDK OpenTelemetry
 pnpm demo:observability
 ```
 
-Gunakan `pnpm dev:observability` untuk mode watch. Agent berbasis OpenTelemetry dapat diarahkan
-ke receiver ini tanpa custom adapter:
+Agent berbasis OpenTelemetry dapat diarahkan ke API tanpa custom adapter:
 
 ```sh
-OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
+OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:3000
 OTEL_EXPORTER_OTLP_PROTOCOL=http/json
+OTEL_EXPORTER_OTLP_HEADERS=Authorization=Bearer<OBSERVABILITY_INGEST_TOKEN>
 OTEL_SERVICE_NAME=nama-agent
 ```
+
+`OBSERVABILITY_INGEST_TOKEN` harus berupa secret acak minimal 32 karakter dan sama dengan konfigurasi
+API. Token ini hanya untuk write-only ingest; jangan kirim ke browser. Tanpa token, endpoint ingest
+gagal tertutup dengan HTTP 503. Pembacaan telemetry di `/api/observability/*` memerlukan JWT dengan
+role `system` atau `superadmin`.
 
 Helper TypeScript tersedia melalui `@moonwitness/agent-observability/instrumentation`; lihat
 [contoh agent](apps/agent-observability/examples/demo-agent.ts).
@@ -140,17 +144,15 @@ Helper TypeScript tersedia melalui `@moonwitness/agent-observability/instrumenta
 ### Qoder CLI
 
 Konfigurasi project [`.qoder/settings.json`](.qoder/settings.json) mengirim hook HTTP Qoder ke
-`POST /v1/qoder` saat receiver berjalan. Satu prompt menjadi satu trace dengan child span untuk
-tool call dan subagent; kegagalan tool/turn juga muncul sebagai error span dan log.
+`POST /v1/qoder` pada API. Ekspor `OBSERVABILITY_INGEST_TOKEN` ke proses Qoder agar interpolasi header
+`Authorization` bekerja. Satu prompt menjadi satu trace dengan child span untuk tool call dan
+subagent; kegagalan tool/turn juga muncul sebagai error span dan log.
 
 Bridge hanya menyimpan metadata seperti nama tool, status, durasi, ID korelasi, dan panjang teks.
 Isi prompt, input/output tool, pesan assistant, path transcript, working directory, dan error mentah
 tidak dikirim ke dashboard. Hook Qoder belum menyediakan token usage atau biaya, sehingga kolom itu
-tetap kosong untuk aktivitas Qoder.
-
-Receiver menyimpan data di memori dengan retensi default satu jam dan tidak memiliki autentikasi.
-Biarkan bind default `127.0.0.1`; jangan mengeksposnya ke jaringan publik tanpa kontrol akses yang
-sesuai.
+tetap kosong untuk aktivitas Qoder. Korelasi hook bersifat process-local dan tidak berbagi state antar
+replica API.
 
 ## Arsitektur
 
@@ -649,11 +651,11 @@ Referensi model, field, relasi, akses, environment, dan endpoint yang dihasilkan
 
 ## Generated workspace reference
 
-Monorepo version: `1.0.0-rc.1` · metadata fingerprint: `5461f381fd2d9aeb81aa9564023788e1e2f32c68d21034c36c86f72b572abf20`.
+Monorepo version: `1.0.0-rc.1` · metadata fingerprint: `37d858a960a782920d473e33c16d73cb306ade7b4e518173a20040002a854c73`.
 
 | App/package                         | Kind    | Version      | Workspace scripts                                                                                                                                                                                                                                                                  |
 | ----------------------------------- | ------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@moonwitness/agent-observability`  | App     | `1.0.0-rc.1` | `build`, `demo`, `dev`, `start`, `test`, `typecheck`                                                                                                                                                                                                                               |
+| `@moonwitness/agent-observability`  | App     | `1.0.0-rc.1` | `build`, `demo`, `test`, `typecheck`                                                                                                                                                                                                                                               |
 | `@moonwitness/agent-sandbox`        | App     | `1.0.0-rc.1` | `build`, `start`, `test`, `typecheck`                                                                                                                                                                                                                                              |
 | `@moonwitness/api`                  | App     | `1.0.0-rc.1` | `attachments:reconcile`, `build`, `db:migrate`, `db:migrate:built`, `dev`, `jobs:outbox`, `jobs:scheduler`, `jobs:scheduler:built`, `jobs:worker`, `jobs:worker:built`, `reset:superadmin-password`, `revoke:auth-sessions`, `start`, `start:built`, `test`, `visual-audit:server` |
 | `@moonwitness/board`                | App     | `1.0.0-rc.1` | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |

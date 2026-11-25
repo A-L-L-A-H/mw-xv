@@ -28,4 +28,28 @@ describe('API startup bootstrap', () => {
     expect(output).not.toContain(secret);
     expect(output).not.toContain('db-password');
   });
+
+  it('rejects a short observability ingest token without exposing it', () => {
+    const secret = 'short-observability-secret';
+    const result = spawnSync(process.execPath, ['--import', 'tsx', 'src/server.ts'], {
+      cwd: apiRoot,
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+        DATABASE_URL: 'postgresql://test:db-password@127.0.0.1:5432/moonwitness_test',
+        METRICS_TOKEN: '',
+        OBSERVABILITY_INGEST_TOKEN: secret,
+      },
+      encoding: 'utf8',
+      timeout: 10_000,
+    });
+    const output = `${result.stdout}${result.stderr}`;
+
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe(1);
+    expect(output).toContain('"event":"api_startup_failure"');
+    expect(output).toContain('OBSERVABILITY_INGEST_TOKEN must be at least 32 characters');
+    expect(output).not.toContain(secret);
+    expect(output).not.toContain('db-password');
+  });
 });

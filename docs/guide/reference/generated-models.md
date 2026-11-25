@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `5461f381fd2d9aeb81aa9564023788e1e2f32c68d21034c36c86f72b572abf20`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `37d858a960a782920d473e33c16d73cb306ade7b4e518173a20040002a854c73`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -172,7 +172,6 @@ Models: 25; declared views: 25; menu entries: 25; seed rows: 739.
 | `base.user`                  | `users`                  | `password`             | password  | No       | Yes      | No         | —                       |
 | `base.user`                  | `users`                  | `role`                 | enum      | No       | Yes      | [redacted] | —                       |
 | `base.user`                  | `users`                  | `timezone`             | string    | No       | Yes      | No         | —                       |
-| `base.user`                  | `users`                  | `token_version`        | integer   | No       | Yes      | [redacted] | —                       |
 | `ir.feature_flag`            | `ir_feature_flags`       | `company`              | belongsTo | No       | Yes      | No         | `base.company`          |
 | `ir.feature_flag`            | `ir_feature_flags`       | `description`          | text      | No       | Yes      | No         | —                       |
 | `ir.feature_flag`            | `ir_feature_flags`       | `enabled`              | boolean   | No       | Yes      | [redacted] | —                       |

@@ -6,7 +6,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -18,7 +21,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -30,7 +36,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -42,7 +51,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -54,7 +66,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -66,7 +81,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -78,7 +96,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -90,7 +111,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -102,7 +126,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -114,7 +141,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -126,7 +156,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -138,7 +171,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -150,7 +186,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -162,7 +201,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]
@@ -174,7 +216,10 @@
         "hooks": [
           {
             "type": "http",
-            "url": "http://127.0.0.1:4318/v1/qoder",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
             "timeout": 5
           }
         ]

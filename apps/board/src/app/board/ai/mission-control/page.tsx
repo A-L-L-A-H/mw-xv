@@ -32,6 +32,7 @@ import {
   ProvenanceBadge,
   RiskTierBadge,
 } from '@/components/ai/mission-control-chrome';
+import { BoardTelemetryPanel } from '@/components/ai/telemetry-panels';
 import { RunScopePanel } from '../_components/cloud-agent-panels';
 
 export default function AiMissionControlPage() {
@@ -481,6 +482,8 @@ export default function AiMissionControlPage() {
 
         <RunScopePanel contract={activeContract} />
       </div>
+
+      <BoardTelemetryPanel />
     </MissionControlShell>
   );
 }

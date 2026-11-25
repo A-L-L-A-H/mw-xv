@@ -13,7 +13,7 @@
       "name": "@moonwitness/agent-observability",
       "version": "1.0.0-rc.1",
       "directory": "apps/agent-observability",
-      "scripts": ["build", "demo", "dev", "start", "test", "typecheck"]
+      "scripts": ["build", "demo", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/agent-sandbox",
@@ -409,8 +409,6 @@
     "@moonwitness/agent-observability": {
       "build": "tsc",
       "demo": "tsx examples/demo-agent.ts",
-      "dev": "tsx watch src/cli.ts",
-      "start": "node dist/cli.js",
       "test": "tsc -p tsconfig.check.json && vitest run",
       "typecheck": "tsc -p tsconfig.check.json"
     },
@@ -1194,14 +1192,26 @@
       "valueType": "string"
     },
     {
+      "name": "OBSERVABILITY_INGEST_TOKEN",
+      "configuredInExample": true,
+      "secret": true,
+      "valueType": "secret"
+    },
+    {
       "name": "OTEL_EXPORTER_OTLP_ENDPOINT",
-      "configuredInExample": false,
+      "configuredInExample": true,
+      "secret": false,
+      "valueType": "string"
+    },
+    {
+      "name": "OTEL_EXPORTER_OTLP_HEADERS",
+      "configuredInExample": true,
       "secret": false,
       "valueType": "string"
     },
     {
       "name": "OTEL_EXPORTER_OTLP_PROTOCOL",
-      "configuredInExample": false,
+      "configuredInExample": true,
       "secret": false,
       "valueType": "string"
     },
@@ -3100,17 +3110,6 @@
               "unique": false,
               "optional": true,
               "hasDefault": false
-            },
-            {
-              "name": "token_version",
-              "kind": "integer",
-              "column": "token_version",
-              "declaredRequired": true,
-              "required": false,
-              "unique": false,
-              "optional": true,
-              "hasDefault": true,
-              "default": "[redacted]"
             }
           ],
           "uniqueConstraints": []
@@ -10499,5 +10498,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "5461f381fd2d9aeb81aa9564023788e1e2f32c68d21034c36c86f72b572abf20"
+  "generatedFromSha256": "37d858a960a782920d473e33c16d73cb306ade7b4e518173a20040002a854c73"
 }

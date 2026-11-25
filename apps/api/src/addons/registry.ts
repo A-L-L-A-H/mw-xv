@@ -27,6 +27,7 @@ import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/o
 import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 import { manifest as ispAddon } from '@moonwitness/orm-isp';
 import { manifest as cloudAddon } from '@moonwitness/orm-cloud';
+import { manifest as observabilityAddon } from '@moonwitness/orm-observability';
 import { createAttachmentScanner, type AttachmentScanner } from '../whatsapp/clamav-scanner.js';
 import type { createVideoPoster } from '../whatsapp/media-thumbnail.js';
 import { checkWhatsAppGatewayVersion } from '../whatsapp/version-guard.js';
@@ -43,6 +44,8 @@ import { getRecordRuleDomain } from '../auth/rules.js';
 import { installCloudAgentEffect } from '../ai-corporation/cloud-agent-effect-setup.js';
 
 export interface ApiAddonRuntimeContext {
+  db: Knex;
+  observabilityIngestToken?: string;
   jwtSecret: string;
   accessTtlSeconds: number;
   refreshTtlSeconds: number;
@@ -190,6 +193,10 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'a2a',
     manifest: a2aAddon,
+  },
+  {
+    name: 'observability',
+    manifest: observabilityAddon,
   },
 ];
 

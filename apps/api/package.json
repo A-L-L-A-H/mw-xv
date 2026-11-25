@@ -59,6 +59,7 @@
     "@moonwitness/orm-isp": "workspace:*",
     "@moonwitness/orm-knowledge": "workspace:*",
     "@moonwitness/orm-notification": "workspace:*",
+    "@moonwitness/orm-observability": "workspace:*",
     "@moonwitness/orm-organization": "workspace:*",
     "@moonwitness/orm-project": "workspace:*",
     "@moonwitness/orm-request": "workspace:*",

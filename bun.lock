@@ -31,7 +31,6 @@
         "@opentelemetry/sdk-metrics": "3.1.1",
         "@opentelemetry/sdk-node": "0.301.2",
         "@opentelemetry/semantic-conventions": "1.45.0",
-        "fastify": "5.12.8",
       },
       "devDependencies": {
         "@types/node": "^26.6.4",
@@ -78,6 +77,7 @@
         "@moonwitness/orm-isp": "workspace:*",
         "@moonwitness/orm-knowledge": "workspace:*",
         "@moonwitness/orm-notification": "workspace:*",
+        "@moonwitness/orm-observability": "workspace:*",
         "@moonwitness/orm-organization": "workspace:*",
         "@moonwitness/orm-project": "workspace:*",
         "@moonwitness/orm-request": "workspace:*",
@@ -818,7 +818,10 @@
         "knex": "^3.3.0",
       },
       "devDependencies": {
+        "@fastify/jwt": "10.2.5",
+        "@fastify/rate-limit": "^11.2.0",
         "@types/better-sqlite3": "^9.6.0",
+        "fastify": "^5.12.6",
         "typescript": "~5.7.3",
         "vitest": "5.0.3",
       },

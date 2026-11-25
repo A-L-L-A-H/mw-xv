@@ -8,7 +8,7 @@ import {
   logPayload,
   metricPayload,
   tracePayload,
-} from './fixtures.js';
+} from './otlp-fixtures.js';
 
 describe('OTLP JSON decoding', () => {
   it('decodes resource spans, attributes, events, status, and usage', () => {

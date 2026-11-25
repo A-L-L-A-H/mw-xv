@@ -37,6 +37,11 @@ import type {
   TraceSummary,
 } from './types.js';
 
+export interface SqlTelemetryStoreOptions extends TelemetryStoreOptions {
+  /** Own the supplied Knex pool. Set false when the API host owns the shared database. */
+  closeDb?: boolean;
+}
+
 interface PayloadRow {
   payload_json: string;
 }
@@ -159,13 +164,15 @@ export class SqlTelemetryStore implements TelemetryStore {
   readonly limits: TelemetryLimits;
   private readonly db: Knex;
   private readonly now: () => number;
+  private readonly closeDb: boolean;
   private closing?: Promise<void>;
 
-  constructor(db: Knex, options: TelemetryStoreOptions = {}) {
+  constructor(db: Knex, options: SqlTelemetryStoreOptions = {}) {
     const resolved = resolveTelemetryOptions(options);
     this.limits = resolved.limits;
     this.now = resolved.now;
     this.db = db;
+    this.closeDb = options.closeDb ?? true;
   }
 
   async getRevision(): Promise<number> {
@@ -439,7 +446,7 @@ export class SqlTelemetryStore implements TelemetryStore {
   }
 
   async close(): Promise<void> {
-    this.closing ??= this.db.destroy();
+    this.closing ??= this.closeDb ? this.db.destroy() : Promise.resolve();
     await this.closing;
   }
 

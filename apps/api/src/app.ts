@@ -57,6 +57,8 @@ export interface BuildAppOptions {
   /** Overrides AUTH_LOGIN_RATE_MAX (used by tests). */
   loginRateMax?: number;
   metricsToken?: string;
+  /** Overrides OBSERVABILITY_INGEST_TOKEN (used by tests). */
+  observabilityIngestToken?: string;
   /** Overrides the WhatsApp gateway probe for isolated tests. */
   checkWhatsAppGateway?: () => Promise<boolean>;
   /** Overrides attachment storage for isolated tests or custom providers. */
@@ -193,6 +195,9 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   app.addHook('onSend', async (request, reply, payload) => {
     reply.header('x-request-id', request.id);
     reply.header('x-content-type-options', 'nosniff');
+    if (request.routeOptions.url?.startsWith('/api/observability/')) {
+      reply.header('Cache-Control', 'private, no-store');
+    }
     reply.header('x-frame-options', 'DENY');
     reply.header('referrer-policy', 'no-referrer');
     reply.header('permissions-policy', 'camera=(), microphone=(), geolocation=()');
@@ -352,6 +357,8 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   }
 
   await registerApiAddonRoutes(app, {
+    db,
+    observabilityIngestToken: options.observabilityIngestToken ?? config.observabilityIngestToken,
     jwtSecret,
     accessTtlSeconds: authConfig.accessTtlSeconds,
     refreshTtlSeconds: authConfig.refreshTtlSeconds,
