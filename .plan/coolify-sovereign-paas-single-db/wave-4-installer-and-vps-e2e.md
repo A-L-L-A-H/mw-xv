@@ -60,7 +60,7 @@
 
 ---
 
-### - [ ] M54 — Update `install.sh` Caddy `:8000–8010`, UFW, `--unlock-port` PostgreSQL Recovery, & Banner
+### - [x] M54 — Update `install.sh` Caddy `:8000–8010`, UFW, `--unlock-port` PostgreSQL Recovery, & Banner
 
 - **Owner File (MODIFY):** `deploy/vps/install.sh`
 - **Depends On:** `M53`

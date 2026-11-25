@@ -387,8 +387,19 @@ EOF
 
   cat > "${MW_ETC_DIR}/Caddyfile" <<EOF
 {
-	admin off
+	admin localhost:2019
 }
+
+:${MW_PUBLIC_PORT} {
+	encode zstd gzip
+	reverse_proxy moonwitness_board:8080 {
+		header_up X-Forwarded-Proto http
+		header_up X-Real-IP {remote_host}
+	}
+}
+EOF
+  if [ -n "${MW_BASE_DOMAIN}" ]; then
+    cat >> "${MW_ETC_DIR}/Caddyfile" <<EOF
 
 ${MW_BASE_DOMAIN} {
 	encode zstd gzip
@@ -406,6 +417,7 @@ wa.${MW_BASE_DOMAIN} {
 	}
 }
 EOF
+  fi
   chmod 0644 "${MW_ETC_DIR}/Caddyfile"
 
   docker rm -f moonwitness-caddy >/dev/null 2>&1 || true
@@ -413,7 +425,7 @@ EOF
     --name moonwitness-caddy \
     --restart unless-stopped \
     --network "${MW_PAAS_NETWORK}" \
-    -p 80:80 -p 443:443 -p 443:443/udp \
+    -p 80:80 -p 443:443 -p 443:443/udp -p 8000-8010:8000-8010 \
     -v "${MW_ETC_DIR}/Caddyfile:/etc/caddy/Caddyfile:ro" \
     -v "${MW_DATA_DIR}/caddy-data:/data" \
     -v "${MW_DATA_DIR}/caddy-config:/config" \
@@ -441,6 +453,17 @@ EOF
   systemctl enable moonwitness-control-plane.service
 }
 
+unlock_public_port() {
+  log "Unlocking public port 8000 via PostgreSQL single source of truth..."
+  docker exec moonwitness_postgres psql -U postgres -d moonwitness_db \
+    -c "INSERT INTO base_config_parameters (key, value, value_type, company_id, active) VALUES ('paas.public_port_enabled', 'true', 'boolean', NULL, true) ON CONFLICT (key, company_id) WHERE company_id IS NULL DO UPDATE SET value='true', active=true;" 2>/dev/null \
+    || docker exec moonwitness_postgres psql -U postgres -d moonwitness_db \
+      -c "UPDATE base_config_parameters SET value='true', active=true WHERE key='paas.public_port_enabled' AND company_id IS NULL;" 2>/dev/null \
+    || true
+  docker restart moonwitness_api >/dev/null 2>&1 || true
+  log "Public port 8000 re-enabled; API restarted to reconcile Caddy routes."
+}
+
 start_all() {
   log "Starting postgres and building MoonWitness API + Board images..."
   (cd "${MW_INSTALL_DIR}" && docker compose -f docker-compose.vps.yml up -d --build postgres api board)
@@ -453,8 +476,13 @@ start_all() {
   docker network connect "${MW_PAAS_NETWORK}" moonwitness_whatsapp 2>/dev/null || true
 
   if command -v ufw >/dev/null 2>&1; then
+    ufw allow 80/tcp >/dev/null 2>&1 || true
+    ufw allow 443/tcp >/dev/null 2>&1 || true
+    ufw allow 443/udp >/dev/null 2>&1 || true
+    ufw allow 8000:8010/tcp >/dev/null 2>&1 || true
     # Remove any legacy PaaS UI rule on port 3004; only permit internal bridge -> private control-plane :3003
     ufw delete allow from 10.254.2.0/24 to 10.254.2.1 port 3004 proto tcp >/dev/null 2>&1 || true
+    ufw delete allow 3004/tcp >/dev/null 2>&1 || true
     for net in moonwitness-xv_default "${MW_PAAS_NETWORK}"; do
       subnet="$(docker network inspect "$net" --format '{{(index .IPAM.Config 0).Subnet}}' 2>/dev/null || true)"
       if [ -n "$subnet" ]; then
@@ -476,14 +504,27 @@ start_all() {
 ========================================================================
  MoonWitness Turnkey Ready (Coolify Pattern · Fresh Install)
 ========================================================================
- Control Panel   : https://${MW_BASE_DOMAIN}  (Board + PaaS Studio at /board/cloud)
- WhatsApp Service: https://wa.${MW_BASE_DOMAIN}
- Wildcard Apps   : https://<slug>.${MW_BASE_DOMAIN}
+ Setup Wizard    : http://${MW_PUBLIC_IPV4}:${MW_PUBLIC_PORT}/setup
+ Control Panel   : http://${MW_PUBLIC_IPV4}:${MW_PUBLIC_PORT}/board/cloud
+ HTTPS Domain    : https://${MW_BASE_DOMAIN} (only when configured)
  Control Plane   : private mesh http://${MW_MESH_IPV4}:${MW_CONTROL_PLANE_PORT} (not exposed)
- Admin Credentials: stored in ${MW_INSTALL_DIR}/.env (chmod 600; SUPERADMIN_LOGIN=superadmin)
+ Admin Login    : superadmin (password in ${MW_INSTALL_DIR}/.env, chmod 600)
+ Setup Token (read from protected env):
+  grep '^MW_SETUP_TOKEN=' ${MW_INSTALL_DIR}/.env
 ========================================================================
 EOF
 }
+
+if [ "${UNLOCK_PORT}" = "true" ]; then
+  unlock_public_port
+  cat <<EOF
+=======================================================================
+  MoonWitness public bootstrap port :${MW_PUBLIC_PORT} re-enabled.
+  Recheck: http://${MW_PUBLIC_IPV4}:${MW_PUBLIC_PORT}/setup
+=======================================================================
+EOF
+  exit 0
+fi
 
 if [ "${REINSTALL}" = "true" ] || [ "${MW_REINSTALL:-false}" = "true" ]; then
   cleanup_for_reinstall
