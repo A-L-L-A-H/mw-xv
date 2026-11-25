@@ -38,7 +38,6 @@ cache:
 
 build_workspace:
   stage: build
-  name: "Build workspace (17 packages + apps)"
   timeout: 45m
   before_script:
     - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
@@ -64,7 +63,6 @@ build_workspace:
 
 unit_tests:
   stage: test
-  name: "Unit tests (CI parity)"
   timeout: 30m
   before_script:
     - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
@@ -85,7 +83,6 @@ unit_tests:
 # Optional: knowledge gate (fast)
 knowledge_gate:
   stage: test
-  name: "Knowledge gate (schema validation)"
   timeout: 10m
   before_script:
     - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
@@ -101,7 +98,6 @@ knowledge_gate:
 
 sast:
   stage: security
-  name: "SAST (Static Application Security Testing)"
   timeout: 30m
   # GitLab SAST uses its own analyzer images
   image: registry.gitlab.com/security-products/sast:latest
@@ -119,7 +115,6 @@ sast:
 
 dependency_scan:
   stage: security
-  name: "Dependency scanning"
   timeout: 20m
   image: registry.gitlab.com/security-products/dependency-scanning:latest
   tags:
@@ -136,7 +131,6 @@ dependency_scan:
 
 container_scan:
   stage: security
-  name: "Container scanning (if Dockerfile exists)"
   timeout: 20m
   image: registry.gitlab.com/security-products/container-scanning:latest
   tags:
@@ -159,7 +153,6 @@ container_scan:
 
 report_to_github:
   stage: .post
-  name: "Report pipeline status to GitHub commit"
   timeout: 5m
   image: node:20-bookworm-slim
   tags:
