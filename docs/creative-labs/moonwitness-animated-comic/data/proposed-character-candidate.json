@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "candidateId": "PCC-SIGNAL-SWITCHBOARD-01",
+  "title": "Night Relay Operator / Signal Switchboard Minder",
+  "status": "experimental-noncanonical-proposed",
+  "humanReviewRequired": true,
+  "canonicalIdAssigned": null,
+  "namespaceNote": "Uses non-canonical PCC-* experimental identifier. Must NOT be assigned a CHR-#### ID or registered in packages/assets/source/world/characters/character-registry.json without explicit human owner review and approval.",
+  "role": "night-relay-switchboard-minder",
+  "domain": "signal-radio-archive-relay",
+  "depictionPolicy": "anonymous-hooded-masked-silhouette",
+  "visualDesign": {
+    "silhouette": "anonymous hooded and visor-masked switchboard operator seated or standing in three-quarter back/side profile; heavy weatherproof relay poncho over patch-cord apron; zero identifiable facial features",
+    "proportions": "standard adult 6 heads, grounded stationary posture",
+    "outfit": "matte ink-black insulated relay poncho with high collar, acoustic visor band hiding upper face, woven copper/cyan patch-cord bandolier, signal-yellow rotary dial clip on sternum",
+    "paletteTokens": [
+      "ink-black",
+      "paper-cream",
+      "signal-cyan",
+      "signal-yellow",
+      "riot-magenta"
+    ],
+    "signatureProps": [
+      "patch-cord-jack-bundle",
+      "rotary-attenuator-pack",
+      "unmarked-cassette-log-tray"
+    ],
+    "allowedVariants": [
+      "back-three-quarter-switchboard-idle",
+      "patching-cable-gesture"
+    ],
+    "prohibitedVariants": [
+      "recognizable-face",
+      "sacred-figure",
+      "real-person-likeness",
+      "third-party-logo",
+      "metaphysical-entity-claim"
+    ]
+  },
+  "narrativeFunction": {
+    "summary": "Bridges the gap between field courier capture (kuro-signal) and zine workbench preservation (vesper-ink) by operating the rooftop-to-archive low-power radio patch bay during quiet night windows.",
+    "worldRuleAlignment": [
+      "MoonWitness II Rule 01: The Moon is the symbolic anchor of the Witness layer.",
+      "MoonWitness II Rule 02: A witness records an observation without forcing a final interpretation.",
+      "MoonWitness II Rule 03: Mystery, unknown, and unresolved states are valid parts of the universe."
+    ],
+    "episodePresenceInEpLab01": "Not rendered as an active on-screen character in EP-LAB-01; documented strictly as a research candidate for future multi-node relay stories after human review."
+  },
+  "sourceInspirations": [
+    {
+      "repository": "bjo163/moonwitnessxv",
+      "revision": "1b5c1b717b68db8ca7c06fa3dc5cc392edc9257d",
+      "path": "BLUEPRINT.md",
+      "blob": "0337b88eee36120061edd2fe191ae52fbf02833f",
+      "conceptBorrowed": "ARSY hub architecture and bounded SIGNAL/RADIO operational domain"
+    },
+    {
+      "repository": "bjo163/moonwitness-xii-season-global-championships",
+      "revision": "dff42ba0e0abce6e37b2c1e94e3e428bb588a8ec",
+      "path": "docs/CHARACTER_CANON_V3_AND_ROADMAP.md",
+      "blob": "4e06daf4884055f3e855bc691c30851c727b377a",
+      "conceptBorrowed": "Hidden-face silhouette rule and disciplined archival stewardship motif inspired by RECORD TWINS without metaphysical or theological claims"
+    },
+    {
+      "repository": "bjo163/moonwitness-II",
+      "revision": "fa69c895322590be12582a6e2c69b55001e30cd3",
+      "path": "docs/WORLD_RULES.md",
+      "blob": "c3634f74b63ad727cd1c8166e5dbe6d6278aa0ea",
+      "conceptBorrowed": "Rules 01-10 witness layer preservation without forced closure"
+    },
+    {
+      "repository": "local/mw-xv",
+      "revision": "f88ebb77e5a3e12ff66db9ccc4ddfaf0da462236",
+      "path": "packages/assets/source/world/characters/character-registry.json",
+      "blob": "working-tree",
+      "conceptBorrowed": "Anonymous crew-01 depiction policy combined with Signal Riot palette tokens"
+    }
+  ],
+  "identitySafetyAssertions": {
+    "mergesHistoricalCharacters": false,
+    "claimsRealPersonIdentity": false,
+    "claimsSacredOrMetaphysicalStatus": false,
+    "modifiesCanonicalRegistry": false
+  }
+}

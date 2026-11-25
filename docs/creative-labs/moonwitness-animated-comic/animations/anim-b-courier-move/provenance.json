@@ -1,0 +1,79 @@
+[
+  {
+    "assetId": "animations/anim-b-courier-move/frame-01.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-running.webp",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG key-pose author)",
+    "creationMethod": "hand-authored-svg-key-pose",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-derivative-of-approved-kuro-signal-pose-running",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-beat-2-frame-01"
+  },
+  {
+    "assetId": "animations/anim-b-courier-move/frame-02.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-running.webp",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG key-pose author)",
+    "creationMethod": "hand-authored-svg-key-pose",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-derivative-of-approved-kuro-signal-pose-running",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-beat-2-frame-02"
+  },
+  {
+    "assetId": "animations/anim-b-courier-move/frame-03.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-running.webp",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG key-pose author)",
+    "creationMethod": "hand-authored-svg-key-pose",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-derivative-of-approved-kuro-signal-pose-running",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-beat-2-frame-03"
+  },
+  {
+    "assetId": "animations/anim-b-courier-move/frame-04.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-running.webp",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG key-pose author)",
+    "creationMethod": "hand-authored-svg-key-pose",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-derivative-of-approved-kuro-signal-pose-running",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-beat-2-frame-04-smear"
+  },
+  {
+    "assetId": "animations/anim-b-courier-move/frame-05.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-running.webp",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG key-pose author)",
+    "creationMethod": "hand-authored-svg-key-pose",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-derivative-of-approved-kuro-signal-pose-running",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-beat-2-frame-05"
+  },
+  {
+    "assetId": "animations/anim-b-courier-move/frame-06.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG key-pose author)",
+    "creationMethod": "hand-authored-svg-key-pose",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-derivative-of-approved-kuro-signal-model-sheet",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-beat-2-frame-06"
+  },
+  {
+    "assetId": "animations/anim-b-courier-move/frame-07.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG key-pose author)",
+    "creationMethod": "hand-authored-svg-key-pose",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-derivative-of-approved-kuro-signal-fullbody-standing",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-beat-2-frame-07-fallback-pose"
+  }
+]

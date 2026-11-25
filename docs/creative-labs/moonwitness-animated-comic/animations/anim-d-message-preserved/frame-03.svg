@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="Rooftop relay warmup: archive loft rooftop antenna dish against Moon City dusk-blue sky with warm amber-cyan indicator light">
+  <defs>
+    <linearGradient id="sky-d3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a1020"/>
+      <stop offset="0.6" stop-color="#14213b"/>
+      <stop offset="1" stop-color="#1c2c4a"/>
+    </linearGradient>
+    <radialGradient id="led-glow-d3" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffe031" stop-opacity="0.9"/>
+      <stop offset="0.45" stop-color="#00d4ff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#00d4ff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="halftone-d3" width="12" height="12" patternUnits="userSpaceOnUse">
+      <circle cx="4" cy="4" r="1.4" fill="#0d0d0d" opacity="0.22"/>
+    </pattern>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#sky-d3)"/>
+  <!-- Distant Moon City Skyline Silhouette -->
+  <path d="M0 540 V418 H90 V372 H174 V406 H262 V352 H346 V412 H458 V384 H552 V424 H668 V364 H772 V398 H868 V346 H960 V540 Z" fill="#0d1424" stroke="#1e2e4d" stroke-width="3"/>
+  <!-- Distant Warm Windows -->
+  <g fill="#ffe031" opacity="0.65">
+    <rect x="114" y="392" width="10" height="14"/>
+    <rect x="134" y="392" width="10" height="14"/>
+    <rect x="284" y="376" width="12" height="14"/>
+    <rect x="694" y="388" width="12" height="16"/>
+    <rect x="716" y="388" width="12" height="16"/>
+    <rect x="892" y="372" width="12" height="16"/>
+  </g>
+
+  <!-- Archive Loft Rooftop Parapet & Chimney -->
+  <path d="M0 448 L960 448 L960 540 L0 540 Z" fill="#171b24" stroke="#0d0d0d" stroke-width="5"/>
+  <rect x="0" y="448" width="960" height="92" fill="url(#halftone-d3)"/>
+  <rect x="0" y="438" width="960" height="16" fill="#262c3a" stroke="#0d0d0d" stroke-width="4"/>
+
+  <!-- Rooftop Relay Mast & Dish -->
+  <g transform="translate(480, 178)">
+    <!-- Steel Tripod & Mast -->
+    <path d="M0 64 L0 264 M-56 264 L0 162 L56 264" fill="none" stroke="#2c3342" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M0 64 L0 264 M-56 264 L0 162 L56 264" fill="none" stroke="#0d0d0d" stroke-width="3" stroke-linecap="round"/>
+    <!-- Parabolic Dish Aimed Up-Right Toward Night Sky -->
+    <g transform="translate(0, 62) rotate(-26)">
+      <path d="M-76 -16 C-56 42 56 42 76 -16 Z" fill="#3a4354" stroke="#0d0d0d" stroke-width="4.5" stroke-linejoin="round"/>
+      <ellipse cx="0" cy="-16" rx="76" ry="20" fill="#4f5b70" stroke="#0d0d0d" stroke-width="4"/>
+      <ellipse cx="0" cy="-16" rx="54" ry="13" fill="none" stroke="#262d3b" stroke-width="2.5"/>
+      <!-- Feed Horn -->
+      <path d="M0 -16 L0 -68 M-36 -14 L0 -64 M36 -14 L0 -64" stroke="#0d0d0d" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="0" cy="-70" r="9" fill="#caa354" stroke="#0d0d0d" stroke-width="3.5"/>
+      <circle cx="0" cy="-70" r="4" fill="#00d4ff"/>
+    </g>
+
+    <!-- Relay Control Box Mounted on Mast -->
+    <g transform="translate(-44, 174)">
+      <rect x="0" y="0" width="88" height="54" rx="6" fill="#252b38" stroke="#0d0d0d" stroke-width="4"/>
+      <rect x="10" y="10" width="44" height="22" rx="3" fill="#0d2230" stroke="#0d0d0d" stroke-width="2.5"/>
+      <path d="M16 21 H48" stroke="#00d4ff" stroke-width="2.5" stroke-dasharray="6 4"/>
+      <!-- Warm Amber-Cyan Indicator Light Warming Up -->
+      <circle cx="68" cy="21" r="24" fill="url(#led-glow-d3)"/>
+      <circle cx="68" cy="21" r="6" fill="#ffe031" stroke="#0d0d0d" stroke-width="2.5"/>
+    </g>
+  </g>
+</svg>

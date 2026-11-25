@@ -1,0 +1,68 @@
+[
+  {
+    "assetId": "anim-d-message-preserved/frame-01.svg",
+    "characterId": "vesper-ink",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/vesper-ink-portrait-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-canon-portraits",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-4 frame-01"
+  },
+  {
+    "assetId": "anim-d-message-preserved/frame-02.svg",
+    "characterId": "vesper-ink",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/vesper-ink-portrait-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-canon-portraits",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-4 frame-02"
+  },
+  {
+    "assetId": "anim-d-message-preserved/frame-03.svg",
+    "characterId": "environment",
+    "sourceOrReference": "packages/assets/environments/moon-city-skyline-mid.svg",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-moon-city-environments",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-4 frame-03"
+  },
+  {
+    "assetId": "anim-d-message-preserved/frame-04.svg",
+    "characterId": "environment",
+    "sourceOrReference": "packages/assets/environments/moon-city-skyline-mid.svg",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-moon-city-environments",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-4 frame-04"
+  },
+  {
+    "assetId": "anim-d-message-preserved/frame-05.svg",
+    "characterId": "vesper-ink",
+    "sourceOrReference": "packages/assets/environments/moon-city-skyline-mid.svg",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-moon-city-environments",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-4 frame-05"
+  },
+  {
+    "assetId": "anim-d-message-preserved/frame-06.svg",
+    "characterId": "environment",
+    "sourceOrReference": "packages/assets/environments/moon-city-moon.svg; packages/assets/environments/moon-city-skyline-mid.svg",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-moon-city-environments",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-4 frame-06 fallback-and-reduced-motion"
+  }
+]

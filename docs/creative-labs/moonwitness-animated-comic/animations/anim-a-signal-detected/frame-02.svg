@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+  <defs>
+    <linearGradient id="sky-a2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#090d1c"/>
+      <stop offset="65%" stop-color="#111a31"/>
+      <stop offset="100%" stop-color="#1a2442"/>
+    </linearGradient>
+    <pattern id="halftone-a2" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="4" cy="4" r="1.4" fill="#0d0d0d" opacity="0.28"/>
+    </pattern>
+  </defs>
+
+  <!-- Night Sky & Crescent Moon -->
+  <rect width="960" height="540" fill="url(#sky-a2)"/>
+  <circle cx="790" cy="108" r="46" fill="#f3efe4" opacity="0.9"/>
+  <circle cx="808" cy="96" r="40" fill="#0d1428"/>
+
+  <!-- Skyline -->
+  <g fill="#0c1224" stroke="#0d0d0d" stroke-width="3">
+    <rect x="20" y="210" width="95" height="220"/>
+    <rect x="110" y="255" width="70" height="175"/>
+    <rect x="175" y="185" width="105" height="245"/>
+    <rect x="275" y="240" width="85" height="190"/>
+    <rect x="595" y="220" width="95" height="210"/>
+    <rect x="685" y="165" width="110" height="265"/>
+    <rect x="790" y="235" width="80" height="195"/>
+    <rect x="865" y="195" width="95" height="235"/>
+  </g>
+  <g opacity="0.65">
+    <rect x="42" y="235" width="12" height="18" fill="#ffe031"/>
+    <rect x="202" y="215" width="14" height="22" fill="#ff2e88"/>
+    <rect x="712" y="200" width="14" height="20" fill="#00e5ff"/>
+    <rect x="892" y="228" width="14" height="22" fill="#ff2e88"/>
+  </g>
+
+  <path d="M0 112 Q280 168 540 124 T960 156" fill="none" stroke="#0d0d0d" stroke-width="3.5"/>
+  <rect x="0" y="388" width="960" height="152" fill="#171d2c" stroke="#0d0d0d" stroke-width="4"/>
+  <rect x="0" y="388" width="960" height="152" fill="url(#halftone-a2)"/>
+  <rect x="0" y="366" width="960" height="24" fill="#252d40" stroke="#0d0d0d" stroke-width="4"/>
+  <line x1="0" y1="322" x2="960" y2="322" stroke="#2c354c" stroke-width="8"/>
+  <line x1="0" y1="322" x2="960" y2="322" stroke="#0d0d0d" stroke-width="4"/>
+  <g stroke="#0d0d0d" stroke-width="4" fill="#252d40">
+    <rect x="115" y="322" width="12" height="46"/>
+    <rect x="315" y="322" width="12" height="46"/>
+    <rect x="645" y="322" width="12" height="46"/>
+    <rect x="845" y="322" width="12" height="46"/>
+  </g>
+
+  <!-- Ground Shadow (wider on squash) -->
+  <ellipse cx="476" cy="482" rx="86" ry="16" fill="#070a14" opacity="0.78"/>
+
+  <!-- KURO SIGNAL: Frame 2 - Anticipation Dip (knees compress/squash, shoulders drop, cyan spark hits antenna) -->
+  <g id="kuro-anticipation-dip" stroke="#0d0d0d" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left Leg (bent knee outward for squash) -->
+    <path d="M474 358 L516 408 L508 456 L536 454 L544 404 L496 348 Z" fill="#1c1f26" stroke-width="4"/>
+    <path d="M504 448 L542 448 L556 470 L500 470 Z" fill="#181a20" stroke-width="4"/>
+    <path d="M498 468 L558 468 L558 480 L498 480 Z" fill="#ffe031" stroke-width="4"/>
+
+    <!-- Right Leg (deep knee bend forward) -->
+    <path d="M438 358 L412 412 L434 458 L466 456 L448 412 L468 358 Z" fill="#20232a" stroke-width="4"/>
+    <rect x="410" y="388" width="22" height="30" rx="4" fill="#1a1d24" stroke-width="3.5"/>
+    <path d="M426 448 L468 448 L478 470 L416 470 Z" fill="#181a20" stroke-width="4"/>
+    <path d="M414 468 L480 468 L480 480 L414 480 Z" fill="#ffe031" stroke-width="4"/>
+
+    <!-- Magenta Hip Strap swinging outward with dip -->
+    <path d="M438 356 Q400 384 396 416 Q408 420 414 410 Q422 384 448 360 Z" fill="#ff2e88" stroke-width="3.5"/>
+
+    <!-- Back Arm (elbow flaring out in startle) -->
+    <path d="M506 272 L548 296 L538 334 L516 324 L524 302 L494 288 Z" fill="#23262d" stroke-width="4"/>
+    <circle cx="526" cy="336" r="10" fill="#eab88e" stroke-width="3.5"/>
+
+    <!-- Compressed Hoodie Torso (squashed lower & wider) -->
+    <path d="M424 266 Q474 256 516 268 L524 352 Q474 366 420 352 Z" fill="#23262d" stroke-width="4.5"/>
+    <path d="M424 266 Q474 256 516 268 L524 352 Q474 366 420 352 Z" fill="url(#halftone-a2)"/>
+    <path d="M424 330 Q446 318 462 334 Q478 322 492 342 L488 352 L422 350 Z" fill="#ff2e88" stroke="none"/>
+    <polygon points="484,286 488,298 496,288 502,298 506,286 506,304 484,304" fill="#ffe031" stroke-width="3"/>
+    <path d="M436 260 Q472 284 510 264 Q504 246 472 244 Q438 246 436 260 Z" fill="#ff2e88" stroke-width="4"/>
+    <path d="M454 272 Q448 294 444 312" fill="none" stroke="#ff2e88" stroke-width="4"/>
+    <path d="M482 272 Q488 294 492 312" fill="none" stroke="#ff2e88" stroke-width="4"/>
+
+    <!-- Front Arm tensing up with Receiver -->
+    <path d="M428 272 L392 312 L408 352 L428 344 L416 316 L442 290 Z" fill="#23262d" stroke-width="4"/>
+    <path d="M402 348 Q396 362 410 368 Q422 366 426 352 Z" fill="#eab88e" stroke-width="3.5"/>
+    <g transform="translate(376,356) rotate(24)">
+      <rect x="0" y="0" width="38" height="52" rx="6" fill="#1b1f27" stroke="#0d0d0d" stroke-width="3.5"/>
+      <rect x="6" y="8" width="26" height="18" rx="3" fill="#0d1422" stroke="#0d0d0d" stroke-width="2.5"/>
+      <polyline points="8,18 14,12 19,22 25,10 30,17" fill="none" stroke="#00e5ff" stroke-width="2.2"/>
+      <polygon points="0,0 12,0 0,12" fill="#ffe031" stroke="#0d0d0d" stroke-width="2"/>
+      <line x1="30" y1="0" x2="34" y2="-16" stroke="#0d0d0d" stroke-width="3"/>
+    </g>
+
+    <!-- Head Dropped Down in Anticipation, Eyes Snapping Toward Headset -->
+    <path d="M422 204 Q410 226 426 248 L508 248 L524 226 Q528 202 512 184 Q502 152 468 150 Q428 152 422 204 Z" fill="#14161b" stroke-width="4.5"/>
+    <path d="M438 192 Q438 240 470 246 Q502 240 504 198 Q500 172 470 172 Q440 174 438 192 Z" fill="#eab88e" stroke-width="4"/>
+    <!-- Eyes darting up-right toward antenna -->
+    <ellipse cx="458" cy="208" rx="7" ry="6" fill="#f3efe4" stroke-width="2.8"/>
+    <circle cx="461" cy="206" r="3.2" fill="#0d0d0d"/>
+    <ellipse cx="488" cy="208" rx="7" ry="6" fill="#f3efe4" stroke-width="2.8"/>
+    <circle cx="491" cy="206" r="3.2" fill="#0d0d0d"/>
+    <!-- Bandages & startled tiny 'o' mouth -->
+    <rect x="464" y="216" width="18" height="7" rx="2" fill="#f3efe4" stroke-width="2.5"/>
+    <rect x="444" y="222" width="13" height="6" rx="1.5" transform="rotate(-14 450 225)" fill="#f3efe4" stroke-width="2.2"/>
+    <ellipse cx="474" cy="233" rx="4" ry="3" fill="#0d0d0d"/>
+
+    <!-- Bangs -->
+    <path d="M426 196 L444 176 L450 198 L466 172 L476 198 L492 176 L498 198 L516 184 Q504 152 470 148 Q430 150 426 196 Z" fill="#0d0d0d" stroke-width="4"/>
+
+    <!-- Headset + Antenna Sparking -->
+    <path d="M430 210 Q426 158 470 154 Q514 158 510 210" fill="none" stroke="#2b303a" stroke-width="9"/>
+    <path d="M430 210 Q426 158 470 154 Q514 158 510 210" fill="none" stroke="#0d0d0d" stroke-width="3.5"/>
+    <ellipse cx="510" cy="210" rx="11" ry="18" fill="#2b303a" stroke-width="4"/>
+    <ellipse cx="511" cy="210" rx="6.5" ry="12.5" fill="#00e5ff" stroke-width="2.5"/>
+    <ellipse cx="511" cy="210" rx="3" ry="6" fill="#ff2e88" stroke="none"/>
+    <line x1="514" y1="194" x2="526" y2="144" stroke="#0d0d0d" stroke-width="4"/>
+    <circle cx="526" cy="142" r="5.5" fill="#00e5ff" stroke-width="2.5"/>
+    <ellipse cx="432" cy="210" rx="10" ry="17" fill="#2b303a" stroke-width="4"/>
+    <ellipse cx="431" cy="210" rx="5.5" ry="11" fill="#00e5ff" stroke-width="2.5"/>
+    <path d="M434 222 Q448 236 466 236" fill="none" stroke="#0d0d0d" stroke-width="3.5"/>
+    <rect x="462" y="232" width="11" height="7" rx="3" fill="#ff2e88" stroke-width="2.5"/>
+  </g>
+
+  <!-- Cyan Signal Spark & Wave Ripple hitting Antenna Tip -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="526,118 532,134 548,136 534,144 538,160 526,148 512,158 518,144 504,134 520,134" fill="#00e5ff" stroke="#0d0d0d" stroke-width="2.8"/>
+    <circle cx="526" cy="142" r="28" fill="none" stroke="#00e5ff" stroke-width="3" stroke-dasharray="10 8"/>
+    <circle cx="526" cy="142" r="46" fill="none" stroke="#ff2e88" stroke-width="2.5" opacity="0.75" stroke-dasharray="14 10"/>
+  </g>
+</svg>

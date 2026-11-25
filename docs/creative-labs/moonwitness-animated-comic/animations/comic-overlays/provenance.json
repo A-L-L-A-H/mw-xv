@@ -1,0 +1,35 @@
+[
+  {
+    "assetId": "comic-overlays/speed-lines-burst.svg",
+    "characterId": "overlay",
+    "sourceOrReference": "MoonWitness Signal Riot palette tokens (#0d0d0d, #ff2e88, #00b8f0)",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-overlay",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "original-experimental-overlay",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic action-framing overlay"
+  },
+  {
+    "assetId": "comic-overlays/ink-wipe-mask.svg",
+    "characterId": "overlay",
+    "sourceOrReference": "MoonWitness zine torn-paper and brush-ink transition motifs",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-overlay",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "original-experimental-overlay",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic panel-transition overlay"
+  },
+  {
+    "assetId": "comic-overlays/halftone-corner-frame.svg",
+    "characterId": "overlay",
+    "sourceOrReference": "MoonWitness zine halftone vignette and gaffer tape framing",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-overlay",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "original-experimental-overlay",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic panel-border overlay"
+  }
+]

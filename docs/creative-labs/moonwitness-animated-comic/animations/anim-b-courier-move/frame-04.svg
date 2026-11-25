@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+  <defs>
+    <linearGradient id="sky-b4" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#090d1c"/>
+      <stop offset="50%" stop-color="#141e3a"/>
+      <stop offset="100%" stop-color="#090d1c"/>
+    </linearGradient>
+    <linearGradient id="smear-cyan" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0"/>
+      <stop offset="70%" stop-color="#00e5ff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#f3efe4" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="smear-magenta" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff2e88" stop-opacity="0"/>
+      <stop offset="75%" stop-color="#ff2e88" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#ffe031" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#sky-b4)"/>
+
+  <!-- High-Speed Horizontal Comic Speed Lines -->
+  <g stroke-linecap="round">
+    <line x1="0" y1="74" x2="960" y2="74" stroke="#1e2a4a" stroke-width="4"/>
+    <line x1="60" y1="126" x2="880" y2="126" stroke="#00e5ff" stroke-width="3" opacity="0.45"/>
+    <line x1="120" y1="420" x2="960" y2="420" stroke="#ff2e88" stroke-width="3.5" opacity="0.45"/>
+    <line x1="0" y1="472" x2="960" y2="472" stroke="#1e2a4a" stroke-width="5"/>
+  </g>
+
+  <!-- Rooftop Cable Span Zipping Beneath -->
+  <path d="M0 354 L960 326" stroke="#0d0d0d" stroke-width="6"/>
+  <path d="M0 374 L960 348" stroke="#0d0d0d" stroke-width="4"/>
+
+  <!-- KURO SIGNAL: Frame 4 - Smear Dash Impact Frame (dynamic comic smear streaks + stretched motion-blur silhouette) -->
+  <g id="kuro-smear-dash">
+    <!-- Cyan & Magenta Speed Arcs -->
+    <path d="M80 218 Q360 156 760 198 L720 228 Q340 194 90 248 Z" fill="url(#smear-cyan)"/>
+    <path d="M110 278 Q400 226 780 258 L740 294 Q380 264 120 314 Z" fill="url(#smear-magenta)"/>
+    <path d="M180 326 Q440 296 710 312 L680 334 Q420 322 190 348 Z" fill="#ffe031" opacity="0.75"/>
+
+    <!-- Stretched Motion-Blur Kuro Silhouette -->
+    <g stroke="#0d0d0d" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Elongated Charcoal Hoodie & Legs Smear -->
+      <path d="M240 258 Q420 198 672 210 L692 256 Q440 274 260 302 Z" fill="#23262d"/>
+      <!-- Magenta Hood & Strap Smear Streaks -->
+      <path d="M290 228 Q450 184 624 196 L608 214 Q440 206 298 244 Z" fill="#ff2e88" stroke-width="3.5"/>
+      <path d="M196 294 Q340 272 510 268 L496 286 Q332 290 204 308 Z" fill="#ff2e88" stroke-width="3.5"/>
+      <!-- Yellow Lug Boot Streaks -->
+      <path d="M248 302 L346 296 L336 318 L238 322 Z" fill="#ffe031" stroke-width="3.5"/>
+      <path d="M598 274 L682 286 L674 306 L590 292 Z" fill="#ffe031" stroke-width="3.5"/>
+
+      <!-- Crisp Leading Head & Receiver Anchor inside the Smear -->
+      <path d="M640 186 Q652 224 686 226 Q712 220 714 190 Q708 168 682 168 Q648 170 640 186 Z" fill="#eab88e"/>
+      <path d="M610 184 L644 166 L666 154 L708 166 L716 184 L682 174 L650 194 L608 198 Z" fill="#0d0d0d"/>
+      <ellipse cx="696" cy="194" rx="6" ry="4.5" fill="#00e5ff" stroke-width="2.5"/>
+      <rect x="692" y="202" width="14" height="5.5" rx="2" fill="#f3efe4" stroke-width="2"/>
+      <!-- Headset Glow Streak -->
+      <circle cx="662" cy="196" r="13" fill="#2b303a"/>
+      <circle cx="662" cy="196" r="7" fill="#00e5ff" stroke-width="2.5"/>
+      <!-- Leading Receiver Spark -->
+      <g transform="translate(724,202) rotate(14)">
+        <rect x="0" y="0" width="32" height="42" rx="5" fill="#1b1f27" stroke="#0d0d0d" stroke-width="3.5"/>
+        <rect x="5" y="6" width="22" height="14" rx="2" fill="#00e5ff" stroke="#0d0d0d" stroke-width="2"/>
+        <polygon points="0,0 10,0 0,10" fill="#ffe031" stroke="#0d0d0d" stroke-width="1.8"/>
+      </g>
+    </g>
+  </g>
+</svg>

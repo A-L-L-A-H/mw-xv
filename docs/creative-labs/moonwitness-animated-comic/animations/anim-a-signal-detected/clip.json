@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "clipId": "anim-a-signal-detected",
+  "beatId": "beat-1-signal-detected",
+  "title": "Signal Detected — Rooftop Pickup",
+  "status": "experimental-candidate",
+  "characterIds": ["kuro-signal"],
+  "loop": false,
+  "playbackMode": "one-shot-or-loop-preview",
+  "totalDurationMs": 2300,
+  "pivot": { "x": 0.5, "y": 0.88 },
+  "motionDescription": "Kuro Signal leans lazily on a Moon City rooftop rail until a cyan carrier spark hits the headset antenna, triggering a compressed anticipation dip, an upward whip reaction with flaring hair and drawstrings, a 3/4 receiver raise, and a settled determined-curiosity hero hold.",
+  "principlesApplied": [
+    "anticipation",
+    "squash-and-stretch",
+    "overlapping-action",
+    "follow-through",
+    "staging-and-silhouette"
+  ],
+  "fallbackPose": "animations/anim-a-signal-detected/frame-06.svg",
+  "reducedMotionAlternative": {
+    "asset": "animations/anim-a-signal-detected/frame-06.svg",
+    "description": "Crisp hero pose of Kuro Signal on the Moon City rooftop examining the glowing portable receiver with determined curiosity."
+  },
+  "frames": [
+    {
+      "frameId": "frame-01",
+      "asset": "animations/anim-a-signal-detected/frame-01.svg",
+      "durationMs": 520,
+      "poseLabel": "Rooftop Idle Lean",
+      "actingNote": "Leaning lazily on the rooftop rail, portable receiver hanging loosely at the hip, half-bored eyes scanning the Moon City skyline.",
+      "principles": ["staging-and-silhouette"]
+    },
+    {
+      "frameId": "frame-02",
+      "asset": "animations/anim-a-signal-detected/frame-02.svg",
+      "durationMs": 140,
+      "poseLabel": "Anticipation Dip",
+      "actingNote": "Cyan spark and ripple hit the antenna tip; knees compress into a squash dip, shoulders drop, eyes snap toward the headset.",
+      "principles": ["anticipation", "squash-and-stretch"]
+    },
+    {
+      "frameId": "frame-03",
+      "asset": "animations/anim-a-signal-detected/frame-03.svg",
+      "durationMs": 180,
+      "poseLabel": "Whip Reaction & Overshoot",
+      "actingNote": "Head snaps upright with wide surprised eyes, spiky hair and hoodie drawstrings flare upward, right hand whips up to the headset earcup.",
+      "principles": ["squash-and-stretch", "overlapping-action"]
+    },
+    {
+      "frameId": "frame-04",
+      "asset": "animations/anim-a-signal-detected/frame-04.svg",
+      "durationMs": 320,
+      "poseLabel": "Receiver Raise (Asymmetric)",
+      "actingNote": "Torso twists 3/4 left as Kuro raises the portable receiver to eye level; cyan and magenta waveforms spike on the LED screen.",
+      "principles": ["staging-and-silhouette", "arcs"]
+    },
+    {
+      "frameId": "frame-05",
+      "asset": "animations/anim-a-signal-detected/frame-05.svg",
+      "durationMs": 220,
+      "poseLabel": "Settle & Squint",
+      "actingNote": "Follow-through settle into leaning-in curiosity, furrowed brow, pulsing antenna rings, right hand cocked on hip.",
+      "principles": ["follow-through", "secondary-action"]
+    },
+    {
+      "frameId": "frame-06",
+      "asset": "animations/anim-a-signal-detected/frame-06.svg",
+      "durationMs": 920,
+      "poseLabel": "Held Hero Pose",
+      "actingNote": "Crisp readable silhouette examining the flickering receiver with determined curiosity; serves as fallback and reduced-motion frame.",
+      "principles": ["staging-and-silhouette", "appeal"]
+    }
+  ]
+}

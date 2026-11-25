@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EP-LAB-01 · WHEN THE MOON RISES, WE SHARE A MESSAGE — MoonWitness Animated Comic Lab</title>
+  <link rel="stylesheet" href="../../../packages/assets/fonts.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#comic-stage">Skip to comic stage</a>
+  <div class="halftone-bg" aria-hidden="true"></div>
+
+  <div id="status-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="experimental-banner" role="banner" data-testid="experimental-banner">
+    <span class="banner-tag">EXPERIMENTAL CREATIVE LAB · EP-LAB-01 · CANDIDATE (UNAPPROVED)</span>
+    <span class="banner-note">Original fictional editorial adaptation · Zero autoplay · Self-contained lab preview</span>
+  </div>
+
+  <header class="lab-header">
+    <div class="header-title-block">
+      <p class="header-eyebrow">MOONWITNESS ANIMATED COMIC THEATER · EP-LAB-01</p>
+      <h1 id="episode-title" class="episode-title">WHEN THE MOON RISES, WE SHARE A MESSAGE</h1>
+    </div>
+
+    <nav class="mode-bar" aria-label="View modes and inspector">
+      <button type="button" id="btn-mode-stage" class="zine-btn is-active" data-testid="btn-mode-stage" aria-pressed="true">
+        Theater Stage
+      </button>
+      <button type="button" id="btn-mode-static" class="zine-btn" data-testid="btn-mode-static" aria-pressed="false">
+        Static Comic Grid
+      </button>
+      <button type="button" id="btn-reduced-motion" class="zine-btn zine-btn-yellow" data-testid="btn-reduced-motion" aria-pressed="false">
+        Reduced Motion: OFF
+      </button>
+      <button type="button" id="btn-sources-drawer" class="zine-btn zine-btn-magenta" data-testid="btn-sources-drawer" aria-expanded="false" aria-controls="sources-drawer">
+        Cast &amp; Sources
+      </button>
+    </nav>
+  </header>
+
+  <main class="lab-main">
+    <!-- Collapsible Character, Sources & Provenance Inspector -->
+    <aside id="sources-drawer" class="sources-drawer" data-testid="sources-drawer" aria-label="Character references, narrative sources, and provenance" hidden>
+      <div class="drawer-header">
+        <h2>CAST, SOURCES &amp; PROVENANCE INSPECTOR</h2>
+        <button type="button" id="btn-close-drawer" class="zine-btn zine-btn-sm" aria-label="Close Cast and Sources drawer">Close [I]</button>
+      </div>
+
+      <div class="drawer-grid">
+        <section class="drawer-card">
+          <h3>APPROVED VISUAL REFERENCES</h3>
+          <p class="drawer-status-badge">PROVENANCE: experimental-candidate-unapproved</p>
+          <div class="ref-character-list">
+            <article class="ref-character">
+              <h4>Kuro Signal</h4>
+              <div class="ref-thumbs">
+                <img src="../../../packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png" alt="Kuro Signal approved model sheet master reference" loading="lazy" />
+                <img src="../../../packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-standing.webp" alt="Kuro Signal approved standing pose reference" loading="lazy" />
+              </div>
+              <p class="ref-rules">Continuity: dark punk street silhouette, electric magenta/cyan signal trim, spiky hair silhouette, expressive torso lean and crisp ink linework.</p>
+            </article>
+            <article class="ref-character">
+              <h4>Vesper Ink</h4>
+              <div class="ref-thumbs">
+                <img src="../../../packages/assets/illustrations/riot-universe/characters/vesper-ink-portrait.webp" alt="Vesper Ink approved portrait reference" loading="lazy" />
+              </div>
+              <p class="ref-rules">Continuity: monochrome zine ink aesthetic, sharp bangs, poised gaze, violet/cyan editorial highlights, calm deliberate hand gestures.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="drawer-card">
+          <h3>NON-CANONICAL CANDIDATE</h3>
+          <div id="candidate-info" class="candidate-info">
+            <p class="muted-copy">Loading candidate record...</p>
+          </div>
+        </section>
+
+        <section class="drawer-card">
+          <h3>CROSS-REPO NARRATIVE SOURCES</h3>
+          <p class="drawer-copy">
+            This episode is an original fictional editorial adaptation synthesized across 8 archived MoonWitness &amp; Rocksoul repositories plus local MW-XV lore docs. Repositories are separate authority scopes and NOT merged into a single canonical database.
+          </p>
+          <ul class="source-list">
+            <li><code>bjo163/moonwitness-II</code> — World Rules 01–10 &amp; Witness Records</li>
+            <li><code>bjo163/moonwitness-xii-season-global-championships</code> — Character Canon V3</li>
+            <li><code>bjo163/moonwitnessxv</code> — ARSY hub &amp; SIGNAL/RADIO domain</li>
+            <li><code>bjo163/rocksoul-assets</code> — Art Direction V2</li>
+            <li><code>bjo163/rocksoul-mftl</code> / <code>rocksoul-superhero</code> / <code>rocksoul-world</code></li>
+            <li><code>bjo163/moonframe</code> — Asset manifest contract v0.1</li>
+          </ul>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Theater Stage View -->
+    <section id="theater-view" class="theater-view" data-testid="theater-view" aria-label="Animated comic theater">
+      <div class="stage-meta-bar" aria-label="Current panel metadata">
+        <span id="meta-panel-id" class="meta-pill meta-pill-yellow" data-testid="meta-panel-id">P01</span>
+        <span id="meta-beat-id" class="meta-pill meta-pill-magenta" data-testid="meta-beat-id">STATIC</span>
+        <span id="meta-frame-counter" class="meta-pill meta-pill-mono" data-testid="meta-frame-counter">Frame 1 / 1</span>
+        <span id="meta-shot-type" class="meta-pill" data-testid="meta-shot-type">Establishing</span>
+        <span id="meta-playback-state" class="meta-pill meta-pill-cyan" data-testid="meta-playback-state">PAUSED</span>
+      </div>
+
+      <div id="comic-stage" class="comic-stage" data-testid="comic-stage" tabindex="-1">
+        <div id="stage-backdrops" class="stage-backdrops" aria-hidden="true"></div>
+        <img id="stage-frame-img" class="stage-frame-img" src="" alt="Comic panel artwork" />
+        <img id="stage-foreground-img" class="stage-foreground-img" src="" alt="" hidden />
+        <div id="stage-fx-overlay" class="stage-fx-overlay" aria-hidden="true"></div>
+      </div>
+
+      <!-- Live HTML Caption & Speech Bubble Strip BELOW/OUTSIDE artwork -->
+      <div id="comic-caption-strip" class="comic-caption-strip" data-testid="comic-caption-strip">
+        <div id="speech-bubble-wrap" class="speech-bubble-wrap" hidden>
+          <span id="caption-speaker" class="speaker-tag"></span>
+          <p id="caption-dialogue" class="speech-bubble"></p>
+        </div>
+        <div class="narrative-caption-box">
+          <p id="caption-text" class="caption-text">Loading storyboard...</p>
+          <p id="acting-note-text" class="acting-note-text"></p>
+        </div>
+      </div>
+
+      <!-- Playback & Stepping Controls -->
+      <div id="playback-controls" class="playback-controls" role="region" aria-label="Playback and stepping controls">
+        <div class="control-group">
+          <button type="button" id="btn-play" class="zine-btn zine-btn-magenta" data-testid="btn-play">Play</button>
+          <button type="button" id="btn-pause" class="zine-btn" data-testid="btn-pause">Pause</button>
+          <button type="button" id="btn-replay" class="zine-btn" data-testid="btn-replay">Replay</button>
+        </div>
+
+        <div class="control-group">
+          <button type="button" id="btn-prev-frame" class="zine-btn" data-testid="btn-prev-frame" aria-label="Previous frame">&lsaquo; Frame</button>
+          <button type="button" id="btn-next-frame" class="zine-btn" data-testid="btn-next-frame" aria-label="Next frame">Frame &rsaquo;</button>
+        </div>
+
+        <div class="control-group">
+          <button type="button" id="btn-prev-panel" class="zine-btn" data-testid="btn-prev-panel" aria-label="Previous panel">&laquo; Panel</button>
+          <button type="button" id="btn-next-panel" class="zine-btn" data-testid="btn-next-panel" aria-label="Next panel">Panel &raquo;</button>
+        </div>
+
+        <div class="control-group" role="group" aria-label="Playback speed">
+          <button type="button" id="btn-speed-normal" class="zine-btn is-active" data-testid="btn-speed-normal" aria-pressed="true">1.0x</button>
+          <button type="button" id="btn-speed-slow" class="zine-btn" data-testid="btn-speed-slow" aria-pressed="false">0.45x</button>
+        </div>
+
+        <div class="control-group scope-group">
+          <label for="scope-select" class="scope-label">Scope</label>
+          <select id="scope-select" class="zine-select" data-testid="scope-select">
+            <option value="EP-LAB-01">Full Episode (EP-LAB-01)</option>
+            <option value="ANIM-A">Beat Loop: ANIM-A</option>
+            <option value="ANIM-B">Beat Loop: ANIM-B</option>
+            <option value="ANIM-C">Beat Loop: ANIM-C</option>
+            <option value="ANIM-D">Beat Loop: ANIM-D</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 12-Panel Storyboard Filmstrip Navigator -->
+      <section class="filmstrip-section" aria-label="Storyboard panel navigator">
+        <div class="filmstrip-header">
+          <h2>STORYBOARD PANELS (P01–P12)</h2>
+          <span class="shortcuts-hint">Keys: Space Play/Pause · &larr;/&rarr; Frame · [/] Panel · R Replay · S 0.45x · G Grid · M Reduced Motion · I Sources</span>
+        </div>
+        <div id="panel-filmstrip" class="panel-filmstrip" data-testid="panel-filmstrip" role="list"></div>
+      </section>
+    </section>
+
+    <!-- Static Comic Storyboard Grid View -->
+    <section id="static-grid-view" class="static-grid-view" data-testid="static-grid-view" aria-label="Static comic storyboard grid" hidden>
+      <div class="static-grid-header">
+        <h2>STATIC COMIC STORYBOARD — EP-LAB-01</h2>
+        <p>All 12 panels rendered as deterministic static frames with live HTML captions and dialogue. Animation is completely stopped.</p>
+      </div>
+      <div id="static-grid-container" class="static-grid-container"></div>
+    </section>
+  </main>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="Asymmetric punk-manga diagonal speed lines framing center action safely">
+  <!-- Transparent background; perimeter-weighted asymmetric diagonal lines -->
+  <g stroke="#0d0d0d" stroke-linecap="round" opacity="0.72">
+    <path d="M-12 24 L218 118" stroke-width="5"/>
+    <path d="M-12 78 L174 148" stroke-width="3"/>
+    <path d="M-12 162 L144 196" stroke-width="4"/>
+    <path d="M-12 368 L152 332" stroke-width="4.5"/>
+    <path d="M-12 456 L212 384" stroke-width="5.5"/>
+    <path d="M972 32 L746 122" stroke-width="5"/>
+    <path d="M972 112 L794 166" stroke-width="3"/>
+    <path d="M972 378 L804 340" stroke-width="4"/>
+    <path d="M972 470 L736 392" stroke-width="5.5"/>
+  </g>
+  <g stroke="#ff2e88" stroke-linecap="round" opacity="0.68">
+    <path d="M24 -10 L248 96" stroke-width="3.5"/>
+    <path d="M-12 122 L162 172" stroke-width="2.8"/>
+    <path d="M-12 412 L182 356" stroke-width="3.2"/>
+    <path d="M936 -10 L718 98" stroke-width="3.5"/>
+    <path d="M972 426 L776 364" stroke-width="3"/>
+  </g>
+  <g stroke="#00b8f0" stroke-linecap="round" opacity="0.62">
+    <path d="M110 -10 L282 78" stroke-width="2.5"/>
+    <path d="M-12 298 L128 286" stroke-width="2.5"/>
+    <path d="M848 -10 L682 82" stroke-width="2.5"/>
+    <path d="M972 248 L832 260" stroke-width="2.5"/>
+    <path d="M862 550 L692 444" stroke-width="3"/>
+  </g>
+</svg>

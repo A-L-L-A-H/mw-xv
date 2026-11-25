@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="Vesper Ink reaches deliberately with both hands and brass stylus to lift the signal slip toward the cyan CRT glow">
+  <defs>
+    <linearGradient id="bg-wall-c2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141822"/>
+      <stop offset="1" stop-color="#0d1018"/>
+    </linearGradient>
+    <radialGradient id="lamp-glow-c2" cx="0.78" cy="0.24" r="0.55">
+      <stop offset="0" stop-color="#ffe031" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#ffe031" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="crt-glow-c2" cx="0.18" cy="0.52" r="0.48">
+      <stop offset="0" stop-color="#00b8f0" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#00b8f0" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="halftone-c2" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.4" fill="#0d0d0d" opacity="0.22"/>
+    </pattern>
+    <pattern id="violet-dots-c2" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2.5" cy="2.5" r="1.3" fill="#9d4edd" opacity="0.38"/>
+    </pattern>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#bg-wall-c2)"/>
+  <g stroke="#202636" stroke-width="2" opacity="0.5">
+    <path d="M0 95H960 M0 165H960 M0 235H960 M0 305H960"/>
+    <path d="M160 95V165 M360 95V165 M560 95V165 M760 95V165"/>
+    <path d="M80 165V235 M280 165V235 M480 165V235 M680 165V235 M880 165V235"/>
+  </g>
+  <!-- CRT Monitor Closer on Left Casting Cyan Glow -->
+  <g transform="translate(20, 175)">
+    <rect x="0" y="0" width="170" height="156" rx="14" fill="#232834" stroke="#0d0d0d" stroke-width="4.5"/>
+    <rect x="18" y="18" width="132" height="106" rx="8" fill="#092434" stroke="#0d0d0d" stroke-width="3.5"/>
+    <path d="M28 72 Q56 30 84 72 T140 72" fill="none" stroke="#00d4ff" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <rect width="960" height="540" fill="url(#lamp-glow-c2)"/>
+  <rect width="960" height="540" fill="url(#crt-glow-c2)"/>
+
+  <!-- VESPER INK (Leaning slightly forward over desk, waist-up, reaching deliberately with both hands) -->
+  <g id="vesper-c2" transform="translate(500, 96)">
+    <!-- Back Hair -->
+    <path d="M-84 96 C-100 148 -84 206 -52 228 L78 224 C104 194 114 136 98 80 C82 22 46 -6 -6 -6 C-56 -6 -94 38 -84 96 Z" fill="#f2efe9" stroke="#0d0d0d" stroke-width="4.5"/>
+    <path d="M-80 120 C-90 164 -74 204 -50 224 L74 220 C94 194 102 156 94 116 Z" fill="url(#violet-dots-c2)"/>
+
+    <!-- Torso Leaning Forward -->
+    <path d="M-126 286 C-112 228 -74 208 -28 202 L42 202 C92 208 128 234 140 288 L152 340 L-138 340 Z" fill="#1c1e24" stroke="#0d0d0d" stroke-width="4.5"/>
+    <!-- Neck -->
+    <path d="M-22 174 L-24 214 Q4 228 30 214 L28 174 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4"/>
+
+    <!-- Utility Apron -->
+    <path d="M-76 218 L-56 202 L-38 220 L-42 252 L48 252 L44 220 L62 202 L82 218 L92 340 L-86 340 Z" fill="#c8a986" stroke="#0d0d0d" stroke-width="4"/>
+    <path d="M-48 288 H42 V340 H-48 Z" fill="#b79670" stroke="#0d0d0d" stroke-width="3.5"/>
+    <!-- Two Yellow Binder Clips -->
+    <g transform="translate(-36, 238)">
+      <path d="M6 0 C6 -12 18 -12 18 0" fill="none" stroke="#d8dee9" stroke-width="2.5"/>
+      <rect x="0" y="0" width="24" height="18" rx="2" fill="#ffe031" stroke="#0d0d0d" stroke-width="3"/>
+    </g>
+    <g transform="translate(-34, 278)">
+      <path d="M6 0 C6 -12 18 -12 18 0" fill="none" stroke="#d8dee9" stroke-width="2.5"/>
+      <rect x="0" y="0" width="24" height="18" rx="2" fill="#ffe031" stroke="#0d0d0d" stroke-width="3"/>
+    </g>
+    <!-- Magenta Tape -->
+    <rect x="20" y="260" width="48" height="12" transform="rotate(14 44 266)" fill="#ff2e88" stroke="#0d0d0d" stroke-width="2.5"/>
+    <rect x="18" y="278" width="48" height="12" transform="rotate(14 42 284)" fill="#ff2e88" stroke="#0d0d0d" stroke-width="2.5"/>
+    <!-- Satchel Strap -->
+    <path d="M62 200 L94 214 L-10 340 L-46 340 Z" fill="#968b6f" stroke="#0d0d0d" stroke-width="4"/>
+
+    <!-- Face (Slightly angled left toward lifted slip) -->
+    <g transform="rotate(-5 0 110)">
+      <path d="M-58 90 C-60 148 -36 184 4 188 C46 184 68 146 66 90 C64 44 36 26 4 26 C-32 26 -56 46 -58 90 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4.5"/>
+      <!-- Focused Eyes Tracking the Slip -->
+      <g stroke="#0d0d0d" stroke-width="3.5" stroke-linecap="round">
+        <path d="M-42 98 Q-28 94 -14 98" fill="none"/>
+        <path d="M16 98 Q30 94 44 98" fill="none"/>
+        <path d="M-40 112 Q-26 108 -14 114" fill="none" stroke-width="4"/>
+        <path d="M16 114 Q28 108 42 112" fill="none" stroke-width="4"/>
+        <ellipse cx="-30" cy="116" rx="5.5" ry="4.8" fill="#0d0d0d"/>
+        <ellipse cx="24" cy="116" rx="5.5" ry="4.8" fill="#0d0d0d"/>
+        <circle cx="-32" cy="114.5" r="1.6" fill="#00d4ff" stroke="none"/>
+        <circle cx="22" cy="114.5" r="1.6" fill="#00d4ff" stroke="none"/>
+      </g>
+      <path d="M0 128 L-4 140 L4 142" fill="none" stroke="#0d0d0d" stroke-width="3" stroke-linecap="round"/>
+      <path d="M-12 158 Q2 162 16 157" fill="none" stroke="#0d0d0d" stroke-width="3.2" stroke-linecap="round"/>
+
+      <!-- Front Bangs + Violet/Cyan Streaks -->
+      <path d="M-68 80 C-78 134 -64 176 -42 208 C-50 172 -50 130 -44 96 C-22 94 -2 74 8 54 C14 74 24 88 40 94 C50 128 50 166 42 198 C68 170 82 130 78 76 C70 18 34 -8 -6 -8 C-50 -8 -76 28 -68 80 Z" fill="#f2efe9" stroke="#0d0d0d" stroke-width="4.5"/>
+      <path d="M-58 90 C-66 134 -58 172 -42 204 C-40 172 -40 132 -34 96 Z" fill="#9d4edd" stroke="#0d0d0d" stroke-width="3"/>
+      <path d="M-66 106 C-72 140 -64 172 -48 198 C-52 168 -54 136 -50 108 Z" fill="#00b8f0" stroke="#0d0d0d" stroke-width="2.5"/>
+      <path d="M54 116 C58 146 54 174 44 196 C60 174 66 144 62 114 Z" fill="#00b8f0" stroke="#0d0d0d" stroke-width="2.5"/>
+
+      <!-- Brass Forehead Goggles -->
+      <g transform="translate(2, 42) rotate(-3)">
+        <path d="M-68 6 L70 6" stroke="#4a3c24" stroke-width="8" stroke-linecap="round"/>
+        <path d="M-12 2 Q0 -6 12 2" fill="none" stroke="#8a6c34" stroke-width="7" stroke-linecap="round"/>
+        <circle cx="-32" cy="4" r="25" fill="#caa354" stroke="#0d0d0d" stroke-width="4"/>
+        <circle cx="-32" cy="4" r="18" fill="#c084fc" stroke="#0d0d0d" stroke-width="3"/>
+        <circle cx="32" cy="4" r="25" fill="#caa354" stroke="#0d0d0d" stroke-width="4"/>
+        <circle cx="32" cy="4" r="18" fill="#00d4ff" stroke="#0d0d0d" stroke-width="3"/>
+      </g>
+    </g>
+
+    <!-- Both Hands Lifting the Paper Signal Slip Up Toward Cyan CRT Glow -->
+    <g transform="translate(-142, 232)">
+      <!-- Lifted Signal Slip (Tilted in mid-air) -->
+      <polygon points="18,-28 192,-52 216,42 36,68" fill="#f2efe9" stroke="#0d0d0d" stroke-width="4.5" stroke-linejoin="round"/>
+      <polygon points="18,-28 192,-52 216,42 36,68" fill="#00d4ff" opacity="0.14"/>
+      <g stroke="#2a2d36" stroke-width="3.5" stroke-linecap="round">
+        <path d="M44 -10 L118 -20 M148 -24 L178 -28"/>
+        <path d="M50 8 L96 2"/>
+        <path d="M56 26 L186 8"/>
+        <path d="M62 42 L152 30"/>
+      </g>
+      <rect x="122" y="-26" width="22" height="12" transform="rotate(-8 133 -20)" fill="none" stroke="#ff2e88" stroke-width="2.5" stroke-dasharray="4 3"/>
+      <rect x="104" y="-6" width="58" height="12" transform="rotate(-8 133 0)" fill="none" stroke="#ff2e88" stroke-width="2.5" stroke-dasharray="4 3"/>
+
+      <!-- Vesper Viewer-Left Hand Gripping Left Edge -->
+      <path d="M-12 24 C-16 2 8 -14 28 -8 L38 14 C36 32 14 42 -6 36 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4"/>
+      <!-- Vesper Viewer-Right Hand Holding Right Edge + Brass Stylus Poised -->
+      <path d="M188 -6 C210 -12 232 4 226 28 L202 40 C186 34 182 14 188 -6 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4"/>
+      <path d="M168 -48 L254 22" stroke="#caa354" stroke-width="7.5" stroke-linecap="round"/>
+      <path d="M168 -48 L254 22" stroke="#0d0d0d" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- Desk Foreground -->
+  <path d="M0 434 L960 430 L960 540 L0 540 Z" fill="#2c2927" stroke="#0d0d0d" stroke-width="5"/>
+  <rect x="0" y="434" width="960" height="106" fill="url(#halftone-c2)"/>
+  <!-- Receiver Resting on Desk -->
+  <g transform="translate(152, 444)">
+    <polygon points="0,12 96,6 112,56 12,62" fill="#2b313e" stroke="#0d0d0d" stroke-width="4"/>
+    <circle cx="84" cy="24" r="5" fill="#ffe031" stroke="#0d0d0d" stroke-width="2"/>
+  </g>
+</svg>

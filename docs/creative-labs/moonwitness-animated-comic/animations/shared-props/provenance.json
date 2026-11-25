@@ -1,0 +1,35 @@
+[
+  {
+    "assetId": "animations/shared-props/portable-receiver-closeup.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/world/characters/character-registry.json",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG prop author)",
+    "creationMethod": "hand-authored-svg-prop",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-prop-derived-from-kuro-signal-signature-props",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-shared-prop-receiver-closeup"
+  },
+  {
+    "assetId": "animations/shared-props/fragment-slip-incomplete.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/world/characters/character-registry.json",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG prop author)",
+    "creationMethod": "hand-authored-svg-prop",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-world-prop-moonwitness-zine-archive",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-shared-prop-fragment-slip"
+  },
+  {
+    "assetId": "animations/shared-props/archive-folio-sealed.svg",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/world/characters/character-registry.json",
+    "creatorOrGenerator": "anim-kuro (MoonWitness Creative Labs SVG prop author)",
+    "creationMethod": "hand-authored-svg-prop",
+    "licenseStatus": "ISC",
+    "sourceDerivativeRelationship": "original-world-prop-moonwitness-zine-archive",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic-shared-prop-archive-folio"
+  }
+]

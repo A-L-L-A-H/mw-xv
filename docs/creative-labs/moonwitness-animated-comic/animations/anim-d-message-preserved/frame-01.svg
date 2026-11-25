@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="Folio alignment at archive table: Kuro watches closely from the left while Vesper aligns the partial sheet inside a zine sleeve">
+  <defs>
+    <linearGradient id="bg-d1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141822"/>
+      <stop offset="1" stop-color="#0d1018"/>
+    </linearGradient>
+    <radialGradient id="lamp-d1" cx="0.58" cy="0.24" r="0.54">
+      <stop offset="0" stop-color="#ffe031" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#ffe031" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="halftone-d1" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.4" fill="#0d0d0d" opacity="0.22"/>
+    </pattern>
+    <pattern id="violet-dots-d1" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2.5" cy="2.5" r="1.3" fill="#9d4edd" opacity="0.38"/>
+    </pattern>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#bg-d1)"/>
+  <g stroke="#202636" stroke-width="2" opacity="0.45">
+    <path d="M0 95H960 M0 165H960 M0 235H960 M0 305H960"/>
+    <path d="M160 95V165 M360 95V165 M560 95V165 M760 95V165"/>
+  </g>
+  <rect width="960" height="540" fill="url(#lamp-d1)"/>
+
+  <!-- KURO SIGNAL (Left, Leaning Slightly In, Watching Closely) -->
+  <g id="kuro-d1" transform="translate(235, 166) rotate(4)">
+    <path d="M-86 146 C-68 104 -18 96 38 110 L82 146 L74 258 L-96 258 Z" fill="#1e2028" stroke="#0d0d0d" stroke-width="4.5"/>
+    <path d="M-54 104 C-24 86 24 90 48 112 C24 128 -24 128 -54 104 Z" fill="#ff2e88" stroke="#0d0d0d" stroke-width="4"/>
+    <polygon points="26,146 30,134 36,142 42,132 46,146" fill="#ffe031" stroke="#0d0d0d" stroke-width="2.5"/>
+    <g transform="translate(12, 22)">
+      <path d="M-60 32 C-76 8 -66 -34 -36 -48 C-16 -68 22 -70 46 -46 C68 -36 74 0 58 26 L-44 68 Z" fill="#0d0d0d"/>
+      <path d="M-20 8 C-20 52 2 76 32 76 C56 72 66 48 62 12 C58 -16 34 -28 8 -28 C-12 -28 -20 -12 -20 8 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4"/>
+      <ellipse cx="42" cy="26" rx="5.5" ry="6.5" fill="#0d0d0d"/>
+      <circle cx="44" cy="24" r="1.8" fill="#ffffff"/>
+      <path d="M28 12 L54 14" stroke="#0d0d0d" stroke-width="3.2" stroke-linecap="round"/>
+      <rect x="24" y="36" width="16" height="7" rx="2" fill="#f2efe9" stroke="#0d0d0d" stroke-width="2"/>
+      <path d="M36 56 Q46 57 54 54" fill="none" stroke="#0d0d0d" stroke-width="3" stroke-linecap="round"/>
+      <!-- Headset -->
+      <path d="M-14 -4 C-8 -52 38 -52 50 -6" fill="none" stroke="#2c303a" stroke-width="9" stroke-linecap="round"/>
+      <ellipse cx="2" cy="24" rx="14" ry="20" fill="#2c303a" stroke="#0d0d0d" stroke-width="4"/>
+      <ellipse cx="2" cy="24" rx="7" ry="11" fill="none" stroke="#00d4ff" stroke-width="3.5"/>
+      <path d="M12 -18 L24 -72" stroke="#2c303a" stroke-width="4.5" stroke-linecap="round"/>
+      <circle cx="24" cy="-72" r="4.5" fill="#00d4ff" stroke="#0d0d0d" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- VESPER INK (Right, Waist-Up, Looking Down Focused on Aligning Sheet into Zine Sleeve) -->
+  <g id="vesper-d1" transform="translate(625, 112)">
+    <path d="M-78 92 C-94 142 -78 198 -48 220 L74 216 C100 186 108 130 94 78 C80 22 44 -4 -4 -4 C-52 -4 -88 38 -78 92 Z" fill="#f2efe9" stroke="#0d0d0d" stroke-width="4.5"/>
+    <path d="M-74 116 C-84 158 -68 196 -46 216 L72 212 C90 188 98 150 90 110 Z" fill="url(#violet-dots-d1)"/>
+    <path d="M-112 272 C-102 222 -68 204 -26 198 L38 198 C84 204 118 228 128 276 L138 328 L-124 328 Z" fill="#1c1e24" stroke="#0d0d0d" stroke-width="4.5"/>
+    <path d="M-20 170 L-22 210 Q4 224 28 210 L26 170 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4"/>
+    <path d="M-70 214 L-50 198 L-34 216 L-38 246 L44 246 L40 216 L56 198 L76 214 L86 328 L-80 328 Z" fill="#c8a986" stroke="#0d0d0d" stroke-width="4"/>
+    <rect x="-32" y="234" width="24" height="18" rx="2" fill="#ffe031" stroke="#0d0d0d" stroke-width="3"/>
+    <rect x="-30" y="272" width="24" height="18" rx="2" fill="#ffe031" stroke="#0d0d0d" stroke-width="3"/>
+    <rect x="18" y="252" width="46" height="12" transform="rotate(14 41 258)" fill="#ff2e88" stroke="#0d0d0d" stroke-width="2.5"/>
+    <path d="M56 196 L88 210 L-12 328 L-44 328 Z" fill="#968b6f" stroke="#0d0d0d" stroke-width="4"/>
+
+    <!-- Head Angled Down Toward Folio -->
+    <g transform="rotate(-6 0 112)">
+      <path d="M-54 88 C-56 144 -34 178 4 182 C44 178 64 142 62 88 C60 44 34 26 4 26 C-30 26 -52 46 -54 88 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4.5"/>
+      <g stroke="#0d0d0d" stroke-width="3.5" stroke-linecap="round">
+        <path d="M-38 100 Q-24 96 -12 100" fill="none"/>
+        <path d="M16 100 Q30 96 44 100" fill="none"/>
+        <path d="M-36 114 Q-24 118 -12 114" fill="none" stroke-width="4"/>
+        <path d="M18 114 Q30 118 42 114" fill="none" stroke-width="4"/>
+      </g>
+      <path d="M2 126 L-2 138 L5 140" fill="none" stroke="#0d0d0d" stroke-width="3" stroke-linecap="round"/>
+      <path d="M-10 156 Q4 160 16 155" fill="none" stroke="#0d0d0d" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M-64 78 C-74 128 -62 168 -40 198 C-48 164 -48 124 -42 94 C-22 92 -2 72 8 54 C12 72 22 86 38 92 C48 124 48 160 40 190 C66 164 78 126 74 74 C66 18 32 -6 -4 -6 C-46 -6 -72 28 -64 78 Z" fill="#f2efe9" stroke="#0d0d0d" stroke-width="4.5"/>
+      <path d="M-54 88 C-62 128 -54 164 -40 194 C-38 164 -38 126 -32 94 Z" fill="#9d4edd" stroke="#0d0d0d" stroke-width="3"/>
+      <path d="M-62 104 C-68 136 -60 166 -46 190 C-50 162 -52 132 -48 106 Z" fill="#00b8f0" stroke="#0d0d0d" stroke-width="2.5"/>
+      <g transform="translate(2, 42) rotate(-3)">
+        <path d="M-64 6 L66 6" stroke="#4a3c24" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="-30" cy="4" r="24" fill="#caa354" stroke="#0d0d0d" stroke-width="4"/>
+        <circle cx="-30" cy="4" r="17" fill="#c084fc" stroke="#0d0d0d" stroke-width="3"/>
+        <circle cx="30" cy="4" r="24" fill="#caa354" stroke="#0d0d0d" stroke-width="4"/>
+        <circle cx="30" cy="4" r="17" fill="#00d4ff" stroke="#0d0d0d" stroke-width="3"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Archive Table -->
+  <path d="M0 404 L960 400 L960 540 L0 540 Z" fill="#2c2927" stroke="#0d0d0d" stroke-width="5"/>
+  <rect x="0" y="404" width="960" height="136" fill="url(#halftone-d1)"/>
+
+  <!-- Zine Folio Sleeve + Partial Sheet Being Aligned Inside -->
+  <g transform="translate(380, 418)">
+    <!-- Open Zine Folio Sleeve -->
+    <polygon points="0,14 274,8 296,104 16,110" fill="#262c38" stroke="#0d0d0d" stroke-width="4.5" stroke-linejoin="round"/>
+    <polygon points="18,22 256,16 274,94 32,100" fill="#323a4a" stroke="#0d0d0d" stroke-width="3"/>
+    <!-- Partial Signal Sheet Sliding Cleanly Into Sleeve -->
+    <polygon points="36,12 224,8 238,84 48,88" fill="#f2efe9" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"/>
+    <g stroke="#222630" stroke-width="3.2" stroke-linecap="round">
+      <path d="M56 28 H130 M168 26 H210"/>
+      <path d="M58 46 H108"/>
+      <path d="M60 64 H206"/>
+    </g>
+    <!-- Unfilled Blank Gap Preserved -->
+    <rect x="114" y="38" width="68" height="12" fill="none" stroke="#ff2e88" stroke-width="2.5" stroke-dasharray="4 3"/>
+    <!-- Vesper Hands Guiding Alignment -->
+    <path d="M-10 38 C-14 18 14 10 34 22 L38 52 C24 64 -2 60 -10 38 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4"/>
+    <path d="M232 22 C254 14 276 24 272 48 L248 60 C230 56 226 36 232 22 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4"/>
+  </g>
+</svg>

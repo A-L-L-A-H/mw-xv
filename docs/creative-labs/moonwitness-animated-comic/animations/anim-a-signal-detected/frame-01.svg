@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+  <defs>
+    <linearGradient id="sky-a1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#090d1c"/>
+      <stop offset="65%" stop-color="#111a31"/>
+      <stop offset="100%" stop-color="#1a2442"/>
+    </linearGradient>
+    <pattern id="halftone-a1" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="4" cy="4" r="1.4" fill="#0d0d0d" opacity="0.28"/>
+    </pattern>
+    <pattern id="cyan-dots-a1" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="5" cy="5" r="1.6" fill="#00e5ff" opacity="0.16"/>
+    </pattern>
+  </defs>
+
+  <!-- Night Sky & Crescent Moon -->
+  <rect width="960" height="540" fill="url(#sky-a1)"/>
+  <circle cx="790" cy="108" r="46" fill="#f3efe4" opacity="0.9"/>
+  <circle cx="808" cy="96" r="40" fill="#0d1428"/>
+  <circle cx="790" cy="108" r="68" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.2" stroke-dasharray="10 8"/>
+
+  <!-- Distant Moon City Skyline -->
+  <g fill="#0c1224" stroke="#0d0d0d" stroke-width="3">
+    <rect x="20" y="210" width="95" height="220"/>
+    <rect x="110" y="255" width="70" height="175"/>
+    <rect x="175" y="185" width="105" height="245"/>
+    <rect x="275" y="240" width="85" height="190"/>
+    <rect x="595" y="220" width="95" height="210"/>
+    <rect x="685" y="165" width="110" height="265"/>
+    <rect x="790" y="235" width="80" height="195"/>
+    <rect x="865" y="195" width="95" height="235"/>
+  </g>
+  <g opacity="0.65">
+    <rect x="42" y="235" width="12" height="18" fill="#ffe031"/>
+    <rect x="72" y="265" width="12" height="18" fill="#00b8f0"/>
+    <rect x="202" y="215" width="14" height="22" fill="#ff2e88"/>
+    <rect x="236" y="255" width="14" height="18" fill="#ffe031"/>
+    <rect x="712" y="200" width="14" height="20" fill="#00e5ff"/>
+    <rect x="748" y="238" width="12" height="18" fill="#ffe031"/>
+    <rect x="892" y="228" width="14" height="22" fill="#ff2e88"/>
+  </g>
+
+  <!-- Overhead Cables -->
+  <path d="M0 112 Q280 168 540 124 T960 156" fill="none" stroke="#0d0d0d" stroke-width="3.5"/>
+  <path d="M0 138 Q320 198 620 148 T960 184" fill="none" stroke="#18223d" stroke-width="2.5"/>
+
+  <!-- Rooftop Deck & Parapet Rail -->
+  <rect x="0" y="388" width="960" height="152" fill="#171d2c" stroke="#0d0d0d" stroke-width="4"/>
+  <rect x="0" y="388" width="960" height="152" fill="url(#halftone-a1)"/>
+  <rect x="0" y="366" width="960" height="24" fill="#252d40" stroke="#0d0d0d" stroke-width="4"/>
+  <line x1="0" y1="322" x2="960" y2="322" stroke="#2c354c" stroke-width="8"/>
+  <line x1="0" y1="322" x2="960" y2="322" stroke="#0d0d0d" stroke-width="4"/>
+  <g stroke="#0d0d0d" stroke-width="4" fill="#252d40">
+    <rect x="115" y="322" width="12" height="46"/>
+    <rect x="315" y="322" width="12" height="46"/>
+    <rect x="645" y="322" width="12" height="46"/>
+    <rect x="845" y="322" width="12" height="46"/>
+  </g>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="478" cy="482" rx="74" ry="14" fill="#070a14" opacity="0.72"/>
+
+  <!-- KURO SIGNAL: Frame 1 - Rooftop Idle Lean (lazy lean against rail, receiver hanging loosely at hip) -->
+  <g id="kuro-idle-lean" stroke="#0d0d0d" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Back Leg (crossed lazily behind) -->
+    <path d="M472 344 L496 410 L512 456" fill="none" stroke="#20232a" stroke-width="30"/>
+    <path d="M460 342 L486 410 L498 456 L526 452 L512 406 L488 338 Z" fill="#1c1f26" stroke-width="4"/>
+    <!-- Back Boot -->
+    <path d="M494 446 L528 446 L544 468 L494 468 Z" fill="#181a20" stroke-width="4"/>
+    <path d="M492 466 L546 466 L546 478 L492 478 Z" fill="#ffe031" stroke-width="4"/>
+    <line x1="504" y1="452" x2="520" y2="454" stroke="#f3efe4" stroke-width="2.5"/>
+    <line x1="504" y1="459" x2="522" y2="461" stroke="#f3efe4" stroke-width="2.5"/>
+
+    <!-- Front Leg (supporting weight, relaxed slight bend) -->
+    <path d="M442 340 L432 408 L442 460 L474 458 L466 406 L474 342 Z" fill="#20232a" stroke-width="4"/>
+    <rect x="424" y="374" width="22" height="34" rx="4" fill="#1a1d24" stroke-width="3.5"/>
+    <!-- Front Boot -->
+    <path d="M434 448 L474 448 L484 470 L424 470 Z" fill="#181a20" stroke-width="4"/>
+    <path d="M422 468 L486 468 L486 480 L422 480 Z" fill="#ffe031" stroke-width="4"/>
+    <line x1="444" y1="454" x2="462" y2="454" stroke="#f3efe4" stroke-width="2.5"/>
+    <line x1="442" y1="461" x2="464" y2="461" stroke="#f3efe4" stroke-width="2.5"/>
+
+    <!-- Magenta Dangling Hip Strap -->
+    <path d="M444 338 Q420 374 416 410 Q426 416 432 406 Q436 376 454 342 Z" fill="#ff2e88" stroke-width="3.5"/>
+
+    <!-- Back Arm resting lazily on rail -->
+    <path d="M496 246 Q532 268 538 318 L516 322 Q508 286 484 268 Z" fill="#23262d" stroke-width="4"/>
+    <path d="M518 316 Q532 328 544 322 Q546 312 532 310 Z" fill="#eab88e" stroke-width="3.5"/>
+
+    <!-- Cropped Oversized Charcoal Hoodie Torso (leaning slightly back-right) -->
+    <path d="M434 236 Q468 228 504 242 L516 334 Q472 346 426 334 Z" fill="#23262d" stroke-width="4.5"/>
+    <path d="M434 236 Q468 228 504 242 L516 334 Q472 346 426 334 Z" fill="url(#halftone-a1)"/>
+    <!-- Magenta Ink Splatters on Hem -->
+    <path d="M432 312 Q448 298 462 316 Q474 304 484 324 L480 334 L430 332 Z" fill="#ff2e88" stroke="none"/>
+    <circle cx="446" cy="296" r="4" fill="#ff2e88" stroke="none"/>
+    <circle cx="496" cy="316" r="5" fill="#ff2e88" stroke="none"/>
+    <!-- Yellow 3-Point Crown Pin -->
+    <polygon points="482,262 486,274 494,264 500,274 504,262 504,280 482,280" fill="#ffe031" stroke-width="3"/>
+    <!-- Magenta Hood Collar & Drawstrings -->
+    <path d="M442 232 Q468 256 502 236 Q498 220 472 218 Q444 220 442 232 Z" fill="#ff2e88" stroke-width="4"/>
+    <path d="M458 244 L454 290" fill="none" stroke="#ff2e88" stroke-width="4"/>
+    <path d="M478 246 L480 288" fill="none" stroke="#ff2e88" stroke-width="4"/>
+
+    <!-- Front Arm hanging loosely holding Portable Receiver at hip -->
+    <path d="M436 244 Q404 282 406 338 L428 338 Q428 294 448 264 Z" fill="#23262d" stroke-width="4"/>
+    <path d="M406 318 Q416 326 424 334 L406 334 Z" fill="#ff2e88" stroke="none"/>
+    <!-- Hand -->
+    <path d="M404 338 Q398 354 410 362 Q422 362 426 346 L424 336 Z" fill="#eab88e" stroke-width="3.5"/>
+    <!-- Portable Receiver dangling loosely -->
+    <g transform="translate(384,352) rotate(14)">
+      <rect x="0" y="0" width="38" height="52" rx="6" fill="#1b1f27" stroke="#0d0d0d" stroke-width="3.5"/>
+      <rect x="6" y="8" width="26" height="18" rx="3" fill="#0d1422" stroke="#0d0d0d" stroke-width="2.5"/>
+      <line x1="10" y1="17" x2="28" y2="17" stroke="#00b8f0" stroke-width="2"/>
+      <polygon points="0,0 12,0 0,12" fill="#ffe031" stroke="#0d0d0d" stroke-width="2"/>
+      <line x1="30" y1="0" x2="34" y2="-16" stroke="#0d0d0d" stroke-width="3"/>
+    </g>
+
+    <!-- Neck & Head (tilted lazily toward skyline) -->
+    <rect x="462" y="212" width="18" height="24" fill="#d99e70" stroke-width="3.5"/>
+    <!-- Hair Back Silhouette -->
+    <path d="M424 176 Q412 196 426 218 L442 214 L498 218 L518 202 Q524 178 510 162 Q502 128 468 126 Q430 126 424 176 Z" fill="#14161b" stroke-width="4.5"/>
+    <!-- Face -->
+    <path d="M438 166 Q438 214 468 220 Q498 216 502 174 Q500 148 468 148 Q440 150 438 166 Z" fill="#eab88e" stroke-width="4"/>
+    <!-- Half-bored eyes watching skyline -->
+    <g>
+      <path d="M448 180 L466 180" stroke="#0d0d0d" stroke-width="3.5"/>
+      <ellipse cx="458" cy="184" rx="5" ry="4" fill="#0d0d0d"/>
+      <circle cx="459" cy="183" r="1.5" fill="#f3efe4"/>
+      <path d="M478 180 L496 180" stroke="#0d0d0d" stroke-width="3.5"/>
+      <ellipse cx="486" cy="184" rx="5" ry="4" fill="#0d0d0d"/>
+      <circle cx="487" cy="183" r="1.5" fill="#f3efe4"/>
+    </g>
+    <!-- Nose Bridge Bandage & Cheek Bandage -->
+    <rect x="463" y="191" width="18" height="7" rx="2" fill="#f3efe4" stroke-width="2.5"/>
+    <rect x="444" y="198" width="13" height="6" rx="1.5" transform="rotate(-14 450 201)" fill="#f3efe4" stroke-width="2.2"/>
+    <!-- Relaxed bored mouth -->
+    <path d="M466 207 Q474 209 480 206" fill="none" stroke="#0d0d0d" stroke-width="2.8"/>
+
+    <!-- Spiky Bangs -->
+    <path d="M428 168 L442 152 L446 172 L462 148 L470 174 L484 150 L492 174 L512 162 Q504 128 470 124 Q432 126 428 168 Z" fill="#0d0d0d" stroke-width="4"/>
+    <path d="M452 128 L466 112 L476 128" fill="#0d0d0d" stroke-width="3.5"/>
+
+    <!-- Headset + Antenna Rod -->
+    <path d="M430 184 Q426 132 470 128 Q514 132 510 184" fill="none" stroke="#2b303a" stroke-width="9"/>
+    <path d="M430 184 Q426 132 470 128 Q514 132 510 184" fill="none" stroke="#0d0d0d" stroke-width="3.5"/>
+    <!-- Left Earcup (viewer's right) with upright antenna -->
+    <ellipse cx="508" cy="186" rx="11" ry="18" fill="#2b303a" stroke-width="4"/>
+    <ellipse cx="509" cy="186" rx="6" ry="12" fill="#00b8f0" stroke-width="2.5"/>
+    <ellipse cx="509" cy="186" rx="3" ry="6" fill="#ff2e88" stroke="none"/>
+    <line x1="512" y1="170" x2="520" y2="122" stroke="#0d0d0d" stroke-width="4"/>
+    <circle cx="520" cy="120" r="4.5" fill="#ff2e88" stroke-width="2.5"/>
+    <!-- Right Earcup (viewer's left) + Boom Mic -->
+    <ellipse cx="432" cy="186" rx="10" ry="17" fill="#2b303a" stroke-width="4"/>
+    <ellipse cx="431" cy="186" rx="5.5" ry="11" fill="#00b8f0" stroke-width="2.5"/>
+    <path d="M434 198 Q446 212 464 212" fill="none" stroke="#0d0d0d" stroke-width="3.5"/>
+    <rect x="460" y="208" width="11" height="7" rx="3" fill="#ff2e88" stroke-width="2.5"/>
+  </g>
+</svg>

@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="Over-the-shoulder reception at Vesper Ink archive desk as Kuro slides receiver and signal slip forward">
+  <defs>
+    <linearGradient id="bg-wall-c1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141822"/>
+      <stop offset="1" stop-color="#0d1018"/>
+    </linearGradient>
+    <radialGradient id="lamp-glow-c1" cx="0.68" cy="0.32" r="0.52">
+      <stop offset="0" stop-color="#ffe031" stop-opacity="0.38"/>
+      <stop offset="0.55" stop-color="#ffe031" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#ffe031" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="crt-glow-c1" cx="0.15" cy="0.45" r="0.35">
+      <stop offset="0" stop-color="#00b8f0" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#00b8f0" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="halftone-c1" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.4" fill="#0d0d0d" opacity="0.22"/>
+    </pattern>
+    <pattern id="violet-dots-c1" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2.5" cy="2.5" r="1.3" fill="#9d4edd" opacity="0.38"/>
+    </pattern>
+  </defs>
+
+  <!-- Archive Wall & Brick Texture -->
+  <rect width="960" height="540" fill="url(#bg-wall-c1)"/>
+  <g stroke="#202636" stroke-width="2" opacity="0.55">
+    <path d="M0 90H960 M0 150H960 M0 210H960 M0 270H960 M0 330H960"/>
+    <path d="M120 90V150 M300 90V150 M480 90V150 M660 90V150 M840 90V150"/>
+    <path d="M60 150V210 M240 150V210 M420 150V210 M600 150V210 M780 150V210"/>
+    <path d="M150 210V270 M330 210V270 M510 210V270 M690 210V270 M870 210V270"/>
+  </g>
+  <!-- Background CRT Monitor on far left -->
+  <g transform="translate(26,185)">
+    <rect x="0" y="0" width="138" height="118" rx="12" fill="#232834" stroke="#0d0d0d" stroke-width="4"/>
+    <rect x="14" y="14" width="108" height="82" rx="6" fill="#0b2433" stroke="#0d0d0d" stroke-width="3"/>
+    <path d="M22 56 Q44 26 66 56 T112 56" fill="none" stroke="#00d4ff" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+  <!-- Hanging Desk Lamp on right -->
+  <g>
+    <path d="M845 0 L815 92 L765 135" fill="none" stroke="#3c4252" stroke-width="7" stroke-linecap="round"/>
+    <path d="M726 120 L788 152 L755 182 L702 152 Z" fill="#caa354" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"/>
+    <ellipse cx="732" cy="164" rx="22" ry="9" transform="rotate(26 732 164)" fill="#fff6b8"/>
+  </g>
+  <!-- Lighting Pools -->
+  <rect width="960" height="540" fill="url(#lamp-glow-c1)"/>
+  <rect width="960" height="540" fill="url(#crt-glow-c1)"/>
+
+  <!-- VESPER INK (Waist-Up behind archive desk, looking calmly down at the incoming slip) -->
+  <g id="vesper-c1" transform="translate(565, 118)">
+    <!-- Back Hair Silhouette -->
+    <path d="M-76 92 C-92 140 -76 196 -46 218 L72 216 C98 186 106 132 92 78 C78 24 44 -4 -4 -4 C-52 -4 -86 38 -76 92 Z" fill="#f2efe9" stroke="#0d0d0d" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M-74 116 C-82 158 -68 194 -46 214 L70 212 C88 188 96 150 88 112 Z" fill="url(#violet-dots-c1)"/>
+
+    <!-- Torso: Charcoal Crew-Neck Tee -->
+    <path d="M-108 268 C-98 220 -66 204 -26 198 L36 198 C82 204 114 226 124 272 L134 318 L-120 318 Z" fill="#1c1e24" stroke="#0d0d0d" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Neck -->
+    <path d="M-20 170 L-22 210 Q4 224 28 210 L26 170 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4"/>
+    <path d="M-20 176 Q4 194 26 176 L26 194 Q4 206 -20 194 Z" fill="#0d0d0d" opacity="0.22"/>
+
+    <!-- Tan Scuffed Utility Apron -->
+    <path d="M-68 212 L-50 198 L-34 214 L-38 244 L44 244 L40 214 L56 198 L74 212 L84 318 L-76 318 Z" fill="#c8a986" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M-44 278 H38 V318 H-44 Z" fill="#b79670" stroke="#0d0d0d" stroke-width="3.5"/>
+    <!-- Two Yellow Binder Clips -->
+    <g transform="translate(-32, 232)">
+      <path d="M6 0 C6 -12 18 -12 18 0" fill="none" stroke="#d8dee9" stroke-width="2.5"/>
+      <rect x="0" y="0" width="24" height="18" rx="2" fill="#ffe031" stroke="#0d0d0d" stroke-width="3"/>
+    </g>
+    <g transform="translate(-30, 270)">
+      <path d="M6 0 C6 -12 18 -12 18 0" fill="none" stroke="#d8dee9" stroke-width="2.5"/>
+      <rect x="0" y="0" width="24" height="18" rx="2" fill="#ffe031" stroke="#0d0d0d" stroke-width="3"/>
+    </g>
+    <!-- Hot Magenta Gaffer Tape Strips (Parallel + X) -->
+    <rect x="18" y="250" width="46" height="12" transform="rotate(14 41 256)" fill="#ff2e88" stroke="#0d0d0d" stroke-width="2.5"/>
+    <rect x="16" y="268" width="46" height="12" transform="rotate(14 39 274)" fill="#ff2e88" stroke="#0d0d0d" stroke-width="2.5"/>
+    <path d="M26 292 L58 314 M58 292 L26 314" stroke="#ff2e88" stroke-width="9" stroke-linecap="butt"/>
+    <path d="M26 292 L58 314 M58 292 L26 314" stroke="#0d0d0d" stroke-width="2" opacity="0.5"/>
+    <!-- Olive-Khaki Crossbody Satchel Strap -->
+    <path d="M56 196 L86 208 L-12 318 L-44 318 Z" fill="#968b6f" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="44" y="220" width="20" height="12" transform="rotate(35 54 226)" fill="#c8be9e" stroke="#0d0d0d" stroke-width="2.5"/>
+
+    <!-- Face (Tilted slightly down toward desk) -->
+    <path d="M-54 88 C-56 144 -34 178 4 182 C44 178 64 142 62 88 C60 44 34 26 4 26 C-30 26 -52 46 -54 88 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4.5"/>
+    <!-- Calm Half-Lidded Eyes Looking Down-Left -->
+    <g stroke="#0d0d0d" stroke-width="3.5" stroke-linecap="round">
+      <path d="M-38 100 Q-24 94 -12 100" fill="none"/>
+      <path d="M16 100 Q30 94 44 100" fill="none"/>
+      <path d="M-36 112 Q-24 108 -12 114" fill="none" stroke-width="4"/>
+      <path d="M18 114 Q30 108 42 112" fill="none" stroke-width="4"/>
+      <ellipse cx="-26" cy="116" rx="5.5" ry="4.5" fill="#0d0d0d"/>
+      <ellipse cx="28" cy="116" rx="5.5" ry="4.5" fill="#0d0d0d"/>
+      <circle cx="-28" cy="114.5" r="1.5" fill="#ffffff" stroke="none"/>
+      <circle cx="26" cy="114.5" r="1.5" fill="#ffffff" stroke="none"/>
+    </g>
+    <!-- Nose & Calm Slight Smile -->
+    <path d="M2 126 L-2 138 L5 140" fill="none" stroke="#0d0d0d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M-12 154 Q4 160 18 153" fill="none" stroke="#0d0d0d" stroke-width="3.2" stroke-linecap="round"/>
+
+    <!-- Asymmetric Front Bangs + Violet & Cyan Streaks -->
+    <path d="M-64 78 C-74 128 -62 168 -40 198 C-48 164 -48 124 -42 94 C-22 92 -2 72 8 54 C12 72 22 86 38 92 C48 124 48 160 40 190 C66 164 78 126 74 74 C66 18 32 -6 -4 -6 C-46 -6 -72 28 -64 78 Z" fill="#f2efe9" stroke="#0d0d0d" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Electric Violet Front Streak (viewer-left) -->
+    <path d="M-54 88 C-62 128 -54 164 -40 194 C-38 164 -38 126 -32 94 Z" fill="#9d4edd" stroke="#0d0d0d" stroke-width="3"/>
+    <!-- Signal Cyan Inner Streak -->
+    <path d="M-62 104 C-68 136 -60 166 -46 190 C-50 162 -52 132 -48 106 Z" fill="#00b8f0" stroke="#0d0d0d" stroke-width="2.5"/>
+    <path d="M52 114 C56 142 52 168 42 188 C58 168 64 140 60 112 Z" fill="#00b8f0" stroke="#0d0d0d" stroke-width="2.5"/>
+
+    <!-- Weathered Brass Forehead Goggles (Left Violet, Right Cyan) -->
+    <g transform="translate(2, 42) rotate(-4)">
+      <path d="M-64 6 L66 6" stroke="#4a3c24" stroke-width="8" stroke-linecap="round"/>
+      <path d="M-12 2 Q0 -6 12 2" fill="none" stroke="#8a6c34" stroke-width="7" stroke-linecap="round"/>
+      <!-- Viewer-left Violet Lens -->
+      <circle cx="-30" cy="4" r="24" fill="#caa354" stroke="#0d0d0d" stroke-width="4"/>
+      <circle cx="-30" cy="4" r="17" fill="#c084fc" stroke="#0d0d0d" stroke-width="3"/>
+      <path d="M-40 -4 L-22 -10 L-18 -2 L-38 6 Z" fill="#ffffff" opacity="0.45"/>
+      <!-- Viewer-right Cyan Lens -->
+      <circle cx="30" cy="4" r="24" fill="#caa354" stroke="#0d0d0d" stroke-width="4"/>
+      <circle cx="30" cy="4" r="17" fill="#00d4ff" stroke="#0d0d0d" stroke-width="3"/>
+      <path d="M20 -4 L38 -10 L42 -2 L22 6 Z" fill="#ffffff" opacity="0.45"/>
+    </g>
+
+    <!-- Vesper Right Hand Resting Near Desk Edge Holding Brass Stylus -->
+    <g transform="translate(-88, 256)">
+      <path d="M0 0 C-18 14 -24 38 -14 54 L16 56 C26 42 22 14 14 0 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4"/>
+      <path d="M-38 22 L42 36" stroke="#caa354" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-38 22 L42 36" stroke="#0d0d0d" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- Archive Workbench Desk Surface -->
+  <path d="M0 398 L960 392 L960 540 L0 540 Z" fill="#2c2927" stroke="#0d0d0d" stroke-width="5"/>
+  <path d="M0 398 L960 392 L960 422 L0 428 Z" fill="#463f38" opacity="0.7"/>
+  <rect x="0" y="400" width="960" height="140" fill="url(#halftone-c1)"/>
+
+  <!-- Blotter Mat on Desk -->
+  <polygon points="290,418 790,414 830,524 250,528" fill="#1b222c" stroke="#0d0d0d" stroke-width="4"/>
+
+  <!-- Incoming Portable Receiver & Signal Slip Sliding Across Desk -->
+  <g transform="translate(362, 434)">
+    <!-- Motion Slide Lines -->
+    <path d="M-92 22 H-18 M-78 38 H-12" stroke="#00d4ff" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+    <!-- Portable Receiver -->
+    <polygon points="0,12 88,6 102,52 12,58" fill="#2b313e" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"/>
+    <polygon points="14,18 62,15 68,38 20,41" fill="#0d2a38" stroke="#0d0d0d" stroke-width="2.5"/>
+    <path d="M22 30 L34 24 L44 33 L58 22" fill="none" stroke="#00d4ff" stroke-width="2.5"/>
+    <circle cx="80" cy="24" r="5" fill="#ffe031" stroke="#0d0d0d" stroke-width="2"/>
+    <path d="M76 6 L108 -34" stroke="#0d0d0d" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="108" cy="-34" r="4" fill="#00d4ff" stroke="#0d0d0d" stroke-width="2"/>
+    <!-- Paper Signal Slip with Missing Gaps -->
+    <polygon points="118,16 254,10 272,64 130,70" fill="#f2efe9" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"/>
+    <g stroke="#2a2d36" stroke-width="3" stroke-linecap="round">
+      <path d="M138 28 H192 M218 26 H244"/>
+      <path d="M142 40 H176"/>
+      <path d="M146 52 H234"/>
+    </g>
+    <!-- Blank Gap Boxes Highlighted Lightly -->
+    <rect x="196" y="21" width="18" height="10" fill="none" stroke="#ff2e88" stroke-width="2" stroke-dasharray="3 2"/>
+    <rect x="184" y="34" width="46" height="10" fill="none" stroke="#ff2e88" stroke-width="2" stroke-dasharray="3 2"/>
+  </g>
+
+  <!-- FOREGROUND: KURO SIGNAL Over-the-Shoulder Silhouette (Left Side) -->
+  <g id="kuro-fg-c1">
+    <!-- Hoodie Shoulder & Magenta Hood Lining -->
+    <path d="M-20 540 L-20 230 C42 216 116 246 164 316 L248 440 L184 540 Z" fill="#1e2028" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M24 228 C68 204 124 218 148 264 C118 278 78 272 44 254 Z" fill="#ff2e88" stroke="#0d0d0d" stroke-width="4"/>
+    <!-- Magenta Paint Splatters on Sleeve -->
+    <path d="M112 360 C130 344 156 364 142 384 C132 396 106 382 112 360 Z" fill="#ff2e88"/>
+    <circle cx="164" cy="392" r="8" fill="#ff2e88"/>
+    <!-- Kuro Back-of-Head Spiky Hair & Headset Edge -->
+    <path d="M-10 198 C-4 122 44 82 104 94 C156 104 176 156 154 206 C132 230 62 238 -10 198 Z" fill="#0d0d0d"/>
+    <path d="M126 146 L154 76" stroke="#2c303a" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="154" cy="76" r="5" fill="#00d4ff" stroke="#0d0d0d" stroke-width="2"/>
+    <ellipse cx="122" cy="176" rx="18" ry="26" fill="#2c303a" stroke="#0d0d0d" stroke-width="4"/>
+    <ellipse cx="122" cy="176" rx="10" ry="15" fill="none" stroke="#00d4ff" stroke-width="3.5"/>
+    <!-- Kuro Hand Pushing Slip Forward -->
+    <path d="M214 424 L318 444 C334 448 338 468 320 474 L216 470 Z" fill="#f4d0b6" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"/>
+  </g>
+</svg>

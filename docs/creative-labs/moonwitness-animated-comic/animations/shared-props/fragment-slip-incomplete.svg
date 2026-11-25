@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+  <defs>
+    <pattern id="halftone-prop2" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="5" cy="5" r="2" fill="#00e5ff" opacity="0.12"/>
+    </pattern>
+    <pattern id="void-hatch-prop2" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#ff2e88" stroke-width="2.5" opacity="0.45"/>
+    </pattern>
+  </defs>
+
+  <!-- Dark Halftone Archive Cutting Mat -->
+  <rect width="960" height="540" fill="#0e1322"/>
+  <rect width="960" height="540" fill="url(#halftone-prop2)"/>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="60" y1="0" x2="60" y2="540"/>
+    <line x1="180" y1="0" x2="180" y2="540"/>
+    <line x1="300" y1="0" x2="300" y2="540"/>
+    <line x1="420" y1="0" x2="420" y2="540"/>
+    <line x1="540" y1="0" x2="540" y2="540"/>
+    <line x1="660" y1="0" x2="660" y2="540"/>
+    <line x1="780" y1="0" x2="780" y2="540"/>
+    <line x1="900" y1="0" x2="900" y2="540"/>
+    <line x1="0" y1="90" x2="960" y2="90"/>
+    <line x1="0" y1="180" x2="960" y2="180"/>
+    <line x1="0" y1="270" x2="960" y2="270"/>
+    <line x1="0" y1="360" x2="960" y2="360"/>
+    <line x1="0" y1="450" x2="960" y2="450"/>
+  </g>
+
+  <!-- Zine Archive Transmission Slip (tilted slightly on mat) -->
+  <g transform="translate(150,64) rotate(-1.5)" stroke="#0d0d0d" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Drop Shadow -->
+    <rect x="14" y="14" width="660" height="410" rx="8" fill="#060810" opacity="0.65" stroke="none"/>
+    <!-- Cream Zine Paper Sheet -->
+    <path d="M0 0 L660 0 L660 392 L636 410 L0 410 Z" fill="#f3efe4" stroke-width="5"/>
+    <!-- Header Band -->
+    <rect x="0" y="0" width="660" height="58" fill="#1b1f27" stroke-width="5"/>
+    <!-- Non-Verbal Carrier Status Dots -->
+    <circle cx="38" cy="29" r="10" fill="#00e5ff" stroke-width="3"/>
+    <circle cx="70" cy="29" r="10" fill="#ffe031" stroke-width="3"/>
+    <circle cx="102" cy="29" r="10" fill="#ff2e88" stroke-width="3"/>
+    <rect x="460" y="18" width="166" height="22" rx="4" fill="#2c3446" stroke-width="3"/>
+
+    <!-- 3 Decoded Carrier Bars (Cyan / Yellow) -->
+    <g>
+      <rect x="44" y="88" width="42" height="34" rx="4" fill="#00b8f0" stroke-width="3.5"/>
+      <rect x="104" y="92" width="380" height="26" rx="4" fill="#00e5ff" stroke-width="3.5"/>
+      <rect x="504" y="92" width="112" height="26" rx="4" fill="#1b1f27" stroke-width="3"/>
+
+      <rect x="44" y="142" width="42" height="34" rx="4" fill="#ffe031" stroke-width="3.5"/>
+      <rect x="104" y="146" width="310" height="26" rx="4" fill="#ffe031" stroke-width="3.5"/>
+      <rect x="434" y="146" width="182" height="26" rx="4" fill="#1b1f27" stroke-width="3"/>
+
+      <rect x="44" y="196" width="42" height="34" rx="4" fill="#00b8f0" stroke-width="3.5"/>
+      <rect x="104" y="200" width="440" height="26" rx="4" fill="#00e5ff" stroke-width="3.5"/>
+      <rect x="564" y="200" width="52" height="26" rx="4" fill="#1b1f27" stroke-width="3"/>
+    </g>
+
+    <!-- 2 Deliberately Blank Torn-Tape Redacted Void Slots -->
+    <g>
+      <!-- Void Slot 1 -->
+      <rect x="44" y="260" width="572" height="48" rx="4" fill="#141824" stroke-width="4" stroke-dasharray="12 8"/>
+      <rect x="44" y="260" width="572" height="48" rx="4" fill="url(#void-hatch-prop2)" stroke="none"/>
+      <!-- Torn Tape Edge -->
+      <polygon points="180,256 268,256 258,312 172,312" fill="#f3efe4" opacity="0.88" stroke-width="3"/>
+
+      <!-- Void Slot 2 -->
+      <rect x="44" y="326" width="572" height="48" rx="4" fill="#141824" stroke-width="4" stroke-dasharray="12 8"/>
+      <rect x="44" y="326" width="572" height="48" rx="4" fill="url(#void-hatch-prop2)" stroke="none"/>
+      <polygon points="410,322 520,322 508,378 402,378" fill="#f3efe4" opacity="0.88" stroke-width="3"/>
+    </g>
+
+    <!-- Magenta Binder Clips on Top Corners -->
+    <g>
+      <rect x="48" y="-22" width="52" height="38" rx="5" fill="#ff2e88" stroke-width="4"/>
+      <path d="M58 -22 Q74 -52 90 -22" fill="none" stroke="#c7d0e2" stroke-width="4.5"/>
+      <rect x="560" y="-22" width="52" height="38" rx="5" fill="#ff2e88" stroke-width="4"/>
+      <path d="M570 -22 Q586 -52 602 -22" fill="none" stroke="#c7d0e2" stroke-width="4.5"/>
+    </g>
+  </g>
+</svg>

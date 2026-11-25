@@ -1,0 +1,68 @@
+[
+  {
+    "assetId": "anim-c-archive-reaction/frame-01.svg",
+    "characterId": "vesper-ink",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/vesper-ink-portrait-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png; packages/assets/illustrations/riot-universe/backgrounds/bg-riot-arcade-workbench.webp",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-canon-portraits",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-3 frame-01"
+  },
+  {
+    "assetId": "anim-c-archive-reaction/frame-02.svg",
+    "characterId": "vesper-ink",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/vesper-ink-portrait-master.png; packages/assets/illustrations/riot-universe/backgrounds/bg-riot-arcade-workbench.webp",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-canon-portraits",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-3 frame-02"
+  },
+  {
+    "assetId": "anim-c-archive-reaction/frame-03.svg",
+    "characterId": "vesper-ink",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/vesper-ink-portrait-master.png",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-canon-portraits",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-3 frame-03"
+  },
+  {
+    "assetId": "anim-c-archive-reaction/frame-04.svg",
+    "characterId": "vesper-ink",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/vesper-ink-portrait-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-canon-portraits",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-3 frame-04"
+  },
+  {
+    "assetId": "anim-c-archive-reaction/frame-05.svg",
+    "characterId": "vesper-ink",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/vesper-ink-portrait-master.png; packages/assets/illustrations/riot-universe/backgrounds/bg-riot-arcade-workbench.webp",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-canon-portraits",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-3 frame-05"
+  },
+  {
+    "assetId": "anim-c-archive-reaction/frame-06.svg",
+    "characterId": "vesper-ink",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/vesper-ink-portrait-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png",
+    "creatorOrGenerator": "anim-vesper",
+    "creationMethod": "hand-authored-svg-keyframe",
+    "licenseStatus": "ISC-internal-experimental",
+    "sourceDerivativeRelationship": "derived-from-approved-canon-portraits",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "moonwitness-animated-comic beat-3 frame-06 fallback-and-reduced-motion"
+  }
+]
