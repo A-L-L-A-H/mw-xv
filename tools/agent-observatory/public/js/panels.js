@@ -30,13 +30,20 @@
   function portraitForSession(session) {
     const base = '/mw-assets/illustrations/riot-universe/characters';
     if (session.status === 'error') return `${base}/kuro-signal-expression-angry.webp`;
+    if (session.runtime === 'opencode') {
+      return session.status === 'running'
+        ? `${base}/kuro-signal-expression-determined.webp`
+        : `${base}/kuro-signal-expression-victory.webp`;
+    }
+    if (session.runtime === 'magpie') {
+      return '/mw-assets/illustrations/riot-universe/game/avatar-vesper.png';
+    }
     if (session.runtime === 'claude') return `${base}/vesper-ink-portrait.webp`;
     if (session.runtime === 'codex') return `${base}/kuro-signal-expression-victory.webp`;
-    if (session.runtime === 'qoder' || session.runtime === 'gemini-cli') {
-      return `${base}/kuro-signal-expression-curious.webp`;
-    }
+    if (session.runtime === 'qoder') return `${base}/kuro-signal-expression-laughing.webp`;
+    if (session.runtime === 'gemini-cli') return `${base}/kuro-signal-expression-curious.webp`;
     if (session.status === 'running') return `${base}/kuro-signal-expression-excited.webp`;
-    if (session.status === 'recent') return `${base}/kuro-signal-expression-thinking.webp`;
+    if (session.status === 'recent') return `${base}/kuro-signal-expression-determined.webp`;
     return `${base}/kuro-signal-expression-sleepy.webp`;
   }
 
@@ -140,6 +147,24 @@
 
     const agBadge = byId('agApiBadge');
     agBadge.textContent = snapshot.antigravityApiConnected ? 'AG-LIVE' : 'FS-LIVE';
+
+    const magpieBadge = byId('magpieBadge');
+    const magpieInfo = snapshot.magpie;
+    if (magpieBadge) {
+      if (magpieInfo && (magpieInfo.connected || magpieInfo.totalRecentCalls > 0)) {
+        const portHint = magpieInfo.addr ? `:${magpieInfo.addr.split(':').pop()}` : '';
+        magpieBadge.textContent = `MAGPIE${portHint} · ${magpieInfo.totalRecentCalls}c${magpieInfo.rateLimit429 ? ` (${magpieInfo.rateLimit429}×429)` : ''}`;
+        magpieBadge.className = `mini-tag ${magpieInfo.rateLimit429 > 0 ? 'orange' : 'magenta'}`;
+      } else {
+        magpieBadge.textContent = 'MAGPIE IDLE';
+        magpieBadge.className = 'mini-tag';
+      }
+    }
+
+    const bossHpEl = byId('kpiBossHp');
+    if (bossHpEl) {
+      bossHpEl.textContent = `${snapshot.battle?.bossHpPct ?? 100}%`;
+    }
 
     if (activePlan) {
       byId('kpiPlanDone').textContent = `${activePlan.done}/${activePlan.total}`;
@@ -355,7 +380,61 @@
         : '<div class="empty">No quests match filter</div>';
     }
 
-    // 4. Beat & Telemetry Lab
+    // 4. Beat & Telemetry Lab — Magpie Hyper-Router Gateway + Runtime Matrix + Tools
+    const magpieSummaryBadge = byId('magpieSummaryBadge');
+    const magpieProviderBars = byId('magpieProviderBars');
+    const magpieRouteFeed = byId('magpieRouteFeed');
+    if (magpieSummaryBadge && magpieProviderBars && magpieRouteFeed) {
+      const mInfo = snapshot.magpie;
+      if (mInfo && (mInfo.connected || mInfo.totalRecentCalls > 0)) {
+        const memTxt = mInfo.memoryStats
+          ? ` · mem ${mInfo.memoryStats.recalled}/${mInfo.memoryStats.searches} recall`
+          : '';
+        magpieSummaryBadge.textContent = `${mInfo.connected ? 'ONLINE' : 'STANDBY'} ${mInfo.addr || ''}${mInfo.version ? ` v${mInfo.version}` : ''} · ${mInfo.totalRecentCalls} calls (${mInfo.okCalls} ok, ${mInfo.rateLimit429}×429, ${mInfo.errorCalls} err) · avg ${mInfo.avgLatencyMs}ms / ttft ${mInfo.avgTtftMs}ms${memTxt}`;
+
+        const provList = mInfo.providers || [];
+        const maxProvCalls = Math.max(1, ...provList.map((prov) => prov.calls || 0));
+        magpieProviderBars.innerHTML = provList.length
+          ? provList
+              .map((prov) => {
+                const pct = Math.max(4, Math.round((prov.calls / maxProvCalls) * 100));
+                const barCls = prov.rateLimits > 0 ? 'bar-violet' : 'bar-fill';
+                return `
+                  <div class="metric-bar-row">
+                    <div class="metric-bar-head">
+                      <span><span class="chip rt-magpie">${esc(prov.provider)}</span> ${esc((prov.models || []).slice(0, 2).join(', '))}</span>
+                      <span>${prov.calls}c · ${fmtNum(prov.tokens)} tok · ${prov.avgMs}ms${prov.rateLimits ? ` · <strong style="color:var(--orange)">${prov.rateLimits}×429</strong>` : ''}</span>
+                    </div>
+                    <div class="bar-track"><div class="bar-fill ${barCls}" style="width:${pct}%"></div></div>
+                  </div>`;
+              })
+              .join('')
+          : '<div class="empty">Magpie gateway online — awaiting route traffic</div>';
+
+        const routeRows = mInfo.recentRoutes || [];
+        magpieRouteFeed.innerHTML = routeRows.length
+          ? routeRows
+              .slice(0, 18)
+              .map(
+                (hop) => `
+                  <div class="feed-row ${hop.status >= 400 ? 'error' : ''}">
+                    <div class="feed-head">
+                      <span><span class="chip rt-${esc(hop.targetRuntime || 'magpie')}">${esc(hop.agent)}</span> → <strong>${esc(hop.provider)}</strong></span>
+                      <span>HTTP ${hop.status} · ${hop.ms}ms (${hop.ttftMs}ms ttft)</span>
+                    </div>
+                    <div class="feed-msg">${esc(hop.model)} · ${fmtNum(hop.tokens)} tok${hop.cached ? ` (${fmtNum(hop.cached)} cached)` : ''} · ${relTime(hop.at)}</div>
+                  </div>`
+              )
+              .join('')
+          : '<div class="empty">No recent Magpie route hops in last 2h</div>';
+      } else {
+        magpieSummaryBadge.textContent = 'Magpie gateway not detected on host';
+        magpieProviderBars.innerHTML =
+          '<div class="empty">No Magpie usage telemetry detected</div>';
+        magpieRouteFeed.innerHTML = '<div class="empty">No recent Magpie routes</div>';
+      }
+    }
+
     const analytics = snapshot.analytics || {};
     const runtimeRows = analytics.runtimeBreakdown || [];
     const maxRtTokens = Math.max(1, ...runtimeRows.map((row) => row.totalTokens || 0));
@@ -546,6 +625,7 @@
                   <div class="agent-meta">
                     <span>gear:${esc(session.model)}</span>
                     ${session.branch ? `<span>branch:${esc(session.branch)}</span>` : ''}
+                    ${typeof session.cost === 'number' && session.cost > 0 ? `<span>cost:$${session.cost.toFixed(3)}</span>` : ''}
                     <span>moves:${session.steps || 0}</span>
                     <span>tok:${fmtNum(session.tokens?.total || 0)}</span>
                   </div>

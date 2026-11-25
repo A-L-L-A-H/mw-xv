@@ -1,0 +1,13 @@
+{
+  "name": "paas-template-pack-dokploy",
+  "version": "1.0.0",
+  "description": "Dokploy service templates (blueprints, docker compose) pack untuk PaaS control plane MoonWitness.",
+  "source": {
+    "repository": "https://github.com/Dokploy/templates",
+    "path": "blueprints",
+    "license": "MIT"
+  },
+  "files": [
+    "blueprints/"
+  ]
+}

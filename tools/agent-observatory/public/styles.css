@@ -63,6 +63,7 @@
   --magenta: #ff2e88;
   --cyan: #00b8f0;
   --violet: #c084fc;
+  --orange: #ff7a18;
   --green: #4ade80;
   --lime: #b4ff39;
   --red: #ff3b5c;
@@ -298,7 +299,7 @@ a {
   align-items: flex-start;
   gap: 8px;
   pointer-events: auto;
-  max-width: calc(100vw - 610px);
+  max-width: calc(100vw - 540px);
 }
 
 .hud-episode-plate,
@@ -596,9 +597,9 @@ a {
   background: transparent;
   color: var(--muted);
   font-family: var(--font-poster);
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  padding: 4px 9px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
   cursor: pointer;
   transition:
     background 0.12s,
@@ -638,13 +639,13 @@ a {
   background: var(--charcoal-glass);
   color: var(--paper);
   font-family: var(--font-poster);
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  padding: 4px 10px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   transition:
     transform 0.1s,
     background 0.12s;
@@ -673,6 +674,16 @@ a {
 
 .comic-btn.active-cyan {
   background: var(--cyan);
+  color: var(--ink);
+}
+
+.comic-btn.active-orange {
+  background: var(--orange);
+  color: var(--ink);
+}
+
+.mini-tag.orange {
+  background: var(--orange);
   color: var(--ink);
 }
 
@@ -813,7 +824,7 @@ a {
   box-shadow:
     6px 6px 0 var(--ink),
     0 0 0 2px var(--yellow);
-  max-width: calc(100vw - 368px);
+  max-width: calc(100vw - 24px);
 }
 
 .dock-btn {
@@ -1177,6 +1188,14 @@ a {
 .rt-codex {
   background: var(--lime);
   color: var(--ink);
+}
+.rt-opencode {
+  background: var(--orange);
+  color: var(--ink);
+}
+.rt-magpie {
+  background: var(--magenta);
+  color: var(--paper);
 }
 .rt-qoder {
   background: var(--violet);

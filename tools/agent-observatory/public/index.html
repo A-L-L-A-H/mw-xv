@@ -55,6 +55,7 @@
               <span id="sseState" class="mini-tag cyan">SSE LIVE</span>
               <span id="gitBadge" class="mini-tag yellow">git…</span>
               <span id="agApiBadge" class="mini-tag violet">FS-LIVE</span>
+              <span id="magpieBadge" class="mini-tag magenta">MAGPIE —</span>
               <span id="repoMeta" class="mini-meta">Connecting…</span>
             </div>
           </div>
@@ -65,19 +66,28 @@
                 ROOFTOP
               </button>
               <button class="comic-pill" data-stage-bg="alley" type="button">ALLEY</button>
-              <button class="comic-pill" data-stage-bg="observatory" type="button">
-                LUNAR DOME
-              </button>
+              <button class="comic-pill" data-stage-bg="observatory" type="button">DOME</button>
               <button class="comic-pill" data-stage-bg="arcade" type="button">ARCADE</button>
             </div>
 
             <div class="comic-group" role="group" aria-label="Flow formation">
-              <button class="comic-pill active" data-flow-mode="stage" type="button">STAGE</button>
+              <button class="comic-pill active" data-flow-mode="warzone" type="button">
+                ⚔️ WAR
+              </button>
+              <button class="comic-pill" data-flow-mode="stage" type="button">STAGE</button>
               <button class="comic-pill" data-flow-mode="pipeline" type="button">BEAMS</button>
               <button class="comic-pill" data-flow-mode="orbital" type="button">ORBIT</button>
               <button class="comic-pill" data-flow-mode="lanes" type="button">LANES</button>
             </div>
 
+            <button
+              id="chaosToggleBtn"
+              class="comic-btn active-orange"
+              type="button"
+              title="Cycle battle chaos intensity (CHILL / RIOT / MAX!!)"
+            >
+              🔥 RIOT
+            </button>
             <button
               id="autoCamBtn"
               class="comic-btn"
@@ -90,7 +100,7 @@
               id="sfxToggleBtn"
               class="comic-btn active-yellow"
               type="button"
-              title="Toggle cartoon SFX"
+              title="Toggle cartoon battle SFX"
             >
               🔊 SFX
             </button>
@@ -98,7 +108,7 @@
               id="beatToggleBtn"
               class="comic-btn"
               type="button"
-              title="Toggle 112 BPM funky anime groove + city night ambience"
+              title="Toggle 128 BPM punk-funk anime breakbeat + city night ambience"
             >
               🎵 BEAT
             </button>
@@ -106,9 +116,9 @@
               id="boomTestBtn"
               class="comic-btn active-magenta"
               type="button"
-              title="Trigger cartoon SFX & anime cut-in"
+              title="Unleash All-Out Anime Team Clash Barrage!!"
             >
-              ⚡ BOOM!
+              ⚔️ CLASH!!
             </button>
             <button id="flowFitBtn" class="comic-btn" type="button" title="Fit stage camera (F)">
               FIT
@@ -126,11 +136,12 @@
 
         <!-- Right Street-Arcade Game Meters (Persona / Jet Set Radio Style) -->
         <div class="hud-arcade-meters">
-          <div class="arcade-meter xp-meter" title="Active Plan Quest Progress">
+          <div class="arcade-meter xp-meter" title="Active Plan Boss HP & Quest Progress">
             <div class="meter-head">
-              <span class="meter-label">QUEST XP</span>
-              <span id="kpiPlanDone" class="meter-val">0/0</span>
-              <span id="kpiPlanPct" class="meter-accent yellow">0%</span>
+              <span class="meter-label">BOSS HP</span>
+              <span id="kpiBossHp" class="meter-val magenta">100%</span>
+              <span id="kpiPlanDone" class="meter-accent yellow">0/0</span>
+              <span id="kpiPlanPct" class="meter-accent">0%</span>
             </div>
             <div class="meter-bar-shell">
               <div id="kpiPlanBar" class="meter-bar-fill yellow"></div>
@@ -412,6 +423,17 @@
             </div>
           </div>
 
+          <div class="sub-panel">
+            <div class="sub-panel-head">
+              <h3 class="sub-title">🐦 MAGPIE HYPER-ROUTER GATEWAY &amp; PROVIDERS</h3>
+              <span id="magpieSummaryBadge" class="mini-meta">Scanning Magpie…</span>
+            </div>
+            <div class="grid-two">
+              <div id="magpieProviderBars" class="stack-tight"></div>
+              <div id="magpieRouteFeed" class="feed-list feed-short"></div>
+            </div>
+          </div>
+
           <div class="grid-two">
             <div class="sub-panel">
               <div class="sub-panel-head">
@@ -456,6 +478,8 @@
             <select id="filterRuntime" class="comic-input" aria-label="Filter runtime">
               <option value="all">All Runtimes</option>
               <option value="antigravity">Antigravity (Kuro)</option>
+              <option value="opencode">OpenCode (Ronin)</option>
+              <option value="magpie">Magpie Router</option>
               <option value="claude">Claude (Vesper)</option>
               <option value="codex">Codex (Striker)</option>
               <option value="qoder">Qoder (Scout)</option>

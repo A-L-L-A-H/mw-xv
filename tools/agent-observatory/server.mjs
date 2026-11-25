@@ -7,6 +7,7 @@ import { createServer } from 'node:http';
 import { Socket } from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
@@ -91,6 +92,7 @@ const DEFAULT_VPS_PROBES = Object.freeze([
 const LOCAL_PORTS = Object.freeze([
   { port: 3000, label: 'API / Dev :3000' },
   { port: 3001, label: 'API :3001' },
+  { port: 3425, label: 'Magpie Gateway :3425' },
   { port: 4174, label: 'Board :4174' },
   { port: 4190, label: 'Observatory :4190' },
   { port: 4242, label: 'Desktop Sidecar :4242' },
@@ -104,6 +106,8 @@ const RUNTIME_LABELS = Object.freeze({
   antigravity: 'Antigravity',
   claude: 'Claude Code',
   codex: 'Codex',
+  opencode: 'OpenCode',
+  magpie: 'Magpie Router',
   qoder: 'Qoder',
   'gemini-cli': 'Gemini CLI',
   'visual-swarm': 'Visual Swarm',
@@ -1467,6 +1471,570 @@ async function collectLocalSwarmManifest(repoRoot) {
 }
 
 // ============================================================================
+// 4B. OPENCODE COLLECTOR (~/.local/share/opencode/opencode.db — SQLite v2)
+// ============================================================================
+
+function parseOpenCodeModelField(rawModel) {
+  if (!rawModel) return 'opencode';
+  const parsed = typeof rawModel === 'string' ? safeJsonParse(rawModel.trim()) : rawModel;
+  if (!parsed) return clip(String(rawModel), 48);
+  const prov = parsed.providerID ? `${parsed.providerID}/` : '';
+  const variant = parsed.variant ? ` (${parsed.variant})` : '';
+  return clip(`${prov}${parsed.id || 'opencode'}${variant}`, 56);
+}
+
+function parseOpenCodeParts(partRows) {
+  let focus = '';
+  let lastTool = '';
+  let lastError = '';
+  let errorCount = 0;
+  let hasRecentError = false;
+  const toolCounts = {};
+  const events = [];
+
+  for (const row of [...partRows].reverse()) {
+    const parsedPart = safeJsonParse(row.data || '');
+    const atIso = row.time_updated ? new Date(Number(row.time_updated)).toISOString() : null;
+    if (!parsedPart) continue;
+
+    if (row.type === 'tool' || parsedPart.type === 'tool') {
+      const toolName = parsedPart.name || parsedPart.tool || 'tool';
+      lastTool = toolName;
+      bumpCounter(toolCounts, toolName);
+      const toolInput = parsedPart.state?.input || parsedPart.input || {};
+      const targetHint = redactSecrets(
+        String(
+          toolInput.path ||
+            toolInput.filePath ||
+            toolInput.command ||
+            toolInput.pattern ||
+            toolInput.description ||
+            ''
+        )
+      );
+      const summary = targetHint ? `${toolName}: ${clip(targetHint, 105)}` : toolName;
+      focus = summary;
+      const failed = parsedPart.state?.status === 'error' || Boolean(parsedPart.state?.error);
+      if (failed) {
+        hasRecentError = true;
+        errorCount += 1;
+        lastError = clip(redactSecrets(String(parsedPart.state?.error || summary)), 150);
+        events.push({ at: atIso, kind: 'error', tool: toolName, summary: lastError });
+      } else {
+        events.push({ at: atIso, kind: 'tool', tool: toolName, summary });
+      }
+    } else if (row.type === 'reasoning' || parsedPart.type === 'reasoning') {
+      const thought = clip(redactSecrets(String(parsedPart.text || '')), 120);
+      if (thought) {
+        if (!focus) focus = thought;
+        events.push({ at: atIso, kind: 'focus', tool: 'reasoning', summary: thought });
+      }
+    } else if (row.type === 'text' || parsedPart.type === 'text') {
+      const txt = clip(redactSecrets(String(parsedPart.text || '')), 120);
+      if (txt) {
+        focus = txt;
+        events.push({ at: atIso, kind: 'message', tool: 'opencode', summary: txt });
+      }
+    }
+  }
+
+  return { focus, lastTool, lastError, errorCount, hasRecentError, toolCounts, events };
+}
+
+export async function collectOpenCodeSessions(homeDir, repoRoot, openCodeCache = null) {
+  const dbPath = path.join(homeDir, '.local', 'share', 'opencode', 'opencode.db');
+  if (!existsSync(dbPath)) return [];
+
+  const dbStat = await stat(dbPath).catch(() => null);
+  const walStat = await stat(`${dbPath}-wal`).catch(() => null);
+  if (!dbStat) return [];
+
+  const cacheSig = `${dbStat.mtimeMs}:${dbStat.size}:${walStat?.mtimeMs || 0}:${walStat?.size || 0}`;
+  if (openCodeCache && openCodeCache.sig === cacheSig) {
+    return openCodeCache.sessions;
+  }
+
+  let sqliteDb;
+  try {
+    sqliteDb = new DatabaseSync(dbPath, { open: true, readOnly: true });
+    const hasV2 = sqliteDb
+      .prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='session_v2'")
+      .get();
+    if (!hasV2) return [];
+
+    const rows = sqliteDb
+      .prepare(
+        `SELECT id, parent_id, title, directory, agent, model, cost,
+                tokens_input, tokens_output, tokens_cache_read, tokens_cache_write,
+                time_created, time_updated, time_busy, time_idle, time_archived
+         FROM session_v2
+         WHERE time_archived IS NULL
+         ORDER BY time_updated DESC
+         LIMIT 16`
+      )
+      .all();
+
+    const partStmt = sqliteDb.prepare(
+      `SELECT type, time_updated, data
+       FROM session_part
+       WHERE session_id = ?
+       ORDER BY time_updated DESC
+       LIMIT 28`
+    );
+
+    const msgCountStmt = sqliteDb.prepare(
+      `SELECT COUNT(*) AS cnt FROM session_message WHERE session_id = ?`
+    );
+
+    const nowMs = Date.now();
+    const sessions = [];
+
+    for (const row of rows) {
+      const partRows = partStmt.all(row.id);
+      const parsedParts = parseOpenCodeParts(partRows);
+      const stepCount = Number(msgCountStmt.get(row.id)?.cnt || partRows.length);
+      const updatedMs = Number(row.time_updated || row.time_created || dbStat.mtimeMs);
+      const isBusy =
+        Boolean(row.time_busy) &&
+        (!row.time_idle || Number(row.time_busy) > Number(row.time_idle)) &&
+        nowMs - updatedMs <= 180_000;
+      const status = isBusy
+        ? 'running'
+        : deriveStatus(updatedMs, null, parsedParts.hasRecentError, nowMs);
+
+      const inputTokens = Number(row.tokens_input || 0);
+      const cachedTokens = Number(row.tokens_cache_read || 0) + Number(row.tokens_cache_write || 0);
+      const outputTokens = Number(row.tokens_output || 0);
+
+      sessions.push({
+        id: row.id,
+        runtime: 'opencode',
+        runtimeLabel: 'OpenCode',
+        title: clip(row.title || `OpenCode ${row.id.slice(0, 10)}`, 100),
+        status,
+        runState: isBusy ? 'BUSY' : status.toUpperCase(),
+        model: parseOpenCodeModelField(row.model),
+        branch: null,
+        cwd: row.directory || null,
+        inCurrentWorkspace: matchesWorkspace(row.directory, repoRoot),
+        isCurrentSession: false,
+        parentId: row.parent_id || null,
+        rootId: null,
+        focus: parsedParts.focus || (row.agent ? `agent:${row.agent}` : 'Ready'),
+        lastTool: parsedParts.lastTool || '',
+        lastError: parsedParts.lastError || '',
+        errorCount: parsedParts.errorCount,
+        steps: stepCount,
+        cost: Number(row.cost || 0),
+        tokens: {
+          input: inputTokens,
+          cached: cachedTokens,
+          output: outputTokens,
+          total: inputTokens + outputTokens,
+        },
+        subagents: [],
+        swarmWorkers: 0,
+        toolCounts: parsedParts.toolCounts,
+        updatedAt: new Date(updatedMs).toISOString(),
+        mtimeMs: updatedMs,
+        sourcePath: dbPath,
+        recentEvents: parsedParts.events.slice(-10),
+      });
+    }
+
+    // Link OpenCode parent/child subagent sessions
+    const byId = new Map(sessions.map((entry) => [entry.id, entry]));
+    for (const entry of sessions) {
+      if (entry.parentId && byId.has(entry.parentId)) {
+        const parent = byId.get(entry.parentId);
+        parent.subagents.push({
+          id: entry.id,
+          role: entry.title,
+          type: 'opencode-child',
+          model: entry.model,
+          status: entry.status,
+          at: entry.updatedAt,
+        });
+      }
+    }
+
+    if (openCodeCache) {
+      openCodeCache.sig = cacheSig;
+      openCodeCache.sessions = sessions;
+    }
+    return sessions;
+  } catch {
+    return openCodeCache?.sessions || [];
+  } finally {
+    if (sqliteDb) {
+      try {
+        sqliteDb.close();
+      } catch {
+        // Ignore close errors
+      }
+    }
+  }
+}
+
+function readOpenCodeDetail(dbPath, sessionId) {
+  let sqliteDb;
+  try {
+    sqliteDb = new DatabaseSync(dbPath, { open: true, readOnly: true });
+    const partRows = sqliteDb
+      .prepare(
+        `SELECT type, time_updated, data
+         FROM session_part
+         WHERE session_id = ?
+         ORDER BY time_updated DESC
+         LIMIT 80`
+      )
+      .all(sessionId);
+    return parseOpenCodeParts(partRows);
+  } catch {
+    return { events: [], toolCounts: {} };
+  } finally {
+    if (sqliteDb) {
+      try {
+        sqliteDb.close();
+      } catch {
+        // Ignore close errors
+      }
+    }
+  }
+}
+
+// ============================================================================
+// 4C. MAGPIE ROUTER / GATEWAY COLLECTOR (~/.config/magpie/)
+// ============================================================================
+
+function normalizeMagpieTargetRuntime(agentName) {
+  const lowered = String(agentName || '').toLowerCase();
+  if (lowered.includes('opencode')) return 'opencode';
+  if (lowered.includes('claude')) return 'claude';
+  if (lowered.includes('codex')) return 'codex';
+  if (lowered.includes('antigravity') || lowered.includes('gemini')) return 'antigravity';
+  if (lowered.includes('qoder')) return 'qoder';
+  return null;
+}
+
+export async function collectMagpieTelemetry(homeDir, repoRoot, magpieCache = null) {
+  const magpieDir = path.join(homeDir, '.config', 'magpie');
+  const emptySummary = {
+    connected: false,
+    addr: null,
+    version: null,
+    totalRecentCalls: 0,
+    okCalls: 0,
+    rateLimit429: 0,
+    errorCalls: 0,
+    avgLatencyMs: 0,
+    avgTtftMs: 0,
+    providers: [],
+    memoryStats: null,
+    recentRoutes: [],
+    routedRuntimes: [],
+  };
+  if (!existsSync(magpieDir)) return { sessions: [], summary: emptySummary };
+
+  const usagePath = path.join(magpieDir, 'usage.jsonl');
+  const gatewayPath = path.join(magpieDir, 'gateway.json');
+  const memStatsPath = path.join(magpieDir, 'memory-stats.json');
+
+  const [usageStat, gatewayRaw, memStatsRaw] = await Promise.all([
+    stat(usagePath).catch(() => null),
+    readFile(gatewayPath, 'utf8').catch(() => ''),
+    readFile(memStatsPath, 'utf8').catch(() => ''),
+  ]);
+
+  const gatewayInfo = safeJsonParse(gatewayRaw.trim());
+  const memStatsJson = safeJsonParse(memStatsRaw.trim());
+  let memoryStats = null;
+  if (memStatsJson && memStatsJson.days) {
+    const dayKeys = Object.keys(memStatsJson.days).sort();
+    const latestDay = dayKeys[dayKeys.length - 1];
+    if (latestDay) {
+      const dayRec = memStatsJson.days[latestDay] || {};
+      memoryStats = {
+        day: latestDay,
+        searches: Number(dayRec.searches || 0),
+        found: Number(dayRec.found || 0),
+        recalled: Number(dayRec.recalled || 0),
+        created: Object.values(dayRec.created || {}).reduce(
+          (acc, num) => acc + Number(num || 0),
+          0
+        ),
+      };
+    }
+  }
+
+  let gatewayPort = 3425;
+  if (gatewayInfo?.addr && typeof gatewayInfo.addr === 'string') {
+    const portPart = Number(gatewayInfo.addr.split(':').pop());
+    if (Number.isInteger(portPart) && portPart > 0 && portPart < 65536) {
+      gatewayPort = portPart;
+    }
+  }
+  const gatewayOpen = gatewayInfo ? await probeLocalTcpPort(gatewayPort) : false;
+
+  const cacheSig = `${usageStat?.mtimeMs || 0}:${usageStat?.size || 0}:${gatewayOpen}:${memoryStats?.searches || 0}`;
+  if (magpieCache && magpieCache.sig === cacheSig) {
+    return magpieCache.bundle;
+  }
+
+  if (!usageStat) {
+    const bundle = {
+      sessions: [],
+      summary: {
+        ...emptySummary,
+        connected: gatewayOpen,
+        addr: gatewayInfo?.addr || null,
+        version: gatewayInfo?.version || null,
+        memoryStats,
+      },
+    };
+    if (magpieCache) {
+      magpieCache.sig = cacheSig;
+      magpieCache.bundle = bundle;
+    }
+    return bundle;
+  }
+
+  // Bounded 256KB tail-read (usage.jsonl can exceed 100MB!)
+  const { tailLines } = await readHeadAndTailLines(usagePath, usageStat.size, 256 * 1024);
+  const nowMs = Date.now();
+  const cutoffMs = nowMs - 2 * 60 * 60_000;
+
+  const streamMap = new Map();
+  const providerMap = new Map();
+  const routedRuntimeSet = new Set();
+  const recentRoutes = [];
+  let okCalls = 0;
+  let rateLimit429 = 0;
+  let errorCalls = 0;
+  let sumLatencyMs = 0;
+  let sumTtftMs = 0;
+  let latencyCount = 0;
+  let ttftCount = 0;
+
+  for (const line of tailLines) {
+    const entry = safeJsonParse(line);
+    if (!entry || !entry.t) continue;
+    const entryMs = Date.parse(entry.t);
+    if (!Number.isFinite(entryMs) || entryMs < cutoffMs) continue;
+
+    const agentTag = clip(redactSecrets(String(entry.agent || 'client')), 32);
+    const providerTag = clip(
+      redactSecrets(String(entry.provider || 'router')).replace(/\S+@\S+/g, 'provider'),
+      36
+    );
+    const servedModel = clip(redactSecrets(String(entry.served || entry.model || 'auto')), 48);
+    const routeGroup = clip(redactSecrets(String(entry.req || '')), 40);
+    const statusCode = Number(entry.status || 0);
+    const msVal = Number(entry.ms || 0);
+    const ttftVal = Number(entry.ttft_ms || 0);
+    const inTok = Number(entry.in || 0);
+    const outTok = Number(entry.out || 0);
+    const cacheTok = Number(entry.cache_read || 0) + Number(entry.cache_write || 0);
+    const is429 = statusCode === 429;
+    const isErr = statusCode >= 400;
+
+    if (statusCode >= 200 && statusCode < 400) okCalls += 1;
+    else if (is429) rateLimit429 += 1;
+    else if (isErr) errorCalls += 1;
+
+    if (msVal > 0) {
+      sumLatencyMs += msVal;
+      latencyCount += 1;
+    }
+    if (ttftVal > 0) {
+      sumTtftMs += ttftVal;
+      ttftCount += 1;
+    }
+
+    const mappedRt = normalizeMagpieTargetRuntime(agentTag);
+    if (mappedRt) routedRuntimeSet.add(mappedRt);
+
+    // Aggregate per-provider metrics (strictly sanitized — no host/account emails)
+    let provStats = providerMap.get(providerTag);
+    if (!provStats) {
+      provStats = {
+        provider: providerTag,
+        calls: 0,
+        ok: 0,
+        rateLimits: 0,
+        errors: 0,
+        tokens: 0,
+        sumMs: 0,
+        models: new Set(),
+      };
+      providerMap.set(providerTag, provStats);
+    }
+    provStats.calls += 1;
+    if (!isErr) provStats.ok += 1;
+    else if (is429) provStats.rateLimits += 1;
+    else provStats.errors += 1;
+    provStats.tokens += inTok + outTok;
+    provStats.sumMs += msVal;
+    provStats.models.add(servedModel);
+
+    // Aggregate into virtual Magpie Router stream sessions
+    const streamKey = `${agentTag}::${providerTag}::${servedModel}`;
+    let streamObj = streamMap.get(streamKey);
+    if (!streamObj) {
+      streamObj = {
+        id: streamKey,
+        agentTag,
+        providerTag,
+        servedModel,
+        routeGroup,
+        targetRuntime: mappedRt,
+        calls: 0,
+        errorCount: 0,
+        hasRecentError: false,
+        lastError: '',
+        inputTokens: 0,
+        cachedTokens: 0,
+        outputTokens: 0,
+        lastMs: entryMs,
+        lastIso: entry.t,
+        subagentIds: new Set(),
+        toolCounts: {},
+        events: [],
+      };
+      streamMap.set(streamKey, streamObj);
+    }
+
+    streamObj.calls += 1;
+    streamObj.inputTokens += inTok;
+    streamObj.cachedTokens += cacheTok;
+    streamObj.outputTokens += outTok;
+    if (entryMs >= streamObj.lastMs) {
+      streamObj.lastMs = entryMs;
+      streamObj.lastIso = entry.t;
+    }
+    if (entry.subagent) streamObj.subagentIds.add(String(entry.subagent).slice(0, 14));
+    const stopTag = entry.stop ? `route:${entry.stop}` : 'route:complete';
+    bumpCounter(streamObj.toolCounts, stopTag);
+
+    const routeSummary = `${providerTag}/${servedModel} HTTP ${statusCode || 200} · ${msVal}ms (ttft ${ttftVal}ms)`;
+    if (isErr) {
+      streamObj.errorCount += 1;
+      streamObj.hasRecentError = true;
+      streamObj.lastError = routeSummary;
+    }
+    streamObj.events.push({
+      at: entry.t,
+      kind: isErr ? 'error' : 'tool',
+      tool: is429 ? 'rate_limit_429' : 'magpie_route',
+      summary: `${agentTag} → ${routeSummary}`,
+    });
+
+    recentRoutes.push({
+      at: entry.t,
+      agent: agentTag,
+      targetRuntime: mappedRt,
+      provider: providerTag,
+      model: servedModel,
+      status: statusCode || 200,
+      ms: msVal,
+      ttftMs: ttftVal,
+      tokens: inTok + outTok,
+      cached: cacheTok,
+    });
+  }
+
+  const sessions = Array.from(streamMap.values())
+    .sort((left, right) => right.lastMs - left.lastMs)
+    .slice(0, 12)
+    .map((streamObj) => {
+      const status = deriveStatus(streamObj.lastMs, null, streamObj.hasRecentError, nowMs);
+      const subagents = Array.from(streamObj.subagentIds)
+        .slice(0, 8)
+        .map((subId) => ({
+          id: subId,
+          role: `${streamObj.agentTag} sub:${subId.slice(0, 8)}`,
+          type: 'magpie-routed',
+          model: streamObj.servedModel,
+          status: status === 'running' ? 'running' : 'idle',
+          at: streamObj.lastIso,
+        }));
+      return {
+        id: streamObj.id,
+        runtime: 'magpie',
+        runtimeLabel: 'Magpie Router',
+        title: clip(`Magpie → ${streamObj.agentTag} (${streamObj.providerTag})`, 96),
+        status,
+        runState: gatewayOpen && status === 'running' ? 'ROUTING' : status.toUpperCase(),
+        model: streamObj.servedModel,
+        branch: streamObj.routeGroup || null,
+        cwd: repoRoot,
+        inCurrentWorkspace: true,
+        isCurrentSession: false,
+        parentId: null,
+        rootId: null,
+        targetRuntime: streamObj.targetRuntime,
+        focus:
+          streamObj.events[streamObj.events.length - 1]?.summary ||
+          `${streamObj.providerTag} ready`,
+        lastTool: streamObj.hasRecentError ? 'rate_limit_429' : 'magpie_route',
+        lastError: streamObj.lastError,
+        errorCount: streamObj.errorCount,
+        steps: streamObj.calls,
+        tokens: {
+          input: streamObj.inputTokens,
+          cached: streamObj.cachedTokens,
+          output: streamObj.outputTokens,
+          total: streamObj.inputTokens + streamObj.outputTokens,
+        },
+        subagents,
+        swarmWorkers: 0,
+        toolCounts: streamObj.toolCounts,
+        updatedAt: streamObj.lastIso,
+        mtimeMs: streamObj.lastMs,
+        sourcePath: usagePath,
+        recentEvents: streamObj.events.slice(-12),
+      };
+    });
+
+  const providers = Array.from(providerMap.values())
+    .map((provStats) => ({
+      provider: provStats.provider,
+      calls: provStats.calls,
+      ok: provStats.ok,
+      rateLimits: provStats.rateLimits,
+      errors: provStats.errors,
+      tokens: provStats.tokens,
+      avgMs: provStats.calls > 0 ? Math.round(provStats.sumMs / provStats.calls) : 0,
+      models: Array.from(provStats.models).slice(0, 4),
+    }))
+    .sort((left, right) => right.calls - left.calls)
+    .slice(0, 10);
+
+  const summary = {
+    connected: gatewayOpen,
+    addr: gatewayInfo?.addr || `127.0.0.1:${gatewayPort}`,
+    version: gatewayInfo?.version || null,
+    totalRecentCalls: okCalls + rateLimit429 + errorCalls,
+    okCalls,
+    rateLimit429,
+    errorCalls,
+    avgLatencyMs: latencyCount > 0 ? Math.round(sumLatencyMs / latencyCount) : 0,
+    avgTtftMs: ttftCount > 0 ? Math.round(sumTtftMs / ttftCount) : 0,
+    providers,
+    memoryStats,
+    recentRoutes: recentRoutes.slice(-24).reverse(),
+    routedRuntimes: Array.from(routedRuntimeSet),
+  };
+
+  const bundle = { sessions, summary };
+  if (magpieCache) {
+    magpieCache.sig = cacheSig;
+    magpieCache.bundle = bundle;
+  }
+  return bundle;
+}
+
+// ============================================================================
 // 5. GIT WORKSPACE RADAR & LIVE SERVER / VPS PROBES
 // ============================================================================
 
@@ -1778,17 +2346,25 @@ export function buildFlowGraph(
     });
   }
 
-  // Select prioritized sessions for crisp topology visualization (max 22)
+  // Select prioritized sessions for crisp topology visualization (cap Magpie virtual streams to top 3)
   const statusRank = { running: 4, error: 3, recent: 2, idle: 1 };
-  const rankedSessions = [...sessions]
-    .sort((left, right) => {
-      const rankDiff = (statusRank[right.status] || 0) - (statusRank[left.status] || 0);
-      if (rankDiff !== 0) return rankDiff;
-      const subDiff = (right.subagents?.length || 0) - (left.subagents?.length || 0);
-      if (subDiff !== 0 && right.status !== 'idle') return subDiff;
-      return right.mtimeMs - left.mtimeMs;
-    })
-    .slice(0, 22);
+  const sortedCandidates = [...sessions].sort((left, right) => {
+    const rankDiff = (statusRank[right.status] || 0) - (statusRank[left.status] || 0);
+    if (rankDiff !== 0) return rankDiff;
+    const subDiff = (right.subagents?.length || 0) - (left.subagents?.length || 0);
+    if (subDiff !== 0 && right.status !== 'idle') return subDiff;
+    return right.mtimeMs - left.mtimeMs;
+  });
+  const rankedSessions = [];
+  const perRuntimePicked = {};
+  for (const candidate of sortedCandidates) {
+    if (rankedSessions.length >= 20) break;
+    const rtCap = candidate.runtime === 'magpie' ? 3 : 6;
+    const rtCount = perRuntimePicked[candidate.runtime] || 0;
+    if (rtCount >= rtCap) continue;
+    perRuntimePicked[candidate.runtime] = rtCount + 1;
+    rankedSessions.push(candidate);
+  }
 
   const sessionNodeById = new Map();
   let subagentNodesAdded = 0;
@@ -1801,6 +2377,7 @@ export function buildFlowGraph(
       tier: 2,
       kind: 'agent',
       runtime: session.runtime,
+      targetRuntime: session.targetRuntime || null,
       sessionId: session.id,
       label: clip(session.title, 34),
       sublabel: clip(session.lastTool || session.model || session.status, 30),
@@ -1999,8 +2576,43 @@ export function buildFlowGraph(
     });
   }
 
-  // Real-time event pulses for p5 particle emission
-  const pulses = (activityFeed || []).slice(0, 28).map((eventEntry, idx) => {
+  // Cross-runtime Magpie Router power-up conduits (Magpie -> OpenCode / Claude / Codex / Antigravity)
+  if (nodeIds.has('rt:magpie')) {
+    const magpieLinkedTargets = new Set();
+    for (const session of sessions) {
+      if (session.runtime === 'magpie' && session.targetRuntime) {
+        magpieLinkedTargets.add(session.targetRuntime);
+      }
+    }
+    for (const targetRt of magpieLinkedTargets) {
+      const targetRtNodeId = `rt:${targetRt}`;
+      if (nodeIds.has(targetRtNodeId)) {
+        edges.push({
+          id: `edge:magpie-boost-${targetRt}`,
+          from: 'rt:magpie',
+          to: targetRtNodeId,
+          kind: 'router-link',
+          runtime: 'magpie',
+          weight: 3.5,
+          active: true,
+          label: 'ROUTE',
+        });
+      }
+    }
+  }
+
+  // Real-time event pulses for p5 particle emission (balance Magpie vs coding hero pulses)
+  const balancedFeed = [];
+  let magpiePulsesCount = 0;
+  for (const eventEntry of activityFeed || []) {
+    if (balancedFeed.length >= 30) break;
+    if (eventEntry.runtime === 'magpie') {
+      if (magpiePulsesCount >= 5) continue;
+      magpiePulsesCount += 1;
+    }
+    balancedFeed.push(eventEntry);
+  }
+  const pulses = balancedFeed.map((eventEntry, idx) => {
     const agentNodeId = sessionNodeById.get(eventEntry.sessionId) || `rt:${eventEntry.runtime}`;
     return {
       id: `${eventEntry.at || idx}-${eventEntry.sessionId}-${idx}`,
@@ -2200,6 +2812,14 @@ export function formatSnapshotMarkdown(snapshot) {
     }
   }
 
+  if (snapshot.magpie && (snapshot.magpie.connected || snapshot.magpie.totalRecentCalls > 0)) {
+    lines.push(
+      '',
+      '## Magpie Router',
+      `- **Gateway:** ${snapshot.magpie.addr || 'local'} (${snapshot.magpie.connected ? 'ONLINE' : 'STANDBY'}) · ${snapshot.magpie.totalRecentCalls} recent calls (${snapshot.magpie.okCalls} ok, ${snapshot.magpie.rateLimit429}×429, avg ${snapshot.magpie.avgLatencyMs}ms)`
+    );
+  }
+
   lines.push('', '## VPS Health Probes');
   for (const probe of snapshot.probes?.vps || []) {
     lines.push(
@@ -2251,6 +2871,8 @@ export function createObservatoryController(config = {}) {
 
   const fileParseCache = new Map();
   const subagentScanCache = new Map();
+  const openCodeCache = { sig: '', sessions: [] };
+  const magpieCache = { sig: '', bundle: null };
   const sampleCpuPct = createCpuSampler();
 
   let cachedAgApi = {
@@ -2690,6 +3312,8 @@ export function createObservatoryController(config = {}) {
       agBundle,
       claudeSessions,
       codexSessions,
+      openCodeSessions,
+      magpieBundle,
       qoderSessions,
       geminiSessions,
       localSwarm,
@@ -2698,6 +3322,8 @@ export function createObservatoryController(config = {}) {
       collectAntigravity(),
       collectClaudeCode(),
       collectCodex(),
+      collectOpenCodeSessions(homeDir, repoRoot, openCodeCache),
+      collectMagpieTelemetry(homeDir, repoRoot, magpieCache),
       collectGenericJsonlRuntime(
         path.join(homeDir, '.qoder', 'projects'),
         'qoder',
@@ -2717,6 +3343,8 @@ export function createObservatoryController(config = {}) {
       ...agBundle.sessions,
       ...claudeSessions,
       ...codexSessions,
+      ...openCodeSessions,
+      ...magpieBundle.sessions,
       ...qoderSessions,
       ...geminiSessions,
     ].sort((left, right) => right.mtimeMs - left.mtimeMs);
@@ -2837,10 +3465,21 @@ export function createObservatoryController(config = {}) {
     const cacheDenom = totalInput + totalCached;
     const cacheHitPct = cacheDenom > 0 ? Math.round((totalCached / cacheDenom) * 1000) / 10 : 0;
 
+    const battle = {
+      bossName: activePlan ? clip(activePlan.title, 54) : 'REPO CHAOS BOSS',
+      bossHpPct: activePlan ? Math.max(0, Math.round((100 - activePlan.percent) * 10) / 10) : 100,
+      bossShieldCount: activePlan?.dag?.stats?.blocked || 0,
+      readyStrikeCount: activePlan?.dag?.stats?.ready || 0,
+      activeWarriors: runningCount,
+      sidekickSwarmCount: subagentTotal,
+      glitchCount: errorSessionCount + vpsProbes.filter((probe) => probe.status === 'down').length,
+      magpieBoostCalls: magpieBundle.summary.totalRecentCalls,
+    };
+
     return {
       rawSessions: allSessions,
       snapshot: {
-        version: 2,
+        version: 3,
         generatedAt: nowIso,
         repoRoot: normalizePathSlashes(repoRoot),
         antigravityApiConnected: agBundle.connectedApi,
@@ -2876,7 +3515,9 @@ export function createObservatoryController(config = {}) {
         defaultPlanId: planBundle.defaultPlanId,
         sessions: allSessions.map(({ sourcePath: _sp, ...publicSession }) => publicSession),
         swarms,
-        activityFeed: activityFeed.slice(0, 80),
+        magpie: magpieBundle.summary,
+        battle,
+        activityFeed: activityFeed.slice(0, 90),
         git: cachedGitState,
         probes: cachedProbes,
         flowGraph,
@@ -2919,10 +3560,14 @@ export function createObservatoryController(config = {}) {
       const detail = await parseCodexRollout(target.sourcePath, fileStat, fileParseCache, true);
       return { ...target, sourcePath: undefined, detail };
     }
+    if (runtime === 'opencode') {
+      const detail = readOpenCodeDetail(target.sourcePath, id);
+      return { ...target, sourcePath: undefined, detail };
+    }
     return {
       ...target,
       sourcePath: undefined,
-      detail: { events: target.recentEvents || [], toolCounts: {} },
+      detail: { events: target.recentEvents || [], toolCounts: target.toolCounts || {} },
     };
   }
 
@@ -3103,7 +3748,7 @@ export async function createObservatoryServer(options = {}) {
       httpResponse.end(
         JSON.stringify({
           ok: true,
-          version: 2,
+          version: 3,
           host,
           port: httpServer.address()?.port ?? port,
           clients: sseClients.size,
@@ -3279,7 +3924,7 @@ if (isDirectEntry) {
     .then((handle) => {
       const boundPort = handle.address?.port ?? cliOptions.port;
       process.stdout.write(
-        `MoonWitness Agent Observatory v2 listening at http://${cliOptions.host}:${boundPort}\n`
+        `MoonWitness Agent Observatory v3 listening at http://${cliOptions.host}:${boundPort}\n`
       );
       const handleShutdown = () => {
         void handle.stop().finally(() => process.exit(0));

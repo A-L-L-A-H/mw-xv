@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import {
   buildFlowGraph,
   buildPlanDag,
+  collectMagpieTelemetry,
+  collectOpenCodeSessions,
   collectPlans,
   computeAnalytics,
   createObservatoryServer,
@@ -184,7 +187,7 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     assert.equal(healthResp.status, 200);
     const healthJson = await healthResp.json();
     assert.equal(healthJson.ok, true);
-    assert.equal(healthJson.version, 2);
+    assert.equal(healthJson.version, 3);
     assert.equal(healthJson.p5Vendored, true);
 
     const p5Resp = await fetch(`${baseUrl}/vendor/p5.min.js`);
@@ -220,10 +223,12 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     const stateResp = await fetch(`${baseUrl}/api/state`);
     assert.equal(stateResp.status, 200);
     const snapshot = await stateResp.json();
-    assert.equal(snapshot.version, 2);
+    assert.equal(snapshot.version, 3);
     assert.ok(Array.isArray(snapshot.plans));
     assert.ok(snapshot.flowGraph && Array.isArray(snapshot.flowGraph.nodes));
     assert.ok(snapshot.analytics && Array.isArray(snapshot.analytics.activityBuckets));
+    assert.ok(snapshot.magpie && typeof snapshot.magpie.totalRecentCalls === 'number');
+    assert.ok(snapshot.battle && typeof snapshot.battle.bossHpPct === 'number');
     assert.ok(Array.isArray(snapshot.telemetryHistory) && snapshot.telemetryHistory.length >= 1);
 
     // Ensure both real repository plans parsed tasks (including D01-D16 heading format!)
@@ -262,6 +267,243 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     await reader.cancel().catch(() => {});
   } finally {
     await handle.stop();
+    await rm(tmpHome, { recursive: true, force: true });
+  }
+});
+
+test('collectOpenCodeSessions reads SQLite v2 sessions, links children, and redacts secrets', async () => {
+  const tmpHome = await mkdtemp(path.join(os.tmpdir(), 'mw-obs-opencode-'));
+  try {
+    const dbDir = path.join(tmpHome, '.local', 'share', 'opencode');
+    await mkdir(dbDir, { recursive: true });
+    const dbPath = path.join(dbDir, 'opencode.db');
+    const sqliteDb = new DatabaseSync(dbPath);
+    const nowMs = Date.now();
+    sqliteDb.exec(`
+      CREATE TABLE session_v2 (
+        id TEXT PRIMARY KEY,
+        parent_id TEXT,
+        title TEXT,
+        directory TEXT,
+        agent TEXT,
+        model TEXT,
+        cost REAL,
+        tokens_input INTEGER,
+        tokens_output INTEGER,
+        tokens_cache_read INTEGER,
+        tokens_cache_write INTEGER,
+        time_created INTEGER,
+        time_updated INTEGER,
+        time_busy INTEGER,
+        time_idle INTEGER,
+        time_archived INTEGER
+      );
+      CREATE TABLE session_part (
+        session_id TEXT,
+        type TEXT,
+        time_updated INTEGER,
+        data TEXT
+      );
+      CREATE TABLE session_message (
+        id TEXT PRIMARY KEY,
+        session_id TEXT
+      );
+    `);
+
+    sqliteDb
+      .prepare(`INSERT INTO session_v2 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(
+        'ses_parent_001',
+        null,
+        'Execute wave M03 migration',
+        'Z:/repo/mw-xv',
+        'build',
+        JSON.stringify({ id: 'claude-opus-4-6', providerID: 'magpie', variant: 'high' }),
+        0.145,
+        12000,
+        3400,
+        8000,
+        1000,
+        nowMs - 60000,
+        nowMs - 1500,
+        nowMs - 1000,
+        nowMs - 9000,
+        null
+      );
+
+    sqliteDb
+      .prepare(`INSERT INTO session_v2 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(
+        'ses_child_002',
+        'ses_parent_001',
+        'Verify schema diff',
+        'Z:/repo/mw-xv',
+        'explore',
+        JSON.stringify({ id: 'gemini-3-flash', providerID: 'magpie' }),
+        0.02,
+        1500,
+        500,
+        200,
+        0,
+        nowMs - 20000,
+        nowMs - 2000,
+        null,
+        nowMs - 2000,
+        null
+      );
+
+    sqliteDb.prepare(`INSERT INTO session_part VALUES (?, ?, ?, ?)`).run(
+      'ses_parent_001',
+      'tool',
+      nowMs - 1200,
+      JSON.stringify({
+        type: 'tool',
+        name: 'bash',
+        state: {
+          status: 'completed',
+          input: { command: 'curl -H "Authorization: Bearer super-secret-tok-999" https://ex' },
+        },
+      })
+    );
+
+    sqliteDb.prepare(`INSERT INTO session_message VALUES (?, ?)`).run('m1', 'ses_parent_001');
+    sqliteDb.prepare(`INSERT INTO session_message VALUES (?, ?)`).run('m2', 'ses_parent_001');
+    sqliteDb.close();
+
+    const sessions = await collectOpenCodeSessions(tmpHome, 'Z:/repo/mw-xv');
+    assert.equal(sessions.length, 2);
+    const parent = sessions.find((entry) => entry.id === 'ses_parent_001');
+    assert.ok(parent);
+    assert.equal(parent.runtime, 'opencode');
+    assert.equal(parent.status, 'running');
+    assert.equal(parent.runState, 'BUSY');
+    assert.equal(parent.model, 'magpie/claude-opus-4-6 (high)');
+    assert.equal(parent.steps, 2);
+    assert.equal(parent.subagents.length, 1);
+    assert.equal(parent.subagents[0].id, 'ses_child_002');
+    assert.equal(parent.focus.includes('super-secret-tok-999'), false);
+    assert.match(parent.focus, /Bearer \[REDACTED\]/);
+  } finally {
+    await rm(tmpHome, { recursive: true, force: true });
+  }
+});
+
+test('collectMagpieTelemetry aggregates provider calls, 429 rate limits, memory stats, and strips account emails', async () => {
+  const tmpHome = await mkdtemp(path.join(os.tmpdir(), 'mw-obs-magpie-'));
+  try {
+    const magpieDir = path.join(tmpHome, '.config', 'magpie');
+    await mkdir(magpieDir, { recursive: true });
+    const nowIso = new Date().toISOString();
+
+    await writeFile(
+      path.join(magpieDir, 'gateway.json'),
+      JSON.stringify({
+        addr: '127.0.0.1:59999',
+        pid: 12345,
+        serves: 'app',
+        version: '0.1.4781',
+      }),
+      'utf8'
+    );
+
+    await writeFile(
+      path.join(magpieDir, 'memory-stats.json'),
+      JSON.stringify({
+        version: 1,
+        days: {
+          '2026-11-25': { created: { inferred: 2 }, searches: 7, found: 5, recalled: 4 },
+        },
+      }),
+      'utf8'
+    );
+
+    const usageLines = [
+      JSON.stringify({
+        t: nowIso,
+        agent: 'opencode',
+        provider: 'amd',
+        host: 'private-secret@example.com',
+        req: 'group/never-stuck',
+        served: 'claude-opus-4-6',
+        in: 4000,
+        out: 600,
+        cache_read: 2000,
+        ms: 1400,
+        ttft_ms: 350,
+        status: 200,
+        stop: 'tool_calls',
+        subagent: 'sub-alpha',
+      }),
+      JSON.stringify({
+        t: nowIso,
+        agent: 'claude-code',
+        provider: 'opencode-zen-free',
+        host: 'hidden-user@corp.local',
+        req: 'group/never-stuck',
+        served: 'minimax-m2.5',
+        in: 1200,
+        out: 0,
+        ms: 400,
+        ttft_ms: 250,
+        status: 429,
+      }),
+    ].join('\n');
+
+    await writeFile(path.join(magpieDir, 'usage.jsonl'), `${usageLines}\n`, 'utf8');
+
+    const bundle = await collectMagpieTelemetry(tmpHome, 'Z:/repo/mw-xv');
+    assert.equal(bundle.summary.totalRecentCalls, 2);
+    assert.equal(bundle.summary.okCalls, 1);
+    assert.equal(bundle.summary.rateLimit429, 1);
+    assert.equal(bundle.summary.avgLatencyMs, 900);
+    assert.equal(bundle.summary.avgTtftMs, 300);
+    assert.equal(bundle.summary.providers.length, 2);
+    assert.equal(bundle.summary.memoryStats.recalled, 4);
+    assert.deepEqual(bundle.summary.routedRuntimes.sort(), ['claude', 'opencode']);
+    assert.equal(bundle.sessions.length, 2);
+
+    const serialized = JSON.stringify(bundle);
+    assert.equal(serialized.includes('private-secret@example.com'), false);
+    assert.equal(serialized.includes('hidden-user@corp.local'), false);
+
+    // Cross-runtime router-link edges connect Magpie to routed OpenCode runtime in flowGraph
+    const graph = buildFlowGraph(
+      [
+        ...bundle.sessions,
+        {
+          id: 'oc-1',
+          runtime: 'opencode',
+          runtimeLabel: 'OpenCode',
+          title: 'OC Runner',
+          status: 'running',
+          model: 'opus',
+          focus: 'editing',
+          lastTool: 'edit',
+          lastError: '',
+          errorCount: 0,
+          steps: 4,
+          tokens: { input: 100, cached: 0, output: 50, total: 150 },
+          subagents: [],
+          toolCounts: {},
+          inCurrentWorkspace: true,
+          updatedAt: nowIso,
+          mtimeMs: Date.now(),
+        },
+      ],
+      [],
+      null,
+      { branch: 'dev', head: 'abc1234', dirtyCount: 0, dirtyByArea: {}, commits: [] },
+      { vps: [], localPorts: [] },
+      [],
+      'Z:/repo/mw-xv'
+    );
+    assert.ok(
+      graph.edges.some(
+        (edge) =>
+          edge.kind === 'router-link' && edge.from === 'rt:magpie' && edge.to === 'rt:opencode'
+      )
+    );
+  } finally {
     await rm(tmpHome, { recursive: true, force: true });
   }
 });

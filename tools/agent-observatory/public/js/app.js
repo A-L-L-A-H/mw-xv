@@ -25,6 +25,7 @@
     feedKind: 'all',
     taskSearch: '',
     taskStatusFilter: 'all',
+    chaosLevel: 'riot',
     autoCam: false,
     comboCount: 1,
     lastHeadSha: null,
@@ -110,6 +111,11 @@
   // Instantiate Full-Bleed Cinema Flow Stage + Quest DAG + Beat Lab Visualizers
   const flowCanvas = obs.createFlowCanvas(byId('flowCanvasHost'), byId('flowTooltip'), {
     onNodeClick(nodeEntry) {
+      if (nodeEntry.kind === 'hub') {
+        sfxEngine.play('clash');
+        bumpCombo(3);
+        return;
+      }
       sfxEngine.play('boing');
       if (nodeEntry.kind === 'agent' && nodeEntry.sessionId) {
         void openSessionDrawer(nodeEntry.runtime, nodeEntry.sessionId);
@@ -130,14 +136,31 @@
     },
     onLivePulse(pulse) {
       bumpCombo(1);
+      const toolTag = String(pulse.tool || '').toLowerCase();
       if (pulse.kind === 'error') {
         sfxEngine.play('bonk');
-      } else if (pulse.kind === 'subagent' || pulse.kind === 'swarm') {
+      } else if (pulse.kind === 'swarm') {
+        sfxEngine.play('clash');
+      } else if (pulse.kind === 'subagent') {
         sfxEngine.play('spawn');
+      } else if (pulse.runtime === 'magpie') {
+        sfxEngine.play('zap');
+      } else if (
+        pulse.runtime === 'opencode' ||
+        toolTag.includes('edit') ||
+        toolTag.includes('write')
+      ) {
+        sfxEngine.play('slash');
+      } else if (
+        toolTag.includes('bash') ||
+        toolTag.includes('command') ||
+        toolTag.includes('run')
+      ) {
+        sfxEngine.play('laser');
       } else if (pulse.kind === 'focus') {
         sfxEngine.play('pop');
       } else {
-        sfxEngine.play('zap');
+        sfxEngine.play('punch');
       }
     },
   });
@@ -372,16 +395,51 @@
         run: () => switchTab('flow'),
       },
       {
+        kind: 'WARZONE',
+        label: '⚔️ Warzone: Anime Cartoon Boss Battle Arena',
+        sub: 'Heroes dash, laser, slash & clash against Plan Boss',
+        run: () => {
+          switchTab('flow');
+          setFlowMode('warzone');
+        },
+      },
+      {
         kind: 'SFX',
-        label: '⚡ Trigger BOOM!! Cut-In + Level-Up Fanfare',
-        sub: 'Test cartoon audio & animation',
+        label: '⚔️ Unleash ALL-OUT RIOT CLASH!! Team Ultimate',
+        sub: 'Simultaneous multi-hero laser & slash barrage + SFX',
         run: () => triggerShowstopperCutIn(),
       },
       {
+        kind: 'CHAOS',
+        label: '🔥 Cycle Battle Chaos Intensity (CHILL / RIOT / MAX!!)',
+        sub: 'Crank speedlines, battle cadence & breakbeat energy',
+        run: () => cycleChaosLevel(),
+      },
+      {
         kind: 'BEAT',
-        label: '🎵 Toggle 112 BPM Funky Anime Beat',
-        sub: 'Slap bass + boom-bap + night city ambience',
+        label: '🎵 Toggle 128 BPM Punk-Funk Anime Boss Breakbeat',
+        sub: 'Breakbeat drums + slap bass + brass + night ambience',
         run: () => toggleFunkyBeat(),
+      },
+      {
+        kind: 'CAST',
+        label: '🔥 Filter Cast: OpenCode Ronin Sessions',
+        sub: 'Inspect live OpenCode SQLite v2 sessions',
+        run: () => {
+          appState.filterRuntime = 'opencode';
+          byId('filterRuntime').value = 'opencode';
+          switchTab('agents');
+        },
+      },
+      {
+        kind: 'CAST',
+        label: '🐦 Filter Cast: Magpie Hyper-Router Gateway',
+        sub: 'Inspect routed providers, latency & 429 deflections',
+        run: () => {
+          appState.filterRuntime = 'magpie';
+          byId('filterRuntime').value = 'magpie';
+          switchTab('agents');
+        },
       },
       {
         kind: 'STAGE',
@@ -534,21 +592,51 @@
     dagCanvas.setVisible(appState.activeTab === 'dag' && mode !== 'list');
   }
 
+  function cycleChaosLevel() {
+    const order = ['chill', 'riot', 'overdrive'];
+    const nextIdx = (order.indexOf(appState.chaosLevel) + 1) % order.length;
+    appState.chaosLevel = order[nextIdx];
+    flowCanvas.setChaosLevel(appState.chaosLevel);
+    sfxEngine.setIntensity(appState.chaosLevel);
+    const btn = byId('chaosToggleBtn');
+    if (btn) {
+      btn.classList.remove('active-orange', 'active-magenta', 'active-cyan');
+      if (appState.chaosLevel === 'chill') {
+        btn.textContent = '🧊 CHILL';
+        btn.classList.add('active-cyan');
+        sfxEngine.play('pop');
+      } else if (appState.chaosLevel === 'riot') {
+        btn.textContent = '🔥 RIOT';
+        btn.classList.add('active-orange');
+        sfxEngine.play('dash');
+      } else {
+        btn.textContent = '💥 MAX!!';
+        btn.classList.add('active-magenta');
+        sfxEngine.play('clash');
+        flowCanvas.triggerAllOutClash('MAX OVERDRIVE!!');
+      }
+    }
+  }
+
   function toggleFunkyBeat() {
     const next = !sfxEngine.isBeatEnabled();
     sfxEngine.setBeatEnabled(next);
     const beatBtn = byId('beatToggleBtn');
-    beatBtn.textContent = next ? '🎵 BEAT ON' : '🎵 FUNKY BEAT';
+    beatBtn.textContent = next ? '🎵 BEAT ON' : '🎵 BEAT';
     beatBtn.classList.toggle('active-cyan', next);
     if (next) byId('audioUnlockBanner')?.classList.add('hidden');
   }
 
   function triggerShowstopperCutIn() {
     void ensureAudioUnlocked().then(() => {
-      sfxEngine.play('levelup');
-      flowCanvas.triggerShowstopper('RIOT TIME!!');
-      bumpCombo(5);
-      showAnimeCutIn('RIOT OVERDRIVE!!', 'MOONWITNESS CREW LIVE ON STAGE!', 'celebrate');
+      sfxEngine.play('ultimate');
+      flowCanvas.triggerAllOutClash('ALL-OUT CLASH!!');
+      bumpCombo(10);
+      showAnimeCutIn(
+        'ALL-OUT RIOT CLASH!!',
+        'OPENCODE · MAGPIE · KURO · VESPER ENGAGED!',
+        'celebrate'
+      );
     });
   }
 
@@ -674,11 +762,12 @@
     const next = !sfxEngine.isSfxEnabled();
     sfxEngine.setSfxEnabled(next);
     const btn = byId('sfxToggleBtn');
-    btn.textContent = next ? '🔊 SFX ON' : '🔇 SFX OFF';
+    btn.textContent = next ? '🔊 SFX' : '🔇 SFX';
     btn.classList.toggle('active-yellow', next);
     if (next) void ensureAudioUnlocked().then(() => sfxEngine.play('boing'));
   });
 
+  byId('chaosToggleBtn')?.addEventListener('click', cycleChaosLevel);
   byId('beatToggleBtn')?.addEventListener('click', toggleFunkyBeat);
   byId('boomTestBtn')?.addEventListener('click', triggerShowstopperCutIn);
 
