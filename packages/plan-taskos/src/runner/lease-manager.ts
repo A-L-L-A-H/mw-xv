@@ -70,71 +70,67 @@ export async function claimTaskLease(
   const expiresSec = nowSec + ttlSec;
   const expiresIso = new Date(expiresSec * 1000).toISOString();
 
-  try {
-    const result = store.transactionImmediate((tx) => {
-      // Reap expired leases first
-      tx.run(`DELETE FROM leases WHERE expires_at <= ?;`, nowIso);
+  const result = store.transactionImmediate((tx) => {
+    // Reap expired leases first
+    tx.run(`DELETE FROM leases WHERE expires_at <= ?;`, nowIso);
 
-      // Check for existing active lease
-      const existing = tx.get(
-        `SELECT task_urn, agent_runtime, session_id, model_tier, acquired_at, expires_at, renewed_at
-         FROM leases WHERE task_urn = ? AND expires_at > ?;`,
-        input.taskUrn,
-        nowIso
-      ) as LeaseRecord | undefined;
+    // Check for existing active lease (unreleased)
+    const existing = tx.get(
+      `SELECT task_urn, agent_runtime, session_id, model_tier, acquired_at, expires_at, renewed_at
+       FROM leases WHERE task_urn = ? AND expires_at > ? AND released = 0;`,
+      input.taskUrn,
+      nowIso
+    ) as LeaseRecord | undefined;
 
-      if (existing) {
-        if (existing.session_id === input.sessionId) {
-          // Same session - renew instead
-          tx.run(
-            `UPDATE leases SET expires_at = ?, renewed_at = ?, model_tier = ? WHERE task_urn = ? AND session_id = ?;`,
-            expiresIso,
-            nowIso,
-            input.modelTier ?? existing.model_tier,
-            input.taskUrn,
-            input.sessionId
-          );
-          return { ok: true, lease: { ...existing, expires_at: expiresIso, renewed_at: nowIso, model_tier: input.modelTier ?? existing.model_tier } };
-        }
-        // Different session holds lease
-        return { ok: false, error: "LEASE_CONFLICT" as const, existingLease: existing };
+    if (existing) {
+      if (existing.session_id === input.sessionId) {
+        // Same session - renew instead
+        tx.run(
+          `UPDATE leases SET expires_at = ?, renewed_at = ?, model_tier = ? WHERE task_urn = ? AND session_id = ?;`,
+          expiresIso,
+          nowIso,
+          input.modelTier ?? existing.model_tier,
+          input.taskUrn,
+          input.sessionId
+        );
+        return { ok: true, lease: { ...existing, expires_at: expiresIso, renewed_at: nowIso, model_tier: input.modelTier ?? existing.model_tier } };
       }
-
-      // Insert new lease
-      tx.run(
-        `INSERT INTO leases (task_urn, agent_runtime, session_id, model_tier, acquired_at, expires_at, renewed_at, released)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0);`,
-        input.taskUrn,
-        input.agentRuntime,
-        input.sessionId,
-        input.modelTier ?? "flash",
-        nowIso,
-        expiresIso,
-        nowIso
-      );
-
-      return {
-        ok: true,
-        lease: {
-          task_urn: input.taskUrn,
-          agent_runtime: input.agentRuntime,
-          session_id: input.sessionId,
-          model_tier: input.modelTier ?? "flash",
-          acquired_at: nowIso,
-          expires_at: expiresIso,
-          renewed_at: nowIso,
-        },
-      };
-    });
-
-    if (result.ok && result.lease) {
-      await mirrorLeasesLocal(store, input.taskUrn.split(":")[4]?.split("/")[0] ?? "default");
+      // Different session holds lease
+      return { ok: false, error: "LEASE_CONFLICT" as const, existingLease: existing };
     }
 
-    return result;
-  } catch (e) {
-    return { ok: false, error: "TASK_NOT_FOUND" };
+    // Insert new lease
+    tx.run(
+      `INSERT INTO leases (task_urn, agent_runtime, session_id, model_tier, acquired_at, expires_at, renewed_at, released)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0);`,
+      input.taskUrn,
+      input.agentRuntime,
+      input.sessionId,
+      input.modelTier ?? "flash",
+      nowIso,
+      expiresIso,
+      nowIso
+    );
+
+    return {
+      ok: true,
+      lease: {
+        task_urn: input.taskUrn,
+        agent_runtime: input.agentRuntime,
+        session_id: input.sessionId,
+        model_tier: input.modelTier ?? "flash",
+        acquired_at: nowIso,
+        expires_at: expiresIso,
+        renewed_at: nowIso,
+      },
+    };
+  });
+
+  if (result.ok && result.lease) {
+    await mirrorLeasesLocal(store, input.taskUrn.split(":")[4]?.split("/")[0] ?? "default");
   }
+
+  return result;
 }
 
 /**
@@ -145,39 +141,37 @@ export async function renewTaskLease(
   taskUrn: string,
   sessionId: string,
   ttlSec = 900,
-  modelTier?: string
+  nowIso?: string
 ): Promise<LeaseRenewResult> {
-  const nowIso = new Date().toISOString();
-  const nowSec = Math.floor(new Date(nowIso).getTime() / 1000);
+  const now = nowIso ?? new Date().toISOString();
+  const nowSec = Math.floor(new Date(now).getTime() / 1000);
   const expiresSec = nowSec + ttlSec;
   const expiresIso = new Date(expiresSec * 1000).toISOString();
 
   const result = store.transactionImmediate((tx) => {
     const existing = tx.get(
       `SELECT task_urn, agent_runtime, session_id, model_tier, acquired_at, expires_at, renewed_at
-       FROM leases WHERE task_urn = ? AND session_id = ? AND expires_at > ?;`,
+       FROM leases WHERE task_urn = ? AND session_id = ? AND expires_at > ? AND released = 0;`,
       taskUrn,
       sessionId,
-      nowIso
+      now
     ) as LeaseRecord | undefined;
 
     if (!existing) {
       return { ok: false, error: "LEASE_NOT_FOUND" as const };
     }
 
-    const tier = modelTier ?? existing.model_tier;
     tx.run(
-      `UPDATE leases SET expires_at = ?, renewed_at = ?, model_tier = ? WHERE task_urn = ? AND session_id = ?;`,
+      `UPDATE leases SET expires_at = ?, renewed_at = ? WHERE task_urn = ? AND session_id = ?;`,
       expiresIso,
-      nowIso,
-      tier,
+      now,
       taskUrn,
       sessionId
     );
 
     return {
       ok: true,
-      lease: { ...existing, expires_at: expiresIso, renewed_at: nowIso, model_tier: tier },
+      lease: { ...existing, expires_at: expiresIso, renewed_at: now },
     };
   });
 
@@ -248,12 +242,12 @@ export async function listActiveLeases(store: BrainStorageDriver): Promise<Activ
 /**
  * Reap expired leases deterministically.
  */
-export async function reapExpiredLeases(store: BrainStorageDriver): Promise<number> {
-  const nowIso = new Date().toISOString();
+export async function reapExpiredLeases(store: BrainStorageDriver, nowIso?: string): Promise<number> {
+  const now = nowIso ?? new Date().toISOString();
   let count = 0;
 
   store.transactionImmediate((tx) => {
-    const result = tx.run(`DELETE FROM leases WHERE expires_at <= ?;`, nowIso);
+    const result = tx.run(`DELETE FROM leases WHERE expires_at <= ?;`, now);
     count = (result as { changes: number }).changes ?? 0;
   });
 

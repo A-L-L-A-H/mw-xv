@@ -38,9 +38,9 @@ export interface ProofEnvelopeDraft {
   readonly parent_proof_hashes: readonly string[];
   readonly commands: readonly unknown[];
   readonly diff_files: readonly string[];
-  readonly owner_files_verified: readonly string[];
+  readonly owner_files_verified: boolean;
   readonly acceptance_criteria_state: readonly unknown[];
-  readonly commit_sha?: string;
+  readonly commit_sha: string | null;
   readonly model_tier?: string;
   readonly agent_runtime?: string;
   readonly verified_at?: string;

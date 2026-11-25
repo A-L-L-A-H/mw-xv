@@ -6,10 +6,11 @@
  */
 
 import type { BrainStorageDriver } from "../brain/storage.js";
-import type { LoadedPlanBundle, PlanTaskIR, ModelTier } from "../core/types.js";
+import type { LoadedPlanBundle, PlanTaskIR, ModelTier, TaskLifecycle, VerifyCommandIR } from "../core/types.js";
 import { discoverPlans } from "../core/loader.js";
 import { sealProofEnvelope } from "../brain/merkle-dag.js";
 import { recordEpisode } from "../brain/episodic-memory.js";
+import type { GitRunner, CommandRunner } from "./scope-gate.js";
 import { inspectChangedFiles, checkOwnerFileScope, executeVerifyCommands, captureBaselineDirtyFiles } from "./scope-gate.js";
 import { claimTaskLease, releaseTaskLease } from "./lease-manager.js";
 import { join } from "node:path";
@@ -23,6 +24,9 @@ export interface CompleteMicroTaskOptions {
   readonly agentRuntime: string;
   readonly modelTier?: ModelTier;
   readonly nowIso?: string;
+  readonly baselineDirtyFiles?: readonly string[];
+  readonly gitRunner?: GitRunner;
+  readonly commandRunner?: CommandRunner;
 }
 
 export interface CompleteMicroTaskResult {
@@ -33,6 +37,8 @@ export interface CompleteMicroTaskResult {
   readonly error?: string;
   readonly blocked?: boolean;
   readonly nextReadyFrontier?: readonly string[];
+  readonly nextModelTier?: ModelTier;
+  readonly attempts?: number;
 }
 
 export interface FailureInfo {
@@ -80,8 +86,8 @@ export async function completeMicroTask(
   const currentAttempts = targetTask.lifecycle.attempts;
   const attemptNumber = currentAttempts + 1;
 
-  // 2. Check dependencies are done and collect parent proof hashes
-  const parentProofHashes = await collectParentProofHashes(store, targetTask);
+  // 2. Check dependencies are done/skipped and collect parent proof hashes
+  const parentProofHashes = await collectParentProofHashes(store, targetTask, bundle, planId);
   if (parentProofHashes.length < targetTask.graph.depends_on.length) {
     return { ok: false, taskCode: taskId, error: "DEPENDENCY_NOT_DONE: predecessor tasks not completed" };
   }
@@ -101,23 +107,26 @@ export async function completeMicroTask(
   }
 
   // 4. Capture baseline dirty files if requireCleanScope
+  // Use provided baselineDirtyFiles or capture if not provided and requireCleanScope is true
   let baselineDirtyFiles: string[] = [];
   if (options.requireCleanScope) {
-    baselineDirtyFiles = await captureBaselineDirtyFiles(repoRoot);
+    baselineDirtyFiles = options.baselineDirtyFiles !== undefined
+      ? [...options.baselineDirtyFiles]
+      : await captureBaselineDirtyFiles(repoRoot, { gitRunner: options.gitRunner });
   }
 
   try {
     // 5. Run verify commands
-    const verifyCommands = targetTask.verification.commands.map((c) => ({
+    const verifyCommands = targetTask.verification.commands.map((c: VerifyCommandIR) => ({
       cmd: c.cmd,
       timeoutSec: 120,
       expectedExitCode: c.expected_exit_code ?? 0,
     }));
 
-    const verifyResults = await executeVerifyCommands(verifyCommands, { cwd: repoRoot });
+    const verifyResults = await executeVerifyCommands(verifyCommands, { cwd: repoRoot, runner: options.commandRunner });
 
     // 6. Scope check
-    const changedFilesResult = await inspectChangedFiles(repoRoot);
+    const changedFilesResult = await inspectChangedFiles(repoRoot, { gitRunner: options.gitRunner });
     const scopeCheck = checkOwnerFileScope(
       changedFilesResult.all,
       [...targetTask.governance.owner_files],
@@ -126,7 +135,8 @@ export async function completeMicroTask(
     );
 
     // 7. Check if any verify command failed
-    const verifyFailed = verifyResults.some((r) => r.exitCode !== (r.cmd.includes("expected_exit_code") ? 0 : 0));
+    // Use the actual expectedExitCode from verifyResults
+    const verifyFailed = verifyResults.some((r) => r.exitCode !== r.expectedExitCode);
     const hasScopeViolation = !scopeCheck.ok;
 
     if (verifyFailed || hasScopeViolation) {
@@ -167,15 +177,23 @@ export async function completeMicroTask(
       const escalationChain = executionPolicy.escalation_chain ?? ["flash", "neon", "argon"];
       const currentTier = options.modelTier ?? targetTask.lifecycle.model_tier ?? executionPolicy.default_model_tier;
       const currentIndex = escalationChain.indexOf(currentTier);
-      const _nextTier = currentIndex >= 0 && currentIndex + 1 < escalationChain.length
+      const nextTier = currentIndex >= 0 && currentIndex + 1 < escalationChain.length
         ? escalationChain[currentIndex + 1]
         : currentTier;
+
+      // Persist the escalation: update wave JSON (task.lifecycle) and brain nodes table
+      await persistEscalation(store, repoRoot, planId, taskId, attemptNumber, nextTier);
+
+      // Release lease on non-terminal failure
+      await releaseTaskLease(store, targetTask.urn, options.sessionId);
 
       return {
         ok: false,
         taskCode: taskId,
         error: verifyFailed ? "VERIFY_FAILED" : "SCOPE_VIOLATION",
         nextReadyFrontier: [],
+        nextModelTier: nextTier,
+        attempts: attemptNumber,
       };
     }
 
@@ -194,12 +212,12 @@ export async function completeMicroTask(
         redacted_excerpt: r.redactedExcerpt,
       })),
       diff_files: scopeCheck.ownedChanged,
-      owner_files_verified: scopeCheck.ownedChanged,
+      owner_files_verified: scopeCheck.ok, // boolean per schema
       acceptance_criteria_state: targetTask.verification.acceptance_criteria.map((c) => ({
         criterion: c,
-        done: true,
+        satisfied: true,
       })),
-      commit_sha: undefined, // Will be filled after commit
+      commit_sha: null, // null per schema, not undefined
       model_tier: options.modelTier ?? targetTask.lifecycle.model_tier ?? executionPolicy.default_model_tier,
       agent_runtime: options.agentRuntime,
       verified_at: nowIso,
@@ -214,11 +232,11 @@ export async function completeMicroTask(
     // 10. Update proof ledger
     await updateProofLedger(store, proofEnvelope, planId);
 
-    // 11. Update wave JSON status
+    // 11. Update wave JSON status - only valid lifecycle fields
     await updateWaveJson(repoRoot, planId, taskId, {
       status: "done",
-      evidence_ref: `.plan/${planId}/evidence/${taskId}.proof.json`,
-      commit_sha: proofEnvelope.commit_sha,
+      delivery_stage: "verified_dev",
+      // evidence_ref and commit_sha are in proof envelope, not wave JSON (schema additionalProperties: false)
     });
 
     // 12. Record fixed_by episode if there were previous attempts
@@ -283,27 +301,32 @@ export async function recordMicroTaskFailure(
   });
 }
 
-async function collectParentProofHashes(store: BrainStorageDriver, task: PlanTaskIR): Promise<string[]> {
+async function collectParentProofHashes(
+  store: BrainStorageDriver,
+  task: PlanTaskIR,
+  bundle: LoadedPlanBundle,
+  planId: string
+): Promise<string[]> {
   const hashes: string[] = [];
   for (const depCode of task.graph.depends_on) {
-    // Find the dependency task and its sealed proof
-    const depTask = await findTaskByCode(store, depCode);
+    // Find the dependency task in the bundle
+    const depTask = bundle.waves.flatMap((w) => w.tasks).find((t) => t.code === depCode);
     if (depTask) {
-      const proof = store.get(
-        `SELECT envelope_sha256 FROM proof_ledger WHERE task_code = ?;`,
-        depCode
-      ) as { envelope_sha256: string } | undefined;
-      if (proof) {
-        hashes.push(proof.envelope_sha256);
+      // Check if dependency is done or skipped
+      if (depTask.lifecycle.status === "done" || depTask.lifecycle.status === "skipped") {
+        // Query proof_ledger by plan_id and task_code
+        const proof = store.get(
+          `SELECT envelope_sha256 FROM proof_ledger WHERE plan_id = ? AND task_code = ? ORDER BY recorded_at DESC LIMIT 1;`,
+          planId,
+          depCode
+        ) as { envelope_sha256: string } | undefined;
+        if (proof) {
+          hashes.push(proof.envelope_sha256);
+        }
       }
     }
   }
   return hashes.sort();
-}
-
-async function findTaskByCode(store: BrainStorageDriver, code: string): Promise<{ urn: string } | null> {
-  const row = store.get(`SELECT urn FROM nodes WHERE code = ? AND kind = 'task' LIMIT 1;`, code) as { urn: string } | undefined;
-  return row ?? null;
 }
 
 async function recordFailureEpisode(
@@ -352,10 +375,44 @@ async function blockTask(
     );
   });
 
-  // Update wave JSON
+  // Update wave JSON properly - only lifecycle fields
   await updateWaveJson(repoRoot, planId, taskId, {
     status: "blocked",
-    blocked_reason: reason,
+    delivery_stage: "na",
+    attempts,
+    model_tier: modelTier,
+    blocked_reason: reason, // stored in metadata_json via updateWaveJson
+  });
+}
+
+/**
+ * Persist escalation state: update wave JSON task.lifecycle and brain nodes table
+ */
+async function persistEscalation(
+  store: BrainStorageDriver,
+  repoRoot: string,
+  planId: string,
+  taskId: string,
+  attempts: number,
+  modelTier: ModelTier
+): Promise<void> {
+  // Update brain nodes table
+  store.transactionImmediate((tx) => {
+    tx.run(
+      `UPDATE nodes SET attempts = ?, metadata_json = json_set(
+         COALESCE(metadata_json, '{}'),
+         '$.model_tier',
+         ?
+       ) WHERE code = ? AND plan_id = ?;`,
+      attempts,
+      modelTier,
+      taskId,
+      planId
+    );
+  });
+
+  // Update wave JSON task.lifecycle
+  await updateWaveJson(repoRoot, planId, taskId, {
     attempts,
     model_tier: modelTier,
   });
@@ -366,6 +423,10 @@ async function updateProofLedger(
   proofEnvelope: ReturnType<typeof sealProofEnvelope>,
   planId: string
 ): Promise<void> {
+  // Extract wave_id from task_urn: urn:mw:work:org/repo:planId:W1/T01
+  const waveIdMatch = proofEnvelope.task_urn.match(/:(W\d+)\//);
+  const waveId = waveIdMatch ? waveIdMatch[1] : "";
+
   store.transactionImmediate((tx) => {
     tx.run(
       `INSERT OR REPLACE INTO proof_ledger
@@ -375,10 +436,10 @@ async function updateProofLedger(
       proofEnvelope.task_urn,
       proofEnvelope.code,
       planId,
-      "", // wave_id - would need to extract
+      waveId,
       0,
       JSON.stringify(proofEnvelope.parent_proof_hashes),
-      "", // merkle_root
+      "", // merkle_root - would need to compute
       JSON.stringify(proofEnvelope)
     );
   });
@@ -400,8 +461,34 @@ async function updateWaveJson(
         const wave = JSON.parse(content);
         const task = wave.tasks.find((t: PlanTaskIR) => t.code === taskId);
         if (task) {
-          // Create updated task with new status
-          const updatedTask = { ...task, ...updates };
+          // Properly update task.lifecycle and task.projections per schema
+          // Only fields defined in TaskLifecycle schema: status, delivery_stage, model_tier, risk_tier, attempts
+          const updatedLifecycle: TaskLifecycle = {
+            ...task.lifecycle,
+            status: (updates.status as TaskLifecycle["status"]) ?? task.lifecycle.status,
+            delivery_stage: (updates.delivery_stage as TaskLifecycle["delivery_stage"]) ?? task.lifecycle.delivery_stage,
+            model_tier: (updates.model_tier as ModelTier) ?? task.lifecycle.model_tier,
+            risk_tier: task.lifecycle.risk_tier,
+            attempts: (typeof updates.attempts === "number" ? updates.attempts : task.lifecycle.attempts),
+          };
+
+          // Update projections - only fields defined in TaskProjections schema
+          // evidence_ref is not in TaskProjections schema, but we track it for internal use
+          // The proof envelope already contains the evidence path
+          const updatedProjections = {
+            ...task.projections,
+            // No evidence_ref in schema - proof is in .plan/{planId}/evidence/{taskId}.proof.json
+          };
+
+          // For blocked_reason, store in lifecycle metadata if we had such a field
+          // Since schema has additionalProperties: false, we cannot add arbitrary fields
+          // The brain nodes table metadata_json already stores blocked_reason
+
+          const updatedTask: PlanTaskIR = {
+            ...task,
+            lifecycle: updatedLifecycle,
+            projections: updatedProjections,
+          } as PlanTaskIR;
           const updatedWave = { ...wave, tasks: wave.tasks.map((t: PlanTaskIR) => t.code === taskId ? updatedTask : t) };
           await writeFile(wavePath, JSON.stringify(updatedWave, null, 2), "utf8");
           break;

@@ -16,19 +16,18 @@ export interface ChangedFilesResult {
   readonly all: readonly string[];
 }
 
-/**
- * Collect changed files from git status --porcelain.
- * Returns repo-relative POSIX paths.
- */
-export async function inspectChangedFiles(
-  repoRoot: string
-): Promise<ChangedFilesResult> {
-  const output = execSync("git status --porcelain", {
-    cwd: repoRoot,
-    encoding: "utf8",
-    maxBuffer: 1024 * 1024,
-  });
+export interface GitRunner {
+  (cmd: string, cwd: string): Promise<{ stdout: string; stderr: string; exitCode: number }>;
+}
 
+export interface CommandRunner {
+  (cmd: string, options: { cwd: string; shell: string; timeoutSec: number }): Promise<{ stdout: string; stderr: string; exitCode: number; signal?: string }>;
+}
+
+/**
+ * Parse git status --porcelain output into ChangedFilesResult.
+ */
+function parseGitStatus(output: string): ChangedFilesResult {
   const staged: string[] = [];
   const unstaged: string[] = [];
   const untracked: string[] = [];
@@ -50,6 +49,30 @@ export async function inspectChangedFiles(
 
   const all = [...new Set([...staged, ...unstaged, ...untracked])];
   return { staged, unstaged, untracked, all };
+}
+
+/**
+ * Collect changed files from git status --porcelain.
+ * Returns repo-relative POSIX paths.
+ */
+export async function inspectChangedFiles(
+  repoRoot: string,
+  options?: { gitRunner?: GitRunner }
+): Promise<ChangedFilesResult> {
+  const gitRunner = options?.gitRunner;
+
+  if (gitRunner) {
+    const result = await gitRunner("git status --porcelain", repoRoot);
+    return parseGitStatus(result.stdout);
+  }
+
+  const output = execSync("git status --porcelain", {
+    cwd: repoRoot,
+    encoding: "utf8",
+    maxBuffer: 1024 * 1024,
+  });
+
+  return parseGitStatus(output);
 }
 
 export interface ScopeCheckResult {
@@ -108,6 +131,7 @@ export interface VerifyCommandResult {
   readonly stdoutSha256: string;
   readonly stderrSha256: string;
   readonly redactedExcerpt: string;
+  readonly expectedExitCode: number;
 }
 
 /**
@@ -117,11 +141,12 @@ export interface VerifyCommandResult {
  */
 export async function executeVerifyCommands(
   commands: readonly { cmd: string; timeoutSec?: number; expectedExitCode?: number }[],
-  options: { cwd?: string; shell?: string } = {}
+  options: { cwd?: string; shell?: string; runner?: CommandRunner } = {}
 ): Promise<VerifyCommandResult[]> {
   const cwd = options.cwd ?? process.cwd();
   const isWindows = process.platform === "win32";
   const shell = options.shell ?? (isWindows ? "powershell.exe" : "/bin/sh");
+  const runner = options.runner;
 
   const results: VerifyCommandResult[] = [];
 
@@ -131,23 +156,30 @@ export async function executeVerifyCommands(
     let stderr: string;
     let exitCode: number;
 
-    try {
-      const output = execSync(cmd, {
-        cwd,
-        shell,
-        timeout: timeoutSec * 1000,
-        maxBuffer: 1024 * 1024,
-        encoding: "utf8",
-        windowsHide: true,
-      });
-      stdout = output;
-      stderr = "";
-      exitCode = 0;
-    } catch (e: unknown) {
-      const err = e as { stdout?: string; stderr?: string; status?: number; signal?: string };
-      stdout = err.stdout ?? "";
-      stderr = err.stderr ?? "";
-      exitCode = err.status ?? (err.signal ? 128 + (err.signal === "SIGTERM" ? 15 : 1) : 1);
+    if (runner) {
+      const result = await runner(cmd, { cwd, shell, timeoutSec });
+      stdout = result.stdout;
+      stderr = result.stderr;
+      exitCode = result.exitCode;
+    } else {
+      try {
+        const output = execSync(cmd, {
+          cwd,
+          shell,
+          timeout: timeoutSec * 1000,
+          maxBuffer: 1024 * 1024,
+          encoding: "utf8",
+          windowsHide: true,
+        });
+        stdout = output;
+        stderr = "";
+        exitCode = 0;
+      } catch (e: unknown) {
+        const err = e as { stdout?: string; stderr?: string; status?: number; signal?: string };
+        stdout = err.stdout ?? "";
+        stderr = err.stderr ?? "";
+        exitCode = err.status ?? (err.signal ? 128 + (err.signal === "SIGTERM" ? 15 : 1) : 1);
+      }
     }
 
     const durationMs = Date.now() - start;
@@ -168,6 +200,7 @@ export async function executeVerifyCommands(
       stdoutSha256,
       stderrSha256,
       redactedExcerpt: excerpt,
+      expectedExitCode,
     });
 
     // If a command fails with non-zero exit code, stop early
@@ -182,7 +215,7 @@ export async function executeVerifyCommands(
 /**
  * Capture baseline dirty files at lease claim time.
  */
-export async function captureBaselineDirtyFiles(repoRoot: string): Promise<string[]> {
-  const result = await inspectChangedFiles(repoRoot);
+export async function captureBaselineDirtyFiles(repoRoot: string, options?: { gitRunner?: GitRunner }): Promise<string[]> {
+  const result = await inspectChangedFiles(repoRoot, options);
   return [...result.all];
 }

@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS nodes (
   status TEXT NOT NULL DEFAULT 'backlog',
   delivery_stage TEXT NOT NULL DEFAULT 'local',
   owner_files TEXT NOT NULL DEFAULT '[]',
+  attempts INTEGER NOT NULL DEFAULT 0,
   metadata_json TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
@@ -97,12 +98,17 @@ const LEASES_DDL = `
 CREATE TABLE IF NOT EXISTS leases (
   lease_id TEXT PRIMARY KEY,
   task_urn TEXT NOT NULL,
-  owner TEXT NOT NULL,
+  agent_runtime TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  model_tier TEXT NOT NULL DEFAULT 'flash',
   acquired_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   expires_at TEXT NOT NULL,
+  renewed_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   released INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_leases_task ON leases (task_urn);
+CREATE INDEX IF NOT EXISTS idx_leases_session ON leases (session_id);
+CREATE INDEX IF NOT EXISTS idx_leases_agent ON leases (agent_runtime);
 `;
 
 const BRAIN_META_DDL = `

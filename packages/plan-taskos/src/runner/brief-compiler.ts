@@ -6,6 +6,8 @@
  * Output is O(1) regardless of plan size (10 or 500 tasks).
  */
 
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import type { BrainStorageDriver } from "../brain/storage.js";
 import type {
   LoadedPlanBundle,
@@ -14,6 +16,7 @@ import type {
   ExecutionPolicy,
   ModelTier,
   RiskTier,
+  DocumentNodeIR,
 } from "../core/types.js";
 import { queryTwoHopContext } from "../brain/knowledge-graph.js";
 import { recallPitfallsForPaths } from "../brain/episodic-memory.js";
@@ -90,16 +93,21 @@ export function compileCognitiveMicroBrief(
   const readOnlyRefs = targetTask.governance.owner_globs ?? [];
 
   // 3. Spec slice (O(1) — only this task's spec section)
-  const specExcerpt = extractTaskSpec(bundle, targetTask.code);
+  const specExcerpt = extractTaskSpec(store, bundle, targetTask.code, targetWave.wave_id);
   const doNotExcerpt = targetTask.governance.do_not?.join("\n") ?? "";
 
   // 4. Cognitive Context via 2-hop knowledge graph + episodic recall
   const twoHop = queryTwoHopContext(store, targetTask.urn);
 
-  // Sibling proofs on same files (last 2)
-  const siblingProofs = twoHop.siblingTasksOnSameFiles
-    .slice(-2)
-    .map((t) => ({ code: t.code, envelopeSha256: "" })); // proof hash not in TaskRow; placeholder
+  // Sibling proofs on same files (last 2) — envelope hashes come from proof_ledger
+  const siblingProofs: { code: string; envelopeSha256: string }[] = [];
+  for (const sibling of twoHop.siblingTasksOnSameFiles.slice(-2)) {
+    const proof = store.get(
+      `SELECT envelope_sha256 FROM proof_ledger WHERE task_code = ? ORDER BY recorded_at DESC LIMIT 1;`,
+      sibling.code
+    ) as { envelope_sha256: string } | undefined;
+    siblingProofs.push({ code: sibling.code, envelopeSha256: proof?.envelope_sha256 ?? "" });
+  }
 
   // Matched invariants
   const matchedInvariants = twoHop.matchedInvariants.map((i) => ({
@@ -168,22 +176,189 @@ export function compileCognitiveMicroBrief(
   };
 }
 
-function extractTaskSpec(bundle: LoadedPlanBundle, taskCode: string): string {
-  // Find the spec file for this task's wave
+/**
+ * Return the exact spec excerpt for a single task.
+ *
+ * Resolution order:
+ *   1. `manifest.waves[].spec_file` (WaveFileRef) — read from the plan bundle's
+ *      spec documents / disk and slice out the `## Txx` section.
+ *   2. The wave playbook itself (`wave_file`) — legacy plans embed the exact
+ *      task spec inline in the wave playbook.
+ *   3. Fallback: scan all `.plan/<planId>/wave-*.md` files for the task heading.
+ *   4. Acceptance criteria from the task IR, as a last-resort fallback.
+ */
+function extractTaskSpec(
+  store: BrainStorageDriver,
+  bundle: LoadedPlanBundle,
+  taskCode: string,
+  waveId: string
+): string {
+  const waveRef = bundle.manifest.waves.find((w) => w.id === waveId);
+
+  // 1. Dedicated spec file for this wave
+  const specFile = waveRef?.spec_file;
+  if (specFile) {
+    const specContent = readDocContent(store, bundle, specFile);
+    const section = specContent ? extractTaskSection(specContent, taskCode) : "";
+    if (section) return section;
+  }
+
+  // 2. The wave playbook carries the task sections (legacy plans, and v2
+  //    bundles whose specs live in wave-*.md playbooks).
+  const playbookFile = waveRef?.wave_file;
+  if (playbookFile) {
+    const playbookContent = readDocContent(store, bundle, playbookFile);
+    const section = playbookContent ? extractTaskSection(playbookContent, taskCode) : "";
+    if (section) return section;
+  }
+
+  // 3. Fallback: scan all wave playbooks in the plan directory directly.
+  //    This handles legacy bundles where manifest.waves is empty or wave_id
+  //    mapping is synthetic.
+  const repoRoot = findRepoRoot(bundle.manifest.plan_id);
+  const planDir = join(repoRoot, ".plan", bundle.manifest.plan_id);
+  const fallbackContent = scanPlanDirForTask(planDir, taskCode);
+  if (fallbackContent) return fallbackContent;
+
+  // 4. Fallback: acceptance criteria from the task IR.
   for (const wave of bundle.waves) {
-    const task = wave.tasks.find((t) => t.code === taskCode);
-    if (task) {
-      // Try to find the corresponding WaveFileRef with spec_file
-      const waveRef = bundle.manifest.waves.find((w) => w.id === wave.wave_id);
-      const specFile = waveRef?.spec_file;
-      if (specFile) {
-        // The spec content would be loaded from bundle.documents
-        // For now, return the acceptance criteria as the spec excerpt
+    if (wave.wave_id === waveId) {
+      const task = wave.tasks.find((t) => t.code === taskCode);
+      if (task) {
         return task.verification.acceptance_criteria.join("\n");
       }
     }
   }
-  return "Spec section not found in v2 bundle.";
+  return "Spec section not found in plan bundle.";
+}
+
+/**
+ * Read the full text of a plan document.
+ *
+ * `bundle.documents` stores document metadata only (urn/slug/path), not body
+ * content, so the file is read from disk. `bundle.source_path` is repo-relative
+ * (`.plan/<id>` or `.plan/<id>.md`); document paths are repo-relative.
+ * `docRef` may be a repo-relative path (`.plan/<id>/specs/W1.md`), a path
+ * relative to the plan dir (`specs/W1.md`, `wave-1-x.md`), or a bare filename.
+ */
+function readDocContent(
+  store: BrainStorageDriver,
+  bundle: LoadedPlanBundle,
+  docRef: string
+): string {
+  const normalized = docRef.replaceAll("\\", "/");
+  const doc = findBundleDoc(bundle, normalized);
+
+  // bundle.source_path is repo-relative (`.plan/<id>` for v2 bundles, `.plan/<id>.md` for legacy).
+  // Plan directory on disk is `.plan/<planId>/` at repo root. Because
+  // `source_path` is repo-relative, the repo root is found by walking up from
+  // the process cwd until the plan directory exists.
+  const repoRoot = findRepoRoot(bundle.manifest.plan_id);
+  const planDir = join(repoRoot, ".plan", bundle.manifest.plan_id);
+
+  const candidates: string[] = [];
+  if (doc) {
+    candidates.push(resolve(planDir, doc.path));
+  }
+  candidates.push(resolve(planDir, normalized));
+  candidates.push(resolve(planDir, normalized.replace(/^\.plan\//, "")));
+
+  for (const candidate of candidates) {
+    const content = readTextIfExists(candidate);
+    if (content) return content;
+  }
+
+  // Last resort: some brain stores mirror document bodies into fts_index.
+  const slug = doc?.slug ?? normalized.split("/").pop()?.replace(/\.md$/, "") ?? "";
+  const content = store.get(
+    `SELECT body FROM fts_index WHERE urn = ? LIMIT 1;`,
+    `urn:mw:doc:${bundle.manifest.repo.org}/${bundle.manifest.repo.name}:${slug}`
+  ) as { body: string } | undefined;
+  return content?.body ?? "";
+}
+
+function findBundleDoc(bundle: LoadedPlanBundle, normalizedRef: string): DocumentNodeIR | undefined {
+  const base = normalizedRef.split("/").pop() ?? normalizedRef;
+  const slug = base.replace(/\.md$/, "");
+  return bundle.documents.find(
+    (d) =>
+      d.path === normalizedRef ||
+      d.path.endsWith(`/${normalizedRef}`) ||
+      d.slug === slug ||
+      d.urn.endsWith(`:${slug}`)
+  );
+}
+
+function readTextIfExists(path: string): string {
+  try {
+    return readFileSync(path, "utf8");
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Find the repo root that contains `.plan/<planId>`. Plan bundle paths are
+ * repo-relative, and the process cwd may be a package dir inside the repo, so
+ * walk up from cwd until `.plan/<planId>` exists. Falls back to the current
+ * working directory.
+ */
+function findRepoRoot(planId: string): string {
+  let dir = resolve(process.cwd());
+  for (let i = 0; i < 10; i++) {
+    if (existsSync(join(dir, ".plan", planId))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return resolve(process.cwd());
+}
+
+/**
+ * Scan a plan directory (`.plan/<planId>`) for the task's spec section by
+ * looking through all `wave-*.md` files. Returns the first matching section.
+ */
+function scanPlanDirForTask(planDir: string, taskCode: string): string {
+  let waveFiles: string[] = [];
+  try {
+    waveFiles = readdirSync(planDir)
+      .filter(f => f.startsWith("wave-") && f.endsWith(".md"))
+      .map(f => join(planDir, f));
+  } catch {
+    return "";
+  }
+  for (const waveFile of waveFiles) {
+    const content = readTextIfExists(waveFile);
+    const section = content ? extractTaskSection(content, taskCode) : "";
+    if (section) return section;
+  }
+  return "";
+}
+
+/**
+ * Extract the `## Txx` section for a task from spec content. Returns "" when
+ * no such section exists.
+ */
+function extractTaskSection(specContent: string, taskCode: string): string {
+  const lines = specContent.split(/\r?\n/);
+  const taskHeadingRe = new RegExp(`^#{2,3}\\s+(?:-\\s+)?(?:\\[[ xX]\\]\\s+)?${taskCode}\\b`);
+  let inTask = false;
+  const taskSection: string[] = [];
+
+  for (const line of lines) {
+    if (!inTask) {
+      if (taskHeadingRe.test(line.trim())) {
+        inTask = true;
+        taskSection.push(line);
+      }
+      continue;
+    }
+    if (/^#{1,2}\s+/.test(line.trim())) {
+      break; // Next task section (## or higher heading)
+    }
+    taskSection.push(line);
+  }
+  return taskSection.join("\n").trim();
 }
 
 interface RenderContext {
