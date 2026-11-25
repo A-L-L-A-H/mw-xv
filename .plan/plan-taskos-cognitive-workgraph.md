@@ -56,7 +56,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T05** — Define pure readonly 6-plane TypeScript contracts & `ProjectionAdapter` SPI in `src/core/types.ts`
 
 ### Wave 1 — WorkGraph Compiler, Disjoint Ownership Prover & DAG (`wave-1-workgraph-compiler-and-prover.md`)
-- [ ] **T06** — Implement dual-format bundle loader `src/core/loader.ts` (v2 `.plan/<id>/manifest.json` + waves/specs/proofs AND v1 legacy `.plan/*.md` parity)
+- [x] **T06** — Implement dual-format bundle loader `src/core/loader.ts` (v2 `.plan/<id>/manifest.json` + waves/specs/proofs AND v1 legacy `.plan/*.md` parity)
 - [ ] **T07** — Implement AJV Schema + 1:1 `specs/*.md` ID parity + invariant path-matcher validator in `src/core/validator.ts`
 - [ ] **T08** — Implement Compile-Time Disjoint Write-Ownership Prover `src/core/disjoint-prover.ts` (transitive `depends_on` closure + POSIX glob intersection proof)
 - [ ] **T09** — Implement DAG engine `src/core/dag.ts` (cycle detection, topological depth, `ready`/`active`/`blocked`/`done` frontier, Boss Critical Path, swarm wave partitioning)
@@ -113,7 +113,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
 | Wave 0 | `T01`–`T05` | `5 / 5` | 8c45fbbb | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
-| Wave 1 | `T06`–`T11` | `0 / 6` | — | — |
+| Wave 1 | `T06`–`T11` | `1 / 6` | d941cca9 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
 | Wave 2 | `T12`–`T18` | `0 / 7` | — | — |
 | Wave 3 | `T19`–`T23` | `0 / 5` | — | — |
 | Wave 4 | `T24`–`T30` | `0 / 7` | — | — |

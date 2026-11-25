@@ -6,7 +6,7 @@
 
 ---
 
-## - [ ] T06 — Implement Dual-Format Bundle Loader (`src/core/loader.ts`)
+## - [x] T06 — Implement Dual-Format Bundle Loader (`src/core/loader.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/core/loader.ts`
   - `packages/plan-taskos/src/core/loader.ts` (CREATE)
