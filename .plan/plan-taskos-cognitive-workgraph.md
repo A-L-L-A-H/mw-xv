@@ -86,7 +86,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T27** — Implement Split-Authority GitHub Issues & Delivery adapter (`src/adapters/github.adapter.ts`: `plan|wave|task` adaptive folding, `<!-- BEGIN/END MOONWITNESS MANAGED -->`, content-hash no-op, bounded batch `<=5`, CI delivery close gate, inbound intake)
 - [x] **T28** — Implement Pure HTTP ORM Project/WorkContract adapter (`src/adapters/orm-http.adapter.ts`), `/swarm` model-tier exporter (`src/adapters/swarm.adapter.ts`), & OTel/Notification event hooks (`src/adapters/telemetry.adapter.ts`)
 - [x] **T29** — Wire clean public SDK barrel exports in `packages/plan-taskos/src/index.ts` & verify zero forbidden imports (`orm*`/`ui`/`fastify`/`react`)
-- [ ] **T30** — Add Wave 4 adapter unit tests (`adapters-plan-taskos.test.ts`, `adapters-docs-github.test.ts`, `adapters-orm-swarm.test.ts`) & pass Wave 4 gate
+- [x] **T30** — Add Wave 4 adapter unit tests (`adapters-plan-taskos.test.ts`, `adapters-docs-github.test.ts`, `adapters-orm-swarm.test.ts`) & pass Wave 4 gate
 
 ### Wave 5 — CLI, Standalone MCP Server, Portable Skill & Dogfood (`wave-5-cli-mcp-skill-and-dogfood.md`)
 - [ ] **T31** — Implement thin MCP tool handlers & stdio JSON-RPC server (`src/mcp/tools.ts`, `src/mcp/stdio-server.ts`: `plan_next`, `plan_recall`, `plan_impact`, `plan_claim`, `plan_complete`, `plan_graph`, `plan_sync`)
@@ -116,6 +116,6 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 | Wave 1 | `T06`–`T11` | `6 / 6` | cb133e05 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
 | Wave 2 | `T12`–`T18` | `7 / 7` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
 | Wave 3 | `T19`–`T23` | `5 / 5` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck && bun --filter @moonwitness/plan-taskos build && bun --filter @moonwitness/plan-taskos test` (80/80) |
-| Wave 4 | `T24`–`T30` | `6 / 7` | 919c1ec2 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
+| Wave 4 | `T24`–`T30` | `7 / 7` | ced7a0d3 | `build` exit 0 && test 114/114 across 13 files |
 | Wave 5 | `T31`–`T36` | `0 / 6` | — | — |
 | Wave 6 | `T37`–`T44` | `0 / 8` | — | — |

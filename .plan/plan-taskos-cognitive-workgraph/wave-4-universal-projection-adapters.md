@@ -139,7 +139,7 @@
 
 ---
 
-## - [ ] T30 — Add Wave 4 Adapter Unit Tests & Pass Wave 4 Gate
+## - [x] T30 — Add Wave 4 Adapter Unit Tests & Pass Wave 4 Gate
 
 - **Owner File(s):** `packages/plan-taskos/tests/adapters-plan-taskos.test.ts`, `packages/plan-taskos/tests/adapters-docs-github.test.ts`, `packages/plan-taskos/tests/adapters-orm-swarm.test.ts`
   - `packages/plan-taskos/tests/adapters-plan-taskos.test.ts` (CREATE)

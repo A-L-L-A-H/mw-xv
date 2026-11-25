@@ -40,7 +40,8 @@ export interface OrmPlanSyncPayload {
  * Normalize a task code into ORM-safe dotted notation.
  */
 export function normalizeOrmCode(planId: string, taskCode: string): string {
-  return `${planId}.${taskCode}`.replace(/[^A-Za-z0-9_.-]/g, "_");
+  const normalizedTask = taskCode.replace(/[^A-Za-z0-9_-]/g, "_");
+  return `${planId}.${normalizedTask}`.replace(/[^A-Za-z0-9_.-]/g, "_");
 }
 
 /**
@@ -133,7 +134,8 @@ export async function postPlanSync(
 }
 
 /**
- * Post a work-contract update for a single task.
+ * Post a work-contract update for a single task to
+ * `POST /projects/tasks/:id/work-contract`.
  */
 export async function postWorkContract(
   taskCode: string,
@@ -141,8 +143,7 @@ export async function postWorkContract(
   options: OrmHttpClientOptions
 ): Promise<{ ok: boolean; status: number; body: string }> {
   const doFetch = options.fetchFn ?? fetch;
-  const projectId = payload.task_urn.split(":")[2]?.split("/")[0] ?? "default";
-  const response = await doFetch(`${options.baseUrl}/projects/${encodeURIComponent(projectId)}/tasks/${encodeURIComponent(taskCode)}/work-contract`, {
+  const response = await doFetch(`${options.baseUrl}/projects/tasks/${encodeURIComponent(taskCode)}/work-contract`, {
     method: "POST",
     headers: { "content-type": "application/json", ...(options.headers ?? {}) },
     body: JSON.stringify(payload),

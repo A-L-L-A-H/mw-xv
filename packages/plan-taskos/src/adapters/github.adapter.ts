@@ -169,7 +169,7 @@ export function planGitHubOperations(input: PlanGitHubOpsInput): GitHubIssueOp[]
     const marker = `<!-- moonwitness-task: ${context.repoId}:${key} -->`;
     const existing = findByMarker(marker);
     const body = renderPlanTrackingBody(bundle, context);
-    ops.push(buildOp(key, marker, existing, body, bundle.manifest.title, ["plan-taskos", "roadmap"]));
+    ops.push(buildOp(key, marker, existing, body, bundle.manifest.title, ["plan-taskos", "roadmap"], remote));
     return ops;
   }
 
@@ -185,7 +185,7 @@ export function planGitHubOperations(input: PlanGitHubOpsInput): GitHubIssueOp[]
       const header = `Task: ${wave.title}\nPlan: ${bundle.manifest.plan_id}\nWave: ${wave.wave_id}\nProgress: ${doneCount}/${wave.tasks.length}`;
       const hash = computeManagedContentHash({ body: `${header}\n\n${checklist}`, labels: ["plan-taskos", "roadmap", `wave:${wave.wave_id}`] });
       const body = `${marker}\n${MANAGED_BEGIN}\n\n${header}\n\n${checklist}\n\n<!-- moonwitness-hash: ${hash} -->\n${MANAGED_END}`;
-      ops.push(buildOp(key, marker, existing, body, `${wave.wave_id}: ${wave.title}`, ["plan-taskos", "roadmap", `wave:${wave.wave_id}`]));
+      ops.push(buildOp(key, marker, existing, body, `${wave.wave_id}: ${wave.title}`, ["plan-taskos", "roadmap", `wave:${wave.wave_id}`], remote));
     }
     return ops;
   }
@@ -200,7 +200,7 @@ export function planGitHubOperations(input: PlanGitHubOpsInput): GitHubIssueOp[]
       const acceptance = task.verification.acceptance_criteria.map((c) => `- ${c}`).join("\n");
       const verify = task.verification.commands.map((c) => `- \`${c.cmd}\``).join("\n");
       const body = `${marker}\n${MANAGED_BEGIN}\n\n${header}\n\n## Acceptance\n\n${acceptance}\n\n## Verify\n\n${verify}\n\n<!-- moonwitness-hash: ${hashOf(header + acceptance + verify)} -->\n${MANAGED_END}`;
-      ops.push(buildOp(key, marker, existing, body, `${task.code}: ${task.title}`, ["plan-taskos", "roadmap", `wave:${wave.wave_id}`]));
+      ops.push(buildOp(key, marker, existing, body, `${task.code}: ${task.title}`, ["plan-taskos", "roadmap", `wave:${wave.wave_id}`], remote));
     }
   }
 
@@ -231,10 +231,24 @@ function buildOp(
   existing: GitHubIssue | undefined,
   body: string,
   title: string,
-  labels: readonly string[]
+  labels: readonly string[],
+  allRemote: readonly GitHubIssue[] = []
 ): GitHubIssueOp {
   if (!existing) {
     return { operation: "create", key, marker, title, body, labels };
+  }
+
+  // Duplicate markers across remote issues -> ambiguous ownership, needs
+  // human triage before any write.
+  const duplicates = allRemote.filter((i) => i.body.includes(marker));
+  if (duplicates.length > 1) {
+    return {
+      operation: "conflict",
+      key,
+      marker,
+      issueNumber: existing.issueNumber,
+      reason: `duplicate managed marker on issues ${duplicates.map((d) => `#${d.issueNumber}`).join(", ")}`,
+    };
   }
 
   const { managed, human } = splitManagedBlock(existing.body);
@@ -245,7 +259,18 @@ function buildOp(
     return { operation: "noop", key, marker, issueNumber: existing.issueNumber };
   }
 
-  // Duplicate markers in remote state -> conflict, needs triage.
+  // A manually closed issue whose managed block drifted must not be silently
+  // reopened or rewritten: flag for human triage.
+  if (existing.state === "closed") {
+    return {
+      operation: "needs-triage",
+      key,
+      marker,
+      issueNumber: existing.issueNumber,
+      reason: "issue was closed manually while managed content drifted",
+    };
+  }
+
   return {
     operation: "update",
     key,

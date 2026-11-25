@@ -15,7 +15,7 @@ import type {
   ProjectionApplyResult,
 } from "../core/types.js";
 import { sha256Hex } from "../core/redaction.js";
-import { writeFile, readFile } from "node:fs/promises";
+import { writeFile, readFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 
 export interface PlanMdAdapterOptions {
@@ -54,6 +54,7 @@ export const planMarkdownAdapter: ProjectionAdapter<PlanMdAdapterOptions> = {
     }
 
     if (existingHash !== contentHash) {
+      await mkdir(planDir, { recursive: true });
       await writeFile(outputPath, rendered, "utf8");
     }
 
