@@ -32,6 +32,8 @@ import { ConfirmDialog } from '@/components/views/confirm-dialog';
 import { client } from '@/lib/client';
 import { MeshTopologyPanel } from './mesh-topology-panel';
 import { PaasTemplateCatalog } from './paas-template-catalog';
+import { InstanceDomainsPanel } from './instance-domains-panel';
+import { PaasAppDrawer } from './paas-app-drawer';
 import type { PaasTemplateDefinition } from './paas-template-data';
 
 export interface PaasStudioNodeMetrics {
@@ -156,6 +158,13 @@ export function PaasStudioPanel({
     action: 'stop' | 'delete';
   } | null>(null);
   const [activeLogs, setActiveLogs] = useState<{ slug: string; text: string } | null>(null);
+
+  // Wave 3: instance settings + per-app management drawer
+  const [instanceDomain, setInstanceDomain] = useState<string>('');
+  const [wildcardDomain, setWildcardDomain] = useState<string>('');
+  const [publicIpv4, setPublicIpv4] = useState<string>('');
+  const [accessMode, setAccessMode] = useState<string>('');
+  const [managedSlug, setManagedSlug] = useState<string | null>(null);
 
   const [slug, setSlug] = useState<string>('');
   const [image, setImage] = useState<string>('');
@@ -457,6 +466,21 @@ export function PaasStudioPanel({
       setDesktopModeAvailable(true);
 
       if (isCloudApi) {
+        try {
+          const settingsRes = await paasFetch(`${normalizedBase}/settings`, { cache: 'no-store' });
+          if (settingsRes.ok) {
+            const settingsPayload = (await settingsRes.json().catch(() => null)) as unknown;
+            if (isRecord(settingsPayload) && settingsPayload.success === true && isRecord(settingsPayload.data)) {
+              const data = settingsPayload.data;
+              setInstanceDomain(typeof data.instanceDomain === 'string' ? data.instanceDomain : '');
+              setWildcardDomain(typeof data.wildcardDomain === 'string' ? data.wildcardDomain : '');
+              setPublicIpv4(typeof data.publicIpv4 === 'string' ? data.publicIpv4 : '');
+              setAccessMode(typeof data.accessMode === 'string' ? data.accessMode : '');
+            }
+          }
+        } catch {
+          // Non-fatal; instance settings remain optional.
+        }
         try {
           const backupsRes = await paasFetch(`${normalizedBase}/backups`, { cache: 'no-store' });
           if (backupsRes.ok) {
@@ -862,6 +886,16 @@ export function PaasStudioPanel({
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    {isCloudApi ? (
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="default"
+                        onClick={() => setManagedSlug(app.slug || app.id)}
+                      >
+                        Manage
+                      </Button>
+                    ) : null}
                     <Button
                       type="button"
                       size="xs"
@@ -915,16 +949,35 @@ export function PaasStudioPanel({
         description="Stream container logs, generate EasyTier VPS join plans, and inspect live PostgreSQL backup metadata."
         actions={<Badge variant="primary">Wave C.13–C.15</Badge>}
       >
-        <Tabs defaultValue="logs-stats" className="space-y-4">
+        <Tabs defaultValue={isCloudApi ? 'instance-domains' : 'logs-stats'} className="space-y-4">
           <TabsList>
+            {isCloudApi ? (
+              <TabsTrigger value="instance-domains">Instance &amp; Domains</TabsTrigger>
+            ) : null}
             <TabsTrigger value="mesh-topology">Mesh Topology</TabsTrigger>
             <TabsTrigger value="logs-stats">Live Logs &amp; Stats</TabsTrigger>
             <TabsTrigger value="vps-wizard">Add VPS Node Wizard</TabsTrigger>
             <TabsTrigger value="pg-backups">PostgreSQL Backups &amp; Restore</TabsTrigger>
           </TabsList>
 
+          {isCloudApi ? (
+            <TabsContent value="instance-domains" className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="default">Access: {accessMode || 'unknown'}</Badge>
+                {instanceDomain ? (
+                  <Badge variant="cyan">Instance: {instanceDomain}</Badge>
+                ) : null}
+              </div>
+              <InstanceDomainsPanel
+                apiBase={normalizedBase}
+                fetchFn={paasFetch}
+                onSettingsApplied={refreshState}
+              />
+            </TabsContent>
+          ) : null}
+
           <TabsContent value="mesh-topology">
-            <MeshTopologyPanel apiBase={normalizedBase} />
+            <MeshTopologyPanel apiBase={normalizedBase} fetchFn={paasFetch} />
           </TabsContent>
 
           <TabsContent value="logs-stats" className="space-y-4">
@@ -1162,7 +1215,26 @@ export function PaasStudioPanel({
       <PaasTemplateCatalog
         deployingTemplateId={deployingTemplateId}
         onDeployTemplate={handleDeployTemplate}
+        {...(isCloudApi
+          ? {
+              apiBase: normalizedBase,
+              fetchFn: paasFetch,
+              wildcardDomain,
+              publicIpv4,
+              onStackDeployed: refreshState,
+            }
+          : {})}
       />
+
+      {managedSlug ? (
+        <PaasAppDrawer
+          slug={managedSlug}
+          apiBase={normalizedBase}
+          fetchFn={paasFetch}
+          onClose={() => setManagedSlug(null)}
+          onUpdated={refreshState}
+        />
+      ) : null}
 
       {activeLogs ? (
         <Panel

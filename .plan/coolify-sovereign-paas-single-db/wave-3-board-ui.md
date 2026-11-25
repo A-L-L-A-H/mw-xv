@@ -247,7 +247,7 @@
 
 ---
 
-## - [ ] M49 — Wire `InstanceDomainsPanel`, `PaasAppDrawer`, `PaasTemplateCatalog`, & `MeshTopologyPanel` in `PaasStudioPanel`
+## - [x] M49 — Wire `InstanceDomainsPanel`, `PaasAppDrawer`, `PaasTemplateCatalog`, & `MeshTopologyPanel` in `PaasStudioPanel`
 
 - **Owner File (MODIFY):** `apps/board/src/components/cloud/paas-studio-panel.tsx`
 - **Depends On:** `M44`, `M46`, `M47`, `M48`
