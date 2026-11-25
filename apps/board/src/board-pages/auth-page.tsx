@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ApiError } from '@moonwitness/client';
+import { client } from '@/lib/client';
 import { useAuth } from '@/hooks/use-auth-context';
 import { Logo } from '@/components/manga/logo';
 import {
@@ -62,12 +63,30 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [setupRequired, setSetupRequired] = useState(false);
   const from = safeReturnPath(searchParams?.get('returnTo'));
   const isLogin = mode === 'login';
 
   useEffect(() => {
     if (user) router.replace(from);
   }, [from, router, user]);
+
+  useEffect(() => {
+    if (!isLogin) return;
+    let active = true;
+    void (async () => {
+      try {
+        const status = await client.getSetupStatus();
+        if (active) setSetupRequired(status.setupRequired === true);
+      } catch {
+        // Silently ignore: the banner is informational only.
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [isLogin]);
+
   if (user) return null;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -136,6 +155,15 @@ export function AuthPage({ mode }: { mode: Mode }) {
                 ? 'Sign in to access your MoonWitness workspace.'
                 : 'Create an account to join your MoonWitness workspace.'}
             </p>
+
+            {isLogin && setupRequired ? (
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+                <span>This server has not completed its first-boot setup yet.</span>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/setup">Complete First-Boot Server Setup</Link>
+                </Button>
+              </div>
+            ) : null}
 
             <form id="auth-form" onSubmit={onSubmit} className="auth-shadow-fields">
               {!isLogin && (

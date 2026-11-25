@@ -91,7 +91,7 @@
 
 ---
 
-## - [ ] M42 — Add First-Boot `/setup` Banner to `auth-page.tsx`
+## - [x] M42 — Add First-Boot `/setup` Banner to `auth-page.tsx`
 
 - **Owner File (MODIFY):** `apps/board/src/board-pages/auth-page.tsx`
 - **Depends On:** `M41`

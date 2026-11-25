@@ -96,7 +96,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M39** — `apps/board/src/app/api/session/route.ts`: dynamic HTTP/HTTPS cookie `secure` flag (`sameSite: 'lax'`)
 - [x] **M40** — `apps/board/src/board-pages/setup-page.tsx`: Step 1 Claim Root Superadmin form
 - [x] **M41** — `apps/board/src/board-pages/setup-page.tsx` + `apps/board/src/app/setup/page.tsx`: Step 2 3-mode domain selector + route page
-- [ ] **M42** — `apps/board/src/board-pages/auth-page.tsx`: first-boot `/setup` banner when `setupRequired === true`
+- [x] **M42** — `apps/board/src/board-pages/auth-page.tsx`: first-boot `/setup` banner when `setupRequired === true`
 - [ ] **M43** — `apps/board/src/components/cloud/instance-domains-panel.tsx`: status strip, 1-click `sslip.io`, domain form, DNS table, Verify DNS, Save & Reload, Promote Preview Apps
 - [ ] **M44** — `instance-domains-panel.tsx` + `settings-page.tsx`: TLS-gated Port `8000` Lockdown (`ConfirmDialog`) + `/board/settings` admin card
 - [ ] **M45** — `apps/board/src/components/cloud/paas-template-catalog.tsx`: paginated server-side 390+ search + category filter + compatibility badges
@@ -135,6 +135,6 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
-| Wave 3 | `M39`–`M51` | `3 / 13` | — | `M41 OK` — typecheck exit 0; board:ui:check pass 6/6; /setup route with 3 domain modes (skip/sslip.io/custom) + DNS verify + save |
+| Wave 3 | `M39`–`M51` | `4 / 13` | — | `M42 OK` — typecheck exit 0; board:ui:check pass 6/6; login shows /setup banner when setupRequired |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
