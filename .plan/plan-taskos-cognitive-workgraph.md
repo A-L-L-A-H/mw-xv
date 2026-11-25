@@ -53,7 +53,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T02** — Add `COPY packages/plan-taskos/package.json` to `Dockerfile` & `apps/whatsapp/Dockerfile` + sync `bun.lock` (`docker-workspace-manifests.test.mjs`)
 - [x] **T03** — Author JSON Schemas 2020-12 (`schemas/{manifest,wave,proof,document}.schema.json`) for 6-plane WorkGraph IR v1
 - [x] **T04** — Implement `src/core/urn.ts`, `src/core/paths.ts` (POSIX normalization + traversal guard), and `src/core/redaction.ts` (secret-scrubbing membrane)
-- [ ] **T05** — Define pure readonly 6-plane TypeScript contracts & `ProjectionAdapter` SPI in `src/core/types.ts`
+- [x] **T05** — Define pure readonly 6-plane TypeScript contracts & `ProjectionAdapter` SPI in `src/core/types.ts`
 
 ### Wave 1 — WorkGraph Compiler, Disjoint Ownership Prover & DAG (`wave-1-workgraph-compiler-and-prover.md`)
 - [ ] **T06** — Implement dual-format bundle loader `src/core/loader.ts` (v2 `.plan/<id>/manifest.json` + waves/specs/proofs AND v1 legacy `.plan/*.md` parity)
@@ -112,7 +112,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
-| Wave 0 | `T01`–`T05` | `4 / 5` | pending (T04) | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
+| Wave 0 | `T01`–`T05` | `5 / 5` | 8c45fbbb | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
 | Wave 1 | `T06`–`T11` | `0 / 6` | — | — |
 | Wave 2 | `T12`–`T18` | `0 / 7` | — | — |
 | Wave 3 | `T19`–`T23` | `0 / 5` | — | — |

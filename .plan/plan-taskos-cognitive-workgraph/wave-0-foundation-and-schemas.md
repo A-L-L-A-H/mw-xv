@@ -113,7 +113,7 @@
 
 ---
 
-## - [ ] T05 — Define 6-Plane TypeScript Contracts & `ProjectionAdapter` SPI (`src/core/types.ts`)
+## - [x] T05 — Define 6-Plane TypeScript Contracts & `ProjectionAdapter` SPI (`src/core/types.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/core/types.ts`
   - `packages/plan-taskos/src/core/types.ts` (CREATE)
