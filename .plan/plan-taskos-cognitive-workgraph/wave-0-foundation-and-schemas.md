@@ -37,7 +37,7 @@
 
 ---
 
-## - [ ] T02 — Register `packages/plan-taskos/package.json` in Both Dockerfiles & Sync `bun.lock`
+## - [x] T02 — Register `packages/plan-taskos/package.json` in Both Dockerfiles & Sync `bun.lock`
 
 - **Owner File(s):** `Dockerfile`, `apps/whatsapp/Dockerfile`, `bun.lock`
   - `Dockerfile` (MODIFY)

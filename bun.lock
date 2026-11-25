@@ -316,7 +316,6 @@
       "name": "@moonwitness/ai-runtime",
       "version": "1.0.0-rc.1",
       "dependencies": {
-        "@moonwitness/logger": "workspace:*",
         "@moonwitness/orm-integration": "workspace:*",
         "@moonwitness/types": "workspace:*",
       },
@@ -628,7 +627,6 @@
         "@moonwitness/orm-project": "workspace:*",
         "@moonwitness/orm-subscription": "workspace:*",
         "@moonwitness/types": "workspace:*",
-        "objection": "^3.1.5",
         "paas-template-pack-coolify": "workspace:*",
         "yaml": "^2.8.0",
       },
@@ -1141,6 +1139,23 @@
       "name": "paas-template-pack-dokploy",
       "version": "1.0.0",
     },
+    "packages/plan-taskos": {
+      "name": "@moonwitness/plan-taskos",
+      "version": "1.0.0-rc.1",
+      "bin": {
+        "plan-taskos": "./dist/cli.js",
+      },
+      "dependencies": {
+        "@moonwitness/types": "workspace:*",
+        "ajv": "^8.20.0",
+        "ajv-formats": "^3.0.1",
+      },
+      "devDependencies": {
+        "@types/node": "^26.6.4",
+        "typescript": "~5.7.3",
+        "vitest": "^5.0.3",
+      },
+    },
     "packages/research": {
       "name": "@moonwitness/research",
       "version": "1.0.0-rc.1",
@@ -1622,6 +1637,8 @@
     "@moonwitness/orm-whatsapp": ["@moonwitness/orm-whatsapp@workspace:packages/orm-whatsapp"],
 
     "@moonwitness/orm-workflow": ["@moonwitness/orm-workflow@workspace:packages/orm-workflow"],
+
+    "@moonwitness/plan-taskos": ["@moonwitness/plan-taskos@workspace:packages/plan-taskos"],
 
     "@moonwitness/research": ["@moonwitness/research@workspace:packages/research"],
 
