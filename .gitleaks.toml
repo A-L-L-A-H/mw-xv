@@ -59,7 +59,7 @@ paths = ["^tools/agent-observatory/server\\.test\\.mjs$"]
 [[allowlists]]
 description = "check-gitleaks-config: synthetic orm-observability fixtures and test expectations for secret scanning config"
 regexTarget = "match"
-paths = ["^scripts/check-gitleaks-config\\.mjs$"]
+paths = ["^scripts/check-gitleaks-config\\.test\\.mjs$", "^scripts/check-gitleaks-config\\.mjs$"]
 regexes = [
   '''api_key: 'sk-test-12345678901234567890'''',
   '''providerKey: 'sk-proj-12345678901234567890'''',
@@ -359,3 +359,6 @@ regex = '''(?i)^[ \t]*(?:export[ \t]+)?(?:JWT_SECRET|METRICS_TOKEN|WHATSAPP_INTE
 secretGroup = 1
 entropy = 4.2
 keywords = ["JWT_SECRET", "METRICS_TOKEN", "WHATSAPP_INTERNAL_TOKEN", "WHATSAPP_SESSION_KEY"]
+[[allowlists]]
+description = "Historical gitleaks reports committed to git history - these contain REDACTED findings from prior scans, not real secrets"
+paths = ["gitleaks-report.json"]

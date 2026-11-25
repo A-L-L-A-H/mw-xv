@@ -31,3 +31,4 @@ depcruise-report.txt
 *.tsbuildinfo
 .plan/.brain/
 .plan/*/.leases.local.json
+gitleaks-report.json
