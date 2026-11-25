@@ -8,7 +8,7 @@ import {
   TelemetryState,
 } from './models.js';
 
-export const REVISION_STATE_KEY = 'revision';
+import { REVISION_STATE_KEY } from './constants.js';
 
 const INDEXES = [
   {

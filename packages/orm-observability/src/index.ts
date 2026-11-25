@@ -6,11 +6,11 @@ export { decodeLogs, decodeMetrics, decodeTraces } from './otlp.js';
 export { QoderTelemetryBridge } from './qoder.js';
 export { observabilityHttpPlugin, type ObservabilityHttpHostContext } from './http-plugin.js';
 export { createSqliteTelemetryStore, type SqliteTelemetryStoreOptions } from './sqlite.js';
+export { REVISION_STATE_KEY } from './constants.js';
 export {
   observabilityAddon,
   observabilityManifest,
   manifest,
-  REVISION_STATE_KEY,
 } from './manifest.js';
 export {
   TelemetrySpan,

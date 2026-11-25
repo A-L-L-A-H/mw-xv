@@ -11,7 +11,7 @@ import {
   traceMatches,
   MAX_RECORD_BYTES,
 } from './internal.js';
-import { REVISION_STATE_KEY } from './manifest.js';
+import { REVISION_STATE_KEY } from './constants.js';
 import {
   TelemetryLog,
   TelemetryMetricPoint,
