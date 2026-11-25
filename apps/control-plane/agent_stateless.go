@@ -156,3 +156,137 @@ func (m *PaasManager) handleAgentMetrics() http.HandlerFunc {
 		writePaasJSON(w, http.StatusOK, resp)
 	}
 }
+
+// AgentContainerInfo describes a live container discovered via docker ps without DB access.
+type AgentContainerInfo struct {
+	Name        string            `json:"name"`
+	ContainerID string            `json:"containerId"`
+	Image       string            `json:"image"`
+	State       string            `json:"state"`
+	Status      string            `json:"status"`
+	Slug        string            `json:"slug,omitempty"`
+	Service     string            `json:"service,omitempty"`
+	TenantID    string            `json:"tenantId,omitempty"`
+	Managed     bool              `json:"managed"`
+	Labels      map[string]string `json:"labels,omitempty"`
+}
+
+func parseDockerLabels(raw string) map[string]string {
+	labels := make(map[string]string)
+	for _, entry := range strings.Split(raw, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		parts := strings.SplitN(entry, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		k := strings.TrimSpace(parts[0])
+		if k != "" {
+			labels[k] = strings.TrimSpace(parts[1])
+		}
+	}
+	return labels
+}
+
+func (m *PaasManager) handleAgentContainers() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		out, err := m.runner(ctx, m.dockerBin, "ps", "-a", "--format", "{{.Names}}\t{{.ID}}\t{{.Image}}\t{{.State}}\t{{.Status}}\t{{.Labels}}")
+		if err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+
+		containers := make([]AgentContainerInfo, 0)
+		for _, line := range strings.Split(out, "\n") {
+			line = strings.TrimRight(line, "\r")
+			if strings.TrimSpace(line) == "" {
+				continue
+			}
+			parts := strings.SplitN(line, "\t", 6)
+			if len(parts) < 4 {
+				continue
+			}
+			name := strings.TrimSpace(parts[0])
+			cid := strings.TrimSpace(parts[1])
+			image := strings.TrimSpace(parts[2])
+			state := strings.TrimSpace(parts[3])
+			status := ""
+			if len(parts) >= 5 {
+				status = strings.TrimSpace(parts[4])
+			}
+			var rawLabels string
+			if len(parts) >= 6 {
+				rawLabels = parts[5]
+			}
+			labels := parseDockerLabels(rawLabels)
+			containers = append(containers, AgentContainerInfo{
+				Name:        name,
+				ContainerID: cid,
+				Image:       image,
+				State:       state,
+				Status:      status,
+				Slug:        labels["mw.paas.app"],
+				Service:     labels["mw.paas.service"],
+				TenantID:    labels["mw.paas.tenant"],
+				Managed:     strings.EqualFold(labels["mw.paas.managed"], "true"),
+				Labels:      labels,
+			})
+		}
+
+		writePaasJSON(w, http.StatusOK, map[string]any{
+			"containers": containers,
+		})
+	}
+}
+
+func (m *PaasManager) handleAgentContainerRun() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+
+		var req PaasDeployRequest
+		dec := json.NewDecoder(io.LimitReader(r.Body, 512*1024))
+		if err := dec.Decode(&req); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request JSON: " + err.Error()})
+			return
+		}
+
+		req = normalizeDeployRequest(req, "")
+		if err := ValidateDeployRequest(req); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
+		defer cancel()
+
+		containerName := PaasContainerName(req.Slug)
+		containerID, err := m.deployContainerZeroDowntime(ctx, req, containerName)
+		if err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{
+				"error": RedactPaasText(err.Error(), collectEnvSecrets(req.Env)...),
+			})
+			return
+		}
+
+		writePaasJSON(w, http.StatusCreated, map[string]any{
+			"ok":            true,
+			"slug":          req.Slug,
+			"containerName": containerName,
+			"containerId":   containerID,
+			"status":        "running",
+		})
+	}
+}

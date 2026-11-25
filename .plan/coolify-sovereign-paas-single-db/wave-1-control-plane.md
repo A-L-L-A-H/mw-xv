@@ -153,7 +153,7 @@
 
 ---
 
-## - [ ] M09 — Add `GET /agent/containers` & `POST /agent/containers/run`
+## - [x] M09 — Add `GET /agent/containers` & `POST /agent/containers/run`
 
 - **Owner Files (MODIFY):**
   - `apps/control-plane/agent_stateless.go`

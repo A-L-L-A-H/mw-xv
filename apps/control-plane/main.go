@@ -99,6 +99,8 @@ var controlPlaneRouteMatrix = []controlPlaneRoute{
 	{pattern: "/paas/webhooks/github/", family: "git-webhook", access: accessWebhookSignature, methods: []string{http.MethodPost}},
 	{pattern: "/agent/caddy/reconcile", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/agent/metrics", family: "agent-stateless", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/agent/containers", family: "agent-stateless", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/agent/containers/run", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/a2a/delegate", family: "a2a-federation", access: accessA2APeer, methods: []string{http.MethodPost}},
 }
 
@@ -363,6 +365,8 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 		"/paas/webhooks/github/":      paasMgr.handleGitHubWebhook(),
 		"/agent/caddy/reconcile":      paasMgr.handleAgentCaddyReconcile(),
 		"/agent/metrics":              paasMgr.handleAgentMetrics(),
+		"/agent/containers":           paasMgr.handleAgentContainers(),
+		"/agent/containers/run":       paasMgr.handleAgentContainerRun(),
 		"/a2a/delegate":               a2aMgr.HandleDelegate(),
 	}
 
