@@ -1,6 +1,6 @@
 # W0-002 — Workspace inventory
 
-Source: current `pnpm-workspace.yaml`, package manifests, and `pnpm -r list --depth -1` on 2026-11-22. The workspace has 26 packages and five pnpm apps. `apps/todo` contains Rust source but no `package.json`, so it is not a pnpm workspace app. Root scripts/CI are not counted as packages.
+Source: current `pnpm-workspace.yaml`, package manifests, and `pnpm -r list --depth -1` on 2026-11-25. The workspace has 26 packages and nine pnpm apps. `apps/todo` was retired (see ADR 0008); current apps: `apps/api`, `apps/board`, `apps/desktop`, `apps/docs`, `apps/ui-catalog`, `apps/agent-observability`, `apps/agent-sandbox`, `apps/control-plane`, `apps/isp`. Root scripts/CI are not counted as packages.
 
 ## Apps
 

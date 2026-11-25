@@ -42,7 +42,7 @@ Earlier detailed source inspection was against `7eab2e1dfeba4629dd66a9fc5472def4
 - `@moonwitness/types`
 - `@moonwitness/ui`
 
-Apps observed: `apps/api`, `apps/board`, `apps/desktop`, `apps/docs`, `apps/ui-catalog`, `apps/todo` (revalidate each directory and package manifest; `apps/todo` manifest was not independently confirmed in the prior inspection).
+Apps observed: `apps/api`, `apps/board`, `apps/desktop`, `apps/docs`, `apps/ui-catalog`, `apps/agent-observability`, `apps/agent-sandbox`, `apps/control-plane`, `apps/isp` (revalidated against current directory and package manifests).
 
 ## Active addon registry observed
 
