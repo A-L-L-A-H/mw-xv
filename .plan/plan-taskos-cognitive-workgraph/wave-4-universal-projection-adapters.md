@@ -98,7 +98,7 @@
 
 ---
 
-## - [ ] T28 — Implement ORM HTTP, `/swarm` Exporter & OTel/Notification Event Adapters
+## - [x] T28 — Implement ORM HTTP, `/swarm` Exporter & OTel/Notification Event Adapters
 
 - **Owner File(s):** `packages/plan-taskos/src/adapters/orm-http.adapter.ts`, `packages/plan-taskos/src/adapters/swarm.adapter.ts`, `packages/plan-taskos/src/adapters/telemetry.adapter.ts`
   - `packages/plan-taskos/src/adapters/orm-http.adapter.ts` (CREATE)
