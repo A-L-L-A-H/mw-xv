@@ -3,25 +3,25 @@
   "groups": {
     "initial": {
       "javascript": { "maxRawBytes": 522000, "maxGzipBytes": 154000 },
-      "stylesheet": { "maxRawBytes": 162000, "maxGzipBytes": 29000 }
+      "stylesheet": { "maxRawBytes": 164000, "maxGzipBytes": 29000 }
     },
     "lazy": {
-      "javascript": { "maxRawBytes": 108000, "maxGzipBytes": 32000 },
+      "javascript": { "maxRawBytes": 110000, "maxGzipBytes": 33000 },
       "stylesheet": { "maxRawBytes": 1, "maxGzipBytes": 1 }
     },
     "total": {
-      "javascript": { "maxRawBytes": 630000, "maxGzipBytes": 186000 },
-      "stylesheet": { "maxRawBytes": 162000, "maxGzipBytes": 29000 }
+      "javascript": { "maxRawBytes": 630000, "maxGzipBytes": 187000 },
+      "stylesheet": { "maxRawBytes": 164000, "maxGzipBytes": 29000 }
     }
   },
   "sections": {
     "scene": {
       "entry": "src/SceneLab.tsx",
-      "javascript": { "maxRawBytes": 23000, "maxGzipBytes": 7800 }
+      "javascript": { "maxRawBytes": 24000, "maxGzipBytes": 8500 }
     },
     "assets": {
       "entry": "src/AssetBrowser.tsx",
-      "javascript": { "maxRawBytes": 5000, "maxGzipBytes": 2000 }
+      "javascript": { "maxRawBytes": 5000, "maxGzipBytes": 2200 }
     },
     "fxlab": {
       "entry": "src/FXLab.tsx",

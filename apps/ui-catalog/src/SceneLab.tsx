@@ -20,17 +20,18 @@ import railingUrl from '@moonwitness/assets/environments/moon-city-prop-railing.
 import wiresUrl from '@moonwitness/assets/environments/moon-city-prop-wires.svg';
 import fallbackHeroDesktop from '@moonwitness/assets/illustrations/home-hero-desktop.webp';
 import fallbackHeroMobile from '@moonwitness/assets/illustrations/home-hero-mobile.webp';
-import moonCitySceneBundle from '@moonwitness/assets/scenes/moon-city-scene.json';
-import assetManifest from '@moonwitness/assets/manifest.json';
-import assetLicenses from '@moonwitness/assets/licenses.json';
-import { buildProvenanceIndex, resolveAssetReviewStatuses } from './asset-review-status';
+import {
+  loadMoonCitySceneData,
+  type MoonCityClipDescriptor,
+  type MoonCitySceneDescriptor,
+} from './moon-city-scene-data';
+import type { AssetProvenanceEntry, AssetReviewStatus } from './asset-review-status';
 import { resolveSceneLayerSources } from './scene-layer-sources';
 import idleFrame1 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-01.svg';
 import idleFrame2 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
 import signalSpecimenArt from '@moonwitness/assets/illustrations/editorial-signal.webp';
 import archiveSpecimenArt from '@moonwitness/assets/illustrations/editorial-archive.webp';
 
-const HERO_SCENE = moonCitySceneBundle.scenes.find((entry) => entry.id === 'moon-city-hero')!;
 const SCENE_LAYER_SOURCES = {
   sky: skyUrl,
   moon: moonUrl,
@@ -43,72 +44,64 @@ const SCENE_LAYER_SOURCES = {
   'prop-wires': wiresUrl,
 } satisfies Record<string, string>;
 
-const ASSET_STATUSES = resolveAssetReviewStatuses(
-  assetManifest.assets,
-  buildProvenanceIndex(assetLicenses.sourceAssets)
-);
-const PROVENANCE_BY_PATH = buildProvenanceIndex(assetLicenses.sourceAssets);
-const CREW_ACTOR = (() => {
-  const actor = HERO_SCENE.actors.find((entry) => entry.id === 'crew-01');
-  if (!actor) throw new Error('Moon City hero scene is missing its crew-01 actor descriptor.');
-  return actor;
-})();
+const IDLE_FRAMES = [idleFrame1, idleFrame2];
 
-const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = resolveSceneLayerSources(
-  HERO_SCENE.layers,
-  SCENE_LAYER_SOURCES
-).map((layer) => ({
-  id: layer.id,
-  src: layer.src,
-  mediaKind: 'vector',
-  zOrder: layer.order,
-  opacity: layer.opacity,
-  pivot: layer.pivot ?? layer.position,
-  parallax: layer.parallax,
-  alt: `Moon City ${layer.id.replaceAll('-', ' ')}`,
-}));
+function buildInitialLayers(scene: MoonCitySceneDescriptor): SceneLayerDescriptor[] {
+  return resolveSceneLayerSources(scene.layers, SCENE_LAYER_SOURCES).map((layer) => ({
+    id: layer.id,
+    src: layer.src,
+    mediaKind: 'vector',
+    zOrder: layer.order,
+    opacity: layer.opacity,
+    pivot: layer.pivot ?? layer.position,
+    parallax: layer.parallax,
+    alt: `Moon City ${layer.id.replaceAll('-', ' ')}`,
+  }));
+}
 
-const SCENE_BREAKPOINTS: readonly SceneBreakpointDescriptor[] = HERO_SCENE.breakpoints.map(
-  (breakpoint) => ({
+function buildBreakpoints(scene: MoonCitySceneDescriptor): readonly SceneBreakpointDescriptor[] {
+  return scene.breakpoints.map((breakpoint) => ({
     name: breakpoint.name,
-    minWidth: breakpoint.minWidth,
-    maxWidth: breakpoint.maxWidth,
+    minWidth: breakpoint.minWidth ?? 0,
+    maxWidth: breakpoint.maxWidth ?? Number.MAX_SAFE_INTEGER,
     layerOverrides: breakpoint.layerOverrides?.map((override) => ({
       layerId: override.layerId,
       opacity: override.opacity,
       pivot: override.position,
       parallax: override.parallax,
     })),
-  })
-);
+  }));
+}
 
-const IDLE_CLIP_DEFINITION = moonCitySceneBundle.clips.find((clip) => clip.id === 'crew-01-idle')!;
-const IDLE_FRAMES = [idleFrame1, idleFrame2];
-
-const IDLE_CLIP: SpriteClipMetadata = {
-  id: IDLE_CLIP_DEFINITION.id,
-  // Frame count/timing come from the canonical clip; only two stills are shipped to keep the
-  // lazy scene chunk under budget.
-  frames: IDLE_CLIP_DEFINITION.frames.map((_, index) => IDLE_FRAMES[Math.min(index, 1)]),
-  durationMs: IDLE_CLIP_DEFINITION.frames.reduce((total, frame) => total + frame.durationMs, 0),
-  loop: IDLE_CLIP_DEFINITION.loop,
-  pingPong: IDLE_CLIP_DEFINITION.direction === 'ping-pong',
-  fallbackAsset: idleFrame1,
-  width: 160,
-  height: 160,
-};
-
-/**
- * The in-scene crew plane reuses the canonical idle clip but keeps its own DOM hook so the
- * standalone sprite specimen (data-sprite-clip="crew-01-idle") stays independently testable.
- * The plane itself is exposed as [data-layer-id="crew-01"] with a z-order between the rooftop
- * (70) / railing (80) and the foreground wires (85).
- */
-const SCENE_CREW_CLIP: SpriteClipMetadata = { ...IDLE_CLIP, id: 'crew-01-idle-scene' };
+function buildIdleClip(clipDef: MoonCityClipDescriptor): SpriteClipMetadata {
+  return {
+    id: clipDef.id,
+    // Frame count/timing come from the canonical clip; only two stills are shipped to keep the
+    // lazy scene chunk under budget.
+    frames: clipDef.frames.map((_, index) => IDLE_FRAMES[Math.min(index, 1)]),
+    durationMs: clipDef.frames.reduce((total, frame) => total + frame.durationMs, 0),
+    loop: clipDef.loop,
+    pingPong: clipDef.direction === 'ping-pong',
+    fallbackAsset: idleFrame1,
+    width: 160,
+    height: 160,
+  };
+}
 
 export function SceneLab() {
   const harness = getActiveSceneHarness() ?? {};
-  const [layers, setLayers] = useState<SceneLayerDescriptor[]>([...INITIAL_LAYERS]);
+  const [sceneData, setSceneData] = useState<{
+    scene: MoonCitySceneDescriptor;
+    breakpoints: readonly SceneBreakpointDescriptor[];
+    crewOrder: number;
+    idleClip: SpriteClipMetadata;
+    sceneCrewClip: SpriteClipMetadata;
+    initialLayers: SceneLayerDescriptor[];
+    provenanceByPath: Map<string, AssetProvenanceEntry>;
+    assetStatuses: Map<string, AssetReviewStatus>;
+  } | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [layers, setLayers] = useState<SceneLayerDescriptor[]>([]);
   const [hiddenIds, setHiddenIds] = useState<Record<string, boolean>>({});
   const [composition, setComposition] = useState<'desktop' | 'mobile'>('desktop');
   const [showGuides, setShowGuides] = useState(true);
@@ -123,6 +116,44 @@ export function SceneLab() {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>('idle');
   const [timelineTimeMs, setTimelineTimeMs] = useState(harness.fixedTimeMs ?? 0);
   const timelineRef = useRef<ReturnType<typeof createSceneTimeline> | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    loadMoonCitySceneData()
+      .then((loaded) => {
+        if (!active) return;
+        const crewActor = loaded.scene.actors.find((entry) => entry.id === 'crew-01');
+        if (!crewActor) {
+          throw new Error('Moon City hero scene is missing its crew-01 actor descriptor.');
+        }
+        const initialLayers = buildInitialLayers(loaded.scene);
+        const idleClip = buildIdleClip(loaded.clip);
+        /**
+         * The in-scene crew plane reuses the canonical idle clip but keeps its own DOM hook so the
+         * standalone sprite specimen (data-sprite-clip="crew-01-idle") stays independently testable.
+         * The plane itself is exposed as [data-layer-id="crew-01"] with a z-order between the rooftop
+         * (70) / railing (80) and the foreground wires (85).
+         */
+        const sceneCrewClip: SpriteClipMetadata = { ...idleClip, id: 'crew-01-idle-scene' };
+        setSceneData({
+          scene: loaded.scene,
+          breakpoints: buildBreakpoints(loaded.scene),
+          crewOrder: crewActor.order,
+          idleClip,
+          sceneCrewClip,
+          initialLayers,
+          provenanceByPath: loaded.provenanceIndex,
+          assetStatuses: loaded.assetStatuses,
+        });
+        setLayers(initialLayers);
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const timeline = createSceneTimeline({
@@ -186,13 +217,29 @@ export function SceneLab() {
   const displayedLayers = activeLayers;
   const crewReducedMotion = staticMode || prefersReducedMotion || Boolean(harness.reducedMotion);
 
+  if (loadError) {
+    return (
+      <div className="scene-lab" data-testid="scene-lab">
+        <p role="alert">Failed to load Moon City scene bundle.</p>
+      </div>
+    );
+  }
+
+  if (!sceneData) {
+    return (
+      <div className="scene-lab" data-testid="scene-lab-loading" aria-busy="true">
+        <p>Loading Moon City scene…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="scene-lab" data-testid="scene-lab">
       <div className="scene-lab-toolbar">
         <Button
           variant="default"
           onClick={() => {
-            setLayers([...INITIAL_LAYERS]);
+            setLayers([...sceneData.initialLayers]);
             setHiddenIds({});
             setComposition('desktop');
             setStaticMode(Boolean(harness.reducedMotion));
@@ -257,10 +304,10 @@ export function SceneLab() {
         data-composition={composition}
       >
         <LayeredScene
-          sceneId={HERO_SCENE.id}
+          sceneId={sceneData.scene.id}
           label="Moon City layered environment preview"
           layers={displayedLayers}
-          breakpoints={SCENE_BREAKPOINTS}
+          breakpoints={sceneData.breakpoints}
           viewportWidth={viewportWidth}
           staticFallback={fallbackHeroDesktop}
           accessibilityFallback={fallbackHeroMobile}
@@ -272,11 +319,11 @@ export function SceneLab() {
         <div
           className="scene-lab-crew-layer"
           data-layer-id="crew-01"
-          data-z-order={String(CREW_ACTOR.order)}
-          style={{ zIndex: CREW_ACTOR.order }}
+          data-z-order={String(sceneData.crewOrder)}
+          style={{ zIndex: sceneData.crewOrder }}
         >
           <SpritePlayer
-            clip={SCENE_CREW_CLIP}
+            clip={sceneData.sceneCrewClip}
             label="crew-01 idle in Moon City"
             playing={spritePlaying}
             reducedMotion={crewReducedMotion}
@@ -302,9 +349,13 @@ export function SceneLab() {
           <ul className="scene-lab-plane-list">
             {layers.map((layer, index) => {
               const hidden = Boolean(hiddenIds[layer.id]);
-              const canonical = HERO_SCENE.layers.find((entry) => entry.id === layer.id);
-              const provenance = canonical ? PROVENANCE_BY_PATH.get(canonical.asset) : undefined;
-              const reviewStatus = canonical ? ASSET_STATUSES.get(canonical.asset) ?? 'unverified' : 'unverified';
+              const canonical = sceneData.scene.layers.find((entry) => entry.id === layer.id);
+              const provenance = canonical?.asset
+                ? sceneData.provenanceByPath.get(canonical.asset)
+                : undefined;
+              const reviewStatus = canonical?.asset
+                ? sceneData.assetStatuses.get(canonical.asset) ?? 'unverified'
+                : 'unverified';
               return (
                 <li key={layer.id} data-plane-id={layer.id} data-plane-order={layer.zOrder}>
                   <label>
@@ -344,7 +395,7 @@ export function SceneLab() {
         <div className="scene-lab-sprite" data-testid="sprite-player-specimen">
           <h3>Sprite sequence player (crew-01-idle)</h3>
           <SpritePlayer
-            clip={IDLE_CLIP}
+            clip={sceneData.idleClip}
             playing={spritePlaying}
             reducedMotion={staticMode}
             label="crew-01 idle breathing sprite"

@@ -48,26 +48,24 @@ export async function meterSessionsToSubscriptionInvoices(
     const billableGb = totalOctets > 0 ? Math.ceil(totalOctets / BYTES_PER_GB) : 0;
     const subtotalMinor = billableGb * pricePerGbMinor;
 
-    const inserted = (await SubscriptionInvoiceLine.query()
-      .insert({
-        subscription_id: subscription.id,
-        name: lineName,
-        product: 'ISP-BANDWIDTH-GB',
-        quantity: billableGb,
-        unit_price_minor: pricePerGbMinor,
-        discount_percent: 0,
-        subtotal_minor: subtotalMinor,
-        sequence: 50,
-        invoice_date: session.stop_time.slice(0, 10),
-      })
-      .onConflict(['subscription_id', 'name'])
-      .ignore()
-      .returning('id')) as unknown as
-      | { id: number }
-      | { id: number }[]
-      | undefined;
-    const insertedRows = Array.isArray(inserted) ? inserted : inserted ? [inserted] : [];
-    if (insertedRows.length === 0) continue;
+    // Check if invoice line already exists to maintain idempotency
+    const existingLine = await SubscriptionInvoiceLine.query().findOne({
+      subscription_id: subscription.id,
+      name: lineName,
+    });
+    if (existingLine) continue;
+
+    await SubscriptionInvoiceLine.query().insert({
+      subscription_id: subscription.id,
+      name: lineName,
+      product: 'ISP-BANDWIDTH-GB',
+      quantity: billableGb,
+      unit_price_minor: pricePerGbMinor,
+      discount_percent: 0,
+      subtotal_minor: subtotalMinor,
+      sequence: 50,
+      invoice_date: session.stop_time.slice(0, 10),
+    });
 
     createdInvoiceLines += 1;
     totalAmountMinor += subtotalMinor;

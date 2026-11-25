@@ -1195,12 +1195,93 @@
       "height": 80
     },
     {
+      "path": "brand/moonwitness-youtube-banner.dark.svg",
+      "kind": "youtube",
+      "variant": "dark",
+      "format": "svg",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "brand/moonwitness-youtube-banner.svg",
+      "kind": "youtube",
+      "variant": "light",
+      "format": "svg",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "path": "brand/moonwitness-youtube-logo.dark.svg",
+      "kind": "youtube",
+      "variant": "dark",
+      "format": "svg",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "path": "brand/moonwitness-youtube-logo.svg",
+      "kind": "youtube",
+      "variant": "light",
+      "format": "svg",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "path": "brand/moonwitness-youtube-thumbnail-template.dark.svg",
+      "kind": "youtube",
+      "variant": "dark",
+      "format": "svg",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "brand/moonwitness-youtube-thumbnail-template.svg",
+      "kind": "youtube",
+      "variant": "light",
+      "format": "svg",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "brand/moonwitness-youtube-watermark.dark.svg",
+      "kind": "youtube",
+      "variant": "dark",
+      "format": "svg",
+      "width": 150,
+      "height": 150
+    },
+    {
+      "path": "brand/moonwitness-youtube-watermark.svg",
+      "kind": "youtube",
+      "variant": "light",
+      "format": "svg",
+      "width": 150,
+      "height": 150
+    },
+    {
       "path": "brand/readme-banner.svg",
       "kind": "readme-banner",
       "variant": "light",
       "format": "svg",
       "width": 1280,
       "height": 320
+    },
+    {
+      "path": "brand/social-card.dark.png",
+      "source": "brand/social-card.dark.svg",
+      "kind": "social-card",
+      "variant": "dark",
+      "format": "png",
+      "width": 1200,
+      "height": 630
+    },
+    {
+      "path": "brand/social-card.dark.svg",
+      "kind": "social-card",
+      "variant": "dark",
+      "format": "svg",
+      "width": 1200,
+      "height": 630
     },
     {
       "path": "brand/social-card.png",
