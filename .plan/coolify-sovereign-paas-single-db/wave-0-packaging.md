@@ -5,7 +5,7 @@
 
 ---
 
-## - [ ] M01 — Add `yaml` & `paas-template-pack-coolify` to `packages/orm-cloud/package.json`
+## - [x] M01 — Add `yaml` & `paas-template-pack-coolify` to `packages/orm-cloud/package.json`
 
 - **Owner File (MODIFY):** `packages/orm-cloud/package.json` (lines 22–30)
 - **Depends On:** None
