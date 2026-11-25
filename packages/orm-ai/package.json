@@ -28,6 +28,7 @@
     "@moonwitness/orm-storage": "workspace:*",
     "@moonwitness/orm-workflow": "workspace:*",
     "@moonwitness/types": "workspace:*",
+    "@moonwitness/logger": "workspace:*",
     "objection": "^3.1.5"
   },
   "devDependencies": {

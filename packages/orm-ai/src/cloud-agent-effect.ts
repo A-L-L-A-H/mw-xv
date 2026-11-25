@@ -22,6 +22,7 @@ import type {
   WorkspaceEvidenceBundle,
   WorkspaceSandboxClient,
 } from '@moonwitness/ai-runtime';
+import { getLogger } from '@moonwitness/logger';
 import type { DurableRunEffects, TrustedRunSnapshot } from './agent-run-executor.js';
 import {
   CLOUD_AGENT_CHECK_KIND,
@@ -209,7 +210,7 @@ async function resolvePolicyVersion(params: {
 function reportCleanupFailure(phase: 'cancel' | 'destroy', error: unknown): void {
   // Log only the error class: cleanup failures must not leak tool output or secrets.
   const name = error instanceof Error ? error.name : 'Error';
-  console.warn(`cloud-agent-effect: workspace ${phase} cleanup failed (${name})`);
+  getLogger().warn(`cloud-agent-effect: workspace ${phase} cleanup failed (${name})`);
 }
 
 /**

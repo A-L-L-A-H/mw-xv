@@ -1,6 +1,7 @@
 import { CronExpressionParser } from 'cron-parser';
 import type { Transaction } from 'objection';
 import { Environment } from '@moonwitness/orm';
+import { getLogger } from '@moonwitness/logger';
 import { Company, CompanyMembership, User } from '@moonwitness/orm-base';
 import { Cron, Job, JobRun, OutboxEvent } from './models.js';
 import { createGracefulDrainController, raceWithAbort, type DrainOutcome } from './drain.js';
@@ -685,7 +686,7 @@ export async function enqueueDueCrons(options: SchedulerOptions = {}): Promise<n
     } catch (error) {
       if (error instanceof CronPayloadRejection) {
         await Cron.query().findById(cron.id).patch({ enabled: false });
-        console.error(
+        getLogger().error(
           `${error.message}. Disarmed so one broken row cannot stall the queue or exit the scheduler; ` +
             'correct its payload and re-enable it to resume.'
         );
@@ -697,9 +698,8 @@ export async function enqueueDueCrons(options: SchedulerOptions = {}): Promise<n
         } catch {
           // Best-effort backoff so a single broken cron never blocks subsequent healthy crons (K7-005).
         }
-        console.error(
-          `Cron "${cron.code}" (id=${cron.id}) failed during tick and was backed off to ${retryAt}:`,
-          error instanceof Error ? error.message : String(error)
+        getLogger().error(
+          `Cron "${cron.code}" (id=${cron.id}) failed during tick and was backed off to ${retryAt}: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }
