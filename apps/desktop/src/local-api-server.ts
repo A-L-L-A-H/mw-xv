@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
@@ -83,6 +83,8 @@ import {
   type VpsComposeAction,
   type VpsOnboardingAuthContext,
 } from './vps-onboarding.js';
+import { DesktopObservatoryService } from './observatory/service.js';
+import type { ObservatoryRuntime } from './observatory/types.js';
 import type { DesktopCapabilityBridge } from './types.js';
 
 export interface LocalAuthContext {
@@ -118,6 +120,11 @@ export interface LocalApiServerOptions {
   readonly port?: number;
   readonly rpcToken?: string;
   readonly desktopHomeDir?: string;
+  readonly repoRoot?: string;
+  readonly observatoryHomeDir?: string;
+  readonly enableObservatoryProbes?: boolean;
+  readonly enableObservatoryAntigravityApi?: boolean;
+  readonly serveWebDistDir?: string;
   readonly initialMode?: DesktopExperienceMode;
   readonly ispApiUrl?: string;
 }
@@ -2845,9 +2852,238 @@ export async function startLocalApiServer(
     return reply.code(status).send(response);
   });
 
+  // Multi-Agent Real-Time Observatory (active in BOTH Workspace & DX modes, read-only R0)
+  const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
+  const observatory = new DesktopObservatoryService({
+    repoRoot: options.repoRoot ?? process.cwd(),
+    ...(options.observatoryHomeDir ? { homeDir: options.observatoryHomeDir } : {}),
+    bridge: options.bridge,
+    knownSecrets: [rpcToken],
+    enableNetworkProbes: options.enableObservatoryProbes ?? !isTestEnv,
+    enableAntigravityApi: options.enableObservatoryAntigravityApi ?? !isTestEnv,
+  });
+
+  const VALID_OBSERVATORY_RUNTIMES: ReadonlySet<ObservatoryRuntime> = new Set([
+    'antigravity',
+    'claude',
+    'codex',
+    'qoder',
+    'gemini-cli',
+    'desktop-worktree',
+    'visual-swarm',
+  ]);
+
+  app.get('/api/desktop/observatory/state', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const fresh = query.fresh === '1' || query.fresh === 'true';
+    const data = await observatory.getSnapshot({ fresh });
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data };
+  });
+
+  app.get('/api/desktop/observatory/session', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const rawRuntime = typeof query.runtime === 'string' ? query.runtime.trim() : '';
+    const sessionId = typeof query.id === 'string' ? query.id.trim() : '';
+    if (!VALID_OBSERVATORY_RUNTIMES.has(rawRuntime as ObservatoryRuntime) || !sessionId) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Valid runtime and id query parameters are required',
+      });
+    }
+    const detail = await observatory.getSessionDetail(rawRuntime as ObservatoryRuntime, sessionId);
+    if (!detail) {
+      return reply.code(404).send({ success: false, error: 'Observatory session not found' });
+    }
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data: detail };
+  });
+
+  app.get('/api/desktop/observatory/stream', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const originHeader = req.headers.origin;
+    const rawOrigin = Array.isArray(originHeader) ? originHeader[0] : originHeader;
+    const headers: Record<string, string> = {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-store',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+      'X-Content-Type-Options': 'nosniff',
+    };
+    if (rawOrigin && isAllowedCorsOrigin(rawOrigin)) {
+      headers['Access-Control-Allow-Origin'] = rawOrigin;
+      headers['Access-Control-Allow-Credentials'] = 'true';
+      headers.Vary = 'Origin';
+    }
+
+    reply.hijack();
+    reply.raw.writeHead(200, headers);
+    reply.raw.write('retry: 2000\n\n');
+
+    let closed = false;
+    let unsubscribe = () => {};
+    let keepalive: ReturnType<typeof setInterval> | null = null;
+
+    const closeStream = () => {
+      if (closed) return;
+      closed = true;
+      if (keepalive) {
+        clearInterval(keepalive);
+        keepalive = null;
+      }
+      unsubscribe();
+      if (!reply.raw.writableEnded) {
+        reply.raw.end();
+      }
+    };
+
+    req.raw.once('close', closeStream);
+    reply.raw.once('close', closeStream);
+
+    try {
+      const initial = await observatory.getSnapshot();
+      if (!closed && !reply.raw.writableEnded) {
+        reply.raw.write(`event: snapshot\ndata: ${JSON.stringify(initial)}\n\n`);
+      }
+    } catch {
+      closeStream();
+      return;
+    }
+
+    if (closed) return;
+
+    unsubscribe = observatory.subscribe((_snapshot, json) => {
+      if (closed || reply.raw.writableEnded) {
+        closeStream();
+        return;
+      }
+      try {
+        reply.raw.write(`event: snapshot\ndata: ${json}\n\n`);
+      } catch {
+        closeStream();
+      }
+    });
+
+    keepalive = setInterval(() => {
+      if (closed || reply.raw.writableEnded) {
+        closeStream();
+        return;
+      }
+      try {
+        reply.raw.write(': keepalive\n\n');
+      } catch {
+        closeStream();
+      }
+    }, 15_000);
+    keepalive.unref();
+  });
+
+  // Optional headless static serving of dist-board when launched with --serve-web
+  const STATIC_MIME_TYPES: Readonly<Record<string, string>> = Object.freeze({
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.mjs': 'application/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.webp': 'image/webp',
+    '.avif': 'image/avif',
+    '.woff2': 'font/woff2',
+    '.ico': 'image/x-icon',
+    '.txt': 'text/plain; charset=utf-8',
+  });
+
+  const distWebRoot = options.serveWebDistDir ? path.resolve(options.serveWebDistDir) : null;
+  if (distWebRoot && existsSync(distWebRoot)) {
+    const distPrefix = `${distWebRoot}${path.sep}`;
+    const apiReservedPrefixes = [
+      '/api/',
+      '/auth/',
+      '/_desktop/',
+      '/mcp',
+      '/healthz',
+      '/livez',
+      '/readyz',
+      '/notifications/',
+    ];
+
+    app.setNotFoundHandler((req, reply) => {
+      const rawUrl = req.raw.url ?? '/';
+      const rawPath = rawUrl.split('?')[0] ?? '/';
+      if (req.method !== 'GET' || apiReservedPrefixes.some((prefix) => rawPath.startsWith(prefix))) {
+        return reply.code(404).send({ success: false, error: 'Not Found' });
+      }
+      if (rawPath.includes('..') || rawPath.includes('\0')) {
+        return reply.code(403).send({ success: false, error: 'Forbidden path' });
+      }
+
+      let decodedPath: string;
+      try {
+        decodedPath = decodeURIComponent(rawPath);
+      } catch {
+        return reply.code(400).send({ success: false, error: 'Malformed URL path' });
+      }
+      if (decodedPath.includes('..') || decodedPath.includes('\0')) {
+        return reply.code(403).send({ success: false, error: 'Forbidden path' });
+      }
+
+      const relPath = decodedPath.replace(/^\/+/u, '');
+      if (relPath.length > 0) {
+        const candidate = path.resolve(distWebRoot, relPath);
+        if (candidate !== distWebRoot && !candidate.startsWith(distPrefix)) {
+          return reply.code(403).send({ success: false, error: 'Forbidden path' });
+        }
+        if (existsSync(candidate) && statSync(candidate).isFile()) {
+          const ext = path.extname(candidate).toLowerCase();
+          const mime = STATIC_MIME_TYPES[ext] ?? 'application/octet-stream';
+          reply.header('X-Content-Type-Options', 'nosniff');
+          reply.header('Content-Type', mime);
+          if (ext === '.html') {
+            reply.header('Cache-Control', 'no-store');
+            const html = readFileSync(candidate, 'utf8').replace(
+              '</head>',
+              '<script>window.__MW_DESKTOP_API_URL__=window.location.origin;</script></head>'
+            );
+            return reply.code(200).send(html);
+          }
+          return reply.code(200).send(readFileSync(candidate));
+        }
+        // Requests targeting a file extension that does not exist must return 404, never SPA HTML
+        if (path.extname(relPath).length > 0) {
+          return reply.code(404).send({ success: false, error: 'Asset not found' });
+        }
+      }
+
+      const spaIndex = path.join(distWebRoot, 'index.html');
+      if (!existsSync(spaIndex)) {
+        return reply.code(404).send({ success: false, error: 'Desktop web bundle not built' });
+      }
+      const html = readFileSync(spaIndex, 'utf8').replace(
+        '</head>',
+        '<script>window.__MW_DESKTOP_API_URL__=window.location.origin;</script></head>'
+      );
+      reply.header('X-Content-Type-Options', 'nosniff');
+      reply.header('Cache-Control', 'no-store');
+      reply.header('Content-Type', 'text/html; charset=utf-8');
+      return reply.code(200).send(html);
+    });
+  }
+
   await app.listen({ host, port });
   const address = app.server.address();
   if (!address || typeof address === 'string') {
+    observatory.stop();
     await app.close();
     throw new Error('Failed to resolve LocalApiServer listening address');
   }
@@ -2859,6 +3095,7 @@ export async function startLocalApiServer(
   const stop = async (): Promise<void> => {
     if (stopped) return;
     stopped = true;
+    observatory.stop();
     meshClientController.stop();
     await app.close();
   };

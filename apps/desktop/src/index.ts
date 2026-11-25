@@ -153,3 +153,43 @@ export {
   type DesktopUpdatePlatformAsset,
   type ParsedSemver,
 } from './updater.js';
+export {
+  DesktopObservatoryService,
+  type ObservatorySnapshotListener,
+} from './observatory/service.js';
+export {
+  DEFAULT_LOCAL_PORTS,
+  DEFAULT_VPS_PROBE_TARGETS,
+  collectGitState,
+  isBlockedProbeUrl,
+  probeHttpTarget,
+  probeLocalPorts,
+  probeVpsTargets,
+} from './observatory/infra-collector.js';
+export { collectPlans, type CollectedPlansBundle } from './observatory/plan-collector.js';
+export type {
+  ObservatoryActivityFeedItem,
+  ObservatoryEvent,
+  ObservatoryEventKind,
+  ObservatoryGitCommit,
+  ObservatoryGitState,
+  ObservatoryHostTelemetry,
+  ObservatoryLocalPortResult,
+  ObservatoryLocalPortTarget,
+  ObservatoryPlanSummary,
+  ObservatoryPlanTask,
+  ObservatoryPlanWave,
+  ObservatoryProbeResult,
+  ObservatoryProbeTarget,
+  ObservatoryProbesState,
+  ObservatoryRuntime,
+  ObservatoryServiceOptions,
+  ObservatorySessionDetail,
+  ObservatorySessionStatus,
+  ObservatorySessionSummary,
+  ObservatorySnapshot,
+  ObservatorySubagent,
+  ObservatorySummaryCounts,
+  ObservatorySwarmSummary,
+  ObservatoryTokenUsage,
+} from './observatory/types.js';

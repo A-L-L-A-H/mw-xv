@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import type { ModelInfo } from '@moonwitness/client';
 import { ToastHost } from '@moonwitness/ui/components/toast';
 import {
+  ActivityIcon,
   CalendarIcon,
   CheckIcon,
   CodeIcon,
@@ -111,6 +112,7 @@ function ModelNavigation({
   isLoading,
   canReadResearch,
   canEditStories,
+  isDesktop = false,
   isWorkspaceDesktop = false,
   onNavigate,
 }: {
@@ -118,12 +120,21 @@ function ModelNavigation({
   isLoading: boolean;
   canReadResearch: boolean;
   canEditStories: boolean;
+  isDesktop?: boolean;
   isWorkspaceDesktop?: boolean;
   onNavigate?: () => void;
 }) {
   return (
     <nav aria-label="Models" className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
       <NavItem to="/board" label="Dashboard" icon={DashboardIcon} onNavigate={onNavigate} />
+      {isDesktop && (
+        <NavItem
+          to="/board/desktop/observatory"
+          label="Agent Observatory"
+          icon={ActivityIcon}
+          onNavigate={onNavigate}
+        />
+      )}
       {canReadResearch && (
         <NavItem
           to="/board/knowledge"
@@ -474,6 +485,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           isLoading={isLoading}
           canReadResearch={researchAccess}
           canEditStories={canEditStories}
+          isDesktop={isDesktop}
           isWorkspaceDesktop={isWorkspaceDesktop}
         />
         {(isDesktop || !isWorkspaceDesktop) && (
@@ -549,6 +561,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 isLoading={isLoading}
                 canReadResearch={researchAccess}
                 canEditStories={canEditStories}
+                isDesktop={isDesktop}
                 isWorkspaceDesktop={isWorkspaceDesktop}
                 onNavigate={() => setMobileNavOpen(false)}
               />

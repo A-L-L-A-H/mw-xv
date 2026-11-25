@@ -10,6 +10,8 @@
     "dev:board": "bun --filter @moonwitness/board dev",
     "desktop:build": "bun --filter @moonwitness/types build && bun --filter @moonwitness/desktop... build && bun --filter @moonwitness/desktop build:web",
     "desktop:web": "bun --filter @moonwitness/desktop build:web",
+    "desktop:serve": "node apps/desktop/dist/cli.js serve --api-port 4242",
+    "desktop:observatory": "node apps/desktop/dist/cli.js serve --serve-web --api-port 4242",
     "desktop:test": "bun --filter @moonwitness/ai-mcp test && bun --filter @moonwitness/desktop test",
     "desktop:mcp": "node apps/desktop/dist/cli.js mcp",
     "dx:test": "bun run desktop:test",
