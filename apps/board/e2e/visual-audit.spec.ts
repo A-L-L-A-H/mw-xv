@@ -703,6 +703,34 @@ async function expectNoHorizontalOverflow(page: Page, label: string) {
 }
 
 async function expectNoA11yViolations(page: Page, label: string) {
+  // Playwright 1.65's bundled Firefox 159 populates WebIDL [Cached] FrozenArray
+  // ARIA element properties (such as Element.prototype.ariaLabelledByElements) in
+  // Playwright's isolated utility compartment during locator evaluation. When
+  // axe-core subsequently reads those cached getters from the main world, Gecko
+  // crashes the content process. Neutralizing the reflected element-reference
+  // getters on Element.prototype in the main world keeps axe-core on its standard
+  // getAttribute('aria-labelledby') / ID-reference validation path without crashing.
+  await page.evaluate(() => {
+    for (const prop of [
+      'ariaLabelledByElements',
+      'ariaDescribedByElements',
+      'ariaControlsElements',
+      'ariaDetailsElements',
+      'ariaFlowToElements',
+      'ariaOwnsElements',
+      'ariaActiveDescendantElement',
+      'ariaErrorMessageElements',
+    ]) {
+      if (prop in Element.prototype) {
+        Object.defineProperty(Element.prototype, prop, {
+          get() {
+            return undefined;
+          },
+          configurable: true,
+        });
+      }
+    }
+  });
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();

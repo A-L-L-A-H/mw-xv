@@ -259,6 +259,10 @@
         "@moonwitness/orm-base": "workspace:*",
         "@moonwitness/orm-whatsapp": "workspace:*",
         "@moonwitness/types": "workspace:*",
+<<<<<<< Updated upstream
+=======
+        "@moonwitness/ui": "workspace:*",
+>>>>>>> Stashed changes
         "@vitejs/plugin-react": "^6.1.1",
         "fastify": "^5.12.8",
         "knex": "^3.3.0",
@@ -2822,12 +2826,15 @@
 
     "p-try": ["p-try@2.2.0", "", {}, "sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ=="],
 
+<<<<<<< Updated upstream
     "paas-template-pack-bigbear": ["paas-template-pack-bigbear@workspace:packages/paas-template-pack-bigbear"],
 
     "paas-template-pack-coolify": ["paas-template-pack-coolify@workspace:packages/paas-template-pack-coolify"],
 
     "paas-template-pack-dokploy": ["paas-template-pack-dokploy@workspace:packages/paas-template-pack-dokploy"],
 
+=======
+>>>>>>> Stashed changes
     "package-directory": ["package-directory@8.2.0", "", { "dependencies": { "find-up-simple": "^1.0.0" } }, "sha512-qJSu5Mo6tHmRxCy2KCYYKYgcfBdUpy9dwReaZD/xwf608AUk/MoRtIOWzgDtUeGeC7n/55yC3MI1Q+MbSoektw=="],
 
     "pako": ["pako@1.0.11", "", {}, "sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw=="],

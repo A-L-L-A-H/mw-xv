@@ -62,6 +62,27 @@ async function expectTheme(page: Page, theme: 'light' | 'dark') {
 }
 
 async function expectNoA11yViolations(page: Page, label: string) {
+  await page.evaluate(() => {
+    for (const prop of [
+      'ariaLabelledByElements',
+      'ariaDescribedByElements',
+      'ariaControlsElements',
+      'ariaDetailsElements',
+      'ariaFlowToElements',
+      'ariaOwnsElements',
+      'ariaActiveDescendantElement',
+      'ariaErrorMessageElements',
+    ]) {
+      if (prop in Element.prototype) {
+        Object.defineProperty(Element.prototype, prop, {
+          get() {
+            return undefined;
+          },
+          configurable: true,
+        });
+      }
+    }
+  });
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
