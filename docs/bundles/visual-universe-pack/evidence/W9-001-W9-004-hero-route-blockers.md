@@ -35,8 +35,8 @@ Production route inventory and the Next build contain neither `/signals` nor `/a
 
 Verification:
 
-- `bun --filter @moonwitness/ui-catalog test` — exit 0; 86 passed.
-- `bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts` — exit 0; 9 passed, including route-gap safeguards.
+- `bun --filter @moonwitness/ui-catalog test` — exit 0; 96 passed.
+- `bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts` — exit 0; 11 passed, including route-gap safeguards.
 
 ## W9-005 — Crew and Story boundary
 
@@ -44,5 +44,5 @@ Story remains backed by the existing API state. Fictional crew-01 is visibly an 
 
 Verification:
 
-- `bun --filter @moonwitness/ui-catalog test` — exit 0; 86 passed.
-- `bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts` — exit 0; 9 passed.
+- `bun --filter @moonwitness/ui-catalog test` — exit 0; 96 passed.
+- `bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts` — exit 0; 11 passed.

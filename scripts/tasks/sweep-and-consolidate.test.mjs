@@ -159,6 +159,25 @@ test('candidate validator rejects unknown graph edges before registry writes', a
   assert.ok(validation.errors.some((error) => error.includes('unknown dependency "UNKNOWN-TASK"')));
 });
 
+test('check projection overlays Visual Universe lifecycle while preserving source-owned task identity', async () => {
+  const canonical = await sweepAndConsolidate({ generatedAt: '2026-11-25T00:00:00.000Z' });
+  const current = structuredClone(canonical);
+  const task = current.tasks.find((entry) => entry.code === 'W9-001');
+  task.status = 'done';
+  task.acceptanceCriteria[0].done = true;
+  task.blockedReason = null;
+  task.metadata.status = 'done';
+  task.metadata.notes = 'Reviewed lifecycle update.';
+  const projected = await sweepAndConsolidate({ generatedAt: current.generatedAt, lifecycleRegistry: current });
+  const projectedTask = projected.tasks.find((entry) => entry.code === 'W9-001');
+  assert.equal(projectedTask.status, 'done');
+  assert.equal(projectedTask.acceptanceCriteria[0].done, true);
+  assert.equal(projectedTask.metadata.notes, 'Reviewed lifecycle update.');
+  task.title = 'Changed source-owned identity';
+  const identityDrift = await sweepAndConsolidate({ generatedAt: current.generatedAt, lifecycleRegistry: current });
+  assert.notEqual(identityDrift.tasks.find((entry) => entry.code === 'W9-001').title, task.title);
+});
+
 test('candidate validator rejects invalid provenance before registry writes', async () => {
   const candidate = await sweepAndConsolidate({ generatedAt: '2026-11-23T00:00:00.000Z' });
   candidate.tasks[0].sourceRef.file = '../outside-repository.json';

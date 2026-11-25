@@ -11,6 +11,13 @@ const approvedProvenance = {
   status: 'approved',
   license: 'ISC',
 };
+const commissionedProvenance = {
+  path: 'source/crew.svg',
+  status: 'approved',
+  license: 'MoonWitness Commissioned Asset (ISC pipeline)',
+  termsVerified: true,
+  distribution: 'approved source master for MoonWitness Signal Riot asset pipeline',
+};
 
 const cases = [
   {
@@ -18,6 +25,36 @@ const cases = [
     asset: approvedAsset,
     provenance: approvedProvenance,
     expected: 'approved',
+  },
+  {
+    name: 'approved verified commissioned license keeps its declared name',
+    asset: { path: commissionedProvenance.path, status: 'approved' },
+    provenance: commissionedProvenance,
+    expected: 'approved',
+  },
+  {
+    name: 'custom license without verified terms fails closed',
+    asset: { path: commissionedProvenance.path, status: 'approved' },
+    provenance: { ...commissionedProvenance, termsVerified: false },
+    expected: 'unverified',
+  },
+  {
+    name: 'custom license without a distribution scope fails closed',
+    asset: { path: commissionedProvenance.path, status: 'approved' },
+    provenance: { ...commissionedProvenance, distribution: '' },
+    expected: 'unverified',
+  },
+  {
+    name: 'crew source master remains review-only',
+    asset: { path: 'source/crew-master.svg', status: 'review' },
+    provenance: { path: 'source/crew-master.svg', status: 'review', license: 'ISC' },
+    expected: 'review',
+  },
+  {
+    name: 'generated Moon City source stays blocked',
+    asset: { path: 'source/moon-city.svg', status: 'blocked' },
+    provenance: { path: 'source/moon-city.svg', status: 'blocked', license: 'unverified' },
+    expected: 'blocked',
   },
   {
     name: 'review-only manifest',
@@ -47,6 +84,18 @@ const cases = [
     name: 'provenance with a missing license fails closed',
     asset: approvedAsset,
     provenance: { path: approvedAsset.path, status: 'approved' },
+    expected: 'unverified',
+  },
+  {
+    name: 'provenance with a missing review state fails closed',
+    asset: approvedAsset,
+    provenance: { path: approvedAsset.path, license: 'ISC' },
+    expected: 'unverified',
+  },
+  {
+    name: 'unknown provenance review state fails closed',
+    asset: approvedAsset,
+    provenance: { ...approvedProvenance, status: 'pending' },
     expected: 'unverified',
   },
   {
@@ -94,4 +143,10 @@ test('asset review status index resolves every manifest path independently', () 
     'artwork/review.png': 'review',
     'artwork/missing.png': 'unverified',
   });
+});
+
+test('ambiguous duplicate provenance paths fail closed', () => {
+  const index = buildProvenanceIndex([approvedProvenance, { ...approvedProvenance, license: 'Other' }]);
+  expect(index.has(approvedAsset.path)).toBe(false);
+  expect(resolveAssetReviewStatus(approvedAsset, index.get(approvedAsset.path))).toBe('unverified');
 });

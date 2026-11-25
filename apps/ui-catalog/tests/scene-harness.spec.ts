@@ -1,4 +1,26 @@
 import { expect, test } from '@playwright/test';
+import { resolveSceneLayerSources } from '../src/scene-layer-sources';
+
+test('scene layer asset imports stay attached to canonical IDs when layer order changes', () => {
+  const layers = [
+    { id: 'sky', order: 0 },
+    { id: 'moon', order: 10 },
+    { id: 'prop-wires', order: 85 },
+  ];
+  const sources = { sky: '/sky.svg', moon: '/moon.svg', 'prop-wires': '/wires.svg' };
+  const result = resolveSceneLayerSources([...layers].reverse(), sources);
+  expect(result.map(({ id, src }) => [id, src])).toEqual([
+    ['prop-wires', '/wires.svg'],
+    ['moon', '/moon.svg'],
+    ['sky', '/sky.svg'],
+  ]);
+});
+
+test('scene layer source resolver rejects missing, duplicate, and unexpected mappings', () => {
+  expect(() => resolveSceneLayerSources([{ id: 'moon' }], {})).toThrow(/missing an imported source/u);
+  expect(() => resolveSceneLayerSources([{ id: 'moon' }, { id: 'moon' }], { moon: '/moon.svg' })).toThrow(/must be unique/u);
+  expect(() => resolveSceneLayerSources([{ id: 'moon' }], { moon: '/moon.svg', sky: '/sky.svg' })).toThrow(/Unexpected imported source mapping/u);
+});
 
 test('environment depth inspector toggles and reorders planes and reflows on mobile (W4-008, W1-006)', async ({
   page,

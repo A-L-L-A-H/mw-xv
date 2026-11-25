@@ -1,13 +1,22 @@
 'use client';
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import {
-  LayeredScene,
-  type SceneBreakpointDescriptor,
-  type SceneLayerDescriptor,
+import { useState, useSyncExternalStore } from 'react';
+import dynamic from 'next/dynamic';
+import type {
+  SceneBreakpointDescriptor,
+  SceneLayerDescriptor,
 } from '@moonwitness/ui/components/layered-scene';
 import moonCitySceneBundle from '@moonwitness/assets/scenes/moon-city-scene.json';
-import { SpritePlayer, type SpriteClipMetadata } from '@moonwitness/ui/components/sprite-player';
+import type { SpriteClipMetadata } from '@moonwitness/ui/components/sprite-player';
+
+const LayeredScene = dynamic(
+  () => import('@moonwitness/ui/components/layered-scene').then((module) => module.LayeredScene),
+  { ssr: false, loading: () => null }
+);
+const SpritePlayer = dynamic(
+  () => import('@moonwitness/ui/components/sprite-player').then((module) => module.SpritePlayer),
+  { ssr: false, loading: () => null }
+);
 
 const HERO_SCENE = moonCitySceneBundle.scenes.find((scene) => scene.id === 'moon-city-hero');
 const MOON_CITY_LAYERS: readonly SceneLayerDescriptor[] = (HERO_SCENE?.layers ?? []).map(
@@ -52,27 +61,42 @@ const PILOT_CLIP: SpriteClipMetadata = {
 const subscribeNoop = () => () => {};
 const getClientMounted = () => true;
 const getServerMounted = () => false;
+const getReducedMotionSnapshot = () =>
+  typeof window === 'undefined' ||
+  typeof window.matchMedia !== 'function' ||
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const getStaticMotionSnapshot = () => true;
+const subscribeToReducedMotion = (onChange: () => void) => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return () => {};
+  const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+  media.addEventListener('change', onChange);
+  return () => media.removeEventListener('change', onChange);
+};
+const getSaveDataSnapshot = () => {
+  if (typeof navigator === 'undefined') return true;
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  return connection?.saveData === true;
+};
 
 function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(true);
+  return useSyncExternalStore(
+    subscribeToReducedMotion,
+    getReducedMotionSnapshot,
+    getStaticMotionSnapshot
+  );
+}
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => setReduced(media.matches);
-    sync();
-    media.addEventListener('change', sync);
-    return () => media.removeEventListener('change', sync);
-  }, []);
-
-  return reduced;
+function useSaveDataPreference(): boolean {
+  return useSyncExternalStore(subscribeNoop, getSaveDataSnapshot, getStaticMotionSnapshot);
 }
 
 export function HomeHeroArt() {
   const [failed, setFailed] = useState(false);
   const mounted = useSyncExternalStore(subscribeNoop, getClientMounted, getServerMounted);
   const reducedMotion = usePrefersReducedMotion();
-  const showInteractiveScene = mounted && !reducedMotion && !failed && MOON_CITY_LAYERS.length > 0;
+  const saveData = useSaveDataPreference();
+  const staticScene = reducedMotion || saveData;
+  const showInteractiveScene = mounted && !staticScene && !failed && MOON_CITY_LAYERS.length > 0;
 
   return (
     <div className="home-hero-art" aria-hidden="true">
@@ -112,13 +136,23 @@ export function HomeHeroArt() {
             />
           ) : null}
           <div className="home-hero-crew" data-testid="home-hero-crew" aria-hidden="true">
-            <SpritePlayer
-              clip={PILOT_CLIP}
-              label="Anonymous Moon City pilot example"
-              playing={!reducedMotion}
-              reducedMotion={reducedMotion}
-              frameStyle={{ filter: 'var(--home-crew-key)' }}
-            />
+            {staticScene ? (
+              <div
+                className="home-hero-crew-still"
+                data-sprite-clip={PILOT_CLIP.id}
+                data-sprite-state="static"
+              >
+                <img src={PILOT_CLIP.fallbackAsset} alt="" />
+              </div>
+            ) : (
+              <SpritePlayer
+                clip={PILOT_CLIP}
+                label="Anonymous Moon City pilot example"
+                playing
+                reducedMotion={false}
+                frameStyle={{ filter: 'var(--home-crew-key)' }}
+              />
+            )}
           </div>
         </>
       )}

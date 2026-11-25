@@ -71,6 +71,7 @@ export function validateSceneBundle(bundle, manifest, filePath = 'scene-bundle.j
       [
         'id',
         'layers',
+        'actors',
         'staticFallback',
         'includes',
         'clips',
@@ -115,6 +116,22 @@ export function validateSceneBundle(bundle, manifest, filePath = 'scene-bundle.j
         for (const axis of ['x', 'y'])
           if (!Number.isFinite(layer.parallax[axis]) || Math.abs(layer.parallax[axis]) > 1)
             fail(`${layerPath}.parallax.${axis}`, 'must be bounded between -1 and 1');
+      }
+    }
+    if (scene.actors !== undefined) {
+      if (!Array.isArray(scene.actors)) fail(`${path}.actors`, 'must be an array of actor descriptors');
+      const actorIds = new Set();
+      for (const [actorIndex, actor] of scene.actors.entries()) {
+        const actorPath = `${path}.actors[${actorIndex}]`;
+        assertKeys(actor, ['id', 'clipId', 'order'], actorPath);
+        if (typeof actor.id !== 'string' || !actor.id || actorIds.has(actor.id))
+          fail(`${actorPath}.id`, 'must be a unique non-empty identifier within the scene');
+        if (typeof actor.clipId !== 'string' || !actor.clipId)
+          fail(`${actorPath}.clipId`, 'must reference a non-empty clip ID');
+        if (!Number.isInteger(actor.order) || orders.has(actor.order))
+          fail(`${actorPath}.order`, 'must be a unique integer within the scene');
+        actorIds.add(actor.id);
+        orders.add(actor.order);
       }
     }
     requireReference(scene.staticFallback, knownAssets, `${path}.staticFallback`);
@@ -203,6 +220,9 @@ export function validateSceneBundle(bundle, manifest, filePath = 'scene-bundle.j
     for (const clipId of scene.clips ?? [])
       if (!clipById.has(clipId))
         fail(`${filePath}.scenes[${sceneIndex}].clips`, `references missing clip ${clipId}`);
+    for (const actor of scene.actors ?? [])
+      if (!clipById.has(actor.clipId))
+        fail(`${filePath}.scenes[${sceneIndex}].actors`, `references missing clip ${actor.clipId}`);
   }
   return { sceneCount: sceneById.size, clipCount: clipById.size };
 }

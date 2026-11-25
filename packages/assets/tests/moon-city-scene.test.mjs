@@ -71,7 +71,9 @@ test('UI Catalog SceneLab consumes the canonical Moon City scene instead of main
   );
   const hero = bundle.scenes.find((scene) => scene.id === 'moon-city-hero');
   assert.match(sceneLabSource, /@moonwitness\/assets\/scenes\/moon-city-scene\.json/u);
-  assert.match(sceneLabSource, /HERO_SCENE\.layers\.map/u);
+  assert.match(sceneLabSource, /resolveSceneLayerSources\([\s\S]*?HERO_SCENE\.layers/u);
+  assert.match(sceneLabSource, /const SCENE_LAYER_SOURCES = \{/u);
+  assert.match(sceneLabSource, /HERO_SCENE\.actors\.find/u);
   assert.match(sceneLabSource, /HERO_SCENE\.breakpoints\.map/u);
   assert.match(sceneLabSource, /IDLE_CLIP_DEFINITION\.frames\.map/u);
   assert.doesNotMatch(sceneLabSource, /const INITIAL_LAYERS[^=]*=\s*\[/u);

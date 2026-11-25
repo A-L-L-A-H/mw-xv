@@ -474,17 +474,25 @@ tersedia sebagai fallback, dan urutan konten halaman tidak mengambil alih scroll
 crew di UI Catalog ditandai sebagai fiksi; tidak ada profil, angka, peta, atau metrik crew buatan di
 data Board.
 
-| Artefak                                                                                                      | Tujuan                                                  |
-| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| [Visual Universe pack](docs/bundles/visual-universe-pack/README-FIRST.md)                                    | Arsitektur, backlog, aturan kontribusi, dan verifikasi. |
-| [Approval dan batas artwork](docs/decisions/moon-city-production-approval.md)                                | Keputusan owner dan ruang lingkup artwork Moon City.    |
-| [Bukti scene dan route gap](docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md) | Hasil W9-001–W9-004 beserta validasinya.                |
-| [Bukti Board visual gate](docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md)  | Status kru/editorial dan matrix lintas-browser.         |
+Homepage juga memakai mode statis saat browser meminta `Save-Data`, tanpa menyembunyikan ilustrasi,
+pilot, copy, atau tautan. Aset plane Moon City memakai cache satu jam dengan stale revalidation;
+pengukuran build produksi cold-cache mencatat 6.1 kB untuk sembilan SVG lingkungan dan 1.4 kB untuk
+frame idle pertama. Lihat [baseline performa](docs/bundles/visual-universe-pack/evidence/W10-001-runtime-performance-baseline.md)
+dan [kebijakan loading/cache](docs/bundles/visual-universe-pack/evidence/W10-002-scene-loading-and-cache.md).
+
+| Artefak                                                                                                                    | Tujuan                                                  |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| [Visual Universe pack](docs/bundles/visual-universe-pack/README-FIRST.md)                                                  | Arsitektur, backlog, aturan kontribusi, dan verifikasi. |
+| [Approval dan batas artwork](docs/decisions/moon-city-production-approval.md)                                              | Keputusan owner dan ruang lingkup artwork Moon City.    |
+| [Bukti scene dan route gap](docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md)               | Hasil W9-001–W9-004 beserta validasinya.                |
+| [Bukti Board visual gate](docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md)                | Status kru/editorial dan matrix lintas-browser.         |
+| [Bukti mode motion dan Save-Data](docs/bundles/visual-universe-pack/evidence/W10-003-motion-and-save-data.md)              | Preferensi gerak/data diuji di tiga browser.            |
+| [Bukti visual dan aksesibilitas homepage](docs/bundles/visual-universe-pack/evidence/W10-004-home-accessibility-matrix.md) | Cakupan homepage dan batas matrix operasional.          |
 
 Route Signals dan Archive belum tersedia di Board; konsep visualnya hanya ada di katalog dan tidak
-menampilkan feed atau record produksi. Matrix visual operasional penuh masih memiliki kegagalan
-Firefox/WebKit yang tercatat di bukti W9-006, meski slice homepage telah lolos pemeriksaan terarah
-di Chromium, Firefox, dan WebKit.
+menampilkan feed atau record produksi. Matrix visual operasional penuh terakhir mencatat 33/42
+lulus dan 9 kegagalan (7 Firefox, 2 WebKit) yang dirinci di bukti W9-006. Slice homepage lolos Chromium/WebKit; Axe Firefox crash di mobile. Save-Data lolos di tiga browser. W10-001–003 selesai; W10-004 menunggu
+gate operasional. Status terkini ada di [Visual Universe README](docs/bundles/visual-universe-pack/README-FIRST.md).
 
 ## WhatsApp gateway
 

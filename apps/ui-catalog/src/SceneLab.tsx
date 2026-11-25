@@ -21,27 +21,45 @@ import wiresUrl from '@moonwitness/assets/environments/moon-city-prop-wires.svg'
 import fallbackHeroDesktop from '@moonwitness/assets/illustrations/home-hero-desktop.webp';
 import fallbackHeroMobile from '@moonwitness/assets/illustrations/home-hero-mobile.webp';
 import moonCitySceneBundle from '@moonwitness/assets/scenes/moon-city-scene.json';
+import assetManifest from '@moonwitness/assets/manifest.json';
+import assetLicenses from '@moonwitness/assets/licenses.json';
+import { buildProvenanceIndex, resolveAssetReviewStatuses } from './asset-review-status';
+import { resolveSceneLayerSources } from './scene-layer-sources';
 import idleFrame1 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-01.svg';
 import idleFrame2 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
 import signalSpecimenArt from '@moonwitness/assets/illustrations/editorial-signal.webp';
 import archiveSpecimenArt from '@moonwitness/assets/illustrations/editorial-archive.webp';
 
 const HERO_SCENE = moonCitySceneBundle.scenes.find((entry) => entry.id === 'moon-city-hero')!;
-const SCENE_LAYER_SOURCES = [
-  skyUrl,
-  moonUrl,
-  cloudsFarUrl,
-  skylineFarUrl,
-  cloudsNearUrl,
-  skylineMidUrl,
-  foregroundUrl,
-  railingUrl,
-  wiresUrl,
-];
+const SCENE_LAYER_SOURCES = {
+  sky: skyUrl,
+  moon: moonUrl,
+  'clouds-far': cloudsFarUrl,
+  'skyline-far': skylineFarUrl,
+  'clouds-near': cloudsNearUrl,
+  'skyline-mid': skylineMidUrl,
+  'rooftop-foreground': foregroundUrl,
+  'prop-railing': railingUrl,
+  'prop-wires': wiresUrl,
+} satisfies Record<string, string>;
 
-const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = HERO_SCENE.layers.map((layer, index) => ({
+const ASSET_STATUSES = resolveAssetReviewStatuses(
+  assetManifest.assets,
+  buildProvenanceIndex(assetLicenses.sourceAssets)
+);
+const PROVENANCE_BY_PATH = buildProvenanceIndex(assetLicenses.sourceAssets);
+const CREW_ACTOR = (() => {
+  const actor = HERO_SCENE.actors.find((entry) => entry.id === 'crew-01');
+  if (!actor) throw new Error('Moon City hero scene is missing its crew-01 actor descriptor.');
+  return actor;
+})();
+
+const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = resolveSceneLayerSources(
+  HERO_SCENE.layers,
+  SCENE_LAYER_SOURCES
+).map((layer) => ({
   id: layer.id,
-  src: SCENE_LAYER_SOURCES[index],
+  src: layer.src,
   mediaKind: 'vector',
   zOrder: layer.order,
   opacity: layer.opacity,
@@ -87,7 +105,6 @@ const IDLE_CLIP: SpriteClipMetadata = {
  * (70) / railing (80) and the foreground wires (85).
  */
 const SCENE_CREW_CLIP: SpriteClipMetadata = { ...IDLE_CLIP, id: 'crew-01-idle-scene' };
-const CREW_PLANE_Z_ORDER = 82;
 
 export function SceneLab() {
   const harness = getActiveSceneHarness() ?? {};
@@ -255,8 +272,8 @@ export function SceneLab() {
         <div
           className="scene-lab-crew-layer"
           data-layer-id="crew-01"
-          data-z-order={String(CREW_PLANE_Z_ORDER)}
-          style={{ zIndex: CREW_PLANE_Z_ORDER }}
+          data-z-order={String(CREW_ACTOR.order)}
+          style={{ zIndex: CREW_ACTOR.order }}
         >
           <SpritePlayer
             clip={SCENE_CREW_CLIP}
@@ -285,15 +302,22 @@ export function SceneLab() {
           <ul className="scene-lab-plane-list">
             {layers.map((layer, index) => {
               const hidden = Boolean(hiddenIds[layer.id]);
+              const canonical = HERO_SCENE.layers.find((entry) => entry.id === layer.id);
+              const provenance = canonical ? PROVENANCE_BY_PATH.get(canonical.asset) : undefined;
+              const reviewStatus = canonical ? ASSET_STATUSES.get(canonical.asset) ?? 'unverified' : 'unverified';
               return (
                 <li key={layer.id} data-plane-id={layer.id} data-plane-order={layer.zOrder}>
                   <label>
                     <Checkbox checked={!hidden} onChange={() => toggleLayer(layer.id)} />
                     <span>
                       {layer.id} (z={layer.zOrder} · pivot {layer.pivot?.x ?? 0.5},
-                      {layer.pivot?.y ?? 0.5} · px {layer.parallax?.x ?? 0})
+                      {layer.pivot?.y ?? 0.5} · px {layer.parallax?.x ?? 0}) · {reviewStatus}
                     </span>
                   </label>
+                  <small data-testid={`plane-provenance-${layer.id}`}>
+                    {canonical?.asset ?? 'Unmapped asset'} · {provenance?.license ?? 'provenance unavailable'}
+                    {provenance?.distribution ? ` · ${provenance.distribution}` : ''}
+                  </small>
                   <div className="scene-lab-plane-actions">
                     <Button
                       size="sm"

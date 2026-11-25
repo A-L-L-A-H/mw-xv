@@ -130,6 +130,22 @@ test('homepage keeps its message and actions visible if hero artwork fails', asy
   expect(accessibility.violations).toEqual([]);
 });
 
+test('homepage respects Save-Data without hiding its static scene or copy', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'connection', {
+      configurable: true,
+      value: { saveData: true },
+    });
+  });
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/');
+  await expect(page.locator('.home-hero-art-image')).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'MoonWitness' })).toBeVisible();
+  await expect(page.getByTestId('home-hero-crew')).toBeVisible();
+  await expect(page.locator('[data-scene-id="moon-city-hero"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid="home-hero-crew"] [data-sprite-state="playing"]')).toHaveCount(0);
+});
+
 test('homepage hero reveal is one-shot without layout shift and respects reduced motion', async ({
   page,
 }) => {

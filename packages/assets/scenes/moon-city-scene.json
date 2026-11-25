@@ -5,6 +5,7 @@
       "staticFallback": "illustrations/home-hero-desktop.webp",
       "accessibilityFallback": "illustrations/home-hero-mobile.webp",
       "clips": ["moon-city-cloud-drift-far", "moon-city-cloud-drift-near", "crew-01-idle"],
+      "actors": [{ "id": "crew-01", "clipId": "crew-01-idle", "order": 82 }],
       "layers": [
         {
           "id": "sky",

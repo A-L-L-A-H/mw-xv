@@ -6689,7 +6689,7 @@
           "command": "bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts",
           "exit_code": 0,
           "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md",
-          "notes": "9 passed; catalog-only route-gap specimen has no links/routes or fabricated data."
+          "notes": "11 passed; catalog-only route-gap specimen has no links/routes or fabricated data."
         }
       ],
       "commit": null,
@@ -6804,13 +6804,13 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Official 42-case visual matrix still fails 14 Firefox/WebKit operational-screen cases (KPI/user baselines, mobile overlay crashes/session, login and story masthead/responsive route rendering). Homepage scene passes in all 3 browsers; boundary, typecheck, lint, build and bundle budgets pass. Resolve operational browser baselines/rendering and session isolation before claiming W9-006.",
+      "notes": "Official 42-case visual matrix after auth hydration fix: 33 passed, 9 failed (7 Firefox, 2 WebKit). All Chromium cases pass; WebKit protected routes, overlays, icons, activity, homepage, login and workbench pass. Residual failures: 2 dashboard screenshot mismatches in each of Firefox/WebKit, plus 5 reproducible Firefox page crashes during Axe-heavy/mobile/story checks. Focused Firefox homepage reproduces Axe crash; see W9 evidence.",
       "evidence": [
         {
-          "command": "bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.reuse.config.mjs --grep \"homepage spelling\"",
-          "exit_code": 0,
+          "command": "MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual",
+          "exit_code": 1,
           "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
-          "notes": "3 passed (Chromium, Firefox, WebKit)."
+          "notes": "Latest official 42-case run: 33 passed, 9 failed (7 Firefox, 2 WebKit); raw ignored output: test-results/w9-006-auth-fix-matrix.log."
         },
         {
           "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md",
@@ -6977,7 +6977,7 @@
       "id": "W10-001",
       "phase": "W10",
       "title": "Establish runtime performance baselines",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "role": "performance",
       "parallel_group": "serial",
@@ -7004,12 +7004,13 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Blocked by W9-002; performance measurements for the new scene cannot be recorded before that route exists. Existing Board bundle budget passes.",
+      "notes": "Completed reproducible cold-cache production measurements on desktop and mobile emulation. See evidence/W10-001-runtime-performance-baseline.md and scripts/visual-universe/measure-home-scene.mjs.",
       "evidence": [
         {
-          "command": "review current task dependencies and source evidence",
+          "command": "bun --filter @moonwitness/board build && node scripts/visual-universe/measure-home-scene.mjs",
           "exit_code": 0,
-          "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
+          "artifact": "docs/bundles/visual-universe-pack/evidence/W10-001-runtime-performance-baseline.md",
+          "notes": "Desktop and mobile cold-cache JS/CSS/resource bytes, FCP/LCP, scene bytes, RAF and Chromium CDP timing/heap recorded; no hardware performance guarantee inferred."
         }
       ],
       "commit": null,
@@ -7018,17 +7019,17 @@
         {
           "id": "W10-001-ac-1",
           "text": "Measurements on named reference devices/browser.",
-          "done": false
+          "done": true
         },
         {
           "id": "W10-001-ac-2",
           "text": "Initial route and deferred scene budgets are separated.",
-          "done": false
+          "done": true
         },
         {
           "id": "W10-001-ac-3",
           "text": "No arbitrary performance claim.",
-          "done": false
+          "done": true
         }
       ]
     },
@@ -7036,7 +7037,7 @@
       "id": "W10-002",
       "phase": "W10",
       "title": "Optimize scene asset loading and caching",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "role": "implementer",
       "parallel_group": "serial",
@@ -7064,12 +7065,18 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Blocked by W9-002 and W10-001; no approved scene assets exist for loading/cache optimization.",
+      "notes": "Measured route-specific scene requests and added bounded one-hour cache freshness for stable Moon City vectors, idle frames and hero variants. No whole-universe preloading. See evidence/W10-002-scene-loading-and-cache.md.",
       "evidence": [
         {
-          "command": "review current task dependencies and source evidence",
+          "command": "production measurement harness; verify Cache-Control headers",
           "exit_code": 0,
-          "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
+          "artifact": "docs/bundles/visual-universe-pack/evidence/W10-002-scene-loading-and-cache.md",
+          "notes": "Eight environment vectors 5,618 encoded bytes; first idle frame 1,431 bytes; measured bounded cache headers at desktop/mobile."
+        },
+        {
+          "artifact": "docs/bundles/visual-universe-pack/evidence/W10-001-runtime-performance-baseline.md",
+          "command": "Evidence path recorded in canonical TaskOS; execution metadata not recorded.",
+          "exit_code": null
         }
       ],
       "commit": null,
@@ -7078,17 +7085,17 @@
         {
           "id": "W10-002-ac-1",
           "text": "Only initial scene critical assets are eagerly loaded.",
-          "done": false
+          "done": true
         },
         {
           "id": "W10-002-ac-2",
           "text": "Offscreen scenes do not download unnecessary media.",
-          "done": false
+          "done": true
         },
         {
           "id": "W10-002-ac-3",
           "text": "Failed loads show fallback and retry where relevant.",
-          "done": false
+          "done": true
         }
       ]
     },
@@ -7096,7 +7103,7 @@
       "id": "W10-003",
       "phase": "W10",
       "title": "Add reduced-motion and low-power scene modes",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "role": "accessibility",
       "parallel_group": "serial",
@@ -7123,12 +7130,13 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Blocked by W9-002; reduced-motion and low-power scene policy needs the production scene consumer.",
+      "notes": "Production hero uses static-first reduced-motion behavior and detects explicit Save-Data only. Static artwork, pilot, text and links remain visible. Playwright passes in Chromium, Firefox and WebKit. See evidence/W10-003-motion-and-save-data.md.",
       "evidence": [
         {
-          "command": "review current task dependencies and source evidence",
+          "command": "MW_VISUAL_BROWSER_MATRIX=true bunx --cwd apps/board playwright test e2e/public-home.spec.ts --config playwright.visual.config.ts --grep 'Save-Data'",
           "exit_code": 0,
-          "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
+          "artifact": "docs/bundles/visual-universe-pack/evidence/W10-003-motion-and-save-data.md",
+          "notes": "3/3 engines pass; preference remains opt-in, unknown capability is not inferred."
         }
       ],
       "commit": null,
@@ -7137,17 +7145,17 @@
         {
           "id": "W10-003-ac-1",
           "text": "User preference is respected before first meaningful playback.",
-          "done": false
+          "done": true
         },
         {
           "id": "W10-003-ac-2",
           "text": "Low-power mode does not imply inaccessible hidden content.",
-          "done": false
+          "done": true
         },
         {
           "id": "W10-003-ac-3",
           "text": "No preference is silently overridden.",
-          "done": false
+          "done": true
         }
       ]
     },
@@ -7184,12 +7192,19 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Blocked by W9-002, W9-006, and W10-003; visual matrix remains red and the scene is absent.",
+      "notes": "Blocked by W9-006: homepage and Save-Data evidence is recorded, but the latest full Board matrix remains red (33/42 passed). Firefox crashes during Axe at mobile and has dashboard baseline mismatch; WebKit has two dashboard baseline mismatches. Signals and Archive remain absent routes and their artwork is catalog-only.",
       "evidence": [
         {
-          "command": "review current task dependencies and source evidence",
+          "command": "homepage visual audit and Save-Data browser matrix",
           "exit_code": 0,
-          "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
+          "artifact": "docs/bundles/visual-universe-pack/evidence/W10-004-home-accessibility-matrix.md",
+          "notes": "Save-Data passes in all three engines; homepage passes Chromium/WebKit; isolated Firefox Axe evaluation crashes at mobile. Whole Board gate remains blocked."
+        },
+        {
+          "command": "MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual",
+          "exit_code": 1,
+          "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
+          "notes": "Latest official 42-case Board matrix: 33 passed, 9 failed (7 Firefox, 2 WebKit)."
         }
       ],
       "commit": null,
@@ -7208,7 +7223,7 @@
         {
           "id": "W10-004-ac-3",
           "text": "Known limitations are explicit.",
-          "done": false
+          "done": true
         }
       ]
     },

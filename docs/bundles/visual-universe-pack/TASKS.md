@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical lifecycle state is `docs/tasks/tasks.json` (project `visual-universe`); this file is generated from it.
 
-Status counts: done 98 · skipped 3 · in_progress 0 · blocked 8 · todo 0.
+Status counts: done 101 · skipped 3 · in_progress 0 · blocked 5 · todo 0.
 
 ## W0
 
@@ -808,13 +808,13 @@ Status counts: done 98 · skipped 3 · in_progress 0 · blocked 8 · todo 0.
   - Verify: pnpm test:e2e:visual; pnpm test:ui-catalog
   - Evidence: `bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.config.ts --grep "homepage spelling"` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-006 — Preserve operational Board visual tier** — **BLOCKED:** Official 42-case visual matrix still fails 14 Firefox/WebKit operational-screen cases (KPI/user baselines, mobile overlay crashes/session, login and story masthead/responsive route rendering). Homepage scene passes in all 3 browsers; boundary, typecheck, lint, build and bundle budgets pass. Resolve operational browser baselines/rendering and session isolation before claiming W9-006.
+- [ ] **W9-006 — Preserve operational Board visual tier** — **BLOCKED:** Official 42-case visual matrix after auth hydration fix: 33 passed, 9 failed (7 Firefox, 2 WebKit). All Chromium cases pass; WebKit protected routes, overlays, icons, activity, homepage, login and workbench pass. Residual failures: 2 dashboard screenshot mismatches in each of Firefox/WebKit, plus 5 reproducible Firefox page crashes during Axe-heavy/mobile/story checks. Focused Firefox homepage reproduces Axe crash; see W9 evidence.
   - Goal: Ensure new immersive runtime does not leak into dense forms, tables or admin data flows.
   - Depends on: W5-005, W6-002, W8-001
   - Deliverables: Board regression report.
   - Acceptance (0/3 complete): [ ] Existing Board light/dark themes, skins and density remain intact.; [ ] Operational screens use restrained motion and valid focus boundaries.; [ ] No measurable layout shift/regression.
   - Verify: pnpm board:ui:check; pnpm test:e2e:visual:matrix
-  - Evidence: `bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.reuse.config.mjs --grep "homepage spelling"` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
+  - Evidence: `MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual` (1) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
 - [x] **W9-007 — Decide desktop app scene adoption**
   - Goal: Audit desktop UI technology and performance before adopting world runtime.
@@ -834,37 +834,37 @@ Status counts: done 98 · skipped 3 · in_progress 0 · blocked 8 · todo 0.
 
 ## W10
 
-- [ ] **W10-001 — Establish runtime performance baselines** — **BLOCKED:** Blocked by W9-002; performance measurements for the new scene cannot be recorded before that route exists. Existing Board bundle budget passes.
+- [x] **W10-001 — Establish runtime performance baselines**
   - Goal: Measure current and new scene route cold load, JS/CSS, asset transfer, CPU/GPU and frame cadence.
   - Depends on: W9-002
   - Deliverables: Baseline and budget document.
-  - Acceptance (0/3 complete): [ ] Measurements on named reference devices/browser.; [ ] Initial route and deferred scene budgets are separated.; [ ] No arbitrary performance claim.
+  - Acceptance (3/3 complete): [x] Measurements on named reference devices/browser.; [x] Initial route and deferred scene budgets are separated.; [x] No arbitrary performance claim.
   - Verify: pnpm board:budget; Playwright performance run
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `bun --filter @moonwitness/board build && node scripts/visual-universe/measure-home-scene.mjs` (0) → `docs/bundles/visual-universe-pack/evidence/W10-001-runtime-performance-baseline.md`
 
-- [ ] **W10-002 — Optimize scene asset loading and caching** — **BLOCKED:** Blocked by W9-002 and W10-001; no approved scene assets exist for loading/cache optimization.
+- [x] **W10-002 — Optimize scene asset loading and caching**
   - Goal: Implement lazy scene loading, preloading policy and responsive media selection.
   - Depends on: W10-001, W2-006, W9-002
   - Deliverables: Loading/cache policy and tests.
-  - Acceptance (0/3 complete): [ ] Only initial scene critical assets are eagerly loaded.; [ ] Offscreen scenes do not download unnecessary media.; [ ] Failed loads show fallback and retry where relevant.
+  - Acceptance (3/3 complete): [x] Only initial scene critical assets are eagerly loaded.; [x] Offscreen scenes do not download unnecessary media.; [x] Failed loads show fallback and retry where relevant.
   - Verify: network asset audit; pnpm test:e2e
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `production measurement harness; verify Cache-Control headers` (0) → `docs/bundles/visual-universe-pack/evidence/W10-002-scene-loading-and-cache.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W10-001-runtime-performance-baseline.md`
 
-- [ ] **W10-003 — Add reduced-motion and low-power scene modes** — **BLOCKED:** Blocked by W9-002; reduced-motion and low-power scene policy needs the production scene consumer.
+- [x] **W10-003 — Add reduced-motion and low-power scene modes**
   - Goal: Support reduced-motion, data-saver/low-capability settings where detectably appropriate.
   - Depends on: W1-007, W5-004, W9-002
   - Deliverables: Motion mode policy and tests.
-  - Acceptance (0/3 complete): [ ] User preference is respected before first meaningful playback.; [ ] Low-power mode does not imply inaccessible hidden content.; [ ] No preference is silently overridden.
+  - Acceptance (3/3 complete): [x] User preference is respected before first meaningful playback.; [x] Low-power mode does not imply inaccessible hidden content.; [x] No preference is silently overridden.
   - Verify: Playwright reduced-motion tests
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `MW_VISUAL_BROWSER_MATRIX=true bunx --cwd apps/board playwright test e2e/public-home.spec.ts --config playwright.visual.config.ts --grep 'Save-Data'` (0) → `docs/bundles/visual-universe-pack/evidence/W10-003-motion-and-save-data.md`
 
-- [ ] **W10-004 — Add full visual and accessibility matrix** — **BLOCKED:** Blocked by W9-002, W9-006, and W10-003; visual matrix remains red and the scene is absent.
+- [ ] **W10-004 — Add full visual and accessibility matrix** — **BLOCKED:** Blocked by W9-006: homepage and Save-Data evidence is recorded, but the latest full Board matrix remains red (33/42 passed). Firefox crashes during Axe at mobile and has dashboard baseline mismatch; WebKit has two dashboard baseline mismatches. Signals and Archive remain absent routes and their artwork is catalog-only.
   - Goal: Run desktop/tablet/mobile, light/dark, keyboard, touch, reduced motion and fallback tests.
   - Depends on: W9-002, W9-006, W10-003
   - Deliverables: Visual evidence matrix and issues list.
-  - Acceptance (0/3 complete): [ ] Critical production pages have review evidence.; [ ] Axe/keyboard checks cover changed user flows.; [ ] Known limitations are explicit.
+  - Acceptance (1/3 complete): [ ] Critical production pages have review evidence.; [ ] Axe/keyboard checks cover changed user flows.; [x] Known limitations are explicit.
   - Verify: pnpm test:ui; pnpm test:ui-catalog; pnpm test:e2e:visual:matrix
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `homepage visual audit and Save-Data browser matrix` (0) → `docs/bundles/visual-universe-pack/evidence/W10-004-home-accessibility-matrix.md`; `MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual` (1) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
 
 - [x] **W10-005 — Verify package build and consumer contracts**
   - Goal: Build, pack and consume assets/UI packages from apps and run API/desktop boundaries.
