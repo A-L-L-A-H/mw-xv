@@ -133,12 +133,15 @@ export interface ReindexResult {
  * Rebuild the cognitive brain tables from repo plans. Deterministic: the same
  * repo state always produces identical nodes/edges/fts counts.
  */
-export function reindexBrainFromRepo(store: BrainStorageDriver, repoRoot: string): ReindexResult {
+export async function reindexBrainFromRepo(
+  store: BrainStorageDriver,
+  repoRoot: string
+): Promise<ReindexResult> {
   const startedAt = process.hrtime.bigint();
 
   initializeBrainSchema(store);
 
-  const bundles = discoverPlans(repoRoot);
+  const bundles = await discoverPlans(repoRoot);
 
   const nodes: NodeRow[] = [];
   const edges: EdgeRow[] = [];
