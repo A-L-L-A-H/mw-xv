@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
-import { TRIGGER_KINDS, AUTOMATION_ACTION_KINDS, AUTOMATION_RUN_STATUSES } from './models.js';
+import type { TRIGGER_KINDS, AUTOMATION_ACTION_KINDS } from './models.js';
+import { AUTOMATION_RUN_STATUSES } from './models.js';
 
 export const AUTOMATION_SEED_VERSION = '1.0.0';
 

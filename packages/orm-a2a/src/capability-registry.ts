@@ -1,4 +1,4 @@
-import { assertNonEmpty } from '@moonwitness/types';
+import { assertNonEmpty, MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import {
   buildA2aCapabilitySeed,
   type A2aCapabilityClaimSeed,
@@ -58,7 +58,6 @@ export interface A2aDelegationEvaluation {
 const MAX_A2A_DELEGATION_DEPTH = 3;
 const MINUTES_PER_HOUR = 60;
 const HOURS_PER_DAY = 24;
-const MILLISECONDS_PER_MINUTE = 60_000;
 const MILLISECONDS_PER_DAY = HOURS_PER_DAY * MINUTES_PER_HOUR * MILLISECONDS_PER_MINUTE;
 const ISO_UTC_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import {
   applyFencedHeartbeat,
   nextHaGeneration,
@@ -505,7 +506,7 @@ export function runDeterministicHaDrill(
     targetId: before.targetId,
     generation: before.generation,
     health_status: 'healthy',
-    observedAtMs: claimedAtMs + 60_000,
+    observedAtMs: claimedAtMs + MILLISECONDS_PER_MINUTE,
   });
   const staleHeartbeatRejected =
     !staleHeartbeat.applied && staleHeartbeat.state.generation === after.generation;

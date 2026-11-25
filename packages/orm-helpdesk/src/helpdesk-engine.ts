@@ -1,4 +1,4 @@
-import { BASIS_POINTS_TOTAL } from '@moonwitness/types';
+import { BASIS_POINTS_TOTAL, MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 
 export type TicketPriority = 'P1' | 'P2' | 'P3' | 'P4';
 export type TicketQueue = 'technical' | 'billing' | 'general' | 'enterprise';
@@ -98,7 +98,7 @@ const AUTO_REPLY_MIN_CONFIDENCE = 0.15;
 function addMinutes(iso: string, minutes: number): string {
   const base = new Date(iso).getTime();
   if (Number.isNaN(base)) throw new Error(`Invalid ISO timestamp: ${iso}`);
-  return new Date(base + minutes * 60_000).toISOString();
+  return new Date(base + minutes * MILLISECONDS_PER_MINUTE).toISOString();
 }
 
 function diffMinutes(fromIso: string, toIso: string): number {
@@ -106,7 +106,7 @@ function diffMinutes(fromIso: string, toIso: string): number {
   const to = new Date(toIso).getTime();
   if (Number.isNaN(from) || Number.isNaN(to))
     throw new Error('Invalid ISO timestamp in SLA computation');
-  return Math.floor((from - to) / 60_000);
+  return Math.floor((from - to) / MILLISECONDS_PER_MINUTE);
 }
 
 export function resolveSlaDeadlines(input: SlaEvaluateInput): SlaDeadlineResult | null {

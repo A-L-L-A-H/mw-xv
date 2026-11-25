@@ -1,8 +1,9 @@
-import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { stdout } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { atomicWrite } from './atomic-write.mjs';
 import { replaceGeneratedAssets } from './manifest-ownership.mjs';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -166,12 +167,6 @@ generated.push(
   }
 );
 const assets = [];
-
-async function atomicWrite(filePath, content) {
-  const temporaryPath = `${filePath}.tmp-${process.pid}`;
-  await writeFile(temporaryPath, content);
-  await rename(temporaryPath, filePath);
-}
 
 for (const item of generated) {
   const outputPath = resolve(packageRoot, item.path);

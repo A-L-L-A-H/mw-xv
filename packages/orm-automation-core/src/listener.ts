@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import { MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import { evaluateDsl, type AutomationDslNode } from './evaluator.js';
 import { resolveAction } from './actions/index.js';
 import type { ActionResult } from './actions/types.js';
@@ -112,7 +113,7 @@ function hasRecentRun(
   cooldownMinutes: number,
   now: Date
 ): Promise<boolean> {
-  const cutoff = new Date(now.getTime() - cooldownMinutes * 60_000);
+  const cutoff = new Date(now.getTime() - cooldownMinutes * MILLISECONDS_PER_MINUTE);
   return db('automation_runs')
     .where({ dedupe_key: dedupeKey })
     .where('created_at', '>=', cutoff.toISOString())

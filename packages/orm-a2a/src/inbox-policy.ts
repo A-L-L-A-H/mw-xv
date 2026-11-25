@@ -8,6 +8,8 @@
  * row reference so verification evidence and audit traceability survive.
  */
 
+import { MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
+
 export interface A2aInboxPaginationConfig {
   readonly defaultLimit: number;
   readonly maxLimit: number;
@@ -121,7 +123,7 @@ export interface A2aIngestionBackpressureConfig {
 export const DEFAULT_A2A_INGESTION_BACKPRESSURE: A2aIngestionBackpressureConfig = Object.freeze({
   maxEnvelopeBytes: 256 * 1024,
   maxRequestsPerWindow: 120,
-  windowMs: 60_000,
+  windowMs: MILLISECONDS_PER_MINUTE,
   retryAfterSeconds: 1,
 });
 

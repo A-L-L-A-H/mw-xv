@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
 import { registerJobHandler } from '@moonwitness/jobs';
+import { MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import { probeCloudTargetsHealth } from './probe.js';
 
 export const CLOUD_TARGETS_PROBE_JOB = 'cloud.targets.probe';
@@ -43,7 +44,7 @@ export async function ensureCloudCrons(db: Knex): Promise<void> {
       cron_expression: '*/2 * * * *',
       timezone: 'UTC',
       enabled: true,
-      next_run_at: new Date(Date.now() + 60_000).toISOString(),
+      next_run_at: new Date(Date.now() + MILLISECONDS_PER_MINUTE).toISOString(),
       misfire_policy: 'coalesce',
       concurrency_policy: 'forbid',
       max_catch_up: 1,

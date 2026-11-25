@@ -1,4 +1,4 @@
-import type { WorkspaceCreateParams } from './contract.js';
+import type { WorkspaceCheckKind, WorkspaceCreateParams } from './contract.js';
 import { forbidden, invalid } from './errors.js';
 import { WORKSPACE_LIMITS } from './limits.js';
 
@@ -223,7 +223,7 @@ function validateLabelOptional(label: unknown): { readonly label?: string } {
 
 export function validateExecuteParams(value: unknown): {
   readonly runId: string;
-  readonly check: import('./contract.js').WorkspaceCheckKind;
+  readonly check: WorkspaceCheckKind;
   readonly cwd?: string;
   readonly timeoutMs?: number;
   readonly maxOutputBytes?: number;
@@ -243,13 +243,13 @@ export function validateExecuteParams(value: unknown): {
   }
   const result: {
     runId: string;
-    check: import('./contract.js').WorkspaceCheckKind;
+    check: WorkspaceCheckKind;
     cwd?: string;
     timeoutMs?: number;
     maxOutputBytes?: number;
   } = {
     runId: validateRunId(value.runId),
-    check: value.check as import('./contract.js').WorkspaceCheckKind,
+    check: value.check as WorkspaceCheckKind,
   };
   if (value.cwd !== undefined) result.cwd = normalizeWorkspacePath(value.cwd, 'cwd');
   if (value.timeoutMs !== undefined) {

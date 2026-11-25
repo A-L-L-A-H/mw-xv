@@ -1,3 +1,4 @@
+import { MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import { buildWhatsappHelpdeskSeed } from './seed.js';
 import type {
   WhatsappHelpdeskCategory,
@@ -138,7 +139,6 @@ export interface WhatsappHelpdeskEscalationDecision {
   readonly reason: string;
 }
 
-const MILLISECONDS_PER_MINUTE = 60_000;
 const URGENT_PATTERNS: readonly string[] = [
   'phishing',
   'penipuan',

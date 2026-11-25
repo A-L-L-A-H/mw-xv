@@ -1,4 +1,5 @@
 import type { AddonHttpPlugin, AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
+import { MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 import type { Knex } from 'knex';
 
@@ -46,7 +47,7 @@ export function checkRateLimit(
   userIdentifier: string,
   limit: number
 ): Promise<boolean> {
-  const windowStart = new Date(Date.now() - 60_000);
+  const windowStart = new Date(Date.now() - MILLISECONDS_PER_MINUTE);
   return db('public_usages')
     .where({ tool_id: toolId, user_identifier: userIdentifier })
     .where('created_at', '>=', windowStart)

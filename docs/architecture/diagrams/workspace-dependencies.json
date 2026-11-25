@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "2ef0529d17c0aeeb3834b8ca4017f4bbfe17500788a6f634fe95e06540cc5aab",
+  "sourceSha256": "6064a4dc92613a7f346897e8691ae06c27fe67b1e0547239dc181678fb2e5aad",
   "packages": [
     {
       "name": "@moonwitness/agent-observability",
@@ -1418,6 +1418,12 @@
     {
       "from": "@moonwitness/orm-public-services",
       "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-public-services"
+    },
+    {
+      "from": "@moonwitness/orm-public-services",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-public-services"
     },

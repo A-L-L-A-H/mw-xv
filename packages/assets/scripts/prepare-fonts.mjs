@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { stdout } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import subsetFont from 'subset-font';
+import { atomicWrite } from './atomic-write.mjs';
 import { replaceGeneratedAssets } from './manifest-ownership.mjs';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -71,9 +72,3 @@ licenses.fonts = [
 await atomicWrite(licensesPath, `${JSON.stringify(licenses, null, 2)}\n`);
 
 stdout.write(`Prepared Road Rage WOFF2: ${subset.length} bytes (SHA-256 ${digest}).\n`);
-
-async function atomicWrite(path, content) {
-  const temporaryPath = `${path}.tmp-${process.pid}`;
-  await writeFile(temporaryPath, content);
-  await rename(temporaryPath, path);
-}

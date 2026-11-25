@@ -1,4 +1,4 @@
-import { DEFAULT_CONTROL_PLANE_URL } from '@moonwitness/types';
+import { DEFAULT_CONTROL_PLANE_URL, MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import { controlPlaneAuthHeaders, recordCloudOperation, resolveControlPlaneToken } from './auth.js';
 import { CloudDeploymentTarget } from './models/index.js';
 
@@ -295,7 +295,10 @@ export async function probeCloudTargetsHealth(
     maxResponseBytes: options.policy?.maxResponseBytes ?? options.maxResponseBytes,
     maxTimeoutMs: options.policy?.maxTimeoutMs,
   };
-  const maxTimeoutMs = Math.max(1, Math.min(60_000, policy.maxTimeoutMs ?? MAX_PROBE_TIMEOUT_MS));
+  const maxTimeoutMs = Math.max(
+    1,
+    Math.min(MILLISECONDS_PER_MINUTE, policy.maxTimeoutMs ?? MAX_PROBE_TIMEOUT_MS)
+  );
   const timeoutMs = options.timeoutMs ?? DEFAULT_HEALTH_TIMEOUT_MS;
   const maxResponseBytes = Math.max(
     64,

@@ -1,9 +1,10 @@
 import { Buffer } from 'node:buffer';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { argv, stdout } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { atomicWrite } from './atomic-write.mjs';
 import { replaceGeneratedAssets } from './manifest-ownership.mjs';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -23,13 +24,6 @@ function assetSlug(filePath) {
     .replace(/\.svg$/u, '')
     .replace(/[^a-zA-Z\d]+/gu, '-')
     .replace(/^-|-$/gu, '');
-}
-
-async function atomicWrite(filePath, content) {
-  await mkdir(dirname(filePath), { recursive: true });
-  const tempPath = `${filePath}.tmp-${process.pid}`;
-  await writeFile(tempPath, content);
-  await rename(tempPath, filePath);
 }
 
 /**

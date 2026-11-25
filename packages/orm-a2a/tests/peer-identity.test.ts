@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import type { A2aPeerIdentityRegistry, A2aPeerKeyRegistration } from '../src/index.js';
 import {
-  A2aPeerIdentityRegistry,
   MAX_PEER_KEY_GRACE_WINDOW_MS,
   createA2aPeerIdentityRegistry,
   createA2aPeerIdentityRegistryFromJson,
   fingerprintPeerKeySecret,
-  type A2aPeerKeyRegistration,
 } from '../src/index.js';
 
 const NOW = 1_763_865_600_000;

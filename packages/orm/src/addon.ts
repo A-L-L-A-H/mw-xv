@@ -327,6 +327,28 @@ export interface AuthenticatedContext {
   readonly companyId: number;
 }
 
+export interface GroupGrant {
+  readonly model_name: string;
+  readonly read: boolean;
+  readonly create: boolean;
+  readonly write: boolean;
+  readonly unlink: boolean;
+}
+
+export interface RequestAuth {
+  readonly userId: number;
+  readonly role: string;
+  readonly companyId?: number;
+  readonly groupPermissions?: readonly GroupGrant[];
+}
+
+export type ModelAccessOperation = 'read' | 'create' | 'write' | 'unlink';
+
+export interface RequireAuthorizedModelAccessOptions {
+  readonly adminOnly?: boolean;
+  readonly onDenied?: () => void;
+}
+
 export function requireAuth(
   req: AddonHttpRequestBase,
   reply: AddonHttpReply
@@ -345,6 +367,61 @@ export function requireAuth(
     role: req.auth.role ?? 'user',
     companyId,
   };
+}
+
+/** Extract authenticated request metadata when a numeric userId is present. */
+export function requestAuth(req: AddonHttpRequestBase | object): RequestAuth | null {
+  const auth = (req as { auth?: RequestAuth | null } | null | undefined)?.auth;
+  return auth && typeof auth.userId === 'number' ? auth : null;
+}
+
+/** Parse a route parameter into a positive safe integer id, or null when invalid. */
+export function parsePositiveId(raw: string): number | null {
+  const id = Number(raw);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+/** Check whether the authenticated caller has the requested model CRUD permission. */
+export function hasModelAccess(
+  auth: RequestAuth,
+  modelName: string,
+  op: ModelAccessOperation
+): boolean {
+  if (auth.role === 'system' || auth.role === 'superadmin') return true;
+  if (auth.role !== 'user') return false;
+  return (auth.groupPermissions ?? []).some((g) => g.model_name === modelName && g[op] === true);
+}
+
+/** Enforce authentication, active positive company context, model ACL, and optional admin role. */
+export function requireAuthorizedModelAccess(
+  req: AddonHttpRequestBase | object,
+  reply: AddonHttpReply,
+  modelNames: string | readonly string[],
+  op: ModelAccessOperation,
+  options?: RequireAuthorizedModelAccessOptions
+): { auth: RequestAuth; companyId: number } | null {
+  const deny = (statusCode: number, error: string): null => {
+    options?.onDenied?.();
+    void reply.code(statusCode).send({ success: false, error });
+    return null;
+  };
+
+  const auth = requestAuth(req);
+  if (!auth) {
+    return deny(401, 'Authentication required');
+  }
+  if (!auth.companyId || !Number.isSafeInteger(auth.companyId) || auth.companyId <= 0) {
+    return deny(403, 'Active company context required');
+  }
+  const models = typeof modelNames === 'string' ? [modelNames] : modelNames;
+  const allowed = models.some((modelName) => hasModelAccess(auth, modelName, op));
+  if (!allowed) {
+    return deny(403, `Access denied for ${models.join('|')}:${op}`);
+  }
+  if (options?.adminOnly && auth.role !== 'system' && auth.role !== 'superadmin') {
+    return deny(403, 'Admin role required');
+  }
+  return { auth, companyId: auth.companyId };
 }
 
 /** Require an initialized Knex database handle on an addon HTTP request context. */

@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { AddonSeedManifest, SeedContext, SeedResult } from '@moonwitness/orm-base';
+import type { AddonSeedManifest, SeedContext, SeedResult } from '@moonwitness/orm-base';
 import { seedSalesInitialData } from './seed.js';
 
 export type { AddonSeedManifest, SeedContext, SeedResult } from '@moonwitness/orm-base';

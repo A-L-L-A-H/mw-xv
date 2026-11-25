@@ -1,6 +1,6 @@
 import type { SeedContext, SeedResult } from '@moonwitness/orm-base';
 import type { AddonSeedManifest } from '@moonwitness/orm-base';
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import {
   Institution,
   Official,

@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 import type { JsonObject, JsonValue } from '@moonwitness/types';
-import {
+import type {
   CapabilityGateway,
-  type RelaxedToolRegistration,
-  type ToolSideEffectKind,
+  RelaxedToolRegistration,
+  ToolSideEffectKind,
 } from './capability-gateway.js';
 import type { RiskTier } from './risk-policy.js';
 import { validateDiffScope } from './pcw-verifier.js';

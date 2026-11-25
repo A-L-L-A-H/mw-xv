@@ -4,10 +4,10 @@
  * supports both NDJSON and Content-Length framing — here we implement
  * both for host compatibility).
  */
-import {
+import type {
   MoonWitnessMcpServer,
-  type MoonWitnessMcpRequest,
-  type MoonWitnessMcpResponse,
+  MoonWitnessMcpRequest,
+  MoonWitnessMcpResponse,
 } from './server.js';
 
 export interface MoonWitnessStdioStreams {
