@@ -197,7 +197,7 @@
 
 ---
 
-### - [ ] M65 — Full Clean Reinstall DB-Wipe Proof (Zero Leftover Guarantee)
+### - [x] M65 — Full Clean Reinstall DB-Wipe Proof (Zero Leftover Guarantee)
 
 - **Depends On:** `M64`
 - **Action (`vps_exec`, background to `/tmp/mw-reinstall-clean.log`):**

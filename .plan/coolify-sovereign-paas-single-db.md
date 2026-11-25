@@ -123,7 +123,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M62** — Verify `promote-wildcard` -> `https://uptime-kuma.apps.moonwitness.biz.id/` returns `200`/`302` over valid TLS + app detail/stats endpoints pass
 - [x] **M63** — Verify Port `8000` Lockdown closes `:8000` & `:8001` while HTTPS stays `200`
 - [x] **M64** — Verify `install.sh --unlock-port` restores `:8000` from PostgreSQL + create 1 backup dump (leaving dirty state intentionally for `M65`)
-- [ ] **M65** — **Full Clean Reinstall DB-Wipe Proof:** Run second `install.sh --reinstall` on dirty VPS -> assert PostgreSQL tables = `0`, admin reset to `superadmin`, old JWT = `401`, zero `mw-*` volumes/stacks/backups/SQLite/domains, fresh `setupRequired: true`
+- [x] **M65** — **Full Clean Reinstall DB-Wipe Proof:** Run second `install.sh --reinstall` on dirty VPS -> assert PostgreSQL tables = `0`, admin reset to `superadmin`, old JWT = `401`, zero `mw-*` volumes/stacks/backups/SQLite/domains, fresh `setupRequired: true`
 - [ ] **M66** — Clean `/tmp/*` staging files, confirm fresh `http://163.61.134.104:8000/setup` live, close Progress Ledger
 
 ---
@@ -137,4 +137,4 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
 | Wave 3 | `M39`–`M51` | `13 / 13` | `0de765f7` | `M51 OK` — full board gate green: typecheck 0; ui:check 0 findings; build exit 0 (28/28 pages incl /setup); board:budget all routes pass |
 | Wave 4 | `M52`–`M55` | `4 / 4` | `7a94fa11` | `M55 OK` — `git push origin dev` succeeded (`c0c19311..7a94fa11`); all pre-push static/UI/doc/gitleaks/TaskOS gates green; dev in sync with origin/dev |
-| Wave 5 | `M56`–`M66` | `9 / 11` | — | `M64 OK` — --unlock-port restored :8000 (200); backup dump 823K created; dirty state (2 PaaS containers + volume + settings) preserved for M65 |
+| Wave 5 | `M56`–`M66` | `10 / 11` | — | `M65 OK` — clean reinstall EXIT_CODE=0; zero PaaS containers/volumes/stacks/backups/SQLite/domains; PG all 0; superadmin reset; old JWT 401; setupRequired true |
