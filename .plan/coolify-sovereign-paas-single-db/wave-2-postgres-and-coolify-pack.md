@@ -214,7 +214,7 @@
 
 ---
 
-## - [ ] M24 — Wire Settings, DNS Doctor, & TLS-Gated Apply Routes (`http.ts`)
+## - [x] M24 — Wire Settings, DNS Doctor, & TLS-Gated Apply Routes (`http.ts`)
 
 - **Owner File (MODIFY):** `packages/orm-cloud/src/http.ts`
 - **Depends On:** `M22`, `M23`

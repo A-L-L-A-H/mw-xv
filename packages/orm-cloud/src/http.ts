@@ -7,7 +7,7 @@ import {
   type RequestAuth,
 } from '@moonwitness/orm';
 import { Subscription } from '@moonwitness/orm-subscription';
-import { DEFAULT_CONTROL_PLANE_URL } from '@moonwitness/types';
+import { DEFAULT_CONTROL_PLANE_URL, trimTrailingSlashes } from '@moonwitness/types';
 import { selectHealthyDeploymentTarget } from './ha.js';
 import {
   CloudApp,
@@ -30,8 +30,15 @@ import {
   listMeshPaasApps,
   listMeshPaasTemplates,
   type MeshPaasAppAction,
+  verifyAgentDns,
 } from './providers/moonwitness-mesh.js';
 import type { PaasQuotaReservationLedger } from './quota.js';
+import {
+  buildDeclarativeCaddySpec,
+  readPaasInstanceSettings,
+  savePaasInstanceSettings,
+  reconcileCaddyWithAgent,
+} from './paas-state.js';
 import { exportCloudTerraformHcl } from './terraform.js';
 import { probeCloudTargetsHealth, assertProbeTarget, readBoundedResponseBody } from './probe.js';
 import {
@@ -266,6 +273,36 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
     feature: 'provisioning',
     resourceId: false,
   },
+  {
+    method: 'GET',
+    path: '/api/cloud/paas/settings',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: true,
+    feature: 'controlPlane',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/settings/verify-dns',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: true,
+    feature: 'controlPlane',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/settings/apply',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: true,
+    feature: 'provisioning',
+    resourceId: false,
+  },
 ]);
 
 const AMBIGUOUS_TIMEOUT_MARKER = 'PROVIDER_TIMEOUT_AMBIGUOUS';
@@ -393,15 +430,6 @@ function storableDeploymentStatus(
 interface DeployOutcome {
   readonly statusCode: number;
   readonly body: Record<string, unknown>;
-}
-
-/** Trim all trailing `/` characters in O(n) time without regex backtracking. */
-function trimTrailingSlashes(value: string): string {
-  let end = value.length;
-  while (end > 0 && value.charCodeAt(end - 1) === 47) {
-    end -= 1;
-  }
-  return end === value.length ? value : value.slice(0, end);
 }
 
 export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): AddonHttpPlugin {
@@ -1672,6 +1700,123 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         });
       }
     });
+
+    fastify.get('/api/cloud/paas/settings', async (req, reply) => {
+    const rule = ruleFor('/api/cloud/paas/settings');
+    const ctx = requireAuthorizedModelAccess(req, reply, rule);
+    if (!ctx) return;
+    if (!requireFeature(reply, rule)) return;
+    if (!requireToken(reply, rule)) return;
+
+    try {
+      const settings = await readPaasInstanceSettings();
+      const spec = await buildDeclarativeCaddySpec();
+      mark(rule.operation, 'success');
+      return {
+        success: true,
+        data: {
+          ...settings,
+          routes: spec.routes,
+          previewListeners: spec.previewListeners,
+          hasPreviewApps: spec.previewListeners.length > 0,
+        },
+      };
+    } catch (error) {
+      mark(rule.operation, 'failed', 'mesh');
+      return reply.code(502).send({
+        success: false,
+        error: safeErrorText(error, [resolvedToken], 'PaaS settings read failed'),
+      });
+    }
+  });
+  fastify.post<{
+    Body: {
+      instanceDomain?: string;
+      wildcardDomain?: string;
+      whatsappDomain?: string;
+      expectedIpv4?: string;
+      checkHttps?: boolean;
+    };
+  }>('/api/cloud/paas/settings/verify-dns', async (req, reply) => {
+    const rule = ruleFor('/api/cloud/paas/settings/verify-dns');
+    const ctx = requireAuthorizedModelAccess(req, reply, rule);
+    if (!ctx) return;
+    if (!requireFeature(reply, rule)) return;
+    if (!requireToken(reply, rule)) return;
+
+    const { instanceDomain, wildcardDomain, whatsappDomain, expectedIpv4, checkHttps } =
+      req.body;
+    try {
+      const data = await verifyAgentDns({
+        endpoint: defaultAgentUrl,
+        ...(instanceDomain !== undefined ? { instanceDomain } : {}),
+        ...(wildcardDomain !== undefined ? { wildcardDomain } : {}),
+        ...(whatsappDomain !== undefined ? { whatsappDomain } : {}),
+        ...(expectedIpv4 !== undefined ? { expectedIpv4 } : {}),
+        ...(checkHttps !== undefined ? { checkHttps } : {}),
+      });
+      mark(rule.operation, 'success');
+      return { success: true, data };
+    } catch (error) {
+      mark(rule.operation, 'failed', 'mesh');
+      return reply.code(502).send({
+        success: false,
+        error: safeErrorText(error, [resolvedToken], 'DNS verification failed'),
+      });
+    }
+  });
+  fastify.post<{
+    Body: {
+      instanceDomain?: string;
+      wildcardDomain?: string;
+      whatsappDomain?: string;
+      publicPort?: number;
+      publicPortEnabled?: boolean;
+      publicIpv4?: string;
+    };
+  }>('/api/cloud/paas/settings/apply', async (req, reply) => {
+    const rule = ruleFor('/api/cloud/paas/settings/apply');
+    const ctx = requireAuthorizedModelAccess(req, reply, rule);
+    if (!ctx) return;
+    if (!requireFeature(reply, rule)) return;
+    if (!requireToken(reply, rule)) return;
+
+    const { instanceDomain, wildcardDomain, whatsappDomain, publicPort, publicPortEnabled, publicIpv4 } =
+      req.body;
+
+    // TLS lockdown guard: disabling the public port requires a reachable,
+    // certificate-verified HTTPS /readyz on the instance domain, otherwise we
+    // would lock ourselves out of the control plane.
+    if (publicPortEnabled === false) {
+      const dns = await verifyAgentDns({
+        endpoint: defaultAgentUrl,
+        instanceDomain,
+        checkHttps: true,
+      });
+      const httpsReady = dns.httpsReady as { reachable?: boolean; tlsVerified?: boolean } | undefined;
+      if (!httpsReady?.reachable || !httpsReady?.tlsVerified) {
+        mark(rule.operation, 'denied');
+        return reply.code(400).send({
+          success: false,
+          error:
+            'Refusing to disable the public port: HTTPS /readyz is not reachable or TLS verification failed on the instance domain',
+        });
+      }
+    }
+
+    try {
+      await savePaasInstanceSettings({ instanceDomain, wildcardDomain, whatsappDomain, publicPort, publicPortEnabled, publicIpv4 });
+      await reconcileCaddyWithAgent({});
+      mark(rule.operation, 'success');
+      return { success: true, data: { ok: true } };
+    } catch (error) {
+      mark(rule.operation, 'failed', 'mesh');
+      return reply.code(502).send({
+        success: false,
+        error: safeErrorText(error, [resolvedToken], 'PaaS settings apply failed'),
+      });
+    }
+  });
   };
 }
 

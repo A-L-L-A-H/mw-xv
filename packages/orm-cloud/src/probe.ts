@@ -86,7 +86,7 @@ export function isAllowedProbeHost(rawHost: string, policy: ProbeTargetPolicy = 
   };
 
   if (isLoopbackHostname(host, { allowIpv4LoopbackSubnet: privateMeshOptions.allowLoopback })) return true;
-  if (isPrivateMeshIp(host, privateMeshOptions)) return true;
+  if (policy.allowPrivateRanges && isPrivateMeshIp(host, privateMeshOptions)) return true;
 
   return (policy.allowedCidrs ?? []).some((cidr) => inCidr(host, cidr));
 }
