@@ -342,7 +342,7 @@ async function callConversationService(method, body, timeoutMs = 5000) {
   const csrf = process.env.ANTIGRAVITY_CSRF_TOKEN;
   if (!addr || !csrf) return null;
 
-  const controller = new AbortController();
+  const controller = new globalThis.AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(`http://${addr}/product.v1.ConversationService/${method}`, {
@@ -365,7 +365,7 @@ async function callConversationService(method, body, timeoutMs = 5000) {
 }
 
 async function refreshAntigravityLiveApi() {
-  const data = await callConversationService('ListConversations', { pageSize: 30, includeArchived: false }, 5000);
+  const data = await callConversationService('ListConversations', { pageSize: 15, includeArchived: false }, 10000);
   if (!data || !Array.isArray(data.conversations)) {
     cachedAgApi = { ...cachedAgApi, connected: false };
     return;
@@ -376,8 +376,8 @@ async function refreshAntigravityLiveApi() {
     if (conv && conv.id) map.set(conv.id, conv);
   }
 
-  // Fetch live child/subagent conversations for top 6 most recent conversations + current conversation
-  const parentIds = new Set(data.conversations.slice(0, 6).map((c) => c.id));
+  // Fetch live child/subagent conversations for top 5 most recent conversations + current conversation
+  const parentIds = new Set(data.conversations.slice(0, 5).map((c) => c.id));
   if (process.env.ANTIGRAVITY_CONVERSATION_ID) parentIds.add(process.env.ANTIGRAVITY_CONVERSATION_ID);
 
   const childrenByParent = new Map();
@@ -385,8 +385,8 @@ async function refreshAntigravityLiveApi() {
     Array.from(parentIds).map(async (pid) => {
       const childRes = await callConversationService(
         'ListConversations',
-        { parentConversationId: pid, pageSize: 40, includeArchived: false },
-        4000,
+        { parentConversationId: pid, pageSize: 30, includeArchived: false },
+        8000,
       );
       if (childRes && Array.isArray(childRes.conversations) && childRes.conversations.length > 0) {
         childrenByParent.set(pid, childRes.conversations);
@@ -1352,7 +1352,7 @@ let cachedProbes = {
 
 async function probeHttpTarget(target) {
   const started = Date.now();
-  const controller = new AbortController();
+  const controller = new globalThis.AbortController();
   const timer = setTimeout(() => controller.abort(), 3500);
   try {
     const res = await fetch(target.url, {
