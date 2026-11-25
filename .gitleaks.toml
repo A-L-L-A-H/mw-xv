@@ -55,6 +55,15 @@ description = "Agent observatory test: curl with REDACTED placeholder in test fi
 paths = ["^tools/agent-observatory/server\\.test\\.mjs$"]
 
 [[allowlists]]
+description = "check-gitleaks-config: synthetic orm-observability fixtures used as test expectations"
+regexTarget = "match"
+paths = ["^scripts/check-gitleaks-config\\.mjs$"]
+regexes = [
+  '''api_key: 'sk-test-12345678901234567890'''',
+  '''providerKey: 'sk-proj-12345678901234567890'''',
+]
+
+[[allowlists]]
 description = "Coolify service templates: dollar-escaped runtime variables and image digests are not credentials"
 regexTarget = "match"
 paths = [

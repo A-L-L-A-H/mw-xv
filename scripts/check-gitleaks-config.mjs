@@ -133,6 +133,8 @@ export const expectedAllowlistExpressions = [
   ...historicalFalsePositiveLines,
   ...reviewedWorkstreamLines,
   ...ormObservabilityLines,
+  "api_key: 'sk-test-12345678901234567890",
+  "providerKey: 'sk-proj-12345678901234567890",
 ];
 
 export function validateGitleaksSetup(workflow, config) {
