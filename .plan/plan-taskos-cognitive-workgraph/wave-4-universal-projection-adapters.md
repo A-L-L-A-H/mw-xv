@@ -50,7 +50,7 @@
 
 ---
 
-## - [ ] T26 — Implement Docs & Second-Brain Adapter (`src/adapters/docs.adapter.ts`)
+## - [x] T26 — Implement Docs & Second-Brain Adapter (`src/adapters/docs.adapter.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/adapters/docs.adapter.ts`
   - `packages/plan-taskos/src/adapters/docs.adapter.ts` (CREATE)
