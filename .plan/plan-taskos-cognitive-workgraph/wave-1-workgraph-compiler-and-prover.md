@@ -123,7 +123,7 @@
 
 ---
 
-## - [ ] T11 — Add Wave 1 Unit Tests & Pass Wave 1 Build/Test Gate
+## - [x] T11 — Add Wave 1 Unit Tests & Pass Wave 1 Build/Test Gate
 
 - **Owner File(s):** `packages/plan-taskos/tests/loader-validator.test.ts`, `packages/plan-taskos/tests/disjoint-prover.test.ts`, `packages/plan-taskos/tests/dag-authority.test.ts`
   - `packages/plan-taskos/tests/loader-validator.test.ts` (CREATE)

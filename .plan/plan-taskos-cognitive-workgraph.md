@@ -61,7 +61,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T08** — Implement Compile-Time Disjoint Write-Ownership Prover `src/core/disjoint-prover.ts` (transitive `depends_on` closure + POSIX glob intersection proof)
 - [x] **T09** — Implement DAG engine `src/core/dag.ts` (cycle detection, topological depth, `ready`/`active`/`blocked`/`done` frontier, Boss Critical Path, swarm wave partitioning)
 - [x] **T10** — Implement Split-Authority Field-Plane Reconciler `src/core/authority.ts` (per-plane ownership merger + normalized SHA-256 no-op fence)
-- [ ] **T11** — Add Wave 1 unit tests (`loader-validator.test.ts`, `disjoint-prover.test.ts`, `dag-authority.test.ts`) & pass Wave 1 gate
+- [x] **T11** — Add Wave 1 unit tests (`loader-validator.test.ts`, `disjoint-prover.test.ts`, `dag-authority.test.ts`) & pass Wave 1 gate
 
 ### Wave 2 — Embedded SQLite Cognitive Brain, Knowledge Graph & Memory (`wave-2-cognitive-brain-and-memory.md`)
 - [x] **T12** — Implement `BrainStorageDriver` (`src/brain/storage.ts`): `NodeSqliteBrainStore` (`node:sqlite` WAL + `busy_timeout=5000` + FTS5) & `InMemoryBrainStore` fallback
