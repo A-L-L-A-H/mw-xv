@@ -29,6 +29,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Disabled service principal cannot authenticate.
   - [ ] Audit actor type is explicit.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I69 — Implement OAuth Client Credentials for machine clients
@@ -48,6 +49,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Token has machine actor identity and no human account session claims.
   - [ ] Secret is shown only once at creation/rotation.
 - **Verify:** bun --filter @moonwitness/id test; Client Credentials integration tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I70 — Enforce explicit scopes for machine principals in API
@@ -67,6 +69,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Machine actor cannot bypass tenant record rules.
   - [ ] Missing/unknown scope is denied.
 - **Verify:** bun --filter @moonwitness/api test; machine-principal authorization integration tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I71 — Implement signing-key rotation and overlap window
@@ -86,6 +89,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Retired key is removed only after safe retention period.
   - [ ] Rotation is safe under repeated invocation and restart.
 - **Verify:** bun --filter @moonwitness/id test; multi-instance/key-rotation integration test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I72 — Add TOTP credential persistence and crypto boundary
@@ -104,6 +108,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Secret vault interface does not expose raw key storage to generic model code.
   - [ ] Tests verify encrypted-at-rest representation and safe redaction.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I73 — Add MFA enrollment and challenge flows
@@ -123,6 +128,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] MFA login challenge is required when policy says it is required.
   - [ ] Disable flow requires recent authentication or an approved recovery path.
 - **Verify:** bun --filter @moonwitness/id test; MFA integration tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I74 — Add account recovery and email-verification provider contracts
@@ -143,6 +149,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Unknown and known account responses are indistinguishable.
   - [ ] Successful reset updates Identity credential and revokes old sessions.
 - **Verify:** bun --filter @moonwitness/id test; recovery integration tests with a fake delivery adapter.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I75 — Evaluate WebAuthn/passkey support and record rollout decision
@@ -161,6 +168,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] RP ID/origin constraints and recovery implications are documented.
   - [ ] Decision is recorded as implement now, defer or use provider feature with reasons.
 - **Verify:** git diff --check; verify referenced library/provider documentation and version compatibility.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I76 — Remove default system/superadmin seeds and startup dependency
@@ -181,32 +189,13 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] All jobs/integrations use explicit service identity or safe internal execution context.
   - [ ] No production global superuser seed remains.
 - **Verify:** bun --filter @moonwitness/orm-base test; bun --filter @moonwitness/api test; bun run orm:check:seeds.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
-
-#### - [ ] I77 — Remove credential ownership and obsolete role fields from base.user
-
-- **Owner File(s):** packages/orm-base/src/models/user.ts; packages/orm-base/src/models/user.test.ts; apps/api/src/**; packages/auth/src/**
-- **Depends On:** I55, I56, I57, I58
-- **Effort:** S
-- **Exact Spec:**
-  - Search all source, test, seed, generated schema and UI references to base.user.password, base.user.login and the legacy system/superadmin/user role enum.
-  - Remove password storage and password helper methods from base.user; remove the legacy global role field after all consumers use explicit grants/capabilities.
-  - Remove login as an authentication authority. If a genuine non-auth business display use remains, replace it with an explicitly named profile/display field before dropping the legacy column.
-  - Keep identity_subject and business principal ID stable. No data backfill is required because the owner confirms the DB is empty.
-  - Update model metadata, generated references, fixtures and tests in the smallest coherent scope.
-- **DO NOT:** Do not blindly drop login while a real business feature still depends on it; do not reintroduce email-based identity matching.
-- **Acceptance Criteria:**
-  - [ ] base.user stores no password or password hash.
-  - [ ] Legacy system/superadmin/user global role is no longer an authorization authority.
-  - [ ] No login call path authenticates from the Business database.
-  - [ ] Build/tests and generated model references are consistent.
-- **Verify:** bun --filter @moonwitness/orm-base test; bun --filter @moonwitness/api test; bun run docs:check:built; repository search for removed fields.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I78 — Remove legacy auth package/runtime and obsolete service-token wiring
 
-- **Owner File(s):** packages/auth/**; packages/auth/package.json; apps/api/package.json; apps/api/src/**; package.json; bun.lock
-- **Depends On:** I67, I69, I70, I76, I77
+- **Owner File(s):** packages/auth/**; apps/api/package.json; apps/api/src/addons/registry.ts; package.json; bun.lock
+- **Depends On:** I67, I69, I70, I76
 - **Effort:** S
 - **Exact Spec:**
   - Search all workspace imports and runtime wiring for @moonwitness/auth, auth.refresh_token, createAuthService and ServiceTokenAuthority.
@@ -221,12 +210,34 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Machine-to-machine use cases are handled by Service Principal scopes or an explicitly documented retained adapter.
   - [ ] No stale workspace dependency or command points to removed code.
 - **Verify:** bun install --lockfile-only; bun run build; bun run test:unit:built; repository search for legacy auth symbols.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
+- **Evidence:** after completion, append exact command, result and commit SHA here.
+
+#### - [ ] I77 — Remove credential ownership and obsolete role fields from base.user
+
+- **Owner File(s):** packages/orm-base/src/models/user.ts; packages/orm-base/src/models/user.test.ts; packages/orm-base/src/migrations/*identity-cleanup*; docs/architecture/identity/legacy-field-usage-map.md
+- **Depends On:** I55, I56, I57, I58, I78
+- **Effort:** S
+- **Exact Spec:**
+  - Search all source, test, seed, generated schema and UI references to base.user.password, base.user.login and the legacy system/superadmin/user role enum.
+  - Remove password storage and password helper methods from base.user; remove the legacy global role field after all consumers use explicit grants/capabilities.
+  - Remove login as an authentication authority. If a genuine non-auth business display use remains, replace it with an explicitly named profile/display field before dropping the legacy column.
+  - Keep identity_subject and business principal ID stable. No data backfill is required because the owner confirms the DB is empty.
+  - Update model metadata, generated references, fixtures and tests in the smallest coherent scope.
+- **DO NOT:** Do not blindly drop login while a real business feature still depends on it; do not reintroduce email-based identity matching.
+- **Acceptance Criteria:**
+  - [ ] base.user stores no password or password hash.
+  - [ ] Legacy system/superadmin/user global role is no longer an authorization authority.
+  - [ ] No login call path authenticates from the Business database.
+  - [ ] Build/tests and generated model references are consistent.
+- **Verify:** bun --filter @moonwitness/orm-base test; bun --filter @moonwitness/api test; bun run docs:check:built; repository search for removed fields.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I79 — Run final security audit, update runbooks and close the plan
 
 - **Owner File(s):** docs/architecture/identity/**; docs/operations/identity-runbook.md; .plan/moonwitness-identity-provider.md; .plan/moonwitness-identity-provider/**
-- **Depends On:** I67, I68, I70, I71, I73, I74, I75, I78
+- **Depends On:** I67, I68, I70, I71, I73, I74, I75, I76, I77, I78
 - **Effort:** S
 - **Exact Spec:**
   - Run a source-based security review against ADR-001, security-model.md and acceptance-matrix.md.
@@ -241,6 +252,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] No secret or test-only credential is committed.
   - [ ] Plan has no unchecked mandatory task and final source SHA is recorded.
 - **Verify:** bun run verify; clean-install E2E; security review and git diff --check.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 

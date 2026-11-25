@@ -28,6 +28,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Issuer value exactly matches token issuer and configured public base URL.
   - [ ] Unsupported algorithms/grants are not advertised.
 - **Verify:** bun --filter @moonwitness/id test; provider discovery smoke test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I31 — Validate OAuth client registration and redirect URI allowlists
@@ -46,6 +47,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Unregistered, wildcard, lookalike and disabled-client URIs are rejected.
   - [ ] Public clients cannot authenticate with a stored client secret.
 - **Verify:** bun --filter @moonwitness/id test; provider client-validation smoke test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I32 — Validate authorization requests and state/nonce requirements
@@ -64,6 +66,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] State is required for app authorization requests; nonce is required for OIDC ID token requests.
   - [ ] Provider handles protocol error response construction.
 - **Verify:** bun --filter @moonwitness/id test; provider authorization-request integration tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I33 — Enforce PKCE S256 for public clients
@@ -82,11 +85,12 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Provider rejects mismatched verifier and challenge.
   - [ ] No custom SHA/PKCE state machine is introduced.
 - **Verify:** bun --filter @moonwitness/id test; PKCE provider integration tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I34 — Bind authorization codes to client, redirect, PKCE and nonce
 
-- **Owner File(s):** apps/id/src/oidc/authorization-code-policy.ts; apps/id/src/oidc/authorization-code-policy.test.ts; apps/id/src/oidc/authorization-code-store.ts
+- **Owner File(s):** apps/id/src/oidc/authorization-code-policy.ts; apps/id/src/oidc/authorization-code-policy.test.ts
 - **Depends On:** I20, I31, I33
 - **Effort:** S
 - **Exact Spec:**
@@ -100,6 +104,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Code cannot be exchanged with a different client, redirect or PKCE verifier.
   - [ ] Expired and revoked-session codes fail.
 - **Verify:** bun --filter @moonwitness/id test; provider code-flow integration test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I35 — Add asymmetric signing-key provider abstraction
@@ -119,6 +124,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Key metadata contains no private key material.
   - [ ] Only approved asymmetric algorithms are allowed.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/orm-identity test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I36 — Publish JWKS and active public keys
@@ -137,6 +143,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] No private key parameter is published.
   - [ ] Unknown/retired key behavior is documented and tested.
 - **Verify:** bun --filter @moonwitness/id test; JWKS endpoint smoke test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I37 — Complete Authorization Code token exchange
@@ -157,6 +164,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Disabled account/revoked session fails before token issue.
   - [ ] ID token is not accepted as API access token.
 - **Verify:** bun --filter @moonwitness/id test; full authorization-code flow smoke test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I38 — Complete refresh rotation and replay-family revocation
@@ -176,6 +184,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Expired/revoked/disabled-account refresh attempts fail.
   - [ ] Concurrent refresh tests prove atomic behavior.
 - **Verify:** bun --filter @moonwitness/id test; PostgreSQL refresh concurrency integration test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I39 — Complete logout and server-side session revocation
@@ -195,6 +204,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] All-session revocation invalidates existing sessions.
   - [ ] Tests verify old credentials no longer work.
 - **Verify:** bun --filter @moonwitness/id test; OIDC logout integration test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I40 — Add full OIDC protocol integration tests
@@ -213,6 +223,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Tests confirm API access-token validation against JWKS.
   - [ ] No test output contains credentials or bearer tokens.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 

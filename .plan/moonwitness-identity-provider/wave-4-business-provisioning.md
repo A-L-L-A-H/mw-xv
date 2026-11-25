@@ -29,6 +29,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Existing integer primary key and foreign keys are unchanged.
   - [ ] Two users cannot share the same non-null identity_subject.
 - **Verify:** bun --filter @moonwitness/orm-base test; bun --filter @moonwitness/orm-base build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I42 — Add API repository to resolve verified subject to business user
@@ -47,6 +48,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Unknown and inactive subject are rejected.
   - [ ] No email-based implicit linking is implemented.
 - **Verify:** bun --filter @moonwitness/api test; bun --filter @moonwitness/api build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I43 — Define a versioned Identity-to-Business event contract
@@ -65,6 +67,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Payload schema is tested and rejects unknown/missing required fields.
   - [ ] Event contract is documented for producer and consumer.
 - **Verify:** bun --filter @moonwitness/types test; bun --filter @moonwitness/types build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I44 — Publish account lifecycle events through Identity outbox
@@ -84,6 +87,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Publisher can restart without losing pending work.
   - [ ] Event payloads are redacted and do not contain credentials.
 - **Verify:** bun --filter @moonwitness/id test; integration test with a fake receiver.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I45 — Consume provisioning events idempotently in API
@@ -104,6 +108,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Business DB mutation and processed-event receipt are atomic.
   - [ ] Consumer never writes credentials or sessions.
 - **Verify:** bun --filter @moonwitness/api test; PostgreSQL idempotency integration test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I46 — Provision or link base.partner as a business contact only
@@ -122,6 +127,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Repeated event delivery does not create duplicate Partners.
   - [ ] No automatic email-based Partner merge occurs.
 - **Verify:** bun --filter @moonwitness/api test; bun --filter @moonwitness/orm-base test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I47 — Provision least-privilege company membership and user group
@@ -142,6 +148,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Duplicate provisioning is idempotent.
   - [ ] No legacy global superadmin/system grant is assigned.
 - **Verify:** bun --filter @moonwitness/api test; PostgreSQL tenant-isolation integration test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I48 — Synchronize account disable/reactivate state
@@ -160,6 +167,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Reactivation restores only prior business membership state.
   - [ ] Duplicate events do not change effective state or duplicate records.
 - **Verify:** bun --filter @moonwitness/api test; identity provisioning integration tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I49 — Add retry/dead-letter visibility and a safe repair command
@@ -179,6 +187,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Explicit replay does not duplicate principal/partner/membership.
   - [ ] Output contains no credential or personal-data dump.
 - **Verify:** bun --filter @moonwitness/api test; command dry-run and isolated replay test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 
