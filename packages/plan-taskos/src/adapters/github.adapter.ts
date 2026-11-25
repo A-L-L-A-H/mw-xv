@@ -305,10 +305,9 @@ export async function applyGitHubOperations(
   const conflicts: string[] = [];
   const errors: string[] = [];
   let applied = 0;
-  let skipped = 0;
 
   const batch = ops.slice(0, MAX_APPLY_BATCH);
-  skipped = ops.length - batch.length;
+  const skipped = ops.length - batch.length;
 
   for (const op of batch) {
     try {
