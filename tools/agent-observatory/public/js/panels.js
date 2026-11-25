@@ -801,6 +801,124 @@
       <div class="probe-row"><span>Memory Tank</span><span class="brand-sub">${snapshot.host.memUsedGb} / ${snapshot.host.memTotalGb} GB (${snapshot.host.memPct}%)</span></div>
       <div class="probe-row"><span>Broadcast Uptime</span><span class="brand-sub">${snapshot.host.uptimeSec}s · ${snapshot.telemetryHistory?.length || 0} frames</span></div>
     `;
+
+    // 8. Internal R&D Discovery & Monitoring Lab (Tab 7)
+    const disc = snapshot.discovery;
+    if (disc && disc.counts) {
+      const totalDisc =
+        (disc.counts.apps || 0) +
+        (disc.counts.packages || 0) +
+        (disc.counts.adrs || 0) +
+        (disc.counts.skills || 0);
+      const tabDiscEl = byId('tabDiscoveryCount');
+      if (tabDiscEl) tabDiscEl.textContent = String(totalDisc);
+
+      const vaultMetaEl = byId('discoveryVaultMeta');
+      if (vaultMetaEl) {
+        vaultMetaEl.textContent = `Apps:${disc.counts.apps} · Pkgs:${disc.counts.packages} · ADRs:${disc.counts.adrs} · Skills:${disc.counts.skills} · Compose:${disc.counts.composeStacks} · Magpie Vault:${disc.counts.magpieVaultCards} cards`;
+      }
+
+      const dQuery = (appState.discoverySearch || '').trim().toLowerCase();
+      const matchStr = (text) =>
+        !dQuery ||
+        String(text || '')
+          .toLowerCase()
+          .includes(dQuery);
+
+      const filteredAdrs = (disc.adrs || []).filter((entry) =>
+        matchStr(`${entry.id} ${entry.title} ${entry.status}`)
+      );
+      if (byId('discoveryAdrCount'))
+        byId('discoveryAdrCount').textContent = String(filteredAdrs.length);
+      if (byId('discoveryAdrList')) {
+        byId('discoveryAdrList').innerHTML = filteredAdrs.length
+          ? filteredAdrs
+              .map(
+                (entry) => `
+              <div class="feed-row clickable" data-doc-path="${esc(entry.relPath)}">
+                <div class="feed-head">
+                  <span><strong style="color:var(--yellow)">${esc(entry.id)}</strong></span>
+                  <span class="chip st-${entry.status.toLowerCase().includes('accept') ? 'done' : 'ready'}">${esc(entry.status)}</span>
+                </div>
+                <div class="feed-msg">${esc(entry.title)}</div>
+              </div>`
+              )
+              .join('')
+          : '<div class="empty">No matching ADRs</div>';
+      }
+
+      const filteredSkills = (disc.skills || []).filter((entry) =>
+        matchStr(`${entry.name} ${entry.description}`)
+      );
+      if (byId('discoverySkillCount'))
+        byId('discoverySkillCount').textContent = String(filteredSkills.length);
+      if (byId('discoverySkillsList')) {
+        byId('discoverySkillsList').innerHTML = filteredSkills.length
+          ? filteredSkills
+              .map(
+                (entry) => `
+              <div class="feed-row clickable" data-doc-path="${esc(entry.relPath)}">
+                <div class="feed-head">
+                  <span><span class="chip rt-codex">SKILL</span> <strong>${esc(entry.name)}</strong></span>
+                  <span>${esc(entry.relPath)}</span>
+                </div>
+                <div class="feed-msg">${esc(entry.description)}</div>
+              </div>`
+              )
+              .join('')
+          : '<div class="empty">No matching skills</div>';
+      }
+
+      const dirtyAreasMap = snapshot.git?.dirtyByArea || {};
+      const renderPkgRow = (entry) => {
+        const dirtyHits = dirtyAreasMap[entry.dir] || 0;
+        return `
+          <div class="probe-row">
+            <span>
+              <span class="chip ${entry.runtime === 'go' ? 'rt-opencode' : entry.kind === 'app' ? 'rt-antigravity' : 'rt-claude'}">${esc(entry.runtime.toUpperCase())}</span>
+              <strong>${esc(entry.name)}</strong>
+              <span class="brand-sub"> · ${esc(entry.dir)}</span>
+            </span>
+            <span class="brand-sub">
+              ${dirtyHits > 0 ? `<span class="chip st-active">${dirtyHits} dirty</span> ` : ''}
+              v${esc(entry.version)} · ${entry.scriptsCount} scr
+            </span>
+          </div>`;
+      };
+
+      const filteredApps = (disc.apps || []).filter((entry) =>
+        matchStr(`${entry.name} ${entry.dir}`)
+      );
+      if (byId('discoveryAppCount'))
+        byId('discoveryAppCount').textContent = String(filteredApps.length);
+      if (byId('discoveryAppsList')) {
+        byId('discoveryAppsList').innerHTML = filteredApps.length
+          ? filteredApps.map(renderPkgRow).join('')
+          : '<div class="empty">No matching apps</div>';
+      }
+
+      const filteredPkgs = (disc.packages || []).filter((entry) =>
+        matchStr(`${entry.name} ${entry.dir}`)
+      );
+      if (byId('discoveryPkgCount'))
+        byId('discoveryPkgCount').textContent = String(filteredPkgs.length);
+      if (byId('discoveryPackagesList')) {
+        byId('discoveryPackagesList').innerHTML = filteredPkgs.length
+          ? filteredPkgs.map(renderPkgRow).join('')
+          : '<div class="empty">No matching packages</div>';
+      }
+
+      const filteredCompose = (disc.composeStacks || []).filter((entry) => matchStr(entry.name));
+      if (byId('discoveryComposeCount'))
+        byId('discoveryComposeCount').textContent = String(filteredCompose.length);
+      if (byId('discoveryComposeList')) {
+        byId('discoveryComposeList').innerHTML = filteredCompose.length
+          ? filteredCompose
+              .map((entry) => `<span class="sub-pill">🐳 ${esc(entry.name)}</span>`)
+              .join('')
+          : '<span class="brand-sub">No compose files</span>';
+      }
+    }
   }
 
   window.MWObservatory.utils = { esc, fmtNum, relTime, portraitForSession };

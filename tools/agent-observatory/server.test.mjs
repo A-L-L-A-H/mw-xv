@@ -8,6 +8,7 @@ import {
   analyzeTrajectoryHealth,
   buildFlowGraph,
   buildPlanDag,
+  collectDiscoveryCatalog,
   collectMagpieTelemetry,
   collectOpenCodeSessions,
   collectPlans,
@@ -17,6 +18,7 @@ import {
   extractTaskDependencies,
   formatSnapshotMarkdown,
   formatSnapshotOtel,
+  readConfinedDiscoveryDoc,
   redactSecrets,
   validateProbeUrl,
 } from './server.mjs';
@@ -190,7 +192,7 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     assert.equal(healthResp.status, 200);
     const healthJson = await healthResp.json();
     assert.equal(healthJson.ok, true);
-    assert.equal(healthJson.version, 5);
+    assert.equal(healthJson.version, 6);
     assert.equal(healthJson.p5Vendored, true);
 
     const p5Resp = await fetch(`${baseUrl}/vendor/p5.min.js`);
@@ -226,7 +228,7 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     const stateResp = await fetch(`${baseUrl}/api/state`);
     assert.equal(stateResp.status, 200);
     const snapshot = await stateResp.json();
-    assert.equal(snapshot.version, 5);
+    assert.equal(snapshot.version, 6);
     assert.ok(Array.isArray(snapshot.plans));
     assert.ok(snapshot.flowGraph && Array.isArray(snapshot.flowGraph.nodes));
     assert.ok(snapshot.analytics && Array.isArray(snapshot.analytics.activityBuckets));
@@ -234,7 +236,22 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     assert.ok(snapshot.magpie && typeof snapshot.magpie.totalRecentCalls === 'number');
     assert.ok(snapshot.battle && typeof snapshot.battle.bossHpPct === 'number');
     assert.ok(Array.isArray(snapshot.alerts));
+    assert.ok(
+      snapshot.discovery && snapshot.discovery.counts && snapshot.discovery.counts.adrs > 0
+    );
     assert.ok(Array.isArray(snapshot.telemetryHistory) && snapshot.telemetryHistory.length >= 1);
+
+    const adrDocResp = await fetch(
+      `${baseUrl}/api/discovery/doc?path=${encodeURIComponent('docs/decisions/0018-internal-rd-agent-observatory.md')}`
+    );
+    assert.equal(adrDocResp.status, 200);
+    const adrDocJson = await adrDocResp.json();
+    assert.match(adrDocJson.content, /ADR 0018/);
+
+    const badDocResp = await fetch(
+      `${baseUrl}/api/discovery/doc?path=${encodeURIComponent('package.json')}`
+    );
+    assert.equal(badDocResp.status, 404);
 
     const otelResp = await fetch(`${baseUrl}/api/export?format=otel`);
     assert.equal(otelResp.status, 200);
@@ -748,4 +765,64 @@ test('formatSnapshotOtel emits OpenTelemetry GenAI OTLP/JSON spans with gen_ai.*
   );
   assert.equal(spans[1].parentSpanId, rootSpan.spanId);
   assert.equal(spans[2].parentSpanId, rootSpan.spanId);
+});
+
+test('collectDiscoveryCatalog discovers workspace apps/packages/ADRs/skills and readConfinedDiscoveryDoc blocks escapes', async () => {
+  const tmpRepo = await mkdtemp(path.join(os.tmpdir(), 'mw-obs-disc-'));
+  const tmpHome = await mkdtemp(path.join(os.tmpdir(), 'mw-obs-disc-home-'));
+  try {
+    await mkdir(path.join(tmpRepo, 'apps', 'demo-app'), { recursive: true });
+    await mkdir(path.join(tmpRepo, 'packages', 'demo-pkg'), { recursive: true });
+    await mkdir(path.join(tmpRepo, 'docs', 'decisions'), { recursive: true });
+    await mkdir(path.join(tmpRepo, '.agents', 'skills', 'demo-skill'), { recursive: true });
+    await mkdir(path.join(tmpRepo, 'deploy', 'compose'), { recursive: true });
+    await mkdir(path.join(tmpHome, '.config', 'magpie', 'memory'), { recursive: true });
+
+    await writeFile(
+      path.join(tmpRepo, 'apps', 'demo-app', 'package.json'),
+      JSON.stringify({ name: '@mw/demo-app', version: '1.0.0', scripts: { dev: 'echo 1' } }),
+      'utf8'
+    );
+    await writeFile(
+      path.join(tmpRepo, 'packages', 'demo-pkg', 'package.json'),
+      JSON.stringify({ name: '@mw/demo-pkg', version: '2.0.0' }),
+      'utf8'
+    );
+    await writeFile(
+      path.join(tmpRepo, 'docs', 'decisions', '0018-demo.md'),
+      '# ADR 0018: Internal R&D Demo\n\n- **Status:** Accepted\n',
+      'utf8'
+    );
+    await writeFile(
+      path.join(tmpRepo, '.agents', 'skills', 'demo-skill', 'SKILL.md'),
+      '---\nname: demo-skill\ndescription: Demo discovery skill\n---\n',
+      'utf8'
+    );
+    await writeFile(
+      path.join(tmpRepo, 'deploy', 'compose', 'docker-compose.dev.yml'),
+      'services: {}\n',
+      'utf8'
+    );
+    await writeFile(
+      path.join(tmpHome, '.config', 'magpie', 'memory', 'm_abc123.md'),
+      '# mem\n',
+      'utf8'
+    );
+
+    const catalog = await collectDiscoveryCatalog(tmpRepo, tmpHome);
+    assert.equal(catalog.counts.apps, 1);
+    assert.equal(catalog.counts.packages, 1);
+    assert.equal(catalog.counts.adrs, 1);
+    assert.equal(catalog.counts.skills, 1);
+    assert.equal(catalog.counts.composeStacks, 1);
+    assert.equal(catalog.counts.magpieVaultCards, 1);
+
+    const allowedDoc = await readConfinedDiscoveryDoc(tmpRepo, 'docs/decisions/0018-demo.md');
+    assert.ok(allowedDoc && allowedDoc.content.includes('Internal R&D Demo'));
+    assert.equal(await readConfinedDiscoveryDoc(tmpRepo, '../secret.txt'), null);
+    assert.equal(await readConfinedDiscoveryDoc(tmpRepo, 'apps/demo-app/package.json'), null);
+  } finally {
+    await rm(tmpRepo, { recursive: true, force: true });
+    await rm(tmpHome, { recursive: true, force: true });
+  }
 });

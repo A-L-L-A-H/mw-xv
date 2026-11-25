@@ -25,6 +25,7 @@
     feedKind: 'all',
     taskSearch: '',
     taskStatusFilter: 'all',
+    discoverySearch: '',
     chaosLevel: 'riot',
     zenMode: false,
     ambienceMode: 'off',
@@ -186,6 +187,11 @@
     byId('heatmapCanvasHost')
   );
 
+  const discoveryConstellation =
+    typeof obs.createDiscoveryConstellation === 'function'
+      ? obs.createDiscoveryConstellation(byId('discoveryCanvasHost'))
+      : { setDiscovery() {}, setVisible() {}, destroy() {} };
+
   function syncReplayBar() {
     const barEl = byId('replayBar');
     const sliderEl = byId('replaySlider');
@@ -231,6 +237,7 @@
     dagCanvas.setPlan(activePlan);
     dagCanvas.setSelectedTask(appState.selectedTaskId);
     telemetryViz.setSnapshot(snapshot);
+    discoveryConstellation.setDiscovery(snapshot.discovery);
     syncReplayBar();
   }
 
@@ -243,13 +250,14 @@
 
     const isCinemaOnly = tabName === 'flow';
     byId('overlayStage').classList.toggle('hidden', isCinemaOnly);
-    for (const key of ['dag', 'telemetry', 'agents', 'swarms', 'infra']) {
-      byId(`view-${key}`).classList.toggle('hidden', key !== tabName);
+    for (const key of ['dag', 'telemetry', 'agents', 'swarms', 'infra', 'discovery']) {
+      byId(`view-${key}`)?.classList.toggle('hidden', key !== tabName);
     }
 
     flowCanvas.setVisible(true); // Living cinema stays alive behind overlays!
     dagCanvas.setVisible(tabName === 'dag' && appState.dagViewMode !== 'list');
     telemetryViz.setVisible(tabName === 'telemetry');
+    discoveryConstellation.setVisible(tabName === 'discovery');
     renderAll();
   }
 
@@ -419,6 +427,36 @@
     }
   }
 
+  async function openDiscoveryDocDrawer(relPath) {
+    const esc = obs.utils?.esc || ((val) => String(val ?? ''));
+    destroyDrawerSketch();
+    sfxEngine.play('pop');
+    byId('drawerBackdrop').classList.add('open');
+    if (byId('drawerPortrait')) {
+      byId('drawerPortrait').src =
+        '/mw-assets/illustrations/riot-universe/characters/kuro-signal-pose-reading.webp';
+    }
+    byId('drawerTitle').textContent = relPath.split('/').pop() || 'R&D DOC';
+    byId('drawerSub').textContent = `INTERNAL R&D DISCOVERY · ${relPath}`;
+    byId('drawerBody').innerHTML = '<div class="empty">Loading confined markdown…</div>';
+
+    try {
+      const httpResponse = await fetch(`/api/discovery/doc?path=${encodeURIComponent(relPath)}`);
+      if (!httpResponse.ok) throw new Error(`HTTP ${httpResponse.status}`);
+      const docPayload = await httpResponse.json();
+      byId('drawerBody').innerHTML = `
+        <div class="probe-row">
+          <div><strong>Path:</strong> <code>${esc(docPayload.relPath)}</code></div>
+          <span class="chip st-done">READ-ONLY R&amp;D PREVIEW</span>
+        </div>
+        <pre class="code-pre" style="max-height:74vh;overflow:auto;line-height:1.5">${esc(docPayload.content)}${docPayload.truncated ? '\n\n… [truncated to 24KB]' : ''}</pre>
+      `;
+    } catch (err) {
+      byId('drawerBody').innerHTML =
+        `<div class="empty">Failed to load doc: ${esc(err.message)}</div>`;
+    }
+  }
+
   async function inspectGitCommit(sha) {
     const esc = obs.utils?.esc || ((val) => String(val ?? ''));
     const panelEl = byId('commitDetailPanel');
@@ -567,9 +605,31 @@
         sub: 'VPS probes, ports, commits',
         run: () => switchTab('infra'),
       },
+      {
+        kind: 'R&D LAB',
+        label: '🔬 Internal R&D Discovery & Monitoring Lab (Tab 7)',
+        sub: 'Apps, packages, ADRs, skills, compose & Magpie vault',
+        run: () => switchTab('discovery'),
+      },
     ];
 
     if (snap) {
+      for (const adrEntry of snap.discovery?.adrs || []) {
+        catalog.push({
+          kind: adrEntry.id,
+          label: `${adrEntry.id} — ${adrEntry.title}`,
+          sub: `${adrEntry.status} · ${adrEntry.relPath}`,
+          run: () => void openDiscoveryDocDrawer(adrEntry.relPath),
+        });
+      }
+      for (const skillEntry of snap.discovery?.skills || []) {
+        catalog.push({
+          kind: 'SKILL',
+          label: skillEntry.name,
+          sub: skillEntry.description,
+          run: () => void openDiscoveryDocDrawer(skillEntry.relPath),
+        });
+      }
       for (const session of snap.sessions || []) {
         catalog.push({
           kind: session.runtimeLabel.toUpperCase(),
@@ -1012,6 +1072,10 @@
     appState.taskStatusFilter = evt.target.value;
     renderAll();
   });
+  byId('discoverySearch')?.addEventListener('input', (evt) => {
+    appState.discoverySearch = evt.target.value;
+    renderAll();
+  });
 
   byId('customProbeForm')?.addEventListener('submit', async (evt) => {
     evt.preventDefault();
@@ -1087,6 +1151,12 @@
       return;
     }
 
+    const docTarget = evt.target.closest('[data-doc-path]');
+    if (docTarget) {
+      void openDiscoveryDocDrawer(docTarget.dataset.docPath);
+      return;
+    }
+
     const sessionTarget = evt.target.closest('[data-runtime][data-id]');
     if (sessionTarget) {
       void openSessionDrawer(sessionTarget.dataset.runtime, sessionTarget.dataset.id);
@@ -1147,7 +1217,15 @@
     }
     if (isTyping) return;
 
-    const tabByKey = { 1: 'flow', 2: 'dag', 3: 'telemetry', 4: 'agents', 5: 'swarms', 6: 'infra' };
+    const tabByKey = {
+      1: 'flow',
+      2: 'dag',
+      3: 'telemetry',
+      4: 'agents',
+      5: 'swarms',
+      6: 'infra',
+      7: 'discovery',
+    };
     if (tabByKey[evt.key]) {
       if (appState.zenMode) toggleZenMode(false);
       switchTab(tabByKey[evt.key]);

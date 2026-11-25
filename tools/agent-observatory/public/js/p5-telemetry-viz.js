@@ -838,4 +838,165 @@
 
   window.MWObservatory.createTelemetryViz = createTelemetryViz;
   window.MWObservatory.createSessionStripSketch = createSessionStripSketch;
+  window.MWObservatory.createDiscoveryConstellation = function createDiscoveryConstellation(
+    hostEl
+  ) {
+    if (!hostEl || typeof p5 === 'undefined') {
+      return {
+        setDiscovery() {},
+        setVisible() {},
+        destroy() {},
+      };
+    }
+
+    let latestDiscovery = null;
+    let isVisible = false;
+    let observer = null;
+
+    const sketchObj = new p5((sketch) => {
+      sketch.setup = () => {
+        const w = Math.max(320, hostEl.clientWidth || 720);
+        const canvas = sketch.createCanvas(w, 250);
+        canvas.parent(hostEl);
+        sketch.pixelDensity(Math.min(2, window.devicePixelRatio || 1));
+        sketch.textFont('JetBrains Mono, Consolas, monospace');
+        sketch.noLoop();
+      };
+
+      sketch.draw = () => {
+        if (!isVisible) return;
+        const w = sketch.width;
+        const h = sketch.height;
+        sketch.background(NIGHT[0], NIGHT[1], NIGHT[2]);
+
+        // Ben-Day dots
+        sketch.noStroke();
+        sketch.fill(255, 224, 49, 14);
+        for (let gx = 14; gx < w; gx += 26) {
+          for (let gy = 14; gy < h; gy += 26) sketch.circle(gx, gy, 1.8);
+        }
+
+        const counts = latestDiscovery?.counts || {
+          apps: 0,
+          packages: 0,
+          adrs: 0,
+          skills: 0,
+          composeStacks: 0,
+          magpieVaultCards: 0,
+        };
+        const cx = w / 2;
+        const cy = h / 2;
+        const t = sketch.millis() * 0.001;
+
+        const clusters = [
+          { label: 'APPS', count: counts.apps, rgb: CYAN, ang: -Math.PI * 0.82 },
+          { label: 'PACKAGES', count: counts.packages, rgb: YELLOW, ang: -Math.PI * 0.18 },
+          { label: 'ADRs', count: counts.adrs, rgb: MAGENTA, ang: Math.PI * 0.18 },
+          { label: 'SKILLS', count: counts.skills, rgb: LIME, ang: Math.PI * 0.5 },
+          { label: 'COMPOSE', count: counts.composeStacks, rgb: ORANGE, ang: Math.PI * 0.82 },
+          { label: 'VAULT', count: counts.magpieVaultCards, rgb: VIOLET, ang: -Math.PI * 0.5 },
+        ];
+
+        const orbitRx = Math.min(w * 0.36, 260);
+        const orbitRy = Math.min(h * 0.35, 86);
+
+        // Orbit ring
+        sketch.noFill();
+        sketch.stroke(PAPER[0], PAPER[1], PAPER[2], 32);
+        sketch.strokeWeight(1.4);
+        sketch.ellipse(cx, cy, orbitRx * 2, orbitRy * 2);
+
+        for (let idx = 0; idx < clusters.length; idx += 1) {
+          const cl = clusters[idx];
+          const nx = cx + Math.cos(cl.ang + Math.sin(t * 0.6 + idx) * 0.05) * orbitRx;
+          const ny = cy + Math.sin(cl.ang + Math.cos(t * 0.6 + idx) * 0.05) * orbitRy;
+
+          // Ink-outlined spoke
+          sketch.stroke(INK[0], INK[1], INK[2], 220);
+          sketch.strokeWeight(4);
+          sketch.line(cx, cy, nx, ny);
+          sketch.stroke(cl.rgb[0], cl.rgb[1], cl.rgb[2], 215);
+          sketch.strokeWeight(2);
+          sketch.line(cx, cy, nx, ny);
+
+          // Orbiting mini satellites proportional to count
+          const satCount = Math.min(8, Math.max(1, Math.ceil(cl.count / 4)));
+          for (let sIdx = 0; sIdx < satCount; sIdx += 1) {
+            const sAng = t * (0.9 + idx * 0.12) + (sIdx / satCount) * Math.PI * 2;
+            const sx = nx + Math.cos(sAng) * 32;
+            const sy = ny + Math.sin(sAng) * 20;
+            sketch.noStroke();
+            sketch.fill(cl.rgb[0], cl.rgb[1], cl.rgb[2], 195);
+            sketch.circle(sx, sy, 5);
+          }
+
+          // Cluster node badge
+          sketch.noStroke();
+          sketch.fill(INK[0], INK[1], INK[2], 230);
+          sketch.circle(nx + 3, ny + 3, 44);
+          sketch.stroke(INK[0], INK[1], INK[2]);
+          sketch.strokeWeight(2.6);
+          sketch.fill(cl.rgb[0], cl.rgb[1], cl.rgb[2]);
+          sketch.circle(nx, ny, 44);
+
+          sketch.noStroke();
+          sketch.fill(INK[0], INK[1], INK[2]);
+          sketch.textFont('Anton, Impact, sans-serif');
+          sketch.textSize(14);
+          sketch.textAlign(sketch.CENTER, sketch.CENTER);
+          sketch.text(String(cl.count), nx, ny - 2);
+          sketch.textFont('JetBrains Mono, Consolas, monospace');
+          sketch.textSize(8.5);
+          sketch.fill(PAPER[0], PAPER[1], PAPER[2]);
+          sketch.text(cl.label, nx, ny + 30);
+        }
+
+        // Center R&D Lab Hub
+        sketch.noStroke();
+        sketch.fill(INK[0], INK[1], INK[2]);
+        sketch.circle(cx + 4, cy + 4, 68);
+        sketch.stroke(YELLOW[0], YELLOW[1], YELLOW[2]);
+        sketch.strokeWeight(3.2);
+        sketch.fill(CHARCOAL[0], CHARCOAL[1], CHARCOAL[2]);
+        sketch.circle(cx, cy, 68);
+        sketch.noStroke();
+        sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2]);
+        sketch.textFont('Anton, Impact, sans-serif');
+        sketch.textSize(13);
+        sketch.textAlign(sketch.CENTER, sketch.CENTER);
+        sketch.text('R&D LAB', cx, cy - 5);
+        sketch.fill(CYAN[0], CYAN[1], CYAN[2]);
+        sketch.textFont('JetBrains Mono, Consolas, monospace');
+        sketch.textSize(8.5);
+        sketch.text('INTERNAL', cx, cy + 10);
+      };
+    }, hostEl);
+
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(() => {
+        if (!isVisible) return;
+        sketchObj.resizeCanvas(Math.max(320, hostEl.clientWidth || 720), 250);
+      });
+      observer.observe(hostEl);
+    }
+
+    return {
+      setDiscovery(nextDiscovery) {
+        latestDiscovery = nextDiscovery;
+      },
+      setVisible(nextVisible) {
+        isVisible = Boolean(nextVisible);
+        if (isVisible) {
+          sketchObj.resizeCanvas(Math.max(320, hostEl.clientWidth || 720), 250);
+          sketchObj.loop();
+        } else {
+          sketchObj.noLoop();
+        }
+      },
+      destroy() {
+        if (observer) observer.disconnect();
+        sketchObj.remove();
+      },
+    };
+  };
 })();

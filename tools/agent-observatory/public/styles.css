@@ -2036,6 +2036,18 @@ a {
   color: var(--muted);
 }
 
+#discoveryCanvasHost {
+  width: 100%;
+  height: 250px;
+  min-height: 250px;
+}
+
+.sheet-scroll > .sub-panel,
+.sheet-scroll > .grid-two,
+.sheet-scroll > .telemetry-canvas-grid {
+  flex-shrink: 0;
+}
+
 .hidden {
   display: none !important;
 }

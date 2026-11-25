@@ -325,6 +325,10 @@
           <span class="dock-key">6</span> 📡 CITY &amp; GIT
           <span id="tabInfraCount" class="dock-count">0</span>
         </button>
+        <button class="dock-btn" data-tab="discovery" type="button">
+          <span class="dock-key">7</span> 🔬 R&amp;D LAB
+          <span id="tabDiscoveryCount" class="dock-count">0</span>
+        </button>
 
         <span class="dock-divider"></span>
 
@@ -688,6 +692,94 @@
             <div class="sub-panel">
               <div class="sub-panel-head"><h3 class="sub-title">🖥️ HOST RIG DIAGNOSTICS</h3></div>
               <div id="hostDiagGrid" class="probe-grid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: INTERNAL R&D DISCOVERY & ANYTHING LAB -->
+      <section id="view-discovery" class="comic-sheet hidden">
+        <div class="sheet-head">
+          <div>
+            <h2 class="sheet-title">
+              🔬 INTERNAL R&amp;D LAB · DISCOVERY, MONITORING &amp; SANDBOX
+            </h2>
+            <div id="discoverySummaryMeta" class="mini-meta">
+              Internal R&amp;D workstation only (ADR 0018) · Live auto-discovery of Apps, Packages,
+              ADRs, Skills &amp; Compose
+            </div>
+          </div>
+          <div class="toolbar">
+            <input
+              id="discoverySearch"
+              class="comic-input"
+              type="search"
+              placeholder="Discover app, package, ADR, skill…"
+            />
+            <button
+              class="comic-btn active-cyan"
+              data-doc-path="docs/decisions/0018-internal-rd-agent-observatory.md"
+              type="button"
+            >
+              📜 ADR 0018
+            </button>
+            <button class="comic-btn active-yellow" data-close-overlay="1" type="button">
+              ✕ BACK TO FILM
+            </button>
+          </div>
+        </div>
+        <div class="sheet-scroll stack">
+          <div class="sub-panel no-pad">
+            <div class="sub-panel-head">
+              <h3 class="sub-title">🌌 LIVE MONOREPO &amp; R&amp;D CONSTELLATION (P5.JS)</h3>
+              <span id="discoveryVaultMeta" class="mini-meta">—</span>
+            </div>
+            <div id="discoveryCanvasHost" class="p5-viz-host"></div>
+          </div>
+
+          <div class="grid-two">
+            <div class="stack">
+              <div class="sub-panel">
+                <div class="sub-panel-head">
+                  <h3 class="sub-title">📜 ARCHITECTURE DECISION RECORDS (CLICK TO READ)</h3>
+                  <span id="discoveryAdrCount" class="mini-meta">0</span>
+                </div>
+                <div id="discoveryAdrList" class="feed-list feed-tall"></div>
+              </div>
+
+              <div class="sub-panel">
+                <div class="sub-panel-head">
+                  <h3 class="sub-title">🧩 WORKSPACE AGENT SKILLS (CLICK TO READ)</h3>
+                  <span id="discoverySkillCount" class="mini-meta">0</span>
+                </div>
+                <div id="discoverySkillsList" class="feed-list feed-short"></div>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="sub-panel">
+                <div class="sub-panel-head">
+                  <h3 class="sub-title">🚀 WORKSPACE APPS</h3>
+                  <span id="discoveryAppCount" class="mini-meta">0</span>
+                </div>
+                <div id="discoveryAppsList" class="feed-list feed-short"></div>
+              </div>
+
+              <div class="sub-panel">
+                <div class="sub-panel-head">
+                  <h3 class="sub-title">📦 WORKSPACE PACKAGES &amp; ADDONS</h3>
+                  <span id="discoveryPkgCount" class="mini-meta">0</span>
+                </div>
+                <div id="discoveryPackagesList" class="feed-list feed-tall"></div>
+              </div>
+
+              <div class="sub-panel">
+                <div class="sub-panel-head">
+                  <h3 class="sub-title">🐳 DEPLOY COMPOSE TOPOLOGIES</h3>
+                  <span id="discoveryComposeCount" class="mini-meta">0</span>
+                </div>
+                <div id="discoveryComposeList" class="subagent-strip no-border"></div>
+              </div>
             </div>
           </div>
         </div>

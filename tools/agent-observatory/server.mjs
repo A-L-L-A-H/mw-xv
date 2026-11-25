@@ -2186,6 +2186,177 @@ export function detectOperationalAlerts(sessions, gitState, magpieSummary, probe
 }
 
 // ============================================================================
+// 4D. INTERNAL R&D DISCOVERY CATALOG (Apps, Packages, ADRs, Skills, Compose)
+// ============================================================================
+
+export async function collectDiscoveryCatalog(repoRoot, homeDir) {
+  const apps = [];
+  const packages = [];
+  const adrs = [];
+  const skills = [];
+  const composeStacks = [];
+
+  const scanPkgGroup = async (baseFolder, targetList, groupKind) => {
+    const absBase = path.join(repoRoot, baseFolder);
+    if (!existsSync(absBase)) return;
+    const dirs = await readdir(absBase, { withFileTypes: true }).catch(() => []);
+    for (const dirEntry of dirs) {
+      if (!dirEntry.isDirectory() || dirEntry.name.startsWith('.')) continue;
+      const pkgPath = path.join(absBase, dirEntry.name, 'package.json');
+      const goModPath = path.join(absBase, dirEntry.name, 'go.mod');
+      if (existsSync(pkgPath)) {
+        const rawPkg = await readFile(pkgPath, 'utf8').catch(() => '');
+        const parsedPkg = safeJsonParse(rawPkg);
+        targetList.push({
+          name: parsedPkg?.name || dirEntry.name,
+          dir: `${baseFolder}/${dirEntry.name}`,
+          kind: groupKind,
+          version: parsedPkg?.version || '0.0.0',
+          scriptsCount: Object.keys(parsedPkg?.scripts || {}).length,
+          runtime: 'node',
+        });
+      } else if (existsSync(goModPath)) {
+        targetList.push({
+          name: dirEntry.name,
+          dir: `${baseFolder}/${dirEntry.name}`,
+          kind: groupKind,
+          version: 'go',
+          scriptsCount: 0,
+          runtime: 'go',
+        });
+      }
+    }
+    targetList.sort((left, right) => left.dir.localeCompare(right.dir));
+  };
+
+  const scanAdrs = async () => {
+    const adrDir = path.join(repoRoot, 'docs', 'decisions');
+    if (!existsSync(adrDir)) return;
+    const files = await readdir(adrDir, { withFileTypes: true }).catch(() => []);
+    for (const fileEntry of files) {
+      if (
+        !fileEntry.isFile() ||
+        !fileEntry.name.endsWith('.md') ||
+        fileEntry.name === 'README.md'
+      ) {
+        continue;
+      }
+      const fullPath = path.join(adrDir, fileEntry.name);
+      const rawText = await readFile(fullPath, 'utf8').catch(() => '');
+      const titleMatch = rawText.match(/^#\s+(.+)$/m);
+      const statusMatch = rawText.match(/\*\*Status:\*\*\s*([^\r\n]+)/i);
+      const numMatch = fileEntry.name.match(/^(\d{4})-/);
+      adrs.push({
+        id: numMatch ? `ADR-${numMatch[1]}` : fileEntry.name.replace(/\.md$/i, ''),
+        title: clip((titleMatch?.[1] || fileEntry.name).replace(/^ADR\s+\d+:\s*/i, ''), 76),
+        status: clip((statusMatch?.[1] || 'Recorded').trim(), 24),
+        relPath: `docs/decisions/${fileEntry.name}`,
+      });
+    }
+    adrs.sort((left, right) => right.id.localeCompare(left.id));
+  };
+
+  const scanSkills = async () => {
+    const skillDir = path.join(repoRoot, '.agents', 'skills');
+    if (!existsSync(skillDir)) return;
+    const dirs = await readdir(skillDir, { withFileTypes: true }).catch(() => []);
+    for (const dirEntry of dirs) {
+      if (!dirEntry.isDirectory()) continue;
+      const skillFile = path.join(skillDir, dirEntry.name, 'SKILL.md');
+      if (!existsSync(skillFile)) continue;
+      const rawText = await readFile(skillFile, 'utf8').catch(() => '');
+      const descMatch = rawText.match(/^description:\s*(.+)$/m);
+      skills.push({
+        name: dirEntry.name,
+        description: clip(
+          (descMatch?.[1] || 'Workspace agent skill').replace(/^["']|["']$/g, ''),
+          96
+        ),
+        relPath: `.agents/skills/${dirEntry.name}/SKILL.md`,
+      });
+    }
+    skills.sort((left, right) => left.name.localeCompare(right.name));
+  };
+
+  const scanCompose = async () => {
+    const composeDir = path.join(repoRoot, 'deploy', 'compose');
+    if (!existsSync(composeDir)) return;
+    const files = await readdir(composeDir, { withFileTypes: true }).catch(() => []);
+    for (const fileEntry of files) {
+      if (!fileEntry.isFile() || !/\.ya?ml$/i.test(fileEntry.name)) continue;
+      composeStacks.push({
+        name: fileEntry.name,
+        relPath: `deploy/compose/${fileEntry.name}`,
+      });
+    }
+    composeStacks.sort((left, right) => left.name.localeCompare(right.name));
+  };
+
+  let magpieVaultCards = 0;
+  const scanMagpieVault = async () => {
+    const vaultDir = path.join(homeDir, '.config', 'magpie', 'memory');
+    if (!existsSync(vaultDir)) return;
+    const entries = await readdir(vaultDir).catch(() => []);
+    magpieVaultCards = entries.filter((name) => /^m_[a-f0-9]+\.md$/i.test(name)).length;
+  };
+
+  await Promise.all([
+    scanPkgGroup('apps', apps, 'app'),
+    scanPkgGroup('packages', packages, 'package'),
+    scanAdrs(),
+    scanSkills(),
+    scanCompose(),
+    scanMagpieVault(),
+  ]);
+
+  return {
+    updatedAt: new Date().toISOString(),
+    counts: {
+      apps: apps.length,
+      packages: packages.length,
+      adrs: adrs.length,
+      skills: skills.length,
+      composeStacks: composeStacks.length,
+      magpieVaultCards,
+    },
+    apps,
+    packages,
+    adrs,
+    skills,
+    composeStacks,
+    magpieVaultCards,
+  };
+}
+
+export async function readConfinedDiscoveryDoc(repoRoot, rawRelPath) {
+  const normalized = normalizePathSlashes(String(rawRelPath || '').trim());
+  if (
+    !normalized ||
+    normalized.includes('..') ||
+    normalized.includes('\0') ||
+    normalized.startsWith('/')
+  ) {
+    return null;
+  }
+  const allowedPattern =
+    /^(?:docs\/decisions\/[A-Za-z0-9._-]+\.md|\.agents\/skills\/[A-Za-z0-9._-]+\/SKILL\.md|tools\/agent-observatory\/README\.md)$/;
+  if (!allowedPattern.test(normalized)) return null;
+
+  const resolvedRoot = path.resolve(repoRoot);
+  const fullPath = path.resolve(resolvedRoot, normalized);
+  if (!fullPath.startsWith(`${resolvedRoot}${path.sep}`) || !existsSync(fullPath)) {
+    return null;
+  }
+  const rawBody = await readFile(fullPath, 'utf8').catch(() => null);
+  if (rawBody === null) return null;
+  return {
+    relPath: normalized,
+    content: redactSecrets(rawBody.slice(0, 24_000)),
+    truncated: rawBody.length > 24_000,
+  };
+}
+
+// ============================================================================
 // 5. GIT WORKSPACE RADAR & LIVE SERVER / VPS PROBES
 // ============================================================================
 
@@ -3374,6 +3545,7 @@ export function createObservatoryController(config = {}) {
   const subagentScanCache = new Map();
   const openCodeCache = { sig: '', sessions: [] };
   const magpieCache = { sig: '', bundle: null };
+  let discoveryCache = { fetchedAt: 0, catalog: null };
   const sampleCpuPct = createCpuSampler();
 
   let cachedAgApi = {
@@ -3989,10 +4161,18 @@ export function createObservatoryController(config = {}) {
       magpieBoostCalls: magpieBundle.summary.totalRecentCalls,
     };
 
+    const nowDiscoveryMs = Date.now();
+    if (!discoveryCache.catalog || nowDiscoveryMs - discoveryCache.fetchedAt > 15_000) {
+      discoveryCache = {
+        fetchedAt: nowDiscoveryMs,
+        catalog: await collectDiscoveryCatalog(repoRoot, homeDir),
+      };
+    }
+
     return {
       rawSessions: allSessions,
       snapshot: {
-        version: 5,
+        version: 6,
         generatedAt: nowIso,
         repoRoot: normalizePathSlashes(repoRoot),
         antigravityApiConnected: agBundle.connectedApi,
@@ -4031,6 +4211,7 @@ export function createObservatoryController(config = {}) {
         magpie: magpieBundle.summary,
         battle,
         alerts,
+        discovery: discoveryCache.catalog,
         activityFeed: activityFeed.slice(0, 90),
         git: cachedGitState,
         probes: cachedProbes,
@@ -4262,7 +4443,7 @@ export async function createObservatoryServer(options = {}) {
       httpResponse.end(
         JSON.stringify({
           ok: true,
-          version: 5,
+          version: 6,
           host,
           port: httpServer.address()?.port ?? port,
           clients: sseClients.size,
@@ -4270,6 +4451,22 @@ export async function createObservatoryServer(options = {}) {
           p5Vendored: existsSync(VENDOR_P5_PATH),
         })
       );
+      return;
+    }
+
+    if (reqUrl.pathname === '/api/discovery/doc') {
+      const relPath = reqUrl.searchParams.get('path') || '';
+      const docPayload = await readConfinedDiscoveryDoc(repoRoot, relPath);
+      if (!docPayload) {
+        httpResponse.writeHead(404, { ...SECURITY_HEADERS, 'Content-Type': 'application/json' });
+        httpResponse.end(JSON.stringify({ error: 'Discovery document not found or disallowed' }));
+        return;
+      }
+      httpResponse.writeHead(200, {
+        ...SECURITY_HEADERS,
+        'Content-Type': 'application/json; charset=utf-8',
+      });
+      httpResponse.end(JSON.stringify(docPayload));
       return;
     }
 
@@ -4448,7 +4645,7 @@ if (isDirectEntry) {
     .then((handle) => {
       const boundPort = handle.address?.port ?? cliOptions.port;
       process.stdout.write(
-        `MoonWitness Agent Observatory v5 listening at http://${cliOptions.host}:${boundPort}\n`
+        `MoonWitness Agent Observatory v6 listening at http://${cliOptions.host}:${boundPort}\n`
       );
       const handleShutdown = () => {
         void handle.stop().finally(() => process.exit(0));
