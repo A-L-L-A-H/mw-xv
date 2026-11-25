@@ -373,6 +373,9 @@ jobs:
     if: always() && github.event_name != 'pull_request' && failure()
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    concurrency:
+      group: gate-failure-triage
+      cancel-in-progress: false
     permissions:
       contents: read
       issues: write

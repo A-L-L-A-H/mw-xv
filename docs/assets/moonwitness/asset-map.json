@@ -4,9 +4,9 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "2251d5aee4519f4d5cb0a1c09e82bc2f7770236df1fb9ea31daa41598d428f20",
+    "assetManifestSha256": "b9adc31dbd1bad749fe35f767274e6518d9197b9b022c16ed278a2832a8f8d93",
     "tokens": "packages/ui/src/styles/tokens.css",
-    "tokensSha256": "24bb0f75d8c8042709f427d7fdc5c5bd735cbe6d930ab00c6938ab5d2557e723"
+    "tokensSha256": "42872eed742d9542837547c7d01d287e7859d6cc0cba13eca12d003a78f0465d"
   },
   "assets": [
     {
@@ -3393,7 +3393,7 @@
     {
       "source": "packages/ui/src/styles/tokens.css",
       "output": "docs/assets/moonwitness/styles/tokens.css",
-      "sha256": "24bb0f75d8c8042709f427d7fdc5c5bd735cbe6d930ab00c6938ab5d2557e723"
+      "sha256": "42872eed742d9542837547c7d01d287e7859d6cc0cba13eca12d003a78f0465d"
     }
   ]
 }
