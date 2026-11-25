@@ -10,7 +10,7 @@
 
 The addon-owned telemetry authority is implemented in the local candidate: OTLP/Qoder ingest, SQL-backed correlation and persistence, credential-derived tenant attribution, company-scoped reads, and Board Mission Control use the canonical API path. Local package, focused API and structural-gate evidence is recorded in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
 
-Acceptance records the architecture decision, not production readiness. Local PostgreSQL checks and all 8 Chromium scenarios passed. Hosted multi-replica validation and production cutover remain open, and the source SHA is not immutable until the candidate is committed.
+Acceptance records the architecture decision, not production readiness. Local PostgreSQL checks and all 8 Chromium scenarios passed. Candidate commit `7c63f05b` has a green exact-SHA CI run including `ci-gate`; hosted multi-replica validation and production cutover remain open.
 
 ## Scope
 

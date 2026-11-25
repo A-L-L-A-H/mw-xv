@@ -2,13 +2,13 @@
 
 ## Status and provenance
 
-- Status: **candidate pushed; exact-SHA CI and release acceptance pending**.
+- Status: **candidate pushed; exact-SHA CI green; hosted release gates pending**.
 - Date: 2026-11-26 (UTC).
 - Baseline for the durable-agent range: `26efd999e888e73996a9eba364aded715a8bbcc0`.
-- Result commit / remote SHA: `04b2e05cc992cceca8452e1dfa2853810bb5e943` on `origin/dev`.
-- Result Git tree: `bc77b496759746d116cb0197d7e71bb7ee2adab5`.
-- Changed-file scope: 68 durable-agent files (73 total) after excluding concurrent `.plan/`, `packages/plan-taskos/`, and `packages/orm-cloud/` changes from the baseline-to-result range.
-- Exact-SHA CI: push run `45665165952` completed with all eight required technical lanes successful; the aggregate `ci-gate` failed because GitHub Actions supplied `{ result, outputs }` objects while the parser expected strings. The follow-up remediation normalizes those objects and adds fail-closed regressions; a green exact-SHA run is still required.
+- Result commit / remote SHA: `7c63f05b9b6a92a62c9298128ba9c546d3f0105c` on `origin/dev`.
+- Result Git tree: `314dd8fba0a41a93b773ca6a241c3ba07cc90065`.
+- Changed-file scope: 15 remediation files, rebased onto remote commit `e4a10f43`; concurrent plan, UI-baseline, and orm-cloud changes remain owned by their respective remote commits.
+- Exact-SHA CI: push run `45685223055` completed successfully for `7c63f05b`; all nine required technical lanes and the aggregate `ci-gate` passed. The earlier run `45665165952` passed its technical lanes but failed aggregate parsing, which this remediation fixes.
 - Runtime used: Bun `1.4.5`; final release preflight used official Node `v24.22.3` on Linux x64, matching the repository's declared Node `24.x`. Earlier integration runs used Node `v22.22.1`; no Node 24 parity claim is inferred from those runs.
 - PostgreSQL used for integration evidence: disposable local PostgreSQL container, isolated schemas/databases, synthetic role and fixtures only.
 - ADR 0016 and ADR 0017 are Accepted as architecture decisions. Acceptance is not production or release acceptance.
@@ -62,6 +62,7 @@
 | `PATH=/tmp/mw-node24/bin:$PATH node --test scripts/ci-gate.test.mjs scripts/review-ci-evidence.test.mjs`                                                                                                                 | Exit 0; **14/14**                      | Actual GitHub Actions aggregate objects, mixed inputs, malformed entries, and every non-success conclusion fail closed.                                                                                                                                                                                                           |
 | `/tmp/opencode/bun-install/bin/bun --filter @moonwitness/orm-observability test` and `bunx --cwd apps/api vitest run tests/observability.test.ts`                                                                        | Exit 0; **69/69** and **6/6**          | Registry rejection status, credential-derived tenant scope, forged selectors, permission denial, and membership denial.                                                                                                                                                                                                           |
 | `/tmp/opencode/bun-install/bin/bun --filter @moonwitness/orm-ai test` plus ORM-AI/ORM-observability TypeScript checks                                                                                                    | Exit 0; **96/96**, 13 files            | Includes first/next/last interactive-session pages, malformed/cross-scope cursors, and HTTP cursor forwarding.                                                                                                                                                                                                                    |
+| Redundant local PostgreSQL rerun against the disposable database                                                                                                                                                         | Stopped; no pass claimed               | Connection startup produced no test results after ten minutes; the process was stopped. Authoritative PostgreSQL integration evidence is the green exact-SHA CI lane.                                                                                                                                                             |
 | `git diff --check`                                                                                                                                                                                                       | Exit 0                                 | No whitespace errors.                                                                                                                                                                                                                                                                                                             |
 | Board Playwright Chromium: `e2e/interactive-session.spec.ts` and `e2e/telemetry.spec.ts`                                                                                                                                 | Exit 0; **8/8**                        | Built API, isolated PostgreSQL, one worker; four interactive-session and four telemetry scenarios, including malformed readings and extreme finite values.                                                                                                                                                                        |
 | `bun --filter @moonwitness/ui build` and `node --test packages/ui/tests/chart.test.mjs`                                                                                                                                  | Exit 0; **4/4**                        | Singleton line-chart regression proves finite coordinates and no `NaN`/`Infinity` output.                                                                                                                                                                                                                                         |
@@ -95,11 +96,11 @@
 - [x] Node `24.x` release-preflight parity on official Node `v24.22.3`.
 - [ ] Hosted Compose cutover, multi-replica soak/failover, restore, and rollback evidence.
 - [ ] Production ingest credential provisioning and old-ingress cutover evidence.
-- [ ] Immutable result commit SHA and exact-SHA CI result: commit `04b2e05c` is recorded above; push run `45665165952` passed all technical lanes but failed aggregate `ci-gate`, so a remediation commit and green exact-SHA run remain required.
-- Commit `04b2e05c` was pushed to `origin/dev`; no deployment is authorized or performed.
+- [x] Immutable result commit SHA and exact-SHA CI result: commit `7c63f05b` / tree `314dd8fb`; push run `45685223055` passed all required technical lanes and aggregate `ci-gate`.
+- Commit `7c63f05b` was pushed to `origin/dev`; no deployment is authorized or performed.
 - [ ] `oxlint` result: invocations under Node `v22.22.1` and verified Node `v24.22.3` both crash with `Illegal instruction` (exit 132); no lint pass is claimed.
 - [x] Browser telemetry console warning: singleton-chart arithmetic is fixed; all eight acceptance scenarios pass without geometry-related `NaN` warnings.
 
 ## Handoff
 
-Preserve candidate commit `04b2e05c` and its predecessor `83897fd5`; do not reset or discard them. Local swarm state remains ignored and must not be committed. Synthetic PostgreSQL resources are disposable and may be removed after evidence capture. Record the exact-SHA CI outcome against the immutable commit, then evaluate release acceptance. Deployment remains outside this authorization.
+Preserve result commit `7c63f05b` and its durable-agent predecessors `04b2e05c` and `83897fd5`; do not reset or discard them. Local swarm state remains ignored and must not be committed. Synthetic PostgreSQL resources are disposable and may be removed after evidence capture. Exact-SHA CI is green; hosted cutover, multi-replica soak/failover, restore, rollback, and production credential evidence remain release gates. Deployment remains outside this authorization.
