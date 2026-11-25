@@ -2308,6 +2308,204 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     );
 
+    fastify.post<{ Params: { slug: string }; Body: { env?: Record<string, string>; merge?: boolean; redeploy?: boolean } }>(
+      '/api/cloud/paas/apps/:slug/env',
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/apps/:slug/env');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const slug = req.params.slug.trim();
+        if (!PAAS_SLUG_PATTERN.test(slug)) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'Invalid PaaS app slug' });
+        }
+        const body = req.body ?? {};
+        const incomingEnv =
+          body.env && typeof body.env === 'object' && !Array.isArray(body.env)
+            ? Object.fromEntries(
+                Object.entries(body.env as Record<string, unknown>).map(([k, v]) => [k, String(v)])
+              )
+            : null;
+        if (!incomingEnv) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'env must be an object' });
+        }
+
+        const cloudApp = await CloudApp.query().findOne({
+          name: slug,
+          company_id: ctx.companyId,
+          managed_by: 'paas',
+          is_active: true,
+        });
+        if (!cloudApp) {
+          mark(rule.operation, 'invalid');
+          return reply.code(404).send({ success: false, error: `App ${slug} not found` });
+        }
+
+        try {
+          // Merge env: never overwrite an existing secret with the [REDACTED] placeholder
+          const existingEnv: Record<string, string> =
+            cloudApp.env_vars && typeof cloudApp.env_vars === 'object' && !Array.isArray(cloudApp.env_vars)
+              ? { ...(cloudApp.env_vars as Record<string, string>) }
+              : {};
+          const merge = body.merge !== false;
+          const mergedEnv: Record<string, string> = merge ? { ...existingEnv } : {};
+          for (const [key, value] of Object.entries(incomingEnv)) {
+            if (value === '[REDACTED]' && existingEnv[key] && existingEnv[key] !== '[REDACTED]') {
+              // Preserve the stored secret; the redaction placeholder must never corrupt it
+              mergedEnv[key] = existingEnv[key];
+            } else {
+              mergedEnv[key] = value;
+            }
+          }
+
+          await CloudApp.query().findById(cloudApp.id).patch({ env_vars: mergedEnv });
+
+          // Trigger redeploy on the stateless agent (unless explicitly disabled)
+          if (body.redeploy !== false) {
+            assertProbeTarget(defaultAgentUrl, requestPolicy);
+            if (cloudApp.deploy_mode === 'compose' && cloudApp.compose_spec) {
+              await upAgentCompose({
+                endpoint: defaultAgentUrl,
+                slug,
+                composeSpec: cloudApp.compose_spec,
+                env: mergedEnv,
+              });
+            } else {
+              await runAgentContainer({
+                endpoint: defaultAgentUrl,
+                token: resolvedToken,
+                slug,
+                image: cloudApp.image,
+                port: cloudApp.port ?? 3000,
+                domain: cloudApp.domain ?? undefined,
+                env: mergedEnv,
+                fetchImpl,
+                timeoutMs: 60_000,
+              });
+            }
+          }
+
+          // Return redacted env (values replaced with [REDACTED])
+          const redactedEnv: Record<string, string> = {};
+          for (const key of Object.keys(mergedEnv)) {
+            redactedEnv[key] = '[REDACTED]';
+          }
+
+          mark(rule.operation, 'success');
+          return { success: true, data: { slug, env: redactedEnv } };
+        } catch (error) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(
+              error,
+              [resolvedToken, ...Object.values(incomingEnv)],
+              'PaaS env update failed'
+            ),
+          });
+        }
+      }
+    );
+
+    fastify.post<{ Params: { slug: string }; Body: { domain?: string } }>(
+      '/api/cloud/paas/apps/:slug/domain',
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/apps/:slug/domain');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const slug = req.params.slug.trim();
+        if (!PAAS_SLUG_PATTERN.test(slug)) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'Invalid PaaS app slug' });
+        }
+        const domain = typeof req.body?.domain === 'string' ? req.body.domain.trim() : '';
+        if (domain && !isValidPublicDomain(domain)) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'Invalid public domain' });
+        }
+
+        const cloudApp = await CloudApp.query().findOne({
+          name: slug,
+          company_id: ctx.companyId,
+          managed_by: 'paas',
+          is_active: true,
+        });
+        if (!cloudApp) {
+          mark(rule.operation, 'invalid');
+          return reply.code(404).send({ success: false, error: `App ${slug} not found` });
+        }
+
+        try {
+          if (domain) {
+            // Collision checks: instance/whatsapp domains and other active PaaS apps
+            const settings = await readPaasInstanceSettings();
+            const lowerDomain = domain.toLowerCase();
+            if (
+              (settings.instanceDomain && lowerDomain === settings.instanceDomain.toLowerCase()) ||
+              (settings.whatsappDomain && lowerDomain === settings.whatsappDomain.toLowerCase())
+            ) {
+              mark(rule.operation, 'invalid');
+              return reply.code(400).send({ success: false, error: 'Domain collides with instance or WhatsApp domain' });
+            }
+            const collision = await CloudApp.query()
+              .where({ managed_by: 'paas', is_active: true })
+              .where('domain', domain)
+              .first();
+            if (collision && collision.id !== cloudApp.id) {
+              mark(rule.operation, 'invalid');
+              return reply.code(400).send({ success: false, error: 'Domain is already used by another active app' });
+            }
+          }
+
+          await CloudApp.query().findById(cloudApp.id).patch({
+            domain: domain || null,
+            ...(domain ? { host_port: null } : {}),
+          });
+
+          // Recompile & redeploy compose apps, preserving stored secrets
+          if (cloudApp.deploy_mode === 'compose' && cloudApp.compose_spec) {
+            const preservedEnv: Record<string, string> =
+              cloudApp.env_vars && typeof cloudApp.env_vars === 'object' && !Array.isArray(cloudApp.env_vars)
+                ? { ...(cloudApp.env_vars as Record<string, string>) }
+                : {};
+            await compileCoolifyCompose({
+              slug,
+              tenantId: `company-${ctx.companyId}`,
+              composeYaml: cloudApp.compose_spec,
+              defaultPort: cloudApp.port ?? 3000,
+              primaryDomain: domain || undefined,
+              existingEnv: preservedEnv,
+              userEnv: {},
+            });
+            await upAgentCompose({
+              endpoint: defaultAgentUrl,
+              slug,
+              composeSpec: cloudApp.compose_spec,
+              env: preservedEnv,
+            });
+          }
+
+          await reconcileCaddyWithAgent({});
+
+          mark(rule.operation, 'success');
+          return { success: true, data: { slug, domain: domain || null } };
+        } catch (error) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(error, [resolvedToken], 'PaaS domain update failed'),
+          });
+        }
+      }
+    );
+
     fastify.get<{ Params: { slug: string } }>(
       '/api/cloud/paas/apps/:slug/logs/stream',
       async (req, reply) => {

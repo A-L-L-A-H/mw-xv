@@ -364,7 +364,7 @@
 
 ---
 
-## - [ ] M31 — Add `POST /apps/:slug/env` & `POST /apps/:slug/domain`
+## - [x] M31 — Add `POST /apps/:slug/env` & `POST /apps/:slug/domain`
 
 - **Owner File (MODIFY):** `packages/orm-cloud/src/http.ts`
 - **Depends On:** `M30`
