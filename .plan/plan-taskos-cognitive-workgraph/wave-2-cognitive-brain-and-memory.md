@@ -53,7 +53,7 @@
 
 ---
 
-## - [ ] T14 — Implement 2-Hop Knowledge Graph Engine & Causal Impact Query (`src/brain/knowledge-graph.ts`)
+## - [x] T14 — Implement 2-Hop Knowledge Graph Engine & Causal Impact Query (`src/brain/knowledge-graph.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/brain/knowledge-graph.ts`
   - `packages/plan-taskos/src/brain/knowledge-graph.ts` (CREATE)
