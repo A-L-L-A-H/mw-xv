@@ -83,7 +83,7 @@
 
 ---
 
-## - [ ] T04 — Implement URN Grammar, POSIX Path Normalizer & Secret Redaction Membrane
+## - [x] T04 — Implement URN Grammar, POSIX Path Normalizer & Secret Redaction Membrane
 
 - **Owner File(s):** `packages/plan-taskos/src/core/urn.ts`, `packages/plan-taskos/src/core/paths.ts`, `packages/plan-taskos/src/core/redaction.ts`
   - `packages/plan-taskos/src/core/urn.ts` (CREATE)
