@@ -5,15 +5,12 @@
   type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import {
   computeSignalFinalScore,
   type SignalScoreInput,
   type SignalScoreWeights,
 } from './scoring.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function parseWeights(value: unknown): SignalScoreWeights | undefined {
   if (value === undefined) return undefined;

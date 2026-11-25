@@ -54,6 +54,7 @@ export function DialogContent({
         </div>
         {showCloseButton && (
           <Primitive.Close
+            type="button"
             data-slot="dialog-close"
             className="mw-ui-dialog-close absolute top-4 right-4 border-2 border-ink bg-paper p-1 text-ink transition-transform hover:-translate-y-0.5 hover:bg-[var(--mw-magenta)] hover:text-[var(--mw-on-magenta)] shadow-[2px_2px_0_0_var(--mw-ink)] disabled:pointer-events-none [&_svg]:size-4"
           >
@@ -92,7 +93,9 @@ export function DialogFooter({
       {children}
       {showCloseButton && (
         <Primitive.Close asChild>
-          <Button variant="outline">Close</Button>
+          <Button type="button" variant="outline">
+            Close
+          </Button>
         </Primitive.Close>
       )}
     </div>

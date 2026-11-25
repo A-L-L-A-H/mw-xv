@@ -17,6 +17,18 @@ import { StatusBar } from '@moonwitness/ui/components/status-bar';
 import { TagInput } from '@moonwitness/ui/components/tag-input';
 import { UpdateBanner, type UpdateBannerStatus } from '@moonwitness/ui/components/update-banner';
 
+export {
+  AiCoverageShowcase,
+  AuthCoverageShowcase,
+  BoardProofShowcase,
+  ChartsShowcase,
+  IntegrationCoverageShowcase,
+  OrmStorageCoverageShowcase,
+  RequestCoverageShowcase,
+  VisualUniverseShowcase,
+  WorkbenchProofShowcase,
+} from './ShowcaseLab.js';
+
 const initialLogEntries: readonly LogConsoleEntry[] = [
   {
     id: 'log-1',

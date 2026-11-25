@@ -17,6 +17,7 @@ import {
 import { installAddons } from '@moonwitness/orm';
 import { manifest as baseManifest } from '@moonwitness/orm-base';
 import { manifest as knowledgeManifest } from '@moonwitness/orm-knowledge';
+import { isRecord } from '@moonwitness/types';
 import { config } from '../config/env.js';
 import { createDatabase } from '../database/knex.js';
 
@@ -31,10 +32,6 @@ const objectId = 'mw:entity:e2e-live-knowledge-object';
 const claim = 'Synthetic local PostgreSQL Board E2E assertion.';
 const locator = 'Q7:46';
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function matchesPublicMetadataRecord(
   value: unknown,

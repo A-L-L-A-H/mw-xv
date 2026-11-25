@@ -58,7 +58,7 @@ function CommandInput({
       data-slot="command-input-wrapper"
       className="mw-ui-command-input-wrap flex h-12 items-center gap-2 border-b-2 border-ink px-3 bg-paper"
     >
-      <SearchIcon className="size-4 shrink-0 text-ink" strokeWidth={2.5} />
+      <SearchIcon className="size-4 shrink-0 text-ink" strokeWidth={2.5} aria-hidden="true" />
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(

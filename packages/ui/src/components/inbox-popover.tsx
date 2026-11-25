@@ -121,7 +121,7 @@ export function InboxPopover({
           ) : isEmpty ? (
             <div className="mw-ui-inbox-empty">
               <span className="mw-ui-inbox-empty-icon" aria-hidden="true">
-                {emptyIcon ?? <InboxIcon size={24} />}
+                {emptyIcon ?? <InboxIcon size={24} aria-hidden="true" />}
               </span>
               <p className="mw-ui-inbox-empty-title">{emptyTitle}</p>
               {emptyDescription ? (

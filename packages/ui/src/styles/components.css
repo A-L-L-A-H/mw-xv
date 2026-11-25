@@ -1298,7 +1298,8 @@
     color: inherit;
   }
   .mw-ui-panel[data-surface='ink'] .mw-ui-panel-description,
-  .mw-ui-panel[data-surface='ink'] .mw-ui-page-header-description {
+  .mw-ui-panel[data-surface='ink'] .mw-ui-page-header-description,
+  .mw-ui-panel[data-surface='ink'] .mw-ui-comic-panel-kicker {
     color: color-mix(in srgb, var(--mw-paper) 82%, var(--mw-ink));
   }
   .mw-ui-panel[data-surface='ink'] .mw-ui-page-header-title {
@@ -1407,10 +1408,6 @@
     transform: translate(-1px, -1px);
     box-shadow: 3px 3px 0 var(--mw-magenta);
   }
-  .mw-ui-pagination button:focus-visible {
-    outline: 3px solid var(--mw-focus);
-    outline-offset: 2px;
-  }
 
   .mw-ui-table-wrap {
     position: relative;
@@ -1517,13 +1514,6 @@
     min-height: 1.5rem;
     min-width: 1.5rem;
     padding: 0;
-  }
-  .mw-ui-tag-remove:focus-visible,
-  .mw-ui-smart-button:focus-visible,
-  .mw-ui-kanban-card:focus-visible,
-  .mw-ui-filter-facet:focus-visible {
-    outline: 3px solid var(--mw-focus);
-    outline-offset: 2px;
   }
   .mw-ui-tag-input .mw-ui-input {
     min-width: 7rem;
@@ -1866,11 +1856,9 @@
     background: var(--mw-surface);
     cursor: pointer;
   }
-  .mw-ui-dialog-close:focus-visible,
-  .mw-ui-tooltip-content:focus-visible,
-  .mw-ui-tabs-trigger:focus-visible {
+  .mw-ui-command-input-wrap:focus-within {
     outline: 3px solid var(--mw-focus);
-    outline-offset: 2px;
+    outline-offset: -3px;
   }
   .mw-ui-dialog-header {
     display: flex;
@@ -2070,6 +2058,23 @@
     width: 100%;
     min-width: 0;
   }
+  .mw-ui-pagination button:focus-visible,
+  .mw-ui-tag-remove:focus-visible,
+  .mw-ui-smart-button:focus-visible,
+  .mw-ui-kanban-card:focus-visible,
+  .mw-ui-filter-facet:focus-visible,
+  .mw-ui-dialog-close:focus-visible,
+  .mw-ui-sheet-close:focus-visible,
+  .mw-ui-dialog-content:focus-visible,
+  .mw-ui-sheet-content:focus-visible,
+  .mw-ui-popover-content:focus-visible,
+  .mw-ui-menu-content:focus-visible,
+  .mw-ui-select-content:focus-visible,
+  .mw-ui-tooltip-content:focus-visible,
+  .mw-ui-tabs-trigger:focus-visible,
+  .mw-ui-chart-scroll:focus-visible,
+  .mw-ui-layered-scene:focus-visible,
+  .mw-ui-breadcrumbs-link:focus-visible,
   .mw-ui-select-trigger:focus-visible {
     outline: 3px solid var(--mw-focus);
     outline-offset: 2px;
@@ -2127,55 +2132,6 @@
     .mw-ui-dialog-footer {
       flex-direction: row;
       justify-content: flex-end;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .mw-ui-button,
-    .mw-ui-button::after,
-    .mw-ui-button::before,
-    .mw-ui-badge,
-    .mw-ui-avatar,
-    .mw-ui-checkbox,
-    .mw-ui-switch,
-    .mw-ui-switch-thumb,
-    .mw-ui-input,
-    .mw-ui-select,
-    .mw-ui-textarea,
-    .mw-ui-select-trigger,
-    .mw-ui-pagination button,
-    .mw-ui-smart-button,
-    .mw-ui-kanban-card,
-    .mw-ui-metric-tile,
-    .mw-ui-table-row,
-    .mw-ui-status-step,
-    .mw-ui-status-step[data-state='active'] .mw-ui-status-indicator,
-    .mw-ui-paper-note,
-    .mw-ui-empty-state,
-    .mw-ui-artwork-frame,
-    .mw-ui-artwork-frame-grunge::after,
-    .mw-ui-tabs-trigger,
-    .mw-ui-tabs-trigger[data-state='active']::after,
-    .mw-ui-chart-bar,
-    .mw-ui-chart-line,
-    .mw-ui-chart-point,
-    .mw-ui-skeleton {
-      transition: none;
-      animation: none;
-    }
-    .mw-ui-chart-line {
-      stroke-dashoffset: 0;
-    }
-
-    .mw-ui-dialog-overlay,
-    .mw-ui-dialog-content,
-    .mw-ui-sheet-content,
-    .mw-ui-popover-content,
-    .mw-ui-menu-content,
-    .mw-ui-select-content,
-    .mw-ui-tooltip-content {
-      animation: none !important;
-      transition: none !important;
     }
   }
 }
@@ -2298,9 +2254,15 @@
       animation: none;
     }
     .mw-ui-loading-progress > span:first-child {
-      width: 38%;
       opacity: 0.6;
     }
+  }
+  .mw-ui-loading-progress[data-reduced-motion='true'] > span:first-child,
+  .mw-ui-loading-spinner[data-reduced-motion='true'] {
+    animation: none;
+  }
+  .mw-ui-loading-progress[data-reduced-motion='true'] > span:first-child {
+    opacity: 0.6;
   }
 }
 
@@ -3076,35 +3038,73 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
+    .mw-ui-button,
+    .mw-ui-button::after,
+    .mw-ui-button::before,
+    .mw-ui-badge,
+    .mw-ui-avatar,
+    .mw-ui-checkbox,
+    .mw-ui-switch,
+    .mw-ui-switch-thumb,
+    .mw-ui-input,
+    .mw-ui-select,
+    .mw-ui-textarea,
+    .mw-ui-select-trigger,
+    .mw-ui-pagination button,
+    .mw-ui-smart-button,
+    .mw-ui-kanban-card,
+    .mw-ui-metric-tile,
+    .mw-ui-table-row,
+    .mw-ui-status-step,
+    .mw-ui-status-step[data-state='active'] .mw-ui-status-indicator,
+    .mw-ui-paper-note,
+    .mw-ui-paper-note.mw-ui-motion-visible,
+    .mw-ui-empty-state,
+    .mw-ui-empty-state.mw-ui-motion-visible,
+    .mw-ui-artwork-frame,
+    .mw-ui-artwork-frame-grunge::after,
+    .mw-ui-tabs-trigger,
+    .mw-ui-tabs-trigger[data-state='active']::after,
+    .mw-ui-chart-bar,
+    .mw-ui-chart-line,
+    .mw-ui-chart-point,
+    .mw-ui-skeleton,
     .mw-ui-speed-lines-pulse,
-    .mw-ui-ink-underline-path,
     .mw-ui-motion-visible .mw-ui-ink-underline-path,
-    .mw-ui-speech-bubble,
     .mw-ui-speech-bubble.mw-ui-motion-visible,
     .mw-ui-live-indicator[data-active='true'] .mw-ui-live-indicator-dot,
-    .mw-ui-status-step[data-state='active'] .mw-ui-status-indicator,
-    .mw-ui-interactive-surface:hover .mw-ui-doodle,
     .mw-ui-interactive-surface:hover .mw-ui-doodle.mw-ui-motion-visible,
-    .mw-ui-paper-note.mw-ui-motion-visible,
-    .mw-ui-empty-state.mw-ui-motion-visible,
-    .mw-ui-anime-burst-active,
     .mw-ui-anime-burst-active.mw-ui-motion-visible,
-    .mw-ui-anime-action-lines-sweep,
     .mw-ui-anime-action-lines-sweep.mw-ui-motion-visible,
-    .mw-ui-grunge-stamp,
     .mw-ui-grunge-stamp.mw-ui-motion-visible,
-    .mw-ui-zine-sticker,
-    .mw-ui-manga-panel,
+    .mw-ui-sticker-badge,
     .mw-ui-manga-panel.mw-ui-motion-visible,
-    .mw-ui-doodle,
     .mw-ui-scene-particle,
-    .mw-ui-comic-transition {
-      animation: none;
-    }
+    .mw-ui-comic-transition,
     .mw-ui-quest-card-fill,
     .mw-ui-reward-panel-fill {
+      animation: none;
       transition: none;
     }
+    .mw-ui-dialog-overlay,
+    .mw-ui-sheet-overlay,
+    .mw-ui-dialog-content,
+    .mw-ui-dialog-close,
+    .mw-ui-sheet-content,
+    .mw-ui-sheet-close,
+    .mw-ui-popover-content,
+    .mw-ui-menu-content,
+    .mw-ui-select-content,
+    .mw-ui-tooltip-content,
+    .mw-ui-command-item,
+    .mw-ui-mode-picker [data-mode-option],
+    .mw-ui-update-banner .animate-spin,
+    .mw-ui-layered-scene-stage,
+    .mw-ui-layered-scene-layer {
+      animation: none !important;
+      transition: none !important;
+    }
+    .mw-ui-chart-line,
     .mw-ui-ink-underline-path,
     .mw-ui-motion-visible .mw-ui-ink-underline-path {
       stroke-dashoffset: 0;
@@ -3114,6 +3114,33 @@
       opacity: 1;
       transform: rotate(-2deg);
     }
+    .mw-ui-button:hover:not(:disabled):not([aria-disabled='true']),
+    .mw-ui-button:active:not(:disabled):not([aria-disabled='true']),
+    .mw-ui-button[data-treatment='brush']:hover:not(:disabled)::before,
+    .mw-ui-button[data-treatment='brush']:active:not(:disabled):not([aria-disabled='true'])::before,
+    .mw-ui-pagination button:hover:not(:disabled),
+    .mw-ui-dialog-close:hover,
+    .mw-ui-sheet-close:hover,
+    .mw-ui-input:focus-visible,
+    .mw-ui-select:focus-visible,
+    .mw-ui-textarea:focus-visible {
+      transform: none;
+    }
+  }
+  .mw-ui-speed-lines[data-reduced-motion='true'] .mw-ui-speed-lines-pulse,
+  .mw-ui-ink-underline[data-reduced-motion='true'] .mw-ui-ink-underline-path,
+  .mw-ui-speech-bubble[data-reduced-motion='true'],
+  .mw-ui-live-indicator[data-reduced-motion='true'] .mw-ui-live-indicator-dot,
+  .mw-ui-anime-burst[data-reduced-motion='true'],
+  .mw-ui-anime-action-lines[data-reduced-motion='true'],
+  .mw-ui-grunge-stamp[data-reduced-motion='true'],
+  .mw-ui-manga-panel[data-reduced-motion='true'],
+  .mw-ui-doodle[data-reduced-motion='true'],
+  .mw-ui-scene-particles[data-reduced-motion='true'] .mw-ui-scene-particle {
+    animation: none;
+  }
+  .mw-ui-ink-underline[data-reduced-motion='true'] .mw-ui-ink-underline-path {
+    stroke-dashoffset: 0;
   }
   .mw-ui-confirm-dialog-warning,
   .mw-ui-confirm-dialog-error {

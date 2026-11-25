@@ -163,6 +163,7 @@ export const CharacterReaction = forwardRef<HTMLDivElement, CharacterReactionPro
           variant={bubbleVariant}
           tail={bubbleTail}
           speaker={speaker}
+          reducedMotion={reducedMotion}
           role={live !== 'off' ? 'status' : undefined}
           aria-live={live !== 'off' ? live : undefined}
           aria-label={statusLabel}

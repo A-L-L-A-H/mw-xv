@@ -5,6 +5,7 @@ import {
   type AddonHttpReply,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import {
   mapFrameworks,
   testControl,
@@ -17,10 +18,6 @@ import {
   type MaturityAssessmentInput,
   type RiskScoreInput,
 } from './compliance-engine.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 const VALID_SEVERITIES = ['critical', 'high', 'medium', 'low', 'informational'];
 const VALID_LIKELIHOODS = ['almost_certain', 'likely', 'possible', 'unlikely', 'rare'];

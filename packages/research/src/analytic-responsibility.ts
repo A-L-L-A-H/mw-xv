@@ -1,3 +1,4 @@
+import { isRecord } from '@moonwitness/types';
 import {
   createJsonSchemaValidator,
   hashCanonicalJson,
@@ -138,10 +139,6 @@ const validateSchema = createJsonSchemaValidator(
   analyticSchema as unknown as JsonSchemaContract,
   'does not match the scoped analytic responsibility contract'
 );
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /** Validate analytic responsibility request structure, factor weights, and evidence prerequisites. */
 export function validateAnalyticResponsibilityRequest(value: unknown): KnowledgeValidationResult {

@@ -7,13 +7,10 @@ import {
   type LocalPassageResolver,
   type ResolvedCanonicalPassage,
 } from '@moonwitness/local-ai';
+import { isRecord } from '@moonwitness/types';
 import { resolveCorpusDataRoot } from '../corpus-root.js';
 import { resolveConceptProfileEvidence } from '../research-review.js';
 import { hasValidationError } from './helpers.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 const quranReference = Object.freeze({
   sourceId: 'mw:source:tanzil-quran-text',

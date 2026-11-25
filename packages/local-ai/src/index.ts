@@ -1,3 +1,5 @@
+import { isRecord } from '@moonwitness/types';
+
 export type LocalAiMode = 'disabled' | 'local';
 export type LocalAiProvider = 'simple-v1' | 'ollama' | 'openai-compat';
 export {
@@ -144,10 +146,6 @@ export function readLocalAiConfig(
     ...(provider ? { provider } : {}),
     ...(model ? { model } : {}),
   };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function extractProviderText(provider: LocalAiProvider, body: unknown): string | undefined {

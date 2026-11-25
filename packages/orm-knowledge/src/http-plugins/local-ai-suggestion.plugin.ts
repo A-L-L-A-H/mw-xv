@@ -5,6 +5,7 @@ import {
   validateResearchSuggestionEnvelopeWithResolver,
   type TrustedSuggestionResolver,
 } from '@moonwitness/research';
+import { isRecord } from '@moonwitness/types';
 import type { Knex } from 'knex';
 import { resolveCorpusDataRoot } from '../corpus-root.js';
 import { resolveConceptProfileEvidence } from '../research-review.js';
@@ -15,10 +16,6 @@ import {
   storeResearchSuggestions,
 } from '../research-suggestion-store.js';
 import { hasValidationError } from './helpers.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 const sources = [
   {

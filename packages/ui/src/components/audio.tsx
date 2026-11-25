@@ -88,12 +88,12 @@ export function SoundToggle() {
     >
       {enabled ? (
         <>
-          <VolumeIcon className="size-4 sm:hidden" />
+          <VolumeIcon className="size-4 sm:hidden" aria-hidden="true" />
           <span className="hidden sm:inline">Sound on</span>
         </>
       ) : (
         <>
-          <VolumeOffIcon className="size-4 sm:hidden" />
+          <VolumeOffIcon className="size-4 sm:hidden" aria-hidden="true" />
           <span className="hidden sm:inline">Sound off</span>
         </>
       )}

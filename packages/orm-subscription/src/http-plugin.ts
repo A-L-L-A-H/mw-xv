@@ -5,16 +5,13 @@ import {
   type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import {
   calculateMidCycleProration,
   calculateMrrAndArr,
   type ProrationInput,
   type SubscriptionRevenueRecord,
 } from './revenue-engine.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 export const subscriptionMetricsHttpPlugin: AddonHttpPlugin = async (app) => {
   app.post('/api/subscriptions/revenue/metrics', async (req, reply) => {

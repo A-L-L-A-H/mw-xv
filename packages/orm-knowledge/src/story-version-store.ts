@@ -1,3 +1,4 @@
+import { isRecord } from '@moonwitness/types';
 import { sha256Hex } from '@moonwitness/types/node';
 import { createJsonSchemaValidator, type KnowledgeValidationResult } from '@moonwitness/knowledge';
 import type { Knex } from 'knex';
@@ -77,10 +78,6 @@ const validateSchema = createJsonSchemaValidator(
   'does not match the versioned story/page contract'
 );
 
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isAuthenticatedEditor(value: AuthenticatedStoryEditor): boolean {
   return (
     Number.isSafeInteger(value.userId) &&
@@ -95,7 +92,7 @@ function isAuthenticatedEditor(value: AuthenticatedStoryEditor): boolean {
 export function validateStoryVersion(value: unknown): KnowledgeValidationResult {
   const schemaResult = validateSchema(value);
   if (!schemaResult.valid) return schemaResult;
-  if (!isObject(value) || !Array.isArray(value.pages) || value.pages.length > maxStoryPages) {
+  if (!isRecord(value) || !Array.isArray(value.pages) || value.pages.length > maxStoryPages) {
     return {
       valid: false,
       issues: [{ path: '/pages', keyword: 'maxItems', message: 'must contain 1–100 pages' }],
@@ -103,7 +100,7 @@ export function validateStoryVersion(value: unknown): KnowledgeValidationResult 
   }
   const pageIds = new Set<string>();
   for (const [index, rawPage] of value.pages.entries()) {
-    if (!isObject(rawPage)) continue;
+    if (!isRecord(rawPage)) continue;
     if (rawPage.page_order !== index + 1) {
       return {
         valid: false,
@@ -207,7 +204,7 @@ async function readVersionRow(
     if (
       canonicalResearchJson(story) !== storyJson ||
       !validateStoryVersion(story).valid ||
-      !isObject(story) ||
+      !isRecord(story) ||
       story.story_id !== row.story_id ||
       story.version !== Number(row.version) ||
       story.title !== row.title ||

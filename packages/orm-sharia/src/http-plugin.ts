@@ -13,6 +13,7 @@ import {
   HalalComplianceAudit,
 } from './models/index.js';
 import { Company, Partner, User, ConfigParameter } from '@moonwitness/orm-base';
+import { isRecord } from '@moonwitness/types';
 import {
   calculateZakat,
   distributeProfitSharing,
@@ -28,10 +29,6 @@ import {
   type WaqfMerkleInput,
   type WaqfMerkleResult,
 } from './sharia-engine.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 export const shariaHttpPlugin: AddonHttpPlugin = async (app) => {
   app.post('/api/sharia/zakat/calculate', async (req, reply) => {

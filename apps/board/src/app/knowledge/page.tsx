@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { isRecord } from '@moonwitness/types';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { EmptyState } from '@moonwitness/ui/components/empty-state';
@@ -35,10 +36,6 @@ type LoadState =
   | { readonly status: 'unavailable'; readonly message: string };
 
 const sha256Pattern = /^[a-f0-9]{64}$/u;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function isValidCitation(value: unknown): value is PublicCitation {
   return (

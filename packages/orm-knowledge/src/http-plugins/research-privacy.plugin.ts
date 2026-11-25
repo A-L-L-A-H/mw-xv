@@ -1,14 +1,11 @@
 import type { AddonHttpPlugin } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import {
   applyPrivacyRevocation,
   PrivacyRevocationError,
   readActivePrivacyProjections,
 } from '../privacy-revocation.js';
 import { hasValidationError } from './helpers.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 const digestPattern = '^[a-f0-9]{64}$';
 const idempotencyPattern = '^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$';

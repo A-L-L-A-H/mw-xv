@@ -3,6 +3,7 @@
 import { useId, useMemo, type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from '../lib/cn.js';
 import { useAnimationVisibility } from '../lib/use-animation-visibility.js';
+import { useReducedMotion } from '../lib/use-reduced-motion.js';
 
 export function EditorialTexture({
   className,
@@ -48,10 +49,12 @@ export function LoadingProgress({
   className?: string;
 }) {
   const motion = useAnimationVisibility<HTMLDivElement>();
+  const reduced = useReducedMotion();
   return (
     <div
       ref={motion.ref}
       className={cn('mw-ui-loading-progress', motion.visibilityClass, className)}
+      data-reduced-motion={reduced ? 'true' : undefined}
       role="status"
       aria-label={label}
     >
@@ -64,10 +67,12 @@ export function LoadingProgress({
 /** Compact inline indicator for buttons while their associated action is pending. */
 export function LoadingSpinner({ className }: { className?: string }) {
   const motion = useAnimationVisibility<HTMLSpanElement>();
+  const reduced = useReducedMotion();
   return (
     <span
       ref={motion.ref}
       aria-hidden="true"
+      data-reduced-motion={reduced ? 'true' : undefined}
       className={cn('mw-ui-loading-spinner', motion.visibilityClass, className)}
     />
   );
@@ -106,6 +111,7 @@ export function SpeedLines({
   animate?: boolean;
 }) {
   const motion = useAnimationVisibility<SVGSVGElement>();
+  const reduced = useReducedMotion();
   const originX = origin[0];
   const originY = origin[1];
   const paths = useMemo(() => {
@@ -129,18 +135,22 @@ export function SpeedLines({
     });
   }, [count, originX, originY, inner, seed]);
 
+  const shouldPulse = animate && !reduced;
+
   return (
     <svg
-      aria-hidden
+      aria-hidden="true"
+      focusable="false"
       ref={motion.ref}
       viewBox="0 0 1000 1000"
       preserveAspectRatio="none"
+      data-reduced-motion={reduced ? 'true' : undefined}
       className={cn('mw-ui-speed-lines', motion.visibilityClass, className)}
     >
       <g
         fill="currentColor"
         className={animate ? 'mw-ui-speed-lines-pulse' : undefined}
-        data-pulse-active={animate && motion.isVisible ? 'true' : 'false'}
+        data-pulse-active={shouldPulse && motion.isVisible ? 'true' : 'false'}
       >
         {paths.map((d, i) => (
           <path key={i} d={d} />
@@ -159,12 +169,15 @@ export function InkUnderline({
   color?: string;
 }) {
   const motion = useAnimationVisibility<SVGSVGElement>();
+  const reduced = useReducedMotion();
   return (
     <svg
-      aria-hidden
+      aria-hidden="true"
+      focusable="false"
       ref={motion.ref}
       viewBox="0 0 200 16"
       preserveAspectRatio="none"
+      data-reduced-motion={reduced ? 'true' : undefined}
       className={cn('mw-ui-ink-underline', motion.visibilityClass, className)}
     >
       <path
@@ -191,6 +204,7 @@ export function Doodle({
   style?: CSSProperties;
 }) {
   const motion = useAnimationVisibility<SVGSVGElement>();
+  const reduced = useReducedMotion();
   const common = {
     fill: 'none',
     stroke: 'currentColor',
@@ -250,6 +264,7 @@ export function Doodle({
       focusable="false"
       ref={motion.ref}
       viewBox={kind === 'crown' ? '0 0 28 24' : '0 0 24 24'}
+      data-reduced-motion={reduced ? 'true' : undefined}
       className={cn('mw-ui-doodle', motion.visibilityClass, className)}
       style={style}
     >
@@ -476,6 +491,7 @@ export function AnimeImpactBurst({
   style?: CSSProperties;
 }) {
   const motion = useAnimationVisibility<SVGSVGElement>();
+  const reduced = useReducedMotion();
   const shapes: Record<typeof variant, ReactNode> = {
     impact: (
       <polygon
@@ -512,10 +528,11 @@ export function AnimeImpactBurst({
       viewBox="0 0 100 100"
       className={cn(
         'mw-ui-anime-burst',
-        animate ? 'mw-ui-anime-burst-active' : undefined,
+        animate && !reduced ? 'mw-ui-anime-burst-active' : undefined,
         motion.visibilityClass,
         className
       )}
+      data-reduced-motion={reduced ? 'true' : undefined}
       data-variant={variant}
       style={style}
     >
@@ -579,6 +596,7 @@ export function AnimeActionLines({
   className?: string;
 }) {
   const motion = useAnimationVisibility<SVGSVGElement>();
+  const reduced = useReducedMotion();
   const count = density === 'dense' ? 42 : 20;
 
   const streaks = useMemo(() => {
@@ -615,12 +633,13 @@ export function AnimeActionLines({
       preserveAspectRatio="none"
       className={cn(
         'mw-ui-anime-action-lines',
-        animate ? 'mw-ui-anime-action-lines-sweep' : undefined,
+        animate && !reduced ? 'mw-ui-anime-action-lines-sweep' : undefined,
         motion.visibilityClass,
         className
       )}
       data-density={density}
       data-direction={direction}
+      data-reduced-motion={reduced ? 'true' : undefined}
     >
       <g fill="currentColor">
         {streaks.map((d, idx) => (
@@ -644,10 +663,16 @@ export function GrungeStamp({
   className?: string;
 }) {
   const motion = useAnimationVisibility<HTMLSpanElement>();
+  const reduced = useReducedMotion();
   return (
     <span
       ref={motion.ref}
-      className={cn('mw-ui-grunge-stamp', motion.visibilityClass, className)}
+      className={cn(
+        'mw-ui-grunge-stamp',
+        reduced ? 'mw-ui-motion-paused' : motion.visibilityClass,
+        className
+      )}
+      data-reduced-motion={reduced ? 'true' : undefined}
       data-tilt={tilt}
       data-tone={tone}
     >
@@ -747,17 +772,24 @@ export function MangaPanel({
   className?: string;
 }) {
   const motion = useAnimationVisibility<HTMLDivElement>();
+  const reduced = useReducedMotion();
   return (
     <div
       ref={motion.ref}
-      className={cn('mw-ui-manga-panel', motion.visibilityClass, className)}
+      className={cn(
+        'mw-ui-manga-panel',
+        reduced ? 'mw-ui-motion-paused' : motion.visibilityClass,
+        className
+      )}
       data-accent={accent}
+      data-reduced-motion={reduced ? 'true' : undefined}
       data-surface={surface}
     >
       {actionLines ? (
         <AnimeActionLines
           direction={speedDirection}
           density="light"
+          animate={!reduced}
           className="mw-ui-manga-panel-lines"
         />
       ) : null}
@@ -770,8 +802,17 @@ export function MangaPanel({
 /** Comic speech bubble for playful hints like record counts. */
 export function SpeechBubble({ children, className }: { children: ReactNode; className?: string }) {
   const motion = useAnimationVisibility<HTMLDivElement>();
+  const reduced = useReducedMotion();
   return (
-    <div ref={motion.ref} className={cn('mw-ui-speech-bubble', motion.visibilityClass, className)}>
+    <div
+      ref={motion.ref}
+      data-reduced-motion={reduced ? 'true' : undefined}
+      className={cn(
+        'mw-ui-speech-bubble',
+        reduced ? 'mw-ui-motion-paused' : motion.visibilityClass,
+        className
+      )}
+    >
       {children}
     </div>
   );
@@ -790,11 +831,17 @@ export function LiveIndicator({
   className?: string;
 }) {
   const motion = useAnimationVisibility<HTMLSpanElement>();
+  const reduced = useReducedMotion();
   return (
     <span
       ref={motion.ref}
-      className={cn('mw-ui-live-indicator', motion.visibilityClass, className)}
+      className={cn(
+        'mw-ui-live-indicator',
+        reduced ? 'mw-ui-motion-paused' : motion.visibilityClass,
+        className
+      )}
       data-active={active ? 'true' : 'false'}
+      data-reduced-motion={reduced ? 'true' : undefined}
       data-variant={variant}
     >
       <span aria-hidden="true" className="mw-ui-live-indicator-dot" />

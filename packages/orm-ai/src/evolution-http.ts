@@ -1,4 +1,5 @@
 import type { AddonHttpPlugin, AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import {
   evaluateObligationDrift,
   synthesizeEvolutionCandidates,
@@ -14,10 +15,6 @@ import {
   type AblationCaseResult,
   type CandidateAblationGateInput,
 } from '@moonwitness/ai-evaluation';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function isStringRecord(value: unknown): value is Record<string, string> {
   if (!isRecord(value)) return false;

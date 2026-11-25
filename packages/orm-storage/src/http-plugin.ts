@@ -5,11 +5,8 @@ import {
   type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import { verifyChunkManifest, type ChunkManifest } from './encrypted-vault.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 export const storageVaultHttpPlugin: AddonHttpPlugin = async (app) => {
   app.post('/api/storage/vault/manifest/verify', async (req, reply) => {

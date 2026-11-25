@@ -1,3 +1,5 @@
+import { isRecord } from '@moonwitness/types';
+
 export const AUTOMATION_DSL_OPS = [
   'eq',
   'ne',
@@ -29,10 +31,6 @@ export type AutomationDslNode = AutomationDslComparison | AutomationDslGroup;
 
 export type AutomationEvaluationResult =
   { readonly matched: true } | { readonly matched: false; readonly reason: string };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 export function isDslGroup(node: AutomationDslNode): node is AutomationDslGroup {
   return isRecord(node) && ('all' in node || 'any' in node);

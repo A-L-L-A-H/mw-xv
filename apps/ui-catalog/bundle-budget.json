@@ -2,11 +2,11 @@
   "schemaVersion": 2,
   "groups": {
     "initial": {
-      "javascript": { "maxRawBytes": 550000, "maxGzipBytes": 160000 },
+      "javascript": { "maxRawBytes": 522000, "maxGzipBytes": 154000 },
       "stylesheet": { "maxRawBytes": 162000, "maxGzipBytes": 29000 }
     },
     "lazy": {
-      "javascript": { "maxRawBytes": 82000, "maxGzipBytes": 26000 },
+      "javascript": { "maxRawBytes": 108000, "maxGzipBytes": 32000 },
       "stylesheet": { "maxRawBytes": 1, "maxGzipBytes": 1 }
     },
     "total": {
@@ -33,7 +33,7 @@
     },
     "extended": {
       "entry": "src/ExtendedControlsLab.tsx",
-      "javascript": { "maxRawBytes": 43000, "maxGzipBytes": 12000 }
+      "javascript": { "maxRawBytes": 73000, "maxGzipBytes": 20000 }
     }
   }
 }

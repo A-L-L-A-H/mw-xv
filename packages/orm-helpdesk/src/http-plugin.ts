@@ -15,6 +15,7 @@ import {
   CsatSurvey,
 } from './models/index.js';
 import { Company, Partner, User } from '@moonwitness/orm-base';
+import { isRecord } from '@moonwitness/types';
 import {
   resolveSlaDeadlines,
   evaluateSlaState,
@@ -28,10 +29,6 @@ import {
   type KnowledgeArticleLike,
   type CsatSurveyLike,
 } from './helpdesk-engine.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function loadSlaPolicies(db: Knex, companyId: number): Promise<SlaPolicyLike[]> {
   return db('helpdesk_sla_policies')

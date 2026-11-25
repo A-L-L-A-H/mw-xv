@@ -1,5 +1,8 @@
+'use client';
+
 import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 import { cn } from '../lib/cn.js';
+import { useReducedMotion } from '../lib/use-reduced-motion.js';
 
 export type SpeechBubbleVariant = 'speech' | 'shout' | 'thought';
 export type SpeechBubbleTail = 'left' | 'right' | 'top' | 'bottom';
@@ -8,18 +11,21 @@ export type SpeechBubbleProps = Omit<ComponentPropsWithoutRef<'div'>, 'children'
   variant?: SpeechBubbleVariant;
   tail?: SpeechBubbleTail;
   speaker?: ReactNode;
+  reducedMotion?: boolean;
   children: ReactNode;
 };
 
 /** Directional comic speech, shout, or thought bubble with optional speaker attribution. */
 export const SpeechBubble = forwardRef<HTMLDivElement, SpeechBubbleProps>(function SpeechBubble(
-  { variant = 'speech', tail = 'bottom', speaker, children, className, ...props },
+  { variant = 'speech', tail = 'bottom', speaker, reducedMotion, children, className, ...props },
   ref
 ) {
+  const isReducedMotion = useReducedMotion(reducedMotion);
   return (
     <div
       ref={ref}
       className={cn('mw-ui-speech-bubble', className)}
+      data-reduced-motion={isReducedMotion ? 'true' : undefined}
       data-tail={tail}
       data-variant={variant}
       {...props}

@@ -6,6 +6,7 @@ import {
   type AuthenticatedContext,
 } from '@moonwitness/orm';
 import type { Knex } from 'knex';
+import { isRecord } from '@moonwitness/types';
 import { Product, ProductVariant } from './models/index.js';
 import {
   applyRepricing,
@@ -13,10 +14,6 @@ import {
   resolveVariantPrice,
   type VariantSelection,
 } from './pricing.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 interface ProductRow {
   id: number;

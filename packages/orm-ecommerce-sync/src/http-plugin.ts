@@ -6,11 +6,8 @@ import {
   type AuthenticatedContext,
 } from '@moonwitness/orm';
 import type { Knex } from 'knex';
+import { isRecord } from '@moonwitness/types';
 import { MarketplaceConnection, MarketplaceSyncJob, SyncMetric } from './models/index.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 let db: Knex;
 

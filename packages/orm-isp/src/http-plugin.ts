@@ -5,6 +5,7 @@ import {
   type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import { planCoaBatch, type CoaPlanInput, type SubscriberLifecycleStatus } from './coa-policy.js';
 import {
   aggregateRadiusAccounting,
@@ -12,10 +13,6 @@ import {
   type RadiusAcctStatusType,
   type SubscriberQuotaSpec,
 } from './accounting-aggregator.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function parseCoaPlanInput(item: unknown): CoaPlanInput | null {
   if (!isRecord(item)) return null;

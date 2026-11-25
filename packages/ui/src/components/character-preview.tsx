@@ -74,13 +74,14 @@ export function CharacterPreview({
         />
       </div>
       <div className="character-preview-controls">
-        <Button variant="magenta" onClick={togglePlayback}>
+        <Button type="button" variant="magenta" onClick={togglePlayback}>
           {playing && !reducedMotion ? 'Pause' : 'Play'}
         </Button>
-        <Button variant="default" onClick={reset}>
+        <Button type="button" variant="default" onClick={reset}>
           Reset
         </Button>
         <Button
+          type="button"
           variant="default"
           onClick={() => setManualReducedMotion(!reducedMotion)}
           aria-pressed={reducedMotion}

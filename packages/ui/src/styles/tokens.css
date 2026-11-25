@@ -10,7 +10,7 @@
   --mw-paper-raised: #fffdf6;
   --mw-ink: #0d0d0d;
   --mw-ink-soft: #3a3a36;
-  --mw-ink-faint: #6b695f;
+  --mw-ink-faint: #59574e;
   --mw-color-ink-muted: var(--mw-ink-faint);
   --mw-signal-blue: #00b8f0;
   --mw-cyan: var(--mw-signal-blue);
@@ -267,6 +267,26 @@
   --mw-layer-toast: 60;
 }
 
+.dark,
+[data-skin='moonwitness-riot'] {
+  --mw-color-ink-muted: var(--mw-ink-faint);
+  --mw-background: var(--mw-paper);
+  --mw-foreground: var(--mw-ink);
+  --mw-surface: var(--mw-paper-raised);
+  --mw-surface-foreground: var(--mw-ink);
+  --mw-popover: var(--mw-paper-raised);
+  --mw-popover-foreground: var(--mw-ink);
+  --mw-secondary: var(--mw-paper);
+  --mw-secondary-foreground: var(--mw-ink);
+  --mw-muted-foreground: var(--mw-ink-soft);
+  --mw-destructive: var(--mw-error);
+  --mw-destructive-foreground: var(--mw-on-error);
+  --mw-border: var(--mw-ink);
+  --mw-border-strong: var(--mw-ink);
+  --mw-border-subtle: color-mix(in srgb, var(--mw-ink) 35%, var(--mw-paper));
+  --mw-input: var(--mw-ink);
+}
+
 .dark {
   color-scheme: dark;
   --mw-yellow-readable: var(--mw-yellow);
@@ -282,6 +302,7 @@
   --mw-muted: #232327;
   --mw-error: #fda29b;
   --mw-on-error: #0d0d0d;
+  --mw-focus: var(--mw-ink);
   --mw-warning-readable: var(--mw-warning);
   --mw-success-readable: #86efac;
 }
@@ -354,6 +375,7 @@
 
 /* Skin: moonwitness-riot (high-impact punk zine & comic) */
 [data-skin='moonwitness-riot'] {
+  color-scheme: light;
   --mw-paper: #f5efdf;
   --mw-paper-raised: #fff9eb;
   --mw-ink: #0a0a0c;
@@ -367,8 +389,6 @@
   --mw-on-accent: #0a0a0c;
   --mw-on-magenta: #0a0a0c;
   --mw-on-violet: #0a0a0c;
-  --mw-border: #0a0a0c;
-  --mw-border-strong: #0a0a0c;
   --mw-focus: #a60e4f;
   --mw-magenta-readable: #a60e4f;
   --mw-cyan-readable: #006e92;
@@ -384,6 +404,7 @@
 }
 
 [data-skin='moonwitness-riot'].dark {
+  color-scheme: dark;
   --mw-paper: #09090b;
   --mw-paper-raised: #121216;
   --mw-ink: #f5efdf;
@@ -394,8 +415,6 @@
   --mw-primary-foreground: #0a0a0c;
   --mw-accent: #ffe031;
   --mw-accent-foreground: #0a0a0c;
-  --mw-border: #f5efdf;
-  --mw-border-strong: #f5efdf;
   --mw-focus: #ffe031;
   --mw-error: #fda29b;
   --mw-on-error: #0a0a0c;

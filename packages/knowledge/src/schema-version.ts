@@ -1,3 +1,4 @@
+import { isRecord } from '@moonwitness/types';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import * as formatsModule from 'ajv-formats';
 import type { KnowledgeValidationIssue, KnowledgeValidationResult } from './types.js';
@@ -98,10 +99,6 @@ const modeledKeywords = new Set([
   'uniqueItems',
 ]);
 
-function isObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
 function sameValue(left: unknown, right: unknown): boolean {
   if (Object.is(left, right)) return true;
   if (Array.isArray(left) && Array.isArray(right)) {
@@ -109,7 +106,7 @@ function sameValue(left: unknown, right: unknown): boolean {
       left.length === right.length && left.every((item, index) => sameValue(item, right[index]))
     );
   }
-  if (!isObject(left) || !isObject(right)) return false;
+  if (!isRecord(left) || !isRecord(right)) return false;
   const leftKeys = Object.keys(left).sort();
   const rightKeys = Object.keys(right).sort();
   return (
@@ -355,8 +352,8 @@ function compareProperties(
   path: string,
   changes: SchemaCompatibilityChange[]
 ): void {
-  const before = isObject(previous.properties) ? previous.properties : {};
-  const after = isObject(next.properties) ? next.properties : {};
+  const before = isRecord(previous.properties) ? previous.properties : {};
+  const after = isRecord(next.properties) ? next.properties : {};
   const afterAdditional = next.additionalProperties;
 
   for (const [name, beforeSchema] of Object.entries(before)) {
@@ -371,7 +368,7 @@ function compareProperties(
         'breaking',
         'Removing this property while rejecting additional properties invalidates old documents that contain it.'
       );
-    } else if (isObject(afterAdditional) || typeof afterAdditional === 'boolean') {
+    } else if (isRecord(afterAdditional) || typeof afterAdditional === 'boolean') {
       compareSchema(beforeSchema, afterAdditional, propertyPath, changes);
     }
   }
@@ -397,7 +394,7 @@ function compareAdditionalProperties(
   const after = next.additionalProperties;
   if (after === undefined || sameValue(before, after)) return;
   if (before === undefined || before === true) {
-    if (after === false || isObject(after)) {
+    if (after === false || isRecord(after)) {
       addChange(
         changes,
         path,
@@ -458,7 +455,7 @@ function compareSchema(
     );
     return;
   }
-  if (!isObject(previousValue) || !isObject(nextValue)) {
+  if (!isRecord(previousValue) || !isRecord(nextValue)) {
     addChange(
       changes,
       path,
@@ -548,7 +545,7 @@ export function validateSchemaVersionRegistry(
     issues.push({ path, keyword, message });
   };
 
-  if (!isObject(value)) {
+  if (!isRecord(value)) {
     return {
       valid: false,
       issues: [{ path: '/', keyword: 'type', message: 'must be a version registry object' }],
@@ -562,7 +559,7 @@ export function validateSchemaVersionRegistry(
       addIssue(pointer('', key), 'additionalProperties', 'registry property is not supported');
     }
   }
-  if (!isObject(value.components)) {
+  if (!isRecord(value.components)) {
     addIssue('/components', 'type', 'must contain ontology and corpus component registries');
     return { valid: false, issues };
   }
@@ -576,7 +573,7 @@ export function validateSchemaVersionRegistry(
   for (const component of componentNames) {
     const componentPath = pointer('/components', component);
     const componentValue = value.components[component];
-    if (!isObject(componentValue)) {
+    if (!isRecord(componentValue)) {
       addIssue(componentPath, 'required', 'component registry is required');
       continue;
     }
@@ -611,7 +608,7 @@ export function validateSchemaVersionRegistry(
     let currentFound = false;
     releases.forEach((release, releaseIndex) => {
       const releasePath = pointer(pointer(componentPath, 'releases'), String(releaseIndex));
-      if (!isObject(release)) {
+      if (!isRecord(release)) {
         addIssue(releasePath, 'type', 'release entry must be an object');
         return;
       }
@@ -652,21 +649,21 @@ export function validateSchemaVersionRegistry(
       }
       const documentVersions = release.document_schema_versions;
       const schemas = release.schemas;
-      if (!isObject(documentVersions) || Object.keys(documentVersions).length === 0) {
+      if (!isRecord(documentVersions) || Object.keys(documentVersions).length === 0) {
         addIssue(
           pointer(releasePath, 'document_schema_versions'),
           'minProperties',
           'must map each schema name to a positive document version'
         );
       }
-      if (!isObject(schemas) || Object.keys(schemas).length === 0) {
+      if (!isRecord(schemas) || Object.keys(schemas).length === 0) {
         addIssue(
           pointer(releasePath, 'schemas'),
           'minProperties',
           'must map each schema name to an immutable schema path'
         );
       }
-      if (!isObject(documentVersions) || !isObject(schemas)) return;
+      if (!isRecord(documentVersions) || !isRecord(schemas)) return;
 
       const documentNames = Object.keys(documentVersions).sort();
       const schemaNames = Object.keys(schemas).sort();
@@ -879,7 +876,7 @@ export function validateDocumentAtSchemaVersion(
   }
   if (issues.length > 0) return { valid: false, issues };
 
-  if (!isObject(value) || value.schema_version !== contract.documentSchemaVersion) {
+  if (!isRecord(value) || value.schema_version !== contract.documentSchemaVersion) {
     return {
       valid: false,
       issues: [

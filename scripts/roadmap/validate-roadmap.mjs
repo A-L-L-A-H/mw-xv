@@ -2,6 +2,7 @@ import { readFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { isRecord } from '@moonwitness/types';
 import { milestonePattern, parseTaskId, taskIdPattern, taskIdSource } from './task-ids.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -36,10 +37,6 @@ const allowedRootKeys = new Set(['schemaVersion', 'description', 'tasks']);
  * @property {TaskStatus=} status
  * @property {string=} evidence
  */
-
-function isRecord(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /** Return duplicate property names, scoped to each JSON object rather than globally. */
 export function findDuplicateJsonObjectKeys(source) {

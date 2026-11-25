@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { isRecord } from '@moonwitness/types';
 
 export interface LocalModelArtifact {
   id: string;
@@ -63,10 +64,6 @@ export type HardwareCompatibilityResult =
 const identifierPattern = /^[a-z0-9][a-z0-9._-]{0,99}$/u;
 const semverPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/u;
 const sha256Pattern = /^[a-f0-9]{64}$/u;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function isHttpsUrl(value: string): boolean {
   try {

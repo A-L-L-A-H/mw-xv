@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "2ed54d8f6586fabf897baa3c8adf1c294c1140d7b70ba69357e92be5860e4aa2",
+  "sourceSha256": "a6033aa97fc7d19ceb014e5b1a02b5608a5425f62c1d863d3b79a089411473a3",
   "packages": [
     {
       "name": "@moonwitness/agent-observability",
@@ -816,6 +816,12 @@
       "manifest": "packages/jobs"
     },
     {
+      "from": "@moonwitness/knowledge",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/knowledge"
+    },
+    {
       "from": "@moonwitness/local-ai",
       "to": "@moonwitness/types",
       "kind": "runtime",
@@ -918,6 +924,12 @@
       "manifest": "packages/orm-ai"
     },
     {
+      "from": "@moonwitness/orm-ai",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-ai"
+    },
+    {
       "from": "@moonwitness/orm-automation-core",
       "to": "@moonwitness/jobs",
       "kind": "development",
@@ -986,6 +998,12 @@
     {
       "from": "@moonwitness/orm-catalog",
       "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-catalog"
+    },
+    {
+      "from": "@moonwitness/orm-catalog",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-catalog"
     },
@@ -1092,6 +1110,12 @@
       "manifest": "packages/orm-compliance"
     },
     {
+      "from": "@moonwitness/orm-compliance",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-compliance"
+    },
+    {
       "from": "@moonwitness/orm-content-factory",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -1130,6 +1154,12 @@
     {
       "from": "@moonwitness/orm-ecommerce-sync",
       "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-ecommerce-sync"
+    },
+    {
+      "from": "@moonwitness/orm-ecommerce-sync",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-ecommerce-sync"
     },
@@ -1412,6 +1442,12 @@
     {
       "from": "@moonwitness/orm-project",
       "to": "@moonwitness/orm-workflow",
+      "kind": "runtime",
+      "manifest": "packages/orm-project"
+    },
+    {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-project"
     },

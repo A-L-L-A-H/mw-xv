@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { isRecord } from '@moonwitness/types';
 
 const identifier = /^[a-z][a-z0-9+.-]*(?::[a-z0-9][a-z0-9._-]{0,179})+$/u;
 const digestPattern = /^[a-f0-9]{64}$/u;
@@ -60,10 +61,6 @@ export type TextualAlignmentPassageResolver = (
   evidenceId: string,
   selector: TextualAlignmentSelector
 ) => Promise<unknown>;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function hasOnlyKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
   const allowed = new Set(keys);

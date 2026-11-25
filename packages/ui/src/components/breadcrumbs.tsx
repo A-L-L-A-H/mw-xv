@@ -41,7 +41,7 @@ export function Breadcrumbs({
             <li key={key} className="mw-ui-breadcrumbs-item">
               {index > 0 ? (
                 <span className="mw-ui-breadcrumbs-separator" aria-hidden="true">
-                  <ChevronRightIcon size={14} />
+                  <ChevronRightIcon size={14} aria-hidden="true" />
                 </span>
               ) : null}
               {isCurrent ? (

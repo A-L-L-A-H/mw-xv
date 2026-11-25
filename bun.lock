@@ -376,6 +376,7 @@
       "name": "@moonwitness/knowledge",
       "version": "1.0.0-rc.1",
       "dependencies": {
+        "@moonwitness/types": "workspace:*",
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
       },
@@ -469,6 +470,7 @@
         "@moonwitness/orm-organization": "workspace:*",
         "@moonwitness/orm-storage": "workspace:*",
         "@moonwitness/orm-workflow": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "objection": "^3.1.5",
       },
       "devDependencies": {
@@ -538,6 +540,7 @@
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "knex": "^3.3.0",
         "objection": "^3.1.5",
       },
@@ -613,6 +616,7 @@
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "knex": "^3.3.0",
         "objection": "^3.1.5",
       },
@@ -662,6 +666,7 @@
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "knex": "^3.3.0",
         "objection": "^3.1.5",
       },
@@ -851,6 +856,7 @@
         "@moonwitness/orm-notification": "workspace:*",
         "@moonwitness/orm-organization": "workspace:*",
         "@moonwitness/orm-workflow": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "objection": "^3.1.5",
       },
       "devDependencies": {

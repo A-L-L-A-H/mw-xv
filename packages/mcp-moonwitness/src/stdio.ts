@@ -4,6 +4,7 @@
  * supports both NDJSON and Content-Length framing — here we implement
  * both for host compatibility).
  */
+import { isRecord } from '@moonwitness/types';
 import type {
   MoonWitnessMcpServer,
   MoonWitnessMcpRequest,
@@ -18,10 +19,6 @@ export interface MoonWitnessStdioStreams {
 export interface MoonWitnessStdioHandle {
   readonly done: Promise<void>;
   close(): Promise<void>;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 export function serveMoonWitnessStdio(

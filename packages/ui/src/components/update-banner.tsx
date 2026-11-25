@@ -88,7 +88,10 @@ export function UpdateBanner({
 
         {status === 'checking' && (
           <span className="inline-flex items-center gap-1.5 font-mono text-xs text-ink-soft">
-            <RefreshIcon className="size-3.5 animate-spin" aria-hidden="true" />
+            <RefreshIcon
+              className="size-3.5 animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
             Checking for updates (v{currentVersion})…
           </span>
         )}

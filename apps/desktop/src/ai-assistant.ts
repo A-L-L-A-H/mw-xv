@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { isRecord } from '@moonwitness/types';
 import {
   DEFAULT_LOCAL_AI_TIMEOUT_MS,
   discoverLocalAiProviders,
@@ -126,10 +127,6 @@ export interface DispatchTaskAgentRunResult {
 
 function sha256Hex(payload: string): string {
   return createHash('sha256').update(payload, 'utf8').digest('hex');
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function sanitizeRunId(raw: string): string {

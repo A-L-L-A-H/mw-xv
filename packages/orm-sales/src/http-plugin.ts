@@ -5,11 +5,8 @@ import {
   type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import { compileQuote, type QuoteCompileInput } from './quote-engine.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 export const quoteHttpPlugin: AddonHttpPlugin = async (app) => {
   app.post('/api/sales/quotes/compile', async (req, reply) => {

@@ -6,6 +6,7 @@
  * newline-delimited / Content-Length framing conventions as
  * `@moonwitness/ai-mcp` (`serveAiMcpStdio`).
  */
+import { isRecord } from '@moonwitness/types';
 import { listMoonWitnessModels, describeMoonWitnessModel } from './catalog.js';
 import { queryMoonWitnessModel, countMoonWitnessModel } from './query.js';
 import { summarizeTaskos } from './taskos.js';
@@ -140,10 +141,6 @@ export interface MoonWitnessMcpResponse {
 export interface MoonWitnessMcpContext {
   readonly apiBaseUrl?: string;
   readonly taskosPath?: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 const JSON_RPC_PARSE_ERROR = -32700;

@@ -3,10 +3,6 @@ import { MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 import type { Knex } from 'knex';
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 let ephemeralIpHashSecret: string | undefined;
 
 function resolveIpHashSecret(): string {

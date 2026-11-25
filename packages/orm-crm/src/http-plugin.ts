@@ -5,6 +5,7 @@ import {
   type AddonHttpRequestBase,
   type AuthenticatedContext,
 } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import {
   scoreLead,
   forecastPipelineRevenue,
@@ -13,10 +14,6 @@ import {
   type LeadTierThresholds,
   type PipelineDeal,
 } from './lead-scoring.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 export const crmHttpPlugin: AddonHttpPlugin = async (app) => {
   app.post('/api/crm/leads/score', async (req, reply) => {

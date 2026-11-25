@@ -366,6 +366,7 @@ export function LayeredScene({
       data-scene-id={sceneId}
       data-scene-state={sceneState}
       data-scene-time={String(Math.round(playback.snapshot.timeMs))}
+      data-reduced-motion={isReduced ? 'true' : 'false'}
       onKeyDown={enableKeyboardCamera ? handleKeyDown : undefined}
       onPointerMove={enablePointerParallax ? handlePointerMove : undefined}
       onPointerLeave={enablePointerParallax ? handlePointerLeave : undefined}

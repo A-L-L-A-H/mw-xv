@@ -1,5 +1,6 @@
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { startWorkflow, WorkflowError, type WorkflowRole } from '@moonwitness/orm-workflow';
+import { isRecord } from '@moonwitness/types';
 import { resolveCorpusDataRoot } from '../corpus-root.js';
 import { ResearchGraphRecord } from '../models.js';
 import { readActiveResearchGraphRelease } from '../research-release.js';
@@ -9,10 +10,6 @@ import {
   validateResearchRelease,
 } from '../research-review.js';
 import { hasValidationError } from './helpers.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 const corpusKey = 'research';
 const reviewCode = 'research.review';
