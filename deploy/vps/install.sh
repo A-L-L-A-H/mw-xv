@@ -193,7 +193,7 @@ configure_secrets_and_env() {
   upsert_env "$app_env" "METRICS_TOKEN" "$metrics_tok"
   upsert_env "$app_env" "OBSERVABILITY_INGEST_TOKEN" "$obs_tok"
   upsert_env "$app_env" "AGENT_SANDBOX_TOKEN" "$sandbox_tok"
-  upsert_env "$app_env" "SUPERADMIN_LOGIN" "admin"
+  upsert_env "$app_env" "SUPERADMIN_LOGIN" "superadmin"
   upsert_env "$app_env" "SUPERADMIN_INITIAL_PASSWORD" "$super_pass"
   upsert_env "$app_env" "SUPERADMIN_PASSWORD" "$super_pass"
   upsert_env "$app_env" "ATTACHMENT_STORAGE_DRIVER" "local"
@@ -427,7 +427,7 @@ start_all() {
  WhatsApp Service: https://wa.${MW_BASE_DOMAIN}
  Wildcard Apps   : https://<slug>.${MW_BASE_DOMAIN}
  Control Plane   : private mesh http://${MW_MESH_IPV4}:${MW_CONTROL_PLANE_PORT} (not exposed)
- Admin Credentials: stored in ${MW_INSTALL_DIR}/.env (chmod 600; SUPERADMIN_LOGIN=admin)
+ Admin Credentials: stored in ${MW_INSTALL_DIR}/.env (chmod 600; SUPERADMIN_LOGIN=superadmin)
 ========================================================================
 EOF
 }
