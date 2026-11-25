@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import signalSpecimenArt from '@moonwitness/assets/illustrations/editorial-signal.webp?url';
 import archiveSpecimenArt from '@moonwitness/assets/illustrations/editorial-archive.webp?url';
 

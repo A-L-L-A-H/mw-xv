@@ -30,7 +30,6 @@ import {
   type AssetReviewStatus,
 } from './asset-review-status';
 import { resolveSceneLayerSources } from './scene-layer-sources';
-import { SceneLabSpecimens } from './SceneLabSpecimens';
 const SceneLabSpecimensLazy = lazy(() => import('./SceneLabSpecimens').then((mod) => ({ default: mod.SceneLabSpecimens })));
 import idleFrame1 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-01.svg';
 import idleFrame2 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
