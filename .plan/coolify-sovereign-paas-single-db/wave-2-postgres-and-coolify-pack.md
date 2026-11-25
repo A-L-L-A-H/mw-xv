@@ -443,7 +443,7 @@
 
 ---
 
-## - [ ] M34 — Make `strict-transport-security` HTTPS-Conditional in `apps/api/src/app.ts`
+## - [x] M34 — Make `strict-transport-security` HTTPS-Conditional in `apps/api/src/app.ts`
 
 - **Owner File (MODIFY):** `apps/api/src/app.ts` (lines 204–206)
 - **Depends On:** `M03`
