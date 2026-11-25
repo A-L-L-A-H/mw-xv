@@ -175,7 +175,7 @@
 
 ---
 
-## - [ ] M10 — Add `/agent/containers/{slug}/{action}` (Single Container + Compose Stack Aware)
+## - [x] M10 — Add `/agent/containers/{slug}/{action}` (Single Container + Compose Stack Aware)
 
 - **Owner Files (MODIFY):**
   - `apps/control-plane/agent_stateless.go`

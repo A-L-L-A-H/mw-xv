@@ -3,10 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -289,4 +293,296 @@ func (m *PaasManager) handleAgentContainerRun() http.HandlerFunc {
 			"status":        "running",
 		})
 	}
+}
+
+func (m *PaasManager) stackComposeFileIfExists(slug string) (stackDir string, composeFile string, isCompose bool) {
+	stackDir = m.composeStackDir(slug)
+	composeFile = filepath.Join(stackDir, "docker-compose.yml")
+	if info, err := os.Stat(composeFile); err == nil && !info.IsDir() {
+		return stackDir, composeFile, true
+	}
+	return stackDir, composeFile, false
+}
+
+func collectStackEnvFileSecrets(stackDir string) []string {
+	data, err := os.ReadFile(filepath.Join(stackDir, ".env"))
+	if err != nil {
+		return nil
+	}
+	var secrets []string
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(strings.TrimRight(line, "\r"))
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		if isSensitiveEnvKey(strings.TrimSpace(parts[0])) {
+			val := strings.TrimSpace(parts[1])
+			if val != "" {
+				secrets = append(secrets, val)
+			}
+		}
+	}
+	return secrets
+}
+
+func parseTailQueryParam(r *http.Request) (int, error) {
+	tail := paasDefaultLogLines
+	if raw := strings.TrimSpace(r.URL.Query().Get("tail")); raw != "" {
+		n, err := strconv.Atoi(raw)
+		if err != nil || n < 1 {
+			return 0, errors.New("tail must be a positive integer (max 500)")
+		}
+		if n > paasMaxLogLines {
+			n = paasMaxLogLines
+		}
+		tail = n
+	}
+	return tail, nil
+}
+
+func (m *PaasManager) handleAgentContainerSubroutes() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sub := strings.TrimPrefix(r.URL.Path, "/agent/containers/")
+		if sub == "" {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "missing container slug"})
+			return
+		}
+		parts := strings.Split(sub, "/")
+		slug := parts[0]
+		if err := ValidatePaasSlug(slug); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
+
+		// GET /agent/containers/{slug}/logs/stream
+		if len(parts) == 3 && parts[1] == "logs" && parts[2] == "stream" {
+			if r.Method != http.MethodGet {
+				writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+				return
+			}
+			m.handleAgentContainerLogsStream(w, r, slug)
+			return
+		}
+
+		if len(parts) != 2 {
+			writePaasJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
+			return
+		}
+
+		action := parts[1]
+		switch action {
+		case "logs":
+			if r.Method != http.MethodGet {
+				writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+				return
+			}
+			m.handleAgentContainerLogs(w, r, slug)
+		case "stats":
+			if r.Method != http.MethodGet {
+				writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+				return
+			}
+			m.handleAgentContainerStats(w, r, slug)
+		case "start", "stop", "restart", "delete":
+			if r.Method != http.MethodPost {
+				writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+				return
+			}
+			// Privileged mutations MUST check canonical m.adminToken (reject raw MW_INTERNAL_SECRET).
+			presented := paasCredentialFromRequest(r)
+			if m.adminToken == "" || !constantTimeEquals(presented, m.adminToken) {
+				writePaasJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+				return
+			}
+			m.handleAgentContainerAction(w, r, slug, action)
+		default:
+			writePaasJSON(w, http.StatusNotFound, map[string]string{"error": "unsupported action"})
+		}
+	}
+}
+
+func (m *PaasManager) handleAgentContainerLogs(w http.ResponseWriter, r *http.Request, slug string) {
+	tail, err := parseTailQueryParam(r)
+	if err != nil {
+		writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+
+	stackDir, composeFile, isCompose := m.stackComposeFileIfExists(slug)
+	secrets := collectStackEnvFileSecrets(stackDir)
+
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+
+	var args []string
+	if isCompose {
+		args = []string{"compose", "-p", PaasContainerName(slug), "-f", composeFile, "logs", "--timestamps", "--tail", strconv.Itoa(tail)}
+	} else {
+		args = []string{"logs", "--timestamps", "--tail", strconv.Itoa(tail), PaasContainerName(slug)}
+	}
+
+	out, err := m.runner(ctx, m.dockerBin, args...)
+	if err != nil {
+		writePaasJSON(w, http.StatusBadGateway, map[string]string{
+			"error": RedactPaasText(err.Error(), secrets...),
+		})
+		return
+	}
+
+	writePaasJSON(w, http.StatusOK, map[string]any{
+		"ok":   true,
+		"slug": slug,
+		"tail": tail,
+		"logs": RedactPaasText(out, secrets...),
+	})
+}
+
+func (m *PaasManager) handleAgentContainerLogsStream(w http.ResponseWriter, r *http.Request, slug string) {
+	tail, err := parseTailQueryParam(r)
+	if err != nil {
+		writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": "streaming unsupported"})
+		return
+	}
+
+	stackDir, composeFile, isCompose := m.stackComposeFileIfExists(slug)
+	secrets := collectStackEnvFileSecrets(stackDir)
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
+	w.WriteHeader(http.StatusOK)
+	flusher.Flush()
+
+	runner := m.streamRunner
+	if runner == nil {
+		runner = runCmdStreamLines
+	}
+
+	var args []string
+	if isCompose {
+		args = []string{"compose", "-p", PaasContainerName(slug), "-f", composeFile, "logs", "--follow", "--timestamps", "--tail", strconv.Itoa(tail)}
+	} else {
+		args = []string{"logs", "--follow", "--timestamps", "--tail", strconv.Itoa(tail), PaasContainerName(slug)}
+	}
+
+	streamErr := runner(r.Context(), func(line string) bool {
+		redacted := RedactPaasText(line, secrets...)
+		if _, writeErr := fmt.Fprintf(w, "data: %s\n\n", redacted); writeErr != nil {
+			return false
+		}
+		flusher.Flush()
+		return true
+	}, m.dockerBin, args...)
+
+	if streamErr != nil && r.Context().Err() == nil {
+		redactedErr := RedactPaasText(streamErr.Error(), secrets...)
+		_, _ = fmt.Fprintf(w, "event: error\ndata: %s\n\n", redactedErr)
+		flusher.Flush()
+	}
+}
+
+func (m *PaasManager) handleAgentContainerStats(w http.ResponseWriter, r *http.Request, slug string) {
+	containerName := PaasContainerName(slug)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	out, err := m.runner(ctx, m.dockerBin, "stats", "--no-stream", "--format", "json", containerName)
+	if err != nil {
+		writePaasJSON(w, http.StatusBadGateway, map[string]string{
+			"error": RedactPaasText(err.Error()),
+		})
+		return
+	}
+
+	stats, err := parseDockerStatsJSON(slug, containerName, out)
+	if err != nil {
+		writePaasJSON(w, http.StatusBadGateway, map[string]string{"error": err.Error()})
+		return
+	}
+	writePaasJSON(w, http.StatusOK, stats)
+}
+
+func (m *PaasManager) handleAgentContainerAction(w http.ResponseWriter, r *http.Request, slug, action string) {
+	stackDir, composeFile, isCompose := m.stackComposeFileIfExists(slug)
+	secrets := collectStackEnvFileSecrets(stackDir)
+	containerName := PaasContainerName(slug)
+
+	pruneVolumes := strings.EqualFold(strings.TrimSpace(r.URL.Query().Get("pruneVolumes")), "true")
+	if !pruneVolumes && r.Body != nil {
+		var body struct {
+			PruneVolumes bool `json:"pruneVolumes"`
+		}
+		if err := json.NewDecoder(io.LimitReader(r.Body, 16*1024)).Decode(&body); err == nil && body.PruneVolumes {
+			pruneVolumes = true
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+	defer cancel()
+
+	var args []string
+	var nextStatus string
+	if isCompose {
+		switch action {
+		case "start":
+			args = []string{"compose", "-p", containerName, "-f", composeFile, "up", "-d"}
+			nextStatus = "running"
+		case "stop":
+			args = []string{"compose", "-p", containerName, "-f", composeFile, "stop"}
+			nextStatus = "stopped"
+		case "restart":
+			args = []string{"compose", "-p", containerName, "-f", composeFile, "restart"}
+			nextStatus = "running"
+		case "delete":
+			args = []string{"compose", "-p", containerName, "-f", composeFile, "down", "--remove-orphans"}
+			if pruneVolumes {
+				args = append(args, "--volumes")
+			}
+			nextStatus = "deleted"
+		}
+	} else {
+		switch action {
+		case "start":
+			args = []string{"start", containerName}
+			nextStatus = "running"
+		case "stop":
+			args = []string{"stop", containerName}
+			nextStatus = "stopped"
+		case "restart":
+			args = []string{"restart", containerName}
+			nextStatus = "running"
+		case "delete":
+			args = []string{"rm", "-f", containerName}
+			nextStatus = "deleted"
+		}
+	}
+
+	if _, err := m.runner(ctx, m.dockerBin, args...); err != nil {
+		writePaasJSON(w, http.StatusInternalServerError, map[string]string{
+			"error": RedactPaasText(err.Error(), secrets...),
+		})
+		return
+	}
+
+	if isCompose && action == "delete" {
+		_ = os.RemoveAll(stackDir)
+	}
+
+	writePaasJSON(w, http.StatusOK, map[string]any{
+		"ok":     true,
+		"slug":   slug,
+		"action": action,
+		"status": nextStatus,
+	})
 }
