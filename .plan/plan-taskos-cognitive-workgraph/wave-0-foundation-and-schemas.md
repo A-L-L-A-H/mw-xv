@@ -58,7 +58,7 @@
 
 ---
 
-## - [ ] T03 — Author JSON Schemas 2020-12 (`manifest`, `wave`, `proof`, `document`)
+## - [x] T03 — Author JSON Schemas 2020-12 (`manifest`, `wave`, `proof`, `document`)
 
 - **Owner File(s):** `packages/plan-taskos/schemas/manifest.schema.json`, `packages/plan-taskos/schemas/wave.schema.json`, `packages/plan-taskos/schemas/proof.schema.json`, `packages/plan-taskos/schemas/document.schema.json`
   - `packages/plan-taskos/schemas/manifest.schema.json` (CREATE)

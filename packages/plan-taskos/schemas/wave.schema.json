@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://moonwitness.org/schemas/plan-taskos/wave.schema.json",
+  "title": "PlanTaskOS Wave",
+  "type": "object",
+  "required": ["schema_version", "plan_id", "wave_id", "title", "tasks"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+    },
+    "wave_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tasks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/plan_task_ir" }
+    }
+  },
+  "$defs": {
+    "plan_task_ir": {
+      "title": "PlanTaskIR (6-plane)",
+      "type": "object",
+      "required": [
+        "urn",
+        "code",
+        "kind",
+        "title",
+        "lifecycle",
+        "governance",
+        "graph",
+        "knowledge",
+        "verification",
+        "projections"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "urn": {
+          "type": "string",
+          "pattern": "^urn:mw:work:"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{1,63}$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["task", "milestone", "epic", "subtask", "gate"]
+        },
+        "parent_urn": {
+          "type": "string",
+          "pattern": "^urn:mw:work:"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle": {
+          "type": "object",
+          "required": ["status", "delivery_stage"],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["backlog", "todo", "in_progress", "review", "blocked", "done", "skipped", "cancelled"]
+            },
+            "delivery_stage": {
+              "type": "string",
+              "enum": ["local", "verified_dev", "in_main", "released", "na"]
+            },
+            "model_tier": {
+              "type": "string",
+              "enum": ["flash", "neon", "argon", "human"]
+            },
+            "risk_tier": {
+              "type": "string",
+              "enum": ["R0", "R1", "R2", "R3", "R4"]
+            },
+            "attempts": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "governance": {
+          "type": "object",
+          "required": ["owner_files"],
+          "additionalProperties": false,
+          "properties": {
+            "owner_files": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "owner_globs": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "invariants": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "rule"],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^INV-"
+                  },
+                  "rule": { "type": "string", "minLength": 1 }
+                }
+              }
+            },
+            "do_not": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "graph": {
+          "type": "object",
+          "required": ["depends_on"],
+          "additionalProperties": false,
+          "properties": {
+            "depends_on": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "knowledge": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "spec_files": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "adr_files": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "invariant_urns": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^urn:mw:inv:" }
+            },
+            "doc_urns": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^urn:mw:doc:" }
+            }
+          }
+        },
+        "verification": {
+          "type": "object",
+          "required": ["commands", "acceptance_criteria"],
+          "additionalProperties": false,
+          "properties": {
+            "commands": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["cmd"],
+                "additionalProperties": false,
+                "properties": {
+                  "cmd": { "type": "string", "minLength": 1 },
+                  "expected_exit_code": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "expected_output": { "type": "string" }
+                }
+              }
+            },
+            "acceptance_criteria": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "projections": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "taskos_code": { "type": "string" },
+            "github_issue_number": {
+              "type": ["integer", "null"],
+              "minimum": 1
+            },
+            "orm_task_code": { "type": "string" },
+            "external_ref": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
