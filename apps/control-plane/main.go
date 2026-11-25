@@ -97,6 +97,8 @@ var controlPlaneRouteMatrix = []controlPlaneRoute{
 	{pattern: "/paas/apps/deploy-git", family: "git-builder", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/paas/apps/preview", family: "git-builder", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/paas/webhooks/github/", family: "git-webhook", access: accessWebhookSignature, methods: []string{http.MethodPost}},
+	{pattern: "/agent/caddy/reconcile", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/agent/metrics", family: "agent-stateless", access: accessAuthenticated, methods: []string{http.MethodGet}},
 	{pattern: "/a2a/delegate", family: "a2a-federation", access: accessA2APeer, methods: []string{http.MethodPost}},
 }
 
@@ -359,6 +361,8 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 		"/paas/apps/deploy-git":       paasMgr.handleGitDeploy(),
 		"/paas/apps/preview":          paasMgr.handlePreviewDeploy(),
 		"/paas/webhooks/github/":      paasMgr.handleGitHubWebhook(),
+		"/agent/caddy/reconcile":      paasMgr.handleAgentCaddyReconcile(),
+		"/agent/metrics":              paasMgr.handleAgentMetrics(),
 		"/a2a/delegate":               a2aMgr.HandleDelegate(),
 	}
 

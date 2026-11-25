@@ -58,7 +58,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M05** — `caddy.go`: add `CaddyBootstrapListener`, `CaddyPreviewListener`, `ReconcileDeclarative`, zero-downtime `caddy reload`
 - [x] **M06** — `main.go`: add `MW_CONTROL_PLANE_STATELESS=true`, `DB = nil`, `db == nil`-safe `/health`
 - [x] **M07** — `main.go`: enable `/agent/` auth middleware prefix in `buildMux`
-- [ ] **M08** — `agent_stateless.go` + `main.go`: `POST /agent/caddy/reconcile` & `GET /agent/metrics`
+- [x] **M08** — `agent_stateless.go` + `main.go`: `POST /agent/caddy/reconcile` & `GET /agent/metrics`
 - [ ] **M09** — `agent_stateless.go` + `main.go`: `GET /agent/containers` & `POST /agent/containers/run`
 - [ ] **M10** — `agent_stateless.go` + `main.go`: `/agent/containers/{slug}/{action}` (single + compose aware)
 - [ ] **M11** — `agent_stateless.go` + `main.go`: `POST /agent/compose/up` (path-confined inline config files + strict security validator)
@@ -133,7 +133,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
-| Wave 1 | `M04`–`M15` | `4 / 12` | — | `M07 OK` — `TestControlPlaneRouteMatrix` PASS + `go vet` OK; `/agent/` auth prefix wired in `buildMux` for `accessAuthenticated` & `accessPrivileged` |
+| Wave 1 | `M04`–`M15` | `5 / 12` | — | `M08 OK` — `go test -C apps/control-plane ./...` PASS (`50.249s`) + `go vet` OK; zero `m.db` in `agent_stateless.go`; `/agent/caddy/reconcile` & `/agent/metrics` registered |
 | Wave 2 | `M16`–`M38` | `0 / 23` | — | — |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |

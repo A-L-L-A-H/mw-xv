@@ -130,7 +130,7 @@
 
 ---
 
-## - [ ] M08 — Create `agent_stateless.go`: `POST /agent/caddy/reconcile` & `GET /agent/metrics`
+## - [x] M08 — Create `agent_stateless.go`: `POST /agent/caddy/reconcile` & `GET /agent/metrics`
 
 - **Owner Files:**
   - `apps/control-plane/agent_stateless.go` (CREATE)
