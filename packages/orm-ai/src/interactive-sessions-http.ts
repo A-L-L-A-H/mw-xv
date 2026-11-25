@@ -1,6 +1,6 @@
 import type { AddonHttpPlugin, AddonHttpReply } from '@moonwitness/orm';
 import { isRecord } from '@moonwitness/types';
-import { requireAiCompanyContext } from './ai-http-helpers.js';
+import { ensureAiJobHandlersRegistered, requireAiCompanyContext } from './ai-http-helpers.js';
 import {
   createInteractiveSession,
   ensureInteractiveSessionConsumer,
@@ -37,6 +37,7 @@ function commandType(raw: unknown): InteractiveCommandType {
 }
 
 export const interactiveSessionsHttpPlugin: AddonHttpPlugin = async (app) => {
+  ensureAiJobHandlersRegistered();
   ensureInteractiveSessionConsumer();
   for (const prefix of INTERACTIVE_SESSION_ROUTE_PREFIXES) {
     app.post(`${prefix}/interactive-sessions`, async (req, reply) => {

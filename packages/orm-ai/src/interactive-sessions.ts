@@ -3,7 +3,7 @@ import type { Knex } from 'knex';
 import { cancelJob, enqueueJob, Job, OutboxEvent, registerOutboxConsumer } from '@moonwitness/jobs';
 import { sha256Canonical } from '@moonwitness/ai-runtime/canonical-json.js';
 import { computeExecutionFingerprint, isActiveCapabilityGrant } from './agent-run-executor.js';
-import { ensureAiJobHandlersRegistered, hasCompanyAccess } from './ai-http-helpers.js';
+import { hasCompanyAccess } from './company-access.js';
 import {
   Agent,
   AgentRun,
@@ -724,7 +724,6 @@ async function pauseInteractiveRun(sessionId: number): Promise<void> {
 
 let consumerRegistered = false;
 export function ensureInteractiveSessionConsumer(): void {
-  ensureAiJobHandlersRegistered();
   if (consumerRegistered) return;
   try {
     registerOutboxConsumer(INTERACTIVE_PAUSE_INTENT, async (raw) => {

@@ -2,16 +2,18 @@ import { randomUUID } from 'node:crypto';
 import type { AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
 import { validateDiffScope, type PcwCheckStatus } from '@moonwitness/ai-runtime';
 import { registerJobHandler } from '@moonwitness/jobs';
-import { AuditLog, Company, CompanyMembership } from '@moonwitness/orm-base';
+import { AuditLog } from '@moonwitness/orm-base';
 import type { WorkflowRole } from '@moonwitness/orm-workflow';
 import { isRecord } from '@moonwitness/types';
 import { runDurableAgentRun } from './agent-run-executor.js';
 import { getCloudAgentEffect } from './cloud-agent-effect-factory.js';
 import { ExecutionPolicy } from './models.js';
+import { hasCompanyAccess } from './company-access.js';
 
 export type { AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
 export type { WorkflowRole } from '@moonwitness/orm-workflow';
 export { isRecord };
+export { hasCompanyAccess } from './company-access.js';
 
 export interface AiCompanyContext {
   readonly userId: number;
@@ -87,25 +89,6 @@ export function ensureAiJobHandlersRegistered(): void {
     }
   }
   aiJobHandlersRegistered = true;
-}
-
-export async function hasCompanyAccess(
-  userId: number,
-  companyId: number,
-  role: string
-): Promise<boolean> {
-  if (!Number.isSafeInteger(userId) || userId < 1) return false;
-  if (!Number.isSafeInteger(companyId) || companyId < 1) return false;
-  const company = await Company.query().findOne({ id: companyId, active: true });
-  if (!company) return false;
-  const membership = await CompanyMembership.query().findOne({
-    user_id: userId,
-    company_id: companyId,
-    active: true,
-  });
-  if (membership) return true;
-  if (role === 'system') return true;
-  return false;
 }
 
 export async function requireAiCompanyContext(

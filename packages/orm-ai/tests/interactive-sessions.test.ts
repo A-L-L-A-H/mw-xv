@@ -42,6 +42,7 @@ import {
   createInteractiveSession,
   createDurableAgentRunStateStore,
   ensureInteractiveSessionConsumer,
+  ensureAiJobHandlersRegistered,
   nextInteractiveTransition,
   readInteractiveSession,
   readPendingInteractiveApproval,
@@ -213,6 +214,7 @@ beforeEach(async () => {
   Model.knex(db);
   if (postgresUrl) await db.raw('CREATE SCHEMA ??', [postgresSchema]);
   await installAddons(db, [...ADDONS].reverse());
+  ensureAiJobHandlersRegistered();
 });
 afterEach(async () => {
   setCloudAgentEffect(null);
