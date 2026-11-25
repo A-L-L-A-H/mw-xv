@@ -183,6 +183,9 @@ struct Database {
     quota_exceeded_rejects: Arc<AtomicU64>,
     /// Count of duplicate quota accumulations skipped (idempotent replay)
     quota_duplicate_accumulations: Arc<AtomicU64>,
+    /// Count of Accounting-Requests for which the Accounting-Response was withheld
+    /// because the durable write failed (M19.05 durable ACK contract).
+    accounting_acks_withheld: Arc<AtomicU64>,
 }
 
 impl Database {
@@ -197,6 +200,7 @@ impl Database {
             pool,
             quota_exceeded_rejects: Arc::new(AtomicU64::new(0)),
             quota_duplicate_accumulations: Arc::new(AtomicU64::new(0)),
+            accounting_acks_withheld: Arc::new(AtomicU64::new(0)),
         })
     }
 
@@ -919,7 +923,17 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
 
     let nas = match db.find_client_with_secret(src_ip).await {
         Ok(Some(c)) => c,
-        _ => return None,
+        Ok(None) => return None,
+        // M19.05: a lookup failure means we cannot durably resolve the event's
+        // identity, so withhold the Accounting-Response and let the NAS retry.
+        Err(err) => {
+            warn!(
+                "NAS lookup failed; withholding Accounting-Response for {} from {}: {}",
+                packet.identifier, src_ip, err
+            );
+            db.accounting_acks_withheld.fetch_add(1, Ordering::Relaxed);
+            return None;
+        }
     };
 
     let secret = nas.secret.as_bytes();
@@ -968,6 +982,10 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
         .and_then(RadiusAttribute::as_u32)
         .map(|v| v as i64);
 
+    // M19.05 durable ACK contract: the Accounting-Response is sent only after the
+    // accounting event has been durably persisted. On write failure we deliberately
+    // send no response so the NAS retransmits and we do not acknowledge an event we
+    // may lose. A bounded counter tracks withheld ACKs for diagnostics.
     if let Err(err) = db
         .record_accounting(
             &session_id,
@@ -984,7 +1002,13 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
         )
         .await
     {
-        warn!("Failed to record RADIUS accounting session {}: {}", session_id, err);
+        warn!(
+            "Accounting write failed; withholding Accounting-Response for session {} from {}: {}",
+            session_id, src_ip, err
+        );
+        db.accounting_acks_withheld
+            .fetch_add(1, Ordering::Relaxed);
+        return None;
     }
 
     Some(encode_response(
@@ -1349,6 +1373,7 @@ async fn get_metrics(State(state): State<AppState>) -> String {
     let db = &state.db;
     let quota_exceeded = db.quota_exceeded_rejects.load(Ordering::Relaxed);
     let quota_duplicates = db.quota_duplicate_accumulations.load(Ordering::Relaxed);
+    let acks_withheld = db.accounting_acks_withheld.load(Ordering::Relaxed);
 
     format!(
         r#"# HELP moonwitness_isp_quota_exceeded_rejects_total Total number of Access-Requests rejected due to quota exceeded
@@ -1357,6 +1382,9 @@ moonwitness_isp_quota_exceeded_rejects_total {quota_exceeded}
 # HELP moonwitness_isp_quota_duplicate_accumulations_total Total number of duplicate quota accumulation attempts skipped (idempotent replay)
 # TYPE moonwitness_isp_quota_duplicate_accumulations_total counter
 moonwitness_isp_quota_duplicate_accumulations_total {quota_duplicates}
+# HELP moonwitness_isp_accounting_acks_withheld_total Number of Accounting-Responses withheld because the durable write failed
+# TYPE moonwitness_isp_accounting_acks_withheld_total counter
+moonwitness_isp_accounting_acks_withheld_total {acks_withheld}
 "#
     )
 }
@@ -1374,6 +1402,33 @@ mod tests {
         let db = Database::new(db_path.to_str().unwrap()).await.unwrap();
         db.migrate().await.unwrap();
         (dir, db)
+    }
+
+    fn build_accounting_request(
+        id: u8,
+        username: &str,
+        session_id: &str,
+        status_type: u32,
+        input_octets: u32,
+        output_octets: u32,
+        session_time: u32,
+        secret: &[u8],
+    ) -> Vec<u8> {
+        let mut pkt = BytesMut::new();
+        pkt.put_u8(codes::ACCOUNTING_REQUEST);
+        pkt.put_u8(id);
+        pkt.put_u16(0);
+        pkt.extend_from_slice(&[0u8; 16]);
+        RadiusAttribute::string(attr_type::USER_NAME, username).encode(&mut pkt);
+        RadiusAttribute::string(attr_type::ACCT_SESSION_ID, session_id).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_STATUS_TYPE, status_type).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_OCTETS, input_octets).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_OCTETS, output_octets).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_SESSION_TIME, session_time).encode(&mut pkt);
+        let total = pkt.len() as u16;
+        pkt[2..4].copy_from_slice(&total.to_be_bytes());
+        sign_accounting_request(&mut pkt, secret);
+        pkt.to_vec()
     }
 
     fn build_pap_access_request(
@@ -2104,5 +2159,92 @@ mod tests {
         )
         .unwrap();
         assert_eq!(resp_new.code, codes::ACCESS_ACCEPT);
+    }
+
+    #[tokio::test]
+    async fn accounting_request_with_db_failure_does_not_ack() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("test-nas", "127.0.0.1", "secret").await.unwrap();
+
+        // Simulate a durable-write failure by closing the underlying pool so
+        // every write path errors at the connection layer.
+        db.pool.close().await;
+
+        let req = build_accounting_request(
+            1,
+            "user1",
+            "sess-dbfail-001",
+            acct_status::START,
+            0,
+            0,
+            0,
+            b"secret",
+        );
+
+        let resp = process_accounting_request(&db, &req, "127.0.0.1").await;
+        assert!(
+            resp.is_none(),
+            "No Accounting-Response may be sent when the durable write fails"
+        );
+        assert_eq!(
+            db.accounting_acks_withheld.load(Ordering::Relaxed),
+            1,
+            "Withheld ACK counter must record the failure"
+        );
+    }
+
+    #[tokio::test]
+    async fn accounting_retransmission_persists_once_after_recovery() {
+        let dir = tempfile::tempdir().unwrap();
+        let db_path = dir.path().join("isp_retrans.db");
+        let db = Database::new(db_path.to_str().unwrap()).await.unwrap();
+        db.migrate().await.unwrap();
+        db.upsert_client("test-nas", "127.0.0.1", "secret").await.unwrap();
+
+        // 1. DB unavailable: NAS sends Accounting-Request, server must not ACK.
+        db.pool.close().await;
+        let req = build_accounting_request(
+            2,
+            "user2",
+            "sess-retrans-001",
+            acct_status::START,
+            0,
+            0,
+            0,
+            b"secret",
+        );
+        let resp = process_accounting_request(&db, &req, "127.0.0.1").await;
+        assert!(resp.is_none(), "Withheld ACK while DB is unavailable");
+
+        // 2. Recovery: reopen the database at the same path.
+        let recovered = Database::new(db_path.to_str().unwrap()).await.unwrap();
+        assert!(
+            recovered.migrate().await.is_ok(),
+            "Recovered database must be usable"
+        );
+
+        // 3. NAS retransmits the identical request (same id/session identity).
+        let resp2 = process_accounting_request(&recovered, &req, "127.0.0.1").await;
+        assert!(
+            resp2.is_some(),
+            "Retransmitted request must be ACKed after durable write succeeds"
+        );
+
+        // 4. Idempotent replay: retransmitting the identical request again must
+        //    not create a duplicate session row.
+        let resp3 = process_accounting_request(&recovered, &req, "127.0.0.1").await;
+        assert!(resp3.is_some());
+
+        let sessions = recovered.list_sessions().await.unwrap();
+        assert_eq!(
+            sessions.iter().filter(|s| s.session_id == "sess-retrans-001").count(),
+            1,
+            "Retransmission must persist exactly one session row"
+        );
+        assert_eq!(
+            recovered.accounting_acks_withheld.load(Ordering::Relaxed),
+            0,
+            "Recovered server must not carry over withheld counters"
+        );
     }
 }
