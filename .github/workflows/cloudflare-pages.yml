@@ -64,7 +64,7 @@ jobs:
 
       - name: Deploy to Cloudflare Pages
         id: deploy
-        uses: cloudflare/pages-action@efd2e3e5b0252b4f5e25c0d4f5c5d5e5f5a5b5c5 # v1.13.6
+        uses: cloudflare/pages-action@v1.13.6
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
