@@ -590,6 +590,7 @@ export function DocsApp() {
       <Routes>
         <Route path="/" element={<Navigate to={pages[0]?.route ?? '/'} replace />} />
         <Route path="/roadmap" element={<PortalLayout skin={skin} onToggleSkin={toggleSkin} />} />
+        <Route path="/monitoring" element={<PortalLayout skin={skin} onToggleSkin={toggleSkin} />} />
         <Route path="/guide/*" element={<PortalLayout skin={skin} onToggleSkin={toggleSkin} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
