@@ -962,9 +962,7 @@ describe('cloud auth and operations hardening', () => {
     beforeAll(async () => {
       const customFetch: typeof fetch = async (input, init) => {
         const url = String(input);
-        console.log('[MOCK FETCH SETTINGS]', init?.method || 'GET', url);
-        try {
-          if (url.endsWith('/paas/metrics')) {
+        if (url.endsWith('/paas/metrics')) {
           return new Response(
             JSON.stringify({
               nodeId: 'vps-node',
@@ -1030,7 +1028,6 @@ describe('cloud auth and operations hardening', () => {
           );
         }
         if (url.endsWith('/agent/dns/verify') && init?.method === 'POST') {
-          console.log('[MOCK FETCH SETTINGS] MATCHED /agent/dns/verify');
           return new Response(
             JSON.stringify({
               ok: true,
@@ -1044,12 +1041,7 @@ describe('cloud auth and operations hardening', () => {
             { status: 200 }
           );
         }
-        console.log('[MOCK FETCH SETTINGS] UNMATCHED', init?.method || 'GET', url);
         return new Response('{}', { status: 404 });
-      } catch (e) {
-        console.error('[MOCK FETCH SETTINGS] ERROR', e);
-        return new Response('{}', { status: 500 });
-      }
       };
 
       // Ensure models are bound to the database
@@ -1070,7 +1062,6 @@ describe('cloud auth and operations hardening', () => {
 
     it('GET /settings reads from base_config_parameters and builds Caddy spec', async () => {
       const res = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/settings' });
-      console.log('GET /settings response:', res.statusCode, res.json());
       expect(res.statusCode).toBe(200);
       expect(res.json().success).toBe(true);
       expect(res.json().data).toHaveProperty('instanceDomain');
@@ -1085,7 +1076,6 @@ describe('cloud auth and operations hardening', () => {
         url: '/api/cloud/paas/settings/verify-dns',
         payload: { instanceDomain: 'test.example.com', checkHttps: false },
       });
-      console.log('POST /settings/verify-dns response:', res.statusCode, res.json());
       expect(res.statusCode).toBe(200);
       expect(res.json().success).toBe(true);
     });
@@ -1343,7 +1333,6 @@ describe('cloud auth and operations hardening', () => {
         url: '/api/cloud/paas/settings/apply',
         payload: { instanceDomain: 'test.example.com', wildcardDomain: 'apps.example.com', publicPortEnabled: false, checkHttps: false },
       });
-      console.log('APPLY RES:', applyRes.statusCode, applyRes.json());
       expect(applyRes.statusCode).toBe(200);
 
       // Now promote preview apps
@@ -1352,7 +1341,6 @@ describe('cloud auth and operations hardening', () => {
         url: '/api/cloud/paas/settings/promote-wildcard',
         payload: { wildcardDomain: 'apps.example.com' },
       });
-      console.log('PROMOTE RES:', promoteRes.statusCode, promoteRes.json());
       expect(promoteRes.statusCode).toBe(200);
       expect(promoteRes.json().success).toBe(true);
       expect(promoteRes.json().data).toHaveProperty('promotedCount');
@@ -1444,7 +1432,6 @@ describe('cloud auth and operations hardening', () => {
         url: '/api/cloud/paas/apps/secret-test/env',
         payload: { env: { MY_SECRET: '[REDACTED]', PUBLIC_VAR: 'updated-public', NEW_VAR: 'new-value' }, merge: true, redeploy: false },
       });
-      console.log('ENV UPDATE RES:', updateRes.statusCode, updateRes.json());
       expect(updateRes.statusCode).toBe(200);
       expect(updateRes.json().success).toBe(true);
       // The response should redact all values
@@ -1509,9 +1496,7 @@ describe('cloud auth and operations hardening', () => {
 
       const customFetch: typeof fetch = async (input, init) => {
         const url = String(input);
-        console.log('[MESH STATUS MOCK]', init?.method || 'GET', url);
         if (url.endsWith('/agent/metrics')) {
-          console.log('[MESH STATUS MOCK] MATCHED /agent/metrics');
           return new Response(
             JSON.stringify({
               nodeId: 'vps-node',
@@ -1525,7 +1510,6 @@ describe('cloud auth and operations hardening', () => {
           );
         }
         if (url.endsWith('/mesh/status')) {
-          console.log('[MESH STATUS MOCK] MATCHED /mesh/status');
           return new Response(
             JSON.stringify({
               nodeId: 'vps-node',
@@ -1539,7 +1523,6 @@ describe('cloud auth and operations hardening', () => {
           );
         }
         if (url.endsWith('/agent/containers') && (!init?.method || init.method === 'GET')) {
-          console.log('[MESH STATUS MOCK] MATCHED /agent/containers');
           return new Response(
             JSON.stringify({
               containers: [
@@ -1562,7 +1545,6 @@ describe('cloud auth and operations hardening', () => {
         if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
           return new Response(JSON.stringify({ success: true }), { status: 200 });
         }
-        console.log('[MESH STATUS MOCK] UNMATCHED', init?.method || 'GET', url);
         return new Response('{}', { status: 404 });
       };
 
@@ -1570,7 +1552,6 @@ describe('cloud auth and operations hardening', () => {
       harness.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
 
       const res = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/mesh/status' });
-      console.log('MESH STATUS RESPONSE:', res.statusCode, res.json());
       expect(res.statusCode).toBe(200);
       expect(res.json().success).toBe(true);
       expect(res.json().data).toHaveProperty('mesh');
