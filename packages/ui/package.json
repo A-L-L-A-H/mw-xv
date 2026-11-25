@@ -258,6 +258,14 @@
       "types": "./dist/components/comic-panel.d.ts",
       "import": "./dist/components/comic-panel.js"
     },
+    "./components/comic-theater": {
+      "types": "./dist/components/comic-theater.d.ts",
+      "import": "./dist/components/comic-theater.js"
+    },
+    "./components/epistemic-branch-panel": {
+      "types": "./dist/components/epistemic-branch-panel.d.ts",
+      "import": "./dist/components/epistemic-branch-panel.js"
+    },
     "./components/speech-bubble": {
       "types": "./dist/components/speech-bubble.d.ts",
       "import": "./dist/components/speech-bubble.js"

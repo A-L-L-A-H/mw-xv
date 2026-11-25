@@ -67,6 +67,7 @@ import hairFrameTwo from '@moonwitness/assets/animation/crew-01-hair/crew-01-hai
 import walkFrameOne from '@moonwitness/assets/animation/crew-01-walk/crew-01-walk-frame-01.svg';
 import walkFrameTwo from '@moonwitness/assets/animation/crew-01-walk/crew-01-walk-frame-02.svg';
 const SceneLab = lazy(() => import('./SceneLab.js').then((mod) => ({ default: mod.SceneLab })));
+const ComicLab = lazy(() => import('./ComicLab.js').then((mod) => ({ default: mod.ComicLab })));
 const FXLab = lazy(() => import('./FXLab.js').then((mod) => ({ default: mod.FXLab })));
 const AssetBrowser = lazy(() =>
   import('./AssetBrowser.js').then((mod) => ({ default: mod.AssetBrowser }))
@@ -1651,6 +1652,7 @@ function CatalogContent() {
       renderer: () => (
         <Suspense fallback={<p role="status">Loading scene inspector…</p>}>
           <SceneLab />
+          <ComicLab />
         </Suspense>
       ),
     },
