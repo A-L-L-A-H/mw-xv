@@ -303,7 +303,7 @@
 
 ---
 
-## - [ ] M28 — Refactor `POST /apps/deploy` & Add `POST /apps/deploy-compose`
+## - [x] M28 — Refactor `POST /apps/deploy` & Add `POST /apps/deploy-compose`
 
 - **Owner File (MODIFY):** `packages/orm-cloud/src/http.ts`
 - **Depends On:** `M27`

@@ -30,8 +30,8 @@ import {
   fetchMeshNodeMetrics,
   listAgentContainers,
   listMeshPaasApps,
-  listMeshPaasTemplates,
   type MeshPaasAppAction,
+  runAgentContainer,
   upAgentCompose,
   verifyAgentDns,
 } from './providers/moonwitness-mesh.js';
@@ -46,7 +46,11 @@ import {
   reconcileCaddyWithAgent,
 } from './paas-state.js';
 import { compileCoolifyCompose } from './coolify-compose-compiler.js';
-import { listCoolifyTemplates, getCoolifyTemplateDetail } from './coolify-template-pack.js';
+import {
+  listCoolifyTemplates,
+  getCoolifyTemplateDetail,
+  type CoolifyCompatibility,
+} from './coolify-template-pack.js';
 import { exportCloudTerraformHcl } from './terraform.js';
 import { probeCloudTargetsHealth, assertProbeTarget, readBoundedResponseBody } from './probe.js';
 import {
@@ -224,6 +228,16 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
   {
     method: 'POST',
     path: '/api/cloud/paas/apps/deploy',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: false,
+    feature: 'provisioning',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/apps/deploy-compose',
     operation: 'app.deploy',
     model: 'cloud.app',
     permission: 'write',
@@ -1501,7 +1515,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           q: query.q,
           category: query.category,
           tag: query.tag,
-          compatibility: (query.compatibility as any) ?? undefined,
+          compatibility: (query.compatibility as CoolifyCompatibility) ?? undefined,
           includeOutdated: query.includeOutdated,
           page: query.page,
           limit: query.limit,
@@ -1540,7 +1554,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       if (!requireFeature(reply, rule)) return;
       if (!requireToken(reply, rule)) return;
 
-      const { slug, tenantId, composeSpec, env, domain, gitRepo, port } = req.body ?? {};
+      const { slug, tenantId, composeSpec, env, domain, gitRepo: _gitRepo, port } = req.body ?? {};
       if (!slug || !composeSpec) {
         mark(rule.operation, 'invalid');
         return reply.code(400).send({ success: false, error: 'slug and composeSpec are required' });
@@ -1600,7 +1614,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       const slug = typeof body.slug === 'string' ? body.slug.trim() : '';
       const image = typeof body.image === 'string' ? body.image.trim() : '';
       if (!PAAS_SLUG_PATTERN.test(slug) || !image) {
-        mark(rule.operation, 'invalid', 'mesh');
+        mark(rule.operation, 'invalid');
         return reply.code(400).send({ success: false, error: 'Valid slug and image are required' });
       }
       const env =
@@ -1610,25 +1624,109 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
             )
           : undefined;
 
+      const resolvedDomain =
+        typeof body.domain === 'string' && body.domain.trim() ? body.domain.trim() : undefined;
+      let previewPort: number | undefined;
+      if (!resolvedDomain) {
+        previewPort = (await allocatePreviewPort()) ?? undefined;
+      }
+      const targetPort = typeof body.port === 'number' && Number.isInteger(body.port) ? body.port : 3000;
+
       try {
         assertProbeTarget(defaultAgentUrl, requestPolicy);
-        const result = await deployViaMoonWitnessMesh({
+        const result = await runAgentContainer({
           endpoint: defaultAgentUrl,
           token: resolvedToken,
           slug,
-          image,
-          domain: typeof body.domain === 'string' && body.domain.trim() ? body.domain.trim() : undefined,
-          port: typeof body.port === 'number' && Number.isInteger(body.port) ? body.port : 3000,
-          tenant:
+          tenantId:
             typeof body.tenant === 'string' && body.tenant.trim()
               ? body.tenant.trim()
               : `company-${ctx.companyId}`,
+          image,
+          port: targetPort,
+          domain: resolvedDomain,
           env,
           fetchImpl,
           timeoutMs: 60_000,
         });
-        mark(rule.operation, 'success', 'mesh');
-        return reply.code(201).send({ success: true, data: result });
+
+        // Find or create deployment target for the company
+        let target = await CloudDeploymentTarget.query()
+          .where({ company_id: ctx.companyId, is_active: true })
+          .first();
+        if (!target) {
+          target = await CloudDeploymentTarget.query()
+            .where({ company_id: ctx.companyId })
+            .first();
+        }
+        if (!target) {
+          target = await CloudDeploymentTarget.query().first();
+        }
+        if (!target) {
+          target = await CloudDeploymentTarget.query().insertAndFetch({
+            company_id: ctx.companyId,
+            name: 'default-paas-target',
+            environment: 'production',
+            api_url: defaultAgentUrl,
+            is_active: true,
+          });
+        }
+
+        let cloudApp = await CloudApp.query().findOne({ name: slug });
+        if (cloudApp) {
+          cloudApp = await CloudApp.query().patchAndFetchById(cloudApp.id, {
+            company_id: ctx.companyId,
+            deployment_target_id: target.id,
+            image: result.slug,
+            port: targetPort,
+            domain: resolvedDomain,
+            host_port: previewPort ?? null,
+            env_vars: env ?? {},
+            compose_spec: '',
+            git_repo: null,
+            managed_by: 'paas',
+            deploy_mode: 'image',
+            is_active: true,
+            active: true,
+          });
+        } else {
+          cloudApp = await CloudApp.query().insertAndFetch({
+            company_id: ctx.companyId,
+            deployment_target_id: target.id,
+            name: slug,
+            image: result.slug,
+            port: targetPort,
+            domain: resolvedDomain,
+            host_port: previewPort ?? null,
+            env_vars: env ?? {},
+            compose_spec: '',
+            git_repo: null,
+            managed_by: 'paas',
+            deploy_mode: 'image',
+            is_active: true,
+            active: true,
+          });
+        }
+
+        await CloudDeployment.query().insert({
+          company_id: ctx.companyId,
+          app_id: cloudApp.id,
+          version: result.slug,
+          image_tag: 'latest',
+          status: 'running',
+          container_id: result.containerId,
+          trigger: 'agent',
+          log: `Container ${result.containerName} started with status ${result.status}`,
+          started_at: new Date().toISOString(),
+        });
+
+        await reconcileCaddyWithAgent({});
+
+        mark(rule.operation, 'success');
+        return reply.code(201).send({
+          success: true,
+          data: { slug, image: result.slug, domain: resolvedDomain, previewPort },
+        });
       } catch (error) {
         mark(rule.operation, 'failed', 'mesh');
         return reply.code(502).send({
@@ -1641,6 +1739,139 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         });
       }
     });
+
+    fastify.post<{ Body: { slug?: string; tenantId?: string; composeSpec?: string; env?: Record<string, string>; domain?: string; port?: number } }>(
+      '/api/cloud/paas/apps/deploy-compose',
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/apps/deploy-compose');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const { slug, tenantId, composeSpec, env, domain, port } = req.body ?? {};
+        if (!slug || !composeSpec) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'slug and composeSpec are required' });
+        }
+        if (!PAAS_SLUG_PATTERN.test(slug)) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'Invalid slug format' });
+        }
+
+        const resolvedDomain =
+          typeof domain === 'string' && domain.trim() ? domain.trim() : undefined;
+        let previewPort: number | undefined;
+        if (!resolvedDomain) {
+          previewPort = (await allocatePreviewPort()) ?? undefined;
+        }
+        const targetPort = typeof port === 'number' && Number.isInteger(port) ? port : 3000;
+
+        try {
+          assertProbeTarget(defaultAgentUrl, requestPolicy);
+          await compileCoolifyCompose({
+            slug,
+            tenantId: tenantId ?? 'default',
+            composeYaml: composeSpec,
+            defaultPort: targetPort,
+            primaryDomain: resolvedDomain,
+            ...(previewPort !== undefined ? { previewPort } : {}),
+            existingEnv: {},
+            userEnv: env,
+          });
+
+          await upAgentCompose({ endpoint: defaultAgentUrl, slug, composeSpec, env });
+
+          // Find or create deployment target for the company
+          let target = await CloudDeploymentTarget.query()
+            .where({ company_id: ctx.companyId, is_active: true })
+            .first();
+          if (!target) {
+            target = await CloudDeploymentTarget.query()
+              .where({ company_id: ctx.companyId })
+              .first();
+          }
+          if (!target) {
+            target = await CloudDeploymentTarget.query().first();
+          }
+          if (!target) {
+            target = await CloudDeploymentTarget.query().insertAndFetch({
+              company_id: ctx.companyId,
+              name: 'default-paas-target',
+              environment: 'production',
+              api_url: defaultAgentUrl,
+              is_active: true,
+            });
+          }
+
+          let cloudApp = await CloudApp.query().findOne({ name: slug });
+          if (cloudApp) {
+            cloudApp = await CloudApp.query().patchAndFetchById(cloudApp.id, {
+              company_id: ctx.companyId,
+              deployment_target_id: target.id,
+              image: `mw-paas-${slug}:latest`,
+              port: targetPort,
+              domain: resolvedDomain,
+              host_port: previewPort ?? null,
+              env_vars: env ?? {},
+              compose_spec: composeSpec,
+              git_repo: null,
+              managed_by: 'paas',
+              deploy_mode: 'compose',
+              is_active: true,
+              active: true,
+            });
+          } else {
+            cloudApp = await CloudApp.query().insertAndFetch({
+              company_id: ctx.companyId,
+              deployment_target_id: target.id,
+              name: slug,
+              image: `mw-paas-${slug}:latest`,
+              port: targetPort,
+              domain: resolvedDomain,
+              host_port: previewPort ?? null,
+              env_vars: env ?? {},
+              compose_spec: composeSpec,
+              git_repo: null,
+              managed_by: 'paas',
+              deploy_mode: 'compose',
+              is_active: true,
+              active: true,
+            });
+          }
+
+          await CloudDeployment.query().insert({
+            company_id: ctx.companyId,
+            app_id: cloudApp.id,
+            version: `mw-paas-${slug}:latest`,
+            image_tag: 'latest',
+            status: 'running',
+            container_id: slug,
+            trigger: 'agent',
+            log: 'Deployed via compose',
+            started_at: new Date().toISOString(),
+          });
+
+          await reconcileCaddyWithAgent({});
+
+          mark(rule.operation, 'success');
+          return reply.code(201).send({
+            success: true,
+            data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain, previewPort },
+          });
+        } catch (error) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(
+              error,
+              [resolvedToken, ...Object.values(env ?? {})],
+              'Compose deploy failed'
+            ),
+          });
+        }
+      }
+    );
 
     fastify.post<{ Params: { slug: string; action: string } }>(
       '/api/cloud/paas/apps/:slug/:action',

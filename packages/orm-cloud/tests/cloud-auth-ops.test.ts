@@ -29,7 +29,6 @@ import {
   CloudConfigError,
   CloudDeployment,
   CloudDeploymentTarget,
-  CloudProvider,
   CloudProvider as ProviderModel,
   describeControlPlaneToken,
   executeProvisionWithCompensation,
@@ -383,7 +382,7 @@ describe('cloud auth and operations hardening', () => {
     const ownApp = await CloudApp.query().findOne({ company_id: 1, name: 'moonwitness-isp' });
     const providerCalls: string[] = [];
     const { app } = await buildApp({
-      fetchImpl: async (input, init) => {
+      fetchImpl: async (input, _init) => {
         providerCalls.push(String(input));
         await Promise.resolve();
         return new Response(JSON.stringify({ id: `ctr-${providerCalls.length}` }), { status: 201 });
@@ -908,6 +907,21 @@ describe('cloud auth and operations hardening', () => {
           }),
           { status: 200 }
         );
+      }
+      if (url.endsWith('/agent/containers/run') && init?.method === 'POST') {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            slug: 'demo',
+            containerName: 'mw-paas-demo',
+            containerId: 'ctr-demo',
+            status: 'running',
+          }),
+          { status: 200 }
+        );
+      }
+      if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
       }
       return new Response('{}', { status: 404 });
     };
