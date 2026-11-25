@@ -164,6 +164,10 @@ jobs:
         run: bunx knip --no-exit-code --no-progress
       - name: Run dependency-cruiser (architecture boundary enforcement)
         run: bunx depcruise --config .dependency-cruiser.cjs packages apps
+      - name: Enforce interactive-session and swarm-observability ADR boundaries
+        run: |
+          bun run interactive-session:boundary:check
+          bun run swarm-observability:boundary:check
       - name: Enforce M15, M16, M17, and M18 Constitutional Invariants and Issue Planner Gates
         run: |
           node --test scripts/check-m15-invariants.test.mjs scripts/check-m16-invariants.test.mjs scripts/check-m17-invariants.test.mjs scripts/check-m18-invariants.test.mjs

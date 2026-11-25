@@ -65,7 +65,21 @@ export function ensureAiJobHandlersRegistered(): void {
           if (!effect) {
             throw new Error('Cloud coding-agent effect is not configured');
           }
-          return runDurableAgentRun(payload, context, effect);
+          const { isInteractiveRunBlocked } = await import('./interactive-sessions.js');
+          if (await isInteractiveRunBlocked(payload.agentRunId, payload.companyId)) {
+            return { status: 'replayed', agentRunId: payload.agentRunId };
+          }
+          try {
+            return await runDurableAgentRun(payload, context, effect);
+          } finally {
+            const { InteractiveSession } = await import('./models/interactive-sessions.js');
+            const { reconcileInteractiveSession } = await import('./interactive-sessions.js');
+            const session = await InteractiveSession.query().findOne({
+              company_id: payload.companyId,
+              agent_run_id: payload.agentRunId,
+            });
+            if (session) await reconcileInteractiveSession(session.id, payload.companyId);
+          }
         },
       });
     } catch {

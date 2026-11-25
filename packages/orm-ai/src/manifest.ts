@@ -3,6 +3,7 @@ import { aiCorporationHttpPlugin } from './ai-corporation-http.js';
 import { aiDesktopSyncHttpPlugin } from './ai-desktop-sync-http.js';
 import { data } from './data.js';
 import { evolutionHttpPlugin } from './evolution-http.js';
+import { interactiveSessionsHttpPlugin } from './interactive-sessions-http.js';
 import {
   AcceptanceCriterion,
   Agent,
@@ -12,6 +13,10 @@ import {
   ArtifactManifest,
   CapabilityGrant,
   ExecutionPolicy,
+  InteractiveSession,
+  InteractiveSessionApproval,
+  InteractiveSessionCommand,
+  InteractiveSessionEvent,
   MemoryCandidate,
   ModelProfile,
   Obligation,
@@ -25,7 +30,43 @@ import { views } from './views.js';
 
 export const manifest = defineAddon({
   name: 'ai',
-  version: '1.0.0',
+  version: '1.1.0',
+  setup: async (trx) => {
+    const client = String(trx.client.config.client);
+    const postgres = client === 'pg';
+    const sqlite = client === 'better-sqlite3' || client === 'sqlite3';
+    if (!postgres && !sqlite) return;
+    if (postgres) {
+      await trx.raw(
+        `CREATE OR REPLACE FUNCTION moonwitness_reject_interactive_event_mutation() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION 'Interactive session events are immutable'; END; $$ LANGUAGE plpgsql`
+      );
+      await trx.raw(
+        `CREATE OR REPLACE FUNCTION moonwitness_reject_terminal_session_mutation() RETURNS trigger AS $$ BEGIN IF OLD.status IN ('completed','failed','cancelled') AND (NEW.status IS DISTINCT FROM OLD.status OR NEW.last_sequence IS DISTINCT FROM OLD.last_sequence OR NEW.version IS DISTINCT FROM OLD.version OR NEW.terminal_at IS DISTINCT FROM OLD.terminal_at) THEN RAISE EXCEPTION 'Interactive session is terminal'; END IF; RETURN NEW; END; $$ LANGUAGE plpgsql`
+      );
+      await trx.raw(
+        'DROP TRIGGER IF EXISTS ai_interactive_events_immutable ON ai_interactive_session_events'
+      );
+      await trx.raw(
+        'CREATE TRIGGER ai_interactive_events_immutable BEFORE UPDATE OR DELETE ON ai_interactive_session_events FOR EACH ROW EXECUTE FUNCTION moonwitness_reject_interactive_event_mutation()'
+      );
+      await trx.raw(
+        'DROP TRIGGER IF EXISTS ai_interactive_sessions_terminal ON ai_interactive_sessions'
+      );
+      await trx.raw(
+        'CREATE TRIGGER ai_interactive_sessions_terminal BEFORE UPDATE ON ai_interactive_sessions FOR EACH ROW EXECUTE FUNCTION moonwitness_reject_terminal_session_mutation()'
+      );
+      return;
+    }
+    await trx.raw(
+      `CREATE TRIGGER IF NOT EXISTS ai_interactive_events_reject_update BEFORE UPDATE ON ai_interactive_session_events BEGIN SELECT RAISE(ABORT, 'Interactive session events are immutable'); END`
+    );
+    await trx.raw(
+      `CREATE TRIGGER IF NOT EXISTS ai_interactive_events_reject_delete BEFORE DELETE ON ai_interactive_session_events BEGIN SELECT RAISE(ABORT, 'Interactive session events are immutable'); END`
+    );
+    await trx.raw(
+      `CREATE TRIGGER IF NOT EXISTS ai_interactive_sessions_terminal BEFORE UPDATE ON ai_interactive_sessions WHEN OLD.status IN ('completed','failed','cancelled') AND (NEW.status != OLD.status OR NEW.last_sequence != OLD.last_sequence OR NEW.version != OLD.version OR NEW.terminal_at != OLD.terminal_at) BEGIN SELECT RAISE(ABORT, 'Interactive session is terminal'); END`
+    );
+  },
   depends: ['base', 'organization', 'jobs', 'workflow', 'orm-storage'],
   models: [
     ProviderProfile,
@@ -38,6 +79,10 @@ export const manifest = defineAddon({
     CapabilityGrant,
     AgentRun,
     AgentRunEffect,
+    InteractiveSession,
+    InteractiveSessionEvent,
+    InteractiveSessionCommand,
+    InteractiveSessionApproval,
     ArtifactManifest,
     Obligation,
     Taskforce,
@@ -47,7 +92,12 @@ export const manifest = defineAddon({
   ],
   data,
   views,
-  httpPlugins: [evolutionHttpPlugin, aiCorporationHttpPlugin, aiDesktopSyncHttpPlugin],
+  httpPlugins: [
+    evolutionHttpPlugin,
+    aiCorporationHttpPlugin,
+    aiDesktopSyncHttpPlugin,
+    interactiveSessionsHttpPlugin,
+  ],
   menus: [
     { model: Agent.modelName, label: 'Agents', group: 'AI Corporation', sequence: 60 },
     {

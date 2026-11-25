@@ -11,6 +11,16 @@ const checks = [
   ['GitHub Action tag pin verification', ['scripts/check-action-tag-pins.mjs']],
   ['Workflow checkout trust policy', ['scripts/check-workflow-checkout-trust.mjs']],
   ['Release provenance policy', ['scripts/check-release-provenance.mjs']],
+  [
+    'Interactive-session ADR boundary suite',
+    ['--test', 'scripts/check-interactive-session-boundary.test.mjs'],
+  ],
+  ['Interactive-session ADR boundary gate', ['scripts/check-interactive-session-boundary.mjs']],
+  [
+    'Swarm observability ADR boundary suite',
+    ['--test', 'scripts/check-swarm-observability-boundary.test.mjs'],
+  ],
+  ['Swarm observability ADR boundary gate', ['scripts/check-swarm-observability-boundary.mjs']],
   ['Workspace Docker manifests', ['--test', 'scripts/docker-workspace-manifests.test.mjs']],
   ['Architecture artifacts', ['scripts/architecture/generate-diagrams.mjs', '--check']],
   ['Generated documentation', ['scripts/docs/generate-reference.mjs', '--check']],

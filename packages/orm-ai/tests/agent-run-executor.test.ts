@@ -3,6 +3,7 @@ import { Job } from '@moonwitness/jobs';
 import {
   Agent,
   AgentRun,
+  ArtifactManifest,
   CapabilityGrant,
   ExecutionPolicy,
   ModelProfile,
@@ -76,6 +77,7 @@ interface PatchRecord {
 
 const rows: Record<string, Row[]> = {
   AgentRun: [],
+  ArtifactManifest: [],
   Agent: [],
   WorkContract: [],
   CapabilityGrant: [],
@@ -182,6 +184,16 @@ function resetRows(): void {
     checkpoint_json: null,
     correlation_id: 'corr-executor',
   });
+  replaceRows('ArtifactManifest', {
+    id: 1,
+    company_id: 3,
+    work_contract_id: 7,
+    agent_run_id: 42,
+    artifact_kind: 'evidence_bundle',
+    sha256: 'a'.repeat(64),
+    verification_status: 'checked',
+    stale_at: null,
+  });
   replaceRows('Agent', {
     id: 11,
     company_id: 3,
@@ -228,6 +240,9 @@ beforeEach(() => {
   resetRows();
   vi.spyOn(AgentRun, 'query').mockImplementation(
     () => fakeQuery('AgentRun', rows.AgentRun!) as never
+  );
+  vi.spyOn(ArtifactManifest, 'query').mockImplementation(
+    () => fakeQuery('ArtifactManifest', rows.ArtifactManifest!) as never
   );
   vi.spyOn(Agent, 'query').mockImplementation(() => fakeQuery('Agent', rows.Agent!) as never);
   vi.spyOn(WorkContract, 'query').mockImplementation(
@@ -306,7 +321,7 @@ describe('runDurableAgentRun approval fingerprint', () => {
     await expect(
       runDurableAgentRun(payload, context, {
         async execute() {
-          return { executedBy: 'test' };
+          return { executedBy: 'test', evidenceSha256: 'a'.repeat(64) };
         },
       })
     ).rejects.toMatchObject({
@@ -326,7 +341,7 @@ describe('runDurableAgentRun approval fingerprint', () => {
 
     const result = await runDurableAgentRun(payload, context, {
       async execute() {
-        return { executedBy: 'test' };
+        return { executedBy: 'test', evidenceSha256: 'a'.repeat(64) };
       },
     });
 
@@ -337,7 +352,7 @@ describe('runDurableAgentRun approval fingerprint', () => {
 
 describe('runDurableAgentRun fencing and recovery', () => {
   it('fails closed without a valid claimed job fencing token', async () => {
-    const execute = vi.fn(async () => ({ executedBy: 'test' }));
+    const execute = vi.fn(async () => ({ executedBy: 'test', evidenceSha256: 'a'.repeat(64) }));
 
     for (const fencingToken of [undefined, 0, -1, 1.5, Number.NaN, '8']) {
       const invalidContext = {
@@ -355,7 +370,7 @@ describe('runDurableAgentRun fencing and recovery', () => {
   });
 
   it('rejects a newer job token or a run token newer than the claim', async () => {
-    const execute = vi.fn(async () => ({ executedBy: 'test' }));
+    const execute = vi.fn(async () => ({ executedBy: 'test', evidenceSha256: 'a'.repeat(64) }));
     rows.Job[0]!.fencing_token = 9;
 
     await expect(runDurableAgentRun(payload, context, { execute })).rejects.toMatchObject({
@@ -376,7 +391,7 @@ describe('runDurableAgentRun fencing and recovery', () => {
   it('preserves terminal replay without executing effects', async () => {
     rows.AgentRun[0]!.status = 'completed';
     rows.Job[0]!.fencing_token = 99;
-    const execute = vi.fn(async () => ({ executedBy: 'test' }));
+    const execute = vi.fn(async () => ({ executedBy: 'test', evidenceSha256: 'a'.repeat(64) }));
 
     await expect(runDurableAgentRun(payload, context, { execute })).resolves.toMatchObject({
       status: 'replayed',
@@ -403,7 +418,7 @@ describe('runDurableAgentRun fencing and recovery', () => {
         started_at: originalStartedAt,
         execution_fingerprint: claimed.fingerprint,
       });
-      return { executedBy: 'recovery' };
+      return { executedBy: 'recovery', evidenceSha256: 'a'.repeat(64) };
     });
 
     await expect(runDurableAgentRun(payload, context, { execute })).resolves.toMatchObject({
@@ -425,7 +440,10 @@ describe('runDurableAgentRun fencing and recovery', () => {
 
   it('does not re-execute a running claim that already has the same token', async () => {
     Object.assign(rows.AgentRun[0]!, { status: 'running', fencing_token: 8 });
-    const execute = vi.fn(async () => ({ executedBy: 'duplicate' }));
+    const execute = vi.fn(async () => ({
+      executedBy: 'duplicate',
+      evidenceSha256: 'a'.repeat(64),
+    }));
 
     await expect(runDurableAgentRun(payload, context, { execute })).resolves.toMatchObject({
       status: 'replayed',
@@ -449,7 +467,7 @@ describe('runDurableAgentRun fencing and recovery', () => {
         rows.Job[0]!.fencing_token = 9;
         Object.assign(rows.AgentRun[0]!, recovered);
         if (effectStatus === 'failed') throw new Error('stale effect failed');
-        return { status: 'completed' };
+        return { status: 'completed', evidenceSha256: 'a'.repeat(64) };
       });
 
       await expect(runDurableAgentRun(payload, context, { execute })).rejects.toThrow();
@@ -464,7 +482,7 @@ describe('runDurableAgentRun effect status mapping', () => {
   it('treats an effect with no status as completed (backward compatible)', async () => {
     const result = await runDurableAgentRun(payload, context, {
       async execute() {
-        return { executedBy: 'test' };
+        return { executedBy: 'test', evidenceSha256: 'a'.repeat(64) };
       },
     });
 
@@ -473,6 +491,38 @@ describe('runDurableAgentRun effect status mapping', () => {
       patches.some((entry) => entry.table === 'AgentRun' && entry.patch.status === 'completed')
     ).toBe(true);
   });
+
+  it('rejects provider success without persisted evidence', async () => {
+    await expect(
+      runDurableAgentRun(payload, context, {
+        async execute() {
+          return { status: 'completed' };
+        },
+      })
+    ).rejects.toThrow('Completion requires');
+    expect(rows.AgentRun[0]!.status).toBe('failed');
+  });
+
+  it.each([
+    ['missing', undefined],
+    ['produced', 'produced'],
+    ['rejected', 'rejected'],
+  ] as const)(
+    'rejects %s evidence instead of trusting provider success',
+    async (_label, status) => {
+      if (status === undefined) replaceRows('ArtifactManifest');
+      else rows.ArtifactManifest[0]!.verification_status = status;
+
+      await expect(
+        runDurableAgentRun(payload, context, {
+          async execute() {
+            return { executedBy: 'test', evidenceSha256: 'a'.repeat(64) };
+          },
+        })
+      ).rejects.toThrow('Completion requires matching checked persisted evidence');
+      expect(rows.AgentRun[0]!.status).toBe('failed');
+    }
+  );
 
   it('marks the run failed when the effect reports failed', async () => {
     const result = await runDurableAgentRun(payload, context, {

@@ -1,9 +1,16 @@
 # ADR 0017: Single-Authority Swarm Orchestration and Observability
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-25
+- **Accepted:** 2026-11-25
 - **Decision owners:** MoonWitness maintainers
 - **Related:** ADR 0007 (AI corporation), ADR 0015 (delivery governance), ADR 0016 (interactive coding sessions), and learned invariants INV-004, INV-007, INV-009, and INV-014.
+
+## Implementation status
+
+The addon-owned telemetry authority is implemented in the local candidate: OTLP/Qoder ingest, SQL-backed correlation and persistence, credential-derived tenant attribution, company-scoped reads, and Board Mission Control use the canonical API path. Local package, focused API and structural-gate evidence is recorded in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
+
+Acceptance records the architecture decision, not production readiness. The evidence is candidate/incomplete: Board browser tests and PostgreSQL/hosted gates are not yet complete, and the source SHA is not immutable until the candidate is committed.
 
 ## Scope
 
@@ -43,7 +50,7 @@ This may provide a polished agent UI quickly, but imports another session loop, 
 
 Move OTLP decoding, Qoder lifecycle bridging, redaction, queries, and retention into `packages/orm-observability`; expose them through its addon HTTP plugin; use the API-owned PostgreSQL connection; and render the only operator UI in Board Mission Control. Keep the skill dashboard local, read-only, and explicitly non-authoritative.
 
-**Decision:** Chosen. This reuses the existing addon, authentication, database, and UI boundaries and provides one place to evolve tenant attribution, retention, incident evidence, and agent health.
+**Decision:** Chosen. This reuses the existing addon, authentication, database, and UI boundaries and provides one place to evolve credential-derived tenant attribution, retention, incident evidence, and agent health.
 
 ## Decision
 
@@ -77,10 +84,13 @@ The observability addon owns these routes:
 - `GET /api/observability/logs`
 - `GET /api/observability/metrics`
 - `GET /api/observability/config`
+- `GET /api/observability/credentials`
+- `POST /api/observability/credentials`
+- `POST /api/observability/credentials/:id/revoke`
 
-Ingest routes use `config: { public: true }` only to bypass the browser JWT prehandler. They must independently require a dedicated `OBSERVABILITY_INGEST_TOKEN` of at least 32 characters, accept `Authorization: Bearer` or `x-observability-token`, compare tokens in constant time, and return `503` when the server token is not configured. Missing or invalid credentials return `401`; they never fall back to anonymous ingestion.
+Ingest routes use `config: { public: true }` only to bypass the browser JWT prehandler. They must independently require a dedicated ingest credential of at least 32 characters, accept `Authorization: Bearer` or `x-observability-token`, and fail closed when ingest is not configured. Registry credentials are stored as hashes, support expiry/revocation, and may carry a server-side company/user binding. The legacy environment token remains supported without tenant attribution and is compared in constant time. Missing or invalid credentials return `401`; an unconfigured server returns `503`; neither path falls back to anonymous ingestion.
 
-Read routes require a valid JWT and the `system` or `superadmin` role. Until trusted server-side tenant attribution exists, telemetry must not be exposed to company users based only on a client-supplied company or agent identifier.
+Telemetry read routes require a valid JWT. `system` and `superadmin` read the global scope. A company user may read only the active company from authenticated server-side context, after active company membership is revalidated and `observability.telemetry_span` read access is granted. Client-supplied company or agent identifiers never establish tenant scope. Ingest-credential management routes remain administrator-only.
 
 Responses use `{ success: true, data }` or `{ success: false, error }`. Collection data is wrapped as `{ traces: [] }`, `{ logs: [] }`, or `{ metrics: [] }` where applicable so the Board client has one stable response contract.
 
@@ -90,11 +100,13 @@ Responses use `{ success: true, data }` or `{ success: false, error }`. Collecti
 - The addon must construct the store with non-owning database lifecycle (`closeDb: false`) and must never call `destroy()` on the shared Knex instance. The API owns connection shutdown.
 - The existing SQLite store remains an addon/test harness for isolated environments; it is not a second production receiver or operator authority.
 - OTLP payload decoding and Qoder lifecycle bridging move into `packages/orm-observability` so app-local instrumentation does not own domain behavior.
+- Qoder prompt/tool/subagent correlation state and counters are persisted in the SQL telemetry store with tenant-scoped keys and expiry. Separate store instances and API replicas therefore share correlation state instead of relying on process-local memory; hosted multi-replica validation remains an open gate.
 - `apps/agent-observability` becomes an instrumentation/client package only. It must not start a listener, serve static assets, create a database, or expose `dev` or `start` server scripts.
 
 ### 4. Security and data handling
 
 - Ingest and read credentials are separate. A telemetry ingest token cannot read traces, logs, or metrics.
+- Tenant attribution comes only from the server-side ingest credential registry. Telemetry attributes and browser parameters cannot assert a company. Persisted span/log/metric identities and Qoder correlation keys include the tenant boundary.
 - OTLP/Qoder input is bounded and redacted before persistence. Qoder hooks store lifecycle metadata, identifiers, timing, and lengths, not raw prompts, responses, messages, tool payloads, or error bodies.
 - The API body limit remains the host security boundary. The addon must reject oversized or malformed batches without buffering unbounded data.
 - No browser receives database credentials, provider secrets, ingest tokens, host environment values, or direct worker/sandbox access.
@@ -110,17 +122,17 @@ Responses use `{ success: true, data }` or `{ success: false, error }`. Collecti
 
 ## Falsifiable invariants
 
-| ID     | Invariant                                                                                           | Evidence                                                                                                                       |
-| ------ | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| SO-001 | Only `packages/orm-observability` defines observability addon/models and domain ingest/read routes. | Boundary gate rejects second `defineModel`, `defineAddon`, and route registration; addon integration tests prove registration. |
-| SO-002 | `apps/agent-observability` cannot run a receiver, static dashboard, or database.                    | Package/source negative fixtures fail; package tests show instrumentation-only exports.                                        |
-| SO-003 | Ingest requires a dedicated strong token and fails closed when unconfigured.                        | Integration tests cover missing, short, wrong, Bearer, header, and constant-time comparison paths.                             |
-| SO-004 | Telemetry reads require JWT administrator authorization.                                            | Integration tests cover anonymous, normal user, `system`, and `superadmin`.                                                    |
-| SO-005 | The addon does not own or destroy the API database.                                                 | Source gate rejects `destroy()` in the HTTP plugin; lifecycle tests leave the shared connection usable after addon shutdown.   |
-| SO-006 | Raw prompts, secrets, and unbounded payloads are not persisted.                                     | Redaction, malformed-input, size-limit, and secret-canary tests.                                                               |
-| SO-007 | Board is the only operator telemetry UI.                                                            | Boundary gate rejects telemetry route/static-server code outside the addon; Board uses shared UI and scoped React Query keys.  |
-| SO-008 | Swarm plan state is not execution evidence.                                                         | UI and tests label planned versus observed provenance; no runtime parent edge is derived from `dependsOn`.                     |
-| SO-009 | Existing jobs, fencing, approvals, and sandbox boundaries remain authoritative.                     | Negative imports/definitions and the ADR 0016 gate remain clean; runtime fencing tests pass.                                   |
+| ID     | Invariant                                                                                                                                                      | Evidence                                                                                                                                 |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| SO-001 | Only `packages/orm-observability` defines observability addon/models and domain ingest/read routes.                                                            | Boundary gate rejects second `defineModel`, `defineAddon`, and route registration; addon integration tests prove registration.           |
+| SO-002 | `apps/agent-observability` cannot run a receiver, static dashboard, or database.                                                                               | Package/source negative fixtures fail; package tests show instrumentation-only exports.                                                  |
+| SO-003 | Ingest requires a dedicated strong credential and fails closed when unconfigured.                                                                              | Integration tests cover missing, short, wrong, Bearer, header, constant-time legacy comparison, registry expiry, and revocation paths.   |
+| SO-004 | Telemetry reads require JWT global-admin authorization or authenticated company-scoped read authorization; ingest-credential management is administrator-only. | Integration tests cover anonymous access, company-user grant/denial and membership, cross-company isolation, `system`, and `superadmin`. |
+| SO-005 | The addon does not own or destroy the API database.                                                                                                            | Source gate rejects `destroy()` in the HTTP plugin; lifecycle tests leave the shared connection usable after addon shutdown.             |
+| SO-006 | Raw prompts, secrets, and unbounded payloads are not persisted.                                                                                                | Redaction, malformed-input, size-limit, and secret-canary tests.                                                                         |
+| SO-007 | Board is the only operator telemetry UI.                                                                                                                       | Boundary gate rejects telemetry route/static-server code outside the addon; Board uses shared UI and scoped React Query keys.            |
+| SO-008 | Swarm plan state is not execution evidence.                                                                                                                    | UI and tests label planned versus observed provenance; no runtime parent edge is derived from `dependsOn`.                               |
+| SO-009 | Existing jobs, fencing, approvals, and sandbox boundaries remain authoritative.                                                                                | Negative imports/definitions and the ADR 0016 gate remain clean; runtime fencing tests pass.                                             |
 
 The static gate covers the structural subset of SO-001, SO-002, SO-005, and SO-007. Authentication, redaction, lifecycle, tenant isolation, and runtime correctness require executable integration tests; a clean static scan is not sufficient evidence.
 
@@ -134,7 +146,7 @@ node scripts/check-swarm-observability-boundary.mjs --json
 node --check scripts/check-swarm-observability-boundary.mjs
 ```
 
-Required implementation evidence also includes observability addon tests, API registration tests, Board type checking, dashboard CLI tests, browser checks, and the existing interactive-session boundary gate. A failed or unexecuted check is not a pass.
+Required implementation evidence also includes observability addon tests, API registration tests, Board type checking, dashboard CLI tests, browser checks, and the existing interactive-session boundary gate. A failed or unexecuted check is not a pass. Current local results and incomplete browser/PostgreSQL/hosted gates are tracked in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
 
 ## Consequences
 
@@ -147,15 +159,15 @@ Required implementation evidence also includes observability addon tests, API re
 
 ### Costs and limitations
 
-- Company-scoped telemetry remains unavailable until trusted tenant attribution is designed and migrated.
-- Qoder bridge in-memory correlation is safe for a single replica but must be redesigned before multi-replica deployment.
+- Company-scoped telemetry reads and credential-derived tenant attribution are implemented. Telemetry ingested with the legacy or an unscoped registry credential remains global and is not visible to company users; producers requiring tenant reads must use company-bound credentials.
+- SQL-backed Qoder correlation is shared across store instances/replicas rather than process-local. PostgreSQL concurrency and hosted multi-replica soak/failover evidence are not yet complete.
 - Board telemetry adds API and database read load; queries and retention need benchmarking as volume grows.
 - Removing the standalone receiver is a deployment cutover: clients must be repointed to the canonical API and provisioned with ingest credentials before old ingress is disabled.
 
 ## Non-goals
 
 - No second observability server, static dashboard, queue, database, model registry, or session authority.
-- No unauthenticated ingest, shared ingest/read token, or client-asserted tenant attribution.
+- No unauthenticated ingest, shared ingest/read token, client-asserted tenant attribution, or tenant attribution from telemetry attributes.
 - No replacement of `AgentRun`, `packages/jobs`, approvals, outbox, artifacts, or sandboxing.
 - No autonomous merge, push, deploy, release, publication, or self-approval.
 - No claim that a green task card proves a successful effect or healthy runtime.

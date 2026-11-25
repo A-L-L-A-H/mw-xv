@@ -288,7 +288,7 @@ describe('observability addon HTTP plugin', () => {
       expect(denied.statusCode).toBe(403);
       expect(denied.json()).toEqual({
         success: false,
-        error: 'Administrator access required',
+        error: 'Active company is required',
       });
       expect(denied.headers['cache-control']).toBe('private, no-store');
     }

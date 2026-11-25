@@ -4,7 +4,9 @@ import { installAddons, registerAddons, type Addon } from '@moonwitness/orm';
 import { computeDesiredSchemaState } from '@moonwitness/orm';
 import { manifest as baseAddon, initializeSuperadminPassword } from '@moonwitness/orm-base';
 import { manifest as authAddon, createAuthService } from '@moonwitness/auth';
-import { jobsManifest } from '@moonwitness/jobs';
+import { jobsManifest, registerJobHandler } from '@moonwitness/jobs';
+import { CronExpressionParser } from 'cron-parser';
+import { SqlTelemetryStore } from '@moonwitness/orm-observability';
 import { manifest as notificationAddon } from '@moonwitness/orm-notification';
 import { manifest as workflowAddon } from '@moonwitness/orm-workflow';
 import { manifest as organizationAddon } from '@moonwitness/orm-organization';
@@ -39,13 +41,37 @@ import { genericRoutes } from '../routes/generic.routes.js';
 import { bootstrapRoutes } from '../routes/bootstrap.routes.js';
 import { menuRegistry } from './action-menu-registry.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
-import { canAccess } from '../auth/policy.js';
+import { canAccess, registerModelAccessPolicy } from '../auth/policy.js';
+import { config } from '../config/env.js';
 import { getRecordRuleDomain } from '../auth/rules.js';
 import { installCloudAgentEffect } from '../ai-corporation/cloud-agent-effect-setup.js';
+
+const OBSERVABILITY_MODELS = ['observability.telemetry_span', 'observability.telemetry_trace', 'observability.telemetry_log', 'observability.telemetry_metric_series', 'observability.telemetry_metric_point', 'observability.telemetry_state', 'observability.qoder_correlation', 'observability.ingest_credential'];
+for (const model of OBSERVABILITY_MODELS) registerModelAccessPolicy(model, 'internal');
+let observabilityPruneDb: Knex | undefined;
+let lastObservabilityPrune = 0;
+function ensureObservabilityPruneJob(db: Knex): void {
+  if (observabilityPruneDb) return;
+  observabilityPruneDb = db;
+  registerJobHandler<Record<string, never>>({
+    name: 'observability.retention.prune', version: 1,
+    parse: (payload) => { if (typeof payload !== 'object' || payload === null || Object.keys(payload).length !== 0) throw new Error('Invalid observability prune payload'); return {} },
+    run: async () => {
+      if (Date.now() - lastObservabilityPrune < config.observability.pruneIntervalMs) return { skipped: true };
+      const store = new SqlTelemetryStore(db, { closeDb: false, ...config.observability });
+      const removed = await store.pruneExpired(); lastObservabilityPrune = Date.now(); return { removed };
+    },
+  });
+}
+async function ensureObservabilityCron(db: Knex): Promise<void> {
+  const nextRunAt = CronExpressionParser.parse('* * * * *', { currentDate: new Date(), tz: 'UTC' }).next().toDate();
+  await db('crons').insert({ code: 'observability.retention.prune', name: 'Prune expired observability telemetry', handler: 'observability.retention.prune', handler_version: 1, payload: '{}', cron_expression: '* * * * *', timezone: 'UTC', enabled: true, next_run_at: nextRunAt.toISOString(), misfire_policy: 'coalesce', concurrency_policy: 'forbid', max_catch_up: 1 }).onConflict('code').merge(['name', 'handler', 'handler_version', 'cron_expression', 'next_run_at']);
+}
 
 export interface ApiAddonRuntimeContext {
   db: Knex;
   observabilityIngestToken?: string;
+  observabilityStoreOptions?: ConstructorParameters<typeof SqlTelemetryStore>[1];
   jwtSecret: string;
   accessTtlSeconds: number;
   refreshTtlSeconds: number;
@@ -84,6 +110,7 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
       await app.register(healthRoutes, {
         metricsToken: ctx.metricsToken,
         checkWhatsAppGateway: ctx.checkWhatsAppGateway ?? (() => checkWhatsAppGatewayVersion()),
+        checkObservability: async () => new SqlTelemetryStore(ctx.db, { closeDb: false, ...ctx.observabilityStoreOptions }).status(),
         checkAttachmentStorage: async () => {
           await ctx.attachmentStorage.checkReady?.();
           return true;
@@ -197,6 +224,10 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
   {
     name: 'observability',
     manifest: observabilityAddon,
+    async postInstall(db) {
+      ensureObservabilityPruneJob(db);
+      await ensureObservabilityCron(db);
+    },
   },
 ];
 
@@ -306,6 +337,7 @@ export async function bootstrapApiWorker(
     installCloudAgentEffect();
     ensureAiJobHandlersRegistered();
   }
+  if (addons.some((addon) => addon.name === 'observability')) ensureObservabilityPruneJob(db);
 }
 
 export async function registerApiAddonRoutes(

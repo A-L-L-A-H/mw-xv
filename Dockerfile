@@ -66,6 +66,7 @@ COPY packages/orm-sim/package.json ./packages/orm-sim/package.json
 COPY packages/orm-storage/package.json ./packages/orm-storage/package.json
 COPY packages/orm-subscription/package.json ./packages/orm-subscription/package.json
 COPY packages/orm-whatsapp/package.json ./packages/orm-whatsapp/package.json
+COPY packages/paas-template-pack-coolify/package.json ./packages/paas-template-pack-coolify/package.json
 COPY packages/research/package.json ./packages/research/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/ui/package.json ./packages/ui/package.json

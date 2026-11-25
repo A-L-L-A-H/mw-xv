@@ -103,6 +103,10 @@ const EXPECTED_AI_MODEL_NAMES = [
   'ai.capability_grant',
   'ai.agent_run',
   'ai.agent_run_effect',
+  'ai.interactive_session',
+  'ai.interactive_session_event',
+  'ai.interactive_session_command',
+  'ai.interactive_session_approval',
   'ai.artifact_manifest',
   'ai.obligation',
   'ai.taskforce',
@@ -269,12 +273,12 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
 
     const db = await setupFullAddons(true);
     expect(aiManifest.name).toBe('ai');
-    expect(aiManifest.version).toBe('1.0.0');
+    expect(aiManifest.version).toBe('1.1.0');
     expect(aiManifest.depends).toEqual(['base', 'organization', 'jobs', 'workflow', 'orm-storage']);
     expect(aiManifest.models.map((m) => m.modelName)).toEqual(
       expect.arrayContaining([...EXPECTED_AI_MODEL_NAMES])
     );
-    expect(aiManifest.models).toHaveLength(16);
+    expect(aiManifest.models).toHaveLength(20);
     expect(aiManifest.views).toHaveLength(15);
     expect(aiManifest.menus).toHaveLength(15);
     for (const seedRecord of aiManifest.data ?? []) {
@@ -282,7 +286,7 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
     }
 
     const addonRow = await db('_orm_addons').where({ name: 'ai' }).first();
-    expect(addonRow).toMatchObject({ name: 'ai', version: '1.0.0' });
+    expect(addonRow).toMatchObject({ name: 'ai', version: '1.1.0' });
 
     const tables = await db('sqlite_master').where({ type: 'table' }).select('name');
     const tableSet = new Set(tables.map((row: { name: string }) => row.name));
@@ -352,9 +356,9 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
     let upgradeExecuted = false;
     const upgradedManifest = defineAddon({
       ...aiManifest,
-      version: '1.1.0',
+      version: '1.2.0',
       upgrade: {
-        '1.0.0': async (trx) => {
+        '1.1.0': async (trx) => {
           upgradeExecuted = true;
           const rows = await trx(AgentProfile.tableName).where({ id: seededProfile.id });
           expect(rows).toHaveLength(1);
@@ -368,7 +372,7 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
     expect(upgradeExecuted).toBe(true);
     expect(await db('_orm_addons').where({ name: 'ai' }).first()).toMatchObject({
       name: 'ai',
-      version: '1.1.0',
+      version: '1.2.0',
     });
     expect((await AgentProfile.query().findById(seededProfile.id).throwIfNotFound()).name).toBe(
       'Customized Researcher Title'
@@ -1163,7 +1167,7 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
     const userAccessRows = await ModelAccess.query()
       .where({ group_id: groupUser.id })
       .where('model_name', 'like', 'ai.%');
-    expect(userAccessRows).toHaveLength(15);
+    expect(userAccessRows).toHaveLength(19);
     for (const row of userAccessRows) {
       expect(row.read).toBe(false);
       expect(row.create).toBe(false);
@@ -1174,7 +1178,7 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
     const reviewerAccessRows = await ModelAccess.query()
       .where({ group_id: groupReviewer.id })
       .where('model_name', 'like', 'ai.%');
-    expect(reviewerAccessRows).toHaveLength(15);
+    expect(reviewerAccessRows).toHaveLength(19);
     for (const row of reviewerAccessRows) {
       expect(row.read).toBe(true);
       expect(row.create).toBe(false);
@@ -1185,12 +1189,16 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
     const operatorAccessRows = await ModelAccess.query()
       .where({ group_id: groupOperator.id })
       .where('model_name', 'like', 'ai.%');
-    expect(operatorAccessRows).toHaveLength(15);
+    expect(operatorAccessRows).toHaveLength(19);
     for (const row of operatorAccessRows) {
       expect(row.read).toBe(true);
       expect(row.unlink).toBe(false);
       if (
         row.model_name === 'ai.agent_run' ||
+        row.model_name === 'ai.interactive_session' ||
+        row.model_name === 'ai.interactive_session_event' ||
+        row.model_name === 'ai.interactive_session_command' ||
+        row.model_name === 'ai.interactive_session_approval' ||
         row.model_name === 'ai.artifact_manifest' ||
         row.model_name === 'ai.skill_version' ||
         row.model_name === 'ai.memory_candidate'

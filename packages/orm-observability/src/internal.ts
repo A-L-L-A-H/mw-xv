@@ -147,6 +147,7 @@ export function summarizeTrace(traceId: string, spans: readonly SpanRecord[]): T
     outputTokens: spans.reduce((total, span) => total + (span.outputTokens ?? 0), 0),
     totalTokens: spans.reduce((total, span) => total + (span.totalTokens ?? 0), 0),
     costUsd: spans.reduce((total, span) => total + (span.costUsd ?? 0), 0),
+    ...(firstSpan?.tenantId ? { tenantId: firstSpan.tenantId } : {}),
   };
 }
 
@@ -162,7 +163,7 @@ export function summarizeRecords(
   metrics: readonly MetricSeries[],
   revision: number
 ): TelemetrySummary {
-  const traces = new Set(spans.map((span) => span.traceId));
+  const traces = new Set(spans.map((span) => `${span.tenantId ?? 'global'}\u0000${span.traceId}`));
   const services = new Set<string>();
   let errorCount = 0;
   let inputTokens = 0;

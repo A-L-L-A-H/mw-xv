@@ -1,10 +1,17 @@
 # ADR 0016: Single-Authority Interactive Coding Sessions
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-25
+- **Accepted:** 2026-11-25
 - **Decision owners:** MoonWitness maintainers
 - **Supersedes:** None
 - **Related:** ADR 0007 (addon-first AI corporation), ADR 0014 (bounded cloud coding agent), `docs/architecture/rock-soul-flow-reuse-map.md`, and learned invariants INV-004, INV-007, INV-009, and INV-014.
+
+## Implementation status
+
+The single-authority decision is implemented in the local candidate: `packages/orm-ai` owns the interactive aggregate, durable events/checkpoints, commands, approvals and addon HTTP routes; Board consumes the resumable snapshot/replay contract; execution remains behind the existing durable run boundary. The first implementation exposes bounded typed command/output events, not a PTY or arbitrary terminal byte stream. Local package, focused API and structural-gate evidence is recorded in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
+
+Acceptance records the architecture decision, not production readiness. The evidence remains candidate/incomplete until all local gates finish; hosted rollout and immutable committed-SHA evidence remain separate requirements.
 
 ## Scope
 
@@ -12,13 +19,13 @@ This decision covers the architecture and structural boundary for adding resumab
 
 `Board UI -> API addon HTTP plugin -> packages/orm-ai -> PostgreSQL`, with durable work in `packages/jobs`, large evidence in `packages/orm-storage`, approvals in the owning ORM addon, and execution in the existing typed/allowlisted `apps/agent-sandbox` boundary.
 
-In scope are future changes to `packages/orm-ai`, `packages/jobs`, `packages/ai-runtime`, `packages/orm-storage`, `packages/ui`, `apps/board`, the `orm-ai` addon's `manifest.httpPlugins` registration, `apps/desktop`, `apps/agent-sandbox`, and production Compose. `vendor/opencode` is in scope only as an exclusion boundary: it remains an untouched upstream snapshot.
+In scope are the implementation and subsequent changes to `packages/orm-ai`, `packages/jobs`, `packages/ai-runtime`, `packages/orm-storage`, `packages/ui`, `apps/board`, the `orm-ai` addon's `manifest.httpPlugins` registration, `apps/desktop`, `apps/agent-sandbox`, and production Compose. `vendor/opencode` is in scope only as an exclusion boundary: it remains an untouched upstream snapshot.
 
-This ADR does not itself authorize runtime feature code, database migrations, new routes or UI, upstream modifications, or production rollout. The architecture gate landing with this ADR is preventive; implementation requires a separate reviewed change after the decision is accepted.
+This ADR authorizes no upstream modification or production rollout by itself. It is Accepted because the chosen authority and boundary are implemented locally; browser, database, hosted and remaining falsification gates still require the evidence recorded in the candidate evidence document.
 
 ## Context and exact problem
 
-MoonWitness already has a bounded, non-interactive cloud coding agent. It can execute a trusted work contract through `DurableRunEffects`, persist compact run checkpoints, lease work through `packages/jobs`, use fencing and cooperative cancellation, request human approval, and produce deterministic evidence. It does not provide a persistent browser session in which a user can converse, inspect bounded terminal output, approve a risky step, disconnect, and later resume the same logical run.
+MoonWitness already has a bounded, non-interactive cloud coding agent. It can execute a trusted work contract through `DurableRunEffects`, persist compact run checkpoints, lease work through `packages/jobs`, use fencing and cooperative cancellation, request human approval, and produce deterministic evidence. It does not provide a persistent browser session in which a user can converse, inspect bounded typed output, approve a risky step, disconnect, and later resume the same logical run.
 
 The problem is therefore: **how can MoonWitness add resumable, browser-based interactive coding without creating a second session/model authority, bypassing jobs/outbox/approval/tenant controls, or giving the browser or model host privileges?**
 
@@ -55,7 +62,7 @@ Embedding a mature terminal UI is tempting, but Agent Canvas or OpenCode would b
 
 **Disadvantages**
 
-- MoonWitness must implement resumable event transport, terminal rendering/backpressure, and bounded PTY orchestration rather than adopt an upstream control plane wholesale.
+- MoonWitness must implement resumable typed event transport, bounded output rendering, and command backpressure rather than adopt an upstream control plane wholesale. A PTY is explicitly outside this first implementation.
 - Interactive latency and reconnect UX require load and failure testing beyond the existing request/response coding-agent path.
 - Coalescing high-volume output into durable, bounded events is less convenient than storing every token or terminal frame.
 
@@ -63,16 +70,16 @@ Embedding a mature terminal UI is tempting, but Agent Canvas or OpenCode would b
 
 ### C. Add polling to the existing non-interactive coding agent
 
-This is simpler than streaming, but it does not provide timely terminal output, interactive steering, or a satisfactory reconnect experience. It is useful as an interim delivery mechanism, not as the target architecture.
+This is simpler than streaming, but it does not provide timely typed output, interactive steering, or a satisfactory reconnect experience. It is useful as an interim delivery mechanism, not as the target architecture.
 
 ## Decision
 
 ### 1. Domain and authority
 
-1. `packages/orm-ai` exclusively owns the interactive-session aggregate, legal state transitions, commands, durable event envelopes, and checkpoints. Future models use its existing addon/model conventions; no equivalent schema belongs in Desktop, Board, OpenCode, or application-local SQLite.
+1. `packages/orm-ai` exclusively owns the interactive-session aggregate, legal state transitions, commands, durable event envelopes, and checkpoints. Models use its existing addon/model conventions; no equivalent schema belongs in Desktop, Board, OpenCode, or application-local SQLite.
 2. Every session and related record is company-scoped and has an owning user. Provider profiles, model profiles, agents, work contracts, capability grants, and approvals remain the existing ORM authorities.
 3. `AgentRun` remains the durable execution identity. An interactive session references its runs; it does not replace `AgentRun`, jobs, approval records, or artifact manifests.
-4. Durable event envelopes contain compact facts or storage references. Large transcripts and output blobs live in `packages/orm-storage`; token/PTY output is coalesced into bounded chunks rather than creating one ORM row per token.
+4. Durable event envelopes contain compact facts or storage references. Large transcripts and output blobs live in `packages/orm-storage`; typed output is bounded and coalesced rather than creating one ORM row per token or terminal frame.
 
 ### 2. Execution and transport
 
@@ -80,7 +87,7 @@ This is simpler than streaming, but it does not provide timely terminal output, 
 2. The adapter may live in `packages/ai-runtime` and use the existing sandbox transport, but it has no database authority. The durable session loop remains under ORM/jobs orchestration. Desktop and Board never run that loop.
 3. `packages/jobs` supplies leases, heartbeats, fencing, retries, dead-lettering, outbox delivery, and cooperative cancellation. A worker revalidates the company, run, execution fingerprint, grant, approval, and fencing token before every effect.
 4. Reuse `AgentRunEffect`'s idempotency key and argument hash for tool side effects. The effect key includes the logical session command/tool-call identity, not a transport attempt number. A retry with the same key returns the recorded result; a changed argument hash fails closed.
-5. Browser commands use addon HTTP endpoints. Output uses a resumable server-sent event stream through the same addon plugin, using a session sequence cursor. Reconnection is transport-only and never creates a new logical run. A WebSocket, if later required, must use the same command/event contracts and addon ownership.
+5. Browser commands and independent-reviewer reads use addon HTTP endpoints. Output uses bounded, typed replayable events under the same addon ownership. Reconnection is transport-only and never creates a new logical run. A WebSocket or PTY, if later required, must use the same command/event contracts and addon ownership and requires a separate reviewed extension.
 
 ### 3. UI, routes, and upstream boundary
 
@@ -99,7 +106,7 @@ The only session states are:
 
 - **created:** The session, owning user/company, initial checkpoint, and outbox enqueue intent are committed together. No provider, PTY, or tool effect has occurred.
 - **running:** A leased worker reconstructs trusted ORM state, validates fencing and the execution fingerprint, and invokes the adapter. Output and control events advance the session version and checkpoint.
-- **waiting_approval:** A risky effect is proposed with exact tool arguments, capability scope, argument hash, expiry, and requesting run. The worker checkpoints and pauses without holding an execution lease across human delay. Approval completion idempotently enqueues/requeues the same logical work.
+- **waiting_approval:** A risky effect is proposed with exact tool arguments, capability scope, argument hash, expiry, and requesting run. Entering this state writes a pause intent; its consumer cancels the matching old job and clears only that job reference before externally visible effects can run. The execution entry point independently checks for waiting/terminal session state and fails closed. Approval completion idempotently enqueues/requeues the same logical work with compare-and-set fencing.
 - **resume:** Approval atomically records the decision and returns the session to `running` using the current fencing token. Any change to the approved fingerprint requires a new approval. Denial, revocation, or expiry cancels the affected session in the initial implementation rather than retrying the risky effect.
 - **completed:** Acceptance evidence and artifact references are committed before the terminal transition. A provider's claim of success is not completion evidence.
 - **failed/cancelled:** Unrecoverable execution/invariant failure records a sanitized error. Cancellation records an outbox intent, aborts the adapter, and fences any subsequent stale attempt. An effect already committed is recorded; an uncommitted effect must not run after cancellation is durable.
@@ -112,31 +119,31 @@ The only session states are:
 
 - Company/user ownership is checked on every command, event replay, approval, artifact read, and stream resumption. ORM scoping is mandatory; identifiers supplied by the browser are untrusted.
 - Interactive and sandbox service ingress is loopback or private networking only. TLS, VPN, and SSO terminate at the authenticated edge. The browser reaches only the Board/API edge, never PostgreSQL, the jobs worker, or the sandbox directly.
-- Provider credentials and host secrets are server-side only. Browser payloads, event envelopes, checkpoints, terminal output, errors, and logs must be secret-free and redacted. Secrets must not be accepted as terminal input, tool arguments, or environment expansion.
+- Provider credentials and host secrets are server-side only. Browser payloads, event envelopes, checkpoints, typed output, errors, and logs must be secret-free and redacted. Secrets must not be accepted as command input, tool arguments, or environment expansion.
 - The sandbox runs non-root with network disabled, read-only root filesystem, `cap_drop: [ALL]`, `no-new-privileges`, bounded writable tmpfs/named volumes, and no published sandbox port. Canonical production Compose must not mount or address a Docker socket or bind a host repository/workspace. Repository access uses a per-run snapshot uploaded through the typed artifact/tool boundary.
 - Tools are typed and allowlisted. Model output is data, not a shell command, Docker request, network destination, or file path outside the run workspace. Host repository bind mounts and generic host environment access are prohibited.
-- Each active session has at most one bounded PTY. Rows, columns, scrollback, bytes, lines, event rate, idle time, and total runtime are capped. Backpressure coalesces or drops ephemeral frames with an explicit truncation marker; durable output remains bounded. OSC/control sequences are sanitized before browser rendering.
-- Risky effects require a human approval bound to exact arguments, scope, expiry, and execution fingerprint. The requesting model cannot approve its own effect. Approval reuse across changed arguments or companies is forbidden.
+- Each interactive session exposes bounded typed output only in the first implementation. Prompt, approval, command, and output sizes are capped; replay is bounded and oversized ephemeral output is rejected or truncated explicitly. OSC/control-sequence handling is required before any future terminal renderer is introduced.
+- Risky effects require a human approval bound to exact arguments, scope, expiry, and execution fingerprint. The requesting model cannot approve its own effect. Approval reuse across changed arguments or companies is forbidden. A dedicated reviewer projection exposes only the pending approval fingerprint, capability, expiry, session identity/status, owner, and requester; full session reads remain owner-only, and neither owner nor requester may decide the approval.
 - Git writes, if allowed, affect only the sandbox workspace and produce a reviewed diff artifact. The session has no autonomous merge, push, deploy, release, or publication capability; those remain separate human-controlled workflows.
 
 ## Falsifiable invariants
 
-| ID | Invariant | Required falsification/evidence |
-| --- | --- | --- |
-| IS-001 | Only `packages/orm-ai` defines interactive-session models, events, checkpoints, and addon ownership. | Schema/addon diff review plus a Desktop negative fixture; no second `defineModel`/`defineAddon`, store, registry, authority, or session table. |
-| IS-002 | Interactive routes are addon-owned. | Negative fixtures for interactive route filenames and route literals fail; addon HTTP integration tests show routes registered through `manifest.httpPlugins`; no host route file is added. |
-| IS-003 | No first-party OpenCode import or runtime dependency exists, and the vendor snapshot is unchanged. | Static gate negative fixtures for static, dynamic, `require`, re-export, and relative vendor imports fail; a CI diff rejects changes under `vendor/opencode`. |
-| IS-004 | Board/shared UI has no native/runtime import. | Negative fixtures for `node-pty`, Tauri, `better-sqlite3`, and `node:*` fail; a browser bundle inspection finds no such module. |
-| IS-005 | Event sequence is unique, monotonic, and replayable per session. | Database uniqueness/concurrency tests plus reconnect tests prove no duplicate/reordered durable sequence and deterministic replay from a checkpoint/cursor. |
-| IS-006 | At-least-once delivery does not duplicate commands or logical effects. | Replay each outbox/event/command/approval at least twice; consumers converge to one state transition and `AgentRunEffect` records one result per effect key; changed arguments fail closed. |
-| IS-007 | Resume/reconnect never creates a second logical run or bypasses approval. | Kill the stream and worker, reconnect with current/stale cursors, and restart from checkpoint; assert the same `AgentRun` identity, no duplicate provider/tool effect, and no execution while approval is absent. |
-| IS-008 | Fencing and cancellation dominate stale work. | Start worker A, fence it with worker B, cancel, then let A resume; assert A cannot transition, append, or commit an effect and its `AbortSignal` is observed. |
-| IS-009 | Lifecycle transitions and approval fingerprints are exact. | Table-driven tests cover every legal/illegal transition, approval expiry/revocation, changed arguments, terminal immutability, and company/user mismatch. |
-| IS-010 | Production sandbox has no host privilege path. | Compose gate rejects sockets/binds/aliases; runtime tests prove non-root UID, read-only root, dropped capabilities, no new privileges, no network, no published port, and no Docker socket/host repository mount. |
-| IS-011 | Output and execution are bounded and secret-free. | Quota/backpressure/idle-timeout tests force truncation and cancellation; secret canaries do not appear in browser events, logs, checkpoints, or artifacts. |
-| IS-012 | Completion and publication are evidence-bound and human-controlled. | Missing/stale acceptance evidence prevents `completed`; no tool/grant permits autonomous merge, push, deploy, or release. |
+| ID     | Invariant                                                                                            | Required falsification/evidence                                                                                                                                                                                   |
+| ------ | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| IS-001 | Only `packages/orm-ai` defines interactive-session models, events, checkpoints, and addon ownership. | Schema/addon diff review plus a Desktop negative fixture; no second `defineModel`/`defineAddon`, store, registry, authority, or session table.                                                                    |
+| IS-002 | Interactive routes are addon-owned.                                                                  | Negative fixtures for interactive route filenames and route literals fail; addon HTTP integration tests show routes registered through `manifest.httpPlugins`; no host route file is added.                       |
+| IS-003 | No first-party OpenCode import or runtime dependency exists, and the vendor snapshot is unchanged.   | Static gate negative fixtures for static, dynamic, `require`, re-export, and relative vendor imports fail; a CI diff rejects changes under `vendor/opencode`.                                                     |
+| IS-004 | Board/shared UI has no native/runtime import.                                                        | Negative fixtures for `node-pty`, Tauri, `better-sqlite3`, and `node:*` fail; a browser bundle inspection finds no such module.                                                                                   |
+| IS-005 | Event sequence is unique, monotonic, and replayable per session.                                     | Database uniqueness/concurrency tests plus reconnect tests prove no duplicate/reordered durable sequence and deterministic replay from a checkpoint/cursor.                                                       |
+| IS-006 | At-least-once delivery does not duplicate commands or logical effects.                               | Replay each outbox/event/command/approval at least twice; consumers converge to one state transition and `AgentRunEffect` records one result per effect key; changed arguments fail closed.                       |
+| IS-007 | Resume/reconnect never creates a second logical run or bypasses approval.                            | Kill the stream and worker, reconnect with current/stale cursors, and restart from checkpoint; assert the same `AgentRun` identity, no duplicate provider/tool effect, and no execution while approval is absent. |
+| IS-008 | Fencing and cancellation dominate stale work.                                                        | Start worker A, fence it with worker B, cancel, then let A resume; assert A cannot transition, append, or commit an effect and its `AbortSignal` is observed.                                                     |
+| IS-009 | Lifecycle transitions and approval fingerprints are exact.                                           | Table-driven tests cover every legal/illegal transition, approval expiry/revocation, changed arguments, terminal immutability, and company/user mismatch.                                                         |
+| IS-010 | Production sandbox has no host privilege path.                                                       | Compose gate rejects sockets/binds/aliases; runtime tests prove non-root UID, read-only root, dropped capabilities, no new privileges, no network, no published port, and no Docker socket/host repository mount. |
+| IS-011 | Output and execution are bounded and secret-free.                                                    | Quota/backpressure/idle-timeout tests force truncation and cancellation; secret canaries do not appear in browser events, logs, checkpoints, or artifacts.                                                        |
+| IS-012 | Completion and publication are evidence-bound and human-controlled.                                  | Missing/stale acceptance evidence prevents `completed`; no tool/grant permits autonomous merge, push, deploy, or release.                                                                                         |
 
-The static gate covers the structural subset of IS-001 through IS-004 and IS-010 before feature code exists. ORM, integration, concurrency, runtime, and threat-model tests are still required for the remaining behavior; passing a static gate is not evidence that those behaviors work.
+The static gate covers the structural subset of IS-001 through IS-004 and IS-010. ORM, integration, concurrency, runtime, browser, PostgreSQL, hosted, and threat-model tests are still required for the remaining behavior; passing a static gate is not evidence that those behaviors work. Current local results and open gates are tracked in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
 
 ## Verification protocol
 
@@ -166,7 +173,7 @@ Verification must use executable **FAIL_TO_PASS** and **PASS_TO_PASS** evidence,
 
 ### Negative and costs
 
-- MoonWitness owns terminal rendering, bounded streaming, reconnect UX, and adapter hardening.
+- MoonWitness owns typed event rendering, bounded output, reconnect UX, and adapter hardening.
 - Durable event volume and retention must be budgeted; raw per-token persistence is intentionally avoided.
 - Interactive failure modes require chaos, soak, approval, and sandbox tests beyond static architecture checks.
 - The first implementation will favor safe cancellation/denial and bounded output over uninterrupted or token-perfect interaction.
@@ -179,10 +186,11 @@ Verification must use executable **FAIL_TO_PASS** and **PASS_TO_PASS** evidence,
 - No autonomous merge, push, deploy, release, publication, or self-approval.
 - No direct browser access to PostgreSQL, workers, sandbox ports, host repositories, Docker, provider secrets, or unrestricted networks.
 - No shared multi-user terminal, persistent developer VM, general IDE/editor replacement, arbitrary internet execution, or agent marketplace.
-- No runtime feature implementation in this architecture slice and no automatic acceptance of this Proposed ADR.
+- No PTY, arbitrary terminal byte stream, per-token durable event stream, or interactive shell in the first implementation.
+- No claim that ADR acceptance or local package tests complete Board browser, PostgreSQL, hosted rollout, chaos/soak, or production acceptance gates.
 
 ## Coordinator follow-ups
 
-- Add a root script equivalent to `interactive-session:boundary:check` that runs the new tests and gate, then add it to required CI/aggregate architecture checks.
-- Add this Proposed ADR to `docs/decisions/README.md`; the index is intentionally untouched by this owned-file slice.
-- After acceptance, design and review additive ORM migrations, the event/checkpoint schema, adapter extension, terminal component, threat model, and rollout/rollback plan before runtime code lands.
+- Keep the ADR register and candidate evidence aligned with the implemented addon ownership and boundary gates; add a root aggregate command/required CI wiring only through a separately reviewed tooling change.
+- Complete Board browser, PostgreSQL, hosted multi-replica, runtime, chaos/soak, approval, and sandbox falsification gates before claiming production readiness.
+- Review any further additive ORM migration, adapter extension, terminal component, threat-model change, and rollout/rollback plan against this Accepted decision; record the resulting immutable commit SHA and CI evidence.

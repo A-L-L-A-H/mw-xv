@@ -144,7 +144,8 @@ async function createCoreStack(suffix: string) {
     handler: 'ai.agent_run.inspect',
     payload: JSON.stringify({ workContractId: contract.id }),
     idempotency_key: `job-${suffix}`,
-    status: 'queued',
+    status: 'running',
+    fencing_token: 7,
     available_at: '2026-11-22T00:00:00.000Z',
   });
   const run = await AgentRun.query().insertAndFetch({

@@ -46,6 +46,7 @@ import {
   type TelemetryTraceStatus,
   type TelemetryTraceSummaryDto,
   type TelemetryConfigDto,
+  type TelemetryEffectiveConfigDto,
 } from './telemetry-api';
 
 const TRACE_LIST_LIMIT = 10;
@@ -93,6 +94,16 @@ function formatRetention(value: number): string {
   return `${formatNumber(value / 86_400_000)} days`;
 }
 
+function formatEffectiveValue(value: string | number | boolean | null | undefined | readonly string[]): string {
+  if (value === null || value === undefined) return 'Not configured';
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean' && value !== null) {
+    return value.join(', ') || 'None';
+  }
+  if (typeof value === 'number') return formatNumber(value);
+  return value;
+}
+
 function formatNumber(value: number | undefined): string {
   if (value === undefined || !Number.isFinite(value)) return '—';
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: 6 }).format(value);
@@ -131,6 +142,62 @@ function severityVariant(severity: TelemetryLogSeverity): 'destructive' | 'cyan'
   if (severity === 'ERROR' || severity === 'FATAL') return 'destructive';
   if (severity === 'WARN') return 'cyan';
   return 'default';
+}
+
+function PaginationControls({
+  nextCursor,
+  onNext,
+  onPrevious,
+  canGoPrevious,
+  disabled = false,
+}: {
+  readonly nextCursor?: string | null;
+  readonly onNext: () => void;
+  readonly onPrevious: () => void;
+  readonly canGoPrevious: boolean;
+  readonly disabled?: boolean;
+}) {
+  return (
+    <nav aria-label="Telemetry pagination" className="flex flex-wrap items-center gap-2 border-t border-ink/15 pt-3">
+      <Button type="button" variant="outline" size="sm" disabled={disabled || !canGoPrevious} onClick={onPrevious}>
+        Previous page
+      </Button>
+      <Button type="button" variant="outline" size="sm" disabled={disabled || !nextCursor} onClick={onNext}>
+        Next page
+      </Button>
+      <span role="status" className="font-mono text-[10px] text-ink-soft">
+        {nextCursor ? 'More results available' : 'End of results'}
+      </span>
+    </nav>
+  );
+}
+
+function EffectiveConfigFields({
+  title,
+  values,
+  formatValue,
+}: {
+  readonly title: string;
+  readonly values: TelemetryEffectiveConfigDto | undefined;
+  readonly formatValue: (value: string | number | boolean | null | undefined | readonly string[]) => string;
+}) {
+  const entries = Object.entries(values ?? {}).filter(([, value]) =>
+    value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || Array.isArray(value)
+  );
+  if (entries.length === 0) return null;
+  return (
+    <div>
+      <h4 className="font-mono text-xs font-bold uppercase text-ink">{title}</h4>
+      <dl className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {entries.map(([key, value]) => (
+          <div key={key} className="min-w-0">
+            <dt className="break-all text-[10px] text-ink-faint uppercase">{key.replace(/[A-Z]/g, (letter) => ` ${letter.toLowerCase()}`)}</dt>
+            <dd className="mt-1 break-words text-ink">{formatValue(value)}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
 }
 
 function QueryFeedback({
@@ -269,18 +336,25 @@ function TracesPanel({
   onSearchChange,
   onStatusChange,
   onSelectTrace,
+  onNext,
+  onPrevious,
+  canGoPrevious,
 }: {
-  readonly query: TelemetryQueryState<{ traces: TelemetryTraceSummaryDto[] }>;
+  readonly query: TelemetryQueryState<{ traces?: readonly TelemetryTraceSummaryDto[]; nextCursor?: string | null }>;
   readonly search: string;
   readonly status: TelemetryTraceStatus;
   readonly selectedTraceId: string | null;
   readonly onSearchChange: (value: string) => void;
   readonly onStatusChange: (value: TelemetryTraceStatus) => void;
   readonly onSelectTrace: (traceId: string) => void;
+  readonly onNext: () => void;
+  readonly onPrevious: () => void;
+  readonly canGoPrevious: boolean;
 }) {
-  const traces = query.data?.traces ?? [];
+  const traces = (query.data?.traces ?? []).slice(0, TRACE_LIST_LIMIT);
   return (
     <Panel
+      aria-label="Recent observed traces"
       title="Recent Observed Traces"
       description="Select a trace to inspect emitted spans, observed parent IDs, and correlated log metadata."
       headingLevel={3}
@@ -392,6 +466,7 @@ function TracesPanel({
               ))}
             </TableBody>
           </Table>
+          <PaginationControls nextCursor={query.data?.nextCursor} onNext={onNext} onPrevious={onPrevious} canGoPrevious={canGoPrevious} disabled={query.isPending} />
         </div>
       </QueryFeedback>
     </Panel>
@@ -405,8 +480,12 @@ function ConfigPanel({
   readonly query: TelemetryQueryState<TelemetryConfigDto>;
   readonly summary: TelemetrySummaryDto | undefined;
 }) {
+  const effectiveScope = typeof query.data?.scope === 'object'
+    ? (query.data.scope.global ? 'all' : 'company')
+    : query.data?.scope;
   return (
     <Panel
+      aria-label="Telemetry retention and configuration"
       title="Retention & Configuration"
       description="Effective store limits. Ingest credentials stay server-side and are never returned to Board."
       headingLevel={3}
@@ -450,10 +529,26 @@ function ConfigPanel({
                 </dd>
               </div>
               <div>
-                <dt className="text-ink-faint uppercase">Read authorization</dt>
-                <dd className="mt-1 text-ink">JWT roles system / superadmin</dd>
+                <dt className="text-ink-faint uppercase">Effective tenant scope</dt>
+                <dd className="mt-1 text-ink">{effectiveScope === 'all' ? 'All tenants' : effectiveScope === 'company' ? 'Current company' : 'Not reported'}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-faint uppercase">Prune on read</dt>
+                <dd className="mt-1 text-ink">{query.data.pruneOnRead === undefined ? 'Not reported' : query.data.pruneOnRead ? 'Enabled' : 'Disabled'}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-faint uppercase">Prune interval</dt>
+                <dd className="mt-1 text-ink">{query.data.pruneIntervalMs === undefined ? 'Not reported' : formatRetention(query.data.pruneIntervalMs)}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-faint uppercase">Read readiness</dt>
+                <dd className="mt-1 text-ink">{query.data.ready === undefined ? 'Not reported' : query.data.ready ? 'Ready' : 'Not ready'}</dd>
               </div>
             </dl>
+            <EffectiveConfigFields title="Effective retention" values={query.data.effectiveRetention} formatValue={formatEffectiveValue} />
+            <EffectiveConfigFields title="Readiness and prune status" values={query.data.status} formatValue={formatEffectiveValue} />
+            <EffectiveConfigFields title="Readiness details" values={query.data.readiness} formatValue={formatEffectiveValue} />
+            <EffectiveConfigFields title="Prune details" values={query.data.prune} formatValue={formatEffectiveValue} />
             <div className="border-t border-ink/15 pt-3">
               <p className="text-ink-faint uppercase">Server-to-server ingest routes</p>
               <ul className="mt-2 space-y-1 text-ink">
@@ -556,15 +651,22 @@ function LogsPanel({
   severity,
   onSeverityChange,
   onSelectTrace,
+  onNext,
+  onPrevious,
+  canGoPrevious,
 }: {
-  readonly query: TelemetryQueryState<{ logs: TelemetryLogDto[] }>;
+  readonly query: TelemetryQueryState<{ logs?: readonly TelemetryLogDto[]; nextCursor?: string | null }>;
   readonly severity: TelemetryLogSeverityFilter;
   readonly onSeverityChange: (value: TelemetryLogSeverityFilter) => void;
   readonly onSelectTrace: (traceId: string) => void;
+  readonly onNext: () => void;
+  readonly onPrevious: () => void;
+  readonly canGoPrevious: boolean;
 }) {
-  const logs = query.data?.logs ?? [];
+  const logs = (query.data?.logs ?? []).slice(0, LOG_LIST_LIMIT);
   return (
     <Panel
+      aria-label="Recent log metadata"
       title="Recent Log Metadata"
       description="Bodies, prompts, arbitrary attributes, and tool payloads are intentionally not rendered."
       headingLevel={3}
@@ -608,6 +710,7 @@ function LogsPanel({
             caption={`Recent log metadata, up to ${LOG_LIST_LIMIT}`}
             onSelectTrace={onSelectTrace}
           />
+          <PaginationControls nextCursor={query.data?.nextCursor} onNext={onNext} onPrevious={onPrevious} canGoPrevious={canGoPrevious} disabled={query.isPending} />
         </QueryFeedback>
       </div>
     </Panel>
@@ -618,10 +721,22 @@ function TraceDetailPanel({
   query,
   selectedTraceId,
   onClose,
+  onNext,
+  onPrevious,
+  canGoPrevious,
+  onNextLogs,
+  onPreviousLogs,
+  canGoPreviousLogs,
 }: {
   readonly query: TelemetryQueryState<TelemetryTraceDetailDto | undefined>;
   readonly selectedTraceId: string | null;
   readonly onClose: () => void;
+  readonly onNext: () => void;
+  readonly onPrevious: () => void;
+  readonly canGoPrevious: boolean;
+  readonly onNextLogs: () => void;
+  readonly onPreviousLogs: () => void;
+  readonly canGoPreviousLogs: boolean;
 }) {
   const detail = query.data;
   const spans = detail?.spans.slice(0, TRACE_SPAN_RENDER_LIMIT) ?? [];
@@ -630,6 +745,7 @@ function TraceDetailPanel({
 
   return (
     <Panel
+      aria-label="Observed trace detail"
       id="board-telemetry-trace-detail"
       title={
         <span
@@ -746,6 +862,7 @@ function TraceDetailPanel({
                     ))}
                   </TableBody>
                 </Table>
+                <PaginationControls nextCursor={detail.spanNextCursor} onNext={onNext} onPrevious={onPrevious} canGoPrevious={canGoPrevious} disabled={query.isPending} />
               </div>
 
               <div className="space-y-2 border-t border-ink/15 pt-4">
@@ -766,6 +883,7 @@ function TraceDetailPanel({
                     No log records are correlated to this retained trace.
                   </p>
                 )}
+                <PaginationControls nextCursor={detail.logNextCursor} onNext={onNextLogs} onPrevious={onPreviousLogs} canGoPrevious={canGoPreviousLogs} disabled={query.isPending} />
               </div>
             </div>
           ) : null}
@@ -950,17 +1068,24 @@ function MetricsPanel({
   selectedMetricId,
   onSearchChange,
   onSelectMetric,
+  onNext,
+  onPrevious,
+  canGoPrevious,
 }: {
-  readonly query: TelemetryQueryState<{ metrics: TelemetryMetricSeriesDto[] }>;
+  readonly query: TelemetryQueryState<{ metrics?: readonly TelemetryMetricSeriesDto[]; nextCursor?: string | null }>;
   readonly search: string;
   readonly selectedMetricId: string | null;
   readonly onSearchChange: (value: string) => void;
   readonly onSelectMetric: (id: string) => void;
+  readonly onNext: () => void;
+  readonly onPrevious: () => void;
+  readonly canGoPrevious: boolean;
 }) {
-  const metrics = query.data?.metrics ?? [];
+  const metrics = (query.data?.metrics ?? []).slice(0, METRIC_LIST_LIMIT);
   const selectedMetric = metrics.find((metric) => metric.id === selectedMetricId) ?? metrics[0];
   return (
     <Panel
+      aria-label="Metric time series"
       title="Metric Time Series"
       description="Returned redacted metric metadata only; point attributes are not rendered."
       headingLevel={3}
@@ -1043,6 +1168,7 @@ function MetricsPanel({
             </TableBody>
           </Table>
           {selectedMetric ? <MetricDetail series={selectedMetric} /> : null}
+          <PaginationControls nextCursor={query.data?.nextCursor} onNext={onNext} onPrevious={onPrevious} canGoPrevious={canGoPrevious} disabled={query.isPending} />
         </div>
       </QueryFeedback>
     </Panel>
@@ -1056,6 +1182,16 @@ export function BoardTelemetryPanel() {
   const [metricSearch, setMetricSearch] = useState('');
   const [selectedTraceId, setSelectedTraceId] = useState<string | null>(null);
   const [selectedMetricId, setSelectedMetricId] = useState<string | null>(null);
+  const [traceCursor, setTraceCursor] = useState<string>();
+  const [previousTraceCursor, setPreviousTraceCursor] = useState<string>();
+  const [logCursor, setLogCursor] = useState<string>();
+  const [previousLogCursor, setPreviousLogCursor] = useState<string>();
+  const [metricCursor, setMetricCursor] = useState<string>();
+  const [previousMetricCursor, setPreviousMetricCursor] = useState<string>();
+  const [detailCursor, setDetailCursor] = useState<string>();
+  const [previousDetailCursor, setPreviousDetailCursor] = useState<string>();
+  const [detailLogCursor, setDetailLogCursor] = useState<string>();
+  const [previousDetailLogCursor, setPreviousDetailLogCursor] = useState<string>();
   const deferredTraceSearch = useDeferredValue(traceSearch);
   const deferredMetricSearch = useDeferredValue(metricSearch);
 
@@ -1064,12 +1200,14 @@ export function BoardTelemetryPanel() {
     limit: TRACE_LIST_LIMIT,
     query: deferredTraceSearch,
     status: traceStatus,
+    cursor: traceCursor,
   });
-  const traceDetailQuery = useTelemetryTraceDetail(selectedTraceId);
-  const logsQuery = useTelemetryLogs({ limit: LOG_LIST_LIMIT, severity: logSeverity });
+  const traceDetailQuery = useTelemetryTraceDetail(selectedTraceId, { cursor: detailCursor, logCursor: detailLogCursor });
+  const logsQuery = useTelemetryLogs({ limit: LOG_LIST_LIMIT, severity: logSeverity, cursor: logCursor });
   const metricsQuery = useTelemetryMetrics({
     limit: METRIC_LIST_LIMIT,
     query: deferredMetricSearch,
+    cursor: metricCursor,
   });
   const configQuery = useTelemetryConfig();
   const isFetching =
@@ -1093,6 +1231,10 @@ export function BoardTelemetryPanel() {
 
   const selectTrace = (traceId: string) => {
     setSelectedTraceId(traceId);
+    setDetailCursor(undefined);
+    setPreviousDetailCursor(undefined);
+    setDetailLogCursor(undefined);
+    setPreviousDetailLogCursor(undefined);
     window.requestAnimationFrame(() => {
       document.getElementById('board-telemetry-trace-detail-heading')?.focus();
     });
@@ -1115,7 +1257,7 @@ export function BoardTelemetryPanel() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="default">
-              <LockIcon className="size-3" /> Admin read-only
+              <LockIcon className="size-3" /> Read-only
             </Badge>
             <Button
               type="button"
@@ -1144,13 +1286,13 @@ export function BoardTelemetryPanel() {
               <div>
                 <strong className="block font-display text-sm uppercase">
                   {errorStatus(accessError) === 403
-                    ? 'Administrator access required'
+                    ? 'Telemetry scope access denied'
                     : 'Authentication required'}
                 </strong>
                 <p className="mt-2">
                   {errorStatus(accessError) === 403
-                    ? 'Board telemetry is restricted to JWT roles system and superadmin.'
-                    : 'Sign in with an authorized system or superadmin account to read Board telemetry.'}
+                    ? 'Your account cannot read this telemetry scope.'
+                    : 'Sign in with an authorized account to read Board telemetry.'}
                 </p>
                 <p className="mt-2 text-ink-soft">
                   Telemetry is unavailable — this response is not an empty-data state.
@@ -1167,9 +1309,24 @@ export function BoardTelemetryPanel() {
                 search={traceSearch}
                 status={traceStatus}
                 selectedTraceId={selectedTraceId}
-                onSearchChange={setTraceSearch}
-                onStatusChange={setTraceStatus}
+                onSearchChange={(value) => {
+                  setTraceSearch(value);
+                  setTraceCursor(undefined);
+                  setPreviousTraceCursor(undefined);
+                }}
+                onStatusChange={(value) => {
+                  setTraceStatus(value);
+                  setTraceCursor(undefined);
+                  setPreviousTraceCursor(undefined);
+                }}
                 onSelectTrace={selectTrace}
+                onNext={() => {
+                  if (!tracesQuery.data?.nextCursor) return;
+                  setPreviousTraceCursor(traceCursor);
+                  setTraceCursor(tracesQuery.data.nextCursor);
+                }}
+                onPrevious={() => setTraceCursor(previousTraceCursor)}
+                canGoPrevious={traceCursor !== undefined}
               />
               <ConfigPanel query={configQuery} summary={summaryQuery.data} />
             </div>
@@ -1177,19 +1334,55 @@ export function BoardTelemetryPanel() {
               query={traceDetailQuery}
               selectedTraceId={selectedTraceId}
               onClose={() => setSelectedTraceId(null)}
+              onNext={() => {
+                if (!traceDetailQuery.data?.spanNextCursor) return;
+                setPreviousDetailCursor(detailCursor);
+                setDetailCursor(traceDetailQuery.data.spanNextCursor);
+              }}
+              onPrevious={() => setDetailCursor(previousDetailCursor)}
+              canGoPrevious={detailCursor !== undefined}
+              onNextLogs={() => {
+                if (!traceDetailQuery.data?.logNextCursor) return;
+                setPreviousDetailLogCursor(detailLogCursor);
+                setDetailLogCursor(traceDetailQuery.data.logNextCursor);
+              }}
+              onPreviousLogs={() => setDetailLogCursor(previousDetailLogCursor)}
+              canGoPreviousLogs={detailLogCursor !== undefined}
             />
             <LogsPanel
               query={logsQuery}
               severity={logSeverity}
-              onSeverityChange={setLogSeverity}
+              onSeverityChange={(value) => {
+                setLogSeverity(value);
+                setLogCursor(undefined);
+                setPreviousLogCursor(undefined);
+              }}
               onSelectTrace={selectTrace}
+              onNext={() => {
+                if (!logsQuery.data?.nextCursor) return;
+                setPreviousLogCursor(logCursor);
+                setLogCursor(logsQuery.data.nextCursor);
+              }}
+              onPrevious={() => setLogCursor(previousLogCursor)}
+              canGoPrevious={logCursor !== undefined}
             />
             <MetricsPanel
               query={metricsQuery}
               search={metricSearch}
               selectedMetricId={selectedMetricId}
-              onSearchChange={setMetricSearch}
+              onSearchChange={(value) => {
+                setMetricSearch(value);
+                setMetricCursor(undefined);
+                setPreviousMetricCursor(undefined);
+              }}
               onSelectMetric={setSelectedMetricId}
+              onNext={() => {
+                if (!metricsQuery.data?.nextCursor) return;
+                setPreviousMetricCursor(metricCursor);
+                setMetricCursor(metricsQuery.data.nextCursor);
+              }}
+              onPrevious={() => setMetricCursor(previousMetricCursor)}
+              canGoPrevious={metricCursor !== undefined}
             />
           </div>
         )}

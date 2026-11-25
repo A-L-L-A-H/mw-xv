@@ -34,6 +34,7 @@ import { CapabilityGrant, ExecutionPolicy } from './models.js';
 
 /** Reserved effect_key prefixes for harness state (never used for tool effects). */
 const HARNESS_CHECKPOINT_PREFIX = 'harness:checkpoint:';
+const TERMINAL_RUN_STATUSES = new Set(['completed', 'failed', 'cancelled']);
 const HARNESS_COMMIT_PREFIX = 'harness:commit:';
 export const TOOL_AUDIT_MODEL = 'ai.tool_invocation';
 
@@ -262,8 +263,15 @@ export function createDurableAgentRunStateStore(scope: DurableRunScope): AgentRu
     async verifyLease(runId: string, fencingToken: number): Promise<LeaseVerificationResult> {
       const run = await AgentRun.query().findById(scope.agentRunId);
       if (!run) return { valid: false, reason: 'not_found' };
-      if (run.status === 'cancelled') {
-        return { valid: false, reason: 'cancelled', currentFencingToken: run.fencing_token };
+      if (run.company_id !== scope.companyId) {
+        return { valid: false, reason: 'not_found' };
+      }
+      if (TERMINAL_RUN_STATUSES.has(String(run.status))) {
+        return {
+          valid: false,
+          reason: String(run.status) === 'cancelled' ? 'cancelled' : 'stale_fencing_token',
+          currentFencingToken: run.fencing_token,
+        };
       }
       if (run.status !== 'running' || run.fencing_token !== fencingToken) {
         return {

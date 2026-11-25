@@ -9,6 +9,7 @@ interface HealthRoutesOptions {
   metricsToken?: string;
   checkAttachmentStorage?: () => Promise<boolean>;
   checkWhatsAppGateway?: () => Promise<boolean>;
+  checkObservability?: () => Promise<import('@moonwitness/orm-observability').ObservabilityStatus>;
 }
 
 async function readInstalledAddons(db: Knex) {
@@ -40,8 +41,11 @@ export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (fast
       : undefined;
 
     const schemaReady = fastify.schemaReadiness.ready;
+    const observability = options.checkObservability
+      ? await options.checkObservability().catch(() => undefined)
+      : undefined;
     const status = dbOk && storageOk && schemaReady ? 200 : 503;
-    const responseBody: HealthResponse = {
+    const responseBody: HealthResponse & { observability?: import('@moonwitness/orm-observability').ObservabilityStatus } = {
       status: dbOk && storageOk && schemaReady ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
@@ -59,6 +63,7 @@ export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (fast
       },
       attachmentStorage: storageOk ? 'connected' : 'disconnected',
       registeredModels: Registry.getNames(),
+      ...(observability ? { observability } : {}),
     };
     return reply.header('Cache-Control', 'no-store').status(status).send(responseBody);
   };
