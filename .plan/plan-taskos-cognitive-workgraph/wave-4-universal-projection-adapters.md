@@ -72,7 +72,7 @@
 
 ---
 
-## - [ ] T27 — Implement Split-Authority GitHub Issues & Delivery Adapter (`src/adapters/github.adapter.ts`)
+## - [x] T27 — Implement Split-Authority GitHub Issues & Delivery Adapter (`src/adapters/github.adapter.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/adapters/github.adapter.ts`
   - `packages/plan-taskos/src/adapters/github.adapter.ts` (CREATE)
