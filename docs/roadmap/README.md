@@ -1,6 +1,6 @@
 # Panduan Roadmap MoonWitness
 
-Roadmap ini terdiri dari 167 kartu M-series dan 65 kartu K-series (232 task). Checklist `ROADMAP.md` tetap sumber status. K-series melacak rebuild knowledge XIV dan berada di [kartu AI lokal](12-local-ai-rebuild.md); workstream AI Corporation (`M12.01`–`M12.14`) berada di [kartu AI Corporation](13-ai-corporation.md). Mulai dari [jalur rilis aktif](ACTIVE-PLAN.md) untuk melihat gate yang benar-benar menahan rilis dan [backlog tertunda](EXECUTION-BACKLOG.md) untuk item yang tetap dilacak tetapi tidak perlu menghambat rilis pertama. Riwayat batch lama ada di [arsip eksekusi](EXECUTION-HISTORY-2026-10-15.md).
+Roadmap ini terdiri dari 210 kartu M-series dan 65 kartu K-series (275 task). Checklist `ROADMAP.md` tetap sumber status. K-series melacak rebuild knowledge XIV dan berada di [kartu AI lokal](12-local-ai-rebuild.md); workstream AI Corporation (`M12.01`–`M12.14`) berada di [kartu AI Corporation](13-ai-corporation.md). Mulai dari [jalur rilis aktif](ACTIVE-PLAN.md) untuk melihat gate yang benar-benar menahan rilis dan [backlog tertunda](EXECUTION-BACKLOG.md) untuk item yang tetap dilacak tetapi tidak perlu menghambat rilis pertama. Riwayat batch lama ada di [arsip eksekusi](EXECUTION-HISTORY-2026-10-15.md).
 
 ## Urutan membaca untuk agen baru
 
@@ -62,3 +62,8 @@ Nomor milestone bukan urutan serial mutlak. Gunakan dependsOn di index. Contoh: 
 - **Extension milestone:** M9 diselesaikan per addon; jangan menandai seluruh master roadmap selesai ketika M9 masih pending.
 - **Maintenance:** jadwal berulang merupakan operasi ongoing. Item setup selesai setelah workflow tersedia dan satu run terbukti; pekerjaan rutin tetap berlanjut.
 - Roadmap hanya lengkap jika gap, tugas tertunda, unsupported capability, dan pemilik tindak lanjut tetap tercatat.
+
+| [ISP Rust server plane & Go control plane](20-isp-rust-go-architecture-aaa.md) | M19.01–M19.13 | Architecture, AAA hardening, Go control API, RouterOS adapter and HA |
+| [ISP OSS, IPAM & FTTH](21-isp-oss-fttx-ipam.md) | M20.01–M20.08 | Network inventory, VLAN/VRF, dual-stack IPAM, OLT, ONT and field service |
+| [Rust ISP services & Go NOC](22-isp-rust-services-noc.md) | M21.01–M21.08 | DHCP, DNS, ACS and telemetry servers in Rust; NOC policy in Go |
+| [ISP BSS & managed server products](23-isp-bss-server-products.md) | M22.01–M22.07 | Product catalog, order activation, billing, collections, self-service and PaaS reuse |
