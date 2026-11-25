@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { PageHeader } from '@moonwitness/ui/components/page-header';
 import { StickerBadge } from '@moonwitness/ui/components/speech-bubble';
 import { EditorialStudioPanel } from '@/components/creative/editorial-studio-panel';
+import { ComicTheaterSection } from '@/components/creative/comic-theater-section';
 
 // oxlint-disable-next-line react/only-export-components
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default function BoardStudioPage() {
         }
       />
       <EditorialStudioPanel />
+      <ComicTheaterSection />
     </div>
   );
 }
