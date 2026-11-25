@@ -1,3 +1,5 @@
+/* global document, window, fetch, Image, localStorage, history, PerformanceObserver, MutationObserver, ResizeObserver, HTMLElement, HTMLImageElement, HTMLCanvasElement, CanvasRenderingContext2D, AudioContext */
+
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
@@ -320,6 +322,58 @@ async function run() {
     await mobilePage.evaluate(() => window.scrollTo(0, 0));
     await saveShot(mobilePage, '07-mobile-390-preview.png', { fullPage: false });
     await mobileCtx.close();
+
+    // 12. Context 4: Zero-server file:// direct open test (inline-bundle.js fallback)
+    const fileUrl = `file:///${path.join(LAB_DIR, 'index.html').replace(/\\/g, '/')}`;
+    const fileCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const filePage = await fileCtx.newPage();
+    await filePage.goto(fileUrl, { waitUntil: 'load' });
+    await filePage.waitForSelector('.filmstrip-item');
+    const filePanelCount = await filePage.locator('.filmstrip-item').count();
+    assert(filePanelCount === 12, `file:// zero-server load must render 12 panels, got ${filePanelCount}`);
+    const soundInitText = await filePage.textContent('#btn-sound-toggle');
+    assert(soundInitText?.includes('Sound: OFF'), `Sound must start OFF, got "${soundInitText}"`);
+    await filePage.click('#btn-sound-toggle');
+    assert((await filePage.textContent('#btn-sound-toggle'))?.includes('Sound: ON'), 'Sound toggle switches ON');
+    await filePage.click('#btn-sound-toggle');
+    assert((await filePage.textContent('#btn-sound-toggle'))?.includes('Sound: OFF'), 'Sound toggle switches OFF');
+    await fileCtx.close();
+
+    // 13. Context 5: Record real 1280x720 WebM screen recording of full EP-LAB-01 animatic playback
+    const tmpVideoDir = path.join(EVIDENCE_DIR, '.tmp-video');
+    fs.mkdirSync(tmpVideoDir, { recursive: true });
+    const recCtx = await browser.newContext({
+      viewport: { width: 1280, height: 720 },
+      recordVideo: { dir: tmpVideoDir, size: { width: 1280, height: 720 } },
+    });
+    const recPage = await recCtx.newPage();
+    await recPage.goto(labUrl, { waitUntil: 'networkidle' });
+    await recPage.waitForSelector('#btn-play');
+    await recPage.waitForTimeout(400);
+    await recPage.click('#btn-play');
+    // Wait for full episode playback to reach P12 & pause (with 20s upper bound)
+    await recPage.waitForFunction(
+      () => {
+        const panel = document.getElementById('meta-panel-id')?.textContent?.trim();
+        const st = document.getElementById('meta-playback-state')?.textContent?.trim();
+        return panel === 'P12' && st === 'PAUSED';
+      },
+      { timeout: 22000 }
+    );
+    await recPage.waitForTimeout(500);
+    const videoObj = recPage.video();
+    await recCtx.close();
+    const recordedPath = await videoObj.path();
+    const finalVideoPath = path.join(EVIDENCE_DIR, 'ep-lab-01-animatic.webm');
+    try {
+      fs.rmSync(finalVideoPath, { force: true });
+    } catch {
+      // ignore
+    }
+    fs.copyFileSync(recordedPath, finalVideoPath);
+    fs.rmSync(tmpVideoDir, { recursive: true, force: true });
+    const videoBytes = fs.statSync(finalVideoPath).size;
+    assert(videoBytes > 50000, `Recorded WebM animatic should be >50KB, got ${videoBytes} bytes`);
 
     assert(consoleErrors.length === 0, `Console errors: ${consoleErrors.join('; ')}`);
     assert(pageErrors.length === 0, `Page errors: ${pageErrors.join('; ')}`);

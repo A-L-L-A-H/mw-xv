@@ -1,3 +1,5 @@
+/* global document, window, localStorage, history, PerformanceObserver, MutationObserver, ResizeObserver, HTMLElement, HTMLImageElement, HTMLCanvasElement, CanvasRenderingContext2D, AudioContext */
+
 (() => {
   'use strict';
 
@@ -23,9 +25,17 @@
     scope: 'EP-LAB-01',
     viewMode: 'stage', // 'stage' | 'static'
     reducedMotion: false,
+    soundEnabled: false,
     drawerOpen: false,
     timerId: null,
   };
+
+  const liveCanvasFx =
+    typeof window.LiveComicCanvasFx === 'function'
+      ? new window.LiveComicCanvasFx(document.getElementById('stage-live-fx'))
+      : null;
+  const foleySynth =
+    typeof window.ComicFoleySynth === 'function' ? new window.ComicFoleySynth() : null;
 
   const els = {
     announcer: document.getElementById('status-announcer'),
@@ -33,6 +43,7 @@
     btnModeStage: document.getElementById('btn-mode-stage'),
     btnModeStatic: document.getElementById('btn-mode-static'),
     btnReducedMotion: document.getElementById('btn-reduced-motion'),
+    btnSoundToggle: document.getElementById('btn-sound-toggle'),
     btnSourcesDrawer: document.getElementById('btn-sources-drawer'),
     btnCloseDrawer: document.getElementById('btn-close-drawer'),
     sourcesDrawer: document.getElementById('sources-drawer'),
@@ -108,6 +119,11 @@
     if (state.clips.has(clipPath)) {
       return state.clips.get(clipPath);
     }
+    const bundle = window.__MW_COMIC_LAB_BUNDLE__;
+    if (window.location.protocol === 'file:' && bundle && bundle.clips && bundle.clips[clipPath]) {
+      state.clips.set(clipPath, bundle.clips[clipPath]);
+      return bundle.clips[clipPath];
+    }
     try {
       const response = await fetch(clipPath);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -115,6 +131,10 @@
       state.clips.set(clipPath, clipData);
       return clipData;
     } catch {
+      if (bundle && bundle.clips && bundle.clips[clipPath]) {
+        state.clips.set(clipPath, bundle.clips[clipPath]);
+        return bundle.clips[clipPath];
+      }
       return null;
     }
   }
@@ -240,6 +260,43 @@
     els.btnPause.setAttribute('aria-pressed', String(!state.isPlaying));
   }
 
+  function syncLiveCanvasMode(panel) {
+    if (!liveCanvasFx) return;
+    if (state.reducedMotion || state.viewMode === 'static' || document.hidden) {
+      liveCanvasFx.setEnabled(false);
+      return;
+    }
+    const beat = panel && panel.beatId;
+    if (beat === 'ANIM-A') liveCanvasFx.setMode('signal');
+    else if (beat === 'ANIM-B') liveCanvasFx.setMode('action');
+    else if (beat === 'ANIM-C') liveCanvasFx.setMode('archive');
+    else if (beat === 'ANIM-D' && (panel.panelId === 'P11' || panel.panelId === 'P12')) liveCanvasFx.setMode('relay');
+    else if (beat === 'ANIM-D') liveCanvasFx.setMode('archive');
+    else liveCanvasFx.setMode('night');
+    liveCanvasFx.setEnabled(true);
+  }
+
+  function triggerFoleyForPanel(panel, frameIdx) {
+    if (!foleySynth || !state.soundEnabled || !panel) return;
+    if (panel.beatId === 'ANIM-A' && frameIdx <= 1) foleySynth.playCue('signal-spark');
+    else if (panel.beatId === 'ANIM-B' && frameIdx === 0) foleySynth.playCue('courier-whoosh');
+    else if (panel.beatId === 'ANIM-C' && frameIdx === 0) foleySynth.playCue('stylus-tap');
+    else if (panel.panelId === 'P10' && frameIdx === 0) foleySynth.playCue('clip-seal');
+    else if (panel.panelId === 'P11' && frameIdx === 0) foleySynth.playCue('relay-ping');
+    else if (frameIdx === 0) foleySynth.playCue('page-cut');
+  }
+
+  function setSoundEnabled(enabled) {
+    state.soundEnabled = Boolean(enabled);
+    if (foleySynth) foleySynth.setEnabled(state.soundEnabled);
+    if (els.btnSoundToggle) {
+      els.btnSoundToggle.textContent = state.soundEnabled ? 'Sound: ON' : 'Sound: OFF';
+      els.btnSoundToggle.setAttribute('aria-pressed', String(state.soundEnabled));
+      els.btnSoundToggle.classList.toggle('is-active', state.soundEnabled);
+    }
+    announce(state.soundEnabled ? 'Procedural comic foley sound enabled.' : 'Sound muted.');
+  }
+
   function applyCameraAndFx(panel, activeFrame, withTransition) {
     FX_CLASSES.forEach((cls) => els.comicStage.classList.remove(cls));
 
@@ -356,6 +413,10 @@
     }
 
     applyCameraAndFx(panel, activeFrame, withFx);
+    syncLiveCanvasMode(panel);
+    if (withFx || state.isPlaying) {
+      triggerFoleyForPanel(panel, safeFrameIdx);
+    }
     updateTimelineProgress(panels, state.panelIndex, safeFrameIdx, frames.length);
 
     // Metadata
@@ -673,12 +734,20 @@
     els.btnModeStage.addEventListener('click', () => setViewMode('stage'));
     els.btnModeStatic.addEventListener('click', () => setViewMode('static'));
     els.btnReducedMotion.addEventListener('click', () => setReducedMotion(!state.reducedMotion));
+    if (els.btnSoundToggle) {
+      els.btnSoundToggle.addEventListener('click', () => setSoundEnabled(!state.soundEnabled));
+    }
     els.btnSourcesDrawer.addEventListener('click', () => setDrawerOpen(!state.drawerOpen));
     els.btnCloseDrawer.addEventListener('click', () => setDrawerOpen(false));
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         pausePlayback('Playback paused because tab became hidden.');
+        if (liveCanvasFx) liveCanvasFx.setEnabled(false);
+        if (foleySynth && state.soundEnabled) foleySynth.setEnabled(false);
+      } else {
+        syncLiveCanvasMode(getCurrentPanel());
+        if (foleySynth && state.soundEnabled) foleySynth.setEnabled(true);
       }
     });
 
@@ -742,28 +811,48 @@
       els.btnReducedMotion.classList.add('is-active');
     }
 
+    const bundle = window.__MW_COMIC_LAB_BUNDLE__;
     try {
-      const sbRes = await fetch('./data/storyboard.json');
-      if (!sbRes.ok) throw new Error(`HTTP ${sbRes.status}`);
-      state.storyboard = await sbRes.json();
+      if (window.location.protocol === 'file:' && bundle && bundle.storyboard) {
+        state.storyboard = bundle.storyboard;
+      } else {
+        const sbRes = await fetch('./data/storyboard.json');
+        if (!sbRes.ok) throw new Error(`HTTP ${sbRes.status}`);
+        state.storyboard = await sbRes.json();
+      }
+    } catch (err) {
+      if (bundle && bundle.storyboard) {
+        state.storyboard = bundle.storyboard;
+      } else {
+        els.captionText.textContent = `Unable to load storyboard data (${err.message}).`;
+      }
+    }
+
+    if (state.storyboard) {
       if (state.storyboard.title) {
         els.episodeTitle.textContent = state.storyboard.title;
       }
       buildFilmstrip();
       buildStaticGrid();
       await renderCurrentFrame(false);
-    } catch (err) {
-      els.captionText.textContent = `Unable to load storyboard data (${err.message}).`;
     }
 
     try {
-      const candRes = await fetch('./data/proposed-character-candidate.json');
-      if (candRes.ok) {
-        state.candidate = await candRes.json();
+      if (window.location.protocol === 'file:' && bundle && bundle.candidate) {
+        state.candidate = bundle.candidate;
         renderCandidateInfo();
+      } else {
+        const candRes = await fetch('./data/proposed-character-candidate.json');
+        if (candRes.ok) {
+          state.candidate = await candRes.json();
+          renderCandidateInfo();
+        }
       }
     } catch {
-      // Optional candidate file
+      if (bundle && bundle.candidate) {
+        state.candidate = bundle.candidate;
+        renderCandidateInfo();
+      }
     }
   }
 

@@ -19,26 +19,36 @@
 
 ---
 
-## 2. How to Run the Local Preview
+## 2. How to Run or Embed in Any App
 
-Serve from the repository root (`z:\repo\mw-xv`) so relative paths to `../../../packages/assets/` resolve cleanly:
+### A. Zero-Server Local Open (`file://`)
+Double-click `docs/creative-labs/moonwitness-animated-comic/index.html` directly — `data/inline-bundle.js` (built via `node scripts/build-inline-bundle.mjs`) provides full offline `file://` playback with zero HTTP server required.
+
+### B. Local HTTP Server
+Serve from the repository root (`z:\repo\mw-xv`) so all relative paths resolve cleanly:
 
 ```powershell
 python -m http.server 4173
 ```
 
-Open:
+Open `http://127.0.0.1:4173/docs/creative-labs/moonwitness-animated-comic/index.html`.
 
-```text
-http://127.0.0.1:4173/docs/creative-labs/moonwitness-animated-comic/index.html
+### C. Drop-In Embed in Any Web App (`<moonwitness-comic-player>`)
+```html
+<script src="/docs/creative-labs/moonwitness-animated-comic/embed.js" defer></script>
+<moonwitness-comic-player
+  src="/docs/creative-labs/moonwitness-animated-comic/index.html"
+  height="760px"
+></moonwitness-comic-player>
 ```
 
 Controls:
 - **Play / Pause / Replay** (`Space` / `R`), **Frame Stepping** (`←` / `→`), **Panel Stepping** (`[` / `]`)
 - **Normal `1.0x` / Slow `0.45x`** (`S`) for acting timing study
+- **Opt-In Procedural WebAudio Foley (`Sound: OFF`):** Mute by default (zero autoplay, zero external audio); user toggle enables synthesized rooftop/radio/stylus/clip/relay cues
+- **Live 60fps Canvas Secondary Motion:** Atmospheric night motes, cyan antenna sparks, speed sparks, desk-lamp dust, and concentric relay rings (auto-disabled under Reduced Motion / Static / Hidden tab)
 - **Scope Selector:** Full 14.4s episode (`EP-LAB-01`) or single-beat loops (`ANIM-A`, `ANIM-B`, `ANIM-C`, `ANIM-D`)
 - **View Modes:** Theater Stage, Static Comic Page (`G`), Reduced-Motion Preview (`M` + automatic `prefers-reduced-motion`), Cast & 2.5D Pipeline Drawer (`I`)
-- Starts paused with zero autoplay audio and pauses automatically when hidden (`visibilitychange`).
 
 ---
 

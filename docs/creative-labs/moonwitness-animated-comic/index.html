@@ -34,6 +34,9 @@
       <button type="button" id="btn-reduced-motion" class="zine-btn zine-btn-yellow" data-testid="btn-reduced-motion" aria-pressed="false">
         Reduced Motion: OFF
       </button>
+      <button type="button" id="btn-sound-toggle" class="zine-btn" data-testid="btn-sound-toggle" aria-pressed="false">
+        Sound: OFF
+      </button>
       <button type="button" id="btn-sources-drawer" class="zine-btn zine-btn-magenta" data-testid="btn-sources-drawer" aria-expanded="false" aria-controls="sources-drawer">
         Cast &amp; Pipeline
       </button>
@@ -134,8 +137,9 @@
             <img id="stage-inset-img" class="stage-inset-img" src="" alt="" />
           </figure>
 
-          <!-- Subtle Comic Print Vignette, Atmospheric Particles & Wipe FX -->
+          <!-- Subtle Comic Print Vignette, Live 60fps Canvas Secondary Motion & Wipe FX -->
           <img class="stage-halftone-frame" src="./animations/comic-overlays/halftone-corner-frame.svg" alt="" aria-hidden="true" />
+          <canvas id="stage-live-fx" class="stage-live-fx" width="960" height="540" aria-hidden="true"></canvas>
           <div id="stage-atmosphere" class="stage-atmosphere" aria-hidden="true"></div>
           <div id="stage-fx-overlay" class="stage-fx-overlay" aria-hidden="true"></div>
 
@@ -213,6 +217,9 @@
     </section>
   </main>
 
+  <script src="./data/inline-bundle.js" defer></script>
+  <script src="./canvas-fx.js" defer></script>
+  <script src="./audio-foley.js" defer></script>
   <script src="./app.js" defer></script>
 </body>
 </html>

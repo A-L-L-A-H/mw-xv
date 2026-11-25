@@ -12,8 +12,9 @@
 
 | Check | Command | Exit Code | Result |
 | --- | --- | --- | --- |
-| Structural, WebP Dimensions/Pixel-Diff, SVG XML, Provenance & Disk Path Gate | `node docs/creative-labs/moonwitness-animated-comic/scripts/validate-lab.mjs` | `0` | **PASSED (866 assertions, 0 failures)** |
-| Headless Chromium E2E, Reduced-Motion & Responsive Gate | `node docs/creative-labs/moonwitness-animated-comic/scripts/playwright-verify.mjs` | `0` | **PASSED (37 assertions, 0 console/page/HTTP errors)** |
+| Structural, WebP Dimensions/Pixel-Diff, SVG XML, Provenance & Disk Path Gate | `node docs/creative-labs/moonwitness-animated-comic/scripts/validate-lab.mjs` | `0` | **PASSED (869 assertions, 0 failures)** |
+| Headless Chromium E2E, `file://` Offline, WebM Recording, Reduced-Motion & Mobile Gate | `node docs/creative-labs/moonwitness-animated-comic/scripts/playwright-verify.mjs` | `0` | **PASSED (42 assertions, 0 console/page/HTTP errors, 7 PNGs + 1 WebM)** |
+| Inline `file://` Bundle Builder | `node docs/creative-labs/moonwitness-animated-comic/scripts/build-inline-bundle.mjs` | `0` | **PASSED (`data/inline-bundle.js` generated, 52,717 bytes)** |
 | Git Whitespace & Conflict Marker Check (Lab Scope) | `git diff --check -- docs/creative-labs/moonwitness-animated-comic` | `0` | **PASSED (0 errors)** |
 
 ---
@@ -46,3 +47,4 @@ All 7 Studio V2 screenshots were captured via headless Chromium and visually ins
 5. `evidence/05-static-storyboard-grid.png` — Full-page Static Comic Page layout displaying all 12 studio-illustrated panels (`P01`..`P12`) with printed speech bubbles, captions, and comic grammar tags while animation is stopped.
 6. `evidence/06-reduced-motion-view.png` — Fresh context with `emulateMedia({ reducedMotion: 'reduce' })` verifying automatic `Reduced Motion: ON`, zero camera transforms/FX, and static `P10` two-shot with `ARCHIVAL FOLIO` macro inset.
 7. `evidence/07-mobile-390-preview.png` — Mobile `390×844` responsive preview on `P03` confirming sharp opaque PiP inset, readable captions, and zero horizontal overflow (`scrollWidth <= innerWidth`).
+8. `evidence/ep-lab-01-animatic.webm` — Real-time `1280×720` Playwright WebM screen recording capturing full continuous playback from `P01` through `P12` with live 60fps Canvas secondary motion and 2.5D virtual camera choreography.
