@@ -125,6 +125,21 @@ export {
   type UpdateMeshPaasAppEnvParams,
   type UpdateMeshPaasAppEnvResult,
 } from './providers/moonwitness-mesh.js';
+export {
+  clearCoolifyTemplateCatalogCache,
+  getCoolifyTemplateDetail,
+  listCoolifyTemplates,
+  loadCoolifyTemplateCatalog,
+  resolveCoolifyServiceTemplatesPath,
+  type CoolifyCategoryCount,
+  type CoolifyCompatibility,
+  type CoolifyEditableEnvVar,
+  type CoolifyTemplateDetail,
+  type CoolifyTemplateEntry,
+  type CoolifyTemplateSummary,
+  type ListCoolifyTemplatesOptions,
+  type ListCoolifyTemplatesResult,
+} from './coolify-template-pack.js';
 export { exportCloudTerraformHcl } from './terraform.js';
 export {
   DEFAULT_PAAS_PLANS,

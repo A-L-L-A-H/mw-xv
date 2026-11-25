@@ -288,3 +288,109 @@ export function loadCoolifyTemplateCatalog(): Map<string, CoolifyTemplateEntry> 
 export function clearCoolifyTemplateCatalogCache(): void {
   catalogCache.clear();
 }
+
+export interface ListCoolifyTemplatesOptions {
+  q?: string;
+  category?: string;
+  tag?: string;
+  compatibility?: CoolifyCompatibility;
+  includeOutdated?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+export interface CoolifyCategoryCount {
+  id: string;
+  count: number;
+}
+
+export interface ListCoolifyTemplatesResult {
+  items: CoolifyTemplateSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  categories: CoolifyCategoryCount[];
+}
+
+export interface CoolifyTemplateDetail extends CoolifyTemplateSummary {
+  composeYaml: string;
+}
+
+function toTemplateSummary(entry: CoolifyTemplateEntry): CoolifyTemplateSummary {
+  const { composeYaml: _yaml, composeDoc: _doc, ...summary } = entry;
+  return summary;
+}
+
+export function listCoolifyTemplates(options: ListCoolifyTemplatesOptions = {}): ListCoolifyTemplatesResult {
+  const catalog = loadCoolifyTemplateCatalog();
+  const includeOutdated = options.includeOutdated ?? true;
+  const rawLimit = typeof options.limit === 'number' && Number.isFinite(options.limit) ? Math.trunc(options.limit) : 24;
+  const limit = Math.min(100, Math.max(1, rawLimit));
+  const rawPage = typeof options.page === 'number' && Number.isFinite(options.page) ? Math.trunc(options.page) : 1;
+  const page = Math.max(1, rawPage);
+
+  const q = options.q?.trim().toLowerCase() ?? '';
+  const categoryFilter = options.category?.trim().toLowerCase() ?? '';
+  const tagFilter = options.tag?.trim().toLowerCase() ?? '';
+  const compatFilter = options.compatibility;
+
+  const sorted = [...catalog.values()].sort((a, b) => a.id.localeCompare(b.id));
+  const categoryCounts = new Map<string, number>();
+  const matched: CoolifyTemplateEntry[] = [];
+
+  for (const entry of sorted) {
+    if (!includeOutdated && entry.outdated) {
+      continue;
+    }
+    categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
+
+    if (compatFilter && entry.compatibility !== compatFilter) {
+      continue;
+    }
+    if (categoryFilter && categoryFilter !== 'all' && entry.category !== categoryFilter) {
+      continue;
+    }
+    if (tagFilter && !entry.tags.some((t) => t.toLowerCase() === tagFilter)) {
+      continue;
+    }
+    if (q) {
+      const hay =
+        entry.id.toLowerCase().includes(q) ||
+        entry.name.toLowerCase().includes(q) ||
+        entry.slogan.toLowerCase().includes(q) ||
+        entry.category.toLowerCase().includes(q) ||
+        entry.tags.some((t) => t.toLowerCase().includes(q));
+      if (!hay) {
+        continue;
+      }
+    }
+    matched.push(entry);
+  }
+
+  const start = (page - 1) * limit;
+  const items = matched.slice(start, start + limit).map(toTemplateSummary);
+  const categories = [...categoryCounts.entries()]
+    .map(([id, count]) => ({ id, count }))
+    .sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
+
+  return {
+    items,
+    total: matched.length,
+    page,
+    limit,
+    categories,
+  };
+}
+
+export function getCoolifyTemplateDetail(id: string): CoolifyTemplateDetail | undefined {
+  const key = id.trim();
+  if (!key) {
+    return undefined;
+  }
+  const entry = loadCoolifyTemplateCatalog().get(key);
+  if (!entry) {
+    return undefined;
+  }
+  const { composeDoc: _doc, ...detail } = entry;
+  return detail;
+}

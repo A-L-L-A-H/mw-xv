@@ -69,7 +69,7 @@
 
 ---
 
-## - [ ] M18 — Add Paginated Search & Detail Exports to `coolify-template-pack.ts`
+## - [x] M18 — Add Paginated Search & Detail Exports to `coolify-template-pack.ts`
 
 - **Owner Files (MODIFY):**
   - `packages/orm-cloud/src/coolify-template-pack.ts`
