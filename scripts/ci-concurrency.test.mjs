@@ -70,7 +70,9 @@ test('every CI job declares explicit least-privilege contents: read permissions'
   const writePermissions = [...workflow.matchAll(/^ {6}([a-z-]+): write\s*$/gmu)].map(
     ([, permission]) => permission
   );
-  assert.deepEqual(writePermissions, ['security-events']);
+  // Failures are triaged into issues and retried via workflow dispatch, so the
+  // triage job intentionally owns the only `issues`/`actions` write exceptions.
+  assert.deepEqual(writePermissions, ['security-events', 'issues', 'actions']);
 });
 
 test('affected CI selector keeps full validation for shared config and master roadmap changes', () => {

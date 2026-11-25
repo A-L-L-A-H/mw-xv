@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  coolifyTemplateAllowlist,
   expectedAllowlistExpressions,
   validateGitleaksCliSetup,
   validateGitleaksSetup,
@@ -198,6 +199,35 @@ test('committed non-secret placeholders for the pinned names stay below the entr
     }
   }
   assert.ok(matched.length >= 2, `placeholder sweep must not be vacuous: ${matched.join('\n')}`);
+});
+
+test('Coolify allowlist matches reviewed placeholder forms only, on reviewed paths', () => {
+  const [couchdb, elastic, digest] = coolifyTemplateAllowlist.regexes.map(
+    (source) => new RegExp(source, 'u')
+  );
+  assert.match('curl -f -u "$${COUCHDB_USER}:$${COUCHDB_PASSWORD}" ', couchdb);
+  assert.match(
+    'RESPONSE=$(curl -s -w "\\n%{http_code}" -u elastic:"$${ELASTIC_PASSWORD}" ',
+    elastic
+  );
+  assert.match('librechat-dev-api:6ecd1b510faaa593ad954fb6276c18e5f12a8e53 ', digest);
+
+  assert.doesNotMatch('curl -f -u "admin:real-password-123" ', couchdb);
+  assert.doesNotMatch(
+    'RESPONSE=$(curl -s -w "\\n%{http_code}" -u elastic:"real-password-123" ',
+    elastic
+  );
+  assert.doesNotMatch('librechat-dev-api:gggggggggggggggggggggggggggggggggggggggg ', digest);
+  assert.doesNotMatch('xlibrechat-dev-api:6ecd1b510faaa593ad954fb6276c18e5f12a8e53 ', digest);
+  assert.equal(coolifyTemplateAllowlist.paths.length, 4);
+  assert.ok(
+    coolifyTemplateAllowlist.paths.every((value) =>
+      value.startsWith('^packages/paas-template-pack-coolify/')
+    )
+  );
+  assert.ok(
+    coolifyTemplateAllowlist.paths.some((value) => value.includes('service-templates(?:-latest)?'))
+  );
 });
 
 test('CI uses the allowed pinned gitleaks CLI with a reviewed baseline', async () => {

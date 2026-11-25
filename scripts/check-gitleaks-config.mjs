@@ -98,6 +98,26 @@ const reviewedWorkstreamLines = [
   'peer-key-gamma-0123456789abcdef01234567',
   'FREELLMAPI_COMMIT_SHA: cd65d6485788dfc7828f06c1147cdea207b28322',
 ];
+// Coolify templates commit only dollar-escaped runtime variables and a pinned image digest.
+// Each expression is anchored to the exact gitleaks match emitted by 8.30.1; the allowlist
+// block is also restricted by path so a real credential in any other file still scans.
+export const coolifyTemplateAllowlist = {
+  description:
+    'Coolify service templates: dollar-escaped runtime variables and image digests are not credentials',
+  regexTarget: 'match',
+  paths: [
+    '^packages/paas-template-pack-coolify/compose/obsidian-livesync\\.yaml$',
+    '^packages/paas-template-pack-coolify/compose/elasticsearch-with-kibana\\.yaml$',
+    '^packages/paas-template-pack-coolify/compose/librechat\\.yaml$',
+    '^packages/paas-template-pack-coolify/service-templates(?:-latest)?\\.json$',
+  ],
+  regexes: [
+    String.raw`^curl -f -u "\$\$\{[A-Z0-9_]*(?:USER|PASSWORD)[A-Z0-9_]*\}:\$\$\{[A-Z0-9_]*(?:USER|PASSWORD)[A-Z0-9_]*\}" $`,
+    String.raw`^RESPONSE=\$\(curl -s -w "\\n%\{http_code\}" -u [a-z]+:"\$\$\{[A-Z0-9_]*PASSWORD[A-Z0-9_]*\}" $`,
+    String.raw`^librechat-dev-api:[0-9a-f]{40} $`,
+  ],
+};
+
 export const expectedAllowlistExpressions = [
   ...allowedLines.map(({ source }) => source),
   ...historicalFalsePositiveLines,
@@ -154,16 +174,33 @@ export function validateGitleaksSetup(workflow, config) {
       ? ''
       : config.slice(allowlistStart, customRulesStart < 0 ? undefined : customRulesStart);
   const configuredLines = [...allowlistConfig.matchAll(/'''(.*?)'''/gs)].map((match) => match[1]);
-  if (configuredLines.length !== expectedAllowlistExpressions.length) {
+  const expectedLines = [...expectedAllowlistExpressions, ...coolifyTemplateAllowlist.regexes];
+  if (configuredLines.length !== expectedLines.length) {
     problems.push(
-      'Allowlist must contain exactly the reviewed synthetic fixture and historical false-positive lines.'
+      'Allowlist must contain exactly the reviewed synthetic fixture, historical false-positive, and Coolify placeholder lines.'
     );
   } else {
     for (const [index, expression] of configuredLines.entries()) {
-      const expected = expectedAllowlistExpressions[index];
+      const expected = expectedLines[index];
       if (expression !== expected)
         problems.push(`Allowlist entry ${index + 1} differs from its reviewed fixture.`);
     }
+  }
+  const coolifyBlock = config.slice(
+    config.indexOf('[[allowlists]]', config.indexOf('Pinned third-party vendor snapshots')),
+    customRulesStart < 0 ? undefined : customRulesStart
+  );
+  const escapeTomlLiteral = (value) => value.replaceAll('\\', '\\\\');
+  if (
+    !coolifyBlock.includes(`description = "${coolifyTemplateAllowlist.description}"`) ||
+    !coolifyBlock.includes(`regexTarget = "${coolifyTemplateAllowlist.regexTarget}"`) ||
+    coolifyTemplateAllowlist.paths.some(
+      (value) => !coolifyBlock.includes(`"${escapeTomlLiteral(value)}"`)
+    )
+  ) {
+    problems.push(
+      'Coolify template allowlist must stay restricted to the five reviewed template paths.'
+    );
   }
   return problems;
 }

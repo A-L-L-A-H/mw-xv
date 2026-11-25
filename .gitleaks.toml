@@ -30,6 +30,21 @@ regexes = [
 description = "Pinned third-party vendor snapshots keep their upstream test fixtures, docs and patches; reviewed at import time"
 paths = ["^vendor/"]
 
+[[allowlists]]
+description = "Coolify service templates: dollar-escaped runtime variables and image digests are not credentials"
+regexTarget = "match"
+paths = [
+  "^packages/paas-template-pack-coolify/compose/obsidian-livesync\\.yaml$",
+  "^packages/paas-template-pack-coolify/compose/elasticsearch-with-kibana\\.yaml$",
+  "^packages/paas-template-pack-coolify/compose/librechat\\.yaml$",
+  "^packages/paas-template-pack-coolify/service-templates(?:-latest)?\\.json$",
+]
+regexes = [
+  '''^curl -f -u "\$\$\{[A-Z0-9_]*(?:USER|PASSWORD)[A-Z0-9_]*\}:\$\$\{[A-Z0-9_]*(?:USER|PASSWORD)[A-Z0-9_]*\}" $''',
+  '''^RESPONSE=\$\(curl -s -w "\\n%\{http_code\}" -u [a-z]+:"\$\$\{[A-Z0-9_]*PASSWORD[A-Z0-9_]*\}" $''',
+  '''^librechat-dev-api:[0-9a-f]{40} $''',
+]
+
 [[rules]]
 id = "moonwitness-runtime-secret"
 description = "High-entropy MoonWitness runtime authentication, metrics, or WhatsApp credential"

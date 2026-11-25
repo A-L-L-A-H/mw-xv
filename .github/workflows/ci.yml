@@ -5,13 +5,18 @@ on:
     branches: [dev, main]
   pull_request:
     branches: [dev, main]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Exact dev SHA allowed for an auto-heal retry
+        required: false
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -369,8 +374,8 @@ jobs:
 
   gate-failure-triage:
     name: Gate failure triage
-    needs: [secret-scan, static-analysis, dependency-audit, quality-and-build, unit-tests, knowledge-gate, postgres-integration, dx-test]
-    if: always() && github.event_name != 'pull_request' && failure()
+    needs: [secret-scan, static-analysis, dependency-audit, quality-and-build, unit-tests, knowledge-gate, postgres-integration, dx-test, ci-gate]
+    if: always() && failure()
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
@@ -379,10 +384,24 @@ jobs:
     permissions:
       contents: read
       issues: write
+      actions: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Verify exact expected SHA for auto-heal retry
+        if: github.event_name == 'workflow_dispatch' && inputs.expected_sha != ''
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+          EVENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$EVENT_SHA" =~ ^[a-f0-9]{40}$ ]]
+          if [[ "$EXPECTED_SHA" != "$EVENT_SHA" ]]; then
+            echo "Dispatched retry SHA does not match the immutable event SHA." >&2
+            exit 1
+          fi
       - name: Collect failed job names
         id: failed
         env:
@@ -406,9 +425,54 @@ jobs:
           FAILED_JOBS: ${{ steps.failed.outputs.failed_jobs }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           COMMIT_SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number || '' }}
         run: |
           set -euo pipefail
           node scripts/roadmap/gate-failure-issue.mjs
+      - name: Queue exact-SHA retry for transient cancellation
+        if: steps.failed.outputs.failed_jobs != '' && github.event_name == 'push' && github.ref == 'refs/heads/dev' && vars.AUTO_HEAL_RETRY == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          jobs_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs" --paginate)"
+          terminal_jobs="$(echo "$jobs_json" | jq '[.jobs[] | select(.name != "gate-failure-triage" and .name != "ci-gate")]')"
+          if [[ "$(echo "$terminal_jobs" | jq 'length')" -eq 0 ]]; then
+            echo "No technical lanes were observed; refusing retry."
+            exit 1
+          fi
+          cancelled="$(echo "$terminal_jobs" | jq '[.[] | select(.conclusion == "cancelled")] | length')"
+          succeeded="$(echo "$terminal_jobs" | jq '[.[] | select(.conclusion == "success")] | length')"
+          total="$(echo "$terminal_jobs" | jq 'length')"
+          if [[ "$cancelled" -eq 0 || "$succeeded" -ne $((total - cancelled)) ]]; then
+            echo "Failure is not a clean cancellation-only flake; skipping retry."
+            exit 0
+          fi
+          retry_key="autoheal-retry:${EXPECTED_SHA}:${RUN_ID}"
+          if gh variable get "$retry_key" --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo "Exact-SHA retry already queued."
+            exit 0
+          fi
+          gh variable set "$retry_key" --repo "$GH_REPO" --body "queued" || true
+          gh workflow run ci.yml --repo "$GH_REPO" --ref dev -f expected_sha="$EXPECTED_SHA"
+      - name: Close resolved auto-heal issues for this exact SHA
+        id: close_resolved
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/dev' && needs.ci-gate.result == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if ! node scripts/release-await-ci.mjs --sha "$EXPECTED_SHA" --repo "$GH_REPO" \
+              --checks '["ci-gate"]' --timeout-seconds 0 --interval-seconds 1; then
+            echo "Gate not green yet; auto-heal issues remain open."
+            exit 0
+          fi
+          node scripts/roadmap/resolve-gate-failure-issue.mjs
       - name: Request auto-fix via roadmap intake label
         if: steps.failed.outputs.failed_jobs != ''
         env:
@@ -420,4 +484,23 @@ jobs:
           set -euo pipefail
           issue_number="$(cat dist/gate-failure/issue-number.txt)"
           gh issue edit "$issue_number" --repo "$GITHUB_REPOSITORY" \
-            --add-label "gate-failure,auto-fix-requested" --add-assignee "A-L-L-A-H" || true
+            --add-label "gate-failure,auto-fix-requested,auto-heal,priority:P0" --add-assignee "A-L-L-A-H" || true
+          gh issue comment "$issue_number" --repo "$GITHUB_REPOSITORY" \
+            --body "Auto-fix requested: @fixer handle this gate failure. Ratchet and required checks remain mandatory."
+
+  ci-gate:
+    name: ci-gate
+    needs: [secret-scan, static-analysis, dependency-audit, quality-and-build, unit-tests, knowledge-gate, postgres-integration, dx-test]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Aggregate CI lane results
+        env:
+          CI_GATE_RESULTS: ${{ toJSON(needs) }}
+        run: node scripts/ci-gate.mjs

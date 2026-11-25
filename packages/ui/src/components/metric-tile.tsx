@@ -37,7 +37,11 @@ export function MetricTile({
     <Tooltip>
       <TooltipTrigger asChild>
         <span className="mw-ui-metric-tile-error-indicator" aria-label="Error">
-          <WarningIcon className="size-4 text-destructive" title={error} />
+          <WarningIcon
+            aria-hidden="true"
+            className="size-4 text-destructive"
+            title={error}
+          />
         </span>
       </TooltipTrigger>
       <TooltipContent>{error}</TooltipContent>
