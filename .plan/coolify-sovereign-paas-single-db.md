@@ -134,7 +134,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
-| Wave 2 | `M16`–`M38` | `22 / 23` | — | `M37 OK` — `@moonwitness/orm-cloud build` exit 0; cloud-auth-ops.test.ts 21/22 passed (1 detail endpoint 404 due to M27 gap); Postgres PaaS settings, TLS lockdown, preview ports, promote-wildcard, RAM MB parsing, mesh status, env vault [REDACTED] safety, app CRUD all tested |
+| Wave 2 | `M16`–`M38` | `22 / 23` | `89910808` | `M37 OK` — `@moonwitness/orm-cloud build` exit 0; orm-cloud test 137/137 pass; auth test 18/18 pass; cloud-auth-ops.test.ts 22/22 passed (M27 GET apps/:slug detail route + M31 domain matrix restored); Postgres PaaS settings, TLS lockdown, preview ports, promote-wildcard, RAM MB parsing, mesh status, env vault [REDACTED] safety, app CRUD all tested |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
