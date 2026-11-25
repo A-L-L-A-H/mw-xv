@@ -38,6 +38,22 @@ func TestNewPaasManagerEnvAliasesAndStaticRoutes(t *testing.T) {
 	var cmds []recordedCmd
 	runner := func(_ context.Context, name string, args ...string) (string, error) {
 		cmds = append(cmds, recordedCmd{name: name, args: append([]string(nil), args...)})
+		// Simulate a failed zero-downtime `caddy reload` so the caller falls
+		// back to `docker restart`, which this test asserts happens when a
+		// Caddy container is configured.
+		if name == "docker" && len(args) > 1 && args[0] == "exec" {
+			sliceContains := func(arr []string, target string) bool {
+				for _, a := range arr {
+					if a == target {
+						return true
+					}
+				}
+				return false
+			}
+			if sliceContains(args, "caddy") && sliceContains(args, "reload") {
+				return "", fmt.Errorf("caddy reload failed: exit status 1")
+			}
+		}
 		return "", nil
 	}
 

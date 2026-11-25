@@ -30,7 +30,7 @@
 
 ---
 
-## - [ ] M05 — Add `ReconcileDeclarative` & Zero-Downtime `caddy reload` to `caddy.go`
+## - [x] M05 — Add `ReconcileDeclarative` & Zero-Downtime `caddy reload` to `caddy.go`
 
 - **Owner File (MODIFY):** `apps/control-plane/caddy.go`
 - **Depends On:** `M04`
