@@ -1,0 +1,21 @@
+# LiteLLM AI Gateway — proxy ke 100+ LLM provider dengan API key per tim,
+# spend tracking, rate limit, dan fallback. HTTP-native, lolos validator
+# control plane (tanpa docker.sock/privileged/host net).
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    expose:
+      - '4000'
+    environment:
+      - LITELLM_MASTER_PASSWORD=${SERVICE_PASSWORD_LITELLM}
+      - LITELLM_SALT=${SERVICE_PASSWORD_LITELLM_SALT}
+      - STORE_MODEL_IN_DB=true
+    volumes:
+      - litellm-data:/app/data
+    healthcheck:
+      test: ['CMD', 'litellm', '--health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+volumes:
+  litellm-data:

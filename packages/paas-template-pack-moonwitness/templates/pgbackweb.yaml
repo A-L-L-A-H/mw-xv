@@ -1,0 +1,31 @@
+# PgBackWeb — web UI untuk backup PostgreSQL terjadwal ke S3-compatible
+# storage (MinIO/Garage/R2), dengan one-click restore.
+# Data-sovereignty: cadangan tanpa vendor cloud lock-in.
+services:
+  pgbackweb:
+    image: eduardolat/pgbackweb:latest
+    expose:
+      - '8085'
+    environment:
+      - PBW_ENCRYPTION_KEY=${SERVICE_PASSWORD_PBW}
+      - PBW_POSTGRES_CONNECTION_URI=postgresql://postgres:${SERVICE_PASSWORD_DB}@pgbackweb-db:5432/pgbackweb
+    depends_on:
+      pgbackweb-db:
+        condition: service_healthy
+  pgbackweb-db:
+    image: postgres:16-alpine
+    expose:
+      - '5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_DB}
+      - POSTGRES_DB=pgbackweb
+    volumes:
+      - pgbackweb-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  pgbackweb-db:

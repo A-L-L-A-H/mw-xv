@@ -1,0 +1,60 @@
+{
+  "moonwitness": {
+    "litellm-gateway": {
+      "file": "templates/litellm-gateway.yaml",
+      "name": "LiteLLM Gateway",
+      "slogan": "AI proxy ke 100+ LLM provider dengan API key per tim, spend tracking, dan fallback otomatis.",
+      "category": "ai",
+      "tags": ["ai", "llm", "proxy", "sovereign"],
+      "documentation": "https://docs.litellm.ai"
+    },
+    "langfuse": {
+      "file": "templates/langfuse.yaml",
+      "name": "Langfuse",
+      "slogan": "LLM observability: tracing, evaluation, dan prompt management untuk AI agents.",
+      "category": "ai",
+      "tags": ["ai", "observability", "llm", "sovereign"],
+      "documentation": "https://langfuse.com/docs"
+    },
+    "lago-billing": {
+      "file": "templates/lago-billing.yaml",
+      "name": "Lago Billing",
+      "slogan": "Meter-to-cash & subscription billing open-source untuk usage-based pricing.",
+      "category": "business",
+      "tags": ["billing", "fintech", "subscription", "sovereign"],
+      "documentation": "https://docs.getlago.com"
+    },
+    "pgbackweb": {
+      "file": "templates/pgbackweb.yaml",
+      "name": "PgBackWeb",
+      "slogan": "Backup PostgreSQL terjadwal ke S3-compatible storage dengan web UI dan one-click restore.",
+      "category": "storage",
+      "tags": ["backup", "postgres", "storage", "sovereign"],
+      "documentation": "https://github.com/eduardolat/pgbackweb"
+    },
+    "sftpgo": {
+      "file": "templates/sftpgo.yaml",
+      "name": "SFTPGo",
+      "slogan": "SFTP/FTP/WebDAV server dengan backend S3-compatible dan OIDC auth.",
+      "category": "storage",
+      "tags": ["storage", "file-transfer", "sftp", "sovereign"],
+      "documentation": "https://sftpgo.com"
+    },
+    "waha": {
+      "file": "templates/waha.yaml",
+      "name": "WAHA",
+      "slogan": "WhatsApp HTTP API multi-engine (WEBJS/NOWEB/GOWS) untuk automation business messaging.",
+      "category": "messaging",
+      "tags": ["whatsapp", "messaging", "regional", "sea"],
+      "documentation": "https://waha.devlikeapro.com"
+    },
+    "openbao": {
+      "file": "templates/openbao.yaml",
+      "name": "OpenBao",
+      "slogan": "Secrets management & PKI (fork Vault, Linux Foundation) untuk infrastruktur sovereign.",
+      "category": "security",
+      "tags": ["secrets", "security", "pki", "sovereign"],
+      "documentation": "https://openbao.org"
+    }
+  }
+}

@@ -99,7 +99,7 @@ function formatTemplateName(id: string): string {
     .join(' ');
 }
 
-function classifyComposeDocument(doc: Record<string, unknown>): {
+export function classifyComposeDocument(doc: Record<string, unknown>): {
   compatibility: CoolifyCompatibility;
   reasons: string[];
   serviceNames: string[];
