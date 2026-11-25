@@ -37,6 +37,7 @@ import {
   registerIspJobHandlers,
   resolveIspAdminToken,
   selectHealthyNas,
+  syncIspRuntimeSessions,
 } from '../src/index.js';
 
 function expectedAdminToken(jwtSecret: string): string {
@@ -817,6 +818,46 @@ describe('@moonwitness/orm-isp addon', () => {
       ).toMatchObject({ count: 1 });
 
       await orderedApp.close();
+    });
+
+    it('trims repeated trailing slashes from ispServiceUrl in HTTP plugin and reconcile sync', async () => {
+      const seenUrls: string[] = [];
+      const slashedUrl = `http://isp.local:3002${'/'.repeat(20_000)}`;
+      const slashApp = Fastify({ logger: false });
+      currentAuth = { userId: 2, role: 'superadmin', companyId: 1 };
+      slashApp.addHook('onRequest', async (req) => {
+        (req as { auth?: typeof currentAuth }).auth = currentAuth;
+      });
+      await slashApp.register(
+        createIspHttpPlugin({
+          ispServiceUrl: slashedUrl,
+          jwtSecret: 'unit-test-jwt-secret',
+          fetchImpl: async (input) => {
+            seenUrls.push(String(input));
+            return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+          },
+        })
+      );
+      await slashApp.ready();
+
+      try {
+        const res = await slashApp.inject({ method: 'GET', url: '/api/isp/health' });
+        expect(res.statusCode).toBe(200);
+        expect(seenUrls).toEqual(['http://isp.local:3002/health']);
+      } finally {
+        await slashApp.close();
+      }
+
+      const syncUrls: string[] = [];
+      await syncIspRuntimeSessions({
+        ispServiceUrl: slashedUrl,
+        jwtSecret: 'unit-test-jwt-secret',
+        fetchImpl: async (input) => {
+          syncUrls.push(String(input));
+          return new Response(JSON.stringify([]), { status: 200 });
+        },
+      });
+      expect(syncUrls).toEqual(['http://isp.local:3002/api/sessions']);
     });
   });
 

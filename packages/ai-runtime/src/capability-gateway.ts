@@ -277,13 +277,30 @@ function computeDigest(value: unknown): string {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
 
+/** Normalize backslashes and strip leading or trailing `/` in O(n) time. */
+function trimPathSlashes(value: string, edge: 'leading' | 'trailing'): string {
+  const slashNormalized = value.includes('\\') ? value.replaceAll('\\', '/') : value;
+  if (edge === 'leading') {
+    let start = 0;
+    while (start < slashNormalized.length && slashNormalized.charCodeAt(start) === 47) {
+      start += 1;
+    }
+    return start === 0 ? slashNormalized : slashNormalized.slice(start);
+  }
+  let end = slashNormalized.length;
+  while (end > 0 && slashNormalized.charCodeAt(end - 1) === 47) {
+    end -= 1;
+  }
+  return end === slashNormalized.length ? slashNormalized : slashNormalized.slice(0, end);
+}
+
 function isPathWithinScope(requestedPath: string, allowedPaths: readonly string[]): boolean {
-  const normalized = requestedPath.replace(/\\/gu, '/').replace(/^\/+/u, '');
+  const normalized = trimPathSlashes(requestedPath, 'leading');
   if (!normalized || normalized.split('/').includes('..')) {
     return false;
   }
   return allowedPaths.some((allowed) => {
-    const cleanAllowed = allowed.replace(/\\/gu, '/').replace(/\/+$/u, '');
+    const cleanAllowed = trimPathSlashes(allowed, 'trailing');
     if (cleanAllowed === '.') return true;
     return normalized === cleanAllowed || normalized.startsWith(`${cleanAllowed}/`);
   });

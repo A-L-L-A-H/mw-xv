@@ -20,6 +20,7 @@ import {
   type StoredResearchGraphRelease,
 } from '../research-release.js';
 import { validateResearchRelease } from '../research-review.js';
+import { toRecord } from './helpers.js';
 
 const corpusKey = 'research';
 const visibilities: readonly ResearchVisibility[] = [
@@ -54,12 +55,6 @@ export interface ResearchExplanationHttpPluginOptions {
     content_sha256: string;
     citation: string;
   } | null>;
-}
-
-function object(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
 }
 
 function storedVisibility(record: StoredResearchGraphRecord, content: Record<string, unknown>) {
@@ -135,7 +130,7 @@ function searchResearchRelease(
   const visibleAssertions = new Map<string, ResearchAssertion>();
   for (const record of release.records) {
     if (record.kind !== 'assertion') continue;
-    const content = object(record.content);
+    const content = toRecord(record.content);
     if (!content || content.kind !== 'Assertion' || content.id !== record.key) continue;
     if (
       storedVisibility(record, content) !== 'INTERNAL' ||
@@ -153,7 +148,7 @@ function searchResearchRelease(
   const evidenceRecords: Array<{ key: string; content: Record<string, unknown> }> = [];
   for (const record of release.records) {
     if (record.kind === 'relation') continue;
-    const content = object(record.content);
+    const content = toRecord(record.content);
     if (
       !content ||
       content.id !== record.key ||
@@ -191,7 +186,7 @@ function searchResearchRelease(
     ) {
       continue;
     }
-    const selector = object(content.selector);
+    const selector = toRecord(content.selector);
     if (
       !selector ||
       typeof selector.source_id !== 'string' ||
@@ -227,7 +222,7 @@ function searchResearchRelease(
       continue;
     }
     if (record.kind === 'relation') {
-      const content = object(record.content);
+      const content = toRecord(record.content);
       if (
         !content ||
         content.kind !== 'ResearchRelation' ||
@@ -261,7 +256,7 @@ function searchResearchRelease(
       continue;
     }
     if (record.kind !== 'evidence') continue;
-    const content = object(record.content);
+    const content = toRecord(record.content);
     if (!content || content.kind !== 'Evidence' || content.id !== record.key) continue;
     if (!visibleEvidence.has(record.key)) continue;
     const candidate = {
@@ -320,7 +315,7 @@ function graphFromRelease(release: StoredResearchGraphRelease) {
   const evidenceVisibility = new Map<string, ResearchVisibility>();
 
   for (const record of release.records) {
-    const content = object(record.content);
+    const content = toRecord(record.content);
     if (!content || content.id !== record.key) throw new TypeError('Research record is malformed');
     const visibility = storedVisibility(record, content);
     if (record.kind === 'relation') {
@@ -345,7 +340,7 @@ function graphFromRelease(release: StoredResearchGraphRelease) {
         content.kind !== 'Evidence' ||
         typeof content.assertion_id !== 'string' ||
         (content.direction !== 'supporting' && content.direction !== 'counterevidence') ||
-        !object(content.selector)
+        !toRecord(content.selector)
       ) {
         throw new TypeError('Research evidence is malformed');
       }

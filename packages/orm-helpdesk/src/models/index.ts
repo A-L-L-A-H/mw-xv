@@ -2,6 +2,7 @@ import { defineModel, fields } from '@moonwitness/orm';
 import { Company } from '@moonwitness/orm-base';
 import { Partner } from '@moonwitness/orm-base';
 import { User } from '@moonwitness/orm-base';
+import { BASIS_POINTS_TOTAL } from '@moonwitness/types';
 
 export type TicketStatus = 'new' | 'open' | 'pending' | 'on_hold' | 'resolved' | 'closed';
 export type TicketPriority = 'P1' | 'P2' | 'P3' | 'P4';
@@ -159,8 +160,8 @@ export const KnowledgeDeflection = defineModel('helpdesk.knowledge_deflection', 
     confidence: fields.integer({
       required: true,
       default: 0,
-      label: 'Confidence (bps 0-10000)',
-      pattern: '^(?:10000|\\d{1,4})$',
+      label: `Confidence (bps 0-${BASIS_POINTS_TOTAL})`,
+      pattern: `^(?:${BASIS_POINTS_TOTAL}|\\d{1,4})$`,
     }),
   },
 });

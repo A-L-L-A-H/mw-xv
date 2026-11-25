@@ -1,3 +1,5 @@
+import { BASIS_POINTS_TOTAL } from '@moonwitness/types';
+
 export interface VolumePriceTier {
   /** Minimum quantity (inclusive) to qualify for this tier */
   minQuantity: number;
@@ -206,13 +208,15 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
     const grossSubtotalCents = appliedUnitPriceCents * line.quantity;
 
     const bps = line.discountBps ?? 0;
-    if (!Number.isInteger(bps) || bps < 0 || bps > 10000) {
-      throw new Error(`Line ${line.lineId} discountBps must be an integer in 0..10000`);
+    if (!Number.isInteger(bps) || bps < 0 || bps > BASIS_POINTS_TOTAL) {
+      throw new Error(
+        `Line ${line.lineId} discountBps must be an integer in 0..${BASIS_POINTS_TOTAL}`
+      );
     }
     const fixedDiscount = line.discountAmountCents ?? 0;
     assertNonNegativeInt(fixedDiscount, `Line ${line.lineId} discountAmountCents`);
 
-    const pctDiscountCents = Math.round((grossSubtotalCents * bps) / 10000);
+    const pctDiscountCents = Math.round((grossSubtotalCents * bps) / BASIS_POINTS_TOTAL);
     const lineDiscountCents = Math.min(grossSubtotalCents, pctDiscountCents + fixedDiscount);
     const afterLineDiscountCents = grossSubtotalCents - lineDiscountCents;
 
@@ -231,15 +235,15 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
   );
 
   const quoteBps = input.quoteDiscountBps ?? 0;
-  if (!Number.isInteger(quoteBps) || quoteBps < 0 || quoteBps > 10000) {
-    throw new Error('quoteDiscountBps must be an integer in 0..10000');
+  if (!Number.isInteger(quoteBps) || quoteBps < 0 || quoteBps > BASIS_POINTS_TOTAL) {
+    throw new Error(`quoteDiscountBps must be an integer in 0..${BASIS_POINTS_TOTAL}`);
   }
   const quoteFixed = input.quoteDiscountCents ?? 0;
   assertNonNegativeInt(quoteFixed, 'quoteDiscountCents');
 
   const quoteDiscountTotalCents = Math.min(
     subtotalAfterLineDiscounts,
-    Math.round((subtotalAfterLineDiscounts * quoteBps) / 10000) + quoteFixed
+    Math.round((subtotalAfterLineDiscounts * quoteBps) / BASIS_POINTS_TOTAL) + quoteFixed
   );
 
   const quoteDiscountAllocations = allocateIntegerCents(
@@ -255,7 +259,9 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
     const totalCostCents = item.line.unitCostCents * item.line.quantity;
     const grossMarginCents = netSubtotalCents - totalCostCents;
     const grossMarginBps =
-      netSubtotalCents > 0 ? Math.floor((grossMarginCents * 10000) / netSubtotalCents) : 0;
+      netSubtotalCents > 0
+        ? Math.floor((grossMarginCents * BASIS_POINTS_TOTAL) / netSubtotalCents)
+        : 0;
 
     if (input.minLineGrossMarginBps !== undefined && grossMarginBps < input.minLineGrossMarginBps) {
       approvalReasons.push(
@@ -289,7 +295,9 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
   const totalCostCents = compiledLines.reduce((acc, l) => acc + l.totalCostCents, 0);
   const grossMarginCents = netSubtotalCents - totalCostCents;
   const grossMarginBps =
-    netSubtotalCents > 0 ? Math.floor((grossMarginCents * 10000) / netSubtotalCents) : 0;
+    netSubtotalCents > 0
+      ? Math.floor((grossMarginCents * BASIS_POINTS_TOTAL) / netSubtotalCents)
+      : 0;
 
   if (input.minGrossMarginBps !== undefined && grossMarginBps < input.minGrossMarginBps) {
     approvalReasons.push(
@@ -310,7 +318,7 @@ export function compileQuote(input: QuoteCompileInput): CompiledQuote {
       .reduce((acc, l) => acc + l.netSubtotalCents, 0);
 
     const taxableBaseCents = rule.compound ? baseNetCents + runningTaxTotalCents : baseNetCents;
-    const taxAmountCents = Math.round((taxableBaseCents * rule.rateBps) / 10000);
+    const taxAmountCents = Math.round((taxableBaseCents * rule.rateBps) / BASIS_POINTS_TOTAL);
     runningTaxTotalCents += taxAmountCents;
 
     taxBreakdown.push({

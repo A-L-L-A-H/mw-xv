@@ -856,4 +856,18 @@ describe('cloud auth and operations hardening', () => {
     expect(HA_DRILL_RUNBOOK.length).toBeGreaterThan(0);
     expect(TERMINAL_DEPLOYMENT_STATES.size).toBeGreaterThan(0);
   });
+
+  it('trims repeated trailing slashes on controlPlaneUrl in linear time', async () => {
+    const slashed = await buildApp({
+      controlPlaneUrl: `http://127.0.0.1:3003${'/'.repeat(20_000)}`,
+    });
+    try {
+      const res = await slashed.app.inject({ method: 'GET', url: '/api/cloud/health' });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().data.controlPlane).toBe('connected');
+      expect(slashed.calls.map((call) => call.url)).toContain('http://127.0.0.1:3003/health');
+    } finally {
+      await slashed.app.close();
+    }
+  });
 });

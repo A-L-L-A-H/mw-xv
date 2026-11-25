@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { lstat, readFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { lstat, open } from 'node:fs/promises';
 import path from 'node:path';
 import { isRecord } from '@moonwitness/types';
 import {
@@ -72,20 +73,46 @@ async function readRegularFile(root: string, relativePath: string, label: string
   if (rootInfo.isSymbolicLink() || !rootInfo.isDirectory()) {
     throw new TypeError('rootDirectory must be a real directory');
   }
-  let current = root;
   const segments = safeRelativePath(relativePath, label).split(path.sep);
-  for (const [index, segment] of segments.entries()) {
+  let current = root;
+  for (const segment of segments.slice(0, -1)) {
     current = path.join(current, segment);
     const info = await lstat(current);
     if (info.isSymbolicLink()) throw new TypeError(`${label} cannot traverse symbolic links`);
-    if (index < segments.length - 1 && !info.isDirectory()) {
+    if (!info.isDirectory()) {
       throw new TypeError(`${label} parents must be directories`);
     }
-    if (index === segments.length - 1 && !info.isFile()) {
+  }
+  const filePath = path.join(current, segments[segments.length - 1]!);
+  const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
+  let handle;
+  try {
+    handle = await open(filePath, flags);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException | undefined)?.code;
+    if (code === 'ELOOP') {
+      throw new TypeError(`${label} cannot traverse symbolic links`, { cause: error });
+    }
+    if (code === 'EISDIR') {
+      throw new TypeError(`${label} must reference a regular file`, { cause: error });
+    }
+    throw error;
+  }
+  try {
+    const info = await handle.stat();
+    if (!info.isFile()) {
       throw new TypeError(`${label} must reference a regular file`);
     }
+    if (constants.O_NOFOLLOW === undefined) {
+      const linkInfo = await lstat(filePath);
+      if (linkInfo.isSymbolicLink()) {
+        throw new TypeError(`${label} cannot traverse symbolic links`);
+      }
+    }
+    return await handle.readFile();
+  } finally {
+    await handle.close();
   }
-  return readFile(current);
 }
 
 function parseIndex(value: unknown): TextualWitnessIndex {

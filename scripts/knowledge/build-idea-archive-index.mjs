@@ -23,13 +23,18 @@ const checkOnly = process.argv.includes('--check');
 const ID_PATTERN = /^((?:IDEA|PRJ|CAN|CHR|FRM|UNR|SRC-LIB|MW-STORY-LEAD)-\d{4})$/;
 const NAMESPACE_ORDER = ['IDEA', 'PRJ', 'CAN', 'MW-STORY-LEAD', 'CHR', 'FRM', 'SRC-LIB', 'UNR'];
 
-function plain(text) {
-  return text
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/`([^`]*)`/g, '$1')
-    .replace(/\*\*([^*]*)\*\*/g, '$1')
-    .replace(/<[^>]*>/g, '')
-    .trim();
+export function plain(text) {
+  let result = text;
+  let previous;
+  do {
+    previous = result;
+    result = result
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+      .replace(/`([^`]*)`/g, '$1')
+      .replace(/\*\*([^*]*)\*\*/g, '$1')
+      .replace(/<[^>]*>/g, '');
+  } while (result !== previous);
+  return result.replace(/[<>]/g, '').trim();
 }
 
 function parseRow(line) {
@@ -54,7 +59,7 @@ function namespaceOf(id) {
   return id.slice(0, id.lastIndexOf('-'));
 }
 
-async function build() {
+export async function build() {
   const files = (await readdir(archiveDir)).filter((name) => name.endsWith('.md')).sort();
   const byId = new Map();
 
@@ -132,27 +137,33 @@ async function build() {
   };
 }
 
-const index = await build();
-const serialized = `${JSON.stringify(index, null, 2)}\n`;
+async function main() {
+  const index = await build();
+  const serialized = `${JSON.stringify(index, null, 2)}\n`;
 
-if (checkOnly) {
-  let current;
-  try {
-    current = await readFile(outputFile, 'utf8');
-  } catch {
-    process.stderr.write(`Missing generated index: ${path.relative(root, outputFile)}\n`);
-    process.exit(1);
-  }
-  if (current !== serialized) {
-    process.stderr.write(
-      'Idea archive index differs from deterministic projection. Run the generator without --check.\n'
+  if (checkOnly) {
+    let current;
+    try {
+      current = await readFile(outputFile, 'utf8');
+    } catch {
+      process.stderr.write(`Missing generated index: ${path.relative(root, outputFile)}\n`);
+      process.exit(1);
+    }
+    if (current !== serialized) {
+      process.stderr.write(
+        'Idea archive index differs from deterministic projection. Run the generator without --check.\n'
+      );
+      process.exit(1);
+    }
+    process.stdout.write(`Idea archive index is current (${index.entries.length} records).\n`);
+  } else {
+    await writeFile(outputFile, serialized, 'utf8');
+    process.stdout.write(
+      `Wrote ${path.relative(root, outputFile)} (${index.entries.length} records).\n`
     );
-    process.exit(1);
   }
-  process.stdout.write(`Idea archive index is current (${index.entries.length} records).\n`);
-} else {
-  await writeFile(outputFile, serialized, 'utf8');
-  process.stdout.write(
-    `Wrote ${path.relative(root, outputFile)} (${index.entries.length} records).\n`
-  );
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  await main();
 }

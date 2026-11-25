@@ -13,3 +13,4 @@ export * from './scene.js';
 export * from './character-adapter.js';
 export * from './service-endpoints.js';
 export * from './network.js';
+export * from './constants.js';

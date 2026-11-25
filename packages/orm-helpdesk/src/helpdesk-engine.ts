@@ -1,3 +1,5 @@
+import { BASIS_POINTS_TOTAL } from '@moonwitness/types';
+
 export type TicketPriority = 'P1' | 'P2' | 'P3' | 'P4';
 export type TicketQueue = 'technical' | 'billing' | 'general' | 'enterprise';
 
@@ -227,7 +229,7 @@ export function suggestAutoReply(
   return {
     articleRef: best.article.ref,
     suggestionText: best.article.snippet,
-    confidence: Math.round(best.score * 10000) / 10000,
+    confidence: Math.round(best.score * BASIS_POINTS_TOTAL) / BASIS_POINTS_TOTAL,
   };
 }
 

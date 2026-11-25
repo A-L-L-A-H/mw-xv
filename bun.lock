@@ -388,6 +388,9 @@
     "packages/local-ai": {
       "name": "@moonwitness/local-ai",
       "version": "1.0.0-rc.1",
+      "dependencies": {
+        "@moonwitness/types": "workspace:*",
+      },
       "devDependencies": {
         "@types/node": "^26.6.4",
         "typescript": "~5.7.3",
@@ -483,6 +486,7 @@
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "knex": "^3.3.0",
         "objection": "^3.1.5",
       },
@@ -641,6 +645,7 @@
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "knex": "^3.3.0",
         "objection": "^3.1.5",
       },
@@ -689,6 +694,7 @@
         "@moonwitness/orm-base": "workspace:*",
         "@moonwitness/orm-crm": "workspace:*",
         "@moonwitness/orm-knowledge": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "knex": "^3.3.0",
         "objection": "^3.1.5",
       },
@@ -963,6 +969,7 @@
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
         "knex": "^3.3.0",
         "objection": "^3.1.5",
       },

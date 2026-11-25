@@ -184,8 +184,13 @@ const buildImage = (
 /** Resolve a canonical asset path against an optional app basePath (defaults to root '/'). */
 export function resolveUniverseAsset(path: string, basePath = ''): string {
   if (/^(?:https?:|data:|blob:)/iu.test(path)) return path;
-  const clean = path.replace(/^\/+/u, '');
-  return basePath ? `${basePath.replace(/\/+$/u, '')}/${clean}` : `/${clean}`;
+  let start = 0;
+  while (start < path.length && path.charCodeAt(start) === 47) start++;
+  const clean = start > 0 ? path.slice(start) : path;
+  if (!basePath) return `/${clean}`;
+  let end = basePath.length;
+  while (end > 0 && basePath.charCodeAt(end - 1) === 47) end--;
+  return `${end < basePath.length ? basePath.slice(0, end) : basePath}/${clean}`;
 }
 
 /** Resolve a character portrait asset (.webp primary with .png fallback). */

@@ -84,8 +84,17 @@ interface RuntimeRadiusSession {
   readonly terminate_cause?: string | number | null;
 }
 
+/** Trim all trailing `/` characters in O(n) time without regex backtracking. */
+export function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) {
+    end -= 1;
+  }
+  return end === value.length ? value : value.slice(0, end);
+}
+
 function normalizeBaseUrl(ispServiceUrl?: string): string {
-  return (ispServiceUrl ?? process.env.MW_ISP_URL ?? DEFAULT_ISP_SERVICE_URL).replace(/\/+$/u, '');
+  return trimTrailingSlashes(ispServiceUrl ?? process.env.MW_ISP_URL ?? DEFAULT_ISP_SERVICE_URL);
 }
 
 function readOptionalString(value: unknown): string | null {

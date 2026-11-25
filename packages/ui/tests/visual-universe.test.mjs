@@ -54,6 +54,21 @@ test('asset-registry resolves canonical universe paths with optional basePath', 
     resolveUniverseAsset('/scenes/riot-alley-scene.json', '/catalog/'),
     '/catalog/scenes/riot-alley-scene.json'
   );
+  assert.equal(
+    resolveUniverseAsset(
+      `${'/'.repeat(20_000)}scenes/riot-alley-scene.json`,
+      `/catalog${'/'.repeat(20_000)}`
+    ),
+    '/catalog/scenes/riot-alley-scene.json'
+  );
+  assert.equal(
+    resolveUniverseAsset(`${'/'.repeat(20_000)}scenes/riot-alley-scene.json`, '/'.repeat(20_000)),
+    '/scenes/riot-alley-scene.json'
+  );
+  assert.equal(
+    resolveUniverseAsset(`${'/'.repeat(20_000)}scenes/riot-alley-scene.json`),
+    '/scenes/riot-alley-scene.json'
+  );
   assert.equal(RIOT_ALLEY_SCENE_PATH, 'scenes/riot-alley-scene.json');
 
   assert.equal(KURO_EXPRESSIONS.length, 16);

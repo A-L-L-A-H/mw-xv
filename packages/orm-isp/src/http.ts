@@ -10,6 +10,7 @@ import {
   probeIspNasHealth,
   processIspRadiusOutbox,
   syncIspRuntimeSessions,
+  trimTrailingSlashes,
   type NasHealthStatus,
 } from './reconcile.js';
 import {
@@ -90,11 +91,9 @@ function requireAuthorizedModelAccess(
 export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHttpPlugin {
   return async (fastifyApp) => {
     const fastify = fastifyApp as FastifyInstance;
-    const baseUrl = (
-      options.ispServiceUrl ??
-      process.env.MW_ISP_URL ??
-      DEFAULT_ISP_SERVICE_URL
-    ).replace(/\/+$/u, '');
+    const baseUrl = trimTrailingSlashes(
+      options.ispServiceUrl ?? process.env.MW_ISP_URL ?? DEFAULT_ISP_SERVICE_URL
+    );
     const fetchImpl = options.fetchImpl ?? globalThis.fetch;
     const adminToken = resolveIspAdminToken({
       adminToken: options.adminToken,

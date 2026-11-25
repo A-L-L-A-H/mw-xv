@@ -327,6 +327,15 @@ interface DeployOutcome {
   readonly body: Record<string, unknown>;
 }
 
+/** Trim all trailing `/` characters in O(n) time without regex backtracking. */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) {
+    end -= 1;
+  }
+  return end === value.length ? value : value.slice(0, end);
+}
+
 export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): AddonHttpPlugin {
   return async (fastifyApp) => {
     // Resolve configuration when the plugin is registered, not when the module is
@@ -335,11 +344,9 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     if (options.strictStartup && !validation.ok) throw new CloudConfigError(validation);
     const fastify = fastifyApp as FastifyInstance;
     const features = validation.value?.features;
-    const defaultAgentUrl = (
-      options.controlPlaneUrl ??
-      process.env.MW_CONTROL_PLANE_URL ??
-      DEFAULT_CONTROL_PLANE_URL
-    ).replace(/\/+$/u, '');
+    const defaultAgentUrl = trimTrailingSlashes(
+      options.controlPlaneUrl ?? process.env.MW_CONTROL_PLANE_URL ?? DEFAULT_CONTROL_PLANE_URL
+    );
     const fetchImpl = options.fetchImpl ?? globalThis.fetch;
     const resolvedToken =
       validation.value?.adminToken ??
@@ -735,11 +742,9 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
             );
           }
           try {
-            const coolifyEndpoint = (
-              provider.endpoint ??
-              effectiveTarget?.api_url ??
-              'https://coolify.moonwitness.local'
-            ).replace(/\/+$/u, '');
+            const coolifyEndpoint = trimTrailingSlashes(
+              provider.endpoint ?? effectiveTarget?.api_url ?? 'https://coolify.moonwitness.local'
+            );
             assertProbeTarget(coolifyEndpoint, requestPolicy);
             const coolifyResult = await deployViaCoolify({
               endpoint: coolifyEndpoint,
@@ -816,11 +821,9 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           }
         }
 
-        const agentUrl = (
-          options.controlPlaneUrl ??
-          effectiveTarget?.api_url ??
-          defaultAgentUrl
-        ).replace(/\/+$/u, '');
+        const agentUrl = trimTrailingSlashes(
+          options.controlPlaneUrl ?? effectiveTarget?.api_url ?? defaultAgentUrl
+        );
         const ports =
           cloudApp.host_port && cloudApp.port ? [`${cloudApp.host_port}:${cloudApp.port}`] : [];
         try {

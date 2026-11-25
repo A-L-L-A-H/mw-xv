@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "f70d4d516c8a3697e81dff87b8f90c6397364e3d7198ea37eeb5409ea6529a55",
+  "sourceSha256": "2ef0529d17c0aeeb3834b8ca4017f4bbfe17500788a6f634fe95e06540cc5aab",
   "packages": [
     {
       "name": "@moonwitness/agent-observability",
@@ -810,6 +810,12 @@
       "manifest": "packages/jobs"
     },
     {
+      "from": "@moonwitness/local-ai",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/local-ai"
+    },
+    {
       "from": "@moonwitness/mcp-moonwitness",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -932,6 +938,12 @@
     {
       "from": "@moonwitness/orm-automation-core",
       "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-automation-core"
+    },
+    {
+      "from": "@moonwitness/orm-automation-core",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-automation-core"
     },
@@ -1098,6 +1110,12 @@
       "manifest": "packages/orm-crm"
     },
     {
+      "from": "@moonwitness/orm-crm",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-crm"
+    },
+    {
       "from": "@moonwitness/orm-ecommerce-sync",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -1142,6 +1160,12 @@
     {
       "from": "@moonwitness/orm-helpdesk",
       "to": "@moonwitness/orm-knowledge",
+      "kind": "runtime",
+      "manifest": "packages/orm-helpdesk"
+    },
+    {
+      "from": "@moonwitness/orm-helpdesk",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-helpdesk"
     },
@@ -1502,6 +1526,12 @@
     {
       "from": "@moonwitness/orm-signal",
       "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-signal"
+    },
+    {
+      "from": "@moonwitness/orm-signal",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-signal"
     },

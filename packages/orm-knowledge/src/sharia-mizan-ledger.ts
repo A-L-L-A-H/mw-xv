@@ -1,8 +1,10 @@
+import { BASIS_POINTS_TOTAL } from '@moonwitness/types';
+
 export const SHARIA_MIZAN_LEDGER_VERSION = 'moonwitness-sharia-mizan-ledger/v1' as const;
 export const ZAKAT_RATE_NUMERATOR = 25 as const;
 export const ZAKAT_RATE_DENOMINATOR = 1_000 as const;
 export const MINIMUM_HAUL_LUNAR_DAYS = 354 as const;
-export const BASIS_POINTS_TOTAL = 10_000 as const;
+export { BASIS_POINTS_TOTAL };
 
 export type ShariaMizanLedgerErrorCode =
   | 'invalid-identifier'

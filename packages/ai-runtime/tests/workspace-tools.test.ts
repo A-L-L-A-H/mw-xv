@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { CapabilityGateway, type ToolEffectAcknowledgement } from '../src/capability-gateway.js';
+import { InMemoryCapabilityGrantStore } from '../src/index.js';
 import { buildEphemeralSandboxManifest } from '../src/sandbox-runner.js';
 import type { WorkspaceSandboxClient } from '../src/workspace-contract.js';
 import {
@@ -191,5 +192,67 @@ describe('typed workspace tools', () => {
     await expect(
       gateway.invoke({ toolName: 'workspace.list', companyId: 1, args: {} })
     ).rejects.toThrow(/Inline capability invocation is disabled/u);
+  });
+
+  it('normalizes repeated slashes in grant allowedPaths and requested paths in linear time', async () => {
+    const nowMs = Date.parse('2026-11-25T00:00:00.000Z');
+    const grantStore = new InMemoryCapabilityGrantStore({ now: () => nowMs });
+    grantStore.setPolicyVersion(1, 1);
+    grantStore.upsertGrant({
+      grantId: 'grant-slash-scope',
+      companyId: 1,
+      agentId: 1,
+      capability: 'workspace.read@v1',
+      scope: { allowedPaths: [`src${'/'.repeat(20_000)}`] },
+      policyVersion: 1,
+      maxCallsPerRun: 10,
+      issuedBy: 1,
+      issuedAt: '2026-11-24T00:00:00.000Z',
+      expiresAt: '2026-11-26T00:00:00.000Z',
+      status: 'active',
+    });
+
+    const gateway = new CapabilityGateway({ grantStore, clock: { now: () => nowMs } });
+    gateway.registerTool({
+      name: 'workspace.read',
+      riskTier: 'R0',
+      sideEffect: 'read_only',
+      capability: 'workspace.read@v1',
+      inputSchema: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] },
+      execute: (args) => ({ path: args.path }),
+    });
+
+    const context = {
+      actorType: 'agent' as const,
+      actorId: 1,
+      companyId: 1,
+      runId: 'run-slash-scope',
+      correlationId: 'corr-slash-scope',
+      policyVersion: 1,
+    };
+
+    const allowed = await gateway.invoke(
+      'workspace.read',
+      { path: `${'/'.repeat(20_000)}src/app.ts` },
+      context
+    );
+    expect(allowed.allowed).toBe(true);
+
+    const deniedOutside = await gateway.invoke(
+      'workspace.read',
+      { path: `${'/'.repeat(20_000)}secrets/key` },
+      context
+    );
+    expect(deniedOutside.allowed).toBe(false);
+    if (!deniedOutside.allowed) expect(deniedOutside.denial.reasonCode).toBe('SCOPE_PATH_DENIED');
+
+    const deniedTraversal = await gateway.invoke(
+      'workspace.read',
+      { path: `${'\\'.repeat(20_000)}src/../secrets/key` },
+      context
+    );
+    expect(deniedTraversal.allowed).toBe(false);
+    if (!deniedTraversal.allowed)
+      expect(deniedTraversal.denial.reasonCode).toBe('SCOPE_PATH_DENIED');
   });
 });

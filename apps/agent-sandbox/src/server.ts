@@ -19,6 +19,30 @@ import { WorkspaceService, type WorkspaceServiceOptions } from './workspace.js';
 
 const MAX_REQUEST_BYTES = 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 130_000;
+const RFC_HEADER_NAME = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/u;
+const FORBIDDEN_HEADER_NAMES: ReadonlySet<string> = new Set([
+  '__proto__',
+  'constructor',
+  'prototype',
+]);
+const ALLOWED_RESPONSE_HEADERS: ReadonlySet<string> = new Set([
+  'content-type',
+  'content-length',
+  'cache-control',
+  'x-content-type-options',
+]);
+const ALLOWED_HTTP_STATUS_CODES: ReadonlyMap<number, number> = new Map([
+  [200, 200],
+  [400, 400],
+  [401, 401],
+  [403, 403],
+  [404, 404],
+  [408, 408],
+  [409, 409],
+  [413, 413],
+  [500, 500],
+  [503, 503],
+]);
 const METHODS: ReadonlySet<string> = new Set([
   'workspace.create',
   'workspace.snapshot',
@@ -74,14 +98,49 @@ export function isAuthorized(header: string | undefined, token: string): boolean
   return presented.length === expected.length && timingSafeEqual(presented, expected);
 }
 
+/** Canonicalize HTTP status codes against a fixed allowlist so untrusted numbers cannot propagate. */
+export function normalizeHttpStatusCode(statusCode: number): number {
+  return ALLOWED_HTTP_STATUS_CODES.get(statusCode) ?? 500;
+}
+
+/** Build response headers using RFC token validation, an allowlist, and the standard Headers container. */
+export function buildSafeResponseHeaders(
+  entries: Iterable<readonly [string, string | number]>
+): Headers {
+  const headers = new Headers();
+  for (const [rawName, rawValue] of entries) {
+    if (typeof rawName !== 'string') {
+      throw new SandboxError('INVALID_REQUEST', 'Response header name must be a string');
+    }
+    const normalizedName = rawName.toLowerCase();
+    if (
+      FORBIDDEN_HEADER_NAMES.has(normalizedName) ||
+      !RFC_HEADER_NAME.test(normalizedName) ||
+      !ALLOWED_RESPONSE_HEADERS.has(normalizedName)
+    ) {
+      throw new SandboxError('FORBIDDEN', 'Response header name is not allowed');
+    }
+    const stringValue = String(rawValue);
+    if (/[\r\n\0]/u.test(stringValue)) {
+      throw new SandboxError('INVALID_REQUEST', 'Response header value contains control chars');
+    }
+    headers.set(normalizedName, stringValue);
+  }
+  return headers;
+}
+
 function sendJson(response: ServerResponse, statusCode: number, body: unknown): void {
   const payload = Buffer.from(JSON.stringify(body), 'utf8');
-  response.writeHead(statusCode, {
-    'content-type': 'application/json; charset=utf-8',
-    'content-length': payload.length,
-    'cache-control': 'no-store',
-    'x-content-type-options': 'nosniff',
-  });
+  const headers = buildSafeResponseHeaders([
+    ['content-type', 'application/json; charset=utf-8'],
+    ['content-length', payload.length],
+    ['cache-control', 'no-store'],
+    ['x-content-type-options', 'nosniff'],
+  ]);
+  response.statusCode = normalizeHttpStatusCode(statusCode);
+  for (const [name, value] of headers) {
+    response.setHeader(name, value);
+  }
   response.end(payload);
 }
 

@@ -1,3 +1,4 @@
+import { BASIS_POINTS_TOTAL } from '@moonwitness/types';
 import { sha256Hex } from '@moonwitness/types/node';
 import type { Knex } from 'knex';
 import {
@@ -7,13 +8,8 @@ import {
   WaqfAsset,
   HalalComplianceAudit,
 } from './models/index.js';
-import {
-  Company,
-  Partner,
-  User,
-  ConfigParameter,
-  ConfigParameterValueType,
-} from '@moonwitness/orm-base';
+import type { ConfigParameterValueType } from '@moonwitness/orm-base';
+import { Company, Partner, User, ConfigParameter } from '@moonwitness/orm-base';
 
 const MOCK_WAQF_TRAILS = new Map<number, string[]>();
 
@@ -115,8 +111,8 @@ function parseProfitSharingRatio(ratio: string): { customerBps: number; companyB
   const total = customer + company;
   if (total === 0) throw new Error('Profit sharing ratio cannot sum to zero');
   return {
-    customerBps: Math.round((customer / total) * 10000),
-    companyBps: Math.round((company / total) * 10000),
+    customerBps: Math.round((customer / total) * BASIS_POINTS_TOTAL),
+    companyBps: Math.round((company / total) * BASIS_POINTS_TOTAL),
   };
 }
 
@@ -149,7 +145,9 @@ export async function calculateZakat(
   // Rikaz (buried treasure) is due at a flat 20% regardless of nisab; all other
   // zakat types are only due once net zakatable wealth reaches nisab.
   const nisabMet = input.zakatType === 'rikaz' || netZakatableMinor >= nisabThresholdMinor;
-  const zakatDueMinor = nisabMet ? Math.floor((netZakatableMinor * rateBps) / 10000) : 0;
+  const zakatDueMinor = nisabMet
+    ? Math.floor((netZakatableMinor * rateBps) / BASIS_POINTS_TOTAL)
+    : 0;
 
   return {
     nisabThresholdMinor,
@@ -198,7 +196,7 @@ export async function distributeProfitSharing(
   const netProfitMinor = input.grossProfitMinor - input.operatingExpensesMinor;
   if (netProfitMinor < 0) throw new Error('Net profit cannot be negative');
 
-  const customerShareMinor = Math.floor((netProfitMinor * ratio.customerBps) / 10000);
+  const customerShareMinor = Math.floor((netProfitMinor * ratio.customerBps) / BASIS_POINTS_TOTAL);
   const companyShareMinor = netProfitMinor - customerShareMinor;
 
   const journalLines: JournalLine[] = [
