@@ -47,6 +47,42 @@ export interface BaileysSessionConnectionEvent {
   qr: string | null;
 }
 
+export interface BaileysGroupParticipant {
+  id: string;
+  admin?: string | null;
+  phoneNumber?: string;
+}
+
+export interface BaileysGroupMetadata {
+  id?: string;
+  subject?: string;
+  desc?: string;
+  size?: number;
+  restrict?: boolean;
+  announce?: boolean;
+  ephemeralDuration?: number;
+  participants?: BaileysGroupParticipant[];
+}
+
+export interface BaileysCachedChat {
+  jid: string;
+  name: string;
+  archived: boolean;
+  pinned: boolean;
+  lastMessageTime: string;
+}
+
+export interface BaileysCachedMessage {
+  id: string;
+  chatJid: string;
+  content: string;
+  timestamp: string;
+  isFromMe: boolean;
+  mediaType: string;
+  sender: string | null;
+  senderDisplayName: string | null;
+}
+
 export interface BaileysSocket {
   user?: { id?: string; name?: string };
   ev: {
@@ -60,6 +96,31 @@ export interface BaileysSocket {
   ): Promise<{ key?: BaileysMessageKey } | undefined>;
   requestPairingCode?(phoneNumber: string): Promise<string>;
   readMessages?(keys: BaileysMessageKey[]): Promise<void>;
+  sendPresenceUpdate?(type: string, toJid?: string): Promise<void>;
+  onWhatsApp?(...jids: string[]): Promise<Array<{ exists?: boolean; jid?: string }>>;
+  fetchStatus?(
+    jid: string
+  ): Promise<
+    { status?: string; setAt?: Date } | Array<{ status?: { status?: string } | string }> | undefined
+  >;
+  profilePictureUrl?(jid: string, type?: 'image' | 'preview'): Promise<string | undefined>;
+  chatModify?(mod: Record<string, unknown>, jid: string): Promise<void>;
+  groupCreate?(subject: string, participants: string[]): Promise<{ id?: string } | undefined>;
+  groupMetadata?(jid: string): Promise<BaileysGroupMetadata | undefined>;
+  groupParticipantsUpdate?(
+    jid: string,
+    participants: string[],
+    action: 'add' | 'remove' | 'promote' | 'demote'
+  ): Promise<Array<{ status?: string; jid?: string }> | undefined>;
+  groupSettingUpdate?(
+    jid: string,
+    setting: 'announcement' | 'not_announcement' | 'locked' | 'unlocked'
+  ): Promise<void>;
+  groupInviteCode?(jid: string): Promise<string | undefined>;
+  groupRevokeInvite?(jid: string): Promise<string | undefined>;
+  groupGetInviteInfo?(code: string): Promise<BaileysGroupMetadata | undefined>;
+  groupAcceptInvite?(code: string): Promise<string | undefined>;
+  groupLeave?(jid: string): Promise<void>;
   logout(): Promise<void>;
   end(error?: Error): void;
 }
@@ -114,6 +175,7 @@ export interface BaileysSendMediaInput {
   caption?: string;
   ptt?: boolean;
   mentions?: string[];
+  replyToMessageId?: string;
 }
 
 export interface BaileysSendStatusInput {
@@ -172,11 +234,15 @@ interface SessionState {
   reconnectAttempts: number;
   manuallyClosed: boolean;
   connectPromise: Promise<BaileysDeviceStatus> | null;
+  chats: Map<string, BaileysCachedChat>;
+  messagesByChat: Map<string, BaileysCachedMessage[]>;
 }
 
 const DEFAULT_LOGGED_OUT_CODE = 401;
 const DEFAULT_RECONNECT_DELAY_MS = 1_500;
 const DEFAULT_MAX_RECONNECT_ATTEMPTS = 10;
+const MAX_CACHED_CHATS = 500;
+const MAX_CACHED_MESSAGES_PER_CHAT = 200;
 const DEVICE_ID_PATTERN = /^[A-Za-z0-9._-]{1,128}$/u;
 
 function sanitizeDeviceId(deviceId: string): string {
@@ -205,6 +271,85 @@ function normalizeTargetJid(recipient: string): string {
     throw new GowaError('Recipient JID or phone number is required', 400, 'INVALID_RECIPIENT');
   }
   return `${digits}@s.whatsapp.net`;
+}
+
+function extractInviteCode(linkOrCode: string): string {
+  const trimmed = linkOrCode.trim();
+  if (!trimmed) {
+    throw new GowaError('Group invite link is required', 400, 'INVALID_INVITE_LINK');
+  }
+  try {
+    const parsed = new URL(trimmed);
+    const code = parsed.pathname.replace(/^\/+/u, '').split('/')[0] ?? '';
+    if (!code) throw new Error('missing code');
+    return code;
+  } catch {
+    if (/^[A-Za-z0-9_-]{8,128}$/u.test(trimmed)) return trimmed;
+    throw new GowaError('Invalid WhatsApp group invite link', 400, 'INVALID_INVITE_LINK');
+  }
+}
+
+function normalizeMessageTimestamp(value: BaileysUpsertMessage['messageTimestamp']): string {
+  let seconds: number | null = null;
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    seconds = value;
+  } else if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) seconds = parsed;
+  } else if (value && typeof value === 'object' && typeof value.toNumber === 'function') {
+    const parsed = value.toNumber();
+    if (Number.isFinite(parsed)) seconds = parsed;
+  }
+  if (seconds === null) return new Date().toISOString();
+  const millis = seconds > 1e12 ? seconds : seconds * 1000;
+  return new Date(millis).toISOString();
+}
+
+function extractUpsertBody(message: Record<string, unknown> | null | undefined): {
+  content: string;
+  mediaType: string;
+} {
+  if (!message) return { content: '', mediaType: 'text' };
+  if (typeof message.conversation === 'string') {
+    return { content: message.conversation, mediaType: 'text' };
+  }
+  const extended = message.extendedTextMessage as { text?: unknown } | undefined;
+  if (extended && typeof extended.text === 'string') {
+    return { content: extended.text, mediaType: 'text' };
+  }
+  const imageMsg = message.imageMessage as { caption?: unknown } | undefined;
+  if (imageMsg && typeof imageMsg === 'object') {
+    return {
+      content: typeof imageMsg.caption === 'string' ? imageMsg.caption : '',
+      mediaType: 'image',
+    };
+  }
+  const videoMsg = message.videoMessage as { caption?: unknown } | undefined;
+  if (videoMsg && typeof videoMsg === 'object') {
+    return {
+      content: typeof videoMsg.caption === 'string' ? videoMsg.caption : '',
+      mediaType: 'video',
+    };
+  }
+  if (message.audioMessage && typeof message.audioMessage === 'object') {
+    return { content: '', mediaType: 'audio' };
+  }
+  const docMsg = message.documentMessage as { caption?: unknown; fileName?: unknown } | undefined;
+  if (docMsg && typeof docMsg === 'object') {
+    return {
+      content:
+        typeof docMsg.caption === 'string'
+          ? docMsg.caption
+          : typeof docMsg.fileName === 'string'
+            ? docMsg.fileName
+            : '',
+      mediaType: 'document',
+    };
+  }
+  if (message.stickerMessage && typeof message.stickerMessage === 'object') {
+    return { content: '', mediaType: 'sticker' };
+  }
+  return { content: '', mediaType: 'text' };
 }
 
 function extractDisconnectStatusCode(error: unknown): number | undefined {
@@ -404,13 +549,39 @@ export class BaileysGatewayManager {
     return code;
   }
 
+  async reconnect(deviceId: string): Promise<BaileysDeviceStatus> {
+    const safeId = sanitizeDeviceId(deviceId);
+    const session = this.sessions.get(safeId);
+    if (session) {
+      if (session.reconnectTimer) {
+        clearTimeout(session.reconnectTimer);
+        session.reconnectTimer = null;
+      }
+      const existingSocket = session.socket;
+      session.socket = null;
+      session.isConnected = false;
+      session.reconnectAttempts = 0;
+      session.manuallyClosed = false;
+      session.connectPromise = null;
+      if (existingSocket) {
+        try {
+          existingSocket.end();
+        } catch {
+          // Ignore close errors while resetting the socket for reconnect.
+        }
+      }
+    }
+    return this.connect(safeId);
+  }
+
   async sendText(
     deviceId: string,
     recipient: string,
     text: string,
     options: { replyToMessageId?: string; mentions?: string[] } = {}
   ): Promise<BaileysSendResult> {
-    const socket = this.requireConnectedSocket(deviceId);
+    const safeId = sanitizeDeviceId(deviceId);
+    const socket = this.requireConnectedSocket(safeId);
     const jid = normalizeTargetJid(recipient);
     const content: Record<string, unknown> = { text };
     if (options.mentions?.length) {
@@ -420,8 +591,22 @@ export class BaileysGatewayManager {
       ? { quoted: { key: { remoteJid: jid, id: options.replyToMessageId } } }
       : undefined;
     const raw = await socket.sendMessage(jid, content, sendOptions);
+    const messageId = raw?.key?.id ?? `baileys-${Date.now()}`;
+    const session = this.sessions.get(safeId);
+    if (session) {
+      this.recordCachedMessage(session, {
+        id: messageId,
+        chatJid: jid,
+        content: text,
+        timestamp: new Date().toISOString(),
+        isFromMe: true,
+        mediaType: 'text',
+        sender: session.jid,
+        senderDisplayName: null,
+      });
+    }
     return {
-      messageId: raw?.key?.id ?? `baileys-${Date.now()}`,
+      messageId,
       jid,
       raw,
     };
@@ -432,15 +617,352 @@ export class BaileysGatewayManager {
     recipient: string,
     media: BaileysSendMediaInput
   ): Promise<BaileysSendResult> {
-    const socket = this.requireConnectedSocket(deviceId);
+    const safeId = sanitizeDeviceId(deviceId);
+    const socket = this.requireConnectedSocket(safeId);
     const jid = normalizeTargetJid(recipient);
     const content = this.buildMediaContent(media);
-    const raw = await socket.sendMessage(jid, content);
+    const sendOptions = media.replyToMessageId
+      ? { quoted: { key: { remoteJid: jid, id: media.replyToMessageId } } }
+      : undefined;
+    const raw = await socket.sendMessage(jid, content, sendOptions);
+    const messageId = raw?.key?.id ?? `baileys-${Date.now()}`;
+    const session = this.sessions.get(safeId);
+    if (session) {
+      this.recordCachedMessage(session, {
+        id: messageId,
+        chatJid: jid,
+        content: media.caption ?? media.fileName ?? '',
+        timestamp: new Date().toISOString(),
+        isFromMe: true,
+        mediaType: media.type,
+        sender: session.jid,
+        senderDisplayName: null,
+      });
+    }
     return {
-      messageId: raw?.key?.id ?? `baileys-${Date.now()}`,
+      messageId,
       jid,
       raw,
     };
+  }
+
+  async sendPresence(deviceId: string, presenceType: string, recipient?: string): Promise<void> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.sendPresenceUpdate === 'function') {
+      const targetJid = recipient?.trim() ? normalizeTargetJid(recipient) : undefined;
+      await socket.sendPresenceUpdate(presenceType, targetJid);
+    }
+  }
+
+  async sendReaction(
+    deviceId: string,
+    recipient: string,
+    messageId: string,
+    emoji: string
+  ): Promise<void> {
+    const socket = this.requireConnectedSocket(deviceId);
+    const jid = normalizeTargetJid(recipient);
+    await socket.sendMessage(jid, {
+      react: {
+        text: emoji,
+        key: { remoteJid: jid, id: messageId },
+      },
+    });
+  }
+
+  async editMessage(
+    deviceId: string,
+    recipient: string,
+    messageId: string,
+    text: string
+  ): Promise<void> {
+    const socket = this.requireConnectedSocket(deviceId);
+    const jid = normalizeTargetJid(recipient);
+    await socket.sendMessage(jid, {
+      text,
+      edit: { remoteJid: jid, id: messageId, fromMe: true },
+    });
+  }
+
+  async revokeMessage(deviceId: string, recipient: string, messageId: string): Promise<void> {
+    const socket = this.requireConnectedSocket(deviceId);
+    const jid = normalizeTargetJid(recipient);
+    await socket.sendMessage(jid, {
+      delete: { remoteJid: jid, id: messageId, fromMe: true },
+    });
+  }
+
+  async checkNumber(deviceId: string, phone: string): Promise<boolean> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.onWhatsApp !== 'function') {
+      throw new GowaError(
+        'WhatsApp number verification is not supported by the active socket',
+        501,
+        'NOT_IMPLEMENTED'
+      );
+    }
+    const jid = normalizeTargetJid(phone);
+    const results = await socket.onWhatsApp(jid);
+    return Boolean(results?.[0]?.exists);
+  }
+
+  async getUserInfo(
+    deviceId: string,
+    recipient: string
+  ): Promise<{ jid: string; verifiedName: string | null; status: string | null }> {
+    const socket = this.requireConnectedSocket(deviceId);
+    const jid = normalizeTargetJid(recipient);
+    let userStatus: string | null = null;
+    if (typeof socket.fetchStatus === 'function') {
+      try {
+        const fetched = await socket.fetchStatus(jid);
+        if (Array.isArray(fetched)) {
+          const entry = fetched[0];
+          if (typeof entry?.status === 'string') {
+            userStatus = entry.status;
+          } else if (entry?.status && typeof entry.status.status === 'string') {
+            userStatus = entry.status.status;
+          }
+        } else if (fetched && typeof fetched.status === 'string') {
+          userStatus = fetched.status;
+        }
+      } catch {
+        // Privacy settings may disallow status lookups.
+      }
+    }
+    return { jid, verifiedName: null, status: userStatus };
+  }
+
+  async getAvatarUrl(
+    deviceId: string,
+    recipient: string,
+    isPreview = true
+  ): Promise<string | null> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.profilePictureUrl !== 'function') return null;
+    const jid = normalizeTargetJid(recipient);
+    try {
+      const url = await socket.profilePictureUrl(jid, isPreview ? 'preview' : 'image');
+      return typeof url === 'string' && url ? url : null;
+    } catch {
+      return null;
+    }
+  }
+
+  listChats(
+    deviceId: string,
+    options: { limit?: number; offset?: number; archived?: boolean; search?: string } = {}
+  ): BaileysCachedChat[] {
+    const safeId = sanitizeDeviceId(deviceId);
+    const session = this.sessions.get(safeId);
+    if (!session) return [];
+    const searchLower = options.search?.trim().toLowerCase() ?? '';
+    const filtered = [...session.chats.values()]
+      .filter((chat) => options.archived === undefined || chat.archived === options.archived)
+      .filter(
+        (chat) =>
+          !searchLower ||
+          chat.name.toLowerCase().includes(searchLower) ||
+          chat.jid.toLowerCase().includes(searchLower)
+      )
+      .sort((left, right) => Date.parse(right.lastMessageTime) - Date.parse(left.lastMessageTime));
+    const offset = Math.max(0, options.offset ?? 0);
+    const limit = Math.max(1, options.limit ?? 100);
+    return filtered.slice(offset, offset + limit);
+  }
+
+  listChatMessages(
+    deviceId: string,
+    jid: string,
+    options: { limit?: number; offset?: number; startTime?: string } = {}
+  ): BaileysCachedMessage[] {
+    const safeId = sanitizeDeviceId(deviceId);
+    const session = this.sessions.get(safeId);
+    if (!session) return [];
+    const targetJid = normalizeTargetJid(jid);
+    const startMs = options.startTime ? Date.parse(options.startTime) : NaN;
+    const entries = session.messagesByChat.get(targetJid) ?? [];
+    const filtered = Number.isFinite(startMs)
+      ? entries.filter((entry) => Date.parse(entry.timestamp) >= startMs)
+      : entries;
+    const ordered = [...filtered].sort(
+      (left, right) => Date.parse(right.timestamp) - Date.parse(left.timestamp)
+    );
+    const offset = Math.max(0, options.offset ?? 0);
+    const limit = Math.max(1, options.limit ?? 100);
+    return ordered.slice(offset, offset + limit);
+  }
+
+  async setChatArchived(deviceId: string, jid: string, archived: boolean): Promise<void> {
+    const safeId = sanitizeDeviceId(deviceId);
+    const socket = this.requireConnectedSocket(safeId);
+    const targetJid = normalizeTargetJid(jid);
+    if (typeof socket.chatModify === 'function') {
+      await socket.chatModify({ archive: archived, lastMessages: [] }, targetJid);
+    }
+    const existing = this.sessions.get(safeId)?.chats.get(targetJid);
+    if (existing) existing.archived = archived;
+  }
+
+  async setChatPinned(deviceId: string, jid: string, pinned: boolean): Promise<void> {
+    const safeId = sanitizeDeviceId(deviceId);
+    const socket = this.requireConnectedSocket(safeId);
+    const targetJid = normalizeTargetJid(jid);
+    if (typeof socket.chatModify === 'function') {
+      await socket.chatModify({ pin: pinned }, targetJid);
+    }
+    const existing = this.sessions.get(safeId)?.chats.get(targetJid);
+    if (existing) existing.pinned = pinned;
+  }
+
+  async createGroup(deviceId: string, title: string, participants: string[]): Promise<string> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.groupCreate !== 'function') {
+      throw new GowaError(
+        'Group creation is not supported by the active socket',
+        501,
+        'NOT_IMPLEMENTED'
+      );
+    }
+    const participantJids = participants.map((entry) => normalizeTargetJid(entry));
+    const created = await socket.groupCreate(title, participantJids);
+    if (!created?.id) {
+      throw new GowaError('WhatsApp did not return a group identifier', 502, 'GROUP_CREATE_FAILED');
+    }
+    return created.id;
+  }
+
+  async getGroupMetadata(deviceId: string, groupJid: string): Promise<BaileysGroupMetadata> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.groupMetadata !== 'function') {
+      throw new GowaError(
+        'Group metadata lookup is not supported by the active socket',
+        501,
+        'NOT_IMPLEMENTED'
+      );
+    }
+    const metadata = await socket.groupMetadata(groupJid);
+    if (!metadata) {
+      throw new GowaError('WhatsApp group not found', 404, 'GROUP_NOT_FOUND');
+    }
+    return metadata;
+  }
+
+  async updateGroupParticipants(
+    deviceId: string,
+    groupJid: string,
+    participants: string[],
+    action: 'add' | 'remove' | 'promote' | 'demote'
+  ): Promise<Array<{ participant: string; status: string }>> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.groupParticipantsUpdate !== 'function') {
+      throw new GowaError(
+        'Group participant updates are not supported by the active socket',
+        501,
+        'NOT_IMPLEMENTED'
+      );
+    }
+    const participantJids = participants.map((entry) => normalizeTargetJid(entry));
+    const updated = await socket.groupParticipantsUpdate(groupJid, participantJids, action);
+    if (!Array.isArray(updated)) {
+      return participantJids.map((jid) => ({ participant: jid, status: 'success' }));
+    }
+    return updated.map((entry, index) => ({
+      participant: entry.jid ?? participantJids[index] ?? '',
+      status:
+        !entry.status || entry.status === '200' || entry.status === 'success'
+          ? 'success'
+          : entry.status,
+    }));
+  }
+
+  async updateGroupSetting(
+    deviceId: string,
+    groupJid: string,
+    setting: 'locked' | 'announce',
+    enabled: boolean
+  ): Promise<void> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.groupSettingUpdate !== 'function') {
+      throw new GowaError(
+        'Group setting updates are not supported by the active socket',
+        501,
+        'NOT_IMPLEMENTED'
+      );
+    }
+    const baileysSetting =
+      setting === 'locked'
+        ? enabled
+          ? 'locked'
+          : 'unlocked'
+        : enabled
+          ? 'announcement'
+          : 'not_announcement';
+    await socket.groupSettingUpdate(groupJid, baileysSetting);
+  }
+
+  async getGroupInviteLink(deviceId: string, groupJid: string, reset = false): Promise<string> {
+    const socket = this.requireConnectedSocket(deviceId);
+    const code = reset
+      ? typeof socket.groupRevokeInvite === 'function'
+        ? await socket.groupRevokeInvite(groupJid)
+        : undefined
+      : typeof socket.groupInviteCode === 'function'
+        ? await socket.groupInviteCode(groupJid)
+        : undefined;
+    if (!code) {
+      throw new GowaError(
+        'Group invite link is not supported by the active socket',
+        501,
+        'NOT_IMPLEMENTED'
+      );
+    }
+    return code.startsWith('https://chat.whatsapp.com/')
+      ? code
+      : `https://chat.whatsapp.com/${code}`;
+  }
+
+  async getGroupInfoFromLink(deviceId: string, link: string): Promise<BaileysGroupMetadata> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.groupGetInviteInfo !== 'function') {
+      throw new GowaError(
+        'Group invite preview is not supported by the active socket',
+        501,
+        'NOT_IMPLEMENTED'
+      );
+    }
+    const code = extractInviteCode(link);
+    const info = await socket.groupGetInviteInfo(code);
+    if (!info) {
+      throw new GowaError('WhatsApp group invite not found', 404, 'INVITE_NOT_FOUND');
+    }
+    return info;
+  }
+
+  async joinGroupWithLink(deviceId: string, link: string): Promise<string> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.groupAcceptInvite !== 'function') {
+      throw new GowaError(
+        'Group join by link is not supported by the active socket',
+        501,
+        'NOT_IMPLEMENTED'
+      );
+    }
+    const code = extractInviteCode(link);
+    const groupId = await socket.groupAcceptInvite(code);
+    return groupId ?? '';
+  }
+
+  async leaveGroup(deviceId: string, groupJid: string): Promise<void> {
+    const socket = this.requireConnectedSocket(deviceId);
+    if (typeof socket.groupLeave !== 'function') {
+      throw new GowaError(
+        'Leaving groups is not supported by the active socket',
+        501,
+        'NOT_IMPLEMENTED'
+      );
+    }
+    await socket.groupLeave(groupJid);
   }
 
   async sendStatus(deviceId: string, payload: BaileysSendStatusInput): Promise<BaileysSendResult> {
@@ -542,9 +1064,51 @@ export class BaileysGatewayManager {
       reconnectAttempts: 0,
       manuallyClosed: false,
       connectPromise: null,
+      chats: new Map(),
+      messagesByChat: new Map(),
     };
     this.sessions.set(deviceId, session);
     return session;
+  }
+
+  private recordCachedMessage(session: SessionState, message: BaileysCachedMessage): void {
+    const chatJid = message.chatJid;
+    if (!chatJid || chatJid === 'status@broadcast') return;
+    const existingChat = session.chats.get(chatJid);
+    if (existingChat) {
+      if (Date.parse(message.timestamp) >= Date.parse(existingChat.lastMessageTime)) {
+        existingChat.lastMessageTime = message.timestamp;
+      }
+      if (!message.isFromMe && message.senderDisplayName && existingChat.name === chatJid) {
+        existingChat.name = message.senderDisplayName;
+      }
+    } else {
+      if (session.chats.size >= MAX_CACHED_CHATS) {
+        const oldestKey = session.chats.keys().next().value;
+        if (oldestKey) {
+          session.chats.delete(oldestKey);
+          session.messagesByChat.delete(oldestKey);
+        }
+      }
+      session.chats.set(chatJid, {
+        jid: chatJid,
+        name: !message.isFromMe && message.senderDisplayName ? message.senderDisplayName : chatJid,
+        archived: false,
+        pinned: false,
+        lastMessageTime: message.timestamp,
+      });
+    }
+    const existingMessages = session.messagesByChat.get(chatJid) ?? [];
+    const existingIndex = existingMessages.findIndex((entry) => entry.id === message.id);
+    if (existingIndex >= 0) {
+      existingMessages[existingIndex] = message;
+    } else {
+      existingMessages.push(message);
+      if (existingMessages.length > MAX_CACHED_MESSAGES_PER_CHAT) {
+        existingMessages.splice(0, existingMessages.length - MAX_CACHED_MESSAGES_PER_CHAT);
+      }
+    }
+    session.messagesByChat.set(chatJid, existingMessages);
   }
 
   private requireConnectedSocket(deviceId: string): BaileysSocket {
@@ -679,6 +1243,25 @@ export class BaileysGatewayManager {
       const payload = (rawEvent ?? {}) as Partial<BaileysMessagesUpsertPayload>;
       const messages = Array.isArray(payload.messages) ? payload.messages : [];
       const type = typeof payload.type === 'string' ? payload.type : 'notify';
+      for (const upsertMessage of messages) {
+        const remoteJid = upsertMessage.key?.remoteJid;
+        const messageId = upsertMessage.key?.id;
+        if (!remoteJid || !messageId) continue;
+        const extracted = extractUpsertBody(upsertMessage.message);
+        this.recordCachedMessage(session, {
+          id: messageId,
+          chatJid: remoteJid,
+          content: extracted.content,
+          timestamp: normalizeMessageTimestamp(upsertMessage.messageTimestamp),
+          isFromMe: upsertMessage.key?.fromMe === true,
+          mediaType: extracted.mediaType,
+          sender: upsertMessage.key?.participant ?? remoteJid,
+          senderDisplayName:
+            typeof upsertMessage.pushName === 'string' && upsertMessage.pushName.trim()
+              ? upsertMessage.pushName.trim()
+              : null,
+        });
+      }
       const event: BaileysInboundMessageEvent = {
         deviceId: session.deviceId,
         type,
@@ -696,6 +1279,8 @@ export class BaileysGatewayManager {
   ): Promise<void> {
     if (update.qr) {
       session.qr = update.qr;
+      session.qrPng = null;
+      session.qrDataUrl = null;
       session.status = 'qr';
       session.isConnected = false;
       try {

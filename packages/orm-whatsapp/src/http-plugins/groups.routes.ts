@@ -9,7 +9,8 @@ import {
 } from '../models.js';
 import { isRecord } from '@moonwitness/types';
 import { sniffMime } from '../runtime/media.js';
-import { gowaRequest, GowaError } from '../runtime/gowa-client.js';
+import { GowaError } from '../runtime/gowa-client.js';
+import { whatsappGatewayRequest } from '../runtime/gateway.js';
 import parsePhoneNumberFromString from 'libphonenumber-js/max';
 import { whatsappLogErrorContext } from '../runtime/log-redaction.js';
 import {
@@ -49,7 +50,7 @@ export function registerWhatsAppGroupRoutes(
       if (!account || account.status !== 'connected' || !account.gateway_device_id)
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       try {
-        const result = await gowaRequest<unknown>(
+        const result = await whatsappGatewayRequest<unknown>(
           `/group/info-from-link?link=${encodeURIComponent(link)}`,
           { deviceId: account.gateway_device_id }
         );
@@ -134,7 +135,7 @@ export function registerWhatsAppGroupRoutes(
           const account = await WhatsappAccount.query().findOne({ company_id: companyId });
           if (account?.status === 'connected' && account.gateway_device_id) {
             try {
-              await gowaRequest<unknown>(
+              await whatsappGatewayRequest<unknown>(
                 `/group/participants?group_id=${encodeURIComponent(existing.group_jid)}`,
                 { deviceId: account.gateway_device_id }
               );
@@ -188,7 +189,7 @@ export function registerWhatsAppGroupRoutes(
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       let info: Record<string, unknown>;
       try {
-        const result = await gowaRequest<unknown>(
+        const result = await whatsappGatewayRequest<unknown>(
           `/group/info-from-link?link=${encodeURIComponent(link)}`,
           { deviceId: account.gateway_device_id }
         );
@@ -249,7 +250,7 @@ export function registerWhatsAppGroupRoutes(
         throw error;
       }
       try {
-        await gowaRequest<unknown>('/group/join-with-link', {
+        await whatsappGatewayRequest<unknown>('/group/join-with-link', {
           method: 'POST',
           deviceId: account.gateway_device_id,
           contentType: 'application/json',
@@ -459,7 +460,7 @@ export function registerWhatsAppGroupRoutes(
       }
 
       try {
-        const result = await gowaRequest<{ group_id?: unknown }>('/group', {
+        const result = await whatsappGatewayRequest<{ group_id?: unknown }>('/group', {
           method: 'POST',
           deviceId: account.gateway_device_id,
           contentType: 'application/json',
@@ -637,12 +638,15 @@ export function registerWhatsAppGroupRoutes(
       try {
         const groupId = encodeURIComponent(String(conversation.jid));
         const [info, participantResponse] = await Promise.all([
-          gowaRequest<Record<string, unknown>>(`/group/info?group_id=${groupId}`, {
+          whatsappGatewayRequest<Record<string, unknown>>(`/group/info?group_id=${groupId}`, {
             deviceId: account.gateway_device_id,
           }),
-          gowaRequest<Record<string, unknown>>(`/group/participants?group_id=${groupId}`, {
-            deviceId: account.gateway_device_id,
-          }),
+          whatsappGatewayRequest<Record<string, unknown>>(
+            `/group/participants?group_id=${groupId}`,
+            {
+              deviceId: account.gateway_device_id,
+            }
+          ),
         ]);
         const infoResult = isRecord(info.results) ? info.results : info;
         const participantResult = isRecord(participantResponse.results)
@@ -926,7 +930,7 @@ export function registerWhatsAppGroupRoutes(
         return true;
       };
       try {
-        const avatar = await gowaRequest<{ url?: unknown; id?: unknown }>(
+        const avatar = await whatsappGatewayRequest<{ url?: unknown; id?: unknown }>(
           `/user/avatar?phone=${encodeURIComponent(String(conversation.jid))}&is_preview=true&is_community=true`,
           { deviceId: account.gateway_device_id }
         );

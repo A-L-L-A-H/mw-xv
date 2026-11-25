@@ -4,7 +4,11 @@ import { Readable } from 'node:stream';
 import { MAX_ATTACHMENT_BYTES } from '@moonwitness/types';
 import { WhatsappAccount, WhatsappConversation, WhatsappMessage } from '../models.js';
 import { safeMime, sniffMime } from '../runtime/media.js';
-import { gowaBinary, gowaOriginPath, gowaRequest } from '../runtime/gowa-client.js';
+import {
+  whatsappGatewayBinary,
+  whatsappGatewayOriginPath,
+  whatsappGatewayRequest,
+} from '../runtime/gateway.js';
 import { whatsappLogErrorContext } from '../runtime/log-redaction.js';
 import {
   MalwareScannerUnavailableError,
@@ -259,7 +263,7 @@ export function registerWhatsAppMediaRoutes(
       });
       if (!conversation || !account?.gateway_device_id)
         return reply.code(404).send({ success: false, error: 'Media not found' });
-      const metadata = await gowaRequest<{
+      const metadata = await whatsappGatewayRequest<{
         file_url?: string;
         file_path?: string;
         filename?: string;
@@ -269,7 +273,10 @@ export function registerWhatsAppMediaRoutes(
       );
       const mediaPath = metadata.file_url ?? metadata.file_path;
       if (!mediaPath) return reply.code(404).send({ success: false, error: 'Media not found' });
-      const downloaded = await gowaBinary(gowaOriginPath(mediaPath), account.gateway_device_id);
+      const downloaded = await whatsappGatewayBinary(
+        whatsappGatewayOriginPath(mediaPath),
+        account.gateway_device_id
+      );
       if (options.attachmentStorage.putStream && options.attachmentStorage.getStream) {
         const mediaKey = randomUUID();
         try {

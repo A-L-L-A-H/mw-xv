@@ -2,7 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import { createHash } from 'node:crypto';
 import { WhatsappAccount, WhatsappConversation, WhatsappGroupOperation } from '../models.js';
 import { isRecord } from '@moonwitness/types';
-import { gowaRequest, GowaError } from '../runtime/gowa-client.js';
+import { GowaError } from '../runtime/gowa-client.js';
+import { whatsappGatewayRequest } from '../runtime/gateway.js';
 import parsePhoneNumberFromString from 'libphonenumber-js/max';
 import { whatsappLogErrorContext } from '../runtime/log-redaction.js';
 import {
@@ -51,15 +52,18 @@ export function registerWhatsAppGroupManagementRoutes(app: FastifyInstance): voi
       const enabled = body.enabled;
       const field = setting === 'locked' ? 'group_is_locked' : 'group_is_announce';
       try {
-        await gowaRequest<unknown>(setting === 'locked' ? '/group/locked' : '/group/announce', {
-          method: 'POST',
-          deviceId: account.gateway_device_id,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            group_id: conversation.jid,
-            [setting]: enabled,
-          }),
-        });
+        await whatsappGatewayRequest<unknown>(
+          setting === 'locked' ? '/group/locked' : '/group/announce',
+          {
+            method: 'POST',
+            deviceId: account.gateway_device_id,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              group_id: conversation.jid,
+              [setting]: enabled,
+            }),
+          }
+        );
       } catch (error) {
         req.log.warn(
           { error: whatsappLogErrorContext(error) },
@@ -231,7 +235,7 @@ export function registerWhatsAppGroupManagementRoutes(app: FastifyInstance): voi
       const upstreamPath =
         action === 'add' ? '/group/participants' : `/group/participants/${action}`;
       try {
-        const results = await gowaRequest<unknown>(upstreamPath, {
+        const results = await whatsappGatewayRequest<unknown>(upstreamPath, {
           method: 'POST',
           deviceId: account.gateway_device_id,
           contentType: 'application/json',
@@ -327,9 +331,12 @@ export function registerWhatsAppGroupManagementRoutes(app: FastifyInstance): voi
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       try {
         const groupId = encodeURIComponent(String(conversation.jid));
-        const result = await gowaRequest<unknown>(`/group/invite-link?group_id=${groupId}`, {
-          deviceId: account.gateway_device_id,
-        });
+        const result = await whatsappGatewayRequest<unknown>(
+          `/group/invite-link?group_id=${groupId}`,
+          {
+            deviceId: account.gateway_device_id,
+          }
+        );
         const value = isRecord(result) && isRecord(result.results) ? result.results : result;
         const inviteLink = isRecord(value) ? value.invite_link : null;
         if (typeof inviteLink !== 'string')
@@ -381,7 +388,7 @@ export function registerWhatsAppGroupManagementRoutes(app: FastifyInstance): voi
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       try {
         const groupId = encodeURIComponent(String(conversation.jid));
-        const result = await gowaRequest<unknown>(
+        const result = await whatsappGatewayRequest<unknown>(
           `/group/invite-link?group_id=${groupId}&reset=true`,
           { deviceId: account.gateway_device_id }
         );
@@ -513,7 +520,7 @@ export function registerWhatsAppGroupManagementRoutes(app: FastifyInstance): voi
         throw error;
       }
       try {
-        await gowaRequest<unknown>('/group/leave', {
+        await whatsappGatewayRequest<unknown>('/group/leave', {
           method: 'POST',
           deviceId: account.gateway_device_id,
           contentType: 'application/json',

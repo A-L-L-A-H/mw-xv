@@ -1,6 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import { WhatsappAccount } from '../models.js';
-import { gowaBinary, gowaOriginPath, gowaRequest, GowaError } from '../runtime/gowa-client.js';
+import { GowaError } from '../runtime/gowa-client.js';
+import {
+  whatsappGatewayBinary,
+  whatsappGatewayOriginPath,
+  whatsappGatewayRequest,
+} from '../runtime/gateway.js';
 import {
   recordWhatsAppAudit,
   requireCompany,
@@ -66,18 +71,24 @@ export function registerWhatsAppAccountRoutes(
       await patchIfUnchanged({ status, phone_number: null, qr_code: null, last_error: lastError });
     } else {
       try {
-        const upstream = await gowaRequest<{
+        const upstream = await whatsappGatewayRequest<{
+          status?: string;
           is_connected?: boolean;
           is_logged_in?: boolean;
           jid?: string;
+          qr_link?: string;
         }>(`/devices/${encodeURIComponent(account.gateway_device_id)}/status`);
         status =
           upstream.is_connected && upstream.is_logged_in
             ? 'connected'
             : upstream.is_logged_in
               ? 'reconnecting'
-              : 'disconnected';
-        phoneNumber = upstream.jid?.split('@')[0] ?? (upstream.is_logged_in ? phoneNumber : null);
+              : upstream.status === 'connecting' && account.status === 'connecting'
+                ? 'connecting'
+                : 'disconnected';
+        phoneNumber =
+          upstream.jid?.split('@')[0]?.split(':')[0] ??
+          (upstream.is_logged_in ? phoneNumber : null);
         if (status === 'connected') {
           lastError = null;
           await patchIfUnchanged({
@@ -86,12 +97,17 @@ export function registerWhatsAppAccountRoutes(
             qr_code: null,
             last_error: null,
           });
-        } else if (account.qr_code) {
+        } else if (account.qr_code || typeof upstream.qr_link === 'string') {
+          const qrPath = account.qr_code ?? whatsappGatewayOriginPath(upstream.qr_link!);
           try {
             accountReadStep = 'qr_image';
-            const image = await gowaBinary(gowaOriginPath(account.qr_code));
+            const image = await whatsappGatewayBinary(whatsappGatewayOriginPath(qrPath));
             qrCode = `data:${image.headers.get('content-type') || 'image/png'};base64,${Buffer.from(await image.arrayBuffer()).toString('base64')}`;
             status = 'qr';
+            if (account.status !== 'qr' || account.qr_code !== qrPath) {
+              lastError = null;
+              await patchIfUnchanged({ status: 'qr', qr_code: qrPath, last_error: null });
+            }
           } catch (error) {
             if (!(error instanceof GowaError && error.statusCode === 404)) throw error;
             status = 'qr_expired';
@@ -133,7 +149,7 @@ export function registerWhatsAppAccountRoutes(
             try {
               // A temporary status endpoint failure should not hide a QR that
               // GoWA can still serve for pairing.
-              const image = await gowaBinary(gowaOriginPath(account.qr_code));
+              const image = await whatsappGatewayBinary(whatsappGatewayOriginPath(account.qr_code));
               qrCode = `data:${image.headers.get('content-type') || 'image/png'};base64,${Buffer.from(await image.arrayBuffer()).toString('base64')}`;
               status = 'qr';
               phoneNumber = null;
@@ -222,13 +238,14 @@ export function registerWhatsAppAccountRoutes(
       if (!account) throw new Error('WhatsApp account could not be created');
       if (account.status === 'qr' && account.qr_code && account.gateway_device_id) {
         try {
-          const gatewayStatus = await gowaRequest<{
+          const gatewayStatus = await whatsappGatewayRequest<{
             is_connected?: boolean;
             is_logged_in?: boolean;
             jid?: string;
           }>(`/devices/${encodeURIComponent(account.gateway_device_id ?? '')}/status`);
           if (gatewayStatus.is_connected && gatewayStatus.is_logged_in) {
-            const phoneNumber = gatewayStatus.jid?.split('@')[0] ?? account.phone_number;
+            const phoneNumber =
+              gatewayStatus.jid?.split('@')[0]?.split(':')[0] ?? account.phone_number;
             await WhatsappAccount.query(trx)
               .where({ id: account.id, company_id: companyId })
               .patch({
@@ -273,7 +290,7 @@ export function registerWhatsAppAccountRoutes(
       try {
         let createDevice = false;
         try {
-          await gowaRequest(`/devices/${encodeURIComponent(deviceId)}`);
+          await whatsappGatewayRequest(`/devices/${encodeURIComponent(deviceId)}`);
         } catch (error) {
           if (!(error instanceof GowaError)) throw error;
           if (error.statusCode === 404) {
@@ -283,7 +300,7 @@ export function registerWhatsAppAccountRoutes(
             // the documented 404 for a missing device. Consult the authoritative list
             // before deciding to create so an existing device is never duplicated.
             pairingStep = 'device_list';
-            const listed = await gowaRequest<
+            const listed = await whatsappGatewayRequest<
               | { device_id?: string }[]
               | { code?: string; results?: { device_id?: string }[] | null }
             >('/devices');
@@ -302,7 +319,7 @@ export function registerWhatsAppAccountRoutes(
         }
         if (createDevice) {
           pairingStep = 'device_create';
-          await gowaRequest('/devices', {
+          await whatsappGatewayRequest('/devices', {
             method: 'POST',
             contentType: 'application/json',
             body: JSON.stringify({
@@ -333,7 +350,7 @@ export function registerWhatsAppAccountRoutes(
             `/whatsapp/gowa/webhook/${encodeURIComponent(deviceId)}`,
             origin
           );
-          await gowaRequest(`/devices/${encodeURIComponent(deviceId)}/webhook`, {
+          await whatsappGatewayRequest(`/devices/${encodeURIComponent(deviceId)}/webhook`, {
             method: 'PATCH',
             contentType: 'application/json',
             body: JSON.stringify({
@@ -345,13 +362,14 @@ export function registerWhatsAppAccountRoutes(
           });
         }
         pairingStep = 'device_status';
-        const gatewayStatus = await gowaRequest<{
+        const gatewayStatus = await whatsappGatewayRequest<{
           is_connected?: boolean;
           is_logged_in?: boolean;
           jid?: string;
         }>(`/devices/${encodeURIComponent(deviceId)}/status`);
         if (gatewayStatus.is_connected && gatewayStatus.is_logged_in) {
-          const phoneNumber = gatewayStatus.jid?.split('@')[0] ?? account.phone_number;
+          const phoneNumber =
+            gatewayStatus.jid?.split('@')[0]?.split(':')[0] ?? account.phone_number;
           await WhatsappAccount.query(trx).where({ id: account.id, company_id: companyId }).patch({
             status: 'connected',
             phone_number: phoneNumber,
@@ -368,11 +386,12 @@ export function registerWhatsAppAccountRoutes(
           };
         }
         pairingStep = 'qr_login';
-        const qr = await gowaRequest<{ qr_link?: string }>(
+        const qr = await whatsappGatewayRequest<{ qr_link?: string }>(
           `/devices/${encodeURIComponent(deviceId)}/login`
         );
         pairingStep = 'qr_link_validate';
-        const qrPath = typeof qr.qr_link === 'string' ? gowaOriginPath(qr.qr_link) : null;
+        const qrPath =
+          typeof qr.qr_link === 'string' ? whatsappGatewayOriginPath(qr.qr_link) : null;
         req.log.info(
           { qrLinkReceived: typeof qr.qr_link === 'string', qrPathAccepted: Boolean(qrPath) },
           'WhatsApp pairing QR response received'
@@ -427,9 +446,12 @@ export function registerWhatsAppAccountRoutes(
     const account = await WhatsappAccount.query().findOne({ company_id: companyId });
     if (account?.gateway_device_id) {
       try {
-        await gowaRequest(`/devices/${encodeURIComponent(account.gateway_device_id)}/logout`, {
-          method: 'POST',
-        });
+        await whatsappGatewayRequest(
+          `/devices/${encodeURIComponent(account.gateway_device_id)}/logout`,
+          {
+            method: 'POST',
+          }
+        );
       } catch (error) {
         if (!(error instanceof GowaError && error.statusCode === 404)) throw error;
       }
