@@ -36,5 +36,5 @@ search.
 
 ## References
 
-- [React Markdown](https://reactmarkdown.com/) renders Markdown as React elements and supports remark plugins.
+- [React Markdown](https://github.com/remarkjs/react-markdown) renders Markdown as React elements and supports remark plugins.
 - [React Router BrowserRouter API](https://api.reactrouter.com/v8/functions/react-router.BrowserRouter.html) provides a `basename` for deployment subpaths.

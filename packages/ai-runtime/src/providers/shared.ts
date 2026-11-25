@@ -2,6 +2,7 @@ import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { isPublicWebhookAddress, validateWebhookUrl } from '@moonwitness/orm-integration';
 import type { JsonValue } from '@moonwitness/types';
+import { isLoopbackHostname, isLoopbackEndpointUrl } from '@moonwitness/types';
 import { sanitizeProviderMessage, type RedactionContext } from '../redaction.js';
 import { composeAttemptSignal } from '../resilience.js';
 import { validateJsonSchema } from '../schema-validator.js';
@@ -13,15 +14,11 @@ import type {
 } from '../types.js';
 import { ProviderError } from '../types.js';
 
-const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 export const DEFAULT_MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 /** Exact origin of the vendored gateway; the adapter appends `/v1` itself. */
 export const FREELMAPI_APPROVED_ORIGIN = 'http://freellmapi:3001';
 
-export function isLoopbackHostname(hostname: string): boolean {
-  const normalized = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-  return LOOPBACK_HOSTS.has(normalized);
-}
+export { isLoopbackHostname } from '@moonwitness/types';
 
 /** Exact-origin match for explicitly approved private inference gateways. */
 export function matchesApprovedPrivateOrigin(
