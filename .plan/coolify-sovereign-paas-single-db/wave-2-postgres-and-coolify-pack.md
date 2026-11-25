@@ -522,7 +522,7 @@
 
 ---
 
-## - [ ] M38 — Write `apps/api/tests/auth-setup-claim.test.ts` & Run Full Wave 2 Gate
+## - [x] M38 — Write `apps/api/tests/auth-setup-claim.test.ts` & Run Full Wave 2 Gate
 
 - **Owner File (CREATE):** `apps/api/tests/auth-setup-claim.test.ts`
 - **Depends On:** `M33`, `M34`, `M35`, `M36`, `M37`

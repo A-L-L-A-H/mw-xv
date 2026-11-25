@@ -203,7 +203,15 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     reply.header('x-frame-options', 'DENY');
     reply.header('referrer-policy', 'no-referrer');
     reply.header('permissions-policy', 'camera=(), microphone=(), geolocation=()');
-    if (config.env === 'production') {
+    if (
+      config.env === 'production' &&
+      (request.protocol === 'https' ||
+        (() => {
+          const proto = request.headers['x-forwarded-proto'];
+          const first = Array.isArray(proto) ? proto[0] : proto;
+          return first?.split(',')[0]?.trim().toLowerCase() === 'https';
+        })())
+    ) {
       reply.header('strict-transport-security', 'max-age=31536000; includeSubDomains');
     }
     return payload;

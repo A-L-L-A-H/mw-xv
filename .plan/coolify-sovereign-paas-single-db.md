@@ -90,7 +90,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M35** — `packages/client/src/types.ts` + `client.ts`: add `getSetupStatus()` & `claimSetup()`
 - [x] **M36** — `packages/orm-cloud/tests/coolify-template-pack.test.ts`: validate ALL 390+ templates + compiler/secret-idempotency tests
 - [x] **M37** — `packages/orm-cloud/tests/cloud-auth-ops.test.ts`: test Postgres settings, TLS lockdown gate, preview ports, promote-wildcard, RAM MB, mesh status, app CRUD
-- [ ] **M38** — `apps/api/tests/auth-setup-claim.test.ts`: test setup-status, `401`/`201`/`409` claim lifecycle, conditional HSTS + full Wave 2 gate
+- [x] **M38** — `apps/api/tests/auth-setup-claim.test.ts`: test setup-status, `401`/`201`/`409` claim lifecycle, conditional HSTS + full Wave 2 gate
 
 ### Wave 3 — Board Onboarding & Coolify-Grade PaaS Studio (`wave-3-board-ui.md`)
 - [ ] **M39** — `apps/board/src/app/api/session/route.ts`: dynamic HTTP/HTTPS cookie `secure` flag (`sameSite: 'lax'`)
@@ -134,7 +134,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
-| Wave 2 | `M16`–`M38` | `22 / 23` | `89910808` | `M37 OK` — `@moonwitness/orm-cloud build` exit 0; orm-cloud test 137/137 pass; auth test 18/18 pass; cloud-auth-ops.test.ts 22/22 passed (M27 GET apps/:slug detail route + M31 domain matrix restored); Postgres PaaS settings, TLS lockdown, preview ports, promote-wildcard, RAM MB parsing, mesh status, env vault [REDACTED] safety, app CRUD all tested |
+| Wave 2 | `M16`–`M38` | `23 / 23` | `TBD` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
