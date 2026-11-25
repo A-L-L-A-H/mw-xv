@@ -146,7 +146,7 @@
 
 ---
 
-### - [ ] M60 — Verify 390+ Template Catalog & Deploy `uptime-kuma` in IP Preview Mode (`:8001`)
+### - [x] M60 — Verify 390+ Template Catalog & Deploy `uptime-kuma` in IP Preview Mode (`:8001`)
 
 - **Depends On:** `M59`
 - **Acceptance Criteria:**
