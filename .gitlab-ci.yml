@@ -40,7 +40,7 @@ build_workspace:
   stage: build
   timeout: 45m
   before_script:
-    - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
+    - apt-get update -qq && apt-get install -y -qq curl ca-certificates unzip > /dev/null
     - curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
     - export PATH="$HOME/.bun/bin:$PATH"
     - bun --version
@@ -65,7 +65,7 @@ unit_tests:
   stage: test
   timeout: 30m
   before_script:
-    - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
+    - apt-get update -qq && apt-get install -y -qq curl ca-certificates unzip > /dev/null
     - curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
     - export PATH="$HOME/.bun/bin:$PATH"
   script:
@@ -85,7 +85,7 @@ knowledge_gate:
   stage: test
   timeout: 10m
   before_script:
-    - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
+    - apt-get update -qq && apt-get install -y -qq curl ca-certificates unzip > /dev/null
     - curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
     - export PATH="$HOME/.bun/bin:$PATH"
   script:
@@ -158,7 +158,7 @@ report_to_github:
   tags:
     - vps
   before_script:
-    - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
+    - apt-get update -qq && apt-get install -y -qq curl ca-certificates unzip > /dev/null
     - curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
     - export PATH="$HOME/.bun/bin:$PATH"
   script:
