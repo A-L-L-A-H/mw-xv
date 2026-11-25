@@ -75,7 +75,7 @@
 
 ---
 
-## - [ ] T15 — Implement Hybrid BM25 + Optional Local Ollama Embedding Recall (`src/brain/hybrid-recall.ts`)
+## - [x] T15 — Implement Hybrid BM25 + Optional Local Ollama Embedding Recall (`src/brain/hybrid-recall.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/brain/hybrid-recall.ts`
   - `packages/plan-taskos/src/brain/hybrid-recall.ts` (CREATE)

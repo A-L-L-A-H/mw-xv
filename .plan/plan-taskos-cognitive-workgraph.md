@@ -67,7 +67,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T12** — Implement `BrainStorageDriver` (`src/brain/storage.ts`): `NodeSqliteBrainStore` (`node:sqlite` WAL + `busy_timeout=5000` + FTS5) & `InMemoryBrainStore` fallback
 - [x] **T13** — Implement 7-table schema migration & deterministic `<150ms` Git-to-SQLite reindexer (`src/brain/schema.ts`, `src/brain/reindex.ts`)
 - [x] **T14** — Implement 2-hop Knowledge Graph query engine (`src/brain/knowledge-graph.ts`: recursive CTE `impact`, file-neighbor history, path-matched `INV-*` & `ADR` traversal)
-- [ ] **T15** — Implement Hybrid BM25 + optional loopback Ollama embedding recall (`src/brain/hybrid-recall.ts`, automatic offline `lexical_only` fallback)
+- [x] **T15** — Implement Hybrid BM25 + optional loopback Ollama embedding recall (`src/brain/hybrid-recall.ts`, automatic offline `lexical_only` fallback)
 - [ ] **T16** — Implement Episodic Memory store (`src/brain/episodic-memory.ts`: redacted `.plan/memory/episodes.jsonl` sync + Non-REM decay & clustering + Protected-Gate Invariant Synthesizer with `automatedPromotionAllowed: false`)
 - [ ] **T17** — Implement RFC 6962 DAG-Merkle Proof Ledger (`src/brain/merkle-dag.ts`: parent-hash DAG proofs + `0x00`/`0x01` domain-separated wave/plan root + tamper verification)
 - [ ] **T18** — Add Wave 2 unit tests (`brain-sqlite.test.ts`, `knowledge-graph.test.ts`, `memory-sleep.test.ts`, `merkle-dag.test.ts`) & pass Wave 2 gate
