@@ -2,13 +2,21 @@
 
 Instruksi agen tersebar di beberapa lokasi karena tiap tool punya konvensi discovery sendiri.
 Jangan menggabungkan atau memindahkan folder ini tanpa memeriksa konvensi tool terkait.
+Skill yang dipakai lintas tool harus memiliki satu implementasi kanonis; lokasi discovery lain hanya boleh menjadi bridge.
 
-| Lokasi                              | Tool / pemilik                          | Isi                                                                                                                             |
-| ----------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `.agents/rules/`, `.agents/skills/` | Agent lokal (OpenCode/custom)           | [Invariant yang dipelajari](../../.agents/rules/learned-invariants.md), skill `frontier-research-scout` dan `hybrid-swarm-dag`. |
-| `plugins/moonwitness/`              | Plugin MoonWitness yang didistribusikan | Rule boundary, skill `mw-addon-dev`, `mw-boundaries`, `mw-taskos`, dan `plugin.json`.                                           |
-| `.qoder/skills/visual-swarm/`       | Qoder IDE                               | Skill visual swarm + dashboard (file ini belum di-track di git).                                                                |
-| `vendor/opencode/.opencode/`        | Snapshot upstream OpenCode              | Agent, command, skill, dan glossary pihak ketiga — jangan diedit.                                                               |
+| Lokasi                              | Tool / pemilik                          | Isi                                                                                                                                                                            |
+| ----------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `.agents/rules/`, `.agents/skills/` | Skill tool-agnostic                     | [Invariant yang dipelajari](../../.agents/rules/learned-invariants.md), skill `frontier-research-scout`, `hybrid-swarm-dag`, dan `visual-swarm` kanonis beserta script/assets. |
+| `plugins/moonwitness/`              | Plugin MoonWitness yang didistribusikan | Rule boundary, skill `mw-addon-dev`, `mw-boundaries`, `mw-taskos`, dan `plugin.json`.                                                                                          |
+| `.qoder/skills/visual-swarm/`       | Qoder discovery bridge                  | `SKILL.md` saja; mengarahkan Qoder ke skill kanonis di `.agents/skills/visual-swarm/` tanpa menduplikasi script atau assets.                                                   |
+| `vendor/opencode/.opencode/`        | Snapshot upstream OpenCode              | Agent, command, skill, dan glossary pihak ketiga — jangan diedit.                                                                                                              |
+
+## Otoritas visual-swarm
+
+- `.agents/skills/visual-swarm/` adalah satu-satunya sumber instruksi dan implementasi `visual-swarm`.
+- `.qoder/skills/visual-swarm/SKILL.md` hanya bridge kompatibilitas discovery; perubahan skill dilakukan di lokasi kanonis.
+- Dashboard adalah snapshot/viewer koordinasi read-only, bukan otoritas orkestrasi, queue, jobs, monitoring, atau observability.
+- Di MoonWitness, API, ORM, jobs, dan Board tetap berwenang. Skill tidak boleh membuat server produk/orkestrasi kedua, database, queue, atau product UI; viewer loopback opsional hanya membaca manifest lokal.
 
 ## Aturan umum
 
