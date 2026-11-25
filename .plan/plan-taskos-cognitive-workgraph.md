@@ -77,7 +77,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T20** — Implement atomic multi-agent TTL Lease manager (`src/runner/lease-manager.ts`: SQLite `BEGIN IMMEDIATE` claim/renew/release/stale-reap + `.leases.local.json` mirror)
 - [x] **T21** — Implement runtime `git diff` scope membrane & verification executor (`src/runner/scope-gate.ts`: blocks edits outside `owner_files` + redacted stdout/stderr capture)
 - [x] **T22** — Implement Proof-Carrying Task Runner (`src/runner/proof-runner.ts`: verify -> scope check -> seal DAG-Merkle `evidence/*.proof.json` -> bounded-attempt `flash->neon->argon->blocked` circuit breaker -> atomic `git commit --only`)
-- [ ] **T23** — Add Wave 3 unit tests (`brief-compiler.test.ts`, `lease-lock.test.ts`, `proof-runner.test.ts`) & pass Wave 3 gate
+- [x] **T23** — Add Wave 3 unit tests (`brief-compiler.test.ts`, `lease-lock.test.ts`, `proof-runner.test.ts`) & pass Wave 3 gate
 
 ### Wave 4 — Universal Split-Authority Projection Adapters (`wave-4-universal-projection-adapters.md`)
 - [ ] **T24** — Implement deterministic `.plan/<id>.md` & Progress Ledger projector (`src/adapters/plan-md.adapter.ts`: 100% compatible with Desktop Observatory)
@@ -113,9 +113,9 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
 | Wave 0 | `T01`–`T05` | `5 / 5` | 8c45fbbb | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
-| Wave 1 | `T06`–`T11` | `5 / 6` | cb133e05 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
-| Wave 2 | `T12`–`T18` | `0 / 7` | — | — |
-| Wave 3 | `T19`–`T23` | `0 / 5` | — | — |
+| Wave 1 | `T06`–`T11` | `6 / 6` | cb133e05 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
+| Wave 2 | `T12`–`T18` | `7 / 7` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
+| Wave 3 | `T19`–`T23` | `5 / 5` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck && bun --filter @moonwitness/plan-taskos build && bun --filter @moonwitness/plan-taskos test` (80/80) |
 | Wave 4 | `T24`–`T30` | `0 / 7` | — | — |
 | Wave 5 | `T31`–`T36` | `0 / 6` | — | — |
 | Wave 6 | `T37`–`T44` | `0 / 8` | — | — |

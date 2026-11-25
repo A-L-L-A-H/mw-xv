@@ -105,7 +105,7 @@
 
 ---
 
-## - [ ] T23 — Add Wave 3 Unit Tests & Pass Wave 3 Runner Gate
+## - [x] T23 — Add Wave 3 Unit Tests & Pass Wave 3 Runner Gate
 
 - **Owner File(s):** `packages/plan-taskos/tests/brief-compiler.test.ts`, `packages/plan-taskos/tests/lease-lock.test.ts`, `packages/plan-taskos/tests/proof-runner.test.ts`
   - `packages/plan-taskos/tests/brief-compiler.test.ts` (CREATE)
@@ -125,5 +125,5 @@
 - **Verify:** `bun --filter @moonwitness/plan-taskos build; if ($?) { bun --filter @moonwitness/plan-taskos test }`
 - **Commit:**
   ```powershell
-  git commit --only packages/plan-taskos/tests/brief-compiler.test.ts packages/plan-taskos/tests/lease-lock.test.ts packages/plan-taskos/tests/proof-runner.test.ts .plan/plan-taskos-cognitive-workgraph.md .plan/plan-taskos-cognitive-workgraph/wave-3-proof-runner-and-briefs.md -m "test(plan-taskos): T23 add wave 3 tests for micro-briefs, leases, scope gate, and proof runner"
+  git commit --only packages/plan-taskos/tests/brief-compiler.test.ts packages/plan-taskos/tests/lease-lock.test.ts packages/plan/taskos/tests/proof-runner.test.ts .plan/plan-taskos-cognitive-workgraph.md .plan/plan-taskos-cognitive-workgraph/wave-3-proof-runner-and-briefs.md -m "test(plan-taskos): T23 add wave 3 tests for micro-briefs, leases, scope gate, and proof runner"
   ```
