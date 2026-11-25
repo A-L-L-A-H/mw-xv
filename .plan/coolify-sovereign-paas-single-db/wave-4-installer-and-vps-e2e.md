@@ -133,7 +133,7 @@
 
 ---
 
-### - [ ] M59 — Verify `/auth/setup-claim`, Non-Zero RAM MB Metrics, Live Mesh Status, & Internal WhatsApp
+### - [x] M59 — Verify `/auth/setup-claim`, Non-Zero RAM MB Metrics, Live Mesh Status, & Internal WhatsApp
 
 - **Depends On:** `M58`
 - **Acceptance Criteria (run on VPS via `vps_exec`, NEVER echoing tokens/passwords):**

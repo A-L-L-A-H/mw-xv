@@ -117,7 +117,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M56** — Archive clean tarball + upload tarball, Linux binary, `install.sh` to `moonwitness-vps`
 - [x] **M57** — Run fresh zero-domain `install.sh --reinstall` & assert zero `control-plane.db`, `:3004` closed, all 6 containers healthy
 - [x] **M58** — Verify IP Bootstrap (`http://163.61.134.104:8000/`, `/setup`, `/readyz`, `/auth/setup-status`, plain-HTTP cookie without `Secure`, no HSTS on HTTP)
-- [ ] **M59** — Verify `/auth/setup-claim` (`401` -> `201` -> `409`), non-zero RAM MB metrics, zero-mock mesh status, internal WhatsApp `readyz`
+- [x] **M59** — Verify `/auth/setup-claim` (`401` -> `201` -> `409`), non-zero RAM MB metrics, zero-mock mesh status, internal WhatsApp `readyz`
 - [ ] **M60** — Verify 390+ template search + deploy `uptime-kuma` in IP preview mode -> verify Postgres `cloud_apps` + `http://163.61.134.104:8001/` live
 - [ ] **M61** — Verify DNS doctor (`matched`) -> apply `apps.moonwitness.biz.id` + wildcard + `wa.apps.moonwitness.biz.id` -> strict TLS `200` + HSTS header on HTTPS
 - [ ] **M62** — Verify `promote-wildcard` -> `https://uptime-kuma.apps.moonwitness.biz.id/` returns `200`/`302` over valid TLS + app detail/stats endpoints pass
@@ -137,4 +137,4 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
 | Wave 3 | `M39`–`M51` | `13 / 13` | `0de765f7` | `M51 OK` — full board gate green: typecheck 0; ui:check 0 findings; build exit 0 (28/28 pages incl /setup); board:budget all routes pass |
 | Wave 4 | `M52`–`M55` | `4 / 4` | `7a94fa11` | `M55 OK` — `git push origin dev` succeeded (`c0c19311..7a94fa11`); all pre-push static/UI/doc/gitleaks/TaskOS gates green; dev in sync with origin/dev |
-| Wave 5 | `M56`–`M66` | `3 / 11` | — | `M58 OK` — /, /setup, /readyz, /auth/setup-status all 200 with no HSTS; setupRequired=true; session cookie HttpOnly without Secure |
+| Wave 5 | `M56`–`M66` | `4 / 11` | — | `M59 OK` — claim 401→201→409; setupRequired=false; metrics RAM 225477/8033 MB meshIp 10.144.0.1; mesh no a-l-l-a-h.com mock; whatsapp readyz connected |

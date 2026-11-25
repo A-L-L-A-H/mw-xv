@@ -1131,6 +1131,10 @@ func (m *PaasManager) syncCaddyRoutes(ctx context.Context) error {
 }
 
 func (m *PaasManager) listAppsFromDB() ([]PaasApp, error) {
+	if m.db == nil {
+		// Stateless agent mode: PaaS metadata lives in PostgreSQL, not in a local DB.
+		return []PaasApp{}, nil
+	}
 	rows, err := m.db.Query(`
 		SELECT slug, tenant_id, image, port, domain, env_json, volumes_json, memory_limit, cpu_limit, compose_spec, git_repo, container_name, container_id, status, created_at, updated_at
 		FROM paas_apps
