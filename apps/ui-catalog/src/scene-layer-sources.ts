@@ -1,4 +1,12 @@
-export type SceneLayerSourceInput = { id: string };
+export interface SceneLayerSourceInput {
+  readonly id: string;
+  readonly asset: string;
+  readonly order: number;
+  readonly position: { readonly x: number; readonly y: number };
+  readonly opacity?: number;
+  readonly pivot?: { readonly x: number; readonly y: number };
+  readonly parallax?: { readonly x: number; readonly y: number };
+}
 
 /** Resolve imported artwork by canonical scene layer ID, never by array position. */
 export function resolveSceneLayerSources<T extends SceneLayerSourceInput>(
