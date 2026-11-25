@@ -480,7 +480,7 @@
 
 ---
 
-## - [ ] M36 — Write `packages/orm-cloud/tests/coolify-template-pack.test.ts` (Validates ALL 390+ Templates)
+## - [x] M36 — Write `packages/orm-cloud/tests/coolify-template-pack.test.ts` (Validates ALL 390+ Templates)
 
 - **Owner File (CREATE):** `packages/orm-cloud/tests/coolify-template-pack.test.ts`
 - **Depends On:** `M20`

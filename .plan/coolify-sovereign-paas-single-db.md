@@ -88,7 +88,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M33** — `apps/api/src/routes/auth.routes.ts`: add `GET /auth/setup-status` & `POST /auth/setup-claim` (SHA-256 constant-time `MW_SETUP_TOKEN`, `409` after claim)
 - [x] **M34** — `apps/api/src/app.ts`: make `strict-transport-security` HTTPS-conditional
 - [x] **M35** — `packages/client/src/types.ts` + `client.ts`: add `getSetupStatus()` & `claimSetup()`
-- [ ] **M36** — `packages/orm-cloud/tests/coolify-template-pack.test.ts`: validate ALL 390+ templates + compiler/secret-idempotency tests
+- [x] **M36** — `packages/orm-cloud/tests/coolify-template-pack.test.ts`: validate ALL 390+ templates + compiler/secret-idempotency tests
 - [ ] **M37** — `packages/orm-cloud/tests/cloud-auth-ops.test.ts`: test Postgres settings, TLS lockdown gate, preview ports, promote-wildcard, RAM MB, mesh status, app CRUD
 - [ ] **M38** — `apps/api/tests/auth-setup-claim.test.ts`: test setup-status, `401`/`201`/`409` claim lifecycle, conditional HSTS + full Wave 2 gate
 
@@ -134,7 +134,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
-| Wave 2 | `M16`–`M38` | `20 / 23` | — | `M35 OK` — `@moonwitness/client build` exit 0; client tests 25/25 passed; `SetupStatus` & `SetupClaimParams` exported; `getSetupStatus()` & `claimSetup()` methods added to `MoonWitnessClient` |
+| Wave 2 | `M16`–`M38` | `21 / 23` | — | `M36 OK` — coolify-template-pack.test.ts 17/17 passed (390+ catalog load, 8 template compile matrix, anythingllm restricted classification, activepieces secret idempotency, path-traversal rejection, appflowy nginx.conf extraction, alexandrie multi-ingress, affine exclude_from_hc removal) |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
