@@ -8,7 +8,7 @@
     "dev": "bun --filter @moonwitness/ui build && node scripts/run-local-services.mjs dev",
     "dev:api": "bun --filter @moonwitness/api dev",
     "dev:board": "bun --filter @moonwitness/board dev",
-    "desktop:build": "bun --filter @moonwitness/desktop... build && bun --filter @moonwitness/desktop build:web",
+    "desktop:build": "bun --filter @moonwitness/types build && bun --filter @moonwitness/desktop... build && bun --filter @moonwitness/desktop build:web",
     "desktop:web": "bun --filter @moonwitness/desktop build:web",
     "desktop:test": "bun --filter @moonwitness/ai-mcp test && bun --filter @moonwitness/desktop test",
     "desktop:mcp": "node apps/desktop/dist/cli.js mcp",
