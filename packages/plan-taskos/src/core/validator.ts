@@ -1,10 +1,11 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve, sep as pathSep } from "node:path";
+import { createRequire } from "node:module";
 import type { LoadedPlanBundle, PlanManifest, WaveDefinition, PlanTaskIR, DocumentNodeIR, ProofEnvelope } from "./types.js";
 import { normalizeRepoPath, globMatchesPath } from "./paths.js";
 import { canonicalJson, sha256Hex } from "./redaction.js";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Ajv2020Module: any = require("ajv/dist/2020.js");
+const Ajv2020Module: any = createRequire(import.meta.url)("ajv/dist/2020.js");
 import * as formatsModule from "ajv-formats";
 
 type Ajv2020 = InstanceType<typeof Ajv2020Module>;

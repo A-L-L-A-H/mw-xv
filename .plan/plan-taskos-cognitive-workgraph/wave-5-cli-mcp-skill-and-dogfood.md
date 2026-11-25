@@ -28,7 +28,7 @@
 
 ---
 
-## - [ ] T32 — Implement Full `plan-taskos` CLI Binary (`src/cli.ts`)
+## - [x] T32 — Implement Full `plan-taskos` CLI Binary (`src/cli.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/cli.ts`
   - `packages/plan-taskos/src/cli.ts` (CREATE)

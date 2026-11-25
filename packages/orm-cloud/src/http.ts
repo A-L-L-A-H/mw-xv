@@ -247,6 +247,26 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
   },
   {
     method: 'POST',
+    path: '/api/cloud/paas/apps/deploy-git',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: false,
+    feature: 'provisioning',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/webhooks/github/:slug',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: false,
+    feature: 'provisioning',
+    resourceId: true,
+  },
+  {
+    method: 'POST',
     path: '/api/cloud/paas/apps/:slug/:action',
     operation: 'app.deploy',
     model: 'cloud.app',
@@ -1679,7 +1699,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           started_at: new Date().toISOString(),
         });
 
-        await reconcileCaddyWithAgent({});
+        await reconcileCaddyWithAgent({ token: resolvedToken });
 
         mark(rule.operation, 'success');
         return reply.code(201).send({ success: true, data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain, previewPort } });
@@ -1816,7 +1836,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           started_at: new Date().toISOString(),
         });
 
-        await reconcileCaddyWithAgent({});
+        await reconcileCaddyWithAgent({ token: resolvedToken });
 
         mark(rule.operation, 'success');
         return reply.code(201).send({
@@ -1948,7 +1968,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
             started_at: new Date().toISOString(),
           });
 
-          await reconcileCaddyWithAgent({});
+          await reconcileCaddyWithAgent({ token: resolvedToken });
 
           mark(rule.operation, 'success');
           return reply.code(201).send({
@@ -2099,7 +2119,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
             started_at: new Date().toISOString(),
           });
 
-          await reconcileCaddyWithAgent({});
+          await reconcileCaddyWithAgent({ token: resolvedToken });
 
           mark(rule.operation, 'success');
           // Return webhookUrl & webhookSecret ONLY on initial creation
@@ -2273,7 +2293,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
               log: `App ${slug} deleted; container removed and Caddy route detached`,
               started_at: new Date().toISOString(),
             });
-            await reconcileCaddyWithAgent({});
+            await reconcileCaddyWithAgent({ token: resolvedToken });
             mark(rule.operation, 'success', 'mesh');
             return { success: true, data: { slug, action: 'delete', status: 'deleted' } };
           }
@@ -2653,7 +2673,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
             });
           }
 
-          await reconcileCaddyWithAgent({});
+          await reconcileCaddyWithAgent({ token: resolvedToken });
 
           mark(rule.operation, 'success');
           return { success: true, data: { slug, domain: domain || null } };
@@ -2920,7 +2940,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     try {
       await savePaasInstanceSettings({ instanceDomain, wildcardDomain, whatsappDomain, publicPort, publicPortEnabled, publicIpv4 });
-      await reconcileCaddyWithAgent({});
+      await reconcileCaddyWithAgent({ token: resolvedToken });
       mark(rule.operation, 'success');
       return { success: true, data: { ok: true } };
     } catch (error) {
@@ -3009,7 +3029,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
   fastify.addHook('onReady', async () => {
     if (process.env.NODE_ENV === 'production' && process.env.MW_CONTROL_PLANE_URL) {
       // Non-blocking boot reconciliation: reconcile Caddy from PostgreSQL state.
-      void reconcileCaddyWithAgent({}).catch(() => {
+      void reconcileCaddyWithAgent({ token: resolvedToken }).catch(() => {
         // Swallowed intentionally: boot must not fail if the agent is not yet reachable.
       });
     }

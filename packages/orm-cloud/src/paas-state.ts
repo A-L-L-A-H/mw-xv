@@ -326,6 +326,7 @@ export interface ReconcileCaddyWithAgentParams {
   bootstrap?: { enabled: boolean; port: number; upstream: string };
   previews?: CaddyPreviewListener[];
   routes?: CaddySpecRoute[];
+  token?: string;
 }
 
 /**
@@ -364,7 +365,7 @@ export async function reconcileCaddyWithAgent(params: ReconcileCaddyWithAgentPar
     if (typeof fetchFn === 'function') {
       await fetchFn(`${endpoint}/agent/caddy/reconcile`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${params.token ?? ''}` },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(5_000),
       }).catch(() => {

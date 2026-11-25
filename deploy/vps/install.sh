@@ -244,7 +244,6 @@ configure_secrets_and_env() {
   upsert_env "$app_env" "AGENT_SANDBOX_TOKEN" "$sandbox_tok"
   upsert_env "$app_env" "SUPERADMIN_LOGIN" "superadmin"
   upsert_env "$app_env" "SUPERADMIN_INITIAL_PASSWORD" "$super_pass"
-  upsert_env "$app_env" "SUPERADMIN_PASSWORD" "$super_pass"
   upsert_env "$app_env" "MW_SETUP_TOKEN" "$setup_token"
   upsert_env "$app_env" "TRUST_PROXY_HOPS" "2"
   upsert_env "$app_env" "MW_PUBLIC_IPV4" "${MW_PUBLIC_IPV4}"
@@ -456,10 +455,7 @@ EOF
 unlock_public_port() {
   log "Unlocking public port 8000 via PostgreSQL single source of truth..."
   docker exec moonwitness_postgres psql -U postgres -d moonwitness_db \
-    -c "INSERT INTO base_config_parameters (key, value, value_type, company_id, active) VALUES ('paas.public_port_enabled', 'true', 'boolean', NULL, true) ON CONFLICT (key, company_id) WHERE company_id IS NULL DO UPDATE SET value='true', active=true;" 2>/dev/null \
-    || docker exec moonwitness_postgres psql -U postgres -d moonwitness_db \
-      -c "UPDATE base_config_parameters SET value='true', active=true WHERE key='paas.public_port_enabled' AND company_id IS NULL;" 2>/dev/null \
-    || true
+    -c "INSERT INTO base_config_parameters (key, value, value_type, company_id, active) VALUES ('paas.public_port_enabled', 'true', 'boolean', NULL, true) ON CONFLICT (key, company_id) DO UPDATE SET value='true', active=true WHERE base_config_parameters.company_id IS NULL;"
   docker restart moonwitness_api >/dev/null 2>&1 || true
   log "Public port 8000 re-enabled; API restarted to reconcile Caddy routes."
 }
