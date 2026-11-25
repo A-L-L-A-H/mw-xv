@@ -258,7 +258,7 @@
 
 ---
 
-## - [ ] M26 — Wire 390+ Coolify Template Routes (`GET /templates`, `GET /templates/:id`, `POST /templates/deploy`)
+## - [x] M26 — Wire 390+ Coolify Template Routes (`GET /templates`, `GET /templates/:id`, `POST /templates/deploy`)
 
 - **Owner File (MODIFY):** `packages/orm-cloud/src/http.ts`
 - **Depends On:** `M25`

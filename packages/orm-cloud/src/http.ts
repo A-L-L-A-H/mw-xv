@@ -32,10 +32,12 @@ import {
   listMeshPaasApps,
   listMeshPaasTemplates,
   type MeshPaasAppAction,
+  upAgentCompose,
   verifyAgentDns,
 } from './providers/moonwitness-mesh.js';
 import type { PaasQuotaReservationLedger } from './quota.js';
 import {
+  allocatePreviewPort,
   buildDeclarativeCaddySpec,
   isValidPublicDomain,
   promotePreviewAppsToWildcard,
@@ -43,6 +45,8 @@ import {
   savePaasInstanceSettings,
   reconcileCaddyWithAgent,
 } from './paas-state.js';
+import { compileCoolifyCompose } from './coolify-compose-compiler.js';
+import { listCoolifyTemplates, getCoolifyTemplateDetail } from './coolify-template-pack.js';
 import { exportCloudTerraformHcl } from './terraform.js';
 import { probeCloudTargetsHealth, assertProbeTarget, readBoundedResponseBody } from './probe.js';
 import {
@@ -325,6 +329,26 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
     permission: 'read',
     adminOnly: false,
     feature: 'controlPlane',
+    resourceId: false,
+  },
+  {
+    method: 'GET',
+    path: '/api/cloud/paas/templates/:id',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: false,
+    feature: 'controlPlane',
+    resourceId: true,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/templates/deploy',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: true,
+    feature: 'provisioning',
     resourceId: false,
   },
 ]);
@@ -1464,22 +1488,98 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       if (!requireFeature(reply, rule)) return;
       if (!requireToken(reply, rule)) return;
       try {
-        assertProbeTarget(defaultAgentUrl, requestPolicy);
-        const templates = await listMeshPaasTemplates({
-          endpoint: defaultAgentUrl,
-          token: resolvedToken,
-          fetchImpl,
-          timeoutMs: 10_000,
+        const query = req.query as {
+          q?: string;
+          category?: string;
+          tag?: string;
+          compatibility?: string;
+          includeOutdated?: boolean;
+          page?: number;
+          limit?: number;
+        };
+        const data = listCoolifyTemplates({
+          q: query.q,
+          category: query.category,
+          tag: query.tag,
+          compatibility: (query.compatibility as any) ?? undefined,
+          includeOutdated: query.includeOutdated,
+          page: query.page,
+          limit: query.limit,
         });
         mark(rule.operation, 'success', 'mesh');
-        return { success: true, data: templates };
+        return { success: true, data };
       } catch (error) {
         mark(rule.operation, 'offline', 'mesh');
         return reply.code(502).send({
           success: false,
-          error: safeErrorText(error, [resolvedToken], 'Control plane templates unreachable'),
+          error: safeErrorText(error, [resolvedToken], 'Coolify template catalog unreachable'),
         });
       }
+    });
+
+    fastify.get<{ Params: { id: string } }>('/api/cloud/paas/templates/:id', async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/templates/:id');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+
+      const { id } = req.params;
+      const detail = getCoolifyTemplateDetail(id);
+      if (!detail) {
+        return reply.code(404).send({ success: false, error: `Template ${id} not found` });
+      }
+      mark(rule.operation, 'success');
+      return { success: true, data: detail };
+    });
+
+    fastify.post<{ Body: { slug?: string; tenantId?: string; composeSpec?: string; env?: Record<string, string>; domain?: string; gitRepo?: string; port?: number } }>('/api/cloud/paas/templates/deploy', async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/templates/deploy');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+
+      const { slug, tenantId, composeSpec, env, domain, gitRepo, port } = req.body ?? {};
+      if (!slug || !composeSpec) {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: 'slug and composeSpec are required' });
+      }
+
+      const detail = getCoolifyTemplateDetail(slug);
+      if (!detail) {
+        return reply.code(404).send({ success: false, error: `Template ${slug} not found` });
+      }
+      if (detail.compatibility === 'restricted') {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: `Template ${slug} is restricted and cannot be deployed` });
+      }
+
+      const resolvedDomain = domain;
+      let previewPort: number | undefined;
+      if (!resolvedDomain) {
+        previewPort = (await allocatePreviewPort()) ?? undefined;
+      }
+
+      await compileCoolifyCompose({
+        slug,
+        tenantId: tenantId ?? 'default',
+        composeYaml: composeSpec,
+        defaultPort: Number(port ?? (detail.port ?? 8080)) || 8080,
+        primaryDomain: resolvedDomain,
+        ...(previewPort !== undefined ? { previewPort } : {}),
+        existingEnv: {},
+        userEnv: env,
+      });
+
+      await upAgentCompose({ endpoint: defaultAgentUrl, slug, composeSpec, env });
+
+      await reconcileCaddyWithAgent({});
+
+      await reconcileCaddyWithAgent({});
+
+      mark(rule.operation, 'success');
+      return reply.code(201).send({ success: true, data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain } });
     });
 
     fastify.post('/api/cloud/paas/apps/deploy', async (req, reply) => {
