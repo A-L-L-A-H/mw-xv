@@ -6,17 +6,15 @@
  */
 
 import type { BrainStorageDriver } from "../brain/storage.js";
-import type { LoadedPlanBundle, PlanTaskIR, ExecutionPolicy, ModelTier } from "../core/types.js";
+import type { LoadedPlanBundle, PlanTaskIR, ModelTier } from "../core/types.js";
 import { discoverPlans } from "../core/loader.js";
-import { sealProofEnvelope, hashProofLeaf } from "../brain/merkle-dag.js";
+import { sealProofEnvelope } from "../brain/merkle-dag.js";
 import { recordEpisode } from "../brain/episodic-memory.js";
 import { inspectChangedFiles, checkOwnerFileScope, executeVerifyCommands, captureBaselineDirtyFiles } from "./scope-gate.js";
-import { claimTaskLease, releaseTaskLease, renewTaskLease, listActiveLeases } from "./lease-manager.js";
-import { join, resolve } from "node:path";
+import { claimTaskLease, releaseTaskLease } from "./lease-manager.js";
+import { join } from "node:path";
 import { writeFile, mkdir, readdir, readFile } from "node:fs/promises";
 import { execSync } from "node:child_process";
-import { sha256Hex } from "../core/redaction.js";
-import { redactSensitiveText } from "../core/redaction.js";
 
 export interface CompleteMicroTaskOptions {
   readonly autoCommit?: boolean;
@@ -169,7 +167,7 @@ export async function completeMicroTask(
       const escalationChain = executionPolicy.escalation_chain ?? ["flash", "neon", "argon"];
       const currentTier = options.modelTier ?? targetTask.lifecycle.model_tier ?? executionPolicy.default_model_tier;
       const currentIndex = escalationChain.indexOf(currentTier);
-      const nextTier = currentIndex >= 0 && currentIndex + 1 < escalationChain.length
+      const _nextTier = currentIndex >= 0 && currentIndex + 1 < escalationChain.length
         ? escalationChain[currentIndex + 1]
         : currentTier;
 
@@ -491,6 +489,6 @@ async function atomicCommit(
     const sha = execSync("git rev-parse HEAD", { cwd: repoRoot, encoding: "utf8" }).trim();
     return sha;
   } catch (e) {
-    throw new Error(`Atomic commit failed: ${(e as Error).message}`);
+    throw new Error(`Atomic commit failed: ${(e as Error).message}`, { cause: e });
   }
 }
