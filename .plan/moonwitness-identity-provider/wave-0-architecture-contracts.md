@@ -59,7 +59,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 - **Evidence:**
   - Command: git diff --check - passed
   - ADR ownership table compared with I01 inventory: consistent
-  - Commit: pending
+  - Commit: 540d2859 docs(identity): freeze ownership boundary in ADR-001 for I02
 
 ---
 
@@ -161,6 +161,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 ## Wave exit gate
 
 Do not start Wave 1 until I01–I06 are done and the OIDC provider recommendation has implementation evidence. Any unresolved provider/security choice must be recorded as a blocker, not guessed.
+
 
 
 
