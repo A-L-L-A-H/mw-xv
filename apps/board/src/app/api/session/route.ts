@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   try {
     urlIsHttps = new URL(request.url).protocol === 'https:';
   } catch {
-    urlIsHttps = false;
+    // request.url is always absolute in a Route Handler; keep default false.
   }
   const isHttps = forwardedProto === 'https' || urlIsHttps;
   const jar = await cookies();
