@@ -2,8 +2,11 @@ import { readFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { isRecord } from '@moonwitness/types';
 import { milestonePattern, parseTaskId, taskIdPattern, taskIdSource } from './task-ids.mjs';
+
+function isRecord(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const allowedTaskKeys = new Set([

@@ -261,7 +261,7 @@
       ],
       "risk": "low",
       "human_approval_required": false,
-      "notes": "Inventory refreshed from current manifests. 26 packages, nine pnpm apps; apps/todo was retired (see ADR 0008); current apps: apps/api, apps/board, apps/desktop, apps/docs, apps/ui-catalog, apps/agent-observability, apps/agent-sandbox, apps/control-plane, apps/isp.",
+      "notes": "Inventory refreshed from current manifests. 26 packages, five pnpm apps; apps/todo has no package.json and is Rust-only.",
       "evidence": [
         {
           "artifact": "evidence/W0-002-workspace-inventory.md",

@@ -64,15 +64,8 @@ jobs:
 
       - name: Deploy to Cloudflare Pages
         id: deploy
-        uses: cloudflare/pages-action@v1.13.6
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: moonwitness-docs
-          directory: apps/docs/dist
-          branch: ${{ github.ref_name }}
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          wranglerVersion: '3'
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' }}
+        run: bunx wrangler pages deploy apps/docs/dist --project-name=moonwitness-docs --branch="${{ github.ref_name }}"
 
       - name: Notify on failure
         if: failure()
