@@ -32,7 +32,7 @@
 
 ---
 
-## - [ ] T20 — Implement Atomic Multi-Agent TTL Lease Manager (`src/runner/lease-manager.ts`)
+## - [x] T20 — Implement Atomic Multi-Agent TTL Lease Manager (`src/runner/lease-manager.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/runner/lease-manager.ts`
   - `packages/plan-taskos/src/runner/lease-manager.ts` (CREATE)
