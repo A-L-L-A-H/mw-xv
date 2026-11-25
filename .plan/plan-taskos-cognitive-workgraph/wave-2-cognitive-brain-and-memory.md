@@ -97,7 +97,7 @@
 
 ---
 
-## - [ ] T16 — Implement Episodic Memory, Non-REM Sleep Consolidation & Protected-Gate Invariant Synthesizer
+## - [x] T16 — Implement Episodic Memory, Non-REM Sleep Consolidation & Protected-Gate Invariant Synthesizer
 
 - **Owner File(s):** `packages/plan-taskos/src/brain/episodic-memory.ts`
   - `packages/plan-taskos/src/brain/episodic-memory.ts` (CREATE)
