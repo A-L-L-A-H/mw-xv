@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `065f50678ab80c8689812c401a8e7a8e5894d6afafc74eaf2a4e21c6ec5826fc`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `e6056c973317ad954be8a9b05cd6244e2ea3d99dd38fff421cfdfe42f0c6f355`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -131,6 +131,7 @@ Source fingerprint: `065f50678ab80c8689812c401a8e7a8e5894d6afafc74eaf2a4e21c6ec5
 | `MW_SETUP_TOKEN`                    | secret         | No                        | Yes                      |
 | `NODE_ENV`                          | string         | Yes                       | No                       |
 | `OBSERVABILITY_INGEST_TOKEN`        | secret         | Yes                       | Yes                      |
+| `OBSERVABILITY_PRUNE_ON_READ`       | string         | No                        | No                       |
 | `OTEL_EXPORTER_OTLP_ENDPOINT`       | string         | Yes                       | No                       |
 | `OTEL_EXPORTER_OTLP_HEADERS`        | string         | Yes                       | No                       |
 | `OTEL_EXPORTER_OTLP_PROTOCOL`       | string         | Yes                       | No                       |
@@ -235,6 +236,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm format:check`
 - `pnpm governance:check`
 - `pnpm hooks:install`
+- `pnpm interactive-session:boundary:check`
 - `pnpm jobs:outbox`
 - `pnpm jobs:scheduler`
 - `pnpm jobs:worker`
@@ -273,6 +275,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm roadmap:progress`
 - `pnpm start`
 - `pnpm start:built`
+- `pnpm swarm-observability:boundary:check`
 - `pnpm tasks:sweep`
 - `pnpm tasks:sync`
 - `pnpm tasks:validate`
@@ -316,6 +319,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm test:release-latest-policy`
 - `pnpm test:release-orchestration`
 - `pnpm test:release-plan`
+- `pnpm test:release-preflight`
 - `pnpm test:release-prepare`
 - `pnpm test:release-prepare-workflow`
 - `pnpm test:release-provenance`

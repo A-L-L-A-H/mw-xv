@@ -829,6 +829,7 @@
       "format:check": "prettier --check .",
       "governance:check": "bun run check:ui-consistency && bun run check:complexity && bun run ui:design:check",
       "hooks:install": "node scripts/setup-git-hooks.mjs",
+      "interactive-session:boundary:check": "node --test scripts/check-interactive-session-boundary.test.mjs && node scripts/check-interactive-session-boundary.mjs",
       "jobs:outbox": "bun --filter @moonwitness/api jobs:outbox",
       "jobs:scheduler": "bun --filter @moonwitness/api jobs:scheduler",
       "jobs:worker": "bun --filter @moonwitness/api jobs:worker",
@@ -867,6 +868,7 @@
       "roadmap:progress": "node scripts/roadmap/progress-dashboard.mjs",
       "start": "node scripts/run-local-services.mjs start",
       "start:built": "node scripts/run-local-services.mjs start:built",
+      "swarm-observability:boundary:check": "node --test scripts/check-swarm-observability-boundary.test.mjs && node scripts/check-swarm-observability-boundary.mjs",
       "tasks:sweep": "node scripts/tasks/sweep-and-consolidate.mjs",
       "tasks:sync": "node scripts/tasks/sync-roadmap.mjs",
       "tasks:validate": "node scripts/tasks/validate-tasks.mjs",
@@ -910,6 +912,7 @@
       "test:release-latest-policy": "node --test scripts/release-latest-policy.test.mjs",
       "test:release-orchestration": "node --test scripts/release-orchestrator.test.mjs scripts/create-release-tag.test.mjs scripts/release-orchestrate-workflow.test.mjs",
       "test:release-plan": "node --test scripts/release-plan.test.mjs",
+      "test:release-preflight": "node --test scripts/release-preflight.test.mjs",
       "test:release-prepare": "node --test scripts/prepare-release.test.mjs",
       "test:release-prepare-workflow": "node --test scripts/release-prepare-workflow.test.mjs",
       "test:release-provenance": "node --test scripts/check-release-provenance.test.mjs",
@@ -928,7 +931,7 @@
       "test:ui-design-check": "node --test scripts/check-ui-design-system.test.mjs scripts/check-ui-gate-wiring.test.mjs",
       "test:unit": "bun run build && bun run test:unit:built",
       "test:unit-runner-policy": "node --test scripts/unit-runner-policy.test.mjs",
-      "test:unit:built": "bun --filter @moonwitness/types test && bunx --cwd apps/api vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && bun --filter @moonwitness/auth test && bun --filter @moonwitness/client test && bun --filter @moonwitness/jobs test && bun --filter @moonwitness/logger test && bun --filter @moonwitness/orm test && bun run test:board-csv && bun run test:addon-conformance && bun --filter @moonwitness/orm-base test && bun --filter @moonwitness/orm-integration test && bun --filter @moonwitness/orm-knowledge test && bun --filter @moonwitness/orm-notification test && bun --filter @moonwitness/orm-organization test && bun --filter @moonwitness/orm-project test && bun --filter @moonwitness/orm-request test && bun --filter @moonwitness/orm-storage test && bun --filter @moonwitness/orm-whatsapp test && bun --filter @moonwitness/orm-workflow test && bun --filter @moonwitness/orm-ai test && bun --filter @moonwitness/orm-a2a test && bun --filter @moonwitness/orm-automation-core test && bun --filter @moonwitness/orm-bot-orchestrator test && bun --filter @moonwitness/orm-catalog test && bun --filter @moonwitness/orm-clinical test && bun --filter @moonwitness/orm-cloud test && bun --filter @moonwitness/orm-compliance test && bun --filter @moonwitness/orm-content-factory test && bun --filter @moonwitness/orm-crm test && bun --filter @moonwitness/orm-ecommerce-sync test && bun --filter @moonwitness/orm-governance test && bun --filter @moonwitness/orm-helpdesk test && bun --filter @moonwitness/orm-income-ledger test && bun --filter @moonwitness/orm-isp test && bun --filter @moonwitness/orm-observability test && bun --filter @moonwitness/orm-public-services test && bun --filter @moonwitness/orm-rnd test && bun --filter @moonwitness/orm-sales test && bun --filter @moonwitness/orm-sensor test && bun --filter @moonwitness/orm-sharia test && bun --filter @moonwitness/orm-signal test && bun --filter @moonwitness/orm-sim test && bun --filter @moonwitness/orm-subscription test && bun --filter @moonwitness/ai-runtime test && bun --filter @moonwitness/ai-mcp test && bun --filter @moonwitness/ai-evaluation test && bun --filter @moonwitness/local-ai typecheck && bun --filter @moonwitness/local-ai test && bun --filter @moonwitness/knowledge typecheck && bun --filter @moonwitness/knowledge test && bun --filter @moonwitness/corpus typecheck && bun --filter @moonwitness/corpus test && bun --filter @moonwitness/research typecheck && bun --filter @moonwitness/research test && bun run test:knowledge-cli:built && bun run test:assets && bun run test:ui && bun run test:platform-audit && bun run test:board-budget && bun run board:budget && bun run test:release-workflow && bun run test:release-latest-policy && bun run test:release-image-publish && bun run test:release-asset-reconcile && bun run test:release-dry-run && bun run test:release-verify-attestations && bun run test:expected-ref && bun run test:release-plan && bun run test:release-orchestration && bun run test:versioned-docs",
+      "test:unit:built": "bun --filter @moonwitness/types test && bunx --cwd apps/api vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts && bun --filter @moonwitness/auth test && bun --filter @moonwitness/client test && bun --filter @moonwitness/jobs test && bun --filter @moonwitness/logger test && bun --filter @moonwitness/orm test && bun run test:board-csv && bun run test:addon-conformance && bun --filter @moonwitness/orm-base test && bun --filter @moonwitness/orm-integration test && bun --filter @moonwitness/orm-knowledge test && bun --filter @moonwitness/orm-notification test && bun --filter @moonwitness/orm-organization test && bun --filter @moonwitness/orm-project test && bun --filter @moonwitness/orm-request test && bun --filter @moonwitness/orm-storage test && bun --filter @moonwitness/orm-whatsapp test && bun --filter @moonwitness/orm-workflow test && bun --filter @moonwitness/orm-ai test && bun --filter @moonwitness/orm-a2a test && bun --filter @moonwitness/orm-automation-core test && bun --filter @moonwitness/orm-bot-orchestrator test && bun --filter @moonwitness/orm-catalog test && bun --filter @moonwitness/orm-clinical test && bun --filter @moonwitness/orm-cloud test && bun --filter @moonwitness/orm-compliance test && bun --filter @moonwitness/orm-content-factory test && bun --filter @moonwitness/orm-crm test && bun --filter @moonwitness/orm-ecommerce-sync test && bun --filter @moonwitness/orm-governance test && bun --filter @moonwitness/orm-helpdesk test && bun --filter @moonwitness/orm-income-ledger test && bun --filter @moonwitness/orm-isp test && bun --filter @moonwitness/orm-observability test && bun --filter @moonwitness/agent-observability test && bun --filter @moonwitness/orm-public-services test && bun --filter @moonwitness/orm-rnd test && bun --filter @moonwitness/orm-sales test && bun --filter @moonwitness/orm-sensor test && bun --filter @moonwitness/orm-sharia test && bun --filter @moonwitness/orm-signal test && bun --filter @moonwitness/orm-sim test && bun --filter @moonwitness/orm-subscription test && bun --filter @moonwitness/ai-runtime test && bun --filter @moonwitness/ai-mcp test && bun --filter @moonwitness/ai-evaluation test && bun --filter @moonwitness/local-ai typecheck && bun --filter @moonwitness/local-ai test && bun --filter @moonwitness/knowledge typecheck && bun --filter @moonwitness/knowledge test && bun --filter @moonwitness/corpus typecheck && bun --filter @moonwitness/corpus test && bun --filter @moonwitness/research typecheck && bun --filter @moonwitness/research test && bun run test:knowledge-cli:built && bun run test:assets && bun run test:ui && bun run test:platform-audit && bun run test:board-budget && bun run board:budget && bun run test:release-workflow && bun run test:release-preflight && bun run test:release-latest-policy && bun run test:release-image-publish && bun run test:release-asset-reconcile && bun run test:release-dry-run && bun run test:release-verify-attestations && bun run test:expected-ref && bun run test:release-plan && bun run test:release-orchestration && bun run test:versioned-docs",
       "test:unit:ci": "node scripts/run-unit-tests.mjs",
       "test:versioned-docs": "node --test scripts/docs/versioned-site.test.mjs",
       "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && bunx --cwd apps/api vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
@@ -1263,6 +1266,12 @@
       "configuredInExample": true,
       "secret": true,
       "valueType": "secret"
+    },
+    {
+      "name": "OBSERVABILITY_PRUNE_ON_READ",
+      "configuredInExample": false,
+      "secret": false,
+      "valueType": "string"
     },
     {
       "name": "OTEL_EXPORTER_OTLP_ENDPOINT",
@@ -6507,9 +6516,153 @@
     },
     {
       "name": "observability",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "depends": [],
       "models": [
+        {
+          "name": "observability.ingest_credential",
+          "table": "observability_ingest_credentials",
+          "fields": [
+            {
+              "name": "company_id",
+              "kind": "integer",
+              "column": "company_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "created_at",
+              "kind": "string",
+              "column": "created_at",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "credential_id",
+              "kind": "string",
+              "column": "credential_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "expires_at",
+              "kind": "string",
+              "column": "expires_at",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "name",
+              "kind": "string",
+              "column": "name",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "revoked_at",
+              "kind": "string",
+              "column": "revoked_at",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "token_hash",
+              "kind": "string",
+              "column": "token_hash",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "user_id",
+              "kind": "integer",
+              "column": "user_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["token_hash"]]
+        },
+        {
+          "name": "observability.qoder_correlation",
+          "table": "observability_qoder_correlation",
+          "fields": [
+            {
+              "name": "expires_at",
+              "kind": "float",
+              "column": "expires_at",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "kind",
+              "kind": "string",
+              "column": "kind",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "state_key",
+              "kind": "string",
+              "column": "state_key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "tenant_id",
+              "kind": "integer",
+              "column": "tenant_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["state_key"]]
+        },
         {
           "name": "observability.telemetry_log",
           "table": "observability_logs",
@@ -6586,6 +6739,27 @@
               "hasDefault": false
             },
             {
+              "name": "tenant_id",
+              "kind": "integer",
+              "column": "tenant_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "tenant_key",
+              "kind": "string",
+              "column": "tenant_key",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
               "name": "timestamp_ms",
               "kind": "float",
               "column": "timestamp_ms",
@@ -6606,7 +6780,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [["log_id"]]
+          "uniqueConstraints": [["log_id", "tenant_key"]]
         },
         {
           "name": "observability.telemetry_metric_point",
@@ -6633,6 +6807,26 @@
               "hasDefault": false
             },
             {
+              "name": "series_key",
+              "kind": "string",
+              "column": "series_key",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "tenant_id",
+              "kind": "integer",
+              "column": "tenant_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
               "name": "timestamp_ms",
               "kind": "float",
               "column": "timestamp_ms",
@@ -6643,7 +6837,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [["series_id", "timestamp_ms"]]
+          "uniqueConstraints": [["series_key", "timestamp_ms"]]
         },
         {
           "name": "observability.telemetry_metric_series",
@@ -6731,6 +6925,27 @@
               "hasDefault": false
             },
             {
+              "name": "tenant_id",
+              "kind": "integer",
+              "column": "tenant_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "tenant_key",
+              "kind": "string",
+              "column": "tenant_key",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
               "name": "unit",
               "kind": "text",
               "column": "unit",
@@ -6741,7 +6956,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [["series_id"]]
+          "uniqueConstraints": [["series_id", "tenant_key"]]
         },
         {
           "name": "observability.telemetry_span",
@@ -6859,6 +7074,27 @@
               "values": ["error", "ok", "unset"]
             },
             {
+              "name": "tenant_id",
+              "kind": "integer",
+              "column": "tenant_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "tenant_key",
+              "kind": "string",
+              "column": "tenant_key",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
               "name": "trace_id",
               "kind": "text",
               "column": "trace_id",
@@ -6869,7 +7105,7 @@
               "hasDefault": false
             }
           ],
-          "uniqueConstraints": [["span_id", "trace_id"]]
+          "uniqueConstraints": [["span_id", "tenant_key", "trace_id"]]
         },
         {
           "name": "observability.telemetry_state",
@@ -6898,6 +7134,95 @@
             }
           ],
           "uniqueConstraints": [["key"]]
+        },
+        {
+          "name": "observability.telemetry_trace",
+          "table": "observability_traces",
+          "fields": [
+            {
+              "name": "error_count",
+              "kind": "integer",
+              "column": "error_count",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "latency_sum_ms",
+              "kind": "float",
+              "column": "latency_sum_ms",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "payload_json",
+              "kind": "text",
+              "column": "payload_json",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "span_count",
+              "kind": "integer",
+              "column": "span_count",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "started_at",
+              "kind": "float",
+              "column": "started_at",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            },
+            {
+              "name": "tenant_id",
+              "kind": "integer",
+              "column": "tenant_id",
+              "declaredRequired": false,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": false
+            },
+            {
+              "name": "tenant_key",
+              "kind": "string",
+              "column": "tenant_key",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
+            },
+            {
+              "name": "trace_id",
+              "kind": "text",
+              "column": "trace_id",
+              "declaredRequired": true,
+              "required": true,
+              "unique": false,
+              "optional": false,
+              "hasDefault": false
+            }
+          ],
+          "uniqueConstraints": [["tenant_key", "trace_id"]]
         }
       ],
       "menus": [],
@@ -10584,5 +10909,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "065f50678ab80c8689812c401a8e7a8e5894d6afafc74eaf2a4e21c6ec5826fc"
+  "generatedFromSha256": "e6056c973317ad954be8a9b05cd6244e2ea3d99dd38fff421cfdfe42f0c6f355"
 }
