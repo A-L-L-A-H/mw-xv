@@ -159,7 +159,7 @@
 
 ---
 
-## - [ ] M45 — Upgrade `PaasTemplateCatalog` to Paginated Server-Side 390+ Marketplace
+## - [x] M45 — Upgrade `PaasTemplateCatalog` to Paginated Server-Side 390+ Marketplace
 
 - **Owner File (MODIFY):** `apps/board/src/components/cloud/paas-template-catalog.tsx`
 - **Depends On:** `M26`
