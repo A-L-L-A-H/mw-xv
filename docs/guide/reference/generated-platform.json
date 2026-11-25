@@ -127,10 +127,6 @@
         "fonts:prepare",
         "inventory",
         "qa",
-        "social:contact-sheets",
-        "social:render",
-        "social:thumbnails",
-        "social:validate",
         "sounds:ambience"
       ]
     },
@@ -423,6 +419,12 @@
       "scripts": []
     },
     {
+      "name": "paas-template-pack-moonwitness",
+      "version": "1.0.0",
+      "directory": "packages/paas-template-pack-moonwitness",
+      "scripts": []
+    },
+    {
       "name": "@moonwitness/plan-taskos",
       "version": "1.0.0-rc.1",
       "directory": "packages/plan-taskos",
@@ -559,10 +561,6 @@
       "fonts:prepare": "node scripts/prepare-fonts.mjs",
       "inventory": "node scripts/asset-inventory.mjs",
       "qa": "node scripts/asset-qa.mjs",
-      "social:contact-sheets": "node scripts/generate-contact-sheets.mjs --social-formats",
-      "social:render": "node scripts/render-social.mjs --format all --theme both",
-      "social:thumbnails": "node scripts/render-youtube-thumbnails.mjs --theme both",
-      "social:validate": "node scripts/validate-social-assets.mjs",
       "sounds:ambience": "node scripts/generate-scene-ambience.mjs"
     },
     "@moonwitness/auth": {
@@ -774,15 +772,11 @@
       "architecture:generate": "bun --filter @moonwitness/knowledge build && bun --filter @moonwitness/corpus build && bun --filter @moonwitness/research build && bun --filter @moonwitness/orm build && bun --filter @moonwitness/orm-base build && bun --filter @moonwitness/auth build && bun --filter @moonwitness/jobs build && bun --filter @moonwitness/orm-integration build && bun --filter @moonwitness/orm-workflow build && bun --filter @moonwitness/orm-whatsapp build && bun --filter @moonwitness/orm-knowledge build && bun --filter @moonwitness/orm-notification build && bun --filter @moonwitness/orm-organization build && bun --filter @moonwitness/orm-project build && bun --filter @moonwitness/orm-request build && bun --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs",
       "assets:check:bounds": "node packages/assets/scripts/check-svg-bounds.mjs",
       "assets:check:docs": "node scripts/export-doc-assets.mjs --check",
-      "assets:contact-sheets:social": "node packages/assets/scripts/generate-contact-sheets.mjs --social-formats",
       "assets:export:docs": "node scripts/export-doc-assets.mjs",
       "assets:generate": "bun --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && bun --filter @moonwitness/assets sounds:ambience && bun --filter @moonwitness/assets fonts:prepare && bun --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
       "assets:generate:illustrations": "node packages/assets/scripts/generate-illustrations.mjs && node scripts/export-doc-assets.mjs",
       "assets:render": "node packages/assets/scripts/render-social.mjs",
-      "assets:render:social": "node packages/assets/scripts/render-social.mjs --format all --theme both",
-      "assets:render:thumbnails": "node packages/assets/scripts/render-youtube-thumbnails.mjs --theme both",
       "assets:validate": "node packages/assets/scripts/validate.mjs",
-      "assets:validate:social": "node packages/assets/scripts/validate-social-assets.mjs",
       "attachments:reconcile": "bun --filter @moonwitness/api attachments:reconcile",
       "audit:workspace": "node scripts/audit-workspace.mjs",
       "automation:check:action-pins": "node scripts/check-action-pins.mjs",
@@ -796,6 +790,8 @@
       "board:ui:check": "node --test scripts/check-board-shared-ui.test.mjs && node scripts/check-board-shared-ui.mjs",
       "board:visual:update": "bun run test:e2e --grep 'responsive screen audit|responsive protected screens' --update-snapshots",
       "build": "node scripts/ci/build-workspace.mjs",
+      "check:complexity": "node scripts/check-code-complexity.mjs --strict",
+      "check:ui-consistency": "node scripts/check-ui-consistency.mjs --strict",
       "ci:affected": "node scripts/select-affected.mjs",
       "control-plane:build": "bun --filter @moonwitness/control-plane docker:build",
       "control-plane:dev": "bun --filter @moonwitness/control-plane dev",
@@ -831,6 +827,7 @@
       "evolution:signals": "node scripts/evolution/collect-signals.mjs",
       "format": "prettier --write .",
       "format:check": "prettier --check .",
+      "governance:check": "bun run check:ui-consistency && bun run check:complexity && bun run ui:design:check",
       "hooks:install": "node scripts/setup-git-hooks.mjs",
       "jobs:outbox": "bun --filter @moonwitness/api jobs:outbox",
       "jobs:scheduler": "bun --filter @moonwitness/api jobs:scheduler",
@@ -1248,6 +1245,12 @@
       "configuredInExample": false,
       "secret": false,
       "valueType": "string"
+    },
+    {
+      "name": "MW_SETUP_TOKEN",
+      "configuredInExample": false,
+      "secret": true,
+      "valueType": "secret"
     },
     {
       "name": "NODE_ENV",
@@ -10549,6 +10552,14 @@
       "path": "/auth/register"
     },
     {
+      "method": "POST",
+      "path": "/auth/setup-claim"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/setup-status"
+    },
+    {
       "method": "GET",
       "path": "/health"
     },
@@ -10573,5 +10584,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "fd4f0974e0ed1549ee16a1a19983f6df0866b43935d826a4b80c0f10ded7ed1b"
+  "generatedFromSha256": "065f50678ab80c8689812c401a8e7a8e5894d6afafc74eaf2a4e21c6ec5826fc"
 }

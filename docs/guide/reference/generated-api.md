@@ -1,6 +1,6 @@
 # Generated API route reference
 
-Extracted from literal Fastify route declarations. Source fingerprint: `fd4f0974e0ed1549ee16a1a19983f6df0866b43935d826a4b80c0f10ded7ed1b`. Generic handler request payloads are not inferred where the source does not declare a static schema.
+Extracted from literal Fastify route declarations. Source fingerprint: `065f50678ab80c8689812c401a8e7a8e5894d6afafc74eaf2a4e21c6ec5826fc`. Generic handler request payloads are not inferred where the source does not declare a static schema.
 
 | Method | Path                                |
 | ------ | ----------------------------------- |
@@ -45,6 +45,8 @@ Extracted from literal Fastify route declarations. Source fingerprint: `fd4f0974
 | PATCH  | `/auth/me/profile`                  |
 | POST   | `/auth/refresh`                     |
 | POST   | `/auth/register`                    |
+| POST   | `/auth/setup-claim`                 |
+| GET    | `/auth/setup-status`                |
 | GET    | `/health`                           |
 | POST   | `/jsonrpc`                          |
 | GET    | `/livez`                            |
