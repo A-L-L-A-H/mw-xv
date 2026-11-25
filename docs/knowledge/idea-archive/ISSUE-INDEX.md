@@ -69,8 +69,8 @@ These counts are point-in-time API results. Re-fetch the issue/PR list before ma
 | [#71](https://github.com/A-L-L-A-H/mw-xv/issues/71)   | [CF-017] Add per-agent A2A peer identity, key pinning and rotation                                                                                           | open   | CF-017          | —                  | 2026-11-23 | 2026-11-24 |
 | [#72](https://github.com/A-L-L-A-H/mw-xv/issues/72)   | [CF-018] Bind A2A peer identity to private-mesh transport authentication                                                                                     | open   | CF-018          | —                  | 2026-11-23 | 2026-11-24 |
 | [#73](https://github.com/A-L-L-A-H/mw-xv/issues/73)   | [CF-019] Add bounded A2A inbox pagination, backpressure and retention policy                                                                                 | open   | CF-019          | —                  | 2026-11-23 | 2026-11-24 |
-| [#74](https://github.com/A-L-L-A-H/mw-xv/issues/74)   | [CF-020] Design the gated A2A inbox-to-work-contract dispatch bridge                                                                                         | open   | CF-020          | —                  | 2026-11-23 | 2026-11-24 |
-| [#75](https://github.com/A-L-L-A-H/mw-xv/issues/75)   | [CF-020] Design the gated A2A inbox-to-work-contract dispatch bridge                                                                                         | closed | CF-020          | —                  | 2026-11-23 | 2026-11-24 |
+| [#74](https://github.com/A-L-L-A-H/mw-xv/issues/74)   | [CF-020] Design the gated A2A inbox-to-work-contract dispatch bridge                                                                                         | closed (canonical) | CF-020          | —                  | 2026-11-23 | 2026-11-24 |
+| [#75](https://github.com/A-L-L-A-H/mw-xv/issues/75)   | [CF-020] Design the gated A2A inbox-to-work-contract dispatch bridge                                                                                         | closed (historical) | CF-020          | —                  | 2026-11-23 | 2026-11-24 |
 | [#76](https://github.com/A-L-L-A-H/mw-xv/issues/76)   | [CF-021] Validate cloud configuration at startup and expose safe readiness reasons                                                                           | open   | CF-021          | —                  | 2026-11-23 | 2026-11-24 |
 | [#77](https://github.com/A-L-L-A-H/mw-xv/issues/77)   | [CF-022] Document cloud data backup and restore verification procedure                                                                                       | open   | CF-022          | —                  | 2026-11-23 | 2026-11-24 |
 | [#78](https://github.com/A-L-L-A-H/mw-xv/issues/78)   | [CF-023] Reconcile ACTIVE-PLAN checkpoint with current branch and promotion history                                                                          | closed | CF-023          | —                  | 2026-11-23 | 2026-11-24 |
@@ -275,12 +275,12 @@ The following 20 title IDs each occur on four separate issue numbers. All 80 iss
 | `MW-ART-002` | [#161](https://github.com/A-L-L-A-H/mw-xv/issues/161), [#141](https://github.com/A-L-L-A-H/mw-xv/issues/141), [#121](https://github.com/A-L-L-A-H/mw-xv/issues/121), [#101](https://github.com/A-L-L-A-H/mw-xv/issues/101) |
 | `MW-ART-003` | [#162](https://github.com/A-L-L-A-H/mw-xv/issues/162), [#142](https://github.com/A-L-L-A-H/mw-xv/issues/142), [#122](https://github.com/A-L-L-A-H/mw-xv/issues/122), [#102](https://github.com/A-L-L-A-H/mw-xv/issues/102) |
 
-### CF-020 conflict
+### CF-020 conflict (RESOLVED 2026-11-25)
 
-- [#74 — Design the gated A2A inbox-to-work-contract dispatch bridge](https://github.com/A-L-L-A-H/mw-xv/issues/74): **open**
-- [#75 — Design the gated A2A inbox-to-work-contract dispatch bridge](https://github.com/A-L-L-A-H/mw-xv/issues/75): **closed**
+- [#74 — Design the gated A2A inbox-to-work-contract dispatch bridge](https://github.com/A-L-L-A-H/mw-xv/issues/74): **closed** (canonical) — closed 2026-11-24T20:45:58Z
+- [#75 — Design the gated A2A inbox-to-work-contract dispatch bridge](https://github.com/A-L-L-A-H/mw-xv/issues/75): **closed** (historical duplicate) — closed 2026-11-23T05:23:52Z
 
-The records have the same stable title ID and substantially identical scope. Neither is a managed TaskOS record in the current registry. No automatic close/reopen/delete was performed. Triage owner must reconcile the open/closed duplicate without erasing comments or history; the conflict was documented on [Issue #27](https://github.com/A-L-L-A-H/mw-xv/issues/27).
+Maintainer decision (2026-11-25): #74 is canonical; #75 is preserved as a closed historical record. Neither issue was reopened, deleted, or modified. See [CF-020-RECONCILIATION.md](CF-020-RECONCILIATION.md) for full evidence. The prior conflict was documented on [Issue #27](https://github.com/A-L-L-A-H/mw-xv/issues/27).
 
 ### TaskOS-managed projection
 
@@ -306,7 +306,7 @@ This section is an additive, dated checkpoint. The 2026-11-23 snapshot above is 
 - Verified with `gh issue list -R A-L-L-A-H/mw-xv --state all --limit 500` and `gh pr list ...`: **191 issues (85 open / 106 closed)** and **30 PRs (2 open / 28 closed-or-merged)**. The prior 161/26 counts were correct at 2026-11-23 but are now stale.
 - 30 issues created after the prior snapshot (#189–#221, with #198 and #216–#218 being PR numbers) were added to the tables above. Most are `Audit:` items produced by the hourly code-audit automation (`audit`, `auto-generated` labels); they are execution backlog records, not new archive proposals.
 - PR #81 (`dev → main`) is now **merged**; the prior report recorded it as open. PR #218 is the current open promotion candidate and #172 is the open Dependabot PR. No promotion was performed by this archive pass.
-- `CF-020` remains open at #74 and closed at #75; no automatic reconciliation was performed. Human triage is still required.
+- `CF-020` reconciliation completed 2026-11-25: #74 designated canonical, #75 preserved as historical duplicate; both remain closed. See [CF-020-RECONCILIATION.md](CF-020-RECONCILIATION.md).
 - The `bjo163` namespace count is endpoint-dependent and must not be reported as a single fact: `gh repo list bjo163 --limit 500` returns **150** accessible repositories (148 public + 2 private, including the archived `moonwitness-memory`), `GET /search/repositories?q=user:bjo163` returns **90**, while the prior report's three paginated GitHub searches produced **280 records (148 public + 132 private)**. These are different query scopes; see the repository consolidation report. No source repository was deleted, archived or rewritten.
 - No GitHub issue was created, closed, edited or deleted during this reconciliation. Issue #173–#188 already cover the Total Idea Archive deliverables; creating duplicates would violate the repository's no-duplicate rule.
 - An additive evidence comment was posted to the archive parent issue [#183](https://github.com/A-L-L-A-H/mw-xv/issues/183#issuecomment-7124559268) recording these verified deltas and the source-access limitation.

@@ -3,7 +3,7 @@
   "format": "moonwitness-idea-archive-index/v1",
   "generator": "scripts/knowledge/build-idea-archive-index.mjs",
   "note": "Navigation index only. Not a task registry, not canon authority, not source bytes.",
-  "countedFiles": 26,
+  "countedFiles": 27,
   "counts": {
     "IDEA": 72,
     "PRJ": 26,
@@ -20,7 +20,9 @@
       "title": "MoonWitness / BULAN BERSAKSI",
       "source": "II master blueprint; MW-XV Issue #16",
       "status": "Product vision proposal",
-      "issues": [16],
+      "issues": [
+        16
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -40,7 +42,9 @@
       "title": "MoonWitness Radio / RADIO",
       "source": "MW-XV Issue #16",
       "status": "Radio MVP (on-demand, scheduled or live) unresolved",
-      "issues": [16],
+      "issues": [
+        16
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -50,7 +54,9 @@
       "title": "Message sharing / signals / shared experience",
       "source": "MW-XV Issue #16",
       "status": "Product journey proposal",
-      "issues": [16],
+      "issues": [
+        16
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -60,7 +66,9 @@
       "title": "Mission Board / missions and progression",
       "source": "Available project context; Issue #15",
       "status": "Exact scope and owning domain need review",
-      "issues": [15],
+      "issues": [
+        15
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -110,7 +118,9 @@
       "title": "AEQ / BABYDOLL — SERVICE JAM",
       "source": "MW-XV Issue #22",
       "status": "Separate exploratory initiative; not integrated",
-      "issues": [22],
+      "issues": [
+        22
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -120,7 +130,9 @@
       "title": "“No Plan (Just Do it)” / “Simple Plan”",
       "source": "Issue #22 concept brief",
       "status": "Preserve source phrases; operational meaning unresolved",
-      "issues": [22],
+      "issues": [
+        22
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -320,7 +332,9 @@
       "title": "GOD PROMISE",
       "source": "MW-XV Issue #17; older GOD-PROMISE draft",
       "status": "Editorial concept; not scripture text",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -330,7 +344,9 @@
       "title": "GOD PROMISE / SF (Share Feeling)",
       "source": "Issue #17 / available context",
       "status": "Meaning retained as label; exact original workflow pending",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -340,7 +356,9 @@
       "title": "“Qāf Kāf kahf Kun”",
       "source": "Issue #17",
       "status": "Concept label; meaning/source not inferred",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -360,7 +378,9 @@
       "title": "Asmaul Husna 99-name dataset / concept map",
       "source": "MW-XV Issue #18; packages/research/src/asma.ts",
       "status": "The repository notes that complete, source-reviewed dataset is not yet evidenced",
-      "issues": [18],
+      "issues": [
+        18
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -370,7 +390,11 @@
       "title": "Selected Asma list corrections #67–69 and #71–74",
       "source": "MW-XV Issue #18",
       "status": "Project-selected profile; not a claim that all scholarly lists share one order",
-      "issues": [18, 67, 71],
+      "issues": [
+        18,
+        67,
+        71
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -380,7 +404,10 @@
       "title": "#75–81 nostalgia/anime/game visual concepts",
       "source": "MW-XV Issue #18",
       "status": "Moodboard references only; use original rights-cleared designs",
-      "issues": [18, 75],
+      "issues": [
+        18,
+        75
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -530,7 +557,9 @@
       "title": "Artwork-first, no forced 3D",
       "source": "MW-XV Issue #19",
       "status": "Existing package/UI-catalog pipeline; no second asset manager",
-      "issues": [19],
+      "issues": [
+        19
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -620,7 +649,9 @@
       "title": "CRAYON Framework v1.3 — R1 Reality → G2 Governing Order → B3 Being → L4 Light; 9 Gate; 13 Way; clock model",
       "source": "Library source; MW-XV Issue #173",
       "status": "Version 1.3 baseline; proposed conceptual/educational framework, not validated scientific theory",
-      "issues": [173],
+      "issues": [
+        173
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -630,7 +661,9 @@
       "title": "An Easy Way to Understand Allah — bilingual pre-scriptural conceptual paper using R1/G2/B3/L4, 9 Gates and 13 Ways",
       "source": "Library source; companion to MW-XV Issue #173",
       "status": "Version 2 paper; non-scriptural entry point; conceptual proposal, not proof or experimentally validated persuasion method",
-      "issues": [173],
+      "issues": [
+        173
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -640,7 +673,9 @@
       "title": "Dīn Allah — 4 Kitab Allah / Universal Iman Foundation",
       "source": "Library source; MW-XV Issue #174",
       "status": "Qur’an-governed comparative research proposal; filename says v1.8 while internal cover says v1.7 and footer also references v1.2; version labels need reconciliation",
-      "issues": [174],
+      "issues": [
+        174
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -650,7 +685,9 @@
       "title": "QUANTUM–FE STONE ENERGY — solar air heating, thermal storage, Fe-oxide/ferrite screening",
       "source": "Library paper and workbook; MW-XV Issue #175",
       "status": "Preliminary scoping review and proposal; no physical experiment or new DFT result; material novelty not established",
-      "issues": [175],
+      "issues": [
+        175
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -660,7 +697,9 @@
       "title": "ROCKSOUL GAME — THE LOST SIGNAL",
       "source": "bjo163/rocksoul-game; MW-XV Issue #176",
       "status": "Early local browser demo / preproduction; not a launched MMO; game canon remains candidate",
-      "issues": [176],
+      "issues": [
+        176
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -680,7 +719,9 @@
       "title": "MoonWitness RPG / 25-prophet Qur’an-mirror game concept",
       "source": "Available account Memory Summary only; see MW-XV Issue #176",
       "status": "Keep separate from ROCKSOUL GAME — The Lost Signal until first-source wording and intended relationship are recovered",
-      "issues": [176],
+      "issues": [
+        176
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -690,7 +731,9 @@
       "title": "MoonWitness OS v2.0 model — “4 SOURCE → 7 CHANNEL → 4 PROCESS → AMAL → 4 SCALE AXES → MĪZĀN”",
       "source": "Available account Memory Summary only; see MW-XV Issue #177",
       "status": "Preserve as a memory lead; original definitions, ordering and source conversation still need recovery before canon or implementation",
-      "issues": [177],
+      "issues": [
+        177
+      ],
       "namespace": "IDEA",
       "file": "IDEA-CATALOG.md",
       "alsoReferencedIn": []
@@ -740,7 +783,9 @@
       "title": "MoonWitness",
       "source": "USER IDEA + PRODUCT PROPOSAL",
       "status": "Target ecosystem; not every proposed experience is shipped",
-      "issues": [16],
+      "issues": [
+        16
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -790,7 +835,9 @@
       "title": "ROCKSOUL",
       "source": "USER IDEA + EDITORIAL PROPOSAL",
       "status": "Keep personal frameworks, fiction and research evidence separated",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -800,7 +847,9 @@
       "title": "GOD PROMISE",
       "source": "USER IDEA + PROPOSAL",
       "status": "Source text, translation, tafsir and reflection must remain distinct",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -810,7 +859,9 @@
       "title": "Asmaul Husna reference & visual concepts",
       "source": "USER IDEA + PROPOSAL",
       "status": "No complete canonical 99-row dataset is asserted by this archive",
-      "issues": [18],
+      "issues": [
+        18
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -870,7 +921,9 @@
       "title": "AEQ / BABYDOLL Service Jam",
       "source": "USER IDEA / UNRESOLVED",
       "status": "Preserve independently; no app, payment or reward ledger inferred",
-      "issues": [22],
+      "issues": [
+        22
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -940,7 +993,9 @@
       "title": "Local AI / Desktop Harness",
       "source": "REPOSITORY-DOCUMENTED",
       "status": "Reuse MW-XV desktop/runtime boundaries; no competing agent runtime",
-      "issues": [21],
+      "issues": [
+        21
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -960,7 +1015,9 @@
       "title": "CRAYON Framework",
       "source": "USER IDEA / CONCEPTUAL FRAMEWORK",
       "status": "Versioned baseline; not a validated scientific or cognitive theory; distinct from RGBL OMNISCIENCE METHOD",
-      "issues": [173],
+      "issues": [
+        173
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -970,7 +1027,9 @@
       "title": "Dīn Allah — Universal Iman Foundation",
       "source": "USER IDEA / RESEARCH PROPOSAL",
       "status": "Source-layered synthesis; filename/internal version labels conflict; not a new religion or revelation",
-      "issues": [174],
+      "issues": [
+        174
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -980,7 +1039,9 @@
       "title": "QUANTUM–FE STONE ENERGY",
       "source": "USER IDEA / RESEARCH PROPOSAL",
       "status": "No experiment or new DFT result; novelty unverified; high-temperature ferrite/redox work is lab-only",
-      "issues": [175],
+      "issues": [
+        175
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -990,7 +1051,9 @@
       "title": "ROCKSOUL GAME — THE LOST SIGNAL",
       "source": "REPOSITORY-DOCUMENTED / PREPRODUCTION",
       "status": "Early local demo; game repository is read-only to this connection; not production-certified and not a day-one MMO",
-      "issues": [176],
+      "issues": [
+        176
+      ],
       "namespace": "PRJ",
       "file": "PROJECT-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1140,7 +1203,10 @@
       "title": "Do not reproduce third-party character/artwork references as original production assets.",
       "source": "Existing MW-XV Issue #18 / #19 proposals and source policies",
       "status": "PROVISIONAL until asset rights review",
-      "issues": [18, 19],
+      "issues": [
+        18,
+        19
+      ],
       "namespace": "CAN",
       "file": "CANON-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1150,7 +1216,9 @@
       "title": "No legacy source bytes, private conversation records, prompts, fixtures, data or assets are imported under current K0-006 scope.",
       "source": "Owner-approved MW-XV K0-006 decision and Issue #27",
       "status": "LOCKED current migration boundary",
-      "issues": [27],
+      "issues": [
+        27
+      ],
       "namespace": "CAN",
       "file": "CANON-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1410,7 +1478,9 @@
       "title": "HISTA",
       "source": "Hikmah · Isti’anah · Sains · Tawakal · Amanah",
       "status": "USER IDEA / mnemonic; first source chronology incomplete",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "FRM",
       "file": "FRAMEWORK-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1420,7 +1490,9 @@
       "title": "Four Pillars of Soul / Djiwa Alami / “AR-RUH Absurd Teori”",
       "source": "Personal reflection / maintenance model; four original pillar definitions not yet established by the inspected issue",
       "status": "USER IDEA / METAPHOR; definitions unresolved",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "FRM",
       "file": "FRAMEWORK-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1430,7 +1502,9 @@
       "title": "“Merawat sebuah Kaca”",
       "source": "Mirror as self-reflection and accountability metaphor",
       "status": "USER IDEA / METAPHOR",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "FRM",
       "file": "FRAMEWORK-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1440,7 +1514,9 @@
       "title": "nafs – fisikal – infrastructure / “same path” input-output",
       "source": "Conceptual diagram relating inner/self, physical and infrastructure layers",
       "status": "USER IDEA / METAPHOR; owner definitions and arrows unresolved",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "FRM",
       "file": "FRAMEWORK-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1450,7 +1526,9 @@
       "title": "faith × prayer × knowledge × effort × patience",
       "source": "Motivational multiplicative mnemonic",
       "status": "USER IDEA / MOTIVATIONAL FORMULA; not a scientific equation",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "FRM",
       "file": "FRAMEWORK-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1500,7 +1578,9 @@
       "title": "Q47:35 “Secret 4” — wa / ila / la / lan",
       "source": "Lexical/pattern hypothesis",
       "status": "RESEARCH HYPOTHESIS / UNVERIFIED; exact Arabic edition, segmentation and reproducible extraction required",
-      "issues": [20],
+      "issues": [
+        20
+      ],
       "namespace": "FRM",
       "file": "FRAMEWORK-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1530,7 +1610,9 @@
       "title": "CRAYON Framework v1.3",
       "status": "proposed conceptual and educational framework; not a validated scientific theory or experimentally validated cognitive taxonomy. Mathematics, science and logic are tools, not standalone proof or direct empirical measurement of Allah.",
       "source": "CRAYON_Framework_v1.3_Bilingual_FINAL.docx, Library, 23 August 2026; Issue #173. A separate companion paper, Easy_Way_to_Understand_Allah_Bilingual_Research_Paper_v2_FINAL.docx, uses the framework as a non-scriptural conceptual starting point.",
-      "issues": [173],
+      "issues": [
+        173
+      ],
       "namespace": "FRM",
       "file": "FRAMEWORK-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1540,7 +1622,9 @@
       "title": "Dīn Allah / Universal Iman Foundation v1.8 file",
       "status": "SECTION-DEFINED",
       "source": "",
-      "issues": [174],
+      "issues": [
+        174
+      ],
       "namespace": "FRM",
       "file": "FRAMEWORK-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1550,7 +1634,9 @@
       "title": "MoonWitness OS v2.0 model (memory-summary only)",
       "status": "SECTION-DEFINED",
       "source": "",
-      "issues": [177],
+      "issues": [
+        177
+      ],
       "namespace": "FRM",
       "file": "FRAMEWORK-REGISTRY.md",
       "alsoReferencedIn": []
@@ -1673,7 +1759,9 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0002",
@@ -1683,7 +1771,9 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0003",
@@ -1693,7 +1783,9 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0004",
@@ -1703,17 +1795,23 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0005",
       "title": "Reopen K0-006?",
       "source": "Owner / LOCKED CURRENT POLICY",
       "status": "☐",
-      "issues": [27],
+      "issues": [
+        27
+      ],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0006",
@@ -1760,7 +1858,9 @@
       "title": "P1",
       "source": "Keep both candidates and block renumbering until original source evidence",
       "status": "Owner / UNRESOLVED",
-      "issues": [14],
+      "issues": [
+        14
+      ],
       "namespace": "UNR",
       "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": []
@@ -1800,10 +1900,15 @@
       "title": "Exact Asmaul Husna numbering profile",
       "source": "Owner / REVIEW",
       "status": "☐",
-      "issues": [67, 71],
+      "issues": [
+        67,
+        71
+      ],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0015",
@@ -1833,14 +1938,18 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0018",
       "title": "P1",
       "source": "First define user journey, rights, moderation and operations; no new ORM yet",
       "status": "Product owner / OPEN",
-      "issues": [16],
+      "issues": [
+        16
+      ],
       "namespace": "UNR",
       "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": []
@@ -1860,7 +1969,9 @@
       "title": "P1",
       "source": "Treat as separate projects until user defines product relation and IAM/data boundary",
       "status": "Owner / UNRESOLVED",
-      "issues": [16],
+      "issues": [
+        16
+      ],
       "namespace": "UNR",
       "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": []
@@ -1880,7 +1991,9 @@
       "title": "P2",
       "source": "Maintain independent concept register; do not create addon/app until confirmed",
       "status": "Owner / UNRESOLVED",
-      "issues": [22],
+      "issues": [
+        22
+      ],
       "namespace": "UNR",
       "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": []
@@ -1938,12 +2051,17 @@
     {
       "id": "UNR-0028",
       "title": "Canonical CF-020",
-      "source": "Maintainer / TRIAGE",
-      "status": "☐",
-      "issues": [74, 75],
+      "source": "Maintainer / RESOLVED 2026-11-25",
+      "status": "☑ #74 canonical",
+      "issues": [
+        74,
+        75
+      ],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0029",
@@ -2010,7 +2128,9 @@
       "title": "P2",
       "source": "Keep each occurrence source-local; require owner decision before unifying into a product or character",
       "status": "Owner / UNRESOLVED",
-      "issues": [16],
+      "issues": [
+        16
+      ],
       "namespace": "UNR",
       "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": []
@@ -2020,7 +2140,9 @@
       "title": "P1",
       "source": "Preserve Qur’an primary and the comparative-source labels; do not treat modern book editions as identical to original revealed books or assert passage equivalence without source-level comparison",
       "status": "Owner / NEEDS_SOURCE",
-      "issues": [17],
+      "issues": [
+        17
+      ],
       "namespace": "UNR",
       "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": []
@@ -2033,7 +2155,9 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0038",
@@ -2043,7 +2167,9 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0039",
@@ -2053,7 +2179,9 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0040",
@@ -2063,7 +2191,9 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0041",
@@ -2073,7 +2203,9 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0042",
@@ -2083,7 +2215,9 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0043",
@@ -2093,14 +2227,18 @@
       "issues": [],
       "namespace": "UNR",
       "file": "DECISION-PACKETS.md",
-      "alsoReferencedIn": ["UNRESOLVED-DECISIONS.md"]
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
     },
     {
       "id": "UNR-0044",
       "title": "P1",
       "source": "No code migration under K0-006; inspect and record all 22 source items before making identity or architecture claims; Issue #182",
       "status": "Owner / NEEDS-SOURCE",
-      "issues": [182],
+      "issues": [
+        182
+      ],
       "namespace": "UNR",
       "file": "UNRESOLVED-DECISIONS.md",
       "alsoReferencedIn": []
