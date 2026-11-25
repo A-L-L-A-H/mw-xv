@@ -30,6 +30,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Every claim links to a current repository path and identifies whether the evidence is direct or owner-provided.
   - [ ] No runtime source file changes.
 - **Verify:** git diff --check; manually open every cited source path.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I02 — Freeze Identity vs Business User ownership in ADR-001
@@ -49,6 +50,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] All rejected alternatives and security invariants are documented.
   - [ ] ADR reflects the I01 inventory.
 - **Verify:** git diff --check; compare ADR ownership table with I01 inventory.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I03 — Evaluate and select a maintained OIDC Provider implementation
@@ -68,6 +70,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Smoke-test commands, runtime versions and actual results are recorded.
   - [ ] One recommended provider strategy is clear; unresolved incompatibilities are explicit.
 - **Verify:** Run the provider smoke-test command recorded in the document; git diff --check.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I04 — Define issuer, subject, audience, token and client contracts
@@ -87,6 +90,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] All required claims and validation failures are explicit.
   - [ ] Examples contain no production secrets.
 - **Verify:** git diff --check; manually trace each claim to ADR-001.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I05 — Define the threat model and Platform/Tenant authorization boundary
@@ -107,6 +111,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Actor types and privilege boundaries are unambiguous.
   - [ ] Security logging and secret-redaction rules are testable.
 - **Verify:** git diff --check; review each threat/control pair.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I06 — Create the acceptance matrix and architecture exit gate
@@ -125,6 +130,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] MVP and post-MVP scenarios are separated.
   - [ ] Wave 1 entry gate and OIDC provider choice are explicit.
 - **Verify:** git diff --check; review matrix-to-task traceability.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 

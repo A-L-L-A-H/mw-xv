@@ -30,6 +30,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Only an operator command can issue a token.
   - [ ] Tests cover duplicate active token and expiry behavior.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I23 — Add bootstrap-state service and setup-status endpoint
@@ -48,6 +49,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Consumed/expired token or existing Platform Owner disables setup.
   - [ ] Route response is stable and contains no secret details.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I24 — Add atomic first Platform Owner creation service
@@ -67,6 +69,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Account, identifier, credential and capability are committed atomically or all rolled back.
   - [ ] Second owner bootstrap attempt is rejected without revealing sensitive account data.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test; PostgreSQL concurrency test when available.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I25 — Add single-use bootstrap claim endpoint
@@ -87,6 +90,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Invalid, expired, reused and concurrent claims fail closed.
   - [ ] No submitted secret appears in logs or error responses.
 - **Verify:** bun --filter @moonwitness/id test; add integration test using an isolated Identity DB.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I26 — Add the minimal first-install setup page
@@ -105,6 +109,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Labels, focus order and errors are accessible.
   - [ ] Submitted secrets are not written to browser storage, URL or server logs.
 - **Verify:** bun --filter @moonwitness/id test; run the existing app's browser/smoke test if configured.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I27 — Add password verification and login-session service
@@ -123,6 +128,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Wrong password, unknown account and disabled account do not create a session.
   - [ ] Password verification uses the maintained hasher adapter and has no plaintext logging.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I28 — Add login, current-session and logout routes
@@ -142,6 +148,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Logout revokes server-side session state.
   - [ ] No public self-registration route exists.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I29 — Add login throttling and brute-force regression tests
@@ -161,6 +168,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Rate limits expire and do not permanently lock an account.
   - [ ] Tests cover configured trusted-proxy behavior.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 

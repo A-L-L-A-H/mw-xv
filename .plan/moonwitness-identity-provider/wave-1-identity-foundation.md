@@ -28,6 +28,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Manifest uses repository package conventions and Node 24.
   - [ ] Package has no apps/api or UI dependency.
 - **Verify:** bun install --lockfile-only; bun --filter @moonwitness/orm-identity build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I08 — Add ORM package exports, tests and build checks
@@ -46,6 +47,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Public entry point can be imported in Node 24.
   - [ ] No database connection occurs during module import.
 - **Verify:** bun --filter @moonwitness/orm-identity build; bun --filter @moonwitness/orm-identity test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I09 — Scaffold apps/id service entry point
@@ -65,6 +67,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Server factory supports controlled startup/shutdown for tests.
   - [ ] The package imports no business addon registry.
 - **Verify:** bun --filter @moonwitness/id build; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I10 — Add strict Identity environment and configuration validation
@@ -83,6 +86,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Missing production database URL and invalid issuer URL fail closed.
   - [ ] Error output never includes DB credentials or secret values.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I11 — Add a dedicated Identity PostgreSQL connection
@@ -101,6 +105,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Connection lifecycle is testable and cleanly closed.
   - [ ] No fallback to business DB is possible.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I12 — Add liveness and readiness endpoints
@@ -119,6 +124,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Readiness fails when DB is unavailable or migrations are pending.
   - [ ] Health responses contain no sensitive fields.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I13 — Add deterministic Identity migration runner
@@ -137,6 +143,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Running migrations twice is a no-op.
   - [ ] Migration history is stored only in Identity DB.
 - **Verify:** bun --filter @moonwitness/id test; use an isolated PostgreSQL integration test when the test harness supports it.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I14 — Add identity.account model and migration
@@ -155,6 +162,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Model create/read/update lifecycle tests pass.
   - [ ] Public subject is opaque and immutable.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I15 — Add identity.identifier model and uniqueness constraints
@@ -173,6 +181,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Normalization behavior has tests for case and whitespace.
   - [ ] Identifier records reference exactly one identity.account.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I16 — Add identity.credential and password-hash adapter
@@ -191,6 +200,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Hasher tests cover correct password, wrong password and malformed stored hash.
   - [ ] Logs and thrown errors never contain supplied passwords or hashes.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I17 — Add identity.session model and expiry indexes
@@ -209,6 +219,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Indexes support account lookup and expiry pruning.
   - [ ] Tests cover expired, revoked and active sessions.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I18 — Add refresh-token family persistence and revocation state
@@ -227,6 +238,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Replay revokes the corresponding family/session.
   - [ ] Tests cover expiry, revocation, replay and concurrent consume.
 - **Verify:** bun --filter @moonwitness/orm-identity test; PostgreSQL transaction tests when available.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I19 — Add OAuth client registry model
@@ -245,6 +257,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Redirect URI and scope allowlists are persisted deterministically.
   - [ ] Disabled clients cannot authorize.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I20 — Add authorization-code persistence adapter only where provider integration requires it
@@ -263,6 +276,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Provider adapter conformance tests prove single-use and expiry behavior.
   - [ ] Any omitted table has a documented reason.
 - **Verify:** bun --filter @moonwitness/id test; selected provider integration smoke test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 #### - [ ] I21 — Add Identity audit-event and transactional-outbox models
@@ -281,6 +295,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Outbox rows can be claimed and retried without losing delivery state.
   - [ ] Both tables have dedicated migrations and tests.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
 
 
