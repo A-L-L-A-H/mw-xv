@@ -101,9 +101,7 @@ const INVENTORY_DIRECTORIES = [
   'scenes',
 ];
 
-const INVENTORY_EXCLUDE_DIRS = [
-  'brand/rendered',
-];
+const INVENTORY_EXCLUDE_DIRS = [];
 
 export async function runAssetQa(rootDir = packageRoot, options = {}) {
   const manifest =
