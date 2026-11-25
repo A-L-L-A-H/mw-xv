@@ -122,7 +122,7 @@
 
 ---
 
-## - [ ] T29 — Wire Public SDK Barrel (`src/index.ts`) & Verify Zero-Coupling Boundary
+## - [x] T29 — Wire Public SDK Barrel (`src/index.ts`) & Verify Zero-Coupling Boundary
 
 - **Owner File(s):** `packages/plan-taskos/src/index.ts`
   - `packages/plan-taskos/src/index.ts` (CREATE)
