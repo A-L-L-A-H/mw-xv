@@ -61,7 +61,7 @@ describe("knowledge-graph: 2-hop context, blast radius, export subgraph", () => 
       try {
         const parsed = JSON.parse(files[0].owner_files);
         if (Array.isArray(parsed) && parsed.length > 0) targetPath = parsed[0];
-      } catch {}
+      } catch (e) { void e; }
     }
     const result = queryBlastRadiusImpact(store, targetPath, 4);
     expect(result).toHaveProperty("impactedTasks");

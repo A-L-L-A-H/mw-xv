@@ -63,7 +63,19 @@ export function readJobResults(environment = env, jobs = requiredJobs) {
   if (inline) {
     try {
       const parsed = JSON.parse(inline);
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        // The CI_GATE_RESULTS may contain objects with a `result` field (e.g., {result: "success", outputs: {}})
+        // Extract just the result string for each job.
+        const extracted = {};
+        for (const [job, value] of Object.entries(parsed)) {
+          if (value && typeof value === 'object' && 'result' in value) {
+            extracted[job] = value.result;
+          } else {
+            extracted[job] = value;
+          }
+        }
+        return extracted;
+      }
     } catch {
       // An unparseable payload is treated as no results and fails closed below.
     }

@@ -69,26 +69,15 @@ export interface VerifyResult {
 
 /**
  * RFC 6962 leaf hash: SHA-256(0x00 || canonicalJson(envelopeWithoutSelfHash)).
- * `envelope_sha256` is excluded from the leaf payload so the hash is
- * self-referencing-stable (compute first, then seal).
+ * The leaf payload is the full envelope as-is except `envelope_sha256` is
+ * omitted when present (self-referencing-stable: compute first, then seal).
+ * Generic over the payload shape so it hashes identically to
+ * `packages/ai-runtime/src/merkle-ledger.ts` `hashMerkleLeaf`.
  */
 export function hashProofLeaf(envelope: ProofEnvelopeDraft): string {
-  // `envelope_sha256` is deliberately excluded so the hash is
-  // self-referencing-stable (compute first, then seal).
-  const withoutSelfHash: ProofEnvelopeDraft = {
-    schema_version: envelope.schema_version,
-    task_urn: envelope.task_urn,
-    code: envelope.code,
-    parent_proof_hashes: envelope.parent_proof_hashes,
-    commands: envelope.commands,
-    diff_files: envelope.diff_files,
-    owner_files_verified: envelope.owner_files_verified,
-    acceptance_criteria_state: envelope.acceptance_criteria_state,
-    commit_sha: envelope.commit_sha,
-    model_tier: envelope.model_tier,
-    agent_runtime: envelope.agent_runtime,
-    verified_at: envelope.verified_at,
-  };
+  const source = envelope as unknown as Record<string, unknown>;
+  const withoutSelfHash: Record<string, unknown> = { ...source };
+  delete withoutSelfHash.envelope_sha256;
   const canonical = canonicalJson(withoutSelfHash);
   const input = Buffer.concat([
     Buffer.from([LEAF_PREFIX]),
@@ -209,21 +198,9 @@ export function verifyProofChain(
   const failed: VerifyResult["failedProofs"] = [];
 
   for (const proof of proofs) {
-    // 1. Recompute the leaf hash and compare.
-    const expected = hashProofLeaf({
-      schema_version: proof.schema_version,
-      task_urn: proof.task_urn,
-      code: proof.code,
-      parent_proof_hashes: proof.parent_proof_hashes,
-      commands: proof.commands,
-      diff_files: proof.diff_files,
-      owner_files_verified: proof.owner_files_verified,
-      acceptance_criteria_state: proof.acceptance_criteria_state,
-      commit_sha: proof.commit_sha,
-      model_tier: proof.model_tier,
-      agent_runtime: proof.agent_runtime,
-      verified_at: proof.verified_at,
-    });
+    // 1. Recompute the leaf hash and compare (envelope_sha256 excluded from
+    //    the leaf payload by hashProofLeaf itself).
+    const expected = hashProofLeaf(proof);
     if (expected !== proof.envelope_sha256) {
       failed.push({
         envelope_sha256: proof.envelope_sha256,

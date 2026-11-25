@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { hashProofLeaf, sealProofEnvelope, computeMerkleRoot, emptyMerkleRoot, verifyProofChain, ProofEnvelopeDraft } from "../src/brain/merkle-dag.js";
+import type { ProofEnvelopeDraft } from "../src/brain/merkle-dag.js";
+import { hashProofLeaf, sealProofEnvelope, computeMerkleRoot, emptyMerkleRoot, verifyProofChain } from "../src/brain/merkle-dag.js";
 import { createHash } from "node:crypto";
 import { canonicalJson } from "../src/core/redaction.js";
 

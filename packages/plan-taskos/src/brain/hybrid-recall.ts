@@ -252,7 +252,7 @@ export async function hybridRecall(
   const mode: HybridRecallResult["mode"] = semanticAvailable ? "hybrid" : "lexical_only";
 
   // --- Semantic re-rank of lexical candidates ----------------------------
-  let semanticScores = new Map<string, number>();
+  const semanticScores = new Map<string, number>();
   if (semanticAvailable && embedding && lexicalCandidates.length > 0) {
     const urns = lexicalCandidates.map((c) => c.urn);
     const embeddingRows = (await store.all(
