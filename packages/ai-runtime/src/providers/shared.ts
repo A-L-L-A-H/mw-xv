@@ -2,7 +2,7 @@ import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { isPublicWebhookAddress, validateWebhookUrl } from '@moonwitness/orm-integration';
 import type { JsonValue } from '@moonwitness/types';
-import { isLoopbackHostname, isLoopbackEndpointUrl } from '@moonwitness/types';
+import { isLoopbackHostname } from '@moonwitness/types';
 import { sanitizeProviderMessage, type RedactionContext } from '../redaction.js';
 import { composeAttemptSignal } from '../resilience.js';
 import { validateJsonSchema } from '../schema-validator.js';
