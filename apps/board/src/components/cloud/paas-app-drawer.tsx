@@ -186,7 +186,7 @@ export function PaasAppDrawer({ slug, apiBase, fetchFn, onClose, onUpdated }: Pa
   const deployMode = detail?.deployMode ?? detail?.deploy_mode ?? 'unknown';
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/50" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-50 flex justify-end bg-ink/50" role="dialog" aria-modal="true">
       <div className="h-full w-full max-w-2xl overflow-y-auto bg-background p-4">
         <Panel
           title={`App: ${slug}`}

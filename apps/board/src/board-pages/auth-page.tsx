@@ -157,7 +157,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
             </p>
 
             {isLogin && setupRequired ? (
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-muted/50 p-3 text-sm">
                 <span>This server has not completed its first-boot setup yet.</span>
                 <Button asChild variant="outline" size="sm">
                   <Link href="/setup">Complete First-Boot Server Setup</Link>
