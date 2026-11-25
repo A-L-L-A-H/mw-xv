@@ -71,7 +71,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M16** — `packages/orm-cloud/src/models/index.ts`: extend `CloudApp` (`managed_by`, `deploy_mode`, `template_id`, `compose_spec`, `git_*`, `ingress_routes`, `webhook_secret`)
 - [x] **M17** — `packages/orm-cloud/src/coolify-template-pack.ts`: catalog resolver + YAML parser + compatibility classifier (`ready` | `inline_config` | `restricted`)
 - [x] **M18** — `packages/orm-cloud/src/coolify-template-pack.ts`: paginated `listCoolifyTemplates` & `getCoolifyTemplateDetail`
-- [ ] **M19** — `packages/orm-cloud/src/coolify-compose-compiler.ts`: security policy gate + idempotent Coolify magic variable resolver (`existingEnv` reuse)
+- [x] **M19** — `packages/orm-cloud/src/coolify-compose-compiler.ts`: security policy gate + idempotent Coolify magic variable resolver (`existingEnv` reuse)
 - [ ] **M20** — `packages/orm-cloud/src/coolify-compose-compiler.ts`: full YAML transformer (volume prefixing, top-level `volumes:`, networks/aliases, inline `content:` files)
 - [ ] **M21** — `packages/orm-cloud/src/paas-state.ts`: NULL-safe `base_config_parameters` upsert + `readPaasInstanceSettings` / `savePaasInstanceSettings`
 - [ ] **M22** — `packages/orm-cloud/src/paas-state.ts`: `allocatePreviewPort`, `buildDeclarativeCaddySpec`, `reconcileCaddyWithAgent`, `promotePreviewAppsToWildcard`
@@ -134,7 +134,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
-| Wave 2 | `M16`–`M38` | `3 / 23` | — | `M18 OK` — `@moonwitness/orm-cloud build` exit 0; `listCoolifyTemplates({q:'n8n'}).total >= 1`, `getCoolifyTemplateDetail('n8n')` defined, `total_all=355` |
+| Wave 2 | `M16`–`M38` | `4 / 23` | — | `M19 OK` — `@moonwitness/orm-cloud build` exit 0; `validateComposeSecurity` rejects privileged/docker.sock/host-bind; `resolveCoolifyMagicVariables` generates CSPRNG secrets + FQDN/URL ingress + idempotent existingEnv reuse |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
