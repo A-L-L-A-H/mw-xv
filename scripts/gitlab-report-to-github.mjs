@@ -3,11 +3,7 @@
 // Reports GitLab pipeline status to GitHub commit via GitHub App installation token.
 // Reads GitHub App credentials from CI/CD variables: GITHUB_APP_ID, GITHUB_APP_PRIVATE_KEY
 
-import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-
-const require = createRequire(import.meta.url);
 
 // Configuration from CI/CD variables
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID;
@@ -24,7 +20,6 @@ const commitSha = process.env.CI_COMMIT_SHA;
 const pipelineId = process.env.CI_PIPELINE_ID;
 const pipelineUrl = process.env.CI_PIPELINE_URL;
 const pipelineStatus = process.env.CI_JOB_STATUS || 'running';
-const branch = process.env.CI_COMMIT_REF_NAME;
 
 if (!commitSha || !pipelineUrl) {
   console.error('Missing required CI variables');
@@ -99,10 +94,9 @@ async function getInstallationToken(jwt) {
     throw new Error(`No GitHub App installation found for ${GITHUB_REPO.split('/')[0]}`);
   }
 
-  // Create installation access token
+  // Create installation access token (scoped to all repos the app is installed on)
   const { data: tokenData } = await octokit.apps.createInstallationAccessToken({
     installation_id: installation.id,
-    repository_ids: [/* repo ID - we'd need to fetch it */],
   });
 
   return tokenData.token;
