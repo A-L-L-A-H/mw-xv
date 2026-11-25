@@ -65,7 +65,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 
 ### Wave 2 — Embedded SQLite Cognitive Brain, Knowledge Graph & Memory (`wave-2-cognitive-brain-and-memory.md`)
 - [x] **T12** — Implement `BrainStorageDriver` (`src/brain/storage.ts`): `NodeSqliteBrainStore` (`node:sqlite` WAL + `busy_timeout=5000` + FTS5) & `InMemoryBrainStore` fallback
-- [ ] **T13** — Implement 7-table schema migration & deterministic `<150ms` Git-to-SQLite reindexer (`src/brain/schema.ts`, `src/brain/reindex.ts`)
+- [x] **T13** — Implement 7-table schema migration & deterministic `<150ms` Git-to-SQLite reindexer (`src/brain/schema.ts`, `src/brain/reindex.ts`)
 - [ ] **T14** — Implement 2-hop Knowledge Graph query engine (`src/brain/knowledge-graph.ts`: recursive CTE `impact`, file-neighbor history, path-matched `INV-*` & `ADR` traversal)
 - [ ] **T15** — Implement Hybrid BM25 + optional loopback Ollama embedding recall (`src/brain/hybrid-recall.ts`, automatic offline `lexical_only` fallback)
 - [ ] **T16** — Implement Episodic Memory store (`src/brain/episodic-memory.ts`: redacted `.plan/memory/episodes.jsonl` sync + Non-REM decay & clustering + Protected-Gate Invariant Synthesizer with `automatedPromotionAllowed: false`)

@@ -30,7 +30,7 @@
 
 ---
 
-## - [ ] T13 — Implement 7-Table Cognitive Schema & Deterministic Git-to-SQLite Reindexer
+## - [x] T13 — Implement 7-Table Cognitive Schema & Deterministic Git-to-SQLite Reindexer
 
 - **Owner File(s):** `packages/plan-taskos/src/brain/schema.ts`, `packages/plan-taskos/src/brain/reindex.ts`
   - `packages/plan-taskos/src/brain/schema.ts` (CREATE)
