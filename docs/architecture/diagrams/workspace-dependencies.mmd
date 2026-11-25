@@ -60,6 +60,7 @@ flowchart LR
   pkg58["@moonwitness/types"]
   pkg59["@moonwitness/ui"]
   pkg60["@moonwitness/ui-catalog"]
+  pkg61["@moonwitness/whatsapp"]
   pkg0 -->|runtime| pkg42
   pkg1 -->|development| pkg58
   pkg2 -->|runtime| pkg4
@@ -288,3 +289,8 @@ flowchart LR
   pkg59 -->|runtime| pkg58
   pkg60 -->|runtime| pkg6
   pkg60 -->|runtime| pkg59
+  pkg61 -->|runtime| pkg19
+  pkg61 -->|runtime| pkg21
+  pkg61 -->|runtime| pkg25
+  pkg61 -->|runtime| pkg55
+  pkg61 -->|runtime| pkg58

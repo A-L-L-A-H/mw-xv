@@ -81,6 +81,12 @@
       "scripts": ["build", "build:built", "dev", "diagnostics:generate", "preview", "test"]
     },
     {
+      "name": "@moonwitness/whatsapp",
+      "version": "1.0.0-rc.1",
+      "directory": "apps/whatsapp",
+      "scripts": ["build", "dev", "start", "test"]
+    },
+    {
       "name": "@moonwitness/ai-evaluation",
       "version": "1.0.0-rc.1",
       "directory": "packages/ai-evaluation",
@@ -482,6 +488,12 @@
       "diagnostics:generate": "node scripts/generate-asset-diagnostics.mjs",
       "preview": "vite preview",
       "test": "playwright test"
+    },
+    "@moonwitness/whatsapp": {
+      "build": "vite build && tsc",
+      "dev": "tsx watch src/server.ts",
+      "start": "node dist/server.js",
+      "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/ai-evaluation": {
       "build": "tsc",
@@ -10509,5 +10521,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "9786df7d14d1cfc9e4788862d8b41fefa0a4737a7c47629685bf5f513c395815"
+  "generatedFromSha256": "7fbde6a21aad1e77ee78aaac16875a8231494dee8eb8332be2754d9c6f9a372c"
 }

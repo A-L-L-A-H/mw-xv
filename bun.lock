@@ -259,7 +259,6 @@
         "@moonwitness/orm-base": "workspace:*",
         "@moonwitness/orm-whatsapp": "workspace:*",
         "@moonwitness/types": "workspace:*",
-        "@moonwitness/ui": "workspace:*",
         "@vitejs/plugin-react": "^6.1.1",
         "fastify": "^5.12.8",
         "knex": "^3.3.0",

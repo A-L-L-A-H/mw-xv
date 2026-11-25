@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "a6033aa97fc7d19ceb014e5b1a02b5608a5425f62c1d863d3b79a089411473a3",
+  "sourceSha256": "99edf4004ce5be8bb48f7ab73a4da00795fb553c42f5951692add7c13ef4fbfb",
   "packages": [
     {
       "name": "@moonwitness/agent-observability",
@@ -368,6 +368,12 @@
       "kind": "app",
       "version": "1.0.0-rc.1",
       "manifest": "apps/ui-catalog"
+    },
+    {
+      "name": "@moonwitness/whatsapp",
+      "kind": "app",
+      "version": "1.0.0-rc.1",
+      "manifest": "apps/whatsapp"
     }
   ],
   "dependencies": [
@@ -1738,6 +1744,36 @@
       "to": "@moonwitness/ui",
       "kind": "runtime",
       "manifest": "apps/ui-catalog"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/logger",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/orm-whatsapp",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
     }
   ]
 }

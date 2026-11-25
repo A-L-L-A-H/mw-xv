@@ -1,0 +1,59 @@
+# Standalone MoonWitness WhatsApp gateway stack with Cloudflare Tunnel sidecar.
+# Relative paths resolve from this file's directory (deploy/compose/), so build contexts use ../..
+# to reach the repository root. Do not pass --project-directory .; it would break those contexts.
+#
+# Quick tunnel (ephemeral trycloudflare.com URL):
+#   docker compose -f deploy/compose/docker-compose.whatsapp.yml up -d --build
+#
+# Named tunnel (persistent Cloudflare Zero Trust tunnel):
+#   CLOUDFLARE_TUNNEL_TOKEN=<token> docker compose -f deploy/compose/docker-compose.whatsapp.yml up -d --build
+services:
+  whatsapp:
+    build:
+      context: ../..
+      dockerfile: apps/whatsapp/Dockerfile
+    container_name: moonwitness_whatsapp_standalone
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${WHATSAPP_PORT:-3001}:3000'
+    environment:
+      NODE_ENV: production
+      WHATSAPP_DRIVER: baileys
+      WHATSAPP_SERVICE_HOST: 0.0.0.0
+      WHATSAPP_SERVICE_PORT: 3000
+      WHATSAPP_GATEWAY_USERNAME: ${WHATSAPP_GATEWAY_USERNAME:-moonwitness}
+      WHATSAPP_GATEWAY_PASSWORD: ${WHATSAPP_GATEWAY_PASSWORD:-moonwitness}
+      WHATSAPP_API_KEY: ${WHATSAPP_API_KEY:-}
+      WHATSAPP_PUBLIC_URL: ${WHATSAPP_PUBLIC_URL:-http://localhost:3001}
+      WHATSAPP_WEBHOOK_URL: ${WHATSAPP_WEBHOOK_URL:-}
+      WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:-}
+      WHATSAPP_BAILEYS_AUTH_DIR: /var/lib/moonwitness/whatsapp-auth
+      WHATSAPP_SQLITE_PATH: ${WHATSAPP_SQLITE_PATH:-/var/lib/moonwitness/whatsapp-auth/whatsapp.db}
+      DATABASE_URL: ${DATABASE_URL:-}
+    volumes:
+      - whatsapp_standalone_auth_data:/var/lib/moonwitness/whatsapp-auth
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: moonwitness_whatsapp_cloudflared
+    restart: unless-stopped
+    command: >-
+      ${CLOUDFLARE_TUNNEL_TOKEN:+tunnel --no-autoupdate run --token }${CLOUDFLARE_TUNNEL_TOKEN:-tunnel --no-autoupdate --url http://whatsapp:3000}
+    depends_on:
+      whatsapp:
+        condition: service_healthy
+
+volumes:
+  whatsapp_standalone_auth_data:
