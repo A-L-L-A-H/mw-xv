@@ -266,8 +266,28 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
     resourceId: true,
   },
   {
+    method: 'GET',
+    path: '/api/cloud/paas/apps/:slug',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: false,
+    feature: 'controlPlane',
+    resourceId: true,
+  },
+  {
     method: 'POST',
     path: '/api/cloud/paas/apps/:slug/env',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: false,
+    feature: 'provisioning',
+    resourceId: true,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/apps/:slug/domain',
     operation: 'app.deploy',
     model: 'cloud.app',
     permission: 'write',
@@ -2313,6 +2333,73 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           return reply.code(502).send({
             success: false,
             error: safeErrorText(error, [resolvedToken], 'PaaS app stats failed'),
+          });
+        }
+      }
+    );
+
+    fastify.get<{ Params: { slug: string } }>(
+      '/api/cloud/paas/apps/:slug',
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/apps/:slug');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const { slug } = req.params;
+        try {
+          const app = await CloudApp.query()
+            .where({ name: slug, company_id: ctx.companyId, managed_by: 'paas', is_active: true, active: true })
+            .first();
+          if (!app) {
+            return reply.code(404).send({ success: false, error: `App ${slug} not found` });
+          }
+
+          // Fetch live container state from agent
+          let containerState: { state: string; status: string; containerId: string } | null = null;
+          try {
+            const containers = await listAgentContainers({ endpoint: defaultAgentUrl, fetchImpl });
+            const found = containers.find((c) => (c.slug ?? c.name) === slug);
+            if (found) {
+              containerState = { state: found.state, status: found.status, containerId: found.containerId };
+            }
+          } catch {
+            // Swallow agent errors; proceed with PostgreSQL state only
+          }
+
+          // Fetch latest 20 deployments
+          const deployments = await CloudDeployment.query()
+            .where({ app_id: app.id, company_id: ctx.companyId })
+            .orderBy('started_at', 'desc')
+            .limit(20);
+
+          // Redact secrets: env_vars keys preserved with [REDACTED] values, webhook_secret redacted
+          const redactedEnvVars: Record<string, string> = {};
+          if (app.env_vars && typeof app.env_vars === 'object') {
+            for (const key of Object.keys(app.env_vars)) {
+              redactedEnvVars[key] = '[REDACTED]';
+            }
+          }
+
+          const data = {
+            ...app,
+            env_vars: redactedEnvVars,
+            webhook_secret: app.webhook_secret ? '[REDACTED]' : undefined,
+            ingressRoutes: app.ingress_routes ?? [],
+            deployMode: app.deploy_mode,
+            templateId: app.template_id,
+            deployments,
+            ...(containerState ? { containerState } : {}),
+          };
+
+          mark(rule.operation, 'success');
+          return { success: true, data };
+        } catch (error) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(error, [resolvedToken], 'PaaS app lookup failed'),
           });
         }
       }
