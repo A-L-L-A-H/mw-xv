@@ -15,6 +15,14 @@ const intentionalBleed = new Map([
     },
   ],
   [
+    'brand/social-card.dark.svg',
+    {
+      elements: ['mw-brand-social-card-dark-orbit-outer'],
+      reason:
+        'the outer orbit ring is intentionally cropped at the right edge of the social-card canvas',
+    },
+  ],
+  [
     'environments/moon-city-clouds-near.svg',
     {
       elements: ['mw-environments-moon-city-clouds-near-layer'],
