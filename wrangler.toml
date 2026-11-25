@@ -1,0 +1,6 @@
+name = "moonwitness-docs"
+compatibility_date = "2026-11-25"
+pages_build_output_dir = "./apps/docs/dist"
+
+[build]
+command = "cd apps/docs && bun run portal:build"

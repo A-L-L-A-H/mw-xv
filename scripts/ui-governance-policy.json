@@ -168,6 +168,19 @@
       "aliases": {},
       "generatedAssets": [],
       "runtimeEvidence": []
+    },
+    "apps/whatsapp": {
+      "packageName": "@moonwitness/whatsapp",
+      "classification": "product-adopter",
+      "browser": true,
+      "sourceRoots": ["client"],
+      "publicRoots": [],
+      "sharedSourceRoots": [],
+      "routeRoots": [],
+      "entryFiles": ["client/main.tsx"],
+      "aliases": {},
+      "generatedAssets": [],
+      "runtimeEvidence": []
     }
   },
   "rules": {
