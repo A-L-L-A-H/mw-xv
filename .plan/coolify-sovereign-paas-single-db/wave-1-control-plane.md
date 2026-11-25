@@ -110,7 +110,7 @@
 
 ---
 
-## - [ ] M07 — Enable `/agent/` Auth Prefix in `buildMux` (`main.go`)
+## - [x] M07 — Enable `/agent/` Auth Prefix in `buildMux` (`main.go`)
 
 - **Owner File (MODIFY):** `apps/control-plane/main.go` (lines 357–369)
 - **Depends On:** `M06`

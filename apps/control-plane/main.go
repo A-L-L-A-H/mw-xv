@@ -372,13 +372,13 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 			// Public liveness, provider HMAC and A2A peer identity are enforced
 			// by their own handlers, never by a service bearer token.
 		case accessAuthenticated:
-			if strings.HasPrefix(route.pattern, "/paas/") {
+			if strings.HasPrefix(route.pattern, "/paas/") || strings.HasPrefix(route.pattern, "/agent/") {
 				handler = requirePaasAuth(adminToken, handler)
 			} else {
 				handler = requireBearerAuth(adminToken, handler)
 			}
 		case accessPrivileged:
-			if strings.HasPrefix(route.pattern, "/paas/") {
+			if strings.HasPrefix(route.pattern, "/paas/") || strings.HasPrefix(route.pattern, "/agent/") {
 				handler = requirePrivilegedPaasAuth(adminToken, handler)
 			} else {
 				handler = requireAccessBearerAuth(adminToken, accessPrivileged, handler)
