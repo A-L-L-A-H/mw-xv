@@ -1,0 +1,93 @@
+name: Deploy Documentation to Cloudflare Pages
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - 'apps/docs/**'
+      - 'packages/ui/**'
+      - 'packages/assets/**'
+      - 'wrangler.toml'
+      - 'package.json'
+      - 'bun.lock'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        type: choice
+        options:
+          - preview
+          - production
+        default: preview
+
+permissions:
+  contents: read
+  deployments: write
+
+env:
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Cloudflare Pages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment:
+      name: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || 'preview') }}
+      url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: ./.github/actions/setup-bun
+        with:
+          node-version: '24'
+          bun-version: '1.4.5'
+
+      - name: Install frozen workspace dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build documentation
+        working-directory: apps/docs
+        run: bun run portal:build
+        env:
+          MW_DOCS_CHANNEL: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'stable' || 'preview') }}
+          MW_DOCS_SOURCE_REF: ${{ github.sha }}
+          MW_DOCS_APPLICATION_VERSION: ${{ github.run_number }}
+          BASE_URL: ${{ github.ref == 'refs/heads/main' && '/moonwitness-xiv/' || '/moonwitness-xiv/' }}
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/pages-action@efd2e3e5b0252b4f5e25c0d4f5c5d5e5f5a5b5c5 # v1.13.6
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: moonwitness-docs
+          directory: apps/docs/dist
+          branch: ${{ github.ref_name }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: '3'
+
+      - name: Comment deployment URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a3d2630b8d9480e35e7e7e5e5f5a5b5c5d5e5f5 # v7.0.1
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '📚 Documentation preview deployed to: ${{ steps.deploy.outputs.url }}'
+            })
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Documentation deployment to Cloudflare Pages failed"
+          exit 1
