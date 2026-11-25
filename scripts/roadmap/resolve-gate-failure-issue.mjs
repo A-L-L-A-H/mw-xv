@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // scripts/roadmap/resolve-gate-failure-issue.mjs
-// Closes the single open auto-heal issue for the current branch after exact-SHA
-// `ci-gate` has already been verified by release-await-ci.mjs.
+// Closes every open auto-heal issue after exact-SHA `ci-gate` has already been
+// verified by release-await-ci.mjs. Auto-heal issues are keyed to the branch
+// the failing run observed (`dev`, `330/merge`, ...), so the close cannot be
+// scoped to the current push branch: on green, every marker-tagged auto-heal
+// issue records a failure that the exact-SHA green gate has superseded.
 
 import { execFileSync } from 'node:child_process';
 
@@ -29,7 +32,6 @@ const listed = GH(
   'issue', 'list', '--repo', repo,
   '--state', 'open',
   '--label', 'auto-heal',
-  '--search', `in:title "Gate failure: ${branch}"`,
   '--json', 'number,title,body'
 );
 const issues = JSON.parse(listed);
@@ -37,7 +39,6 @@ const marker = '<!-- gate-failure-triage:auto -->';
 const targets = issues.filter(
   (issue) => typeof issue.body === 'string' && issue.body.includes(marker)
 );
-if (targets.length > 1) throw new Error('Multiple auto-heal issues found; refusing ambiguous close');
 
 for (const issue of targets) {
   const number = String(issue.number);

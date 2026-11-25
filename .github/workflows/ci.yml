@@ -382,7 +382,11 @@ jobs:
   gate-failure-triage:
     name: Gate failure triage
     needs: [secret-scan, static-analysis, dependency-audit, quality-and-build, unit-tests, knowledge-gate, postgres-integration, dx-test, ci-gate]
-    if: always() && failure()
+    # Runs on every terminal CI result: on failure it triages and opens auto-heal
+    # issues; on success it verifies exact-SHA ci-gate is green and closes the
+    # resolved auto-heal issue. Skipping the job on green would leave open
+    # auto-heal issues unclosed forever.
+    if: always() && !cancelled()
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
@@ -474,8 +478,13 @@ jobs:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
+          # This job runs inside the still-in-progress ci.yml run, so polling
+          # mode (which requires a completed exact-SHA CI workflow run) can never
+          # see itself as completed. Verify the already-completed ci-gate check
+          # run on this exact SHA via a one-shot check-runs snapshot instead.
+          gh api "repos/$GH_REPO/commits/$EXPECTED_SHA/check-runs?per_page=100" > gate-check-runs.json
           if ! node scripts/release-await-ci.mjs --sha "$EXPECTED_SHA" --repo "$GH_REPO" \
-              --checks '["ci-gate"]' --timeout-seconds 0 --interval-seconds 1; then
+              --checks '["ci-gate"]' --checks-file gate-check-runs.json; then
             echo "Gate not green yet; auto-heal issues remain open."
             exit 0
           fi

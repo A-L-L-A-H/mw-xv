@@ -23,11 +23,12 @@ function createFakeGh(log, existing) {
   return fake;
 }
 
-test('resolve closes only the marked auto-heal issue with exact-SHA evidence', () => {
+test('resolve closes every marked auto-heal issue on exact-SHA green', () => {
   const log = path.join(mkdtempSync(path.join(tmpdir(), 'mw-gate-resolve-log-')), 'calls.log');
   const existing = JSON.stringify([
     { number: 9, title: 'Gate failure: dev [a]', body: '<!-- gate-failure-triage:auto -->' },
     { number: 10, title: 'Gate failure: dev [b]', body: 'unrelated issue' },
+    { number: 11, title: 'Gate failure: 330/merge [c]', body: '<!-- gate-failure-triage:auto -->' },
   ]);
   const fake = createFakeGh(log, existing);
 
@@ -46,8 +47,9 @@ test('resolve closes only the marked auto-heal issue with exact-SHA evidence', (
   });
 
   const calls = readFileSync(log, 'utf8');
-  assert.match(calls, /issue edit 9 --repo owner\/repo --remove-label auto-fix-requested,priority:P0/u);
+  assert.match(calls, /issue edit 9 --repo owner\/repo --remove-label auto-fix-requested,priority:p0/u);
   assert.match(calls, /issue close 9 --repo owner\/repo/u);
+  assert.match(calls, /issue close 11 --repo owner\/repo/u);
   assert.match(calls, /abcdefabcdefabcdefabcdefabcdefabcdefabcd/u);
   assert.doesNotMatch(calls, /issue close 10/u);
 });
