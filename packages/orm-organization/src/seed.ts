@@ -1,10 +1,4 @@
 import { DEFAULT_TIMEZONE } from '@moonwitness/orm-base';
-import {
-  OrganizationDepartment,
-  OrganizationTeam,
-  OrganizationPosition,
-  OrganizationMembership,
-} from './models.js';
 
 export interface OrganizationSeedPermission {
   model: string;
