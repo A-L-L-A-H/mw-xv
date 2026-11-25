@@ -92,7 +92,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T31** — Implement thin MCP tool handlers & stdio JSON-RPC server (`src/mcp/tools.ts`, `src/mcp/stdio-server.ts`: `plan_next`, `plan_recall`, `plan_impact`, `plan_claim`, `plan_complete`, `plan_graph`, `plan_sync`)
 - [x] **T32** — Implement full `plan-taskos` CLI (`src/cli.ts`: `init`, `lint`, `reindex`, `dag`, `next`, `recall`, `impact`, `claim`, `verify`, `complete`, `fail`, `block`, `sleep`, `sync`, `intake`, `export-swarm`, `mcp`)
 - [x] **T33** — Author portable Agent Skill & templates (`packages/plan-taskos/skill/SKILL.md`, `skill/templates/{manifest,wave,adr,spec}.*`, `skill/mcp-manifest.json`)
-- [ ] **T34** — Install workspace skill mirror at `.agents/skills/plan-taskos/SKILL.md` & link with `hybrid-swarm-dag` / `frontier-research-scout` conventions
+- [x] **T34** — Install workspace skill mirror at `.agents/skills/plan-taskos/SKILL.md` & link with `hybrid-swarm-dag` / `frontier-research-scout` conventions
 - [ ] **T35** — Add root `package.json` convenience scripts (`plan:lint`, `plan:reindex`, `plan:next`, `plan:sync`, `plan:mcp`)
 - [ ] **T36** — Add Wave 5 CLI + MCP E2E tests (`cli-e2e.test.ts`, `mcp-server.test.ts`) & dogfood `plan-taskos lint` + `reindex` on `.plan/`
 
@@ -117,5 +117,5 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 | Wave 2 | `T12`–`T18` | `7 / 7` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
 | Wave 3 | `T19`–`T23` | `5 / 5` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck && bun --filter @moonwitness/plan-taskos build && bun --filter @moonwitness/plan-taskos test` (80/80) |
 | Wave 4 | `T24`–`T30` | `7 / 7` | ced7a0d3 | `build` exit 0 && test 114/114 across 13 files |
-| Wave 5 | `T31`–`T36` | `3 / 6` | a52319a5 | T33/T34/T35 verify exit 0; templates AJV schema-valid; `check-docs.mjs` 0 findings |
+| Wave 5 | `T31`–`T36` | `4 / 6` | af4d88a2 | T33/T34/T35 verify exit 0; templates AJV schema-valid; `check-docs.mjs` 0 findings |
 | Wave 6 | `T37`–`T44` | `0 / 8` | — | — |

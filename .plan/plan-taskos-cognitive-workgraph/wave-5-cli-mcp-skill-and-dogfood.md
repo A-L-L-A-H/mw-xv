@@ -86,7 +86,7 @@
 
 ---
 
-## - [ ] T34 — Install Workspace Skill Mirror at `.agents/skills/plan-taskos/SKILL.md`
+## - [x] T34 — Install Workspace Skill Mirror at `.agents/skills/plan-taskos/SKILL.md`
 
 - **Owner File(s):** `.agents/skills/plan-taskos/SKILL.md`
   - `.agents/skills/plan-taskos/SKILL.md` (CREATE)
