@@ -21,14 +21,15 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
 
   const candidateValidation = await validateTaskRegistryData(result);
   assert.equal(candidateValidation.valid, true, candidateValidation.errors.join('\n'));
-  assert.equal(candidateValidation.taskCount, 679);
+  assert.equal(candidateValidation.taskCount, 715);
 
-  // Source inventory: 239 roadmap + 24 audit + 112 WhatsApp + 7 legacy MW
-  // + 14 promotion lifecycle + 128 desktop + 4 evolution + 109 Visual Universe records.
+  // Source inventory: 239 + 36 ISP M19-M22 roadmap + 24 audit + 112 WhatsApp
+  // + 7 legacy MW + 14 promotion lifecycle + 128 desktop + 4 evolution
+  // + 109 Visual Universe records.
   assert.equal(
     result.tasks.length,
-    679,
-    `Expected 679 source-backed tasks, got ${result.tasks.length}`
+    715,
+    `Expected 715 source-backed tasks, got ${result.tasks.length}`
   );
   const statusCounts = Object.fromEntries(
     ['done', 'doing', 'todo', 'blocked'].map((status) => [
@@ -36,7 +37,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
       result.tasks.filter((task) => task.status === status).length,
     ])
   );
-  assert.deepEqual(statusCounts, { done: 469, doing: 49, todo: 119, blocked: 24 });
+  assert.deepEqual(statusCounts, { done: 469, doing: 49, todo: 155, blocked: 24 });
 
   const sourceCounts = Object.fromEntries(
     [...new Set(result.tasks.map((task) => task.sourceRef.file))]
@@ -51,7 +52,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
     'docs/archive/todos/todo.md': 7,
     'docs/operations/social-media-grand-plan.md': 29,
     'docs/operations/youtube-channel.md': 13,
-    'docs/roadmap/tasks.json': 239,
+    'docs/roadmap/tasks.json': 275,
     'evolution/backlog.json': 4,
     'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md': 14,
     'scripts/tasks/sources/audit-tasks.mjs': 24,
@@ -246,7 +247,7 @@ test('isolated recovery candidate mode writes validated output without touching 
     const candidate = JSON.parse(await readFile(candidatePath, 'utf8'));
     const validation = await validateTaskRegistryData(candidate);
     assert.equal(validation.valid, true, validation.errors.join('\n'));
-    assert.equal(candidate.tasks.length, 679);
+    assert.equal(candidate.tasks.length, 715);
     assert.equal(await readFile(canonicalPath, 'utf8'), canonicalBefore);
     assert.equal((await stat(candidatePath)).isFile(), true);
   } finally {
