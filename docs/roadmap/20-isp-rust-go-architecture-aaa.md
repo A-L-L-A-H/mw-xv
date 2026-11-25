@@ -79,8 +79,8 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 ### Acceptance
 
-- [ ] Clean clone builds the image without pre-existing Cargo artifacts.
-- [ ] docker compose config succeeds and references only existing paths and services.
+- [x] Clean clone builds the image without pre-existing Cargo artifacts.
+- [x] docker compose config succeeds and references only existing paths and services.
 - [ ] Container starts RADIUS auth/accounting and private management HTTP using documented configuration.
 
 ### Delivery gates

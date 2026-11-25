@@ -3518,6 +3518,7 @@
       ],
       "output": "Tracked Cargo.lock and passing clean Docker/Compose build",
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
+      "evidence": "docs/roadmap/evidence/M19.03.md",
       "priority": "p1",
       "status": "todo"
     },
