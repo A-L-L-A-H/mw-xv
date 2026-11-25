@@ -1,17 +1,4 @@
 {
   "version": 1,
-  "entries": [
-    {
-      "file": "apps/board/src/components/ai/interactive-session-panel.tsx",
-      "rule": "hardcoded-color",
-      "fingerprint": "4291e527330b07aca6b177ca284f6df3ae0ede8cb8a29dcb54e8947cc3b92f77",
-      "reason": "Reviewed existing styling debt; migrate to shared design-system tokens or components."
-    },
-    {
-      "file": "apps/board/src/components/ai/interactive-session-panel.tsx",
-      "rule": "hardcoded-color",
-      "fingerprint": "95b038ab927aff2e7682431957edd6cc35a05265427eb0ab078a599ba0472984",
-      "reason": "Reviewed existing styling debt; migrate to shared design-system tokens or components."
-    }
-  ]
+  "entries": []
 }
