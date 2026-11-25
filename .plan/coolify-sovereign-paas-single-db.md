@@ -121,7 +121,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M60** — Verify 390+ template search + deploy `uptime-kuma` in IP preview mode -> verify Postgres `cloud_apps` + `http://163.61.134.104:8001/` live
 - [x] **M61** — Verify DNS doctor (`matched`) -> apply `apps.moonwitness.biz.id` + wildcard + `wa.apps.moonwitness.biz.id` -> strict TLS `200` + HSTS header on HTTPS
 - [x] **M62** — Verify `promote-wildcard` -> `https://uptime-kuma.apps.moonwitness.biz.id/` returns `200`/`302` over valid TLS + app detail/stats endpoints pass
-- [ ] **M63** — Verify Port `8000` Lockdown closes `:8000` & `:8001` while HTTPS stays `200`
+- [x] **M63** — Verify Port `8000` Lockdown closes `:8000` & `:8001` while HTTPS stays `200`
 - [ ] **M64** — Verify `install.sh --unlock-port` restores `:8000` from PostgreSQL + create 1 backup dump (leaving dirty state intentionally for `M65`)
 - [ ] **M65** — **Full Clean Reinstall DB-Wipe Proof:** Run second `install.sh --reinstall` on dirty VPS -> assert PostgreSQL tables = `0`, admin reset to `superadmin`, old JWT = `401`, zero `mw-*` volumes/stacks/backups/SQLite/domains, fresh `setupRequired: true`
 - [ ] **M66** — Clean `/tmp/*` staging files, confirm fresh `http://163.61.134.104:8000/setup` live, close Progress Ledger
@@ -137,4 +137,4 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
 | Wave 3 | `M39`–`M51` | `13 / 13` | `0de765f7` | `M51 OK` — full board gate green: typecheck 0; ui:check 0 findings; build exit 0 (28/28 pages incl /setup); board:budget all routes pass |
 | Wave 4 | `M52`–`M55` | `4 / 4` | `7a94fa11` | `M55 OK` — `git push origin dev` succeeded (`c0c19311..7a94fa11`); all pre-push static/UI/doc/gitleaks/TaskOS gates green; dev in sync with origin/dev |
-| Wave 5 | `M56`–`M66` | `7 / 11` | — | `M62 OK` — promote-wildcard count=1; app detail/stats 200; https://uptime-kuma.apps.moonwitness.biz.id/ 200 over valid TLS |
+| Wave 5 | `M56`–`M66` | `8 / 11` | — | `M63 OK` — lockdown apply 200; bootstrap port blocks removed from Caddyfile; :8000/:8001 closed; HTTPS 200 |

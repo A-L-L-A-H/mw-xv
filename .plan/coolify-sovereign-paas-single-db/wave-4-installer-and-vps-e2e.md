@@ -178,7 +178,7 @@
 
 ---
 
-### - [ ] M63 — Verify TLS-Gated Port `8000` Lockdown
+### - [x] M63 — Verify TLS-Gated Port `8000` Lockdown
 
 - **Depends On:** `M62`
 - **Acceptance Criteria:**
