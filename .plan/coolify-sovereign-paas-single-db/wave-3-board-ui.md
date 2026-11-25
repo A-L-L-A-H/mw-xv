@@ -269,7 +269,7 @@
 
 ---
 
-## - [ ] M50 — Add 3-Tab Deploy Panel (`Docker Image` | `Git Repository` | `Docker Compose`) in `PaasStudioPanel`
+## - [x] M50 — Add 3-Tab Deploy Panel (`Docker Image` | `Git Repository` | `Docker Compose`) in `PaasStudioPanel`
 
 - **Owner File (MODIFY):** `apps/board/src/components/cloud/paas-studio-panel.tsx`
 - **Depends On:** `M49`
