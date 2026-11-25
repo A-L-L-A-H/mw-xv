@@ -18,6 +18,7 @@ coverage/
 .codex-worktrees/
 apps/board/next-env.d.ts
 playwright-report/
+.playwright-mcp/
 .qoder-tmp/
 apps/desktop/src-tauri/resources/
 apps/desktop/src-tauri/target/
