@@ -14,6 +14,11 @@ function serviceBlock(source, name) {
   return source.slice(start, nextService === -1 ? undefined : start + 1 + nextService);
 }
 
+function environmentMergePattern(...anchors) {
+  const escaped = anchors.map((anchor) => anchor.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'));
+  return new RegExp(`^ {6}<<:\\s*\\[\\s*${escaped.join(',\\s*')},?\\s*\\]$`, 'mu');
+}
+
 test('development Compose runs WhatsApp outbox and attachment cleanup jobs with scoped secrets', () => {
   const source = readFileSync('deploy/compose/docker-compose.development.yml', 'utf8');
   assert.match(serviceBlock(source, 'outbox-worker'), /WHATSAPP_GATEWAY_USERNAME:/u);
@@ -98,10 +103,16 @@ test('canonical production Compose scopes WhatsApp gateway and webhook secrets t
     /WHATSAPP_GATEWAY_(?:USERNAME|PASSWORD)|WHATSAPP_WEBHOOK_SECRET/u
   );
 
-  const expectedApiEnvironmentMerge =
-    /^ {6}<<:\s*\[\*app_environment,\s*\*ai_environment,\s*\*whatsapp_gateway_credentials,\s*\*whatsapp_webhook_environment\]$/mu;
-  const expectedOutboxEnvironmentMerge =
-    /^ {6}<<:\s*\[\*app_environment,\s*\*whatsapp_gateway_credentials\]$/mu;
+  const expectedApiEnvironmentMerge = environmentMergePattern(
+    '*app_environment',
+    '*ai_environment',
+    '*whatsapp_gateway_credentials',
+    '*whatsapp_webhook_environment'
+  );
+  const expectedOutboxEnvironmentMerge = environmentMergePattern(
+    '*app_environment',
+    '*whatsapp_gateway_credentials'
+  );
   assert.match(serviceBlock(source, 'api'), expectedApiEnvironmentMerge);
   assert.match(serviceBlock(source, 'outbox-worker'), expectedOutboxEnvironmentMerge);
   assert.doesNotMatch(serviceBlock(source, 'outbox-worker'), /WHATSAPP_WEBHOOK_SECRET/u);

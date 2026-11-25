@@ -7,10 +7,6 @@ import {
   buildOrganizationInitialSeed,
   seedOrganizationInitialData,
   type OrganizationInitialSeedBundle,
-  OrganizationDepartment,
-  OrganizationTeam,
-  OrganizationPosition,
-  OrganizationMembership,
 } from '../src/index.js';
 
 describe('organization seed', () => {

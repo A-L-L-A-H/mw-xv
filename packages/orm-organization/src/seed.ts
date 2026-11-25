@@ -1,13 +1,4 @@
-import { knex, type Knex } from 'knex';
-import {
-  Company,
-  DEFAULT_TIMEZONE,
-  User,
-  Partner,
-  AccessGroup,
-  GroupMembership,
-  ModelAccess,
-} from '@moonwitness/orm-base';
+import { DEFAULT_TIMEZONE } from '@moonwitness/orm-base';
 import {
   OrganizationDepartment,
   OrganizationTeam,
