@@ -20,12 +20,7 @@ import {
   type JsonValue,
 } from '@moonwitness/types';
 import type { Transaction } from 'objection';
-import {
-  canAccess,
-  canManageBaseUser,
-  operationFor,
-  rpcOperation,
-} from '../auth/policy.js';
+import { canAccess, canManageBaseUser, operationFor, rpcOperation } from '../auth/policy.js';
 import {
   ATTACHMENT_MIME_TYPES,
   encodedAttachmentName,

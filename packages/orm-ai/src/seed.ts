@@ -2,13 +2,7 @@ import { seed, ref } from '@moonwitness/orm';
 import { AccessGroup, GroupMembership, ModelAccess, IrFeatureFlag } from '@moonwitness/orm-base';
 import { WorkflowDefinition } from '@moonwitness/orm-workflow';
 import { FREELMAPI_COMPOSE_ORIGIN } from './models/constants.js';
-import {
-  Agent,
-  AgentProfile,
-  ExecutionPolicy,
-  ModelProfile,
-  ProviderProfile,
-} from './models.js';
+import { Agent, AgentProfile, ExecutionPolicy, ModelProfile, ProviderProfile } from './models.js';
 
 export const AI_CORPORATION_CONSTITUTIONAL_POLICIES = [
   seed(IrFeatureFlag, 'ai.constitution_corp_enabled', {

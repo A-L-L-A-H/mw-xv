@@ -1,7 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { databaseErrorCode } from '../database/errors.js';
-import type {
-  BaseModel} from '@moonwitness/orm';
+import type { BaseModel } from '@moonwitness/orm';
 import {
   Registry,
   applyDomain,
@@ -320,7 +319,11 @@ export const PROTECTED_ACCESS_MODELS = new Set([
   'base.outbox_event',
 ]);
 
-export function hasValidAccessRule(modelName: string, values: JsonObject, current?: BaseModel): boolean {
+export function hasValidAccessRule(
+  modelName: string,
+  values: JsonObject,
+  current?: BaseModel
+): boolean {
   if (modelName !== 'base.model_access') return true;
   const target = Object.hasOwn(values, 'model_name')
     ? values.model_name
