@@ -253,7 +253,7 @@ export function LineChart({
   const empty = labels.length === 0 || !hasPoint ? emptyMessage : undefined;
   const width = Math.max(320, labels.length * 72);
   const x = (index: number) =>
-    32 + (labels.length <= 1 ? 0 : index * (width - 64)) / (labels.length - 1);
+    32 + (labels.length <= 1 ? 0 : (index * (width - 64)) / (labels.length - 1));
   const y = (value: number) => 168 - ((value - minValue) / Math.max(1, maxValue - minValue)) * 128;
   return (
     <ChartFrame

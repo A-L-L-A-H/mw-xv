@@ -75,18 +75,20 @@ function errorMessage(error: unknown): string {
 }
 
 function formatTimestamp(value: number | string | undefined): string {
-  if (value === undefined) return '—';
+  if (value === undefined || (typeof value === 'number' && !Number.isFinite(value))) return '—';
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '—' : `${date.toISOString().replace('T', ' ')} UTC`;
 }
 
 function formatDuration(value: number): string {
+  if (!Number.isFinite(value)) return '—';
   if (value < 1) return `${value.toFixed(2)} ms`;
   if (value < 1_000) return `${formatNumber(value)} ms`;
   return `${formatNumber(value / 1_000)} s`;
 }
 
 function formatRetention(value: number): string {
+  if (!Number.isFinite(value)) return '—';
   if (value < 1_000) return `${formatNumber(value)} ms`;
   if (value < 60_000) return `${formatNumber(value / 1_000)} seconds`;
   if (value < 3_600_000) return `${formatNumber(value / 60_000)} minutes`;
@@ -961,6 +963,12 @@ function MetricTimeSeriesChart({ series }: { readonly series: TelemetryMetricSer
     .map((point) => metricPlotValue(series, point))
     .filter((value): value is number => value !== undefined && Number.isFinite(value));
   const valueLabel = series.type === 'gauge' || series.type === 'sum' ? 'value' : 'sum';
+  // Scale overflowing ranges for geometry while preserving original display values.
+  const valueRange = Math.max(0, ...values) - Math.min(0, ...values);
+  const plotScale = Number.isFinite(valueRange)
+    ? 1
+    : Math.max(1, ...values.map((value) => Math.abs(value)));
+  const plotValues = values.map((value) => value / plotScale);
 
   if (points.length === 0 || values.length !== points.length) {
     return (
@@ -988,13 +996,13 @@ function MetricTimeSeriesChart({ series }: { readonly series: TelemetryMetricSer
         series={[
           {
             label: `${series.name} ${valueLabel}`,
-            values,
+            values: plotValues,
           },
         ]}
         locale="en-US"
         valueLabel={valueLabel}
         className="mt-2 h-40 w-full text-magenta"
-        renderValue={(value) => `${formatNumber(value)} ${series.unit ?? ''}`}
+        renderValue={(value) => `${formatNumber(value * plotScale)} ${series.unit ?? ''}`}
       />
       <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] text-ink-faint">
         <span>{formatTimestamp(points[0]?.timestampMs)}</span>

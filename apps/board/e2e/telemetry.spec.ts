@@ -3,7 +3,7 @@ import { E2E_SUPERADMIN_PASSWORD } from './constants.js';
 
 async function openMissionControl(
   page: Page,
-  telemetryOptions: { empty?: boolean; failLogs?: boolean } = {}
+  telemetryOptions: { empty?: boolean; failLogs?: boolean; global?: boolean; metricPoints?: unknown[] } = {}
 ) {
   await page.goto('/login');
   await page.getByLabel('Email or Username').fill('superadmin');
@@ -45,10 +45,10 @@ function log(id: string, traceId?: string) {
   };
 }
 
-function metric(id: string, name: string) {
+function metric(id: string, name: string, points?: unknown[]) {
   return {
     id, name, type: 'gauge', serviceName: 'api', unit: 'ms',
-    points: [{ timestampMs: 1_700_000_000_000, value: 4, attributes: { raw: 'hidden-metric-attribute' } }],
+    points: points ?? [{ timestampMs: 1_700_000_000_000, value: 4, attributes: { raw: 'hidden-metric-attribute' } }],
   };
 }
 
@@ -58,7 +58,7 @@ const summary = {
   costUsd: 0, avgLatencyMs: 12, services: ['api'], lastEventAt: '2023-11-14T22:13:20.000Z',
 };
 
-async function mockTelemetry(page: Page, options: { empty?: boolean; failLogs?: boolean; global?: boolean } = {}) {
+async function mockTelemetry(page: Page, options: { empty?: boolean; failLogs?: boolean; global?: boolean; metricPoints?: unknown[] } = {}) {
   const requested: Array<{ path: string; cursor: string | null; scope: string | null }> = [];
   await page.route('**/api/observability/**', async (route) => {
     const url = new URL(route.request().url());
@@ -107,7 +107,7 @@ async function mockTelemetry(page: Page, options: { empty?: boolean; failLogs?: 
     }
     if (url.pathname.endsWith('/metrics')) {
       const second = url.searchParams.get('cursor') === 'metric-next';
-      await route.fulfill({ json: { success: true, data: { metrics: options.empty ? [] : [metric(second ? 'metric-2' : 'metric-1', second ? 'Second metric' : 'First metric')], ...(!second && !options.empty ? { nextCursor: 'metric-next' } : {}) } } });
+      await route.fulfill({ json: { success: true, data: { metrics: options.empty ? [] : [metric(second ? 'metric-2' : 'metric-1', second ? 'Second metric' : 'First metric', options.metricPoints)], ...(!second && !options.empty ? { nextCursor: 'metric-next' } : {}) } } });
       return;
     }
     await route.fulfill({ status: 404, json: { success: false, error: 'Unmocked telemetry route' } });
@@ -170,4 +170,76 @@ test('distinguishes successful empty pages from API errors', async ({ page }) =>
   await expect(logs.getByRole('alert')).toContainText('Synthetic telemetry outage');
   await expect(logs.getByRole('alert')).toContainText('not an empty-data state');
   await expect(logs.getByText(/No retained log records/)).toHaveCount(0);
+});
+
+test('malformed metric readings and extreme finite values never create invalid SVG geometry', async ({ page }) => {
+  test.setTimeout(60_000);
+  const geometryWarnings: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error' && /Received NaN|Invalid.*(?:x|y|points)/iu.test(message.text())) {
+      geometryWarnings.push(message.text());
+    }
+  });
+  const telemetryOptions: { metricPoints?: unknown[] } = {};
+  await openMissionControl(page, telemetryOptions);
+  const telemetry = page.getByRole('region', { name: 'Board telemetry' });
+  const metrics = telemetry.getByRole('region', { name: 'Metric time series' });
+
+  async function expectFiniteSvgGeometry() {
+    const invalid = await metrics.locator('svg').evaluateAll((svgs) =>
+      svgs.flatMap((svg) => {
+        const failures: string[] = [];
+        for (const element of svg.querySelectorAll('*')) {
+          for (const attribute of ['x', 'cx', 'x1', 'x2', 'y', 'cy', 'y1', 'y2', 'width', 'height']) {
+            const value = element.getAttribute(attribute);
+            if (value !== null && value !== '' && !Number.isFinite(Number(value))) {
+              failures.push(`${element.tagName}.${attribute}=${value}`);
+            }
+          }
+          const points = element.getAttribute('points');
+          if (points) {
+            for (const pair of points.trim().split(/\s+/u)) {
+              const coordinates = pair.split(',');
+              if (coordinates.length !== 2 || coordinates.some((value) => !Number.isFinite(Number(value)))) {
+                failures.push(`${element.tagName}.points=${pair}`);
+              }
+            }
+          }
+        }
+        return failures;
+      })
+    );
+    expect(invalid).toEqual([]);
+  }
+
+  await expect(metrics.getByRole('img', { name: 'First metric value time series' })).toBeVisible();
+  await expectFiniteSvgGeometry();
+
+  const malformedCases: Array<{ points: unknown[]; incomplete: boolean }> = [
+    { points: [{ timestampMs: 1_700_000_000_000, attributes: {} }], incomplete: true },
+    { points: [{ timestampMs: 1_700_000_000_000, value: null, attributes: {} }], incomplete: true },
+    { points: [{ timestampMs: 1_700_000_000_000, value: 'not-a-number', attributes: {} }], incomplete: true },
+    { points: [{ timestampMs: 1_700_000_000_000, value: '4', attributes: {} }], incomplete: true },
+    { points: [{ timestampMs: 'invalid', value: 4, attributes: {} }], incomplete: false },
+  ];
+  for (const { points, incomplete } of malformedCases) {
+    telemetryOptions.metricPoints = points;
+    await telemetry.getByRole('button', { name: 'Refresh telemetry' }).click();
+    if (incomplete) {
+      await expect(metrics.getByText(/No complete numeric value series is available to plot/)).toBeVisible();
+    } else {
+      await expect(metrics.getByRole('img', { name: 'First metric value time series' })).toBeVisible();
+    }
+    await expectFiniteSvgGeometry();
+  }
+
+  telemetryOptions.metricPoints = [
+    { timestampMs: 1_700_000_000_000, value: -Number.MAX_VALUE, attributes: {} },
+    { timestampMs: 1_700_000_060_000, value: Number.MAX_VALUE, attributes: {} },
+  ];
+  await telemetry.getByRole('button', { name: 'Refresh telemetry' }).click();
+  await expect(metrics.getByRole('img', { name: 'First metric value time series' })).toBeVisible();
+  await expect(metrics.locator('.mw-ui-chart-point')).toHaveCount(2);
+  await expectFiniteSvgGeometry();
+  expect(geometryWarnings).toEqual([]);
 });

@@ -64,9 +64,13 @@ export const interactiveSessionsHttpPlugin: AddonHttpPlugin = async (app) => {
     app.get(`${prefix}/interactive-sessions`, async (req, reply) => {
       const ctx = await requireAiCompanyContext(req, reply);
       if (!ctx) return;
-      const query = isRecord(req.query) ? req.query : {};
-      const sessions = await listInteractiveSessions(ctx, query.limit);
-      return { success: true, data: sessions, nextCursor: sessions.at(-1)?.id ?? null };
+      try {
+        const query = isRecord(req.query) ? req.query : {};
+        const result = await listInteractiveSessions(ctx, query.limit, query.cursor);
+        return { success: true, data: result.sessions, nextCursor: result.nextCursor };
+      } catch (error) {
+        return interactiveError(reply, error);
+      }
     });
 
     app.get<{ Params: { id: string } }>(

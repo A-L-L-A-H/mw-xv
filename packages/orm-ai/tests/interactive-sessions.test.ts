@@ -177,6 +177,27 @@ async function create(s?: Stack) {
   return { ...fixture, ...result };
 }
 
+async function seedListSessions(fixture: Stack, count: number, scope = fixture.scope) {
+  const sessions = [];
+  for (let index = 0; index < count; index += 1) {
+    const result = await createInteractiveSession({
+      ...scope,
+      agentId: fixture.agent.id,
+      workContractId: fixture.contract.id,
+      initialPrompt: `inspect page ${index}`,
+      idempotencyKey: `list-key-${scope.userId}-${index}-001`,
+    });
+    sessions.push(result.session);
+  }
+  return sessions;
+}
+
+function listCursor(scope: { companyId: number; userId: number }, id: number): string {
+  return Buffer.from(JSON.stringify({ v: 1, c: scope.companyId, u: scope.userId, id })).toString(
+    'base64url'
+  );
+}
+
 beforeEach(async () => {
   const postgresUrl = process.env.INTERACTIVE_POSTGRES_TEST_URL;
   const postgresSchema = `interactive_${randomUUID().replaceAll('-', '')}`;
@@ -721,7 +742,7 @@ describe('interactive session authority and lifecycle', () => {
     await expect(readInteractiveSession(fixture.session.id, reviewerScope)).rejects.toMatchObject({
       statusCode: 404,
     });
-    await expect(listInteractiveSessions(reviewerScope)).resolves.toEqual([]);
+    await expect(listInteractiveSessions(reviewerScope)).resolves.toEqual({ sessions: [], nextCursor: null });
     await expect(
       readPendingInteractiveApproval(fixture.session.id, fixture.scope)
     ).rejects.toMatchObject({ statusCode: 403 });
@@ -739,6 +760,64 @@ describe('interactive session authority and lifecycle', () => {
     await expect(
       readPendingInteractiveApproval(fixture.session.id, outsider.scope)
     ).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it('paginates owner/company sessions by a stable keyset cursor', async () => {
+    const fixture = await stack('list-pagination');
+    const sessions = await seedListSessions(fixture, 5);
+    const reviewerScope = { companyId: fixture.company.id, userId: fixture.reviewer.id };
+    await seedListSessions(fixture, 1, reviewerScope);
+    const other = await stack('list-pagination-other');
+    await seedListSessions(other, 1);
+    const ids = sessions.map((session) => session.id).reverse();
+
+    const first = await listInteractiveSessions(fixture.scope, 2);
+    expect(first.sessions.map((session) => session.id)).toEqual(ids.slice(0, 2));
+    expect(first.nextCursor).toBe(listCursor(fixture.scope, ids[1]!));
+    const second = await listInteractiveSessions(fixture.scope, 2, first.nextCursor);
+    expect(second.sessions.map((session) => session.id)).toEqual(ids.slice(2, 4));
+    expect(second.nextCursor).toBe(listCursor(fixture.scope, ids[3]!));
+    const last = await listInteractiveSessions(fixture.scope, 2, second.nextCursor);
+    expect(last.sessions.map((session) => session.id)).toEqual(ids.slice(4));
+    expect(last.nextCursor).toBeNull();
+    await expect(listInteractiveSessions(reviewerScope)).resolves.toEqual({
+      sessions: [expect.objectContaining({ owner_id: fixture.reviewer.id })],
+      nextCursor: null,
+    });
+    await expect(
+      listInteractiveSessions(reviewerScope, 2, first.nextCursor)
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT', statusCode: 422 });
+    await expect(
+      listInteractiveSessions(other.scope, 2, first.nextCursor)
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT', statusCode: 422 });
+  });
+
+  it('rejects malformed and unsafe pagination cursors', async () => {
+    const fixture = await stack('list-cursor-validation');
+    const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
+    const invalid = [
+      '',
+      'not+base64url',
+      'e30',
+      encode(null),
+      encode([]),
+      encode({ v: 2, c: fixture.company.id, u: fixture.user.id, id: 1 }),
+      encode({ v: 1, c: fixture.company.id, u: fixture.user.id, id: 0 }),
+      encode({ v: 1, c: fixture.company.id, u: fixture.user.id, id: -1 }),
+      encode({ v: 1, c: fixture.company.id, u: fixture.user.id, id: 1.5 }),
+      encode({ v: 1, c: fixture.company.id, u: fixture.user.id, id: Number.MAX_SAFE_INTEGER + 1 }),
+      encode({ v: 1, c: fixture.company.id, u: fixture.user.id, id: '1' }),
+      encode({ v: 1, c: fixture.company.id, u: fixture.user.id, id: 1, extra: true }),
+      'A'.repeat(257),
+      42,
+    ];
+    for (const cursor of invalid) {
+      await expect(listInteractiveSessions(fixture.scope, 25, cursor)).rejects.toMatchObject({
+        name: 'InteractiveSessionError',
+        code: 'INVALID_INPUT',
+        statusCode: 422,
+      });
+    }
   });
 
   it('enforces company and owner isolation on all reads and commands', async () => {
@@ -941,5 +1020,95 @@ describe('interactive session authority and lifecycle', () => {
       stillPrivate.reply
     );
     expect(stillPrivate.status).toBe(404);
+  });
+
+  it('HTTP list forwards the cursor, ends on the last page, and enforces scope', async () => {
+    const fixture = await stack('http-list-pagination');
+    const sessions = await seedListSessions(fixture, 3);
+    const reviewerScope = { companyId: fixture.company.id, userId: fixture.reviewer.id };
+    const reviewerSessions = await seedListSessions(fixture, 2, reviewerScope);
+    const other = await stack('http-list-other');
+    await seedListSessions(other, 1);
+    const routes = new Map<
+      string,
+      (req: AddonHttpRequestBase, reply: AddonHttpReply) => Promise<unknown> | unknown
+    >();
+    const register =
+      (method: string) =>
+      (path: string, handler: (req: AddonHttpRequestBase, reply: AddonHttpReply) => Promise<unknown> | unknown) =>
+        routes.set(`${method} ${path}`, handler);
+    await interactiveSessionsHttpPlugin(
+      { get: register('GET'), post: register('POST') } as unknown as AddonHttpApp,
+      {}
+    );
+    const list = routes.get('GET /api/ai/interactive-sessions')!;
+    const request = async (query: Record<string, string>, auth = {
+      userId: fixture.user.id,
+      companyId: fixture.company.id,
+      role: 'user',
+    }) => {
+      let status = 200;
+      let body: unknown;
+      const reply = {
+        code(value: number) { status = value; return reply; },
+        send(value: unknown) { body = value; return reply; },
+        header() { return reply; },
+      } as AddonHttpReply;
+      const result = await list(
+        { query, body: undefined, auth } as unknown as AddonHttpRequestBase,
+        reply
+      );
+      return { result, status, body };
+    };
+
+    const first = await request({ limit: '2' });
+    expect(first).toMatchObject({
+      status: 200,
+      result: {
+        success: true,
+        data: [{ id: sessions[2]!.id }, { id: sessions[1]!.id }],
+        nextCursor: expect.any(String),
+      },
+    });
+    const cursor = (first.result as { nextCursor: string }).nextCursor;
+    expect(cursor).not.toBe(String(sessions[1]!.id));
+    const next = await request({ limit: '2', cursor });
+    expect(next).toMatchObject({
+      result: {
+        success: true,
+        data: [{ id: sessions[0]!.id }],
+        nextCursor: null,
+      },
+    });
+    const invalid = await request({ cursor: 'not+base64url' });
+    expect(invalid).toMatchObject({
+      status: 422,
+      body: { success: false, code: 'INVALID_INPUT' },
+    });
+    const nonOwner = await request({ cursor }, {
+      userId: fixture.reviewer.id,
+      companyId: fixture.company.id,
+      role: 'user',
+    });
+    expect(nonOwner).toMatchObject({ status: 422, body: { code: 'INVALID_INPUT' } });
+    const crossCompany = await request({ cursor }, {
+      userId: other.user.id,
+      companyId: other.company.id,
+      role: 'user',
+    });
+    expect(crossCompany).toMatchObject({ status: 422, body: { code: 'INVALID_INPUT' } });
+    const reviewer = await request({}, {
+      userId: fixture.reviewer.id,
+      companyId: fixture.company.id,
+      role: 'user',
+    });
+    expect(reviewer).toMatchObject({
+      result: {
+        success: true,
+        data: [{ id: reviewerSessions[1]!.id }, { id: reviewerSessions[0]!.id }],
+        nextCursor: null,
+      },
+    });
+    expect(JSON.stringify(reviewer.result)).not.toContain(`"id":${sessions[0]!.id}`);
   });
 });

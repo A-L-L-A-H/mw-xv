@@ -9,7 +9,7 @@
 
 ## Implementation status
 
-The single-authority decision is implemented in the local candidate: `packages/orm-ai` owns the interactive aggregate, durable events/checkpoints, commands, approvals and addon HTTP routes; Board consumes the resumable snapshot/replay contract; execution remains behind the existing durable run boundary. The first implementation exposes bounded typed command/output events, not a PTY or arbitrary terminal byte stream. Local package, focused API and structural-gate evidence is recorded in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
+The single-authority decision is implemented in the local candidate: `packages/orm-ai` owns the interactive aggregate, durable events/checkpoints, commands, approvals and addon HTTP routes; Board consumes the resumable snapshot/replay contract; execution remains behind the existing durable run boundary. The first implementation delivers bounded typed command, control, approval, and completion events, not general agent-output streaming, a PTY, or an arbitrary terminal byte stream. Local package, focused API and structural-gate evidence is recorded in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
 
 Acceptance records the architecture decision, not production readiness. The evidence remains candidate/incomplete until all local gates finish; hosted rollout and immutable committed-SHA evidence remain separate requirements.
 
@@ -25,7 +25,7 @@ This ADR authorizes no upstream modification or production rollout by itself. It
 
 ## Context and exact problem
 
-MoonWitness already has a bounded, non-interactive cloud coding agent. It can execute a trusted work contract through `DurableRunEffects`, persist compact run checkpoints, lease work through `packages/jobs`, use fencing and cooperative cancellation, request human approval, and produce deterministic evidence. It does not provide a persistent browser session in which a user can converse, inspect bounded typed output, approve a risky step, disconnect, and later resume the same logical run.
+MoonWitness already has a bounded, non-interactive cloud coding agent. It can execute a trusted work contract through `DurableRunEffects`, persist compact run checkpoints, lease work through `packages/jobs`, use fencing and cooperative cancellation, request human approval, and produce deterministic evidence. It does not provide a persistent browser session in which a user can issue commands, inspect delivered bounded typed command/control/approval/completion events, approve a risky step, disconnect, and later resume the same logical run.
 
 The problem is therefore: **how can MoonWitness add resumable, browser-based interactive coding without creating a second session/model authority, bypassing jobs/outbox/approval/tenant controls, or giving the browser or model host privileges?**
 
@@ -79,7 +79,7 @@ This is simpler than streaming, but it does not provide timely typed output, int
 1. `packages/orm-ai` exclusively owns the interactive-session aggregate, legal state transitions, commands, durable event envelopes, and checkpoints. Models use its existing addon/model conventions; no equivalent schema belongs in Desktop, Board, OpenCode, or application-local SQLite.
 2. Every session and related record is company-scoped and has an owning user. Provider profiles, model profiles, agents, work contracts, capability grants, and approvals remain the existing ORM authorities.
 3. `AgentRun` remains the durable execution identity. An interactive session references its runs; it does not replace `AgentRun`, jobs, approval records, or artifact manifests.
-4. Durable event envelopes contain compact facts or storage references. Large transcripts and output blobs live in `packages/orm-storage`; typed output is bounded and coalesced rather than creating one ORM row per token or terminal frame.
+4. Durable event envelopes contain compact facts or storage references. Large transcripts and output blobs live in `packages/orm-storage`; delivered command, control, approval, and completion events are bounded rather than creating one ORM row per token or terminal frame.
 
 ### 2. Execution and transport
 
@@ -87,7 +87,7 @@ This is simpler than streaming, but it does not provide timely typed output, int
 2. The adapter may live in `packages/ai-runtime` and use the existing sandbox transport, but it has no database authority. The durable session loop remains under ORM/jobs orchestration. Desktop and Board never run that loop.
 3. `packages/jobs` supplies leases, heartbeats, fencing, retries, dead-lettering, outbox delivery, and cooperative cancellation. A worker revalidates the company, run, execution fingerprint, grant, approval, and fencing token before every effect.
 4. Reuse `AgentRunEffect`'s idempotency key and argument hash for tool side effects. The effect key includes the logical session command/tool-call identity, not a transport attempt number. A retry with the same key returns the recorded result; a changed argument hash fails closed.
-5. Browser commands and independent-reviewer reads use addon HTTP endpoints. Output uses bounded, typed replayable events under the same addon ownership. Reconnection is transport-only and never creates a new logical run. A WebSocket or PTY, if later required, must use the same command/event contracts and addon ownership and requires a separate reviewed extension.
+5. Browser commands and independent-reviewer reads use addon HTTP endpoints. The first implementation delivers bounded, typed, replayable command, control, approval, and completion events under the same addon ownership; this is not general agent-output streaming. Reconnection is transport-only and never creates a new logical run. A WebSocket or PTY, if later required, must use the same command/event contracts and addon ownership and requires a separate reviewed extension.
 
 ### 3. UI, routes, and upstream boundary
 
@@ -105,7 +105,7 @@ The only session states are:
 `waiting_approval -> running` is permitted only after a valid approval. `created`, `running`, and `waiting_approval` may transition to `cancelled`; `running` may transition to `failed`. Terminal states never reopen.
 
 - **created:** The session, owning user/company, initial checkpoint, and outbox enqueue intent are committed together. No provider, PTY, or tool effect has occurred.
-- **running:** A leased worker reconstructs trusted ORM state, validates fencing and the execution fingerprint, and invokes the adapter. Output and control events advance the session version and checkpoint.
+- **running:** A leased worker reconstructs trusted ORM state, validates fencing and the execution fingerprint, and invokes the adapter. Delivered command, control, approval, and completion events advance the session version and checkpoint.
 - **waiting_approval:** A risky effect is proposed with exact tool arguments, capability scope, argument hash, expiry, and requesting run. Entering this state writes a pause intent; its consumer cancels the matching old job and clears only that job reference before externally visible effects can run. The execution entry point independently checks for waiting/terminal session state and fails closed. Approval completion idempotently enqueues/requeues the same logical work with compare-and-set fencing.
 - **resume:** Approval atomically records the decision and returns the session to `running` using the current fencing token. Any change to the approved fingerprint requires a new approval. Denial, revocation, or expiry cancels the affected session in the initial implementation rather than retrying the risky effect.
 - **completed:** Acceptance evidence and artifact references are committed before the terminal transition. A provider's claim of success is not completion evidence.
@@ -122,7 +122,7 @@ The only session states are:
 - Provider credentials and host secrets are server-side only. Browser payloads, event envelopes, checkpoints, typed output, errors, and logs must be secret-free and redacted. Secrets must not be accepted as command input, tool arguments, or environment expansion.
 - The sandbox runs non-root with network disabled, read-only root filesystem, `cap_drop: [ALL]`, `no-new-privileges`, bounded writable tmpfs/named volumes, and no published sandbox port. Canonical production Compose must not mount or address a Docker socket or bind a host repository/workspace. Repository access uses a per-run snapshot uploaded through the typed artifact/tool boundary.
 - Tools are typed and allowlisted. Model output is data, not a shell command, Docker request, network destination, or file path outside the run workspace. Host repository bind mounts and generic host environment access are prohibited.
-- Each interactive session exposes bounded typed output only in the first implementation. Prompt, approval, command, and output sizes are capped; replay is bounded and oversized ephemeral output is rejected or truncated explicitly. OSC/control-sequence handling is required before any future terminal renderer is introduced.
+- Each interactive session delivers only bounded typed command, control, approval, and completion events in the first implementation, not general agent-output streaming. Prompt, approval, command, and delivered-event payload sizes are capped; replay is bounded and oversized payloads are rejected or truncated explicitly. OSC/control-sequence handling is required before any future terminal renderer is introduced.
 - Risky effects require a human approval bound to exact arguments, scope, expiry, and execution fingerprint. The requesting model cannot approve its own effect. Approval reuse across changed arguments or companies is forbidden. A dedicated reviewer projection exposes only the pending approval fingerprint, capability, expiry, session identity/status, owner, and requester; full session reads remain owner-only, and neither owner nor requester may decide the approval.
 - Git writes, if allowed, affect only the sandbox workspace and produce a reviewed diff artifact. The session has no autonomous merge, push, deploy, release, or publication capability; those remain separate human-controlled workflows.
 

@@ -10,7 +10,7 @@
 
 The addon-owned telemetry authority is implemented in the local candidate: OTLP/Qoder ingest, SQL-backed correlation and persistence, credential-derived tenant attribution, company-scoped reads, and Board Mission Control use the canonical API path. Local package, focused API and structural-gate evidence is recorded in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
 
-Acceptance records the architecture decision, not production readiness. The evidence is candidate/incomplete: Board browser tests and PostgreSQL/hosted gates are not yet complete, and the source SHA is not immutable until the candidate is committed.
+Acceptance records the architecture decision, not production readiness. Local PostgreSQL checks and all 8 Chromium scenarios passed. Hosted multi-replica validation and production cutover remain open, and the source SHA is not immutable until the candidate is committed.
 
 ## Scope
 
@@ -146,7 +146,7 @@ node scripts/check-swarm-observability-boundary.mjs --json
 node --check scripts/check-swarm-observability-boundary.mjs
 ```
 
-Required implementation evidence also includes observability addon tests, API registration tests, Board type checking, dashboard CLI tests, browser checks, and the existing interactive-session boundary gate. A failed or unexecuted check is not a pass. Current local results and incomplete browser/PostgreSQL/hosted gates are tracked in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
+Required implementation evidence also includes observability addon tests, API registration tests, Board type checking, dashboard CLI tests, browser checks, and the existing interactive-session boundary gate. A failed or unexecuted check is not a pass. Local PostgreSQL checks and all 8 Chromium scenarios passed; hosted multi-replica validation and production cutover remain open. Current local results and remaining gates are tracked in [`DURABLE-AGENT-OPERATIONS.md`](../roadmap/evidence/DURABLE-AGENT-OPERATIONS.md).
 
 ## Consequences
 

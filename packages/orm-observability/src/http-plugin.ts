@@ -51,10 +51,19 @@ export const observabilityHttpPlugin: AddonHttpPlugin<AddonHttpApp, Observabilit
   const ingestContext = async (request: AddonHttpRequest, reply: AddonHttpReply): Promise<IngestContext | undefined> => {
     const authorization = request.headers.authorization; const bearer = typeof authorization === 'string' ? /^Bearer (.+)$/iu.exec(authorization)?.[1] : undefined;
     const alternate = request.headers['x-observability-token']; const presented = bearer ?? (typeof alternate === 'string' ? alternate : undefined);
-    if (presented && credentials) { const credential = await credentials.lookup(presented).catch(() => undefined); if (credential) return { ...(credential.companyId ? { tenantId: credential.companyId } : {}) } }
+    if (presented && credentials) {
+      const credential = await credentials.lookup(presented).catch(() => undefined);
+      if (credential) return { ...(credential.companyId ? { tenantId: credential.companyId } : {}) };
+      // Registry credentials are self-identifying and must never regain access through legacy fallback.
+      if (presented.startsWith('mwobs_')) { deny(reply, 401, 'Unauthorized'); return undefined; }
+    }
     const legacy = options.observabilityIngestToken;
-    if (!legacy || legacy.length < 32) { reply.code(503).send({ success: false, error: 'Observability ingest is not configured' }); return undefined }
-    if (!presented || !tokenMatches(presented, legacy)) { deny(reply, 401, 'Unauthorized'); return undefined }
+    if (!presented) {
+      if (credentials || (legacy && legacy.length >= 32)) { deny(reply, 401, 'Unauthorized'); return undefined; }
+      reply.code(503).send({ success: false, error: 'Observability ingest is not configured' });
+      return undefined;
+    }
+    if (!legacy || legacy.length < 32 || !tokenMatches(presented, legacy)) { deny(reply, 401, 'Unauthorized'); return undefined; }
     return {};
   };
   app.post('/v1/traces', INGEST_ROUTE_OPTIONS, async (request, reply) => {

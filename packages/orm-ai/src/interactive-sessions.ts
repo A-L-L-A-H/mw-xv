@@ -651,12 +651,82 @@ export async function readInteractiveSession(
   });
 }
 
-export async function listInteractiveSessions(scope: InteractiveScope, limitInput: unknown = 25) {
+const INTERACTIVE_LIST_CURSOR_VERSION = 1;
+const INTERACTIVE_LIST_CURSOR_MAX_LENGTH = 256;
+
+function encodeListCursor(scope: InteractiveScope, id: number): string {
+  return Buffer.from(
+    JSON.stringify({
+      v: INTERACTIVE_LIST_CURSOR_VERSION,
+      c: scope.companyId,
+      u: scope.userId,
+      id,
+    }),
+    'utf8'
+  ).toString('base64url');
+}
+
+function invalidListCursor(): InteractiveSessionError {
+  return new InteractiveSessionError('INVALID_INPUT', 'Invalid pagination cursor', 422);
+}
+
+function isListCursorPayload(value: unknown, scope: InteractiveScope): value is Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    Object.keys(record).length === 4 &&
+    record.v === INTERACTIVE_LIST_CURSOR_VERSION &&
+    Number.isSafeInteger(record.c) &&
+    Number.isSafeInteger(record.u) &&
+    Number.isSafeInteger(record.id) &&
+    (record.id as number) >= 1 &&
+    record.c === scope.companyId &&
+    record.u === scope.userId
+  );
+}
+
+function decodeListCursor(value: unknown, scope: InteractiveScope): number | undefined {
+  if (value === undefined) return undefined;
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    value.length > INTERACTIVE_LIST_CURSOR_MAX_LENGTH ||
+    !/^[A-Za-z0-9_-]+$/u.test(value)
+  ) {
+    throw invalidListCursor();
+  }
+
+  let cursor: unknown;
+  try {
+    const bytes = Buffer.from(value, 'base64url');
+    if (bytes.toString('base64url') !== value) throw invalidListCursor();
+    cursor = JSON.parse(bytes.toString('utf8'));
+  } catch {
+    throw invalidListCursor();
+  }
+  if (!isListCursorPayload(cursor, scope)) throw invalidListCursor();
+  return cursor.id as number;
+}
+
+export async function listInteractiveSessions(
+  scope: InteractiveScope,
+  limitInput: unknown = 25,
+  cursorInput?: unknown
+) {
   const limit = Math.min(100, Math.max(1, Number(limitInput) || 25));
-  return InteractiveSession.query()
+  const cursor = decodeListCursor(cursorInput, scope);
+  const query = InteractiveSession.query()
     .where({ company_id: scope.companyId, owner_id: scope.userId })
     .orderBy('id', 'desc')
-    .limit(limit);
+    .limit(limit + 1);
+  if (cursor !== undefined) query.where('id', '<', cursor);
+  const rows = await query;
+  const sessions = rows.slice(0, limit);
+  return {
+    sessions,
+    nextCursor:
+      rows.length > limit ? encodeListCursor(scope, sessions[sessions.length - 1]!.id) : null,
+  };
 }
 
 /** Fail closed before resolving or invoking any externally visible effect. */

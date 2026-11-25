@@ -5,9 +5,9 @@ import rateLimit from '@fastify/rate-limit';
 import { afterEach, describe, expect, it } from 'vitest';
 import { installAddons } from '@moonwitness/orm';
 import { MemoryTelemetryStore } from '../src/memory-store.js';
-import { observabilityHttpPlugin } from '../src/http-plugin.js';
+import { observabilityHttpPlugin, type ObservabilityHttpHostContext } from '../src/http-plugin.js';
 import { observabilityAddon } from '../src/manifest.js';
-import type { TelemetryStore } from '../src/types.js';
+import type { IngestCredentialRegistry, TelemetryStore } from '../src/types.js';
 import {
   NOW_MS,
   TRACE_ID,
@@ -21,7 +21,7 @@ const INGEST_TOKEN = 'observability-ingest-token-1234567890';
 const JWT_SECRET = 'observability-test-jwt-secret-1234567890';
 const apps: FastifyInstance[] = [];
 
-interface HarnessOptions {
+interface HarnessOptions extends Pick<ObservabilityHttpHostContext, 'ingestCredentials' | 'canAccess' | 'hasCompanyAccess'> {
   token?: string;
   store?: TelemetryStore;
 }
@@ -43,9 +43,19 @@ async function createHarness(options: HarnessOptions = {}) {
       return;
     }
     try {
-      const payload = await request.jwtVerify<{ sub: string; role: string }>();
+      const payload = await request.jwtVerify<{
+        sub: string;
+        role: string;
+        companyId?: number;
+        groupPermissions?: unknown;
+      }>();
       Object.assign(request, {
-        auth: { userId: Number(payload.sub), role: payload.role },
+        auth: {
+          userId: Number(payload.sub),
+          role: payload.role,
+          companyId: payload.companyId,
+          groupPermissions: payload.groupPermissions,
+        },
       });
     } catch {
       return reply.code(401).send({ success: false, error: 'Authentication required' });
@@ -72,6 +82,9 @@ async function createHarness(options: HarnessOptions = {}) {
   await app.register(observabilityHttpPlugin as Parameters<FastifyInstance['register']>[0], {
     store,
     observabilityIngestToken: options.token ?? INGEST_TOKEN,
+    ingestCredentials: options.ingestCredentials,
+    canAccess: options.canAccess,
+    hasCompanyAccess: options.hasCompanyAccess,
   });
   await app.ready();
   return {
@@ -79,7 +92,8 @@ async function createHarness(options: HarnessOptions = {}) {
     store,
     adminToken: app.jwt.sign({ sub: '1', role: 'superadmin' }),
     systemToken: app.jwt.sign({ sub: '2', role: 'system' }),
-    userToken: app.jwt.sign({ sub: '3', role: 'user' }),
+    userToken: app.jwt.sign({ sub: '3', role: 'user', companyId: 7, groupPermissions: ['read'] }),
+    unscopedUserToken: app.jwt.sign({ sub: '3', role: 'user' }),
   };
 }
 
@@ -89,6 +103,17 @@ function ingestHeaders(token = INGEST_TOKEN) {
 
 function adminHeaders(token: string) {
   return { authorization: `Bearer ${token}` };
+}
+
+function credentialRegistry(
+  lookup: IngestCredentialRegistry['lookup']
+): IngestCredentialRegistry {
+  return {
+    lookup,
+    create: async () => { throw new Error('Not used by HTTP harness'); },
+    revoke: async () => { throw new Error('Not used by HTTP harness'); },
+    list: async () => { throw new Error('Not used by HTTP harness'); },
+  };
 }
 
 afterEach(async () => {
@@ -150,6 +175,137 @@ describe('observability addon HTTP plugin', () => {
     });
     expect(alternate.statusCode).toBe(200);
     expect(alternate.json()).toEqual({});
+  });
+
+  it('fails closed for rejected registry credentials without legacy configuration', async () => {
+    const rejected = new Set(['mwobs_invalid', 'mwobs_expired', 'mwobs_revoked', 'mwobs_lookup_failure']);
+    const { app } = await createHarness({
+      token: '',
+      ingestCredentials: credentialRegistry(async (token) => {
+        if (token === 'mwobs_lookup_failure') throw new Error('Registry unavailable');
+        return undefined;
+      }),
+    });
+    for (const token of rejected) {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/v1/traces',
+        payload: tracePayload(),
+        headers: ingestHeaders(token),
+      });
+      expect(response.statusCode).toBe(401);
+      expect(response.json()).toEqual({ success: false, error: 'Unauthorized' });
+      expect(response.headers['cache-control']).toBe('private, no-store');
+    }
+    expect((await app.inject({ method: 'POST', url: '/v1/traces', payload: {} })).statusCode).toBe(401);
+  });
+
+  it('preserves valid legacy fallback but never revives a rejected registry credential', async () => {
+    const revoked = 'mwobs_revoked';
+    const registry = credentialRegistry(async () => undefined);
+    const fallback = await createHarness({ ingestCredentials: registry });
+    const legacy = await fallback.app.inject({
+      method: 'POST',
+      url: '/v1/traces',
+      payload: tracePayload(),
+      headers: ingestHeaders(),
+    });
+    expect(legacy.statusCode).toBe(200);
+    const { app } = await createHarness({ token: revoked, ingestCredentials: registry });
+    const rejected = await app.inject({
+      method: 'POST',
+      url: '/v1/traces',
+      payload: tracePayload(),
+      headers: ingestHeaders(revoked),
+    });
+    expect(rejected.statusCode).toBe(401);
+  });
+
+  it('derives ingest tenant from the registry and keeps company reads scoped despite forged selectors', async () => {
+    const lookups: string[] = [];
+    const accessChecks: unknown[][] = [];
+    const membershipChecks: unknown[][] = [];
+    const { app, adminToken, userToken } = await createHarness({
+      ingestCredentials: credentialRegistry(async (token) => {
+        lookups.push(token);
+        if (token === 'mwobs_company_seven') return { id: 'seven', companyId: 7, userId: 70 };
+        if (token === 'mwobs_company_eight') return { id: 'eight', companyId: 8, userId: 80 };
+        return undefined;
+      }),
+      canAccess: (...args) => { accessChecks.push(args); return true; },
+      hasCompanyAccess: async (...args) => { membershipChecks.push(args); return true; },
+    });
+    const otherTraceId = '22222222222222222222222222222222';
+    const forgedPayload = structuredClone(tracePayload());
+    const forgedSpan = forgedPayload.resourceSpans[0]?.scopeSpans[0]?.spans[0];
+    if (!forgedSpan?.attributes) throw new Error('Trace fixture is missing its root span attributes');
+    forgedSpan.attributes.push({
+      key: 'moonwitness.company_id',
+      value: { stringValue: '99' },
+    });
+    for (const [token, traceId] of [
+      ['mwobs_company_seven', TRACE_ID],
+      ['mwobs_company_eight', otherTraceId],
+    ] as const) {
+      const payload = structuredClone(forgedPayload);
+      const spans = payload.resourceSpans[0]?.scopeSpans[0]?.spans;
+      if (!spans) throw new Error('Trace fixture is missing its spans');
+      for (const span of spans) {
+        if (span.traceId) span.traceId = traceId;
+      }
+      const ingested = await app.inject({
+        method: 'POST',
+        url: '/v1/traces',
+        payload,
+        headers: ingestHeaders(token),
+      });
+      expect(ingested.statusCode).toBe(200);
+    }
+
+    const scoped = await app.inject({
+      url: `/api/observability/traces?companyId=8&company_id=8&tenantId=8`,
+      headers: { ...adminHeaders(userToken), 'x-company-id': '8', 'x-observability-company-id': '8' },
+    });
+    expect(scoped.statusCode).toBe(200);
+    expect(scoped.json().data.traces).toHaveLength(1);
+    expect(scoped.json().data.traces[0]).toMatchObject({ traceId: TRACE_ID, tenantId: 7 });
+    expect(accessChecks).toEqual([
+      ['user', 'observability.telemetry_span', 'read', ['read']],
+    ]);
+    expect(membershipChecks).toEqual([[3, 7, 'user']]);
+
+    const crossCompany = await app.inject({
+      url: `/api/observability/traces/${otherTraceId}`,
+      headers: { ...adminHeaders(userToken), 'x-company-id': '8' },
+    });
+    expect(crossCompany.statusCode).toBe(404);
+    const global = await app.inject({ url: '/api/observability/traces', headers: adminHeaders(adminToken) });
+    expect(global.json().data.traces).toHaveLength(2);
+    expect(lookups).toEqual(['mwobs_company_seven', 'mwobs_company_eight']);
+  });
+
+  it('denies company reads without permission or active membership', async () => {
+    const withoutPermission = await createHarness({
+      canAccess: () => false,
+      hasCompanyAccess: async () => true,
+    });
+    const denied = await withoutPermission.app.inject({
+      url: '/api/observability/summary',
+      headers: adminHeaders(withoutPermission.userToken),
+    });
+    expect(denied.statusCode).toBe(403);
+    expect(denied.json()).toEqual({ success: false, error: 'Telemetry read access denied' });
+
+    const withoutMembership = await createHarness({
+      canAccess: () => true,
+      hasCompanyAccess: async () => false,
+    });
+    const nonMember = await withoutMembership.app.inject({
+      url: '/api/observability/summary',
+      headers: adminHeaders(withoutMembership.userToken),
+    });
+    expect(nonMember.statusCode).toBe(403);
+    expect(nonMember.json()).toEqual({ success: false, error: 'Company access denied' });
   });
 
   it('returns bounded validation errors for invalid OTLP and Qoder payloads', async () => {
@@ -267,7 +423,7 @@ describe('observability addon HTTP plugin', () => {
   });
 
   it('denies unauthenticated and non-admin reads while allowing Qoder hooks without JWT', async () => {
-    const { app, adminToken, userToken } = await createHarness();
+    const { app, adminToken, unscopedUserToken } = await createHarness();
     const ingestCredentialRead = await app.inject({
       url: '/api/observability/summary',
       headers: ingestHeaders(),
@@ -284,7 +440,7 @@ describe('observability addon HTTP plugin', () => {
       const unauthenticated = await app.inject({ url });
       expect(unauthenticated.statusCode).toBe(401);
       expect(unauthenticated.json()).toEqual({ success: false, error: 'Authentication required' });
-      const denied = await app.inject({ url, headers: adminHeaders(userToken) });
+      const denied = await app.inject({ url, headers: adminHeaders(unscopedUserToken) });
       expect(denied.statusCode).toBe(403);
       expect(denied.json()).toEqual({
         success: false,
