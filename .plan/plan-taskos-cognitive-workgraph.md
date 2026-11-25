@@ -17,12 +17,12 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 3. **Implement `Txx`:** Edit ONLY the files listed under `Owner File(s)` for `Txx`. Follow `Exact Spec` and `DO NOT` strictly.
 4. **Run `Verify` Command:** Must exit `0` and satisfy every bullet in `Acceptance Criteria` and `Expected Output`. Fix root causes immediately if anything fails.
 5. **Update Tracking:** Change `- [ ]` -> `- [x]` for `Txx` in BOTH the Wave Playbook AND this Master file, and update the Progress Ledger row.
-6. **Atomic Per-Micro-Task Commit:**
+6. **Atomic Per-Micro-Task Commit & Push (`dev` only):**
    ```powershell
-   git commit --only <Txx-owner-files> .plan/plan-taskos-cognitive-workgraph.md .plan/plan-taskos-cognitive-workgraph/<wave-file>.md -m "<type>(<scope>): Txx <short-title>"
+   git add <Txx-owner-files> .plan/plan-taskos-cognitive-workgraph.md .plan/plan-taskos-cognitive-workgraph/<wave-file>.md ; if ($?) { git commit --only <Txx-owner-files> .plan/plan-taskos-cognitive-workgraph.md .plan/plan-taskos-cognitive-workgraph/<wave-file>.md -m "<type>(<scope>): Txx <short-title>" } ; if ($?) { git push origin dev; if (-not $?) { git pull --rebase --autostash origin dev; if ($?) { git push origin dev } } }
    ```
-   - **Pre-Commit Auto-Fix Recovery:** If the pre-commit hook runs `eslint --fix` and modifies a staged file, re-run the exact same `git commit --only ...` command once.
-   - **NEVER** run `git add -A`, **NEVER** touch unrelated dirty files, **NEVER** pass `--force` or `--no-verify`.
+   - **Pre-Commit Auto-Fix Recovery:** If the pre-commit hook runs `eslint --fix` and modifies a staged file, re-run the exact same `git commit --only ...` command once, then push to `origin dev`.
+   - **NEVER** run `git add -A`, **NEVER** touch unrelated dirty files, **NEVER** pass `--force` or `--no-verify`, **NEVER** push to `main`.
 7. **Hard Invariants:**
    - Windows PowerShell ONLY: chain commands with `; if ($?) { ... }`, NEVER `&&` (`INV-001`).
    - `packages/plan-taskos` MUST have ZERO imports from `@moonwitness/orm*`, `@moonwitness/ui`, `fastify`, `react`, `better-sqlite3`, or `tauri` (`INV-004`, `INV-009`).
