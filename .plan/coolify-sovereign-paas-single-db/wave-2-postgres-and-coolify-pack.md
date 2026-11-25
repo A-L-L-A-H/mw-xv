@@ -343,7 +343,7 @@
 
 ---
 
-## - [ ] M30 — Refactor App Lifecycle `:action`, Live `stats`, & `logs/stream` to Stateless Agent
+## - [x] M30 — Refactor App Lifecycle `:action`, Live `stats`, & `logs/stream` to Stateless Agent
 
 - **Owner File (MODIFY):** `packages/orm-cloud/src/http.ts`
 - **Depends On:** `M29`

@@ -24,13 +24,13 @@ import {
   type CloudDeploymentState,
 } from './providers/coolify.js';
 import {
-  controlMeshPaasApp,
+  controlAgentContainer,
   deployAgentGit,
+  fetchAgentContainerStats,
   fetchAgentMeshStatus,
   fetchMeshNodeMetrics,
   listAgentContainers,
   listMeshPaasApps,
-  type MeshPaasAppAction,
   runAgentContainer,
   upAgentCompose,
   verifyAgentDns,
@@ -253,6 +253,16 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
     permission: 'write',
     adminOnly: false,
     feature: 'provisioning',
+    resourceId: true,
+  },
+  {
+    method: 'GET',
+    path: '/api/cloud/paas/apps/:slug/stats',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: false,
+    feature: 'controlPlane',
     resourceId: true,
   },
   {
@@ -1424,14 +1434,6 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     });
 
     const PAAS_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$/u;
-    const PAAS_ACTIONS: readonly MeshPaasAppAction[] = [
-      'start',
-      'restart',
-      'stop',
-      'redeploy',
-      'delete',
-      'logs',
-    ];
     const normalizeBackup = (raw: unknown) => {
       const item = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
       const sizeBytes = typeof item.sizeBytes === 'number' ? item.sizeBytes : 0;
@@ -2122,18 +2124,128 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         if (!requireToken(reply, rule)) return;
 
         const slug = req.params.slug.trim();
-        const action = req.params.action.trim() as MeshPaasAppAction;
-        if (!PAAS_SLUG_PATTERN.test(slug) || !PAAS_ACTIONS.includes(action)) {
+        const action = req.params.action.trim();
+        if (
+          !PAAS_SLUG_PATTERN.test(slug) ||
+          !['start', 'restart', 'stop', 'redeploy', 'delete'].includes(action)
+        ) {
           mark(rule.operation, 'invalid', 'mesh');
           return reply.code(400).send({ success: false, error: 'Invalid PaaS app slug or action' });
         }
+
+        // Scope check: app must exist in PostgreSQL for this company
+        const cloudApp = await CloudApp.query().findOne({
+          name: slug,
+          company_id: ctx.companyId,
+          managed_by: 'paas',
+          is_active: true,
+        });
+        if (!cloudApp) {
+          mark(rule.operation, 'invalid', 'mesh');
+          return reply.code(404).send({ success: false, error: `App ${slug} not found` });
+        }
+
         try {
           assertProbeTarget(defaultAgentUrl, requestPolicy);
-          const result = await controlMeshPaasApp({
+
+          // Delete: remove container, deactivate Postgres state, reconcile Caddy
+          if (action === 'delete') {
+            try {
+              await controlAgentContainer({
+                endpoint: defaultAgentUrl,
+                token: resolvedToken,
+                slug,
+                action: 'delete',
+                fetchImpl,
+                timeoutMs: 60_000,
+              });
+            } catch {
+              // Container may already be gone; continue cleaning Postgres state.
+            }
+            await CloudApp.query().findById(cloudApp.id).patch({
+              is_active: false,
+              active: false,
+              domain: null,
+              host_port: null,
+            });
+            await CloudDeployment.query().insert({
+              company_id: ctx.companyId,
+              app_id: cloudApp.id,
+              version: cloudApp.image_tag ?? 'latest',
+              image_tag: cloudApp.image_tag ?? 'latest',
+              status: 'stopped',
+              container_id: slug,
+              trigger: 'agent',
+              log: `App ${slug} deleted; container removed and Caddy route detached`,
+              started_at: new Date().toISOString(),
+            });
+            await reconcileCaddyWithAgent({});
+            mark(rule.operation, 'success', 'mesh');
+            return { success: true, data: { slug, action: 'delete', status: 'deleted' } };
+          }
+
+          // Redeploy: re-run stored spec based on deploy_mode
+          if (action === 'redeploy') {
+            if (cloudApp.deploy_mode === 'compose' && cloudApp.compose_spec) {
+              await upAgentCompose({
+                endpoint: defaultAgentUrl,
+                slug,
+                composeSpec: cloudApp.compose_spec,
+                env:
+                  cloudApp.env_vars && typeof cloudApp.env_vars === 'object'
+                    ? (cloudApp.env_vars as Record<string, string>)
+                    : undefined,
+              });
+            } else if (cloudApp.deploy_mode === 'git' && cloudApp.git_repo) {
+              await deployAgentGit({
+                endpoint: defaultAgentUrl,
+                token: resolvedToken,
+                slug,
+                gitRepo: cloudApp.git_repo,
+                ...(cloudApp.git_branch ? { branch: cloudApp.git_branch } : {}),
+                ...(cloudApp.dockerfile_path ? { dockerfilePath: cloudApp.dockerfile_path } : {}),
+                port: cloudApp.port ?? 3000,
+                domain: cloudApp.domain ?? undefined,
+                fetchImpl,
+                timeoutMs: 120_000,
+              });
+            } else {
+              await runAgentContainer({
+                endpoint: defaultAgentUrl,
+                token: resolvedToken,
+                slug,
+                image: cloudApp.image,
+                port: cloudApp.port ?? 3000,
+                domain: cloudApp.domain ?? undefined,
+                env:
+                  cloudApp.env_vars && typeof cloudApp.env_vars === 'object'
+                    ? (cloudApp.env_vars as Record<string, string>)
+                    : undefined,
+                fetchImpl,
+                timeoutMs: 60_000,
+              });
+            }
+            await CloudDeployment.query().insert({
+              company_id: ctx.companyId,
+              app_id: cloudApp.id,
+              version: cloudApp.image_tag ?? 'latest',
+              image_tag: cloudApp.image_tag ?? 'latest',
+              status: 'running',
+              container_id: slug,
+              trigger: 'agent',
+              log: `App ${slug} redeployed from stored ${cloudApp.deploy_mode} spec`,
+              started_at: new Date().toISOString(),
+            });
+            mark(rule.operation, 'success', 'mesh');
+            return { success: true, data: { slug, action: 'redeploy', status: 'running' } };
+          }
+
+          // start / restart / stop: forward to stateless agent
+          const result = await controlAgentContainer({
             endpoint: defaultAgentUrl,
             token: resolvedToken,
-            appIdOrSlug: slug,
-            action,
+            slug,
+            action: action as 'start' | 'stop' | 'restart',
             fetchImpl,
             timeoutMs: 60_000,
           });
@@ -2144,6 +2256,53 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           return reply.code(502).send({
             success: false,
             error: safeErrorText(error, [resolvedToken], `PaaS ${action} failed`),
+          });
+        }
+      }
+    );
+
+    fastify.get<{ Params: { slug: string } }>(
+      '/api/cloud/paas/apps/:slug/stats',
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/apps/:slug/stats');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const slug = req.params.slug.trim();
+        if (!PAAS_SLUG_PATTERN.test(slug)) {
+          mark(rule.operation, 'invalid', 'mesh');
+          return reply.code(400).send({ success: false, error: 'Invalid PaaS app slug' });
+        }
+
+        const cloudApp = await CloudApp.query().findOne({
+          name: slug,
+          company_id: ctx.companyId,
+          managed_by: 'paas',
+          is_active: true,
+        });
+        if (!cloudApp) {
+          mark(rule.operation, 'invalid', 'mesh');
+          return reply.code(404).send({ success: false, error: `App ${slug} not found` });
+        }
+
+        try {
+          assertProbeTarget(defaultAgentUrl, requestPolicy);
+          const stats = await fetchAgentContainerStats({
+            endpoint: defaultAgentUrl,
+            token: resolvedToken,
+            slug,
+            fetchImpl,
+            timeoutMs: 15_000,
+          });
+          mark(rule.operation, 'success', 'mesh');
+          return { success: true, data: stats };
+        } catch (error) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(error, [resolvedToken], 'PaaS app stats failed'),
           });
         }
       }
@@ -2165,7 +2324,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         }
         try {
           const url = assertProbeTarget(
-            `${defaultAgentUrl}/paas/apps/${encodeURIComponent(slug)}/logs/stream`,
+            `${defaultAgentUrl}/agent/containers/${encodeURIComponent(slug)}/logs/stream`,
             requestPolicy
           );
           const res = await controlPlaneFetch(url.toString(), {

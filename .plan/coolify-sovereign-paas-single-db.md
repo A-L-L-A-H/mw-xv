@@ -82,7 +82,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M27** — `packages/orm-cloud/src/http.ts`: refactor `GET /apps` & add `GET /apps/:slug` (PostgreSQL `CloudApp` + live agent merge + deployment history)
 - [x] **M28** — `packages/orm-cloud/src/http.ts`: refactor `POST /apps/deploy` & add `POST /apps/deploy-compose` (Postgres + agent + Caddy)
 - [x] **M29** — `packages/orm-cloud/src/http.ts`: add `POST /apps/deploy-git` & `POST /webhooks/github/:slug` (HMAC-SHA256 verified against Postgres)
-- [ ] **M30** — `packages/orm-cloud/src/http.ts`: refactor `POST /apps/:slug/:action` + add `GET /apps/:slug/stats` + update `logs/stream` to `/agent/containers/*`
+- [x] **M30** — `packages/orm-cloud/src/http.ts`: refactor `POST /apps/:slug/:action` + add `GET /apps/:slug/stats` + update `logs/stream` to `/agent/containers/*`
 - [ ] **M31** — `packages/orm-cloud/src/http.ts`: add `POST /apps/:slug/env` (`[REDACTED]`-safe) & `POST /apps/:slug/domain` (Postgres + compose recompile + Caddy)
 - [ ] **M32** — `packages/auth/src/service.ts` + `index.ts`: add transactional `claimSuperadminSetup()` (raw password -> auto-hashed by `User` model!)
 - [ ] **M33** — `apps/api/src/routes/auth.routes.ts`: add `GET /auth/setup-status` & `POST /auth/setup-claim` (SHA-256 constant-time `MW_SETUP_TOKEN`, `409` after claim)
@@ -134,7 +134,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
-| Wave 2 | `M16`–`M38` | `14 / 23` | — | `M29 OK` — `@moonwitness/orm-cloud build` exit 0; cloud-auth-ops.test.ts 12/12 passed; `POST /api/cloud/paas/apps/deploy-git` (deployAgentGit + webhook_secret) & `POST /api/cloud/paas/webhooks/github/:slug` (HMAC-SHA256 constant-time verify) wired |
+| Wave 2 | `M16`–`M38` | `15 / 23` | — | `M30 OK` — `@moonwitness/orm-cloud build` exit 0; cloud-auth-ops.test.ts 12/12 passed; `POST /apps/:slug/:action` (Postgres scope-check, redeploy/delete semantics), `GET /apps/:slug/stats`, `logs/stream` proxied to `/agent/containers/*` |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
