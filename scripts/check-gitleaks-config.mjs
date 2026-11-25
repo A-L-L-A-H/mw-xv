@@ -100,9 +100,12 @@ const reviewedWorkstreamLines = [
 ];
 
 // orm-observability test fixtures: synthetic API keys used in telemetry redaction and ingestion tests
+// Note: The gitleaks config uses triple-quoted TOML strings ('''...'''), and the check script's
+// regex capture ('''(.*?)''') stops before the closing triple quote, so the captured content
+// excludes the trailing single quote that appears before the closing triple quote in the TOML.
 const ormObservabilityLines = [
-  "api_key: 'sk-test-12345678901234567890'",
-  "providerKey: 'sk-proj-12345678901234567890'",
+  "api_key: 'sk-test-12345678901234567890",
+  "providerKey: 'sk-proj-12345678901234567890",
 ];
 
 // Coolify templates commit only dollar-escaped runtime variables and a pinned image digest.
