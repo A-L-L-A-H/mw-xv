@@ -250,7 +250,7 @@
 
 ---
 
-## - [ ] M13 — Add `POST /agent/dns/verify` (Apex, Synthetic Wildcard, & Strict TLS `/readyz`)
+## - [x] M13 — Add `POST /agent/dns/verify` (Apex, Synthetic Wildcard, & Strict TLS `/readyz`)
 
 - **Owner Files (MODIFY):**
   - `apps/control-plane/agent_stateless.go`

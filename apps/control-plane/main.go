@@ -104,6 +104,7 @@ var controlPlaneRouteMatrix = []controlPlaneRoute{
 	{pattern: "/agent/containers/run", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/agent/compose/up", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/agent/git/deploy", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/agent/dns/verify", family: "agent-stateless", access: accessAuthenticated, methods: []string{http.MethodPost}},
 	{pattern: "/a2a/delegate", family: "a2a-federation", access: accessA2APeer, methods: []string{http.MethodPost}},
 }
 
@@ -373,6 +374,7 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 		"/agent/containers/run":       paasMgr.handleAgentContainerRun(),
 		"/agent/compose/up":           paasMgr.handleAgentComposeUp(),
 		"/agent/git/deploy":           paasMgr.handleAgentGitDeploy(),
+		"/agent/dns/verify":           paasMgr.handleAgentDnsVerify(),
 		"/a2a/delegate":               a2aMgr.HandleDelegate(),
 	}
 

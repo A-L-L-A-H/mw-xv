@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -988,5 +989,193 @@ func (m *PaasManager) handleAgentGitDeploy() http.HandlerFunc {
 			"containerName": containerName,
 			"containerId":   containerID,
 		})
+	}
+}
+
+// AgentDnsVerifyRequest is the payload for POST /agent/dns/verify.
+type AgentDnsVerifyRequest struct {
+	InstanceDomain string `json:"instanceDomain,omitempty"`
+	WildcardDomain string `json:"wildcardDomain,omitempty"`
+	WhatsappDomain string `json:"whatsappDomain,omitempty"`
+	ExpectedIPv4   string `json:"expectedIpv4,omitempty"`
+	CheckHTTPS     bool   `json:"checkHttps,omitempty"`
+}
+
+// AgentDnsCheckResult describes DNS resolution status for a single domain target.
+type AgentDnsCheckResult struct {
+	Domain      string   `json:"domain,omitempty"`
+	ProbeHost   string   `json:"probeHost,omitempty"`
+	Status      string   `json:"status"`
+	ResolvedIPs []string `json:"resolvedIps,omitempty"`
+	Warning     string   `json:"warning,omitempty"`
+	Error       string   `json:"error,omitempty"`
+}
+
+// AgentHttpsReadyResult describes strict TLS /readyz reachability.
+type AgentHttpsReadyResult struct {
+	URL         string `json:"url"`
+	Reachable   bool   `json:"reachable"`
+	TLSVerified bool   `json:"tlsVerified"`
+	Error       string `json:"error,omitempty"`
+}
+
+func verifyDnsTarget(
+	parentCtx context.Context,
+	lookupFn func(context.Context, string) ([]net.IPAddr, error),
+	domain string,
+	probeHost string,
+	expectedIP string,
+) AgentDnsCheckResult {
+	if domain == "" {
+		return AgentDnsCheckResult{Status: "skipped"}
+	}
+	ctx, cancel := context.WithTimeout(parentCtx, 5*time.Second)
+	defer cancel()
+
+	addrs, err := lookupFn(ctx, probeHost)
+	if err != nil {
+		return AgentDnsCheckResult{
+			Domain:    domain,
+			ProbeHost: probeHost,
+			Status:    "unresolved",
+			Error:     err.Error(),
+		}
+	}
+	if len(addrs) == 0 {
+		return AgentDnsCheckResult{
+			Domain:    domain,
+			ProbeHost: probeHost,
+			Status:    "unresolved",
+			Error:     "no A/AAAA records returned",
+		}
+	}
+
+	resolved := make([]string, 0, len(addrs))
+	matched := false
+	for _, addr := range addrs {
+		ipStr := addr.IP.String()
+		resolved = append(resolved, ipStr)
+		if expectedIP != "" && ipStr == expectedIP {
+			matched = true
+		}
+	}
+
+	if matched {
+		return AgentDnsCheckResult{
+			Domain:      domain,
+			ProbeHost:   probeHost,
+			Status:      "matched",
+			ResolvedIPs: resolved,
+		}
+	}
+
+	warning := "Resolved IP does not match expected VPS IP; if using Cloudflare, switch proxy status to DNS-only (grey cloud) so Caddy can provision TLS directly."
+	if expectedIP == "" {
+		warning = "MW_PUBLIC_IPV4 is unset; unable to verify resolved IP against server IP."
+	}
+	return AgentDnsCheckResult{
+		Domain:      domain,
+		ProbeHost:   probeHost,
+		Status:      "different_ip",
+		ResolvedIPs: resolved,
+		Warning:     warning,
+	}
+}
+
+func (m *PaasManager) handleAgentDnsVerify() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+
+		var req AgentDnsVerifyRequest
+		dec := json.NewDecoder(io.LimitReader(r.Body, 128*1024))
+		if err := dec.Decode(&req); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request JSON: " + err.Error()})
+			return
+		}
+
+		instanceDomain := strings.ToLower(strings.TrimSpace(req.InstanceDomain))
+		wildcardDomain := strings.ToLower(strings.TrimSpace(req.WildcardDomain))
+		whatsappDomain := strings.ToLower(strings.TrimSpace(req.WhatsappDomain))
+
+		for _, d := range []string{instanceDomain, wildcardDomain, whatsappDomain} {
+			if d != "" {
+				if err := ValidatePaasDomain(d); err != nil {
+					writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+					return
+				}
+			}
+		}
+
+		expectedIP := strings.TrimSpace(req.ExpectedIPv4)
+		if expectedIP == "" {
+			expectedIP = strings.TrimSpace(os.Getenv("MW_PUBLIC_IPV4"))
+		}
+		if expectedIP != "" && net.ParseIP(expectedIP) == nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("invalid expectedIpv4: %q", expectedIP)})
+			return
+		}
+
+		lookupFn := m.dnsLookupIP
+		if lookupFn == nil {
+			lookupFn = net.DefaultResolver.LookupIPAddr
+		}
+		probeFn := m.httpsProbe
+		if probeFn == nil {
+			probeFn = defaultHTTPHealthProbe
+		}
+
+		instanceRes := verifyDnsTarget(r.Context(), lookupFn, instanceDomain, instanceDomain, expectedIP)
+		wildcardProbe := ""
+		if wildcardDomain != "" {
+			wildcardProbe = "mw-dns-check." + wildcardDomain
+		}
+		wildcardRes := verifyDnsTarget(r.Context(), lookupFn, wildcardDomain, wildcardProbe, expectedIP)
+		whatsappRes := verifyDnsTarget(r.Context(), lookupFn, whatsappDomain, whatsappDomain, expectedIP)
+
+		var httpsReady *AgentHttpsReadyResult
+		if req.CheckHTTPS && instanceDomain != "" {
+			probeURL := "https://" + instanceDomain + "/readyz"
+			httpsCtx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+			err := probeFn(httpsCtx, probeURL)
+			cancel()
+			if err == nil {
+				httpsReady = &AgentHttpsReadyResult{
+					URL:         probeURL,
+					Reachable:   true,
+					TLSVerified: true,
+				}
+			} else {
+				httpsReady = &AgentHttpsReadyResult{
+					URL:         probeURL,
+					Reachable:   false,
+					TLSVerified: false,
+					Error:       err.Error(),
+				}
+			}
+		}
+
+		allMatched := true
+		for _, res := range []AgentDnsCheckResult{instanceRes, wildcardRes, whatsappRes} {
+			if res.Status != "skipped" && res.Status != "matched" {
+				allMatched = false
+				break
+			}
+		}
+
+		resp := map[string]any{
+			"ok":           true,
+			"expectedIpv4": expectedIP,
+			"allMatched":   allMatched,
+			"instance":     instanceRes,
+			"wildcard":     wildcardRes,
+			"whatsapp":     whatsappRes,
+		}
+		if httpsReady != nil {
+			resp["httpsReady"] = httpsReady
+		}
+		writePaasJSON(w, http.StatusOK, resp)
 	}
 }

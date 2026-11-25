@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -222,6 +223,8 @@ type PaasManager struct {
 	binaryRunner  BinaryCommandRunner
 	stdinRunner   StdinCommandRunner
 	healthProber  HealthProber
+	dnsLookupIP   func(ctx context.Context, host string) ([]net.IPAddr, error)
+	httpsProbe    HealthProber
 	startedAt     time.Time
 }
 
