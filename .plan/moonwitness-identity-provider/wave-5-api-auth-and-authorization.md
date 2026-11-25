@@ -28,6 +28,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] No private signing key or DB credential path exists in the SDK.
   - [ ] Package dependencies are minimal.
 - **Verify:** bun --filter @moonwitness/identity-sdk build; bun --filter @moonwitness/identity-sdk test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I51 — Implement strict issuer/audience/JWKS access-token verifier
@@ -48,6 +49,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] JWKS refresh behavior is bounded and tested.
   - [ ] Verifier does not log token values.
 - **Verify:** bun --filter @moonwitness/identity-sdk test; bun --filter @moonwitness/identity-sdk build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I52 — Replace API-local JWT signing with Identity token verification
@@ -56,9 +58,9 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
 - **Depends On:** I12, I36, I51
 - **Effort:** S
 - **Exact Spec:**
-  - Introduce the Identity access-token verifier into the Fastify authentication plugin lifecycle.
+  - Implement and test the Identity access-token verifier as a separate Fastify plugin. Keep it isolated until cutover task I57.
   - Read trusted issuer, audience and JWKS configuration from validated API config; never use a caller-supplied issuer/JWKS URL.
-  - Remove API access-token signing from the user authentication path while keeping the API bootable for the remaining old routes until I57/I58.
+  - Do not switch the active API authentication path in this task. Legacy auth remains only as a temporary development path until I57 performs the atomic cutover; no mixed-token fallback is permitted in production.
   - Keep authentication plugin output compatible with downstream request principal consumers during the staged cutover.
   - Fail startup or readiness when required verifier configuration is missing in production.
 - **DO NOT:** Do not expose private key material to API or accept old HS256 user tokens as a fallback.
@@ -68,6 +70,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] No user access token is signed by API.
   - [ ] Existing non-auth business routes still build.
 - **Verify:** bun --filter @moonwitness/api test; bun --filter @moonwitness/api build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I53 — Resolve verified token subject to the local business principal
@@ -86,6 +89,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Unknown/unprovisioned/inactive subject receives an authentication failure.
   - [ ] Company membership remains checked by API.
 - **Verify:** bun --filter @moonwitness/api test; API auth integration tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I54 — Preserve auth-cache invalidation and revocation behavior
@@ -104,6 +108,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Cache cannot retain revoked principal state beyond defined TTL.
   - [ ] API has no direct Identity DB connection.
 - **Verify:** bun --filter @moonwitness/api test; revocation/cache integration tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I55 — Remove implicit global system/superadmin data bypass
@@ -124,6 +129,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Every administrative bypass is a named endpoint capability with a test.
   - [ ] system actor is not silently granted human permissions.
 - **Verify:** bun --filter @moonwitness/api test; authorization and row-rule integration tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I56 — Refactor current-user profile and preference endpoints
@@ -142,11 +148,12 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Business preferences/profile remain editable through API policy.
   - [ ] No password, credential or refresh-token field is returned.
 - **Verify:** bun --filter @moonwitness/api test; Board API client type checks.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I57 — Remove API-owned human login/register/password routes
 
-- **Owner File(s):** apps/api/src/routes/auth.routes.ts; apps/api/src/routes/auth.routes.test.ts; apps/api/src/server.ts
+- **Owner File(s):** apps/api/src/routes/auth.routes.ts; apps/api/src/routes/auth.routes.test.ts; apps/api/src/plugins/auth.plugin.ts; apps/api/src/app.ts; apps/api/src/server.ts
 - **Depends On:** I56, I61, I64
 - **Effort:** S
 - **Exact Spec:**
@@ -160,6 +167,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] No public self-registration/login/refresh/password route remains.
   - [ ] Business profile routes continue to work.
 - **Verify:** bun --filter @moonwitness/api test; bun --filter @moonwitness/api build; search route registry for legacy endpoints.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I58 — Remove API runtime wiring to legacy credential auth service
@@ -178,6 +186,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] No unused auth package dependency remains in apps/api/package.json.
   - [ ] All business addons still register as before.
 - **Verify:** bun --filter @moonwitness/api test; bun --filter @moonwitness/api build.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I59 — Add tenant and authorization regression coverage
@@ -197,6 +206,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - [ ] Tests cover Identity verification plus Business authorization together.
   - [ ] No cross-tenant data leakage is possible through tested CRUD paths.
 - **Verify:** bun --filter @moonwitness/api test; run targeted PostgreSQL integration suite.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 

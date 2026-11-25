@@ -163,8 +163,8 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [ ] **I74** — Add account recovery and email-verification provider contracts
 - [ ] **I75** — Evaluate WebAuthn/passkey support and record rollout decision
 - [ ] **I76** — Remove default system/superadmin seeds and startup dependency
-- [ ] **I77** — Remove credential ownership and obsolete role fields from base.user
 - [ ] **I78** — Remove legacy auth package/runtime and obsolete service-token wiring
+- [ ] **I77** — Remove credential ownership and obsolete role fields from base.user
 - [ ] **I79** — Run final security audit, update runbooks and close the plan
 
 ## 6. MVP gates

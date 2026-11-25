@@ -14,7 +14,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
 
 #### - [ ] I60 — Register Board as an OIDC public client
 
-- **Owner File(s):** apps/id/src/oidc/default-clients.ts; apps/id/src/oidc/default-clients.test.ts; apps/id/src/database/seeds/**
+- **Owner File(s):** apps/id/src/oidc/clients/board-client.ts; apps/id/src/oidc/clients/board-client.test.ts; apps/id/src/database/seeds/board-client.ts
 - **Depends On:** I31, I40
 - **Effort:** XS
 - **Exact Spec:**
@@ -29,6 +29,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Redirect allowlist is exact and environment-specific.
   - [ ] Repeated seed runs do not duplicate client records.
 - **Verify:** bun --filter @moonwitness/id test; identity client registry integration test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I61 — Implement Board Authorization Code + PKCE callback
@@ -49,6 +50,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Tokens remain server-side in secure session storage.
   - [ ] Open-redirect attempts are rejected.
 - **Verify:** bun --filter @moonwitness/board typecheck; Board auth unit tests; add a focused Playwright login callback test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I62 — Implement Board server-side session, renewal and logout
@@ -70,11 +72,12 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Logout revokes Identity session and Board cookie.
   - [ ] CSRF protection is tested.
 - **Verify:** bun --filter @moonwitness/board typecheck; Board auth tests; focused Playwright session/logout test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I63 — Register Desktop as an OIDC public client
 
-- **Owner File(s):** apps/id/src/oidc/default-clients.ts; apps/id/src/oidc/default-clients.test.ts; apps/id/src/database/seeds/**
+- **Owner File(s):** apps/id/src/oidc/clients/desktop-client.ts; apps/id/src/oidc/clients/desktop-client.test.ts; apps/id/src/database/seeds/desktop-client.ts
 - **Depends On:** I31, I40
 - **Effort:** XS
 - **Exact Spec:**
@@ -88,6 +91,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Callback allowlist matches the documented Desktop strategy.
   - [ ] Only expected grant types and scopes are allowed.
 - **Verify:** bun --filter @moonwitness/id test; client registry validation tests.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I64 — Implement Desktop system-browser login with PKCE
@@ -108,6 +112,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] No token appears in console output, logs or desktop config exports.
   - [ ] Logout revokes session and clears local credential storage.
 - **Verify:** bun --filter @moonwitness/desktop typecheck; bun --filter @moonwitness/desktop test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I65 — Implement Desktop callback, token lifecycle and logout
@@ -127,6 +132,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Renderer receives no refresh token or private credential.
   - [ ] Remote logout failure does not prevent local credential clearing.
 - **Verify:** bun --filter @moonwitness/desktop typecheck; bun --filter @moonwitness/desktop test.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I66 — Add Identity service and separate Identity database to deployment
@@ -148,6 +154,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Issuer URL and reverse-proxy path are consistent.
   - [ ] No default superadmin password/setup token is required.
 - **Verify:** docker compose config; compose build/start smoke test using disposable local environment; git diff --check.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 #### - [ ] I67 — Prove clean first installation end to end
@@ -170,6 +177,7 @@ Execute one task per cycle in dependency order. Inspect existing client/session 
   - [ ] Cross-tenant and invalid-token negative tests pass.
   - [ ] Test teardown leaves no shared data behind.
 - **Verify:** Run the new clean-install E2E suites and all affected API/ID/Board/Desktop test commands.
+- **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
 
