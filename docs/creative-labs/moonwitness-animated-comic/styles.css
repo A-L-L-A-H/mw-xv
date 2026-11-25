@@ -1044,3 +1044,98 @@ body {
     display: none;
   }
 }
+
+/* Live Manga Visual SFX, Director Overlay, Epistemic Hotspots, Webtoon & AAA High Contrast */
+.stage-visual-sfx {
+  position: absolute;
+  z-index: 6;
+  padding: 0.14rem 0.55rem;
+  font-family: var(--mw-font-grunge);
+  font-size: clamp(1.1rem, 2.2vw, 1.65rem);
+  letter-spacing: 0.06em;
+  border: 3px solid var(--mw-ink-black);
+  box-shadow: 4px 4px 0 0 var(--mw-ink-black);
+  pointer-events: none;
+  transform: rotate(-4deg);
+}
+.stage-visual-sfx[data-tone='cyan'] { background: var(--mw-signal-blue); color: var(--mw-ink-black); }
+.stage-visual-sfx[data-tone='magenta'] { background: var(--mw-magenta); color: var(--mw-ink-black); }
+.stage-visual-sfx[data-tone='yellow'] { background: var(--mw-yellow); color: var(--mw-ink-black); }
+.stage-visual-sfx[data-tone='violet'] { background: var(--mw-violet); color: var(--mw-ink-black); }
+.stage-visual-sfx[data-pos='top-right'] { top: 14px; right: 16px; }
+.stage-visual-sfx[data-pos='top-left'] { top: 14px; left: 16px; }
+.stage-visual-sfx[data-pos='bottom-left'] { bottom: 18px; left: 16px; }
+
+.stage-director-overlay {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  z-index: 7;
+  max-width: min(420px, 85%);
+  background: rgba(8, 9, 14, 0.92);
+  color: var(--mw-paper-cream);
+  border: 2px solid var(--mw-signal-blue);
+  padding: 0.5rem 0.65rem;
+  font-family: var(--mw-font-mono);
+  font-size: 0.7rem;
+}
+.dir-head { color: var(--mw-yellow); font-weight: 800; margin-bottom: 0.28rem; }
+.dir-chips { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.28rem; }
+.dir-chip { background: var(--mw-magenta); color: var(--mw-ink-black); padding: 0.06rem 0.35rem; font-weight: 800; }
+.dir-meta { color: var(--mw-signal-blue); margin-bottom: 0.2rem; }
+.dir-purpose { color: #d6d2c7; font-family: var(--mw-font-sans); font-size: 0.74rem; }
+
+.stage-hotspots { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.hotspot-pin {
+  position: absolute;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  background: var(--mw-yellow);
+  color: var(--mw-ink-black);
+  border: 2px solid var(--mw-ink-black);
+  box-shadow: 3px 3px 0 0 var(--mw-ink-black);
+  font-family: var(--mw-font-mono);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+}
+.hotspot-card {
+  position: absolute;
+  left: 16px;
+  bottom: 18px;
+  max-width: 320px;
+  pointer-events: auto;
+  background: var(--mw-paper-cream);
+  color: var(--mw-ink-black);
+  border: 3px solid var(--mw-ink-black);
+  box-shadow: 4px 4px 0 0 var(--mw-signal-blue);
+  padding: 0.5rem 0.65rem;
+  font-size: 0.78rem;
+}
+.hotspot-card p { margin: 0.25rem 0 0; }
+
+.webtoon-container {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.webtoon-card {
+  background: var(--mw-paper-cream);
+  color: var(--mw-ink-black);
+  border: 3px solid var(--mw-ink-black);
+  box-shadow: 6px 6px 0 0 var(--mw-signal-blue);
+  overflow: hidden;
+}
+.webtoon-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; border-bottom: 3px solid var(--mw-ink-black); }
+.webtoon-body { padding: 0.75rem 0.9rem; }
+
+[data-theme='high-contrast'] {
+  --mw-ink-deep: #000000;
+  --mw-ink-panel: #000000;
+  --mw-paper-cream: #ffffff;
+  --mw-border-subtle: #ffffff;
+}
+[data-theme='high-contrast'] .zine-btn { border-width: 3px; }

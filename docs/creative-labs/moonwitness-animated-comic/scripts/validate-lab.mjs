@@ -105,7 +105,11 @@ async function main() {
     const relPath = path.relative(LAB_DIR, webpPath).replace(/\\/g, '/');
     const meta = await sharp(webpPath).metadata();
     assert(meta.format === 'webp', `${relPath}: expected webp format, got ${meta.format}`);
-    assert(meta.width === 960 && meta.height === 540, `${relPath}: expected 960x540, got ${meta.width}x${meta.height}`);
+    if (relPath.startsWith('evidence/') && relPath.includes('1200x630')) {
+      assert(meta.width === 1200 && meta.height === 630, `${relPath}: expected 1200x630, got ${meta.width}x${meta.height}`);
+    } else {
+      assert(meta.width === 960 && meta.height === 540, `${relPath}: expected 960x540, got ${meta.width}x${meta.height}`);
+    }
   }
 
   // 3. Verify pixel-level frame-to-frame motion uniqueness across all 4 clips (25 frames total)

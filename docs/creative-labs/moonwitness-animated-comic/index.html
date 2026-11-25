@@ -28,8 +28,29 @@
       <button type="button" id="btn-mode-stage" class="zine-btn is-active" data-testid="btn-mode-stage" aria-pressed="true">
         Theater Stage
       </button>
+      <button type="button" id="btn-mode-webtoon" class="zine-btn" data-testid="btn-mode-webtoon" aria-pressed="false">
+        Webtoon Scroll
+      </button>
       <button type="button" id="btn-mode-static" class="zine-btn" data-testid="btn-mode-static" aria-pressed="false">
         Static Comic Page
+      </button>
+      <button type="button" id="btn-director-mode" class="zine-btn" data-testid="btn-director-mode" aria-pressed="false">
+        Director: OFF
+      </button>
+      <button type="button" id="btn-flythrough-3d" class="zine-btn" data-testid="btn-flythrough-3d" aria-pressed="false">
+        3D Stage: OFF
+      </button>
+      <button type="button" id="btn-lang-toggle" class="zine-btn" data-testid="btn-lang-toggle" aria-pressed="false">
+        Lang: EN
+      </button>
+      <button type="button" id="btn-branch-toggle" class="zine-btn" data-testid="btn-branch-toggle" aria-pressed="false">
+        Branch: Preserve Unknown
+      </button>
+      <button type="button" id="btn-remix-export" class="zine-btn" data-testid="btn-remix-export">
+        Export Remix JSON
+      </button>
+      <button type="button" id="btn-high-contrast" class="zine-btn" data-testid="btn-high-contrast" aria-pressed="false">
+        AAA Contrast
       </button>
       <button type="button" id="btn-reduced-motion" class="zine-btn zine-btn-yellow" data-testid="btn-reduced-motion" aria-pressed="false">
         Reduced Motion: OFF
@@ -137,6 +158,11 @@
             <img id="stage-inset-img" class="stage-inset-img" src="" alt="" />
           </figure>
 
+          <!-- Live Accessible HTML Manga Visual SFX, Epistemic Hotspots & Director Commentary -->
+          <div id="stage-visual-sfx" class="stage-visual-sfx" aria-hidden="true" hidden></div>
+          <div id="stage-hotspots" class="stage-hotspots" hidden></div>
+          <div id="stage-director-overlay" class="stage-director-overlay" data-testid="stage-director-overlay" hidden></div>
+
           <!-- Subtle Comic Print Vignette, Live 60fps Canvas Secondary Motion & Wipe FX -->
           <img class="stage-halftone-frame" src="./animations/comic-overlays/halftone-corner-frame.svg" alt="" aria-hidden="true" />
           <canvas id="stage-live-fx" class="stage-live-fx" width="960" height="540" aria-hidden="true"></canvas>
@@ -207,6 +233,15 @@
       </section>
     </section>
 
+    <!-- Vertical Webtoon Scroll View -->
+    <section id="webtoon-view" class="webtoon-view" data-testid="webtoon-view" aria-label="Vertical webtoon scroll reader" hidden>
+      <div class="static-grid-header">
+        <h2>VERTICAL WEBTOON READER — EP-LAB-01</h2>
+        <p>Scroll vertically through all 12 studio panels with live HTML speech bubbles and captions.</p>
+      </div>
+      <div id="webtoon-container" class="webtoon-container"></div>
+    </section>
+
     <!-- Static Comic Storyboard Page View -->
     <section id="static-grid-view" class="static-grid-view" data-testid="static-grid-view" aria-label="Static comic storyboard grid" hidden>
       <div class="static-grid-header">
@@ -218,8 +253,13 @@
   </main>
 
   <script src="./data/inline-bundle.js" defer></script>
+  <script src="./engine/parallax-stage.js" defer></script>
+  <script src="./engine/flythrough-3d.js" defer></script>
   <script src="./canvas-fx.js" defer></script>
   <script src="./audio-foley.js" defer></script>
+  <script src="./director-overlay.js" defer></script>
+  <script src="./interactive-hotspots.js" defer></script>
+  <script src="./visual-sfx.js" defer></script>
   <script src="./app.js" defer></script>
 </body>
 </html>

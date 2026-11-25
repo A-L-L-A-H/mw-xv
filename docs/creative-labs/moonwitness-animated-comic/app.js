@@ -23,13 +23,34 @@
     isPlaying: false,
     speed: 1.0,
     scope: 'EP-LAB-01',
-    viewMode: 'stage', // 'stage' | 'static'
+    viewMode: 'stage', // 'stage' | 'webtoon' | 'static'
     reducedMotion: false,
+    directorMode: false,
+    highContrast: false,
     soundEnabled: false,
     drawerOpen: false,
     timerId: null,
   };
 
+  const parallaxRig =
+    typeof window.ParallaxStageRig === 'function'
+      ? new window.ParallaxStageRig(
+          document.getElementById('comic-stage'),
+          document.getElementById('stage-camera')
+        )
+      : null;
+  const directorOverlay =
+    typeof window.DirectorCommentaryOverlay === 'function'
+      ? new window.DirectorCommentaryOverlay(document.getElementById('stage-director-overlay'))
+      : null;
+  const hotspotLayer =
+    typeof window.EpistemicHotspotLayer === 'function'
+      ? new window.EpistemicHotspotLayer(document.getElementById('stage-hotspots'))
+      : null;
+  const visualSfx =
+    typeof window.MangaVisualSfxLayer === 'function'
+      ? new window.MangaVisualSfxLayer(document.getElementById('stage-visual-sfx'))
+      : null;
   const liveCanvasFx =
     typeof window.LiveComicCanvasFx === 'function'
       ? new window.LiveComicCanvasFx(document.getElementById('stage-live-fx'))
@@ -41,7 +62,14 @@
     announcer: document.getElementById('status-announcer'),
     episodeTitle: document.getElementById('episode-title'),
     btnModeStage: document.getElementById('btn-mode-stage'),
+    btnModeWebtoon: document.getElementById('btn-mode-webtoon'),
     btnModeStatic: document.getElementById('btn-mode-static'),
+    btnDirectorMode: document.getElementById('btn-director-mode'),
+    btnFlythrough3d: document.getElementById('btn-flythrough-3d'),
+    btnLangToggle: document.getElementById('btn-lang-toggle'),
+    btnBranchToggle: document.getElementById('btn-branch-toggle'),
+    btnRemixExport: document.getElementById('btn-remix-export'),
+    btnHighContrast: document.getElementById('btn-high-contrast'),
     btnReducedMotion: document.getElementById('btn-reduced-motion'),
     btnSoundToggle: document.getElementById('btn-sound-toggle'),
     btnSourcesDrawer: document.getElementById('btn-sources-drawer'),
@@ -49,6 +77,8 @@
     sourcesDrawer: document.getElementById('sources-drawer'),
     candidateInfo: document.getElementById('candidate-info'),
     theaterView: document.getElementById('theater-view'),
+    webtoonView: document.getElementById('webtoon-view'),
+    webtoonContainer: document.getElementById('webtoon-container'),
     staticGridView: document.getElementById('static-grid-view'),
     staticGridContainer: document.getElementById('static-grid-container'),
     comicStage: document.getElementById('comic-stage'),
@@ -413,7 +443,20 @@
     }
 
     applyCameraAndFx(panel, activeFrame, withFx);
+    if (parallaxRig) {
+      parallaxRig.setEnabled(!state.reducedMotion && state.viewMode === 'stage');
+      parallaxRig.setBaseTransform(activeFrame && activeFrame.camera);
+    }
+    if (directorOverlay) directorOverlay.update(panel, activeFrame);
+    if (hotspotLayer) hotspotLayer.update(panel);
+    if (visualSfx) visualSfx.update(activeFrame, state.reducedMotion);
     syncLiveCanvasMode(panel);
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage(
+        { source: 'mw-comic-lab', type: 'panelchange', payload: { panelId: panel.panelId, beatId: panel.beatId } },
+        '*'
+      );
+    }
     if (withFx || state.isPlaying) {
       triggerFoleyForPanel(panel, safeFrameIdx);
     }
@@ -567,16 +610,49 @@
 
   function setViewMode(mode) {
     state.viewMode = mode;
+    const isStage = mode === 'stage';
+    const isWebtoon = mode === 'webtoon';
     const isStatic = mode === 'static';
-    if (isStatic) {
-      pausePlayback('Switched to static comic page view. Animation stopped.');
+    if (!isStage) {
+      pausePlayback(`Switched to ${mode} reader. Animation stopped.`);
     }
-    els.theaterView.hidden = isStatic;
+    els.theaterView.hidden = !isStage;
+    if (els.webtoonView) els.webtoonView.hidden = !isWebtoon;
     els.staticGridView.hidden = !isStatic;
-    els.btnModeStage.classList.toggle('is-active', !isStatic);
-    els.btnModeStage.setAttribute('aria-pressed', String(!isStatic));
+    els.btnModeStage.classList.toggle('is-active', isStage);
+    els.btnModeStage.setAttribute('aria-pressed', String(isStage));
+    if (els.btnModeWebtoon) {
+      els.btnModeWebtoon.classList.toggle('is-active', isWebtoon);
+      els.btnModeWebtoon.setAttribute('aria-pressed', String(isWebtoon));
+    }
     els.btnModeStatic.classList.toggle('is-active', isStatic);
     els.btnModeStatic.setAttribute('aria-pressed', String(isStatic));
+    syncLiveCanvasMode(getCurrentPanel());
+  }
+
+  function buildWebtoonView() {
+    if (!els.webtoonContainer || !state.storyboard || !Array.isArray(state.storyboard.panels)) return;
+    els.webtoonContainer.innerHTML = '';
+    state.storyboard.panels.forEach((panel) => {
+      const card = document.createElement('article');
+      card.className = 'webtoon-card';
+      const src = resolveAssetPath(panel.staticFallbackAsset, panel.clipPath);
+      const dlg = panel.dialogue
+        ? `<p class="static-panel-dialogue"><strong>${panel.speaker || 'VOICE'}:</strong> ${panel.dialogue}</p>`
+        : '';
+      card.innerHTML = `
+        <div class="static-panel-top">
+          <span>${panel.panelId} · ${panel.shotType || ''}</span>
+          <span class="static-panel-beat">${panel.beatId || 'STATIC'}</span>
+        </div>
+        <img src="${src}" alt="${panel.panelId}: ${panel.visualAction || ''}" loading="lazy" />
+        <div class="webtoon-body">
+          ${dlg}
+          <p class="static-panel-caption">${panel.caption || ''}</p>
+        </div>
+      `;
+      els.webtoonContainer.appendChild(card);
+    });
   }
 
   async function setReducedMotion(enabled, silent = false) {
@@ -732,7 +808,28 @@
     });
 
     els.btnModeStage.addEventListener('click', () => setViewMode('stage'));
+    if (els.btnModeWebtoon) {
+      els.btnModeWebtoon.addEventListener('click', () => setViewMode('webtoon'));
+    }
     els.btnModeStatic.addEventListener('click', () => setViewMode('static'));
+    if (els.btnDirectorMode) {
+      els.btnDirectorMode.addEventListener('click', () => {
+        state.directorMode = !state.directorMode;
+        els.btnDirectorMode.textContent = state.directorMode ? 'Director: ON' : 'Director: OFF';
+        els.btnDirectorMode.setAttribute('aria-pressed', String(state.directorMode));
+        els.btnDirectorMode.classList.toggle('is-active', state.directorMode);
+        if (directorOverlay) directorOverlay.setEnabled(state.directorMode);
+        renderCurrentFrame(false);
+      });
+    }
+    if (els.btnHighContrast) {
+      els.btnHighContrast.addEventListener('click', () => {
+        state.highContrast = !state.highContrast;
+        document.documentElement.dataset.theme = state.highContrast ? 'high-contrast' : 'riot';
+        els.btnHighContrast.setAttribute('aria-pressed', String(state.highContrast));
+        els.btnHighContrast.classList.toggle('is-active', state.highContrast);
+      });
+    }
     els.btnReducedMotion.addEventListener('click', () => setReducedMotion(!state.reducedMotion));
     if (els.btnSoundToggle) {
       els.btnSoundToggle.addEventListener('click', () => setSoundEnabled(!state.soundEnabled));
@@ -801,6 +898,62 @@
   async function init() {
     bindEvents();
 
+    if (els.btnFlythrough3d && window.MWFlythrough3D) {
+      window.MWFlythrough3D.bindPointer(els.comicStage, () => state.panelIndex);
+      els.btnFlythrough3d.addEventListener('click', () => {
+        const next = window.MWFlythrough3D.setEnabled(!state.flythrough3d, els.comicStage, state.panelIndex);
+        state.flythrough3d = next;
+        els.btnFlythrough3d.textContent = next ? '3D Stage: ON' : '3D Stage: OFF';
+        els.btnFlythrough3d.setAttribute('aria-pressed', String(next));
+        els.btnFlythrough3d.classList.toggle('is-active', next);
+        announce(next ? '3D fly-through stage enabled.' : '3D fly-through stage disabled.');
+      });
+    }
+
+    if (els.btnLangToggle) {
+      els.btnLangToggle.addEventListener('click', () => {
+        state.lang = state.lang === 'en' ? 'id' : 'en';
+        document.documentElement.dataset.comicLang = state.lang;
+        els.btnLangToggle.textContent = state.lang === 'id' ? 'Lang: ID' : 'Lang: EN';
+        els.btnLangToggle.setAttribute('aria-pressed', String(state.lang === 'id'));
+        els.btnLangToggle.classList.toggle('is-active', state.lang === 'id');
+        announce(`Lettering language switched to ${state.lang.toUpperCase()}.`);
+      });
+    }
+
+    if (els.btnBranchToggle) {
+      els.btnBranchToggle.addEventListener('click', () => {
+        state.branch = state.branch === 'preserve-unknown' ? 'patch-gap' : 'preserve-unknown';
+        document.documentElement.dataset.epistemicBranch = state.branch;
+        const isPatch = state.branch === 'patch-gap';
+        els.btnBranchToggle.textContent = isPatch ? 'Branch: Patch Gap' : 'Branch: Preserve Unknown';
+        els.btnBranchToggle.setAttribute('aria-pressed', String(isPatch));
+        els.btnBranchToggle.classList.toggle('is-active', isPatch);
+        announce(`Epistemic branch set to ${state.branch}.`);
+      });
+    }
+
+    if (els.btnRemixExport) {
+      els.btnRemixExport.addEventListener('click', () => {
+        const payload = {
+          episode: state.scope,
+          lang: state.lang,
+          branch: state.branch,
+          panelIndex: state.panelIndex,
+          exportedAt: new Date().toISOString(),
+          panels: state.storyboard ? state.storyboard.panels.map((p) => ({ id: p.panelId, beat: p.beatId, caption: p.caption })) : [],
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${state.scope.toLowerCase()}-remix.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        announce('Exported zine remix JSON.');
+      });
+    }
+
     const prefersReduced =
       window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) {
@@ -834,6 +987,17 @@
       }
       buildFilmstrip();
       buildStaticGrid();
+      buildWebtoonView();
+      const params = new URLSearchParams(window.location.search);
+      const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+      if (saveData || params.get('reduced') === '1') {
+        await setReducedMotion(true, true);
+      }
+      if (params.get('theme') === 'high-contrast' && els.btnHighContrast) {
+        els.btnHighContrast.click();
+      }
+      if (params.get('mode') === 'webtoon') setViewMode('webtoon');
+      else if (params.get('mode') === 'static') setViewMode('static');
       await renderCurrentFrame(false);
     }
 

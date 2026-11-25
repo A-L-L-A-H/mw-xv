@@ -13,6 +13,7 @@ function readJson(relPath) {
 const bundle = {
   generatedAt: '2026-11-25',
   storyboard: readJson('data/storyboard.json'),
+  seasonIndex: readJson('data/season-index.json'),
   candidate: readJson('data/proposed-character-candidate.json'),
   manifest: readJson('data/manifest.json'),
   clips: {
