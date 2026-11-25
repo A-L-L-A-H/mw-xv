@@ -1,0 +1,1406 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>MoonWitness Agent Observatory</title>
+    <style>
+      :root {
+        --bg: #070b11;
+        --surface: #0e141d;
+        --surface-2: #131c28;
+        --surface-hover: #182434;
+        --border: #202d3e;
+        --border-strong: #2f4158;
+        --text: #eef4fa;
+        --muted: #99abc0;
+        --faint: #677b91;
+        --cyan: #5ce1e6;
+        --green: #4ade80;
+        --amber: #fbbf24;
+        --red: #f87171;
+        --violet: #a78bfa;
+        --blue: #60a5fa;
+        --pink: #f472b6;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background:
+          radial-gradient(circle at 12% -10%, rgba(92, 225, 230, 0.08), transparent 32rem),
+          radial-gradient(circle at 90% 0%, rgba(167, 139, 250, 0.07), transparent 34rem),
+          var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 13.5px;
+        line-height: 1.45;
+        min-height: 100vh;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+
+      .shell {
+        max-width: 1580px;
+        margin: 0 auto;
+        padding: 14px 18px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      /* Topbar */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        background: rgba(14, 20, 29, 0.9);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 11px 16px;
+        backdrop-filter: blur(8px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .brand-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 12px rgba(74, 222, 128, 0.8);
+        animation: pulse 2s infinite;
+      }
+
+      .brand-dot.offline {
+        background: var(--red);
+        box-shadow: 0 0 10px rgba(248, 113, 113, 0.7);
+        animation: none;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.55;
+          transform: scale(0.88);
+        }
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+      }
+
+      .brand-sub {
+        font-size: 11.5px;
+        color: var(--muted);
+        font-family: var(--mono);
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        font-size: 12px;
+        font-family: var(--mono);
+        color: var(--muted);
+      }
+
+      .pill strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .btn {
+        border: 1px solid var(--border-strong);
+        background: var(--surface-2);
+        color: var(--text);
+        padding: 5px 11px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: background 0.14s, border-color 0.14s;
+      }
+
+      .btn:hover {
+        background: var(--surface-hover);
+        border-color: var(--cyan);
+      }
+
+      select.ctrl,
+      input.ctrl {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 5px 9px;
+        font-size: 12.5px;
+        color: var(--text);
+        outline: none;
+      }
+
+      select.ctrl:focus,
+      input.ctrl:focus {
+        border-color: var(--cyan);
+      }
+
+      /* KPI Row */
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      @media (max-width: 1120px) {
+        .kpis {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      .kpi {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .kpi-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--faint);
+        font-weight: 600;
+      }
+
+      .kpi-val {
+        font-size: 22px;
+        font-weight: 700;
+        font-family: var(--mono);
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .kpi-sub {
+        font-size: 11.5px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .bar-track {
+        width: 100%;
+        height: 6px;
+        background: #172230;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 2px;
+      }
+
+      .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--cyan), var(--green));
+        border-radius: 999px;
+        transition: width 0.35s ease;
+      }
+
+      /* Nav Tabs */
+      .tabs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .tab-btn {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        padding: 7px 14px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 12.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .tab-btn.active {
+        background: rgba(92, 225, 230, 0.12);
+        border-color: var(--cyan);
+        color: var(--text);
+      }
+
+      .count-badge {
+        background: rgba(255, 255, 255, 0.08);
+        padding: 1px 6px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-family: var(--mono);
+      }
+
+      /* Layout grids */
+      .grid-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+        gap: 14px;
+        align-items: start;
+      }
+
+      @media (max-width: 1020px) {
+        .grid-main {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(19, 28, 40, 0.65);
+      }
+
+      .panel-title {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        margin: 0;
+      }
+
+      .panel-body {
+        padding: 12px 14px;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      /* Runtime & Status Chips */
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: var(--mono);
+        border: 1px solid transparent;
+      }
+
+      .rt-antigravity {
+        background: rgba(92, 225, 230, 0.14);
+        color: var(--cyan);
+        border-color: rgba(92, 225, 230, 0.35);
+      }
+      .rt-claude {
+        background: rgba(251, 191, 36, 0.14);
+        color: var(--amber);
+        border-color: rgba(251, 191, 36, 0.35);
+      }
+      .rt-codex {
+        background: rgba(74, 222, 128, 0.14);
+        color: var(--green);
+        border-color: rgba(74, 222, 128, 0.35);
+      }
+      .rt-qoder {
+        background: rgba(167, 139, 250, 0.14);
+        color: var(--violet);
+        border-color: rgba(167, 139, 250, 0.35);
+      }
+      .rt-gemini-cli {
+        background: rgba(96, 165, 250, 0.14);
+        color: var(--blue);
+        border-color: rgba(96, 165, 250, 0.35);
+      }
+      .rt-visual-swarm {
+        background: rgba(244, 114, 182, 0.14);
+        color: var(--pink);
+        border-color: rgba(244, 114, 182, 0.35);
+      }
+
+      .st-running {
+        background: rgba(74, 222, 128, 0.15);
+        color: var(--green);
+        border-color: rgba(74, 222, 128, 0.4);
+      }
+      .st-recent {
+        background: rgba(96, 165, 250, 0.14);
+        color: var(--blue);
+        border-color: rgba(96, 165, 250, 0.35);
+      }
+      .st-error {
+        background: rgba(248, 113, 113, 0.15);
+        color: var(--red);
+        border-color: rgba(248, 113, 113, 0.4);
+      }
+      .st-idle {
+        background: rgba(153, 171, 192, 0.1);
+        color: var(--muted);
+        border-color: rgba(153, 171, 192, 0.25);
+      }
+
+      /* Agent Cards */
+      .agent-list {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+      }
+
+      .agent-card {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 11px 13px;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+      }
+
+      .agent-card:hover {
+        border-color: var(--cyan);
+        background: var(--surface-hover);
+      }
+
+      .agent-card.running {
+        border-left: 3px solid var(--green);
+      }
+
+      .agent-card.error {
+        border-left: 3px solid var(--red);
+      }
+
+      .agent-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+      }
+
+      .agent-badges {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .agent-title {
+        font-weight: 600;
+        font-size: 13.5px;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+
+      .agent-focus {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .agent-meta {
+        margin-top: 7px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        font-size: 11.5px;
+        font-family: var(--mono);
+        color: var(--faint);
+      }
+
+      .subagent-strip {
+        margin-top: 8px;
+        padding-top: 7px;
+        border-top: 1px dashed var(--border);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+
+      .sub-pill {
+        font-size: 11px;
+        font-family: var(--mono);
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.12);
+        border: 1px solid rgba(167, 139, 250, 0.3);
+        color: #d8ccff;
+      }
+
+      /* Feed & Commits */
+      .feed-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 440px;
+        overflow-y: auto;
+      }
+
+      .feed-row {
+        padding: 7px 9px;
+        border-radius: var(--radius-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        font-size: 12px;
+      }
+
+      .feed-row.error {
+        border-color: rgba(248, 113, 113, 0.4);
+      }
+
+      .feed-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 3px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--faint);
+      }
+
+      .feed-msg {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--text);
+        word-break: break-word;
+      }
+
+      /* Probes */
+      .probe-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+
+      .probe-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 7px 10px;
+        border-radius: var(--radius-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        font-size: 12px;
+      }
+
+      .probe-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+      }
+
+      .probe-dot.up {
+        background: var(--green);
+      }
+      .probe-dot.warn {
+        background: var(--amber);
+      }
+      .probe-dot.down {
+        background: var(--red);
+      }
+      .probe-dot.pending {
+        background: var(--faint);
+      }
+
+      /* Plan Micro-tasks */
+      .wave-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      @media (max-width: 900px) {
+        .wave-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .wave-card {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+
+      .wave-card.selected {
+        border-color: var(--cyan);
+      }
+
+      .task-table {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .task-row {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 9px 12px;
+      }
+
+      .task-row.done {
+        border-left: 3px solid var(--green);
+        opacity: 0.85;
+      }
+
+      .task-row.next {
+        border-left: 3px solid var(--cyan);
+        background: rgba(92, 225, 230, 0.06);
+      }
+
+      .task-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        cursor: pointer;
+      }
+
+      .task-id {
+        font-family: var(--mono);
+        font-weight: 700;
+        color: var(--cyan);
+        margin-right: 8px;
+      }
+
+      .task-detail {
+        margin-top: 9px;
+        padding-top: 9px;
+        border-top: 1px dashed var(--border);
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .task-detail code {
+        font-family: var(--mono);
+        color: var(--text);
+        background: rgba(0, 0, 0, 0.35);
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+
+      /* Drawer modal */
+      .drawer-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(4, 7, 12, 0.72);
+        z-index: 50;
+        display: none;
+        justify-content: flex-end;
+      }
+
+      .drawer-backdrop.open {
+        display: flex;
+      }
+
+      .drawer {
+        width: min(680px, 95vw);
+        height: 100%;
+        background: var(--surface);
+        border-left: 1px solid var(--border-strong);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .drawer-body {
+        padding: 14px 16px;
+        overflow-y: auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .port-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      @media (max-width: 800px) {
+        .port-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      .empty {
+        color: var(--faint);
+        text-align: center;
+        padding: 24px 10px;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <div class="brand">
+          <span id="liveDot" class="brand-dot"></span>
+          <div>
+            <h1>MoonWitness Agent Observatory</h1>
+            <div id="repoMeta" class="brand-sub">Connecting to SSE stream…</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <span class="pill">SSE <strong id="sseState">CONNECTING</strong></span>
+          <span class="pill">Git <strong id="gitBadge">—</strong></span>
+          <span class="pill">Antigravity API <strong id="agApiBadge">—</strong></span>
+          <select id="planSelect" class="ctrl" aria-label="Select plan"></select>
+          <button id="refreshBtn" class="btn" type="button">Refresh Now</button>
+        </div>
+      </header>
+
+      <!-- KPI STRIP -->
+      <section class="kpis">
+        <div class="kpi">
+          <div class="kpi-label">Plan Progress</div>
+          <div class="kpi-val"><span id="kpiPlanDone">0/0</span><span id="kpiPlanPct" style="font-size:13px;color:var(--cyan)">0%</span></div>
+          <div class="bar-track"><div id="kpiPlanBar" class="bar-fill" style="width:0%"></div></div>
+          <div id="kpiPlanNext" class="kpi-sub">Next: —</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Coding Agents</div>
+          <div class="kpi-val"><span id="kpiRunning">0</span><span id="kpiTotalSessions" style="font-size:13px;color:var(--muted)">/ 0 tracked</span></div>
+          <div id="kpiRuntimeSplit" class="kpi-sub">Scanning runtimes…</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Subagents &amp; Swarms</div>
+          <div class="kpi-val"><span id="kpiSubagents">0</span><span id="kpiSwarms" style="font-size:13px;color:var(--violet)">0 swarms</span></div>
+          <div class="kpi-sub">Antigravity + Claude + Swarm manifests</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Tokens Observed</div>
+          <div class="kpi-val"><span id="kpiTokens">0</span></div>
+          <div id="kpiTokenSplit" class="kpi-sub">in: 0 · cache: 0 · out: 0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">VPS &amp; Host Health</div>
+          <div class="kpi-val"><span id="kpiVpsUp">0/0</span><span id="kpiHostRam" style="font-size:13px;color:var(--muted)">RAM —</span></div>
+          <div id="kpiVpsSummary" class="kpi-sub">Probing endpoints…</div>
+        </div>
+      </section>
+
+      <!-- NAVIGATION TABS -->
+      <nav class="tabs">
+        <button class="tab-btn active" data-tab="overview" type="button">
+          Live Agents &amp; Activity <span id="tabAgentsCount" class="count-badge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="plan" type="button">
+          Plan Micro-Tasks <span id="tabPlanCount" class="count-badge">0/0</span>
+        </button>
+        <button class="tab-btn" data-tab="swarms" type="button">
+          Subagents &amp; Swarms <span id="tabSwarmsCount" class="count-badge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="infra" type="button">
+          Server, VPS &amp; Git <span id="tabInfraCount" class="count-badge">0</span>
+        </button>
+      </nav>
+
+      <!-- TAB 1: OVERVIEW -->
+      <section id="view-overview" class="grid-main">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Auto-Discovered Coding Agents (Real-Time)</h2>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <select id="filterRuntime" class="ctrl">
+                <option value="all">All Runtimes</option>
+                <option value="antigravity">Antigravity</option>
+                <option value="claude">Claude Code</option>
+                <option value="codex">Codex</option>
+                <option value="qoder">Qoder</option>
+                <option value="gemini-cli">Gemini CLI</option>
+              </select>
+              <select id="filterStatus" class="ctrl">
+                <option value="all">All Status</option>
+                <option value="running">Running</option>
+                <option value="recent">Recent (&lt;15m)</option>
+                <option value="error">Has Error</option>
+              </select>
+              <label class="pill" style="cursor:pointer">
+                <input id="filterWorkspace" type="checkbox" style="margin:0" /> mw-xv only
+              </label>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="agentList" class="agent-list"></div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">Live Unified Activity Feed</h2>
+              <span id="feedTimestamp" class="brand-sub">—</span>
+            </div>
+            <div class="panel-body">
+              <div id="activityFeed" class="feed-list"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">VPS Endpoints (Live Probe)</h2>
+              <span id="probeAge" class="brand-sub">—</span>
+            </div>
+            <div class="panel-body">
+              <div id="vpsProbeMini" class="probe-grid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: PLAN MICRO-TASKS -->
+      <section id="view-plan" class="hidden">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 id="planViewTitle" class="panel-title">Plan Micro-Tasks</h2>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <input id="taskSearch" class="ctrl" type="search" placeholder="Filter M01, caddy, postgres…" />
+              <select id="taskStatusFilter" class="ctrl">
+                <option value="all">All Tasks</option>
+                <option value="pending">Pending Only</option>
+                <option value="done">Completed Only</option>
+              </select>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="waveGrid" class="wave-grid"></div>
+            <div id="taskTable" class="task-table"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: SUBAGENTS & SWARMS -->
+      <section id="view-swarms" class="hidden stack">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Swarm Boards &amp; Manifests</h2>
+          </div>
+          <div class="panel-body">
+            <div id="swarmList" class="stack"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Parent → Subagent Hierarchy</h2>
+          </div>
+          <div class="panel-body">
+            <div id="subagentTree" class="stack"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: SERVER, VPS & GIT -->
+      <section id="view-infra" class="hidden stack">
+        <div class="grid-main">
+          <div class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">Recent Git Commits (Auto-Mapped to M01–M66)</h2>
+              <span id="gitSummaryDetail" class="brand-sub">—</span>
+            </div>
+            <div class="panel-body">
+              <div id="gitCommitList" class="feed-list" style="max-height:520px"></div>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="panel">
+              <div class="panel-head">
+                <h2 class="panel-title">VPS Live Probes</h2>
+              </div>
+              <div class="panel-body">
+                <div id="vpsProbeFull" class="probe-grid"></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2 class="panel-title">Local Dev Ports (127.0.0.1)</h2>
+              </div>
+              <div class="panel-body">
+                <div id="localPortGrid" class="port-grid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- SESSION DETAIL DRAWER -->
+    <div id="drawerBackdrop" class="drawer-backdrop">
+      <div class="drawer">
+        <div class="panel-head">
+          <div>
+            <h2 id="drawerTitle" class="panel-title">Session Inspector</h2>
+            <div id="drawerSub" class="brand-sub">—</div>
+          </div>
+          <button id="drawerClose" class="btn" type="button">Close</button>
+        </div>
+        <div id="drawerBody" class="drawer-body"></div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const state = {
+          snapshot: null,
+          activeTab: 'overview',
+          selectedPlanId: null,
+          selectedWave: 'all',
+          expandedTasks: new Set(),
+          filterRuntime: 'all',
+          filterStatus: 'all',
+          workspaceOnly: false,
+          taskSearch: '',
+          taskStatusFilter: 'all',
+        };
+
+        const $ = (id) => document.getElementById(id);
+
+        function esc(str) {
+          return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        }
+
+        function fmtNum(n) {
+          const num = Number(n || 0);
+          if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
+          if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+          return String(num);
+        }
+
+        function relTime(iso) {
+          if (!iso) return '—';
+          const diff = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+          if (diff < 5) return 'just now';
+          if (diff < 60) return `${diff}s ago`;
+          if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+          if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+          return `${Math.floor(diff / 86400)}d ago`;
+        }
+
+        function getActivePlan() {
+          const snap = state.snapshot;
+          if (!snap || !snap.plans || !snap.plans.length) return null;
+          return snap.plans.find((p) => p.id === state.selectedPlanId) || snap.plans[0];
+        }
+
+        function renderProbes(containerId) {
+          const el = $(containerId);
+          const probes = state.snapshot?.probes?.vps || [];
+          if (!probes.length) {
+            el.innerHTML = '<div class="empty">No probes configured</div>';
+            return;
+          }
+          el.innerHTML = probes
+            .map(
+              (p) => `
+              <div class="probe-row">
+                <div>
+                  <span class="probe-dot ${esc(p.status)}"></span>
+                  <strong>${esc(p.label)}</strong>
+                  ${p.detail ? `<span style="color:var(--muted);margin-left:6px;font-family:var(--mono);font-size:11px">${esc(p.detail)}</span>` : ''}
+                </div>
+                <div style="font-family:var(--mono);font-size:11.5px;color:var(--muted)">
+                  ${p.httpCode ? `HTTP ${p.httpCode}` : p.status.toUpperCase()} · ${p.latencyMs ?? '—'}ms
+                </div>
+              </div>`,
+            )
+            .join('');
+        }
+
+        function renderAll() {
+          const snap = state.snapshot;
+          if (!snap) return;
+
+          // Plan dropdown
+          const planSelect = $('planSelect');
+          if (!state.selectedPlanId) state.selectedPlanId = snap.defaultPlanId;
+          if (planSelect.options.length !== snap.plans.length) {
+            planSelect.innerHTML = snap.plans
+              .map((p) => `<option value="${esc(p.id)}">${esc(p.id)} (${p.done}/${p.total})</option>`)
+              .join('');
+          }
+          if (state.selectedPlanId) planSelect.value = state.selectedPlanId;
+
+          const plan = getActivePlan();
+
+          // Top bar
+          $('repoMeta').textContent = `${snap.repoRoot} · updated ${relTime(snap.generatedAt)}`;
+          $('gitBadge').textContent = `${snap.git.branch}@${snap.git.head || '—'}${snap.git.dirtyCount ? ` (${snap.git.dirtyCount} dirty)` : ''}`;
+          $('agApiBadge').textContent = snap.antigravityApiConnected ? 'CONNECTED' : 'FS-FALLBACK';
+          $('agApiBadge').style.color = snap.antigravityApiConnected ? 'var(--green)' : 'var(--amber)';
+
+          // KPIs
+          if (plan) {
+            $('kpiPlanDone').textContent = `${plan.done}/${plan.total}`;
+            $('kpiPlanPct').textContent = `${plan.percent}%`;
+            $('kpiPlanBar').style.width = `${plan.percent}%`;
+            $('kpiPlanNext').textContent = plan.nextTaskId
+              ? `Next: ${plan.nextTaskId} — ${plan.nextTaskTitle}`
+              : 'ALL TASKS COMPLETE';
+            $('tabPlanCount').textContent = `${plan.done}/${plan.total}`;
+          }
+
+          $('kpiRunning').textContent = String(snap.summary.runningSessions);
+          $('kpiTotalSessions').textContent = `/ ${snap.summary.totalSessions} tracked`;
+          const rc = snap.summary.runtimeCounts || {};
+          $('kpiRuntimeSplit').textContent = Object.entries(rc)
+            .map(([k, v]) => `${k}:${v}`)
+            .join(' · ') || 'No sessions found';
+          $('tabAgentsCount').textContent = String(snap.summary.totalSessions);
+
+          $('kpiSubagents').textContent = String(snap.summary.subagents);
+          $('kpiSwarms').textContent = `${snap.summary.swarms} swarm(s)`;
+          $('tabSwarmsCount').textContent = String(snap.summary.subagents + snap.summary.swarms);
+
+          $('kpiTokens').textContent = fmtNum(snap.summary.tokens.total);
+          $('kpiTokenSplit').textContent = `in:${fmtNum(snap.summary.tokens.input)} · cache:${fmtNum(snap.summary.tokens.cached)} · out:${fmtNum(snap.summary.tokens.output)}`;
+
+          const vpsProbes = snap.probes.vps || [];
+          const vpsUp = vpsProbes.filter((p) => p.status === 'up').length;
+          $('kpiVpsUp').textContent = `${vpsUp}/${vpsProbes.length}`;
+          $('kpiHostRam').textContent = `RAM ${snap.host.memUsedGb}/${snap.host.memTotalGb}GB`;
+          $('kpiVpsSummary').textContent = vpsProbes.map((p) => `${p.httpCode || 'ERR'}`).join(' · ');
+          $('tabInfraCount').textContent = `${vpsUp}/${vpsProbes.length}`;
+          $('probeAge').textContent = relTime(snap.probes.updatedAt);
+
+          // Agents list
+          const filteredAgents = (snap.sessions || []).filter((s) => {
+            if (state.filterRuntime !== 'all' && s.runtime !== state.filterRuntime) return false;
+            if (state.filterStatus === 'running' && s.status !== 'running') return false;
+            if (state.filterStatus === 'recent' && s.status !== 'running' && s.status !== 'recent') return false;
+            if (state.filterStatus === 'error' && !s.lastError) return false;
+            if (state.workspaceOnly && !s.inCurrentWorkspace) return false;
+            return true;
+          });
+
+          const agentList = $('agentList');
+          if (!filteredAgents.length) {
+            agentList.innerHTML = '<div class="empty">No agents match current filters</div>';
+          } else {
+            agentList.innerHTML = filteredAgents
+              .map((s) => {
+                const subHtml =
+                  s.subagents && s.subagents.length
+                    ? `<div class="subagent-strip">${s.subagents
+                        .slice(0, 6)
+                        .map((sub) => `<span class="sub-pill">↳ ${esc(sub.role || sub.type)}</span>`)
+                        .join('')}${s.subagents.length > 6 ? `<span class="sub-pill">+${s.subagents.length - 6} more</span>` : ''}</div>`
+                    : '';
+                return `
+                  <article class="agent-card ${esc(s.status)}" data-runtime="${esc(s.runtime)}" data-id="${esc(s.id)}">
+                    <div class="agent-top">
+                      <div class="agent-badges">
+                        <span class="chip rt-${esc(s.runtime)}">${esc(s.runtimeLabel)}</span>
+                        <span class="chip st-${esc(s.status)}">${esc(s.status.toUpperCase())}</span>
+                        ${s.isCurrentSession ? '<span class="chip rt-antigravity">THIS SESSION</span>' : ''}
+                        ${s.swarmWorkers ? `<span class="chip rt-visual-swarm">SWARM:${s.swarmWorkers}</span>` : ''}
+                      </div>
+                      <span class="brand-sub">${relTime(s.updatedAt)}</span>
+                    </div>
+                    <div class="agent-title">${esc(s.title)}</div>
+                    <div class="agent-focus">${esc(s.focus || s.lastTool || 'Idle')}</div>
+                    ${s.lastError ? `<div class="agent-focus" style="color:var(--red);margin-top:3px">ERR: ${esc(s.lastError)}</div>` : ''}
+                    <div class="agent-meta">
+                      <span>model:${esc(s.model)}</span>
+                      ${s.branch ? `<span>branch:${esc(s.branch)}</span>` : ''}
+                      <span>steps:${s.steps || 0}</span>
+                      <span>tok:${fmtNum(s.tokens?.total || 0)}</span>
+                      <span>id:${esc(s.id.slice(0, 8))}</span>
+                    </div>
+                    ${subHtml}
+                  </article>`;
+              })
+              .join('');
+          }
+
+          // Live feed
+          $('feedTimestamp').textContent = relTime(snap.generatedAt);
+          const feedEl = $('activityFeed');
+          if (!snap.activityFeed.length) {
+            feedEl.innerHTML = '<div class="empty">Waiting for agent activity…</div>';
+          } else {
+            feedEl.innerHTML = snap.activityFeed
+              .map(
+                (ev) => `
+                <div class="feed-row ${ev.kind === 'error' ? 'error' : ''}">
+                  <div class="feed-head">
+                    <span><span class="chip rt-${esc(ev.runtime)}" style="padding:0 6px">${esc(ev.runtimeLabel)}</span> ${esc(ev.sessionTitle)}</span>
+                    <span>${relTime(ev.at)}</span>
+                  </div>
+                  <div class="feed-msg">[${esc(ev.tool || ev.kind)}] ${esc(ev.summary)}</div>
+                </div>`,
+              )
+              .join('');
+          }
+
+          renderProbes('vpsProbeMini');
+          renderProbes('vpsProbeFull');
+
+          // Plan tab
+          if (plan) {
+            $('planViewTitle').textContent = `${plan.title} (${plan.done}/${plan.total} · ${plan.percent}%)`;
+            $('waveGrid').innerHTML = [
+              `<div class="wave-card ${state.selectedWave === 'all' ? 'selected' : ''}" data-wave="all">
+                <div style="font-weight:700;margin-bottom:4px">All Waves</div>
+                <div style="font-family:var(--mono);font-size:12px;color:var(--cyan)">${plan.done}/${plan.total} (${plan.percent}%)</div>
+                <div class="bar-track"><div class="bar-fill" style="width:${plan.percent}%"></div></div>
+              </div>`,
+              ...plan.waves.map(
+                (w) => `
+                <div class="wave-card ${state.selectedWave === w.title ? 'selected' : ''}" data-wave="${esc(w.title)}">
+                  <div style="font-weight:600;font-size:12.5px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(w.title)}</div>
+                  <div style="font-family:var(--mono);font-size:12px;color:var(--muted)">${w.done}/${w.total} (${w.percent}%)</div>
+                  <div class="bar-track"><div class="bar-fill" style="width:${w.percent}%"></div></div>
+                </div>`,
+              ),
+            ].join('');
+
+            const q = state.taskSearch.trim().toLowerCase();
+            const tasks = plan.tasks.filter((t) => {
+              if (state.selectedWave !== 'all' && t.wave !== state.selectedWave) return false;
+              if (state.taskStatusFilter === 'done' && !t.done) return false;
+              if (state.taskStatusFilter === 'pending' && t.done) return false;
+              if (q && !`${t.id} ${t.title} ${t.ownerFiles} ${t.wave}`.toLowerCase().includes(q)) return false;
+              return true;
+            });
+
+            $('taskTable').innerHTML = tasks.length
+              ? tasks
+                  .map((t) => {
+                    const isNext = t.id === plan.nextTaskId;
+                    const expanded = state.expandedTasks.has(t.id);
+                    return `
+                      <div class="task-row ${t.done ? 'done' : ''} ${isNext ? 'next' : ''}">
+                        <div class="task-head" data-task-id="${esc(t.id)}">
+                          <div>
+                            <span style="margin-right:8px">${t.done ? '✅' : isNext ? '▶' : '⬜'}</span>
+                            <span class="task-id">${esc(t.id)}</span>
+                            <span>${esc(t.title)}</span>
+                          </div>
+                          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                            ${t.commitSha ? `<span class="chip st-running">${esc(t.commitSha)}</span>` : ''}
+                            <span class="brand-sub">${expanded ? '▲' : '▼'}</span>
+                          </div>
+                        </div>
+                        ${
+                          expanded
+                            ? `<div class="task-detail">
+                                <div><strong>Wave:</strong> ${esc(t.wave)}</div>
+                                ${t.ownerFiles ? `<div><strong>Owner Files:</strong> <code>${esc(t.ownerFiles)}</code></div>` : ''}
+                                ${t.dependsOn ? `<div><strong>Depends On:</strong> <code>${esc(t.dependsOn)}</code></div>` : ''}
+                                ${t.acceptance ? `<div><strong>Acceptance:</strong> ${esc(t.acceptance)}</div>` : ''}
+                                ${t.expected ? `<div><strong>Expected:</strong> ${esc(t.expected)}</div>` : ''}
+                                ${t.verify ? `<div><strong>Verify:</strong> <code>${esc(t.verify)}</code></div>` : ''}
+                                ${t.spec ? `<div><strong>Spec:</strong> ${esc(t.spec)}</div>` : ''}
+                              </div>`
+                            : ''
+                        }
+                      </div>`;
+                  })
+                  .join('')
+              : '<div class="empty">No micro-tasks match filter</div>';
+          }
+
+          // Swarms & Subagents tab
+          const swarmEl = $('swarmList');
+          swarmEl.innerHTML = snap.swarms.length
+            ? snap.swarms
+                .map(
+                  (sw) => `
+                  <div class="agent-card">
+                    <div class="agent-top">
+                      <span class="chip rt-${esc(sw.runtime)}">${esc(sw.runtime)}</span>
+                      <span class="brand-sub">${(sw.workers || []).length} workers</span>
+                    </div>
+                    <div class="agent-title">${esc(sw.title)}</div>
+                    <div class="agent-focus" style="white-space:normal">${esc(sw.line)}</div>
+                    <div class="subagent-strip">
+                      ${(sw.workers || [])
+                        .map((w) => `<span class="sub-pill">${esc(w.name)}: ${esc(w.task || w.status || '')}</span>`)
+                        .join('')}
+                    </div>
+                  </div>`,
+                )
+                .join('')
+            : '<div class="empty">No active swarm plans detected</div>';
+
+          const parentsWithSubs = (snap.sessions || []).filter((s) => s.subagents && s.subagents.length > 0);
+          $('subagentTree').innerHTML = parentsWithSubs.length
+            ? parentsWithSubs
+                .map(
+                  (p) => `
+                  <div class="agent-card" data-runtime="${esc(p.runtime)}" data-id="${esc(p.id)}">
+                    <div class="agent-top">
+                      <div class="agent-badges">
+                        <span class="chip rt-${esc(p.runtime)}">${esc(p.runtimeLabel)}</span>
+                        <strong>${esc(p.title)}</strong>
+                      </div>
+                      <span class="brand-sub">${p.subagents.length} subagent(s)</span>
+                    </div>
+                    <div class="stack" style="gap:5px;margin-top:8px;padding-left:14px;border-left:2px solid var(--border-strong)">
+                      ${p.subagents
+                        .map(
+                          (sub) => `
+                          <div class="probe-row">
+                            <div><strong>${esc(sub.role || sub.id)}</strong> <span class="brand-sub">(${esc(sub.type || 'subagent')} · ${esc(sub.model || 'inherit')})</span></div>
+                            <span class="brand-sub">${relTime(sub.at)}</span>
+                          </div>`,
+                        )
+                        .join('')}
+                    </div>
+                  </div>`,
+                )
+                .join('')
+            : '<div class="empty">No subagent spawns detected yet</div>';
+
+          // Git & Ports tab
+          $('gitSummaryDetail').textContent = `branch: ${snap.git.branch} · ${snap.git.dirtyCount} uncommitted change(s)`;
+          $('gitCommitList').innerHTML = (snap.git.commits || []).length
+            ? snap.git.commits
+                .map(
+                  (c) => `
+                  <div class="feed-row">
+                    <div class="feed-head">
+                      <span><strong style="color:var(--cyan)">${esc(c.sha)}</strong> ${c.taskId ? `<span class="chip st-running">${esc(c.taskId)}</span>` : ''} · ${esc(c.author)}</span>
+                      <span>${relTime(c.at)}</span>
+                    </div>
+                    <div class="feed-msg">${esc(c.subject)}</div>
+                  </div>`,
+                )
+                .join('')
+            : '<div class="empty">No git commits found</div>';
+
+          $('localPortGrid').innerHTML = (snap.probes.localPorts || [])
+            .map(
+              (lp) => `
+              <div class="probe-row">
+                <span><span class="probe-dot ${lp.open ? 'up' : 'pending'}"></span>${esc(lp.label)}</span>
+                <span class="brand-sub">${lp.open ? 'OPEN' : '—'}</span>
+              </div>`,
+            )
+            .join('');
+        }
+
+        async function openSessionDrawer(runtime, id) {
+          $('drawerBackdrop').classList.add('open');
+          $('drawerTitle').textContent = 'Loading session…';
+          $('drawerSub').textContent = `${runtime} / ${id}`;
+          $('drawerBody').innerHTML = '<div class="empty">Reading transcript tail…</div>';
+          try {
+            const res = await fetch(`/api/session?runtime=${encodeURIComponent(runtime)}&id=${encodeURIComponent(id)}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            $('drawerTitle').textContent = data.title || id;
+            $('drawerSub').textContent = `${data.runtimeLabel} · ${data.model} · ${data.status.toUpperCase()} · ${fmtNum(data.tokens?.total || 0)} tok`;
+            const evs = (data.detail?.events || data.recentEvents || []).slice().reverse();
+            const subs = data.detail?.subagents || data.subagents || [];
+            $('drawerBody').innerHTML = `
+              <div class="probe-row">
+                <div><strong>Workspace:</strong> <span class="brand-sub">${esc(data.cwd || '—')}</span></div>
+                <div><strong>Branch:</strong> <span class="brand-sub">${esc(data.branch || '—')}</span></div>
+              </div>
+              ${
+                subs.length
+                  ? `<div><div class="kpi-label" style="margin-bottom:6px">Subagents (${subs.length})</div><div class="subagent-strip" style="border:0;margin:0;padding:0">${subs
+                      .map((s) => `<span class="sub-pill">${esc(s.role || s.id)} (${esc(s.type || 'sub')})</span>`)
+                      .join('')}</div></div>`
+                  : ''
+              }
+              <div class="kpi-label">Recent Tool Calls &amp; Events (${evs.length})</div>
+              <div class="stack" style="gap:6px">
+                ${
+                  evs.length
+                    ? evs
+                        .map(
+                          (e) => `
+                        <div class="feed-row ${e.kind === 'error' ? 'error' : ''}">
+                          <div class="feed-head"><span>${esc(e.tool || e.kind)}</span><span>${relTime(e.at)}</span></div>
+                          <div class="feed-msg">${esc(e.summary)}</div>
+                        </div>`,
+                        )
+                        .join('')
+                    : '<div class="empty">No events captured</div>'
+                }
+              </div>`;
+          } catch (err) {
+            $('drawerBody').innerHTML = `<div class="empty">Failed to load detail: ${esc(err.message)}</div>`;
+          }
+        }
+
+        // Event bindings
+        document.querySelectorAll('.tab-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.activeTab = btn.dataset.tab;
+            document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b === btn));
+            ['overview', 'plan', 'swarms', 'infra'].forEach((t) => {
+              $(`view-${t}`).classList.toggle('hidden', t !== state.activeTab);
+            });
+          });
+        });
+
+        $('planSelect').addEventListener('change', (e) => {
+          state.selectedPlanId = e.target.value;
+          state.selectedWave = 'all';
+          renderAll();
+        });
+        $('filterRuntime').addEventListener('change', (e) => {
+          state.filterRuntime = e.target.value;
+          renderAll();
+        });
+        $('filterStatus').addEventListener('change', (e) => {
+          state.filterStatus = e.target.value;
+          renderAll();
+        });
+        $('filterWorkspace').addEventListener('change', (e) => {
+          state.workspaceOnly = e.target.checked;
+          renderAll();
+        });
+        $('taskSearch').addEventListener('input', (e) => {
+          state.taskSearch = e.target.value;
+          renderAll();
+        });
+        $('taskStatusFilter').addEventListener('change', (e) => {
+          state.taskStatusFilter = e.target.value;
+          renderAll();
+        });
+
+        document.addEventListener('click', (e) => {
+          const waveCard = e.target.closest('.wave-card');
+          if (waveCard) {
+            state.selectedWave = waveCard.dataset.wave;
+            renderAll();
+            return;
+          }
+          const taskHead = e.target.closest('.task-head');
+          if (taskHead) {
+            const tid = taskHead.dataset.taskId;
+            if (state.expandedTasks.has(tid)) state.expandedTasks.delete(tid);
+            else state.expandedTasks.add(tid);
+            renderAll();
+            return;
+          }
+          const agentCard = e.target.closest('.agent-card[data-id]');
+          if (agentCard) {
+            openSessionDrawer(agentCard.dataset.runtime, agentCard.dataset.id);
+          }
+        });
+
+        $('drawerClose').addEventListener('click', () => $('drawerBackdrop').classList.remove('open'));
+        $('drawerBackdrop').addEventListener('click', (e) => {
+          if (e.target === $('drawerBackdrop')) $('drawerBackdrop').classList.remove('open');
+        });
+
+        $('refreshBtn').addEventListener('click', async () => {
+          const res = await fetch('/api/state?fresh=1');
+          if (res.ok) {
+            state.snapshot = await res.json();
+            renderAll();
+          }
+        });
+
+        function connectSse() {
+          const es = new EventSource('/api/stream');
+          es.addEventListener('open', () => {
+            $('sseState').textContent = 'LIVE · 2s';
+            $('sseState').style.color = 'var(--green)';
+            $('liveDot').classList.remove('offline');
+          });
+          es.addEventListener('snapshot', (evt) => {
+            try {
+              state.snapshot = JSON.parse(evt.data);
+              renderAll();
+            } catch {
+              // ignore malformed frame
+            }
+          });
+          es.addEventListener('error', () => {
+            $('sseState').textContent = 'RECONNECTING';
+            $('sseState').style.color = 'var(--amber)';
+            $('liveDot').classList.add('offline');
+          });
+        }
+
+        connectSse();
+      })();
+    </script>
+  </body>
+</html>
