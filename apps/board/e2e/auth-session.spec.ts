@@ -1,11 +1,4 @@
-import { createHmac } from 'node:crypto';
-import { expect, test, type Page } from '@playwright/test';
-import {
-  createE2eSuffix,
-  E2E_JWT_SECRET,
-  E2E_SUPERADMIN_PASSWORD,
-  loginPageUrl,
-} from './constants.js';
+import { createE2eSuffix, E2E_JWT_SECRET, E2E_SUPERADMIN_PASSWORD, loginPageUrl, readSession, authCookie } from './constants.js';
 
 interface E2EUser {
   id: number;
@@ -46,28 +39,23 @@ async function loginSuperadmin(page: Page) {
   await expect(page.getByRole('heading', { name: 'Command center', exact: false })).toBeVisible();
 }
 
-test('reload restores session, concurrent requests share expired-token refresh, and logout revokes it', async ({
+test('reload restores session via cookie, concurrent requests share expired-token refresh, and logout revokes it', async ({
   page,
 }) => {
   await loginSuperadmin(page);
-  const original = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as PersistedSession | null
-  );
+  const original = await readSession<PersistedSession>(page);
   expect(original).not.toBeNull();
 
   await page.reload();
   await expect(page).toHaveURL(/\/board$/u);
   await expect(page.getByRole('heading', { name: 'Command center', exact: false })).toBeVisible();
 
-  const expired = expiredAccessToken(original!.user);
-  await page.evaluate((token) => {
-    const session = JSON.parse(
-      localStorage.getItem('mw-board-session') ?? 'null'
-    ) as PersistedSession | null;
-    if (!session) throw new Error('Expected persisted E2E session');
-    session.access_token = token;
-    localStorage.setItem('mw-board-session', JSON.stringify(session));
-  }, expired);
+  // Inject an expired access token via the HttpOnly session cookie
+  const expiredSessionJson = JSON.stringify({
+    ...original!,
+    access_token: expiredAccessToken(original!.user),
+  });
+  await page.context().addCookies(authCookie(expiredSessionJson, '127.0.0.1'));
 
   let refreshRequests = 0;
   page.on('request', (request) => {
@@ -76,27 +64,20 @@ test('reload restores session, concurrent requests share expired-token refresh, 
   await page.reload();
   await expect(page).toHaveURL(/\/board$/u);
   await expect(page.getByRole('heading', { name: 'Command center', exact: false })).toBeVisible();
-  await expect
-    .poll(async () =>
-      page.evaluate(() => {
-        const session = JSON.parse(
-          localStorage.getItem('mw-board-session') ?? 'null'
-        ) as PersistedSession | null;
-        return session?.access_token;
-      })
-    )
-    .not.toBe(expired);
+
+  const rotated = await readSession<PersistedSession>(page);
+  expect(rotated).not.toBeNull();
+  expect(rotated!.access_token).not.toBe(expiredAccessToken(original!.user));
+  expect(rotated!.refresh_token).not.toBe(original!.refresh_token);
   expect(refreshRequests).toBe(1);
 
-  const rotated = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as PersistedSession | null
-  );
-  expect(rotated?.refresh_token).not.toBe(original?.refresh_token);
   await page.getByRole('button', { name: 'superadmin' }).click();
   await page.getByRole('menuitem', { name: 'Sign out' }).click();
   await expect(page).toHaveURL(loginPageUrl);
   await expect(page.getByRole('heading', { name: 'Enter the Shadow' })).toBeVisible();
-  await expect(page.evaluate(() => localStorage.getItem('mw-board-session'))).resolves.toBeNull();
+
+  const loggedOutSession = await readSession<PersistedSession>(page);
+  expect(loggedOutSession).toBeNull();
 
   const replay = await page.request.post('/auth/refresh', {
     data: { refresh_token: rotated!.refresh_token },
@@ -109,9 +90,7 @@ test('reload restores session, concurrent requests share expired-token refresh, 
 
 test('disabled accounts cannot establish an authentication session', async ({ page }) => {
   await loginSuperadmin(page);
-  const session = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as PersistedSession | null
-  );
+  const session = await readSession<PersistedSession>(page);
   expect(session).not.toBeNull();
   const headers = { authorization: `Bearer ${session!.access_token}` };
   const suffix = createE2eSuffix();

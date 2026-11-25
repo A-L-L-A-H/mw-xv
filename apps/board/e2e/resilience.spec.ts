@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { createE2eSuffix, E2E_SUPERADMIN_PASSWORD, loginPageUrl } from './constants.js';
+import { createE2eSuffix, E2E_SUPERADMIN_PASSWORD, loginPageUrl, readSession } from './constants.js';
 
 interface BoardSession {
   access_token: string;
@@ -16,9 +16,7 @@ async function loginSuperadmin(page: Page): Promise<BoardSession> {
   await page.getByLabel('Password', { exact: true }).fill(E2E_SUPERADMIN_PASSWORD);
   await page.getByRole('button', { name: 'Enter the Shadow' }).click();
   await expect(page).toHaveURL(/\/board$/u);
-  const session = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as BoardSession | null
-  );
+  const session = await readSession<BoardSession>(page);
   expect(session).not.toBeNull();
   return session!;
 }

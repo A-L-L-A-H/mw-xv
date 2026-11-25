@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { createE2eSuffix, E2E_SUPERADMIN_PASSWORD } from './constants.js';
+import { createE2eSuffix, E2E_SUPERADMIN_PASSWORD, readSession } from './constants.js';
 
 interface BoardSession {
   access_token: string;
@@ -23,9 +23,7 @@ test('record forms validate, edit relations, scope state by country, archive, re
   await page.getByRole('button', { name: 'Enter the Shadow' }).click();
   await expect(page).toHaveURL(/\/board$/u);
 
-  const session = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as BoardSession | null
-  );
+  const session = await readSession<BoardSession>(page);
   expect(session).not.toBeNull();
   const authorization = { authorization: `Bearer ${session!.access_token}` };
   const addressViewsResponse = await page.request.get('/api/base.partner_address/views', {
